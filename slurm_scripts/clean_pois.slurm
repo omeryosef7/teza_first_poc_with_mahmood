@@ -7,7 +7,8 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=04:00:00
-#SBATCH --partition=gpu-sharifm
+#SBATCH --partition=studentkillable
+#SBATCH --account=gpu-students
 #SBATCH --gres=gpu:1                # Request 1 GPU
 
 set -euo pipefail
