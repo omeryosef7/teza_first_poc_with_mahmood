@@ -8,11 +8,15 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+from dotenv import load_dotenv
+
 from poc_stage2.schemas import ARTIFACT_VERSION, HijackingResultRow, row_from_workflow_record
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 HIJACKING_ROOT = PROJECT_ROOT / "Chain_of_Thought_Hijacking" / "Hijacking"
+
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 DEFAULT_ATTACK_MODEL = "gemini-2.5-pro"
