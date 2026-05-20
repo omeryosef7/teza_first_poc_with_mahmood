@@ -1,0 +1,4 @@
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/strong_reject/strong_reject/strong_reject/evaluate.py:408: SyntaxWarning: invalid escape sequence '\d'
+  scores[item] = float(re.findall(f"{i+1}.b \d", judge_response)[0].split()[-1])
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/strong_reject/strong_reject/strong_reject/evaluate.py:574: SyntaxWarning: invalid escape sequence '\d'
+  scores[item] = float(re.findall(f"{i+1}.b \d", judge_response)[0].split()[-1])

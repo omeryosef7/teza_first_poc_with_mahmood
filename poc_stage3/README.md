@@ -99,6 +99,12 @@ Each scored row preserves the original Stage 2 fields and appends `strongreject_
 
 ## Current execution status
 
-In this workspace, `OPENAI_API_KEY` is not set, so real StrongREJECT scoring cannot be run yet.
+In this workspace, real StrongREJECT scoring has already been run successfully.
 
-Use the scoring command above after configuring credentials to generate the artifacts and then rerun the analysis command.
+The produced artifacts are:
+
+- `outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl`
+- `outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_summary.json`
+- `outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_analysis.json`
+
+Use the scoring command above if you want to rerun the job, and then rerun the analysis command on the scored JSONL.
