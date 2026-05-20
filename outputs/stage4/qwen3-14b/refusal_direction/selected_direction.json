@@ -1,19 +1,20 @@
 {
   "artifact_version": "stage4a1_v1",
   "stage": "stage4a1_candidate_refusal_direction_extraction",
-  "timestamp_utc": "2026-05-20T17:55:18.651978+00:00",
+  "timestamp_utc": "2026-05-20T18:19:49.875450+00:00",
   "model_name": "Qwen/Qwen3-14B",
   "model_family": "qwen3",
-  "num_harmful_prompts": 4,
-  "num_harmless_prompts": 4,
-  "num_harmful_train_prompts": 3,
-  "num_harmless_train_prompts": 3,
-  "num_harmful_validation_prompts": 1,
-  "num_harmless_validation_prompts": 1,
+  "num_harmful_prompts": 64,
+  "num_harmless_prompts": 64,
+  "num_harmful_train_prompts": 48,
+  "num_harmless_train_prompts": 48,
+  "num_harmful_validation_prompts": 16,
+  "num_harmless_validation_prompts": 16,
   "positions": [
     -1,
     -2,
-    -3
+    -3,
+    -4
   ],
   "token_position_semantics": "prompt_end_relative_negative_offsets",
   "layers": [
@@ -61,14 +62,14 @@
   "num_layers": 40,
   "hidden_size": 5120,
   "candidate_tensor_shape": [
-    3,
+    4,
     40,
     5120
   ],
   "enable_thinking": false,
   "batch_size": 1,
   "seed": 42,
-  "dry_run": true,
+  "dry_run": false,
   "device_summary": {
     "model.embed_tokens": "0",
     "model.layers.0": "0",
@@ -124,11 +125,11 @@
   "selection_criterion": "max_projection_separation_auxiliary_not_final",
   "selected_position_index": 2,
   "selected_position": -3,
-  "selected_layer": 39,
-  "selected_score": 405.25610733032227,
-  "selected_harmful_projection_mean": 341.6458435058594,
-  "selected_harmless_projection_mean": -63.61026382446289,
-  "direction_norm": 1.0000003576278687,
+  "selected_layer": 22,
+  "selected_score": 14.166624327994466,
+  "selected_harmful_projection_mean": 61.89002990722656,
+  "selected_harmless_projection_mean": -3.606233596801758,
+  "direction_norm": 1.0,
   "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
   "scientific_use_warning": "This direction was selected only by Stage 4A1 projection diagnostics. It is provisional and must not be treated as intervention-selected. Run Stage 4A2 intervention-based selection before scientific use."
 }

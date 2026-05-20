@@ -1,19 +1,20 @@
 {
   "artifact_version": "stage4a1_v1",
   "stage": "stage4a1_candidate_refusal_direction_extraction",
-  "timestamp_utc": "2026-05-20T17:55:18.651978+00:00",
+  "timestamp_utc": "2026-05-20T18:19:49.875450+00:00",
   "model_name": "Qwen/Qwen3-14B",
   "model_family": "qwen3",
-  "num_harmful_prompts": 4,
-  "num_harmless_prompts": 4,
-  "num_harmful_train_prompts": 3,
-  "num_harmless_train_prompts": 3,
-  "num_harmful_validation_prompts": 1,
-  "num_harmless_validation_prompts": 1,
+  "num_harmful_prompts": 64,
+  "num_harmless_prompts": 64,
+  "num_harmful_train_prompts": 48,
+  "num_harmless_train_prompts": 48,
+  "num_harmful_validation_prompts": 16,
+  "num_harmless_validation_prompts": 16,
   "positions": [
     -1,
     -2,
-    -3
+    -3,
+    -4
   ],
   "token_position_semantics": "prompt_end_relative_negative_offsets",
   "layers": [
@@ -61,14 +62,14 @@
   "num_layers": 40,
   "hidden_size": 5120,
   "candidate_tensor_shape": [
-    3,
+    4,
     40,
     5120
   ],
   "enable_thinking": false,
   "batch_size": 1,
   "seed": 42,
-  "dry_run": true,
+  "dry_run": false,
   "device_summary": {
     "model.embed_tokens": "0",
     "model.layers.0": "0",
