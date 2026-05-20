@@ -56,7 +56,7 @@ python -m poc_stage4.extract_refusal_direction \
   --model-name Qwen/Qwen3-14B \
   --num-harmful 64 \
   --num-harmless 64 \
-  --positions -1,-2,-3 \
+  --positions=-1,-2,-3,-4 \
   --batch-size 1 \
   --enable-thinking false
 ```
@@ -104,4 +104,3 @@ upstream `select_direction.py` logic:
 - harmless validation activation-addition/refusal steering
 - KL-divergence or similar sanity filtering
 - final direction selected by intervention behavior, not projection diagnostics
-

@@ -163,6 +163,8 @@ def save_provisional_direction(
 
 
 def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
+    import torch
+
     from poc_stage4.activation_capture import capture_residual_input_activations
     from poc_stage4.candidate_directions import generate_candidate_directions, split_prompts
     from poc_stage4.projection_diagnostics import compute_projection_diagnostics, summarize_diagnostics

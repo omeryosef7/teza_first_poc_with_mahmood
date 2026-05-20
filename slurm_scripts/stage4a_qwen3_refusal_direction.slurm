@@ -21,15 +21,14 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction}"
 BATCH_SIZE="${BATCH_SIZE:-1}"
-POSITIONS="${POSITIONS:--1,-2,-3}"
+POSITIONS="${POSITIONS:--1,-2,-3,-4}"
 ENABLE_THINKING="${ENABLE_THINKING:-false}"
 SEED="${SEED:-42}"
 
-# Dry-run defaults to true because Stage 4A1 loads a 14B model and should be
-# smoke-tested before larger prompt counts.
-DRY_RUN="${DRY_RUN:-true}"
-NUM_HARMFUL="${NUM_HARMFUL:-}"
-NUM_HARMLESS="${NUM_HARMLESS:-}"
+# The dry run has already succeeded; default to the fuller Stage 4A1 candidate run.
+DRY_RUN="${DRY_RUN:-false}"
+NUM_HARMFUL="${NUM_HARMFUL:-64}"
+NUM_HARMLESS="${NUM_HARMLESS:-64}"
 OVERWRITE="${OVERWRITE:-true}"
 USE_BUILTIN_PROMPTS="${USE_BUILTIN_PROMPTS:-false}"
 
@@ -65,7 +64,7 @@ ARGS=(
     --model-name "$MODEL_NAME"
     --output-dir "$OUTPUT_DIR"
     --batch-size "$BATCH_SIZE"
-    --positions "$POSITIONS"
+    "--positions=$POSITIONS"
     --enable-thinking "$ENABLE_THINKING"
     --seed "$SEED"
 )
