@@ -9,6 +9,7 @@
 #SBATCH --time=04:00:00
 #SBATCH --partition=studentkillable
 #SBATCH --account=gpu-students
+#SBATCH --exclude=s-002
 #SBATCH --gres=gpu:1                # Request 1 GPU
 
 set -euo pipefail
