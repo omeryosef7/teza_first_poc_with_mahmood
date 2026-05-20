@@ -1,0 +1,42 @@
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/fastchat/model/model_chatglm.py:32: SyntaxWarning: invalid escape sequence '\?'
+  ["\?", "？"],
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:2274: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:2274: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/Hijacking/data/dataset.py", line 23, in load_goals
+    dataset = load_dataset(args.dataset, name=args.dataset_split, split=split_slice)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/datasets/load.py", line 1392, in load_dataset
+    builder_instance = load_dataset_builder(
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/datasets/load.py", line 1132, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/datasets/load.py", line 1025, in dataset_module_factory
+    raise e1 from None
+  File "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/datasets/load.py", line 1011, in dataset_module_factory
+    raise DatasetNotFoundError(message) from e
+datasets.exceptions.DatasetNotFoundError: Dataset 'walledai/HarmBench' is a gated dataset on the Hub. You must be authenticated to access it.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2/collect_hijacking_results.py", line 75, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2/collect_hijacking_results.py", line 31, in main
+    result = run_hijacking_slice(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2/hijacking_wrapper.py", line 200, in run_hijacking_slice
+    goals_to_test, start_index = load_goals(args)
+                                 ^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/Hijacking/data/dataset.py", line 31, in load_goals
+    raise ValueError(error_msg)
+ValueError: Failed to load dataset slice 'train[0:4]': Dataset 'walledai/HarmBench' is a gated dataset on the Hub. You must be authenticated to access it.
+slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
+slurmstepd: error: Cannot write to cgroup.procs for (null)
+slurmstepd: error: Unable to move pid 1363060 to init root cgroup (null)

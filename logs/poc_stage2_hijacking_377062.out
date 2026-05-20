@@ -1,0 +1,4 @@
+Setting max_n_tokens for model gpt-o4-mini to: 50000
+Setting 'reasoning_effort' parameter for model gpt-o4-mini to: 'medium' (default)
+Loading dataset 'walledai/HarmBench' from row 1 to 4.
+Failed to load dataset slice 'train[0:4]': Dataset 'walledai/HarmBench' is a gated dataset on the Hub. You must be authenticated to access it.
