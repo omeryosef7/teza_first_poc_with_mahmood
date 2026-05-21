@@ -101,3 +101,69 @@ Some parameters are on the meta device because they were offloaded to the cpu.
 Stage 4A2 candidates:  28%|██▊       | 45/160 [7:08:04<18:14:45, 571.18s/it][2026-05-21T15:17:10.147548+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=5
 [2026-05-21T15:26:43.108090+00:00] [stage4a2] Finished candidate position=-2 layer=5 passes_filters=False failures=kl_above_threshold,steering_below_threshold
 Stage 4A2 candidates:  29%|██▉       | 46/160 [7:17:37<18:06:15, 571.72s/it][2026-05-21T15:26:43.108604+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=6
+[2026-05-21T15:36:15.078894+00:00] [stage4a2] Finished candidate position=-2 layer=6 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  29%|██▉       | 47/160 [7:27:09<17:56:52, 571.79s/it][2026-05-21T15:36:15.079795+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=7
+[2026-05-21T15:45:46.446921+00:00] [stage4a2] Finished candidate position=-2 layer=7 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  30%|███       | 48/160 [7:36:40<17:47:06, 571.67s/it][2026-05-21T15:45:46.447810+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=8
+[2026-05-21T15:55:18.461776+00:00] [stage4a2] Finished candidate position=-2 layer=8 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  31%|███       | 49/160 [7:46:12<17:37:46, 571.77s/it][2026-05-21T15:55:18.462950+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=9
+[2026-05-21T16:04:50.416984+00:00] [stage4a2] Finished candidate position=-2 layer=9 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  31%|███▏      | 50/160 [7:55:44<17:28:20, 571.83s/it][2026-05-21T16:04:50.417952+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=10
+[2026-05-21T16:14:22.539936+00:00] [stage4a2] Finished candidate position=-2 layer=10 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  32%|███▏      | 51/160 [8:05:16<17:18:58, 571.91s/it][2026-05-21T16:14:22.540442+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=11
+[2026-05-21T16:23:55.480576+00:00] [stage4a2] Finished candidate position=-2 layer=11 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  32%|███▎      | 52/160 [8:14:49<17:10:00, 572.22s/it][2026-05-21T16:23:55.481368+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=12
+[2026-05-21T16:33:28.739424+00:00] [stage4a2] Finished candidate position=-2 layer=12 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  33%|███▎      | 53/160 [8:24:22<17:01:01, 572.53s/it][2026-05-21T16:33:28.744554+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=13
+[2026-05-21T16:43:01.044446+00:00] [stage4a2] Finished candidate position=-2 layer=13 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  34%|███▍      | 54/160 [8:33:54<16:51:21, 572.46s/it][2026-05-21T16:43:01.044924+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=14
+[2026-05-21T16:52:33.576269+00:00] [stage4a2] Finished candidate position=-2 layer=14 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  34%|███▍      | 55/160 [8:43:27<16:41:51, 572.49s/it][2026-05-21T16:52:33.582173+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=15
+[2026-05-21T17:02:04.716878+00:00] [stage4a2] Finished candidate position=-2 layer=15 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  35%|███▌      | 56/160 [8:52:58<16:31:36, 572.08s/it][2026-05-21T17:02:04.717518+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=16
+[2026-05-21T17:11:36.489580+00:00] [stage4a2] Finished candidate position=-2 layer=16 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  36%|███▌      | 57/160 [9:02:30<16:21:54, 571.99s/it][2026-05-21T17:11:36.492008+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=17
+[2026-05-21T17:21:17.627352+00:00] [stage4a2] Finished candidate position=-2 layer=17 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  36%|███▋      | 58/160 [9:12:11<16:17:02, 574.73s/it][2026-05-21T17:21:17.628307+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=18
+[2026-05-21T17:30:59.258011+00:00] [stage4a2] Finished candidate position=-2 layer=18 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  37%|███▋      | 59/160 [9:21:53<16:10:57, 576.80s/it][2026-05-21T17:30:59.263760+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=19
+[2026-05-21T17:40:38.501515+00:00] [stage4a2] Finished candidate position=-2 layer=19 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  38%|███▊      | 60/160 [9:31:32<16:02:33, 577.53s/it][2026-05-21T17:40:38.502645+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=20
+[2026-05-21T17:50:10.790718+00:00] [stage4a2] Finished candidate position=-2 layer=20 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  38%|███▊      | 61/160 [9:41:04<15:50:20, 575.96s/it][2026-05-21T17:50:10.791238+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=21
+[2026-05-21T17:59:46.670582+00:00] [stage4a2] Finished candidate position=-2 layer=21 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  39%|███▉      | 62/160 [9:50:40<15:40:41, 575.94s/it][2026-05-21T17:59:46.675699+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=22
+[2026-05-21T18:09:26.562976+00:00] [stage4a2] Finished candidate position=-2 layer=22 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  39%|███▉      | 63/160 [10:00:20<15:33:00, 577.12s/it][2026-05-21T18:09:26.563757+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=23
+[2026-05-21T18:19:02.543999+00:00] [stage4a2] Finished candidate position=-2 layer=23 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  40%|████      | 64/160 [10:09:56<15:22:50, 576.78s/it][2026-05-21T18:19:02.544789+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=24
+[2026-05-21T18:28:34.580208+00:00] [stage4a2] Finished candidate position=-2 layer=24 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  41%|████      | 65/160 [10:19:28<15:10:58, 575.36s/it][2026-05-21T18:28:34.581191+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=25
+[2026-05-21T18:38:06.637756+00:00] [stage4a2] Finished candidate position=-2 layer=25 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  41%|████▏     | 66/160 [10:29:00<14:59:50, 574.37s/it][2026-05-21T18:38:06.638795+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=26
+[2026-05-21T18:47:39.468295+00:00] [stage4a2] Finished candidate position=-2 layer=26 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  42%|████▏     | 67/160 [10:38:33<14:49:33, 573.91s/it][2026-05-21T18:47:39.469279+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=27
+[2026-05-21T18:57:11.441115+00:00] [stage4a2] Finished candidate position=-2 layer=27 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  42%|████▎     | 68/160 [10:48:05<14:39:06, 573.33s/it][2026-05-21T18:57:11.441709+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=28
+[2026-05-21T19:06:49.571312+00:00] [stage4a2] Finished candidate position=-2 layer=28 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  43%|████▎     | 69/160 [10:57:43<14:31:43, 574.77s/it][2026-05-21T19:06:49.572329+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=29
+[2026-05-21T19:16:29.742903+00:00] [stage4a2] Finished candidate position=-2 layer=29 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  44%|████▍     | 70/160 [11:07:23<14:24:35, 576.39s/it][2026-05-21T19:16:29.748604+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=30
+[2026-05-21T19:26:08.790248+00:00] [stage4a2] Finished candidate position=-2 layer=30 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  44%|████▍     | 71/160 [11:17:02<14:16:09, 577.19s/it][2026-05-21T19:26:08.791246+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=31
+[2026-05-21T19:35:45.909356+00:00] [stage4a2] Finished candidate position=-2 layer=31 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  45%|████▌     | 72/160 [11:26:39<14:06:30, 577.17s/it][2026-05-21T19:35:45.910434+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=32
+[2026-05-21T19:45:25.243002+00:00] [stage4a2] Finished candidate position=-2 layer=32 passes_filters=False failures=kl_above_threshold,steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  46%|████▌     | 73/160 [11:36:19<13:57:50, 577.82s/it][2026-05-21T19:45:25.244006+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=33
+[2026-05-21T19:55:03.649455+00:00] [stage4a2] Finished candidate position=-2 layer=33 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  46%|████▋     | 74/160 [11:45:57<13:48:27, 577.99s/it][2026-05-21T19:55:03.651233+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=34
+[2026-05-21T20:04:42.137031+00:00] [stage4a2] Finished candidate position=-2 layer=34 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  47%|████▋     | 75/160 [11:55:36<13:39:02, 578.14s/it][2026-05-21T20:04:42.142254+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=35
+[2026-05-21T20:14:17.986197+00:00] [stage4a2] Finished candidate position=-2 layer=35 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  48%|████▊     | 76/160 [12:05:11<13:28:26, 577.45s/it][2026-05-21T20:14:17.986721+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=36
+[2026-05-21T20:23:49.908064+00:00] [stage4a2] Finished candidate position=-2 layer=36 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  48%|████▊     | 77/160 [12:14:43<13:16:30, 575.79s/it][2026-05-21T20:23:49.909212+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=37
+[2026-05-21T20:33:22.612346+00:00] [stage4a2] Finished candidate position=-2 layer=37 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  49%|████▉     | 78/160 [12:24:16<13:05:39, 574.87s/it][2026-05-21T20:33:22.616612+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=38
+[2026-05-21T20:42:54.060214+00:00] [stage4a2] Finished candidate position=-2 layer=38 passes_filters=False failures=steering_below_threshold,layer_pruned
+Stage 4A2 candidates:  49%|████▉     | 79/160 [12:33:47<12:54:41, 573.84s/it][2026-05-21T20:42:54.064523+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=39
