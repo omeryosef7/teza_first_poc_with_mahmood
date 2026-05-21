@@ -95,3 +95,9 @@ Some parameters are on the meta device because they were offloaded to the cpu.
 Stage 4A2 candidates:  26%|██▋       | 42/160 [6:39:30<18:43:06, 571.07s/it][2026-05-21T14:48:36.598768+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=2
 [2026-05-21T14:58:07.678474+00:00] [stage4a2] Finished candidate position=-2 layer=2 passes_filters=False failures=steering_below_threshold
 Stage 4A2 candidates:  27%|██▋       | 43/160 [6:49:01<18:33:35, 571.08s/it][2026-05-21T14:58:07.679431+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=3
+[2026-05-21T15:07:38.630697+00:00] [stage4a2] Finished candidate position=-2 layer=3 passes_filters=False failures=steering_below_threshold
+Stage 4A2 candidates:  28%|██▊       | 44/160 [6:58:32<18:24:00, 571.04s/it][2026-05-21T15:07:38.631169+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=4
+[2026-05-21T15:17:10.146640+00:00] [stage4a2] Finished candidate position=-2 layer=4 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  28%|██▊       | 45/160 [7:08:04<18:14:45, 571.18s/it][2026-05-21T15:17:10.147548+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=5
+[2026-05-21T15:26:43.108090+00:00] [stage4a2] Finished candidate position=-2 layer=5 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  29%|██▉       | 46/160 [7:17:37<18:06:15, 571.72s/it][2026-05-21T15:26:43.108604+00:00] [stage4a2] Evaluating candidate position_index=1 position=-2 layer=6
