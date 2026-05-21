@@ -190,3 +190,92 @@ or:
 ```bash
 --refusal-token-ids 40,2121
 ```
+
+## Stage 4B Refusal Dampening
+
+Stage 4B measures the internal refusal-direction component for direct harmful
+prompts versus CoT-hijacked variants. It requires a Stage 4A2 final direction by
+default:
+
+```json
+"selection_status": "intervention_selected"
+```
+
+Provisional Stage 4A1 directions are rejected unless explicitly allowed for
+debugging:
+
+```bash
+--allow-provisional-direction
+```
+
+Do not use provisional runs as scientific results.
+
+Stage 4B uses existing Stage 2 artifacts by default:
+
+```text
+outputs/hijacking_baseline_gpt-o4-mini_small.jsonl
+```
+
+For each goal it measures:
+
+- `direct_harmful`: the Stage 2 `goal`
+- `hijacked_medium`: a middle-length Stage 2 `attack_prompt`
+- `hijacked_long`: the longest Stage 2 `attack_prompt`
+
+If medium and long resolve to the same attack prompt, the outputs record:
+
+```json
+"hijacked_medium_equals_long": true
+```
+
+Negative deltas mean dampening:
+
+```text
+delta = hijacked_component - direct_component
+```
+
+Stage 4B measures an internal refusal signal, not final behavioral jailbreak
+success.
+
+Dry-run command, after Stage 4A2 succeeds:
+
+```bash
+python -m poc_stage4.measure_refusal_dampening \
+  --model-name Qwen/Qwen3-14B \
+  --direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_dampening \
+  --enable-thinking false \
+  --dry-run \
+  --num-goals 2
+```
+
+Debug-only provisional command:
+
+```bash
+python -m poc_stage4.measure_refusal_dampening \
+  --model-name Qwen/Qwen3-14B \
+  --direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_dampening \
+  --enable-thinking false \
+  --dry-run \
+  --num-goals 2 \
+  --allow-provisional-direction
+```
+
+SLURM dry run:
+
+```bash
+sbatch slurm_scripts/stage4b_qwen3_refusal_dampening.slurm
+```
+
+For `--num-goals 30`, provide a larger Stage 2 JSONL artifact:
+
+```bash
+python -m poc_stage4.measure_refusal_dampening \
+  --model-name Qwen/Qwen3-14B \
+  --direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_dampening \
+  --enable-thinking false \
+  --num-goals 30 \
+  --stage2-jsonl <larger-stage2-artifact>.jsonl
+```
