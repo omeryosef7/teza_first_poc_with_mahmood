@@ -1,0 +1,5 @@
+[2026-05-21T07:55:30.447252+00:00] [stage4a2] Loading Qwen3 model model=Qwen/Qwen3-14B
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:36<04:12, 36.06s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:13<03:39, 36.63s/it]slurmstepd: error: *** JOB 382350 ON s-003 CANCELLED AT 2026-05-21T10:56:49 ***
+slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
+slurmstepd: error: Cannot write to cgroup.procs for (null)
+slurmstepd: error: Unable to move pid 1194815 to init root cgroup (null)

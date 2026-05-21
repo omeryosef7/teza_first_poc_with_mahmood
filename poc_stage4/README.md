@@ -436,3 +436,63 @@ python -m poc_stage4.measure_refusal_dampening \
   --num-goals 30 \
   --stage2-jsonl <larger-stage2-artifact>.jsonl
 ```
+
+## Stage 4C Qwen Report
+
+Stage 4C aggregates Qwen3-14B Stage 4A1, Stage 4A2, and Stage 4B artifacts into
+a derived report. It does not modify refusal directions, intervention metrics,
+or dampening measurements.
+
+Outputs:
+
+```text
+stage4_qwen_report.json
+stage4_qwen_report.md
+refusal_components_by_condition.csv
+refusal_dampening_by_goal.csv
+```
+
+If `matplotlib` is available, Stage 4C also writes:
+
+```text
+refusal_component_by_condition.png
+dampening_delta_by_goal.png
+```
+
+Debug or provisional inputs are rejected by default. Use
+`--allow-debug-inputs` only for preliminary reports; those reports are clearly
+marked as not final scientific evidence.
+
+Debug report command:
+
+```bash
+python -m poc_stage4.build_stage4_report \
+  --model-name Qwen/Qwen3-14B \
+  --refusal-direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --refusal-dampening-dir outputs/stage4/qwen3-14b/refusal_dampening_debug \
+  --output-dir outputs/stage4/qwen3-14b/report_debug \
+  --allow-debug-inputs
+```
+
+Final report command, after Stage 4A2 and Stage 4B are final:
+
+```bash
+python -m poc_stage4.build_stage4_report \
+  --model-name Qwen/Qwen3-14B \
+  --refusal-direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --refusal-dampening-dir outputs/stage4/qwen3-14b/refusal_dampening \
+  --output-dir outputs/stage4/qwen3-14b/report
+```
+
+SLURM debug report:
+
+```bash
+sbatch --export=ALL,ALLOW_DEBUG_INPUTS=true,REFUSAL_DAMPENING_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_dampening_debug,OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/report_debug \
+  slurm_scripts/stage4c_qwen3_report.slurm
+```
+
+SLURM final report:
+
+```bash
+sbatch slurm_scripts/stage4c_qwen3_report.slurm
+```
