@@ -31,6 +31,14 @@ class Qwen3Model:
         return len(self.layers)
 
     @property
+    def attn_modules(self) -> list[Any]:
+        return [layer.self_attn for layer in self.layers]
+
+    @property
+    def mlp_modules(self) -> list[Any]:
+        return [layer.mlp for layer in self.layers]
+
+    @property
     def hidden_size(self) -> int:
         return int(self.model.config.hidden_size)
 
@@ -88,4 +96,3 @@ def load_qwen3_model(model_name: str = DEFAULT_QWEN3_MODEL) -> Qwen3Model:
     model.requires_grad_(False)
 
     return Qwen3Model(model_name=model_name, tokenizer=tokenizer, model=model)
-

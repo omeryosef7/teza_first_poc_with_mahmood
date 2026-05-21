@@ -1,0 +1,4 @@
+Wrote intervention candidate scores to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/intervention_candidate_scores.json
+Wrote intervention metrics to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/intervention_selection_metrics.json
+Selection status: intervention_smoke_test_only
+Smoke mode did not overwrite direction.pt or selected_direction.json.
