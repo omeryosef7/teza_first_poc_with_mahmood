@@ -33,6 +33,9 @@ TOP_K_PROJECTION="${TOP_K_PROJECTION:-}"
 DRY_RUN="${DRY_RUN:-false}"
 REFUSAL_TOKEN_STRINGS="${REFUSAL_TOKEN_STRINGS:-I,As}"
 REFUSAL_TOKEN_IDS="${REFUSAL_TOKEN_IDS:-}"
+RESUME="${RESUME:-false}"
+CHECKPOINT_DIR="${CHECKPOINT_DIR:-}"
+NO_PROGRESS="${NO_PROGRESS:-false}"
 
 cd "$PROJECT_DIR"
 
@@ -81,6 +84,18 @@ fi
 
 if [ -n "$REFUSAL_TOKEN_IDS" ]; then
     ARGS+=(--refusal-token-ids "$REFUSAL_TOKEN_IDS")
+fi
+
+if [ "$RESUME" = "true" ]; then
+    ARGS+=(--resume)
+fi
+
+if [ -n "$CHECKPOINT_DIR" ]; then
+    ARGS+=(--checkpoint-dir "$CHECKPOINT_DIR")
+fi
+
+if [ "$NO_PROGRESS" = "true" ]; then
+    ARGS+=(--no-progress)
 fi
 
 python -m poc_stage4.select_refusal_direction_interventions "${ARGS[@]}"

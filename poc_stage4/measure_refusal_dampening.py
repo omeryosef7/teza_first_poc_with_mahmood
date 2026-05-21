@@ -29,6 +29,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--allow-provisional-direction", action="store_true")
     parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--resume", action="store_true", help="Resume Stage 4B from per-example checkpoints.")
+    parser.add_argument("--checkpoint-dir", help="Directory for Stage 4B resumable checkpoints.")
+    parser.add_argument("--no-progress", action="store_true", help="Disable tqdm/progress logging.")
     return parser
 
 
@@ -53,12 +56,25 @@ def main() -> int:
             dry_run=bool(args.dry_run),
             allow_provisional_direction=bool(args.allow_provisional_direction),
             batch_size=args.batch_size,
+            resume=bool(args.resume),
+            checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
+            no_progress=bool(args.no_progress),
         )
 
+        from poc_stage4.run_state import log_progress
+
+        log_progress(
+            "stage4b",
+            "Loading direction",
+            enabled=not config.no_progress,
+            direction_dir=str(config.direction_dir),
+            allow_provisional=config.allow_provisional_direction,
+        )
         loaded_direction = load_direction(
             config.direction_dir,
             allow_provisional_direction=config.allow_provisional_direction,
         )
+        log_progress("stage4b", "Loading Qwen3 model", enabled=not config.no_progress, model=config.model_name)
         model_base = load_qwen3_model(config.model_name)
         summary = run_refusal_dampening_measurement(
             config=config,
@@ -78,4 +94,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

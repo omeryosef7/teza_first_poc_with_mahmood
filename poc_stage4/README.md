@@ -72,6 +72,163 @@ python -m poc_stage4.extract_refusal_direction \
 `--enable-thinking` is configurable and recorded in every metadata artifact.
 The default is `false` for shorter, stable prompt formatting.
 
+## Progress Logs And Resume
+
+All Stage 4 CLIs print timestamped progress lines and, when `tqdm` is
+available, progress bars. In SLURM runs these usually appear in the job `.err`
+file, while the final short success summary appears in the `.out` file. The
+progress lines look like:
+
+```text
+[2026-05-21T12:34:56+00:00] [stage4a2] Evaluating candidate position=-3 layer=22
+```
+
+Use these flags on all Stage 4 CLIs:
+
+```bash
+--resume
+```
+
+Resume from an existing checkpoint directory. The run validates that the
+checkpoint was created with the same important configuration before reusing it.
+
+```bash
+--checkpoint-dir <path>
+```
+
+Use a custom checkpoint directory instead of the default stage-specific one.
+
+```bash
+--no-progress
+```
+
+Disable timestamped progress logs and `tqdm` progress bars. This does not
+disable checkpoint writing.
+
+Checkpoints are configuration-guarded with a fingerprint stored in
+`manifest.json`. If the current command changes important settings, such as
+model name, prompt counts, positions, validation settings, selected direction,
+or candidate list, resume fails clearly instead of mixing incompatible partial
+results.
+
+Existing jobs that started before checkpoint support was added cannot
+retroactively resume. Only jobs started with this checkpointing code can be
+continued.
+
+### Checkpoint Contents
+
+| Stage | Default checkpoint directory | Checkpoint files | Resume key | What resume does |
+| --- | --- | --- | --- | --- |
+| Stage 4A1 | `outputs/stage4/qwen3-14b/refusal_direction/checkpoints/stage4a1/` | `manifest.json`, `harmful_train_batch_*.pt`, `harmless_train_batch_*.pt`, `harmful_validation_batch_*.pt`, `harmless_validation_batch_*.pt` | activation split + batch range encoded in filename | loads completed activation batches and recomputes only missing batches, then rebuilds candidate directions, diagnostics, and provisional metadata |
+| Stage 4A2 | `outputs/stage4/qwen3-14b/refusal_direction/checkpoints/stage4a2/` | `manifest.json`, `baseline_harmful_logits.pt`, `baseline_harmless_logits.pt`, `intervention_candidate_scores.checkpoint.jsonl` | `(position_index, position, layer)` | loads baseline logits when present and skips completed candidate intervention evaluations, then rebuilds final candidate-score and metrics JSON files |
+| Stage 4B | `outputs/stage4/qwen3-14b/refusal_dampening/checkpoints/stage4b/` or the equivalent under the debug output directory | `manifest.json`, `per_example_refusal_components.checkpoint.jsonl` | `(goal_index, condition)` | skips completed prompt-condition rows, measures missing rows, then rebuilds `per_example_refusal_components.jsonl` and `refusal_dampening_summary.json` |
+
+### CLI Resume Examples
+
+Stage 4A1:
+
+```bash
+python -m poc_stage4.extract_refusal_direction \
+  --model-name Qwen/Qwen3-14B \
+  --output-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --num-harmful 64 \
+  --num-harmless 64 \
+  --positions=-1,-2,-3,-4 \
+  --batch-size 1 \
+  --enable-thinking false \
+  --overwrite \
+  --resume
+```
+
+Stage 4A2:
+
+```bash
+python -m poc_stage4.select_refusal_direction_interventions \
+  --input-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --model-name Qwen/Qwen3-14B \
+  --enable-thinking false \
+  --batch-size 1 \
+  --resume
+```
+
+Stage 4B:
+
+```bash
+python -m poc_stage4.measure_refusal_dampening \
+  --model-name Qwen/Qwen3-14B \
+  --direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_dampening \
+  --enable-thinking false \
+  --num-goals 2 \
+  --resume
+```
+
+For a debug-only Stage 4B resume with a provisional direction, keep using the
+debug output directory and explicit provisional flag:
+
+```bash
+python -m poc_stage4.measure_refusal_dampening \
+  --model-name Qwen/Qwen3-14B \
+  --direction-dir outputs/stage4/qwen3-14b/refusal_direction \
+  --output-dir outputs/stage4/qwen3-14b/refusal_dampening_debug \
+  --enable-thinking false \
+  --dry-run \
+  --num-goals 2 \
+  --allow-provisional-direction \
+  --resume
+```
+
+### SLURM Resume Examples
+
+Stage 4A1:
+
+```bash
+sbatch --export=ALL,RESUME=true slurm_scripts/stage4a_qwen3_refusal_direction.slurm
+```
+
+Stage 4A2:
+
+```bash
+sbatch --export=ALL,RESUME=true slurm_scripts/stage4a2_qwen3_intervention_selection.slurm
+```
+
+Stage 4B:
+
+```bash
+sbatch --export=ALL,RESUME=true slurm_scripts/stage4b_qwen3_refusal_dampening.slurm
+```
+
+Use a custom checkpoint directory from SLURM:
+
+```bash
+sbatch --export=ALL,RESUME=true,CHECKPOINT_DIR=/path/to/checkpoints/stage4a2 \
+  slurm_scripts/stage4a2_qwen3_intervention_selection.slurm
+```
+
+Suppress progress logging from SLURM:
+
+```bash
+sbatch --export=ALL,NO_PROGRESS=true slurm_scripts/stage4a2_qwen3_intervention_selection.slurm
+```
+
+### Operational Notes
+
+- Final scientific outputs are written or rebuilt only after successful
+  completion of the stage.
+- Stage 4A2 full mode still updates `direction.pt` and `selected_direction.json`
+  only after all required candidates complete and at least one candidate
+  survives the filters.
+- Stage 4B still rejects provisional Stage 4A1 directions by default. Resume
+  does not bypass this guardrail; debug runs still need
+  `--allow-provisional-direction`.
+- Deleting a checkpoint directory forces a fresh run for that stage.
+- If you intentionally change run settings, use a fresh checkpoint directory or
+  delete the old one. Otherwise the fingerprint check will stop the run.
+- Checkpoint files are intermediate state. The main scientific artifacts remain
+  the stage outputs documented below.
+
+
 ## Outputs
 
 Default output directory:

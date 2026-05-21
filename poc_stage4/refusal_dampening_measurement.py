@@ -8,6 +8,14 @@ from statistics import mean, median
 from typing import Any, Callable
 
 from poc_stage4.direction_loader import LoadedDirection
+from poc_stage4.run_state import (
+    append_jsonl,
+    completed_rows_by_key,
+    log_progress,
+    progress_iter,
+    validate_checkpoint_manifest,
+    write_checkpoint_manifest,
+)
 from poc_stage4.schemas import make_json_safe, read_json, utc_now, write_json
 
 
@@ -42,6 +50,9 @@ class DampeningConfig:
     dry_run: bool
     allow_provisional_direction: bool
     batch_size: int
+    resume: bool = False
+    checkpoint_dir: Path | None = None
+    no_progress: bool = False
 
 
 def load_jsonl(path: str | Path) -> list[dict[str, Any]]:
@@ -225,6 +236,10 @@ def measure_refusal_components(
     prompt_conditions: list[PromptCondition],
     enable_thinking: bool,
     batch_size: int,
+    allow_provisional_direction: bool,
+    checkpoint_dir: Path | None = None,
+    resume: bool = False,
+    progress_enabled: bool = True,
 ) -> list[dict[str, Any]]:
     import torch
 
@@ -235,13 +250,62 @@ def measure_refusal_components(
     direction = direction / (direction.norm() + 1e-8)
     direction_selection_status = metadata.get("selection_status")
     debug_only_run = bool(
-        loaded_direction.metadata.get("selection_status") != "intervention_selected"
+        allow_provisional_direction
+        or loaded_direction.metadata.get("selection_status") != "intervention_selected"
     )
 
+    checkpoint_jsonl = checkpoint_dir / "per_example_refusal_components.checkpoint.jsonl" if checkpoint_dir else None
+    completed: dict[tuple[Any, ...], dict[str, Any]] = {}
+    if checkpoint_jsonl:
+        if resume:
+            completed = completed_rows_by_key(checkpoint_jsonl, ("goal_index", "condition"))
+            log_progress(
+                "stage4b",
+                "Loaded per-example checkpoint rows",
+                enabled=progress_enabled,
+                completed=len(completed),
+                path=str(checkpoint_jsonl),
+            )
+        else:
+            checkpoint_jsonl.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint_jsonl.write_text("", encoding="utf-8")
+
     rows: list[dict[str, Any]] = []
+    rows_by_key: dict[tuple[int, str], dict[str, Any]] = {
+        (int(row["goal_index"]), str(row["condition"])): row
+        for row in completed.values()
+    }
     input_device = _input_device(model_base.model)
-    for start in range(0, len(prompt_conditions), batch_size):
-        batch = prompt_conditions[start : start + batch_size]
+    batch_starts = list(range(0, len(prompt_conditions), batch_size))
+    for start in progress_iter(
+        batch_starts,
+        total=len(batch_starts),
+        desc="Stage 4B conditions",
+        enabled=progress_enabled,
+    ):
+        original_batch = prompt_conditions[start : start + batch_size]
+        batch = [
+            item
+            for item in original_batch
+            if (item.goal_index, item.condition) not in rows_by_key
+        ]
+        if not batch:
+            log_progress(
+                "stage4b",
+                "Skipping completed condition batch",
+                enabled=progress_enabled,
+                start=start,
+                end=start + len(original_batch),
+            )
+            continue
+        log_progress(
+            "stage4b",
+            "Measuring condition batch",
+            enabled=progress_enabled,
+            start=start,
+            count=len(batch),
+            conditions=",".join(item.condition for item in batch),
+        )
         tokenized = model_base.tokenize_prompts(
             [item.prompt for item in batch],
             enable_thinking=enable_thinking,
@@ -282,7 +346,7 @@ def measure_refusal_components(
                     "selected_layer": selected_layer,
                     "refusal_component": float(component),
                     "direction_selection_status": direction_selection_status,
-                    "allow_provisional_direction": None,
+                    "allow_provisional_direction": allow_provisional_direction,
                     "debug_only_run": debug_only_run,
                     "prompt_length_tokens": int(prompt_length),
                     "enable_thinking": enable_thinking,
@@ -294,10 +358,30 @@ def measure_refusal_components(
                     "medium_long_comparison_status": item.medium_long_comparison_status,
                 }
             )
+            key = (item.goal_index, item.condition)
+            rows_by_key[key] = rows[-1]
+            if checkpoint_jsonl:
+                append_jsonl(checkpoint_jsonl, rows[-1])
+            log_progress(
+                "stage4b",
+                "Saved condition checkpoint",
+                enabled=progress_enabled,
+                goal_index=item.goal_index,
+                condition=item.condition,
+            )
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    return rows
+    ordered_rows = [
+        rows_by_key[(item.goal_index, item.condition)]
+        for item in prompt_conditions
+        if (item.goal_index, item.condition) in rows_by_key
+    ]
+    if len(ordered_rows) != len(prompt_conditions):
+        raise RuntimeError(
+            f"Only {len(ordered_rows)} of {len(prompt_conditions)} Stage 4B rows are complete."
+        )
+    return ordered_rows
 
 
 def _safe_stat(values: list[float], fn: Callable[[list[float]], float]) -> float | None:
@@ -406,11 +490,52 @@ def run_refusal_dampening_measurement(
     model_base: Any,
     loaded_direction: LoadedDirection,
 ) -> dict[str, Any]:
+    progress_enabled = not config.no_progress
+    checkpoint_dir = config.checkpoint_dir or (config.output_dir / "checkpoints" / "stage4b")
+    checkpoint_payload = {
+        "model_name": config.model_name,
+        "direction_dir": str(config.direction_dir),
+        "output_dir": str(config.output_dir),
+        "stage2_jsonl": str(config.stage2_jsonl),
+        "enable_thinking": config.enable_thinking,
+        "num_goals": config.num_goals,
+        "dry_run": config.dry_run,
+        "allow_provisional_direction": config.allow_provisional_direction,
+        "batch_size": config.batch_size,
+        "direction_selection_status": loaded_direction.metadata.get("selection_status"),
+        "selected_position": loaded_direction.metadata.get("selected_position"),
+        "selected_layer": loaded_direction.metadata.get("selected_layer"),
+    }
+    if config.resume:
+        validate_checkpoint_manifest(checkpoint_dir, stage="stage4b", fingerprint_payload=checkpoint_payload)
+    write_checkpoint_manifest(
+        checkpoint_dir,
+        stage="stage4b",
+        fingerprint_payload=checkpoint_payload,
+        extra={"checkpoint_dir": str(checkpoint_dir)},
+    )
+    log_progress(
+        "stage4b",
+        "Starting refusal dampening measurement",
+        enabled=progress_enabled,
+        output_dir=str(config.output_dir),
+        checkpoint_dir=str(checkpoint_dir),
+        resume=config.resume,
+    )
+
     token_length_fn = make_token_length_fn(model_base.tokenizer)
+    log_progress("stage4b", "Building prompt conditions", enabled=progress_enabled, stage2_jsonl=str(config.stage2_jsonl))
     prompt_conditions, prompt_metadata = build_prompt_conditions(
         stage2_jsonl=config.stage2_jsonl,
         num_goals=config.num_goals,
         token_length_fn=token_length_fn,
+    )
+    log_progress(
+        "stage4b",
+        "Built prompt conditions",
+        enabled=progress_enabled,
+        goals=prompt_metadata["num_goals"],
+        conditions=len(prompt_conditions),
     )
     rows = measure_refusal_components(
         model_base=model_base,
@@ -418,6 +543,10 @@ def run_refusal_dampening_measurement(
         prompt_conditions=prompt_conditions,
         enable_thinking=config.enable_thinking,
         batch_size=config.batch_size,
+        allow_provisional_direction=config.allow_provisional_direction,
+        checkpoint_dir=checkpoint_dir,
+        resume=config.resume,
+        progress_enabled=progress_enabled,
     )
     debug_only_run = bool(
         config.allow_provisional_direction
@@ -436,4 +565,11 @@ def run_refusal_dampening_measurement(
     config.output_dir.mkdir(parents=True, exist_ok=True)
     write_jsonl(config.output_dir / "per_example_refusal_components.jsonl", rows)
     write_json(config.output_dir / "refusal_dampening_summary.json", summary)
+    log_progress(
+        "stage4b",
+        "Finished refusal dampening measurement",
+        enabled=progress_enabled,
+        rows=len(rows),
+        goals=summary["number_of_goals"],
+    )
     return summary

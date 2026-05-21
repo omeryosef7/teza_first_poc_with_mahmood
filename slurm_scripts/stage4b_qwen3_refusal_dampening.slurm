@@ -31,6 +31,9 @@ ENABLE_THINKING="${ENABLE_THINKING:-false}"
 NUM_GOALS="${NUM_GOALS:-2}"
 DRY_RUN="${DRY_RUN:-true}"
 BATCH_SIZE="${BATCH_SIZE:-1}"
+RESUME="${RESUME:-false}"
+CHECKPOINT_DIR="${CHECKPOINT_DIR:-}"
+NO_PROGRESS="${NO_PROGRESS:-false}"
 
 cd "$PROJECT_DIR"
 
@@ -70,6 +73,18 @@ fi
 
 if [ "$ALLOW_PROVISIONAL_DIRECTION" = "true" ]; then
     ARGS+=(--allow-provisional-direction)
+fi
+
+if [ "$RESUME" = "true" ]; then
+    ARGS+=(--resume)
+fi
+
+if [ -n "$CHECKPOINT_DIR" ]; then
+    ARGS+=(--checkpoint-dir "$CHECKPOINT_DIR")
+fi
+
+if [ "$NO_PROGRESS" = "true" ]; then
+    ARGS+=(--no-progress)
 fi
 
 python -m poc_stage4.measure_refusal_dampening "${ARGS[@]}"

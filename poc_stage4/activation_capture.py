@@ -5,6 +5,7 @@ from typing import Any
 import torch
 
 from poc_stage4.qwen3_model import Qwen3Model
+from poc_stage4.run_state import log_progress, progress_iter
 
 
 def validate_positions(positions: list[int]) -> None:
@@ -53,6 +54,11 @@ def capture_residual_input_activations(
     positions: list[int],
     batch_size: int,
     enable_thinking: bool,
+    checkpoint_dir: str | None = None,
+    checkpoint_prefix: str | None = None,
+    resume: bool = False,
+    progress_enabled: bool = True,
+    stage_name: str = "stage4a1",
 ) -> torch.Tensor:
     """Capture residual stream inputs as [n_prompt, n_position, n_layer, d_model]."""
 
@@ -66,9 +72,46 @@ def capture_residual_input_activations(
     n_positions = len(positions)
     all_batches: list[torch.Tensor] = []
     input_device = _input_device(model_base.model)
+    checkpoint_path = None
+    if checkpoint_dir is not None and checkpoint_prefix is not None:
+        from pathlib import Path
 
-    for start in range(0, len(prompts), batch_size):
+        checkpoint_path = Path(checkpoint_dir)
+        checkpoint_path.mkdir(parents=True, exist_ok=True)
+
+    batch_starts = list(range(0, len(prompts), batch_size))
+    for start in progress_iter(
+        batch_starts,
+        total=len(batch_starts),
+        desc=checkpoint_prefix or "activation batches",
+        enabled=progress_enabled,
+    ):
         batch_prompts = prompts[start : start + batch_size]
+        end = start + len(batch_prompts)
+        batch_file = None
+        if checkpoint_path is not None:
+            batch_file = checkpoint_path / f"{checkpoint_prefix}_batch_{start:06d}_{end:06d}.pt"
+            if resume and batch_file.exists():
+                log_progress(
+                    stage_name,
+                    "Loaded activation batch checkpoint",
+                    enabled=progress_enabled,
+                    split=checkpoint_prefix,
+                    start=start,
+                    end=end,
+                )
+                all_batches.append(torch.load(batch_file, map_location="cpu"))
+                continue
+
+        log_progress(
+            stage_name,
+            "Capturing activation batch",
+            enabled=progress_enabled,
+            split=checkpoint_prefix,
+            start=start,
+            end=end,
+            total_prompts=len(prompts),
+        )
         tokenized = model_base.tokenize_prompts(batch_prompts, enable_thinking=enable_thinking)
         attention_mask = tokenized.attention_mask.to(input_device)
         absolute_positions = _absolute_positions(attention_mask, positions)
@@ -106,6 +149,15 @@ def capture_residual_input_activations(
                 hook.remove()
 
         all_batches.append(batch_cache)
+        if batch_file is not None:
+            torch.save(batch_cache, batch_file)
+            log_progress(
+                stage_name,
+                "Saved activation batch checkpoint",
+                enabled=progress_enabled,
+                split=checkpoint_prefix,
+                path=str(batch_file),
+            )
         del batch_cache
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

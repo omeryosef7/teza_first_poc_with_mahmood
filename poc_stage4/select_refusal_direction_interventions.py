@@ -44,6 +44,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--use-stage4a1-heldout-validation", action="store_true")
     parser.add_argument("--refusal-token-strings", default="I,As")
     parser.add_argument("--refusal-token-ids")
+    parser.add_argument("--resume", action="store_true", help="Resume Stage 4A2 from candidate checkpoints.")
+    parser.add_argument("--checkpoint-dir", help="Directory for Stage 4A2 resumable checkpoints.")
+    parser.add_argument("--no-progress", action="store_true", help="Disable tqdm/progress logging.")
     return parser
 
 
@@ -70,7 +73,13 @@ def main() -> int:
             use_stage4a1_heldout_validation=bool(args.use_stage4a1_heldout_validation),
             refusal_token_strings=_parse_csv_strings(args.refusal_token_strings),
             refusal_token_ids=_parse_csv_ints(args.refusal_token_ids),
+            resume=bool(args.resume),
+            checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
+            no_progress=bool(args.no_progress),
         )
+        from poc_stage4.run_state import log_progress
+
+        log_progress("stage4a2", "Loading Qwen3 model", enabled=not config.no_progress, model=config.model_name)
         model_base = load_qwen3_model(config.model_name)
         metrics = run_intervention_selection(config=config, model_base=model_base)
     except Exception as exc:

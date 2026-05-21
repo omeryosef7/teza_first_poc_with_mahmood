@@ -31,6 +31,9 @@ NUM_HARMFUL="${NUM_HARMFUL:-64}"
 NUM_HARMLESS="${NUM_HARMLESS:-64}"
 OVERWRITE="${OVERWRITE:-true}"
 USE_BUILTIN_PROMPTS="${USE_BUILTIN_PROMPTS:-false}"
+RESUME="${RESUME:-false}"
+CHECKPOINT_DIR="${CHECKPOINT_DIR:-}"
+NO_PROGRESS="${NO_PROGRESS:-false}"
 
 cd "$PROJECT_DIR"
 
@@ -87,6 +90,18 @@ fi
 
 if [ "$USE_BUILTIN_PROMPTS" = "true" ]; then
     ARGS+=(--use-builtin-prompts)
+fi
+
+if [ "$RESUME" = "true" ]; then
+    ARGS+=(--resume)
+fi
+
+if [ -n "$CHECKPOINT_DIR" ]; then
+    ARGS+=(--checkpoint-dir "$CHECKPOINT_DIR")
+fi
+
+if [ "$NO_PROGRESS" = "true" ]; then
+    ARGS+=(--no-progress)
 fi
 
 python -m poc_stage4.extract_refusal_direction "${ARGS[@]}"

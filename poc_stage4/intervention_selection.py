@@ -19,6 +19,14 @@ from poc_stage4.schemas import (
     utc_now,
     write_json,
 )
+from poc_stage4.run_state import (
+    append_jsonl,
+    completed_rows_by_key,
+    log_progress,
+    progress_iter,
+    validate_checkpoint_manifest,
+    write_checkpoint_manifest,
+)
 
 if TYPE_CHECKING:
     import torch
@@ -52,6 +60,9 @@ class InterventionSelectionConfig:
     use_stage4a1_heldout_validation: bool
     refusal_token_strings: list[str] | None
     refusal_token_ids: list[int] | None
+    resume: bool = False
+    checkpoint_dir: Path | None = None
+    no_progress: bool = False
 
 
 @dataclass(frozen=True)
@@ -397,26 +408,82 @@ def evaluate_candidates(
     harmless_validation_prompts: list[str],
     refusal_token_ids: list[int],
     config: InterventionSelectionConfig,
+    checkpoint_dir: Path | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     import torch
 
-    baseline_harmful_logits = get_last_position_logits(
-        model_base,
-        harmful_validation_prompts,
-        enable_thinking=config.enable_thinking,
-        batch_size=config.batch_size,
-    )
-    baseline_harmless_logits = get_last_position_logits(
-        model_base,
-        harmless_validation_prompts,
-        enable_thinking=config.enable_thinking,
-        batch_size=config.batch_size,
-    )
+    progress_enabled = not config.no_progress
+    baseline_harmful_path = checkpoint_dir / "baseline_harmful_logits.pt" if checkpoint_dir else None
+    baseline_harmless_path = checkpoint_dir / "baseline_harmless_logits.pt" if checkpoint_dir else None
+    if config.resume and baseline_harmful_path and baseline_harmless_path and baseline_harmful_path.exists() and baseline_harmless_path.exists():
+        log_progress("stage4a2", "Loaded baseline logits from checkpoint", enabled=progress_enabled)
+        baseline_harmful_logits = torch.load(baseline_harmful_path, map_location="cpu")
+        baseline_harmless_logits = torch.load(baseline_harmless_path, map_location="cpu")
+    else:
+        log_progress("stage4a2", "Computing baseline harmful logits", enabled=progress_enabled)
+        baseline_harmful_logits = get_last_position_logits(
+            model_base,
+            harmful_validation_prompts,
+            enable_thinking=config.enable_thinking,
+            batch_size=config.batch_size,
+        )
+        log_progress("stage4a2", "Computing baseline harmless logits", enabled=progress_enabled)
+        baseline_harmless_logits = get_last_position_logits(
+            model_base,
+            harmless_validation_prompts,
+            enable_thinking=config.enable_thinking,
+            batch_size=config.batch_size,
+        )
+        if baseline_harmful_path and baseline_harmless_path:
+            torch.save(baseline_harmful_logits, baseline_harmful_path)
+            torch.save(baseline_harmless_logits, baseline_harmless_path)
+            log_progress("stage4a2", "Saved baseline logits checkpoint", enabled=progress_enabled)
     baseline_harmful_scores = refusal_scores_from_logits(baseline_harmful_logits, refusal_token_ids)
     baseline_harmless_scores = refusal_scores_from_logits(baseline_harmless_logits, refusal_token_ids)
 
-    rows: list[dict[str, Any]] = []
-    for candidate in candidate_indices:
+    checkpoint_jsonl = checkpoint_dir / "intervention_candidate_scores.checkpoint.jsonl" if checkpoint_dir else None
+    completed: dict[tuple[Any, ...], dict[str, Any]] = {}
+    if checkpoint_jsonl:
+        if config.resume:
+            completed = completed_rows_by_key(checkpoint_jsonl, ("position_index", "position", "layer"))
+            log_progress(
+                "stage4a2",
+                "Loaded candidate checkpoint rows",
+                enabled=progress_enabled,
+                completed=len(completed),
+                path=str(checkpoint_jsonl),
+            )
+        else:
+            checkpoint_jsonl.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint_jsonl.write_text("", encoding="utf-8")
+
+    rows_by_key: dict[tuple[int, int, int], dict[str, Any]] = {}
+    for candidate in progress_iter(
+        candidate_indices,
+        total=len(candidate_indices),
+        desc="Stage 4A2 candidates",
+        enabled=progress_enabled,
+    ):
+        key = (candidate.position_index, candidate.position, candidate.layer)
+        if key in completed:
+            rows_by_key[key] = completed[key]
+            log_progress(
+                "stage4a2",
+                "Skipping completed candidate",
+                enabled=progress_enabled,
+                position=candidate.position,
+                layer=candidate.layer,
+            )
+            continue
+
+        log_progress(
+            "stage4a2",
+            "Evaluating candidate",
+            enabled=progress_enabled,
+            position_index=candidate.position_index,
+            position=candidate.position,
+            layer=candidate.layer,
+        )
         direction = candidate_directions[candidate.position_index, candidate.layer].detach().cpu()
         ablation_pre_hooks, ablation_hooks = build_ablation_hooks(model_base, direction)
         steering_pre_hooks, steering_hooks = build_steering_hooks(
@@ -473,12 +540,32 @@ def evaluate_candidates(
         )
         row["passes_filters"] = passes
         row["filter_failure_reasons"] = failure_reasons
-        rows.append(row)
+        rows_by_key[key] = row
+        if checkpoint_jsonl:
+            append_jsonl(checkpoint_jsonl, row)
+        log_progress(
+            "stage4a2",
+            "Finished candidate",
+            enabled=progress_enabled,
+            position=candidate.position,
+            layer=candidate.layer,
+            passes_filters=passes,
+            failures=",".join(failure_reasons) if failure_reasons else "none",
+        )
 
     baseline_summary = {
         "baseline_harmful_refusal_score_mean": float(baseline_harmful_scores.mean().item()),
         "baseline_harmless_refusal_score_mean": float(baseline_harmless_scores.mean().item()),
     }
+    rows = [
+        rows_by_key[(candidate.position_index, candidate.position, candidate.layer)]
+        for candidate in candidate_indices
+        if (candidate.position_index, candidate.position, candidate.layer) in rows_by_key
+    ]
+    if len(rows) != len(candidate_indices):
+        raise RuntimeError(
+            f"Only {len(rows)} of {len(candidate_indices)} candidates are complete after resume/evaluation."
+        )
     return rows, baseline_summary
 
 
@@ -499,6 +586,19 @@ def run_intervention_selection(
     input_dir = config.input_dir
     output_dir = config.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
+    progress_enabled = not config.no_progress
+    checkpoint_dir = config.checkpoint_dir or (output_dir / "checkpoints" / "stage4a2")
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    log_progress(
+        "stage4a2",
+        "Starting intervention-based selection",
+        enabled=progress_enabled,
+        input_dir=str(input_dir),
+        output_dir=str(output_dir),
+        checkpoint_dir=str(checkpoint_dir),
+        resume=config.resume,
+    )
 
     candidate_metadata_path = input_dir / "candidate_metadata.json"
     candidate_metadata = read_json(candidate_metadata_path)
@@ -517,6 +617,42 @@ def run_intervention_selection(
     else:
         candidate_indices = all_candidate_indices(positions, num_layers)
 
+    checkpoint_payload = {
+        "input_dir": str(input_dir),
+        "output_dir": str(output_dir),
+        "model_name": config.model_name,
+        "enable_thinking": config.enable_thinking,
+        "batch_size": config.batch_size,
+        "num_harmful_val": config.num_harmful_val,
+        "num_harmless_val": config.num_harmless_val,
+        "validation_seed": config.validation_seed,
+        "kl_threshold": config.kl_threshold,
+        "induce_refusal_threshold": config.induce_refusal_threshold,
+        "prune_layer_percentage": config.prune_layer_percentage,
+        "top_k_projection": config.top_k_projection,
+        "dry_run": config.dry_run,
+        "use_stage4a1_heldout_validation": config.use_stage4a1_heldout_validation,
+        "refusal_token_strings": config.refusal_token_strings,
+        "refusal_token_ids": config.refusal_token_ids,
+        "candidate_tensor_shape": list(candidate_directions.shape),
+        "candidate_indices": [asdict(candidate) for candidate in candidate_indices],
+    }
+    if config.resume:
+        validate_checkpoint_manifest(checkpoint_dir, stage="stage4a2", fingerprint_payload=checkpoint_payload)
+    write_checkpoint_manifest(
+        checkpoint_dir,
+        stage="stage4a2",
+        fingerprint_payload=checkpoint_payload,
+        extra={"checkpoint_dir": str(checkpoint_dir)},
+    )
+    log_progress(
+        "stage4a2",
+        "Prepared candidate list",
+        enabled=progress_enabled,
+        candidates=len(candidate_indices),
+        smoke_mode=bool(config.dry_run or config.top_k_projection is not None),
+    )
+
     harmful_validation, harmless_validation, validation_metadata = load_stage4a2_validation_prompts(
         config,
         candidate_metadata,
@@ -525,6 +661,12 @@ def run_intervention_selection(
         model_base,
         refusal_token_strings=config.refusal_token_strings,
         refusal_token_ids=config.refusal_token_ids,
+    )
+    log_progress(
+        "stage4a2",
+        "Resolved refusal tokens",
+        enabled=progress_enabled,
+        token_ids=refusal_metadata["refusal_token_ids"],
     )
 
     rows, baseline_summary = evaluate_candidates(
@@ -535,6 +677,7 @@ def run_intervention_selection(
         harmless_validation_prompts=harmless_validation,
         refusal_token_ids=[int(token_id) for token_id in refusal_metadata["refusal_token_ids"]],
         config=config,
+        checkpoint_dir=checkpoint_dir,
     )
 
     survivors = [row for row in rows if bool(row.get("passes_filters"))]
@@ -542,6 +685,14 @@ def run_intervention_selection(
     selection_status = SMOKE_SELECTION_STATUS if smoke_mode else INTERVENTION_SELECTED
     if survivors:
         selected_row = select_final_candidate(rows)
+        log_progress(
+            "stage4a2",
+            "Selected intervention candidate",
+            enabled=progress_enabled,
+            position=selected_row["position"],
+            layer=selected_row["layer"],
+            survivors=len(survivors),
+        )
     elif not smoke_mode:
         write_json(output_dir / "intervention_candidate_scores.json", {"candidates": rows})
         raise RuntimeError("No candidates survived filters; leaving direction.pt and selected_direction.json unchanged.")
@@ -609,5 +760,14 @@ def run_intervention_selection(
             "direction_norm": float(selected_direction.norm().item()),
         }
         write_json(output_dir / "selected_direction.json", selected_payload)
+        log_progress("stage4a2", "Updated final selected direction", enabled=progress_enabled)
 
+    log_progress(
+        "stage4a2",
+        "Finished intervention selection",
+        enabled=progress_enabled,
+        selection_status=base_payload["selection_status"],
+        evaluated=len(rows),
+        survivors=len(survivors),
+    )
     return base_payload

@@ -35,6 +35,9 @@ class ExtractionConfig:
     seed: int
     overwrite: bool
     use_builtin_prompts: bool
+    resume: bool = False
+    checkpoint_dir: Path | None = None
+    no_progress: bool = False
 
 
 def utc_now() -> str:
@@ -74,5 +77,6 @@ def read_json(path: str | Path) -> dict[str, Any]:
 def config_as_metadata(config: ExtractionConfig) -> dict[str, Any]:
     payload = asdict(config)
     payload["output_dir"] = str(config.output_dir)
+    if config.checkpoint_dir is not None:
+        payload["checkpoint_dir"] = str(config.checkpoint_dir)
     return payload
-

@@ -15,6 +15,7 @@ from poc_stage4.schemas import (
     utc_now,
     write_json,
 )
+from poc_stage4.run_state import log_progress, validate_checkpoint_manifest, write_checkpoint_manifest
 
 if TYPE_CHECKING:
     import torch
@@ -80,6 +81,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--enable-thinking", type=parse_bool, default=False)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--resume", action="store_true", help="Resume from Stage 4A1 checkpoint batches.")
+    parser.add_argument("--checkpoint-dir", help="Directory for Stage 4A1 resumable checkpoints.")
+    parser.add_argument("--no-progress", action="store_true", help="Disable tqdm/progress logging.")
     parser.add_argument(
         "--use-builtin-prompts",
         action="store_true",
@@ -113,6 +117,20 @@ def _check_outputs(output_dir: Path, *, overwrite: bool) -> None:
         raise RuntimeError(
             "Stage 4A1 output files already exist. Use --overwrite to replace them:\n" + formatted
         )
+
+
+def _checkpoint_config(config: ExtractionConfig) -> dict[str, Any]:
+    return {
+        "model_name": config.model_name,
+        "dry_run": config.dry_run,
+        "num_harmful": config.num_harmful,
+        "num_harmless": config.num_harmless,
+        "batch_size": config.batch_size,
+        "positions": config.positions,
+        "enable_thinking": config.enable_thinking,
+        "seed": config.seed,
+        "use_builtin_prompts": config.use_builtin_prompts,
+    }
 
 
 def _default_prompt_count(args: argparse.Namespace, *, harmful: bool) -> int:
@@ -171,9 +189,30 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
     from poc_stage4.qwen3_model import load_qwen3_model
 
     output_dir = config.output_dir
-    _check_outputs(output_dir, overwrite=config.overwrite)
+    progress_enabled = not config.no_progress
+    checkpoint_dir = config.checkpoint_dir or (output_dir / "checkpoints" / "stage4a1")
+    checkpoint_payload = _checkpoint_config(config)
+    if config.resume:
+        validate_checkpoint_manifest(checkpoint_dir, stage="stage4a1", fingerprint_payload=checkpoint_payload)
+    _check_outputs(output_dir, overwrite=config.overwrite or config.resume)
     output_dir.mkdir(parents=True, exist_ok=True)
+    write_checkpoint_manifest(
+        checkpoint_dir,
+        stage="stage4a1",
+        fingerprint_payload=checkpoint_payload,
+        extra={"checkpoint_dir": str(checkpoint_dir), "output_dir": str(output_dir)},
+    )
 
+    log_progress(
+        "stage4a1",
+        "Starting refusal-direction candidate extraction",
+        enabled=progress_enabled,
+        output_dir=str(output_dir),
+        checkpoint_dir=str(checkpoint_dir),
+        resume=config.resume,
+    )
+
+    log_progress("stage4a1", "Loading prompt sets", enabled=progress_enabled)
     harmful_prompts, harmless_prompts, prompt_source_metadata = load_prompt_sets(
         num_harmful=config.num_harmful,
         num_harmless=config.num_harmless,
@@ -181,43 +220,88 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
         use_builtin_prompts=config.use_builtin_prompts,
     )
     prompt_split = split_prompts(harmful_prompts, harmless_prompts, seed=config.seed)
+    log_progress(
+        "stage4a1",
+        "Loaded prompt split",
+        enabled=progress_enabled,
+        harmful_train=len(prompt_split.harmful_train),
+        harmless_train=len(prompt_split.harmless_train),
+        harmful_validation=len(prompt_split.harmful_validation),
+        harmless_validation=len(prompt_split.harmless_validation),
+    )
 
+    log_progress("stage4a1", "Loading Qwen3 model", enabled=progress_enabled, model=config.model_name)
     model_base = load_qwen3_model(config.model_name)
+    log_progress(
+        "stage4a1",
+        "Loaded Qwen3 model",
+        enabled=progress_enabled,
+        num_layers=model_base.num_layers,
+        hidden_size=model_base.hidden_size,
+    )
 
+    log_progress("stage4a1", "Capturing harmful train activations", enabled=progress_enabled)
     harmful_train_activations = capture_residual_input_activations(
         model_base,
         prompt_split.harmful_train,
         positions=config.positions,
         batch_size=config.batch_size,
         enable_thinking=config.enable_thinking,
+        checkpoint_dir=str(checkpoint_dir),
+        checkpoint_prefix="harmful_train",
+        resume=config.resume,
+        progress_enabled=progress_enabled,
     )
+    log_progress("stage4a1", "Capturing harmless train activations", enabled=progress_enabled)
     harmless_train_activations = capture_residual_input_activations(
         model_base,
         prompt_split.harmless_train,
         positions=config.positions,
         batch_size=config.batch_size,
         enable_thinking=config.enable_thinking,
+        checkpoint_dir=str(checkpoint_dir),
+        checkpoint_prefix="harmless_train",
+        resume=config.resume,
+        progress_enabled=progress_enabled,
     )
+    log_progress("stage4a1", "Generating candidate directions", enabled=progress_enabled)
     candidate_directions = generate_candidate_directions(
         harmful_train_activations,
         harmless_train_activations,
     )
     torch.save(candidate_directions.cpu(), output_dir / "candidate_directions.pt")
+    log_progress(
+        "stage4a1",
+        "Saved candidate directions",
+        enabled=progress_enabled,
+        shape=list(candidate_directions.shape),
+    )
 
+    log_progress("stage4a1", "Capturing harmful validation activations", enabled=progress_enabled)
     harmful_validation_activations = capture_residual_input_activations(
         model_base,
         prompt_split.harmful_validation,
         positions=config.positions,
         batch_size=config.batch_size,
         enable_thinking=config.enable_thinking,
+        checkpoint_dir=str(checkpoint_dir),
+        checkpoint_prefix="harmful_validation",
+        resume=config.resume,
+        progress_enabled=progress_enabled,
     )
+    log_progress("stage4a1", "Capturing harmless validation activations", enabled=progress_enabled)
     harmless_validation_activations = capture_residual_input_activations(
         model_base,
         prompt_split.harmless_validation,
         positions=config.positions,
         batch_size=config.batch_size,
         enable_thinking=config.enable_thinking,
+        checkpoint_dir=str(checkpoint_dir),
+        checkpoint_prefix="harmless_validation",
+        resume=config.resume,
+        progress_enabled=progress_enabled,
     )
+    log_progress("stage4a1", "Computing projection diagnostics", enabled=progress_enabled)
     diagnostic_rows, selection = compute_projection_diagnostics(
         candidate_directions,
         harmful_validation_activations,
@@ -276,6 +360,13 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
         "diagnostic_summary": summarize_diagnostics(diagnostic_rows),
     }
     write_json(output_dir / "extraction_metrics.json", metrics)
+    log_progress(
+        "stage4a1",
+        "Finished Stage 4A1 extraction",
+        enabled=progress_enabled,
+        selected_position=selected_metadata["selected_position"],
+        selected_layer=selected_metadata["selected_layer"],
+    )
     return metrics
 
 
@@ -295,6 +386,9 @@ def main() -> int:
             seed=args.seed,
             overwrite=bool(args.overwrite),
             use_builtin_prompts=bool(args.use_builtin_prompts),
+            resume=bool(args.resume),
+            checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
+            no_progress=bool(args.no_progress),
         )
         metrics = run_extraction(config)
     except Exception as exc:
