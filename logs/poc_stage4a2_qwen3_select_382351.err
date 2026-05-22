@@ -295,3 +295,11 @@ Some parameters are on the meta device because they were offloaded to the cpu.
 Stage 4A2 candidates:  89%|████████▉ | 142/160 [22:37:27<2:51:41, 572.28s/it][2026-05-22T06:46:33.554594+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=22
 [2026-05-22T06:56:06.759861+00:00] [stage4a2] Finished candidate position=-4 layer=22 passes_filters=False failures=kl_above_threshold,steering_below_threshold
 Stage 4A2 candidates:  89%|████████▉ | 143/160 [22:47:00<2:42:13, 572.56s/it][2026-05-22T06:56:06.765799+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=23
+[2026-05-22T07:05:39.858606+00:00] [stage4a2] Finished candidate position=-4 layer=23 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  90%|█████████ | 144/160 [22:56:33<2:32:43, 572.72s/it][2026-05-22T07:05:39.864521+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=24
+[2026-05-22T07:15:09.417676+00:00] [stage4a2] Finished candidate position=-4 layer=24 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  91%|█████████ | 145/160 [23:06:03<2:22:56, 571.77s/it][2026-05-22T07:15:09.418183+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=25
+[2026-05-22T07:24:39.740452+00:00] [stage4a2] Finished candidate position=-4 layer=25 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  91%|█████████▏| 146/160 [23:15:33<2:13:18, 571.34s/it][2026-05-22T07:24:39.740961+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=26
+[2026-05-22T07:34:11.213050+00:00] [stage4a2] Finished candidate position=-4 layer=26 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  92%|█████████▏| 147/160 [23:25:05<2:03:47, 571.38s/it][2026-05-22T07:34:11.214113+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=27

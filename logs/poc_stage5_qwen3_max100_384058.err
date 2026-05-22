@@ -5,3 +5,44 @@
 Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 149.12it/s]
 [2026-05-22T07:00:00.373244+00:00] [stage5] processed examples processed=1 total=42 rows_written=3 failed_examples=0
 [2026-05-22T07:00:21.634902+00:00] [stage5] processed examples processed=2 total=42 rows_written=6 failed_examples=0
+[2026-05-22T07:00:41.798744+00:00] [stage5] processed examples processed=3 total=42 rows_written=9 failed_examples=0
+[2026-05-22T07:01:01.720102+00:00] [stage5] processed examples processed=4 total=42 rows_written=12 failed_examples=0
+[2026-05-22T07:01:21.992378+00:00] [stage5] processed examples processed=5 total=42 rows_written=15 failed_examples=0
+[2026-05-22T07:01:42.483961+00:00] [stage5] processed examples processed=6 total=42 rows_written=18 failed_examples=0
+[2026-05-22T07:02:02.605937+00:00] [stage5] processed examples processed=7 total=42 rows_written=21 failed_examples=0
+[2026-05-22T07:02:22.838045+00:00] [stage5] processed examples processed=8 total=42 rows_written=24 failed_examples=0
+[2026-05-22T07:02:42.386400+00:00] [stage5] processed examples processed=9 total=42 rows_written=27 failed_examples=0
+[2026-05-22T07:03:02.208660+00:00] [stage5] processed examples processed=10 total=42 rows_written=30 failed_examples=0
+[2026-05-22T07:03:21.760766+00:00] [stage5] processed examples processed=11 total=42 rows_written=33 failed_examples=0
+[2026-05-22T07:03:42.022747+00:00] [stage5] processed examples processed=12 total=42 rows_written=36 failed_examples=0
+[2026-05-22T07:04:02.295839+00:00] [stage5] processed examples processed=13 total=42 rows_written=39 failed_examples=0
+[2026-05-22T07:04:22.309580+00:00] [stage5] processed examples processed=14 total=42 rows_written=42 failed_examples=0
+[2026-05-22T07:04:41.511930+00:00] [stage5] processed examples processed=15 total=42 rows_written=45 failed_examples=0
+[2026-05-22T07:05:00.930859+00:00] [stage5] processed examples processed=16 total=42 rows_written=48 failed_examples=0
+[2026-05-22T07:05:20.125254+00:00] [stage5] processed examples processed=17 total=42 rows_written=51 failed_examples=0
+[2026-05-22T07:05:39.516082+00:00] [stage5] processed examples processed=18 total=42 rows_written=54 failed_examples=0
+[2026-05-22T07:05:58.709006+00:00] [stage5] processed examples processed=19 total=42 rows_written=57 failed_examples=0
+[2026-05-22T07:06:18.625511+00:00] [stage5] processed examples processed=20 total=42 rows_written=60 failed_examples=0
+[2026-05-22T07:06:38.614329+00:00] [stage5] processed examples processed=21 total=42 rows_written=63 failed_examples=0
+[2026-05-22T07:06:58.357349+00:00] [stage5] processed examples processed=22 total=42 rows_written=66 failed_examples=0
+[2026-05-22T07:07:18.779443+00:00] [stage5] processed examples processed=23 total=42 rows_written=69 failed_examples=0
+[2026-05-22T07:07:39.421100+00:00] [stage5] processed examples processed=24 total=42 rows_written=72 failed_examples=0
+[2026-05-22T07:07:59.876247+00:00] [stage5] processed examples processed=25 total=42 rows_written=75 failed_examples=0
+[2026-05-22T07:08:20.185255+00:00] [stage5] processed examples processed=26 total=42 rows_written=78 failed_examples=0
+[2026-05-22T07:08:40.124375+00:00] [stage5] processed examples processed=27 total=42 rows_written=81 failed_examples=0
+[2026-05-22T07:08:59.978278+00:00] [stage5] processed examples processed=28 total=42 rows_written=84 failed_examples=0
+[2026-05-22T07:09:19.793093+00:00] [stage5] processed examples processed=29 total=42 rows_written=87 failed_examples=0
+[2026-05-22T07:09:39.906521+00:00] [stage5] processed examples processed=30 total=42 rows_written=90 failed_examples=0
+[2026-05-22T07:09:59.805944+00:00] [stage5] processed examples processed=31 total=42 rows_written=93 failed_examples=0
+[2026-05-22T07:10:15.540532+00:00] [stage5] processed examples processed=32 total=42 rows_written=96 failed_examples=0
+[2026-05-22T07:10:31.711485+00:00] [stage5] processed examples processed=33 total=42 rows_written=99 failed_examples=0
+[2026-05-22T07:10:52.315796+00:00] [stage5] processed examples processed=34 total=42 rows_written=102 failed_examples=0
+[2026-05-22T07:11:13.543366+00:00] [stage5] processed examples processed=35 total=42 rows_written=105 failed_examples=0
+[2026-05-22T07:11:34.579538+00:00] [stage5] processed examples processed=36 total=42 rows_written=108 failed_examples=0
+[2026-05-22T07:11:55.479988+00:00] [stage5] processed examples processed=37 total=42 rows_written=111 failed_examples=0
+[2026-05-22T07:12:16.286708+00:00] [stage5] processed examples processed=38 total=42 rows_written=114 failed_examples=0
+[2026-05-22T07:12:37.424434+00:00] [stage5] processed examples processed=39 total=42 rows_written=117 failed_examples=0
+[2026-05-22T07:12:57.672769+00:00] [stage5] processed examples processed=40 total=42 rows_written=120 failed_examples=0
+[2026-05-22T07:13:17.183038+00:00] [stage5] processed examples processed=41 total=42 rows_written=123 failed_examples=0
+[2026-05-22T07:13:37.227766+00:00] [stage5] processed examples processed=42 total=42 rows_written=126 failed_examples=0
+[2026-05-22T07:13:37.233587+00:00] [stage5] completed Stage 5 projection dynamics processed_examples=42 failed_examples=0 rows_written=126 output_jsonl=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/per_example_layer_region_projections.jsonl summary_json=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/projection_summary.json
