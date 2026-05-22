@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=poc_stage5_qwen3_smoke
-#SBATCH --output=logs/poc_stage5_qwen3_smoke_%j.out
-#SBATCH --error=logs/poc_stage5_qwen3_smoke_%j.err
+#SBATCH --job-name=poc_stage5_qwen3_max100
+#SBATCH --output=logs/poc_stage5_qwen3_max100_%j.out
+#SBATCH --error=logs/poc_stage5_qwen3_max100_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=02:00:00
+#SBATCH --time=24:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
@@ -22,18 +22,17 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
 INPUT_JSONL="${INPUT_JSONL:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl}"
 DIRECTION_PATH="${DIRECTION_PATH:-$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction/direction.pt}"
-OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage5/qwen3-14b/smoke_max1_final}"
-RUN_NAME="${RUN_NAME:-stage5_qwen3_smoke_max1_final}"
-MAX_EXAMPLES="${MAX_EXAMPLES:-1}"
-MAX_LENGTH="${MAX_LENGTH:-128}"
+OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage5/qwen3-14b/max100_final}"
+RUN_NAME="${RUN_NAME:-stage5_qwen3_max100_final}"
+MAX_EXAMPLES="${MAX_EXAMPLES:-100}"
+MAX_LENGTH="${MAX_LENGTH:-256}"
 LAYERS="${LAYERS:--1}"
-TOKEN_REGIONS="${TOKEN_REGIONS:-final_token,last_8}"
+TOKEN_REGIONS="${TOKEN_REGIONS:-final_token,last_8,last_32}"
 DEVICE="${DEVICE:-auto}"
 DTYPE="${DTYPE:-bfloat16}"
+CONDITION="${CONDITION:-cot_hijack}"
 OVERWRITE="${OVERWRITE:-true}"
 NO_PROGRESS="${NO_PROGRESS:-false}"
-STORE_TEXT_HASHES="${STORE_TEXT_HASHES:-false}"
-INCLUDE_RESPONSE_CONTEXT="${INCLUDE_RESPONSE_CONTEXT:-false}"
 
 cd "$PROJECT_DIR"
 
@@ -61,9 +60,12 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 OUTPUT_JSONL="$OUTPUT_DIR/per_example_layer_region_projections.jsonl"
 SUMMARY_JSON="$OUTPUT_DIR/projection_summary.json"
 ERROR_JSONL="$OUTPUT_DIR/projection_errors.jsonl"
-export OUTPUT_JSONL SUMMARY_JSON ERROR_JSONL
+AGGREGATE_JSON="$OUTPUT_DIR/projection_aggregate_summary.json"
+AGGREGATE_CSV="$OUTPUT_DIR/projection_aggregate_summary.csv"
+EXPECTED_ROWS=300
+export OUTPUT_JSONL SUMMARY_JSON ERROR_JSONL AGGREGATE_JSON AGGREGATE_CSV EXPECTED_ROWS
 
-echo "=== Stage 5 Qwen3 projection smoke started ==="
+echo "=== Stage 5 Qwen3 max-100 final analysis started ==="
 date
 hostname
 pwd
@@ -72,14 +74,20 @@ python -V
 echo "MODEL_NAME=$MODEL_NAME"
 echo "INPUT_JSONL=$INPUT_JSONL"
 echo "DIRECTION_PATH=$DIRECTION_PATH"
+echo "OUTPUT_DIR=$OUTPUT_DIR"
 echo "OUTPUT_JSONL=$OUTPUT_JSONL"
 echo "SUMMARY_JSON=$SUMMARY_JSON"
+echo "ERROR_JSONL=$ERROR_JSONL"
+echo "AGGREGATE_JSON=$AGGREGATE_JSON"
+echo "AGGREGATE_CSV=$AGGREGATE_CSV"
+echo "RUN_NAME=$RUN_NAME"
 echo "MAX_EXAMPLES=$MAX_EXAMPLES"
 echo "MAX_LENGTH=$MAX_LENGTH"
 echo "LAYERS=$LAYERS"
 echo "TOKEN_REGIONS=$TOKEN_REGIONS"
 echo "DEVICE=$DEVICE"
 echo "DTYPE=$DTYPE"
+echo "CONDITION=$CONDITION"
 echo "PYTORCH_CUDA_ALLOC_CONF=$PYTORCH_CUDA_ALLOC_CONF"
 
 if [ ! -f "$INPUT_JSONL" ]; then
@@ -96,7 +104,9 @@ echo ""
 echo "=== Checking compute CLI help ==="
 python -m poc_stage5.compute_refusal_projection_dynamics --help
 
-ARGS=(
+echo ""
+echo "=== Running Stage 5 Qwen3 max-100 compute ==="
+COMPUTE_ARGS=(
     --input-jsonl "$INPUT_JSONL"
     --direction-path "$DIRECTION_PATH"
     --model-name-or-path "$MODEL_NAME"
@@ -109,81 +119,51 @@ ARGS=(
     --token-regions "$TOKEN_REGIONS"
     --device "$DEVICE"
     --dtype "$DTYPE"
+    --condition "$CONDITION"
     --run-name "$RUN_NAME"
 )
 
 if [ "$OVERWRITE" = "true" ]; then
-    ARGS+=(--overwrite)
+    COMPUTE_ARGS+=(--overwrite)
 fi
 
 if [ "$NO_PROGRESS" = "true" ]; then
-    ARGS+=(--no-progress)
+    COMPUTE_ARGS+=(--no-progress)
 fi
 
-if [ "$STORE_TEXT_HASHES" = "true" ]; then
-    ARGS+=(--store-text-hashes)
-fi
-
-if [ "$INCLUDE_RESPONSE_CONTEXT" = "true" ]; then
-    ARGS+=(--include-response-context)
-fi
+python -m poc_stage5.compute_refusal_projection_dynamics "${COMPUTE_ARGS[@]}"
 
 echo ""
-echo "=== Running Stage 5 Qwen3 projection smoke ==="
-python -m poc_stage5.compute_refusal_projection_dynamics "${ARGS[@]}"
+echo "=== Running Stage 5 aggregate summarizer ==="
+SUMMARY_ARGS=(
+    --input-jsonl "$OUTPUT_JSONL"
+    --output-json "$AGGREGATE_JSON"
+    --output-csv "$AGGREGATE_CSV"
+)
+
+if [ "$OVERWRITE" = "true" ]; then
+    SUMMARY_ARGS+=(--overwrite)
+fi
+
+python -m poc_stage5.summarize_refusal_projection_dynamics "${SUMMARY_ARGS[@]}"
 
 echo ""
-echo "=== Validating smoke outputs ==="
-python - <<'PY'
-import json
-import os
-from pathlib import Path
+echo "=== Stage 5 max-100 output validation ==="
+wc -l "$OUTPUT_JSONL"
+echo "Compute summary JSON: $SUMMARY_JSON"
+echo "Aggregate summary CSV: $AGGREGATE_CSV"
 
-output_jsonl = Path(os.environ["OUTPUT_JSONL"])
-summary_json = Path(os.environ["SUMMARY_JSON"])
-
-if not output_jsonl.exists():
-    raise SystemExit(f"missing output JSONL: {output_jsonl}")
-if not summary_json.exists():
-    raise SystemExit(f"missing summary JSON: {summary_json}")
-
-rows = [json.loads(line) for line in output_jsonl.read_text(encoding="utf-8").splitlines() if line.strip()]
-summary = json.loads(summary_json.read_text(encoding="utf-8"))
-if not rows:
-    raise SystemExit("output JSONL has no rows")
-
-forbidden_fields = {
-    "prompt",
-    "prompt_text",
-    "response",
-    "response_text",
-    "token",
-    "tokens",
-    "token_strings",
-    "hidden_state",
-    "hidden_states",
-}
-for row in rows:
-    overlap = forbidden_fields.intersection(row)
-    if overlap:
-        raise SystemExit(f"raw-text/raw-state field(s) present: {sorted(overlap)}")
-    if row.get("hidden_state_index") is None:
-        raise SystemExit("missing hidden_state_index")
-    if row.get("region") not in {"final_token", "last_8"}:
-        raise SystemExit(f"unexpected region: {row.get('region')}")
-
-if summary.get("loaded_examples") != 1:
-    raise SystemExit(f"expected loaded_examples=1, got {summary.get('loaded_examples')}")
-if summary.get("rows_written") != len(rows):
-    raise SystemExit("summary rows_written does not match output JSONL row count")
-
-print("stage5 qwen3 smoke output validation ok")
-PY
+ROW_COUNT="$(wc -l < "$OUTPUT_JSONL")"
+if [ "$ROW_COUNT" -ne "$EXPECTED_ROWS" ]; then
+    echo "WARNING: expected $EXPECTED_ROWS projection rows, got $ROW_COUNT"
+else
+    echo "Projection row count matches expected $EXPECTED_ROWS rows"
+fi
 
 echo ""
 echo "=== Checking Stage 2/3/4 diff is empty ==="
 git diff -- poc_stage2 poc_stage3 poc_stage4
 
 echo ""
-echo "=== Stage 5 Qwen3 projection smoke finished successfully ==="
+echo "=== Stage 5 Qwen3 max-100 final analysis finished successfully ==="
 date

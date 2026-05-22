@@ -1,0 +1,33 @@
+=== POC model cache download started ===
+Fri May 22 09:37:30 AM IDT 2026
+n-301
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+CONDA_ENV=poc_stage2
+HF_HOME=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface
+HF_HUB_CACHE=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
+Downloading model snapshots into Hugging Face cache:
+
+=== Downloading Qwen/Qwen3-8B ===
+Snapshot path: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218
+Files present: 15
+
+=== Downloading deepseek-ai/DeepSeek-R1-Distill-Qwen-14B ===
+Snapshot path: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-14B/snapshots/1df8507178afcc1bef68cd8c393f61a886323761
+Files present: 13
+
+=== Downloading deepseek-ai/DeepSeek-R1-Distill-Qwen-7B ===
+Snapshot path: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-7B/snapshots/916b56a44061fd5cd7d6a8fb632557ed4f724f60
+Files present: 11
+
+=== Downloading mistralai/Mistral-7B-Instruct-v0.3 ===
+Snapshot path: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71
+Files present: 15
+
+All requested model snapshots are present in the repo-local cache.
+
+=== Cache size ===
+112G	/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface
+
+=== POC model cache download finished successfully ===
+Fri May 22 09:59:10 AM IDT 2026

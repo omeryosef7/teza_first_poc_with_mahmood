@@ -1,0 +1,83 @@
+=== Stage 5 Qwen3 max-100 final analysis started ===
+Fri May 22 09:59:26 AM IDT 2026
+n-301
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+MODEL_NAME=Qwen/Qwen3-14B
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+DIRECTION_PATH=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final
+OUTPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/per_example_layer_region_projections.jsonl
+SUMMARY_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/projection_summary.json
+ERROR_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/projection_errors.jsonl
+AGGREGATE_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/projection_aggregate_summary.json
+AGGREGATE_CSV=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max100_final/projection_aggregate_summary.csv
+RUN_NAME=stage5_qwen3_max100_final
+MAX_EXAMPLES=100
+MAX_LENGTH=256
+LAYERS=-1
+TOKEN_REGIONS=final_token,last_8,last_32
+DEVICE=auto
+DTYPE=bfloat16
+CONDITION=cot_hijack
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Checking compute CLI help ===
+usage: compute_refusal_projection_dynamics.py [-h] --input-jsonl INPUT_JSONL
+                                              --direction-path DIRECTION_PATH
+                                              --model-name-or-path
+                                              MODEL_NAME_OR_PATH
+                                              --output-jsonl OUTPUT_JSONL
+                                              --summary-json SUMMARY_JSON
+                                              [--max-examples MAX_EXAMPLES]
+                                              [--max-length MAX_LENGTH]
+                                              [--device DEVICE]
+                                              [--dtype DTYPE]
+                                              [--layers LAYERS]
+                                              [--token-regions TOKEN_REGIONS]
+                                              [--no-progress]
+                                              [--include-response-context]
+                                              [--run-name RUN_NAME]
+                                              [--condition CONDITION]
+                                              [--overwrite]
+                                              [--error-jsonl ERROR_JSONL]
+                                              [--store-text-hashes]
+
+Stage 5 refusal-projection dynamics. Writes compact projection summaries only;
+does not write raw prompt text, response text, token strings, or hidden
+states.
+
+options:
+  -h, --help            show this help message and exit
+  --input-jsonl INPUT_JSONL
+  --direction-path DIRECTION_PATH
+  --model-name-or-path MODEL_NAME_OR_PATH
+  --output-jsonl OUTPUT_JSONL
+  --summary-json SUMMARY_JSON
+  --max-examples MAX_EXAMPLES
+  --max-length MAX_LENGTH
+  --device DEVICE
+  --dtype DTYPE
+  --layers LAYERS       HuggingFace hidden-state indices to project. 0 is
+                        embeddings, 1 is the first transformer block output,
+                        -1 is the final hidden state. Use comma lists like
+                        '0,-1' or '1,12,-1'. Omitted/auto defaults to -1 only.
+                        Use 'all' explicitly to project every hidden-state
+                        index.
+  --token-regions TOKEN_REGIONS
+                        Comma-separated token regions. Supported:
+                        all,final_token,first_32,last_16,last_32,last_8.
+  --no-progress
+  --include-response-context
+                        Also process prompt plus response text when response
+                        text is available; raw text is not written.
+  --run-name RUN_NAME
+  --condition CONDITION
+                        Default condition label for input rows that do not
+                        already contain a condition.
+  --overwrite
+  --error-jsonl ERROR_JSONL
+  --store-text-hashes   Store SHA256 hashes of prompt/response text only;
+                        never stores raw text.
+
+=== Running Stage 5 Qwen3 max-100 compute ===

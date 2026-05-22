@@ -1,0 +1,7 @@
+[2026-05-22T06:59:26.406421+00:00] [stage5] loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt
+[2026-05-22T06:59:29.146447+00:00] [stage5] loading model and tokenizer model=Qwen/Qwen3-14B
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:174: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
+  return torch._C._cuda_getDeviceCount() > 0
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 149.12it/s]
+[2026-05-22T07:00:00.373244+00:00] [stage5] processed examples processed=1 total=42 rows_written=3 failed_examples=0
+[2026-05-22T07:00:21.634902+00:00] [stage5] processed examples processed=2 total=42 rows_written=6 failed_examples=0
