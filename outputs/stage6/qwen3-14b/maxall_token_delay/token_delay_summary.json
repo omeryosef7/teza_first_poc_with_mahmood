@@ -1,0 +1,56 @@
+{
+  "stage": 6,
+  "run_name": "stage6_qwen3_token_delay_maxall",
+  "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+  "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "output_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+  "summary_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json",
+  "error_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_errors.jsonl",
+  "loaded_examples": 42,
+  "processed_examples": 42,
+  "failed_examples": 0,
+  "failed_prefixes": 0,
+  "rows_written": 210,
+  "skipped_contentless_rows": 0,
+  "detected_condition_values": [
+    "cot_hijack"
+  ],
+  "layers_request": "-1",
+  "selected_hidden_state_indices": [
+    40
+  ],
+  "prefix_lengths": [
+    16,
+    32,
+    64,
+    128,
+    "full"
+  ],
+  "token_regions": [
+    "final_token"
+  ],
+  "max_length": 256,
+  "store_text_hashes": false,
+  "config": {
+    "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+    "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
+    "model_name_or_path": "Qwen/Qwen3-14B",
+    "output_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+    "summary_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json",
+    "max_examples": 100,
+    "max_length": 256,
+    "prefix_lengths": "16,32,64,128,full",
+    "layers": "-1",
+    "token_region": "final_token",
+    "device": "auto",
+    "dtype": "bfloat16",
+    "condition": "cot_hijack",
+    "run_name": "stage6_qwen3_token_delay_maxall",
+    "overwrite": true,
+    "error_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_errors.jsonl",
+    "store_text_hashes": false
+  },
+  "start_time": "2026-05-22T08:10:42.134171+00:00",
+  "end_time": "2026-05-22T08:48:42.245243+00:00"
+}

@@ -1,0 +1,276 @@
+=== Stage 6 Qwen3 token-delay max-all started ===
+Fri May 22 11:10:41 AM IDT 2026
+n-301
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+MODEL_NAME=Qwen/Qwen3-14B
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+DIRECTION_PATH=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt
+OUTPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl
+SUMMARY_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json
+ERROR_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_errors.jsonl
+AGGREGATE_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.json
+AGGREGATE_CSV=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.csv
+RUN_NAME=stage6_qwen3_token_delay_maxall
+MAX_EXAMPLES=100
+MAX_LENGTH=256
+PREFIX_LENGTHS=16,32,64,128,full
+LAYERS=-1
+TOKEN_REGION=final_token
+DEVICE=auto
+DTYPE=bfloat16
+CONDITION=cot_hijack
+EXPECTED_ROWS=210
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Checking Stage 6 compute CLI help ===
+usage: compute_token_delay.py [-h] --input-jsonl INPUT_JSONL --direction-path
+                              DIRECTION_PATH --model-name-or-path
+                              MODEL_NAME_OR_PATH --output-jsonl OUTPUT_JSONL
+                              --summary-json SUMMARY_JSON
+                              [--max-examples MAX_EXAMPLES]
+                              [--max-length MAX_LENGTH]
+                              [--prefix-lengths PREFIX_LENGTHS]
+                              [--layers LAYERS] [--token-region TOKEN_REGION]
+                              [--device DEVICE] [--dtype DTYPE]
+                              [--condition CONDITION] [--run-name RUN_NAME]
+                              [--overwrite] [--error-jsonl ERROR_JSONL]
+                              [--store-text-hashes]
+
+Stage 6 token-level delayed detection. Writes compact prefix projection
+summaries only; never writes raw prompt text, response text, token strings,
+logits, or hidden states.
+
+options:
+  -h, --help            show this help message and exit
+  --input-jsonl INPUT_JSONL
+  --direction-path DIRECTION_PATH
+  --model-name-or-path MODEL_NAME_OR_PATH
+  --output-jsonl OUTPUT_JSONL
+  --summary-json SUMMARY_JSON
+  --max-examples MAX_EXAMPLES
+  --max-length MAX_LENGTH
+  --prefix-lengths PREFIX_LENGTHS
+  --layers LAYERS       HuggingFace hidden-state indices to project. 0 is
+                        embeddings, 1 is the first transformer block output,
+                        -1 is the final hidden state. Use comma lists like
+                        '0,-1' or '1,12,-1'. Use 'all' to project every
+                        hidden-state index.
+  --token-region TOKEN_REGION
+                        Comma-separated token regions. Supported:
+                        all,final_token,first_32,last_16,last_32,last_8.
+  --device DEVICE
+  --dtype DTYPE
+  --condition CONDITION
+                        Default condition label for input rows that do not
+                        already contain a condition.
+  --run-name RUN_NAME
+  --overwrite
+  --error-jsonl ERROR_JSONL
+  --store-text-hashes   Store SHA256 hashes of prompt text only; never stores
+                        raw text.
+
+=== Checking Stage 6 summarizer CLI help ===
+usage: summarize_token_delay.py [-h] --input-jsonl INPUT_JSONL --output-json
+                                OUTPUT_JSON [--output-csv OUTPUT_CSV]
+                                [--overwrite]
+
+Aggregate Stage 6 token-delay JSONL rows into compact summary files.
+
+options:
+  -h, --help            show this help message and exit
+  --input-jsonl INPUT_JSONL
+  --output-json OUTPUT_JSON
+  --output-csv OUTPUT_CSV
+  --overwrite
+
+=== Running Stage 6 Qwen3 token-delay max-all ===
+{
+  "stage": 6,
+  "run_name": "stage6_qwen3_token_delay_maxall",
+  "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+  "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "output_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+  "summary_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json",
+  "error_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_errors.jsonl",
+  "loaded_examples": 42,
+  "processed_examples": 42,
+  "failed_examples": 0,
+  "failed_prefixes": 0,
+  "rows_written": 210,
+  "skipped_contentless_rows": 0,
+  "detected_condition_values": [
+    "cot_hijack"
+  ],
+  "layers_request": "-1",
+  "selected_hidden_state_indices": [
+    40
+  ],
+  "prefix_lengths": [
+    16,
+    32,
+    64,
+    128,
+    "full"
+  ],
+  "token_regions": [
+    "final_token"
+  ],
+  "max_length": 256,
+  "store_text_hashes": false,
+  "config": {
+    "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+    "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
+    "model_name_or_path": "Qwen/Qwen3-14B",
+    "output_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+    "summary_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json",
+    "max_examples": 100,
+    "max_length": 256,
+    "prefix_lengths": "16,32,64,128,full",
+    "layers": "-1",
+    "token_region": "final_token",
+    "device": "auto",
+    "dtype": "bfloat16",
+    "condition": "cot_hijack",
+    "run_name": "stage6_qwen3_token_delay_maxall",
+    "overwrite": true,
+    "error_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_errors.jsonl",
+    "store_text_hashes": false
+  },
+  "start_time": "2026-05-22T08:10:42.134171+00:00",
+  "end_time": "2026-05-22T08:48:42.245243+00:00"
+}
+
+=== Running Stage 6 aggregate summarizer ===
+{
+  "stage": 6,
+  "summary_type": "token_delay_aggregate",
+  "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+  "output_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.json",
+  "output_csv": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.csv",
+  "num_input_rows": 210,
+  "num_groups": 5,
+  "group_fields": [
+    "condition",
+    "hidden_state_index",
+    "prefix_length",
+    "token_region"
+  ],
+  "metrics": [
+    "count",
+    "projection_mean_mean",
+    "projection_mean_std",
+    "projection_mean_median",
+    "projection_final_mean",
+    "projection_final_std",
+    "projection_abs_mean_mean",
+    "success_rate",
+    "mean_strongreject_score",
+    "mean_judge_score"
+  ],
+  "groups": [
+    {
+      "condition": "cot_hijack",
+      "hidden_state_index": 40,
+      "prefix_length": 128,
+      "token_region": "final_token",
+      "count": 42,
+      "projection_mean_mean": -0.22083391462053573,
+      "projection_mean_std": 2.6938524253069978,
+      "projection_mean_median": -0.4013671875,
+      "projection_final_mean": -0.22083391462053573,
+      "projection_final_std": 2.6938524253069978,
+      "projection_abs_mean_mean": 2.1772606259300593,
+      "success_rate": 0.09523809523809523,
+      "mean_strongreject_score": 0.07142857142857142,
+      "mean_judge_score": 1.8571428571428572
+    },
+    {
+      "condition": "cot_hijack",
+      "hidden_state_index": 40,
+      "prefix_length": 16,
+      "token_region": "final_token",
+      "count": 42,
+      "projection_mean_mean": 0.4893391927083333,
+      "projection_mean_std": 2.1491673616831424,
+      "projection_mean_median": 0.63671875,
+      "projection_final_mean": 0.4893391927083333,
+      "projection_final_std": 2.1491673616831424,
+      "projection_abs_mean_mean": 1.7368280319940477,
+      "success_rate": 0.09523809523809523,
+      "mean_strongreject_score": 0.07142857142857142,
+      "mean_judge_score": 1.8571428571428572
+    },
+    {
+      "condition": "cot_hijack",
+      "hidden_state_index": 40,
+      "prefix_length": 32,
+      "token_region": "final_token",
+      "count": 42,
+      "projection_mean_mean": 0.11013648623511904,
+      "projection_mean_std": 2.3530970242270848,
+      "projection_mean_median": 0.037841796875,
+      "projection_final_mean": 0.11013648623511904,
+      "projection_final_std": 2.3530970242270848,
+      "projection_abs_mean_mean": 1.7010846819196428,
+      "success_rate": 0.09523809523809523,
+      "mean_strongreject_score": 0.07142857142857142,
+      "mean_judge_score": 1.8571428571428572
+    },
+    {
+      "condition": "cot_hijack",
+      "hidden_state_index": 40,
+      "prefix_length": 64,
+      "token_region": "final_token",
+      "count": 42,
+      "projection_mean_mean": -0.06682477678571429,
+      "projection_mean_std": 3.098916773342926,
+      "projection_mean_median": -0.474609375,
+      "projection_final_mean": -0.06682477678571429,
+      "projection_final_std": 3.098916773342926,
+      "projection_abs_mean_mean": 2.4194103422619047,
+      "success_rate": 0.09523809523809523,
+      "mean_strongreject_score": 0.07142857142857142,
+      "mean_judge_score": 1.8571428571428572
+    },
+    {
+      "condition": "cot_hijack",
+      "hidden_state_index": 40,
+      "prefix_length": "full",
+      "token_region": "final_token",
+      "count": 42,
+      "projection_mean_mean": -0.05113002232142857,
+      "projection_mean_std": 2.9153492169755517,
+      "projection_mean_median": -0.92578125,
+      "projection_final_mean": -0.05113002232142857,
+      "projection_final_std": 2.9153492169755517,
+      "projection_abs_mean_mean": 2.4096214657738093,
+      "success_rate": 0.09523809523809523,
+      "mean_strongreject_score": 0.07142857142857142,
+      "mean_judge_score": 1.8571428571428572
+    }
+  ],
+  "config": {
+    "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl",
+    "output_json": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.json",
+    "output_csv": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_aggregate_summary.csv",
+    "overwrite": true
+  },
+  "start_time": "2026-05-22T08:48:45.906849+00:00",
+  "end_time": "2026-05-22T08:48:45.942242+00:00"
+}
+
+=== Validating max-all outputs ===
+stage6 qwen3 token-delay max-all output validation ok
+
+=== Stage 6 max-all row count ===
+210 /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl
+Token-delay row count matches expected 210 rows
+
+=== Checking Stage 2/3/4/5 diff is empty ===
+
+=== Checking Stage 6 Python logic diff ===
+
+=== Stage 6 Qwen3 token-delay max-all finished successfully ===
+Fri May 22 11:48:46 AM IDT 2026
