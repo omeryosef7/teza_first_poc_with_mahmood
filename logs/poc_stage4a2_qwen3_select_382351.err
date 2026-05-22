@@ -303,3 +303,11 @@ Some parameters are on the meta device because they were offloaded to the cpu.
 Stage 4A2 candidates:  91%|█████████▏| 146/160 [23:15:33<2:13:18, 571.34s/it][2026-05-22T07:24:39.740961+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=26
 [2026-05-22T07:34:11.213050+00:00] [stage4a2] Finished candidate position=-4 layer=26 passes_filters=False failures=kl_above_threshold,steering_below_threshold
 Stage 4A2 candidates:  92%|█████████▏| 147/160 [23:25:05<2:03:47, 571.38s/it][2026-05-22T07:34:11.214113+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=27
+[2026-05-22T07:43:44.754039+00:00] [stage4a2] Finished candidate position=-4 layer=27 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  92%|█████████▎| 148/160 [23:34:38<1:54:24, 572.03s/it][2026-05-22T07:43:44.759730+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=28
+[2026-05-22T07:53:14.709741+00:00] [stage4a2] Finished candidate position=-4 layer=28 passes_filters=False failures=kl_above_threshold,steering_below_threshold
+Stage 4A2 candidates:  93%|█████████▎| 149/160 [23:44:08<1:44:45, 571.41s/it][2026-05-22T07:53:14.714426+00:00] [stage4a2] Evaluating candidate position_index=3 position=-4 layer=29
+slurmstepd: error: *** JOB 382351 ON s-003 CANCELLED AT 2026-05-22T10:59:02 DUE TO TIME LIMIT ***
+slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
+slurmstepd: error: Cannot write to cgroup.procs for (null)
+slurmstepd: error: Unable to move pid 1195190 to init root cgroup (null)

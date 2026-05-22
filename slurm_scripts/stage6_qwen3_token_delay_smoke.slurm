@@ -1,0 +1,210 @@
+#!/bin/bash
+
+#SBATCH --job-name=poc_stage6_qwen3_smoke
+#SBATCH --output=logs/poc_stage6_qwen3_smoke_%j.out
+#SBATCH --error=logs/poc_stage6_qwen3_smoke_%j.err
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+#SBATCH --partition=killable
+#SBATCH --account=gpu-research
+#SBATCH --nodes=1
+#SBATCH --gpus=1
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,n-301,n-302,n-303,n-304,n-305
+
+set -euo pipefail
+
+PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+RUNTIME_DIR="/home/sharifm/students/omeryosef/jupyter_runtime"
+CONDA_ENV="${CONDA_ENV:-poc_stage2}"
+
+MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
+INPUT_JSONL="${INPUT_JSONL:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl}"
+DIRECTION_PATH="${DIRECTION_PATH:-$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction/direction.pt}"
+OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage6/qwen3-14b/smoke_token_delay}"
+RUN_NAME="${RUN_NAME:-stage6_qwen3_token_delay_smoke}"
+MAX_EXAMPLES="${MAX_EXAMPLES:-1}"
+MAX_LENGTH="${MAX_LENGTH:-256}"
+PREFIX_LENGTHS="${PREFIX_LENGTHS:-16,32,64,128,full}"
+LAYERS="${LAYERS:--1}"
+TOKEN_REGION="${TOKEN_REGION:-final_token}"
+DEVICE="${DEVICE:-auto}"
+DTYPE="${DTYPE:-bfloat16}"
+CONDITION="${CONDITION:-cot_hijack}"
+OVERWRITE="${OVERWRITE:-true}"
+STORE_TEXT_HASHES="${STORE_TEXT_HASHES:-false}"
+
+cd "$PROJECT_DIR"
+
+source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
+conda activate "$CONDA_ENV"
+
+if [ -f "$PROJECT_DIR/.env" ]; then
+    set -a
+    source "$PROJECT_DIR/.env"
+    set +a
+fi
+
+mkdir -p logs outputs "$OUTPUT_DIR" "$RUNTIME_DIR"/{config,data,runtime,ipython} "$PROJECT_DIR/.cache"/{huggingface,torch,triton}
+
+export JUPYTER_CONFIG_DIR="$RUNTIME_DIR/config"
+export JUPYTER_DATA_DIR="$RUNTIME_DIR/data"
+export JUPYTER_RUNTIME_DIR="$RUNTIME_DIR/runtime"
+export IPYTHONDIR="$RUNTIME_DIR/ipython"
+export HF_HOME="$PROJECT_DIR/.cache/huggingface"
+export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
+export TORCH_HOME="$PROJECT_DIR/.cache/torch"
+export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+
+OUTPUT_JSONL="$OUTPUT_DIR/token_delay.jsonl"
+SUMMARY_JSON="$OUTPUT_DIR/token_delay_summary.json"
+ERROR_JSONL="$OUTPUT_DIR/token_delay_errors.jsonl"
+AGGREGATE_JSON="$OUTPUT_DIR/token_delay_aggregate_summary.json"
+AGGREGATE_CSV="$OUTPUT_DIR/token_delay_aggregate_summary.csv"
+export OUTPUT_JSONL SUMMARY_JSON ERROR_JSONL AGGREGATE_JSON AGGREGATE_CSV
+
+echo "=== Stage 6 Qwen3 token-delay smoke started ==="
+date
+hostname
+pwd
+python -V
+
+echo "MODEL_NAME=$MODEL_NAME"
+echo "INPUT_JSONL=$INPUT_JSONL"
+echo "DIRECTION_PATH=$DIRECTION_PATH"
+echo "OUTPUT_JSONL=$OUTPUT_JSONL"
+echo "SUMMARY_JSON=$SUMMARY_JSON"
+echo "ERROR_JSONL=$ERROR_JSONL"
+echo "AGGREGATE_JSON=$AGGREGATE_JSON"
+echo "AGGREGATE_CSV=$AGGREGATE_CSV"
+echo "RUN_NAME=$RUN_NAME"
+echo "MAX_EXAMPLES=$MAX_EXAMPLES"
+echo "MAX_LENGTH=$MAX_LENGTH"
+echo "PREFIX_LENGTHS=$PREFIX_LENGTHS"
+echo "LAYERS=$LAYERS"
+echo "TOKEN_REGION=$TOKEN_REGION"
+echo "DEVICE=$DEVICE"
+echo "DTYPE=$DTYPE"
+echo "CONDITION=$CONDITION"
+echo "PYTORCH_CUDA_ALLOC_CONF=$PYTORCH_CUDA_ALLOC_CONF"
+
+if [ ! -f "$INPUT_JSONL" ]; then
+    echo "ERROR: INPUT_JSONL does not exist: $INPUT_JSONL"
+    exit 1
+fi
+
+if [ ! -f "$DIRECTION_PATH" ]; then
+    echo "ERROR: DIRECTION_PATH does not exist: $DIRECTION_PATH"
+    exit 1
+fi
+
+echo ""
+echo "=== Checking Stage 6 compute CLI help ==="
+python -m poc_stage6.compute_token_delay --help
+
+echo ""
+echo "=== Checking Stage 6 summarizer CLI help ==="
+python -m poc_stage6.summarize_token_delay --help
+
+COMPUTE_ARGS=(
+    --input-jsonl "$INPUT_JSONL"
+    --direction-path "$DIRECTION_PATH"
+    --model-name-or-path "$MODEL_NAME"
+    --output-jsonl "$OUTPUT_JSONL"
+    --summary-json "$SUMMARY_JSON"
+    --error-jsonl "$ERROR_JSONL"
+    --max-examples "$MAX_EXAMPLES"
+    --max-length "$MAX_LENGTH"
+    --prefix-lengths "$PREFIX_LENGTHS"
+    --layers "$LAYERS"
+    --token-region "$TOKEN_REGION"
+    --device "$DEVICE"
+    --dtype "$DTYPE"
+    --condition "$CONDITION"
+    --run-name "$RUN_NAME"
+)
+
+if [ "$OVERWRITE" = "true" ]; then
+    COMPUTE_ARGS+=(--overwrite)
+fi
+
+if [ "$STORE_TEXT_HASHES" = "true" ]; then
+    COMPUTE_ARGS+=(--store-text-hashes)
+fi
+
+echo ""
+echo "=== Running Stage 6 Qwen3 token-delay smoke ==="
+python -m poc_stage6.compute_token_delay "${COMPUTE_ARGS[@]}"
+
+echo ""
+echo "=== Running Stage 6 aggregate summarizer ==="
+SUMMARY_ARGS=(
+    --input-jsonl "$OUTPUT_JSONL"
+    --output-json "$AGGREGATE_JSON"
+    --output-csv "$AGGREGATE_CSV"
+)
+
+if [ "$OVERWRITE" = "true" ]; then
+    SUMMARY_ARGS+=(--overwrite)
+fi
+
+python -m poc_stage6.summarize_token_delay "${SUMMARY_ARGS[@]}"
+
+echo ""
+echo "=== Validating smoke outputs ==="
+python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+output_jsonl = Path(os.environ["OUTPUT_JSONL"])
+summary_json = Path(os.environ["SUMMARY_JSON"])
+
+if not output_jsonl.exists():
+    raise SystemExit(f"missing output JSONL: {output_jsonl}")
+if not summary_json.exists():
+    raise SystemExit(f"missing summary JSON: {summary_json}")
+
+rows = [json.loads(line) for line in output_jsonl.read_text(encoding="utf-8").splitlines() if line.strip()]
+summary = json.loads(summary_json.read_text(encoding="utf-8"))
+if not rows:
+    raise SystemExit("output JSONL has no rows")
+
+forbidden_fields = {
+    "prompt",
+    "prompt_text",
+    "response",
+    "response_text",
+    "token",
+    "tokens",
+    "token_strings",
+    "logits",
+    "hidden_state",
+    "hidden_states",
+}
+for row in rows:
+    overlap = forbidden_fields.intersection(row)
+    if overlap:
+        raise SystemExit(f"raw-text/raw-state field(s) present: {sorted(overlap)}")
+    if row.get("stage") != 6:
+        raise SystemExit(f"unexpected stage: {row.get('stage')}")
+    if row.get("token_region") != "final_token":
+        raise SystemExit(f"unexpected token_region: {row.get('token_region')}")
+
+if summary.get("loaded_examples") != 1:
+    raise SystemExit(f"expected loaded_examples=1, got {summary.get('loaded_examples')}")
+if summary.get("rows_written") != len(rows):
+    raise SystemExit("summary rows_written does not match output JSONL row count")
+
+print("stage6 qwen3 token-delay smoke output validation ok")
+PY
+
+echo ""
+echo "=== Checking Stage 2/3/4/5 diff is empty ==="
+git diff -- poc_stage2 poc_stage3 poc_stage4 poc_stage5
+
+echo ""
+echo "=== Stage 6 Qwen3 token-delay smoke finished successfully ==="
+date
