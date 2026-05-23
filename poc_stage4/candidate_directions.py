@@ -43,6 +43,8 @@ def split_prompts(
 def generate_candidate_directions(
     harmful_train_activations: torch.Tensor,
     harmless_train_activations: torch.Tensor,
+    *,
+    direction_normalization: str = "unit",
 ) -> torch.Tensor:
     """Generate candidate directions as [n_position, n_layer, d_model]."""
 
@@ -54,6 +56,13 @@ def generate_candidate_directions(
     harmful_mean = harmful_train_activations.mean(dim=0)
     harmless_mean = harmless_train_activations.mean(dim=0)
     candidate_directions = harmful_mean - harmless_mean
+    if direction_normalization == "raw":
+        return candidate_directions
+    if direction_normalization != "unit":
+        raise ValueError(
+            f"Unsupported direction_normalization={direction_normalization!r}. "
+            "Expected 'unit' or 'raw'."
+        )
     norms = candidate_directions.norm(dim=-1, keepdim=True).clamp_min(1e-12)
     return candidate_directions / norms
 

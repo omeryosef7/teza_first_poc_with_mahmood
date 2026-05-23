@@ -108,6 +108,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of harmless prompts to use when reproducing the upstream extraction method.",
     )
     parser.add_argument(
+        "--direction-normalization",
+        choices=("unit", "raw"),
+        default="unit",
+        help="How to store fallback Stage 4A1 candidate directions: unit-normalized or raw harmful_mean-harmless_mean.",
+    )
+    parser.add_argument(
         "--top-k-projection",
         type=int,
         help="Only evaluate the top K promising candidates based on projection ranking.",
@@ -289,6 +295,7 @@ def _reproduce_upstream_method(
         positions=_parse_positions(args.positions),
         enable_thinking=bool(args.enable_thinking),
         seed=42,
+        direction_normalization=args.direction_normalization,
         overwrite=bool(args.overwrite),
         use_builtin_prompts=False,
         resume=False,
@@ -319,6 +326,7 @@ def _reproduce_upstream_method(
         "stage4a2_candidate_scores_path": str(output_dir / "intervention_candidate_scores.json"),
         "stage4a2_direction_path": str(output_dir / "direction.pt"),
         "stage4a2_selected_direction_path": str(output_dir / "selected_direction.json"),
+        "direction_normalization": args.direction_normalization,
         "intervention_selection_metrics": make_json_safe(metrics),
     }
     if payload["validated"]:

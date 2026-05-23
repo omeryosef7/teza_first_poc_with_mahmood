@@ -35,6 +35,7 @@ class ExtractionConfig:
     seed: int
     overwrite: bool
     use_builtin_prompts: bool
+    direction_normalization: str = "unit"
     resume: bool = False
     checkpoint_dir: Path | None = None
     no_progress: bool = False

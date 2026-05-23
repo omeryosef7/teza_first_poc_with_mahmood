@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-positions", type=int, help="Use positions -1 through -N when --positions is omitted.")
     parser.add_argument("--enable-thinking", type=parse_bool, default=False)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--direction-normalization",
+        choices=("unit", "raw"),
+        default="unit",
+        help="How to store Stage 4A1 candidate directions: unit-normalized or raw harmful_mean-harmless_mean.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--resume", action="store_true", help="Resume from Stage 4A1 checkpoint batches.")
     parser.add_argument("--checkpoint-dir", help="Directory for Stage 4A1 resumable checkpoints.")
@@ -129,6 +135,7 @@ def _checkpoint_config(config: ExtractionConfig) -> dict[str, Any]:
         "positions": config.positions,
         "enable_thinking": config.enable_thinking,
         "seed": config.seed,
+        "direction_normalization": config.direction_normalization,
         "use_builtin_prompts": config.use_builtin_prompts,
     }
 
@@ -268,6 +275,7 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
     candidate_directions = generate_candidate_directions(
         harmful_train_activations,
         harmless_train_activations,
+        direction_normalization=config.direction_normalization,
     )
     torch.save(candidate_directions.cpu(), output_dir / "candidate_directions.pt")
     log_progress(
@@ -331,6 +339,7 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
         "enable_thinking": config.enable_thinking,
         "batch_size": config.batch_size,
         "seed": config.seed,
+        "direction_normalization": config.direction_normalization,
         "dry_run": config.dry_run,
         "device_summary": model_base.device_summary,
         **prompt_source_metadata,
@@ -386,6 +395,7 @@ def main() -> int:
             seed=args.seed,
             overwrite=bool(args.overwrite),
             use_builtin_prompts=bool(args.use_builtin_prompts),
+            direction_normalization=args.direction_normalization,
             resume=bool(args.resume),
             checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
             no_progress=bool(args.no_progress),
