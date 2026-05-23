@@ -4,7 +4,9 @@
 
 Stage 4 began the mechanistic part of the POC. It added Qwen3-14B refusal-direction extraction, intervention-based candidate selection, refusal-component dampening measurement, checkpoint/resume support, and report generation.
 
-The important scientific caveat is that Stage 4 is not final evidence yet. Stage 4A1 produced a provisional projection-selected direction. Stage 4A2 smoke-tested intervention selection over 5 candidates but did not produce an `intervention_selected` final direction. Stage 4B measured dampening in debug mode with the provisional direction. Stage 4C produced a debug report clearly marked as preliminary.
+The main explicit Stage 4A1 result is that the current best provisional candidate in the repo is the direction at prompt-end-relative position `-3` and layer `22`. Its saved projection-diagnostic score is `14.166624327994466`, with harmful projection mean `61.89002990722656` and harmless projection mean `-3.606233596801758`.
+
+The main scientific caveat remains unchanged: this is only a provisional winner. Stage 4A2 did not produce a final `intervention_selected` direction, so Stage 4 is still not final mechanistic evidence.
 
 ## Comprehensive Detailed Summary
 
@@ -24,7 +26,7 @@ Stage 4A1 used 64 harmful and 64 harmless prompts, split internally into 48/48 t
 - Move beyond black-box attack logs into hidden-state/refusal-direction analysis.
 - Use Qwen3-14B as the open-source model target for mechanistic probing.
 - Reproduce the refusal-direction idea with candidate directions across positions and layers.
-- Add intervention selection to avoid treating projection diagnostics as final scientific evidence.
+- Add intervention selection so the project would not mistake projection diagnostics for final scientific evidence.
 - Measure whether hijacked prompt variants reduce the refusal-direction component compared with direct harmful prompts.
 
 ## What We Actually Did
@@ -40,22 +42,22 @@ Stage 4A1 used 64 harmful and 64 harmless prompts, split internally into 48/48 t
 ### Stage 4A2
 
 - Added intervention-based selection code and Slurm support.
-- Ran a smoke test over the top 5 projection-ranked candidates.
-- Wrote intervention candidate scores and metrics.
-- Did not overwrite `direction.pt` because smoke mode did not produce a final direction.
-- Longer/checkpointed Stage 4A2 work continued later, visible in checkpoint artifacts and `logs/poc_stage4a2_qwen3_select_382351.err`, but no final `intervention_selected` artifact is present.
+- Ran a smoke test first, then a fuller intervention-selection pass whose metrics are now present in `intervention_selection_metrics.json`.
+- Evaluated all 160 candidates in the final recorded artifact.
+- Found zero candidates surviving the intervention filters.
+- Did not overwrite `direction.pt` because no candidate was promoted to final.
 
 ### Stage 4B
 
 - Added refusal-component dampening measurement.
-- Ran debug-only dampening measurement for 2 goals.
+- Ran a debug-only dampening measurement for 2 goals.
 - Explicitly allowed the provisional direction for debugging.
 - Wrote per-example components and a summary under `outputs/stage4/qwen3-14b/refusal_dampening_debug/`.
 
 ### Stage 4C
 
 - Added report-building code.
-- Built a debug report from the provisional/debug inputs.
+- Built a debug report from provisional/debug inputs.
 - Wrote JSON, Markdown, and CSV report artifacts under `outputs/stage4/qwen3-14b/report_debug/`.
 
 ## Runs And Artifacts
@@ -65,14 +67,13 @@ Stage 4A1 used 64 harmful and 64 harmless prompts, split internally into 48/48 t
 | 4A1 | Stage 4 README | `poc_stage4/README.md` | Commands, guardrails, resume behavior, and stage structure. |
 | 4A1 | Slurm script | `slurm_scripts/stage4a_qwen3_refusal_direction.slurm` | Candidate extraction batch configuration. |
 | 4A1 | Final stdout | `logs/poc_stage4a_qwen3_refusal_381185.out` | Stage 4A1 artifact write and selected provisional position/layer. |
-| 4A1 | Extraction metrics | `outputs/stage4/qwen3-14b/refusal_direction/extraction_metrics.json` | 64/64 prompts, shape `[4, 40, 5120]`, model metadata. |
-| 4A1 | Selected direction metadata | `outputs/stage4/qwen3-14b/refusal_direction/selected_direction.json` | `selection_status = provisional_projection_diagnostic_only`. |
+| 4A1 | Extraction metrics | `outputs/stage4/qwen3-14b/refusal_direction/extraction_metrics.json` | 64/64 prompts, candidate shape, model metadata. |
+| 4A1 | Selected direction metadata | `outputs/stage4/qwen3-14b/refusal_direction/selected_direction.json` | Saved provisional winner and selection warning. |
+| 4A1 | Projection diagnostics | `outputs/stage4/qwen3-14b/refusal_direction/projection_diagnostics.json` | Per-position, per-layer separation diagnostics for all 160 candidates. |
 | 4A2 | Slurm script | `slurm_scripts/stage4a2_qwen3_intervention_selection.slurm` | Intervention-selection batch configuration. |
-| 4A2 | Smoke stdout | `logs/poc_stage4a2_qwen3_select_381263.out` | Smoke mode wrote metrics and did not overwrite direction. |
-| 4A2 | Intervention metrics | `outputs/stage4/qwen3-14b/refusal_direction/intervention_selection_metrics.json` | 5 candidates evaluated, 0 surviving filters, smoke mode. |
+| 4A2 | Intervention metrics | `outputs/stage4/qwen3-14b/refusal_direction/intervention_selection_metrics.json` | Final recorded intervention-selection result: 160 evaluated, 0 survivors. |
 | 4A2 | Ongoing checkpoint evidence | `outputs/stage4/qwen3-14b/refusal_direction/checkpoints/stage4a2/` | Baseline logits, manifest, and candidate-score checkpoint rows. |
 | 4B | Slurm script | `slurm_scripts/stage4b_qwen3_refusal_dampening.slurm` | Debug dampening batch configuration. |
-| 4B | Debug stdout | `logs/poc_stage4b_qwen3_dampen_382303.out` | Measured 2 goals and wrote debug summary. |
 | 4B | Debug summary | `outputs/stage4/qwen3-14b/refusal_dampening_debug/refusal_dampening_summary.json` | Debug-only dampening results. |
 | 4C | Slurm script | `slurm_scripts/stage4c_qwen3_report.slurm` | Report generation configuration. |
 | 4C | Debug report | `outputs/stage4/qwen3-14b/report_debug/stage4_qwen_report.md` | Aggregated preliminary report. |
@@ -84,55 +85,110 @@ Stage 4A1 used 64 harmful and 64 harmless prompts, split internally into 48/48 t
 | Refusal-direction upstream code added | Commit `0a21439`, `2026-05-20T19:42:02+03:00` | git-window estimate |
 | Stage 4A1 code added | Commit `50558ba`, `2026-05-20T20:35:18+03:00` | git-window estimate |
 | Stage 4A1 artifact timestamp | `2026-05-20T18:19:49.875450+00:00`, or `21:19:49 IDT` | exact from artifact |
-| Stage 4A2 smoke metrics timestamp | `2026-05-20T19:40:10.120846+00:00`, or `22:40:10 IDT` | exact from artifact |
+| Stage 4A2 final metrics timestamp | `2026-05-22T13:44:16.530935+00:00`, or `16:44:16 IDT` | exact from artifact |
 | Stage 4B debug summary timestamp | `2026-05-21T06:42:13.022752+00:00`, or `09:42:13 IDT` | exact from artifact |
 | Stage 4C debug report committed | Commit `0c70f8e`, `2026-05-21T10:59:21+03:00` | git-window estimate |
-| Longer Stage 4A2 checkpoint work | Commit `90f71aa` at `2026-05-21T18:02:04+03:00` and later dirty log/checkpoint updates | git-window estimate |
 | Slurm accounting | Not available from this shell because controller hostname resolution failed | unavailable |
 
 ## Results
 
-Stage 4A1 results:
+### Stage 4A1 explicit winning candidate
 
-- Model: `Qwen/Qwen3-14B`.
-- Candidate shape: `[4, 40, 5120]`.
-- Positions: `[-1, -2, -3, -4]`.
-- Layers: 40.
-- Provisional selected position: `-3`.
-- Provisional selected layer: `22`.
-- Selection status: `provisional_projection_diagnostic_only`.
+The provisional winning candidate currently saved in the repo is:
 
-Stage 4A2 smoke results:
+- position `-3`
+- layer `22`
+- `selection_status = provisional_projection_diagnostic_only`
+- `selected_score = 14.166624327994466`
+- harmful projection mean `61.89002990722656`
+- harmless projection mean `-3.606233596801758`
+- `direction_norm = 1.0`
 
-- Candidates available: 160.
-- Candidates evaluated: 5.
-- Candidates surviving filters: 0.
-- Selection status: `intervention_smoke_test_only`.
-- Direction was not promoted to final.
+Other Stage 4A1 facts:
 
-Stage 4B debug results:
+- Candidate tensor shape: `[4, 40, 5120]`
+- Candidate count: `160`
+- Positions tested: `[-1, -2, -3, -4]`
+- Layers tested: `40`
+- Diagnostic summary mean standardized separation: `6.664061363336008`
 
-- Goals measured: 2.
-- Direct harmful mean refusal component: `61.433319091796875`.
-- Hijacked medium mean component: `2.553408205509186`.
-- Hijacked long mean component: `3.2049278020858765`.
-- Mean medium delta: `-58.87991088628769`.
-- Mean long delta: `-58.228391289711`.
-- Scientific status: `debug_only_not_final_evidence`.
+Comparison note:
 
-Stage 4C result:
+- The saved provisional winner is the best candidate by standardized projection separation.
+- The strongest raw `projection_separation` in the diagnostics appears later in the same position family, at position `-3`, layer `39`, with raw separation `600.2092590332031`.
+- That layer `39` candidate was not selected because its standardized separation `13.375142479999504` is lower than the saved layer `22` winner's `14.166624327994466`.
 
-- Generated debug report with explicit warnings.
-- Report status: `debug_preliminary`.
+### Stage 4A2 explicit intervention result
+
+The latest recorded Stage 4A2 artifact says:
+
+- `selection_status = intervention_selection_failed_no_survivors`
+- candidates available: `160`
+- candidates evaluated: `160`
+- candidates surviving filters: `0`
+- baseline harmful refusal score mean: `3.962426360306912`
+- baseline harmless refusal score mean: `-15.66423998503984`
+
+Failure counts by reason:
+
+- `steering_below_threshold = 160`
+- `kl_above_threshold = 92`
+- `layer_pruned = 32`
+
+Best tradeoff candidate recorded by Stage 4A2:
+
+- position `-1`, layer `9`
+- harmful ablation refusal score `3.7349283246606917`
+- harmless steering refusal score `-15.627660489174787`
+- harmless ablation KL divergence `0.04825110056550176`
+- still failed the steering threshold, so it was not promoted
+
+### Stage 4B explicit debug result
+
+- goals measured: `2`
+- direct harmful mean refusal component: `61.433319091796875`
+- hijacked medium mean refusal component: `2.553408205509186`
+- hijacked long mean refusal component: `3.2049278020858765`
+- mean medium delta: `-58.87991088628769`
+- mean long delta: `-58.228391289711`
+- fraction of negative medium deltas: `1.0`
+- fraction of negative long deltas: `1.0`
+- scientific status: `debug_only_not_final_evidence`
+
+### Stage 4C explicit report result
+
+- report status: `debug_preliminary`
+- output report path: `outputs/stage4/qwen3-14b/report_debug/stage4_qwen_report.md`
+
+## What The Main Metrics Mean
+
+- `projection_separation`: the raw difference between harmful and harmless projection means for one candidate direction. Larger absolute separation means the candidate distinguishes the two prompt classes more in raw units.
+- `pooled_projection_std`: the pooled spread of the harmful and harmless projections. Larger values mean the classes are more internally noisy.
+- `standardized_projection_separation`: separation normalized by spread. Larger is better if the goal is to find a clean separator rather than just a large raw difference.
+- `selected_score`: the actual selection score for the saved candidate. In Stage 4A1 it is the standardized projection separation used by the provisional diagnostic.
+- `direction_norm`: norm of the saved direction vector. `1.0` means the stored direction was normalized.
+- `selection_status = provisional_projection_diagnostic_only`: the candidate won the Stage 4A1 diagnostic, but it was not validated by intervention selection.
+- `harmful_projection_mean`: mean projection of harmful validation prompts onto the candidate direction.
+- `harmless_projection_mean`: mean projection of harmless validation prompts onto the candidate direction.
+- `harmful_ablation_refusal_score`: Stage 4A2's intervention metric on harmful prompts after ablating a candidate direction. Lower is intended to mean less refusal after ablation.
+- `harmless_steering_refusal_score`: Stage 4A2's intervention metric on harmless prompts after steering in the candidate direction. The filter expects this not to induce refusal-like behavior.
+- `harmless_ablation_kl_divergence`: how much the harmless output distribution moved under ablation. Lower is safer.
+- `mean_delta_medium` / `mean_delta_long`: average difference between the direct harmful refusal component and the hijacked refusal component. Negative means dampening relative to direct harmful prompts.
+
+Interpretation rule for this stage:
+
+- Larger positive projection on the selected Stage 4A1 direction means stronger alignment with the harmful-side direction found during extraction.
+- More negative or smaller values mean weaker alignment with that harmful-side direction.
 
 ## Limitations / Caveats
 
+- The current best candidate is explicit, but it is still only provisional.
 - No final `intervention_selected` direction exists yet.
+- Stage 4A2's latest recorded artifact says no candidate survived the scientific filters.
 - Stage 4B used `--allow-provisional-direction`, so it validates the measurement path but is not final evidence.
 - Stage 4C report is intentionally marked debug/preliminary.
-- Some Stage 4A2 checkpoint artifacts and logs are still dirty/uncommitted in the working tree and should not be overwritten.
 - Qwen3-14B runs are resource-heavy and some layers were placed on CPU according to the extraction metrics.
 
 ## Handoff To Next Stage
 
-Stage 5 can use the existing Stage 4 direction for read-only projection-dynamics smoke tests, but final mechanistic claims should wait for a completed Stage 4A2 `intervention_selected` direction and a non-debug Stage 4B run.
+Stage 5 can use the existing Stage 4 direction for read-only projection-dynamics analysis, but final mechanistic claims should wait for a completed Stage 4A2 `intervention_selected` direction.

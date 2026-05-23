@@ -2,18 +2,24 @@
 
 ## Manager Summary
 
-Stage 5 added a read-only projection-dynamics analysis. It measures how Stage 2/3 examples project onto an existing Stage 4 refusal direction across HuggingFace hidden-state indices and token regions, while avoiding storage of raw prompt text, raw response text, token strings, hidden states, logits, or model outputs by default.
+Stage 5 added a read-only projection-dynamics analysis. It measures how Stage 2/3 examples project onto the saved Stage 4 refusal direction across hidden-state indices and token regions, while avoiding storage of raw prompt text, raw response text, token strings, hidden states, logits, or model outputs by default.
 
-The completed Qwen3 smoke run processed 1 example, wrote 2 projection rows, and passed output validation. A later max-20 run was started but did not complete in the available artifacts; its temporary output files are empty and should be treated as incomplete.
+The stage is no longer just a smoke test in the current repo. There are now three completed artifact sets:
+
+- smoke max-1: `1` example, `2` rows
+- max-20 final: `20` examples, `60` rows
+- max-100 final: `42` examples, `126` rows
+
+The scientific caveat is unchanged: all Stage 5 runs still depend on the provisional Stage 4 direction.
 
 ## Comprehensive Detailed Summary
 
-Stage 5 was designed to be a safe, derived-analysis layer on top of existing artifacts:
+Stage 5 is a derived-analysis layer on top of existing artifacts:
 
-- Input examples come from the Stage 3 StrongREJECT-scored JSONL.
-- The direction comes from Stage 4.
-- The model is `Qwen/Qwen3-14B`.
-- Outputs are compact numeric projection summaries only.
+- input examples come from the Stage 3 StrongREJECT-scored JSONL
+- the direction comes from Stage 4
+- the model is `Qwen/Qwen3-14B`
+- outputs are compact numeric projection summaries only
 
 The key implementation modules are:
 
@@ -29,7 +35,7 @@ The compute step writes one row per example, sequence type, hidden-state index, 
 
 - Build a read-only mechanistic projection stage that does not mutate Stage 2, Stage 3, or Stage 4 artifacts.
 - Validate data loading, direction loading, projection math, and output safety constraints.
-- Run a small Qwen3 smoke test before scaling to a max-20 analysis.
+- Run a small Qwen3 smoke test before scaling.
 - Keep outputs shareable by default by excluding raw text and raw model internals.
 
 ## What We Actually Did
@@ -37,11 +43,11 @@ The compute step writes one row per example, sequence type, hidden-state index, 
 - Added the `poc_stage5` package.
 - Added a generic smoke test Slurm script.
 - Added core projection validation.
-- Added a Qwen3 max-1 smoke Slurm script.
-- Added a Qwen3 max-20 Slurm script.
+- Added Qwen3 max-1, max-20, and max-100 run paths.
 - Ran the completed max-1 Qwen3 smoke job `384046`.
-- Ran the aggregate summarizer for the max-1 smoke output.
-- Started max-20 job `384052`, which did not complete in the current artifacts.
+- Ran the completed max-20 Qwen3 job `384052`.
+- Ran the completed max-100 Qwen3 job `384058`.
+- Ran aggregate summarization for the completed outputs.
 
 ## Runs And Artifacts
 
@@ -51,16 +57,12 @@ The compute step writes one row per example, sequence type, hidden-state index, 
 | Generic smoke script | `slurm_scripts/stage5_smoke_test.slurm` | Early Stage 5 smoke test configuration. |
 | Core validation script | `slurm_scripts/stage5_projection_core_validation.slurm` | Projection utility validation. |
 | Qwen3 smoke script | `slurm_scripts/stage5_qwen3_projection_smoke.slurm` | Completed max-1 Qwen3 smoke configuration. |
-| Qwen3 max-20 script | `slurm_scripts/stage5_qwen3_max20_final.slurm` | Larger analysis attempt configuration. |
-| Completed smoke stdout | `logs/poc_stage5_qwen3_smoke_384046.out` | Help check, compute run, output validation, clean Stage 2/3/4 diff check. |
-| Completed smoke stderr | `logs/poc_stage5_qwen3_smoke_384046.err` | Direction/model loading, one processed example, completion line. |
-| Completed smoke JSONL | `outputs/stage5/qwen3-14b/smoke_max1_final/per_example_layer_region_projections.jsonl` | 2 compact projection rows. |
-| Completed smoke summary | `outputs/stage5/qwen3-14b/smoke_max1_final/projection_summary.json` | 1 processed example, 2 rows, 0 failures. |
-| Completed smoke aggregate JSON | `outputs/stage5/qwen3-14b/smoke_max1_final/projection_aggregate_summary.json` | 2 grouped summaries. |
-| Completed smoke aggregate CSV | `outputs/stage5/qwen3-14b/smoke_max1_final/projection_aggregate_summary.csv` | CSV version of aggregate groups. |
-| Max-20 stdout | `logs/poc_stage5_qwen3_max20_384052.out` | Started max-20 job and reached compute launch. |
-| Max-20 stderr | `logs/poc_stage5_qwen3_max20_384052.err` | Model loading and first progress line. |
-| Max-20 temporary outputs | `outputs/stage5/qwen3-14b/max20_final/*.tmp` | Currently empty; incomplete run evidence only. |
+| Qwen3 max-20 script | `slurm_scripts/stage5_qwen3_max20_final.slurm` | Completed max-20 Qwen3 configuration. |
+| Qwen3 max-100 script | `slurm_scripts/stage5_qwen3_max100_final.slurm` | Completed max-100 Qwen3 configuration. |
+| Smoke summary | `outputs/stage5/qwen3-14b/smoke_max1_final/projection_summary.json` | 1 processed example, 2 rows, 0 failures. |
+| Max-20 summary | `outputs/stage5/qwen3-14b/max20_final/projection_summary.json` | 20 processed examples, 60 rows, 0 failures. |
+| Max-100 summary | `outputs/stage5/qwen3-14b/max100_final/projection_summary.json` | 42 processed examples, 126 rows, 0 failures. |
+| Max-100 aggregate JSON | `outputs/stage5/qwen3-14b/max100_final/projection_aggregate_summary.json` | Region-level aggregate statistics over all 42 examples. |
 
 ## Timing From Git And Logs
 
@@ -69,54 +71,79 @@ The compute step writes one row per example, sequence type, hidden-state index, 
 | Initial Stage 5 code committed | Commit `63ce2c0`, `2026-05-21T18:30:44+03:00` | git-window estimate |
 | Stage 5 validation/smoke improvements committed | Commit `49067fb`, `2026-05-21T23:52:56+03:00` | git-window estimate |
 | Additional Stage 5 work committed | Commit `5159fab`, `2026-05-22T08:30:48+03:00` | git-window estimate |
-| Completed max-1 smoke start | `2026-05-22T05:56:17.270965+00:00` in `projection_summary.json` | exact from artifact |
 | Completed max-1 smoke end | `2026-05-22T06:01:26.257018+00:00` in `projection_summary.json` | exact from artifact |
-| Completed max-1 smoke duration | About 5 minutes 9 seconds | exact from artifact |
-| Aggregate summarizer duration | `2026-05-22T06:06:50.447415+00:00` to `2026-05-22T06:06:50.448060+00:00` | exact from artifact |
-| Max-20 attempt progress | First progress line at `2026-05-22T06:25:01.719742+00:00` in stderr | estimated from logs |
+| Completed max-20 end | `2026-05-22T06:31:28.152333+00:00` in `projection_summary.json` | exact from artifact |
+| Completed max-100 end | `2026-05-22T07:13:37.231703+00:00` in `projection_summary.json` | exact from artifact |
 | Slurm accounting | Not available from this shell because controller hostname resolution failed | unavailable |
 
 ## Results
 
-Completed max-1 smoke:
+### Smoke max-1
 
-- Input JSONL: `outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl`.
-- Direction path: `outputs/stage4/qwen3-14b/refusal_direction/direction.pt`.
-- Model: `Qwen/Qwen3-14B`.
-- Loaded examples: 1.
-- Processed examples: 1.
-- Failed examples: 0.
-- Failed sequences: 0.
-- Rows written: 2.
-- Hidden-state index selected from `--layers -1`: 40.
-- Token regions: `final_token`, `last_8`.
-- Raw text stored: no.
-- Text hashes stored: no.
-- Response context included: no.
+- loaded examples: `1`
+- processed examples: `1`
+- failed examples: `0`
+- failed sequences: `0`
+- rows written: `2`
+- selected hidden-state index: `40`
+- token regions: `final_token`, `last_8`
 
-Aggregate max-1 smoke:
+Aggregate max-1 values:
 
-- Input rows: 2.
-- Groups: 2.
-- Group fields: `condition`, `sequence_type`, `hidden_state_index`, `region`.
-- Final-token projection mean for the single example: `1.703125`.
-- Last-8 projection mean for the single example: `-0.129150390625`.
+- final-token projection mean: `1.703125`
+- last-8 projection mean: `-0.129150390625`
 
-Max-20 attempt:
+### Max-20 final
 
-- Configured for 20 examples, final hidden state, and regions `final_token,last_8,last_32`.
-- Log shows model loading and processing started.
-- Current `.tmp` projection and error files are empty.
-- No completed summary JSON, aggregate JSON, or aggregate CSV exists for max-20 in the current artifact set.
+- loaded examples: `20`
+- processed examples: `20`
+- failed examples: `0`
+- failed sequences: `0`
+- rows written: `60`
+- selected hidden-state index: `40`
+- token regions: `final_token`, `last_8`, `last_32`
+
+### Max-100 final
+
+- loaded examples: `42`
+- processed examples: `42`
+- failed examples: `0`
+- failed sequences: `0`
+- rows written: `126`
+- selected hidden-state index: `40`
+- token regions: `final_token`, `last_8`, `last_32`
+
+Max-100 aggregate summary by region:
+
+| Region | Count | Mean projection | Success rate | Mean StrongREJECT |
+| --- | ---: | ---: | ---: | ---: |
+| `final_token` | 42 | `-0.05113002232142857` | `0.09523809523809523` | `0.07142857142857142` |
+| `last_8` | 42 | `-0.023778279622395832` | `0.09523809523809523` | `0.07142857142857142` |
+| `last_32` | 42 | `0.016065733773367747` | `0.09523809523809523` | `0.07142857142857142` |
+
+Explicit readout:
+
+- the largest positive region-level mean in the completed max-100 run is `last_32` at `0.016065733773367747`
+- the most negative region-level mean is `final_token` at `-0.05113002232142857`
+- these values are small because Stage 5 is measuring attack-prompt rows against a direction learned in Stage 4A1 from a separate harmful-versus-harmless extraction dataset
+
+## What The Main Metrics Mean
+
+- `selected_hidden_state_indices = [40]`: the run measured only the final hidden-state index that corresponds to `--layers -1` for this model.
+- `token_regions = final_token,last_8,last_32`: where in the prompt representation the direction projection is aggregated. `final_token` uses just the last token; `last_8` and `last_32` average over the final 8 or 32 tokens available in the prompt window.
+- `projection_value` / `projection_mean`: signed projection of the hidden representation onto the Stage 4 refusal direction. More positive means more aligned with the harmful-side direction discovered in Stage 4A1; more negative means more aligned with the opposite direction.
+- `projection_abs_mean`: average magnitude of the projection regardless of sign.
+- `failed_sequences`: number of sequence-level computations that failed even if the example itself loaded successfully.
+- `rows_written`: number of per-example, per-region output rows emitted by the run.
+- `success_rate`: fraction of rows in a group whose inherited Stage 2/3 label is successful.
+- `mean_strongreject_score`: average Stage 3 StrongREJECT score for the rows in a group.
 
 ## Limitations / Caveats
 
-- Stage 5 currently uses the Stage 4 provisional direction. That is acceptable for smoke testing but not final mechanistic evidence.
-- The completed Qwen3 smoke run is intentionally tiny: one example.
-- The max-20 run is incomplete in the current workspace.
-- One completed smoke log reports CUDA initialization warning and apparent CPU fallback behavior; this should be considered when interpreting timing and scalability.
+- Stage 5 currently uses the Stage 4 provisional direction. That is acceptable for derived analysis but not final mechanistic evidence.
 - Stage 5 output safety is deliberate: raw prompts, raw responses, token strings, hidden states, logits, and raw model outputs are not written by default.
+- Projection sign should be interpreted relative to the Stage 4A1 extraction convention, not as a universal notion of refusal on its own.
 
 ## Handoff To Next Stage
 
-The immediate next useful step is to complete or rerun the max-20 Stage 5 analysis after confirming GPU availability, then repeat Stage 5 with a final Stage 4A2 `intervention_selected` direction once that exists.
+Stage 6 can now work from a completed Stage 5 base rather than only a smoke run, while later scientific interpretation should still wait for a final Stage 4A2 `intervention_selected` direction.
