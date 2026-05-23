@@ -1,0 +1,23 @@
+{
+  "stage": "stage4a1",
+  "timestamp_utc": "2026-05-23T14:15:36.106589+00:00",
+  "config_fingerprint": "ac354be675f1332127fa075c3785dfd91aac3848727c3735760953ce426dd5e7",
+  "fingerprint_payload": {
+    "model_name": "Qwen/Qwen3-14B",
+    "dry_run": false,
+    "num_harmful": 64,
+    "num_harmless": 64,
+    "batch_size": 1,
+    "positions": [
+      -1,
+      -2,
+      -3,
+      -4
+    ],
+    "enable_thinking": false,
+    "seed": 42,
+    "use_builtin_prompts": false
+  },
+  "checkpoint_dir": "outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5/checkpoints/stage4a1",
+  "output_dir": "outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5"
+}

@@ -313,6 +313,22 @@ SLURM full run:
 sbatch slurm_scripts/stage4a2_qwen3_intervention_selection.slurm
 ```
 
+## Upstream Direction Import
+
+If you have a released upstream refusal direction, validate it without touching the
+local Stage 4 `direction.pt` with:
+
+```bash
+python -m poc_stage4.validate_upstream_direction \
+  --direction-dir /path/to/upstream/release_dir \
+  --output-dir outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation
+```
+
+The command writes `upstream_direction_validation.json` in the output directory.
+If the upstream direction is incompatible with Qwen3-14B, the same command falls
+back to reproducing the upstream Stage 4 extraction and validation workflow into
+that separate output directory instead of using the local provisional candidate.
+
 By default, Stage 4A2 uses the upstream dedicated validation splits:
 
 ```text

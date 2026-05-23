@@ -1,7 +1,7 @@
 {
   "stage": "stage4a2",
-  "timestamp_utc": "2026-05-22T13:44:15.480502+00:00",
-  "config_fingerprint": "b789f4cfa0e17f3762f7d50a763d5b8ed3aca417383de1a41a18441f6765438c",
+  "timestamp_utc": "2026-05-23T12:31:28.441414+00:00",
+  "config_fingerprint": "1faafdb0257f694e2b796da3fae2ffaf40dd64a4ba68969fdab3785e88ddd39c",
   "fingerprint_payload": {
     "input_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction",
     "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction",
@@ -22,6 +22,8 @@
       "As"
     ],
     "refusal_token_ids": null,
+    "sign_scale_diagnostics": true,
+    "sign_scale_output": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/sign_scale_diagnostics.json",
     "candidate_tensor_shape": [
       4,
       40,
