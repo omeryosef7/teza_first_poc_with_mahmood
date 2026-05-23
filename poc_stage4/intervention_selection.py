@@ -4,6 +4,7 @@ import contextlib
 import json
 import math
 import random
+from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -63,6 +64,8 @@ class InterventionSelectionConfig:
     resume: bool = False
     checkpoint_dir: Path | None = None
     no_progress: bool = False
+    sign_scale_diagnostics: bool = False
+    sign_scale_output: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,10 @@ class CandidateIndex:
     position_index: int
     position: int
     layer: int
+
+
+def _candidate_key(row: dict[str, Any]) -> tuple[int, int, int]:
+    return (int(row["position_index"]), int(row["position"]), int(row["layer"]))
 
 
 def load_json_list(path: str | Path) -> list[dict[str, Any]]:
@@ -256,8 +263,14 @@ def build_ablation_hooks(model_base: Qwen3Model, direction: torch.Tensor) -> tup
     return pre_hooks, hooks
 
 
-def build_steering_hooks(model_base: Qwen3Model, direction: torch.Tensor, *, source_layer: int) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any]]]:
-    return [(model_base.layers[source_layer], get_activation_addition_input_pre_hook(direction, coeff=1.0))], []
+def build_steering_hooks(
+    model_base: Qwen3Model,
+    direction: torch.Tensor,
+    *,
+    source_layer: int,
+    coeff: float = 1.0,
+) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any]]]:
+    return [(model_base.layers[source_layer], get_activation_addition_input_pre_hook(direction, coeff=coeff))], []
 
 
 def _input_device(model: Any) -> torch.device:
@@ -397,6 +410,313 @@ def _candidate_passes_filters(
                 reasons.append("layer_pruned")
 
     return not reasons, reasons
+
+
+def _candidate_summary(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "position_index": int(row["position_index"]),
+        "position": int(row["position"]),
+        "layer": int(row["layer"]),
+        "harmful_ablation_refusal_score": float(row["harmful_ablation_refusal_score"]),
+        "harmless_steering_refusal_score": float(row["harmless_steering_refusal_score"]),
+        "harmless_ablation_kl_divergence": float(row["harmless_ablation_kl_divergence"]),
+        "passes_filters": bool(row.get("passes_filters")),
+        "filter_failure_reasons": list(row.get("filter_failure_reasons", [])),
+    }
+
+
+def _tradeoff_sort_key(
+    row: dict[str, Any],
+    *,
+    kl_threshold: float,
+    induce_refusal_threshold: float,
+    prune_layer_percentage: float | None,
+    num_layers: int,
+) -> tuple[float, float, float, int, float, int, int]:
+    kl_excess = max(0.0, float(row["harmless_ablation_kl_divergence"]) - kl_threshold)
+    steering_shortfall = max(0.0, induce_refusal_threshold - float(row["harmless_steering_refusal_score"]))
+    first_pruned_layer = None
+    if prune_layer_percentage is not None:
+        first_pruned_layer = int(num_layers * (1.0 - prune_layer_percentage))
+    layer_pruned = int(first_pruned_layer is not None and int(row["layer"]) >= first_pruned_layer)
+    return (
+        float(len(row.get("filter_failure_reasons", []))),
+        kl_excess,
+        steering_shortfall,
+        layer_pruned,
+        -float(row["harmless_steering_refusal_score"]),
+        int(row["layer"]),
+        int(row["position_index"]),
+    )
+
+
+def build_no_survivor_diagnostics(
+    rows: list[dict[str, Any]],
+    *,
+    kl_threshold: float,
+    induce_refusal_threshold: float,
+    prune_layer_percentage: float | None,
+    num_layers: int,
+) -> dict[str, Any]:
+    failure_counts = Counter()
+    for row in rows:
+        for reason in row.get("filter_failure_reasons", []):
+            failure_counts[str(reason)] += 1
+
+    best_by_steering = max(rows, key=lambda row: float(row["harmless_steering_refusal_score"]))
+    best_by_kl = min(rows, key=lambda row: float(row["harmless_ablation_kl_divergence"]))
+    best_by_tradeoff = min(
+        rows,
+        key=lambda row: _tradeoff_sort_key(
+            row,
+            kl_threshold=kl_threshold,
+            induce_refusal_threshold=induce_refusal_threshold,
+            prune_layer_percentage=prune_layer_percentage,
+            num_layers=num_layers,
+        ),
+    )
+
+    steering_ranked = sorted(rows, key=lambda row: float(row["harmless_steering_refusal_score"]), reverse=True)
+    kl_ranked = sorted(rows, key=lambda row: float(row["harmless_ablation_kl_divergence"]))
+    tradeoff_ranked = sorted(
+        rows,
+        key=lambda row: _tradeoff_sort_key(
+            row,
+            kl_threshold=kl_threshold,
+            induce_refusal_threshold=induce_refusal_threshold,
+            prune_layer_percentage=prune_layer_percentage,
+            num_layers=num_layers,
+        ),
+    )
+
+    return {
+        "scientific_status": "not_validated_no_surviving_candidates",
+        "selection_status": "intervention_selection_failed_no_survivors",
+        "warning": (
+            "No candidates survived Stage 4A2 filters; do not run Stage 4B scientifically from this direction."
+        ),
+        "total_candidates": len(rows),
+        "survived_candidates": 0,
+        "failure_counts_by_reason": dict(failure_counts),
+        "best_candidate_by_steering_score": _candidate_summary(best_by_steering),
+        "best_candidate_by_kl": _candidate_summary(best_by_kl),
+        "best_tradeoff_candidate": _candidate_summary(best_by_tradeoff),
+        "top_candidates_by_steering_score": [_candidate_summary(row) for row in steering_ranked[:5]],
+        "top_candidates_by_kl": [_candidate_summary(row) for row in kl_ranked[:5]],
+        "top_candidates_by_tradeoff": [_candidate_summary(row) for row in tradeoff_ranked[:5]],
+    }
+
+
+def _select_sign_scale_candidates(
+    rows: list[dict[str, Any]],
+    no_survivor_diagnostics: dict[str, Any],
+) -> list[dict[str, Any]]:
+    rows_by_key = {_candidate_key(row): row for row in rows}
+    selected: list[dict[str, Any]] = []
+    seen: set[tuple[int, int, int]] = set()
+    for source_key in ("top_candidates_by_steering_score", "top_candidates_by_tradeoff"):
+        for candidate in list(no_survivor_diagnostics.get(source_key, []))[:5]:
+            key = _candidate_key(candidate)
+            if key in seen:
+                continue
+            row = rows_by_key.get(key)
+            if row is None:
+                continue
+            selected.append(row)
+            seen.add(key)
+    return selected
+
+
+def _summarize_trial(trial: dict[str, Any] | None) -> dict[str, Any] | None:
+    if trial is None:
+        return None
+    return {
+        "position_index": trial["position_index"],
+        "position": trial["position"],
+        "layer": trial["layer"],
+        "sign": trial["sign"],
+        "scale": trial["scale"],
+        "coeff": trial["coeff"],
+        "harmless_steering_refusal_score": trial["harmless_steering_refusal_score"],
+        "harmless_steering_refusal_score_delta": trial["harmless_steering_refusal_score_delta"],
+    }
+
+
+def build_sign_scale_diagnostics(
+    *,
+    model_base: Qwen3Model,
+    candidate_directions: torch.Tensor,
+    rows: list[dict[str, Any]],
+    baseline_harmful_logits: torch.Tensor,
+    baseline_harmless_logits: torch.Tensor,
+    baseline_summary: dict[str, Any],
+    no_survivor_diagnostics: dict[str, Any],
+    harmful_validation_prompts: list[str],
+    harmless_validation_prompts: list[str],
+    refusal_token_ids: list[int],
+    config: InterventionSelectionConfig,
+) -> dict[str, Any]:
+    selected_candidates = _select_sign_scale_candidates(rows, no_survivor_diagnostics)
+    if not selected_candidates:
+        raise RuntimeError("No candidates available for sign/scale diagnostics.")
+
+    baseline_harmful_mean = float(baseline_summary["baseline_harmful_refusal_score_mean"])
+    baseline_harmless_mean = float(baseline_summary["baseline_harmless_refusal_score_mean"])
+    scales = [0.5, 1.0, 2.0, 5.0]
+    signs = [1.0, -1.0]
+    trials: list[dict[str, Any]] = []
+    best_by_sign: dict[float, dict[str, Any] | None] = {1.0: None, -1.0: None}
+    best_by_scale: dict[float, dict[str, Any] | None] = {scale: None for scale in scales}
+    best_trial: dict[str, Any] | None = None
+
+    def update_best(store: dict[float, dict[str, Any] | None], key: float, trial: dict[str, Any]) -> None:
+        current = store.get(key)
+        if current is None or float(trial["harmless_steering_refusal_score"]) > float(current["harmless_steering_refusal_score"]):
+            store[key] = trial
+
+    for candidate in selected_candidates:
+        direction = candidate_directions[candidate["position_index"], candidate["layer"]].detach().cpu()
+        ablation_pre_hooks, ablation_hooks = build_ablation_hooks(model_base, direction)
+
+        harmful_ablation_logits = get_last_position_logits(
+            model_base,
+            harmful_validation_prompts,
+            enable_thinking=config.enable_thinking,
+            batch_size=config.batch_size,
+            pre_hooks=ablation_pre_hooks,
+            hooks=ablation_hooks,
+        )
+        harmless_ablation_logits = get_last_position_logits(
+            model_base,
+            harmless_validation_prompts,
+            enable_thinking=config.enable_thinking,
+            batch_size=config.batch_size,
+            pre_hooks=ablation_pre_hooks,
+            hooks=ablation_hooks,
+        )
+
+        harmful_ablation_scores = refusal_scores_from_logits(harmful_ablation_logits, refusal_token_ids)
+        harmless_ablation_scores = refusal_scores_from_logits(harmless_ablation_logits, refusal_token_ids)
+        harmful_ablation_mean = float(harmful_ablation_scores.mean().item())
+        harmless_ablation_mean = float(harmless_ablation_scores.mean().item())
+        harmless_ablation_kl = float(
+            kl_divergence_from_logits(baseline_harmless_logits, harmless_ablation_logits).mean().item()
+        )
+
+        for sign in signs:
+            for scale in scales:
+                coeff = float(sign * scale)
+                steering_pre_hooks, steering_hooks = build_steering_hooks(
+                    model_base,
+                    direction,
+                    source_layer=int(candidate["layer"]),
+                    coeff=coeff,
+                )
+                harmless_steering_logits = get_last_position_logits(
+                    model_base,
+                    harmless_validation_prompts,
+                    enable_thinking=config.enable_thinking,
+                    batch_size=config.batch_size,
+                    pre_hooks=steering_pre_hooks,
+                    hooks=steering_hooks,
+                )
+                harmless_steering_scores = refusal_scores_from_logits(harmless_steering_logits, refusal_token_ids)
+                harmless_steering_mean = float(harmless_steering_scores.mean().item())
+
+                trial = {
+                    "position_index": int(candidate["position_index"]),
+                    "position": int(candidate["position"]),
+                    "layer": int(candidate["layer"]),
+                    "sign": float(sign),
+                    "scale": float(scale),
+                    "coeff": coeff,
+                    "baseline_harmful_refusal_score_mean": baseline_harmful_mean,
+                    "baseline_harmless_refusal_score_mean": baseline_harmless_mean,
+                    "harmful_ablation_refusal_score": harmful_ablation_mean,
+                    "harmless_ablation_refusal_score": harmless_ablation_mean,
+                    "harmful_ablation_refusal_score_delta": harmful_ablation_mean - baseline_harmful_mean,
+                    "harmless_steering_refusal_score": harmless_steering_mean,
+                    "harmless_steering_refusal_score_delta": harmless_steering_mean - baseline_harmless_mean,
+                    "harmless_ablation_kl_divergence": harmless_ablation_kl,
+                    "harmless_steering_refusal_score_above_baseline": harmless_steering_mean > baseline_harmless_mean,
+                }
+                trials.append(trial)
+                update_best(best_by_sign, sign, trial)
+                update_best(best_by_scale, scale, trial)
+                if best_trial is None or float(trial["harmless_steering_refusal_score"]) > float(best_trial["harmless_steering_refusal_score"]):
+                    best_trial = trial
+
+    positive_best = best_by_sign[1.0]
+    negative_best = best_by_sign[-1.0]
+    positive_above = bool(positive_best and float(positive_best["harmless_steering_refusal_score"]) > baseline_harmless_mean)
+    negative_above = bool(negative_best and float(negative_best["harmless_steering_refusal_score"]) > baseline_harmless_mean)
+    any_above_baseline = any(trial["harmless_steering_refusal_score_above_baseline"] for trial in trials)
+
+    if not any_above_baseline:
+        interpretation = "weak_candidates"
+        interpretation_reason = "No sign/scale trial raised harmless steering above the baseline harmless refusal score."
+    elif negative_above and not positive_above:
+        interpretation = "sign_issue"
+        interpretation_reason = "The flipped sign is the only sign that beats the harmless baseline."
+    elif positive_above and not negative_above:
+        best_positive_scale = float(positive_best["scale"]) if positive_best is not None else None
+        if best_positive_scale is not None and best_positive_scale > 1.0:
+            interpretation = "scale_issue"
+            interpretation_reason = "The original sign only clears baseline at a larger steering scale."
+        else:
+            interpretation = "sign_issue"
+            interpretation_reason = "The original sign clears baseline and the sweep does not point to weak scale alone."
+    else:
+        interpretation = "mixed_or_ambiguous"
+        interpretation_reason = "Both signs can beat baseline, so sign and scale effects are mixed in this subset."
+
+    candidate_union = [
+        {
+            "position_index": int(candidate["position_index"]),
+            "position": int(candidate["position"]),
+            "layer": int(candidate["layer"]),
+            "harmful_ablation_refusal_score": float(candidate["harmful_ablation_refusal_score"]),
+            "harmless_steering_refusal_score": float(candidate["harmless_steering_refusal_score"]),
+            "harmless_ablation_kl_divergence": float(candidate["harmless_ablation_kl_divergence"]),
+            "passes_filters": bool(candidate.get("passes_filters")),
+            "filter_failure_reasons": list(candidate.get("filter_failure_reasons", [])),
+        }
+        for candidate in selected_candidates
+    ]
+
+    return {
+        "artifact_version": "stage4a2_sign_scale_v1",
+        "stage": "stage4a2_sign_scale_diagnostics",
+        "timestamp_utc": utc_now(),
+        "scientific_status": "exploratory_not_validated",
+        "diagnostic_type": "stage4a2_sign_scale_sweep",
+        "diagnostic_note": (
+            "Exploratory non-scientific diagnostic only. Do not treat this artifact as validated evidence."
+        ),
+        "baseline_harmful_refusal_score_mean": baseline_harmful_mean,
+        "baseline_harmless_refusal_score_mean": baseline_harmless_mean,
+        "candidate_union": candidate_union,
+        "candidate_union_size": len(candidate_union),
+        "signs_tested": signs,
+        "scales_tested": scales,
+        "trials": trials,
+        "trial_count": len(trials),
+        "best_trial": _summarize_trial(best_trial),
+        "best_trial_by_sign": {
+            "positive": _summarize_trial(positive_best),
+            "negative": _summarize_trial(negative_best),
+        },
+        "best_trial_by_scale": {str(scale): _summarize_trial(best_by_scale[scale]) for scale in scales},
+        "summary": {
+            "any_trial_above_harmless_baseline": any_above_baseline,
+            "interpretation": interpretation,
+            "interpretation_reason": interpretation_reason,
+            "positive_sign_beats_baseline": positive_above,
+            "negative_sign_beats_baseline": negative_above,
+            "best_harmless_steering_refusal_score": float(best_trial["harmless_steering_refusal_score"]) if best_trial else None,
+            "best_harmless_steering_refusal_score_delta": float(best_trial["harmless_steering_refusal_score_delta"]) if best_trial else None,
+        },
+    }
 
 
 def evaluate_candidates(
@@ -566,6 +886,38 @@ def evaluate_candidates(
         raise RuntimeError(
             f"Only {len(rows)} of {len(candidate_indices)} candidates are complete after resume/evaluation."
         )
+
+    survivors = [row for row in rows if bool(row.get("passes_filters"))]
+    if not survivors and config.sign_scale_diagnostics:
+        no_survivor_diagnostics = build_no_survivor_diagnostics(
+            rows,
+            kl_threshold=config.kl_threshold,
+            induce_refusal_threshold=config.induce_refusal_threshold,
+            prune_layer_percentage=config.prune_layer_percentage,
+            num_layers=model_base.num_layers,
+        )
+        sign_scale_output = config.sign_scale_output or (config.output_dir / "sign_scale_diagnostics.json")
+        sign_scale_payload = build_sign_scale_diagnostics(
+            model_base=model_base,
+            candidate_directions=candidate_directions,
+            rows=rows,
+            baseline_harmful_logits=baseline_harmful_logits,
+            baseline_harmless_logits=baseline_harmless_logits,
+            baseline_summary=baseline_summary,
+            no_survivor_diagnostics=no_survivor_diagnostics,
+            harmful_validation_prompts=harmful_validation_prompts,
+            harmless_validation_prompts=harmless_validation_prompts,
+            refusal_token_ids=refusal_token_ids,
+            config=config,
+        )
+        write_json(sign_scale_output, sign_scale_payload)
+        baseline_summary = {
+            **baseline_summary,
+            "sign_scale_diagnostics_requested": True,
+            "sign_scale_diagnostics_path": str(sign_scale_output),
+            "sign_scale_diagnostics_scientific_status": sign_scale_payload["scientific_status"],
+            "sign_scale_diagnostics_summary": sign_scale_payload["summary"],
+        }
     return rows, baseline_summary
 
 
@@ -634,6 +986,8 @@ def run_intervention_selection(
         "use_stage4a1_heldout_validation": config.use_stage4a1_heldout_validation,
         "refusal_token_strings": config.refusal_token_strings,
         "refusal_token_ids": config.refusal_token_ids,
+        "sign_scale_diagnostics": config.sign_scale_diagnostics,
+        "sign_scale_output": str(config.sign_scale_output) if config.sign_scale_output is not None else None,
         "candidate_tensor_shape": list(candidate_directions.shape),
         "candidate_indices": [asdict(candidate) for candidate in candidate_indices],
     }
@@ -693,9 +1047,18 @@ def run_intervention_selection(
             layer=selected_row["layer"],
             survivors=len(survivors),
         )
-    elif not smoke_mode:
-        write_json(output_dir / "intervention_candidate_scores.json", {"candidates": rows})
-        raise RuntimeError("No candidates survived filters; leaving direction.pt and selected_direction.json unchanged.")
+
+    no_survivor_diagnostics = None
+    if not survivors:
+        no_survivor_diagnostics = build_no_survivor_diagnostics(
+            rows,
+            kl_threshold=config.kl_threshold,
+            induce_refusal_threshold=config.induce_refusal_threshold,
+            prune_layer_percentage=config.prune_layer_percentage,
+            num_layers=model_base.num_layers,
+        )
+        if not smoke_mode:
+            selection_status = no_survivor_diagnostics["selection_status"]
 
     timestamp = utc_now()
     base_payload: dict[str, Any] = {
@@ -728,6 +1091,9 @@ def run_intervention_selection(
         **baseline_summary,
     }
 
+    if no_survivor_diagnostics is not None:
+        base_payload.update(no_survivor_diagnostics)
+
     candidate_scores_payload = {
         **base_payload,
         "candidates": rows,
@@ -747,6 +1113,12 @@ def run_intervention_selection(
         )
 
     write_json(output_dir / "intervention_selection_metrics.json", base_payload)
+
+    if not survivors and not smoke_mode and not config.sign_scale_diagnostics:
+        raise RuntimeError(
+            "No candidates survived filters; leaving direction.pt and selected_direction.json unchanged. "
+            "Diagnostic summary written with scientific_status=not_validated_no_surviving_candidates."
+        )
 
     if not smoke_mode and selected_row is not None:
         selected_direction = candidate_directions[

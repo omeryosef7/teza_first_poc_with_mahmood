@@ -47,6 +47,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--resume", action="store_true", help="Resume Stage 4A2 from candidate checkpoints.")
     parser.add_argument("--checkpoint-dir", help="Directory for Stage 4A2 resumable checkpoints.")
     parser.add_argument("--no-progress", action="store_true", help="Disable tqdm/progress logging.")
+    parser.add_argument(
+        "--sign-scale-diagnostics",
+        action="store_true",
+        help="Write the exploratory non-scientific Stage 4A2 sign/scale diagnostic JSON when no candidates survive.",
+    )
+    parser.add_argument(
+        "--sign-scale-output",
+        help="Output path for the exploratory sign/scale diagnostic JSON.",
+    )
     return parser
 
 
@@ -76,6 +85,10 @@ def main() -> int:
             resume=bool(args.resume),
             checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
             no_progress=bool(args.no_progress),
+            sign_scale_diagnostics=bool(args.sign_scale_diagnostics),
+            sign_scale_output=Path(args.sign_scale_output)
+            if args.sign_scale_output
+            else Path(args.output_dir) / "sign_scale_diagnostics.json",
         )
         from poc_stage4.run_state import log_progress
 
@@ -88,11 +101,16 @@ def main() -> int:
 
     print(f"Wrote intervention candidate scores to: {config.output_dir / 'intervention_candidate_scores.json'}")
     print(f"Wrote intervention metrics to: {config.output_dir / 'intervention_selection_metrics.json'}")
+    if metrics.get("sign_scale_diagnostics_path"):
+        print(f"Wrote exploratory sign/scale diagnostics to: {metrics['sign_scale_diagnostics_path']}")
     print(f"Selection status: {metrics['selection_status']}")
     if metrics.get("selection_status") == "intervention_selected":
         print(f"Updated final direction.pt and selected_direction.json in: {config.output_dir}")
         print(f"Selected position: {metrics.get('selected_position')}")
         print(f"Selected layer: {metrics.get('selected_layer')}")
+    elif metrics.get("scientific_status") == "not_validated_no_surviving_candidates":
+        print("No candidates survived Stage 4A2 filters.")
+        print("direction.pt and selected_direction.json were left unchanged and must not be treated as validated.")
     else:
         print("Smoke mode did not overwrite direction.pt or selected_direction.json.")
     return 0

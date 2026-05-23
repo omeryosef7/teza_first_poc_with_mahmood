@@ -1,6 +1,6 @@
 {
   "stage": "stage4a2",
-  "timestamp_utc": "2026-05-22T08:03:44.512400+00:00",
+  "timestamp_utc": "2026-05-22T13:44:15.480502+00:00",
   "config_fingerprint": "b789f4cfa0e17f3762f7d50a763d5b8ed3aca417383de1a41a18441f6765438c",
   "fingerprint_payload": {
     "input_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction",

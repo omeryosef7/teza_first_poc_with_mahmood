@@ -1,4 +1,292 @@
 {
+  "artifact_version": "stage4a2_v1",
+  "stage": "stage4a2_intervention_based_refusal_direction_selection",
+  "timestamp_utc": "2026-05-22T13:44:16.530935+00:00",
+  "selection_status": "intervention_selection_failed_no_survivors",
+  "selection_criterion": "lowest_harmful_refusal_score_after_ablation_with_kl_and_steering_filters",
+  "model_name": "Qwen/Qwen3-14B",
+  "enable_thinking": false,
+  "input_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction",
+  "stage4a1_candidate_directions_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/candidate_directions.pt",
+  "stage4a1_candidate_metadata_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/candidate_metadata.json",
+  "candidate_tensor_shape": [
+    4,
+    40,
+    5120
+  ],
+  "num_candidates_available": 160,
+  "num_candidates_evaluated": 160,
+  "num_candidates_surviving_filters": 0,
+  "smoke_mode": false,
+  "top_k_projection": null,
+  "dry_run": false,
+  "kl_threshold": 0.1,
+  "induce_refusal_threshold": 0.0,
+  "prune_layer_percentage": 0.2,
+  "batch_size": 1,
+  "num_harmful_validation_prompts": 32,
+  "num_harmless_validation_prompts": 32,
+  "validation_mode": "upstream_dedicated_validation_splits",
+  "harmful_validation_source": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/dataset/splits/harmful_val.json",
+  "harmless_validation_source": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/dataset/splits/harmless_val.json",
+  "num_available_harmful_validation_prompts": 39,
+  "num_available_harmless_validation_prompts": 6264,
+  "validation_seed": 42,
+  "refusal_token_source": "qwen_upstream_surface_forms_resolved_with_qwen3_tokenizer",
+  "refusal_token_ids": [
+    40,
+    2121
+  ],
+  "refusal_token_decoded_strings": [
+    "I",
+    "As"
+  ],
+  "refusal_token_strings_requested": [
+    "I",
+    "As"
+  ],
+  "upstream_reference": "QWEN_REFUSAL_TOKS = [40, 2121] # ['I', 'As']",
+  "baseline_harmful_refusal_score_mean": 3.962426360306912,
+  "baseline_harmless_refusal_score_mean": -15.66423998503984,
+  "scientific_status": "not_validated_no_surviving_candidates",
+  "warning": "No candidates survived Stage 4A2 filters; do not run Stage 4B scientifically from this direction.",
+  "total_candidates": 160,
+  "survived_candidates": 0,
+  "failure_counts_by_reason": {
+    "steering_below_threshold": 160,
+    "kl_above_threshold": 92,
+    "layer_pruned": 32
+  },
+  "best_candidate_by_steering_score": {
+    "position_index": 0,
+    "position": -1,
+    "layer": 19,
+    "harmful_ablation_refusal_score": -17.10322358150622,
+    "harmless_steering_refusal_score": -15.603689741226221,
+    "harmless_ablation_kl_divergence": 0.9873436593468629,
+    "passes_filters": false,
+    "filter_failure_reasons": [
+      "kl_above_threshold",
+      "steering_below_threshold"
+    ]
+  },
+  "best_candidate_by_kl": {
+    "position_index": 0,
+    "position": -1,
+    "layer": 0,
+    "harmful_ablation_refusal_score": 3.962426360306912,
+    "harmless_steering_refusal_score": -15.66423998503984,
+    "harmless_ablation_kl_divergence": 0.0,
+    "passes_filters": false,
+    "filter_failure_reasons": [
+      "steering_below_threshold"
+    ]
+  },
+  "best_tradeoff_candidate": {
+    "position_index": 0,
+    "position": -1,
+    "layer": 9,
+    "harmful_ablation_refusal_score": 3.7349283246606917,
+    "harmless_steering_refusal_score": -15.627660489174787,
+    "harmless_ablation_kl_divergence": 0.04825110056550176,
+    "passes_filters": false,
+    "filter_failure_reasons": [
+      "steering_below_threshold"
+    ]
+  },
+  "top_candidates_by_steering_score": [
+    {
+      "position_index": 0,
+      "position": -1,
+      "layer": 19,
+      "harmful_ablation_refusal_score": -17.10322358150622,
+      "harmless_steering_refusal_score": -15.603689741226221,
+      "harmless_ablation_kl_divergence": 0.9873436593468629,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "kl_above_threshold",
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 5,
+      "harmful_ablation_refusal_score": -0.09939153806468186,
+      "harmless_steering_refusal_score": -15.613405890983689,
+      "harmless_ablation_kl_divergence": 1.3644484607685963,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "kl_above_threshold",
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 0,
+      "position": -1,
+      "layer": 24,
+      "harmful_ablation_refusal_score": 0.09584137054651232,
+      "harmless_steering_refusal_score": -15.616699314535053,
+      "harmless_ablation_kl_divergence": 0.585210172605457,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "kl_above_threshold",
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 20,
+      "harmful_ablation_refusal_score": -7.127669719331953,
+      "harmless_steering_refusal_score": -15.621100171014733,
+      "harmless_ablation_kl_divergence": 0.6363982232316484,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "kl_above_threshold",
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 4,
+      "harmful_ablation_refusal_score": 2.4863353741167225,
+      "harmless_steering_refusal_score": -15.62134349947834,
+      "harmless_ablation_kl_divergence": 1.4079101743807048,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "kl_above_threshold",
+        "steering_below_threshold"
+      ]
+    }
+  ],
+  "top_candidates_by_kl": [
+    {
+      "position_index": 0,
+      "position": -1,
+      "layer": 0,
+      "harmful_ablation_refusal_score": 3.962426360306912,
+      "harmless_steering_refusal_score": -15.66423998503984,
+      "harmless_ablation_kl_divergence": 0.0,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 0,
+      "harmful_ablation_refusal_score": 3.962426360306912,
+      "harmless_steering_refusal_score": -15.66423998503984,
+      "harmless_ablation_kl_divergence": 0.0,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 2,
+      "position": -3,
+      "layer": 0,
+      "harmful_ablation_refusal_score": 3.962426360306912,
+      "harmless_steering_refusal_score": -15.66423998503984,
+      "harmless_ablation_kl_divergence": 0.0,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 3,
+      "position": -4,
+      "layer": 0,
+      "harmful_ablation_refusal_score": 3.962426360306912,
+      "harmless_steering_refusal_score": -15.66423998503984,
+      "harmless_ablation_kl_divergence": 0.0,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 39,
+      "harmful_ablation_refusal_score": 3.4916316315001614,
+      "harmless_steering_refusal_score": -15.665842099927293,
+      "harmless_ablation_kl_divergence": 0.0026720055882503216,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold",
+        "layer_pruned"
+      ]
+    }
+  ],
+  "top_candidates_by_tradeoff": [
+    {
+      "position_index": 0,
+      "position": -1,
+      "layer": 9,
+      "harmful_ablation_refusal_score": 3.7349283246606917,
+      "harmless_steering_refusal_score": -15.627660489174787,
+      "harmless_ablation_kl_divergence": 0.04825110056550176,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 2,
+      "position": -3,
+      "layer": 24,
+      "harmful_ablation_refusal_score": -2.7871319094792866,
+      "harmless_steering_refusal_score": -15.627733829738423,
+      "harmless_ablation_kl_divergence": 0.03023891754077465,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 1,
+      "position": -2,
+      "layer": 2,
+      "harmful_ablation_refusal_score": 3.966196320961891,
+      "harmless_steering_refusal_score": -15.639195426881091,
+      "harmless_ablation_kl_divergence": 0.02324914109497003,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 3,
+      "position": -4,
+      "layer": 16,
+      "harmful_ablation_refusal_score": 2.7102704352964304,
+      "harmless_steering_refusal_score": -15.63941612278942,
+      "harmless_ablation_kl_divergence": 0.01395464175191963,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    },
+    {
+      "position_index": 2,
+      "position": -3,
+      "layer": 10,
+      "harmful_ablation_refusal_score": 2.882701170148512,
+      "harmless_steering_refusal_score": -15.640717766148416,
+      "harmless_ablation_kl_divergence": 0.028114098984852027,
+      "passes_filters": false,
+      "filter_failure_reasons": [
+        "steering_below_threshold"
+      ]
+    }
+  ],
   "candidates": [
     {
       "position_index": 0,
