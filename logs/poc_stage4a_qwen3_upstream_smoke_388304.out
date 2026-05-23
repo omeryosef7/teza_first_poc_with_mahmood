@@ -2,3 +2,7 @@
 Sat May 23 05:15:22 PM IDT 2026
 n-301
 /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Wrote upstream direction validation to: outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5/upstream_direction_validation.json
+Validated: False
+=== Stage 4A Upstream Fallback Smoke Test Finished ===
+Sat May 23 06:01:32 PM IDT 2026
