@@ -1,0 +1,12 @@
+=== Stage 6 Qwen3 search-until-success started ===
+Sun May 24 04:48:22 PM IDT 2026
+n-804
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+OUTPUT_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace/qwen3_14b_first_success_trace.json
+PROGRESS_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace/search_progress.jsonl
+MAX_ATTEMPTS=10
+OVERWRITE=false
+=== Stage 6 Qwen3 search-until-success finished ===
+Sun May 24 04:55:46 PM IDT 2026

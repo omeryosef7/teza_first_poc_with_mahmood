@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/pipeline/run_pipeline.py", line 10, in <module>
+    from pipeline.model_utils.model_factory import construct_model_base
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/pipeline/model_utils/model_factory.py", line 1, in <module>
+    from pipeline.model_utils.model_base import ModelBase
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/pipeline/model_utils/model_base.py", line 5, in <module>
+    from jaxtyping import Int, Float
+ModuleNotFoundError: No module named 'jaxtyping'

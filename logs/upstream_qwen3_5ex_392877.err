@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/pipeline/run_pipeline.py", line 15, in <module>
+    from pipeline.submodules.evaluate_jailbreak import evaluate_jailbreak
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction/pipeline/submodules/evaluate_jailbreak.py", line 8, in <module>
+    from vllm import LLM, SamplingParams
+ModuleNotFoundError: No module named 'vllm'
