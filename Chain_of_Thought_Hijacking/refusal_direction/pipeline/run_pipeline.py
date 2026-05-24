@@ -21,7 +21,14 @@ def parse_arguments():
     parser.add_argument('--output-root', type=str, help='Override the default upstream artifact output root.')
     parser.add_argument('--n-train', type=int, help='Number of harmful and harmless training examples to sample.')
     parser.add_argument('--n-val', type=int, help='Number of harmful and harmless validation examples to sample.')
+    parser.add_argument('--presample-train', type=int, help='Optional larger train pool size to sample before upstream filtering, then trim back to --n-train.')
+    parser.add_argument('--presample-val', type=int, help='Optional larger validation pool size to sample before upstream filtering, then trim back to --n-val.')
     return parser.parse_args()
+
+def _sample_count(target_count, presample_count):
+    if presample_count is None:
+        return target_count
+    return max(target_count, presample_count)
 
 def load_and_sample_datasets(cfg):
     """
@@ -31,10 +38,22 @@ def load_and_sample_datasets(cfg):
         Tuple of datasets: (harmful_train, harmless_train, harmful_val, harmless_val)
     """
     random.seed(42)
-    harmful_train = random.sample(load_dataset_split(harmtype='harmful', split='train', instructions_only=True), cfg.n_train)
-    harmless_train = random.sample(load_dataset_split(harmtype='harmless', split='train', instructions_only=True), cfg.n_train)
-    harmful_val = random.sample(load_dataset_split(harmtype='harmful', split='val', instructions_only=True), cfg.n_val)
-    harmless_val = random.sample(load_dataset_split(harmtype='harmless', split='val', instructions_only=True), cfg.n_val)
+    harmful_train = random.sample(
+        load_dataset_split(harmtype='harmful', split='train', instructions_only=True),
+        _sample_count(cfg.n_train, cfg.presample_train),
+    )
+    harmless_train = random.sample(
+        load_dataset_split(harmtype='harmless', split='train', instructions_only=True),
+        _sample_count(cfg.n_train, cfg.presample_train),
+    )
+    harmful_val = random.sample(
+        load_dataset_split(harmtype='harmful', split='val', instructions_only=True),
+        _sample_count(cfg.n_val, cfg.presample_val),
+    )
+    harmless_val = random.sample(
+        load_dataset_split(harmtype='harmless', split='val', instructions_only=True),
+        _sample_count(cfg.n_val, cfg.presample_val),
+    )
     return harmful_train, harmless_train, harmful_val, harmless_val
 
 def filter_data(cfg, model_base, harmful_train, harmless_train, harmful_val, harmless_val):
@@ -60,6 +79,34 @@ def filter_data(cfg, model_base, harmful_train, harmless_train, harmful_val, har
         harmless_val = filter_examples(harmless_val, harmless_val_scores, 0, lambda x, y: x < y)
     
     return harmful_train, harmless_train, harmful_val, harmless_val
+
+def trim_filtered_datasets(cfg, harmful_train, harmless_train, harmful_val, harmless_val):
+    """Trim filtered datasets back to the requested target sizes."""
+    return (
+        harmful_train[:cfg.n_train],
+        harmless_train[:cfg.n_train],
+        harmful_val[:cfg.n_val],
+        harmless_val[:cfg.n_val],
+    )
+
+def save_dataset_summary(cfg, before_filter_counts, after_filter_counts, final_counts):
+    os.makedirs(cfg.artifact_path(), exist_ok=True)
+    with open(os.path.join(cfg.artifact_path(), 'dataset_summary.json'), 'w') as f:
+        json.dump(
+            {
+                'requested_counts': {
+                    'n_train': cfg.n_train,
+                    'n_val': cfg.n_val,
+                    'presample_train': cfg.presample_train,
+                    'presample_val': cfg.presample_val,
+                },
+                'before_filter_counts': before_filter_counts,
+                'after_filter_counts': after_filter_counts,
+                'final_counts_used': final_counts,
+            },
+            f,
+            indent=4,
+        )
 
 def generate_and_save_candidate_directions(cfg, model_base, harmful_train, harmless_train):
     """Generate and save candidate directions."""
@@ -142,7 +189,7 @@ def evaluate_loss_for_datasets(cfg, model_base, fwd_pre_hooks, fwd_hooks, interv
     with open(f'{cfg.artifact_path()}/loss_evals/{intervention_label}_loss_eval.json', "w") as f:
         json.dump(loss_evals, f, indent=4)
 
-def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_train=None, n_val=None):
+def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_train=None, n_val=None, presample_train=None, presample_val=None):
     """Run the full pipeline."""
     model_alias = os.path.basename(model_path)
     cfg = Config(
@@ -150,6 +197,8 @@ def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_tra
         model_path=model_path,
         n_train=Config.n_train if n_train is None else n_train,
         n_val=Config.n_val if n_val is None else n_val,
+        presample_train=presample_train,
+        presample_val=presample_val,
         output_root=output_root,
         stop_after_selection=stop_after_selection,
     )
@@ -158,9 +207,29 @@ def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_tra
 
     # Load and sample datasets
     harmful_train, harmless_train, harmful_val, harmless_val = load_and_sample_datasets(cfg)
+    before_filter_counts = {
+        'harmful_train': len(harmful_train),
+        'harmless_train': len(harmless_train),
+        'harmful_val': len(harmful_val),
+        'harmless_val': len(harmless_val),
+    }
     
     # Filter datasets based on refusal scores
     harmful_train, harmless_train, harmful_val, harmless_val = filter_data(cfg, model_base, harmful_train, harmless_train, harmful_val, harmless_val)
+    after_filter_counts = {
+        'harmful_train': len(harmful_train),
+        'harmless_train': len(harmless_train),
+        'harmful_val': len(harmful_val),
+        'harmless_val': len(harmless_val),
+    }
+    harmful_train, harmless_train, harmful_val, harmless_val = trim_filtered_datasets(cfg, harmful_train, harmless_train, harmful_val, harmless_val)
+    final_counts = {
+        'harmful_train': len(harmful_train),
+        'harmless_train': len(harmless_train),
+        'harmful_val': len(harmful_val),
+        'harmless_val': len(harmless_val),
+    }
+    save_dataset_summary(cfg, before_filter_counts, after_filter_counts, final_counts)
 
     # 1. Generate candidate refusal directions
     candidate_directions = generate_and_save_candidate_directions(cfg, model_base, harmful_train, harmless_train)
@@ -215,4 +284,6 @@ if __name__ == "__main__":
         output_root=args.output_root,
         n_train=args.n_train,
         n_val=args.n_val,
+        presample_train=args.presample_train,
+        presample_val=args.presample_val,
     )

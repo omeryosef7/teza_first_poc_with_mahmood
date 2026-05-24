@@ -668,6 +668,8 @@ def _write_search_summary(config: ExportConfig, payload: dict[str, Any]) -> None
 
 
 def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: Any, model: Any | None) -> dict[str, Any]:
+    import torch
+
     prompt_text = example.prompt_text
     formatted_prompt = _format_prompt(tokenizer, prompt_text, enable_thinking=config.enable_thinking)
     prompt_token_ids = _token_ids(tokenizer, formatted_prompt)

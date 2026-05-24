@@ -11,6 +11,8 @@ class Config:
     n_train: int = 128
     n_test: int = 100
     n_val: int = 32
+    presample_train: int = None
+    presample_val: int = None
     output_root: str = None
     stop_after_selection: bool = False
     filter_train: bool = True
