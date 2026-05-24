@@ -52,6 +52,31 @@ export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export TORCH_HOME="$PROJECT_DIR/.cache/torch"
 export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 
+REQUIRED_MODULES=(torch transformers jaxtyping einops matplotlib)
+MISSING_PACKAGES=()
+
+for module in "${REQUIRED_MODULES[@]}"; do
+    if ! python3 - <<PY
+import importlib.util
+import sys
+sys.exit(0 if importlib.util.find_spec("$module") is not None else 1)
+PY
+    then
+        case "$module" in
+            torch) MISSING_PACKAGES+=("torch==2.3.0") ;;
+            transformers) MISSING_PACKAGES+=("transformers==4.44.2") ;;
+            jaxtyping) MISSING_PACKAGES+=("jaxtyping==0.2.29") ;;
+            einops) MISSING_PACKAGES+=("einops==0.8.0") ;;
+            matplotlib) MISSING_PACKAGES+=("matplotlib==3.9.0") ;;
+        esac
+    fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+    echo "Installing missing upstream pipeline dependencies: ${MISSING_PACKAGES[*]}"
+    python3 -m pip install "${MISSING_PACKAGES[@]}"
+fi
+
 echo "=== Upstream-Native Qwen3 5-Example Smoke Started ==="
 date
 hostname
