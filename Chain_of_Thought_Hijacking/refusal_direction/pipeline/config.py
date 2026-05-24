@@ -11,6 +11,8 @@ class Config:
     n_train: int = 128
     n_test: int = 100
     n_val: int = 32
+    output_root: str = None
+    stop_after_selection: bool = False
     filter_train: bool = True
     filter_val: bool = True
     evaluation_datasets: Tuple[str] = ("jailbreakbench",)
@@ -21,4 +23,6 @@ class Config:
     ce_loss_n_batches: int = 2048
 
     def artifact_path(self) -> str:
+        if self.output_root is not None:
+            return os.path.join(self.output_root, self.model_alias)
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), "runs", self.model_alias)

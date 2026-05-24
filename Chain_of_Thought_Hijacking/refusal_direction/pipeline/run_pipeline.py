@@ -19,6 +19,10 @@ def parse_arguments():
     """Parse model path argument from command line."""
     parser = argparse.ArgumentParser(description="Parse model path argument.")
     parser.add_argument('--model_path', type=str, required=True, help='Path to the model')
+    parser.add_argument('--stop-after-selection', action='store_true', help='Stop after direction selection.')
+    parser.add_argument('--output-root', type=str, help='Override the default upstream artifact output root.')
+    parser.add_argument('--n-train', type=int, help='Number of harmful and harmless training examples to sample.')
+    parser.add_argument('--n-val', type=int, help='Number of harmful and harmless validation examples to sample.')
     return parser.parse_args()
 
 def load_and_sample_datasets(cfg):
@@ -133,10 +137,17 @@ def evaluate_loss_for_datasets(cfg, model_base, fwd_pre_hooks, fwd_hooks, interv
     with open(f'{cfg.artifact_path()}/loss_evals/{intervention_label}_loss_eval.json', "w") as f:
         json.dump(loss_evals, f, indent=4)
 
-def run_pipeline(model_path):
+def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_train=None, n_val=None):
     """Run the full pipeline."""
     model_alias = os.path.basename(model_path)
-    cfg = Config(model_alias=model_alias, model_path=model_path)
+    cfg = Config(
+        model_alias=model_alias,
+        model_path=model_path,
+        n_train=Config.n_train if n_train is None else n_train,
+        n_val=Config.n_val if n_val is None else n_val,
+        output_root=output_root,
+        stop_after_selection=stop_after_selection,
+    )
 
     model_base = construct_model_base(cfg.model_path)
 
@@ -151,6 +162,9 @@ def run_pipeline(model_path):
     
     # 2. Select the most effective refusal direction
     pos, layer, direction = select_and_save_direction(cfg, model_base, harmful_val, harmless_val, candidate_directions)
+
+    if cfg.stop_after_selection:
+        return
 
     baseline_fwd_pre_hooks, baseline_fwd_hooks = [], []
     ablation_fwd_pre_hooks, ablation_fwd_hooks = get_all_direction_ablation_hooks(model_base, direction)
@@ -187,4 +201,10 @@ def run_pipeline(model_path):
 
 if __name__ == "__main__":
     args = parse_arguments()
-    run_pipeline(model_path=args.model_path)
+    run_pipeline(
+        model_path=args.model_path,
+        stop_after_selection=bool(args.stop_after_selection),
+        output_root=args.output_root,
+        n_train=args.n_train,
+        n_val=args.n_val,
+    )

@@ -31,6 +31,18 @@ The artifact records the formatted chat prompt, prompt and generation token
 IDs, token strings, single-token decodes, round-trip checks, generation
 config, and the available success-evaluation fields.
 
+### Search Until Success
+
+Use `poc_stage6.export_qwen_token_trace --search-until-success` to scan
+candidate hijack rows one by one and stop at the first successful Qwen rerun.
+Candidate ranking may prefer source successes or high StrongREJECT rows, but
+the final `qwen_run_success` is computed only from the actual Qwen output.
+
+Use `--max-attempts 3` or `--max-attempts 5` for a short smoke test before a
+full SLURM run. Failed attempts write only compact progress JSONL rows under
+the Stage 6 token-trace search output directory; only the first successful run
+writes the full supervisor JSON artifact.
+
 ## Prefix Behavior
 
 Prefixes are created by tokenizing the full prompt once, slicing token IDs, and

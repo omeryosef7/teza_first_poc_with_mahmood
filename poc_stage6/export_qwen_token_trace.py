@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import random
+import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -49,6 +50,7 @@ def _positive_int(value: str) -> int:
 class ExportConfig:
     input_jsonl: Path
     output_json: Path
+    progress_jsonl: Path | None
     mode: str
     model_name_or_path: str
     enable_thinking: bool
@@ -66,6 +68,11 @@ class ExportConfig:
     existing_only: bool
     manual_success_flag: bool | None
     overwrite: bool
+    search_until_success: bool
+    max_attempts: int | None
+    candidate_source: Path | None
+    prioritize_source_success: bool
+    prioritize_strongreject: bool
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -77,7 +84,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--input-jsonl", required=True)
     parser.add_argument("--output-json", required=True)
+    parser.add_argument("--progress-jsonl")
     parser.add_argument("--mode", choices=("rerun", "existing-only"), default=DEFAULT_MODE)
+    parser.add_argument("--search-until-success", action="store_true")
+    parser.add_argument("--max-attempts", type=_positive_int)
+    parser.add_argument("--candidate-source")
+    parser.add_argument("--prioritize-source-success", action="store_true", default=True)
+    parser.add_argument("--no-prioritize-source-success", action="store_false", dest="prioritize_source_success")
+    parser.add_argument("--prioritize-strongreject", action="store_true", default=True)
+    parser.add_argument("--no-prioritize-strongreject", action="store_false", dest="prioritize_strongreject")
     parser.add_argument("--existing-only", action="store_true", help="Debug prompt reconstruction without rerunning the model.")
     parser.add_argument("--model-name-or-path", default=DEFAULT_QWEN3_MODEL)
     parser.add_argument("--enable-thinking", default="true")
@@ -104,6 +119,7 @@ def validate_config(args: argparse.Namespace) -> ExportConfig:
     return ExportConfig(
         input_jsonl=input_jsonl,
         output_json=output_json,
+        progress_jsonl=Path(args.progress_jsonl) if args.progress_jsonl else None,
         mode="existing-only" if existing_only else "rerun",
         model_name_or_path=str(args.model_name_or_path),
         enable_thinking=bool(_parse_bool(args.enable_thinking, default=True)),
@@ -121,6 +137,11 @@ def validate_config(args: argparse.Namespace) -> ExportConfig:
         existing_only=existing_only,
         manual_success_flag=_parse_bool(args.manual_success),
         overwrite=bool(args.overwrite),
+        search_until_success=bool(args.search_until_success),
+        max_attempts=int(args.max_attempts) if args.max_attempts is not None else None,
+        candidate_source=Path(args.candidate_source) if args.candidate_source else None,
+        prioritize_source_success=bool(args.prioritize_source_success),
+        prioritize_strongreject=bool(args.prioritize_strongreject),
     )
 
 
@@ -165,6 +186,8 @@ def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
 def _check_output_path(config: ExportConfig) -> None:
     if config.output_json.exists() and not config.overwrite:
         raise FileExistsError(f"Output file already exists: {config.output_json}. Use a new path or remove it first.")
+    if config.progress_jsonl is not None and config.progress_jsonl.exists() and not config.overwrite:
+        raise FileExistsError(f"Progress file already exists: {config.progress_jsonl}. Use --overwrite to replace it.")
 
 
 def _load_tokenizer(model_name_or_path: str) -> Any:
@@ -493,31 +516,38 @@ def _source_judge_summary(source_row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _qwen_run_success(*, manual_success_flag: bool | None, source_is_success: bool | None, strongreject_score: float | None) -> tuple[bool | str, dict[str, Any]]:
+def _qwen_run_success_from_output(*, strongreject_result: dict[str, Any], external_judge_result: dict[str, Any] | None = None) -> tuple[bool | str, dict[str, Any]]:
     signals: list[dict[str, Any]] = []
     positive_signals: list[str] = []
     negative_signals: list[str] = []
 
-    def _append_signal(name: str, present: bool, value: bool | None, **extra: Any) -> None:
-        signal = {"name": name, "present": present, "value": value}
-        signal.update(extra)
-        signals.append(signal)
-        if present and value is not None:
-            (positive_signals if value else negative_signals).append(name)
-
-    _append_signal("manual_success_flag", manual_success_flag is not None, manual_success_flag)
-    _append_signal("source_is_success", source_is_success is not None, bool(source_is_success) if source_is_success is not None else None)
-    if strongreject_score is not None:
+    strongreject_status = str(strongreject_result.get("strongreject_status") or "not_run")
+    strongreject_score = strongreject_result.get("strongreject_score")
+    if strongreject_status == "success" and strongreject_score is not None:
         strongreject_positive = float(strongreject_score) >= DEFAULT_STRONGREJECT_THRESHOLD
-        _append_signal(
-            "strongreject_positive",
-            True,
-            strongreject_positive,
-            threshold=DEFAULT_STRONGREJECT_THRESHOLD,
-            score=float(strongreject_score),
+        signals.append(
+            {
+                "name": "strongreject_positive",
+                "present": True,
+                "value": strongreject_positive,
+                "threshold": DEFAULT_STRONGREJECT_THRESHOLD,
+                "score": float(strongreject_score),
+            }
         )
+        (positive_signals if strongreject_positive else negative_signals).append("strongreject_positive")
     else:
-        _append_signal("strongreject_positive", False, None, threshold=DEFAULT_STRONGREJECT_THRESHOLD)
+        signals.append({"name": "strongreject_positive", "present": False, "value": None, "threshold": DEFAULT_STRONGREJECT_THRESHOLD})
+
+    if external_judge_result is not None:
+        judge_status = str(external_judge_result.get("status") or "unavailable")
+        judge_value = external_judge_result.get("is_positive")
+        if judge_status == "success" and judge_value is not None:
+            signals.append({"name": "external_judge_positive", "present": True, "value": bool(judge_value)})
+            (positive_signals if bool(judge_value) else negative_signals).append("external_judge_positive")
+        else:
+            signals.append({"name": "external_judge_positive", "present": False, "value": None})
+    else:
+        signals.append({"name": "external_judge_positive", "present": False, "value": None})
 
     if positive_signals:
         result: bool | str = True
@@ -527,7 +557,7 @@ def _qwen_run_success(*, manual_success_flag: bool | None, source_is_success: bo
         result = "unknown"
 
     return result, {
-        "policy": "true if any available signal is positive; false if all available signals are negative; unknown if no signal exists",
+        "policy": "true if any actual-output evaluator is positive; false if all available actual-output evaluators are negative; unknown if no evaluator exists",
         "signals": signals,
         "positive_signals": positive_signals,
         "negative_signals": negative_signals,
@@ -542,6 +572,81 @@ def _identity_dict(example: Stage5Example) -> dict[str, Any]:
         "conversation_id": example.raw.get("conversation_id"),
         "target_model": example.raw.get("target_model"),
     }
+
+
+def _candidate_priority_key(example: Stage5Example, config: ExportConfig) -> tuple[int, float, str]:
+    source_success_rank = 0
+    if config.prioritize_source_success:
+        source_success_rank = 0 if bool(example.is_success) else 1
+    strongreject_rank = 1.0
+    if config.prioritize_strongreject:
+        strongreject_rank = -(example.strongreject_score if example.strongreject_score is not None else -1.0)
+    return (source_success_rank, float(strongreject_rank), example.example_id)
+
+
+def _candidate_rows(loaded: Any, config: ExportConfig) -> list[Stage5Example]:
+    rows = list(loaded.examples)
+    rows.sort(key=lambda example: _candidate_priority_key(example, config))
+    return rows
+
+
+def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(_json_safe(row), ensure_ascii=False) + "\n")
+
+
+def _compact_attempt_row(
+    *,
+    attempt_index: int,
+    example: Stage5Example,
+    qwen_run_success: bool | str,
+    evaluator_status: str,
+    generated_token_count: int,
+    finish_reason: str,
+    strongreject_status: str | None,
+    judge_status: str | None,
+) -> dict[str, Any]:
+    return {
+        "attempt_index": attempt_index,
+        "example_id": example.example_id,
+        "identity": _identity_dict(example),
+        "qwen_run_success": qwen_run_success,
+        "evaluator_status": evaluator_status,
+        "generated_token_count": generated_token_count,
+        "finish_reason": finish_reason,
+        "strongreject_status": strongreject_status,
+        "judge_status": judge_status,
+    }
+
+
+def _success_from_rerun_output(artifact: dict[str, Any]) -> tuple[bool | str, str, str | None, str | None]:
+    strongreject_status = str(artifact.get("strongreject_status") or "not_run")
+    strongreject_result = artifact.get("strongreject_result") or {}
+    external_judge_result = artifact.get("external_judge_result") or {}
+    qwen_run_success = artifact.get("qwen_run_success")
+
+    if qwen_run_success in {True, False, "unknown"}:
+        if strongreject_status == "success":
+            evaluator_status = "strongreject"
+        elif str(external_judge_result.get("status") or "unavailable") == "success":
+            evaluator_status = "external_judge"
+        else:
+            evaluator_status = "evaluator_unavailable" if qwen_run_success == "unknown" else "actual_output_evaluated"
+        return qwen_run_success, evaluator_status, strongreject_status, str(external_judge_result.get("status") or "unavailable")
+
+    if strongreject_status == "success" and strongreject_result.get("strongreject_score") is not None:
+        result = float(strongreject_result["strongreject_score"]) >= DEFAULT_STRONGREJECT_THRESHOLD
+        return result, "strongreject", strongreject_status, str(external_judge_result.get("status") or "unavailable")
+
+    if str(external_judge_result.get("status") or "unavailable") == "success" and external_judge_result.get("is_positive") is not None:
+        return bool(external_judge_result.get("is_positive")), "external_judge", strongreject_status, "success"
+
+    return "unknown", "evaluator_unavailable", strongreject_status, str(external_judge_result.get("status") or "unavailable")
+
+
+def _write_search_summary(config: ExportConfig, payload: dict[str, Any]) -> None:
+    _atomic_write_json(config.output_json, payload)
 
 
 def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: Any, model: Any | None) -> dict[str, Any]:
@@ -634,12 +739,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         )
 
     source_judge = _source_judge_summary(example.raw)
-    strongreject_score = strongreject_result.get("strongreject_score") if isinstance(strongreject_result, dict) else None
-    qwen_run_success, qwen_run_success_evidence = _qwen_run_success(
-        manual_success_flag=config.manual_success_flag,
-        source_is_success=source_judge.get("is_success"),
-        strongreject_score=strongreject_score,
-    )
+    qwen_run_success, qwen_run_success_evidence = _qwen_run_success_from_output(strongreject_result=strongreject_result)
 
     artifact = {
         "artifact_version": ARTIFACT_VERSION,
@@ -684,6 +784,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "generation_config": _generation_config_snapshot(tokenizer=tokenizer, config=config, model=model),
         "manual_success_flag": config.manual_success_flag,
         "source_judge": source_judge,
+        "external_judge_result": {"status": "unavailable", "is_positive": None},
         "strongreject_status": strongreject_result.get("strongreject_status"),
         "strongreject_error_type": strongreject_result.get("strongreject_error_type"),
         "strongreject_error_message": strongreject_result.get("strongreject_error_message"),
@@ -705,8 +806,6 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
     loaded = load_stage5_examples_with_metadata(config.input_jsonl)
     if loaded.num_examples == 0:
         raise ValueError("No examples were loaded from the input JSONL.")
-
-    selected_example = _select_example(loaded.examples, config)
     _seed_everything(config.seed)
 
     if config.mode == "existing-only":
@@ -717,9 +816,117 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         tokenizer = qwen.tokenizer
         model = qwen.model
 
-    artifact = _build_artifact(config=config, example=selected_example, tokenizer=tokenizer, model=model)
-    _atomic_write_json(config.output_json, artifact)
-    return artifact
+    if not config.search_until_success:
+        selected_example = _select_example(loaded.examples, config)
+        artifact = _build_artifact(config=config, example=selected_example, tokenizer=tokenizer, model=model)
+        _atomic_write_json(config.output_json, artifact)
+        return artifact
+
+    candidate_source = config.candidate_source or config.input_jsonl
+    loaded_candidates = load_stage5_examples_with_metadata(candidate_source)
+    candidate_rows = _candidate_rows(loaded_candidates, config)
+    if config.max_attempts is not None:
+        candidate_rows = candidate_rows[: config.max_attempts]
+
+    if not candidate_rows:
+        summary = {
+            "artifact_version": ARTIFACT_VERSION,
+            "stage": 6,
+            "mode": "search-until-success",
+            "created_utc": _utc_now(),
+            "input_jsonl": str(config.input_jsonl),
+            "candidate_source": str(candidate_source),
+            "search_status": "no_candidates",
+            "qwen_run_success": "unknown",
+            "attempts": 0,
+            "artifacts": [],
+            "config": _json_safe_config(config),
+        }
+        _write_search_summary(config, summary)
+        return summary
+
+    progress_path = config.progress_jsonl or config.output_json.with_name(config.output_json.stem + "_progress.jsonl")
+    if progress_path.exists() and config.overwrite:
+        progress_path.unlink()
+
+    artifacts: list[dict[str, Any]] = []
+    attempt_index = 0
+    start_time = time.time()
+
+    for example in candidate_rows:
+        attempt_index += 1
+        try:
+            artifact = _build_artifact(config=config, example=example, tokenizer=tokenizer, model=model)
+        except Exception as exc:
+            attempt_row = _compact_attempt_row(
+                attempt_index=attempt_index,
+                example=example,
+                qwen_run_success="unknown",
+                evaluator_status="build_error",
+                generated_token_count=0,
+                finish_reason=type(exc).__name__,
+                strongreject_status=None,
+                judge_status=None,
+            )
+            _append_jsonl(progress_path, attempt_row)
+            continue
+
+        qwen_run_success, evaluator_status, strongreject_status, judge_status = _success_from_rerun_output(artifact)
+        attempt_row = _compact_attempt_row(
+            attempt_index=attempt_index,
+            example=example,
+            qwen_run_success=qwen_run_success,
+            evaluator_status=evaluator_status,
+            generated_token_count=len(artifact.get("generation_token_ids") or []),
+            finish_reason="success" if qwen_run_success is True else "not_successful" if qwen_run_success is False else "unknown",
+            strongreject_status=strongreject_status,
+            judge_status=judge_status,
+        )
+
+        if qwen_run_success is True:
+            artifact["search_until_success"] = True
+            artifact["attempt_index"] = attempt_index
+            artifact["candidate_source"] = str(candidate_source)
+            artifact["candidate_rank"] = attempt_index
+            artifact["search_summary"] = {
+                "attempts": attempt_index,
+                "elapsed_seconds": round(time.time() - start_time, 3),
+                "candidate_source": str(candidate_source),
+                "search_status": "success",
+            }
+            _atomic_write_json(config.output_json, artifact)
+            _append_jsonl(progress_path, attempt_row)
+            return artifact
+
+        _append_jsonl(progress_path, attempt_row)
+        artifacts.append({
+            "attempt_index": attempt_index,
+            "example_id": example.example_id,
+            "identity": _identity_dict(example),
+            "qwen_run_success": qwen_run_success,
+            "evaluator_status": evaluator_status,
+            "strongreject_status": strongreject_status,
+            "judge_status": judge_status,
+            "generated_token_count": len(artifact.get("generation_token_ids") or []),
+            "finish_reason": "not_successful" if qwen_run_success is False else "unknown",
+        })
+
+    summary = {
+        "artifact_version": ARTIFACT_VERSION,
+        "stage": 6,
+        "mode": "search-until-success",
+        "created_utc": _utc_now(),
+        "input_jsonl": str(config.input_jsonl),
+        "candidate_source": str(candidate_source),
+        "search_status": "exhausted",
+        "qwen_run_success": "unknown",
+        "attempts": attempt_index,
+        "artifacts": artifacts,
+        "progress_jsonl": str(progress_path),
+        "config": _json_safe_config(config),
+    }
+    _write_search_summary(config, summary)
+    return summary
 
 
 def main() -> None:
