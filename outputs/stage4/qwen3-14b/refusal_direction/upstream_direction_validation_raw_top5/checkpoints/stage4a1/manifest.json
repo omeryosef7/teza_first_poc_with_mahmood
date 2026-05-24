@@ -1,0 +1,24 @@
+{
+  "stage": "stage4a1",
+  "timestamp_utc": "2026-05-23T18:11:16.103451+00:00",
+  "config_fingerprint": "01a9d643beacfeb09f6b48bb2fec39866dca9f786a969f6f5cd5a8f632525fd9",
+  "fingerprint_payload": {
+    "model_name": "Qwen/Qwen3-14B",
+    "dry_run": false,
+    "num_harmful": 64,
+    "num_harmless": 64,
+    "batch_size": 1,
+    "positions": [
+      -1,
+      -2,
+      -3,
+      -4
+    ],
+    "enable_thinking": false,
+    "seed": 42,
+    "direction_normalization": "raw",
+    "use_builtin_prompts": false
+  },
+  "checkpoint_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_raw_top5/checkpoints/stage4a1",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_raw_top5"
+}
