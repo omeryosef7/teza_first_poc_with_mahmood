@@ -89,6 +89,9 @@ def select_and_save_direction(cfg, model_base, harmful_val, harmless_val, candid
         artifact_dir=os.path.join(cfg.artifact_path(), "select_direction")
     )
 
+    if direction is None:
+        return None, None, None
+
     with open(f'{cfg.artifact_path()}/direction_metadata.json', "w") as f:
         json.dump({"pos": pos, "layer": layer}, f, indent=4)
 
@@ -164,6 +167,9 @@ def run_pipeline(model_path, stop_after_selection=False, output_root=None, n_tra
     
     # 2. Select the most effective refusal direction
     pos, layer, direction = select_and_save_direction(cfg, model_base, harmful_val, harmless_val, candidate_directions)
+
+    if direction is None:
+        return
 
     if cfg.stop_after_selection:
         return

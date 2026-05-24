@@ -114,6 +114,41 @@ def filter_fn(refusal_score, steering_score, kl_div_score, layer, n_layer, kl_th
         return True
     return False
 
+def _is_finite_score(*values) -> bool:
+    return all(math.isfinite(v) for v in values)
+
+def _candidate_record(position, layer, refusal_score, steering_score, kl_div_score):
+    return {
+        'position': position,
+        'layer': layer,
+        'refusal_score': refusal_score,
+        'steering_score': steering_score,
+        'kl_div_score': kl_div_score,
+    }
+
+def _closest_tradeoff_candidate(all_scores, n_layer, kl_threshold, induce_refusal_threshold, prune_layer_percentage):
+    tradeoff_pool = []
+    for score in all_scores:
+        finite_scores = _is_finite_score(score['refusal_score'], score['steering_score'], score['kl_div_score'])
+        pruned = prune_layer_percentage is not None and score['layer'] >= int(n_layer * (1.0 - prune_layer_percentage))
+        if not finite_scores or pruned:
+            continue
+
+        steering_gap = 0.0 if induce_refusal_threshold is None else max(0.0, induce_refusal_threshold - score['steering_score'])
+        kl_gap = 0.0 if kl_threshold is None else max(0.0, score['kl_div_score'] - kl_threshold)
+        tradeoff_pool.append(((steering_gap, kl_gap, score['refusal_score']), score))
+
+    if len(tradeoff_pool) == 0:
+        return None
+
+    tradeoff_pool.sort(key=lambda item: item[0])
+    best = dict(tradeoff_pool[0][1])
+    best['tradeoff_heuristic'] = {
+        'steering_gap_to_threshold': tradeoff_pool[0][0][0],
+        'kl_gap_to_threshold': tradeoff_pool[0][0][1],
+    }
+    return best
+
 def select_direction(
     model_base: ModelBase,
     harmful_instructions,
@@ -273,7 +308,70 @@ def select_direction(
     with open(f"{artifact_dir}/direction_evaluations_filtered.json", 'w') as f:
         json.dump(json_output_filtered_scores, f, indent=4)
 
-    assert len(filtered_scores) > 0, "All scores have been filtered out!"
+    if len(filtered_scores) == 0:
+        failure_counts = {
+            'non_finite_scores': 0,
+            'layer_pruned': 0,
+            'kl_above_threshold': 0,
+            'steering_below_threshold': 0,
+        }
+
+        for score in json_output_all_scores:
+            refusal_score = score['refusal_score']
+            steering_score = score['steering_score']
+            kl_div_score = score['kl_div_score']
+            layer = score['layer']
+
+            if not _is_finite_score(refusal_score, steering_score, kl_div_score):
+                failure_counts['non_finite_scores'] += 1
+            if prune_layer_percentage is not None and layer >= int(n_layer * (1.0 - prune_layer_percentage)):
+                failure_counts['layer_pruned'] += 1
+            if kl_threshold is not None and kl_div_score > kl_threshold:
+                failure_counts['kl_above_threshold'] += 1
+            if induce_refusal_threshold is not None and steering_score < induce_refusal_threshold:
+                failure_counts['steering_below_threshold'] += 1
+
+        best_candidate_by_steering = None
+        best_candidate_by_kl = None
+        if len(json_output_all_scores) > 0:
+            best_candidate_by_steering = max(json_output_all_scores, key=lambda item: item['steering_score'])
+            finite_kl_scores = [item for item in json_output_all_scores if math.isfinite(item['kl_div_score'])]
+            if len(finite_kl_scores) > 0:
+                best_candidate_by_kl = min(finite_kl_scores, key=lambda item: item['kl_div_score'])
+
+        no_survivor_summary = {
+            'scientific_status': 'not_validated_no_surviving_candidates',
+            'warning': 'No upstream candidate survived; do not treat this direction as validated.',
+            'total_candidates_evaluated': len(json_output_all_scores),
+            'surviving_candidates': 0,
+            'failure_counts_by_reason': failure_counts,
+            'failure_count_notes': 'Counts are not mutually exclusive; a candidate can fail multiple filters.',
+            'selection_thresholds': {
+                'kl_threshold': kl_threshold,
+                'induce_refusal_threshold': induce_refusal_threshold,
+                'prune_layer_percentage': prune_layer_percentage,
+            },
+            'baseline_scores': {
+                'harmful_refusal_score': baseline_refusal_scores_harmful.mean().item(),
+                'harmless_refusal_score': baseline_refusal_scores_harmless.mean().item(),
+            },
+            'best_candidate_by_steering_score': best_candidate_by_steering,
+            'best_candidate_by_kl_div_score': best_candidate_by_kl,
+            'best_tradeoff_candidate': _closest_tradeoff_candidate(
+                json_output_all_scores,
+                n_layer=n_layer,
+                kl_threshold=kl_threshold,
+                induce_refusal_threshold=induce_refusal_threshold,
+                prune_layer_percentage=prune_layer_percentage,
+            ),
+        }
+
+        with open(f"{artifact_dir}/no_survivor_summary.json", 'w') as f:
+            json.dump(no_survivor_summary, f, indent=4)
+
+        print("No upstream candidate survived selection filters.")
+        print(f"Wrote no-survivor summary to {artifact_dir}/no_survivor_summary.json")
+        return None, None, None
 
     # sorted in descending order
     filtered_scores = sorted(filtered_scores, key=lambda x: x[0], reverse=True)
