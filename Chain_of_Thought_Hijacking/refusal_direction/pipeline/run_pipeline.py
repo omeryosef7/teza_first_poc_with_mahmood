@@ -12,8 +12,6 @@ from pipeline.utils.hook_utils import get_activation_addition_input_pre_hook, ge
 
 from pipeline.submodules.generate_directions import generate_directions
 from pipeline.submodules.select_direction import select_direction, get_refusal_scores
-from pipeline.submodules.evaluate_jailbreak import evaluate_jailbreak
-from pipeline.submodules.evaluate_loss import evaluate_loss
 
 def parse_arguments():
     """Parse model path argument from command line."""
@@ -113,6 +111,8 @@ def generate_and_save_completions_for_dataset(cfg, model_base, fwd_pre_hooks, fw
 
 def evaluate_completions_and_save_results_for_dataset(cfg, intervention_label, dataset_name, eval_methodologies):
     """Evaluate completions and save results for a dataset."""
+    from pipeline.submodules.evaluate_jailbreak import evaluate_jailbreak
+
     with open(os.path.join(cfg.artifact_path(), f'completions/{dataset_name}_{intervention_label}_completions.json'), 'r') as f:
         completions = json.load(f)
 
@@ -127,6 +127,8 @@ def evaluate_completions_and_save_results_for_dataset(cfg, intervention_label, d
 
 def evaluate_loss_for_datasets(cfg, model_base, fwd_pre_hooks, fwd_hooks, intervention_label):
     """Evaluate loss on datasets."""
+    from pipeline.submodules.evaluate_loss import evaluate_loss
+
     if not os.path.exists(os.path.join(cfg.artifact_path(), 'loss_evals')):
         os.makedirs(os.path.join(cfg.artifact_path(), 'loss_evals'))
 
