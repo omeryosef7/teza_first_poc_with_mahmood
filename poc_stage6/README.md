@@ -23,7 +23,7 @@ hijack example. The supervisor-facing default is a real rerun on
 `Qwen/Qwen3-14B` with `enable_thinking=True`; `--existing-only` is reserved for
 prompt-reconstruction debugging.
 
-Example output path:
+Example single-example output path:
 
 `outputs/stage6/qwen3-14b/token_trace/qwen_token_trace.json`
 
@@ -33,15 +33,36 @@ config, and the available success-evaluation fields.
 
 ### Search Until Success
 
-Use `poc_stage6.export_qwen_token_trace --search-until-success` to scan
-candidate hijack rows one by one and stop at the first successful Qwen rerun.
-Candidate ranking may prefer source successes or high StrongREJECT rows, but
-the final `qwen_run_success` is computed only from the actual Qwen output.
+Use `poc_stage6.find_successful_qwen_trace` to scan candidate hijack rows one
+by one and stop at the first successful Qwen rerun. The search wrapper forces
+the rerun path on `Qwen/Qwen3-14B` and keeps `enable_thinking=True`.
+
+Candidate ranking may prefer source successes, higher original judge scores,
+or higher StrongREJECT scores, but the final `qwen_run_success` is computed
+only from the actual Qwen output.
 
 Use `--max-attempts 3` or `--max-attempts 5` for a short smoke test before a
 full SLURM run. Failed attempts write only compact progress JSONL rows under
-the Stage 6 token-trace search output directory; only the first successful run
-writes the full supervisor JSON artifact.
+`outputs/stage6/qwen_token_trace_search/progress.jsonl`; only the first
+successful run writes the full supervisor JSON artifact under the same output
+directory as `qwen3_14b_success_trace_<example_id>.json`.
+
+The search wrapper also writes a compact summary JSON to
+`outputs/stage6/qwen_token_trace_search/search_summary.json`.
+
+### SLURM Search Job
+
+Submit the new search job with either of these forms:
+
+```bash
+sbatch slurm_scripts/stage6_qwen3_14b_find_successful_trace.slurm 5
+```
+
+```bash
+MAX_ATTEMPTS=5 sbatch slurm_scripts/stage6_qwen3_14b_find_successful_trace.slurm
+```
+
+The job writes logs to `logs/` and keeps transcript content out of stdout/stderr.
 
 ## Prefix Behavior
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import random
 import time
 from dataclasses import asdict, dataclass
@@ -574,14 +575,27 @@ def _identity_dict(example: Stage5Example) -> dict[str, Any]:
     }
 
 
-def _candidate_priority_key(example: Stage5Example, config: ExportConfig) -> tuple[int, float, str]:
+def _candidate_priority_key(example: Stage5Example, config: ExportConfig) -> tuple[int, float, float, str]:
     source_success_rank = 0
     if config.prioritize_source_success:
         source_success_rank = 0 if bool(example.is_success) else 1
-    strongreject_rank = 1.0
+    judge_rank = -(float(example.judge_score) if example.judge_score is not None else -1.0)
+
+    strongreject_rank = 0.0
     if config.prioritize_strongreject:
         strongreject_rank = -(example.strongreject_score if example.strongreject_score is not None else -1.0)
-    return (source_success_rank, float(strongreject_rank), example.example_id)
+
+    return (source_success_rank, float(judge_rank), float(strongreject_rank), example.example_id)
+
+
+def _safe_filename_part(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_.-")
+    return cleaned or "example"
+
+
+def _success_artifact_path(config: ExportConfig, example: Stage5Example) -> Path:
+    slug = _safe_filename_part(example.example_id)
+    return config.output_json.parent / f"qwen3_14b_success_trace_{slug}.json"
 
 
 def _candidate_rows(loaded: Any, config: ExportConfig) -> list[Stage5Example]:
@@ -606,8 +620,9 @@ def _compact_attempt_row(
     finish_reason: str,
     strongreject_status: str | None,
     judge_status: str | None,
+    output_artifact_path: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    row = {
         "attempt_index": attempt_index,
         "example_id": example.example_id,
         "identity": _identity_dict(example),
@@ -618,6 +633,9 @@ def _compact_attempt_row(
         "strongreject_status": strongreject_status,
         "judge_status": judge_status,
     }
+    if output_artifact_path is not None:
+        row["output_artifact_path"] = output_artifact_path
+    return row
 
 
 def _success_from_rerun_output(artifact: dict[str, Any]) -> tuple[bool | str, str, str | None, str | None]:
@@ -665,6 +683,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
     generation_single_token_decodes: list[str] | None = None
     saved_generated_text_raw: str | None = None
     decoded_generation_from_ids: str | None = None
+    generation_finish_reason: str | None = None
     full_prompt_plus_generation_token_ids = list(prompt_token_ids)
     full_sequence_token_strings = list(prompt_token_strings)
     full_sequence_single_token_decodes = list(prompt_single_token_decodes)
@@ -708,6 +727,14 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         generation_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in generation_token_ids]
         saved_generated_text_raw = tokenizer.decode(generation_token_ids, skip_special_tokens=False)
         decoded_generation_from_ids = saved_generated_text_raw
+        if generation_token_ids and tokenizer.eos_token_id is not None and generation_token_ids[-1] == int(tokenizer.eos_token_id):
+            generation_finish_reason = "eos_token"
+        elif len(generation_token_ids) >= config.max_new_tokens:
+            generation_finish_reason = "max_new_tokens"
+        elif generation_token_ids:
+            generation_finish_reason = "unknown"
+        else:
+            generation_finish_reason = "empty"
         full_sequence_token_strings = list(tokenizer.convert_ids_to_tokens(full_prompt_plus_generation_token_ids))
         full_sequence_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in full_prompt_plus_generation_token_ids]
         full_decoded_sequence_from_prompt_plus_generation_ids = tokenizer.decode(full_prompt_plus_generation_token_ids, skip_special_tokens=False)
@@ -765,6 +792,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "decoded_prompt_from_ids": decoded_prompt_from_ids,
         "prompt_roundtrip_exact": prompt_roundtrip_exact,
         "generation_status": "not_run" if model is None else "success",
+        "generation_finish_reason": generation_finish_reason,
         "generation_token_ids": generation_token_ids if model is not None else None,
         "generation_token_strings": generation_token_strings,
         "generation_single_token_decodes": generation_single_token_decodes,
@@ -840,6 +868,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
             "qwen_run_success": "unknown",
             "attempts": 0,
             "artifacts": [],
+            "output_artifact_path": None,
             "config": _json_safe_config(config),
         }
         _write_search_summary(config, summary)
@@ -884,18 +913,40 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         )
 
         if qwen_run_success is True:
+            success_artifact_path = _success_artifact_path(config, example)
+            if success_artifact_path.exists() and not config.overwrite:
+                raise FileExistsError(
+                    f"Success artifact already exists: {success_artifact_path}. Use --overwrite to replace it."
+                )
             artifact["search_until_success"] = True
             artifact["attempt_index"] = attempt_index
             artifact["candidate_source"] = str(candidate_source)
             artifact["candidate_rank"] = attempt_index
+            artifact["output_artifact_path"] = str(success_artifact_path)
             artifact["search_summary"] = {
                 "attempts": attempt_index,
                 "elapsed_seconds": round(time.time() - start_time, 3),
                 "candidate_source": str(candidate_source),
                 "search_status": "success",
+                "output_artifact_path": str(success_artifact_path),
             }
-            _atomic_write_json(config.output_json, artifact)
-            _append_jsonl(progress_path, attempt_row)
+            _atomic_write_json(success_artifact_path, artifact)
+            summary = {
+                "artifact_version": ARTIFACT_VERSION,
+                "stage": 6,
+                "mode": "search-until-success",
+                "created_utc": _utc_now(),
+                "input_jsonl": str(config.input_jsonl),
+                "candidate_source": str(candidate_source),
+                "search_status": "success",
+                "qwen_run_success": True,
+                "attempts": attempt_index,
+                "output_artifact_path": str(success_artifact_path),
+                "progress_jsonl": str(progress_path),
+                "config": _json_safe_config(config),
+            }
+            _atomic_write_json(config.output_json, summary)
+            _append_jsonl(progress_path, {**attempt_row, "output_artifact_path": str(success_artifact_path)})
             return artifact
 
         _append_jsonl(progress_path, attempt_row)
@@ -923,6 +974,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         "attempts": attempt_index,
         "artifacts": artifacts,
         "progress_jsonl": str(progress_path),
+        "output_artifact_path": None,
         "config": _json_safe_config(config),
     }
     _write_search_summary(config, summary)
