@@ -256,6 +256,22 @@ def _token_text(tokenizer: Any, token_id: int) -> str:
     return tokenizer.decode([int(token_id)], skip_special_tokens=False)
 
 
+def _tokenizer_token_string(tokenizer: Any, token_id: int) -> str:
+    try:
+        token = tokenizer.convert_ids_to_tokens([int(token_id)])
+        if isinstance(token, list) and token:
+            return str(token[0])
+    except Exception:
+        pass
+    try:
+        token = tokenizer.convert_ids_to_tokens(int(token_id))
+        if token is not None:
+            return str(token)
+    except Exception:
+        pass
+    return _token_text(tokenizer, token_id)
+
+
 def _special_token_ids(tokenizer: Any) -> set[int]:
     ids: set[int] = set()
     for token_id in getattr(tokenizer, "all_special_ids", []) or []:
@@ -266,7 +282,35 @@ def _special_token_ids(tokenizer: Any) -> set[int]:
     return ids
 
 
-def _extract_think_and_final_text(generation_text: str) -> tuple[str | None, str | None, str]:
+def _is_special_token(*, token_id: int, tokenizer_token_string: str, special_ids: set[int]) -> bool:
+    return bool(
+        token_id in special_ids
+        or tokenizer_token_string.startswith("<|")
+        or tokenizer_token_string in {"<think>", "</think>"}
+    )
+
+
+def _special_token_flags(*, token_ids: list[int], token_strings: list[str], special_ids: set[int]) -> list[bool]:
+    return [
+        _is_special_token(
+            token_id=int(token_id),
+            tokenizer_token_string=str(token_string),
+            special_ids=special_ids,
+        )
+        for token_id, token_string in zip(token_ids, token_strings)
+    ]
+
+
+def _parse_generation_segments(generation_text: str | None) -> dict[str, Any]:
+    if generation_text is None:
+        return {
+            "think_text": None,
+            "final_text": None,
+            "think_span": None,
+            "final_span": None,
+            "thinking_segmentation_status": "unknown",
+        }
+
     start_tag = "<think>"
     end_tag = "</think>"
     start = generation_text.find(start_tag)
@@ -274,8 +318,30 @@ def _extract_think_and_final_text(generation_text: str) -> tuple[str | None, str
     if start >= 0 and end >= 0 and end > start:
         think_text = generation_text[start + len(start_tag) : end]
         final_text = generation_text[end + len(end_tag) :]
-        return think_text, final_text, "separable"
-    return None, generation_text if generation_text.strip() else None, "not_separable"
+        return {
+            "think_text": think_text,
+            "final_text": final_text if final_text else None,
+            "think_span": (start + len(start_tag), end),
+            "final_span": (end + len(end_tag), len(generation_text)),
+            "thinking_segmentation_status": "parsed_from_think_tags",
+        }
+
+    if start >= 0 or end >= 0:
+        return {
+            "think_text": None,
+            "final_text": generation_text if generation_text.strip() else None,
+            "think_span": None,
+            "final_span": None,
+            "thinking_segmentation_status": "not_separable",
+        }
+
+    return {
+        "think_text": None,
+        "final_text": generation_text if generation_text.strip() else None,
+        "think_span": None,
+        "final_span": None,
+        "thinking_segmentation_status": "not_present",
+    }
 
 
 def _tokenize_with_offsets(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int]] | None, str]:
@@ -295,13 +361,17 @@ def _tokenize_with_offsets(tokenizer: Any, text: str) -> tuple[list[int], list[t
 def _classify_prompt_token(
     *,
     token_id: int,
-    token_text: str,
+    tokenizer_token_string: str,
     span: tuple[int, int] | None,
     formatted_prompt: str,
     prompt_text: str,
     special_ids: set[int],
 ) -> str:
-    if token_id in special_ids or token_text.startswith("<|") or token_text in {"<think>", "</think>"}:
+    if _is_special_token(
+        token_id=token_id,
+        tokenizer_token_string=tokenizer_token_string,
+        special_ids=special_ids,
+    ):
         return "special"
     if span is None:
         return "unknown"
@@ -319,24 +389,28 @@ def _classify_prompt_token(
 def _classify_generation_token(
     *,
     token_id: int,
-    token_text: str,
+    tokenizer_token_string: str,
     span: tuple[int, int] | None,
     think_span: tuple[int, int] | None,
     final_span: tuple[int, int] | None,
     special_ids: set[int],
     generation_text: str,
+    thinking_segmentation_status: str,
 ) -> str:
-    if token_id in special_ids or token_text.startswith("<|") or token_text in {"<think>", "</think>"}:
+    if _is_special_token(
+        token_id=token_id,
+        tokenizer_token_string=tokenizer_token_string,
+        special_ids=special_ids,
+    ):
         return "special"
-    if span is None:
-        return "unknown"
-    if think_span is not None and span[0] >= think_span[0] and span[1] <= think_span[1]:
-        return "think"
-    if final_span is not None and span[0] >= final_span[0] and span[1] <= final_span[1]:
-        return "final"
+    if thinking_segmentation_status == "parsed_from_think_tags" and span is not None:
+        if think_span is not None and span[0] >= think_span[0] and span[1] <= think_span[1]:
+            return "think"
+        if final_span is not None and span[0] >= final_span[0] and span[1] <= final_span[1]:
+            return "final"
     if generation_text.strip():
         return "assistant"
-    return "unknown"
+    return "unknown" if span is None else "assistant"
 
 
 def _build_token_rows(
@@ -347,73 +421,114 @@ def _build_token_rows(
     formatted_prompt: str,
     prompt_text: str,
     generation_text: str,
-) -> tuple[list[dict[str, Any]], str, str]:
-    full_token_ids = prompt_token_ids + generation_token_ids
-    full_decoded_sequence = tokenizer.decode(full_token_ids, skip_special_tokens=False)
+) -> tuple[list[dict[str, Any]], str, str, str]:
     special_ids = _special_token_ids(tokenizer)
+    full_token_ids = prompt_token_ids + generation_token_ids
+    prompt_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in prompt_token_ids]
+    generation_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in generation_token_ids]
+    prompt_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in prompt_token_ids]
+    generation_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in generation_token_ids]
 
-    offsets_ids, offsets, offset_status = _tokenize_with_offsets(tokenizer, full_decoded_sequence)
-    if offsets is None or offsets_ids != full_token_ids:
-        offsets = None
-        offset_status = "unavailable"
+    prompt_offsets_ids, prompt_offsets, prompt_offset_status = _tokenize_with_offsets(tokenizer, formatted_prompt)
+    if prompt_offsets is None or prompt_offsets_ids != prompt_token_ids:
+        prompt_offsets = None
+        prompt_offset_status = "unavailable"
 
-    think_text, final_text, thinking_segmentation_status = _extract_think_and_final_text(generation_text)
-    think_span = None
-    final_span = None
-    if think_text is not None:
-        think_start = generation_text.find("<think>") + len("<think>")
-        think_end = generation_text.find("</think>")
-        think_span = (think_start, think_end)
-        final_start = think_end + len("</think>")
-        final_span = (final_start, len(generation_text))
-    elif final_text is not None:
-        final_span = (0, len(generation_text))
+    if generation_token_ids:
+        generation_offsets_ids, generation_offsets, generation_offset_status = _tokenize_with_offsets(tokenizer, generation_text)
+        if generation_offsets is None or generation_offsets_ids != generation_token_ids:
+            generation_offsets = None
+            generation_offset_status = "unavailable"
+    else:
+        generation_offsets = []
+        generation_offset_status = "available"
+
+    generation_segments = _parse_generation_segments(generation_text)
+    think_text = generation_segments["think_text"]
+    final_text = generation_segments["final_text"]
+    think_span = generation_segments["think_span"]
+    final_span = generation_segments["final_span"]
+    thinking_segmentation_status = str(generation_segments["thinking_segmentation_status"])
+    if thinking_segmentation_status == "parsed_from_think_tags" and generation_offset_status != "available":
+        thinking_segmentation_status = "not_separable"
 
     rows: list[dict[str, Any]] = []
     incremental_decoded = ""
-    for global_index, token_id in enumerate(full_token_ids):
-        token_text = _token_text(tokenizer, token_id)
-        span = offsets[global_index] if offsets is not None and global_index < len(offsets) else None
-        segment = "prompt" if global_index < len(prompt_token_ids) else "generation"
-        if segment == "prompt":
-            role_or_part = _classify_prompt_token(
-                token_id=token_id,
-                token_text=token_text,
-                span=span,
-                formatted_prompt=formatted_prompt,
-                prompt_text=prompt_text,
-                special_ids=special_ids,
-            )
-        else:
-            role_or_part = _classify_generation_token(
-                token_id=token_id,
-                token_text=token_text,
-                span=span,
-                think_span=think_span,
-                final_span=final_span,
-                special_ids=special_ids,
-                generation_text=generation_text,
-            )
-
-        incremental_decoded += token_text
+    for prompt_index, token_id in enumerate(prompt_token_ids):
+        tokenizer_token_string = prompt_token_strings[prompt_index]
+        decoded_single_token = prompt_single_token_decodes[prompt_index]
+        span = prompt_offsets[prompt_index] if prompt_offsets is not None and prompt_index < len(prompt_offsets) else None
+        role_or_part = _classify_prompt_token(
+            token_id=token_id,
+            tokenizer_token_string=tokenizer_token_string,
+            span=span,
+            formatted_prompt=formatted_prompt,
+            prompt_text=prompt_text,
+            special_ids=special_ids,
+        )
+        incremental_decoded += decoded_single_token
+        global_index = prompt_index
         prefix_decode = tokenizer.decode(full_token_ids[: global_index + 1], skip_special_tokens=False)
         rows.append(
             {
                 "global_token_index": global_index,
-                "segment": segment,
+                "segment": "prompt",
                 "role_or_part": role_or_part,
                 "token_id": int(token_id),
-                "tokenizer_token_string": token_text,
-                "decoded_single_token": token_text,
-                "is_special_token": bool(token_id in special_ids),
+                "tokenizer_token_string": tokenizer_token_string,
+                "decoded_single_token": decoded_single_token,
+                "is_special_token": _is_special_token(
+                    token_id=int(token_id),
+                    tokenizer_token_string=tokenizer_token_string,
+                    special_ids=special_ids,
+                ),
                 "char_start": span[0] if span is not None else None,
                 "char_end": span[1] if span is not None else None,
+                "char_span_reference": "formatted_prompt",
+                "raw_text_reconstruction_check": incremental_decoded == prefix_decode,
+            }
+        )
+
+    for generation_index, token_id in enumerate(generation_token_ids):
+        tokenizer_token_string = generation_token_strings[generation_index]
+        decoded_single_token = generation_single_token_decodes[generation_index]
+        span = generation_offsets[generation_index] if generation_offsets is not None and generation_index < len(generation_offsets) else None
+        role_or_part = _classify_generation_token(
+            token_id=token_id,
+            tokenizer_token_string=tokenizer_token_string,
+            span=span,
+            think_span=think_span,
+            final_span=final_span,
+            special_ids=special_ids,
+            generation_text=generation_text,
+            thinking_segmentation_status=thinking_segmentation_status,
+        )
+        incremental_decoded += decoded_single_token
+        global_index = len(prompt_token_ids) + generation_index
+        prefix_decode = tokenizer.decode(full_token_ids[: global_index + 1], skip_special_tokens=False)
+        rows.append(
+            {
+                "global_token_index": global_index,
+                "segment": "generation",
+                "role_or_part": role_or_part,
+                "token_id": int(token_id),
+                "tokenizer_token_string": tokenizer_token_string,
+                "decoded_single_token": decoded_single_token,
+                "is_special_token": _is_special_token(
+                    token_id=int(token_id),
+                    tokenizer_token_string=tokenizer_token_string,
+                    special_ids=special_ids,
+                ),
+                "char_start": span[0] if span is not None else None,
+                "char_end": span[1] if span is not None else None,
+                "char_span_reference": "generation_text",
                 "raw_text_reconstruction_check": incremental_decoded == prefix_decode,
             }
         )
 
     token_table_status = "exact" if all(row["raw_text_reconstruction_check"] for row in rows) else "mismatch"
-    return rows, token_table_status, offset_status
+    offset_status = "available" if prompt_offset_status == "available" and generation_offset_status == "available" else "unavailable"
+    return rows, token_table_status, offset_status, thinking_segmentation_status
 
 
 def _generation_config_snapshot(*, tokenizer: Any, config: ExportConfig, model: Any | None) -> dict[str, Any]:
@@ -604,6 +719,27 @@ def _candidate_rows(loaded: Any, config: ExportConfig) -> list[Stage5Example]:
     return rows
 
 
+def _ranking_policy(config: ExportConfig) -> str:
+    ranking_parts: list[str] = []
+    if config.prioritize_source_success:
+        ranking_parts.append("source is_success preferred")
+    ranking_parts.append("higher source judge_score preferred")
+    if config.prioritize_strongreject:
+        ranking_parts.append("higher source strongreject_score preferred")
+    ranking_parts.append("example_id ascending tie-breaker")
+    return "; ".join(ranking_parts)
+
+
+def _ranking_metadata(*, example: Stage5Example, config: ExportConfig, candidate_rank: int) -> dict[str, Any]:
+    return {
+        "candidate_rank": candidate_rank,
+        "source_is_success": example.is_success,
+        "source_judge_score": example.judge_score,
+        "source_strongreject_score": example.strongreject_score,
+        "ranking_policy": _ranking_policy(config),
+    }
+
+
 def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
@@ -614,6 +750,8 @@ def _compact_attempt_row(
     *,
     attempt_index: int,
     example: Stage5Example,
+    config: ExportConfig,
+    candidate_rank: int,
     qwen_run_success: bool | str,
     evaluator_status: str,
     generated_token_count: int,
@@ -632,6 +770,7 @@ def _compact_attempt_row(
         "finish_reason": finish_reason,
         "strongreject_status": strongreject_status,
         "judge_status": judge_status,
+        **_ranking_metadata(example=example, config=config, candidate_rank=candidate_rank),
     }
     if output_artifact_path is not None:
         row["output_artifact_path"] = output_artifact_path
@@ -673,16 +812,24 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
     prompt_text = example.prompt_text
     formatted_prompt = _format_prompt(tokenizer, prompt_text, enable_thinking=config.enable_thinking)
     prompt_token_ids = _token_ids(tokenizer, formatted_prompt)
-    prompt_token_strings = list(tokenizer.convert_ids_to_tokens(prompt_token_ids))
+    prompt_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in prompt_token_ids]
     prompt_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in prompt_token_ids]
     decoded_prompt_from_ids = tokenizer.decode(prompt_token_ids, skip_special_tokens=False)
     prompt_roundtrip_exact = decoded_prompt_from_ids == formatted_prompt
     if not prompt_roundtrip_exact:
         raise RuntimeError("Prompt round-trip check failed; refusing to write a malformed trace artifact.")
+    special_ids = _special_token_ids(tokenizer)
+    prompt_special_token_flags = _special_token_flags(
+        token_ids=prompt_token_ids,
+        token_strings=prompt_token_strings,
+        special_ids=special_ids,
+    )
+    prompt_token_count = len(prompt_token_ids)
 
     generation_token_ids: list[int] = []
     generation_token_strings: list[str] | None = None
     generation_single_token_decodes: list[str] | None = None
+    generation_special_token_flags: list[bool] = []
     saved_generated_text_raw: str | None = None
     decoded_generation_from_ids: str | None = None
     generation_finish_reason: str | None = None
@@ -692,7 +839,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
     full_decoded_sequence_from_prompt_plus_generation_ids = decoded_prompt_from_ids
     think_text: str | None = None
     final_assistant_text: str | None = None
-    thinking_segmentation_status = "not_requested" if not config.enable_thinking else "not_separable"
+    thinking_segmentation_status = "unknown" if config.enable_thinking else "not_present"
     strongreject_result: dict[str, Any] = {
         "strongreject_status": "not_run",
         "strongreject_error_type": None,
@@ -725,8 +872,13 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         full_prompt_plus_generation_token_ids = [int(token_id) for token_id in generated.sequences[0].tolist()]
         prompt_len = len(prompt_token_ids)
         generation_token_ids = full_prompt_plus_generation_token_ids[prompt_len:]
-        generation_token_strings = list(tokenizer.convert_ids_to_tokens(generation_token_ids))
+        generation_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in generation_token_ids]
         generation_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in generation_token_ids]
+        generation_special_token_flags = _special_token_flags(
+            token_ids=generation_token_ids,
+            token_strings=generation_token_strings,
+            special_ids=special_ids,
+        )
         saved_generated_text_raw = tokenizer.decode(generation_token_ids, skip_special_tokens=False)
         decoded_generation_from_ids = saved_generated_text_raw
         if generation_token_ids and tokenizer.eos_token_id is not None and generation_token_ids[-1] == int(tokenizer.eos_token_id):
@@ -737,11 +889,13 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             generation_finish_reason = "unknown"
         else:
             generation_finish_reason = "empty"
-        full_sequence_token_strings = list(tokenizer.convert_ids_to_tokens(full_prompt_plus_generation_token_ids))
+        full_sequence_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in full_prompt_plus_generation_token_ids]
         full_sequence_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in full_prompt_plus_generation_token_ids]
         full_decoded_sequence_from_prompt_plus_generation_ids = tokenizer.decode(full_prompt_plus_generation_token_ids, skip_special_tokens=False)
 
-        think_text, final_assistant_text, thinking_segmentation_status = _extract_think_and_final_text(saved_generated_text_raw)
+        generation_segments = _parse_generation_segments(saved_generated_text_raw)
+        think_text = generation_segments["think_text"]
+        final_assistant_text = generation_segments["final_text"]
         evaluation_text = final_assistant_text if final_assistant_text is not None else saved_generated_text_raw
         strongreject_result = _evaluate_strongreject(
             source_row=example.raw,
@@ -749,7 +903,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             run_allowed=True,
         )
 
-        token_rows, token_table_status, offset_mapping_status = _build_token_rows(
+        token_rows, token_table_status, offset_mapping_status, token_table_thinking_status = _build_token_rows(
             tokenizer=tokenizer,
             prompt_token_ids=prompt_token_ids,
             generation_token_ids=generation_token_ids,
@@ -757,8 +911,9 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             prompt_text=prompt_text,
             generation_text=saved_generated_text_raw,
         )
+        thinking_segmentation_status = token_table_thinking_status
     else:
-        token_rows, token_table_status, offset_mapping_status = _build_token_rows(
+        token_rows, token_table_status, offset_mapping_status, token_table_thinking_status = _build_token_rows(
             tokenizer=tokenizer,
             prompt_token_ids=prompt_token_ids,
             generation_token_ids=[],
@@ -766,6 +921,13 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             prompt_text=prompt_text,
             generation_text="",
         )
+        if not config.enable_thinking:
+            thinking_segmentation_status = "not_present"
+        else:
+            thinking_segmentation_status = token_table_thinking_status
+
+    generation_token_count = len(generation_token_ids)
+    token_table_length = len(token_rows)
 
     source_judge = _source_judge_summary(example.raw)
     qwen_run_success, qwen_run_success_evidence = _qwen_run_success_from_output(strongreject_result=strongreject_result)
@@ -788,16 +950,20 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         },
         "selected_stage5_metadata": example.metadata(),
         "saved_formatted_prompt": formatted_prompt,
+        "prompt_token_count": prompt_token_count,
         "prompt_token_ids": prompt_token_ids,
         "prompt_token_strings": prompt_token_strings,
         "prompt_single_token_decodes": prompt_single_token_decodes,
+        "prompt_special_token_flags": prompt_special_token_flags,
         "decoded_prompt_from_ids": decoded_prompt_from_ids,
         "prompt_roundtrip_exact": prompt_roundtrip_exact,
         "generation_status": "not_run" if model is None else "success",
         "generation_finish_reason": generation_finish_reason,
+        "generation_token_count": generation_token_count,
         "generation_token_ids": generation_token_ids if model is not None else None,
         "generation_token_strings": generation_token_strings,
         "generation_single_token_decodes": generation_single_token_decodes,
+        "generation_special_token_flags": generation_special_token_flags,
         "generation_roundtrip_saved": saved_generated_text_raw,
         "saved_generated_text_raw": saved_generated_text_raw,
         "decoded_generation_from_ids": decoded_generation_from_ids,
@@ -810,6 +976,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "thinking_segmentation_status": thinking_segmentation_status,
         "offset_mapping_status": offset_mapping_status,
         "token_table_reconstruction_status": token_table_status,
+        "token_table_length": token_table_length,
         "token_table": token_rows,
         "generation_config": _generation_config_snapshot(tokenizer=tokenizer, config=config, model=model),
         "manual_success_flag": config.manual_success_flag,
@@ -884,14 +1051,16 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
     attempt_index = 0
     start_time = time.time()
 
-    for example in candidate_rows:
-        attempt_index += 1
+    for candidate_rank, example in enumerate(candidate_rows, start=1):
+        attempt_index = candidate_rank
         try:
             artifact = _build_artifact(config=config, example=example, tokenizer=tokenizer, model=model)
         except Exception as exc:
             attempt_row = _compact_attempt_row(
                 attempt_index=attempt_index,
                 example=example,
+                config=config,
+                candidate_rank=candidate_rank,
                 qwen_run_success="unknown",
                 evaluator_status="build_error",
                 generated_token_count=0,
@@ -906,6 +1075,8 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         attempt_row = _compact_attempt_row(
             attempt_index=attempt_index,
             example=example,
+            config=config,
+            candidate_rank=candidate_rank,
             qwen_run_success=qwen_run_success,
             evaluator_status=evaluator_status,
             generated_token_count=len(artifact.get("generation_token_ids") or []),
@@ -923,14 +1094,16 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
             artifact["search_until_success"] = True
             artifact["attempt_index"] = attempt_index
             artifact["candidate_source"] = str(candidate_source)
-            artifact["candidate_rank"] = attempt_index
+            artifact["candidate_rank"] = candidate_rank
             artifact["output_artifact_path"] = str(success_artifact_path)
+            artifact["ranking_metadata"] = _ranking_metadata(example=example, config=config, candidate_rank=candidate_rank)
             artifact["search_summary"] = {
                 "attempts": attempt_index,
                 "elapsed_seconds": round(time.time() - start_time, 3),
                 "candidate_source": str(candidate_source),
                 "search_status": "success",
                 "output_artifact_path": str(success_artifact_path),
+                "search_summary_message": "Confirmed successful Qwen/Qwen3-14B rerun found.",
             }
             _atomic_write_json(success_artifact_path, artifact)
             summary = {
@@ -945,6 +1118,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
                 "attempts": attempt_index,
                 "output_artifact_path": str(success_artifact_path),
                 "progress_jsonl": str(progress_path),
+                "search_summary_message": "Confirmed successful Qwen/Qwen3-14B rerun found.",
                 "config": _json_safe_config(config),
             }
             _atomic_write_json(config.output_json, summary)
@@ -962,6 +1136,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
             "judge_status": judge_status,
             "generated_token_count": len(artifact.get("generation_token_ids") or []),
             "finish_reason": "not_successful" if qwen_run_success is False else "unknown",
+            **_ranking_metadata(example=example, config=config, candidate_rank=candidate_rank),
         })
 
     summary = {
@@ -971,12 +1146,13 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         "created_utc": _utc_now(),
         "input_jsonl": str(config.input_jsonl),
         "candidate_source": str(candidate_source),
-        "search_status": "exhausted",
+        "search_status": "exhausted_no_confirmed_qwen_success",
         "qwen_run_success": "unknown",
         "attempts": attempt_index,
         "artifacts": artifacts,
         "progress_jsonl": str(progress_path),
         "output_artifact_path": None,
+        "search_summary_message": "No confirmed successful Qwen/Qwen3-14B rerun was found among the attempted candidates.",
         "config": _json_safe_config(config),
     }
     _write_search_summary(config, summary)
