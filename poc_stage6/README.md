@@ -16,6 +16,21 @@ text, raw response text, token strings, logits, hidden states, or raw model
 outputs. Use `--store-text-hashes` only when SHA256 prompt hashes are needed
 for joining outputs.
 
+## Qwen Token Trace Export
+
+`poc_stage6.export_qwen_token_trace` writes one JSON artifact for a selected
+hijack example. The supervisor-facing default is a real rerun on
+`Qwen/Qwen3-14B` with `enable_thinking=True`; `--existing-only` is reserved for
+prompt-reconstruction debugging.
+
+Example output path:
+
+`outputs/stage6/qwen3-14b/token_trace/qwen_token_trace.json`
+
+The artifact records the formatted chat prompt, prompt and generation token
+IDs, token strings, single-token decodes, round-trip checks, generation
+config, and the available success-evaluation fields.
+
 ## Prefix Behavior
 
 Prefixes are created by tokenizing the full prompt once, slicing token IDs, and
