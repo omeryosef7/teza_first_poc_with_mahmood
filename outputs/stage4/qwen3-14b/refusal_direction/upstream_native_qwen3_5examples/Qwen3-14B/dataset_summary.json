@@ -1,0 +1,26 @@
+{
+    "requested_counts": {
+        "n_train": 5,
+        "n_val": 5,
+        "presample_train": null,
+        "presample_val": null
+    },
+    "before_filter_counts": {
+        "harmful_train": 5,
+        "harmless_train": 5,
+        "harmful_val": 5,
+        "harmless_val": 5
+    },
+    "after_filter_counts": {
+        "harmful_train": 0,
+        "harmless_train": 5,
+        "harmful_val": 0,
+        "harmless_val": 5
+    },
+    "final_counts_used": {
+        "harmful_train": 0,
+        "harmless_train": 5,
+        "harmful_val": 0,
+        "harmless_val": 5
+    }
+}

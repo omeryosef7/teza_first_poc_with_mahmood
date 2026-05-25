@@ -17,21 +17,21 @@
     },
     "baseline_scores": {
         "harmful_refusal_score": NaN,
-        "harmless_refusal_score": -18.420658111572266
+        "harmless_refusal_score": -18.420663833618164
     },
     "best_candidate_by_steering_score": {
-        "position": -3,
-        "layer": 6,
+        "position": -2,
+        "layer": 11,
         "refusal_score": NaN,
-        "steering_score": -6.385223388671875,
-        "kl_div_score": 13.815194944571033
+        "steering_score": -6.314892768859863,
+        "kl_div_score": 13.390416840008157
     },
     "best_candidate_by_kl_div_score": {
         "position": -3,
         "layer": 0,
         "refusal_score": NaN,
-        "steering_score": -18.4206600189209,
-        "kl_div_score": -9.005776005025754e-07
+        "steering_score": -18.42064666748047,
+        "kl_div_score": -1.0004996478810374e-06
     },
     "best_tradeoff_candidate": null
 }
