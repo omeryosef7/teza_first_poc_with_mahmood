@@ -1,0 +1,28 @@
+=== Stage 6 Qwen3-14B search-until-success started ===
+Wed May 27 12:39:20 AM IDT 2026
+n-802
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+CUDA_VISIBLE_DEVICES=1,3
+GPU 0: NVIDIA L40S (UUID: GPU-8d982b7e-64a1-9ad0-a3a5-73c22e0c77c5)
+GPU 1: NVIDIA L40S (UUID: GPU-85733045-169f-9198-1680-aa273500dce2)
+GPU 2: NVIDIA L40S (UUID: GPU-cda9623b-1f28-5838-ef10-f2e60cd33017)
+GPU 3: NVIDIA L40S (UUID: GPU-89660645-c676-d0d1-e21a-28672150a334)
+GPU 4: NVIDIA L40S (UUID: GPU-ef2d5069-4e60-c668-cb17-94bd024e9dd2)
+GPU 5: NVIDIA L40S (UUID: GPU-9be91ff9-6f4a-00af-fb27-b63037b1dff1)
+GPU 6: NVIDIA L40S (UUID: GPU-4ae4e1b5-5087-c04c-6aeb-ed06daf3c236)
+GPU 7: NVIDIA L40S (UUID: GPU-ecc932bd-2a1c-45a5-9909-fe21df8e99ed)
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+OUTPUT_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003914/search_summary.json
+PROGRESS_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003914/progress.jsonl
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003914
+MODEL_NAME=Qwen/Qwen3-14B
+ENABLE_THINKING=true
+MAX_NEW_TOKENS=768
+DO_SAMPLE=false
+TEMPERATURE=1.0
+TOP_P=1.0
+TOP_K=50
+SEED=0
+MAX_ATTEMPTS=1
+OVERWRITE=true

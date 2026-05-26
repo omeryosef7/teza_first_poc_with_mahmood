@@ -1,0 +1,35 @@
+=== Stage 6 Qwen3-14B search-until-success started ===
+Wed May 27 12:39:59 AM IDT 2026
+n-301
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+CUDA_VISIBLE_DEVICES=0,1
+GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-870345cb-87fc-e238-e1c3-3bc3c1e0f77a)
+GPU 1: NVIDIA GeForce RTX 3090 (UUID: GPU-e88ee2d3-c238-e3b8-6d33-bf691404bd34)
+GPU 2: NVIDIA GeForce RTX 3090 (UUID: GPU-fefe2b56-11fc-abf7-ceb7-493782026294)
+GPU 3: NVIDIA GeForce RTX 3090 (UUID: GPU-a938c87a-749d-4fb9-756a-ac2ff7752f14)
+GPU 4: NVIDIA GeForce RTX 3090 (UUID: GPU-95ee4536-68c8-9633-c975-3af6541ba985)
+GPU 5: NVIDIA GeForce RTX 3090 (UUID: GPU-82d0370c-68d7-6ecf-8ed4-3cc484a29fc5)
+GPU 6: NVIDIA GeForce RTX 3090 (UUID: GPU-c6262130-31e8-b1b1-ce4b-5a98cd989a33)
+GPU 7: NVIDIA GeForce RTX 3090 (UUID: GPU-6025fb8d-7597-dede-caeb-90e932173f21)
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+OUTPUT_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003955/search_summary.json
+PROGRESS_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003955/progress.jsonl
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_gpu_smoke_20260527_003955
+MODEL_NAME=Qwen/Qwen3-14B
+ENABLE_THINKING=true
+MAX_NEW_TOKENS=768
+DO_SAMPLE=false
+TEMPERATURE=1.0
+TOP_P=1.0
+TOP_K=50
+SEED=0
+MAX_ATTEMPTS=1
+OVERWRITE=true
+[qwen3_model] model_name=Qwen/Qwen3-14B
+[qwen3_model] torch.cuda.is_available=True
+[qwen3_model] torch.cuda.device_count=2
+[qwen3_model] hf_device_map={'model.embed_tokens': '0', 'model.layers.0': '0', 'model.layers.1': '0', 'model.layers.2': '0', 'model.layers.3': '0', 'model.layers.4': '0', 'model.layers.5': '0', 'model.layers.6': '0', 'model.layers.7': '0', 'model.layers.8': '0', 'model.layers.9': '0', 'model.layers.10': '0', 'model.layers.11': '0', 'model.layers.12': '0', 'model.layers.13': '0', 'model.layers.14': '0', 'model.layers.15': '0', 'model.layers.16': '0', 'model.layers.17': '0', 'model.layers.18': '1', 'model.layers.19': '1', 'model.layers.20': '1', 'model.layers.21': '1', 'model.layers.22': '1', 'model.layers.23': '1', 'model.layers.24': '1', 'model.layers.25': '1', 'model.layers.26': '1', 'model.layers.27': '1', 'model.layers.28': '1', 'model.layers.29': '1', 'model.layers.30': '1', 'model.layers.31': '1', 'model.layers.32': '1', 'model.layers.33': '1', 'model.layers.34': '1', 'model.layers.35': '1', 'model.layers.36': '1', 'model.layers.37': '1', 'model.layers.38': '1', 'model.layers.39': '1', 'model.norm': '1', 'model.rotary_emb': '1', 'lm_head': '1'}
+[qwen3_model] cpu_offload_detected={}
+=== Stage 6 Qwen3-14B search-until-success finished ===
+Wed May 27 12:47:35 AM IDT 2026
