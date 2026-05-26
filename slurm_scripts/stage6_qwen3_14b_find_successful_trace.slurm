@@ -7,6 +7,9 @@
 #
 # The optional first positional argument is treated as MAX_ATTEMPTS for smoke tests.
 # If MAX_ATTEMPTS is omitted or empty, the search scans all candidates.
+# Default search settings now request 2 GPUs and a shorter generation cap.
+# To escalate further on the cluster, you can override at submission time, e.g.:
+#   sbatch --gpus=4 slurm_scripts/stage6_qwen3_14b_find_successful_trace.slurm
 
 #SBATCH --job-name=poc_stage6_qwen3_find_success
 #SBATCH --output=logs/poc_stage6_qwen3_find_success_%j.out
@@ -18,7 +21,7 @@
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --gpus=1
+#SBATCH --gpus=2
 #SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,n-301,n-302,n-303,n-304,n-305
 
 set -euo pipefail
@@ -33,7 +36,7 @@ OUTPUT_JSON="${OUTPUT_JSON:-$OUTPUT_DIR/search_summary.json}"
 PROGRESS_JSONL="${PROGRESS_JSONL:-$OUTPUT_DIR/progress.jsonl}"
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
 ENABLE_THINKING="${ENABLE_THINKING:-true}"
-MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-2048}"
+MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-768}"
 DO_SAMPLE="${DO_SAMPLE:-false}"
 TEMPERATURE="${TEMPERATURE:-1.0}"
 TOP_P="${TOP_P:-1.0}"
@@ -82,6 +85,10 @@ date
 hostname
 pwd
 python -V
+echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-<unset>}"
+if command -v nvidia-smi >/dev/null 2>&1; then
+    nvidia-smi -L
+fi
 
 echo "INPUT_JSONL=$INPUT_JSONL"
 echo "OUTPUT_JSON=$OUTPUT_JSON"

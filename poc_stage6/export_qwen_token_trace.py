@@ -1009,7 +1009,11 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
         tokenizer = _load_tokenizer(config.model_name_or_path)
         model = None
     else:
-        qwen = load_qwen3_model(config.model_name_or_path)
+        qwen = load_qwen3_model(
+            config.model_name_or_path,
+            require_cuda=True,
+            log_device_placement=True,
+        )
         tokenizer = qwen.tokenizer
         model = qwen.model
 

@@ -52,6 +52,15 @@ class Qwen3Model:
         except StopIteration:
             return {}
 
+    @property
+    def cpu_offload_entries(self) -> dict[str, str]:
+        summary = self.device_summary
+        return {
+            str(key): str(value)
+            for key, value in summary.items()
+            if str(value).lower().startswith(("cpu", "disk", "meta"))
+        }
+
     def format_prompts(self, prompts: list[str], *, enable_thinking: bool) -> list[str]:
         formatted: list[str] = []
         for prompt in prompts:
@@ -81,7 +90,18 @@ class Qwen3Model:
         )
 
 
-def load_qwen3_model(model_name: str = DEFAULT_QWEN3_MODEL) -> Qwen3Model:
+def load_qwen3_model(
+    model_name: str = DEFAULT_QWEN3_MODEL,
+    *,
+    require_cuda: bool = False,
+    log_device_placement: bool = False,
+) -> Qwen3Model:
+    if require_cuda and not torch.cuda.is_available():
+        raise RuntimeError(
+            f"CUDA is not available for {model_name}. "
+            "Refusing to load Qwen3-14B without GPU because this run is expected to use CUDA."
+        )
+
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     tokenizer.padding_side = "left"
     if tokenizer.pad_token is None:
@@ -95,4 +115,17 @@ def load_qwen3_model(model_name: str = DEFAULT_QWEN3_MODEL) -> Qwen3Model:
     ).eval()
     model.requires_grad_(False)
 
-    return Qwen3Model(model_name=model_name, tokenizer=tokenizer, model=model)
+    wrapped = Qwen3Model(model_name=model_name, tokenizer=tokenizer, model=model)
+
+    if log_device_placement:
+        cuda_device_count = torch.cuda.device_count()
+        print(f"[qwen3_model] model_name={model_name}")
+        print(f"[qwen3_model] torch.cuda.is_available={torch.cuda.is_available()}")
+        print(f"[qwen3_model] torch.cuda.device_count={cuda_device_count}")
+        print(f"[qwen3_model] hf_device_map={wrapped.device_summary}")
+        if wrapped.cpu_offload_entries:
+            print(f"[qwen3_model] cpu_offload_detected={wrapped.cpu_offload_entries}")
+        else:
+            print("[qwen3_model] cpu_offload_detected={}")
+
+    return wrapped
