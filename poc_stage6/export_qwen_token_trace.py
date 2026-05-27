@@ -713,6 +713,11 @@ def _success_artifact_path(config: ExportConfig, example: Stage5Example) -> Path
     return config.output_json.parent / f"qwen3_14b_success_trace_{slug}.json"
 
 
+def _attempt_artifact_path(config: ExportConfig, example: Stage5Example, *, candidate_rank: int) -> Path:
+    slug = _safe_filename_part(example.example_id)
+    return config.output_json.parent / f"qwen3_14b_attempt_trace_rank_{candidate_rank:03d}_{slug}.json"
+
+
 def _candidate_rows(loaded: Any, config: ExportConfig) -> list[Stage5Example]:
     rows = list(loaded.examples)
     rows.sort(key=lambda example: _candidate_priority_key(example, config))
@@ -759,6 +764,7 @@ def _compact_attempt_row(
     strongreject_status: str | None,
     judge_status: str | None,
     output_artifact_path: str | None = None,
+    error_message: str | None = None,
 ) -> dict[str, Any]:
     row = {
         "attempt_index": attempt_index,
@@ -774,6 +780,8 @@ def _compact_attempt_row(
     }
     if output_artifact_path is not None:
         row["output_artifact_path"] = output_artifact_path
+    if error_message is not None:
+        row["error_message"] = error_message
     return row
 
 
@@ -804,6 +812,37 @@ def _success_from_rerun_output(artifact: dict[str, Any]) -> tuple[bool | str, st
 
 def _write_search_summary(config: ExportConfig, payload: dict[str, Any]) -> None:
     _atomic_write_json(config.output_json, payload)
+
+
+def _prepare_search_artifact(
+    *,
+    artifact: dict[str, Any],
+    example: Stage5Example,
+    config: ExportConfig,
+    candidate_source: Path,
+    candidate_rank: int,
+    attempt_index: int,
+    output_artifact_path: Path,
+    elapsed_seconds: float,
+    search_status: str,
+    search_summary_message: str,
+) -> dict[str, Any]:
+    artifact = dict(artifact)
+    artifact["search_until_success"] = True
+    artifact["attempt_index"] = attempt_index
+    artifact["candidate_source"] = str(candidate_source)
+    artifact["candidate_rank"] = candidate_rank
+    artifact["output_artifact_path"] = str(output_artifact_path)
+    artifact["ranking_metadata"] = _ranking_metadata(example=example, config=config, candidate_rank=candidate_rank)
+    artifact["search_summary"] = {
+        "attempts": attempt_index,
+        "elapsed_seconds": round(elapsed_seconds, 3),
+        "candidate_source": str(candidate_source),
+        "search_status": search_status,
+        "output_artifact_path": str(output_artifact_path),
+        "search_summary_message": search_summary_message,
+    }
+    return artifact
 
 
 def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: Any, model: Any | None) -> dict[str, Any]:
@@ -1071,11 +1110,40 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
                 finish_reason=type(exc).__name__,
                 strongreject_status=None,
                 judge_status=None,
+                error_message=str(exc),
             )
             _append_jsonl(progress_path, attempt_row)
             continue
 
         qwen_run_success, evaluator_status, strongreject_status, judge_status = _success_from_rerun_output(artifact)
+        output_artifact_path = (
+            _success_artifact_path(config, example)
+            if qwen_run_success is True
+            else _attempt_artifact_path(config, example, candidate_rank=candidate_rank)
+        )
+        if output_artifact_path.exists() and not config.overwrite:
+            raise FileExistsError(
+                f"Attempt artifact already exists: {output_artifact_path}. Use --overwrite to replace it."
+            )
+        search_status = "success" if qwen_run_success is True else "attempt_completed"
+        search_summary_message = (
+            "Confirmed successful Qwen/Qwen3-14B rerun found."
+            if qwen_run_success is True
+            else "Attempt completed and full token trace saved."
+        )
+        artifact = _prepare_search_artifact(
+            artifact=artifact,
+            example=example,
+            config=config,
+            candidate_source=candidate_source,
+            candidate_rank=candidate_rank,
+            attempt_index=attempt_index,
+            output_artifact_path=output_artifact_path,
+            elapsed_seconds=time.time() - start_time,
+            search_status=search_status,
+            search_summary_message=search_summary_message,
+        )
+        _atomic_write_json(output_artifact_path, artifact)
         attempt_row = _compact_attempt_row(
             attempt_index=attempt_index,
             example=example,
@@ -1087,29 +1155,10 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
             finish_reason="success" if qwen_run_success is True else "not_successful" if qwen_run_success is False else "unknown",
             strongreject_status=strongreject_status,
             judge_status=judge_status,
+            output_artifact_path=str(output_artifact_path),
         )
 
         if qwen_run_success is True:
-            success_artifact_path = _success_artifact_path(config, example)
-            if success_artifact_path.exists() and not config.overwrite:
-                raise FileExistsError(
-                    f"Success artifact already exists: {success_artifact_path}. Use --overwrite to replace it."
-                )
-            artifact["search_until_success"] = True
-            artifact["attempt_index"] = attempt_index
-            artifact["candidate_source"] = str(candidate_source)
-            artifact["candidate_rank"] = candidate_rank
-            artifact["output_artifact_path"] = str(success_artifact_path)
-            artifact["ranking_metadata"] = _ranking_metadata(example=example, config=config, candidate_rank=candidate_rank)
-            artifact["search_summary"] = {
-                "attempts": attempt_index,
-                "elapsed_seconds": round(time.time() - start_time, 3),
-                "candidate_source": str(candidate_source),
-                "search_status": "success",
-                "output_artifact_path": str(success_artifact_path),
-                "search_summary_message": "Confirmed successful Qwen/Qwen3-14B rerun found.",
-            }
-            _atomic_write_json(success_artifact_path, artifact)
             summary = {
                 "artifact_version": ARTIFACT_VERSION,
                 "stage": 6,
@@ -1120,13 +1169,13 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
                 "search_status": "success",
                 "qwen_run_success": True,
                 "attempts": attempt_index,
-                "output_artifact_path": str(success_artifact_path),
+                "output_artifact_path": str(output_artifact_path),
                 "progress_jsonl": str(progress_path),
                 "search_summary_message": "Confirmed successful Qwen/Qwen3-14B rerun found.",
                 "config": _json_safe_config(config),
             }
             _atomic_write_json(config.output_json, summary)
-            _append_jsonl(progress_path, {**attempt_row, "output_artifact_path": str(success_artifact_path)})
+            _append_jsonl(progress_path, attempt_row)
             return artifact
 
         _append_jsonl(progress_path, attempt_row)
@@ -1140,6 +1189,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
             "judge_status": judge_status,
             "generated_token_count": len(artifact.get("generation_token_ids") or []),
             "finish_reason": "not_successful" if qwen_run_success is False else "unknown",
+            "output_artifact_path": str(output_artifact_path),
             **_ranking_metadata(example=example, config=config, candidate_rank=candidate_rank),
         })
 

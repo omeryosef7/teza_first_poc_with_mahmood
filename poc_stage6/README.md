@@ -42,10 +42,13 @@ or higher StrongREJECT scores, but the final `qwen_run_success` is computed
 only from the actual Qwen output.
 
 Use `--max-attempts 3` or `--max-attempts 5` for a short smoke test before a
-full SLURM run. Failed attempts write only compact progress JSONL rows under
-`outputs/stage6/qwen_token_trace_search/progress.jsonl`; only the first
-successful run writes the full supervisor JSON artifact under the same output
-directory as `qwen3_14b_success_trace_<example_id>.json`.
+full SLURM run. Every completed rerun now writes a full token-trace JSON under
+the search output directory. Non-successful attempts use
+`qwen3_14b_attempt_trace_rank_<rank>_<example_id>.json`, while the first
+confirmed successful rerun is still written as
+`qwen3_14b_success_trace_<example_id>.json`. Compact progress rows under
+`outputs/stage6/qwen_token_trace_search/progress.jsonl` include only safe
+metadata plus the artifact path.
 
 The search wrapper also writes a compact summary JSON to
 `outputs/stage6/qwen_token_trace_search/search_summary.json`.
