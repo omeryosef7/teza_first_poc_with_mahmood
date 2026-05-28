@@ -21,6 +21,7 @@
 set -euo pipefail
 
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+RUNTIME_DIR="/home/sharifm/students/omeryosef/jupyter_runtime"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
 INPUT_JSONL="${INPUT_JSONL:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl}"
@@ -33,12 +34,30 @@ cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate "$CONDA_ENV"
 
-mkdir -p logs "$OUT_DIR"
+if [ -f "$PROJECT_DIR/.env" ]; then
+    set -a
+    source "$PROJECT_DIR/.env"
+    set +a
+fi
+
+mkdir -p logs "$OUT_DIR" "$RUNTIME_DIR"/{config,data,runtime,ipython} "$PROJECT_DIR/.cache"/{huggingface,torch,triton}
+
+export JUPYTER_CONFIG_DIR="$RUNTIME_DIR/config"
+export JUPYTER_DATA_DIR="$RUNTIME_DIR/data"
+export JUPYTER_RUNTIME_DIR="$RUNTIME_DIR/runtime"
+export IPYTHONDIR="$RUNTIME_DIR/ipython"
+export HF_HOME="$PROJECT_DIR/.cache/huggingface"
+export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
+export TORCH_HOME="$PROJECT_DIR/.cache/torch"
+export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
 echo "INPUT_JSONL=$INPUT_JSONL"
 echo "OUT_DIR=$OUT_DIR"
 echo "MODEL_NAME=$MODEL_NAME"
 echo "MAX_ATTEMPTS=${MAX_ATTEMPTS_FROM_ARG:-<all>}"
+echo "HF_HOME=$HF_HOME"
+echo "HF_HUB_CACHE=$HF_HUB_CACHE"
 
 ARGS=(
     --input-jsonl "$INPUT_JSONL"
