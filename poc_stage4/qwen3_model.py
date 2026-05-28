@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -8,6 +9,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 DEFAULT_QWEN3_MODEL = "Qwen/Qwen3-14B"
+
+
+def _hf_cache_dir() -> str | None:
+    for env_name in ("HF_HUB_CACHE", "HUGGINGFACE_HUB_CACHE", "TRANSFORMERS_CACHE", "HF_HOME"):
+        value = os.environ.get(env_name)
+        if value:
+            return value
+    return None
 
 
 @dataclass
@@ -102,7 +111,12 @@ def load_qwen3_model(
             "Refusing to load Qwen3-14B without GPU because this run is expected to use CUDA."
         )
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    cache_dir = _hf_cache_dir()
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        cache_dir=cache_dir,
+    )
     tokenizer.padding_side = "left"
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -112,6 +126,7 @@ def load_qwen3_model(
         torch_dtype="auto",
         device_map="auto",
         trust_remote_code=True,
+        cache_dir=cache_dir,
     ).eval()
     model.requires_grad_(False)
 
@@ -122,6 +137,7 @@ def load_qwen3_model(
         print(f"[qwen3_model] model_name={model_name}")
         print(f"[qwen3_model] torch.cuda.is_available={torch.cuda.is_available()}")
         print(f"[qwen3_model] torch.cuda.device_count={cuda_device_count}")
+        print(f"[qwen3_model] cache_dir={cache_dir}")
         print(f"[qwen3_model] hf_device_map={wrapped.device_summary}")
         if wrapped.cpu_offload_entries:
             print(f"[qwen3_model] cpu_offload_detected={wrapped.cpu_offload_entries}")

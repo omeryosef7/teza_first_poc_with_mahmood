@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import random
 import time
@@ -25,6 +26,14 @@ DEFAULT_TOP_P = 1.0
 DEFAULT_TOP_K = 50
 DEFAULT_SEED = 0
 DEFAULT_STRONGREJECT_THRESHOLD = 0.5
+
+
+def _hf_cache_dir() -> str | None:
+    for env_name in ("HF_HUB_CACHE", "HUGGINGFACE_HUB_CACHE", "TRANSFORMERS_CACHE", "HF_HOME"):
+        value = os.environ.get(env_name)
+        if value:
+            return value
+    return None
 
 
 def _parse_bool(value: str | bool | None, *, default: bool | None = None) -> bool | None:
@@ -197,7 +206,11 @@ def _check_output_path(config: ExportConfig) -> None:
 def _load_tokenizer(model_name_or_path: str) -> Any:
     from transformers import AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name_or_path,
+        trust_remote_code=True,
+        cache_dir=_hf_cache_dir(),
+    )
     tokenizer.padding_side = "left"
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
