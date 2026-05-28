@@ -74,6 +74,7 @@ class ExportConfig:
     candidate_source: Path | None
     prioritize_source_success: bool
     prioritize_strongreject: bool
+    redact_generation: bool
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -110,6 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-model")
     parser.add_argument("--manual-success")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--redact-generation", action="store_true", help="Do not store raw generated text or per-token decoded text; store hashes and token ids only.")
     return parser
 
 
@@ -143,6 +145,7 @@ def validate_config(args: argparse.Namespace) -> ExportConfig:
         candidate_source=Path(args.candidate_source) if args.candidate_source else None,
         prioritize_source_success=bool(args.prioritize_source_success),
         prioritize_strongreject=bool(args.prioritize_strongreject),
+        redact_generation=bool(getattr(args, "redact_generation", False)),
     )
 
 
@@ -1003,15 +1006,16 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "generation_token_strings": generation_token_strings,
         "generation_single_token_decodes": generation_single_token_decodes,
         "generation_special_token_flags": generation_special_token_flags,
-        "generation_roundtrip_saved": saved_generated_text_raw,
-        "saved_generated_text_raw": saved_generated_text_raw,
-        "decoded_generation_from_ids": decoded_generation_from_ids,
+        "generation_roundtrip_saved": saved_generated_text_raw if not config.redact_generation else None,
+        # When redaction is requested we avoid storing raw generated text or decoded sequences.
+        "saved_generated_text_raw": saved_generated_text_raw if not config.redact_generation else None,
+        "decoded_generation_from_ids": decoded_generation_from_ids if not config.redact_generation else None,
         "full_prompt_plus_generation_token_ids": full_prompt_plus_generation_token_ids,
         "full_sequence_token_strings": full_sequence_token_strings,
         "full_sequence_single_token_decodes": full_sequence_single_token_decodes,
-        "full_decoded_sequence_from_prompt_plus_generation_ids": full_decoded_sequence_from_prompt_plus_generation_ids,
-        "think_text": think_text,
-        "final_assistant_text": final_assistant_text,
+        "full_decoded_sequence_from_prompt_plus_generation_ids": full_decoded_sequence_from_prompt_plus_generation_ids if not config.redact_generation else None,
+        "think_text": think_text if not config.redact_generation else None,
+        "final_assistant_text": final_assistant_text if not config.redact_generation else None,
         "thinking_segmentation_status": thinking_segmentation_status,
         "offset_mapping_status": offset_mapping_status,
         "token_table_reconstruction_status": token_table_status,
@@ -1029,6 +1033,14 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "qwen_run_success_evidence": qwen_run_success_evidence,
         "config": _json_safe_config(config),
     }
+    # If redaction is enabled, keep token IDs and token-level decodes, but remove raw generation text.
+    if config.redact_generation:
+        artifact["generation_roundtrip_saved"] = None
+        artifact["saved_generated_text_raw"] = None
+        artifact["think_text"] = None
+        artifact["final_assistant_text"] = None
+        artifact["generation_text_sha256"] = None
+        artifact["generation_roundtrip_saved_hash_only"] = None
 
     return artifact
 
