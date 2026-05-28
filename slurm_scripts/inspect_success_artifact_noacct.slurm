@@ -9,11 +9,14 @@
 #SBATCH --job-name=inspect_qwen_artifact
 #SBATCH --output=logs/inspect_qwen_artifact_%j.out
 #SBATCH --error=logs/inspect_qwen_artifact_%j.err
-#SBATCH --time=00:10:00
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=8G
-
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
+#SBATCH --partition=killable
+#SBATCH --account=gpu-research
+#SBATCH --nodes=1
+#SBATCH --gpus=2
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,n-301,n-302,n-303,n-304,n-305
 set -euo pipefail
 
 ARTIFACT_PATH="${1:-/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen_token_trace_search_full_gpu_alltraces_20260527_183600/qwen3_14b_success_trace_goal_index_0_attack_iteration_1_conversation_id_1_target_model_gpt-o4-mini.json}"
