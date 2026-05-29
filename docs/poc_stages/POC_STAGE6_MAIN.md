@@ -136,6 +136,19 @@ Why `full` still has `num_tokens = 256`:
 - Prefix-level shifts are descriptive outputs, not by themselves proof of a causal refusal trigger.
 - The completed run only used `final_token`, not wider token regions.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+Stage 6 is the closest existing stage to the "full token capture" goal, but with an important distinction:
+
+- **Stage 6** measures *projection* at prefix lengths — it passes increasing prefix slices of the prompt to Qwen3-14B and measures the refusal-direction projection at each step. It does NOT capture the raw generated tokens.
+- **Stage 2B** (the new stage) runs the full attack prompt through Qwen3-14B and saves ALL generated tokens (thinking + final answer) without trimming.
+
+The `max_length=256` cap applied in current Stage 6 runs (visible in the example row where `full` prefix gives `num_tokens=256` from a 911-token prompt) would NOT be acceptable for Stage 2B. Stage 2B uses `max_new_tokens=32768` with no prompt truncation.
+
+`poc_stage6/export_qwen_token_trace.py` was the main reference for Stage 2B's token-capture implementation. The token parsing, `<think>` tag splitting, and `model.generate()` call pattern in `poc_stage2b/runner.py` follows the same approach.
+
+After Stage 2B runs, Stage 6 can be re-run using Stage 2B JSONL as input (with appropriate `--condition` flag) to measure prefix-level projection dynamics on Qwen3-14B's own attack inputs.
+
 ## Handoff To Next Stage
 
-Stage 7 can now compare offline objective definitions using both full-prompt Stage 5 projections and prefix-based Stage 6 projections.
+Stage 7 can now compare offline objective definitions using both full-prompt Stage 5 projections and prefix-based Stage 6 projections. Once Stage 2B completes, re-run Stages 5 and 6 with Stage 2B JSONL to produce aligned mechanistic data for Qwen3-14B as both subject and target.

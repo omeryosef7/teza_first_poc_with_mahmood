@@ -144,6 +144,16 @@ Explicit readout:
 - Stage 5 output safety is deliberate: raw prompts, raw responses, token strings, hidden states, logits, and raw model outputs are not written by default.
 - Projection sign should be interpreted relative to the Stage 4A1 extraction convention, not as a universal notion of refusal on its own.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+Stage 5 is the first projection-analysis stage after the behavioral pipeline. Its role once Stage 2B completes:
+
+- Stage 5 currently projects **gpt-o4-mini attack prompts** onto Qwen3-14B's refusal direction. This measures how Qwen3-14B's hidden state responds to attack prompts designed for a different model.
+- After Stage 2B runs, Stage 5 can be re-run with Stage 2B's JSONL as input. That run would project **Qwen3-14B's own responses** onto the refusal direction — a tighter pairing.
+- No code changes are required: the `--input-jsonl` and `--condition` flags already support new input sources.
+
+Current Stage 5 data (42 examples from gpt-o4-mini attack prompts) is still valid for its original purpose — it shows how Qwen3-14B's internal representation responds to those attack texts at the prompt level.
+
 ## Handoff To Next Stage
 
-Stage 6 can now work from a completed Stage 5 base rather than only a smoke run, while later scientific interpretation should still wait for a final Stage 4A2 `intervention_selected` direction.
+Stage 6 can now work from a completed Stage 5 base rather than only a smoke run, while later scientific interpretation should still wait for a final Stage 4A2 `intervention_selected` direction. Once Stage 2B completes, re-run Stage 5 with Stage 2B JSONL to align behavioral and mechanistic data on the same model.

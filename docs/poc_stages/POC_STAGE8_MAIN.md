@@ -97,6 +97,16 @@ Concrete row example from the smoke output:
 - Rewards depend on earlier offline artifacts, especially Stage 7.
 - The smoke run is intentionally tiny and should be treated as plumbing validation plus a first descriptive summary.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+Stage 8 is fully offline — it does not load models or call APIs. Its role in the goal pipeline:
+
+- Stage 8's reward structure was designed around the gpt-o4-mini behavioral baseline (Stage 2/3) and its projection correlations (Stages 5/6/7). Once Stage 2B provides Qwen3-14B behavioral scores, the reward signal becomes more directly aligned with the actual attack target.
+- The action space (`choose_reasoning_block_length_bucket`, etc.) is already designed around Qwen3-14B's CoT structure — this stage was always intended as a sketch for eventual live Qwen3-14B RL.
+- No code changes are required. Stage 8 can re-run with Stage 7 outputs derived from Stage 2B data.
+
+The complete goal pipeline path is: Stage 2B (attack Qwen3-14B) → re-run Stages 5/6 → re-run Stage 7 → re-run Stage 8 with Qwen3-14B-native reward signal.
+
 ## Handoff To Next Stage
 
-Any later model-in-the-loop RL stage should remain constrained and should only build on this sandbox after the reward definition and safety boundaries are reviewed again.
+Any later model-in-the-loop RL stage should remain constrained and should only build on this sandbox after the reward definition and safety boundaries are reviewed again. The prerequisite for that transition is a complete Stage 2B run establishing Qwen3-14B behavioral ground truth.

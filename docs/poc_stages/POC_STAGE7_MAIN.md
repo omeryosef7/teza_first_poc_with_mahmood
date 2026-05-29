@@ -120,6 +120,14 @@ Why this matters:
 - The conclusions are based on a small POC dataset and should be treated as ranking evidence, not final reward design proof.
 - The refusal-based objectives depend on the provisional Stage 4 direction via Stages 5 and 6.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+Stage 7 is fully offline — it reads Stage 5/6 projection data and computes objective candidates without any model calls. Its role in the goal pipeline:
+
+- The current Stage 7 run uses behavioral scores from **gpt-o4-mini** attacks (Stage 2/3) correlated with **Qwen3-14B projections** (Stages 5/6). The finding: `objective_strongreject_only` has the strongest positive correlation (0.54 Pearson).
+- After Stage 2B runs and Stages 5/6 re-run with Qwen3-14B outputs, Stage 7 can be re-run. The correlation structure may differ because the behavioral scores will now be from Qwen3-14B directly.
+- No code changes required — Stage 7 reads from configurable artifact paths.
+
 ## Handoff To Next Stage
 
-Stage 8A can use the Stage 7 output as an offline reward source for a constrained sandbox, which is exactly what the current repo does.
+Stage 8A can use the Stage 7 output as an offline reward source for a constrained sandbox, which is exactly what the current repo does. The most important next step for Stage 7 is re-running after Stage 2B + Stages 5/6 complete, so the reward correlations are computed on Qwen3-14B's own behavioral ground truth.

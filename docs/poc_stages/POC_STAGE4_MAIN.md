@@ -189,6 +189,16 @@ Interpretation rule for this stage:
 - Stage 4C report is intentionally marked debug/preliminary.
 - Qwen3-14B runs are resource-heavy and some layers were placed on CPU according to the extraction metrics.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+Stage 4 is the mechanistic backbone of the pipeline. Its role in relation to the goal pipeline:
+
+- **Model loading infrastructure** (`poc_stage4/qwen3_model.py`): directly reused in Stage 2B's `runner.py` via `from poc_stage4.qwen3_model import load_qwen3_model`. Stage 2B does NOT depend on the refusal direction.
+- **Refusal direction** (`direction.pt`, status: provisional): used by Stages 5/6/7 for projection analysis but NOT required for Stage 2B's behavioral measurement.
+- **Stage 4B dampening result** (mean delta ~−58 points for hijacked prompts): this is a mechanistic signal that CoT hijacking reduces Qwen3-14B's internal refusal component. Stage 2B will measure the behavioral counterpart: does the model actually produce harmful output when internally dampened?
+
+Key open issue: Stage 4A2 found 0 candidates surviving intervention filters. The provisional direction from Stage 4A1 (position −3, layer 22) is still the only saved direction. Projection analysis in Stages 5/6/7 is based on this provisional direction and should be treated as exploratory.
+
 ## Handoff To Next Stage
 
-Stage 5 can use the existing Stage 4 direction for read-only projection-dynamics analysis, but final mechanistic claims should wait for a completed Stage 4A2 `intervention_selected` direction.
+Stage 5 can use the existing Stage 4 direction for read-only projection-dynamics analysis, but final mechanistic claims should wait for a completed Stage 4A2 `intervention_selected` direction. Stage 2B is independent of Stage 4 and can run in parallel.

@@ -70,7 +70,16 @@ Slurm accounting was not used for Stage 1. Later `sacct/squeue` checks from this
 - The audit was static: no expensive attack run was performed in Stage 1.
 - The Hijacking repo's existing logs were not enough for research-grade downstream analysis.
 - The audit did not validate API keys or cluster runtime behavior; that was pushed into Stage 2.
+- The Hijacking repo's target model list (`config/models.py`) covers only API-backed models (gpt-o4-mini, gemini-2.5-pro, claude-4-sonnet, grok-3-mini). Running Qwen3-14B as a **local** attack target was not in scope for Stage 1 and requires separate infrastructure built in `poc_stage2b`.
+
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+The goal pipeline is: load 42 attack prompts → run on Qwen3-14B reasoning locally → save all tokens without trimming → StrongREJECT + LLM judge to determine success.
+
+Stage 1's contribution: confirmed the Hijacking repo can supply the attack prompt generation logic (Gemini attacker + iterative refinement against API models). It did not assess whether Qwen3-14B could be used as a local target. That gap was left for later stages.
+
+The audit also confirmed that `strong_reject/strong_reject` (now `poc_stage3`) is the right evaluator, and that the LLM judge already exists in `Chain_of_Thought_Hijacking/Hijacking/core/judge.py`.
 
 ## Handoff To Next Stage
 
-Stage 2 should wrap the Hijacking code without changing attack logic, run a small HarmBench slice against `gpt-o4-mini`, and write structured artifacts that can be validated and later scored by StrongREJECT.
+Stage 2 should wrap the Hijacking code without changing attack logic, run a small HarmBench slice against `gpt-o4-mini`, and write structured artifacts that can be validated and later scored by StrongREJECT. The `attack_prompt` field in Stage 2's JSONL artifact will become the direct input for Stage 2B's Qwen3-14B run.

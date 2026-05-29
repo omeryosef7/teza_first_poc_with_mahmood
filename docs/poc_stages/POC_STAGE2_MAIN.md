@@ -6,6 +6,8 @@ Stage 2 converted the Stage 1 plan into a working baseline run. We built and use
 
 The final successful run tested 4 goals, wrote 42 row-level records, and reported 2 successful goals out of 4, or 50 percent goal-level attack success rate. This stage is the baseline data source for Stage 2.5 validation and Stage 3 StrongREJECT scoring.
 
+**The 42 `attack_prompt` values in the Stage 2 JSONL are the direct input for Stage 2B, which runs those same prompts against Qwen3-14B reasoning locally with full token capture.**
+
 ## Comprehensive Detailed Summary
 
 The central goal of Stage 2 was to stop relying on ad hoc logs and produce reusable research artifacts. The wrapper did not redesign the attack. It reused the existing Hijacking workflow and captured the per-goal, per-iteration, per-conversation results in a normalized schema.
@@ -96,6 +98,22 @@ Per-goal summary, using safe high-level labels:
 - The dataset slice is intentionally small and should be treated as a POC, not a robust benchmark.
 - Raw prompts and raw responses remain in the JSONL artifact, but this documentation intentionally avoids reproducing them.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+The goal pipeline is: load 42 attack prompts → run on Qwen3-14B reasoning locally → save all tokens without trimming → StrongREJECT + LLM judge to determine success.
+
+Stage 2 is complete as a `gpt-o4-mini` behavioral baseline. It does **not** run against Qwen3-14B. The gap:
+
+| Pipeline step | Stage 2 status |
+| --- | --- |
+| 42 attack prompts available | ✅ Field `attack_prompt` in every JSONL row |
+| Run on Qwen3-14B reasoning | ❌ Target was `gpt-o4-mini` (API) |
+| Save all tokens without trim | ❌ Not captured — only text responses stored |
+| StrongREJECT scoring | ✅ Done in Stage 3 (on gpt-o4-mini outputs) |
+| LLM judge scoring | ✅ Done in Stage 2 (Gemini judge, gpt-o4-mini outputs) |
+
+**Stage 2B** closes this gap: it loads the Stage 3 JSONL (which has all 42 rows with `attack_prompt` intact), runs each through Qwen3-14B locally, and captures the full token trace. See `docs/poc_stages/POC_STAGE2B_MAIN.md`.
+
 ## Handoff To Next Stage
 
-Stage 2.5 should validate the row artifact and summary artifact, clarify metric definitions, verify early stopping, and design schema improvements for error accounting before relying on these artifacts for broader conclusions.
+Stage 2.5 should validate the row artifact and summary artifact, clarify metric definitions, verify early stopping, and design schema improvements for error accounting before relying on these artifacts for broader conclusions. Stage 2B (parallel path) uses Stage 2 artifacts directly as its input prompt source.

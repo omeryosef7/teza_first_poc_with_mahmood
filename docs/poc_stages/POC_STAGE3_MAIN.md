@@ -155,9 +155,20 @@ Why this matters:
 - The input set is small: 4 goals and 42 rows.
 - This documentation cites the exact harmful goal prompts because they already exist in the Stage 3 artifacts, but it summarizes the responses instead of copying more unsafe output than necessary.
 
+## Relation to Goal Pipeline (Qwen3-14B Full Token Capture)
+
+The goal pipeline requires two judges: StrongREJECT + LLM-as-judge. Stage 3 provides both:
+
+- **StrongREJECT** (Stage 3): rubric-based, scored all 42 gpt-o4-mini outputs. `poc_stage3/strongreject_scoring.py` is reused directly in Stage 2B to score Qwen3-14B outputs inline.
+- **LLM judge**: the Gemini judge already existed in the Hijacking repo (`core/judge.py`) for Stage 2. Stage 2B uses the same judge template in `poc_stage2b/judge.py`.
+
+The Stage 3 JSONL (`hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl`) is the primary input to Stage 2B. It contains the `attack_prompt` for each of the 42 rows alongside the original gpt-o4-mini scores, which serve as baseline comparison for Qwen3-14B results.
+
+Note: The evaluator disagreements documented here (StrongREJECT vs. Hijacking judge) are a known issue. Stage 2B keeps the same dual-judge structure and defines success as `strongreject_is_success OR judge_is_success` to be conservative.
+
 ## Handoff To Next Stage
 
-Stage 4 should move from black-box/evaluator analysis into mechanistic analysis on an open-source model, starting with refusal-direction extraction for `Qwen/Qwen3-14B` and then measuring refusal-component behavior across prompt conditions.
+Stage 4 should move from black-box/evaluator analysis into mechanistic analysis on an open-source model, starting with refusal-direction extraction for `Qwen/Qwen3-14B` and then measuring refusal-component behavior across prompt conditions. Stage 2B (parallel path) uses Stage 3 JSONL as its input source.
 
 
 ##Examples:
