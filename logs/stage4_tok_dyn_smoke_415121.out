@@ -1,0 +1,90 @@
+=== Stage 4 token-dynamics smoke started ===
+Fri May 29 09:09:44 PM IDT 2026
+n-304
+SLURM_JOB_ID=415121
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24252 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22928 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24252 MiB
+
+MODEL_NAME_OR_PATH=Qwen/Qwen3-14B
+STAGE6_INPUT=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_redacted
+REFUSAL_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+LAYERS=all
+MAX_EXAMPLES=5
+MAX_NEW_TOKENS_TO_ANALYZE=128
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260529_210936
+RUN_NAME=smoke_20260529_210936
+DEVICE=auto
+DTYPE=bfloat16
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Checking CLI help ===
+usage: analyze_stage6_token_dynamics.py [-h] --stage6-input STAGE6_INPUT
+                                        --output-dir OUTPUT_DIR
+                                        [--model-name-or-path MODEL_NAME_OR_PATH]
+                                        [--refusal-direction-path REFUSAL_DIRECTION_PATH]
+                                        [--layers LAYERS]
+                                        [--max-examples MAX_EXAMPLES]
+                                        [--max-new-tokens-to-analyze MAX_NEW_TOKENS_TO_ANALYZE]
+                                        [--smoke] [--resume] [--device DEVICE]
+                                        [--dtype DTYPE]
+                                        [--allow-provisional-direction]
+                                        [--plot] [--no-plot]
+                                        [--run-name RUN_NAME]
+                                        [--span-metadata-file SPAN_METADATA_FILE]
+
+Stage 4 token-level dynamics analysis. Reads Stage 6 Qwen3-14B token trace
+artifacts and computes refusal-direction projection per generated token per
+layer.
+
+options:
+  -h, --help            show this help message and exit
+  --stage6-input STAGE6_INPUT
+                        Directory of Stage 6 trace JSON files, or a single
+                        JSON file.
+  --output-dir OUTPUT_DIR
+                        Output directory for all artifacts.
+  --model-name-or-path MODEL_NAME_OR_PATH
+                        HuggingFace model name/path. Default: Qwen/Qwen3-14B
+  --refusal-direction-path REFUSAL_DIRECTION_PATH
+                        Path to directory containing direction.pt and
+                        selected_direction.json. Default:
+                        outputs/stage4/qwen3-14b/refusal_direction
+  --layers LAYERS       Comma-separated layer indices or "all". Default: all
+                        layers.
+  --max-examples MAX_EXAMPLES
+                        Limit number of examples processed.
+  --max-new-tokens-to-analyze MAX_NEW_TOKENS_TO_ANALYZE
+                        Max generated tokens analyzed per example. Default:
+                        all.
+  --smoke               Smoke-run mode: sets --max-examples 5 and --max-new-
+                        tokens-to-analyze 128 unless those flags are
+                        explicitly provided.
+  --resume              Skip examples whose per-example output JSON already
+                        exists.
+  --device DEVICE       Device for model (auto/cuda/cpu). Default: auto.
+  --dtype DTYPE         Torch dtype (bfloat16/float16/float32/auto). Default:
+                        bfloat16.
+  --allow-provisional-direction
+                        Allow Stage 4A1 provisional directions (smoke/debug
+                        only).
+  --plot                Generate plots (default: true when matplotlib is
+                        available).
+  --no-plot             Disable plot generation.
+  --run-name RUN_NAME   Human-readable run label. Default:
+                        token_dynamics_<timestamp>.
+  --span-metadata-file SPAN_METADATA_FILE
+                        Optional path to a JSON file with span metadata per
+                        example (for future attention-based metrics). Not yet
+                        implemented; a warning is stored in the manifest when
+                        absent.
+
+=== Running Stage 4 token-dynamics smoke ===
+Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_redacted --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260529_210936 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --max-examples 5 --max-new-tokens-to-analyze 128 --run-name smoke_20260529_210936 --device auto --dtype bfloat16 --smoke
