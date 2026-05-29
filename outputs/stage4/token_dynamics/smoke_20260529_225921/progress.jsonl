@@ -1,0 +1,10 @@
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-05-29T19:59:51.120237+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 8.14, "analyzed_tokens": 128, "warnings": [], "utc": "2026-05-29T19:59:59.197147+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-05-29T19:59:59.281353+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 5.908, "analyzed_tokens": 128, "warnings": [], "utc": "2026-05-29T20:00:05.134323+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-05-29T20:00:05.223784+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 12.588, "analyzed_tokens": 128, "warnings": [], "utc": "2026-05-29T20:00:17.759649+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-05-29T20:00:17.826828+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 5.824, "analyzed_tokens": 128, "warnings": [], "utc": "2026-05-29T20:00:23.614464+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-05-29T20:00:23.701821+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 5.543, "analyzed_tokens": 128, "warnings": [], "utc": "2026-05-29T20:00:29.180909+00:00"}

@@ -29,6 +29,7 @@ DEVICE="${DEVICE:-auto}"
 DTYPE="${DTYPE:-bfloat16}"
 RUN_NAME="${RUN_NAME:-smoke_$(date +%Y%m%d_%H%M%S)}"
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage4/token_dynamics/$RUN_NAME}"
+export OUTPUT_DIR
 PLOT="${PLOT:-true}"
 
 cd "$PROJECT_DIR"
@@ -108,6 +109,7 @@ SCRIPT_ARGS=(
     --device "$DEVICE"
     --dtype "$DTYPE"
     --smoke
+    --allow-provisional-direction
 )
 
 if [ "${PLOT:-true}" != "true" ]; then

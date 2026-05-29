@@ -1,0 +1,16 @@
+[2026-05-29T18:10:34.332446+00:00] [stage4_token_dyn] Loading model model=Qwen/Qwen3-14B
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:41<04:49, 41.36s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:28<04:27, 44.61s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [02:13<03:45, 45.02s/it]Loading checkpoint shards:  50%|█████     | 4/8 [02:57<02:57, 44.46s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [03:43<02:14, 44.95s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [04:25<01:28, 44.14s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [05:10<00:44, 44.49s/it]Loading checkpoint shards: 100%|██████████| 8/8 [05:30<00:00, 36.65s/it]Loading checkpoint shards: 100%|██████████| 8/8 [05:30<00:00, 41.35s/it]
+[2026-05-29T18:16:11.341431+00:00] [stage4_token_dyn] Loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_stage6_token_dynamics.py", line 864, in <module>
+    main()
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_stage6_token_dynamics.py", line 860, in main
+    run(args)
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_stage6_token_dynamics.py", line 629, in run
+    loaded_dir = load_direction(
+                 ^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/direction_loader.py", line 39, in load_direction
+    raise RuntimeError(
+RuntimeError: Refusing to load a non-final refusal direction by default. This is a Stage 4A1 provisional projection-diagnostic direction. Run Stage 4A2 intervention-based selection first, or pass `allow_provisional_direction=True` / `--allow-provisional-direction` only for smoke tests.

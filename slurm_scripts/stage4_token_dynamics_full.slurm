@@ -32,6 +32,7 @@ DTYPE="${DTYPE:-bfloat16}"
 RESUME="${RESUME:-true}"
 RUN_NAME="${RUN_NAME:-full_$(date +%Y%m%d_%H%M%S)}"
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage4/token_dynamics/$RUN_NAME}"
+export OUTPUT_DIR
 PLOT="${PLOT:-true}"
 
 cd "$PROJECT_DIR"
@@ -112,6 +113,7 @@ SCRIPT_ARGS=(
     --run-name "$RUN_NAME"
     --device "$DEVICE"
     --dtype "$DTYPE"
+    --allow-provisional-direction
 )
 
 if [ -n "${MAX_EXAMPLES:-}" ]; then
