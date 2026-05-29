@@ -1,0 +1,5 @@
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+slurmstepd: error: *** JOB 414041 ON n-301 CANCELLED AT 2026-05-29T16:34:12 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 414041 STEPD TERMINATED ON n-301 AT 2026-05-29T16:37:12 DUE TO JOB NOT ENDING WITH SIGNALS ***
+slurmstepd: error: Container 93040 in cgroup plugin has 1 processes, giving up after 191 sec
