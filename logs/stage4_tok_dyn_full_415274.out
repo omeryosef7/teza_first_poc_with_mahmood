@@ -1,0 +1,30 @@
+=== Stage 4 token-dynamics full run started ===
+Fri May 29 11:06:45 PM IDT 2026
+n-304
+SLURM_JOB_ID=415274
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22822 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24252 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22928 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24252 MiB
+
+MODEL_NAME_OR_PATH=Qwen/Qwen3-14B
+STAGE6_INPUT=outputs/stage6/all_traces_redacted
+REFUSAL_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+LAYERS=all
+MAX_EXAMPLES=<all>
+MAX_NEW_TOKENS_TO_ANALYZE=<all>
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260529_230644
+RUN_NAME=full_20260529_230644
+RESUME=true
+DEVICE=auto
+DTYPE=bfloat16
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Running Stage 4 token-dynamics full run ===
+Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input outputs/stage6/all_traces_redacted --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260529_230644 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --run-name full_20260529_230644 --device auto --dtype bfloat16 --allow-provisional-direction --resume
