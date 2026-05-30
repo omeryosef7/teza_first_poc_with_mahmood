@@ -1,0 +1,61 @@
+=== Stage 2B Qwen3 batch attack started ===
+Sat May 30 10:59:37 AM IDT 2026
+n-303
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+MODEL_NAME=Qwen/Qwen3-14B
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+OUTPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage2b/qwen3-14b/stage2b_qwen3_batch.jsonl
+SUMMARY_JSON=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage2b/qwen3-14b/stage2b_qwen3_batch_summary.json
+RUN_NAME=stage2b_qwen3_batch
+MAX_NEW_TOKENS=32768
+ENABLE_THINKING=true
+DO_SAMPLE=false
+SEED=0
+MAX_EXAMPLES=(all)
+SKIP_JUDGE=false
+SKIP_STRONGREJECT=false
+RESUME=false
+OVERWRITE=false
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Checking Stage 2B CLI help ===
+usage: run_batch_attack.py [-h] --input-jsonl INPUT_JSONL --output-jsonl
+                           OUTPUT_JSONL --summary-json SUMMARY_JSON
+                           [--model-name-or-path MODEL_NAME_OR_PATH]
+                           [--max-new-tokens MAX_NEW_TOKENS]
+                           [--enable-thinking] [--no-thinking] [--do-sample]
+                           [--seed SEED] [--max-examples MAX_EXAMPLES]
+                           [--skip-judge] [--skip-strongreject] [--resume]
+                           [--overwrite]
+
+Stage 2B: Run existing Stage 2/3 attack prompts through Qwen3-14B reasoning
+model locally. Captures all tokens (input, thinking, output) without trimming.
+Scores each output with StrongREJECT and an LLM judge (Gemini).
+
+options:
+  -h, --help            show this help message and exit
+  --input-jsonl INPUT_JSONL
+                        Path to Stage 2 or Stage 3 JSONL artifact.
+  --output-jsonl OUTPUT_JSONL
+                        Output JSONL path (one row per input example).
+  --summary-json SUMMARY_JSON
+                        Output summary JSON path.
+  --model-name-or-path MODEL_NAME_OR_PATH
+  --max-new-tokens MAX_NEW_TOKENS
+                        Maximum generated tokens. Default 32768 — do not trim
+                        thinking tokens.
+  --enable-thinking     Enable Qwen3 thinking/reasoning mode (default: true).
+  --no-thinking
+  --do-sample
+  --seed SEED
+  --max-examples MAX_EXAMPLES
+                        Process at most this many input rows (for smoke
+                        tests).
+  --skip-judge          Skip the Gemini LLM judge step (StrongREJECT only).
+  --skip-strongreject   Skip StrongREJECT scoring (judge only).
+  --resume              Skip already-processed example_ids in output JSONL.
+  --overwrite           Overwrite output files if they already exist.
+
+=== Running Stage 2B batch attack ===
+[stage2b] Loading input from /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl

@@ -1,0 +1,15 @@
+{
+  "artifact_version": "stage2b_v1",
+  "stage": "2b",
+  "started_utc": "2026-05-30T08:01:26.282315+00:00",
+  "finished_utc": "2026-05-30T17:18:00.655229+00:00",
+  "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+  "output_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage2b/qwen3-14b/stage2b_qwen3_batch.jsonl",
+  "model_name": "Qwen/Qwen3-14B",
+  "max_new_tokens": 32768,
+  "enable_thinking": true,
+  "rows_total": 42,
+  "rows_written": 42,
+  "rows_failed": 0,
+  "rows_skipped_resume": 0
+}

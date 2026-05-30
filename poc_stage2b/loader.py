@@ -50,7 +50,7 @@ def load_stage2_jsonl(path: str | Path) -> list[Stage2Row]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"Invalid JSON on line {line_number} in {path}: {exc}") from exc
 
-            missing = [f for f in REQUIRED_FIELDS if not raw.get(f)]
+            missing = [f for f in REQUIRED_FIELDS if f not in raw or raw[f] is None]
             if missing:
                 raise ValueError(f"Row {line_number} is missing required fields: {missing}")
 

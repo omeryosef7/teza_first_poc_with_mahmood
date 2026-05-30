@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2b/run_batch_attack.py", line 412, in <module>
+    main()
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2b/run_batch_attack.py", line 279, in main
+    all_rows = load_stage2_jsonl(input_jsonl)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage2b/loader.py", line 55, in load_stage2_jsonl
+    raise ValueError(f"Row {line_number} is missing required fields: {missing}")
+ValueError: Row 1 is missing required fields: ['goal_index']
