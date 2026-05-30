@@ -1,0 +1,21 @@
+=== Stage 6 Qwen3 full token-trace batch started ===
+Sat May 30 10:23:58 AM IDT 2026
+n-303
+SLURM_JOB_ID=415763
+NVIDIA GeForce RTX 3090, 24576 MiB, 22693 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22693 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22693 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22693 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 22693 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24126 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24126 MiB
+NVIDIA GeForce RTX 3090, 24576 MiB, 24126 MiB
+
+INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+OUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full
+MODEL_NAME=Qwen/Qwen3-14B
+MAX_NEW_TOKENS=16384
+MAX_ATTEMPTS=(all)
+RUN_JUDGE=true
+
+=== Running full batch exporter ===

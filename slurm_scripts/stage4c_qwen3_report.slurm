@@ -4,11 +4,14 @@
 #SBATCH --output=logs/poc_stage4c_qwen3_report_%j.out
 #SBATCH --error=logs/poc_stage4c_qwen3_report_%j.err
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem=8G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
 #SBATCH --time=24:00:00
-#SBATCH --partition=studentkillable
-#SBATCH --account=gpu-students
+#SBATCH --partition=killable
+#SBATCH --account=gpu-research
+#SBATCH --nodes=1
+#SBATCH --gpus=2
+#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-302,n-303,n-304,n-305
 
 set -euo pipefail
 

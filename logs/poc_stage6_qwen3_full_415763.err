@@ -1,0 +1,3 @@
+/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:46<05:23, 46.19s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:27<04:19, 43.20s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [02:14<03:44, 44.86s/it]

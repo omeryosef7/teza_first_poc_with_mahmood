@@ -7,10 +7,11 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=24:00:00
-#SBATCH --partition=studentkillable
-#SBATCH --account=gpu-students
-#SBATCH --exclude=s-002
-#SBATCH --gres=gpu:1
+#SBATCH --partition=killable
+#SBATCH --account=gpu-research
+#SBATCH --nodes=1
+#SBATCH --gpus=2
+#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-302,n-303,n-304,n-305
 
 set -euo pipefail
 

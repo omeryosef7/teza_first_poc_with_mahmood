@@ -5,13 +5,13 @@
 #SBATCH --error=logs/poc_stage4a2_qwen3_sign_scale_top5_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --time=24:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,n-301,n-302,n-303,n-304,n-305
+#SBATCH --gpus=2
+#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-302,n-303,n-304,n-305
 
 set -euo pipefail
 
