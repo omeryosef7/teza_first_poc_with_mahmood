@@ -19,3 +19,8 @@ MAX_ATTEMPTS=(all)
 RUN_JUDGE=true
 
 === Running full batch exporter ===
+[batch] Loading examples from /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
+[batch] Found 42 examples
+[batch] Mode: in-process (model loaded once)
+[batch] max_new_tokens=32768 redact=False run_judge=True
+[batch] Loading model once: Qwen/Qwen3-14B

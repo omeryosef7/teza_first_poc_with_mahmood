@@ -221,7 +221,7 @@ def run_in_process(
     from poc_stage4.qwen3_model import load_qwen3_model
     from poc_stage6.export_qwen_token_trace import _build_artifact, _seed_everything
 
-    print(f"[batch] Loading model once: {args.model}")
+    print(f"[batch] Loading model once: {args.model}", flush=True)
     qwen = load_qwen3_model(args.model, require_cuda=True, log_device_placement=True)
     tokenizer = qwen.tokenizer
     model = qwen.model
@@ -230,14 +230,14 @@ def run_in_process(
     rows: list[dict] = []
     for count, ex in enumerate(examples, start=1):
         if args.max_attempts is not None and count > args.max_attempts:
-            print(f"Reached max attempts ({args.max_attempts}), stopping.")
+            print(f"Reached max attempts ({args.max_attempts}), stopping.", flush=True)
             break
 
         example_id = ex.example_id
         output_path = out_dir / f"qwen3_14b_trace_{_safe_filename_part(example_id)}.json"
 
         if output_path.exists():
-            print(f"[{count}/{len(examples)}] Skipping existing: {example_id}")
+            print(f"[{count}/{len(examples)}] Skipping existing: {example_id}", flush=True)
             rows.append({
                 "example_id": example_id,
                 "artifact_path": str(output_path),
@@ -246,7 +246,7 @@ def run_in_process(
             })
             continue
 
-        print(f"[{count}/{len(examples)}] Processing: {example_id}")
+        print(f"[{count}/{len(examples)}] Processing: {example_id}", flush=True)
         try:
             config = _make_export_config(
                 input_jsonl=input_jsonl,
@@ -259,7 +259,7 @@ def run_in_process(
             artifact = _build_artifact(config=config, example=ex, tokenizer=tokenizer, model=model)
             _atomic_write_json(output_path, artifact)
         except Exception as exc:
-            print(f"  ERROR: {exc}")
+            print(f"  ERROR: {exc}", flush=True)
             rows.append({
                 "example_id": example_id,
                 "artifact_path": str(output_path),
@@ -271,12 +271,12 @@ def run_in_process(
         gen_count = len(artifact.get("generation_token_ids") or [])
         seg_status = artifact.get("thinking_segmentation_status", "unknown")
         sr_score = (artifact.get("strongreject_result") or {}).get("strongreject_score")
-        print(f"  gen_tokens={gen_count} seg={seg_status} sr={sr_score}")
+        print(f"  gen_tokens={gen_count} seg={seg_status} sr={sr_score}", flush=True)
 
         judge_patch: dict[str, Any] = {}
         if args.run_judge:
             judge_patch = _run_gemini_judge_and_patch(output_path)
-            print(f"  judge: {judge_patch}")
+            print(f"  judge: {judge_patch}", flush=True)
 
         rows.append({
             "example_id": example_id,

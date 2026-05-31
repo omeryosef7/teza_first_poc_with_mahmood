@@ -62,6 +62,7 @@ def _call_gemini(goal: str, response: str) -> str:
         messages=[{"role": "user", "content": prompt}],
         max_tokens=JUDGE_MAX_TOKENS,
         temperature=JUDGE_TEMPERATURE,
+        timeout=120,
         safety_settings=[
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
