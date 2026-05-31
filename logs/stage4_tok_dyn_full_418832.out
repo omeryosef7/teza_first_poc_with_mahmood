@@ -1,0 +1,30 @@
+=== Stage 4 token-dynamics full run started ===
+Sun May 31 06:24:44 PM IDT 2026
+n-802
+SLURM_JOB_ID=418832
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+
+MODEL_NAME_OR_PATH=Qwen/Qwen3-14B
+STAGE6_INPUT=outputs/stage6/all_traces_full
+REFUSAL_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+LAYERS=all
+MAX_EXAMPLES=<all>
+MAX_NEW_TOKENS_TO_ANALYZE=<all>
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260531_182439
+RUN_NAME=full_20260531_182439
+RESUME=true
+DEVICE=auto
+DTYPE=bfloat16
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Running Stage 4 token-dynamics full run ===
+Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input outputs/stage6/all_traces_full --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260531_182439 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --run-name full_20260531_182439 --device auto --dtype bfloat16 --allow-provisional-direction --resume
