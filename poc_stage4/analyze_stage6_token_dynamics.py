@@ -121,6 +121,8 @@ def get_residual_projection_pre_hook(
         dir_on_device = direction_cpu.to(act.device)
         # [seq_len] — dot product of each token's activation with direction
         proj = (act[0].float() @ dir_on_device).detach().cpu().tolist()
+        if not isinstance(proj, list):
+            proj = [float(proj)]
         projections_store[layer_idx] = proj
 
     return hook_fn
@@ -228,10 +230,18 @@ def compute_projections_for_example(
         with torch.no_grad():
             model(input_ids=input_ids.to(input_device))
 
-    # Check all layers were captured
+    # Check all layers were captured and have correct length
+    expected_len = prompt_len + n_gen_analyzed
     missing = [li for li in selected_layers if li not in projections_store]
     if missing:
         warnings.append(f"Hooks did not fire for layers: {missing}")
+    short = [
+        f"layer={li} got={len(projections_store[li])} expected={expected_len}"
+        for li in selected_layers
+        if li in projections_store and len(projections_store[li]) < expected_len
+    ]
+    if short:
+        warnings.append(f"Projection lists shorter than expected: {short}")
 
     # Build generation-segment token rows indexed by generated_token_index
     generation_rows: list[dict[str, Any]] = [
@@ -767,6 +777,9 @@ def run(args: argparse.Namespace) -> None:
             warnings=result["warnings"],
         )
         atomic_write_json(per_example_path, per_example_artifact)
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         # Append to per_prompt_metrics.jsonl
         append_jsonl(per_prompt_path, make_json_safe({

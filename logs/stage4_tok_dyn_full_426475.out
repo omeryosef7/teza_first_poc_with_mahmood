@@ -1,0 +1,46 @@
+=== Stage 4 token-dynamics full run started ===
+Mon 01 Jun 2026 08:45:10 IDT
+n-804
+SLURM_JOB_ID=426475
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+
+MODEL_NAME_OR_PATH=Qwen/Qwen3-14B
+STAGE6_INPUT=outputs/stage6/all_traces_full
+REFUSAL_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+LAYERS=all
+MAX_EXAMPLES=<all>
+MAX_NEW_TOKENS_TO_ANALYZE=<all>
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260601_084504
+RUN_NAME=full_20260601_084504
+RESUME=true
+DEVICE=auto
+DTYPE=bfloat16
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Running Stage 4 token-dynamics full run ===
+Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input outputs/stage6/all_traces_full --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260601_084504 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --run-name full_20260601_084504 --device auto --dtype bfloat16 --allow-provisional-direction --resume
+[qwen3_model] model_name=Qwen/Qwen3-14B
+[qwen3_model] torch.cuda.is_available=True
+[qwen3_model] torch.cuda.device_count=2
+[qwen3_model] cache_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
+[qwen3_model] hf_device_map={'model.embed_tokens': '0', 'model.layers.0': '0', 'model.layers.1': '0', 'model.layers.2': '0', 'model.layers.3': '0', 'model.layers.4': '0', 'model.layers.5': '0', 'model.layers.6': '0', 'model.layers.7': '0', 'model.layers.8': '0', 'model.layers.9': '0', 'model.layers.10': '0', 'model.layers.11': '0', 'model.layers.12': '0', 'model.layers.13': '0', 'model.layers.14': '0', 'model.layers.15': '0', 'model.layers.16': '0', 'model.layers.17': '0', 'model.layers.18': '1', 'model.layers.19': '1', 'model.layers.20': '1', 'model.layers.21': '1', 'model.layers.22': '1', 'model.layers.23': '1', 'model.layers.24': '1', 'model.layers.25': '1', 'model.layers.26': '1', 'model.layers.27': '1', 'model.layers.28': '1', 'model.layers.29': '1', 'model.layers.30': '1', 'model.layers.31': '1', 'model.layers.32': '1', 'model.layers.33': '1', 'model.layers.34': '1', 'model.layers.35': '1', 'model.layers.36': '1', 'model.layers.37': '1', 'model.layers.38': '1', 'model.layers.39': '1', 'model.norm': '1', 'model.rotary_emb': '1', 'lm_head': '1'}
+[qwen3_model] cpu_offload_detected={}
+
+=== Checking outputs ===
+manifest: status=completed, completed=42, failed=0, skipped=0
+per_prompt_metrics.jsonl: 42 rows
+token_level_metrics.jsonl: 24461040 rows
+per_example/: 42 files
+Output check OK
+
+=== Stage 4 token-dynamics full run finished ===
+Mon 01 Jun 2026 15:30:10 IDT
