@@ -55,12 +55,13 @@
   "n_model_layers": 40,
   "max_examples": null,
   "max_new_tokens_to_analyze": null,
-  "examples_attempted": 0,
-  "examples_completed": 0,
+  "examples_attempted": 42,
+  "examples_completed": 42,
   "examples_skipped": 0,
   "examples_failed": 0,
   "tokens_source": "full_prompt_plus_generation_token_ids_from_stage6_artifact",
   "span_metadata_warning": "No --span-metadata-file provided; attention-based span metrics not available in this run.",
   "command": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_stage6_token_dynamics.py --stage6-input outputs/stage6/all_traces_full --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260531_182439 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --run-name full_20260531_182439 --device auto --dtype bfloat16 --allow-provisional-direction --resume",
-  "status": "in_progress"
+  "status": "completed",
+  "finished_utc": "2026-05-31T21:49:21.480722+00:00"
 }

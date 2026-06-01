@@ -64,3 +64,30 @@
 [2026-05-31T19:39:25.885111+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini
 [2026-05-31T19:56:05.697937+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini elapsed=1000.596 analyzed_tokens=32768
 [2026-05-31T19:56:06.759420+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini
+[2026-05-31T20:07:46.066594+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini elapsed=699.739 analyzed_tokens=18513
+[2026-05-31T20:07:46.644704+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini
+[2026-05-31T20:12:29.946955+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini elapsed=283.494 analyzed_tokens=4300
+[2026-05-31T20:12:30.364353+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=2|target_model=gpt-o4-mini
+[2026-05-31T20:19:52.938905+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=2|target_model=gpt-o4-mini elapsed=442.886 analyzed_tokens=10896
+[2026-05-31T20:19:54.074378+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=3|target_model=gpt-o4-mini
+[2026-05-31T20:26:31.978681+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=3|target_model=gpt-o4-mini elapsed=398.799 analyzed_tokens=7696
+[2026-05-31T20:26:32.597980+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=4|target_model=gpt-o4-mini
+[2026-05-31T20:40:26.992304+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=4|target_model=gpt-o4-mini elapsed=834.844 analyzed_tokens=19428
+[2026-05-31T20:40:28.245093+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=5|target_model=gpt-o4-mini
+[2026-05-31T20:50:42.423530+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=5|target_model=gpt-o4-mini elapsed=615.049 analyzed_tokens=17714
+[2026-05-31T20:50:43.200389+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=2|attack_iteration=2|conversation_id=6|target_model=gpt-o4-mini
+[2026-05-31T20:59:15.863863+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=2|attack_iteration=2|conversation_id=6|target_model=gpt-o4-mini elapsed=513.08 analyzed_tokens=17525
+[2026-05-31T20:59:16.379181+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini
+[2026-05-31T21:01:08.419292+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini elapsed=112.2 analyzed_tokens=3634
+[2026-05-31T21:01:09.225333+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini
+[2026-05-31T21:10:33.514206+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini elapsed=565.013 analyzed_tokens=19850
+[2026-05-31T21:10:34.258532+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini
+[2026-05-31T21:17:40.146088+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini elapsed=426.233 analyzed_tokens=14188
+[2026-05-31T21:17:40.836906+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini
+[2026-05-31T21:26:10.031691+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini elapsed=509.606 analyzed_tokens=17193
+[2026-05-31T21:26:10.735388+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini
+[2026-05-31T21:33:06.946097+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini elapsed=416.568 analyzed_tokens=13740
+[2026-05-31T21:33:07.894057+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini
+[2026-05-31T21:49:00.505071+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini elapsed=953.26 analyzed_tokens=25839
+[2026-05-31T21:49:01.014460+00:00] [stage4_token_dyn] Generating plots
+[2026-05-31T21:49:21.483436+00:00] [stage4_token_dyn] Done completed=42 failed=0 skipped=0 output_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260531_182439
