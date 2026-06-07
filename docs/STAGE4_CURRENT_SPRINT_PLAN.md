@@ -1323,6 +1323,96 @@ The **early_projection** and **think_length** categories show the largest differ
 
 ---
 
+### Phase 8 — Sprint Results Document
+
+**File:** `docs/STAGE4_CURRENT_SPRINT_RESULTS.md`  
+**Created:** 2026-06-07  
+**Length:** 576 lines, 5,380 words, 18 numbered sections + front-matter header  
+
+**Purpose:** The authoritative scientific summary of the Stage 4 analytical sprint. All numerical values were pre-verified against authoritative CSVs and JSONs before writing; no values were copied from memory.
+
+**Sections:** Metadata header · Executive Summary · Research Question · Data and Pipeline · Dataset Audit and Outcome Definitions · Provisional Direction and Causal Status · Initial Aggregate Observation · Fixed-Window Analysis · Normalized-Progress Analysis · Confound-Controlled Modeling · Reasoning Length Relationship · Per-Prompt Trajectory Inspection · Goal and Iteration Heterogeneity · Refined Scientific Interpretation · Thesis-Safe Main Conclusion · Limitations (14 items) · Recommended Next Steps · Artifact Index · Selected Figures (11 recommended plots)
+
+**Key wording constraints enforced:**
+- Phase 6 observation: *"No abrupt sign reversal was observed in the scalar Layer-22 projection at the `</think>` boundary."*
+- Phase 7 bin wording: *"Goals 0, 2, and 3 show positive success-minus-failure differences in all ten normalized-progress bins; Goal 1 shows a positive difference in nine of ten bins."*
+- Main conclusion: verbatim paragraph reproduced from approved spec (see Section 14 of results doc).
+- Banned phrases confirmed absent: "proven", "causes", "refusal signal", "commitment token", "dilution confirmed".
+- All direction references use "provisional harmful-versus-harmless contrast direction".
+
+**Verification confirmation:** `random_seed: 42` confirmed as top-level key in `confound_models.json`. All 12 referenced figures confirmed present (12/12). All 168 per-prompt PNGs confirmed present.
+
+---
+
+### Sprint Closeout — Artifact Freeze and Documentation (2026-06-07)
+
+The following closeout activities were performed after Phase 8 and are not a new analysis phase.
+
+#### 1. `random_seed` verification
+
+`random_seed: 42` was confirmed present as a top-level key in `confound_models.json`. Value = 42. No change needed; the key was already present from the Phase 4/5 post-hoc correction documented in that phase's results section above.
+
+#### 2. Figure-path validation
+
+All 12 figures referenced by relative Markdown links in `docs/STAGE4_CURRENT_SPRINT_RESULTS.md` were checked for existence:
+
+| Figure | Status |
+|--------|--------|
+| `fixed_window_layer22_group_comparison.png` | ✓ Present |
+| `fixed_window_effect_by_layer.png` | ✓ Present |
+| `normalized_progress_layer22.png` | ✓ Present |
+| `normalized_progress_layer22_difference.png` | ✓ Present |
+| `normalized_progress_effect_heatmap.png` | ✓ Present |
+| `confound_projection_adjusted_odds_ratio.png` | ✓ Present |
+| `confound_model_comparison.png` | ✓ Present |
+| `confound_leave_one_goal_out.png` | ✓ Present |
+| `confound_projection_vs_think_length.png` | ✓ Present |
+| `goal_success_rates.png` | ✓ Present |
+| `goal_layer22_first500.png` | ✓ Present |
+| `goal_normalized_layer22.png` | ✓ Present |
+
+Supporting files also verified: `per_prompt_plot_index.md` ✓, `canonical_examples.json` ✓, `plots_analysis_v2/per_prompt/` directory with exactly 168 PNGs ✓.
+
+**Result: 0 broken paths.**
+
+#### 3. Meeting brief
+
+**File:** `docs/STAGE4_MAHMOOD_MEETING_BRIEF.md`  
+**Length:** ~120 lines  
+**Contents:** Original hypothesis · Experimental setup (6 lines) · Five most important findings · Three primary numerical results · Refined interpretation · Main limitations · Proposed next sprint (4 priorities) · References to 5 recommended figures.
+
+Key contents:
+- **Finding 1:** Effect is early, not gradual — L22 Hedges' g = 1.256 at 500 tokens (MWU p = 0.0016, perm p = 0.0003).
+- **Finding 2:** Effect persists across all 10 normalized bins; all four goals show positive differences.
+- **Finding 3:** Confound-adjusted OR = 4.00, CI [1.06, 15.03], permutation p = 0.033.
+- **Finding 4:** Estimate is fragile — LOGO Goal 2 exclusion drops OR to 1.90 (CI includes 1); M2 LOO log loss worse than M0.
+- **Finding 5:** No sign reversal at `</think>` boundary in any of 41 separable examples.
+- **Primary numerical results:** g=1.256 (500-tok fixed window) · OR=4.00 (Firth M2) · 0/160 Stage 4A2 survivors.
+- **Recommended figures:** `fixed_window_layer22_group_comparison.png`, `normalized_progress_effect_heatmap.png`, `confound_projection_adjusted_odds_ratio.png`, `confound_leave_one_goal_out.png`, `goal_layer22_first500.png`.
+
+#### 4. Artifact freeze manifest
+
+**File:** `docs/STAGE4_SPRINT_ARTIFACT_MANIFEST.md`  
+**Length:** ~255 lines  
+**Contents:** Authoritative run directory · Per-example projection artifacts (42 files, 578,759 tokens, 24,461,040 projection rows) · All 24 analysis CSVs/JSONs with row counts · All 22 analysis plots and 168 per-prompt plots (with pre-specified vs. exploratory tags) · Script inventory (6 sprint scripts + module scripts) · Documentation file index · Full data quality status table · Known exclusions and censoring (2 right-censored, 1 not-separable — all Goal 2 iter 1) · Stage 4A2 status (0/160 survivors, `intervention_selection_failed_no_survivors`) · Package versions · "What is NOT in this manifest" section.
+
+No artifacts were copied or moved.
+
+#### 5. Git status
+
+`git` binary was not found in the Claude execution environment on this cluster node. Manual command for the user:
+
+```bash
+cd /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+git status --short
+```
+
+#### Sprint final status
+
+All eight analytical phases and all closeout activities are complete. The sprint is **frozen**. Phase 9 (attention-percentage pilot) has been explicitly deferred by the user and is not part of this sprint.
+
+---
+
 ### Package versions used in all analysis scripts
 
 | Package | Version |
