@@ -1,5 +1,6 @@
 {
   "artifact_version": "confound_models_v1",
+  "random_seed": 42,
   "fitting_method": "Firth (1993) penalized-likelihood logistic regression (pure NumPy/SciPy implementation; Jeffreys-prior penalty; standard errors from observed Fisher information at converged estimate; CIs are Wald 95%; p-values are two-sided Wald z-tests)",
   "primary_predictor": "layer-22 mean projection over first 500 thinking tokens (standardized to z-score within each fitted subset)",
   "standardization": {
