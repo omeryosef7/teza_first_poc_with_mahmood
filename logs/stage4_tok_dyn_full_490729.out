@@ -28,3 +28,19 @@ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 === Running Stage 4 token-dynamics full run ===
 Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input outputs/stage6/all_traces_full --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260604_101929 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --run-name full_20260604_101929 --device auto --dtype bfloat16 --allow-provisional-direction --resume
+[qwen3_model] model_name=Qwen/Qwen3-14B
+[qwen3_model] torch.cuda.is_available=True
+[qwen3_model] torch.cuda.device_count=1
+[qwen3_model] cache_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
+[qwen3_model] hf_device_map={'': '0'}
+[qwen3_model] cpu_offload_detected={}
+
+=== Checking outputs ===
+manifest: status=completed, completed=18, failed=0, skipped=24
+per_prompt_metrics.jsonl: 42 rows
+token_level_metrics.jsonl: 24461040 rows
+per_example/: 42 files
+Output check OK
+
+=== Stage 4 token-dynamics full run finished ===
+Sun Jun  7 01:04:10 PM IDT 2026

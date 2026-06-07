@@ -193,3 +193,12 @@
 {"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-07T09:14:15.189756+00:00"}
 {"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 104.338, "analyzed_tokens": 3634, "warnings": [], "utc": "2026-06-07T09:15:59.106511+00:00"}
 {"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-06-07T09:15:59.566170+00:00"}
+{"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 572.579, "analyzed_tokens": 19850, "warnings": [], "utc": "2026-06-07T09:25:31.686621+00:00"}
+{"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-06-07T09:25:32.372645+00:00"}
+{"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 437.827, "analyzed_tokens": 14188, "warnings": [], "utc": "2026-06-07T09:32:49.515288+00:00"}
+{"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-06-07T09:32:49.940235+00:00"}
+{"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 511.824, "analyzed_tokens": 17193, "warnings": [], "utc": "2026-06-07T09:41:21.339828+00:00"}
+{"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-06-07T09:41:21.687297+00:00"}
+{"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 395.977, "analyzed_tokens": 13740, "warnings": [], "utc": "2026-06-07T09:47:57.317807+00:00"}
+{"event": "started", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "utc": "2026-06-07T09:47:57.969099+00:00"}
+{"event": "completed", "prompt_id": "goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "elapsed_seconds": 727.797, "analyzed_tokens": 25839, "warnings": [], "utc": "2026-06-07T10:00:05.115730+00:00"}

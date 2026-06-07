@@ -56,3 +56,17 @@
 [2026-06-07T09:14:15.190626+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini
 [2026-06-07T09:15:59.107241+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini elapsed=104.338 analyzed_tokens=3634
 [2026-06-07T09:15:59.567006+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini
+[2026-06-07T09:25:31.687689+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini elapsed=572.579 analyzed_tokens=19850
+[2026-06-07T09:25:32.373570+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini
+[2026-06-07T09:32:49.515998+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini elapsed=437.827 analyzed_tokens=14188
+[2026-06-07T09:32:49.941060+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini
+[2026-06-07T09:41:21.340592+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini elapsed=511.824 analyzed_tokens=17193
+[2026-06-07T09:41:21.688051+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini
+[2026-06-07T09:47:57.318490+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini elapsed=395.977 analyzed_tokens=13740
+[2026-06-07T09:47:57.969939+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini
+[2026-06-07T10:00:05.116444+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini elapsed=727.797 analyzed_tokens=25839
+[2026-06-07T10:00:05.116710+00:00] [stage4_token_dyn] Generating plots
+[2026-06-07T10:00:11.904114+00:00] [stage4_token_dyn] Done completed=18 failed=0 skipped=24 output_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260604_101929
+slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
+slurmstepd: error: Cannot write to cgroup.procs for (null)
+slurmstepd: error: Unable to move pid 126060 to init root cgroup (null)
