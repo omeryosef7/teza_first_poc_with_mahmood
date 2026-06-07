@@ -1,0 +1,28 @@
+{
+  "artifact_version": "confound_model_manifest_v1",
+  "created_utc": "2026-06-07T15:48:01.858121+00:00",
+  "stage4_run_directory": "outputs/stage4/token_dynamics/full_20260604_101929",
+  "inputs": {
+    "analysis_dataset": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/analysis_dataset.csv",
+    "fixed_window_csv": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/fixed_window_per_example.csv",
+    "normalized_csv": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/normalized_progress_per_example.csv"
+  },
+  "primary_predictor": "layer-22, window=500, mean_projection",
+  "primary_outcome": "sr_success = strongreject_score >= 0.5",
+  "fitting_method": "Firth (1993) penalized logistic regression",
+  "n_bootstrap": 2000,
+  "n_permutations": 10000,
+  "random_seed": 42,
+  "package_versions": {
+    "python": "3.12.13",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "matplotlib": "3.9.0"
+  },
+  "outputs": {
+    "confound_model_dataset_csv": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/confound_model_dataset.csv",
+    "confound_model_coefficients_csv": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/confound_model_coefficients.csv",
+    "confound_model_metrics_csv": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/confound_model_metrics.csv",
+    "confound_models_json": "outputs/stage4/token_dynamics/full_20260604_101929/analysis/confound_models.json"
+  }
+}
