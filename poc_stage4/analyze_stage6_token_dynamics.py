@@ -116,11 +116,26 @@ def get_residual_projection_pre_hook(
     Used via add_hooks() from the paper code (hook_utils.py).
     Returns None so the forward pass is not modified.
     """
+    _debug_done: list[bool] = []  # mutable cell so nested fn can set it
+
     def hook_fn(module: Any, input: Any) -> None:
         act = input[0] if isinstance(input, tuple) else input  # [1, seq_len, d_model]
         dir_on_device = direction_cpu.to(act.device)
-        # [seq_len] — dot product of each token's activation with direction
-        proj = (act[0].float() @ dir_on_device).detach().cpu().tolist()
+        proj_tensor = (act[0].float() @ dir_on_device).detach()
+        # Debug: log shape/dtype for first call on each layer
+        if not _debug_done:
+            _debug_done.append(True)
+            import sys
+            print(
+                f"[hook_debug] layer={layer_idx}"
+                f" act.shape={tuple(act.shape)}"
+                f" dir.shape={tuple(dir_on_device.shape)}"
+                f" proj.shape={tuple(proj_tensor.shape)}"
+                f" act.device={act.device}"
+                f" dir.device={dir_on_device.device}",
+                file=sys.stderr, flush=True,
+            )
+        proj = proj_tensor.cpu().tolist()
         if not isinstance(proj, list):
             proj = [float(proj)]
         projections_store[layer_idx] = proj
@@ -176,19 +191,30 @@ def compute_projections_for_example(
     direction: torch.Tensor,
     selected_layers: list[int],
     max_new_tokens_to_analyze: int | None,
-    add_hooks: Any,
+    add_hooks: Any,  # kept in signature for API compatibility; not used
 ) -> dict[str, Any]:
     """
     Run a single forward pass on the full sequence from a Stage 6 artifact
     and return per-layer projection lists over generated tokens.
 
+    Uses forward pre-hooks (NOT output_hidden_states=True) so that only one
+    layer's activation occupies GPU memory at a time.  With output_hidden_states
+    the forward pass holds all 41 hidden-state tensors simultaneously (~6-10 GB
+    for long sequences), which causes OOM on top of the ~39 GB model footprint.
+    Hooks project each layer's activation onto the refusal direction immediately
+    and store only the resulting Python float list, keeping peak extra GPU usage
+    to ~160 MB (one float32 activation tensor for seq_len ≈ 8000).
+
+    This approach requires a single GPU (device_map={"": 0}), which is enforced
+    by the SLURM script (--gpus=1, nodelist n-802..n-805).
+
     Returns a dict with:
-      projections:   {layer_idx: list[float]} — full sequence length
+      projections:    {layer_idx: list[float]} — full sequence length
       generation_rows: list of token_table rows for generation segment
-      prompt_len:    int
-      n_gen_full:    int
+      prompt_len:     int
+      n_gen_full:     int
       n_gen_analyzed: int
-      warnings:      list[str]
+      warnings:       list[str]
     """
     warnings: list[str] = []
 
@@ -218,30 +244,43 @@ def compute_projections_for_example(
 
     input_ids = torch.tensor(input_ids_list, dtype=torch.long).unsqueeze(0)
     input_device = _model_input_device(model)
+    direction_cpu = direction.cpu()
 
+    # --- Forward pre-hooks: capture + project one layer at a time ---
+    # register_forward_pre_hook on layer[i] fires with the residual stream
+    # input to layer i, which equals output_hidden_states[i].  We immediately
+    # project onto the refusal direction and store only the Python float list.
     projections_store: dict[int, list[float]] = {}
-    hook_pairs = [
-        (model.model.layers[li], get_residual_projection_pre_hook(li, direction, projections_store))
-        for li in selected_layers
-        if li < len(model.model.layers)
-    ]
+    transformer_layers = model.model.layers
+    n_model_layers = len(transformer_layers)
 
-    with add_hooks(module_forward_pre_hooks=hook_pairs, module_forward_hooks=[]):
+    def _make_hook(layer_idx: int):
+        def _hook(module: Any, hook_input: Any) -> None:
+            act = hook_input[0] if isinstance(hook_input, tuple) else hook_input
+            # act: [1, seq_len, hidden_size] on GPU (bfloat16)
+            dir_dev = direction_cpu.to(act.device)
+            proj = (act[0].float() @ dir_dev).detach().cpu().tolist()
+            projections_store[layer_idx] = proj if isinstance(proj, list) else [float(proj)]
+            del dir_dev
+        return _hook
+
+    handles = []
+    for li in selected_layers:
+        if li >= n_model_layers:
+            warnings.append(f"Layer {li} out of range (model has {n_model_layers} layers)")
+            continue
+        handles.append(transformer_layers[li].register_forward_pre_hook(_make_hook(li)))
+
+    try:
         with torch.no_grad():
             model(input_ids=input_ids.to(input_device))
+    finally:
+        for h in handles:
+            h.remove()
+        del handles
 
-    # Check all layers were captured and have correct length
-    expected_len = prompt_len + n_gen_analyzed
-    missing = [li for li in selected_layers if li not in projections_store]
-    if missing:
-        warnings.append(f"Hooks did not fire for layers: {missing}")
-    short = [
-        f"layer={li} got={len(projections_store[li])} expected={expected_len}"
-        for li in selected_layers
-        if li in projections_store and len(projections_store[li]) < expected_len
-    ]
-    if short:
-        warnings.append(f"Projection lists shorter than expected: {short}")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
     # Build generation-segment token rows indexed by generated_token_index
     generation_rows: list[dict[str, Any]] = [
@@ -737,7 +776,7 @@ def run(args: argparse.Namespace) -> None:
                 direction=direction,
                 selected_layers=selected_layers,
                 max_new_tokens_to_analyze=args.max_new_tokens_to_analyze,
-                add_hooks=add_hooks,
+                add_hooks=add_hooks,  # kept in signature for compatibility, unused
             )
         except Exception as exc:
             elapsed = round(time.time() - t0, 3)

@@ -1,0 +1,14 @@
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-01T17:26:10.877572+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 12.859, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:26:23.567763+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-06-01T17:26:23.910816+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 9.454, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:26:33.022609+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-06-01T17:26:33.423348+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 10.273, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:26:43.296207+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-06-01T17:26:43.642093+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 9.319, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:26:52.615906+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-06-01T17:26:52.962272+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 9.741, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:27:02.357284+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "utc": "2026-06-01T17:27:02.715035+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "elapsed_seconds": 9.879, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:27:12.236999+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-01T17:27:12.335657+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 10.217, "analyzed_tokens": 128, "warnings": [], "utc": "2026-06-01T17:27:22.455181+00:00"}

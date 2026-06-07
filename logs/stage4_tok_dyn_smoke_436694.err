@@ -1,0 +1,304 @@
+[2026-06-01T17:19:22.575241+00:00] [stage4_token_dyn] Loading model model=Qwen/Qwen3-14B
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:55<06:31, 55.87s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:50<05:31, 55.27s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [02:45<04:35, 55.00s/it]Loading checkpoint shards:  50%|█████     | 4/8 [03:38<03:37, 54.34s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [04:32<02:42, 54.01s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [05:24<01:47, 53.52s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [06:17<00:53, 53.19s/it]Loading checkpoint shards: 100%|██████████| 8/8 [06:42<00:00, 44.28s/it]Loading checkpoint shards: 100%|██████████| 8/8 [06:42<00:00, 50.30s/it]
+[2026-06-01T17:26:10.321510+00:00] [stage4_token_dyn] Loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+[2026-06-01T17:26:10.528093+00:00] [stage4_token_dyn] Resolving layers
+[2026-06-01T17:26:10.528195+00:00] [stage4_token_dyn] Selected 40 layers layers=[0, 1, 2, 3, 4]
+[2026-06-01T17:26:10.579225+00:00] [stage4_token_dyn] Collecting Stage 6 trace files path=outputs/stage6/all_traces_full
+[2026-06-01T17:26:10.583294+00:00] [stage4_token_dyn] Found 42 trace files
+[2026-06-01T17:26:10.583343+00:00] [stage4_token_dyn] Limited to 7 examples by --max-examples
+[2026-06-01T17:26:10.879319+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=919 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=919 val_type=float val_repr=0.2463301420211792
+[val_debug] li=2 abs_idx=919 val_type=float val_repr=0.36522382497787476
+[val_debug] li=3 abs_idx=919 val_type=float val_repr=0.8419141173362732
+[val_debug] li=4 abs_idx=919 val_type=float val_repr=0.8463739156723022
+[val_debug] li=5 abs_idx=919 val_type=float val_repr=1.147911787033081
+[val_debug] li=6 abs_idx=919 val_type=float val_repr=1.313161849975586
+[val_debug] li=7 abs_idx=919 val_type=float val_repr=135.6549530029297
+[val_debug] li=8 abs_idx=919 val_type=float val_repr=147.0906219482422
+[val_debug] li=9 abs_idx=919 val_type=float val_repr=148.14776611328125
+[val_debug] li=10 abs_idx=919 val_type=float val_repr=149.99546813964844
+[val_debug] li=11 abs_idx=919 val_type=float val_repr=151.73374938964844
+[val_debug] li=12 abs_idx=919 val_type=float val_repr=153.6875
+[val_debug] li=13 abs_idx=919 val_type=float val_repr=155.52110290527344
+[val_debug] li=14 abs_idx=919 val_type=float val_repr=156.29498291015625
+[val_debug] li=15 abs_idx=919 val_type=float val_repr=157.02896118164062
+[val_debug] li=16 abs_idx=919 val_type=float val_repr=157.7490234375
+[val_debug] li=17 abs_idx=919 val_type=float val_repr=157.68475341796875
+[val_debug] li=18 abs_idx=919 val_type=float val_repr=158.3402557373047
+[val_debug] li=19 abs_idx=919 val_type=float val_repr=0.9272589683532715
+[val_debug] li=20 abs_idx=919 val_type=float val_repr=157.32888793945312
+[val_debug] li=21 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=919 val_type=float val_repr=0.0
+[2026-06-01T17:26:23.568603+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini elapsed=12.859 analyzed_tokens=128
+[2026-06-01T17:26:23.911901+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=1023 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=2 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=3 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=4 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=5 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=6 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=7 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=8 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=9 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=10 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=11 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=12 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=13 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=14 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=15 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=16 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=17 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=18 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=19 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=20 abs_idx=1023 val_type=float val_repr=nan
+[val_debug] li=21 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=1023 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=1023 val_type=float val_repr=0.0
+[2026-06-01T17:26:33.023361+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini elapsed=9.454 analyzed_tokens=128
+[2026-06-01T17:26:33.424602+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=943 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=943 val_type=float val_repr=0.2452385276556015
+[val_debug] li=2 abs_idx=943 val_type=float val_repr=0.3819007873535156
+[val_debug] li=3 abs_idx=943 val_type=float val_repr=0.807854175567627
+[val_debug] li=4 abs_idx=943 val_type=float val_repr=0.8043925166130066
+[val_debug] li=5 abs_idx=943 val_type=float val_repr=1.0765115022659302
+[val_debug] li=6 abs_idx=943 val_type=float val_repr=1.5162951946258545
+[val_debug] li=7 abs_idx=943 val_type=float val_repr=290.6723937988281
+[val_debug] li=8 abs_idx=943 val_type=float val_repr=302.9961853027344
+[val_debug] li=9 abs_idx=943 val_type=float val_repr=305.00970458984375
+[val_debug] li=10 abs_idx=943 val_type=float val_repr=306.8646240234375
+[val_debug] li=11 abs_idx=943 val_type=float val_repr=308.57232666015625
+[val_debug] li=12 abs_idx=943 val_type=float val_repr=310.4638366699219
+[val_debug] li=13 abs_idx=943 val_type=float val_repr=312.28961181640625
+[val_debug] li=14 abs_idx=943 val_type=float val_repr=312.1799621582031
+[val_debug] li=15 abs_idx=943 val_type=float val_repr=311.9704895019531
+[val_debug] li=16 abs_idx=943 val_type=float val_repr=311.77203369140625
+[val_debug] li=17 abs_idx=943 val_type=float val_repr=311.73199462890625
+[val_debug] li=18 abs_idx=943 val_type=float val_repr=313.26641845703125
+[val_debug] li=19 abs_idx=943 val_type=float val_repr=1.0812796354293823
+[val_debug] li=20 abs_idx=943 val_type=float val_repr=311.3406066894531
+[val_debug] li=21 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=943 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=943 val_type=float val_repr=0.0
+[2026-06-01T17:26:43.296913+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini elapsed=10.273 analyzed_tokens=128
+[2026-06-01T17:26:43.643176+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=559 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=559 val_type=float val_repr=0.21318405866622925
+[val_debug] li=2 abs_idx=559 val_type=float val_repr=0.33741170167922974
+[val_debug] li=3 abs_idx=559 val_type=float val_repr=0.6646884083747864
+[val_debug] li=4 abs_idx=559 val_type=float val_repr=0.6597991585731506
+[val_debug] li=5 abs_idx=559 val_type=float val_repr=0.916234016418457
+[val_debug] li=6 abs_idx=559 val_type=float val_repr=1.1919746398925781
+[val_debug] li=7 abs_idx=559 val_type=float val_repr=162.847900390625
+[val_debug] li=8 abs_idx=559 val_type=float val_repr=174.2349853515625
+[val_debug] li=9 abs_idx=559 val_type=float val_repr=175.33750915527344
+[val_debug] li=10 abs_idx=559 val_type=float val_repr=177.1389923095703
+[val_debug] li=11 abs_idx=559 val_type=float val_repr=178.85569763183594
+[val_debug] li=12 abs_idx=559 val_type=float val_repr=180.7655487060547
+[val_debug] li=13 abs_idx=559 val_type=float val_repr=182.56756591796875
+[val_debug] li=14 abs_idx=559 val_type=float val_repr=183.29164123535156
+[val_debug] li=15 abs_idx=559 val_type=float val_repr=183.95565795898438
+[val_debug] li=16 abs_idx=559 val_type=float val_repr=184.6270751953125
+[val_debug] li=17 abs_idx=559 val_type=float val_repr=184.56640625
+[val_debug] li=18 abs_idx=559 val_type=float val_repr=184.33839416503906
+[val_debug] li=19 abs_idx=559 val_type=float val_repr=183.3128662109375
+[val_debug] li=20 abs_idx=559 val_type=float val_repr=0.9722385406494141
+[val_debug] li=21 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=559 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=559 val_type=float val_repr=0.0
+[2026-06-01T17:26:52.616617+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini elapsed=9.319 analyzed_tokens=128
+[2026-06-01T17:26:52.963353+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=1025 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=2 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=3 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=4 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=5 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=6 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=7 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=8 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=9 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=10 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=11 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=12 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=13 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=14 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=15 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=16 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=17 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=18 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=19 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=20 abs_idx=1025 val_type=float val_repr=nan
+[val_debug] li=21 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=1025 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=1025 val_type=float val_repr=0.0
+[2026-06-01T17:27:02.357998+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini elapsed=9.741 analyzed_tokens=128
+[2026-06-01T17:27:02.715903+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=919 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=2 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=3 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=4 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=5 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=6 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=7 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=8 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=9 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=10 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=11 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=12 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=13 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=14 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=15 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=16 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=17 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=18 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=19 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=20 abs_idx=919 val_type=float val_repr=nan
+[val_debug] li=21 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=919 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=919 val_type=float val_repr=0.0
+[2026-06-01T17:27:12.237697+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini elapsed=9.879 analyzed_tokens=128
+[2026-06-01T17:27:12.336892+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini
+[val_debug] li=0 abs_idx=837 val_type=float val_repr=0.012119723483920097
+[val_debug] li=1 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=2 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=3 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=4 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=5 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=6 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=7 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=8 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=9 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=10 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=11 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=12 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=13 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=14 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=15 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=16 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=17 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=18 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=19 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=20 abs_idx=837 val_type=float val_repr=nan
+[val_debug] li=21 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=22 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=23 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=24 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=25 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=26 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=27 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=28 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=29 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=30 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=31 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=32 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=33 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=34 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=35 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=36 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=37 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=38 abs_idx=837 val_type=float val_repr=0.0
+[val_debug] li=39 abs_idx=837 val_type=float val_repr=0.0
+[2026-06-01T17:27:22.455917+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=2|conversation_id=1|target_model=gpt-o4-mini elapsed=10.217 analyzed_tokens=128
+[2026-06-01T17:27:22.455982+00:00] [stage4_token_dyn] Generating plots
+[2026-06-01T17:27:24.844670+00:00] [stage4_token_dyn] Done completed=7 failed=0 skipped=0 output_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260601_201836

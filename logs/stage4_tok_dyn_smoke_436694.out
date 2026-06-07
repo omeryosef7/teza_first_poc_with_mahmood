@@ -1,0 +1,108 @@
+=== Stage 4 token-dynamics smoke started ===
+Mon Jun  1 08:18:41 PM IDT 2026
+n-802
+SLURM_JOB_ID=436694
+/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
+Python 3.12.13
+NVIDIA L40S, 46068 MiB, 12813 MiB
+NVIDIA L40S, 46068 MiB, 1353 MiB
+NVIDIA L40S, 46068 MiB, 1513 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+
+MODEL_NAME_OR_PATH=Qwen/Qwen3-14B
+STAGE6_INPUT=outputs/stage6/all_traces_full
+REFUSAL_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
+LAYERS=all
+MAX_EXAMPLES=7
+MAX_NEW_TOKENS_TO_ANALYZE=128
+OUTPUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260601_201836
+RUN_NAME=smoke_20260601_201836
+DEVICE=auto
+DTYPE=bfloat16
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+=== Checking CLI help ===
+usage: analyze_stage6_token_dynamics.py [-h] --stage6-input STAGE6_INPUT
+                                        --output-dir OUTPUT_DIR
+                                        [--model-name-or-path MODEL_NAME_OR_PATH]
+                                        [--refusal-direction-path REFUSAL_DIRECTION_PATH]
+                                        [--layers LAYERS]
+                                        [--max-examples MAX_EXAMPLES]
+                                        [--max-new-tokens-to-analyze MAX_NEW_TOKENS_TO_ANALYZE]
+                                        [--smoke] [--resume] [--device DEVICE]
+                                        [--dtype DTYPE]
+                                        [--allow-provisional-direction]
+                                        [--plot] [--no-plot]
+                                        [--run-name RUN_NAME]
+                                        [--span-metadata-file SPAN_METADATA_FILE]
+
+Stage 4 token-level dynamics analysis. Reads Stage 6 Qwen3-14B token trace
+artifacts and computes refusal-direction projection per generated token per
+layer.
+
+options:
+  -h, --help            show this help message and exit
+  --stage6-input STAGE6_INPUT
+                        Directory of Stage 6 trace JSON files, or a single
+                        JSON file.
+  --output-dir OUTPUT_DIR
+                        Output directory for all artifacts.
+  --model-name-or-path MODEL_NAME_OR_PATH
+                        HuggingFace model name/path. Default: Qwen/Qwen3-14B
+  --refusal-direction-path REFUSAL_DIRECTION_PATH
+                        Path to directory containing direction.pt and
+                        selected_direction.json. Default:
+                        outputs/stage4/qwen3-14b/refusal_direction
+  --layers LAYERS       Comma-separated layer indices or "all". Default: all
+                        layers.
+  --max-examples MAX_EXAMPLES
+                        Limit number of examples processed.
+  --max-new-tokens-to-analyze MAX_NEW_TOKENS_TO_ANALYZE
+                        Max generated tokens analyzed per example. Default:
+                        all.
+  --smoke               Smoke-run mode: sets --max-examples 5 and --max-new-
+                        tokens-to-analyze 128 unless those flags are
+                        explicitly provided.
+  --resume              Skip examples whose per-example output JSON already
+                        exists.
+  --device DEVICE       Device for model (auto/cuda/cpu). Default: auto.
+  --dtype DTYPE         Torch dtype (bfloat16/float16/float32/auto). Default:
+                        bfloat16.
+  --allow-provisional-direction
+                        Allow Stage 4A1 provisional directions (smoke/debug
+                        only).
+  --plot                Generate plots (default: true when matplotlib is
+                        available).
+  --no-plot             Disable plot generation.
+  --run-name RUN_NAME   Human-readable run label. Default:
+                        token_dynamics_<timestamp>.
+  --span-metadata-file SPAN_METADATA_FILE
+                        Optional path to a JSON file with span metadata per
+                        example (for future attention-based metrics). Not yet
+                        implemented; a warning is stored in the manifest when
+                        absent.
+
+=== Running Stage 4 token-dynamics smoke ===
+Command: python -m poc_stage4.analyze_stage6_token_dynamics --stage6-input outputs/stage6/all_traces_full --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260601_201836 --model-name-or-path Qwen/Qwen3-14B --refusal-direction-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction --layers all --max-examples 7 --max-new-tokens-to-analyze 128 --run-name smoke_20260601_201836 --device auto --dtype bfloat16 --smoke --allow-provisional-direction
+[qwen3_model] model_name=Qwen/Qwen3-14B
+[qwen3_model] torch.cuda.is_available=True
+[qwen3_model] torch.cuda.device_count=2
+[qwen3_model] cache_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
+[qwen3_model] hf_device_map={'model.embed_tokens': '0', 'model.layers.0': '0', 'model.layers.1': '0', 'model.layers.2': '0', 'model.layers.3': '0', 'model.layers.4': '0', 'model.layers.5': '0', 'model.layers.6': '0', 'model.layers.7': '0', 'model.layers.8': '0', 'model.layers.9': '0', 'model.layers.10': '0', 'model.layers.11': '0', 'model.layers.12': '0', 'model.layers.13': '0', 'model.layers.14': '0', 'model.layers.15': '0', 'model.layers.16': '0', 'model.layers.17': '0', 'model.layers.18': '1', 'model.layers.19': '1', 'model.layers.20': '1', 'model.layers.21': '1', 'model.layers.22': '1', 'model.layers.23': '1', 'model.layers.24': '1', 'model.layers.25': '1', 'model.layers.26': '1', 'model.layers.27': '1', 'model.layers.28': '1', 'model.layers.29': '1', 'model.layers.30': '1', 'model.layers.31': '1', 'model.layers.32': '1', 'model.layers.33': '1', 'model.layers.34': '1', 'model.layers.35': '1', 'model.layers.36': '1', 'model.layers.37': '1', 'model.layers.38': '1', 'model.layers.39': '1', 'model.norm': '1', 'model.rotary_emb': '1', 'lm_head': '1'}
+[qwen3_model] cpu_offload_detected={}
+
+=== Validating smoke outputs ===
+manifest: examples_completed=7, failed=0
+per_prompt_metrics.jsonl: 7 rows
+token_level_metrics.jsonl: 35840 rows
+per_example/: 7 files
+per_example spot-check: token_level_data length=128, layers=40
+
+Stage 4 token-dynamics smoke output validation OK
+
+=== Stage 4 token-dynamics smoke finished successfully ===
+Mon Jun  1 08:27:26 PM IDT 2026
