@@ -1,0 +1,8 @@
+{
+  "artifact_version": "adjudication_queue_v1",
+  "created_utc": "2026-06-08T14:16:40.239279+00:00",
+  "analysis_dataset_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/full_20260604_101929/analysis/analysis_dataset.csv",
+  "n_total": 42,
+  "n_completed": 0,
+  "n_pending": 42
+}
