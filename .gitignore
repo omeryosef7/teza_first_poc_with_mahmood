@@ -3,3 +3,4 @@
 __pycache__/
 *.py[cod]
 outputs/stage4/token_dynamics/*/token_level_metrics.jsonl
+outputs/stage4/token_dynamics/full_20260604_101929/plots_analysis_v2/per_prompt/
