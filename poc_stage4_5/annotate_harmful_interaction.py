@@ -138,6 +138,8 @@ def _annotate_interactive(
     print(
         "\nCommands: [n] next block  [p] prev block  [j N] jump to token N  "
         "[s N] set event to N\n"
+        "          [f TEXT] find first token containing TEXT  "
+        "[fa TEXT] find all matches\n"
         "          [done] finish  [none] no harmful interaction  "
         "[unc] uncertain  [skip] defer\n"
         "          [show] toggle token text\n"
@@ -267,6 +269,24 @@ def _annotate_interactive(
             print("  Skipped — no annotation saved.")
             return None
 
+        elif cmd in ("f", "fa") and len(parts) >= 2:
+            needle = cmd_raw.split(None, 1)[1].lower()
+            matches = [
+                t for t in tokens
+                if needle in t.get("token_text", "").lower()
+            ]
+            if not matches:
+                print(f"  No tokens found containing {needle!r}.")
+            elif cmd == "f":
+                target = matches[0]["generated_token_index"]
+                block_idx = target // _BLOCK_SIZE
+                print(f"  First match at token {target} → block {block_idx + 1}")
+                _display_block(tokens, block_idx, show_text)
+            else:  # fa
+                print(f"  {len(matches)} match(es):")
+                for t in matches:
+                    print(f"    [{t['generated_token_index']:5d}] {t.get('token_text','')!r}")
+
         elif cmd == "show":
             show_text = not show_text
             print(f"  Token text display: {'ON' if show_text else 'OFF'}")
@@ -278,6 +298,8 @@ def _annotate_interactive(
                 "  n          — next block\n"
                 "  p          — previous block\n"
                 "  j N        — jump to block containing token index N\n"
+                "  f TEXT     — jump to first token containing TEXT\n"
+                "  fa TEXT    — list all tokens containing TEXT\n"
                 "  s N        — set harmful_interaction_start_token to N\n"
                 "  done       — finish annotation (event must be set)\n"
                 "  none       — mark as no_harmful_interaction_found\n"
@@ -312,6 +334,18 @@ def _pick_next_pending(review_dir: Path, analysis_dataset_path: Path) -> str | N
     for row in queue:
         if row["annotation_status"] == "pending":
             return row["example_id"]
+    return None
+
+
+def _pick_from_queue_file(queue_path: Path, annotations_path: Path) -> str | None:
+    """Return next example_id from queue_path that has not been annotated yet."""
+    completed: set[str] = set()
+    if annotations_path.exists():
+        completed = {r["example_id"] for r in common.read_csv_as_list(annotations_path)}
+    for r in common.read_csv_as_list(queue_path):
+        eid = r.get("example_id", "")
+        if eid and eid not in completed:
+            return eid
     return None
 
 
@@ -433,6 +467,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=False,
         help="Overwrite existing annotation without prompting.",
     )
+    p.add_argument(
+        "--queue",
+        type=Path,
+        default=None,
+        help="CSV file with example_id column; pick next pending from this queue "
+             "instead of the full annotation queue.",
+    )
     return p.parse_args(argv)
 
 
@@ -441,7 +482,11 @@ def main(argv: list[str] | None = None) -> int:
 
     example_id = args.example_id
     if example_id is None:
-        example_id = _pick_next_pending(args.review_dir, args.analysis_dataset)
+        if args.queue is not None:
+            annotations_path = args.review_dir / "harmful_interaction_annotations.csv"
+            example_id = _pick_from_queue_file(args.queue, annotations_path)
+        else:
+            example_id = _pick_next_pending(args.review_dir, args.analysis_dataset)
         if example_id is None:
             print("All examples are annotated or excluded. Nothing to do.")
             return 0

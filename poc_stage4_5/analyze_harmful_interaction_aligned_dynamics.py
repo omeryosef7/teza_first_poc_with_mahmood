@@ -450,6 +450,7 @@ def compute_group_summary(
     rng: np.random.Generator,
     n_bootstrap: int = N_BOOTSTRAP,
     n_permutations: int = N_PERMUTATIONS,
+    outcome_col: str = "sr_success",
 ) -> list[dict]:
     """
     Compute group statistics per layer × feature × subset.
@@ -487,13 +488,13 @@ def compute_group_summary(
 
                 sr_success_vals = np.array(
                     [float(r[feat]) for r in eligible
-                     if str(r.get("sr_success", "")) == "True"
+                     if str(r.get(outcome_col, "")) == "True"
                      and not math.isnan(float(r[feat]) if r[feat] not in ("", None) else float("nan"))],
                     dtype=np.float64,
                 )
                 sr_failure_vals = np.array(
                     [float(r[feat]) for r in eligible
-                     if str(r.get("sr_success", "")) == "False"
+                     if str(r.get(outcome_col, "")) == "False"
                      and not math.isnan(float(r[feat]) if r[feat] not in ("", None) else float("nan"))],
                     dtype=np.float64,
                 )
@@ -561,6 +562,7 @@ def compute_group_summary(
 def _build_raw(
     rows_layer22: list[dict],
     projection_feature: str,
+    outcome_col: str = "sr_success",
 ) -> tuple[dict[str, np.ndarray], np.ndarray]:
     """Build raw input dict for fit_model / build_design_matrix."""
     proj = np.array([float(r[projection_feature])
@@ -572,7 +574,7 @@ def _build_raw(
     goal = np.array([int(r["goal_index"]) for r in rows_layer22], dtype=np.float64)
     attack_iter = np.array([int(r["attack_iteration"])
                              for r in rows_layer22], dtype=np.float64)
-    y = np.array([1.0 if str(r.get("sr_success")) == "True" else 0.0
+    y = np.array([1.0 if str(r.get(outcome_col)) == "True" else 0.0
                    for r in rows_layer22], dtype=np.float64)
 
     raw = {
@@ -750,6 +752,7 @@ def run_logo_analysis(
     rng: np.random.Generator | None = None,
     n_bootstrap: int = N_BOOTSTRAP,
     n_permutations: int = N_PERMUTATIONS,
+    outcome_col: str = "sr_success",
 ) -> list[dict]:
     """Leave-one-goal-out sensitivity for post_event_early_mean at primary layer."""
     if rng is None:
@@ -765,13 +768,13 @@ def run_logo_analysis(
     for excl_goal in goals:
         subset = [r for r in eligible if int(r["goal_index"]) != excl_goal]
         s_vals = np.array([float(r["post_event_early_mean"]) for r in subset
-                            if str(r.get("sr_success")) == "True"], dtype=np.float64)
+                            if str(r.get(outcome_col)) == "True"], dtype=np.float64)
         f_vals = np.array([float(r["post_event_early_mean"]) for r in subset
-                            if str(r.get("sr_success")) == "False"], dtype=np.float64)
+                            if str(r.get(outcome_col)) == "False"], dtype=np.float64)
         if len(s_vals) == 0 or len(f_vals) == 0:
             rows_out.append({"excluded_goal": excl_goal, "layer": layer,
                               "feature": "post_event_early_mean",
-                              "outcome": "sr_success", "subset": f"excl_goal_{excl_goal}",
+                              "outcome": outcome_col, "subset": f"excl_goal_{excl_goal}",
                               "n_success": len(s_vals), "n_failure": len(f_vals),
                               "hedges_g": float("nan"), "mann_whitney_p": float("nan"),
                               "or_post_event_proj": float("nan"),
@@ -805,6 +808,7 @@ def run_stream_sensitivity(
     rng: np.random.Generator | None = None,
     n_bootstrap: int = N_BOOTSTRAP,
     n_permutations: int = N_PERMUTATIONS,
+    outcome_col: str = "sr_success",
 ) -> list[dict]:
     """Leave-one-stream-out sensitivity for post_event_early_mean."""
     if rng is None:
@@ -820,13 +824,13 @@ def run_stream_sensitivity(
     for excl_conv in convs:
         subset = [r for r in eligible if int(r["conversation_id"]) != excl_conv]
         s_vals = np.array([float(r["post_event_early_mean"]) for r in subset
-                            if str(r.get("sr_success")) == "True"], dtype=np.float64)
+                            if str(r.get(outcome_col)) == "True"], dtype=np.float64)
         f_vals = np.array([float(r["post_event_early_mean"]) for r in subset
-                            if str(r.get("sr_success")) == "False"], dtype=np.float64)
+                            if str(r.get(outcome_col)) == "False"], dtype=np.float64)
         if len(s_vals) == 0 or len(f_vals) == 0:
             rows_out.append({"excluded_stream": excl_conv, "layer": layer,
                               "feature": "post_event_early_mean",
-                              "outcome": "sr_success",
+                              "outcome": outcome_col,
                               "n_success": len(s_vals), "n_failure": len(f_vals),
                               "hedges_g": float("nan"), "mann_whitney_p": float("nan")})
             continue
@@ -835,7 +839,7 @@ def run_stream_sensitivity(
             "excluded_stream": excl_conv,
             "layer": layer,
             "feature": "post_event_early_mean",
-            "outcome": "sr_success",
+            "outcome": outcome_col,
             "n_success": len(s_vals),
             "n_failure": len(f_vals),
             "hedges_g": stats["hedges_g"],
@@ -894,12 +898,17 @@ def run_analysis(
     n_bootstrap: int = N_BOOTSTRAP,
     n_permutations: int = N_PERMUTATIONS,
     layers: list[int] = SELECTED_LAYERS,
+    example_ids: set[str] | None = None,
+    pilot_mode: bool = False,
 ) -> int:
     """Execute full event-aligned analysis. Returns exit code."""
     rng = np.random.default_rng(seed)
 
     # Load inputs
     dataset_meta = common.load_analysis_dataset()
+    if example_ids is not None:
+        dataset_meta = [r for r in dataset_meta if r["example_id"] in example_ids]
+        print(f"Filtered to {len(dataset_meta)} examples from --example-ids-file.")
     annotations_path = review_dir / "harmful_interaction_annotations.csv"
 
     annotations: dict[str, dict] = {}
@@ -948,6 +957,13 @@ def run_analysis(
         # Write empty per-example CSV if no data
         common.write_csv(run_dir / "analysis" / "event_aligned_per_example.csv",
                           [], PER_EXAMPLE_FIELDS)
+        if pilot_mode:
+            _write_pilot_results(
+                run_dir=run_dir,
+                review_dir=review_dir,
+                example_ids=example_ids,
+                n_annotated=n_annotated,
+            )
         _write_run_manifest(run_dir, review_dir, annotations_path, n_annotated,
                              n_bootstrap, n_permutations, seed)
         return 0
@@ -997,6 +1013,19 @@ def run_analysis(
     common.write_csv(run_dir / "analysis" / "stream_sensitivity.csv", stream_rows, STREAM_FIELDS)
     print(f"Written: stream_sensitivity.csv ({len(stream_rows)} rows)")
 
+    # Gemini sensitivity (pilot mode only)
+    if pilot_mode and per_example_rows:
+        gemini_summary = compute_group_summary(
+            per_example_rows, rng, n_bootstrap, n_permutations,
+            outcome_col="judge_success",
+        )
+        common.write_csv(
+            run_dir / "analysis" / "event_aligned_group_summary_gemini_sensitivity.csv",
+            gemini_summary, GROUP_SUMMARY_FIELDS,
+        )
+        print(f"Written: event_aligned_group_summary_gemini_sensitivity.csv "
+              f"({len(gemini_summary)} rows)")
+
     # Full analysis JSON
     analysis_json = {
         "stage": "stage4_5",
@@ -1015,14 +1044,81 @@ def run_analysis(
         "n_bootstrap": n_bootstrap,
         "n_permutations": n_permutations,
     }
+    if pilot_mode:
+        analysis_json["analysis_scope"] = "pilot_exploratory_not_full_human_ground_truth"
+        if example_ids is not None:
+            analysis_json["n_pilot"] = len(example_ids)
     common.atomic_write_json(run_dir / "analysis" / "event_aligned_analysis.json",
                               common.make_json_safe(analysis_json))
     print(f"Written: event_aligned_analysis.json")
+
+    # Pilot results document
+    if pilot_mode:
+        _write_pilot_results(
+            run_dir=run_dir,
+            review_dir=review_dir,
+            example_ids=example_ids,
+            n_annotated=n_annotated,
+        )
 
     _write_run_manifest(run_dir, review_dir, annotations_path, n_annotated,
                          n_bootstrap, n_permutations, seed)
     print(f"\nAnalysis complete. Outputs in: {run_dir}")
     return 0
+
+
+def _write_pilot_results(
+    run_dir: Path,
+    review_dir: Path,
+    example_ids: set[str] | None,
+    n_annotated: int,
+) -> None:
+    """Write pilot_results.json with required disclosures."""
+    # Count completed human reviews
+    progress_path = review_dir / "manual_adjudication_progress.csv"
+    n_manual = 0
+    if progress_path.exists():
+        rows = common.read_csv_as_list(progress_path)
+        pilot_ids = example_ids or set()
+        n_manual = sum(
+            1 for r in rows
+            if r.get("review_status") == "completed"
+            and (not pilot_ids or r.get("example_id") in pilot_ids)
+        )
+
+    # Load n_disagreements_included from selection manifest if available
+    manifest_path = review_dir / "pilot_selection_manifest.json"
+    n_disagree: int | str = "unknown"
+    selection_rules_ref = str(manifest_path)
+    if manifest_path.exists():
+        import json as _json
+        with open(manifest_path, encoding="utf-8") as f:
+            m = _json.load(f)
+        n_disagree = m.get("n_disagreements_included", "unknown")
+
+    pilot_results = {
+        "analysis_scope": "pilot_exploratory_not_full_human_ground_truth",
+        "pilot_size": len(example_ids) if example_ids is not None else "all",
+        "selection_rules_manifest": selection_rules_ref,
+        "n_disagreements_included": n_disagree,
+        "n_manual_labels_completed": n_manual,
+        "n_event_annotations_completed": n_annotated,
+        "primary_outcome": "sr_success",
+        "sensitivity_outcome": "judge_success",
+        "human_labels_used_as_outcome": False,
+        "exploratory_disclaimer": (
+            "Results are exploratory. Pilot size is N="
+            + str(len(example_ids) if example_ids is not None else "?")
+            + ". Cannot replace the full 42-example analysis with complete human ground truth. "
+            "No causal claims are made. StrongREJECT is the primary outcome; "
+            "Gemini judge is used as a sensitivity outcome only."
+        ),
+    }
+    common.atomic_write_json(
+        run_dir / "analysis" / "pilot_results.json",
+        common.make_json_safe(pilot_results),
+    )
+    print(f"Written: analysis/pilot_results.json")
 
 
 def _write_run_manifest(
@@ -1102,6 +1198,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=SELECTED_LAYERS,
         help="Layers to analyze.",
     )
+    p.add_argument(
+        "--example-ids-file",
+        type=Path,
+        default=None,
+        help="CSV with example_id column; restrict analysis to these examples "
+             "(e.g. review/pilot_example_queue.csv).",
+    )
+    p.add_argument(
+        "--pilot-mode",
+        action="store_true",
+        default=False,
+        help="Label outputs as pilot_exploratory_not_full_human_ground_truth and "
+             "add Gemini sensitivity analysis.",
+    )
     return p.parse_args(argv)
 
 
@@ -1116,6 +1226,13 @@ def main(argv: list[str] | None = None) -> int:
                     "manifests", "logs"):
             (run_dir / sub).mkdir(parents=True, exist_ok=True)
 
+    # Resolve example IDs from file if provided
+    example_ids: set[str] | None = None
+    if args.example_ids_file is not None:
+        rows = common.read_csv_as_list(args.example_ids_file)
+        example_ids = {r["example_id"] for r in rows if r.get("example_id")}
+        print(f"Loaded {len(example_ids)} example IDs from {args.example_ids_file}")
+
     print(f"Run directory: {run_dir}")
     return run_analysis(
         run_dir=run_dir,
@@ -1124,6 +1241,8 @@ def main(argv: list[str] | None = None) -> int:
         n_bootstrap=args.n_bootstrap,
         n_permutations=args.n_permutations,
         layers=args.layers,
+        example_ids=example_ids,
+        pilot_mode=args.pilot_mode,
     )
 
 
