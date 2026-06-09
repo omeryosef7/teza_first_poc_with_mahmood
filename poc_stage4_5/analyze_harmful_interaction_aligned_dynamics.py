@@ -852,9 +852,9 @@ def run_stream_sensitivity(
 # Run directory setup
 # ---------------------------------------------------------------------------
 
-def make_run_dir(base_dir: Path) -> Path:
+def make_run_dir(base_dir: Path, suffix: str = "") -> Path:
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    run_dir = base_dir / f"run_{ts}"
+    run_dir = base_dir / f"run_{ts}{suffix}"
     for sub in ("analysis", "plots/aggregate", "plots/per_example",
                 "manifests", "logs"):
         (run_dir / sub).mkdir(parents=True, exist_ok=True)
@@ -900,6 +900,8 @@ def run_analysis(
     layers: list[int] = SELECTED_LAYERS,
     example_ids: set[str] | None = None,
     pilot_mode: bool = False,
+    annotations_path_override: Path | None = None,
+    annotation_source: str = "human",
 ) -> int:
     """Execute full event-aligned analysis. Returns exit code."""
     rng = np.random.default_rng(seed)
@@ -909,13 +911,23 @@ def run_analysis(
     if example_ids is not None:
         dataset_meta = [r for r in dataset_meta if r["example_id"] in example_ids]
         print(f"Filtered to {len(dataset_meta)} examples from --example-ids-file.")
-    annotations_path = review_dir / "harmful_interaction_annotations.csv"
+
+    if annotations_path_override is not None:
+        annotations_path = annotations_path_override
+        print(f"Using annotations file: {annotations_path} (source={annotation_source})")
+    else:
+        annotations_path = review_dir / "harmful_interaction_annotations.csv"
 
     annotations: dict[str, dict] = {}
     if annotations_path.exists():
         for r in common.read_csv_as_list(annotations_path):
             eid = r.get("example_id")
             if eid:
+                # Translate LLM consensus CSV field names to the analysis schema
+                if "onset_segment" in r and "interaction_phase" not in r:
+                    r["interaction_phase"] = r["onset_segment"]
+                if "annotation_confidence" not in r and "confidence" in r:
+                    r["annotation_confidence"] = r["confidence"]
                 annotations[eid] = r
     else:
         print(f"WARNING: Annotations file not found: {annotations_path}", file=sys.stderr)
@@ -932,6 +944,29 @@ def run_analysis(
 
     n_annotated = audit["counts_by_status"].get("annotated", 0)
     print(f"Annotations: {n_annotated} annotated, {audit['n_unannotated']} unannotated")
+
+    # Pilot-pending check: block analysis until every pilot example has an explicit status.
+    # "pending" is not an explicit status — the human has not yet decided.
+    if pilot_mode and example_ids is not None:
+        from poc_stage4_5.build_event_annotation_queue import build_annotation_queue as _baq
+        progress_path = review_dir / "manual_adjudication_progress.csv"
+        full_queue = _baq(common.ANALYSIS_DATASET_PATH, progress_path, annotations_path)
+        pilot_pending = [
+            r["example_id"] for r in full_queue
+            if r["example_id"] in example_ids and r["annotation_status"] == "pending"
+        ]
+        if pilot_pending:
+            print(
+                f"PILOT INCOMPLETE: {len(pilot_pending)}/{len(example_ids)} pilot "
+                "example(s) still have annotation_status='pending'. "
+                "Annotate all pilot examples before running the final pilot analysis. "
+                "Writing audit artifact only.",
+                file=sys.stderr,
+            )
+            _write_run_manifest(run_dir, review_dir, annotations_path, n_annotated,
+                                n_bootstrap, n_permutations, seed)
+            _write_pilot_results(run_dir, review_dir, example_ids, n_annotated)
+            return 0
 
     # Evaluator agreement summary
     eval_summary = build_evaluator_agreement_summary(dataset_meta)
@@ -1062,7 +1097,8 @@ def run_analysis(
         )
 
     _write_run_manifest(run_dir, review_dir, annotations_path, n_annotated,
-                         n_bootstrap, n_permutations, seed)
+                         n_bootstrap, n_permutations, seed,
+                         annotation_source=annotation_source)
     print(f"\nAnalysis complete. Outputs in: {run_dir}")
     return 0
 
@@ -1129,6 +1165,7 @@ def _write_run_manifest(
     n_bootstrap: int,
     n_permutations: int,
     seed: int,
+    annotation_source: str = "human",
 ) -> None:
     import subprocess
     try:
@@ -1140,6 +1177,7 @@ def _write_run_manifest(
     except Exception:
         git_commit = "unknown"
 
+    is_llm_annotated = annotation_source != "human"
     manifest = {
         "stage": "stage4_5",
         "artifact_version": "stage4_5_run_manifest_v1",
@@ -1162,6 +1200,10 @@ def _write_run_manifest(
         "n_permutations": n_permutations,
         "git_commit": git_commit,
         "contains_raw_text": False,
+        "annotation_source": annotation_source,
+        "annotation_status": (
+            "automated_not_human_ground_truth" if is_llm_annotated else "human"
+        ),
     }
     common.atomic_write_json(run_dir / "manifests" / "run_manifest.json", manifest)
     print(f"Written: manifests/run_manifest.json")
@@ -1212,14 +1254,48 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Label outputs as pilot_exploratory_not_full_human_ground_truth and "
              "add Gemini sensitivity analysis.",
     )
+    # LLM annotation support (Stage 4.5B)
+    p.add_argument(
+        "--annotations-file",
+        type=Path,
+        default=None,
+        help="Path to LLM consensus annotations CSV "
+             "(e.g. outputs/stage4_5/llm_harmful_interaction_annotations/run_*/consensus_annotations.csv). "
+             "Overrides the default review/harmful_interaction_annotations.csv.",
+    )
+    p.add_argument(
+        "--annotation-source",
+        choices=["human", "o4mini", "auto"],
+        default="human",
+        help="Source of onset annotations. Use 'o4mini' for Stage 4.5B LLM annotations.",
+    )
+    p.add_argument(
+        "--allow-llm-annotations",
+        action="store_true",
+        default=False,
+        help="Required when --annotation-source is not 'human'. Acknowledges that "
+             "the analysis uses automated LLM annotations, not human ground truth.",
+    )
     return p.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
 
+    # Validate LLM annotation flags
+    if args.annotation_source != "human" and not args.allow_llm_annotations:
+        print(
+            "ERROR: --annotation-source is not 'human' but --allow-llm-annotations was not set. "
+            "Pass --allow-llm-annotations to acknowledge that this analysis uses automated LLM "
+            "annotations, not human ground truth.",
+            file=sys.stderr,
+        )
+        return 1
+
     if args.run_dir is None:
-        run_dir = make_run_dir(common.DEFAULT_OUTPUT_BASE)
+        # Add _llm_annotated suffix to run dir name when using LLM annotations
+        suffix = "_llm_annotated" if args.annotation_source != "human" else ""
+        run_dir = make_run_dir(common.DEFAULT_OUTPUT_BASE, suffix=suffix)
     else:
         run_dir = args.run_dir
         for sub in ("analysis", "plots/aggregate", "plots/per_example",
@@ -1233,6 +1309,18 @@ def main(argv: list[str] | None = None) -> int:
         example_ids = {r["example_id"] for r in rows if r.get("example_id")}
         print(f"Loaded {len(example_ids)} example IDs from {args.example_ids_file}")
 
+    # Resolve annotations path
+    if args.annotations_file is not None:
+        annotations_path_override = args.annotations_file
+    else:
+        annotations_path_override = None
+
+    if args.annotation_source != "human":
+        print(
+            "CAUTION: using LLM-annotated onset indices "
+            f"(source={args.annotation_source}); results are exploratory only."
+        )
+
     print(f"Run directory: {run_dir}")
     return run_analysis(
         run_dir=run_dir,
@@ -1243,6 +1331,8 @@ def main(argv: list[str] | None = None) -> int:
         layers=args.layers,
         example_ids=example_ids,
         pilot_mode=args.pilot_mode,
+        annotations_path_override=annotations_path_override,
+        annotation_source=args.annotation_source,
     )
 
 
