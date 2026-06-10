@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-06-10T14:09:14.828286+00:00",
+  "replication_prompts_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_7/replication_prompts.jsonl",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "model_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+  "do_sample": false,
+  "seed": 0,
+  "max_new_tokens": 32768,
+  "n_rows": 12,
+  "n_done": 12,
+  "n_skipped": 0,
+  "n_failed": 0,
+  "direction_status": "not_applied_in_generation",
+  "judge_status_note": "Gemini judge skipped (spending cap); use --skip-judge=False to retry"
+}

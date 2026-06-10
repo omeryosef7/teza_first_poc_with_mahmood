@@ -241,6 +241,12 @@ def run_single(
         "goal_index": row.get("goal_index"),
         "selection_stratum": row.get("selection_stratum", ""),
         "enable_thinking": enable_thinking,
+        # --- Exact inputs sent to Qwen ---
+        "user_message_text": user_message,            # raw user message (before chat template)
+        "formatted_input_text": result.input_text,    # exact string after apply_chat_template
+        "input_token_ids": result.input_token_ids,    # token IDs of the formatted prompt
+        "input_token_count": result.input_num_tokens, # number of input tokens
+        # --- Token counts ---
         "source_prompt_tokens": row.get("source_prompt_tokens"),
         "transformed_prompt_tokens": row.get("transformed_prompt_tokens"),
         "transformation_method": row.get("transformation_method", ""),
@@ -255,17 +261,21 @@ def run_single(
         "final_token_count": result.final_num_tokens,
         "thinking_segmentation_status": result.thinking_segmentation_status,
         "finish_reason": result.finish_reason,
-        "final_text": result.final_text,
-        "think_text": result.think_text,
-        "generation_text": result.generation_text,
-        "generation_token_ids": result.generation_token_ids,
+        # --- Exact outputs from Qwen ---
+        "think_text": result.think_text,              # exact thinking tokens (text between <think>…</think>)
+        "final_text": result.final_text,              # exact final answer tokens (after </think>)
+        "generation_text": result.generation_text,    # full generation (think_text + final_text, with tags)
+        "generation_token_ids": result.generation_token_ids,  # token IDs of the generation
+        # --- Timing and metadata ---
         "elapsed_seconds": round(elapsed, 3),
         "created_utc": common.utc_now(),
+        # --- Prompt integrity hashes ---
         "source_prompt_sha256": row.get("source_prompt_sha256"),
         "transformed_prompt_sha256": row.get("transformed_prompt_sha256"),
         "target_span_sha256": row.get("target_span_sha256"),
         "answer_cue_sha256": row.get("answer_cue_sha256"),
         "benign_wrapper_sha256": row.get("benign_wrapper_sha256"),
+        # --- Scores ---
         **sr,
         **judge_dict,
         "is_success": is_success,
@@ -283,6 +293,7 @@ def run_single(
         "enable_thinking": enable_thinking,
         "source_prompt_tokens": row.get("source_prompt_tokens"),
         "transformed_prompt_tokens": row.get("transformed_prompt_tokens"),
+        "input_token_count": result.input_num_tokens,   # tokens actually fed to Qwen (after chat template)
         "transformation_method": row.get("transformation_method", ""),
         "length_match_ratio": row.get("length_match_ratio"),
         "generation_token_count": result.generation_num_tokens,

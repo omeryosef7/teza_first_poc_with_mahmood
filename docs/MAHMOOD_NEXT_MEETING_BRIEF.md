@@ -1,7 +1,7 @@
 # Next Meeting Brief — Mahmood
 
-**Prepared:** 2026-06-10
-**Stage:** 4.6 complete (audited); 4.7 design and prompt build complete; GPU runs pending
+**Prepared:** 2026-06-10  
+**Stage:** 4.6 complete (audited); 4.7 smoke test ✅ passed (job 529213); full array ✅ submitted (job 530501, 4 tasks)
 
 ---
 
@@ -18,9 +18,11 @@ A 4-goal × 5-condition controlled experiment (20 deterministic Qwen3-14B genera
 
 Token budget corrected: goals 1 and 3, condition A were rerun at 32,768 max tokens after initial 16,384 runs truncated.
 
-### Stage 4.7 — Multi-Prompt Controlled Replication (prompt build complete; GPU runs pending)
+### Stage 4.7 — Multi-Prompt Controlled Replication (array job running)
 
 Extends Stage 4.6 to 3 prompts per goal (12 total, selected by length-tertile stratification from the 42 Stage 2B examples) × 4 conditions (48 generations). The critical new addition is **Condition F** — a coherent, length-matched benign wrapper — designed to separate puzzle semantics from context length.
+
+**Infrastructure status:** Smoke test passed (SLURM job 529213, 2026-06-10). Full array submitted as job 530501. Smoke result: all 3 conditions (A/D/F) completed with `eos_token`, F ratio=0.962 (within ±5%). Note: smoke prompt (goal 0, lower stratum) returned `sr_success=False` across all conditions — this particular prompt may be in a lower-attack-success regime; full results across 12 prompts will clarify.
 
 ---
 

@@ -28,6 +28,7 @@ RUNTIME_DIR="/home/sharifm/students/omeryosef/jupyter_runtime"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
 GOAL_INDEX="${SLURM_ARRAY_TASK_ID}"
+export GOAL_INDEX
 RUN_NAME="${RUN_NAME:-full_$(date +%Y%m%d_%H%M%S)_goal${GOAL_INDEX}}"
 # All tasks write to the same run directory for easy merging
 SHARED_RUN_DIR="${SHARED_RUN_DIR:-$PROJECT_DIR/outputs/stage4_7/runs/run_array_$(date +%Y%m%d_%H%M%S | cut -c1-13)}"

@@ -480,10 +480,10 @@ def fig8_projection_vs_thinking_length(mech_rows: list[dict], out_dir: Path) -> 
 
     fig, axes = plt.subplots(1, 2, figsize=FIGSIZE_WIDE)
 
-    for ax, proj_key, xlabel in [
-        (axes[0], "layer22_think_phase_mean_projection", "Think-phase mean L22 projection"),
-        (axes[1], "layer22_last_500_think_mean_projection", "Last-500 think tokens L22 projection"),
-    ]:
+    for ax, (proj_key, xlabel) in zip(axes, [
+        ("layer22_think_phase_mean_projection", "Think-phase mean L22 projection"),
+        ("layer22_last_500_think_mean_projection", "Last-500 think tokens L22 projection"),
+    ]):
         for cond in ["A", "D", "F"]:
             cond_rows = [r for r in mech_rows if r.get("condition") == cond]
             xs = []
@@ -539,7 +539,7 @@ def fig9_finish_reason_and_truncation(paired_contrasts: list[dict], cond_summary
         cond_contrast_rows = [r for r in paired_contrasts if r.get("cond_ref") == cond]
         if not cond_contrast_rows:
             cond_contrast_rows = [r for r in paired_contrasts if r.get("cond_comp") == cond]
-        for xi, label, fr_val in enumerate(["eos_token", "max_new_tokens"]):
+        for xi, (label, fr_val) in enumerate([("eos_token", "eos_token"), ("max_new_tokens", "max_new_tokens")]):
             matching = [
                 _f(r.get("score_ref") if r.get("cond_ref") == cond else r.get("score_comp"))
                 for r in paired_contrasts

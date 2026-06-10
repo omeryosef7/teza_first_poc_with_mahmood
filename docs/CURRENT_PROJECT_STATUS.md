@@ -6,7 +6,7 @@
 
 ## Active Stage: 4.7 — Multi-Prompt Controlled Replication
 
-**Stage 4.6** (controlled ablation) is complete and audited. **Stage 4.7** prompt construction is complete; GPU generation is the next step.
+**Stage 4.6** (controlled ablation) is complete and audited. **Stage 4.7** prompt construction is complete; smoke test passed; full-array GPU generation submitted (job 530501, 4 tasks).
 
 ---
 
@@ -21,7 +21,7 @@
 | Stage 4.5 (attention pilot) | ✅ Complete | Attention-head analysis artifacts |
 | Stage 4.5B (LLM onset) | ❌ Blocked | Safety-filter truncation; code exists but no usable annotations |
 | Stage 4.6 (controlled ablation) | ✅ Complete, audited | 20 corrected generations; 6 meeting figures; canonical CSVs |
-| Stage 4.7 (multi-prompt replication) | 🔄 In progress | Prompts built (48 rows); GPU runs pending |
+| Stage 4.7 (multi-prompt replication) | 🔄 In progress | Prompts built (48 rows); smoke ✅ passed; array job 530501 running |
 | Stage 5–8 | 🔜 Deferred | Not started |
 
 ---
@@ -31,15 +31,32 @@
 **Prompt build:** `outputs/stage4_7/replication_prompts.jsonl` — 48 rows (12 prompts × 4 conditions)
 **Audit:** `outputs/stage4_7/replication_prompt_audit.json` — all invariants passing
 **Source selection:** `outputs/stage4_7/source_prompt_selection.csv` — 12 prompts (3 per goal, length-tertile stratified)
-**GPU generation:** Not yet submitted (SLURM scripts ready)
 
-### Pending GPU work
+### Smoke test — PASSED (SLURM job 529213, 2026-06-10)
 
-1. Submit smoke test: `slurm_scripts/stage4_7_replication_smoke.slurm`
-2. Submit full array (after smoke passes): `slurm_scripts/stage4_7_replication_array.slurm`
-3. Run projection analysis: `poc_stage4_7/compute_selected_layer_dynamics.py`
-4. Run behavioral + mechanistic analysis: `poc_stage4_7/analyze_replication.py`
-5. Generate 9 meeting figures: `poc_stage4_7/plot_replication.py`
+Smoke run: goal 0, lower stratum, conditions A/D/F (3 generations).
+
+| Cond | finish_reason | sr_success | sr_score | think_tokens | F ratio |
+|------|--------------|-----------|----------|-------------|---------|
+| A | eos_token | False | 0.0 | 15,002 | — |
+| D | eos_token | False | 0.0 | 2,769 | — |
+| F | eos_token | False | 0.0 | 714 | 0.962 ✓ |
+
+Infrastructure verdict: **PASS** — all 3 rows complete, no truncation, F length matched.  
+Note: `sr_success=False` for all 3 on this source prompt is a research data point (lower-tertile prompt, goal 0); full-array results across all 12 prompts will show the distribution.
+
+### Full array — SUBMITTED (SLURM job 530501, 2026-06-10)
+
+`#SBATCH --array=0-3` — one L40S GPU per task, one goal per task, 6h wall time.
+Output dir: `outputs/stage4_7/runs/run_array_20260610_1414/`
+
+### Remaining GPU work
+
+1. ✅ Smoke: job 529213 — passed
+2. ✅ Full array: job 530501 — submitted
+3. 🔄 Run projection analysis: `poc_stage4_7/compute_selected_layer_dynamics.py` (after array completes)
+4. 🔄 Run behavioral + mechanistic analysis: `poc_stage4_7/analyze_replication.py`
+5. 🔄 Generate 9 meeting figures: `poc_stage4_7/plot_replication.py`
 
 ---
 
@@ -61,11 +78,13 @@
 ## Critical Path to Next Meeting
 
 1. ✅ Stage 4.6 audit and meeting figures
-2. ✅ Stage 4.7 prompt build (CPU work)
-3. 🔄 Stage 4.7 GPU generation (48 runs × ~25 min each on L40S)
-4. 🔄 Stage 4.7 projection analysis (GPU, after generation)
-5. 🔄 Stage 4.7 behavioral + mechanistic analysis + plots
-6. 🔄 Populate `docs/STAGE4_7_REPLICATION_RESULTS.md`
+2. ✅ Stage 4.7 prompt build (CPU work) + all CPU tests passing (32/32)
+3. ✅ Stage 4.7 smoke test passed (job 529213)
+4. ✅ Stage 4.7 full array submitted (job 530501)
+5. 🔄 Stage 4.7 GPU generation completing — wait for job 530501
+6. 🔄 Stage 4.7 projection analysis (GPU, after generation)
+7. 🔄 Stage 4.7 behavioral + mechanistic analysis + 9 plots
+8. 🔄 Populate `docs/STAGE4_7_REPLICATION_RESULTS.md`
 
 ---
 
