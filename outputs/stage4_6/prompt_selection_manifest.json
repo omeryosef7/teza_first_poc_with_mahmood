@@ -1,0 +1,19 @@
+{
+  "created_utc": "2026-06-09T17:53:36.242712+00:00",
+  "n_sources": 4,
+  "n_conditions": 5,
+  "n_rows": 20,
+  "conditions": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "all_validations_passed": true,
+  "do_sample": false,
+  "generation_is_deterministic": true,
+  "seed": 42,
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "model_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18"
+}

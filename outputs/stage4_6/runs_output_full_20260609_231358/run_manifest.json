@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-06-09T22:05:36.658354+00:00",
+  "ablation_prompts_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_6/ablation_prompts.jsonl",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "model_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+  "do_sample": false,
+  "seed": 0,
+  "max_new_tokens": 16384,
+  "n_rows": 20,
+  "n_done": 20,
+  "n_skipped": 0,
+  "n_failed": 0,
+  "skip_judge": false,
+  "skip_strongreject": false
+}

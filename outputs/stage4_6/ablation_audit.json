@@ -1,0 +1,10 @@
+{
+  "created_utc": "2026-06-09T17:53:37.846642+00:00",
+  "n_rows": 20,
+  "n_goals": 4,
+  "n_conditions": 5,
+  "validation_passed": true,
+  "failures": [],
+  "warnings": [],
+  "gate_result": "PASS"
+}
