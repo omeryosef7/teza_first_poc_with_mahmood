@@ -97,7 +97,7 @@ A (thinking=on) outperforms E (thinking=off) significantly (p=0.031, mean diff=+
 
 ### Finding 4: Puzzle structure drives 13.9× more thinking
 
-Despite equal prompt length, A generates 13,904 more mean think tokens than F. The puzzle induces far deeper reasoning chains than harmless filler of the same length. This thinking amplification is itself a mechanism by which puzzle structure differs from length.
+Despite equal prompt length, A generates ~10,634 more mean think tokens than F (mean diff from paired contrasts: 10,634). The puzzle induces far deeper reasoning chains than harmless filler of the same length. This thinking amplification is itself a mechanism by which puzzle structure differs from length.
 
 ### Finding 5: Goal 2 (chemical weapons) is the most susceptible
 
