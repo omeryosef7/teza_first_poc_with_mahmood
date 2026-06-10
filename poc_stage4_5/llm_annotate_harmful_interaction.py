@@ -59,7 +59,7 @@ load_dotenv(_REPO_ROOT / ".env")
 # o4-mini refused to process think traces containing CBRN content (HTTP 400 invalid_prompt).
 # Switched to gemini/gemini-2.5-pro via litellm — same model used by poc_stage2b/judge.py,
 # which successfully processes this content in a research context.
-LLM_MODEL = "gemini/gemini-2.5-pro"
+LLM_MODEL = "gemini/gemini-2.5-flash"
 LLM_PROVIDER = "gemini"
 LLM_MAX_TOKENS = 512
 LLM_MAX_RETRIES = 3
