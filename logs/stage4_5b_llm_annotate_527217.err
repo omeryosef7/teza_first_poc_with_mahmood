@@ -2457,3 +2457,879 @@ LiteLLM completion() model= gemini-2.5-flash; provider = gemini
 LiteLLM completion() model= gemini-2.5-flash; provider = gemini
 [92m12:21:29 - LiteLLM:INFO[0m: utils.py:3230 - 
 LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:33 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:36 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:41 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:41 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:45 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:50 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:50 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:21:53 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:21:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:00 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:03 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:03 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:13 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:16 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:23 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:26 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:33 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:35 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:35 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:38 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:40 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:52 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:22:54 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:22:57 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:04 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:07 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:12 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:16 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:19 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:23 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:25 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:28 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:35 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:35 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:41 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:45 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:48 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:53 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:23:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:23:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:02 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:05 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:07 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:07 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:15 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:15 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:20 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:27 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:32 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:38 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:44 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:48 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:24:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:24:58 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:00 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:00 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:03 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:03 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:08 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:08 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:13 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:15 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:24 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:27 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:40 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:50 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:50 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:25:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:25:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:03 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:16 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:19 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:26 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:32 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:35 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:35 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:40 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:45 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:52 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:52 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:54 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:26:57 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:26:57 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:00 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:07 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:08 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:18 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:22 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:25 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:28 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:32 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:34 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:40 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:45 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:27:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:27:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:00 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:10 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:13 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:13 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:16 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:16 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:18 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:18 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:22 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:29 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:32 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:39 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:39 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:42 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:44 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:46 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:48 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:28:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:28:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:03 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:11 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:14 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:18 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:21 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:27 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:29 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:32 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:41 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:44 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:46 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:53 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:53 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:57 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:57 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:29:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:29:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:03 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:30:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:10 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:15 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:21 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:34 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:30:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:46 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:30:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:30:50 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:30:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:30:58 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:02 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:13 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:14 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:26 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:31 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:34 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:41 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:45 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:48 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:53 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:53 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:31:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:31:58 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:01 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:04 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:08 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:13 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:40 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:45 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:53 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:53 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:32:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:32:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:00 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:05 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:10 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:12 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:14 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:14 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:23 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:26 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:35 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:39 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:39 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:42 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:44 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:47 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:52 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:33:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:33:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:02 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:34:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:05 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:34:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:08 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:15 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:28 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:34 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:36 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:40 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:45 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:47 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:34:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:50 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:34:52 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:34:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:34:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:02 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:04 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:07 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:07 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:10 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:15 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:22 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:24 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:27 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:29 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:29 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:36 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:40 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:42 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:42 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:53 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:56 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:35:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:35:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:01 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:07 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:07 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:09 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:12 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:15 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:15 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:21 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:21 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:31 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:40 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:40 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:45 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:52 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:36:57 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:36:57 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:00 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:10 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:16 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:24 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:28 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:35 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:35 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:38 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:41 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:47 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:37:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:37:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:03 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:10 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:12 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:14 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:23 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:33 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:36 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:41 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:45 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:45 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:48 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:50 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:52 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:56 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:38:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:38:59 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:01 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:04 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:06 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:06 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:09 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:11 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:15 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:19 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:30 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:44 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:52 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:39:54 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:39:59 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:08 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:11 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:11 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:15 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:20 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:25 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:29 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:37 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:41 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:47 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:50 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:50 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:53 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:40:55 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:40:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:02 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:05 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:07 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:07 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:10 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:12 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:17 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:20 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:23 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:28 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:33 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:39 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:46 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:49 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:54 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:41:58 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:41:58 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:03 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:42:05 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:14 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:14 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:18 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:22 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:24 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:27 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:32 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:38 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:43 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:46 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:42:46 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:42:51 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:42:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:42:58 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:43:01 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
+[92m12:43:01 - LiteLLM:INFO[0m: utils.py:3230 - 
+LiteLLM completion() model= gemini-2.5-flash; provider = gemini
+[92m12:43:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
