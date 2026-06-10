@@ -145,6 +145,7 @@ def run_single(
     skip_judge: bool = False,
     skip_strongreject: bool = False,
     dry_run: bool = False,
+    max_new_tokens: int = _MAX_NEW_TOKENS,
 ) -> dict:
     from poc_stage2b.runner import run_qwen_inference
     from poc_stage2b.judge import score_with_gemini_judge, judge_result_to_dict
@@ -171,7 +172,7 @@ def run_single(
         model=model,
         prompt_text=user_message,
         enable_thinking=enable_thinking,
-        max_new_tokens=_MAX_NEW_TOKENS,
+        max_new_tokens=max_new_tokens,
         do_sample=_DO_SAMPLE,
         seed=_SEED,
     )
@@ -217,7 +218,7 @@ def run_single(
         "model_revision": _MODEL_REVISION,
         "do_sample": _DO_SAMPLE,
         "seed": _SEED,
-        "max_new_tokens": _MAX_NEW_TOKENS,
+        "max_new_tokens": max_new_tokens,
         "generation_token_count": result.generation_num_tokens,
         "think_token_count": result.think_num_tokens,
         "final_token_count": result.final_num_tokens,
@@ -277,6 +278,8 @@ def run_ablation(
     skip_strongreject: bool,
     dry_run: bool,
     smoke: bool,
+    max_new_tokens: int = _MAX_NEW_TOKENS,
+    force: bool = False,
 ) -> None:
     logging.basicConfig(
         level=logging.INFO,
@@ -314,7 +317,7 @@ def run_ablation(
         rows = [r for r in rows if r.get("goal_index") == min(r["goal_index"] for r in rows) and r.get("condition") in ("A", "D")]
 
     log.info(f"Running {len(rows)} prompt-condition pairs")
-    log.info(f"do_sample={_DO_SAMPLE} seed={_SEED} max_new_tokens={_MAX_NEW_TOKENS}")
+    log.info(f"do_sample={_DO_SAMPLE} seed={_SEED} max_new_tokens={max_new_tokens} force={force}")
 
     if dry_run:
         for row in rows:
@@ -334,10 +337,19 @@ def run_ablation(
     for row in rows:
         run_id = _run_id(row["source_example_id"], row["condition"])
 
-        if _already_done(run_id, summary_path):
+        if not force and _already_done(run_id, summary_path):
             log.info(f"SKIP (already done): {run_id}")
             n_skipped += 1
             continue
+        if force and _already_done(run_id, summary_path):
+            # Remove stale row from summary so it gets replaced
+            lines = [l for l in summary_path.read_text().splitlines() if l.strip()]
+            kept = [l for l in lines if json.loads(l).get("run_id") != run_id]
+            summary_path.write_text("\n".join(kept) + ("\n" if kept else ""))
+            artifact_path = output_dir / "runs" / f"{run_id}.json"
+            if artifact_path.exists():
+                artifact_path.unlink()
+            log.info(f"FORCE rerun: {run_id}")
 
         log.info(
             f"Running {run_id} "
@@ -354,6 +366,7 @@ def run_ablation(
                 output_dir=output_dir,
                 skip_judge=skip_judge,
                 skip_strongreject=skip_strongreject,
+                max_new_tokens=max_new_tokens,
             )
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(summary_row, default=str) + "\n")
@@ -377,7 +390,7 @@ def run_ablation(
         "model_revision": _MODEL_REVISION,
         "do_sample": _DO_SAMPLE,
         "seed": _SEED,
-        "max_new_tokens": _MAX_NEW_TOKENS,
+        "max_new_tokens": max_new_tokens,
         "n_rows": len(rows),
         "n_done": n_done,
         "n_skipped": n_skipped,
@@ -406,6 +419,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--dry-run", action="store_true", default=False)
     p.add_argument("--skip-judge", action="store_true", default=False)
     p.add_argument("--skip-strongreject", action="store_true", default=False)
+    p.add_argument("--max-new-tokens", type=int, default=_MAX_NEW_TOKENS,
+                   help="Override max_new_tokens for generation.")
+    p.add_argument("--force", action="store_true", default=False,
+                   help="Force rerun even if run_id already exists in summary.")
     return p.parse_args(argv)
 
 
@@ -422,6 +439,8 @@ def main(argv: list[str] | None = None) -> int:
         skip_strongreject=args.skip_strongreject,
         dry_run=args.dry_run,
         smoke=args.smoke,
+        max_new_tokens=args.max_new_tokens,
+        force=args.force,
     )
     return 0
 
