@@ -24,6 +24,7 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage4_6/runs_output_smoke_$(date +%Y%m%d_%H%M%S)}"
 ABLATION_PROMPTS="${ABLATION_PROMPTS:-$PROJECT_DIR/outputs/stage4_6/ablation_prompts.jsonl}"
+export OUTPUT_DIR
 SKIP_JUDGE="${SKIP_JUDGE:-false}"
 SKIP_STRONGREJECT="${SKIP_STRONGREJECT:-false}"
 

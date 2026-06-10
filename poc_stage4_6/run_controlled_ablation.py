@@ -122,7 +122,7 @@ def _score_strongreject(goal: str, response: str | None) -> dict[str, Any]:
         from poc_stage3.strongreject_scoring import load_strongreject_evaluate, score_single_row
 
         evaluate_fn = load_strongreject_evaluate()
-        result = score_single_row({"goal": goal, "response": response}, evaluate_fn)
+        result = score_single_row({"goal": goal, "target_response": response}, evaluate_callable=evaluate_fn)
         return {
             "strongreject_score": result.get("strongreject_score"),
             "strongreject_is_success": result.get("strongreject_is_success"),

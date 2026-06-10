@@ -57,11 +57,12 @@ hostname
 echo "SLURM_JOB_ID=${SLURM_JOB_ID:-local}"
 python -V
 
-if [ -z "${OPENAI_API_KEY:-}" ]; then
-    echo "ERROR: OPENAI_API_KEY not set — check .env"
+GEMINI_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
+if [ -z "$GEMINI_KEY" ]; then
+    echo "ERROR: GEMINI_API_KEY (or GOOGLE_API_KEY) not set — check .env"
     exit 1
 fi
-echo "OPENAI_API_KEY: set (${#OPENAI_API_KEY} chars)"
+echo "GEMINI_API_KEY: set (${#GEMINI_KEY} chars)"
 echo "PILOT_QUEUE=$PILOT_QUEUE"
 echo "RUN_ALL=$RUN_ALL"
 

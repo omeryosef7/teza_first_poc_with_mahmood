@@ -40,7 +40,6 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from dotenv import load_dotenv
-from openai import OpenAI
 
 from poc_stage4_5 import common
 from poc_stage4_5.annotate_harmful_interaction import ANNOTATIONS_FIELDNAMES
@@ -57,8 +56,11 @@ load_dotenv(_REPO_ROOT / ".env")
 # Configuration
 # ---------------------------------------------------------------------------
 
-LLM_MODEL = "o4-mini"
-LLM_PROVIDER = "openai"
+# o4-mini refused to process think traces containing CBRN content (HTTP 400 invalid_prompt).
+# Switched to gemini/gemini-2.5-pro via litellm — same model used by poc_stage2b/judge.py,
+# which successfully processes this content in a research context.
+LLM_MODEL = "gemini/gemini-2.5-pro"
+LLM_PROVIDER = "gemini"
 LLM_MAX_TOKENS = 512
 LLM_MAX_RETRIES = 3
 LLM_RETRY_BASE_SECONDS = 2.0
@@ -80,23 +82,38 @@ DEFAULT_OUTPUT_BASE = (
 # ---------------------------------------------------------------------------
 
 def _call_llm(
-    client: OpenAI,
+    client: Any,
     system_prompt: str,
     user_prompt: str,
     logger: logging.Logger,
 ) -> dict | None:
-    """Call o4-mini with JSON output mode. Returns parsed dict or None on failure."""
+    """Call LLM via litellm with JSON output. Returns parsed dict or None on failure."""
+    import litellm
+
+    combined_prompt = system_prompt + "\n\n" + user_prompt + "\n\nReturn only valid JSON."
+
     for attempt in range(LLM_MAX_RETRIES):
         try:
-            resp = client.chat.completions.create(
+            resp = litellm.completion(
                 model=LLM_MODEL,
-                max_completion_tokens=LLM_MAX_TOKENS,
-                response_format={"type": "json_object"},
-                messages=[
-                    {"role": "user", "content": system_prompt + "\n\n" + user_prompt},
+                max_tokens=LLM_MAX_TOKENS,
+                temperature=0.0,
+                messages=[{"role": "user", "content": combined_prompt}],
+                safety_settings=[
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                 ],
             )
             content = resp.choices[0].message.content or ""
+            # Strip markdown code fences if present
+            content = content.strip()
+            if content.startswith("```"):
+                lines = content.splitlines()
+                content = "\n".join(
+                    l for l in lines if not l.startswith("```")
+                ).strip()
             return json.loads(content)
         except json.JSONDecodeError as e:
             logger.warning("JSON decode error (attempt %d/%d): %s", attempt + 1, LLM_MAX_RETRIES, e)
@@ -682,12 +699,15 @@ def annotate_examples(
     logger: logging.Logger,
 ) -> None:
     import os
-    api_key = os.environ.get("OPENAI_API_KEY")
+    import litellm
+
+    # Check for Gemini API key (required for gemini/gemini-2.5-pro via litellm)
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
-        logger.error("OPENAI_API_KEY not set. Cannot proceed.")
+        logger.error("GEMINI_API_KEY or GOOGLE_API_KEY not set. Cannot proceed.")
         sys.exit(1)
 
-    client = OpenAI(api_key=api_key)
+    client = None  # litellm handles auth via environment variables
     consensus_csv = run_dir / "consensus_annotations.csv"
     dataset = common.load_analysis_dataset()
     meta_map = {r["example_id"]: r for r in dataset}
