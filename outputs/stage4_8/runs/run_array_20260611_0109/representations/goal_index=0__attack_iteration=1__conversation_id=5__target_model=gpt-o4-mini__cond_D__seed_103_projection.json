@@ -1,5 +1,5 @@
 {
-  "run_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini__cond_D__seed_103",
+  "run_id": "goal_index=0__attack_iteration=1__conversation_id=5__target_model=gpt-o4-mini__cond_D__seed_103",
   "source_example_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
   "condition": "D",
   "goal_index": "0",
