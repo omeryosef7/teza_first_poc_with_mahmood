@@ -1,0 +1,471 @@
+{
+  "summary": {
+    "pass": 73,
+    "fail": 0,
+    "skip": 1,
+    "info": 3
+  },
+  "checks": [
+    {
+      "check": "frozen_token_dynamics_manifest",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "refusal_direction_pt",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "frozen_manifest_readable",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage4_n_examples_attempted_42",
+      "status": "PASS",
+      "actual": 42,
+      "expected": 42
+    },
+    {
+      "check": "stage4a2_causal_survivors",
+      "status": "SKIP",
+      "actual": "key_not_found",
+      "expected": 0,
+      "note": "['artifact_version', 'stage', 'timestamp_utc', 'selection_status', 'selection_criterion', 'model_name', 'enable_thinking', 'input_dir', 'output_dir', 'stage4a1_candidate_directions_path']"
+    },
+    {
+      "check": "stage47_condition_summary_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_total_rows_48",
+      "status": "PASS",
+      "actual": 48,
+      "expected": 48
+    },
+    {
+      "check": "stage47_n_source_prompts_12",
+      "status": "PASS",
+      "actual": 12,
+      "expected": 12
+    },
+    {
+      "check": "stage47_A_n_censored_0",
+      "status": "PASS",
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "stage47_D_n_censored_1",
+      "status": "PASS",
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "check": "stage47_F_n_censored_1",
+      "status": "PASS",
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "check": "stage47_E_n_censored_3",
+      "status": "PASS",
+      "actual": 3,
+      "expected": 3
+    },
+    {
+      "check": "stage47_A_cc_n_12",
+      "status": "PASS",
+      "actual": 12,
+      "expected": 12
+    },
+    {
+      "check": "stage47_D_cc_n_11",
+      "status": "PASS",
+      "actual": 11,
+      "expected": 11
+    },
+    {
+      "check": "stage47_F_cc_n_11",
+      "status": "PASS",
+      "actual": 11,
+      "expected": 11
+    },
+    {
+      "check": "stage47_E_cc_n_9",
+      "status": "PASS",
+      "actual": 9,
+      "expected": 9
+    },
+    {
+      "check": "stage47_A_cc_success_10",
+      "status": "PASS",
+      "actual": 10,
+      "expected": 10
+    },
+    {
+      "check": "stage47_D_cc_success_5",
+      "status": "PASS",
+      "actual": 5,
+      "expected": 5
+    },
+    {
+      "check": "stage47_F_cc_success_3",
+      "status": "PASS",
+      "actual": 3,
+      "expected": 3
+    },
+    {
+      "check": "stage47_E_cc_success_4",
+      "status": "PASS",
+      "actual": 4,
+      "expected": 4
+    },
+    {
+      "check": "stage47_A_cc_rate_0833",
+      "status": "PASS",
+      "actual": 0.8333333333333334,
+      "expected": 0.8333
+    },
+    {
+      "check": "stage47_D_cc_rate_0455",
+      "status": "PASS",
+      "actual": 0.45454545454545453,
+      "expected": 0.4545
+    },
+    {
+      "check": "stage47_F_cc_rate_0273",
+      "status": "PASS",
+      "actual": 0.2727272727272727,
+      "expected": 0.2727
+    },
+    {
+      "check": "stage47_E_cc_rate_0444",
+      "status": "PASS",
+      "actual": 0.4444444444444444,
+      "expected": 0.4444
+    },
+    {
+      "check": "stage47_A_rate_docs_discrepancy",
+      "status": "INFO",
+      "note": "NOTE: some docs claim A=10/11 (91%) but artifact shows A=10/12 (83.3%, 0 censored). Corrective rerun eliminated A's censored row. Docs should be updated."
+    },
+    {
+      "check": "stage47_A_mean_think_11458",
+      "status": "PASS",
+      "actual": 11457.916666666666,
+      "expected": 11458.0
+    },
+    {
+      "check": "stage47_D_mean_think_2924",
+      "status": "PASS",
+      "actual": 2924.3333333333335,
+      "expected": 2924.0
+    },
+    {
+      "check": "stage47_F_mean_think_824",
+      "status": "PASS",
+      "actual": 824.0,
+      "expected": 824.0
+    },
+    {
+      "check": "stage47_sign_tests_json",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AD_sign_p_0031",
+      "status": "PASS",
+      "actual": 0.03125,
+      "expected": 0.03125
+    },
+    {
+      "check": "stage47_AF_sign_p_0008",
+      "status": "PASS",
+      "actual": 0.0078125,
+      "expected": 0.0078125
+    },
+    {
+      "check": "stage47_AF_mcnemar_p_0016",
+      "status": "PASS",
+      "actual": 0.015625,
+      "expected": 0.015625
+    },
+    {
+      "check": "stage47_AE_sign_p_0031",
+      "status": "PASS",
+      "actual": 0.03125,
+      "expected": 0.03125
+    },
+    {
+      "check": "stage47_AF_pvalue_test_note",
+      "status": "INFO",
+      "note": "NOTE: A-F p reported as ~0.016 in docs = McNemar exact (0.01563). Sign test p = 0.00781. These are different tests."
+    },
+    {
+      "check": "stage47_paired_contrasts_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AD_score_diff_0417",
+      "status": "PASS",
+      "actual": 0.4166666666666667,
+      "expected": 0.4167
+    },
+    {
+      "check": "stage47_AF_score_diff_0583",
+      "status": "PASS",
+      "actual": 0.5833333333333334,
+      "expected": 0.5833
+    },
+    {
+      "check": "stage47_AE_score_diff_0490",
+      "status": "PASS",
+      "actual": 0.4895833333333333,
+      "expected": 0.4896
+    },
+    {
+      "check": "stage47_score_diff_docs_discrepancy",
+      "status": "INFO",
+      "note": "NOTE: some docs report A-D diff=0.438 and A-F diff=0.573. Artifacts show A-D=0.4167, A-F=0.5833 (all 12 pairs including legacy). Docs may have used an earlier or different analysis pass."
+    },
+    {
+      "check": "stage47_AF_think_ratio_1397",
+      "status": "PASS",
+      "actual": 13.966578826057935,
+      "expected": 13.97
+    },
+    {
+      "check": "stage47_logo_json",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AD_logo_always_positive",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AF_logo_always_positive",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AD_logo_n_folds_4",
+      "status": "PASS",
+      "actual": 4,
+      "expected": 4
+    },
+    {
+      "check": "stage47_mechanistic_summary_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_A_L22_first500_mean_727",
+      "status": "PASS",
+      "actual": 7.2648076159457355,
+      "expected": 7.26
+    },
+    {
+      "check": "stage47_D_L22_first500_mean_906",
+      "status": "PASS",
+      "actual": 9.057476881364982,
+      "expected": 9.06
+    },
+    {
+      "check": "stage47_F_L22_first500_mean_850",
+      "status": "PASS",
+      "actual": 8.499280427038672,
+      "expected": 8.5
+    },
+    {
+      "check": "stage47_mechanistic_contrasts_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage47_AD_L22_diff_neg179",
+      "status": "PASS",
+      "actual": -1.7926692654192447,
+      "expected": -1.793
+    },
+    {
+      "check": "stage47_L22_spearman_rho_neg068",
+      "status": "PASS",
+      "actual": -0.6783216783216784,
+      "expected": -0.678
+    },
+    {
+      "check": "stage47_L22_spearman_condA_neg068",
+      "status": "PASS",
+      "actual": -0.6783216783216783,
+      "expected": -0.678
+    },
+    {
+      "check": "stage48_condition_summary_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage48_total_rows_60",
+      "status": "PASS",
+      "actual": 60,
+      "expected": 60
+    },
+    {
+      "check": "stage48_total_censored_0",
+      "status": "PASS",
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "stage48_A_success_12",
+      "status": "PASS",
+      "actual": 12,
+      "expected": 12
+    },
+    {
+      "check": "stage48_D_success_10",
+      "status": "PASS",
+      "actual": 10,
+      "expected": 10
+    },
+    {
+      "check": "stage48_F_success_8",
+      "status": "PASS",
+      "actual": 8,
+      "expected": 8
+    },
+    {
+      "check": "stage48_A_rate_060",
+      "status": "PASS",
+      "actual": 0.6,
+      "expected": 0.6
+    },
+    {
+      "check": "stage48_D_rate_050",
+      "status": "PASS",
+      "actual": 0.5,
+      "expected": 0.5
+    },
+    {
+      "check": "stage48_F_rate_040",
+      "status": "PASS",
+      "actual": 0.4,
+      "expected": 0.4
+    },
+    {
+      "check": "stage48_analysis_summary_json",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage48_n_cells_12",
+      "status": "PASS",
+      "actual": 12,
+      "expected": 12
+    },
+    {
+      "check": "stage48_matched_cells_3",
+      "status": "PASS",
+      "actual": 3,
+      "expected": 3
+    },
+    {
+      "check": "stage48_variance_decomp_json",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage48_within_cell_var_0053",
+      "status": "PASS",
+      "actual": 0.053333333333333344,
+      "expected": 0.0533
+    },
+    {
+      "check": "stage48_between_cell_var_0197",
+      "status": "PASS",
+      "actual": 0.19666666666666668,
+      "expected": 0.1967
+    },
+    {
+      "check": "stage48_variance_ratio_369",
+      "status": "PASS",
+      "actual": 3.6874999999999996,
+      "expected": 3.69
+    },
+    {
+      "check": "stage48_cell_summary_csv",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage48_goal1_total_success_0",
+      "status": "PASS",
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "stage48_goal3_total_success_15",
+      "status": "PASS",
+      "actual": 15,
+      "expected": 15
+    },
+    {
+      "check": "stage48_projection_summary_jsonl",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "stage48_A_L22_mean_712",
+      "status": "PASS",
+      "actual": 7.116820836943387,
+      "expected": 7.12
+    },
+    {
+      "check": "stage48_F_L22_mean_808",
+      "status": "PASS",
+      "actual": 8.078315451431273,
+      "expected": 8.08
+    },
+    {
+      "check": "stage48_D_L22_mean_895",
+      "status": "PASS",
+      "actual": 8.946221629428864,
+      "expected": 8.95
+    },
+    {
+      "check": "stage48_L22_ordering_A_lt_F",
+      "status": "PASS",
+      "actual": true,
+      "expected": true,
+      "direction": "A < F < D (opposite behavioral ordering A > D > F)"
+    },
+    {
+      "check": "stage48_L22_ordering_F_lt_D",
+      "status": "PASS",
+      "actual": true,
+      "expected": true
+    }
+  ]
+}

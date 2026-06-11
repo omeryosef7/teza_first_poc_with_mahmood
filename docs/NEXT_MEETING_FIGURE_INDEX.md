@@ -1,7 +1,7 @@
 # Figure Index — Next Meeting
 
 **Last updated:** 2026-06-11  
-**Stages:** 4.6 complete; 4.7 ALL COMPLETE (11/11 figures); 4.8 smoke running (job 534919)
+**Stages:** 4.6 complete; 4.7 ALL COMPLETE (11/11 figures); 4.8 COMPLETE (run_array_20260611_0109)
 
 ---
 
@@ -38,17 +38,22 @@ At: `outputs/stage4_6/runs_output_full_20260610_091021/plots_meeting/`
 
 ---
 
-## Stage 4.8 Figures — PENDING
+## Stage 4.8 Figures — COMPLETE
 
-After full run and analysis (smoke job 533261 → array → analysis):
+All figures at: `outputs/stage4_8/runs/run_array_20260611_0109/plots/`
 
-| # | Filename | Description |
-|---|----------|-------------|
-| 1 | `fig1_seed_outcomes_by_cell.png` | Heatmap: SR success per (prompt × condition × seed) |
-| 2 | `fig2_within_vs_between_prompt_variability.png` | Variance decomposition |
-| 3 | `fig3_condition_effects_with_prompt_fixed_effects.png` | Condition comparison with prompt fixed effects |
-| 5 | `fig5_matched_success_failure_projection.png` | Projection in matched success/failure cells |
-| 6 | `fig6_heldout_direction_performance.png` | LOO AUC per held-out prompt |
+60/60 generations complete (0 censored). Branch C applied (3 matched cells < threshold of 4); figs 6–7 skipped.
+
+| # | Filename | Status | Key message |
+|---|----------|--------|-------------|
+| 1 | `fig1_seed_outcomes_by_cell.png` | ✅ Done | Heatmap: SR success per (prompt × condition × seed) |
+| 2 | `fig2_within_vs_between_prompt_variability.png` | ✅ Done | Variance decomposition: between/within ratio 3.69× |
+| 3 | `fig3_condition_effects_with_prompt_fixed_effects.png` | ✅ Done | Condition comparison with prompt fixed effects |
+| 4 | `fig4_thinking_length_by_seed_and_outcome.png` | ✅ Done | Thinking length by seed and success/failure |
+| 5 | `fig5_matched_success_failure_projection.png` | ✅ Done | Projection in matched success/failure cells (3 cells) |
+| 6 | *(skipped — Branch C)* | ⛔ N/A | LOO direction performance: insufficient matched cells |
+| 7 | *(skipped — Branch C)* | ⛔ N/A | Held-out direction: insufficient matched cells |
+| 9 | `fig9_censoring_by_prompt_condition.png` | ✅ Done | Censoring summary (0 censored in Stage 4.8) |
 
 ---
 
@@ -62,4 +67,4 @@ For a 20-minute meeting with up to 5 slides:
 4. **`fig5_layer22_early_projection.png` (Stage 4.7)** — A < D < F on provisional direction (opposite of behavioral success)
 5. **`fig7_per_goal_condition_heatmap.png` (Stage 4.7)** — stability of A > D > F across all 4 goals
 
-**Optional if Stage 4.8 full array completes:** `fig1_seed_outcomes_by_cell.png` — stochastic variation per prompt/condition/seed.
+**Stage 4.8 is complete.** Also add `fig1_seed_outcomes_by_cell.png` (Stage 4.8) — stochastic variation per prompt/condition/seed — and `fig2_within_vs_between_prompt_variability.png` (Stage 4.8) — variance ratio 3.69× confirms goal identity dominates.

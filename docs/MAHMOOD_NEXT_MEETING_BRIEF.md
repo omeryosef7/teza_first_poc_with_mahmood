@@ -22,15 +22,15 @@ Multi-prompt replication across 12 source prompts × 4 conditions (A = full puzz
 
 | Condition | Success / Complete | Mean SR score | Mean think tokens |
 |-----------|-------------------|---------------|------------------|
-| A: Full puzzle, thinking=on | 10/11† | 0.823 | 11,458 |
+| A: Full puzzle, thinking=on | 10/12 | 0.823 | 11,458 |
 | D: No puzzle, thinking=on | 5/11† | 0.385 | 2,924 |
 | F: Benign wrapper, thinking=on | 3/11† | 0.250 | 824 |
 | E: Full puzzle, thinking=off | 4/9† | 0.333 | 0 |
 
-†Complete-case (5 censored rows excluded). All sign tests pass at p < 0.05 (A−D, A−F, A−E).
+†Complete-case (censored rows excluded). D: 1 censored, F: 1 censored, E: 3 censored. A: 0 censored — corrective rerun at 65,536 tokens resolved A's originally censored row, so all 12 A rows are complete-case. All sign tests pass at p < 0.05 (A−D, A−F, A−E).
 A−D and A−F stable across all 4 goal subsets (leave-one-goal-out sensitivity: 4/4 folds positive).
 
-**Length-matched control:** A and F have matched prompt length (±5%), yet A succeeds at 10/11 vs F at 3/11. Rules out prompt length as sole driver; does not distinguish puzzle semantics from reasoning structure.
+**Length-matched control:** The original structured puzzle condition outperforms both the bare-target and length-matched benign-context controls. Because the benign control matches length but not puzzle structure, this rules out prompt length alone but does not isolate puzzle semantics from reasoning structure or task coherence. A succeeds at 10/12 vs F at 3/11.
 
 **Thinking amplification:** A generates ~13.9× more thinking tokens than F despite identical total length.
 

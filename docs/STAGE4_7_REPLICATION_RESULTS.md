@@ -180,14 +180,14 @@ Figures: `fig5_layer22_early_projection.png`, `fig6_layer22_normalized_trajector
 
 **Leave-one-goal-out (LOGO):** For each of 4 goals, excluded all 3 prompts from that goal and re-ran A−D and A−F contrasts on the remaining 9 prompts. Both contrasts remain positive in all 4 folds (`always_positive=True`). The behavioral finding is robust to any single goal's removal.
 
-**Complete-case vs legacy:** With censored rows excluded, A=10/11 success (one censored); the direction of all contrasts is unchanged. The 5 censored rows are concentrated in conditions E and D, so including them as False would only understate those conditions' success further.
+**Complete-case vs legacy:** With censored rows excluded, A=10/12 success (A has 0 censored — corrective rerun at 65,536 tokens resolved the originally censored row for condition A); the direction of all contrasts is unchanged. The 5 censored rows are in conditions D (1), F (1), and E (3), so including them as False would only understate those conditions' success further.
 
 ## Limitations
 
 1. **5 censored rows** — unknown behavioral outcome; handled via complete-case primary analysis + corrective rerun at 65536 tokens (job 533260)
 2. **n=3 per goal** — small sample; sign tests have limited power (p=0.031 is the minimum achievable with n=12, 6 positive signs)
 3. **StrongREJECT only** — Gemini judge skipped (spending cap); automated scorer may differ from human judgement
-4. **Layer-22 projection pending** — mechanistic analysis (figs 5, 6, 8, 11) generating via job 533255
+4. **Layer-22 projection complete** — mechanistic analysis (figs 5, 6, 8, 11) generated; provisional direction tracks thinking depth, not behavioral success (see Mechanistic section)
 5. **No causal claim** — the projection direction is diagnostic; A outperforming D/F is observational; causal mechanism requires future intervention study
 
 ---
