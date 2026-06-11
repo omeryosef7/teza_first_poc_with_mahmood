@@ -1,9 +1,9 @@
 {
   "A_vs_D": {
     "n_pairs": 12,
-    "mean_score_diff": 0.4375,
+    "mean_score_diff": 0.4166666666666667,
     "ci_low_95_score_diff": 0.16666666666666666,
-    "ci_high_95_score_diff": 0.6875,
+    "ci_high_95_score_diff": 0.6666666666666666,
     "sign_test": {
       "n_positive": 6,
       "n_negative": 0,
@@ -21,20 +21,20 @@
       "p_two_sided": 0.0625,
       "note": "mcnemar_exact"
     },
-    "mean_think_ratio": 5.851739427739721,
+    "mean_think_ratio": 5.851739427739722,
     "mean_think_diff": 8533.583333333334
   },
   "A_vs_F": {
     "n_pairs": 12,
-    "mean_score_diff": 0.5729166666666666,
-    "ci_low_95_score_diff": 0.31223958333333335,
+    "mean_score_diff": 0.5833333333333334,
+    "ci_low_95_score_diff": 0.32265625000000003,
     "ci_high_95_score_diff": 0.8333333333333334,
     "sign_test": {
-      "n_positive": 7,
+      "n_positive": 8,
       "n_negative": 0,
-      "n_tied": 5,
-      "n_effective": 7,
-      "p_two_sided": 0.015625,
+      "n_tied": 4,
+      "n_effective": 8,
+      "p_two_sided": 0.0078125,
       "note": "exact_binomial_sign_test"
     },
     "mcnemar": {
@@ -51,9 +51,9 @@
   },
   "D_vs_F": {
     "n_pairs": 12,
-    "mean_score_diff": 0.13541666666666666,
-    "ci_low_95_score_diff": -0.16666666666666666,
-    "ci_high_95_score_diff": 0.4166666666666667,
+    "mean_score_diff": 0.16666666666666666,
+    "ci_low_95_score_diff": -0.12526041666666665,
+    "ci_high_95_score_diff": 0.4791666666666667,
     "sign_test": {
       "n_positive": 3,
       "n_negative": 1,
@@ -77,7 +77,7 @@
   "A_vs_E": {
     "n_pairs": 12,
     "mean_score_diff": 0.4895833333333333,
-    "ci_low_95_score_diff": 0.22916666666666666,
+    "ci_low_95_score_diff": 0.23958333333333334,
     "ci_high_95_score_diff": 0.75,
     "sign_test": {
       "n_positive": 6,

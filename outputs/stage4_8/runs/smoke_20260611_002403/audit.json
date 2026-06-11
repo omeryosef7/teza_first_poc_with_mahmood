@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "n_rows": 6,
+  "n_complete": 6,
+  "n_censored": 0,
+  "n_diverse_cells": 3,
+  "n_cells": 3,
+  "n_sr_scored": 6,
+  "seeds_present": [
+    101,
+    102
+  ],
+  "finish_reasons": {
+    "eos_token": 6
+  },
+  "segmentation_status": {
+    "parsed_from_think_tags": 6
+  },
+  "censoring_by_condition": {
+    "A": 0,
+    "D": 0,
+    "F": 0
+  },
+  "sampling_config_checked": {
+    "do_sample": true,
+    "temperature": 0.7,
+    "top_p": 0.95
+  },
+  "errors": [],
+  "warnings": [],
+  "is_smoke": true,
+  "created_utc": "2026-06-10T22:08:09.673009+00:00"
+}

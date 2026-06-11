@@ -1,0 +1,8 @@
+{
+  "passed": false,
+  "errors": [
+    "run_summary.jsonl not found in /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/smoke_20260610_201505"
+  ],
+  "warnings": [],
+  "created_utc": "2026-06-10T17:22:45.450920+00:00"
+}

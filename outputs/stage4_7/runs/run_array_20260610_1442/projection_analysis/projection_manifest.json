@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-06-10T16:27:12.486393+00:00",
+  "run_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_7/runs/run_array_20260610_1442",
+  "n_rows": 48,
+  "selected_layers": [
+    13,
+    16,
+    22,
+    38,
+    39
+  ],
+  "primary_layer": 22,
+  "exploratory_layers": [
+    13,
+    16,
+    38,
+    39
+  ],
+  "direction_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt",
+  "direction_status": "provisional_projection_diagnostic_only",
+  "direction_layer": null,
+  "output_hidden_states_used": false,
+  "multi_gpu_used": false,
+  "note": "Layer 22 is the pre-specified primary layer. Layers 13, 16, 38, 39 are exploratory comparison layers. All results are diagnostic only \u2014 do not claim causal refusal suppression."
+}

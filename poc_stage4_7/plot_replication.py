@@ -509,6 +509,91 @@ def fig8_projection_vs_thinking_length(mech_rows: list[dict], out_dir: Path) -> 
 
 
 # ---------------------------------------------------------------------------
+# Fig 10: Complete-case vs legacy sensitivity
+# ---------------------------------------------------------------------------
+def fig10_complete_case_vs_legacy(sensitivity: dict, out_dir: Path) -> None:
+    if not sensitivity:
+        print("  Skipping fig10 — no sensitivity data")
+        return
+
+    conds = ["A", "D", "F", "E"]
+    cond_labels = ["A: Full puzzle", "D: No puzzle", "F: Benign wrap", "E: No thinking"]
+    x = np.arange(len(conds))
+    width = 0.25
+
+    cc_rates = [sensitivity.get(c, {}).get("complete_case_rate") or 0 for c in conds]
+    leg_rates = [sensitivity.get(c, {}).get("legacy_rate") or 0 for c in conds]
+    n_censored = [sensitivity.get(c, {}).get("n_censored", 0) for c in conds]
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    bars1 = ax.bar(x - width / 2, cc_rates, width, label="Complete-case (censored→excluded)", color="#2166ac", alpha=0.85, edgecolor="black", linewidth=0.7)
+    bars2 = ax.bar(x + width / 2, leg_rates, width, label="Legacy (censored→False)", color="#d73027", alpha=0.75, edgecolor="black", linewidth=0.7)
+
+    for bar, cc, leg, nc in zip(x, cc_rates, leg_rates, n_censored):
+        ax.text(bar - width / 2, cc + 0.02, f"{cc:.0%}", ha="center", va="bottom", fontsize=8)
+        ax.text(bar + width / 2, leg + 0.02, f"{leg:.0%}", ha="center", va="bottom", fontsize=8)
+        if nc > 0:
+            ax.text(bar, -0.06, f"({nc} cens.)", ha="center", va="top", fontsize=7.5, color="crimson")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(cond_labels, fontsize=9)
+    ax.set_ylabel("SR Success Rate", fontsize=10)
+    ax.set_ylim(-0.12, 1.15)
+    ax.axhline(y=0.5, color="gray", linewidth=0.8, linestyle="--", alpha=0.5, label="SR threshold")
+    ax.set_title("Stage 4.7 — Sensitivity: Complete-Case vs Legacy Outcome Definition",
+                 fontsize=11, fontweight="bold")
+    ax.legend(fontsize=9)
+    _watermark(ax)
+    fig.tight_layout()
+    _save(fig, out_dir / "fig10_complete_case_vs_legacy.png", "complete-case vs legacy")
+
+
+# ---------------------------------------------------------------------------
+# Fig 11: Selected-layer condition effects (all 5 layers)
+# ---------------------------------------------------------------------------
+def fig11_selected_layer_condition_effects(mech_rows: list[dict], out_dir: Path) -> None:
+    if not mech_rows:
+        print("  Skipping fig11 — no mechanistic data")
+        return
+
+    layers = [13, 16, 22, 38, 39]
+    conds = ["A", "D", "F"]
+    window = "first_500"
+
+    fig, axes = plt.subplots(1, len(layers), figsize=(14, 5), sharey=False)
+    for ax, layer in zip(axes, layers):
+        for ci, cond in enumerate(conds):
+            key = f"layer{layer}_{window}_mean_projection"
+            vals = [_f(r.get(key)) for r in mech_rows if r.get("condition") == cond]
+            vals = [v for v in vals if not math.isnan(v)]
+            if not vals:
+                continue
+            jitter = np.random.default_rng(7 + ci).uniform(-0.12, 0.12, len(vals))
+            ax.scatter(ci + jitter, vals, color=CONDITION_COLORS[cond], s=40, alpha=0.75, zorder=3)
+            ax.hlines(np.mean(vals), ci - 0.3, ci + 0.3, colors=CONDITION_COLORS[cond], linewidths=2)
+
+        ax.set_xticks([0, 1, 2])
+        ax.set_xticklabels(["A", "D", "F"], fontsize=9)
+        ax.axhline(0, color="black", linewidth=0.5, linestyle="--", alpha=0.4)
+        title = f"Layer {layer}"
+        if layer == 22:
+            title += "\n[pre-specified]"
+        else:
+            title += "\n[exploratory]"
+        ax.set_title(title, fontsize=9, fontweight="bold")
+        if ax is axes[0]:
+            ax.set_ylabel("Projection (a.u.)", fontsize=9)
+
+    fig.suptitle(
+        f"Stage 4.7 — Selected-Layer Condition Effects ({window} thinking tokens)\n"
+        "[DIAGNOSTIC ONLY — provisional direction]",
+        fontsize=11, fontweight="bold",
+    )
+    fig.tight_layout()
+    _save(fig, out_dir / "fig11_selected_layer_condition_effects.png", "selected-layer effects")
+
+
+# ---------------------------------------------------------------------------
 # Fig 9: Finish reason and truncation
 # ---------------------------------------------------------------------------
 def fig9_finish_reason_and_truncation(paired_contrasts: list[dict], cond_summary: list[dict], out_dir: Path) -> None:
@@ -588,6 +673,13 @@ def main(argv: list[str] | None = None) -> int:
     goal_strat = _load_csv(analysis_dir / "goal_stratified_summary.csv")
     mech_rows = _load_csv(analysis_dir / "mechanistic_summary.csv")
 
+    # Load sensitivity JSON
+    sensitivity: dict = {}
+    sens_path = analysis_dir / "sensitivity_summary.json"
+    if sens_path.exists():
+        with open(sens_path) as f:
+            sensitivity = json.load(f)
+
     if not cond_summary:
         print(f"ERROR: {analysis_dir / 'condition_summary.csv'} not found. Run analyze_replication.py first.")
         return 1
@@ -606,6 +698,8 @@ def main(argv: list[str] | None = None) -> int:
     fig7_per_goal_condition_heatmap(goal_strat, out_dir)
     fig8_projection_vs_thinking_length(mech_rows, out_dir)
     fig9_finish_reason_and_truncation(paired_contrasts, cond_summary, out_dir)
+    fig10_complete_case_vs_legacy(sensitivity, out_dir)
+    fig11_selected_layer_condition_effects(mech_rows, out_dir)
 
     print(f"\nAll figures written to {out_dir}")
     return 0

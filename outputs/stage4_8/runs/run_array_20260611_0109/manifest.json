@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-06-10T23:48:22.160848+00:00",
+  "manifest_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/repeated_generation_manifest.jsonl",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "model_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+  "do_sample": true,
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "max_new_tokens": 32768,
+  "n_rows": 15,
+  "n_done": 15,
+  "n_skipped": 0,
+  "n_failed": 0,
+  "smoke": false,
+  "direction_status": "not_applied_in_generation"
+}

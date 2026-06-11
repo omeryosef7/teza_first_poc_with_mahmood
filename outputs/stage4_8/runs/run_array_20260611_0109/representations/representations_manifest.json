@@ -1,0 +1,18 @@
+{
+  "created_utc": "2026-06-10T23:51:52.254548+00:00",
+  "run_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_20260611_0109",
+  "n_done": 60,
+  "n_skipped": 0,
+  "n_failed": 0,
+  "selected_layers": [
+    13,
+    16,
+    22,
+    38,
+    39
+  ],
+  "primary_layer": 22,
+  "direction_status": "provisional_projection_diagnostic_only",
+  "direction_layer": null,
+  "note": "Layer 22 is pre-specified primary. Layers 13, 16, 38, 39 are exploratory. All projections are diagnostic only \u2014 no causal claims."
+}

@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "n_rows": 60,
+  "n_unique_sources": 4,
+  "seeds": [
+    101,
+    102,
+    103,
+    104,
+    105
+  ],
+  "conditions": [
+    "A",
+    "D",
+    "F"
+  ],
+  "errors": [],
+  "warnings": [],
+  "sampling_config": {
+    "do_sample": true,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "max_new_tokens": 32768
+  },
+  "created_utc": "2026-06-10T15:53:07.000601+00:00"
+}
