@@ -102,7 +102,8 @@ def build_manifest(
             prompt_hash = _sha256(user_message)
 
             for seed in _SEEDS:
-                run_id = f"{source_id}__cond_{condition}__seed_{seed}"
+                safe_source_id = source_id.replace("|", "__")
+                run_id = f"{safe_source_id}__cond_{condition}__seed_{seed}"
                 manifest_rows.append({
                     "run_id": run_id,
                     "source_example_id": source_id,
