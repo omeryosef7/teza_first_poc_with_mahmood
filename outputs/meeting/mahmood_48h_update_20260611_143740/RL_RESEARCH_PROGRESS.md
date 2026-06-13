@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-13
 **Author:** Omer Yosef
-**Status:** 539190 COMPLETE (cost_mechanistic, 43/48 eps). 540543 PENDING (cost_asr, dependency on 540506). 540506 RUNNING (cost_l22_deflect, **26/48 steps, 10 successes=38.5% ASR partial**). 540486[1,3] COMPLETE (Extension v3, 60/60 rows). 540587 COMPLETE (repr extraction). Combined Stage 4.8 direction: **AUC=0.679 L22 / AUC=0.745 L16, perm_p=0.0**.
+**Status:** 539190 COMPLETE (cost_mechanistic, 43/48 eps). **540506 COMPLETE** (cost_l22_deflect, 44/48 eps, ASR=45%, TIME LIMIT). **541183 RUNNING** (cost_asr, n-803, started 2026-06-13 14:29 UTC). 540486[1,3] COMPLETE (Extension v3). Combined Stage 4.8 direction: **AUC=0.679 L22 / AUC=0.745 L16, perm_p=0.0**.
 
 ---
 
@@ -479,7 +479,9 @@ The pieces now connect into a coherent story:
 | Live RL job 540537 (cost_asr retry) | FAILED (0 eps) | CUDA indexSelectSmallIndex assert — n-803 GPU2/3 still contaminated |
 | Live RL job 540543 (cost_asr) | **PENDING (Dependency 540506)** | Starts after 540506 finishes on clean n-803 GPUs 0/1 |
 | Live RL job 540472 (cost_l22_deflect) | FAILED n-801 (1 ep) | CUDA device-side assert; n-801 CUDA-contaminated |
-| Live RL job 540506 (cost_l22_deflect retry) | **RUNNING n-803** | 10/48 steps; 4 successes (40% ASR partial) |
+| Live RL job 540506 (cost_l22_deflect retry) | **COMPLETE** | 44/48 eps (TIME LIMIT 12h). ASR=45%, P(A) dominant all goals. Report: `run_540506/LIVE_RL_REPORT.md` |
+| Live RL job 540543 (cost_asr resubmit) | CANCELLED | DependencyNeverSatisfied after 540506 hit TIME LIMIT (afterok requires exit 0) |
+| Live RL job 541183 (cost_asr) | **RUNNING n-803** | Started 2026-06-13 14:29 UTC. Fresh submission without dependency. |
 | Stage 4.8 Extension v3 (job 540486[1,3]) | **COMPLETE** | 60/60 rows. Goal 1: 0 successes (0/30). Goal 3: cond=A all True. |
 | Job 540587 (repr extraction for ext_v3) | **COMPLETE** | 60/60 projection rows written ~06:20 UTC |
 | Combined Stage 4.8 direction (all 4 goals) | **COMPLETE** | **AUC=0.679 (L22), AUC=0.745 (L16), perm_p=0.0** (3 valid folds; goal 1 invalid) |

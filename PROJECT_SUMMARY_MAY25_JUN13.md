@@ -740,6 +740,8 @@ All 3 valid folds agree on sign. Layer 16 first-2000 is the best and most consis
 
 ### 14.1 What It Is
 
+**IMPORTANT — Scope of this experiment:** This is an **offline policy-selection analysis only**, not a full AutoInject run. No new adversarial prompts were generated; no new Qwen3-14B inference was performed. The question asked is purely: "If we treat existing conditions {A, D, F, E} as fixed actions and apply RL policy-selection algorithms to Stage 4.7/4.8 outcome data, do all algorithms converge to Condition A?" The answer is yes, but **AutoInject's original capability — iteratively generating new adversarial prompt variants via GRPO — was not exercised.** An online run generating new prompt variants has not been done and requires Mahmood's approval.
+
 Adapted AutoInject (originally GRPO-based RL for AgentDojo benchmark adversarial suffixes) for offline replay over existing Stage 4.7/4.8 cells — **no new Qwen3-14B generations**. Tests whether principled RL policy selection would discover Condition A as the optimal condition.
 
 **Location:** `outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/`
@@ -790,7 +792,7 @@ Long harmless-looking reasoning preambles dilute or delay safety responses. Our 
 Semantically harmless tokens can acquire harmful internal representations as context accumulates. Our refinement: L22 direction anti-correlates with behavioral success — the puzzle may work by diluting refusal-relevant features (pulling model into harmless semantic space) rather than directly activating harmful features. This is why a simple linear direction fails to predict behavior.
 
 **Paper 3 — Safety-before-CoT (Towards Safer Large Reasoning Models):**
-Safety decisions should be made BEFORE extended reasoning begins. Our onset analysis (cond=A commits at mean 0.86% of thinking tokens) directly operationalizes this — the puzzle induces commitment to the harmful trajectory in the first ~1% of thinking, before safety-relevant reasoning steps can intervene.
+Safety decisions should be made BEFORE extended reasoning begins. Our onset proxy analysis (heuristic keyword-position measure; LLM annotation blocked) shows cond=A all-episodes mean = 0.86% of thinking tokens — the puzzle induces commitment to the harmful trajectory in the first ~1% of thinking, before safety-relevant reasoning steps can intervene.
 
 **Testable predictions from this framing:**
 - Models that check safety before thinking (before `<think>`) should show lower ASR
@@ -851,18 +853,19 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset anal
 
 **Per-condition live performance (43 eps):**
 
-| Condition | Live ASR | Mean think tokens | Mean step time |
-|-----------|---------|-------------------|---------------|
-| A | **71%** (10/14) | 12,877 | ~40 min |
-| D | 50% (5/10) | 1,968 | ~4 min |
-| F | 29% (3/10) | 1,198 | ~4 min |
-| E | 44% (3/9) | 0 (thinking=off) | ~5 min |
+| Condition | Live ASR | N eps | Mean think tokens | Mean step time |
+|-----------|---------|-------|-------------------|---------------|
+| A | **71%** (10/14) | 14 | 12,877 | ~40 min |
+| D | 50% (3/6) | 6 | 1,968 | ~4 min |
+| F | 29% (4/14) | 14 | 1,198 | ~4 min |
+| E | 44% (4/9) | 9 | 0 (thinking=off) | ~5 min |
 
 **Key diagnostic:** Spearman ρ (think tokens vs sr_success, cond=A, n=14): **0.000**, p=1.000 — goal identity is dominant predictor, not thinking length.
 
-**Onset analysis (live RL, cond=A successes):**
-- Mean commit point: **0.86%** of thinking tokens (mean 0.67% median)
-- Gradient: A(0.86%) < D(2.32%) < F(4.58%) — onset proxy matches behavioral ASR gradient
+**Onset analysis (live RL, heuristic onset proxy — keyword position / total think tokens):**
+- All cond=A episodes (n=14): mean **0.86%**; cond=A successes only (n=10): mean **0.67%**
+- Gradient (all-episodes means): A(0.86%) < D(2.32%) < F(4.58%) — onset proxy order matches behavioral ASR gradient
+- **Note:** onset_percent is the heuristic proxy embedded in the cost_mechanistic reward function, not an LLM-annotated onset (Stage 4.5B was blocked)
 
 **Report:** `outputs/rl_experiment/run_539190/LIVE_RL_REPORT.md`
 
@@ -898,8 +901,9 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset anal
 | 540471 | Cancelled (stuck 83 min) | n-803 GPU pair 2/3 CUDA contamination from prior stuck job |
 | 540537 | Failed (0 eps) | CUDA `indexSelectSmallIndex` assert — same contaminated GPUs on n-803 |
 | 540472 | Failed (1 ep) | n-801 device-side CUDA assert; n-801 confirmed contaminated |
-| 540506 | RUNNING (cost_l22_deflect) | Clean GPUs on n-803 (GPUs 0/1); step 4 since 03:06 UTC |
-| 540543 | PENDING (cost_asr) | `--dependency=afterok:540506 --nodelist=n-803`; will use clean GPUs after 540506 |
+| 540506 | COMPLETE (cost_l22_deflect) | 44/48 eps, hit 12h walltime; ASR=45%, A=71% dominant all goals |
+| 540543 | CANCELLED (cost_asr) | DependencyNeverSatisfied — 540506 exited non-zero (walltime); cancelled and resubmitted as 541183 |
+| **541183** | **RUNNING (cost_asr)** | Resubmitted 2026-06-13 14:29 UTC on n-803 without dependency; model loading |
 
 **Critical technical fixes for live RL (applied by job 539190):**
 1. `torch_dtype=torch.float32` — eliminates bfloat16 NaN entirely (56 GB fits in 2× L40S)
@@ -913,14 +917,23 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset anal
 - n-801: contaminated (CUDA device-side assert) — excluded from nodelist
 - n-802: appears clean (Stage 4.8 ext jobs ran fine with bfloat16)
 
-### 16.6 Current Live RL Status (June 13 ~09:00 UTC)
+### 16.6 Current Live RL Status (June 13 ~14:35 UTC)
 
-| Job | Condition | Status |
-|-----|-----------|--------|
-| 540506 | cost_l22_deflect | RUNNING — n-803, step 4 (cond=A, goal=2) since 03:06 UTC |
-| 540543 | cost_asr | PENDING — dependency on 540506 finishing; will start on clean n-803 GPUs |
+| Job | Condition | Status | Result |
+|-----|-----------|--------|--------|
+| 539190 | cost_mechanistic | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71%, P(A) dominant all goals |
+| 540506 | cost_l22_deflect | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71%, P(A) dominant all goals |
+| 540543 | cost_asr | ❌ CANCELLED | DependencyNeverSatisfied; resubmitted as 541183 |
+| **541183** | **cost_asr** | **🔄 RUNNING** | Started 14:29 UTC on n-803. First eps expected ~14:50 UTC. |
 
-When both complete: run `analyze_live_rl_run.py` on each and create 3-variant comparison table (cost_asr / cost_mechanistic / cost_l22_deflect).
+**Two of three variants are complete and consistent: A=71% ASR, P(A) dominant on all 4 goals for both cost_mechanistic and cost_l22_deflect.**
+
+**cost_asr (job 541183) is now running** — resubmitted 2026-06-13 14:29 UTC without dependency flag, nodelist=n-803. With 6h remaining on cluster access, expect 20-30+ episodes before time or access limit.
+
+**What remains missing:**
+- 541183 final results (cost_asr live RL) — in progress
+- 3-variant comparison table — partial (cost_mechanistic + cost_l22_deflect done)
+- Full analysis report for cost_asr once 541183 completes
 
 ---
 
@@ -1012,10 +1025,10 @@ The conda environment (`poc_stage2`, Python 3.12.13) does NOT include statsmodel
 | Combined direction extraction (180 rows) | ✅ COMPLETE | L22 AUC=0.679 (p<0.001); L16 AUC=0.745 (p<0.001) |
 | RL simulation (3 variants × 27 seeds) | ✅ COMPLETE | 27/27 → A dominant; G3=85%, G2=66% |
 | Live RL cost_mechanistic (job 539190) | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71% |
-| Live RL cost_l22_deflect (job 540506) | 🔄 RUNNING | n-803, step 4 |
-| Live RL cost_asr (job 540543) | ⏳ PENDING | Dependency on 540506 |
-| 3-variant live RL comparison table | ⏳ PENDING | Need 540506 + 540543 |
-| AutoInject POC | ✅ COMPLETE (offline) | 64/64 → A; online run pending Mahmood approval |
+| Live RL cost_l22_deflect (job 540506) | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71% dominant all goals |
+| Live RL cost_asr (job 541183) | 🔄 RUNNING | Resubmitted 14:29 UTC; results pending |
+| 3-variant live RL comparison table | ⏳ PARTIAL | cost_mechanistic + cost_l22_deflect done; cost_asr (541183) in progress |
+| AutoInject POC | ✅ COMPLETE (offline replay only) | 64/64 → A; **real online AutoInject NOT run** — pending Mahmood approval |
 | Advisor meeting package (June 11) | ✅ COMPLETE | 73/73 audit pass |
 | 48h update package | ✅ COMPLETE | 46/46 audit pass |
 | Stages 5–8 | 🔜 DEFERRED | Not started |
@@ -1050,8 +1063,9 @@ The conda environment (`poc_stage2`, Python 3.12.13) does NOT include statsmodel
 | RL per-goal susceptibility (G3/G2/G0/G1) | 85.1% / 65.9% / 25.3% / 17.9% | Simulation estimate |
 | Live RL validation A ASR (job 539190) | **71%** (10/14 eps) | LIVE QWEN3-14B |
 | Live RL overall ASR | 49% (21/43 eps) | LIVE |
-| Onset commit point (cond=A, live) | **0.86%** of thinking tokens | LIVE QWEN3-14B |
-| Onset gradient A < D < F | A=0.86%, D=2.32%, F=4.58% | LIVE |
+| Onset proxy — all cond=A (n=14, live) | **0.86%** of thinking tokens | LIVE QWEN3-14B, heuristic proxy |
+| Onset proxy — cond=A successes only (n=10) | **0.67%** of thinking tokens | LIVE QWEN3-14B, heuristic proxy |
+| Onset gradient A < D < F | A=0.86%, D=2.32%, F=4.58% (all-episodes means) | LIVE, heuristic proxy |
 | AutoInject POC: policies selecting A | 8/8 (100%) | CONFIRMED |
 | AutoInject POC: reward combos → A | 64/64 (100%) | CONFIRMED |
 
