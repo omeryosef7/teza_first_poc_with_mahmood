@@ -903,7 +903,8 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset prox
 | 540472 | Failed (1 ep) | n-801 device-side CUDA assert; n-801 confirmed contaminated |
 | 540506 | COMPLETE (cost_l22_deflect) | 44/48 eps, hit 12h walltime; ASR=45%, A=71% dominant all goals |
 | 540543 | CANCELLED (cost_asr) | DependencyNeverSatisfied — 540506 exited non-zero (walltime); cancelled and resubmitted as 541183 |
-| **541183** | **RUNNING (cost_asr)** | Resubmitted 2026-06-13 14:29 UTC on n-803 without dependency; model loading |
+| 541177 | CANCELLED (wrong variant) | Submitted VARIANT= instead of RL_VARIANT=; defaulted to cost_mechanistic; cancelled immediately |
+| **541183** | **RUNNING (cost_asr)** | Correct RL_VARIANT=cost_asr. 7/48 steps, 1 success (goal=2 cond=A). Partial ASR=14%. ~4h left. |
 
 **Critical technical fixes for live RL (applied by job 539190):**
 1. `torch_dtype=torch.float32` — eliminates bfloat16 NaN entirely (56 GB fits in 2× L40S)
@@ -924,7 +925,8 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset prox
 | 539190 | cost_mechanistic | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71%, P(A) dominant all goals |
 | 540506 | cost_l22_deflect | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71%, P(A) dominant all goals |
 | 540543 | cost_asr | ❌ CANCELLED | DependencyNeverSatisfied; resubmitted as 541183 |
-| **541183** | **cost_asr** | **🔄 RUNNING** | Started 14:29 UTC on n-803. First eps expected ~14:50 UTC. |
+| 541177 | cost_asr (wrong variant) | ❌ CANCELLED | Wrong env var (VARIANT= vs RL_VARIANT=); cancelled within minutes |
+| **541183** | **cost_asr** | **🔄 RUNNING** | 7/48 steps, 1 success (goal=2 cond=A). Partial ASR=14%. ~4h left. |
 
 **Two of three variants are complete and consistent: A=71% ASR, P(A) dominant on all 4 goals for both cost_mechanistic and cost_l22_deflect.**
 
