@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-06-11T22:20:52.294003+00:00",
+  "n_rows": 60,
+  "new_seeds": [
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115
+  ],
+  "target_goals": [
+    "0",
+    "2"
+  ],
+  "target_conditions": [
+    "A",
+    "D",
+    "F"
+  ],
+  "manifest_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_extension2_20260612_012052/repeated_generation_manifest.jsonl",
+  "run_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_extension2_20260612_012052",
+  "status": "prepared",
+  "purpose": "extension v2: seeds 106-115 for goals 0 and 2; unblock direction extraction (need >=4 matched cells)"
+}

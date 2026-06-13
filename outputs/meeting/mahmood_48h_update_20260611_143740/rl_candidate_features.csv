@@ -1,0 +1,8 @@
+feature_name,current_proxy,measurable_now,requires_experiment
+wrapper_type,condition (A/D/F/E),True,False
+wrapper_token_count,source_prompt_tokens - target_span_tokens,True,False
+target_placement_position,onset_token_idx (heuristic),True,False
+think_amplification_ratio,think_token_count_A / think_token_count_D,True,False
+reasoning_difficulty,puzzle complexity score (not yet computed),False,True
+semantic_indirection_level,manual label or embedding,False,True
+answer_cue_explicitness,answer_cue_sha256 (hash only),False,True

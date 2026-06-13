@@ -1,0 +1,7 @@
+{
+  "n_cells": 12,
+  "n_complete": 120,
+  "mean_within_cell_variance": 0.060821759259259256,
+  "between_cell_variance": 0.18716965663580246,
+  "note": "between_cell_variance includes both prompt identity and condition effects. mean_within_cell_variance is purely seed/stochastic variation within fixed (prompt, condition)."
+}

@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-06-11T14:39:45.393545Z",
+  "planned": 60,
+  "completed": 0,
+  "threshold_target": 4,
+  "current_matched_cells": 3,
+  "target_goals": [
+    "0",
+    "2"
+  ],
+  "extension_seeds": [
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115
+  ],
+  "conditions": [
+    "A",
+    "D",
+    "F"
+  ],
+  "status": "planned_not_started"
+}

@@ -1,0 +1,4 @@
+condition,n_total,n_complete,n_censored,n_success,success_rate_complete,mean_sr_score,ci_low_95,ci_high_95
+A,40,40,0,29,0.725,0.7125,0.575,0.8375
+D,40,40,0,18,0.45,0.45,0.275,0.6
+F,40,40,0,13,0.325,0.321875,0.175,0.475

@@ -1,0 +1,36 @@
+{
+  "mode": "simulation",
+  "timestamp": "2026-06-11T18:44:57.040948Z",
+  "n_episodes": 300,
+  "lr": 0.05,
+  "ema": 0.9,
+  "seed": 42,
+  "variants": [
+    "cost_asr",
+    "cost_mechanistic",
+    "cost_l22_deflect"
+  ],
+  "dominant_actions": {
+    "cost_asr": "A",
+    "cost_mechanistic": "A",
+    "cost_l22_deflect": "A"
+  },
+  "asr_last50": {
+    "cost_asr": 0.52,
+    "cost_mechanistic": 0.48,
+    "cost_l22_deflect": 0.62
+  },
+  "env_n_cells": 16,
+  "env_goals": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "env_conditions": [
+    "A",
+    "D",
+    "E",
+    "F"
+  ]
+}

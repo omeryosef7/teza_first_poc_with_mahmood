@@ -31,7 +31,8 @@ PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahm
 RUNTIME_DIR="/home/sharifm/students/omeryosef/jupyter_runtime"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
-MANIFEST="$PROJECT_DIR/outputs/stage4_8/repeated_generation_manifest.jsonl"
+# MANIFEST can be overridden via --export=MANIFEST=<path> for extension runs
+MANIFEST="${MANIFEST:-$PROJECT_DIR/outputs/stage4_8/repeated_generation_manifest.jsonl}"
 
 # All array tasks share one run dir. If RUN_DIR not set externally, create a shared
 # timestamp dir before submitting (set via sbatch --export=RUN_DIR=...).

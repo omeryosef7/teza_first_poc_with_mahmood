@@ -1,0 +1,3 @@
+sr_success,n,mean_onset_pct,median_onset_pct,std_onset_pct,mean_tokens_before_onset,median_tokens_before_onset,mean_think_tokens,n_early,n_middle,n_late,n_none
+True,48,0.001,0.0,0.0043,0.7,0.0,6707.3,48,0,0,0
+False,46,0.0493,0.0,0.1677,27.8,0.0,4832.2,44,0,2,0

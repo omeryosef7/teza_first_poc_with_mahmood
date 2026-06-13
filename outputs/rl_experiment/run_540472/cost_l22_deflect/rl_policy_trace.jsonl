@@ -1,0 +1,1 @@
+{"step": 1, "goal_idx": 2, "condition": "F", "variant": "cost_l22_deflect", "sr_success": false, "sr_score": 0.0, "think_token_count": 0, "is_censored": false, "onset_percent": null, "elapsed_seconds": 18.29, "reward_total": 0.0, "advantage": 0.0, "baseline": 0.0, "prob_A": 0.25, "prob_D": 0.25, "prob_F": 0.25, "prob_E": 0.25, "cumulative_reward": 0.0, "mean_reward_so_far": 0.0}

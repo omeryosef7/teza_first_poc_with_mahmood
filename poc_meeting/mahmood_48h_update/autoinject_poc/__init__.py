@@ -1,0 +1,1 @@
+# AutoInject POC adapter package

@@ -1,0 +1,8 @@
+prepare final Mahmood update with ASR onset and AutoInject POC
+
+- Submit Stage 4.8 extension (SLURM job 538360)
+- Add AutoInject offline POC: 8 policies, 3 rewards, 64 weight combos
+- Add manual onset annotation subset (35 rows) and analysis script
+- Add AutoInject code audit and adapter package
+- Update all 6 meeting docs with AutoInject POC section
+- All 61 audit checks pass

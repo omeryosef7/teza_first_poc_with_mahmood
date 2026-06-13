@@ -1,0 +1,22 @@
+{
+  "total_examples": 94,
+  "confidence_counts": {
+    "high": 63,
+    "medium": 31
+  },
+  "method_counts": {
+    "target_overlap": 94
+  },
+  "n_unavailable": 0,
+  "unavailable_rate": 0.0,
+  "n_high_medium_confidence": 94,
+  "high_medium_confidence_rate": 1.0,
+  "onset_bucket_counts": {
+    "early": 92,
+    "middle": 0,
+    "late": 2,
+    "none": 0,
+    "unavailable": 0
+  },
+  "note": "Onset proxy is heuristic (token-overlap). Use high+medium confidence rows only for analysis. See manual_onset_review_packet.csv for validation."
+}

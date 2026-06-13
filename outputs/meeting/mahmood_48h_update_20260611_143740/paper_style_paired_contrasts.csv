@@ -1,0 +1,5 @@
+contrast,cond_ref,cond_comp,paired_n,asr_ref_pct,asr_comp_pct,asr_diff_pp,mean_score_diff,median_score_diff,mean_think_diff,median_think_diff,n_pos,n_neg,n_tie,sign_test_p
+A-D,A,D,12,83.3,41.7,41.7,0.4167,0.0625,8533.6,10592.0,5,0,7,0.0625
+A-E,A,E,12,83.3,33.3,50.0,0.4896,0.4375,11457.9,13591.5,6,0,6,0.0312
+A-F,A,F,12,83.3,25.0,58.3,0.5833,0.9375,10633.9,12446.5,7,0,5,0.0156
+D-F,D,F,12,41.7,25.0,16.7,0.1667,0.0,2100.3,1965.5,3,1,8,0.625

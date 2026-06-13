@@ -1,0 +1,109 @@
+{
+  "audit_date": "2026-06-11",
+  "autoinject_repo_root": "AutoInject/AutoInject/",
+  "optimization_method": "GRPO (Group Relative Policy Optimization) via TRL library",
+  "method_classification": "genuine_rl_policy_gradient",
+  "domain": "prompt_injection_against_llm_agent_benchmarks",
+  "key_files": [
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/agentdojo/adaptive_agentdojo.py",
+      "purpose": "Main iterative attack loop driver; manages query budgets, checkpointing, iteration control",
+      "key_functions": ["run_adaptive_attack", "_find_latest_checkpoint", "_save_checkpoint"],
+      "reusable": "partial",
+      "reuse_notes": "Loop structure (candidate->evaluate->update->checkpoint) is analogous to our offline optimizer; direct execution requires AgentDojo"
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/trl_suffix/learner.py",
+      "purpose": "TRLSuffixLearner class; implements GRPO training loop using TRL GRPOTrainer",
+      "key_functions": ["TRLSuffixLearner.__init__", "TRLSuffixLearner.learn"],
+      "key_params": {
+        "grpo_num_generations": 8,
+        "grpo_learning_rate": 1e-7,
+        "grpo_max_grad_norm": 0.1,
+        "grpo_beta": 10.0,
+        "max_suffix_length": 20
+      },
+      "reusable": "no",
+      "reuse_notes": "Requires AgentDojo + live LLM API + GPU. Cannot run without full infrastructure."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/trl_suffix/reward_utils.py",
+      "purpose": "Reward computation and normalization utilities",
+      "key_functions": [
+        "rank_normalize_rewards",
+        "extract_injection_goal_from_prompt",
+        "create_experience_based_reward_function"
+      ],
+      "reusable": "yes",
+      "reuse_notes": "rank_normalize_rewards() is directly borrowed in autoinject_offline_optimizer.py. Pure numpy, no heavy dependencies."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/common/feedback_utils.py",
+      "purpose": "GPT-based comparative reward computation for suffix quality",
+      "key_functions": ["compute_adaptive_reward", "compare_suffix_with_previous"],
+      "reusable": "no",
+      "reuse_notes": "Requires OpenAI API. Not safe to use at this stage — would expose content to external service."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/trl_suffix/evaluator.py",
+      "purpose": "SuffixEvaluator class; evaluates suffix quality in AgentDojo benchmark",
+      "key_functions": ["SuffixEvaluator.evaluate"],
+      "reusable": "no",
+      "reuse_notes": "Domain-specific to AgentDojo; not applicable to reasoning-model hijacking."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/adaptive_random_suffix/learner.py",
+      "purpose": "Random suffix mutation baseline for comparison against GRPO",
+      "key_functions": ["AdaptiveRandomSuffixLearner.learn"],
+      "reusable": "partial",
+      "reuse_notes": "Conceptually maps to our always_A/D/F fixed baselines. Random selection principle is portable."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learner_factory.py",
+      "purpose": "Factory for instantiating learner types (NoOp, Random, TRL-suffix)",
+      "key_functions": ["get_attack_learner"],
+      "reusable": "partial",
+      "reuse_notes": "Factory pattern is useful; actual learner types are not directly portable."
+    },
+    {
+      "path": "AutoInject/AutoInject/src/rlpi/attack/learners/common/stats_utils.py",
+      "purpose": "Logging and statistics utilities for reward tracking",
+      "key_functions": ["log_reward_stats", "log_stats_summary", "save_reward_stats"],
+      "reusable": "partial",
+      "reuse_notes": "Pattern is reusable; our optimization trace JSONL follows the same design."
+    },
+    {
+      "path": "AutoInject/AutoInject/agentdojo/src/agentdojo/",
+      "purpose": "AgentDojo benchmark suite (banking, Slack, travel, workspace tasks)",
+      "key_functions": ["TaskSuite", "BaseInjectionTask", "BaseUserTask"],
+      "reusable": "no",
+      "reuse_notes": "Completely different domain. Not applicable to reasoning-model hijacking."
+    }
+  ],
+  "reward_signal": {
+    "primary": "Binary 0/1 from AgentDojo evaluator (did agent execute injected goal?)",
+    "secondary": "GPT-4 comparative feedback (soft signal; requires OpenAI API)",
+    "normalization": "rank_normalize_rewards: converts raw rewards to [-1, 1] range",
+    "our_analogue": "sr_success (binary) and strongreject_score (continuous [0,1])"
+  },
+  "action_space": {
+    "autoinject": "Continuous token sequence (up to 20 tokens appended as suffix)",
+    "our_analogue": "Discrete structural wrapper choice: A / D / F / E conditions"
+  },
+  "candidate_generation": {
+    "autoinject": "GRPO policy model generates 8 suffix candidates per training step",
+    "our_analogue": "Fixed pool of existing Stage 4.7/4.8 cells; selection not generation"
+  },
+  "safe_to_run_directly": false,
+  "reasons_not_safe": [
+    "GRPO training would optimize a model to generate harmful content more effectively",
+    "GPT feedback requires OpenAI API and would expose harmful content externally",
+    "AgentDojo requires live LLM API calls with adversarial injection goals",
+    "Any online generation must wait for explicit Mahmood approval"
+  ],
+  "safe_integration_path": {
+    "step1_this_poc": "Offline replay: treat existing A/D/F/E cells as fixed candidate pool; apply AutoInject-style reward scoring and greedy selection; borrow rank_normalize_rewards",
+    "step2_requires_approval": "Constrained online run: action = structural wrapper choice; generation = running Qwen3-14B on existing research prompts; reward = sr_success",
+    "step3_requires_safety_review": "Extend action space to structural variations within conditions"
+  }
+}

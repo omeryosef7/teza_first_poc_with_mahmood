@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-06-11T14:39:45.393545Z",
+  "planned": 60,
+  "completed": 0,
+  "threshold_target": 4,
+  "current_matched_cells": 3,
+  "target_goals": [
+    "0",
+    "2"
+  ],
+  "extension_seeds": [
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115
+  ],
+  "conditions": [
+    "A",
+    "D",
+    "F"
+  ],
+  "status": "planned_not_started",
+  "threshold_met": false,
+  "has_extension_data": false,
+  "ext_run_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_extension_20260611_143945",
+  "analyzed_utc": "2026-06-11T14:39:46.062104Z"
+}

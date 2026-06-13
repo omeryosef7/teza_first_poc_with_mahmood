@@ -1,0 +1,432 @@
+{
+  "created_utc": "2026-06-12T01:15:41.844547+00:00",
+  "primary_layer": 22,
+  "primary_window": "first_500",
+  "n_matched_cells": 5,
+  "decision_gate_branch": "B",
+  "direction_name": "behavior-conditioned predictive direction",
+  "direction_status": "predictive_not_causal",
+  "results_by_layer_window": [
+    {
+      "layer": 22,
+      "window": "first_500",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.56,
+      "mean_balanced_accuracy": 0.4875,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.247,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.58,
+          "balanced_accuracy": 0.5,
+          "projection_diff": 0.26089404170966707,
+          "mean_proj_success": 0.17392936113977733,
+          "mean_proj_failure": -0.08696468056988974,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.54,
+          "balanced_accuracy": 0.475,
+          "projection_diff": 0.14556343835949828,
+          "mean_proj_success": 0.048521146119832936,
+          "mean_proj_failure": -0.09704229223966535,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": true
+    },
+    {
+      "layer": 22,
+      "window": "first_2000",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.4225,
+      "mean_balanced_accuracy": 0.475,
+      "n_folds_positive_direction": 0,
+      "sign_consistent": false,
+      "permutation_p_approx": 0.91,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.45,
+          "balanced_accuracy": 0.5,
+          "projection_diff": -0.28857573014858345,
+          "mean_proj_success": -0.19238382009905478,
+          "mean_proj_failure": 0.09619191004952868,
+          "direction_positive_for_success": false
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.395,
+          "balanced_accuracy": 0.45,
+          "projection_diff": -0.12758407765167848,
+          "mean_proj_success": -0.04252802588389324,
+          "mean_proj_failure": 0.08505605176778523,
+          "direction_positive_for_success": false
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 13,
+      "window": "first_500",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.54,
+      "mean_balanced_accuracy": 0.4875,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.303,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.545,
+          "balanced_accuracy": 0.475,
+          "projection_diff": 0.028226659005947986,
+          "mean_proj_success": 0.018817772670631783,
+          "mean_proj_failure": -0.009408886335316202,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.535,
+          "balanced_accuracy": 0.5,
+          "projection_diff": 0.0009534518909454005,
+          "mean_proj_success": 0.0003178172969815929,
+          "mean_proj_failure": -0.0006356345939638075,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 13,
+      "window": "first_2000",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.5549999999999999,
+      "mean_balanced_accuracy": 0.575,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.266,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.565,
+          "balanced_accuracy": 0.525,
+          "projection_diff": 0.0769301599354403,
+          "mean_proj_success": 0.0512867732902937,
+          "mean_proj_failure": -0.025643386645146603,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.545,
+          "balanced_accuracy": 0.625,
+          "projection_diff": 0.012933471992440571,
+          "mean_proj_success": 0.004311157330813553,
+          "mean_proj_failure": -0.008622314661627018,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 16,
+      "window": "first_500",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.395,
+      "mean_balanced_accuracy": 0.42500000000000004,
+      "n_folds_positive_direction": 0,
+      "sign_consistent": false,
+      "permutation_p_approx": 0.96,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.515,
+          "balanced_accuracy": 0.525,
+          "projection_diff": -0.00691541184404465,
+          "mean_proj_success": -0.004610274562696581,
+          "mean_proj_failure": 0.0023051372813480686,
+          "direction_positive_for_success": false
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.275,
+          "balanced_accuracy": 0.325,
+          "projection_diff": -0.1538298972004652,
+          "mean_proj_success": -0.0512766324001551,
+          "mean_proj_failure": 0.1025532648003101,
+          "direction_positive_for_success": false
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 16,
+      "window": "first_2000",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.6775,
+      "mean_balanced_accuracy": 0.625,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.0,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.555,
+          "balanced_accuracy": 0.5,
+          "projection_diff": 0.12526930090093005,
+          "mean_proj_success": 0.08351286726728713,
+          "mean_proj_failure": -0.04175643363364292,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.8,
+          "balanced_accuracy": 0.75,
+          "projection_diff": 0.16250627801166137,
+          "mean_proj_success": 0.05416875933722052,
+          "mean_proj_failure": -0.10833751867444086,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 38,
+      "window": "first_500",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.40249999999999997,
+      "mean_balanced_accuracy": 0.425,
+      "n_folds_positive_direction": 0,
+      "sign_consistent": false,
+      "permutation_p_approx": 0.908,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.33,
+          "balanced_accuracy": 0.32499999999999996,
+          "projection_diff": -2.3613080270683,
+          "mean_proj_success": -1.5742053513788719,
+          "mean_proj_failure": 0.7871026756894282,
+          "direction_positive_for_success": false
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.475,
+          "balanced_accuracy": 0.525,
+          "projection_diff": -0.5821406156301571,
+          "mean_proj_success": -0.19404687187671285,
+          "mean_proj_failure": 0.3880937437534442,
+          "direction_positive_for_success": false
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 38,
+      "window": "first_2000",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.305,
+      "mean_balanced_accuracy": 0.325,
+      "n_folds_positive_direction": 0,
+      "sign_consistent": false,
+      "permutation_p_approx": 1.0,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.4,
+          "balanced_accuracy": 0.42500000000000004,
+          "projection_diff": -1.8557689321036919,
+          "mean_proj_success": -1.2371792880691317,
+          "mean_proj_failure": 0.6185896440345602,
+          "direction_positive_for_success": false
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.21,
+          "balanced_accuracy": 0.22499999999999998,
+          "projection_diff": -2.553848180128157,
+          "mean_proj_success": -0.851282726709389,
+          "mean_proj_failure": 1.702565453418768,
+          "direction_positive_for_success": false
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 39,
+      "window": "first_500",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.5525,
+      "mean_balanced_accuracy": 0.575,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.279,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.54,
+          "balanced_accuracy": 0.575,
+          "projection_diff": 0.09423343995757065,
+          "mean_proj_success": 0.06282229330504378,
+          "mean_proj_failure": -0.03141114665252687,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.565,
+          "balanced_accuracy": 0.575,
+          "projection_diff": 2.353088030426504,
+          "mean_proj_success": 0.7843626768088428,
+          "mean_proj_failure": -1.5687253536176613,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    },
+    {
+      "layer": 39,
+      "window": "first_2000",
+      "n_folds": 2,
+      "n_valid_folds": 2,
+      "mean_auc": 0.585,
+      "mean_balanced_accuracy": 0.5375,
+      "n_folds_positive_direction": 2,
+      "sign_consistent": true,
+      "permutation_p_approx": 0.119,
+      "n_permutations": 1000,
+      "fold_results": [
+        {
+          "held_out_prompt": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+          "n_train": 30,
+          "n_test": 30,
+          "n_test_success": 10,
+          "n_test_failure": 20,
+          "auc": 0.51,
+          "balanced_accuracy": 0.45,
+          "projection_diff": 0.031705985106587065,
+          "mean_proj_success": 0.021137323404386166,
+          "mean_proj_failure": -0.010568661702200898,
+          "direction_positive_for_success": true
+        },
+        {
+          "held_out_prompt": "goal_index=2|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+          "n_train": 20,
+          "n_test": 30,
+          "n_test_success": 20,
+          "n_test_failure": 10,
+          "auc": 0.66,
+          "balanced_accuracy": 0.625,
+          "projection_diff": 2.295874246337312,
+          "mean_proj_success": 0.7652914154457712,
+          "mean_proj_failure": -1.5305828308915408,
+          "direction_positive_for_success": true
+        }
+      ],
+      "note": "behavior-conditioned predictive direction \u2014 not causal. Trained on success-minus-failure within matched cells (\u22651 success, \u22651 failure). Evaluated on held-out source prompts only.",
+      "is_primary": false
+    }
+  ],
+  "old_direction_results": null
+}

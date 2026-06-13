@@ -1,0 +1,44 @@
+{
+  "created_utc": "2026-06-13T03:21:25.682877+00:00",
+  "n_run_summary_rows": 180,
+  "n_projection_rows": 180,
+  "source_dirs": {
+    "base": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_20260611_0109",
+    "extension_v2": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_extension2_20260612_012052",
+    "extension_v3": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4_8/runs/run_array_extension3_20260613_021039"
+  },
+  "goals_expected": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "seeds_expected": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125
+  ],
+  "purpose": "Combined 4-goal direction extraction (base + ext_v2 + ext_v3)"
+}

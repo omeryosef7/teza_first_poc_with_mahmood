@@ -1,0 +1,25 @@
+{
+  "n_valid": 94,
+  "spearman_onset_vs_sr_score": {
+    "r": -0.2167,
+    "p": 0.0359
+  },
+  "spearman_onset_vs_think_tokens": {
+    "r": -0.371,
+    "p": 0.0002
+  },
+  "spearman_onset_vs_sr_success": {
+    "r": -0.2244,
+    "p": 0.0297
+  },
+  "mannwhitney_onset_success_vs_failure": {
+    "U": 912.0,
+    "p": 0.0309,
+    "n_success": 48,
+    "n_failure": 46
+  },
+  "kruskal_wallis_onset_across_conditions": {
+    "H": 29.276,
+    "p": 0.0
+  }
+}

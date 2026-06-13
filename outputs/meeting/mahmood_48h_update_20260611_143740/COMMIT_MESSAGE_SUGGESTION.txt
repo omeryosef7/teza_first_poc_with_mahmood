@@ -1,0 +1,27 @@
+prepare 48h Mahmood update with ASR, onset, RL readiness
+
+Add meeting package for 48h Mahmood update:
+
+- poc_meeting/mahmood_48h_update/: 10 new analysis scripts
+  (artifact inventory, paper-style ASR report, onset proxy pipeline,
+   Stage 4.8 extension prep, RL readiness, package audit)
+
+- outputs/meeting/mahmood_48h_update_20260611_143740/: generated package
+  (6 ASR figures, 6 onset figures, 3 extension docs, 2 RL docs,
+   5 meeting docs, CSVs, markdown tables, audit)
+
+- docs/LITERATURE_BRIDGE_DELAYED_SAFETY_COMMITMENT.md: unified hypothesis
+  connecting CoT Hijacking, Doublespeak, and Safety-before-CoT
+
+- docs/LITERATURE_WATCH_ALERTS.md: search strings and citation tracking
+
+- outputs/stage4_8/runs/run_array_extension_20260611_143945/: Stage 4.8
+  extension manifest (60 planned gens, goals 0+2, seeds 106-115)
+
+Key findings:
+- Stage 4.7: A=83.3% vs F=27.3% ASR (sign test p=0.016); length not confound
+- Stage 4.8 replication: A=60% > D=50% > F=40% under stochastic sampling
+- Onset proxy: 92% early classification; heuristic needs manual validation
+- Layer-22 direction: anti-correlates with ASR; ruled out as primary mechanism
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

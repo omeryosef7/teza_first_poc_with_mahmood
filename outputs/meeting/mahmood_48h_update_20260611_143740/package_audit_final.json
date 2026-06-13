@@ -1,0 +1,546 @@
+[
+  {
+    "item": "artifact_inventory.json",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/artifact_inventory.json",
+    "status": "PASS",
+    "size_bytes": 11170,
+    "category": "inventory",
+    "note": ""
+  },
+  {
+    "item": "artifact_inventory.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/artifact_inventory.md",
+    "status": "PASS",
+    "size_bytes": 3886,
+    "category": "inventory",
+    "note": ""
+  },
+  {
+    "item": "paper_style_asr_summary.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/paper_style_asr_summary.csv",
+    "status": "PASS",
+    "size_bytes": 1601,
+    "category": "asr_csv",
+    "note": ""
+  },
+  {
+    "item": "paper_style_asr_by_stage_condition.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/paper_style_asr_by_stage_condition.csv",
+    "status": "PASS",
+    "size_bytes": 1601,
+    "category": "asr_csv",
+    "note": ""
+  },
+  {
+    "item": "paper_style_paired_contrasts.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/paper_style_paired_contrasts.csv",
+    "status": "PASS",
+    "size_bytes": 446,
+    "category": "asr_csv",
+    "note": ""
+  },
+  {
+    "item": "condition_asr_percent_table.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/condition_asr_percent_table.md",
+    "status": "PASS",
+    "size_bytes": 1579,
+    "category": "asr_md",
+    "note": ""
+  },
+  {
+    "item": "stage4_7_condition_summary_percent.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage4_7_condition_summary_percent.md",
+    "status": "PASS",
+    "size_bytes": 1189,
+    "category": "asr_md",
+    "note": ""
+  },
+  {
+    "item": "stage4_8_condition_summary_percent.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage4_8_condition_summary_percent.md",
+    "status": "PASS",
+    "size_bytes": 799,
+    "category": "asr_md",
+    "note": ""
+  },
+  {
+    "item": "PAPER_STYLE_ASR_INTERPRETATION.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/PAPER_STYLE_ASR_INTERPRETATION.md",
+    "status": "PASS",
+    "size_bytes": 2510,
+    "category": "asr_md",
+    "note": ""
+  },
+  {
+    "item": "fig1_asr_by_condition_percent_stage47.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig1_asr_by_condition_percent_stage47.png",
+    "status": "PASS",
+    "size_bytes": 59023,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "fig2_delta_asr_percentage_points_stage47.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig2_delta_asr_percentage_points_stage47.png",
+    "status": "PASS",
+    "size_bytes": 49771,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "fig3_think_tokens_by_condition_stage47.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig3_think_tokens_by_condition_stage47.png",
+    "status": "PASS",
+    "size_bytes": 47214,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "fig4_asr_by_condition_percent_stage48.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig4_asr_by_condition_percent_stage48.png",
+    "status": "PASS",
+    "size_bytes": 62689,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "fig5_goal_condition_heatmap_stage47.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig5_goal_condition_heatmap_stage47.png",
+    "status": "PASS",
+    "size_bytes": 58922,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "fig6_asr_vs_think_tokens_stage47.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig6_asr_vs_think_tokens_stage47.png",
+    "status": "PASS",
+    "size_bytes": 65650,
+    "category": "asr_fig",
+    "note": ""
+  },
+  {
+    "item": "onset_proxy_dataset.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/onset_proxy_dataset.csv",
+    "status": "PASS",
+    "size_bytes": 41722,
+    "category": "onset_data",
+    "note": ""
+  },
+  {
+    "item": "onset_quality_report.json",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/onset_quality_report.json",
+    "status": "PASS",
+    "size_bytes": 535,
+    "category": "onset_data",
+    "note": ""
+  },
+  {
+    "item": "onset_by_condition.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/onset_by_condition.csv",
+    "status": "PASS",
+    "size_bytes": 306,
+    "category": "onset_csv",
+    "note": ""
+  },
+  {
+    "item": "onset_by_success.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/onset_by_success.csv",
+    "status": "PASS",
+    "size_bytes": 264,
+    "category": "onset_csv",
+    "note": ""
+  },
+  {
+    "item": "onset_bucket_asr.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/onset_bucket_asr.csv",
+    "status": "PASS",
+    "size_bytes": 136,
+    "category": "onset_csv",
+    "note": ""
+  },
+  {
+    "item": "manual_onset_review_packet.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/manual_onset_review_packet.csv",
+    "status": "PASS",
+    "size_bytes": 22414,
+    "category": "onset_review",
+    "note": ""
+  },
+  {
+    "item": "manual_onset_review_instructions.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/manual_onset_review_instructions.md",
+    "status": "PASS",
+    "size_bytes": 2847,
+    "category": "onset_review",
+    "note": ""
+  },
+  {
+    "item": "ONSET_ANALYSIS_RESULTS.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/ONSET_ANALYSIS_RESULTS.md",
+    "status": "PASS",
+    "size_bytes": 2821,
+    "category": "onset_md",
+    "note": ""
+  },
+  {
+    "item": "fig_onset_percent_by_condition.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_onset_percent_by_condition.png",
+    "status": "PASS",
+    "size_bytes": 58464,
+    "category": "onset_fig",
+    "note": ""
+  },
+  {
+    "item": "fig_onset_percent_success_vs_failure.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_onset_percent_success_vs_failure.png",
+    "status": "PASS",
+    "size_bytes": 48726,
+    "category": "onset_fig",
+    "note": ""
+  },
+  {
+    "item": "fig_asr_by_onset_bucket.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_asr_by_onset_bucket.png",
+    "status": "PASS",
+    "size_bytes": 32953,
+    "category": "onset_fig",
+    "note": ""
+  },
+  {
+    "item": "fig_tokens_before_onset_by_condition.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_tokens_before_onset_by_condition.png",
+    "status": "PASS",
+    "size_bytes": 43390,
+    "category": "onset_fig",
+    "note": ""
+  },
+  {
+    "item": "fig_think_tokens_vs_onset_percent.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_think_tokens_vs_onset_percent.png",
+    "status": "PASS",
+    "size_bytes": 58822,
+    "category": "onset_fig",
+    "note": ""
+  },
+  {
+    "item": "stage48_extension_plan.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage48_extension_plan.md",
+    "status": "PASS",
+    "size_bytes": 2705,
+    "category": "extension",
+    "note": ""
+  },
+  {
+    "item": "stage48_extension_batch_summary.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage48_extension_batch_summary.csv",
+    "status": "PASS",
+    "size_bytes": 7182,
+    "category": "extension",
+    "note": ""
+  },
+  {
+    "item": "stage48_extension_status.json",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage48_extension_status.json",
+    "status": "PASS",
+    "size_bytes": 638,
+    "category": "extension",
+    "note": ""
+  },
+  {
+    "item": "stage48_matched_cells_report.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/stage48_matched_cells_report.md",
+    "status": "PASS",
+    "size_bytes": 1280,
+    "category": "extension",
+    "note": ""
+  },
+  {
+    "item": "fig_stage48_matched_cells_heatmap.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/fig_stage48_matched_cells_heatmap.png",
+    "status": "PASS",
+    "size_bytes": 52604,
+    "category": "extension_fig",
+    "note": ""
+  },
+  {
+    "item": "rl_reward_components.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/rl_reward_components.csv",
+    "status": "PASS",
+    "size_bytes": 1689,
+    "category": "rl",
+    "note": ""
+  },
+  {
+    "item": "rl_candidate_features.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/rl_candidate_features.csv",
+    "status": "PASS",
+    "size_bytes": 535,
+    "category": "rl",
+    "note": ""
+  },
+  {
+    "item": "rl_readiness_table.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/rl_readiness_table.csv",
+    "status": "PASS",
+    "size_bytes": 1295,
+    "category": "rl",
+    "note": ""
+  },
+  {
+    "item": "RL_OPTIMIZATION_PLAN.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/RL_OPTIMIZATION_PLAN.md",
+    "status": "PASS",
+    "size_bytes": 3898,
+    "category": "rl",
+    "note": ""
+  },
+  {
+    "item": "RL_NOT_YET_RATIONALE.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/RL_NOT_YET_RATIONALE.md",
+    "status": "PASS",
+    "size_bytes": 2848,
+    "category": "rl",
+    "note": ""
+  },
+  {
+    "item": "LITERATURE_BRIDGE_DELAYED_SAFETY_COMMITMENT.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/LITERATURE_BRIDGE_DELAYED_SAFETY_COMMITMENT.md",
+    "status": "PASS",
+    "size_bytes": 9201,
+    "category": "literature",
+    "note": ""
+  },
+  {
+    "item": "LITERATURE_WATCH_ALERTS.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/LITERATURE_WATCH_ALERTS.md",
+    "status": "PASS",
+    "size_bytes": 4014,
+    "category": "literature",
+    "note": ""
+  },
+  {
+    "item": "ONE_PAGE_48H_ADVISOR_BRIEF.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/ONE_PAGE_48H_ADVISOR_BRIEF.md",
+    "status": "PASS",
+    "size_bytes": 5172,
+    "category": "meeting_docs",
+    "note": ""
+  },
+  {
+    "item": "SLIDE_OUTLINE_48H_UPDATE.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/SLIDE_OUTLINE_48H_UPDATE.md",
+    "status": "PASS",
+    "size_bytes": 10134,
+    "category": "meeting_docs",
+    "note": ""
+  },
+  {
+    "item": "Q_AND_A_48H_UPDATE.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/Q_AND_A_48H_UPDATE.md",
+    "status": "PASS",
+    "size_bytes": 7782,
+    "category": "meeting_docs",
+    "note": ""
+  },
+  {
+    "item": "WHAT_CHANGED_SINCE_LAST_MEETING.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/WHAT_CHANGED_SINCE_LAST_MEETING.md",
+    "status": "PASS",
+    "size_bytes": 4356,
+    "category": "meeting_docs",
+    "note": ""
+  },
+  {
+    "item": "NEXT_DECISION_FOR_MAHMOOD.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/NEXT_DECISION_FOR_MAHMOOD.md",
+    "status": "PASS",
+    "size_bytes": 4966,
+    "category": "meeting_docs",
+    "note": ""
+  },
+  {
+    "item": "COMMIT_MESSAGE_SUGGESTION.txt",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/COMMIT_MESSAGE_SUGGESTION.txt",
+    "status": "PASS",
+    "size_bytes": 1203,
+    "category": "misc",
+    "note": ""
+  },
+  {
+    "item": "STAGE48_EXTENSION_SUBMISSION.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/STAGE48_EXTENSION_SUBMISSION.md",
+    "status": "PASS",
+    "size_bytes": 4113,
+    "category": "stage48_ext",
+    "note": ""
+  },
+  {
+    "item": "STAGE48_EXTENSION_STATUS.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/STAGE48_EXTENSION_STATUS.md",
+    "status": "PASS",
+    "size_bytes": 3208,
+    "category": "stage48_ext",
+    "note": ""
+  },
+  {
+    "item": "manual_onset_review_subset_30_40.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/manual_onset_review_subset_30_40.csv",
+    "status": "PASS",
+    "size_bytes": 11659,
+    "category": "onset_annotation",
+    "note": ""
+  },
+  {
+    "item": "MANUAL_ONSET_ANNOTATION_INSTRUCTIONS_SHORT.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/MANUAL_ONSET_ANNOTATION_INSTRUCTIONS_SHORT.md",
+    "status": "PASS",
+    "size_bytes": 2734,
+    "category": "onset_annotation",
+    "note": ""
+  },
+  {
+    "item": "AUTOINJECT_POC_MEETING_SUMMARY.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/AUTOINJECT_POC_MEETING_SUMMARY.md",
+    "status": "PASS",
+    "size_bytes": 2379,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "FINAL_PRE_MEETING_STATUS.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/FINAL_PRE_MEETING_STATUS.md",
+    "status": "PASS",
+    "size_bytes": 7871,
+    "category": "final_status",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/AUTOINJECT_CODE_AUDIT.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/AUTOINJECT_CODE_AUDIT.md",
+    "status": "PASS",
+    "size_bytes": 10644,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_code_inventory.json",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_code_inventory.json",
+    "status": "PASS",
+    "size_bytes": 5810,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_poc_dataset.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_poc_dataset.csv",
+    "status": "PASS",
+    "size_bytes": 10979,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/safe_structural_action_space.json",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/safe_structural_action_space.json",
+    "status": "PASS",
+    "size_bytes": 6153,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/SAFE_STRUCTURAL_ACTION_SPACE.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/SAFE_STRUCTURAL_ACTION_SPACE.md",
+    "status": "PASS",
+    "size_bytes": 2709,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_offline_policy_results.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_offline_policy_results.csv",
+    "status": "PASS",
+    "size_bytes": 1826,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_offline_policy_results.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_offline_policy_results.md",
+    "status": "PASS",
+    "size_bytes": 3348,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_optimization_trace.jsonl",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_optimization_trace.jsonl",
+    "status": "PASS",
+    "size_bytes": 15936,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_reward_sensitivity_grid.csv",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_reward_sensitivity_grid.csv",
+    "status": "PASS",
+    "size_bytes": 7695,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/autoinject_reward_sensitivity_summary.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/autoinject_reward_sensitivity_summary.md",
+    "status": "PASS",
+    "size_bytes": 2351,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/safe_autoinject_candidate_template.jsonl",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/safe_autoinject_candidate_template.jsonl",
+    "status": "PASS",
+    "size_bytes": 19385,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/SAFE_AUTOINJECT_CANDIDATE_TEMPLATE_README.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/SAFE_AUTOINJECT_CANDIDATE_TEMPLATE_README.md",
+    "status": "PASS",
+    "size_bytes": 2392,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/AUTOINJECT_POC_RESULTS.md",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/AUTOINJECT_POC_RESULTS.md",
+    "status": "PASS",
+    "size_bytes": 6349,
+    "category": "autoinject_poc",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/fig_autoinject_policy_rewards.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/fig_autoinject_policy_rewards.png",
+    "status": "PASS",
+    "size_bytes": 13830,
+    "category": "autoinject_fig",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/fig_autoinject_reward_tradeoffs.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/fig_autoinject_reward_tradeoffs.png",
+    "status": "PASS",
+    "size_bytes": 13502,
+    "category": "autoinject_fig",
+    "note": ""
+  },
+  {
+    "item": "autoinject_poc/fig_autoinject_reward_selection_heatmap.png",
+    "expected_path": "outputs/meeting/mahmood_48h_update_20260611_143740/autoinject_poc/fig_autoinject_reward_selection_heatmap.png",
+    "status": "PASS",
+    "size_bytes": 12286,
+    "category": "autoinject_fig",
+    "note": ""
+  }
+]

@@ -1,0 +1,11 @@
+requirement,status,notes
+Primary reward signal defined and measured,ready,sr_success and strongreject_score available for all Stage 4.7/4.8 examples
+Secondary reward signal (thinking amplification),partial,think_token_count available; need censoring penalty and overclaiming guard
+Action space defined,partial,Wrapper type (A/D/F/E) defined; continuous features (wrapper_length etc.) available
+Reward baseline established (what does random/current policy score?),ready,Stage 4.8 condition A: ~60% ASR; condition F: ~40%; greedy D: ~45%
+Behavior-conditioned direction for intermediate reward,blocked,Only 3 matched cells; need ≥4. Extension plan prepared.
+Onset timing measurable for delayed-commitment reward,partial,Heuristic proxy available; needs manual validation before use as reward
+Safe training environment (no real deployment),ready,All experiments run in isolated offline setting
+Overclaiming guard: reward must not optimize harmful content,partial,"StrongREJECT measures compliance, not quality of harmful content; OK for research"
+Causal evidence that reward components predict behavior,partial,think_token_count correlates with ASR (A>D>F); onset proxy unvalidated
+RL training infrastructure (PPO/GRPO/DPO),blocked,Not implemented; requires separate engineering effort

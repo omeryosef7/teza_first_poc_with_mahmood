@@ -1,0 +1,26 @@
+{
+  "A": {
+    "n_episodes": 89,
+    "asr": 0.652,
+    "n_with_l22": 36,
+    "mean_l22": 5.9747
+  },
+  "D": {
+    "n_episodes": 70,
+    "asr": 0.514,
+    "n_with_l22": 15,
+    "mean_l22": 9.0665
+  },
+  "E": {
+    "n_episodes": 75,
+    "asr": 0.373,
+    "n_with_l22": 0,
+    "mean_l22": null
+  },
+  "F": {
+    "n_episodes": 66,
+    "asr": 0.318,
+    "n_with_l22": 30,
+    "mean_l22": 9.1396
+  }
+}

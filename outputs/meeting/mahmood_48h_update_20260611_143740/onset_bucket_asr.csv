@@ -1,0 +1,6 @@
+onset_bucket,n,n_valid,n_success,asr_pct
+early,92,92,48,52.2
+middle,0,0,0,nan
+late,2,2,0,0.0
+none,0,0,0,nan
+unavailable,0,0,0,nan
