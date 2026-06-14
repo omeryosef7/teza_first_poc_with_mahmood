@@ -42,7 +42,7 @@ This document covers 19 days of intensive experimental work on puzzle-based chai
 16. [Live REINFORCE RL Experiment (June 11–13)](#16-live-reinforce-rl-experiment-june-11-13)
 17. [Technical Infrastructure Built](#17-technical-infrastructure-built)
 18. [Constraints and Scientific Caveats](#18-constraints-and-scientific-caveats)
-19. [Current Status (June 13)](#19-current-status-june-13)
+19. [Current Status (June 14)](#19-current-status-june-14--all-jobs-complete)
 20. [Key Numbers for Mahmood](#20-key-numbers-for-mahmood)
 21. [Artifact Index](#21-artifact-index)
 
@@ -904,7 +904,7 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset prox
 | 540506 | COMPLETE (cost_l22_deflect) | 44/48 eps, hit 12h walltime; ASR=45%, A=71% dominant all goals |
 | 540543 | CANCELLED (cost_asr) | DependencyNeverSatisfied — 540506 exited non-zero (walltime); cancelled and resubmitted as 541183 |
 | 541177 | CANCELLED (wrong variant) | Submitted VARIANT= instead of RL_VARIANT=; defaulted to cost_mechanistic; cancelled immediately |
-| **541183** | **RUNNING (cost_asr)** | Correct RL_VARIANT=cost_asr. 7/48 steps, 1 success (goal=2 cond=A). Partial ASR=14%. ~4h left. |
+| **541183** | **COMPLETE (cost_asr)** | 44/48 eps, hit 12h walltime; ASR=45%, A=71% (10/14). P(A) dominant all goals. |
 
 **Critical technical fixes for live RL (applied by job 539190):**
 1. `torch_dtype=torch.float32` — eliminates bfloat16 NaN entirely (56 GB fits in 2× L40S)
@@ -918,24 +918,32 @@ Safety decisions should be made BEFORE extended reasoning begins. Our onset prox
 - n-801: contaminated (CUDA device-side assert) — excluded from nodelist
 - n-802: appears clean (Stage 4.8 ext jobs ran fine with bfloat16)
 
-### 16.6 Current Live RL Status (June 13 ~14:35 UTC)
+### 16.6 Live RL Final Status (ALL COMPLETE — June 14)
 
 | Job | Condition | Status | Result |
 |-----|-----------|--------|--------|
-| 539190 | cost_mechanistic | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71%, P(A) dominant all goals |
-| 540506 | cost_l22_deflect | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71%, P(A) dominant all goals |
+| 539190 | cost_mechanistic | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71% (10/14), P(A) dominant all goals |
+| 540506 | cost_l22_deflect | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71% (10/14), P(A) dominant all goals |
 | 540543 | cost_asr | ❌ CANCELLED | DependencyNeverSatisfied; resubmitted as 541183 |
 | 541177 | cost_asr (wrong variant) | ❌ CANCELLED | Wrong env var (VARIANT= vs RL_VARIANT=); cancelled within minutes |
-| **541183** | **cost_asr** | **🔄 RUNNING** | 7/48 steps, 1 success (goal=2 cond=A). Partial ASR=14%. ~4h left. |
+| **541183** | **cost_asr** | **✅ COMPLETE** | **44/48 eps, ASR=45%, A=71% (10/14). TIMEOUT 12h.** |
 
-**Two of three variants are complete and consistent: A=71% ASR, P(A) dominant on all 4 goals for both cost_mechanistic and cost_l22_deflect.**
+**ALL THREE variants complete. Queue empty as of June 14.**
 
-**cost_asr (job 541183) is now running** — resubmitted 2026-06-13 14:29 UTC without dependency flag, nodelist=n-803. With 6h remaining on cluster access, expect 20-30+ episodes before time or access limit.
+**Three-Variant Comparison:**
 
-**What remains missing:**
-- 541183 final results (cost_asr live RL) — in progress
-- 3-variant comparison table — partial (cost_mechanistic + cost_l22_deflect done)
-- Full analysis report for cost_asr once 541183 completes
+| Variant | Job | N eps | Overall ASR | Cond A | Cond D | Cond F | Cond E |
+|---------|-----|-------|------------|--------|--------|--------|--------|
+| cost_mechanistic | 539190 | 43/48 | **49%** | **71%** (10/14) | 50% (3/6) | 29% (4/14) | 44% (4/9) |
+| cost_l22_deflect | 540506 | 44/48 | **45%** | **71%** (10/14) | 43% (3/7) | 14% (2/14) | 56% (5/9) |
+| cost_asr | 541183 | 44/48 | **45%** | **71%** (10/14) | 57% (4/7) | 21% (3/14) | 33% (3/9) |
+
+**Key result: Condition A achieves exactly 71% ASR (10/14 episodes) in ALL three variants.** The reward shaping (onset, L22) does not affect Condition A's empirical hit rate — it is dominant regardless of which research-motivated signal is used.
+
+**What remains:**
+- `analyze_live_rl_run.py` not yet run on 541183 — no LIVE_RL_REPORT.md for cost_asr
+  Command: `/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python3 analyze_live_rl_run.py --run-dir outputs/rl_experiment/run_541183 --job-id 541183`
+- Uncommitted: run_541183/cost_asr/rl_policy_trace.jsonl + checkpoints at steps 10/20/30/40
 
 ---
 
@@ -1011,7 +1019,7 @@ The conda environment (`poc_stage2`, Python 3.12.13) does NOT include statsmodel
 
 ---
 
-## 19. Current Status (June 13)
+## 19. Current Status (June 14 — All Jobs Complete)
 
 | Component | Status | Key output |
 |-----------|--------|-----------|
@@ -1028,8 +1036,8 @@ The conda environment (`poc_stage2`, Python 3.12.13) does NOT include statsmodel
 | RL simulation (3 variants × 27 seeds) | ✅ COMPLETE | 27/27 → A dominant; G3=85%, G2=66% |
 | Live RL cost_mechanistic (job 539190) | ✅ COMPLETE | 43/48 eps, ASR=49%, A=71% |
 | Live RL cost_l22_deflect (job 540506) | ✅ COMPLETE (walltime) | 44/48 eps, ASR=45%, A=71% dominant all goals |
-| Live RL cost_asr (job 541183) | 🔄 RUNNING | Resubmitted 14:29 UTC; results pending |
-| 3-variant live RL comparison table | ⏳ PARTIAL | cost_mechanistic + cost_l22_deflect done; cost_asr (541183) in progress |
+| Live RL cost_asr (job 541183) | ✅ COMPLETE | 44/48 eps, ASR=45%, Cond A=71% (10/14). TIMEOUT 12h. |
+| 3-variant live RL comparison table | ✅ COMPLETE | A=71% in ALL 3 variants (10/14 each). See Section 16.6. |
 | AutoInject POC | ✅ COMPLETE (offline replay only) | 64/64 → A; **real online AutoInject NOT run** — pending Mahmood approval |
 | Advisor meeting package (June 11) | ✅ COMPLETE | 73/73 audit pass |
 | 48h update package | ✅ COMPLETE | 46/46 audit pass |
