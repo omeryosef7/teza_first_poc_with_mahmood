@@ -62,17 +62,17 @@ def test_openai():
 def test_gemini():
     """Test Gemini API access"""
     print("\n" + "="*60)
-    print("Testing Gemini (gemini-2.5-pro)...")
+    print("Testing Gemini (gemini-2.5-flash)...")
     print("="*60)
-    
+
     if not os.environ.get("GEMINI_API_KEY"):
         print("✗ SKIPPED - GEMINI_API_KEY not set")
         print("   Set it with: export GEMINI_API_KEY='your-key-here'")
         return False
-    
+
     try:
         response = litellm.completion(
-            model="gemini/gemini-2.5-pro",  # Use LiteLLM model name with provider
+            model="gemini/gemini-2.5-flash",
             messages=[
                 {"role": "user", "content": "Say 'Gemini API works!' in one sentence."}
             ],

@@ -4,6 +4,7 @@ from enum import Enum
 
 class Model(Enum):
     gemini_2_5_pro = "gemini-2.5-pro"
+    gemini_2_5_flash = "gemini-2.5-flash"
     gpt_o4_mini = "gpt-o4-mini"
     gpt_5_mini = "gpt-5-mini"
     grok_3_mini = "grok-3-mini"
@@ -17,6 +18,7 @@ MODEL_NAMES = [model.value for model in Model]
 # API key environment variable names for each model
 API_KEY_NAMES: dict[Model | str, str] = {
     Model.gemini_2_5_pro: "GEMINI_API_KEY",
+    Model.gemini_2_5_flash: "GEMINI_API_KEY",
     Model.gpt_o4_mini: "OPENAI_API_KEY",
     Model.gpt_5_mini: "OPENAI_API_KEY",
     Model.grok_3_mini: "GROK_API_KEY",
@@ -31,7 +33,8 @@ LITELLM_MODEL_MAPPING = {
     "gpt-5-mini": "gpt-5-mini",
     "claude-4-sonnet": "anthropic/claude-sonnet-4-20250514",
     "grok-3-mini": "xai/grok-3-mini",
-    "gemini-2.5-pro": "gemini/gemini-2.5-pro"
+    "gemini-2.5-pro": "gemini/gemini-2.5-pro",
+    "gemini-2.5-flash": "gemini/gemini-2.5-flash"
 }
 
 

@@ -59,7 +59,13 @@ class APILiteLLM(BaseLLM):
         litellm_args['seed'] = 1
 
         try:
-            outputs = litellm.batch_completion(**litellm_args)
+            outputs = []
+            for conv in convs_list:
+                single_args = {**litellm_args, "messages": conv}
+                try:
+                    outputs.append(litellm.completion(**single_args))
+                except Exception as e:
+                    outputs.append(e)
 
             responses = []
             for i, item in enumerate(outputs):

@@ -19,12 +19,13 @@ HIJACKING_ROOT = PROJECT_ROOT / "Chain_of_Thought_Hijacking" / "Hijacking"
 load_dotenv(PROJECT_ROOT / ".env")
 
 
-DEFAULT_ATTACK_MODEL = "gemini-2.5-pro"
+DEFAULT_ATTACK_MODEL = "gemini-2.5-flash"
 DEFAULT_JUDGE_MODEL = "gemini-judge"
 DEFAULT_DATASET = "walledai/HarmBench"
 DEFAULT_DATASET_SPLIT = "standard"
 MODEL_TO_ENV_VAR = {
     "gemini-2.5-pro": "GEMINI_API_KEY",
+    "gemini-2.5-flash": "GEMINI_API_KEY",
     "gpt-o4-mini": "OPENAI_API_KEY",
     "gpt-5-mini": "OPENAI_API_KEY",
     "grok-3-mini": "GROK_API_KEY",

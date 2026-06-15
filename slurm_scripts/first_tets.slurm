@@ -46,5 +46,7 @@ export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 python -m poc_stage2.collect_hijacking_results \
     --target-model gpt-o4-mini \
     --start-example 1 \
-    --end-example 4 \
+    --end-example 11 \
+    --n-streams 20 \
+    --n-iterations 1 \
     --output-dir outputs

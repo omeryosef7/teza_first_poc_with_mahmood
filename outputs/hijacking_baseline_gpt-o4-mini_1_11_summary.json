@@ -1,0 +1,23 @@
+{
+  "artifact_version": "stage2_v1",
+  "timestamp_utc": "2026-06-14T15:44:55.817043+00:00",
+  "num_goals": 11,
+  "num_successes": 1,
+  "attack_success_rate": 0.09090909090909091,
+  "target_model": "gpt-o4-mini",
+  "dataset": "walledai/HarmBench",
+  "dataset_split": "standard",
+  "dataset_slice": "train[0:11]",
+  "start_example": 1,
+  "end_example": 11,
+  "n_iterations": 1,
+  "n_streams": 20,
+  "attack_model": "gemini-2.5-flash",
+  "judge_model": "gemini-judge",
+  "provider_model_name": "o4-mini",
+  "num_rows": 220,
+  "verified_model_mapping": {
+    "cli_model_name": "gpt-o4-mini",
+    "provider_model_name": "o4-mini"
+  }
+}
