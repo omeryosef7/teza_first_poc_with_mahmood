@@ -63,7 +63,7 @@ def main() -> int:
     args = build_parser().parse_args()
     try:
         from poc_stage4.intervention_selection import InterventionSelectionConfig, run_intervention_selection
-        from poc_stage4.qwen3_model import load_qwen3_model
+        from poc_stage4.qwen3_model import load_hf_model
 
         config = InterventionSelectionConfig(
             input_dir=Path(args.input_dir),
@@ -92,8 +92,8 @@ def main() -> int:
         )
         from poc_stage4.run_state import log_progress
 
-        log_progress("stage4a2", "Loading Qwen3 model", enabled=not config.no_progress, model=config.model_name)
-        model_base = load_qwen3_model(config.model_name)
+        log_progress("stage4a2", "Loading model", enabled=not config.no_progress, model=config.model_name)
+        model_base = load_hf_model(config.model_name)
         metrics = run_intervention_selection(config=config, model_base=model_base)
     except Exception as exc:
         print(str(exc), file=sys.stderr)

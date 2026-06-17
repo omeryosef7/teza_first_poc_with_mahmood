@@ -60,6 +60,17 @@ def _safe_filename_part(value: str) -> str:
     return cleaned or "example"
 
 
+def _model_slug(model_name: str) -> str:
+    """Derive a filesystem-safe prefix from a HuggingFace model id.
+
+    Examples:
+        "Qwen/Qwen3-14B"          -> "qwen3_14b"
+        "google/gemma-4-E4B-it"   -> "gemma_4_e4b_it"
+    """
+    tail = model_name.split("/")[-1]
+    return re.sub(r"[^A-Za-z0-9]+", "_", tail).lower().strip("_")
+
+
 def iter_examples(input_jsonl: Path) -> list[Stage5Example]:
     loaded = load_stage5_examples_with_metadata(input_jsonl)
     return list(loaded.examples)
@@ -173,10 +184,12 @@ def _make_export_config(
     input_jsonl: Path,
     output_json: Path,
     model_name: str,
+    enable_thinking: bool,
     max_new_tokens: int,
     redact_generation: bool,
     example: Stage5Example,
     seed: int = 0,
+    model_family: str = "qwen3",
 ) -> Any:
     from poc_stage6.export_qwen_token_trace import ExportConfig
     return ExportConfig(
@@ -185,7 +198,7 @@ def _make_export_config(
         progress_jsonl=None,
         mode="rerun",
         model_name_or_path=model_name,
-        enable_thinking=True,
+        enable_thinking=enable_thinking,
         max_new_tokens=max_new_tokens,
         do_sample=False,
         temperature=1.0,
@@ -206,6 +219,7 @@ def _make_export_config(
         prioritize_source_success=True,
         prioritize_strongreject=True,
         redact_generation=redact_generation,
+        model_family=model_family,
     )
 
 
@@ -218,13 +232,19 @@ def run_in_process(
     summary_path: Path,
 ) -> list[dict]:
     """Load model once, process all examples in this process."""
-    from poc_stage4.qwen3_model import load_qwen3_model
     from poc_stage6.export_qwen_token_trace import _build_artifact, _seed_everything
 
-    print(f"[batch] Loading model once: {args.model}", flush=True)
-    qwen = load_qwen3_model(args.model, require_cuda=True, log_device_placement=True)
+    model_family = getattr(args, "model_family", "qwen3")
+    print(f"[batch] Loading model once: {args.model} (family={model_family})", flush=True)
+    if model_family == "gemma4":
+        from poc_stage4.qwen3_model import load_gemma4_model
+        qwen = load_gemma4_model(args.model, require_cuda=True, log_device_placement=True)
+    else:
+        from poc_stage4.qwen3_model import load_hf_model
+        qwen = load_hf_model(args.model, require_cuda=True, log_device_placement=True)
     tokenizer = qwen.tokenizer
     model = qwen.model
+    processor = getattr(qwen, "_processor", None)
     _seed_everything(args.seed)
 
     rows: list[dict] = []
@@ -234,7 +254,7 @@ def run_in_process(
             break
 
         example_id = ex.example_id
-        output_path = out_dir / f"qwen3_14b_trace_{_safe_filename_part(example_id)}.json"
+        output_path = out_dir / f"{_model_slug(args.model)}_trace_{_safe_filename_part(example_id)}.json"
 
         if output_path.exists():
             print(f"[{count}/{len(examples)}] Skipping existing: {example_id}", flush=True)
@@ -252,11 +272,13 @@ def run_in_process(
                 input_jsonl=input_jsonl,
                 output_json=output_path,
                 model_name=args.model,
+                enable_thinking=args.enable_thinking,
                 max_new_tokens=args.max_new_tokens,
                 redact_generation=not args.no_redact,
                 example=ex,
+                model_family=getattr(args, "model_family", "qwen3"),
             )
-            artifact = _build_artifact(config=config, example=ex, tokenizer=tokenizer, model=model)
+            artifact = _build_artifact(config=config, example=ex, tokenizer=tokenizer, model=model, processor=processor)
             _atomic_write_json(output_path, artifact)
         except Exception as exc:
             print(f"  ERROR: {exc}", flush=True)
@@ -308,7 +330,7 @@ def run_subprocess(
             break
 
         example_id = ex.example_id
-        output_path = out_dir / f"qwen3_14b_trace_{_safe_filename_part(example_id)}.json"
+        output_path = out_dir / f"{_model_slug(args.model)}_trace_{_safe_filename_part(example_id)}.json"
 
         if output_path.exists():
             print(f"[{count}/{len(examples)}] Skipping existing: {example_id}")
@@ -326,7 +348,8 @@ def run_subprocess(
             "--example-id", str(example_id),
             "--output-json", str(output_path),
             "--model-name-or-path", args.model,
-            "--enable-thinking", "true",
+            "--model-family", getattr(args, "model_family", "qwen3"),
+            "--enable-thinking", "true" if args.enable_thinking else "false",
             "--max-new-tokens", str(args.max_new_tokens),
         ]
         if not args.no_redact:
@@ -412,6 +435,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-in-process", action="store_false", dest="in_process",
                    help="Spawn a subprocess per example (original behavior, slower).")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--enable-thinking", action="store_true", default=True,
+                   help="Pass enable_thinking=True to the chat template (Qwen3 thinking mode). Default: True.")
+    p.add_argument("--no-enable-thinking", action="store_false", dest="enable_thinking",
+                   help="Disable thinking mode (use for models that don't support it, e.g. Gemma).")
+    p.add_argument("--model-family", default="qwen3", choices=("qwen3", "gemma4"),
+                   help="Model family; controls loading and output parsing. Default: qwen3.")
     p.add_argument("--extra-args", default="",
                    help="Extra args for subprocess mode only.")
     p.add_argument("--summary-json", default=None,

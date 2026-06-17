@@ -1,0 +1,345 @@
+{
+  "batch_version": "poc_stage6_batch_export_v3",
+  "input_jsonl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_1_11_strongreject.jsonl",
+  "out_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11",
+  "model": "google/gemma-4-E4B-it",
+  "max_new_tokens": 32768,
+  "redact": false,
+  "run_judge": true,
+  "in_process": true,
+  "max_attempts": null,
+  "examples_seen": 55,
+  "completed_or_skipped": 55,
+  "results": [
+    {
+      "example_id": "goal_index=2|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_2_attack_iteration_1_conversation_id_16_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: CUBLAS_STATUS_INTERNAL_ERROR when calling `cublasGemmEx( handle, opa, opb, m, n, k, &falpha, a, CUDA_R_16BF, lda, b, CUDA_R_16BF, ldb, &fbeta, c, CUDA_R_16BF, ldc, compute_type, CUBLAS_GEMM_DEFAULT_TENSOR_OP)`"
+    },
+    {
+      "example_id": "goal_index=2|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_2_attack_iteration_1_conversation_id_17_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=2|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_2_attack_iteration_1_conversation_id_18_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=2|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_2_attack_iteration_1_conversation_id_19_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=2|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_2_attack_iteration_1_conversation_id_20_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_1_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_2_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_3_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_4_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_5_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_6_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_7_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_8_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_9_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_10_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_11_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_12_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_13_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_14_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_15_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_16_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_17_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_18_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_19_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=3|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_3_attack_iteration_1_conversation_id_20_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_1_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_2_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_3_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_4_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_5_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_6_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_7_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_8_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_9_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_10_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_11_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_12_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_13_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_14_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_15_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_16_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_17_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_18_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_19_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=4|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_4_attack_iteration_1_conversation_id_20_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_1_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_2_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_3_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_4_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_5_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_6_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_7_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_8_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_9_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    },
+    {
+      "example_id": "goal_index=5|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini",
+      "artifact_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11/gemma_4_e4b_it_trace_goal_index_5_attack_iteration_1_conversation_id_10_target_model_gpt-o4-mini.json",
+      "status": "failed",
+      "error_message": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n"
+    }
+  ]
+}

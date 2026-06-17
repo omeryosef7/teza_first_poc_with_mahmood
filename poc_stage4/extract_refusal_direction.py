@@ -193,7 +193,7 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
     from poc_stage4.activation_capture import capture_residual_input_activations
     from poc_stage4.candidate_directions import generate_candidate_directions, split_prompts
     from poc_stage4.projection_diagnostics import compute_projection_diagnostics, summarize_diagnostics
-    from poc_stage4.qwen3_model import load_qwen3_model
+    from poc_stage4.qwen3_model import load_hf_model
 
     output_dir = config.output_dir
     progress_enabled = not config.no_progress
@@ -237,11 +237,11 @@ def run_extraction(config: ExtractionConfig) -> dict[str, Any]:
         harmless_validation=len(prompt_split.harmless_validation),
     )
 
-    log_progress("stage4a1", "Loading Qwen3 model", enabled=progress_enabled, model=config.model_name)
-    model_base = load_qwen3_model(config.model_name)
+    log_progress("stage4a1", "Loading model", enabled=progress_enabled, model=config.model_name)
+    model_base = load_hf_model(config.model_name)
     log_progress(
         "stage4a1",
-        "Loaded Qwen3 model",
+        "Loaded model",
         enabled=progress_enabled,
         num_layers=model_base.num_layers,
         hidden_size=model_base.hidden_size,

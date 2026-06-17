@@ -16,7 +16,7 @@ from poc_stage3.strongreject_scoring import load_strongreject_evaluate, make_jso
 from poc_stage5.data_loading import Stage5Example, load_stage5_examples_with_metadata, validate_jsonl_path
 
 
-ARTIFACT_VERSION = "poc_stage6_qwen_token_trace_v1"
+ARTIFACT_VERSION = "poc_stage6_model_token_trace_v1"
 DEFAULT_QWEN3_MODEL = "Qwen/Qwen3-14B"
 DEFAULT_MODE = "rerun"
 DEFAULT_MAX_NEW_TOKENS = 512
@@ -84,6 +84,7 @@ class ExportConfig:
     prioritize_source_success: bool
     prioritize_strongreject: bool
     redact_generation: bool
+    model_family: str = "qwen3"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -121,6 +122,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manual-success")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--redact-generation", action="store_true", help="Do not store raw generated text or per-token decoded text; store hashes and token ids only.")
+    parser.add_argument("--model-family", default="qwen3", choices=("qwen3", "gemma4"), help="Model family; controls loading and output parsing. Default: qwen3.")
     return parser
 
 
@@ -155,6 +157,7 @@ def validate_config(args: argparse.Namespace) -> ExportConfig:
         prioritize_source_success=bool(args.prioritize_source_success),
         prioritize_strongreject=bool(args.prioritize_strongreject),
         redact_generation=bool(getattr(args, "redact_generation", False)),
+        model_family=str(getattr(args, "model_family", "qwen3")),
     )
 
 
@@ -218,17 +221,15 @@ def _load_tokenizer(model_name_or_path: str) -> Any:
 
 
 def _format_prompt(tokenizer: Any, prompt_text: str, *, enable_thinking: bool) -> str:
+    messages = [{"role": "user", "content": prompt_text}]
+    kwargs: dict = dict(tokenize=False, add_generation_prompt=True)
+    if enable_thinking:
+        kwargs["enable_thinking"] = True
     try:
-        return tokenizer.apply_chat_template(
-            [{"role": "user", "content": prompt_text}],
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=enable_thinking,
-        )
-    except TypeError as exc:
-        raise RuntimeError(
-            "Qwen3 chat-template formatting with enable_thinking requires a recent transformers version."
-        ) from exc
+        return tokenizer.apply_chat_template(messages, **kwargs)
+    except TypeError:
+        # Tokenizer doesn't support enable_thinking kwarg — fall back to standard call
+        return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
 
 def _select_example(examples: list[Stage5Example], config: ExportConfig) -> Stage5Example:
@@ -351,6 +352,33 @@ def _parse_generation_segments(generation_text: str | None) -> dict[str, Any]:
             "thinking_segmentation_status": "not_separable",
         }
 
+    # Gemma 4 thought channel: <|channel>thought\n…\n<channel|>
+    GEMMA_START = "<|channel>thought"
+    GEMMA_END = "<channel|>"
+    g_start = generation_text.find(GEMMA_START)
+    g_end = generation_text.find(GEMMA_END)
+    if g_start >= 0 and g_end >= 0 and g_end > g_start:
+        content_start = g_start + len(GEMMA_START)
+        if content_start < len(generation_text) and generation_text[content_start] == "\n":
+            content_start += 1
+        think_text = generation_text[content_start:g_end]
+        final_text = generation_text[g_end + len(GEMMA_END):]
+        return {
+            "think_text": think_text.strip() or None,
+            "final_text": final_text.strip() or None,
+            "think_span": (content_start, g_end),
+            "final_span": (g_end + len(GEMMA_END), len(generation_text)),
+            "thinking_segmentation_status": "parsed_from_thought_channel",
+        }
+    if g_start >= 0 or g_end >= 0:
+        return {
+            "think_text": None,
+            "final_text": generation_text if generation_text.strip() else None,
+            "think_span": None,
+            "final_span": None,
+            "thinking_segmentation_status": "malformed_thought_channel",
+        }
+
     return {
         "think_text": None,
         "final_text": generation_text if generation_text.strip() else None,
@@ -419,7 +447,7 @@ def _classify_generation_token(
         special_ids=special_ids,
     ):
         return "special"
-    if thinking_segmentation_status == "parsed_from_think_tags" and span is not None:
+    if thinking_segmentation_status in {"parsed_from_think_tags", "parsed_from_thought_channel"} and span is not None:
         if think_span is not None and span[0] >= think_span[0] and span[1] <= think_span[1]:
             return "think"
         if final_span is not None and span[0] >= final_span[0] and span[1] <= final_span[1]:
@@ -861,7 +889,7 @@ def _prepare_search_artifact(
     return artifact
 
 
-def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: Any, model: Any | None) -> dict[str, Any]:
+def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: Any, model: Any | None, processor: Any = None) -> dict[str, Any]:
     import torch
 
     prompt_text = example.prompt_text
@@ -903,8 +931,14 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
     }
 
     if model is not None:
-        generation_inputs = tokenizer(formatted_prompt, return_tensors="pt", add_special_tokens=False)
-        generation_inputs = {key: value.to(next(model.parameters()).device) for key, value in generation_inputs.items()}
+        device = next(model.parameters()).device
+        if processor is not None:
+            # Gemma 4: use AutoProcessor for encoding (handles multimodal pipeline correctly)
+            generation_inputs = processor(text=formatted_prompt, return_tensors="pt")
+        else:
+            # Qwen3: existing path
+            generation_inputs = tokenizer(formatted_prompt, return_tensors="pt", add_special_tokens=False)
+        generation_inputs = {key: value.to(device) for key, value in generation_inputs.items()}
         generation_kwargs: dict[str, Any] = {
             "max_new_tokens": config.max_new_tokens,
             "do_sample": config.do_sample,
@@ -1061,7 +1095,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
 def run_export(config: ExportConfig) -> dict[str, Any]:
     import torch
 
-    from poc_stage4.qwen3_model import load_qwen3_model
+    from poc_stage4.qwen3_model import load_qwen3_model  # used for qwen3 family
 
     _check_output_path(config)
     loaded = load_stage5_examples_with_metadata(config.input_jsonl)
@@ -1072,18 +1106,28 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
     if config.mode == "existing-only":
         tokenizer = _load_tokenizer(config.model_name_or_path)
         model = None
+        processor = None
     else:
-        qwen = load_qwen3_model(
-            config.model_name_or_path,
-            require_cuda=True,
-            log_device_placement=True,
-        )
+        if config.model_family == "gemma4":
+            from poc_stage4.qwen3_model import load_gemma4_model
+            qwen = load_gemma4_model(
+                config.model_name_or_path,
+                require_cuda=True,
+                log_device_placement=True,
+            )
+        else:
+            qwen = load_qwen3_model(
+                config.model_name_or_path,
+                require_cuda=True,
+                log_device_placement=True,
+            )
         tokenizer = qwen.tokenizer
         model = qwen.model
+        processor = getattr(qwen, "_processor", None)
 
     if not config.search_until_success:
         selected_example = _select_example(loaded.examples, config)
-        artifact = _build_artifact(config=config, example=selected_example, tokenizer=tokenizer, model=model)
+        artifact = _build_artifact(config=config, example=selected_example, tokenizer=tokenizer, model=model, processor=processor)
         _atomic_write_json(config.output_json, artifact)
         return artifact
 
@@ -1122,7 +1166,7 @@ def run_export(config: ExportConfig) -> dict[str, Any]:
     for candidate_rank, example in enumerate(candidate_rows, start=1):
         attempt_index = candidate_rank
         try:
-            artifact = _build_artifact(config=config, example=example, tokenizer=tokenizer, model=model)
+            artifact = _build_artifact(config=config, example=example, tokenizer=tokenizer, model=model, processor=processor)
         except Exception as exc:
             attempt_row = _compact_attempt_row(
                 attempt_index=attempt_index,

@@ -34,7 +34,7 @@ from typing import Any
 import torch
 
 from poc_stage4.direction_loader import load_direction
-from poc_stage4.qwen3_model import load_qwen3_model
+from poc_stage4.qwen3_model import load_hf_model
 from poc_stage4.run_state import append_jsonl, atomic_write_json, log_progress
 from poc_stage4.schemas import make_json_safe
 
@@ -666,7 +666,7 @@ def run(args: argparse.Namespace) -> None:
     manifest_path = output_dir / "manifest.json"
 
     log_progress(STAGE_NAME, "Loading model", model=args.model_name_or_path)
-    qwen = load_qwen3_model(
+    qwen = load_hf_model(
         args.model_name_or_path,
         require_cuda=True,
         log_device_placement=True,
