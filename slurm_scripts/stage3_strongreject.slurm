@@ -17,10 +17,10 @@ set -euo pipefail
 
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 RUNTIME_DIR="/home/sharifm/students/omeryosef/jupyter_runtime"
-INPUT_JSONL="$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small.jsonl"
-OUTPUT_JSONL="$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl"
-SUMMARY_JSON="$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_summary.json"
-ANALYSIS_JSON="$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_analysis.json"
+INPUT_JSONL="${INPUT_JSONL:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small.jsonl}"
+OUTPUT_JSONL="${OUTPUT_JSONL:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl}"
+SUMMARY_JSON="${SUMMARY_JSON:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_summary.json}"
+ANALYSIS_JSON="${ANALYSIS_JSON:-$PROJECT_DIR/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject_analysis.json}"
 
 cd "$PROJECT_DIR"
 

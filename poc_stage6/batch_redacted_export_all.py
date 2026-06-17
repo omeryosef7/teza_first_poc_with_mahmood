@@ -397,6 +397,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out-dir", default="outputs/stage6/all_traces")
     p.add_argument("--model", default="Qwen/Qwen3-14B")
     p.add_argument("--max-attempts", type=int, default=None)
+    p.add_argument("--start-index", type=int, default=0,
+                   help="Process examples starting from this index (inclusive).")
+    p.add_argument("--end-index", type=int, default=None,
+                   help="Process examples up to this index (exclusive). Default: all.")
     p.add_argument("--max-new-tokens", type=int, default=768,
                    help="Max tokens to generate per example. Default 768. Use 16384+ for full thinking traces.")
     p.add_argument("--no-redact", action="store_true", default=False,
@@ -422,6 +426,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[batch] Loading examples from {input_jsonl}")
     examples = iter_examples(input_jsonl)
     print(f"[batch] Found {len(examples)} examples")
+    if args.start_index or args.end_index is not None:
+        examples = examples[args.start_index:args.end_index]
+        print(f"[batch] Sliced to examples[{args.start_index}:{args.end_index}] = {len(examples)} examples")
     print(f"[batch] Mode: {'in-process (model loaded once)' if args.in_process else 'subprocess per example'}")
     print(f"[batch] max_new_tokens={args.max_new_tokens} redact={not args.no_redact} run_judge={args.run_judge}")
 
