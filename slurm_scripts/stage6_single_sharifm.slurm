@@ -19,7 +19,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=2
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602,n-501,n-503
+#SBATCH --nodelist=n-501,n-601
 
 set -euo pipefail
 
