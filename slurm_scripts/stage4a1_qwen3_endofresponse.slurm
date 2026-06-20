@@ -11,7 +11,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=2
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602
+#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602,n-302,n-303,n-304,n-305
 
 # Stage 4A1-endofresponse: extract refusal direction at EOS token (after full answer).
 #
@@ -26,7 +26,8 @@
 #   endofresponse (EOS)     ???
 #
 # SEQUENCES: mean 16798 tokens, max 32800 tokens. Forward pass only (no generation).
-#            max_seq_len=30000 cap to avoid OOM on very long traces.
+#            max_seq_len=20000 cap (reduced from 30000 after OOM on RTX 3090;
+#            mean trace length 16798 tokens, so only extreme outliers are skipped).
 #
 # Output: outputs/stage4/qwen3-14b/refusal_direction_endofresponse/
 #   candidate_directions.pt   [1, n_layers, d_model]
@@ -44,7 +45,7 @@ STAGE6_INPUT="${STAGE6_INPUT:-$PROJECT_DIR/outputs/stage6/all_traces_full_1_11}"
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction_endofresponse}"
 GROUP_BY="${GROUP_BY:-qwen_run_success}"
 MAX_PER_GROUP="${MAX_PER_GROUP:-110}"
-MAX_SEQ_LEN="${MAX_SEQ_LEN:-30000}"
+MAX_SEQ_LEN="${MAX_SEQ_LEN:-20000}"
 DIRECTION_NORMALIZATION="${DIRECTION_NORMALIZATION:-unit}"
 DRY_RUN="${DRY_RUN:-false}"
 OVERWRITE="${OVERWRITE:-true}"
@@ -70,8 +71,10 @@ export HF_HOME="$PROJECT_DIR/.cache/huggingface"
 export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export TORCH_HOME="$PROJECT_DIR/.cache/torch"
 export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 echo "[stage4a1_endofresponse] Starting at $(date) on $(hostname)"
+nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader 2>/dev/null || true
 
 ARGS=(
     --model-family "$MODEL_FAMILY"

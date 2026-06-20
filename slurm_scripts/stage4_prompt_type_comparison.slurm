@@ -6,12 +6,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=04:00:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=2
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602
+#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602,n-302,n-303,n-304,n-305
 
 # Stage 4 — Prompt-type comparison analysis.
 #
@@ -54,7 +54,7 @@ NUM_HARMLESS="${NUM_HARMLESS:-50}"
 NUM_DIRECT_HARM="${NUM_DIRECT_HARM:-50}"
 MAX_PUZZLE="${MAX_PUZZLE:-}"        # default: all available
 MAX_GEN_TOKENS="${MAX_GEN_TOKENS:-8192}"
-MAX_SEQ_LEN="${MAX_SEQ_LEN:-30000}"
+MAX_SEQ_LEN="${MAX_SEQ_LEN:-20000}"
 FOCUS_LAYERS="${FOCUS_LAYERS:-}"   # default: auto from subspace metadata
 
 cd "$PROJECT_DIR"
@@ -78,8 +78,10 @@ export HF_HOME="$PROJECT_DIR/.cache/huggingface"
 export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export TORCH_HOME="$PROJECT_DIR/.cache/torch"
 export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 echo "[stage4_prompt_type_comparison] Starting at $(date) on $(hostname)"
+nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader 2>/dev/null || true
 echo "[stage4_prompt_type_comparison] Subspace: ${SUBSPACE_VARIANT} (${SUBSPACE_DIR})"
 echo "[stage4_prompt_type_comparison] num_harmless=${NUM_HARMLESS} num_direct_harm=${NUM_DIRECT_HARM}"
 

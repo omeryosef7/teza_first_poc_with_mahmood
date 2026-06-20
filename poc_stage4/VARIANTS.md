@@ -657,3 +657,79 @@ Note: L3 r0 (behavioral) shows the flattest trajectory (d≈0.30–0.36 across a
 - The `final_proj` (at the 3072nd token) AUC=0.601 is lower than `mean_proj` AUC=0.734 for the ceiling set
 
 **Coverage caveat**: The 4B analysis captures only the **first 3072 thinking tokens**. The median trace has ~20K+ total generation tokens. The trajectory plots (bins 0-9) represent the first ~15-40% of the full thinking phase for most examples. "Bin 9" is NOT the end of thinking — it is the 2765-3072 token range, which for a typical trace is early-to-mid thinking. Full thinking coverage would require O(n²) forward passes (prohibitive at 20K+ tokens).
+
+---
+
+## New Variants: endofresponse + prompt-type comparison (2026-06-20)
+
+### Endofresponse variant
+
+**Goal**: Extract refusal direction at EOS (`<|im_end|>`) — after the full answer is generated.
+Completes the temporal picture: startofthink → endofthink → **endofresponse**.
+
+**Script**: `poc_stage4/extract_refusal_direction_endofresponse.py`
+**SLURM**: `slurm_scripts/stage4a1_qwen3_endofresponse.slurm`
+**Output dir**: `outputs/stage4/qwen3-14b/refusal_direction_endofresponse/`
+
+**4A1 results (job 596299, 2026-06-20)**:
+- max_seq_len=20000 (reduced from 30000 after OOM on RTX 3090 with 15.84 GiB model in use)
+- 35 complied / 35 refused used (25 complied + 45 refused skipped, >20k tokens)
+- `max_standardized_projection_separation: 0.495` (vs endofthink 7.44, startofthink 2.64)
+- All 40 candidate directions produced; shape=[1, 40, 5120]
+
+**4A2 results (job 596310, 2026-06-20)**:
+- `scientific_status: not_validated_no_surviving_candidates`
+- All 40 layers failed KL + steering threshold filters
+- Interpretation: The EOS activation does not produce a direction strong enough to behaviorally steer the model. The refusal signal at the end of the response is very weak compared to mid-generation checkpoints.
+
+**Chain status**: 4A1 ✅ | 4A2 ❌ (no candidates) | 4B/4C: not runnable (no validated subspace)
+
+**Scientific conclusion**: The refusal encoding is strongest **during** generation (endofthink, behavioral), not after it. By EOS, the representational signal that distinguished complied vs refused has dissipated or mixed. This is consistent with the model "committing" its behavioral trajectory early and the residual stream encoding task-completion rather than behavioral policy by the time EOS is produced.
+
+---
+
+### Prompt-type comparison (job 596213, 2026-06-20)
+
+**Goal**: Project 3 prompt types × 3 time points onto the behavioral refusal subspace.
+Answers: *Does a puzzle-attack prompt look like harmless or direct-harmful in the refusal subspace?*
+
+**Script**: `poc_stage4/compare_prompt_projections.py`
+**SLURM**: `slurm_scripts/stage4_prompt_type_comparison.slurm`
+**Output dir**: `outputs/stage4/qwen3-14b/prompt_type_comparison_behavioral/`
+**Subspace**: `direction_subspace_behavioral` ([5, 5120], layers L3/L21/L22/L23/L26)
+
+**Prompt types**: harmless (50), direct_harm (50), puzzle_attack (201 Stage 6 traces)
+**Time points**: startofthink (`<think>`), endofthink (`</think>`), endofresponse (EOS)
+
+**Status (job 596213, running ~2.5h)**: In projection phase — all 3 types projected, writing CSV/plots.
+Results pending. Will update with findings once job completes.
+
+---
+
+## Direction Cosine Comparison — All 4 Variants (2026-06-20)
+
+Re-ran `python -m poc_stage4.compare_directions` with all 4 variant directions.
+Output: `outputs/stage4/qwen3-14b/direction_comparison/`
+
+### Selected-direction cosine similarities
+
+| Pair | Selected cosine | Layers compared | Max cosine (best layer) | Best layer |
+|------|----------------|----------------|------------------------|-----------|
+| eoi vs startofthink | 0.053 | L22 vs L1 | 0.314 | L1 |
+| eoi vs endofthink | 0.266 | L22 vs L26 | 0.405 | L26 |
+| eoi vs behavioral | -0.053 | L22 vs L20 | 0.137 | L2 |
+| startofthink vs endofthink | 0.030 | L1 vs L26 | 0.176 | L1 |
+| startofthink vs behavioral | 0.006 | L1 vs L20 | 0.211 | L1 |
+| endofthink vs behavioral | -0.050 | L26 vs L20 | 0.294 | L11 |
+
+### Interpretation
+
+All 6 pairs are nearly orthogonal (cosine < 0.27 at selected layers). The highest
+similarity is eoi↔endofthink (0.266) — the end-of-response state is most related to
+what the model encoded at `</think>`, which makes intuitive sense.
+
+All four directions capture **different axes** of the refusal signal:
+- `startofthink` (L0-L2): very early, shallow layers — pre-thinking commitment
+- `endofthink` (L26-L29): deep layers — mature CoT conclusion
+- `behavioral` (L22-L26): deep layers — behavioral outcome contrast
+- `endofresponse` (L22): deep layers — post-generation state (weak, not validated)
