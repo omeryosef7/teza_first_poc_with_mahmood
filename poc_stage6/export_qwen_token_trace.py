@@ -28,6 +28,62 @@ DEFAULT_SEED = 0
 DEFAULT_STRONGREJECT_THRESHOLD = 0.5
 
 
+def normalize_eos_token_ids(value: Any) -> list[int]:
+    if value is None:
+        return []
+    if isinstance(value, int):
+        return [int(value)]
+    return [int(v) for v in value]
+
+
+def get_effective_eos_token_ids(model: Any, tokenizer: Any, model_family: str) -> list[int]:
+    eos_ids = normalize_eos_token_ids(
+        getattr(getattr(model, "generation_config", None), "eos_token_id", None)
+    )
+    if not eos_ids:
+        tok_eos = getattr(tokenizer, "eos_token_id", None)
+        if tok_eos is not None:
+            eos_ids = normalize_eos_token_ids(tok_eos)
+    if model_family == "gemma4":
+        turn_end_id = tokenizer.convert_tokens_to_ids("<turn|>")
+        unknown_id = getattr(tokenizer, "unk_token_id", None)
+        if turn_end_id is None:
+            raise ValueError("Could not resolve Gemma 4 end-of-turn token <turn|>.")
+        if unknown_id is not None and int(turn_end_id) == int(unknown_id):
+            raise ValueError("Gemma 4 <turn|> resolved to the unknown-token ID.")
+        if int(turn_end_id) not in eos_ids:
+            eos_ids.append(int(turn_end_id))
+    return list(dict.fromkeys(eos_ids))
+
+
+def validate_gemma_generation(
+    generation_token_ids: list[int],
+    turn_end_id: int,
+    effective_eos_ids: list[int],
+    finish_reason: str,
+) -> dict[str, object]:
+    turn_end_count = generation_token_ids.count(turn_end_id)
+    last_token_id = generation_token_ids[-1] if generation_token_ids else None
+    ended_with_valid_eos = last_token_id is not None and last_token_id in effective_eos_ids
+    # <turn|> may appear 0 or 1 times; if present it must be the final token
+    turn_end_position_valid = turn_end_count == 0 or (
+        turn_end_count == 1 and last_token_id == turn_end_id
+    )
+    generation_valid = (
+        bool(generation_token_ids)
+        and finish_reason == "eos_token"
+        and ended_with_valid_eos
+        and turn_end_position_valid
+    )
+    return {
+        "generation_valid": generation_valid,
+        "turn_end_count": turn_end_count,
+        "turn_end_repetition_detected": turn_end_count > 1,
+        "ended_with_turn_end": last_token_id == turn_end_id,
+        "ended_with_valid_eos": ended_with_valid_eos,
+    }
+
+
 def _hf_cache_dir() -> str | None:
     for env_name in ("HF_HUB_CACHE", "HUGGINGFACE_HUB_CACHE", "TRANSFORMERS_CACHE", "HF_HOME"):
         value = os.environ.get(env_name)
@@ -85,6 +141,7 @@ class ExportConfig:
     prioritize_strongreject: bool
     redact_generation: bool
     model_family: str = "qwen3"
+    strict_generation_validation: bool = False
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -123,6 +180,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--redact-generation", action="store_true", help="Do not store raw generated text or per-token decoded text; store hashes and token ids only.")
     parser.add_argument("--model-family", default="qwen3", choices=("qwen3", "gemma4"), help="Model family; controls loading and output parsing. Default: qwen3.")
+    parser.add_argument("--strict-generation-validation", action="store_true", help="Raise RuntimeError on invalid native generation instead of recording and continuing.")
     return parser
 
 
@@ -158,6 +216,7 @@ def validate_config(args: argparse.Namespace) -> ExportConfig:
         prioritize_strongreject=bool(args.prioritize_strongreject),
         redact_generation=bool(getattr(args, "redact_generation", False)),
         model_family=str(getattr(args, "model_family", "qwen3")),
+        strict_generation_validation=bool(getattr(args, "strict_generation_validation", False)),
     )
 
 
@@ -575,7 +634,7 @@ def _build_token_rows(
     return rows, token_table_status, offset_status, thinking_segmentation_status
 
 
-def _generation_config_snapshot(*, tokenizer: Any, config: ExportConfig, model: Any | None) -> dict[str, Any]:
+def _generation_config_snapshot(*, tokenizer: Any, config: ExportConfig, model: Any | None, effective_eos_ids: list[int] | None = None) -> dict[str, Any]:
     import torch
     import transformers
 
@@ -594,6 +653,12 @@ def _generation_config_snapshot(*, tokenizer: Any, config: ExportConfig, model: 
         "torch_version": torch.__version__,
         "model_name_or_path": config.model_name_or_path,
         "tokenizer_class": type(tokenizer).__name__,
+        "tokenizer_eos_token_id": tokenizer.eos_token_id,
+        "model_config_eos_token_id": getattr(getattr(model, "config", None), "eos_token_id", None) if model is not None else None,
+        "generation_config_eos_token_id": getattr(getattr(model, "generation_config", None), "eos_token_id", None) if model is not None else None,
+        "effective_eos_token_ids": effective_eos_ids,
+        "gemma_turn_end_token_id": tokenizer.convert_tokens_to_ids("<turn|>") if config.model_family == "gemma4" else None,
+        "strict_generation_validation": config.strict_generation_validation,
     }
     if model is not None:
         device_summary = None
@@ -929,6 +994,11 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "strongreject_error_message": None,
         "strongreject_evaluated_text_kind": None,
     }
+    effective_eos_ids: list[int] | None = None
+    gemma_validation: dict[str, object] | None = None
+    last_generated_token_id: int | None = None
+    last_generated_token: str | None = None
+    generation_is_valid: bool = True
 
     if model is not None:
         device = next(model.parameters()).device
@@ -939,11 +1009,19 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             # Qwen3: existing path
             generation_inputs = tokenizer(formatted_prompt, return_tensors="pt", add_special_tokens=False)
         generation_inputs = {key: value.to(device) for key, value in generation_inputs.items()}
+        effective_eos_ids = get_effective_eos_token_ids(model, tokenizer, config.model_family)
+        if config.model_family == "gemma4":
+            _gemma_turn_end_id = tokenizer.convert_tokens_to_ids("<turn|>")
+            if int(_gemma_turn_end_id) not in effective_eos_ids:
+                raise RuntimeError(
+                    "Gemma 4 end-of-turn token is missing from effective EOS list: "
+                    f"turn_end_id={_gemma_turn_end_id}, effective_eos_ids={effective_eos_ids}"
+                )
         generation_kwargs: dict[str, Any] = {
             "max_new_tokens": config.max_new_tokens,
             "do_sample": config.do_sample,
             "return_dict_in_generate": True,
-            "eos_token_id": tokenizer.eos_token_id,
+            "eos_token_id": effective_eos_ids,
             "pad_token_id": tokenizer.pad_token_id,
         }
         if config.do_sample:
@@ -970,7 +1048,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         )
         saved_generated_text_raw = tokenizer.decode(generation_token_ids, skip_special_tokens=False)
         decoded_generation_from_ids = saved_generated_text_raw
-        if generation_token_ids and tokenizer.eos_token_id is not None and generation_token_ids[-1] == int(tokenizer.eos_token_id):
+        if generation_token_ids and effective_eos_ids and generation_token_ids[-1] in effective_eos_ids:
             generation_finish_reason = "eos_token"
         elif len(generation_token_ids) >= config.max_new_tokens:
             generation_finish_reason = "max_new_tokens"
@@ -978,18 +1056,66 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
             generation_finish_reason = "unknown"
         else:
             generation_finish_reason = "empty"
+        last_generated_token_id = generation_token_ids[-1] if generation_token_ids else None
+        last_generated_token = _token_text(tokenizer, last_generated_token_id) if last_generated_token_id is not None else None
         full_sequence_token_strings = [_tokenizer_token_string(tokenizer, token_id) for token_id in full_prompt_plus_generation_token_ids]
         full_sequence_single_token_decodes = [_token_text(tokenizer, token_id) for token_id in full_prompt_plus_generation_token_ids]
         full_decoded_sequence_from_prompt_plus_generation_ids = tokenizer.decode(full_prompt_plus_generation_token_ids, skip_special_tokens=False)
 
-        generation_segments = _parse_generation_segments(saved_generated_text_raw)
+        # Decode without trailing EOS token for semantic parsing — prevents control tokens
+        # like <turn|> from bleeding into think_text / final_assistant_text.
+        # The full token IDs (including the terminal EOS) are preserved in saved_generated_text_raw.
+        ids_for_parsing = (
+            generation_token_ids[:-1]
+            if (generation_token_ids and effective_eos_ids and generation_token_ids[-1] in effective_eos_ids)
+            else generation_token_ids
+        )
+        generation_text_for_parsing = tokenizer.decode(ids_for_parsing, skip_special_tokens=False)
+
+        generation_segments = _parse_generation_segments(generation_text_for_parsing)
         think_text = generation_segments["think_text"]
         final_assistant_text = generation_segments["final_text"]
+
+        if config.model_family == "gemma4":
+            _tid = tokenizer.convert_tokens_to_ids("<turn|>")
+            gemma_validation = validate_gemma_generation(
+                generation_token_ids=generation_token_ids,
+                turn_end_id=int(_tid),
+                effective_eos_ids=effective_eos_ids,
+                finish_reason=generation_finish_reason,
+            )
+
+        semantic_answer_valid = (
+            final_assistant_text is not None
+            and bool(final_assistant_text.strip())
+            and "<turn|>" not in final_assistant_text
+        )
+        generation_is_valid = (
+            (gemma_validation is None or bool(gemma_validation["generation_valid"]))
+            and semantic_answer_valid
+        )
+
+        print(
+            f"[generation] finish_reason={generation_finish_reason} "
+            f"last_token_id={last_generated_token_id} "
+            f"generation_is_valid={generation_is_valid} "
+            f"gemma_validation={gemma_validation}",
+            flush=True,
+        )
+
+        if config.strict_generation_validation and not generation_is_valid:
+            raise RuntimeError(
+                "Native generation failed validation: "
+                f"finish_reason={generation_finish_reason}, "
+                f"last_token_id={last_generated_token_id}, "
+                f"gemma_validation={gemma_validation}"
+            )
+
         evaluation_text = final_assistant_text if final_assistant_text is not None else saved_generated_text_raw
         strongreject_result = _evaluate_strongreject(
             source_row=example.raw,
             evaluated_text=evaluation_text,
-            run_allowed=True,
+            run_allowed=generation_is_valid,
         )
 
         token_rows, token_table_status, offset_mapping_status, token_table_thinking_status = _build_token_rows(
@@ -1068,7 +1194,7 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "token_table_reconstruction_status": token_table_status,
         "token_table_length": token_table_length,
         "token_table": token_rows,
-        "generation_config": _generation_config_snapshot(tokenizer=tokenizer, config=config, model=model),
+        "generation_config": _generation_config_snapshot(tokenizer=tokenizer, config=config, model=model, effective_eos_ids=effective_eos_ids),
         "manual_success_flag": config.manual_success_flag,
         "source_judge": source_judge,
         "external_judge_result": {"status": "unavailable", "is_positive": None},
@@ -1078,6 +1204,11 @@ def _build_artifact(*, config: ExportConfig, example: Stage5Example, tokenizer: 
         "strongreject_result": _json_safe(strongreject_result),
         "qwen_run_success": qwen_run_success,
         "qwen_run_success_evidence": qwen_run_success_evidence,
+        "last_generated_token_id": last_generated_token_id,
+        "last_generated_token": last_generated_token,
+        "effective_eos_token_ids": effective_eos_ids,
+        "gemma_generation_validation": gemma_validation,
+        "generation_validation_status": "valid" if generation_is_valid else "invalid_native_generation",
         "config": _json_safe_config(config),
     }
     # If redaction is enabled, keep token IDs and token-level decodes, but remove raw generation text.

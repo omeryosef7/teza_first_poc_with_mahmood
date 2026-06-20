@@ -190,6 +190,7 @@ def _make_export_config(
     example: Stage5Example,
     seed: int = 0,
     model_family: str = "qwen3",
+    strict_generation_validation: bool = False,
 ) -> Any:
     from poc_stage6.export_qwen_token_trace import ExportConfig
     return ExportConfig(
@@ -220,6 +221,7 @@ def _make_export_config(
         prioritize_strongreject=True,
         redact_generation=redact_generation,
         model_family=model_family,
+        strict_generation_validation=strict_generation_validation,
     )
 
 
@@ -277,6 +279,7 @@ def run_in_process(
                 redact_generation=not args.no_redact,
                 example=ex,
                 model_family=getattr(args, "model_family", "qwen3"),
+                strict_generation_validation=getattr(args, "strict_generation_validation", False),
             )
             artifact = _build_artifact(config=config, example=ex, tokenizer=tokenizer, model=model, processor=processor)
             _atomic_write_json(output_path, artifact)
@@ -354,6 +357,8 @@ def run_subprocess(
         ]
         if not args.no_redact:
             cmd.append("--redact-generation")
+        if getattr(args, "strict_generation_validation", False):
+            cmd.append("--strict-generation-validation")
         if args.extra_args:
             cmd.extend(args.extra_args.split())
 
@@ -441,6 +446,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="Disable thinking mode (use for models that don't support it, e.g. Gemma).")
     p.add_argument("--model-family", default="qwen3", choices=("qwen3", "gemma4"),
                    help="Model family; controls loading and output parsing. Default: qwen3.")
+    p.add_argument("--strict-generation-validation", action="store_true", default=False,
+                   help="Raise RuntimeError on invalid native generation (fail fast). Default: False.")
     p.add_argument("--extra-args", default="",
                    help="Extra args for subprocess mode only.")
     p.add_argument("--summary-json", default=None,

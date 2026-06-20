@@ -16,7 +16,7 @@
 #SBATCH --job-name=stage6_gemma_full_arr
 #SBATCH --output=logs/stage6_gemma_full_arr_%A_%a.out
 #SBATCH --error=logs/stage6_gemma_full_arr_%A_%a.err
-#SBATCH --array=0-3
+#SBATCH --array=0-1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -40,8 +40,9 @@ MODEL_FAMILY="${MODEL_FAMILY:-gemma4}"
 ENABLE_THINKING="${ENABLE_THINKING:-true}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-32768}"
 TOTAL_EXAMPLES="${TOTAL_EXAMPLES:-220}"
-N_JOBS=4
+N_JOBS=2
 RUN_JUDGE="${RUN_JUDGE:-true}"
+STRICT_VALIDATION="${STRICT_VALIDATION:-true}"
 
 # Compute this job's slice
 PER_JOB=$(( (TOTAL_EXAMPLES + N_JOBS - 1) / N_JOBS ))
@@ -110,6 +111,10 @@ fi
 
 if [ "$RUN_JUDGE" = "true" ]; then
     ARGS+=(--run-judge)
+fi
+
+if [ "$STRICT_VALIDATION" = "true" ]; then
+    ARGS+=(--strict-generation-validation)
 fi
 
 echo ""

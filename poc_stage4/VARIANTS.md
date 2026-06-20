@@ -14,9 +14,10 @@ changed in each new variant relative to the original script it extends.
 | `analyze_stage6_token_dynamics.py` | 4B (original) | — (uses 4A direction) | All generated tokens | Single projection per token per layer | Qwen3 only | `token_dynamics_<run>/` |
 | `model_family_utils.py` | Shared utility | — | — | — | Both | (no outputs; library module) |
 | **`extract_refusal_direction_endofthink.py`** | 4A1-endofthink (**new**) | harmful vs. harmless (input label) | `</think>` / `<channel\|>` token (after deliberation) | Single vector per layer `[1, n_layers, d_model]` | Both | `refusal_direction_endofthink/` |
-| **`extract_refusal_direction_behavioral.py`** | 4A1-behavioral (**new**) | complied vs. refused (`judge_score`) | `</think>` / `<channel\|>` token (after deliberation) | Single vector per layer `[1, n_layers, d_model]` | Both | `refusal_direction_behavioral/` |
+| **`extract_refusal_direction_behavioral.py`** | 4A1-behavioral (**new**) | complied vs. refused (`qwen_run_success` by default; `judge_score` optional) | `</think>` / `<channel\|>` token (after deliberation) | Single vector per layer `[1, n_layers, d_model]` | Both | `refusal_direction_behavioral/` |
 | **`select_direction_subspace.py`** | 4A2-subspace (**new**) | — (uses any 4A1 candidates) | — | Top-K validated vectors `[K, d_model]` | Both | `direction_subspace/` |
-| **`analyze_token_dynamics_subspace.py`** | 4B-subspace (**new**) | — (uses subspace direction) | All generated tokens | K projections per token per layer | Both | `token_dynamics_subspace_<run>/` |
+| **`analyze_token_dynamics_subspace.py`** | 4B-subspace (**new**) | — (uses subspace direction) | All generated tokens | K projections per token per layer | Both | `token_dynamics_subspace_{variant}/` |
+| **`analyze_subspace_dynamics_stats.py`** | 4C-stats (**new**) | — (reads 4B output) | — | AUC + trajectory stats, no GPU | CPU only | `subspace_stats_{variant}/` |
 
 ---
 
@@ -100,12 +101,26 @@ was never strongly encoded to begin with.
 `get_thinking_end_token_ids` handle Gemma4's `<channel|>` marker and `load_gemma4_model`
 loader transparently. All activation-capture hook code is identical.
 
+**Checkpoint / resume** (added 2026-06-19):
+
+After each prompt, the script saves `{output_dir}/checkpoints/endofthink/{group_label}/{i:05d}_{act.pt,meta.json}`. If the job is preempted, resubmit with `--resume` to skip already-captured prompts and continue from where it died. The output-existence guard is bypassed when `--resume` is set. Checkpoints are **always written** (even without `--resume`) so the flag only controls whether they are **read back**.
+
+Groups: `harmful_train`, `harmless_train`, `harmful_val`, `harmless_val` — each gets its own subdirectory of per-prompt files.
+
+```bash
+# Resume after preemption
+python -m poc_stage4.extract_refusal_direction_endofthink \
+    --resume \
+    --output-dir outputs/stage4/qwen3-14b/refusal_direction_endofthink \
+    --num-harmful 220 --num-harmless 220 --max-generation-tokens 2048
+```
+
 **Run commands**:
 ```bash
 # Qwen3 (default)
 python -m poc_stage4.extract_refusal_direction_endofthink \
     --output-dir outputs/stage4/qwen3-14b/refusal_direction_endofthink \
-    --max-generation-tokens 2048
+    --num-harmful 220 --num-harmless 220 --max-generation-tokens 2048
 
 # Gemma4
 python -m poc_stage4.extract_refusal_direction_endofthink \
@@ -120,8 +135,11 @@ python -m poc_stage4.extract_refusal_direction_endofthink \
 
 **Diff from `extract_refusal_direction.py`**:
 
-- **Contrast set**: harmful/harmless (input label) → complied/refused (behavioral outcome,
-  `source_judge.judge_score == 10` vs. `== 1`)
+- **Contrast set**: harmful/harmless (input label) → complied/refused (behavioral outcome).
+  Default criterion: `qwen_run_success == True` (complied) vs. `False` (refused), where
+  `qwen_run_success = (StrongREJECT >= 0.5) OR (judge_score == 10)`. This gives ~113/107
+  split in `all_traces_full_1_11`. Alternative via `--group-by judge_score`: uses
+  `judge_score==10` vs. `==1` (gives 1/219 split in current traces — too few complied).
 - **Extraction position**: EOI (prompt end, before generation) → `</think>` / `<channel|>`
   token (same as endofthink script)
 - **Input source**: raw prompts (loads and formats each prompt from scratch) →
@@ -141,7 +159,8 @@ python -m poc_stage4.extract_refusal_direction_endofthink \
   `STAGE4A1_ARTIFACT_VERSION`; compatible with Stage 4A2 and `select_direction_subspace.py`
 - **Model loading**: uses `load_model_by_family` and `get_thinking_end_token_ids` from
   `model_family_utils`
-- **CLI**: adds `--model-family`, `--model-name`; `--stage6-input` is a required argument;
+- **CLI**: adds `--model-family`, `--model-name`, `--group-by {qwen_run_success,judge_score}`
+  (default `qwen_run_success`); `--stage6-input` is a required argument;
   `--output-dir` defaults to `outputs/stage4/<model-slug>/refusal_direction_behavioral/`
 
 **Why**: The Arditi et al. direction distinguishes "this input is harmful" at the
@@ -158,12 +177,30 @@ Gemma4's loader and `<channel|>` marker. The `THINKING_SEGMENT_HINTS_BY_FAMILY` 
 includes Gemma4's segment labels (`"channel"`, `"thought"`) so the token-table search
 works on Gemma4 trace artifacts too.
 
+**`--group-by` criterion** (added 2026-06-19):
+
+The Gemini judge scored 219/220 traces as refused (`judge_score=1`), leaving only 1 complied
+example — too few for a meaningful DiM direction. The `qwen_run_success` field (pre-computed
+per trace as `SR >= 0.5 OR judge_score == 10`) reveals 113 complied / 107 refused — a near-
+50/50 split with clean separation (refused group avg SR = 0.014). Default is now `qwen_run_success`.
+
+| `--group-by` | Complied criterion | Refused criterion | Split in `all_traces_full_1_11` |
+|---|---|---|---|
+| `qwen_run_success` (default) | `qwen_run_success == True` | `qwen_run_success == False` | 113 / 107 |
+| `judge_score` | `judge_score == 10` | `judge_score == 1` | 1 / 219 |
+
 **Run commands**:
 ```bash
-# Qwen3 (default)
+# Qwen3 (default, qwen_run_success grouping)
 python -m poc_stage4.extract_refusal_direction_behavioral \
     --stage6-input outputs/stage6/all_traces_full_1_11 \
     --output-dir outputs/stage4/qwen3-14b/refusal_direction_behavioral
+
+# Qwen3 with legacy judge_score grouping
+python -m poc_stage4.extract_refusal_direction_behavioral \
+    --group-by judge_score \
+    --stage6-input outputs/stage6/all_traces_full_1_11 \
+    --output-dir outputs/stage4/qwen3-14b/refusal_direction_behavioral_judge
 
 # Gemma4
 python -m poc_stage4.extract_refusal_direction_behavioral \
@@ -312,6 +349,79 @@ The output slug appears in default output directory paths (e.g.
 
 ---
 
+### `extract_refusal_direction_startofthink.py` — new, does NOT modify original
+
+**Diff from `extract_refusal_direction.py`**:
+
+- **Extraction position**: EOI (prompt end) → `<think>` token (first generated token with `enable_thinking=True`, Qwen3 token ID 151667)
+- **Method**: format prompt with `enable_thinking=True` (so prompt ends at `assistant\n`), append the `<think>` token to input IDs, run a single forward pass — **no generation required**. Captures residual stream at the `<think>` position for every layer via `register_forward_pre_hook`.
+- **Contrast set**: unchanged — harmful vs. harmless vanilla prompts (input label)
+- **Output shape**: `candidate_directions.pt` is `[1, n_layers, d_model]` (one position labelled `"startofthink"`)
+- **Speed**: ~0.1s/prompt (vs. ~10 min/prompt for endofthink which requires generation). Full 440 prompts in ~15 minutes.
+- **Schema compatibility**: yes — same `candidate_metadata.json` schema; compatible with `select_direction_subspace.py`
+
+**Why**: The trajectory analysis (Stage 4C) shows that attack outcome signal appears in the very first tokens of the thinking phase (bin 0, first 5%). The startofthink direction tests a stronger hypothesis: is the attack outcome already encoded in the residual stream AT `<think>`, before any thinking tokens are generated? If startofthink achieves AUC ≈ 0.750 (matching endofthink/behavioral), the model commits to its response at the moment thinking begins, before any CoT reasoning occurs. If it achieves AUC << 0.750, the encoding emerges during reasoning.
+
+This creates a temporal chain of extraction positions:
+1. **EOI** (prompt end, `enable_thinking=False`): "how the model reads the instruction"
+2. **startofthink** (`<think>`, first generated token, `enable_thinking=True`): "at the gate to reasoning"
+3. **endofthink** (`</think>`, end of thinking): "after deliberation, contrasting input labels"
+4. **behavioral** (`</think>`, end of thinking): "after deliberation, contrasting actual outcomes"
+
+**Run commands**:
+```bash
+# Qwen3 (default)
+python -m poc_stage4.extract_refusal_direction_startofthink \
+    --num-harmful 220 --num-harmless 220
+# (output: outputs/stage4/qwen3-14b/refusal_direction_startofthink/)
+
+# Then chain through 4A2→4B→4C:
+KL_THRESHOLD=1000 INDUCE_REFUSAL_THRESHOLD=-100 PRUNE_LAYER_PERCENTAGE=0.0 \
+    INPUT_VARIANT=startofthink sbatch slurm_scripts/stage4a2_qwen3_subspace.slurm
+INPUT_VARIANT=startofthink sbatch slurm_scripts/stage4b_qwen3_token_dynamics_subspace.slurm
+INPUT_VARIANT=startofthink sbatch slurm_scripts/stage4_subspace_stats.slurm
+```
+
+**Run status (2026-06-19)**:
+
+| Job | Script | Status | Notes |
+|-----|--------|--------|-------|
+| 595022 | 4A1-startofthink | ❌ Failed | CUDA error on n-601 (GPU contamination from Gemma jobs) |
+| 595023 | 4A1-startofthink | ❌ Cancelled | Resources unavailable |
+| 595025 | 4A1-startofthink | ❌ Failed | CUDA error on n-601 again (narrowed to n-601 exclusion fix needed) |
+| 595027 | 4A1-startofthink | ❌ Bug | Completed, but only L1/L2 had non-zero DiM. Root cause: Flash Attention 2 does not support left-padded inputs without explicit position_ids. Left-padding caused incorrect attention patterns at L3+, making harmful/harmless activations identical there (zero DiM). |
+| **595066** | **4A1-startofthink (batch fix)** | **❌ Bug** | **Batched rewrite (left-padding) — same FlashAttn2 issue, zero DiM at L3+** |
+| **595193** | **4A1-startofthink (right-pad fix)** | **❌ Bug** | **Right-padding made things WORSE: all 40 layers show zero DiM (even L1/L2 which were non-zero with left-padding). See root cause update below.** |
+| **595217** | **4A1-startofthink (left-pad + position_ids fix)** | **✅ Completed** | **Result: L1/L2 non-zero (best layer=1, score=2.6438), L3-L39 all zero — SAME pattern as original left-padding. This is a genuine finding: position_ids fix confirmed NOT the root cause of zero DiM at L3+.** |
+
+**Root cause of zero DiM — final diagnosis (2026-06-19)**:
+
+Three experiments, three results:
+
+| Approach | L1/L2 | L3-L39 | Notes |
+|----------|--------|--------|-------|
+| Left-padding, no position_ids (595027/595066) | ✅ non-zero | ❌ zero | Initial finding |
+| Right-padding, default position_ids (595193) | ❌ zero | ❌ zero | WORSE |
+| Left-padding + explicit position_ids (595217) | ✅ non-zero | ❌ zero | SAME as attempt 1 |
+
+**Conclusion**: position_ids do NOT fix the zero DiM at L3-L39. The right-padding made L1/L2 also disappear, revealing that left-padding is required to keep  at a fixed tensor column. But L3-L39 are genuinely zero regardless of position_ids.
+
+**Scientific finding (not a bug)**: The harmful/harmless distinction at the  token is ONLY present in early layers (L1, L2). Deeper layers (L3-L39) have equal mean projections for harmful and harmless, making the Direction in Means zero there. This reveals a genuine representational asymmetry:
+
+- **EOI (prompt end)**: DiM non-zero at many layers → input distinction preserved in deep layers
+- **Startofthink (, first generated token)**: DiM ONLY at L1/L2 → distinction not preserved beyond early processing
+- **Endofthink (, after full thinking)**: DiM non-zero at deep layers → distinction re-emerges after deliberation
+
+Interpretation: At the  gate, the model has not yet committed its refusal in the deep representational space. The commitment emerges during the thinking process and is fully encoded by  at layer 29 (AUC=0.750). This is consistent with the trajectory finding that the attack outcome signal first appears in bin 0 (first 5% of thinking), not at the gate itself.
+
+**Current status** (2026-06-19, pipeline complete):
+- 4A1-startofthink ✅ (job 595217, best_layer=1, score=2.6438, L1/L2 only)
+- 4A2-subspace_startofthink ✅ (job 595221, [3,5120] subspace: L1=rank0, L0=rank1, L2=rank2)
+- 4B-token_dynamics_startofthink ✅ (job 595223, 220/220 examples, ~1.4s/example — early-exit at L0/L1/L2)
+- 4C-stats_startofthink ✅ (job 595228, best AUC=0.731 at L0, rank0, p=0.0)
+
+---
+
 ## Comparison: What Each Paper Does
 
 | | Arditi et al. 2024 (refusal direction paper) | Zhao et al. 2025 (CoT hijacking paper) | poc_stage4 original | poc_stage4 new variants |
@@ -369,3 +479,181 @@ actually generating thinking chains for these prompts.
 Confirm there are enough complied and refused examples in the Stage 6 input directory to
 form meaningful train and validation splits. If the attack success rate is very high or
 very low, one group may be too small for reliable DiM computation.
+
+---
+
+## SLURM Scripts (Qwen3-14B pipeline)
+
+The following SLURM scripts cover the full new Stage 4 pipeline for Qwen3-14B.
+All use `--partition=killable --account=gpu-research --nodelist=n-802,...,n-601,n-602`.
+
+| Script | Runs | Time limit | GPUs | Resume? |
+|--------|------|-----------|------|---------|
+| `stage4a1_qwen3_endofthink_smoke.slurm` | `extract_refusal_direction_endofthink` (4 prompts, `--dry-run`) | 30 min | 1 | — |
+| `stage4a1_qwen3_endofthink.slurm` | `extract_refusal_direction_endofthink` (220+220 prompts) | 24h | 2 | Yes (`RESUME=true`) |
+| `stage4a1_qwen3_behavioral.slurm` | `extract_refusal_direction_behavioral` (Stage 6 traces, `qwen_run_success`) | 12h | 2 | — (fast, no generation) |
+| `stage4a2_qwen3_subspace.slurm` | `select_direction_subspace` (`INPUT_VARIANT=endofthink\|behavioral`) | 24h | 2 | Yes (`RESUME=true`) |
+| `stage4b_qwen3_token_dynamics_subspace.slurm` | `analyze_token_dynamics_subspace` (`INPUT_VARIANT=endofthink\|behavioral`) | 12h | 2 | Yes (`RESUME=true`) |
+
+### Automatic chain submission
+
+`slurm_scripts/submit_stage4_chain.sh` submits all 7 jobs at once with SLURM
+`--dependency=afterok:` chaining so each step only starts if the previous one succeeded:
+
+```
+Track A: smoke → endofthink_full → subspace_endofthink → dyn_endofthink
+Track B: behavioral → subspace_behavioral → dyn_behavioral
+```
+
+Run: `bash slurm_scripts/submit_stage4_chain.sh`
+
+### Resume after preemption (endofthink)
+
+The endofthink job runs on the `killable` partition (max 24h, can be preempted). Per-prompt
+checkpoints are saved automatically to `<output-dir>/checkpoints/endofthink/`. To resume:
+
+```bash
+RESUME=true sbatch slurm_scripts/stage4a1_qwen3_endofthink.slurm
+```
+
+### Known issues: intervention filters do not apply to endofthink or behavioral directions
+
+**BOTH** `endofthink` and `behavioral` directions fail the default intervention filters in
+`select_direction_subspace.py`. The filters were designed for an input-label refusal direction;
+neither of the new tracks satisfies them:
+
+| Filter | Condition | Endofthink | Behavioral | Reason |
+|--------|-----------|-----------|-----------|--------|
+| KL filter | `harmless_ablation_kl_divergence ≤ threshold` | Partly (some layers 0–13 KL) | Partly | Ablating doesn't always disrupt harmless outputs |
+| Steering filter | `harmless_steering_refusal_score ≥ threshold` | **All fail** (steer≈−18.4) | **All fail** (steer≈−18.4) | Both directions point toward compliance, not refusal |
+
+The steering score ≈ −18.4 across ALL layers for BOTH tracks because:
+- **Endofthink direction** = mean(harmful reasoning at `</think>`) − mean(harmless reasoning) → captures "harmful content processing", not refusal readiness
+- **Behavioral direction** = mean(complied) − mean(refused) → points explicitly away from refusal
+
+**Fix: bypass both filters with extreme thresholds:**
+```bash
+# Works for both INPUT_VARIANT=behavioral and INPUT_VARIANT=endofthink
+KL_THRESHOLD=1000 INDUCE_REFUSAL_THRESHOLD=-100 PRUNE_LAYER_PERCENTAGE=0.0 \
+    INPUT_VARIANT=behavioral sbatch slurm_scripts/stage4a2_qwen3_subspace.slurm
+```
+
+**RESUME bug:** Do NOT use `RESUME=true` when changing filter thresholds. The checkpoint JSONL
+(`checkpoints/subspace_selection/intervention_candidate_scores.checkpoint.jsonl`) stores old
+`passes_filters` values and RESUME reuses them verbatim — new thresholds are ignored for
+already-cached rows.
+Fix: delete `intervention_candidate_scores.checkpoint.jsonl` first, then submit without RESUME.
+Keeping `baseline_harmful_logits.pt` and `baseline_harmless_logits.pt` is safe — they ARE
+correctly reloaded.
+
+### Run status (2026-06-19, final state after all fixes)
+
+| Job | Script | Status | Notes |
+|-----|--------|--------|-------|
+| 593267 | endofthink smoke | ✅ Completed | Passed |
+| 593268 | endofthink full | ✅ Completed (~6h 17m) | Layer 26, score 7.4362, 162/162 train, 3 harmless skipped |
+| 593269 | subspace_endofthink | ❌ Failed | Steering filter (steer≈−18.4 < 0.0 default) |
+| 593270 | dyn_endofthink | ❌ Cancelled | Dependency chain broken |
+| 593271 | behavioral | ✅ Completed | Layer 20, score 0.9207, 71/71 examples |
+| 593272 | subspace_behavioral | ❌ Failed | KL filter (KL≤0.1 default) |
+| 593273–594772 | various retries | ❌ | Filter/RESUME bug iterations (see PIPELINE.md) |
+| 594773 | subspace_behavioral (**final**) | ✅ Completed | KL=1000, steer=−100, [5,5120] shape, layers 3/21/22/23/26 |
+| 594889 | subspace_endofthink | ✅ Completed | KL=1000, steer=−100; [5,5120], layers 2/22/26/28/29 |
+| 594890 | dyn_endofthink | ❌ Cancelled | O(n²) speed: ~59 min/example full-tokens; resubmitted as 594904 |
+| 594891 | dyn_behavioral | ❌ Cancelled | Same; resubmitted as 594903 |
+| 594903 | dyn_behavioral | ❌ Failed | Disk quota: token_level_metrics.jsonl ~240 MB/ex → 52 GB total — fixed |
+| 594904 | dyn_endofthink | ❌ Failed | Same |
+| 594971 | dyn_behavioral | ❌ Failed | Disk quota on per_example JSON (22 MB/ex) — fixed with layer subsetting (Option A) |
+| 594972 | dyn_endofthink | ❌ Failed | Same |
+| **594998** | **dyn_behavioral** | **✅ Completed** | **220/220 examples; ~3.3 MB/example (5 subspace layers); no errors** |
+| **594999** | **dyn_endofthink** | **✅ Completed** | **220/220 examples; ~3.3 MB/example (5 subspace layers); no errors** |
+| **595007** | **stats_behavioral** | **✅ Completed** | **Best AUC=0.750 (layer 26, rank 4), p=0.0; 24/25 (layer,rank) pairs significant** |
+| **595008** | **stats_endofthink** | **✅ Completed** | **Best AUC=0.750 (layer 29, rank 2), p=0.0; 14/25 pairs significant** |
+| **595217** | **4A1-startofthink** | **✅ Completed** | **Left-pad + position_ids fix; best_layer=1, score=2.6438; L3-L39 zero (genuine finding)** |
+| **595221** | **4A2-subspace_startofthink** | **✅ Completed** | **[3,5120] subspace: L0, L1, L2 (only 3 of 5 passed relaxed filters)** |
+| **595223** | **4B-dyn_startofthink** | **✅ Completed** | **220/220 examples, ~1.4s/ex (early-exit at L0/L1/L2 layers)** |
+| **595228** | **4C-stats_startofthink** | **✅ Completed** | **Best AUC=0.731 (layer 0, rank 0), p=0.0** |
+
+**Disk fix (2026-06-19):** `analyze_token_dynamics_subspace.py` no longer writes
+`token_level_metrics.jsonl` by default (use `--emit-token-level-jsonl` to opt in).
+`analyze_subspace_dynamics_stats.py` now reads directly from `per_example/*.json`.
+Disk per variant: 220 × 22 MB = 4.8 GB (was 52 GB).
+
+**RESUME resubmit commands** (if job times out or is preempted):
+```bash
+RESUME=true INPUT_VARIANT=behavioral sbatch slurm_scripts/stage4b_qwen3_token_dynamics_subspace.slurm
+RESUME=true INPUT_VARIANT=endofthink sbatch slurm_scripts/stage4b_qwen3_token_dynamics_subspace.slurm
+```
+RESUME skips examples whose `per_example/<id>.json` exists (written atomically on completion).
+**Do NOT delete the output directory before resubmitting** — it is the checkpoint store.
+
+### Stage 4C — Analysis script (CPU-only, no GPU)
+
+Script: `analyze_subspace_dynamics_stats.py`
+SLURM: `stage4_subspace_stats.slurm`
+
+**Run after dyn jobs complete:**
+```bash
+INPUT_VARIANT=behavioral sbatch slurm_scripts/stage4_subspace_stats.slurm
+INPUT_VARIANT=endofthink sbatch slurm_scripts/stage4_subspace_stats.slurm
+```
+
+**What it computes:**
+- Streams `per_example/*.json` files (never loads all into RAM — uses Welford online stats)
+- Groups tokens into segments: `thinking` / `answer` / `other`
+- Per-example: mean/std/final/max/min projection per (layer, rank, segment)
+- AUC(mean thinking projection, qwen_run_success) + Mann-Whitney p-value per (layer, rank)
+- Normalized trajectory: mean projection per bin (default 10 bins) during thinking, complied vs refused
+- 4 plots: AUC heatmap, trajectory per rank, box plots, thinking vs answer comparison
+
+**Outputs** (in `outputs/stage4/qwen3-14b/subspace_stats_{behavioral,endofthink}/`):
+```
+per_example_stats.csv    (example × layer × rank × segment) statistics
+auc_table.csv            AUC per (layer, rank), sorted best-first
+trajectory.csv           mean projection per (bin × layer × rank × group)
+summary.json             top-line results
+plots/auc_heatmap.png
+plots/trajectory_rank{k}.png
+plots/boxplot_thinking.png
+plots/segment_comparison.png
+```
+
+**What to look for:** AUC > 0.6 = direction predicts jailbreak outcome.
+
+**Actual results (jobs 595007/595008, 2026-06-19):**
+
+| Variant | Best AUC | Best (layer, rank) | p-value | Significant pairs |
+|---------|----------|-------------------|---------|-------------------|
+| behavioral | 0.750 | layer 26, rank 4 | 0.0 | 24/25 |
+| endofthink | 0.750 | layer 29, rank 2 | 0.0 | 14/25 |
+| startofthink | 0.731 | layer 0, rank 0 | 0.0 | — |
+
+Both variants achieve best AUC = 0.750 with p=0.0 (Mann-Whitney). The refusal subspace
+projection during the first 3072 thinking tokens reliably separates complied vs refused
+examples for Qwen3-14B on CoT hijacking attacks.
+
+Output dirs: `outputs/stage4/qwen3-14b/subspace_stats_behavioral/` and `subspace_stats_endofthink/`.
+
+**New findings from additional analysis (2026-06-19)**:
+
+**Temporal trajectory profiles (full 10-bin view for top (layer, rank) per variant)**:
+
+| Variant | Top (L, r) | Bin 0 (5%) | Bin 4 (45%) | Bin 9 (95%) | Peak bin |
+|---------|-----------|------------|------------|------------|---------|
+| behavioral | L26 r4 | d=0.158 | d=0.310 | d=0.163 | bin 4 (45%) |
+| endofthink | L29 r2 | d=0.285 | d=0.290 | d=0.258 | bin 3 (35%) |
+
+Note: L3 r0 (behavioral) shows the flattest trajectory (d≈0.30–0.36 across all bins), suggesting a very stable representational signal throughout early thinking.
+
+**Robustness: AUC holds when controlling for thinking length**:
+- All 199 examples: AUC=0.750
+- Ceiling examples only (89C/89R, both groups analyzed to 3071 tokens): **AUC=0.734** (p<0.0001)
+- This confirms the signal is genuine and not driven by the short-thinkers=complied confound.
+
+**Thinking length as outcome predictor**:
+- Refused examples: mean generation = 20,412 tokens (median 19,786)
+- Complied examples: mean generation = 13,500 tokens (median 15,301)
+- Refused examples generate ~50% more tokens; both groups exceed the 3072 thinking-token cutoff
+- The `final_proj` (at the 3072nd token) AUC=0.601 is lower than `mean_proj` AUC=0.734 for the ceiling set
+
+**Coverage caveat**: The 4B analysis captures only the **first 3072 thinking tokens**. The median trace has ~20K+ total generation tokens. The trajectory plots (bins 0-9) represent the first ~15-40% of the full thinking phase for most examples. "Bin 9" is NOT the end of thinking — it is the 2765-3072 token range, which for a typical trace is early-to-mid thinking. Full thinking coverage would require O(n²) forward passes (prohibitive at 20K+ tokens).

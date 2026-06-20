@@ -1,0 +1,11 @@
+{
+  "total_trace_files": 220,
+  "group_by_criterion": "qwen_run_success",
+  "complied_count_raw": 113,
+  "refused_count_raw": 107,
+  "complied_count_used": 110,
+  "refused_count_used": 107,
+  "unknown_count": 0,
+  "failed_to_read_count": 0,
+  "max_per_group": 110
+}

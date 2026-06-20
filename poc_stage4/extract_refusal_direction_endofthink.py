@@ -40,6 +40,7 @@ OUTPUTS (to --output-dir, default: outputs/stage4/<model-slug>/refusal_direction
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -99,6 +100,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--direction-normalization", choices=("unit", "raw"), default="unit")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--resume", action="store_true",
+        help=(
+            "Resume from per-prompt checkpoints in --checkpoint-dir. "
+            "Skips prompts whose activation files already exist; processes the rest. "
+            "Bypasses the output-existence guard (--overwrite not needed)."
+        ),
+    )
+    parser.add_argument(
+        "--checkpoint-dir", default=None,
+        help=(
+            "Directory for per-prompt activation checkpoints. "
+            "Default: <output-dir>/checkpoints/endofthink. "
+            "Checkpoints are always written; use --resume to load them on restart."
+        ),
+    )
     parser.add_argument("--no-progress", action="store_true")
     parser.add_argument("--use-builtin-prompts", action="store_true",
                         help="Use the small built-in prompt lists instead of vendored splits.")
@@ -143,6 +160,9 @@ def generate_and_capture_endthink_activations(
     max_generation_tokens: int,
     progress_enabled: bool,
     stage_name: str,
+    checkpoint_dir: Path | None = None,
+    group_label: str = "group",
+    resume: bool = False,
 ) -> tuple[Any, list[int | None], list[str]]:
     """
     For each prompt:
@@ -150,6 +170,9 @@ def generate_and_capture_endthink_activations(
       2. Find </think> position in the full generated sequence.
       3. Run a forward pass on the truncated sequence (up to and including </think>).
       4. Capture residual stream input at the </think> position for every layer.
+
+    Per-prompt checkpoints are written to checkpoint_dir/group_label/{idx:05d}_{act,meta}.
+    Pass resume=True to load existing checkpoints and skip already-processed prompts.
 
     Returns:
       activations: torch.Tensor [n_valid, 1, n_layers, d_model]  (float32, on CPU)
@@ -174,12 +197,34 @@ def generate_and_capture_endthink_activations(
     valid_positions: list[int | None] = []
     skipped_prompts: list[str] = []
 
-    for prompt in progress_iter(
+    # Resolve per-group checkpoint subdir
+    ckpt_sub: Path | None = None
+    if checkpoint_dir is not None:
+        ckpt_sub = checkpoint_dir / group_label
+        ckpt_sub.mkdir(parents=True, exist_ok=True)
+
+    for idx, prompt in enumerate(progress_iter(
         prompts,
         total=len(prompts),
         desc="endofthink extraction",
         enabled=progress_enabled,
-    ):
+    )):
+        # --- Resume: load existing checkpoint if available ---
+        if ckpt_sub is not None and resume:
+            meta_path = ckpt_sub / f"{idx:05d}_meta.json"
+            act_path = ckpt_sub / f"{idx:05d}_act.pt"
+            if meta_path.exists():
+                meta = json.loads(meta_path.read_text())
+                if meta.get("skipped"):
+                    valid_positions.append(None)
+                    skipped_prompts.append(prompt)
+                    continue
+                elif act_path.exists():
+                    act = torch.load(act_path, map_location="cpu", weights_only=True)
+                    all_valid_activations.append(act)
+                    valid_positions.append(meta["endthink_pos"])
+                    continue
+
         # Step 1: Format prompt and tokenize
         formatted = model_base.format_prompts([prompt], enable_thinking=True)[0]
         tokenized = model_base.tokenizer(
@@ -219,6 +264,10 @@ def generate_and_capture_endthink_activations(
             )
             valid_positions.append(None)
             skipped_prompts.append(prompt)
+            if ckpt_sub is not None:
+                (ckpt_sub / f"{idx:05d}_meta.json").write_text(
+                    json.dumps({"skipped": True, "prompt_idx": idx})
+                )
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
             continue
@@ -260,8 +309,16 @@ def generate_and_capture_endthink_activations(
                 h.remove()
 
         # Add position dimension to match schema: [1, n_layers, d_model]
-        all_valid_activations.append(layer_cache.unsqueeze(0).clone())
+        act_tensor = layer_cache.unsqueeze(0).clone()
+        all_valid_activations.append(act_tensor)
         valid_positions.append(endthink_pos)
+
+        # Save per-prompt checkpoint
+        if ckpt_sub is not None:
+            torch.save(act_tensor, ckpt_sub / f"{idx:05d}_act.pt")
+            (ckpt_sub / f"{idx:05d}_meta.json").write_text(
+                json.dumps({"skipped": False, "prompt_idx": idx, "endthink_pos": endthink_pos})
+            )
 
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -317,6 +374,8 @@ def run_extraction_endofthink(
     max_generation_tokens: int,
     seed: int,
     overwrite: bool,
+    resume: bool = False,
+    checkpoint_dir: Path | None = None,
     direction_normalization: str,
     use_builtin_prompts: bool,
     no_progress: bool,
@@ -337,8 +396,14 @@ def run_extraction_endofthink(
     )
 
     progress_enabled = not no_progress
-    _check_outputs(output_dir, overwrite=overwrite)
+    if not resume:
+        _check_outputs(output_dir, overwrite=overwrite)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Resolve checkpoint directory
+    ckpt_dir = checkpoint_dir or (output_dir / "checkpoints" / "endofthink")
+    if resume or True:  # always create the dir so checkpoints can be written
+        ckpt_dir.mkdir(parents=True, exist_ok=True)
 
     log_progress(STAGE_NAME, "Starting end-of-thinking direction extraction", enabled=progress_enabled)
 
@@ -382,6 +447,9 @@ def run_extraction_endofthink(
         max_generation_tokens=max_generation_tokens,
         progress_enabled=progress_enabled,
         stage_name=STAGE_NAME,
+        checkpoint_dir=ckpt_dir,
+        group_label="harmful_train",
+        resume=resume,
     )
     log_progress(
         STAGE_NAME,
@@ -400,6 +468,9 @@ def run_extraction_endofthink(
         max_generation_tokens=max_generation_tokens,
         progress_enabled=progress_enabled,
         stage_name=STAGE_NAME,
+        checkpoint_dir=ckpt_dir,
+        group_label="harmless_train",
+        resume=resume,
     )
     log_progress(
         STAGE_NAME,
@@ -440,6 +511,9 @@ def run_extraction_endofthink(
         max_generation_tokens=max_generation_tokens,
         progress_enabled=progress_enabled,
         stage_name=STAGE_NAME,
+        checkpoint_dir=ckpt_dir,
+        group_label="harmful_val",
+        resume=resume,
     )
 
     # --- Harmless validation ---
@@ -451,6 +525,9 @@ def run_extraction_endofthink(
         max_generation_tokens=max_generation_tokens,
         progress_enabled=progress_enabled,
         stage_name=STAGE_NAME,
+        checkpoint_dir=ckpt_dir,
+        group_label="harmless_val",
+        resume=resume,
     )
 
     n_valid_val = min(harmful_val_acts.shape[0], harmless_val_acts.shape[0])
@@ -500,6 +577,7 @@ def run_extraction_endofthink(
         "candidate_tensor_shape": list(candidate_directions.shape),
         "direction_normalization": direction_normalization,
         "dry_run": dry_run,
+        "resume": resume,
         "seed": seed,
         "device_summary": model_base.device_summary,
         **prompt_source_metadata,
@@ -585,6 +663,8 @@ def main() -> int:
         slug = DEFAULT_MODEL_SLUG_BY_FAMILY[model_family]
         args.output_dir = f"outputs/stage4/{slug}/refusal_direction_endofthink"
 
+    ckpt_dir = Path(args.checkpoint_dir) if args.checkpoint_dir else None
+
     try:
         metrics = run_extraction_endofthink(
             model_name=args.model_name,
@@ -596,6 +676,8 @@ def main() -> int:
             max_generation_tokens=args.max_generation_tokens,
             seed=args.seed,
             overwrite=bool(args.overwrite),
+            resume=bool(args.resume),
+            checkpoint_dir=ckpt_dir,
             direction_normalization=args.direction_normalization,
             use_builtin_prompts=bool(args.use_builtin_prompts),
             no_progress=bool(args.no_progress),

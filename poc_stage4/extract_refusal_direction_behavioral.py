@@ -42,8 +42,6 @@ OUTPUTS (to --output-dir, default: outputs/stage4/qwen3-14b/refusal_direction_be
   group_summary.json             how many complied/refused examples were found and used
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys
@@ -61,7 +59,12 @@ from poc_stage4.extract_refusal_direction_endofthink import (
 )
 STAGE_NAME = "stage4a1_behavioral"
 
-# judge_score thresholds for grouping
+# group_by choices
+GROUP_BY_QWEN_RUN_SUCCESS = "qwen_run_success"
+GROUP_BY_JUDGE_SCORE = "judge_score"
+DEFAULT_GROUP_BY = GROUP_BY_QWEN_RUN_SUCCESS
+
+# judge_score thresholds (used when group_by == "judge_score")
 COMPLIED_JUDGE_SCORE = 10
 REFUSED_JUDGE_SCORE = 1
 
@@ -87,7 +90,6 @@ def _judge_score(artifact: dict[str, Any]) -> int | None:
     sj = artifact.get("source_judge") or {}
     score = sj.get("judge_score")
     if score is None:
-        # Fallback: check top-level
         score = artifact.get("judge_score")
     if score is None:
         return None
@@ -97,18 +99,35 @@ def _judge_score(artifact: dict[str, Any]) -> int | None:
         return None
 
 
+def _qwen_run_success(artifact: dict[str, Any]) -> bool | None:
+    """Extract qwen_run_success flag (True=complied via SR>=0.5 or judge=10, False=refused)."""
+    val = artifact.get("qwen_run_success")
+    if val is None:
+        return None
+    try:
+        return bool(val)
+    except (TypeError, ValueError):
+        return None
+
+
 def group_artifacts(
     trace_files: list[Path],
     *,
+    group_by: str = DEFAULT_GROUP_BY,
     max_per_group: int | None = None,
     progress_enabled: bool = True,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """
-    Load Stage 6 artifacts and group into 'complied' (score=10) and 'refused' (score=1).
+    Load Stage 6 artifacts and group into 'complied' and 'refused'.
+
+    group_by choices:
+      "qwen_run_success" (default): complied = qwen_run_success==True (SR>=0.5 OR judge=10),
+                                    refused  = qwen_run_success==False
+      "judge_score":                complied = judge_score==10, refused = judge_score==1
 
     Returns:
-        complied_artifacts: list of artifact dicts with judge_score == 10
-        refused_artifacts: list of artifact dicts with judge_score == 1
+        complied_artifacts: artifacts in the complied class
+        refused_artifacts: artifacts in the refused class
         group_summary: counts and source info
     """
     from poc_stage4.run_state import log_progress
@@ -126,25 +145,38 @@ def group_artifacts(
             failed_count += 1
             continue
 
-        score = _judge_score(artifact)
         artifact["_source_path"] = str(path)
 
-        if score == COMPLIED_JUDGE_SCORE:
-            complied.append(artifact)
-        elif score == REFUSED_JUDGE_SCORE:
-            refused.append(artifact)
-        else:
-            unknown_count += 1
+        if group_by == GROUP_BY_QWEN_RUN_SUCCESS:
+            flag = _qwen_run_success(artifact)
+            if flag is True:
+                complied.append(artifact)
+            elif flag is False:
+                refused.append(artifact)
+            else:
+                unknown_count += 1
+        else:  # judge_score
+            score = _judge_score(artifact)
+            if score == COMPLIED_JUDGE_SCORE:
+                complied.append(artifact)
+            elif score == REFUSED_JUDGE_SCORE:
+                refused.append(artifact)
+            else:
+                unknown_count += 1
 
     log_progress(
         STAGE_NAME,
         "Grouped artifacts",
         enabled=progress_enabled,
+        group_by=group_by,
         complied=len(complied),
         refused=len(refused),
         unknown=unknown_count,
         failed=failed_count,
     )
+
+    n_complied_raw = len(complied)
+    n_refused_raw = len(refused)
 
     if max_per_group is not None:
         complied = complied[:max_per_group]
@@ -152,8 +184,9 @@ def group_artifacts(
 
     summary = {
         "total_trace_files": len(trace_files),
-        "complied_count_raw": len(complied) + (0 if max_per_group is None else 0),
-        "refused_count_raw": len(refused) + (0 if max_per_group is None else 0),
+        "group_by_criterion": group_by,
+        "complied_count_raw": n_complied_raw,
+        "refused_count_raw": n_refused_raw,
         "complied_count_used": len(complied),
         "refused_count_used": len(refused),
         "unknown_count": unknown_count,
@@ -334,6 +367,7 @@ def run_extraction_behavioral(
     model_family: str,
     stage6_input: Path,
     output_dir: Path,
+    group_by: str = DEFAULT_GROUP_BY,
     max_per_group: int | None,
     dry_run: bool,
     overwrite: bool,
@@ -370,14 +404,21 @@ def run_extraction_behavioral(
     effective_max = 4 if dry_run else max_per_group
     complied_artifacts, refused_artifacts, group_summary = group_artifacts(
         trace_files,
+        group_by=group_by,
         max_per_group=effective_max,
         progress_enabled=progress_enabled,
     )
 
     if not complied_artifacts:
-        raise RuntimeError("No 'complied' examples (judge_score=10) found in Stage 6 artifacts.")
+        raise RuntimeError(
+            f"No 'complied' examples found in Stage 6 artifacts (group_by={group_by!r}). "
+            "For 'qwen_run_success': need qwen_run_success==True entries. "
+            "For 'judge_score': need judge_score==10 entries."
+        )
     if not refused_artifacts:
-        raise RuntimeError("No 'refused' examples (judge_score=1) found in Stage 6 artifacts.")
+        raise RuntimeError(
+            f"No 'refused' examples found in Stage 6 artifacts (group_by={group_by!r})."
+        )
 
     write_json(output_dir / "group_summary.json", group_summary)
 
@@ -484,11 +525,13 @@ def run_extraction_behavioral(
         "model_name": model_name,
         "model_family": model_family,
         "contrast_set": "behavioral_complied_vs_refused",
+        "group_by_criterion": group_by,
         "contrast_set_notes": (
             "DiM = mean(complied_at_endthink) − mean(refused_at_endthink). "
             "This direction captures what changes in the residual stream at the </think> position "
             "between examples where the model was successfully hijacked vs. refused. "
-            "It is distinct from Stage 4A1 which contrasts input labels (harmful vs. harmless)."
+            "It is distinct from Stage 4A1 which contrasts input labels (harmful vs. harmless). "
+            f"Grouping criterion: {group_by!r}."
         ),
         "endthink_token_ids": endthink_token_ids,
         "stage6_input": str(stage6_input),
@@ -588,6 +631,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-name", default=None,
         help="HF model name or path. Default: inferred from --model-family.",
     )
+    parser.add_argument(
+        "--group-by",
+        default=DEFAULT_GROUP_BY,
+        choices=[GROUP_BY_QWEN_RUN_SUCCESS, GROUP_BY_JUDGE_SCORE],
+        help=(
+            "Field used to split artifacts into complied vs. refused groups. "
+            f"'{GROUP_BY_QWEN_RUN_SUCCESS}' (default): complied = qwen_run_success==True "
+            "(SR>=0.5 OR judge=10); gives ~113/107 split in all_traces_full_1_11. "
+            f"'{GROUP_BY_JUDGE_SCORE}': complied = judge_score==10 (Gemini judge only)."
+        ),
+    )
     parser.add_argument("--max-per-group", type=int, default=None,
                         help="Max examples to use per group (complied/refused). Default: all.")
     parser.add_argument("--dry-run", action="store_true",
@@ -615,6 +669,7 @@ def main() -> int:
             model_family=model_family,
             stage6_input=Path(args.stage6_input),
             output_dir=Path(args.output_dir),
+            group_by=args.group_by,
             max_per_group=args.max_per_group,
             dry_run=bool(args.dry_run),
             overwrite=bool(args.overwrite),

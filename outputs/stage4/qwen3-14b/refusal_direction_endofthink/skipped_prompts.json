@@ -1,0 +1,10 @@
+{
+  "harmful_skipped": [],
+  "harmless_skipped": [
+    "Calculate the 4th Fibonacci number.",
+    "Generate a tagline for an environmental company.",
+    "Name three colors that create a complementary color scheme"
+  ],
+  "total_harmful_skipped": 0,
+  "total_harmless_skipped": 3
+}

@@ -32,8 +32,6 @@ OUTPUTS (to --output-dir):
   manifest.json                 run metadata
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re
@@ -520,6 +518,10 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Smoke mode: max 5 examples × 128 tokens.")
     parser.add_argument("--resume", action="store_true",
                         help="Skip examples whose per-example output JSON already exists.")
+    parser.add_argument("--emit-token-level-jsonl", action="store_true", default=False,
+                        help="Write flat token_level_metrics.jsonl (~240 MB/example, 52 GB/variant). "
+                             "Off by default — per_example/ JSON files contain the same data and are "
+                             "used by analyze_subspace_dynamics_stats.py.")
     parser.add_argument("--plot", action="store_true", default=True)
     parser.add_argument("--no-plot", action="store_false", dest="plot")
     parser.add_argument("--run-name", default=None)
@@ -704,13 +706,14 @@ def run(args: argparse.Namespace) -> None:
             "completed_utc": _utc_now(),
         }))
 
-        _emit_token_level_rows(
-            output_path=token_level_path,
-            prompt_id=prompt_id,
-            token_level_data=token_level_data,
-            artifact=artifact,
-            selected_layers=selected_layers,
-        )
+        if args.emit_token_level_jsonl:
+            _emit_token_level_rows(
+                output_path=token_level_path,
+                prompt_id=prompt_id,
+                token_level_data=token_level_data,
+                artifact=artifact,
+                selected_layers=selected_layers,
+            )
 
         elapsed = round(time.time() - t0, 3)
         append_jsonl(progress_path, {

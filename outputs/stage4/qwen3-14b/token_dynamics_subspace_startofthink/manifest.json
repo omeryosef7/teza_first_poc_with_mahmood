@@ -1,0 +1,64 @@
+{
+  "artifact_version": "poc_stage4_token_dynamics_subspace_v1",
+  "stage": "4_token_dynamics_subspace",
+  "run_name": "token_dynamics_subspace_20260619_182515",
+  "smoke": false,
+  "created_utc": "2026-06-19T18:25:32.540601+00:00",
+  "git_commit": "65bcd05ba296ed507ffffc1e445d93af172c9493",
+  "stage6_input": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full_1_11",
+  "model_name_or_path": "Qwen/Qwen3-14B",
+  "model_family": "qwen3",
+  "direction_subspace_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/direction_subspace_startofthink",
+  "subspace_k": 3,
+  "subspace_shape": [
+    3,
+    5120
+  ],
+  "subspace_directions": [
+    {
+      "subspace_rank": 0,
+      "position_index": 0,
+      "position": 0,
+      "layer": 1,
+      "harmful_ablation_refusal_score": -18.420590002036946,
+      "harmless_steering_refusal_score": -18.41769120296771,
+      "harmless_ablation_kl_divergence": -2.2661946520743137e-06,
+      "original_candidate_norm": 0.9999997019767761
+    },
+    {
+      "subspace_rank": 1,
+      "position_index": 0,
+      "position": 0,
+      "layer": 0,
+      "harmful_ablation_refusal_score": -18.409442845141413,
+      "harmless_steering_refusal_score": -18.417003590019647,
+      "harmless_ablation_kl_divergence": 0.0,
+      "original_candidate_norm": 0.0
+    },
+    {
+      "subspace_rank": 2,
+      "position_index": 0,
+      "position": 0,
+      "layer": 2,
+      "harmful_ablation_refusal_score": -10.84765993527972,
+      "harmless_steering_refusal_score": -18.41722224962318,
+      "harmless_ablation_kl_divergence": 13.738859038758232,
+      "original_candidate_norm": 0.9999999403953552
+    }
+  ],
+  "selected_layers": [
+    0,
+    1,
+    2
+  ],
+  "n_model_layers": 40,
+  "max_examples": null,
+  "max_new_tokens_to_analyze": 3072,
+  "examples_attempted": 220,
+  "examples_completed": 220,
+  "examples_skipped": 0,
+  "examples_failed": 0,
+  "status": "completed",
+  "command": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_token_dynamics_subspace.py --model-family qwen3 --model-name-or-path Qwen/Qwen3-14B --stage6-input /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full_1_11 --direction-subspace-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/direction_subspace_startofthink --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/token_dynamics_subspace_startofthink --layers 1,0,2 --max-new-tokens-to-analyze 3072",
+  "finished_utc": "2026-06-19T18:32:21.714793+00:00"
+}
