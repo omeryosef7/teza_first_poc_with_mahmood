@@ -59,9 +59,13 @@ if [ "$INPUT_VARIANT" = "behavioral" ]; then
 elif [ "$INPUT_VARIANT" = "startofthink" ]; then
     DEFAULT_SUBSPACE="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_startofthink"
     DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_startofthink"
-else
+elif [ "$INPUT_VARIANT" = "endofthink" ]; then
     DEFAULT_SUBSPACE="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_endofthink"
     DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_endofthink"
+else
+    # Generic fallback for hvp_startofthink, dvp_endofthink, etc.
+    DEFAULT_SUBSPACE="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_${INPUT_VARIANT}"
+    DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_${INPUT_VARIANT}"
 fi
 
 DIRECTION_SUBSPACE_PATH="${DIRECTION_SUBSPACE_PATH:-$DEFAULT_SUBSPACE}"
@@ -77,7 +81,8 @@ if [ -z "$LAYERS" ]; then
         LAYERS=$(python3 -c "
 import json, pathlib
 d = json.loads(pathlib.Path('$METADATA_PATH').read_text())
-print(','.join(str(x['layer']) for x in d.get('directions', [])))
+layers = [x.get('layer', -1) for x in d.get('directions', [])]
+print('all' if (not layers or all(l < 0 for l in layers)) else ','.join(str(l) for l in layers))
 ")
         echo "[stage4b] Auto-detected subspace layers from metadata: $LAYERS"
     else
@@ -102,7 +107,7 @@ if [ -f "$PROJECT_DIR/.env" ]; then
     set +a
 fi
 
-mkdir -p logs outputs "$OUTPUT_DIR" "$RUNTIME_DIR"/{config,data,runtime,ipython} "$PROJECT_DIR/.cache"/{huggingface,torch,triton}
+mkdir -p logs outputs "$OUTPUT_DIR" "$RUNTIME_DIR"/{config,data,runtime,ipython} "$PROJECT_DIR/.cache"/{huggingface,torch,triton} 2>/dev/null || true
 
 export JUPYTER_CONFIG_DIR="$RUNTIME_DIR/config"
 export JUPYTER_DATA_DIR="$RUNTIME_DIR/data"

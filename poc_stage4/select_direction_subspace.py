@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_K = 5
+DEFAULT_PCA_VARIANCE_THRESHOLD = 0.90
 
 ARTIFACT_VERSION = "stage4a2_subspace_v1"
 STAGE_NAME = "stage4a2_subspace"
@@ -47,16 +48,164 @@ def _parse_csv_strings(value: str | None) -> list[str] | None:
     return [s.strip() for s in value.split(",") if s.strip()]
 
 
+def run_pca_subspace_selection(
+    *,
+    input_dir: Path,
+    output_dir: Path,
+    variance_threshold: float,
+    max_k: int,
+    no_progress: bool,
+) -> dict[str, Any]:
+    """
+    PCA-based subspace selection: no model, no intervention tests.
+
+    Loads candidate_directions.pt [1, n_layers, d_model], squeezes to [n_layers, d_model],
+    applies SVD, keeps the top-K right singular vectors (rows of Vh) whose cumulative
+    singular-value-squared fraction >= variance_threshold.
+
+    Output schema is identical to run_subspace_selection() so 4B/4C work unchanged.
+    The "directions" list uses pca_component as rank, with layer=-1 (PCA components span
+    all layers). Callers should pass LAYERS=all to stage4b.
+    """
+    import torch
+
+    from poc_stage4.run_state import log_progress
+    from poc_stage4.schemas import read_json, utc_now, write_json
+
+    progress_enabled = not no_progress
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    candidate_metadata = read_json(input_dir / "candidate_metadata.json")
+    candidate_directions = torch.load(
+        input_dir / "candidate_directions.pt", map_location="cpu", weights_only=True
+    ).float()  # [1, n_layers, d_model]
+
+    if candidate_directions.dim() != 3 or candidate_directions.shape[0] != 1:
+        raise ValueError(
+            f"Expected candidate_directions shape [1, n_layers, d_model], "
+            f"got {list(candidate_directions.shape)}"
+        )
+    M = candidate_directions.squeeze(0)  # [n_layers, d_model]
+    n_layers, d_model = M.shape
+
+    log_progress(STAGE_NAME, f"PCA on [{n_layers}, {d_model}] direction matrix",
+                 enabled=progress_enabled)
+
+    # SVD: M = U S Vh,  Vh rows are principal components in d_model space
+    U, S, Vh = torch.linalg.svd(M, full_matrices=False)
+    # S: [min(n_layers, d_model)], Vh: [min(n_layers, d_model), d_model]
+
+    s_sq = S ** 2
+    total_var = s_sq.sum().item()
+    cumvar = s_sq.cumsum(0) / total_var  # [rank]
+
+    # K = smallest index where cumulative variance >= threshold
+    k_indices = (cumvar >= variance_threshold).nonzero(as_tuple=True)[0]
+    if len(k_indices) == 0:
+        k_auto = Vh.shape[0]
+    else:
+        k_auto = int(k_indices[0].item()) + 1
+    k_actual = min(k_auto, max_k, Vh.shape[0])
+
+    log_progress(STAGE_NAME,
+                 f"PCA: keeping K={k_actual} components "
+                 f"(threshold={variance_threshold:.0%}, max_k={max_k}), "
+                 f"cumulative variance={cumvar[k_actual-1].item():.4f}",
+                 enabled=progress_enabled)
+
+    subspace = Vh[:k_actual]  # [K, d_model] — already unit-norm rows from SVD
+    torch.save(subspace, output_dir / "direction_subspace.pt")
+    log_progress(STAGE_NAME, f"Saved direction_subspace.pt {list(subspace.shape)}",
+                 enabled=progress_enabled)
+
+    # Build "directions" metadata list.  layer=-1 signals PCA components (not layer-specific).
+    # Stage4b SLURM scripts should set LAYERS=all when using PCA subspace.
+    direction_meta_list = []
+    for rank in range(k_actual):
+        var_exp = (s_sq[rank] / total_var).item()
+        cum_var_exp = cumvar[rank].item()
+        direction_meta_list.append({
+            "subspace_rank": rank,
+            "layer": -1,  # PCA components span all layers — not layer-specific
+            "pca_component": rank,
+            "singular_value": float(S[rank].item()),
+            "variance_explained": round(var_exp, 6),
+            "cumulative_variance_explained": round(cum_var_exp, 6),
+            "original_candidate_norm": float(Vh[rank].norm().item()),
+        })
+
+    metadata: dict[str, Any] = {
+        "artifact_version": ARTIFACT_VERSION,
+        "stage": "stage4a2_subspace_pca_refusal_direction_selection",
+        "timestamp_utc": utc_now(),
+        "source_variant": "select_direction_subspace_pca",
+        "subspace_method": "pca",
+        "source_stage4a1_dir": str(input_dir),
+        "output_dir": str(output_dir),
+        "k_requested": max_k,
+        "k_actual": k_actual,
+        "subspace_shape": list(subspace.shape),
+        "pca_variance_threshold": variance_threshold,
+        "total_singular_values": Vh.shape[0],
+        "singular_values": [float(v) for v in S.tolist()],
+        "cumulative_variance_explained": [round(float(v), 6) for v in cumvar.tolist()],
+        "selection_criterion": f"pca_top_k_components_ge_{variance_threshold:.0%}_variance",
+        "num_layers": n_layers,
+        "hidden_size": d_model,
+        "pca_note": (
+            "Rows of Vh (right singular vectors of the [n_layers, d_model] DiM matrix). "
+            "Each component is a d_model vector spanning all layers. "
+            "layer=-1 in directions list signals PCA (not layer-specific). "
+            "Set LAYERS=all in stage4b when using this subspace."
+        ),
+        "directions": direction_meta_list,
+        **{k: v for k, v in candidate_metadata.items()
+           if k in ("model_name", "model_family", "group_a_type", "group_b_type",
+                    "contrast_set", "full_variant", "extraction_position")},
+    }
+    write_json(output_dir / "direction_subspace_metadata.json", metadata)
+
+    # Write a stub intervention_candidate_scores.json for compatibility
+    write_json(output_dir / "intervention_candidate_scores.json", {
+        "artifact_version": ARTIFACT_VERSION,
+        "stage": "stage4a2_subspace_pca_candidate_scores",
+        "subspace_method": "pca",
+        "note": "No intervention evaluation performed (PCA method). See direction_subspace_metadata.json.",
+        "candidates": [],
+    })
+
+    log_progress(STAGE_NAME, f"PCA subspace done. K={k_actual} → {output_dir}",
+                 enabled=progress_enabled)
+    return metadata
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Stage 4A2-subspace: select top-K intervention-validated refusal directions "
-            "and save as direction_subspace.pt of shape [K, d_model]."
+            "Stage 4A2-subspace: select top-K refusal directions "
+            "and save as direction_subspace.pt of shape [K, d_model]. "
+            "Two methods: 'intervention' (default, requires GPU) or 'pca' (CPU-only, adaptive K)."
         )
     )
     parser.add_argument(
+        "--subspace-method", default="intervention", choices=["intervention", "pca"],
+        help=(
+            "How to select directions. 'intervention': KL+steering filters + top-K survivors "
+            "(requires model). 'pca': SVD on layer directions, adaptive K by variance explained "
+            "(no model needed). Default: intervention."
+        ),
+    )
+    parser.add_argument(
+        "--pca-variance-threshold", type=float, default=DEFAULT_PCA_VARIANCE_THRESHOLD,
+        help=f"Cumulative variance fraction to retain in PCA mode. Default: {DEFAULT_PCA_VARIANCE_THRESHOLD}.",
+    )
+    parser.add_argument(
+        "--pca-max-k", type=int, default=DEFAULT_K,
+        help=f"Hard cap on number of PCA components to keep. Default: {DEFAULT_K}.",
+    )
+    parser.add_argument(
         "--model-family", default="qwen3", choices=["qwen3", "gemma4"],
-        help="Model family. Controls the HF loader. Default: qwen3.",
+        help="Model family. Controls the HF loader. Default: qwen3. (Only used by 'intervention' method.)",
     )
     parser.add_argument("--input-dir", default=None,
                         help=("Stage 4A1 output directory containing candidate_directions.pt. "
@@ -302,21 +451,46 @@ def main() -> int:
 
     from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY, DEFAULT_MODEL_SLUG_BY_FAMILY
     model_family: str = args.model_family
-    if args.model_name is None:
-        args.model_name = DEFAULT_MODEL_BY_FAMILY[model_family]
     slug = DEFAULT_MODEL_SLUG_BY_FAMILY[model_family]
     if args.input_dir is None:
         args.input_dir = f"outputs/stage4/{slug}/refusal_direction"
     if args.output_dir is None:
         args.output_dir = f"outputs/stage4/{slug}/direction_subspace"
 
+    input_dir = Path(args.input_dir)
+    output_dir = Path(args.output_dir)
+
+    if args.subspace_method == "pca":
+        try:
+            metrics = run_pca_subspace_selection(
+                input_dir=input_dir,
+                output_dir=output_dir,
+                variance_threshold=args.pca_variance_threshold,
+                max_k=args.pca_max_k,
+                no_progress=bool(args.no_progress),
+            )
+        except Exception as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        out_dir = output_dir
+        print(f"Wrote direction_subspace.pt shape {metrics['subspace_shape']}: {out_dir / 'direction_subspace.pt'}")
+        print(f"PCA K={metrics['k_actual']} components, cumulative variance: "
+              f"{metrics['cumulative_variance_explained'][metrics['k_actual']-1]:.4f}")
+        for d in metrics["directions"]:
+            print(f"  rank {d['subspace_rank']}: variance={d['variance_explained']:.4f} "
+                  f"cumulative={d['cumulative_variance_explained']:.4f}")
+        return 0
+
+    # Intervention method (original path)
+    if args.model_name is None:
+        args.model_name = DEFAULT_MODEL_BY_FAMILY[model_family]
     enable_thinking = _parse_bool(args.enable_thinking)
     refusal_token_strings = _parse_csv_strings(args.refusal_token_strings)
 
     try:
         metrics = run_subspace_selection(
-            input_dir=Path(args.input_dir),
-            output_dir=Path(args.output_dir),
+            input_dir=input_dir,
+            output_dir=output_dir,
             model_name=args.model_name,
             model_family=model_family,
             k=args.k,
@@ -338,7 +512,7 @@ def main() -> int:
         print(str(exc), file=sys.stderr)
         return 1
 
-    out_dir = Path(args.output_dir)
+    out_dir = output_dir
     print(f"Wrote direction_subspace.pt shape {metrics['subspace_shape']}: {out_dir / 'direction_subspace.pt'}")
     print(f"Wrote direction_subspace_metadata.json: {out_dir / 'direction_subspace_metadata.json'}")
     print(f"Directions selected: {metrics['k_actual']} of {metrics['k_requested']} requested")

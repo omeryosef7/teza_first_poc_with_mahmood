@@ -41,7 +41,8 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
 MODEL_FAMILY="${MODEL_FAMILY:-qwen3}"
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
-INPUT_VARIANT="${INPUT_VARIANT:-endofthink}"   # "endofthink", "behavioral", or "startofthink"
+INPUT_VARIANT="${INPUT_VARIANT:-endofthink}"   # "endofthink", "behavioral", "startofthink", or any hvp/dvp variant
+SUBSPACE_METHOD="${SUBSPACE_METHOD:-intervention}"  # "intervention" or "pca"
 
 # Resolve input/output dirs from variant
 if [ "$INPUT_VARIANT" = "behavioral" ]; then
@@ -50,9 +51,13 @@ if [ "$INPUT_VARIANT" = "behavioral" ]; then
 elif [ "$INPUT_VARIANT" = "startofthink" ]; then
     DEFAULT_INPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction_startofthink"
     DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_startofthink"
-else
+elif [ "$INPUT_VARIANT" = "endofthink" ]; then
     DEFAULT_INPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction_endofthink"
     DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_endofthink"
+else
+    # Generic fallback for hvp_startofthink, dvp_endofthink, etc.
+    DEFAULT_INPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/refusal_direction_${INPUT_VARIANT}"
+    DEFAULT_OUTPUT="$PROJECT_DIR/outputs/stage4/qwen3-14b/direction_subspace_${INPUT_VARIANT}"
 fi
 
 INPUT_DIR="${INPUT_DIR:-$DEFAULT_INPUT}"
@@ -123,5 +128,7 @@ fi
 if [ -n "$CHECKPOINT_DIR" ]; then
     ARGS+=(--checkpoint-dir "$CHECKPOINT_DIR")
 fi
+
+ARGS+=(--subspace-method "$SUBSPACE_METHOD")
 
 python -m poc_stage4.select_direction_subspace "${ARGS[@]}"

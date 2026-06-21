@@ -1,0 +1,70 @@
+{
+  "available_directions": [
+    "startofthink",
+    "endofthink",
+    "behavioral"
+  ],
+  "per_pair_at_best_layers": [
+    {
+      "pair": "startofthink_vs_endofthink",
+      "sim_at_{ka}_best_layer": 0.4593,
+      "sim_at_{kb}_best_layer": 0.3633,
+      "max_cosine_over_layers": 0.4593,
+      "argmax_layer": 26
+    },
+    {
+      "pair": "startofthink_vs_behavioral",
+      "sim_at_{ka}_best_layer": -0.2739,
+      "sim_at_{kb}_best_layer": -0.1715,
+      "max_cosine_over_layers": 0.0854,
+      "argmax_layer": 8
+    },
+    {
+      "pair": "endofthink_vs_behavioral",
+      "sim_at_{ka}_best_layer": -0.4586,
+      "sim_at_{kb}_best_layer": -0.4161,
+      "max_cosine_over_layers": 0.6789,
+      "argmax_layer": 11
+    }
+  ],
+  "selected_direction_cosines": [
+    {
+      "pair": "startofthink_vs_endofthink",
+      "cosine": 0.3102,
+      "ka_layer": 26,
+      "kb_layer": 28
+    },
+    {
+      "pair": "startofthink_vs_behavioral",
+      "cosine": -0.12,
+      "ka_layer": 26,
+      "kb_layer": 30
+    },
+    {
+      "pair": "endofthink_vs_behavioral",
+      "cosine": -0.2354,
+      "ka_layer": 28,
+      "kb_layer": 30
+    }
+  ],
+  "per_pair_summary": [
+    {
+      "pair": "startofthink_vs_endofthink",
+      "mean_abs_cosine": 0.1635,
+      "max_abs_cosine": 0.4593,
+      "min_abs_cosine": 0.0028
+    },
+    {
+      "pair": "startofthink_vs_behavioral",
+      "mean_abs_cosine": 0.0839,
+      "max_abs_cosine": 0.2739,
+      "min_abs_cosine": 0.002
+    },
+    {
+      "pair": "endofthink_vs_behavioral",
+      "mean_abs_cosine": 0.3369,
+      "max_abs_cosine": 0.6789,
+      "min_abs_cosine": 0.0209
+    }
+  ]
+}

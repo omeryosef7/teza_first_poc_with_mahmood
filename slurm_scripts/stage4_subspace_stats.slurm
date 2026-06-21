@@ -54,10 +54,15 @@ elif [ "$INPUT_VARIANT" = "startofthink" ]; then
     DEFAULT_DYN_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_startofthink"
     DEFAULT_OUT_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/subspace_stats_startofthink"
     VARIANT_LABEL="startofthink"
-else
+elif [ "$INPUT_VARIANT" = "behavioral" ]; then
     DEFAULT_DYN_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_behavioral"
     DEFAULT_OUT_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/subspace_stats_behavioral"
     VARIANT_LABEL="behavioral"
+else
+    # Generic fallback for hvp_startofthink, dvp_endofthink, etc.
+    DEFAULT_DYN_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/token_dynamics_subspace_${INPUT_VARIANT}"
+    DEFAULT_OUT_DIR="$PROJECT_DIR/outputs/stage4/qwen3-14b/subspace_stats_${INPUT_VARIANT}"
+    VARIANT_LABEL="${INPUT_VARIANT}"
 fi
 
 TOKEN_DYN_DIR="${TOKEN_DYN_DIR:-$DEFAULT_DYN_DIR}"

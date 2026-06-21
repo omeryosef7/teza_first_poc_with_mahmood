@@ -1,0 +1,124 @@
+{
+  "variant_name": "endofthink",
+  "token_dynamics_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/gemma4-e4b-it/token_dynamics_subspace_endofthink",
+  "n_examples": 220,
+  "n_complied": 66,
+  "n_refused": 154,
+  "focus_layers": [
+    16,
+    33,
+    38,
+    40,
+    41
+  ],
+  "n_bins": 10,
+  "auc_table_top5": [
+    {
+      "layer": 16,
+      "subspace_rank": 3,
+      "n_complied": 62,
+      "n_refused": 144,
+      "auc_raw": 0.6165,
+      "auc": 0.6165,
+      "p_value": 0.0081
+    },
+    {
+      "layer": 16,
+      "subspace_rank": 2,
+      "n_complied": 62,
+      "n_refused": 144,
+      "auc_raw": 0.6112,
+      "auc": 0.6112,
+      "p_value": 0.0114
+    },
+    {
+      "layer": 38,
+      "subspace_rank": 0,
+      "n_complied": 62,
+      "n_refused": 144,
+      "auc_raw": 0.6035,
+      "auc": 0.6035,
+      "p_value": 0.0186
+    },
+    {
+      "layer": 33,
+      "subspace_rank": 1,
+      "n_complied": 62,
+      "n_refused": 144,
+      "auc_raw": 0.4026,
+      "auc": 0.5974,
+      "p_value": 0.0267
+    },
+    {
+      "layer": 40,
+      "subspace_rank": 0,
+      "n_complied": 62,
+      "n_refused": 144,
+      "auc_raw": 0.5972,
+      "auc": 0.5972,
+      "p_value": 0.0271
+    }
+  ],
+  "best_auc": {
+    "layer": 16,
+    "subspace_rank": 3,
+    "n_complied": 62,
+    "n_refused": 144,
+    "auc_raw": 0.6165,
+    "auc": 0.6165,
+    "p_value": 0.0081
+  },
+  "manifest_subspace_k": 5,
+  "manifest_subspace_directions": [
+    {
+      "subspace_rank": 0,
+      "position_index": 0,
+      "position": 0,
+      "layer": 41,
+      "harmful_ablation_refusal_score": -15.158062458729196,
+      "harmless_steering_refusal_score": -10.904231228053108,
+      "harmless_ablation_kl_divergence": 0.07999306909338921,
+      "original_candidate_norm": 0.9999999403953552
+    },
+    {
+      "subspace_rank": 1,
+      "position_index": 0,
+      "position": 0,
+      "layer": 16,
+      "harmful_ablation_refusal_score": -8.783101818403821,
+      "harmless_steering_refusal_score": -11.296394192236257,
+      "harmless_ablation_kl_divergence": 0.9549233022534368,
+      "original_candidate_norm": 1.0
+    },
+    {
+      "subspace_rank": 2,
+      "position_index": 0,
+      "position": 0,
+      "layer": 40,
+      "harmful_ablation_refusal_score": -8.496000720724457,
+      "harmless_steering_refusal_score": -10.968434874975255,
+      "harmless_ablation_kl_divergence": 0.07639360089134563,
+      "original_candidate_norm": 0.9999998807907104
+    },
+    {
+      "subspace_rank": 3,
+      "position_index": 0,
+      "position": 0,
+      "layer": 38,
+      "harmful_ablation_refusal_score": -7.972117065362642,
+      "harmless_steering_refusal_score": -10.974196467931561,
+      "harmless_ablation_kl_divergence": 0.11562825929119631,
+      "original_candidate_norm": 1.0
+    },
+    {
+      "subspace_rank": 4,
+      "position_index": 0,
+      "position": 0,
+      "layer": 33,
+      "harmful_ablation_refusal_score": -7.907932552031192,
+      "harmless_steering_refusal_score": -11.086784384465773,
+      "harmless_ablation_kl_divergence": 0.7897720334858565,
+      "original_candidate_norm": 0.9999999403953552
+    }
+  ]
+}

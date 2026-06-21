@@ -27,13 +27,27 @@ class Qwen3Model:
 
     @property
     def layers(self) -> Any:
-        try:
-            return self.model.model.layers
-        except AttributeError as exc:
-            raise RuntimeError(
-                "Unable to find Qwen3 transformer layers at `model.model.layers`. "
-                "This Stage 4A1 wrapper currently supports Hugging Face Qwen3 causal LM models only."
-            ) from exc
+        # Paths are relative to self.model (the HF model object).
+        # Qwen3ForCausalLM:                 self.model .model        .layers  → "model.layers"
+        # Gemma4ForConditionalGeneration:   self.model .model        .language_model .layers → "model.language_model.layers"
+        for attr_path in (
+            "model.layers",
+            "model.language_model.layers",
+            "language_model.model.layers",
+            "layers",
+        ):
+            obj = self.model
+            try:
+                for part in attr_path.split("."):
+                    obj = getattr(obj, part)
+                return obj
+            except AttributeError:
+                continue
+        raise RuntimeError(
+            f"Unable to find transformer layers in {type(self.model).__name__}. "
+            "Tried: model.layers, model.language_model.layers, "
+            "language_model.model.layers, layers"
+        )
 
     @property
     def num_layers(self) -> int:
@@ -49,7 +63,13 @@ class Qwen3Model:
 
     @property
     def hidden_size(self) -> int:
-        return int(self.model.config.hidden_size)
+        cfg = self.model.config
+        if hasattr(cfg, "hidden_size"):
+            return int(cfg.hidden_size)
+        # Multimodal models (Gemma4) expose text dims under text_config
+        if hasattr(cfg, "text_config") and hasattr(cfg.text_config, "hidden_size"):
+            return int(cfg.text_config.hidden_size)
+        raise RuntimeError(f"Cannot determine hidden_size from {type(cfg).__name__}")
 
     @property
     def device_summary(self) -> dict[str, str]:

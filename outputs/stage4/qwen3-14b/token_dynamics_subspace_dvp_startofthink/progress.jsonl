@@ -1,0 +1,143 @@
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "utc": "2026-06-21T10:37:49.644982+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "elapsed_seconds": 4.985, "analyzed_tokens": 3072, "utc": "2026-06-21T10:37:54.541516+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "utc": "2026-06-21T10:37:54.605255+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "elapsed_seconds": 4.709, "analyzed_tokens": 3072, "utc": "2026-06-21T10:37:59.254883+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "utc": "2026-06-21T10:37:59.316219+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "elapsed_seconds": 4.46, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:03.718277+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:03.770547+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "elapsed_seconds": 4.588, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:08.308466+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:08.389016+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "elapsed_seconds": 5.115, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:13.425329+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:13.520379+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "elapsed_seconds": 4.37, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:17.796972+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:17.952076+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "elapsed_seconds": 4.643, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:22.443595+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:22.526193+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "elapsed_seconds": 4.572, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:27.017638+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:27.113967+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "elapsed_seconds": 4.574, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:31.593979+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:31.635461+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "elapsed_seconds": 4.322, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:35.917297+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:35.954471+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 4.469, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:40.389908+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:40.498203+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "elapsed_seconds": 4.848, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:45.239834+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:45.331665+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 4.503, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:49.744545+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:49.835173+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 4.713, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:54.458912+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:54.537497+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 4.275, "analyzed_tokens": 3072, "utc": "2026-06-21T10:38:58.737000+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-06-21T10:38:58.809003+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 4.744, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:03.482773+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:03.584747+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "elapsed_seconds": 4.31, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:07.796518+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:07.850328+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "elapsed_seconds": 4.425, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:12.222796+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:12.318326+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "elapsed_seconds": 4.921, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:17.145733+00:00"}
+{"event": "started", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:17.234067+00:00"}
+{"event": "completed", "prompt_id": "goal_index=0|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "elapsed_seconds": 4.415, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:21.562343+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:21.685361+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "elapsed_seconds": 4.219, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:25.783053+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:25.892889+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "elapsed_seconds": 5.018, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:30.802312+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:30.870836+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "elapsed_seconds": 4.291, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:35.096322+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:35.139575+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "elapsed_seconds": 4.339, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:39.436996+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:39.581562+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "elapsed_seconds": 5.137, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:44.575819+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:44.676532+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "elapsed_seconds": 4.415, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:48.992289+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:49.069374+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "elapsed_seconds": 4.393, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:53.387436+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:53.480217+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "elapsed_seconds": 5.09, "analyzed_tokens": 3072, "utc": "2026-06-21T10:39:58.479169+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "utc": "2026-06-21T10:39:58.580561+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "elapsed_seconds": 4.332, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:02.812892+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:02.853523+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "elapsed_seconds": 4.229, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:07.044182+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:07.078086+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 4.145, "analyzed_tokens": 3050, "utc": "2026-06-21T10:40:11.193545+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:11.281815+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "elapsed_seconds": 4.508, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:15.702775+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:15.814748+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 5.472, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:21.176971+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:21.233205+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 4.311, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:25.489922+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:25.608357+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 4.349, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:29.841663+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:29.919876+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 4.395, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:34.238258+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:34.345652+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "elapsed_seconds": 5.239, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:39.478305+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:39.522191+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "elapsed_seconds": 4.225, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:43.704732+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:43.807504+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "elapsed_seconds": 4.585, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:48.291137+00:00"}
+{"event": "started", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:48.377480+00:00"}
+{"event": "completed", "prompt_id": "goal_index=10|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "elapsed_seconds": 4.343, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:52.636052+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:52.732065+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "elapsed_seconds": 4.293, "analyzed_tokens": 3072, "utc": "2026-06-21T10:40:56.930491+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "utc": "2026-06-21T10:40:57.019654+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "elapsed_seconds": 5.408, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:02.340299+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:02.429537+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "elapsed_seconds": 4.323, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:06.665128+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:06.719138+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "elapsed_seconds": 4.326, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:10.992565+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:11.101697+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "elapsed_seconds": 4.595, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:15.589504+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:15.745793+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "elapsed_seconds": 4.444, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:20.034900+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:20.122379+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "elapsed_seconds": 4.292, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:24.327765+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:24.406426+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "elapsed_seconds": 5.666, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:29.995258+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:30.091456+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "elapsed_seconds": 4.332, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:34.328490+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:34.385938+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "elapsed_seconds": 4.229, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:38.559673+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:38.605387+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 4.256, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:42.817076+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:42.931014+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "elapsed_seconds": 4.508, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:47.326423+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:47.456599+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini", "elapsed_seconds": 4.531, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:51.858757+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:51.950549+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini", "elapsed_seconds": 5.556, "analyzed_tokens": 3072, "utc": "2026-06-21T10:41:57.415971+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "utc": "2026-06-21T10:41:57.500843+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "elapsed_seconds": 4.31, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:01.727802+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:01.811451+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "elapsed_seconds": 4.303, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:06.032569+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:06.114889+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=6|target_model=gpt-o4-mini", "elapsed_seconds": 4.29, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:10.324968+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:10.387537+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=7|target_model=gpt-o4-mini", "elapsed_seconds": 4.144, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:14.470357+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:14.604679+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=8|target_model=gpt-o4-mini", "elapsed_seconds": 4.486, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:18.957753+00:00"}
+{"event": "started", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:19.051952+00:00"}
+{"event": "completed", "prompt_id": "goal_index=1|attack_iteration=1|conversation_id=9|target_model=gpt-o4-mini", "elapsed_seconds": 4.329, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:23.288471+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:23.433672+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=10|target_model=gpt-o4-mini", "elapsed_seconds": 4.402, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:27.691907+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:27.787825+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=11|target_model=gpt-o4-mini", "elapsed_seconds": 6.119, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:33.812500+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:33.894372+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=12|target_model=gpt-o4-mini", "elapsed_seconds": 4.337, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:38.151361+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:38.200542+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=13|target_model=gpt-o4-mini", "elapsed_seconds": 4.251, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:42.403953+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:42.508471+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=14|target_model=gpt-o4-mini", "elapsed_seconds": 4.519, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:46.924765+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:47.015631+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=15|target_model=gpt-o4-mini", "elapsed_seconds": 4.484, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:51.410152+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:51.478007+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=16|target_model=gpt-o4-mini", "elapsed_seconds": 4.364, "analyzed_tokens": 3072, "utc": "2026-06-21T10:42:55.775664+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "utc": "2026-06-21T10:42:55.934116+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=17|target_model=gpt-o4-mini", "elapsed_seconds": 4.46, "analyzed_tokens": 3072, "utc": "2026-06-21T10:43:00.237919+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "utc": "2026-06-21T10:43:00.327086+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=18|target_model=gpt-o4-mini", "elapsed_seconds": 4.32, "analyzed_tokens": 3072, "utc": "2026-06-21T10:43:04.559518+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "utc": "2026-06-21T10:43:04.607135+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=19|target_model=gpt-o4-mini", "elapsed_seconds": 5.922, "analyzed_tokens": 3072, "utc": "2026-06-21T10:43:10.483193+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "utc": "2026-06-21T10:43:10.537758+00:00"}
+{"event": "completed", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini", "elapsed_seconds": 4.246, "analyzed_tokens": 3072, "utc": "2026-06-21T10:43:14.730372+00:00"}
+{"event": "started", "prompt_id": "goal_index=2|attack_iteration=1|conversation_id=20|target_model=gpt-o4-mini", "utc": "2026-06-21T10:43:14.841836+00:00"}

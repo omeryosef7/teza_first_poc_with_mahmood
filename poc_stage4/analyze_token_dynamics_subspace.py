@@ -147,6 +147,22 @@ def _model_input_device(model: Any) -> torch.device:
         return next(model.parameters()).device
 
 
+def _get_model_layers(model: Any) -> Any:
+    """Return the transformer layer ModuleList for Qwen3 or Gemma4 HF models."""
+    for path in ("model.layers", "model.language_model.layers", "language_model.model.layers", "layers"):
+        obj = model
+        try:
+            for part in path.split("."):
+                obj = getattr(obj, part)
+            return obj
+        except AttributeError:
+            continue
+    raise RuntimeError(
+        f"Cannot find transformer layers in {type(model).__name__}. "
+        "Tried: model.layers, model.language_model.layers, language_model.model.layers, layers"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Projection computation
 # ---------------------------------------------------------------------------
@@ -193,7 +209,7 @@ def compute_subspace_projections_for_example(
     subspace_cpu = subspace.cpu()
 
     projections_store: dict[int, list[list[float]]] = {}
-    transformer_layers = model.model.layers
+    transformer_layers = _get_model_layers(model)
     n_model_layers = len(transformer_layers)
 
     handles = []
@@ -467,7 +483,7 @@ def _git_commit() -> str | None:
 
 
 def _resolve_layers(layers_arg: str, model: Any) -> list[int]:
-    n = len(model.model.layers)
+    n = len(_get_model_layers(model))
     if layers_arg.strip().lower() == "all":
         return list(range(n))
     result = []
@@ -567,7 +583,7 @@ def run(args: argparse.Namespace) -> None:
         require_cuda=True, log_device_placement=True,
     )
     model = qwen.model
-    n_model_layers = len(model.model.layers)
+    n_model_layers = len(_get_model_layers(model))
 
     selected_layers = _resolve_layers(args.layers, model)
     log_progress(STAGE_NAME, f"Selected {len(selected_layers)} layers", layers=selected_layers[:5])

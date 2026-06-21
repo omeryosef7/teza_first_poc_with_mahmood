@@ -72,9 +72,12 @@ def _find_think_end_pos(full_ids: list[int], think_end_ids: list[int]) -> int | 
     return None
 
 
-def _find_eos_pos(full_ids: list[int], eos_id: int) -> int | None:
-    """Return absolute index of last token, verified to be eos_id."""
-    if full_ids and full_ids[-1] == eos_id:
+def _find_eos_pos(full_ids: list[int], eos_id: int | list[int]) -> int | None:
+    """Return absolute index of last token, verified to be eos_id (or one of eos_id if list)."""
+    if not full_ids:
+        return None
+    valid = set(eos_id) if isinstance(eos_id, list) else {eos_id}
+    if full_ids[-1] in valid:
         return len(full_ids) - 1
     return None
 
@@ -390,7 +393,18 @@ def run_comparison(
 
     think_start_ids = get_thinking_start_token_ids(model_base.tokenizer, model_family)
     think_end_ids   = get_thinking_end_token_ids(model_base.tokenizer, model_family)
-    eos_id = model_base.tokenizer.eos_token_id
+    eos_id: int | list[int] = model_base.tokenizer.eos_token_id
+    # For models where the effective EOS during generation differs from eos_token_id
+    # (e.g. Gemma 4 uses token 106 <turn|> to stop, not token 1 <eos>), collect all
+    # valid terminal token IDs from the model's generation config.
+    try:
+        gen_cfg_eos = model_base.model.generation_config.eos_token_id
+        if isinstance(gen_cfg_eos, list):
+            eos_id = list(set(gen_cfg_eos + ([eos_id] if isinstance(eos_id, int) else eos_id)))
+        elif gen_cfg_eos is not None and gen_cfg_eos != eos_id:
+            eos_id = [eos_id, gen_cfg_eos] if isinstance(eos_id, int) else list(set(eos_id + [gen_cfg_eos]))
+    except Exception:
+        pass
 
     print(f"[compare_projections] think_start_ids={think_start_ids} think_end_ids={think_end_ids} eos_id={eos_id}")
 

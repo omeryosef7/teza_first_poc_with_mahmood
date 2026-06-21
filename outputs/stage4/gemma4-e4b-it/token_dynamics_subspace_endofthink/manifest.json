@@ -1,0 +1,86 @@
+{
+  "artifact_version": "poc_stage4_token_dynamics_subspace_v1",
+  "stage": "4_token_dynamics_subspace",
+  "run_name": "token_dynamics_subspace_20260621_014202",
+  "smoke": false,
+  "created_utc": "2026-06-21T01:46:32.270480+00:00",
+  "git_commit": "e2baf8f13b2a9d397e68e303797228750ecf6dd4",
+  "stage6_input": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11_eos_fixed",
+  "model_name_or_path": "google/gemma-4-E4B-it",
+  "model_family": "gemma4",
+  "direction_subspace_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/gemma4-e4b-it/direction_subspace_endofthink",
+  "subspace_k": 5,
+  "subspace_shape": [
+    5,
+    2560
+  ],
+  "subspace_directions": [
+    {
+      "subspace_rank": 0,
+      "position_index": 0,
+      "position": 0,
+      "layer": 41,
+      "harmful_ablation_refusal_score": -15.158062458729196,
+      "harmless_steering_refusal_score": -10.904231228053108,
+      "harmless_ablation_kl_divergence": 0.07999306909338921,
+      "original_candidate_norm": 0.9999999403953552
+    },
+    {
+      "subspace_rank": 1,
+      "position_index": 0,
+      "position": 0,
+      "layer": 16,
+      "harmful_ablation_refusal_score": -8.783101818403821,
+      "harmless_steering_refusal_score": -11.296394192236257,
+      "harmless_ablation_kl_divergence": 0.9549233022534368,
+      "original_candidate_norm": 1.0
+    },
+    {
+      "subspace_rank": 2,
+      "position_index": 0,
+      "position": 0,
+      "layer": 40,
+      "harmful_ablation_refusal_score": -8.496000720724457,
+      "harmless_steering_refusal_score": -10.968434874975255,
+      "harmless_ablation_kl_divergence": 0.07639360089134563,
+      "original_candidate_norm": 0.9999998807907104
+    },
+    {
+      "subspace_rank": 3,
+      "position_index": 0,
+      "position": 0,
+      "layer": 38,
+      "harmful_ablation_refusal_score": -7.972117065362642,
+      "harmless_steering_refusal_score": -10.974196467931561,
+      "harmless_ablation_kl_divergence": 0.11562825929119631,
+      "original_candidate_norm": 1.0
+    },
+    {
+      "subspace_rank": 4,
+      "position_index": 0,
+      "position": 0,
+      "layer": 33,
+      "harmful_ablation_refusal_score": -7.907932552031192,
+      "harmless_steering_refusal_score": -11.086784384465773,
+      "harmless_ablation_kl_divergence": 0.7897720334858565,
+      "original_candidate_norm": 0.9999999403953552
+    }
+  ],
+  "selected_layers": [
+    16,
+    33,
+    38,
+    40,
+    41
+  ],
+  "n_model_layers": 42,
+  "max_examples": null,
+  "max_new_tokens_to_analyze": 3072,
+  "examples_attempted": 220,
+  "examples_completed": 220,
+  "examples_skipped": 0,
+  "examples_failed": 0,
+  "status": "completed",
+  "command": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_token_dynamics_subspace.py --model-family gemma4 --model-name-or-path google/gemma-4-E4B-it --stage6-input /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/gemma_traces_full_1_11_eos_fixed --direction-subspace-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/gemma4-e4b-it/direction_subspace_endofthink --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/gemma4-e4b-it/token_dynamics_subspace_endofthink --layers 41,16,40,38,33 --max-new-tokens-to-analyze 3072",
+  "finished_utc": "2026-06-21T01:52:44.911594+00:00"
+}

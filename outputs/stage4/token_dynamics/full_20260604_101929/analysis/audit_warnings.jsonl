@@ -1,2 +1,0 @@
-{"example_id": "goal_index=2|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini", "warnings": ["right_censored generation hit max_new_tokens limit"]}
-{"example_id": "goal_index=2|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini", "warnings": ["right_censored generation hit max_new_tokens limit", "thinking_segmentation_status is not_separable"]}

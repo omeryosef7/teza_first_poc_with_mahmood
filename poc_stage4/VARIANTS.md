@@ -701,8 +701,40 @@ Answers: *Does a puzzle-attack prompt look like harmless or direct-harmful in th
 **Prompt types**: harmless (50), direct_harm (50), puzzle_attack (201 Stage 6 traces)
 **Time points**: startofthink (`<think>`), endofthink (`</think>`), endofresponse (EOS)
 
-**Status (job 596213, running ~2.5h)**: In projection phase — all 3 types projected, writing CSV/plots.
-Results pending. Will update with findings once job completes.
+**Status**: Job 596213 completed (old run). Job 596344 TIMED OUT at 23:15:57 IDT on 2026-06-20 (8h limit exceeded, no output saved — Python stdout was unbuffered).
+
+**Job 598041** resubmitted 2026-06-20 23:17 IDT with `PYTHONUNBUFFERED=1` and `--time=12:00:00`.
+**Status as of 2026-06-21 00:00 IDT**: RUNNING on n-803, 43min elapsed, generating harmless traces (50 prompts). ETA ~4h more.
+**Status as of 2026-06-21 02:11 IDT**: RUNNING 2h54m elapsed. No output files yet — still in generation phase (100 new traces × max_new_tokens=8192 for Qwen3-14B). ETA completion ~04:00-05:00 IDT.
+**Status as of 2026-06-21 02:41 IDT**: RUNNING 3h24m elapsed. Still generating — no output files yet. Log still shows initial setup lines only. ETA unchanged ~04:30-05:00 IDT.
+**Job 598041 CANCELLED at 08:11 IDT** — 8h47m elapsed with only 5 stderr lines (still generating harmless traces). Root cause: max_new_tokens=8192 × 100 traces on Qwen3-14B = ~17.5h generation, exceeds 12h wall time. No output produced.
+**Job 598659** resubmitted 08:11 IDT with `MAX_GEN_TOKENS=4096` (matching Gemma script). Running on n-601.
+**Status as of 09:11 IDT**: harmless generation DONE (~1h for 50 traces, ~1.2 min/trace), now generating direct_harm (50 traces). Revised ETA: ~10:40 IDT.
+**Job 598659 COMPLETED** at 09:42 IDT (1h30m elapsed). 17,100 rows written to `projections.csv`. 49 harmless (1 failed), 50 direct_harm, 129 puzzle traces (82 complied / 47 refused).
+
+Direction convention: `dir = mean(complied_attack) - mean(refused_attack)`. Positive = complied-like, negative = refused-like.
+
+**Projections at best layer (L26, rank=4) — mean per prompt type × time point:**
+
+| Time point | harmless | direct_harm | puzzle(complied, n=82) | puzzle(refused, n=47) |
+|------------|----------|-------------|----------------------|----------------------|
+| startofthink | -1.44 | -4.05 | -4.08 | -4.28 |
+| endofthink | +19.93 | +13.22 | **+5.40** | **-1.60** |
+| endofresponse | -8.83 | -9.94 | -15.47 | -17.14 |
+
+**Key findings:**
+1. **startofthink**: All prompt types cluster similarly (-1.4 to -4.3). No meaningful pre-thinking separation — contrast with Gemma where puzzle attacks projected 8-9× more refused-like than harmless at startofthink.
+2. **endofthink**: Harmless (+19.93) >> direct_harm (+13.22) >> puzzle(complied) (+5.40) >> puzzle(refused) (-1.60). Complied puzzle attacks are substantially LESS complied-like than harmless or direct_harm at end-of-thinking — the model is in a distinct "puzzle-solving" mode. Refused attacks turn negative.
+3. **endofresponse**: Both complied (-15.47) and refused (-17.14) puzzle attacks are MORE refused-like than harmless (-8.83) or direct_harm (-9.94). The behavioral subspace captures the adversarial nature of puzzle attacks even after the response.
+
+**Comparison to Gemma ptcomp (L17, rank=4):**
+| Time point | Qwen3 harmless | Qwen3 puzzle(complied) | Gemma harmless | Gemma puzzle(complied) |
+|------------|---------------|----------------------|----------------|----------------------|
+| startofthink | -1.44 | -4.08 | -0.84 | -6.81 |
+| endofthink | +19.93 | +5.40 | -12.63 | -8.00 |
+| endofresponse | -8.83 | -15.47 | -2.53 | -3.44 |
+
+Note different direction conventions (same sign convention). Qwen3 shows much weaker pre-thinking discrimination but stronger post-response adversarial signal.
 
 ---
 

@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=08:00:00
+#SBATCH --time=12:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
@@ -79,6 +79,7 @@ export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export TORCH_HOME="$PROJECT_DIR/.cache/torch"
 export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTHONUNBUFFERED=1
 
 echo "[stage4_prompt_type_comparison] Starting at $(date) on $(hostname)"
 nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader 2>/dev/null || true
