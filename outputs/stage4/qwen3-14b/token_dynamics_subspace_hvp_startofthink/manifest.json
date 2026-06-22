@@ -1,10 +1,10 @@
 {
   "artifact_version": "poc_stage4_token_dynamics_subspace_v1",
   "stage": "4_token_dynamics_subspace",
-  "run_name": "token_dynamics_subspace_20260621_104155",
+  "run_name": "token_dynamics_subspace_20260621_145709",
   "smoke": false,
-  "created_utc": "2026-06-21T10:42:15.423808+00:00",
-  "git_commit": "e2baf8f13b2a9d397e68e303797228750ecf6dd4",
+  "created_utc": "2026-06-21T14:57:44.803513+00:00",
+  "git_commit": "6c8168240e47f92bd348ed01b343c7de88ef994a",
   "stage6_input": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full_1_11",
   "model_name_or_path": "Qwen/Qwen3-14B",
   "model_family": "qwen3",
@@ -106,10 +106,11 @@
   "n_model_layers": 40,
   "max_examples": null,
   "max_new_tokens_to_analyze": 3072,
-  "examples_attempted": 0,
-  "examples_completed": 0,
+  "examples_attempted": 220,
+  "examples_completed": 220,
   "examples_skipped": 0,
   "examples_failed": 0,
-  "status": "in_progress",
-  "command": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_token_dynamics_subspace.py --model-family qwen3 --model-name-or-path Qwen/Qwen3-14B --stage6-input /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full_1_11 --direction-subspace-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/direction_subspace_hvp_startofthink --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/token_dynamics_subspace_hvp_startofthink --layers all --max-new-tokens-to-analyze 3072"
+  "status": "completed",
+  "command": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/poc_stage4/analyze_token_dynamics_subspace.py --model-family qwen3 --model-name-or-path Qwen/Qwen3-14B --stage6-input /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_full_1_11 --direction-subspace-path /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/direction_subspace_hvp_startofthink --output-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/token_dynamics_subspace_hvp_startofthink --layers all --max-new-tokens-to-analyze 3072",
+  "finished_utc": "2026-06-21T15:27:55.122507+00:00"
 }

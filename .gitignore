@@ -8,4 +8,5 @@ outputs/stage4/token_dynamics/full_20260604_101929/plots_analysis_v2/per_prompt/
 # Stage 4.7 — exclude per-generation JSON artifacts (contain raw model outputs) and stale run
 outputs/stage4_7/runs/*/runs/
 outputs/stage4_7/runs/*/logs/
-outputs/stage4_7/runs/run_array_20260610_1414/
+outputs/stage4_7/runs/run_array_20260610_1414/outputs/
+outputs/

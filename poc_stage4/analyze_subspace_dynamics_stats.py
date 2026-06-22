@@ -118,11 +118,16 @@ def _read_manifest(dyn_dir: pathlib.Path) -> dict[str, Any]:
 
 
 def _subspace_layers_from_manifest(manifest: dict[str, Any]) -> list[int] | None:
-    """Return the K subspace layers listed in the manifest, if available."""
+    """Return the K subspace layers listed in the manifest, if available.
+    Returns None when directions use layer=-1 (spans all layers — no layer filter)."""
     directions = manifest.get("subspace_directions", [])
     if not directions:
         return None
-    return sorted({int(d["layer"]) for d in directions if "layer" in d})
+    layers = sorted({int(d["layer"]) for d in directions if "layer" in d})
+    # layer == -1 means the direction is a global (all-layer) PCA direction
+    if set(layers) == {-1}:
+        return None
+    return layers
 
 
 def _load_per_prompt(dyn_dir: pathlib.Path) -> dict[str, dict[str, Any]]:

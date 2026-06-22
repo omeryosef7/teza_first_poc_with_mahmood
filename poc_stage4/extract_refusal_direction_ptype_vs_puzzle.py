@@ -349,7 +349,7 @@ def generate_and_capture_endofresponse_activations(
             hooks.append(layer.register_forward_pre_hook(_make_hook(li)))
         try:
             with torch.no_grad():
-                model_base.model(input_ids=full_tensor.to(input_device), use_cache=False)
+                model_base.base_model(input_ids=full_tensor.to(input_device), use_cache=False)
         finally:
             for h in hooks:
                 h.remove()
@@ -557,6 +557,7 @@ def run_extraction(
             endthink_token_ids=endthink_ids,
             group_label="puzzle_train",
             progress_enabled=progress_enabled,
+            max_seq_len=max_seq_len,
         )
 
         log_progress(STAGE_NAME, f"Generating + capturing group_a_train ({group_a_type}) endofthink",
@@ -578,6 +579,7 @@ def run_extraction(
             endthink_token_ids=endthink_ids,
             group_label="puzzle_val",
             progress_enabled=progress_enabled,
+            max_seq_len=max_seq_len,
         )
 
         log_progress(STAGE_NAME, f"Generating + capturing group_a_val ({group_a_type}) endofthink",

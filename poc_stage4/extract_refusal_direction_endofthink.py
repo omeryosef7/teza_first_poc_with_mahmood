@@ -303,7 +303,7 @@ def generate_and_capture_endthink_activations(
 
         try:
             with torch.no_grad():
-                model_base.model(input_ids=truncated_ids.to(input_device))
+                model_base.base_model(input_ids=truncated_ids.to(input_device))
         finally:
             for h in hooks:
                 h.remove()

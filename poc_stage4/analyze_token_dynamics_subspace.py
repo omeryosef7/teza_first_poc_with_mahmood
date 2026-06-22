@@ -582,7 +582,7 @@ def run(args: argparse.Namespace) -> None:
         args.model_name_or_path, args.model_family,
         require_cuda=True, log_device_placement=True,
     )
-    model = qwen.model
+    model = qwen.base_model
     n_model_layers = len(_get_model_layers(model))
 
     selected_layers = _resolve_layers(args.layers, model)

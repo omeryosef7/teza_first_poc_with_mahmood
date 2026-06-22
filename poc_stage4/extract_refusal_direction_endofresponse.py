@@ -152,7 +152,7 @@ def capture_endofresponse_activations_from_artifacts(
 
         if len(full_ids) > max_seq_len:
             log_progress(
-                STAGE_NAME, f"Skipping: seq len {len(full_ids)} > max_seq_len {max_seq_len}",
+                STAGE_NAME, f"Skipping: seq_len={len(full_ids)} > max_seq_len={max_seq_len}",
                 enabled=progress_enabled, source=source_path,
             )
             eos_positions.append(None)
@@ -186,7 +186,7 @@ def capture_endofresponse_activations_from_artifacts(
 
         try:
             with torch.no_grad():
-                model_base.model(input_ids=full_tensor.to(input_device), use_cache=False)
+                model_base.base_model(input_ids=full_tensor.to(input_device), use_cache=False)
         finally:
             for h in hooks:
                 h.remove()

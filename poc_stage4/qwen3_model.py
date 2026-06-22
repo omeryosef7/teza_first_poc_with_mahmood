@@ -54,6 +54,20 @@ class Qwen3Model:
         return len(self.layers)
 
     @property
+    def base_model(self) -> Any:
+        """Text decoder without LM head — avoids materializing the logit matrix (seq × vocab).
+        Use this for forward passes that only need intermediate hidden states via hooks."""
+        for attr_path in ("model.language_model", "model"):
+            obj = self.model
+            try:
+                for part in attr_path.split("."):
+                    obj = getattr(obj, part)
+                return obj
+            except AttributeError:
+                continue
+        raise RuntimeError(f"Cannot find base text model in {type(self.model).__name__}")
+
+    @property
     def attn_modules(self) -> list[Any]:
         return [layer.self_attn for layer in self.layers]
 

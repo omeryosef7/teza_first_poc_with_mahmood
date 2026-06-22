@@ -207,6 +207,7 @@ def capture_endthink_activations_from_artifacts(
     endthink_token_ids: list[int],
     group_label: str,
     progress_enabled: bool,
+    max_seq_len: int = 30000,
 ) -> tuple[torch.Tensor, list[int | None], list[str]]:
     """
     For each artifact:
@@ -271,17 +272,17 @@ def capture_endthink_activations_from_artifacts(
             endthink_pos=endthink_pos,
         )
 
-        truncated_ids = torch.tensor(
-            full_ids[: endthink_pos + 1], dtype=torch.long
-        ).unsqueeze(0)
+        raw_ids = full_ids[: endthink_pos + 1]
+        capture_pos = len(raw_ids) - 1  # endthink is the last token
+        truncated_ids = torch.tensor(raw_ids, dtype=torch.long).unsqueeze(0)
 
         layer_cache = torch.zeros((n_layers, d_model), dtype=torch.float32, device="cpu")
         hooks = []
 
-        def _make_hook(li: int):
+        def _make_hook(li: int, pos: int = capture_pos):
             def _hook(module: Any, hook_input: Any) -> None:
                 act = hook_input[0] if isinstance(hook_input, tuple) else hook_input
-                layer_cache[li] = act[0, endthink_pos].detach().float().cpu()
+                layer_cache[li] = act[0, pos].detach().float().cpu()
             return _hook
 
         for li, layer in enumerate(layers):
@@ -289,7 +290,7 @@ def capture_endthink_activations_from_artifacts(
 
         try:
             with torch.no_grad():
-                model_base.model(input_ids=truncated_ids.to(input_device))
+                model_base.base_model(input_ids=truncated_ids.to(input_device))
         finally:
             for h in hooks:
                 h.remove()
