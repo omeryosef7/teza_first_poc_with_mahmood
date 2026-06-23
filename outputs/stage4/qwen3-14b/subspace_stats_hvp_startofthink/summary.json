@@ -1,15 +1,67 @@
 {
   "variant_name": "hvp_startofthink",
   "token_dynamics_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/token_dynamics_subspace_hvp_startofthink",
-  "n_examples": 0,
-  "n_complied": 0,
-  "n_refused": 0,
-  "focus_layers": [
-    -1
-  ],
+  "n_examples": 220,
+  "n_complied": 113,
+  "n_refused": 107,
+  "focus_layers": "all",
   "n_bins": 10,
-  "auc_table_top5": [],
-  "best_auc": null,
+  "auc_table_top5": [
+    {
+      "layer": 19,
+      "subspace_rank": 2,
+      "n_complied": 108,
+      "n_refused": 91,
+      "auc_raw": 0.2791,
+      "auc": 0.7209,
+      "p_value": 0.0
+    },
+    {
+      "layer": 1,
+      "subspace_rank": 3,
+      "n_complied": 108,
+      "n_refused": 91,
+      "auc_raw": 0.7163,
+      "auc": 0.7163,
+      "p_value": 0.0
+    },
+    {
+      "layer": 1,
+      "subspace_rank": 2,
+      "n_complied": 108,
+      "n_refused": 91,
+      "auc_raw": 0.2839,
+      "auc": 0.7161,
+      "p_value": 0.0
+    },
+    {
+      "layer": 18,
+      "subspace_rank": 2,
+      "n_complied": 108,
+      "n_refused": 91,
+      "auc_raw": 0.2849,
+      "auc": 0.7151,
+      "p_value": 0.0
+    },
+    {
+      "layer": 2,
+      "subspace_rank": 1,
+      "n_complied": 108,
+      "n_refused": 91,
+      "auc_raw": 0.2889,
+      "auc": 0.7111,
+      "p_value": 0.0
+    }
+  ],
+  "best_auc": {
+    "layer": 19,
+    "subspace_rank": 2,
+    "n_complied": 108,
+    "n_refused": 91,
+    "auc_raw": 0.2791,
+    "auc": 0.7209,
+    "p_value": 0.0
+  },
   "manifest_subspace_k": 5,
   "manifest_subspace_directions": [
     {

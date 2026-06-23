@@ -10,7 +10,7 @@
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602,n-302,n-303,n-304,n-305
+#SBATCH --exclude=n-601,n-602,n-301
 
 # Stage 4 subspace dynamics statistical analysis — CPU-only.
 # Runs analyze_subspace_dynamics_stats.py on the output of

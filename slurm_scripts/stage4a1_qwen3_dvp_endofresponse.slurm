@@ -6,12 +6,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
-#SBATCH --gpus=2
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,n-601,n-602
+#SBATCH --gpus=1
+#SBATCH --nodelist=n-801,n-802,n-803,n-805
 
 # Stage 4A1 ptype_vs_puzzle (Qwen3-14B): direct_harm vs puzzle at endofresponse.
 # Contrast: mean(puzzle_at_EOS) − mean(direct_harm_at_EOS)

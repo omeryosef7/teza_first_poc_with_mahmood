@@ -153,12 +153,19 @@ def load_qwen3_model(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    # Use bfloat16 (model native dtype) with default SDPA dispatch.
+    # On L40S (sm89), SDPA auto-selects FlashAttention2 for bfloat16, handling
+    # 34K-token puzzle traces in O(n) memory. All SLURM scripts pin to L40S nodes
+    # (n-801..n-805) so V100 (sm70, no flash for bf16) is never hit.
+    # Checkpoints are always saved as float32 (.detach().float().cpu()) so dtype
+    # changes across runs do not affect checkpoint compatibility.
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
         device_map="auto",
         trust_remote_code=True,
         cache_dir=cache_dir,
+        attn_implementation="sdpa",
     ).eval()
     model.requires_grad_(False)
 
@@ -208,12 +215,16 @@ def load_gemma4_model(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    # Same bfloat16 + default SDPA as load_qwen3_model(). Gemma4 E4B-it also
+    # loads in bfloat16 natively; FlashAttention2 on L40S handles its head_dim=256
+    # and GQA structure for sequences up to 34K tokens.
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
         device_map="auto",
         trust_remote_code=True,
         cache_dir=cache_dir,
+        attn_implementation="sdpa",
     ).eval()
     model.requires_grad_(False)
 
