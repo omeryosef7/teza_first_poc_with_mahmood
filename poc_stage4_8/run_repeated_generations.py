@@ -36,17 +36,29 @@ from dotenv import load_dotenv
 load_dotenv(_REPO_ROOT / ".env")
 
 from poc_stage4_5 import common
+from poc_stage4.model_family_utils import THINKING_MARKERS_BY_FAMILY
 
 _MANIFEST_PATH = _REPO_ROOT / "outputs" / "stage4_8" / "repeated_generation_manifest.jsonl"
 _OUTPUT_BASE = _REPO_ROOT / "outputs" / "stage4_8" / "runs"
 _MODEL = "Qwen/Qwen3-14B"
 _MODEL_REVISION = "40c069824f4251a91eefaf281ebe4c544efd3e18"
+_GEMMA4_MODEL = "google/gemma-4-E4B-it"
 _DO_SAMPLE = True
 _TEMPERATURE = 0.7
 _TOP_P = 0.95
 _MAX_NEW_TOKENS = 32768
 _SEEDS = [101, 102, 103, 104, 105]
 _CONDITIONS = ["A", "D", "F"]
+
+# Default prompts paths per model family
+_PROMPTS_PATH_BY_FAMILY = {
+    "qwen3": _REPO_ROOT / "outputs" / "stage4_7" / "replication_prompts.jsonl",
+    "gemma4": _REPO_ROOT / "outputs" / "stage4_8_gemma" / "replication_prompts.jsonl",
+}
+_GOAL_JSONL_BY_FAMILY = {
+    "qwen3": _REPO_ROOT / "outputs" / "hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl",
+    "gemma4": _REPO_ROOT / "outputs" / "stage4_8_gemma" / "replication_prompts.jsonl",
+}
 
 
 def _sha256(text: str) -> str:
@@ -94,19 +106,31 @@ def _remove_from_summary(run_id: str, summary_path: Path) -> None:
     summary_path.write_text("\n".join(kept) + ("\n" if kept else ""))
 
 
-def _load_model():
+def _load_model(model_family: str = "qwen3"):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    tok = AutoTokenizer.from_pretrained(
-        _MODEL, revision=_MODEL_REVISION, trust_remote_code=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        _MODEL,
-        revision=_MODEL_REVISION,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
-        trust_remote_code=True,
-    )
+    if model_family == "gemma4":
+        model_name = _GEMMA4_MODEL
+        tok = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype="auto",
+            device_map="auto",
+            attn_implementation="sdpa",
+            trust_remote_code=True,
+        )
+    else:
+        model_name = _MODEL
+        tok = AutoTokenizer.from_pretrained(
+            model_name, revision=_MODEL_REVISION, trust_remote_code=True
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            revision=_MODEL_REVISION,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            trust_remote_code=True,
+        )
     model.eval()
     return tok, model
 
@@ -128,28 +152,38 @@ def _score_strongreject(goal: str, response: str | None) -> dict[str, Any]:
         return {"strongreject_score": None, "strongreject_is_success": None, "strongreject_status": f"error: {exc}"}
 
 
-def _load_goal_map() -> dict[str, str]:
+def _load_goal_map(model_family: str = "qwen3", prompts_path: Path | None = None) -> dict[str, str]:
     """Load goal text for each source_example_id."""
-    s2b_path = _REPO_ROOT / "outputs" / "hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl"
     goal_map: dict[str, str] = {}
-    if s2b_path.exists():
-        with open(s2b_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    r = json.loads(line)
-                    gi = r.get("goal_index")
-                    ai = r.get("attack_iteration")
-                    ci = r.get("conversation_id")
-                    tm = r.get("target_model", "gpt-o4-mini")
-                    eid = f"goal_index={gi}|attack_iteration={ai}|conversation_id={ci}|target_model={tm}"
-                    goal_map[eid] = r.get("goal", "")
+
+    if model_family == "gemma4":
+        # Load goal from Gemma4 replication_prompts.jsonl (has 'goal' field per row)
+        path = prompts_path or _GOAL_JSONL_BY_FAMILY["gemma4"]
+        if path.exists():
+            for r in _load_jsonl(path):
+                eid = r.get("source_example_id") or r.get("_source_example_id", "")
+                if eid and r.get("goal"):
+                    goal_map[eid] = r["goal"]
+    else:
+        s2b_path = _GOAL_JSONL_BY_FAMILY["qwen3"]
+        if s2b_path.exists():
+            with open(s2b_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        r = json.loads(line)
+                        gi = r.get("goal_index")
+                        ai = r.get("attack_iteration")
+                        ci = r.get("conversation_id")
+                        tm = r.get("target_model", "gpt-o4-mini")
+                        eid = f"goal_index={gi}|attack_iteration={ai}|conversation_id={ci}|target_model={tm}"
+                        goal_map[eid] = r.get("goal", "")
     return goal_map
 
 
-def _load_user_messages() -> dict[tuple[str, str], str]:
-    """Load user_message_text for each (source_example_id, condition) from Stage 4.7 replication_prompts.jsonl."""
-    rep_path = _REPO_ROOT / "outputs" / "stage4_7" / "replication_prompts.jsonl"
+def _load_user_messages(prompts_path: Path | None = None) -> dict[tuple[str, str], str]:
+    """Load user_message_text for each (source_example_id, condition)."""
+    rep_path = prompts_path or (_REPO_ROOT / "outputs" / "stage4_7" / "replication_prompts.jsonl")
     msg_map: dict[tuple[str, str], str] = {}
     if rep_path.exists():
         for r in _load_jsonl(rep_path):
@@ -158,7 +192,36 @@ def _load_user_messages() -> dict[tuple[str, str], str]:
     return msg_map
 
 
-def _run_qwen_with_sampling(
+def _parse_gemma4_thinking(generation_text: str) -> tuple[str | None, str | None, str]:
+    """Parse Gemma4 thinking channel from generated text.
+
+    Returns (think_text, final_text, segmentation_status).
+    """
+    start_marker = THINKING_MARKERS_BY_FAMILY["gemma4"]["start"]
+    end_marker = THINKING_MARKERS_BY_FAMILY["gemma4"]["end"]
+    start_idx = generation_text.find(start_marker)
+    end_idx = generation_text.find(end_marker)
+    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        think_text = generation_text[start_idx + len(start_marker):end_idx]
+        final_text = generation_text[end_idx + len(end_marker):].strip()
+        return think_text, final_text, "parsed_from_thought_channel"
+    elif start_marker in generation_text:
+        return generation_text[generation_text.find(start_marker):], None, "thought_channel_unclosed"
+    else:
+        return None, generation_text, "no_thought_channel"
+
+
+def _get_effective_eos_ids(model: Any, tokenizer: Any) -> list[int]:
+    """Return EOS token IDs from generation_config (Gemma4) or tokenizer fallback."""
+    eos = getattr(getattr(model, "generation_config", None), "eos_token_id", None)
+    if eos is None:
+        eos = tokenizer.eos_token_id
+    if isinstance(eos, int):
+        return [eos]
+    return list(eos)
+
+
+def _run_generation(
     tokenizer: Any,
     model: Any,
     prompt_text: str,
@@ -167,28 +230,38 @@ def _run_qwen_with_sampling(
     max_new_tokens: int,
     temperature: float,
     top_p: float,
+    model_family: str = "qwen3",
 ):
-    """Run Qwen3 inference with full sampling kwargs. Returns QwenGenerationResult."""
+    """Run inference with full sampling kwargs. Returns QwenGenerationResult."""
     import torch
     import transformers
     from poc_stage2b.runner import QwenGenerationResult, _parse_think_tags, _finish_reason
 
-    # Seed everything
     torch.manual_seed(seed)
     try:
         transformers.set_seed(seed)
     except Exception:
         pass
 
-    formatted_prompt: str = tokenizer.apply_chat_template(
-        [{"role": "user", "content": prompt_text}],
-        tokenize=False,
-        add_generation_prompt=True,
-        enable_thinking=enable_thinking,
-    )
+    try:
+        formatted_prompt: str = tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt_text}],
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=enable_thinking,
+        )
+    except TypeError:
+        formatted_prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt_text}],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+
     inputs = tokenizer(formatted_prompt, return_tensors="pt", add_special_tokens=False)
     device = next(model.parameters()).device
     inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    eos_ids = _get_effective_eos_ids(model, tokenizer)
 
     generation_kwargs: dict[str, Any] = {
         "max_new_tokens": max_new_tokens,
@@ -196,8 +269,8 @@ def _run_qwen_with_sampling(
         "temperature": temperature,
         "top_p": top_p,
         "return_dict_in_generate": True,
-        "eos_token_id": tokenizer.eos_token_id,
-        "pad_token_id": tokenizer.pad_token_id,
+        "eos_token_id": eos_ids,
+        "pad_token_id": tokenizer.pad_token_id or eos_ids[0],
     }
     with torch.inference_mode():
         generated = model.generate(**inputs, **generation_kwargs)
@@ -207,7 +280,11 @@ def _run_qwen_with_sampling(
     input_token_ids = full_ids[:prompt_len]
     generation_token_ids = full_ids[prompt_len:]
     generation_text: str = tokenizer.decode(generation_token_ids, skip_special_tokens=False)
-    think_text, final_text, seg_status = _parse_think_tags(generation_text)
+
+    if model_family == "gemma4":
+        think_text, final_text, seg_status = _parse_gemma4_thinking(generation_text)
+    else:
+        think_text, final_text, seg_status = _parse_think_tags(generation_text)
 
     think_num = 0
     final_num = 0
@@ -222,7 +299,11 @@ def _run_qwen_with_sampling(
         except Exception:
             pass
 
-    finish_reason = _finish_reason(generation_token_ids, eos_token_id=tokenizer.eos_token_id, max_new_tokens=max_new_tokens)
+    finish_reason = _finish_reason(
+        generation_token_ids,
+        eos_token_id=eos_ids[0],
+        max_new_tokens=max_new_tokens,
+    )
 
     return QwenGenerationResult(
         input_text=formatted_prompt,
@@ -240,6 +321,13 @@ def _run_qwen_with_sampling(
     )
 
 
+# Keep old name as alias for backward compatibility
+def _run_qwen_with_sampling(tokenizer, model, prompt_text, enable_thinking, seed,
+                             max_new_tokens, temperature, top_p):
+    return _run_generation(tokenizer, model, prompt_text, enable_thinking, seed,
+                           max_new_tokens, temperature, top_p, model_family="qwen3")
+
+
 def run_single(
     row: dict,
     tokenizer: Any,
@@ -249,6 +337,7 @@ def run_single(
     user_message: str,
     skip_judge: bool = True,
     max_new_tokens: int = _MAX_NEW_TOKENS,
+    model_family: str = "qwen3",
 ) -> dict:
     run_id = row["run_id"]
     source_example_id = row["source_example_id"]
@@ -262,11 +351,12 @@ def run_single(
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
 
     t0 = time.time()
-    result = _run_qwen_with_sampling(
+    result = _run_generation(
         tokenizer=tokenizer,
         model=model,
         prompt_text=user_message,
         enable_thinking=enable_thinking,
+        model_family=model_family,
         seed=seed,
         max_new_tokens=max_new_tokens,
         temperature=_TEMPERATURE,
@@ -375,6 +465,8 @@ def run_repeated(
     dry_run: bool,
     max_new_tokens: int,
     force: bool,
+    model_family: str = "qwen3",
+    prompts_path: Path | None = None,
 ) -> None:
     logging.basicConfig(
         level=logging.INFO,
@@ -422,16 +514,18 @@ def run_repeated(
     log.info(f"Processing {len(rows)} rows (smoke={smoke} force={force} dry_run={dry_run})")
 
     # Load lookups
-    goal_map = _load_goal_map()
-    msg_map = _load_user_messages()
+    effective_prompts_path = prompts_path or _PROMPTS_PATH_BY_FAMILY.get(model_family)
+    goal_map = _load_goal_map(model_family=model_family, prompts_path=effective_prompts_path)
+    msg_map = _load_user_messages(prompts_path=effective_prompts_path)
 
     if dry_run:
         for r in rows:
             log.info(f"[DRY RUN] {r['run_id']} cond={r['condition']} seed={r['seed']}")
         return
 
-    log.info(f"Loading model {_MODEL} ...")
-    tokenizer, model = _load_model()
+    model_name = _GEMMA4_MODEL if model_family == "gemma4" else _MODEL
+    log.info(f"Loading model {model_name} (family={model_family}) ...")
+    tokenizer, model = _load_model(model_family=model_family)
     log.info("Model loaded.")
 
     n_done = n_skipped = n_failed = 0
@@ -452,8 +546,8 @@ def run_repeated(
 
         source_id = row.get("source_example_id", "")
         condition = row.get("condition", "")
-        goal = goal_map.get(source_id, "")
-        user_message = msg_map.get((source_id, condition), "")
+        goal = goal_map.get(source_id, "") or row.get("goal", "")
+        user_message = msg_map.get((source_id, condition), "") or row.get("user_message_text", "")
         if not user_message:
             log.error(f"Missing user_message for {source_id} cond={condition}")
             n_failed += 1
@@ -474,6 +568,7 @@ def run_repeated(
                 user_message=user_message,
                 skip_judge=skip_judge,
                 max_new_tokens=max_new_tokens,
+                model_family=model_family,
             )
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(summary_row, default=str) + "\n")
@@ -522,6 +617,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--skip-judge", action="store_true", default=True)
     p.add_argument("--dry-run", action="store_true", default=False)
     p.add_argument("--max-new-tokens", type=int, default=_MAX_NEW_TOKENS)
+    p.add_argument("--model-family", choices=["qwen3", "gemma4"], default="qwen3",
+                   help="Model family to run. Default: qwen3")
+    p.add_argument("--prompts-path", type=Path, default=None,
+                   help="Path to replication_prompts.jsonl (default: auto by model-family)")
     return p.parse_args(argv)
 
 
@@ -531,11 +630,18 @@ def main(argv: list[str] | None = None) -> int:
     goals = [int(g.strip()) for g in args.goals.split(",")] if args.goals else None
     seeds = [int(s.strip()) for s in args.seeds.split(",")] if args.seeds else None
 
+    model_family = args.model_family
+    output_base = (
+        _REPO_ROOT / "outputs" / "stage4_8_gemma" / "runs"
+        if model_family == "gemma4"
+        else _OUTPUT_BASE
+    )
+
     if args.output_dir:
         output_dir = args.output_dir
     else:
         ts = common.utc_now().replace(":", "").replace("-", "").replace("+", "").replace("T", "_")[:15]
-        output_dir = _OUTPUT_BASE / f"run_{ts}"
+        output_dir = output_base / f"run_{ts}"
 
     run_repeated(
         manifest_path=args.manifest,
@@ -548,6 +654,8 @@ def main(argv: list[str] | None = None) -> int:
         dry_run=args.dry_run,
         max_new_tokens=args.max_new_tokens,
         force=args.force,
+        model_family=model_family,
+        prompts_path=args.prompts_path,
     )
     return 0
 
