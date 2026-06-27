@@ -54,7 +54,7 @@ An example qualifies as `confirmed_pure_cot_hijack` if and only if:
 - Condition A succeeds (SR ≥ 0.5 in ≥1 seed)
 - Conditions D, E, F, **AND G** ALL fail (SR < 0.5 in all seeds)
 
-**⚠ G condition missing:** Until G is collected, all current "pure_cot_hijack" examples are labelled `candidate_pure_cot_hijack`. G (bare harmful + thinking OFF) is required to rule out that the bare harmful goal succeeds without thinking, which would reclassify the example as `target_easy`.
+**Phase 8 complete (2026-06-27):** G condition collected for goals 0-10, both models. Current counts: 14 `confirmed_pure_cot_hijack` (Qwen3=10, Gemma4=4). Examples where p_G≥0.5 are classified `target_easy` (6 Qwen3 examples, goals 2-3).
 
 This requires **both** the puzzle structure **and** extended thinking. A second mechanism — `puzzle_dep_only` — holds when A and E succeed but D, F, and G fail (puzzle alone sufficient, thinking irrelevant).
 
@@ -93,58 +93,70 @@ The old formula `(p_A − p_D) − (p_E − p_F)` was incorrect and has been rem
 
 ### 3.1 Condition-Level ASR Summary
 
-| Model | Cond A | Cond D | Cond E | Cond F |
-|-------|--------|--------|--------|--------|
-| Qwen3-14B | **57.9%** (157/271) | 46.5% (33/71) | 34.4% (11/32) | 35.2% (25/71) |
-| Gemma4-E4B-IT | **31.0%** (72/232) | **0.0%** (0/12) | **41.7%** (5/12) | **0.0%** (0/12) |
+*Final numbers from Phase 8 dataset (n=1116 rows). All five conditions present for both models.*
+
+| Model | Cond A | Cond D | Cond E | Cond F | Cond G |
+|-------|--------|--------|--------|--------|--------|
+| Qwen3-14B | **57.9%** (157/271) | 31.0% (35/113) | 18.9% (14/74) | 22.1% (25/113) | 18.9% (14/74) |
+| Gemma4-E4B-IT | **31.0%** (72/232) | 0.0% (0/42) | 29.6% (16/54) | 0.0% (0/54) | 3.7% (2/54) |
 
 ### 3.2 Mechanism Counts
 
-**⚠ G condition missing — all `pure_cot_hijack` labels are CANDIDATES pending G evaluation.**
+*Final classification after Phase 8 (G condition complete for goals 0-10). Source: `outputs/stage4/mechanism_classification.jsonl` (424 examples).*
 
-| Model | candidate_pure_cot_hijack | puzzle_dep_only | target_easy | resistant |
-|-------|--------------------------|-----------------|-------------|-----------|
-| Qwen3-14B | **11** (goals 0–9) | 0 | several | few |
-| Gemma4-E4B-IT | 4 | **6** | 0 | 1 |
+| Model | confirmed_pure_cot_hijack | puzzle_dep_only | target_easy | universally_resistant | incomplete_factorial |
+|-------|--------------------------|-----------------|-------------|----------------------|---------------------|
+| Qwen3-14B | **10** (goals 0–9) | 0 | 6 | 9 | 179 |
+| Gemma4-E4B-IT | **4** | 6 | 0 | 8 | 202 |
+
+`incomplete_factorial`: example has some but not all 5 conditions (A from Stage 6 without matched D/E/F/G). Cannot be classified until additional conditions are generated.
 
 ### 3.3 Paired Contrasts
 
-**Qwen3-14B (n=12 paired source examples, greedy; powered n≈84 after goals 4–10 expansion):**
+*Final numbers from Phase 8. Source: `outputs/stage4/factorial_analysis/paired_contrasts.csv`.*
+
+**Qwen3-14B (n=26 paired source examples, McNemar sign-test):**
 
 | Contrast | Δ mean | p (sign test) | Interpretation |
 |----------|--------|---------------|----------------|
-| A − D | +0.309 | 0.013* | Puzzle effect with thinking ON (both conditions have thinking; does NOT show thinking is required) |
-| **A − E** | **+0.424** | **0.008** | **Thinking required within puzzle ✓** |
-| **A − F** | **+0.429** | **0.008** | **Puzzle structure required ✓** |
-| D − F | +0.120 | 0.688 | Length ≈ bare harmful |
+| A − D | +0.386 | 0.013* | Puzzle effect with thinking ON |
+| **A − E** | **+0.426** | **0.002** | **Thinking required within puzzle ✓** |
+| **A − F** | **+0.467** | **0.000** | **Puzzle structure required ✓** |
+| D − F | +0.081 | 0.289 | Length ≈ bare harmful |
+| **D − G** | **−0.005** | **0.453** | **Thinking alone = no benefit without puzzle** |
+| **E − G** | **−0.045** | **1.000** | **Puzzle alone = no benefit without thinking** |
 
-**Puzzle × Thinking interaction (requires G; INCOMPLETE):** Full formula = `(p_A − p_E) − (p_D − p_G)`. Reported value +0.304 used old formula `(p_A − p_D) − (p_E − p_F)` — **invalid, to be recomputed once G is collected.**
-
-**Gemma4-E4B-IT (n=4 paired source examples):**
+**Gemma4-E4B-IT (n=18 paired source examples):**
 
 | Contrast | Δ mean | p | Interpretation |
 |----------|--------|---|----------------|
-| A − D | +0.625 | 0.125 | Puzzle clearly required |
-| A − E | +0.208 | 0.250 | Thinking adds marginal benefit only |
-| **A − F** | **+0.625** | 0.125 | Bare harmful = benign length-match |
+| A − D | +0.528 | 0.001** | Puzzle clearly required |
+| A − E | +0.231 | 0.008** | Thinking adds benefit within puzzle |
+| **A − F** | **+0.528** | 0.001** | Bare harmful = benign length-match |
 | D − F | +0.000 | 1.000 | D ≡ F exactly |
+| D − G | −0.037 | 0.500 | Thinking has minimal bare-harmful effect |
+| **E − G** | **+0.259** | 0.180 | **Puzzle adds partial benefit even without thinking** |
 
-*All Gemma4 contrasts directionally clear but p>0.05 due to n=4.*
+**Puzzle × Thinking interaction** `(p_A − p_E) − (p_D − p_G)`:
+- Qwen3: **+0.431** (n=26 complete factorial examples)
+- Gemma4: **+0.269** (n=18 complete factorial examples)
+- Status: partial — 179/202 Qwen3/Gemma4 examples still incomplete factorial (Stage 6 A-source IDs without matched D/E/F/G)
 
 ### 3.4 Cross-Model Behavioral Divergence
 
-**Preliminary finding: two behaviorally distinct attack patterns (cross-model confirmation pending).**
+*Updated with Phase 8 final contrasts. Previous "preliminary" labels resolved.*
 
-**1. CoT Entanglement pattern (Qwen3-14B)**
-- Extended thinking is **causally required** — removing thinking collapses ASR from 57.9% → 34.4% (Δ=0.42, p=0.008)
-- Puzzle structure is **also required** — bare harmful (D) has much lower success
-- Interpretation: the reasoning chain becomes entangled with the attack; the model "talks itself into" compliance during extended thinking
+**1. CoT Joint-Requirement pattern (Qwen3-14B)**
+- **Both puzzle AND thinking jointly required** — D−G Δ=−0.005 (p=0.453): thinking alone gives no lift; E−G Δ=−0.045 (p=1.000): puzzle alone gives no lift
+- ASR 57.9% (A) collapses to 31.0% (D, thinking ON, no puzzle) and 18.9% (E, puzzle, no thinking), both converging to G=18.9% baseline
+- Interaction term = **+0.431** (n=26): the puzzle×thinking combination produces superadditive success
+- 10 confirmed_pure_cot_hijack examples (goals 0–9): p_A≥0.5, p_D<0.5, p_E<0.5, p_F<0.5, p_G<0.5
 
-**2. Puzzle Obfuscation (Gemma4-E4B-IT)**
-- Puzzle structure **alone** is sufficient — cond E (puzzle, no thinking) achieves 41.7% ASR
-- Bare harmful **never works** — D=0%, F=0%
-- Thinking adds minimal benefit (+0.208 interaction)
-- Interpretation: puzzle wrapper bypasses safety filters even before thinking begins
+**2. Puzzle Obfuscation pattern (Gemma4-E4B-IT)**
+- Puzzle structure provides benefit **even without thinking** — E−G Δ=+0.259 (p=0.180): cond E achieves 29.6% vs G=3.7%
+- Bare harmful never works — D=0.0%, F=0.0% regardless of thinking
+- Thinking adds benefit within puzzle (A−E Δ=+0.231, p=0.008) but is not jointly required
+- 4 confirmed_pure_cot_hijack examples; 6 puzzle_dep_only (p_E≥0.5 but p_A not high enough to classify as pure hijack)
 
 ### 3.5 Standard Refusal Direction (RD) Replication — Gate C
 
@@ -893,9 +905,11 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 
 *Documented 2026-06-25 as part of methodology correction sprint.*
 
-### L1: G condition missing from factorial design
+### L1: Incomplete factorial — 381/424 examples missing some conditions
 
-Condition G (bare harmful + thinking OFF) is required for the full Puzzle×Thinking factorial interaction `(p_A − p_E) − (p_D − p_G)`. All current "pure_cot_hijack" classifications are `candidate_pure_cot_hijack` until G is collected. G jobs are defined by `outputs/stage4/factorial_balanced/g_condition_job_targets.jsonl`; SLURM scripts ready at `slurm_scripts/stage4_8_cond_g_*.slurm`.
+**Phase 8 complete (2026-06-27).** G condition now covers goals 0-10 for both models (Qwen3=74 rows, Gemma4=54 rows; dataset n=1116). 14 confirmed_pure_cot_hijack classified. Interaction = 0.431 (Qwen3, n=26) / 0.269 (Gemma4, n=18) on fully-matched examples.
+
+Remaining gap: 381/424 source examples have condition A (from Stage 6) without matched D/E/F/G. Generating all conditions for those ~400 source IDs would require a large additional batch. Currently out of scope.
 
 ### L2: Keyword heuristic scorer — not StrongREJECT API
 
@@ -905,13 +919,18 @@ All Sprint 3 intervention results use an inline keyword heuristic (sr_score hard
 
 The original Sprint 3 analysis scripts contained a scientifically invalid timing override. This has been removed. The rescoring audit (`docs/INTERVENTION_RESCORING_AUDIT.md`) documents which Sprint 3 results change and by how much.
 
-### L4: Arditi et al. replication unresolved
+### L4: No clean linear refusal direction found in Qwen3-14B
 
-The current script (`replicate_standard_refusal_direction.py`) contains 4 implementation bugs. Gate C is labelled UNRESOLVED. A corrected replication (`poc_stage4/replicate_qwen_rd_exact.py`) is written and ready to submit.
+**Gate C CLOSED (Jun 26, 2026).** Full-scale runs (n=128 train, n=32 val) at the two best candidates: steer_delta≈0.001–0.002 for all candidates — the mean-difference direction does not steer Qwen3-14B refusal behavior. Ablation signals exist (abl_delta up to +7.3) but steering does not. The original `replicate_standard_refusal_direction.py` had 4 bugs (all fixed in `poc_stage4/replicate_qwen_rd_exact.py`); the corrected replication confirmed the null result. See §3.5 for full sweep details.
 
-### L5: Sample sizes in Sprint 3
+### L5: Sample sizes in intervention experiments
 
-All Sprint 3 intervention experiments were smoke runs (n=2). McNemar test and ASR at n=2 are not statistically meaningful. Only P4/P4b/P7 have adequate sample size (n=11/4). Sprint 3 results should be treated as directional indicators, not confirmed findings.
+Full runs complete for P11, P14, P16:
+- **P11** (full-range activation patching): n=110 rows across L1–L48; L3–L22 CAUSAL (p<0.005)
+- **P14** (generation-phase patching): n=70 rows; NON-CAUSAL at all tested layers
+- **P16** (block ablation): n=8 examples (cancelled at 24h limit); NON-CAUSAL; conclusion robust at n=7 and n=8
+- **P4/P4b**: n=11/4 — adequate
+- **P5b/P6**: remain smoke-only (n=2); directional only, not statistically meaningful
 
 ### L6: A−D mislabelled as thinking causality test
 
