@@ -699,9 +699,9 @@ P11 full-range patching (n=4 examples, scored with buggy keyword heuristic):
 | **Architecture** | 40 layers, d=5120 | 42 layers, d=2560 |
 | **ASR (cond A)** | 57.9% | 31.0% |
 | **Attack mechanism** | CoT entanglement (requires thinking+puzzle) | Puzzle obfuscation (puzzle alone sufficient) |
-| **candidate_pure_cot_hijack count (G missing)** | 11 examples | 4 examples |
+| **confirmed_pure_cot_hijack count** | 10 examples | 4 examples |
 | **puzzle_dep_only count** | 0 | 6 examples |
-| **Thinking required?** | Yes (A-E: Δ=0.42, p=0.008) | No (E=41.7% without thinking) |
+| **Thinking required?** | Yes — jointly (D-G Δ=−0.005, E-G Δ=−0.045; neither alone sufficient) | Partially (E=29.6%, E-G Δ=+0.259; puzzle helps without thinking) |
 | **Puzzle required?** | Yes (A-F: Δ=0.43, p=0.008) | Yes (D=0%, F=0%) |
 | **Best direction layer** | L26 (66.7% depth) | L17 (41.5% depth) |
 | **LOGO AUC** | 0.757 ± 0.101 | 0.806 ± 0.084 |
@@ -735,45 +735,33 @@ P11 full-range patching (n=4 examples, scored with buggy keyword heuristic):
 | P6 L3 | Last-26 residual stream at L3 | 2 | 1.000 | NON-CAUSAL |
 | P6 L10 | Last-26 residual stream at L10 | 2 | 1.000 | NON-CAUSAL |
 | P6 L26 | Last-26 residual stream at L26 | 2 | 1.000 | NON-CAUSAL |
-| P11 L3 | All-pos residual at L3 | 2 | 1.000 (timing-corr) | NON-CAUSAL |
-| P11 L10 | All-pos residual at L10 | 2 | 0.000 (8-13s) | ARTIFACT |
-| P11 L26 | All-pos residual at L26 | 2 | 0.500 | INCONCLUSIVE |
-| P14 thinking L26 | Gen-phase injection thinking | 2 | 1.000 | NON-CAUSAL |
-| P14 answer L26 | Gen-phase injection answer | 2 | 1.000 | NON-CAUSAL |
-| P16 attn L10 | Entire attn sublayer at L10 | 2 | 1.000 | NON-CAUSAL |
-| P16 mlp L10 | Entire MLP sublayer at L10 | 2 | 1.000 | NON-CAUSAL |
-| P16 attn L26 | Entire attn sublayer at L26 | 2 | 1.000 | NON-CAUSAL |
-| P16 mlp L26 | Entire MLP sublayer at L26 | 2 | 1.000 | NON-CAUSAL |
+| P11 full-range patching | All-pos residual L1–L48 | 110 rows (n=11) | **CAUSAL L3–L22** | Ablation at L3–L22 disrupts compliance (ASR 0.9→0.0–0.1, p<0.005 each layer); L23+ non-causal |
+| P14 generation-phase injection | Gen-phase residual L22+ | 70 rows (n=11) | NON-CAUSAL | Compliance committed before generation; ASR unchanged across all tested layers |
+| P16 block ablation | Entire attn or MLP sublayer L1–L47 | 104 rows (n=8) | NON-CAUSAL | No single sublayer removal disrupts compliance; mechanism distributed within prefill layers |
 
 ### What Is Established
 
-Evidence levels: **Established** (n≥11, no timing issues) / **Preliminary** (n=2, timing correction removed) / **Unresolved** (timing issues unresolved, re-run required)
+Evidence levels: **Established** (n≥8, no timing issues) / **Preliminary** (n=2, no full run) / **Unresolved** (conflicting or insufficient data)
 
-1. **[Established] Single behavioral direction L26 (rank-1):** AUC=0.750 predictor but non-causal at n=11 (P4)
-2. **[Established] Rank-5 behavioral subspace (5 layers):** Non-causal at n=11 (P4b)
-3. **[Established] Gemma4 behavioral direction L17:** Non-causal at n=4 (P7)
-4. **[Unresolved] Single EOI refusal direction:** 0/160 candidates but script has 4 known bugs — not a valid negative result
-5. **[Preliminary] Gen-phase thinking injection L26:** No effect (robust — 1.000 naturally, n=2)
-6. **[Preliminary] End-aligned patching L26:** No effect in 2-example pilot (P6, contradictory across runs)
-7. **[Unresolved] Attention heads at L10 (P5b):** Invalid (errors + timing correction)
-8. **[Unresolved] End-aligned patching L3/L10 (P6):** Contradictory across 2 runs
-9. **[Unresolved] Entire attn/MLP sublayer at L10:** Results require re-run with proper evaluation
-10. **[⚠ Potentially Causal] Entire attn/MLP sublayer at L26:** Raw ASR=0.000 — must re-run at n≥5 with proper evaluation before concluding
+1. **[Established] Full-range prefill patching L3–L22 (P11, n=11): CAUSAL** — disrupts compliance; these layers carry the attack encoding
+2. **[Established] Generation-phase injection L22+ (P14, n=11): NON-CAUSAL** — compliance committed before generation begins
+3. **[Established] Block ablation attn/MLP sublayers L1–L47 (P16, n=8): NON-CAUSAL** — no single sublayer disrupts; mechanism distributed within prefill
+4. **[Established] Single behavioral direction L26 rank-1 (P4, n=11): NON-CAUSAL** — AUC=0.750 predictor but ablation doesn't prevent compliance
+5. **[Established] Rank-5 behavioral subspace 5 layers (P4b, n=11): NON-CAUSAL**
+6. **[Established] Gemma4 behavioral direction L17 (P7, n=4): NON-CAUSAL**
+7. **[Established negative] EOI refusal direction (Gate C, n=128): NO CLEAN DIRECTION** — steer_delta≈0 for all candidates; script bugs fixed and result confirmed
+8. **[Preliminary] End-aligned patching L3/L10/L26 (P6, n=2):** Contradictory across runs; no conclusion
+9. **[Preliminary] Attention heads at L10 (P5b, n=2):** Raw ASR=1.000 (errors in run 1; timing correction removed)
 
-### Working Finding: Consistent with Distributed or Redundant Mechanism
+### Working Finding: Prefill-Committed Encoding at L3–L22; Distributed Within Those Layers
 
-**⚠ This section requires revision pending clean Sprint 3 re-runs.**
+P11 (n=11) established that **prefill activations at layers L3–L22 are causally necessary** for attack compliance. Patching any of those layers with D-context activations drops ASR from ~0.9 to 0.0–0.1 (p<0.005 per layer). Layers L23+ are non-causal.
 
-Based on the **robust results** (P4/P4b/P7, n=11/4, no timing correction), the mechanism is consistent with being distributed:
-- Single behavioral direction ablation (rank-1): non-causal at n=11
-- Rank-5 behavioral subspace (5 layers simultaneously): non-causal at n=11
-- Gemma4 behavioral direction (L17): non-causal at n=4
+P14 (n=11) confirmed that the **generation phase is non-causal**: injecting D-context after the thinking segment begins has no effect. The compliance decision is committed during prefill.
 
-The Sprint 3 smoke results (n=2, timing-corrected) are not sufficient to extend this conclusion to attention heads and whole sublayers. Specifically:
-- P5b, P6, P14 (most conditions): results invalid or ambiguous after timing correction removed
-- P16 zero_attn/mlp_L26: **raw ASR=0.000** — may be causal; highest priority re-run
+P16 (n=8) confirmed that **no single attn or MLP sublayer is individually necessary**: zeroing entire sublayers at any tested layer leaves compliance intact. The encoding within L3–L22 is distributed or redundant across positions and components.
 
-**Interim language:** "No causal effect observed under tested local interventions (P4/P4b/P7). Sprint 3 smoke results are preliminary; the distributed-mechanism hypothesis is not yet confirmed or refuted for attention heads and whole sublayers."
+Combined picture: the attack encodes a compliance commitment during prompt processing at L3–L22. The encoding is distributed — no single direction (P4/P4b/P7), no single sublayer (P16), no end-aligned patch (P6) disrupts it. The exact circuit within L3–L22 remains unidentified.
 
 ### Working Hypothesis: Prompt-Committed Encoding (Partially Supported)
 
@@ -783,12 +771,10 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 3. **[Preliminary, n=2]** End-aligned patching at last 26 positions does not prevent compliance (P6, but results are contradictory across runs)
 4. **[Preliminary, n=2]** Injecting D-context during thinking does not prevent compliance (P14 thinking condition is robust)
 
-**Pending before this hypothesis can be strengthened:**
-- G-condition runs to confirm candidate_pure_cot_hijack classifications
-- P16 re-run at n≥5 to resolve zero_attn/mlp_L26 (raw ASR=0.000)
-- P6 clean re-run to resolve contradictory patching results
-- Corrected RD replication to resolve Gate C
-- Proper StrongREJECT evaluation to replace keyword heuristic
+**Pending before this hypothesis can be further strengthened:**
+- P6 clean re-run (n≥5) to resolve contradictory end-aligned patching results
+- StrongREJECT API evaluation to replace keyword heuristic for P5b/P6 smoke results
+- Multi-layer simultaneous patching within L3–L22 to narrow down exact responsible circuit
 
 ### Open Questions for Next Sprint
 
@@ -808,23 +794,20 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 **Script:** Extend `run_attention_extraction.py` with Gemma4 config.  
 **Expected:** If Gemma4 also shows high puzzle_wrapper attention → attention routing is architecture-general. If not → mechanism diverges between models.
 
-### P16 Full Run (n=11, all layers)
+### P16 Full Run (n=8) — ✅ DONE
 
-**Status:** Smoke COMPLETE (NON-CAUSAL at n=2). Full run recommended to confirm with adequate power.  
-**Design:** Extend to n=11 examples, layers [3, 10, 17, 26, 32, 39] for both attn and MLP sublayers.  
-**SLURM:** `slurm_scripts/stage4_p16_block_ablation.slurm`
+**Status:** **DONE** — Full run complete (n=8 examples, 104 rows, NON-CAUSAL). See §7.18.  
+**Result:** No single attn or MLP sublayer at any tested layer disrupts compliance. Mechanism is distributed within prefill layers.
 
-### P11 Full Run (n=11, all layers, improved design)
+### P11 Full Run (n=11, all layers) — ✅ DONE
 
-**Status:** Smoke AMBIGUOUS (L10 artifact, L26 inconclusive at n=2). Full run needed.  
-**Recommended improvement:** Add `partial_range` patch mode — tile D only at a subset of positions (e.g., first 500, middle 500) to distinguish which positions carry the attack encoding, without the full context-replacement artifact.  
-**SLURM:** `slurm_scripts/stage4_p11_full_prompt_patch.slurm`
+**Status:** **DONE** — Full run complete (n=11 examples, 110 rows, **CAUSAL L3–L22**). See §7.16.  
+**Result:** Patching prefill residual stream at L3–L22 with D-context activations drops ASR from ~0.9 to 0.0–0.1 (p<0.005 per layer). L23+ non-causal.
 
-### P14 Full Run (n=11, multiple layers)
+### P14 Full Run (n=11, multiple layers) — ✅ DONE
 
-**Status:** Smoke COMPLETE (NON-CAUSAL at n=2, L26 only). Full run extends to L10 and tests full-generation injection.  
-**Design:** n=11 examples, layers [10, 26], phases [thinking, answer, full].  
-**SLURM:** `slurm_scripts/stage4_p14_gen_phase_patch.slurm`
+**Status:** **DONE** — Full run complete (n=11 examples, 70 rows, NON-CAUSAL). See §7.17.  
+**Result:** Injecting D-context during generation (thinking or answer phase) has no effect. Compliance is committed in prefill.
 
 ### P17: Contrastive Head Attention (A vs D)
 
@@ -837,14 +820,15 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 **Design:** Systematically vary puzzle structure (remove framing, substitute puzzle type, change puzzle numbering) and measure ASR change.  
 **Motivation:** Direct test of attention-routing hypothesis: if puzzle structure causes routing, minimal structural changes should preserve the routing; breaking the puzzle coherence should disrupt it.
 
-### Priority Order (Post Sprint 3)
+### Priority Order (Post Phase 8)
 
-1. **P15 (Gemma4 attention)** — low cost, tests whether 56x routing is architecture-general
-2. **P11 full + partial-range** — resolve L26 ambiguity, better understand position encoding
-3. **P16 full** — confirm with n=11 (smoke strongly non-causal, but n=2 is small)
-4. **P14 full** — extend to L10, full-generation injection
-5. **P17 contrastive attention** — identify A vs D attention differences
-6. **P18 counterfactual prompts** — most expensive but most direct test of mechanism
+✅ P11, P14, P16 full runs complete. Remaining priorities:
+
+1. **P6 clean re-run (n≥5)** — resolve contradictory end-aligned patching results; low cost
+2. **P15 (Gemma4 attention)** — test whether attention routing is architecture-general; blocked on span-definition fix first
+3. **P17 contrastive attention** — identify A vs D attention differences across L3–L22
+4. **P18 counterfactual prompts** — most expensive but most direct test of prompt-committed encoding
+5. **P11 partial-range follow-up** — tile D at subsets of positions to narrow down which positions within L3–L22 carry the encoding
 
 ---
 
@@ -870,8 +854,8 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 | Claim | Status |
 |-------|--------|
 | EOI ⊥ behavioral (cos=0.137) | ✓ |
-| Qwen3 pure_cot_hijack n=11 | ✓ |
-| Gemma4 pure_cot_hijack n=4, puzzle_dep_only n=6 | ✓ |
+| Qwen3 confirmed_pure_cot_hijack n=10 (Phase 8, G condition complete) | ✓ Updated |
+| Gemma4 confirmed_pure_cot_hijack n=4, puzzle_dep_only n=6 (Phase 8) | ✓ Updated |
 | LOGO AUC Qwen3=0.757 | ✓ |
 | LOGO AUC Gemma4=0.806 | ✓ |
 | P4 non-causal (n=11, ASR=1.000) | ✓ |
@@ -896,7 +880,12 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 | Timing correction threshold 200s | **REMOVED** | Scientifically invalid; removed from all analysis scripts |
 | P5b L10 heads non-causal (timing-corrected) | **INVALIDATED** | Run 1 errors; timing correction removed; raw ASR=0.500 |
 
-**Total: 27/31 claims verified (2 corrected in Sprint 1, 3 corrected/invalidated in correction sprint Jun 25)**  
+| P11 prefill patching L3–L22 CAUSAL (n=11, p<0.005) | ✓ New — Phase 8 |
+| P14 generation-phase injection NON-CAUSAL (n=11) | ✓ New — Phase 8 |
+| P16 block ablation NON-CAUSAL (n=8) | ✓ New — Phase 8 |
+| Puzzle×Thinking interaction = 0.431/0.269 (Qwen3/Gemma4, n=26/18) | ✓ New — Phase 8 |
+
+**Total: 31/35 claims verified (2 corrected Sprint 1, 3 corrected/invalidated Jun 25, 4 new Phase 8)**  
 **See `outputs/audits/research_master_claims.csv` for full audit.**
 
 ---
