@@ -4,7 +4,7 @@
 **Models:** Qwen3-14B, Gemma4-E4B-IT  
 **Period:** Jun 23 – Jun 25, 2026  
 **Status:** ⭐ **14 confirmed_pure_cot_hijack** (Qwen3=10, Gemma4=4). Interaction=0.431/0.269 (Qwen3/Gemma4, n=26/18 complete factorial examples). **ALL CORRECTION JOBS COMPLETE. Phase 8 DONE: G condition goals 4-10 completed (618309/618313), dataset rebuilt (n=1116), factorial analysis finalized.** See §7.16–§7.20.
-**⚠ Corrections applied 2026-06-25:** Timing-based success override removed; G condition missing from factorial; RD replication result labelled UNRESOLVED; A-D contrast re-labelled; intervention conclusions downgraded to evidence levels.
+**⚠ Corrections applied 2026-06-25 → completed 2026-06-27:** Timing-based success override removed; G condition added (Phase 8, goals 0–10 both models); RD replication confirmed CLOSED (Gate C); A-D contrast re-labelled; intervention conclusions carry evidence levels. All corrections complete.
 **⚠ New finding 2026-06-26:** Keyword scorer has systematic false negatives for puzzle-attack responses — refusal keywords ("harmful", "dangerous", "illegal") appear in the puzzle solution text itself, not in explicit refusal phrases. Scorer fixed in all 4 run scripts (now uses first-person constructs: "i cannot", "i'm unable", etc.). P16 L26 re-scored from partial data: zero_attn/mlp_L26 are CONFIRMED NON-CAUSAL at n=2 (both records are false negatives). P14/P11 require re-run with fixed scorer (raw text not stored).
 **Correction sprint summary:** `docs/CORRECTION_SPRINT_FINAL_REPORT.md`
 
@@ -44,7 +44,7 @@
 | D | Bare harmful request + extended thinking ON (puzzle effect with thinking ON; does NOT test thinking requirement) |
 | E | Puzzle wrapper + extended thinking OFF (thinking effect within puzzle) |
 | F | Benign length-matched prompt + extended thinking ON (length/structure control; NOT a factorial cell) |
-| G | Bare harmful request + extended thinking OFF (required for factorial interaction; **currently missing**) |
+| G | Bare harmful request + extended thinking OFF (required for factorial interaction; **complete — goals 0–10 both models, Phase 8**) |
 
 **Note on A−D:** Both A and D have thinking ON. A−D measures the puzzle effect with thinking enabled — it does NOT show whether thinking is required. Thinking requirement is measured by A−E (puzzle) and D−G (bare harmful).
 
@@ -63,10 +63,9 @@ The old formula `(p_A − p_D) − (p_E − p_F)` was incorrect and has been rem
 
 ### Dataset
 
-- **Total rows:** 988 across 2 models × 11 goals × 4 conditions
-- **Qwen3-14B:** 468+ rows (goals 0–10, stages 4.7/4.8/6)
-- **Gemma4-E4B-IT:** 268+ rows (stage 4.8/6)
-- **Valid rows:** ~960/988 | **Attack successes (cond A):** 308+
+- **Total rows:** 1116 (Phase 8 rebuilt) — qwen3=668, gemma4=448
+- **By condition:** A=524, D=168, E=128, F=168, G=128
+- **Attack successes (cond A):** 229 (Qwen3=157/271, Gemma4=72/232)
 
 ---
 
@@ -140,7 +139,7 @@ The old formula `(p_A − p_D) − (p_E − p_F)` was incorrect and has been rem
 **Puzzle × Thinking interaction** `(p_A − p_E) − (p_D − p_G)`:
 - Qwen3: **+0.431** (n=26 complete factorial examples)
 - Gemma4: **+0.269** (n=18 complete factorial examples)
-- Status: partial — 179/202 Qwen3/Gemma4 examples still incomplete factorial (Stage 6 A-source IDs without matched D/E/F/G)
+- Status: partial — 381/424 examples still incomplete factorial (Stage 6 A-source IDs without matched D/E/F/G). Complete factorial n=26 Qwen3 + n=18 Gemma4 = 44 examples.
 
 ### 3.4 Cross-Model Behavioral Divergence
 
@@ -216,7 +215,7 @@ Mean signed projections onto behavioral direction during each phase.
 **Qwen3-14B:**
 - Prompt phase: **−7.76** (compliance-directed)
 - Thinking phase: **+3.17** (sign reversal — moves toward refusal direction during thinking)
-- **ALL mechanism classes show this flip** (candidate_pure_cot_hijack, resistant, target_easy, incomplete_factorial) — including examples that ultimately FAIL
+- **ALL mechanism classes show this flip** (confirmed_pure_cot_hijack, resistant, target_easy, incomplete_factorial) — including examples that ultimately FAIL
 - **This means the sign reversal is not the attack mechanism.** It is present in both successes and failures. It may reflect a general property of the model's thinking phase, not a feature specific to the attack.
 - Descriptive observation: during the prompt→thinking transition, the projection onto the behavioral direction reverses sign regardless of whether the attack succeeds.
 
@@ -779,7 +778,7 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 ### Open Questions for Next Sprint
 
 1. **Is the mechanism in the FULL attention circuit?** P16 tested individual layers; multi-layer attention ablation not tested.
-2. **Does full-range patching at L26 have a consistent effect?** P11 L26 was inconclusive (n=2, inconsistent); needs n=11.
+2. **Does full-range patching at L26 have a consistent effect?** P11 full run complete — L26 is NON-CAUSAL (causal window is L3–L22 only; L23+ non-causal). See §7.16.
 3. **Is the mechanism cross-architecture?** Gemma4 P5a not yet done; do both models show same 56x attention routing?
 4. **What is the minimal intervention that disrupts the attack?** Path patching across multiple layers simultaneously?
 
@@ -790,7 +789,7 @@ The puzzle structure causes an encoding during the prompt phase that commits the
 ### P15: Gemma4 Attention Pattern Replication
 
 **Motivation:** Test whether the 56x attention-routing ratio seen in Qwen3 is architecture-general.  
-**Design:** Run P5a-equivalent attention extraction on Gemma4 pure_cot_hijack examples.  
+**Design:** Run P5a-equivalent attention extraction on Gemma4 confirmed_pure_cot_hijack examples.  
 **Script:** Extend `run_attention_extraction.py` with Gemma4 config.  
 **Expected:** If Gemma4 also shows high puzzle_wrapper attention → attention routing is architecture-general. If not → mechanism diverges between models.
 
@@ -1784,7 +1783,7 @@ Result: **1116 rows** (qwen3=668, gemma4=448) — G condition: qwen3=74 (goals 0
 **Puzzle×Thinking interaction** `(p_A−p_E)−(p_D−p_G)`:
 - Qwen3: 0.431 (n=26 complete factorial examples)
 - Gemma4: 0.269 (n=18 complete factorial examples)
-- Status: **PARTIAL** — 179/202 Qwen3/Gemma4 examples still incomplete factorial (Stage 6 A-condition source IDs without matched D/E/F/G). Interaction estimate is correct for the 44 fully-matched examples but cannot be generalized to the full sample.
+- Status: **PARTIAL** — 381/424 examples still incomplete factorial (Stage 6 A-condition source IDs without matched D/E/F/G). Interaction estimate is correct for the 44 fully-matched examples (n=26 Qwen3 + n=18 Gemma4) but cannot be generalized to the full sample.
 
 **Mechanism classification** (of 424 total examples):
 
