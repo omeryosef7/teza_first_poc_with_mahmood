@@ -38,15 +38,13 @@ def _mcnemar_midp(b: int, c: int) -> float:
     return min(1.0, 2 * p_total)
 
 
-_COMPLIANCE_ELAPSED_THRESHOLD_S = 200.0
-
+# elapsed_s is retained as diagnostic metadata only — never used to override the judge label.
+# The timing-based override (_COMPLIANCE_ELAPSED_THRESHOLD_S) was removed as scientifically
+# invalid: long generation time is not evidence of compliance. Use raw sr_success only.
 
 def _timing_correct_success(r: dict) -> bool:
-    """Timing-based correction: elapsed > 200s with sr_success=False = heuristic FN."""
-    scored = r.get("sr_success", False)
-    if not scored and r.get("elapsed_s", 0.0) > _COMPLIANCE_ELAPSED_THRESHOLD_S:
-        return True
-    return scored
+    """Return raw keyword-based judge label. elapsed_s is ignored."""
+    return bool(r.get("sr_success", False))
 
 
 def _load_results(run_dir: Path) -> list[dict]:

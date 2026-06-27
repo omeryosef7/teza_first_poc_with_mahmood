@@ -337,6 +337,7 @@ def deduplicate(rows: list[dict]) -> list[dict]:
         "stage4_7": 1,
         "stage4_8": 2,
         "stage4_8_cond_e": 2,
+        "stage4_8_cond_g": 2,
         "stage4_8_gemma": 2,
         "stage4_9_qwen3": 3,
         "stage4_9_gemma4": 3,
@@ -366,6 +367,10 @@ def main() -> None:
     parser.add_argument("--stage48-run-dir", default=str(_STAGE48_RUN))
     parser.add_argument("--cond-e-run-dir", default=None,
                         help="Path to run_cond_e_* dir; auto-discovers latest if omitted")
+    parser.add_argument("--cond-g-run-dir", default=None, action="append",
+                        help="Path to Qwen3 run_cond_g_* dir (repeatable); auto-discovers all if omitted")
+    parser.add_argument("--cond-g-gemma4-run-dir", default=None, action="append",
+                        help="Path to Gemma4 run_cond_g_* dir (repeatable, uses load_stage48_gemma4)")
     parser.add_argument("--gemma-run-dir", default=None,
                         help="Path to Gemma4 run dir; auto-discovers latest if omitted")
     parser.add_argument("--no-stage6", action="store_true", default=False)
@@ -386,6 +391,29 @@ def main() -> None:
     else:
         cond_e_dirs = _discover_all_run_dirs(
             _REPO_ROOT / "outputs" / "stage4_8" / "runs", "run_cond_e_*"
+        )
+
+    # Condition G (bare harmful + thinking OFF) — required for full factorial interaction
+    cond_g_dirs: list[Path] = []
+    if args.cond_g_run_dir:
+        cond_g_dirs = [Path(p) for p in args.cond_g_run_dir]
+    else:
+        # Auto-discover Qwen3 G dirs from stage4_8/runs
+        cond_g_dirs = _discover_all_run_dirs(
+            _REPO_ROOT / "outputs" / "stage4_8" / "runs", "run_cond_g_*"
+        ) + _discover_all_run_dirs(
+            _REPO_ROOT / "outputs" / "stage4_8_extended" / "runs", "run_cond_g_qwen3*"
+        )
+
+    # Separate Gemma4 G dirs (need load_stage48_gemma4, not load_stage48_qwen3)
+    cond_g_gemma4_dirs: list[Path] = []
+    if args.cond_g_gemma4_run_dir:
+        cond_g_gemma4_dirs = [Path(p) for p in args.cond_g_gemma4_run_dir]
+    else:
+        cond_g_gemma4_dirs = _discover_all_run_dirs(
+            _REPO_ROOT / "outputs" / "stage4_8_gemma" / "runs", "run_cond_g_*"
+        ) + _discover_all_run_dirs(
+            _REPO_ROOT / "outputs" / "stage4_8_extended" / "runs", "run_cond_g_gemma4*"
         )
 
     gemma_run_dir = Path(args.gemma_run_dir) if args.gemma_run_dir else _auto_discover_run_dir(
@@ -410,6 +438,23 @@ def main() -> None:
                 all_rows.extend(load_stage48_qwen3(d, source_stage="stage4_8_cond_e"))
     else:
         print("  WARNING: no cond-E run dirs found; condition E missing for Qwen3 stochastic")
+    # Load G condition data (Qwen3)
+    if cond_g_dirs:
+        for d in cond_g_dirs:
+            if d.exists():
+                all_rows.extend(load_stage48_qwen3(d, source_stage="stage4_8_cond_g"))
+        print(f"  Stage 4.8 cond-G (qwen3): {[str(d) for d in cond_g_dirs]}")
+    else:
+        print("  WARNING: no Qwen3 cond-G run dirs found")
+    # Load G condition data (Gemma4)
+    if cond_g_gemma4_dirs:
+        for d in cond_g_gemma4_dirs:
+            if d.exists():
+                all_rows.extend(load_stage48_gemma4(d))
+        print(f"  Stage 4.8 cond-G (gemma4): {[str(d) for d in cond_g_gemma4_dirs]}")
+    else:
+        print("  WARNING: no Gemma4 cond-G run dirs found; G condition missing for Gemma4")
+
     if not args.no_stage6:
         all_rows.extend(load_stage6_qwen3(_STAGE6_QWEN))
         all_rows.extend(load_stage6_gemma4(_STAGE6_GEMMA))

@@ -4,7 +4,7 @@ Statistical analysis of the factorial attack dataset.
 Produces:
   1. Primary meeting table — mechanism class counts by model
   2. Paired contrasts — A vs D, A vs E, A vs F, D vs F (sign test + bootstrap CI)
-  3. Puzzle × Thinking interaction — (p_A - p_D) - (p_E - p_F)
+  3. Puzzle × Thinking interaction — (p_A - p_E) - (p_D - p_G)  [requires G condition]
   4. Per-goal breakdown table
 
 Inputs:
@@ -49,7 +49,7 @@ _DATASET = _REPO_ROOT / "outputs" / "stage4" / "factorial_attack_dataset.jsonl"
 _CLASSIFICATION = _REPO_ROOT / "outputs" / "stage4" / "mechanism_classification.jsonl"
 _OUTPUT_DIR = _REPO_ROOT / "outputs" / "stage4" / "factorial_analysis"
 
-_CONDITIONS = ["A", "D", "E", "F"]
+_CONDITIONS = ["A", "D", "E", "F", "G"]  # G = bare harmful + thinking OFF (currently missing)
 _THETA = 0.5
 _N_BOOTSTRAP = 10_000
 
@@ -150,7 +150,13 @@ def compute_paired_contrasts(
     """Compute A-D, A-E, A-F, D-F contrasts for one model."""
     per_example = _get_per_example_rates(dataset_rows, model_family, source_stage_filter)
 
-    contrasts = [("A", "D"), ("A", "E"), ("A", "F"), ("D", "F")]
+    # A-D: puzzle effect with thinking ON  (NOT "thinking required" — both have thinking ON)
+    # A-E: thinking effect within puzzle condition
+    # D-G: thinking effect without puzzle  (G = bare harmful + thinking OFF)
+    # E-G: puzzle effect with thinking OFF
+    # A-F: puzzle effect vs length-matched benign control (F = length control, not no-puzzle cell)
+    # D-F: bare harmful vs benign length control
+    contrasts = [("A", "D"), ("A", "E"), ("A", "F"), ("D", "F"), ("D", "G"), ("E", "G")]
     results = []
     for c1, c2 in contrasts:
         # Only examples where both conditions are available
@@ -207,23 +213,39 @@ def compute_interaction(
     source_stage_filter=None,
 ) -> dict:
     """
-    Puzzle × Thinking interaction per example:
-    interaction = (p_A - p_D) - (p_E - p_F)
-    Positive → puzzle+thinking interact superadditively.
+    Full Puzzle × Thinking factorial interaction per example:
+    interaction = (p_A - p_E) - (p_D - p_G)
+
+    Interpretation:
+    - (A-E): thinking effect WITHIN puzzle condition
+    - (D-G): thinking effect WITHOUT puzzle
+    - interaction > 0: thinking adds MORE when puzzle is present (superadditive)
+
+    Requires G condition (bare harmful + thinking OFF). Returns INCOMPLETE if G is missing.
+
+    F (length-matched benign control) is NOT used in the factorial interaction — it is a
+    separate length/structure control and is NOT the no-puzzle/thinking-off cell.
+    The old formula (A-D)-(E-F) was incorrect and has been replaced.
     """
     per_example = _get_per_example_rates(dataset_rows, model_family, source_stage_filter)
     interactions = []
+    n_missing_g = 0
     for sid, rates in per_example.items():
         pA = rates.get("A")
-        pD = rates.get("D")
         pE = rates.get("E")
-        pF = rates.get("F")
-        if any(x is None for x in [pA, pD, pE, pF]):
+        pD = rates.get("D")
+        pG = rates.get("G")
+        if pG is None:
+            n_missing_g += 1
             continue
-        interactions.append((pA - pD) - (pE - pF))
+        if any(x is None for x in [pA, pE, pD]):
+            continue
+        interactions.append((pA - pE) - (pD - pG))
 
     if not interactions:
-        return {"model_family": model_family, "n": 0, "mean_interaction": None}
+        status = "INCOMPLETE — G condition missing for all examples" if n_missing_g > 0 else "no paired examples"
+        return {"model_family": model_family, "n": 0, "mean_interaction": None,
+                "status": status, "n_missing_g": n_missing_g}
 
     mean_int = sum(interactions) / len(interactions)
     return {
@@ -231,6 +253,8 @@ def compute_interaction(
         "n": len(interactions),
         "mean_interaction": mean_int,
         "interaction_values": interactions,
+        "n_missing_g": n_missing_g,
+        "status": "complete" if n_missing_g == 0 else f"partial — {n_missing_g} examples missing G",
     }
 
 
@@ -396,19 +420,29 @@ def main() -> None:
     _write_csv(output_dir / "paired_contrasts.csv", all_contrasts, contrast_fields)
 
     # ── 3. Interaction effects ─────────────────────────────────────────────────
-    print("\n=== Puzzle × Thinking interaction ===")
+    print("\n=== Puzzle × Thinking interaction: (A-E)-(D-G) ===")
+    print("  NOTE: Requires G condition (bare harmful + thinking OFF).")
+    print("  If G is missing, result is INCOMPLETE and cannot be interpreted as a full factorial interaction.")
     interaction_rows = []
     for model in models:
         result = compute_interaction(dataset_rows, model)
         mi = result.get("mean_interaction")
-        print(f"  {model}: mean_interaction={_fmt(mi)}, n={result.get('n', 0)}")
+        status = result.get("status", "unknown")
+        n_missing_g = result.get("n_missing_g", 0)
+        print(f"  {model}: mean_interaction={_fmt(mi)}, n={result.get('n', 0)}, "
+              f"n_missing_g={n_missing_g}, status={status}")
+        if n_missing_g > 0:
+            print(f"  *** INCOMPLETE: G condition missing for {n_missing_g} examples. "
+                  f"Cannot report factorial interaction. ***")
         interaction_rows.append({
             "model_family": model,
             "n": result.get("n", 0),
             "mean_interaction": result.get("mean_interaction"),
+            "n_missing_g": n_missing_g,
+            "status": status,
         })
     _write_csv(output_dir / "interaction_effects.csv", interaction_rows,
-               ["model_family", "n", "mean_interaction"])
+               ["model_family", "n", "mean_interaction", "n_missing_g", "status"])
 
     # ── 4. Per-goal mechanism breakdown ───────────────────────────────────────
     print("\n=== Mechanism by goal ===")
