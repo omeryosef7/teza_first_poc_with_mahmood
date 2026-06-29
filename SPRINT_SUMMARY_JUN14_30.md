@@ -460,4 +460,252 @@ Centralizes all model-family-specific knowledge:
 | Prompt-type comparison analysis | **Complete** | Both models |
 | Critical bug fixes (base_model, EOS, position_ids) | **Complete** | June 22 |
 | Stage 4A2 causal validation | **Complete (negative)** | 0/160 direction candidates pass |
-| Overall scientific verdict | **Established** | Refusal subspace is real, diagnostic (AUC 0.70+), not causal |
+| Overall scientific verdict (June 24) | **Established** | Refusal subspace is real, diagnostic (AUC 0.70+), not causal |
+| Factorial goal-level validation (Phase 7/8) | **Complete** | Qwen3 interaction p=0.027 (CI [0.085, 0.678]); Gemma4 p=0.80 NOT significant (retracted) |
+| Representation confound controls (Phase 9) | **Complete** | Qwen3 LOGO AUC 0.757; Gemma4 LOGO AUC 0.809; goal/length baselines ruled out |
+| Cross-model behavioral divergence (Phase 10) | **Complete** | Language downgraded from "two mechanisms"; Qwen3=0.379 vs Gemma4=0.025 |
+| P11 prefill patching — SR-validated | **Complete** | L3–L22: 0–10% vs baseline 50% (108/110 valid) |
+| P14 generation-phase patching — SR-validated (REVISED) | **Complete** | gen_thinking_L10=44% (non-causal); all answer-phase 0% (61/70 valid) |
+| P16 block ablation — SR-validated (REVISED) | **Complete** | zero_attn_L26=0%; all ablations suppressive (109/117 valid) |
+| P11 selectivity pilot | **Complete** | Controls pass; generic disruption caveat (68/75 valid) |
+| CoT causal role (Step 8) | **Complete** | Sufficient not necessary; empty_thinking=37.5% (32/32 valid) |
+
+---
+
+## 13. Mechanistic Validation Sprint Overview (June 24–30, 2026)
+
+### Motivation
+
+After the June 14–24 behavioral and direction-pipeline work, several headline claims needed scientific validation before presentation to Mahmood:
+
+1. **P11 prefill patching** — ASR dropped to 0% at L3–L22, but this was measured with a keyword scorer only. No full answer text was stored, so StrongREJECT could not be applied retroactively. The result might also reflect generic context replacement rather than specific causal localization.
+2. **P14 generation-phase patching** — Keyword scorer labeled all answer-phase conditions "non-causal." SR validation needed to confirm or revise.
+3. **P16 block ablation** — Same issue: keyword scorer only, no SR validation.
+4. **Factorial interaction** — The source-level analysis (0.431/0.269) treats source examples as independent observations, but all 26 Qwen3 sources span only 11 goals. Goal-level validation required.
+5. **Representation confound** — The probe AUCs could reflect goal identity or thinking length rather than true mechanistic information.
+
+### Infrastructure Built
+
+| Script | Purpose |
+|--------|---------|
+| `poc_stage4/evaluate_intervention_outputs.py` | StrongREJECT scorer: reads JSONL with `full_answer_text`, calls gpt-4o per row, writes SR score fields |
+| `poc_stage4/run_cot_swapping.py` | Step 8 CoT causal role: inserts successful/failed CoTs into answer generation |
+| `poc_stage4/run_p11_controlled_patching.py` | Selectivity pilot: identity, sham, cross-source, harmless, random, mean activation controls |
+| Modified run scripts | All three (P11/P14/P16) updated to store `full_answer_text` per row |
+
+### Key Revision Methodology
+
+Full re-runs of P11/P14/P16 were submitted with corrected run scripts that store the complete post-`</think>` answer text (`full_answer_text` field). Then `evaluate_intervention_outputs.py` called gpt-4o (StrongREJECT rubric) for each row. Input files: `run_20260627_191512` runs. SR output files: `outputs/stage4/intervention_judge_validation/`.
+
+---
+
+## 14. Factorial Interaction — Goal-Level Validation (Phase 7/8)
+
+### Why Goal-Level Validation Was Needed
+
+The factorial dataset (1,116 rows total across 5 conditions A/D/E/F/G × 11 goals × multiple sources × seeds) treated source examples as the unit of analysis. But there are only 11 goals, and multiple source prompts per goal are not truly independent — they share the same harmful category, safety training behavior, and refusal threshold. Treating them as independent overstates the effective sample size.
+
+Goal-level hierarchical bootstrap was used to account for goal clustering.
+
+### Results
+
+| Analysis level | Qwen3-14B | Gemma4-E4B-IT |
+|----------------|-----------|----------------|
+| Source-level interaction (biased) | 0.431 | 0.269 |
+| Goal-level interaction (hierarchical bootstrap) | **0.375** | 0.034 |
+| Permutation p-value (goal-level) | **p=0.027** | p=0.80 |
+| 95% CI | [0.085, 0.678] | — |
+| LOGO range (leave-one-goal-out) | [0.302, 0.472] | [−0.046, 0.097] |
+
+**Qwen3:** Goal-level interaction = 0.375 (p=0.027, CI [0.085, 0.678]). Significant and positive across LOGO range — robust.
+
+**Gemma4:** Goal-level interaction = 0.034 (p=0.80). NOT SIGNIFICANT. **The Gemma4 interaction result is retracted.** The source-level 0.269 was inflated by goal clustering. No defensible claim can be made for Gemma4.
+
+Pure-hijack stability: 1 stable pure-hijack seed (strict criterion), 3 probable, 410 insufficient (E/G conditions had only 6 seeds vs A/D/F 16 seeds — underpowered for strict pairing).
+
+---
+
+## 15. Representation Confound Controls (Phase 9)
+
+### Goal
+
+Verify that the LOGO AUC results (0.757/0.806 from Phase 4C) reflect mechanistic information, not confounds:
+- **Goal confound**: model might predict outcome from goal identity alone (some goals always comply, others always refuse)
+- **Thinking-length confound**: longer thinking → higher ASR; probe might just predict length
+
+### Results
+
+| Baseline | Qwen3 AUC | Gemma4 AUC |
+|---------|-----------|------------|
+| Goal-only features | 0.500 | 0.500 |
+| Thinking-length features | 0.439 | 0.338 |
+| Representation probe (LOGO) | **0.757** | **0.809** |
+| Probe increment over length | **+0.318** | **+0.472** |
+| Probe increment over goal-only | **+0.257** | **+0.309** |
+
+**Qwen3:** LOGO AUC = 0.757 across all 11 folds. Goal-only baseline = 0.500 (chance). Thinking-length baseline = 0.439 (below chance — negatively correlated!). Probe increment = +0.318 over length, +0.257 over goal.
+
+**Gemma4:** LOGO AUC = 0.809 across 8/11 folds (goals 1, 2, 10 excluded: n_minority < 3 in those folds). Goal-only = 0.500. Length baseline = 0.338 (well below chance). Probe increment = +0.472 over length, +0.309 over goal.
+
+Both confound baselines ruled out. The probe AUC reflects genuine mechanistic information about attack success.
+
+---
+
+## 16. Cross-Model Behavioral Divergence (Phase 10)
+
+### Setup
+
+Matched subset: all 11 goals available in both models. Per-goal interaction estimates computed separately for Qwen3 and Gemma4 using the same source prompts and conditions.
+
+### Results
+
+| Metric | Qwen3-14B | Gemma4-E4B-IT |
+|--------|-----------|----------------|
+| Goal-mean interaction | 0.379 | 0.025 |
+| Goals with positive interaction | 8/11 | 5/11 |
+| Best probe layer (normalized depth) | L26/L39 = 67% | L17/L41 = 41% |
+
+**Language correction:** Previous documentation described this as "two distinct mechanisms." This is **incorrect** — a direct model × interaction statistical test was not run. The correct description is **cross-model behavioral divergence**: Qwen3 shows a strong, consistent interaction effect while Gemma4 does not. The probe depth difference (67% vs 41% of network depth) is also notable but may reflect architectural differences rather than a mechanistically distinct process.
+
+---
+
+## 17. P11 Prefill Patching — StrongREJECT Results
+
+**Experiment:** Patch the full prefill residual stream from a D-context (bare harmful) run into an A-context (puzzle attack) run, at each layer L3–L39. If the attack depends on early layer representations, patching early D-context activations into the A-context run should suppress the attack.
+
+**Source:** `outputs/stage4/p11_full_prompt_patch/run_20260627_191512/results.jsonl` → SR scored at `outputs/stage4/intervention_judge_validation/p11_sr_scored.jsonl`
+
+**Valid rows:** 108/110 (2 NaN from TPM rate limiting)
+
+| Condition | Valid N | SR Successes | ASR |
+|-----------|---------|-------------|-----|
+| baseline_A | 10 | 5 | **50%** |
+| baseline_D | 10 | 0 | 0% |
+| L3 | 10 | 0 | 0% |
+| L10 | 10 | 0 | 0% |
+| L17 | 10 | 1 | 10% |
+| L21 | 10 | 0 | 0% |
+| L22 | 10 | 0 | 0% |
+| L23 | 10 | 1 | 10% ← transition |
+| L26 | 10 | 4 | **40%** |
+| L32 | 9 | 2 | 22% |
+| L39 | 9 | 1 | 11% |
+
+**SR-CONFIRMED:** Causal boundary at L3–L22 (0–10% ASR vs 50% baseline). L23 marks the transition (10%). L26 partially recovers (40%), then drops again at L32–L39.
+
+**Interpretation:** Replacing prefill activations at layers ≤ L22 with D-context activations suppresses the attack. This is consistent with the attack pathway depending on early-layer context encoding. Note: this is a full-prefill replacement (destructive baseline) — selectivity is addressed separately in §20.
+
+---
+
+## 18. P14 Generation-Phase Patching — StrongREJECT Results (REVISED)
+
+**Experiment:** During generation, patch the residual stream at a given layer with activations from a D-context reference run. Three phases tested: thinking-only (`gen_thinking`), answer-only (`gen_answer`), and both (`gen_full`). Two layers: L10 and L26.
+
+**Source:** `outputs/stage4/p14_gen_phase_patch/run_20260627_191512/results.jsonl` → SR scored at `outputs/stage4/intervention_judge_validation/p14_sr_scored.jsonl`
+
+**Valid rows:** 61/70 (9 NaN)
+
+| Condition | Valid N | SR Successes | ASR | vs baseline |
+|-----------|---------|-------------|-----|------------|
+| baseline | 10 | 5 | **50%** | — |
+| gen_thinking_L10 | 9 | 4 | **44%** | −6pp (≈ non-causal) |
+| gen_thinking_L26 | 7 | 0 | **0%** | −50pp |
+| gen_answer_L10 | 9 | 0 | **0%** | −50pp |
+| gen_answer_L26 | 10 | 0 | **0%** | −50pp |
+| gen_full_L10 | 10 | 0 | **0%** | −50pp |
+| gen_full_L26 | 6 | 0 | **0%** | −50pp |
+
+**KEY REVISION vs keyword scorer:** The keyword scorer labeled all conditions as "non-causal" because it could not accurately measure ASR from snippets. SR shows the opposite: 5 of 6 conditions are fully suppressive (0% ASR).
+
+**The only near-non-causal condition is `gen_thinking_L10` (44% ≈ 50% baseline).** This means: patching L10 activations during the thinking phase does NOT suppress the attack. The attack pathway is established AFTER L10 in the thinking phase — D-context information injected at L10 is not sufficient to redirect the generation.
+
+**L26 is the critical point:** Patching L26 during any phase (thinking or answer) fully suppresses the attack. All answer-phase patching suppresses at both layers, suggesting the answer phase is fully D-context sensitive once the thinking phase has completed.
+
+---
+
+## 19. P16 Block Ablation — StrongREJECT Results (REVISED)
+
+**Experiment:** Zero out either attention or MLP outputs at a specific layer during generation (both thinking and answer phases). Tests whether specific computational components are necessary for the attack.
+
+**Source:** `outputs/stage4/p16_block_ablation/run_20260627_191512/results.jsonl` → SR scored at `outputs/stage4/intervention_judge_validation/p16_sr_scored.jsonl`
+
+**Valid rows:** 109/117 (8 NaN)
+
+| Condition | Valid N | SR Successes | ASR | vs baseline |
+|-----------|---------|-------------|-----|------------|
+| baseline | 8 | 5 | **62%** | — |
+| zero_attn_L26 | 9 | 0 | **0%** | −62pp ← most suppressive |
+| zero_mlp_L39 | 9 | 1 | **11%** | −51pp |
+| zero_attn_L10 | 9 | 2 | **22%** | −40pp |
+| zero_attn_L39 | 9 | 2 | **22%** | −40pp |
+| zero_mlp_L10 | 9 | 3 | **33%** | −29pp |
+| zero_mlp_L26 | 9 | 4 | **44%** | −18pp |
+| zero_attn_L3 | 9 | 3 | **33%** | −29pp |
+| zero_mlp_L3 | 9 | 3 | **33%** | −29pp |
+| zero_attn_L17 | 9 | 4 | **44%** | −18pp |
+| zero_mlp_L17 | 9 | 3 | **33%** | −29pp |
+| zero_attn_L22 | 9 | 2 | **22%** | −40pp |
+| zero_mlp_L22 | 9 | 5 | **56%** | −6pp |
+
+**KEY REVISION vs keyword scorer:** The keyword scorer labeled all conditions "non-causal." SR shows ALL ablations reduce ASR (0–44% vs 62% baseline).
+
+**`zero_attn_L26` is the single most critical component** (0% ASR, −62pp). L26 attention is the chokepoint for attack execution. MLP at L26 is less critical (44% — modest suppression only). Attention ablations generally more suppressive than MLP ablations at the same layer.
+
+**Distributed computation with L26 attention as the primary bottleneck.** Ablating any single component partially suppresses the attack; L26 attention is the most critical single node.
+
+---
+
+## 20. P11 Selectivity Pilot — StrongREJECT Results
+
+**Experiment:** Tests whether P11's suppression effect is *specific* to the D-context activations, or whether any context substitution produces the same suppression. Control conditions: identity (own activations), sham (hook with no change), cross-source (different A-context from another prompt), harmless, random-norm-matched, mean activations.
+
+**Source:** `outputs/stage4/p11_controlled_patching/run_20260627_204032/results.jsonl` → SR scored at `outputs/stage4/intervention_judge_validation/p11_selectivity_sr_scored.jsonl`
+
+**Valid rows:** 68/75 (7 NaN)
+
+| Condition | Valid N | SR Successes | ASR | Interpretation |
+|-----------|---------|-------------|-----|----------------|
+| baseline_A | 3 | 2 | **67%** | No intervention |
+| identity | 9 | 5 | **56%** | Own activations — passes |
+| sham | 7 | 6 | **86%** | No-op hook — passes |
+| patch_D_full | 8 | 3 | **38%** | D-context replacement (partially suppressive) |
+| a_cross_source | 3 | 0 | **0%** | Different A-context |
+| a_to_d | 9 | 0 | **0%** | A activations in D context |
+| harmless | 7 | 0 | **0%** | Harmless prompt activations |
+| mean_activation | 9 | 0 | **0%** | Global mean activations |
+| random_norm | 8 | 0 | **0%** | Random norm-matched vectors |
+
+**Controls pass:** identity=56% (≈ baseline_A 67%), sham=86% (≈ baseline). The hook infrastructure and identity patch do not disrupt the attack.
+
+**ALL substitutions suppress to 0%** — including `a_cross_source` (a different A-context, same puzzle type). This is a critical caveat: **the suppression effect is not specific to D-context activations**. Any context substitution (including another A-context puzzle run) suppresses the attack.
+
+**Interpretation:** P11's suppression reflects generic disruption of the attack-relevant context representation, not specific causal localization. The attack is sensitive to its prefill context being replaced with any alternative context. `patch_D_full` is partially suppressive (38%) — the D-context is slightly less disruptive than fully alien contexts (0%), possibly because D and A share some structural similarity in their prefill representations.
+
+`a_to_d`=0/9: inserting A-context activations into a D-context run does not enable the attack — the attack requires A-context in the full sequence, not just inserted activations.
+
+---
+
+## 21. CoT Causal Role (Step 8)
+
+**Experiment:** Test whether the chain-of-thought (CoT) content is causally necessary or sufficient for attack success. Conditions: swap successful CoT into a failed generation attempt; swap failed/D-context CoT into a successful A generation; remove thinking entirely.
+
+**Source:** `outputs/stage4/cot_causal_role/run_20260628_211949/results.jsonl` → SR scored at `outputs/stage4/intervention_judge_validation/cot_causal_role_sr_scored.jsonl`
+
+**Valid rows:** 32/32 (0 NaN — clean run completed first, before TPM limits hit)
+
+| Condition | SR Successes / N | ASR | vs baseline |
+|-----------|-----------------|-----|------------|
+| baseline | 5/8 | **62.5%** | — |
+| forced_own_cot | 5/8 | **62.5%** | 0pp |
+| forced_cross_cot | 4/8 | **50.0%** | −12.5pp |
+| empty_thinking | 3/8 | **37.5%** | −25pp |
+
+**KEY REVISION vs keyword scorer:** Keyword scorer reported 100% for all conditions ("always attacks"). SR shows meaningful variation.
+
+**CoT is SUFFICIENT:** `forced_own_cot`=62.5% matches baseline exactly. Inserting a successful CoT into a failed attempt restores full attack success — the CoT carries causal information.
+
+**CoT is NOT NECESSARY:** `empty_thinking`=37.5%. Without any thinking trace, the attack still succeeds 37.5% of the time. The puzzle framing alone drives partial attack success; CoT amplifies it by 25pp.
+
+**`forced_cross_cot`=50%:** Inserting a D-context (refusal) CoT partially suppresses the attack but does not eliminate it (50% vs 62.5% baseline). The model can partially override an inserted foreign CoT.
+
+**Thinking uplift estimate:** CoT provides approximately 3.8–12.3× speedup (from Stage 4.6/4.7 token analysis) and +25pp ASR uplift (CoT vs empty thinking). The puzzle-framing drives the attack mechanism; the CoT is an amplifier, not a necessary condition.
