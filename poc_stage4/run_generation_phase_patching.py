@@ -41,6 +41,16 @@ _DEFAULT_OUT_DIR = _REPO_ROOT / "outputs" / "stage4" / "p14_gen_phase_patch"
 _MECH_JSONL = _REPO_ROOT / "outputs" / "stage4" / "mechanism_classification.jsonl"
 _STAGE6_DIR = _REPO_ROOT / "outputs" / "stage6" / "all_traces_full_1_11"
 
+_SCORER_VERSION = "keyword_fixed_v2_with_text_storage"
+
+
+def _split_text(text: str, think_end: str) -> tuple[str, str]:
+    if think_end in text:
+        parts = text.split(think_end, 1)
+        return parts[0], parts[1]
+    return "", text
+
+
 _MODEL_CONFIGS = {
     "qwen3": {
         "model_name": "Qwen/Qwen3-14B",
@@ -221,9 +231,11 @@ def _generate_with_gen_patch(
     finally:
         hook_handle.remove()
 
+    gen_token_count = len(generated_ids)
     text = tokenizer.decode(generated_ids, skip_special_tokens=False)
     sr_score, sr_success = _sr_score_heuristic(text, cfg["think_end"])
-    return text, sr_score, sr_success
+    finish_reason = "length" if gen_token_count >= max_new_tokens - 10 else "eos_token"
+    return text, sr_score, sr_success, gen_token_count, finish_reason
 
 
 def _generate_baseline(model, tokenizer, input_ids, max_new_tokens, cfg):
@@ -236,9 +248,11 @@ def _generate_baseline(model, tokenizer, input_ids, max_new_tokens, cfg):
             pad_token_id=tokenizer.eos_token_id,
         )
     gen_ids = output[0][input_ids.shape[1]:]
+    gen_token_count = gen_ids.shape[0]
     text = tokenizer.decode(gen_ids, skip_special_tokens=False)
     sr_score, sr_success = _sr_score_heuristic(text, cfg["think_end"])
-    return text, sr_score, sr_success
+    finish_reason = "length" if gen_token_count >= max_new_tokens - 10 else "eos_token"
+    return text, sr_score, sr_success, gen_token_count, finish_reason
 
 
 def main():
@@ -266,9 +280,13 @@ def main():
     print(f"Output: {run_dir}")
 
     mech_map = _load_mechanism_map(args.model)
-    pure_hijack_ids = [sid for sid, m in mech_map.items() if m == "pure_cot_hijack"]
+    pure_hijack_ids = [sid for sid, m in mech_map.items() if m in ("pure_cot_hijack", "confirmed_pure_cot_hijack")]
     if n_examples:
         pure_hijack_ids = pure_hijack_ids[:n_examples]
+
+    import hashlib
+    gen_config_str = json.dumps({"do_sample": False, "max_new_tokens": cfg.get("max_new_tokens"), "model": args.model}, sort_keys=True)
+    gen_config_hash = hashlib.sha256(gen_config_str.encode()).hexdigest()[:12]
 
     print(f"=== P14 Generation-Phase Patching (n={len(pure_hijack_ids)}, "
           f"layers={layers}, phases={args.phases}) ===")
@@ -315,14 +333,26 @@ def main():
 
         print(f"  A-prompt: {a_ids.shape[1]} tokens, D-prompt: {d_ids.shape[1]} tokens")
 
+        think_end = cfg["think_end"]
+        common = {"source_example_id": source_id, "model_revision": revision or "default",
+                  "generation_config_hash": gen_config_hash, "scorer_version": _SCORER_VERSION}
+
+        def make_row(cond, text, sr_score, sr_success, gen_tok, finish_reason, **extra):
+            think_text, answer_text = _split_text(text, think_end)
+            return {**common, "condition": cond, "sr_score": sr_score,
+                    "sr_success": sr_success, "gen_tokens": gen_tok,
+                    "finish_reason": finish_reason,
+                    "full_thinking_text": think_text, "full_answer_text": answer_text,
+                    **extra}
+
         results = []
 
         # Baseline
         t0 = time.time()
-        _, sr, success = _generate_baseline(model, tokenizer, a_ids, cfg["max_new_tokens"], cfg)
+        b_text, sr, success, b_tok, b_fin = _generate_baseline(
+            model, tokenizer, a_ids, cfg["max_new_tokens"], cfg)
         elapsed = round(time.time() - t0, 1)
-        results.append({"source_example_id": source_id, "condition": "baseline",
-                        "sr_score": sr, "sr_success": success, "elapsed_s": elapsed})
+        results.append({**make_row("baseline", b_text, sr, success, b_tok, b_fin), "elapsed_s": elapsed})
         print(f"  baseline: success={success} ({elapsed}s)")
 
         # Capture D last-position hidden states per layer
@@ -337,7 +367,7 @@ def main():
                 cond_name = f"gen_{phase}_L{li}"
                 t0 = time.time()
                 try:
-                    _, sr, success = _generate_with_gen_patch(
+                    p_text, sr, success, p_tok, p_fin = _generate_with_gen_patch(
                         model, tokenizer, a_ids,
                         d_vec=d_vecs[li],
                         layer_idx=li,
@@ -349,11 +379,10 @@ def main():
                     )
                 except Exception as e:
                     print(f"  ERROR at {cond_name}: {e}")
-                    sr, success = 0.5, True  # conservative: assume still complying
+                    p_text, sr, success, p_tok, p_fin = "", 0.5, True, 0, "error"
                 elapsed = round(time.time() - t0, 1)
-                results.append({"source_example_id": source_id, "condition": cond_name,
-                                "layer": li, "phase": phase,
-                                "sr_score": sr, "sr_success": success, "elapsed_s": elapsed})
+                results.append({**make_row(cond_name, p_text, sr, success, p_tok, p_fin),
+                                "layer": li, "phase": phase, "elapsed_s": elapsed})
                 print(f"  {cond_name}: success={success} ({elapsed}s)")
 
         with results_file.open("a") as f:

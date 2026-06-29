@@ -1,10 +1,10 @@
-# Sprint Summary: June 14–24, 2026
+# Sprint Summary: June 14–30, 2026
 ## Chain-of-Thought Hijacking — Full Mechanistic Analysis Sprint
 
 **Project:** MSc Thesis — Mechanistic Analysis of CoT Hijacking  
 **Supervisor:** Mahmood Sharif (Tel Aviv University)  
 **Student:** Omer Yosef  
-**Sprint period:** June 14 (last meeting) → June 24, 2026
+**Sprint period:** June 14 (last meeting with Mahmood) → June 30, 2026
 
 ---
 
@@ -18,7 +18,7 @@ Harmful goals are wrapped inside puzzle structures (e.g., "solve this riddle tha
 
 ### Models Evaluated
 - **Qwen3-14B** — 40 transformer layers, 14B parameters, thinking markers `<think>` / `</think>`
-- **Gemma4-E4B-IT** — 36 transformer layers, thinking markers `<|channel>thought` / `<channel|>`
+- **Gemma4-E4B-IT** — 42 transformer layers (L0–L41), thinking markers `<|channel>thought` / `<channel|>`
 
 ### Infrastructure
 - **GPU cluster:** SLURM on L40S nodes (48GB VRAM): n-801, n-802, n-803, n-805
