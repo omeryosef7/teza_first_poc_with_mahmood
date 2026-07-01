@@ -1,0 +1,10 @@
+model,n_unique_sources_A,n_unique_sources_D,n_unique_sources_E,n_unique_sources_F,n_unique_sources_G,n_total_unique_sources,note
+qwen3-14b,26,26,26,26,26,26,source-level from interaction_effects.csv (26 sources tested)
+gemma4-e4b-it,18,18,18,18,18,18,source-level from interaction_effects.csv (18 sources tested)
+NOTES,,,,,,
+Source A qwen3 interaction=0.431,,,,,,from factorial_analysis/interaction_effects.csv
+Source A gemma4 interaction=0.269,,,,,,from factorial_analysis/interaction_effects.csv
+Source-level differs from goal-level (0.3751/0.0339) due to averaging level,,,,,,
+Seed counts per source per condition: 4-17 (qwen3); 4-17 (gemma4),,,,,,
+See seed_coverage_by_condition.csv for per-condition seed distributions,,,,,,
+EXACT per-source rows not extracted,,,,,,requires reading factorial_attack_dataset.jsonl with groupby(model source_id condition)

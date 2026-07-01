@@ -1,0 +1,75 @@
+slide,claim_name,value,numerator,denominator,denom_description,status,caveat,authoritative_source
+2,total_pipeline_variants,14,14,14,variants run June14-30,VERIFIED,includes 2 behavioral + 6 HVP/DVP + other configurations,SPRINT_SUMMARY §2
+2,total_models,2,2,2,model families,VERIFIED,Qwen3-14B and Gemma4-E4B-IT,repo
+2,total_harmful_goals,11,11,11,distinct harmful goals,VERIFIED,11 categories across HarmBench and custom,repo
+2,total_factorial_rows,1116,1116,1116,JSONL rows in factorial_attack_dataset.jsonl,VERIFIED,668 qwen3 + 448 gemma4,factorial_attack_dataset.jsonl
+2,qwen3_factorial_rows,668,668,1116,total factorial rows,VERIFIED,,factorial_attack_dataset.jsonl
+2,gemma4_factorial_rows,448,448,1116,total factorial rows,VERIFIED,,factorial_attack_dataset.jsonl
+2,total_conditions,5,5,5,experimental conditions A/D/E/F/G,VERIFIED,,factorial_attack_dataset.jsonl
+2,intervention_experiments,3,3,3,P11/P14/P16,VERIFIED,,repo
+3,qwen3_behavioral_ASR,0.514,113,220,source prompts (11 goals x 20 variants),VERIFIED,1 seed per source; Stage 6 behavioral dataset,SPRINT_SUMMARY §3
+3,gemma4_behavioral_ASR,0.300,66,220,source prompts (11 goals x 20 variants),VERIFIED,1 seed per source; Stage 6 behavioral dataset,SPRINT_SUMMARY §3
+3,qwen3_behavioral_N,220,220,220,source prompts,VERIFIED,11 goals x 20 variants,SPRINT_SUMMARY §3
+3,gemma4_behavioral_N,220,220,220,source prompts,VERIFIED,11 goals x 20 variants,SPRINT_SUMMARY §3
+4,qwen3_condition_A_ASR,0.610,177,290,valid A rows (approx),ESTIMATED,From factorial_balanced analysis; exact count from dataset,factorial_balanced qwen3 goal_level_effects
+4,gemma4_condition_A_ASR,0.269,62,230,valid A rows (approx),ESTIMATED,From behavioral summary.json N=62/144,subspace_stats_behavioral/summary.json
+4,qwen3_interaction_goal_level,0.3751,,,11 goals,VERIFIED,goal-clustered bootstrap; p=0.0268,goal_clustered_interaction_summary.json
+4,qwen3_interaction_pvalue,0.0268,,,5000 bootstrap 5000 permutation,VERIFIED,goal-clustered; Bernoulli family,goal_clustered_interaction_summary.json
+4,gemma4_interaction_goal_level,0.0339,,,11 goals,VERIFIED,p=0.8016 (NOT significant),goal_clustered_interaction_summary.json
+4,gemma4_interaction_pvalue,0.8016,,,5000 bootstrap 5000 permutation,VERIFIED,NOT significant,goal_clustered_interaction_summary.json
+4,qwen3_interaction_source_level,0.431,,,26 sources,VERIFIED,source-level; no formal test in this file,factorial_analysis/interaction_effects.csv
+4,gemma4_interaction_source_level,0.269,,,18 sources,VERIFIED,source-level; no formal test in this file,factorial_analysis/interaction_effects.csv
+4,qwen3_n_goals_positive,11,11,11,goals with positive interaction,VERIFIED,see goal_level_effects.csv,goal_clustered_interaction_summary.json
+4,gemma4_n_goals_positive,6,6,11,goals with positive interaction,VERIFIED,NOT 5 as some docs state,goal_clustered_interaction_summary.json
+4,bootstrap_samples,5000,5000,,bootstrap iterations,VERIFIED,,goal_clustered_interaction_summary.json
+4,permutation_samples,5000,5000,,permutation iterations,VERIFIED,,goal_clustered_interaction_summary.json
+5,qwen3_puzzle_specific_goals,4,4,11,goals where A_ASR > D_ASR (Scheme A),VERIFIED,Goals {0 5 7 8}; NOT {0 2 3 5 8 9},06_goal_categories.csv
+5,qwen3_puzzle_specific_goal_ids,"{0,5,7,8}",,,,VERIFIED,Scheme A classification,06_goal_categories.csv
+5,qwen3_generally_vulnerable_goals,3,3,11,goals where D_ASR high regardless,VERIFIED,Goals {1 3 4} (chemistry/terrorism/weapons),06_goal_categories.csv
+5,qwen3_puzzle_hurts_goals,1,1,11,goals where D > A,VERIFIED,Goal 2 (chemical weapons); D=83% > A,06_goal_categories.csv
+5,gemma4_puzzle_specific_goals,1,1,11,goals where A_ASR > D_ASR (Scheme A),VERIFIED,Only 1 goal for Gemma4,06_goal_categories.csv
+6,qwen3_logo_auc,0.757,,,11 valid folds,VERIFIED,11/11 folds valid; mean of per-fold AUCs,conservative_logo_auc.json
+6,gemma4_logo_auc,0.809,,,8 valid folds,VERIFIED,8/11 valid; goals 1 2 10 excluded (n_minority<3),conservative_logo_auc.json
+6,gemma4_logo_auc_all11,0.806,,,11 folds including invalid,REPORTED,includes 3 near-one-class folds; 0.809 preferred,probe_transfer_auc.csv
+6,qwen3_behavioral_best_layer,26,,,layer index,VERIFIED,best AUC layer in subspace sweep,subspace_stats_behavioral/summary.json
+6,qwen3_behavioral_best_auc,0.7502,,,in-sample AUC,VERIFIED,rank=4 subspace at L26,subspace_stats_behavioral/summary.json
+6,gemma4_behavioral_best_layer,17,,,layer index,VERIFIED,,subspace_stats_behavioral/summary.json
+6,gemma4_behavioral_best_auc,0.7468,,,in-sample AUC,VERIFIED,rank=4 subspace at L17,subspace_stats_behavioral/summary.json
+6,qwen3_dvp_best_auc,0.736,,,in-sample AUC after flip,VERIFIED,auc_raw=0.264 → flipped; L37,subspace_stats_dvp_startofthink/summary.json
+6,gemma4_dvp_best_auc,0.740,,,in-sample AUC after flip,VERIFIED,auc_raw=0.260 → flipped; L24,subspace_stats_dvp_startofthink/summary.json
+6,causal_candidates_pass,0,0,160,direction candidates tested,VERIFIED,0/160 pass KL+steering thresholds,SPRINT_SUMMARY §7
+6,total_direction_candidates,160,,,directions tested in Stage 4A2,REPORTED,exact per-model split unknown; see M2,SPRINT_SUMMARY §7
+7,max_pairwise_cosine,0.258,,,all pairwise abs cosine similarities,VERIFIED,endofthink vs dvp_endofthink pair (qwen3),19_direction_cosine_matrix.csv
+7,gemma4_hvp_startofthink_norm,0.000,,,mean norm of direction vector,VERIFIED,DEGENERATE: zero vector; cannot use this direction,20_direction_metadata.csv
+8,p11_baseline_A_ASR,0.500,5,10,valid rows (10/10),VERIFIED,Condition A (puzzle + thinking ON),p11_sr_scored.jsonl
+8,p11_baseline_D_ASR,0.000,0,10,valid rows,VERIFIED,Condition D (bare harmful + thinking ON),p11_sr_scored.jsonl
+8,p11_L26_ASR,0.400,4,10,valid rows,VERIFIED,best-performing patch layer in P11,p11_sr_scored.jsonl
+8,p11_total_valid,108,108,110,total rows,VERIFIED,2 NaN rows (L32 and L39),p11_sr_scored.jsonl
+8,p11_sel_sham_ASR,0.667,6,9,valid rows,VERIFIED,sham=patch different layer; high ASR = generic disruption concern,p11_selectivity_sr_scored.jsonl
+8,p11_sel_identity_ASR,0.556,5,9,valid rows,VERIFIED,identity=copy A→A; similar to sham,p11_selectivity_sr_scored.jsonl
+8,p11_sel_ato_d_ASR,0.000,0,9,valid rows,VERIFIED,targeted A→D patch; 0% BUT also = random_norm,p11_selectivity_sr_scored.jsonl
+8,p14_baseline_ASR,0.500,5,10,valid rows (10/10),VERIFIED,,p14_sr_scored.jsonl
+8,p14_gen_thinking_L10_ASR,0.444,4,9,valid rows (1 NaN excluded),VERIFIED,sprint says 4/10=40% but valid=9; correct=44.4%,p14_sr_scored.jsonl
+8,p14_gen_thinking_L26_ASR,0.000,0,7,valid rows (3 NaN excluded),VERIFIED,,p14_sr_scored.jsonl
+8,p14_gen_answer_L10_ASR,0.000,0,9,valid rows,VERIFIED,,p14_sr_scored.jsonl
+8,p14_gen_answer_L26_ASR,0.000,0,10,valid rows,VERIFIED,,p14_sr_scored.jsonl
+8,p14_total_valid,61,61,70,total rows,VERIFIED,9 NaN rows,p14_sr_scored.jsonl
+8,p14_truncated_count,56,56,70,all rows,VERIFIED,80% of rows are truncated (broken outputs),p14_sr_scored.jsonl
+8,p16_baseline_ASR,0.625,5,8,valid rows (1 NaN excluded from 9),VERIFIED,sprint says 5/9=55.6% WRONG; correct=5/8=62.5%,p16_sr_scored.jsonl
+8,p16_zero_attn_L26_ASR,0.000,0,9,valid rows (9/9 valid),VERIFIED,most suppressive single ablation,p16_sr_scored.jsonl
+8,p16_zero_mlp_L26_ASR,0.250,2,8,valid rows (1 NaN excluded),VERIFIED,sprint says 4/9=44% WRONG; correct=2/8=25%,p16_sr_scored.jsonl
+8,p16_total_valid,109,109,117,total rows,VERIFIED,8 NaN rows,p16_sr_scored.jsonl
+9,cot_baseline_ASR,0.625,5,8,valid rows (8/8),VERIFIED,,cot_causal_role_sr_scored.jsonl
+9,cot_forced_own_thinking_ASR,0.625,5,8,valid rows,VERIFIED,same as baseline; CoT sufficient consistent,cot_causal_role_sr_scored.jsonl
+9,cot_forced_cross_thinking_ASR,0.500,4,8,valid rows,VERIFIED,cross-source CoT; -12.5pp,cot_causal_role_sr_scored.jsonl
+9,cot_empty_thinking_ASR,0.375,3,8,valid rows,VERIFIED,no CoT; 37.5% still succeed; CoT NOT necessary,cot_causal_role_sr_scored.jsonl
+9,cot_total_rows,32,32,32,all conditions,VERIFIED,8 per condition; 0 NaN,cot_causal_role_sr_scored.jsonl
+9,cot_empty_vs_baseline_diff,-0.250,-0.250,,pp difference,VERIFIED,-25pp from removing CoT,cot_causal_role_sr_scored.jsonl
+9,thinking_token_ratio,13.97,11458,824,A vs F mean thinking tokens,VERIFIED,FROM STAGE 4.7 (not from CoT experiment),SPRINT_SUMMARY §4
+10,qwen3_total_failures,400,400,668,qwen3 total rows (all conditions),VERIFIED,failures in valid rows classified by mode,14_failure_mode_counts_by_model.csv
+10,gemma4_total_failures,346,346,448,gemma4 total rows,VERIFIED,,14_failure_mode_counts_by_model.csv
+10,qwen3_no_text_failures,205,205,400,qwen3 failures,VERIFIED,51.3% of qwen3 failures have no text,14_failure_mode_counts_by_model.csv
+10,gemma4_no_text_failures,202,202,346,gemma4 failures,VERIFIED,58.4% of gemma4 failures have no text,14_failure_mode_counts_by_model.csv
+10,qwen3_explicit_refusal_failures,88,88,400,qwen3 failures,VERIFIED,,14_failure_mode_counts_by_model.csv
+10,gemma4_explicit_refusal_failures,99,99,346,gemma4 failures,VERIFIED,,14_failure_mode_counts_by_model.csv
+10,manual_review_packet_size,45,45,45,failure examples in review packet,VERIFIED,many have has_text=False despite being in review packet,15_manual_failure_review_packet.csv
