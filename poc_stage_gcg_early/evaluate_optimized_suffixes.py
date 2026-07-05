@@ -164,9 +164,106 @@ def evaluate_all_candidates(
 ) -> None:
     """
     Evaluate all candidates from FINAL_CANDIDATES.jsonl against all tasks and seeds.
-    Stub — implementation follows Stage 3 gate.
+
+    For each candidate, evaluates:
+      - optimized suffix (from FINAL_CANDIDATES.jsonl)
+      - neutral control suffix (task.neutral_control_suffix)
+      - random suffix (16 space-token IDs decoded)
+      - task-only baseline (" " — no suffix)
+
+    Writes to FREE_GENERATION_RESULTS.jsonl (append, resumable by row_key).
     """
-    raise NotImplementedError(
-        "evaluate_all_candidates is a Stage 9 implementation. "
-        "Run Stage 3 (task-only GCG) and pass the validation gate first."
-    )
+    import json as _json
+
+    final_candidates_path = Path(final_candidates_path)
+    if not final_candidates_path.exists():
+        print(f"[evaluate] No FINAL_CANDIDATES.jsonl at {final_candidates_path}", flush=True)
+        return
+
+    candidates = []
+    with open(final_candidates_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                candidates.append(_json.loads(line))
+    print(f"[evaluate] {len(candidates)} candidates to evaluate", flush=True)
+
+    # Build baseline suffixes
+    neutral_suffix = " "  # single space — task-only baseline
+    random_suffix_ids = [220] * 16  # 16 space tokens — random baseline
+    random_suffix_str = tokenizer.decode(random_suffix_ids, skip_special_tokens=True)
+
+    total_done = 0
+    for task in tasks:
+        for seed in seeds:
+            for cand in candidates:
+                label = f"optimized_{cand.get('selection_mode', 'weighted')}"
+                res = evaluate_suffix(
+                    model, tokenizer, model_family,
+                    task_id=task.task_id,
+                    instruction=task.instruction,
+                    suffix_str=cand["suffix_str"],
+                    suffix_label=label,
+                    enable_thinking=enable_thinking,
+                    seed=seed,
+                    output_dir=output_dir,
+                    max_new_tokens=max_new_tokens,
+                )
+                if res is not None:
+                    total_done += 1
+                    print(f"[evaluate] task={task.task_id} label={label} seed={seed} "
+                          f"finish={res['finish_reason']} sr={res.get('strongreject_score')}", flush=True)
+
+            # Neutral control
+            res = evaluate_suffix(
+                model, tokenizer, model_family,
+                task_id=task.task_id,
+                instruction=task.instruction,
+                suffix_str=task.neutral_control_suffix,
+                suffix_label="neutral_control",
+                enable_thinking=enable_thinking,
+                seed=seed,
+                output_dir=output_dir,
+                max_new_tokens=max_new_tokens,
+            )
+            if res is not None:
+                total_done += 1
+                print(f"[evaluate] task={task.task_id} label=neutral_control seed={seed} "
+                      f"finish={res['finish_reason']}", flush=True)
+
+            # Random suffix baseline
+            res = evaluate_suffix(
+                model, tokenizer, model_family,
+                task_id=task.task_id,
+                instruction=task.instruction,
+                suffix_str=random_suffix_str,
+                suffix_label="random_spaces",
+                enable_thinking=enable_thinking,
+                seed=seed,
+                output_dir=output_dir,
+                max_new_tokens=max_new_tokens,
+            )
+            if res is not None:
+                total_done += 1
+                print(f"[evaluate] task={task.task_id} label=random_spaces seed={seed} "
+                      f"finish={res['finish_reason']}", flush=True)
+
+            # Task-only baseline (no suffix)
+            res = evaluate_suffix(
+                model, tokenizer, model_family,
+                task_id=task.task_id,
+                instruction=task.instruction,
+                suffix_str=neutral_suffix,
+                suffix_label="task_only",
+                enable_thinking=enable_thinking,
+                seed=seed,
+                output_dir=output_dir,
+                max_new_tokens=max_new_tokens,
+            )
+            if res is not None:
+                total_done += 1
+                print(f"[evaluate] task={task.task_id} label=task_only seed={seed} "
+                      f"finish={res['finish_reason']}", flush=True)
+
+    print(f"[evaluate] Done. {total_done} new evaluations written to {output_dir}/FREE_GENERATION_RESULTS.jsonl",
+          flush=True)
