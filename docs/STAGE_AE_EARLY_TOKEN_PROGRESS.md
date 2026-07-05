@@ -1460,6 +1460,10 @@ correctly excluded per the plan).
 end-to-end for both models: generation → replay → scoring → analysis
 → committed.**
 
+**Commit hash: `5c5246a`** — "Add Stage AE early-token-expansion
+pipeline: paired A/D/E/G generation, hidden-state replay, StrongREJECT
+scoring, and cross-model analysis" (26 files changed, 5357 insertions).
+
 - [x] Qwen3-14B generation FULLY COMPLETE: 1386/1386 rows.
 - [x] Gemma4-E4B-it generation FULLY COMPLETE: 1386/1386 rows.
 - [x] Qwen hidden-state replay FULLY COMPLETE: 44/44 shards.
