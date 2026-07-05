@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 8b — repr_loss position fix + reference cache v2 build (job 641046 running)
+**Current stage:** Stage 8b — optimization run with correct repr_loss positions (job 641047 pending)
 
 ---
 
@@ -59,17 +59,29 @@
 | Stage 5: cache invalidation | ✅ Tested (CPU mock) |
 | Stage 8a: v1 (filter_cand=True) | ❌ FAILED — suffix frozen for all 200 steps (BPE filter rejects all candidates when suffix_length=16) |
 | Stage 8 v2: filter_cand=False, 200 steps | ✅ PASSED — job 640983: task_loss 2.52→0.05 (98% reduction); repr_loss ≈ 0 (expected — wrong positions) |
-| Stage 8b: reference cache v2 build | ⏳ Running — job 641046 |
+| Stage 8b: reference cache v2 build | ✅ PASSED — job 641046: 4 tasks, positions task-specific (suffix-relative) |
+| Stage 8b: optimization run | ⏳ Pending — job 641047 (reference_cache_v2, lambda_repr=1.0) |
 
 ---
 
 ## Next Actions
 
-1. **Wait for job 641046** (Stage 8b reference cache v2) to complete. Builds `reference_cache_v2/` with positions = last 3 suffix tokens per task. After completion, submit Stage 8b optimization pointing at v2.
+1. **Monitor job 641047** (Stage 8b optimization). Expect repr_loss > 0 this time (positions are now suffix-relative, meaning they attend to the full suffix context). If task_loss continues decreasing while repr_loss stays near 0, something is still wrong. If repr_loss is non-zero and changes across steps, the objective is wired correctly.
 
-2. **Stage 8b optimization**: Submit `run_gcg_qwen3_optimization.slurm` with `REFERENCE_CACHE_DIR=.../reference_cache_v2`. The optimizer now computes per-task repr_pos from spans dynamically (not hardcoded [0,1,2]). Expect repr_loss > 0 and to show gradient signal.
+2. **Stage 9 — free-generation evaluation**: After Stage 8b completes, implement `evaluate_optimized_suffixes.evaluate_all_candidates()` and submit the free-generation evaluation job on the best candidates.
 
-3. **Stage 9 — free-generation evaluation**: Run `evaluate_optimized_suffixes.py` on the best candidates from Stage 8b.
+3. **Stage 10 — Gemma4 extension**: After Stage 9 analysis.
+
+## Stage 8b Reference Cache v2 — Verified Positions (2026-07-05)
+
+| Task | suffix_slice | positions (last 3 suffix tokens) |
+|---|---|---|
+| fruit_list_alpha | slice(15, 31) | [28, 29, 30] |
+| celsius_convert | slice(30, 46) | [43, 44, 45] |
+| capital_france | slice(21, 37) | [34, 35, 36] |
+| count_vowels | slice(23, 39) | [36, 37, 38] |
+
+These positions are within the suffix region (not before it), so causal attention flows from them back through all suffix tokens → non-zero repr gradient.
 
 ## Bugs Found and Fixed (2026-07-05, Stage 8)
 
