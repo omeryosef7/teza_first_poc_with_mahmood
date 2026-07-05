@@ -37,6 +37,8 @@ N_STEPS="${N_STEPS:-200}"
 BATCH_SIZE="${BATCH_SIZE:-64}"
 SEED="${SEED:-42}"
 REPR_POSITIONS="${REPR_POSITIONS:-3}"
+REPR_LAYERS="${REPR_LAYERS:-0,5,10,15,20,25,30,35}"
+REFERENCE_CACHE_DIR="${REFERENCE_CACHE_DIR:-${PROJECT_DIR}/outputs/stage_gcg_early/reference_cache_v1}"
 SELECTION_MODE="${SELECTION_MODE:-weighted}"
 
 cd "$PROJECT_DIR"
@@ -62,6 +64,8 @@ echo "SLURM_NODELIST:  ${SLURM_NODELIST}"
 echo "RUN_ID:          ${RUN_ID}"
 echo "lambda_repr:     ${LAMBDA_REPR}"
 echo "lambda_kl:       ${LAMBDA_KL}"
+echo "repr_layers:     ${REPR_LAYERS}"
+echo "ref_cache_dir:   ${REFERENCE_CACHE_DIR}"
 echo "suffix_length:   ${SUFFIX_LEN}"
 echo "n_steps:         ${N_STEPS}"
 echo "seed:            ${SEED}"
@@ -95,6 +99,8 @@ python -m poc_stage_gcg_early.run_optimization \
     --lambda-repr "${LAMBDA_REPR}" \
     --lambda-kl "${LAMBDA_KL}" \
     --repr-positions "${REPR_POSITIONS}" \
+    --repr-layers "${REPR_LAYERS}" \
+    --reference-cache-dir "${REFERENCE_CACHE_DIR}" \
     --checkpoint-every 10 \
     --snapshot-every 50 \
     --split train

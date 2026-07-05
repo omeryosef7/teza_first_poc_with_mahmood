@@ -26,6 +26,7 @@ import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Optional
 
 import torch
 
@@ -91,6 +92,12 @@ def main(argv=None):
     parser.add_argument("--lambda-kl", type=float, default=0.0)
     parser.add_argument("--repr-metric", default="cosine", choices=["cosine", "l2"])
     parser.add_argument("--repr-positions", type=int, default=3)
+    parser.add_argument("--repr-layers", default="0,5,10,15,20,25,30,35",
+                        help="Comma-separated layer indices for repr_loss (must be in pre-built cache). "
+                             "Default excludes layer 40 to avoid final-norm mismatch.")
+    parser.add_argument("--reference-cache-dir", default=None,
+                        help="Path to pre-built reference hidden-state cache directory. "
+                             "Required when lambda_repr > 0 to avoid rebuilding on every run.")
     parser.add_argument("--no-thinking", action="store_true")
     parser.add_argument("--checkpoint-every", type=int, default=10)
     parser.add_argument("--snapshot-every", type=int, default=50)
@@ -179,6 +186,64 @@ def main(argv=None):
         ref_cache = ReferenceCache(cache_dir)
         print("[run_optimization] Reference cache initialized.", flush=True)
 
+    # --- Load pre-built reference hidden states for repr_loss ---
+    reference_hs_per_task: Optional[dict] = None
+    repr_layers_list: Optional[list] = None
+    if args.lambda_repr > 0.0 and args.reference_cache_dir:
+        import json as _json
+        cache_dir_prebuilt = Path(args.reference_cache_dir)
+        manifest_path = cache_dir_prebuilt / "REFERENCE_CACHE_MANIFEST.json"
+        if not manifest_path.exists():
+            raise FileNotFoundError(
+                f"Reference cache manifest not found: {manifest_path}. "
+                "Run build_gcg_reference_cache.slurm first."
+            )
+        repr_layers_list = [int(x) for x in args.repr_layers.split(",")]
+        manifest: dict = {}
+        with open(manifest_path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    entry = _json.loads(line)
+                    manifest[entry["task_id"]] = entry
+        reference_hs_per_task = {}
+        for task in tasks:
+            if task.task_id not in manifest:
+                print(f"[run_optimization] WARNING: no cache entry for task={task.task_id}", flush=True)
+                continue
+            meta = manifest[task.task_id]
+            cache_key = meta["cache_key"]
+            safe_task_id = task.task_id.replace("/", "_").replace(" ", "_")
+            pt_filename = meta.get("pt_path", f"{safe_task_id}_{cache_key}.pt")
+            pt_path = cache_dir_prebuilt / pt_filename
+            if not pt_path.exists():
+                print(f"[run_optimization] WARNING: cache file not found: {pt_path}", flush=True)
+                continue
+            data = torch.load(pt_path, map_location="cpu", weights_only=False)
+            hs_raw = data["hidden_states"]
+            hs = {
+                int(l): {int(p): v for p, v in pos_dict.items()}
+                for l, pos_dict in hs_raw.items()
+            }
+            # Keep only the layers that will be used for repr_loss
+            hs_filtered = {l: hs[l] for l in repr_layers_list if l in hs}
+            reference_hs_per_task[task.task_id] = hs_filtered
+            print(
+                f"[run_optimization] Loaded reference hs: task={task.task_id} "
+                f"key={cache_key} layers={sorted(hs_filtered.keys())}",
+                flush=True,
+            )
+        if not reference_hs_per_task:
+            raise RuntimeError(
+                "No reference hidden states loaded — cannot run with lambda_repr > 0. "
+                "Check that reference_cache_dir contains entries for all train tasks."
+            )
+        print(
+            f"[run_optimization] repr_layers={repr_layers_list} "
+            f"repr_positions=0..{args.repr_positions - 1}",
+            flush=True,
+        )
+
     # --- Run optimization ---
     run_optimization(
         model=model,
@@ -188,6 +253,8 @@ def main(argv=None):
         config=config,
         reference_cache=ref_cache,
         output_dir=output_dir,
+        reference_hs_per_task=reference_hs_per_task,
+        repr_layers=repr_layers_list,
     )
 
 

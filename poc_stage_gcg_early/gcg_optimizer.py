@@ -66,17 +66,24 @@ def _token_gradients(
     suffix_slice: slice,
     target_slice: slice,
     loss_slice: slice,
+    lambda_repr: float = 0.0,
+    reference_hs: Optional[Dict] = None,
+    repr_layers: Optional[List[int]] = None,
+    repr_positions: Optional[List[int]] = None,
+    repr_metric: str = "cosine",
 ) -> torch.Tensor:
     """
-    Compute gradients of the task loss w.r.t. suffix token one-hot embeddings.
+    Compute gradients of the composite loss w.r.t. suffix token one-hot embeddings.
+
+    When lambda_repr > 0 and reference_hs is provided, the gradient includes a
+    representation-distance term from output_hidden_states=True (required because
+    hook-based capture cannot propagate gradients through the computation graph).
 
     Returns Tensor[suffix_len, vocab_size]: gradient for each suffix position
     over the vocabulary (normalized by row norm, matching minimal_gcg convention).
-
-    This is mathematically identical to llm_attacks.minimal_gcg.opt_utils.token_gradients
-    but calls our model_adapter.get_embedding_{matrix,embeddings} instead of the
-    Llama-specific llm_attacks versions.
     """
+    from poc_stage_gcg_early.objectives import repr_loss as _repr_loss_fn
+
     embed_weights = get_embedding_matrix(model, model_family)  # [vocab, d_model]
     device = model.device if hasattr(model, "device") else next(model.parameters()).device
 
@@ -106,9 +113,41 @@ def _token_gradients(
         dim=1,
     )
 
-    logits = model(inputs_embeds=combined).logits  # [1, seq_len, vocab]
-    targets = input_ids[target_slice].to(device)
-    loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
+    use_repr = (
+        lambda_repr > 0.0
+        and reference_hs is not None
+        and repr_layers
+        and repr_positions
+    )
+
+    if use_repr:
+        # output_hidden_states=True so gradients flow through repr_loss → one_hot
+        output = model(inputs_embeds=combined, output_hidden_states=True)
+        logits = output.logits  # [1, seq_len, vocab]
+        # Extract candidate hidden states (retain grad — they're on the comp graph via combined)
+        cand_hs: Dict[int, Dict[int, torch.Tensor]] = {}
+        for layer_idx in repr_layers:
+            if layer_idx < len(output.hidden_states):
+                lt = output.hidden_states[layer_idx]  # [1, seq_len, d_model]
+                cand_hs[layer_idx] = {
+                    pos: lt[0, pos, :]
+                    for pos in repr_positions
+                    if pos < lt.shape[1]
+                }
+        r_loss = _repr_loss_fn(
+            cand_hs, reference_hs,
+            layers=repr_layers,
+            positions=repr_positions,
+            metric=repr_metric,
+        )
+        targets = input_ids[target_slice].to(device)
+        t_loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
+        loss = t_loss + lambda_repr * r_loss
+    else:
+        logits = model(inputs_embeds=combined).logits  # [1, seq_len, vocab]
+        targets = input_ids[target_slice].to(device)
+        loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
+
     loss.backward()
 
     grad = one_hot.grad.clone()
@@ -302,14 +341,21 @@ def run_optimization(
     config: RunConfig,
     reference_cache: Optional[ReferenceCache],
     output_dir: Path,
+    reference_hs_per_task: Optional[Dict[str, Dict]] = None,
+    repr_layers: Optional[List[int]] = None,
 ) -> None:
     """
     Main GCG optimization loop with full resume support.
 
     Stages:
       - Stage 3 (task-only):   lambda_repr=0, lambda_kl=0
-      - Stage 6+ (repr obj):   lambda_repr > 0
-      - Stage 6+ (kl obj):     lambda_kl > 0
+      - Stage 8  (repr obj):   lambda_repr > 0, reference_hs_per_task provided
+
+    reference_hs_per_task: {task_id: {layer_idx: {pos: fp16 CPU tensor}}}
+      Pre-loaded from the reference cache (neutral-suffix hidden states).
+      When provided with lambda_repr > 0, repr_loss is added to the gradient and
+      logged per step. Selection is still by task_loss (repr_loss logged separately).
+    repr_layers: layer indices that are present in reference_hs_per_task.
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -375,6 +421,22 @@ def run_optimization(
     pareto_front: List[dict] = []
     device = next(model.parameters()).device
 
+    # Repr-loss config derived once (repr_pos_list matches reference cache positions)
+    use_repr = (
+        config.objective.lambda_repr > 0.0
+        and reference_hs_per_task is not None
+        and repr_layers
+    )
+    repr_pos_list = list(range(config.objective.repr_positions)) if use_repr else []
+
+    if use_repr:
+        print(
+            f"[GCG] repr_loss ENABLED: lambda_repr={config.objective.lambda_repr}, "
+            f"layers={repr_layers}, positions={repr_pos_list}, "
+            f"tasks_with_cache={sorted(reference_hs_per_task.keys())}",
+            flush=True,
+        )
+
     for step in range(start_step, config.gcg.n_steps):
         t_start = time.time()
         _current_state["step"] = step
@@ -389,10 +451,16 @@ def run_optimization(
                 task.instruction, suffix_str, task.safe_target_prefix,
                 suffix_ids_override=suffix_ids,
             )
+            ref_hs = (reference_hs_per_task or {}).get(task.task_id)
             g = _token_gradients(
                 model, model_family,
                 spans.input_ids, spans.suffix_slice,
                 spans.target_slice, spans.loss_slice,
+                lambda_repr=config.objective.lambda_repr,
+                reference_hs=ref_hs,
+                repr_layers=repr_layers,
+                repr_positions=repr_pos_list,
+                repr_metric=config.objective.repr_metric,
             )
             if grad_accum is None:
                 grad_accum = g
@@ -450,7 +518,7 @@ def run_optimization(
             best_idx = min(range(len(eval_results)), key=lambda i: eval_results[i]["task_loss"])
 
         best_cand = cand_lists[best_idx]
-        best_losses = eval_results[best_idx]
+        best_losses = dict(eval_results[best_idx])  # mutable copy
 
         # Accept if better than current
         current_eval = _evaluate_candidates(
@@ -462,6 +530,41 @@ def run_optimization(
             suffix_str = tokenizer.decode(suffix_ids, skip_special_tokens=True)
 
         _current_state["suffix_ids"] = suffix_ids
+
+        # --- Post-selection repr_loss evaluation (one forward pass, no_grad) ---
+        # Selection above used task_loss only; now compute true repr_loss for logging.
+        if use_repr and reference_hs_per_task:
+            from poc_stage_gcg_early.objectives import repr_loss as _repr_loss_fn
+            ref_hs_0 = reference_hs_per_task.get(train_tasks[0].task_id)
+            if ref_hs_0 is not None:
+                sel_spans = build_suffix_spans(
+                    tokenizer, model_family, config.enable_thinking,
+                    train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
+                    suffix_ids_override=suffix_ids,
+                )
+                with torch.no_grad():
+                    out = model(
+                        input_ids=sel_spans.input_ids.unsqueeze(0).to(device),
+                        output_hidden_states=True,
+                    )
+                cand_hs: Dict[int, Dict[int, torch.Tensor]] = {}
+                for layer_idx in repr_layers:
+                    if layer_idx < len(out.hidden_states):
+                        lt = out.hidden_states[layer_idx]  # [1, seq_len, d_model]
+                        cand_hs[layer_idx] = {
+                            pos: lt[0, pos, :].detach().cpu().to(torch.float16)
+                            for pos in repr_pos_list
+                            if pos < lt.shape[1]
+                        }
+                r_val = _repr_loss_fn(
+                    cand_hs, ref_hs_0,
+                    layers=repr_layers, positions=repr_pos_list,
+                    metric=config.objective.repr_metric,
+                ).item()
+                best_losses["repr_loss"] = r_val
+                best_losses["total_loss"] = (
+                    best_losses["task_loss"] + config.objective.lambda_repr * r_val
+                )
 
         # --- Memory stats ---
         if torch.cuda.is_available():
