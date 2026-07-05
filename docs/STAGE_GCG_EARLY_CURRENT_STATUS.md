@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 3 — smoke job 640815 PENDING (all 32 L40S GPUs occupied; waiting for slot)
+**Current stage:** Stage 3 — smoke job 640936 PENDING (BPE fix applied; awaiting GPU slot)
 
 ---
 
@@ -61,18 +61,18 @@
 
 ## Next Actions
 
-1. **Job 640815 is submitted — monitor when GPU slot opens:**
+1. **Job 640936 is submitted (smoke_gcg_qwen3_v2) — monitor:**
    ```bash
-   squeue -j 640815
-   tail -f logs/gcg_smoke_qwen3_640815.out
+   squeue -j 640936
+   tail -f logs/gcg_smoke_qwen3_640936.out
    ```
 
-2. **If job fails:** re-submit same RUN_ID (checkpoint detection is automatic)
+2. **If job fails:** check err log; re-submit with new v3 RUN_ID
    ```bash
-   sbatch --export=ALL,RUN_ID=smoke_gcg_qwen3_v1 slurm_scripts/smoke_gcg_qwen3.slurm
+   sbatch --export=ALL,RUN_ID=smoke_gcg_qwen3_v3 slurm_scripts/smoke_gcg_qwen3.slurm
    ```
 
-3. **After smoke passes:** check `outputs/stage_gcg_early/smoke_gcg_qwen3_v1/AUDIT_REPORT.md`
+3. **After smoke passes:** check `outputs/stage_gcg_early/smoke_gcg_qwen3_v2/AUDIT_REPORT.md`
 
 4. **If smoke passes:** proceed to Stage 8 (weighted repr objective):
    ```bash
@@ -94,6 +94,7 @@
 |---|---|
 | `nvidia-smi --query-gpu=name \| head -1` SIGPIPE under `set -o pipefail` | Changed to `awk 'NR==1{print;exit}'` in both SLURM scripts |
 | Python heredoc `${OUTPUT_DIR}` inside single-quoted `'PYEOF'` unexpanded | Changed to `python - "$OUTPUT_DIR" <<'PYEOF'` + `sys.argv[1]` |
+| **BPE non-invertibility → CUDA device-side assert** (job 640912) | `build_suffix_spans` was re-tokenizing `suffix_str` via decode→encode, giving fewer tokens than `suffix_ids`. Qwen3 tiktoken: `"! "` → `[0,220]`, decode → `"! ! ! ! "`, re-encode → `[0,753,753,753,220]` (5 tokens not 8). Fix: added `suffix_ids_override` param to `build_suffix_spans`; optimizer now passes actual IDs directly. |
 | `preserve_grad=True` in `selected_state_capture` doesn't work (hooks always detach) | Documented; Stage 6 must use `output_hidden_states=True` with `inputs_embeds` instead |
 
 ## Known Limitations
@@ -107,7 +108,8 @@
 
 | Blocker | Resolution |
 |---|---|
-| Cluster GPU availability | Job 640815 pending; all 32 L40S GPUs occupied as of 19:30 UTC |
+| BPE non-invertibility CUDA assert (was blocking all runs) | **FIXED** — `suffix_ids_override` added to `build_suffix_spans`, commit e092df7 |
+| Cluster GPU availability | Job 640936 pending; awaiting slot |
 | Qwen3-14B embedding path not confirmed at runtime | First model load will print model type; verify in smoke log |
 | Stage AE `replay_hidden_states` import in cluster env | Verified importable without argparse side effects |
 
