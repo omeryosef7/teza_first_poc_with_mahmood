@@ -91,8 +91,23 @@ class RunConfig:
     enable_thinking: bool = True
 
     def config_hash(self) -> str:
-        """SHA-256 of the full config as sorted JSON (first 16 hex chars)."""
-        d = dataclasses.asdict(self)
+        """
+        SHA-256 of the scientific config (first 16 hex chars).
+
+        Excludes deployment metadata (run_id, output_dir, manifest_path) so that
+        a checkpoint can be resumed even if those fields change — e.g. moving the
+        output to a different directory, renaming the run, or pointing to a copy of
+        the manifest. The hash only changes when the scientific hyperparameters change:
+        model identity, suffix length, batch size, topk, seed, objectives, etc.
+        """
+        d = {
+            "model_family": self.model_family,
+            "model_name_or_path": self.model_name_or_path,
+            "model_revision": self.model_revision,
+            "enable_thinking": self.enable_thinking,
+            "gcg": dataclasses.asdict(self.gcg),
+            "objective": dataclasses.asdict(self.objective),
+        }
         serialized = json.dumps(d, sort_keys=True, ensure_ascii=True)
         return hashlib.sha256(serialized.encode()).hexdigest()[:16]
 
