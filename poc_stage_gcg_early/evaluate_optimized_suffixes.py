@@ -117,7 +117,7 @@ def evaluate_suffix(
         "row_key": rk,
         "task_id": task_id,
         "suffix_str": suffix_str,
-        "suffix_label": suffix_label,
+        "condition_label": suffix_label,  # canonical name used by analysis scripts
         "seed": seed,
         "generation_text": generation_text,
         "positions": positions,
