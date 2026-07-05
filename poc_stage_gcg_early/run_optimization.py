@@ -245,7 +245,7 @@ def main(argv=None):
             )
         print(
             f"[run_optimization] repr_layers={repr_layers_list} "
-            f"repr_positions=0..{args.repr_positions - 1}",
+            f"repr_positions=last {args.repr_positions} suffix tokens (computed per-task from spans)",
             flush=True,
         )
 
