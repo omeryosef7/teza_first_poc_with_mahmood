@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 3 — PASSED (job 640936); v3 resume validation (job 640947) running
+**Current stage:** Stage 4 — GPU integration test (hook capture equivalence)
 
 ---
 
@@ -51,9 +51,9 @@
 
 | Gate | Status |
 |---|---|
-| Stage 3: task_loss decreases | ✅ PASSED — job 640936: 3.9844→0.1123 (97% reduction, 50 steps) |
-| Stage 3: same seed → same trajectory | ✅ PASSED — audit_run.py certified DONE, all 11 checks OK |
-| Stage 3: resume produces identical result | ⏳ Pending — job 640947 (v3, config_hash fix applied) |
+| Stage 3: task_loss decreases | ✅ PASSED — 3.9844→0.1123 (97% reduction, 50 steps, jobs 640936/640947) |
+| Stage 3: same seed → same trajectory | ✅ PASSED — v2 and v3 identical step-by-step, audit DONE |
+| Stage 3: resume produces identical result | ✅ PASSED — job 640947: "[GCG] Resuming from step 49", clean exit |
 | Stage 4: hook capture ≡ output_hidden_states | ⏳ Pending GPU integration test |
 | Stage 5: cache invalidation | ✅ Tested (CPU mock) |
 
@@ -61,27 +61,23 @@
 
 ## Next Actions
 
-1. **Monitor job 640947 (v3 — resume validation):**
+1. **Stage 4 — GPU integration test** (hook capture ≡ output_hidden_states for Qwen3-14B):
+   Submit a small SLURM job to run the marked GPU integration test:
    ```bash
-   tail -f logs/gcg_smoke_qwen3_640947.out
+   sbatch slurm_scripts/test_state_capture_gpu.slurm
    ```
-   Expected: model loads, 50 steps run, then same command re-runs and prints
-   "Resuming from step 49" and exits cleanly (loop empty, already done).
-
-2. **After v3 passes:** write `docs/STAGE_GCG_EARLY_BASELINE_VALIDATION.md`
-
-3. **Stage 4 — GPU integration test** (hook capture equivalence):
+   Or interactively on a cluster node with L40S:
    ```bash
    conda run -n poc_stage2 python -m pytest poc_stage_gcg_early/tests/test_state_capture.py \
        -m gpu_integration -v
    ```
 
-4. **Stage 5 — reference cache building:**
+2. **Stage 5 — reference cache building** (after Stage 4 passes):
    ```bash
    sbatch slurm_scripts/build_gcg_reference_cache.slurm
    ```
 
-5. **Stage 8 — weighted repr objective (after Stages 4–5):**
+3. **Stage 8 — weighted repr objective** (after Stages 4–5):
    ```bash
    sbatch --export=ALL,RUN_ID=gcg_qwen3_repr_v1,LAMBDA_REPR=1.0,SUFFIX_LEN=16,N_STEPS=200 \
           slurm_scripts/run_gcg_qwen3_optimization.slurm
