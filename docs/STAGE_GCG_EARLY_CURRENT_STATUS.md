@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 4 — GPU integration test (hook capture equivalence)
+**Current stage:** Stage 8 — repr_loss objective optimization (job 640983 running)
 
 ---
 
@@ -20,7 +20,7 @@
 | `poc_stage_gcg_early/objectives.py` | ✅ | task_loss, repr_loss, kl_loss, regularization_loss, composite_loss |
 | `poc_stage_gcg_early/gcg_optimizer.py` | ✅ | Full loop: gradient → sample → filter → evaluate → select → checkpoint |
 | `poc_stage_gcg_early/build_safe_surrogate_manifest.py` | ✅ | 4-task harmless manifest |
-| `poc_stage_gcg_early/run_optimization.py` | ✅ | CLI entry point with ENVIRONMENT.json |
+| `poc_stage_gcg_early/run_optimization.py` | ✅ | CLI entry point with --reference-cache-dir, --repr-layers, --no-filter-cand |
 | `poc_stage_gcg_early/evaluate_optimized_suffixes.py` | ✅ stub | Stage 9 — pending Stage 3 gate |
 | `poc_stage_gcg_early/audit_run.py` | ✅ | Run completeness audit + DONE flag |
 | `poc_stage_gcg_early/analyze_pareto_frontier.py` | ✅ Full impl | Writes RESULTS_SUMMARY.md; Pareto frontier, trajectory stats, Stage 3 gate check |
@@ -54,34 +54,28 @@
 | Stage 3: task_loss decreases | ✅ PASSED — 3.9844→0.1123 (97% reduction, 50 steps, jobs 640936/640947) |
 | Stage 3: same seed → same trajectory | ✅ PASSED — v2 and v3 identical step-by-step, audit DONE |
 | Stage 3: resume produces identical result | ✅ PASSED — job 640947: "[GCG] Resuming from step 49", clean exit |
-| Stage 4: hook capture ≡ output_hidden_states | ⏳ Pending GPU integration test |
+| Stage 4: hook capture ≡ output_hidden_states | ✅ PASSED — job 640954: 1 passed in 43s on L40S |
+| Stage 5: reference cache built | ✅ PASSED — job 640959: 4 tasks cached in 1:26 |
 | Stage 5: cache invalidation | ✅ Tested (CPU mock) |
+| Stage 8a: v1 (filter_cand=True) | ❌ FAILED — suffix frozen for all 200 steps (BPE filter rejects all candidates when suffix_length=16) |
+| Stage 8: v2 (filter_cand=False) | ⏳ Running — job 640983 on n-801 |
 
 ---
 
 ## Next Actions
 
-1. **Stage 4 — GPU integration test** (hook capture ≡ output_hidden_states for Qwen3-14B):
-   Submit a small SLURM job to run the marked GPU integration test:
-   ```bash
-   sbatch slurm_scripts/test_state_capture_gpu.slurm
-   ```
-   Or interactively on a cluster node with L40S:
-   ```bash
-   conda run -n poc_stage2 python -m pytest poc_stage_gcg_early/tests/test_state_capture.py \
-       -m gpu_integration -v
-   ```
+1. **Wait for job 640983** (Stage 8 repr_v2) to complete. Expect task_loss to decrease (BPE filter disabled so candidates can be accepted). repr_loss ≈ 0 because positions 0,1,2 precede the suffix in causal attention.
 
-2. **Stage 5 — reference cache building** (after Stage 4 passes):
-   ```bash
-   sbatch slurm_scripts/build_gcg_reference_cache.slurm
-   ```
+2. **Stage 8b — correct repr_loss positions**: Current design uses absolute positions 0,1,2 which are before the suffix (causal masking → repr gradient is 0). Fix: use positions relative to suffix end (`suffix_slice.stop - 3, ..., suffix_slice.stop - 1`) and rebuild reference cache with same-length neutral suffix (16 space tokens). This gives valid repr_loss gradient that guides the suffix.
 
-3. **Stage 8 — weighted repr objective** (after Stages 4–5):
-   ```bash
-   sbatch --export=ALL,RUN_ID=gcg_qwen3_repr_v1,LAMBDA_REPR=1.0,SUFFIX_LEN=16,N_STEPS=200 \
-          slurm_scripts/run_gcg_qwen3_optimization.slurm
-   ```
+3. **Stage 9 — free-generation evaluation**: Run `evaluate_optimized_suffixes.py` on the best candidates from Stage 8.
+
+## Bugs Found (2026-07-05, Stage 8)
+
+| Bug | Root Cause | Fix |
+|---|---|---|
+| repr_loss ≈ 0.0001 always (no gradient) | Positions 0,1,2 are before suffix in causal LM → no attention from them to suffix tokens | Fix: use `suffix_slice.stop - {1,2,3}` as positions; rebuild cache with 16-token neutral suffix |
+| Stage 8 v1: suffix frozen 200 steps | `get_filtered_cands(filter_cand=True)` rejects all 64 candidates when suffix_length=16 (BPE non-invertibility with tiktoken); fallback = current suffix repeated | Fix: `--no-filter-cand` (safe since `suffix_ids_override` bypasses BPE in optimizer) |
 
 ---
 
@@ -107,8 +101,10 @@
 |---|---|
 | BPE non-invertibility CUDA assert (was blocking all runs) | **FIXED** — `suffix_ids_override` added to `build_suffix_spans`, commit e092df7 |
 | `config_hash` included `run_id`/`output_dir` → resume always failed | **FIXED** — commit f8535a2: hash now covers only scientific params |
-| Cluster GPU availability | Job 640947 (v3) running on n-801 |
-| Qwen3-14B embedding path not confirmed at runtime | **CONFIRMED** — job 640936 showed `hf_device_map={'first_parameter_device': 'cuda:0'}`, model loaded correctly |
+| Stage 4 hook capture equivalence | **CONFIRMED** — job 640954 PASSED |
+| Stage 5 layer index error (0,6,12,...,47 OOR) | **FIXED** — layers corrected to 0,5,10,15,20,25,30,35,40 in build_reference_cache.py |
+| Stage 8 v1: suffix frozen (BPE filter) | **FIXED** — commit 172146f: `--no-filter-cand` added; job 640983 running |
+| repr_loss ≈ 0 (causal masking, wrong positions) | **DIAGNOSED** — next: rebuild cache with suffix-relative positions |
 
 ---
 
