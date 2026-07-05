@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 3 — smoke job 640936 PENDING (BPE fix applied; awaiting GPU slot)
+**Current stage:** Stage 3 — PASSED (job 640936); v3 resume validation (job 640947) running
 
 ---
 
@@ -51,9 +51,9 @@
 
 | Gate | Status |
 |---|---|
-| Stage 3: task_loss decreases | ⏳ Pending cluster smoke run |
-| Stage 3: same seed → same trajectory | ⏳ Pending |
-| Stage 3: resume produces identical result | ⏳ Pending |
+| Stage 3: task_loss decreases | ✅ PASSED — job 640936: 3.9844→0.1123 (97% reduction, 50 steps) |
+| Stage 3: same seed → same trajectory | ✅ PASSED — audit_run.py certified DONE, all 11 checks OK |
+| Stage 3: resume produces identical result | ⏳ Pending — job 640947 (v3, config_hash fix applied) |
 | Stage 4: hook capture ≡ output_hidden_states | ⏳ Pending GPU integration test |
 | Stage 5: cache invalidation | ✅ Tested (CPU mock) |
 
@@ -61,29 +61,30 @@
 
 ## Next Actions
 
-1. **Job 640936 is submitted (smoke_gcg_qwen3_v2) — monitor:**
+1. **Monitor job 640947 (v3 — resume validation):**
    ```bash
-   squeue -j 640936
-   tail -f logs/gcg_smoke_qwen3_640936.out
+   tail -f logs/gcg_smoke_qwen3_640947.out
    ```
+   Expected: model loads, 50 steps run, then same command re-runs and prints
+   "Resuming from step 49" and exits cleanly (loop empty, already done).
 
-2. **If job fails:** check err log; re-submit with new v3 RUN_ID
-   ```bash
-   sbatch --export=ALL,RUN_ID=smoke_gcg_qwen3_v3 slurm_scripts/smoke_gcg_qwen3.slurm
-   ```
+2. **After v3 passes:** write `docs/STAGE_GCG_EARLY_BASELINE_VALIDATION.md`
 
-3. **After smoke passes:** check `outputs/stage_gcg_early/smoke_gcg_qwen3_v2/AUDIT_REPORT.md`
-
-4. **If smoke passes:** proceed to Stage 8 (weighted repr objective):
-   ```bash
-   sbatch --export=ALL,RUN_ID=gcg_qwen3_repr_v1,LAMBDA_REPR=1.0,SUFFIX_LEN=16,N_STEPS=200 \
-          slurm_scripts/run_gcg_qwen3_optimization.slurm
-   ```
-
-5. **GPU integration test** (on a cluster node with Qwen3-14B loaded):
+3. **Stage 4 — GPU integration test** (hook capture equivalence):
    ```bash
    conda run -n poc_stage2 python -m pytest poc_stage_gcg_early/tests/test_state_capture.py \
        -m gpu_integration -v
+   ```
+
+4. **Stage 5 — reference cache building:**
+   ```bash
+   sbatch slurm_scripts/build_gcg_reference_cache.slurm
+   ```
+
+5. **Stage 8 — weighted repr objective (after Stages 4–5):**
+   ```bash
+   sbatch --export=ALL,RUN_ID=gcg_qwen3_repr_v1,LAMBDA_REPR=1.0,SUFFIX_LEN=16,N_STEPS=200 \
+          slurm_scripts/run_gcg_qwen3_optimization.slurm
    ```
 
 ---
@@ -109,9 +110,9 @@
 | Blocker | Resolution |
 |---|---|
 | BPE non-invertibility CUDA assert (was blocking all runs) | **FIXED** — `suffix_ids_override` added to `build_suffix_spans`, commit e092df7 |
-| Cluster GPU availability | Job 640936 pending; awaiting slot |
-| Qwen3-14B embedding path not confirmed at runtime | First model load will print model type; verify in smoke log |
-| Stage AE `replay_hidden_states` import in cluster env | Verified importable without argparse side effects |
+| `config_hash` included `run_id`/`output_dir` → resume always failed | **FIXED** — commit f8535a2: hash now covers only scientific params |
+| Cluster GPU availability | Job 640947 (v3) running on n-801 |
+| Qwen3-14B embedding path not confirmed at runtime | **CONFIRMED** — job 640936 showed `hf_device_map={'first_parameter_device': 'cuda:0'}`, model loaded correctly |
 
 ---
 
