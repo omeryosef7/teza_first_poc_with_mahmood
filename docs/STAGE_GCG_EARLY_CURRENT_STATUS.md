@@ -145,5 +145,8 @@ These positions are within the suffix region (not before it), so causal attentio
 - `slurm_scripts/smoke_gcg_qwen3.slurm`
 - `slurm_scripts/run_gcg_qwen3_optimization.slurm`
 - `slurm_scripts/build_gcg_reference_cache_v2.slurm`
+- `slurm_scripts/run_gcg_free_generation.slurm`
+- `slurm_scripts/run_gcg_analysis.slurm`
+- `slurm_scripts/run_gcg_replay.slurm`
 
 **Untouched:** all of `llm-attacks/`, all of `poc_stage_ae/`, all existing SLURM scripts.
