@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 8 — repr_loss objective optimization (job 640983 running)
+**Current stage:** Stage 8b — repr_loss position fix + reference cache v2 build (job 641046 running)
 
 ---
 
@@ -58,24 +58,25 @@
 | Stage 5: reference cache built | ✅ PASSED — job 640959: 4 tasks cached in 1:26 |
 | Stage 5: cache invalidation | ✅ Tested (CPU mock) |
 | Stage 8a: v1 (filter_cand=True) | ❌ FAILED — suffix frozen for all 200 steps (BPE filter rejects all candidates when suffix_length=16) |
-| Stage 8: v2 (filter_cand=False) | ⏳ Running — job 640983 on n-801 |
+| Stage 8 v2: filter_cand=False, 200 steps | ✅ PASSED — job 640983: task_loss 2.52→0.05 (98% reduction); repr_loss ≈ 0 (expected — wrong positions) |
+| Stage 8b: reference cache v2 build | ⏳ Running — job 641046 |
 
 ---
 
 ## Next Actions
 
-1. **Wait for job 640983** (Stage 8 repr_v2) to complete. Expect task_loss to decrease (BPE filter disabled so candidates can be accepted). repr_loss ≈ 0 because positions 0,1,2 precede the suffix in causal attention.
+1. **Wait for job 641046** (Stage 8b reference cache v2) to complete. Builds `reference_cache_v2/` with positions = last 3 suffix tokens per task. After completion, submit Stage 8b optimization pointing at v2.
 
-2. **Stage 8b — correct repr_loss positions**: Current design uses absolute positions 0,1,2 which are before the suffix (causal masking → repr gradient is 0). Fix: use positions relative to suffix end (`suffix_slice.stop - 3, ..., suffix_slice.stop - 1`) and rebuild reference cache with same-length neutral suffix (16 space tokens). This gives valid repr_loss gradient that guides the suffix.
+2. **Stage 8b optimization**: Submit `run_gcg_qwen3_optimization.slurm` with `REFERENCE_CACHE_DIR=.../reference_cache_v2`. The optimizer now computes per-task repr_pos from spans dynamically (not hardcoded [0,1,2]). Expect repr_loss > 0 and to show gradient signal.
 
-3. **Stage 9 — free-generation evaluation**: Run `evaluate_optimized_suffixes.py` on the best candidates from Stage 8.
+3. **Stage 9 — free-generation evaluation**: Run `evaluate_optimized_suffixes.py` on the best candidates from Stage 8b.
 
-## Bugs Found (2026-07-05, Stage 8)
+## Bugs Found and Fixed (2026-07-05, Stage 8)
 
-| Bug | Root Cause | Fix |
-|---|---|---|
-| repr_loss ≈ 0.0001 always (no gradient) | Positions 0,1,2 are before suffix in causal LM → no attention from them to suffix tokens | Fix: use `suffix_slice.stop - {1,2,3}` as positions; rebuild cache with 16-token neutral suffix |
-| Stage 8 v1: suffix frozen 200 steps | `get_filtered_cands(filter_cand=True)` rejects all 64 candidates when suffix_length=16 (BPE non-invertibility with tiktoken); fallback = current suffix repeated | Fix: `--no-filter-cand` (safe since `suffix_ids_override` bypasses BPE in optimizer) |
+| Bug | Root Cause | Fix | Status |
+|---|---|---|---|
+| repr_loss ≈ 0.0001 always (no gradient) | Positions 0,1,2 are before suffix in causal LM → no attention from them to suffix tokens | `gcg_optimizer.py`: compute repr_pos per-task as `[suffix_slice.stop - N + i for i in range(N)]`; `build_reference_cache.py`: `--repr-positions N --suffix-length 16` builds v2 cache | ✅ FIXED — job 641046 building cache v2 |
+| Stage 8 v1: suffix frozen 200 steps | `get_filtered_cands(filter_cand=True)` rejects all 64 candidates when suffix_length=16 (BPE non-invertibility with tiktoken); fallback = current suffix repeated | `--no-filter-cand` (safe since `suffix_ids_override` bypasses BPE in optimizer) | ✅ FIXED — job 640983 PASSED (task_loss 2.52→0.05) |
 
 ---
 
@@ -117,5 +118,6 @@
 - `outputs/stage_gcg_early/surrogate_manifest_v1.jsonl`
 - `slurm_scripts/smoke_gcg_qwen3.slurm`
 - `slurm_scripts/run_gcg_qwen3_optimization.slurm`
+- `slurm_scripts/build_gcg_reference_cache_v2.slurm`
 
 **Untouched:** all of `llm-attacks/`, all of `poc_stage_ae/`, all existing SLURM scripts.

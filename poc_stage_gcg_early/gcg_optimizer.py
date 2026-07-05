@@ -421,21 +421,37 @@ def run_optimization(
     pareto_front: List[dict] = []
     device = next(model.parameters()).device
 
-    # Repr-loss config derived once (repr_pos_list matches reference cache positions)
+    # Repr-loss config
     use_repr = (
         config.objective.lambda_repr > 0.0
         and reference_hs_per_task is not None
         and repr_layers
     )
-    repr_pos_list = list(range(config.objective.repr_positions)) if use_repr else []
 
     if use_repr:
+        # Build per-task repr positions from the suffix span (last N suffix tokens).
+        # These positions attend to the full prefix + all suffix tokens → non-zero gradient.
+        # Computed from initial suffix (positions don't change since suffix_length is fixed).
+        N = config.objective.repr_positions
+        repr_pos_per_task: Dict[str, List[int]] = {}
+        for task in train_tasks:
+            init_spans = build_suffix_spans(
+                tokenizer, model_family, config.enable_thinking,
+                task.instruction, suffix_str, task.safe_target_prefix,
+                suffix_ids_override=suffix_ids,
+            )
+            repr_pos_per_task[task.task_id] = [
+                max(0, init_spans.suffix_slice.stop - N + i) for i in range(N)
+            ]
         print(
             f"[GCG] repr_loss ENABLED: lambda_repr={config.objective.lambda_repr}, "
-            f"layers={repr_layers}, positions={repr_pos_list}, "
+            f"layers={repr_layers}, "
+            f"repr_pos_per_task={repr_pos_per_task}, "
             f"tasks_with_cache={sorted(reference_hs_per_task.keys())}",
             flush=True,
         )
+    else:
+        repr_pos_per_task = {}
 
     for step in range(start_step, config.gcg.n_steps):
         t_start = time.time()
@@ -459,7 +475,7 @@ def run_optimization(
                 lambda_repr=config.objective.lambda_repr,
                 reference_hs=ref_hs,
                 repr_layers=repr_layers,
-                repr_positions=repr_pos_list,
+                repr_positions=repr_pos_per_task.get(task.task_id, []),
                 repr_metric=config.objective.repr_metric,
             )
             if grad_accum is None:
@@ -547,18 +563,19 @@ def run_optimization(
                         input_ids=sel_spans.input_ids.unsqueeze(0).to(device),
                         output_hidden_states=True,
                     )
+                t0_repr_pos = repr_pos_per_task.get(train_tasks[0].task_id, [])
                 cand_hs: Dict[int, Dict[int, torch.Tensor]] = {}
                 for layer_idx in repr_layers:
                     if layer_idx < len(out.hidden_states):
                         lt = out.hidden_states[layer_idx]  # [1, seq_len, d_model]
                         cand_hs[layer_idx] = {
                             pos: lt[0, pos, :].detach().cpu().to(torch.float16)
-                            for pos in repr_pos_list
+                            for pos in t0_repr_pos
                             if pos < lt.shape[1]
                         }
                 r_val = _repr_loss_fn(
                     cand_hs, ref_hs_0,
-                    layers=repr_layers, positions=repr_pos_list,
+                    layers=repr_layers, positions=t0_repr_pos,
                     metric=config.objective.repr_metric,
                 ).item()
                 best_losses["repr_loss"] = r_val

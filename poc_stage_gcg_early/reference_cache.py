@@ -251,12 +251,17 @@ class ReferenceCache:
         enable_thinking: bool,
         layers: List[int],
         positions: List[int],
+        suffix_ids_override: Optional[List[int]] = None,
     ) -> ReferenceCacheEntry:
         """
         Run a forward pass on the neutral-suffix input and store the result.
 
         Skips silently if the entry already exists with the same config key.
         Raises CacheKeyMismatchError if a different config's entry exists.
+
+        suffix_ids_override: if provided, use these token IDs directly for the
+          neutral suffix (bypasses BPE tokenization). Required when the neutral
+          suffix is specified as raw token IDs (e.g. [220]*16 for Stage 8b).
         """
         self.assert_not_stale(
             task_id, model, tokenizer, model_family,
@@ -273,6 +278,7 @@ class ReferenceCache:
         spans = build_suffix_spans(
             tokenizer, model_family, enable_thinking,
             instruction, neutral_suffix, safe_target=" ",
+            suffix_ids_override=suffix_ids_override,
         )
         input_ids = spans.input_ids  # full [prefix + neutral_suffix + " "]
 
