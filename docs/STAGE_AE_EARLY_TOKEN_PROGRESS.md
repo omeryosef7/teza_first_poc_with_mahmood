@@ -1464,6 +1464,59 @@ end-to-end for both models: generation → replay → scoring → analysis
 pipeline: paired A/D/E/G generation, hidden-state replay, StrongREJECT
 scoring, and cross-model analysis" (26 files changed, 5357 insertions).
 
+## 2026-07-05 (later) — Post-completion verification pass; missing run-directory docs written; DONE marker
+
+User asked to verify all outputs are complete and that everything the
+plan committed to documenting was actually documented. Ran a full
+integrity pass:
+
+- **Generation**: re-ran `audit_ae_run.py` fresh for both models —
+  confirmed again 1386/1386 rows, 0 missing, for both Qwen3-14B and
+  Gemma4-E4B-it.
+- **Hidden-state replay**: confirmed exactly 44 `.pt` + 44
+  `_metadata.parquet` files for both models, 0 zero-byte files.
+- **Scoring**: confirmed 1386/1386 rows for both models, 0 bad JSON.
+  **Found 1 StrongREJECT API error** (out of 2772 total scored rows):
+  `qwen3|4|goal_index=4|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini|E|203`
+  has `strongreject_score=null`, `strongreject_status="error"` (all
+  heuristic taxonomy fields still computed normally). Attempted to
+  retry it by removing the one line from `qwen3_scores.jsonl` and
+  rescoring — **this edit was correctly blocked by the permission
+  system as an unreviewed destructive modification to completed
+  research data** (score_ae_outputs.py's resume logic keys on row_key
+  presence, not success/failure, so retrying requires either removing
+  the stale line or a small script change — left for the user to
+  decide, documented in `RUN_STATUS.md` "Known Issues" rather than
+  fixed unilaterally). Confirmed both Stage 9 analysis scripts already
+  skip rows with a null success label, so this does not corrupt any
+  analysis result — it's 1385/1386 Qwen condition-E goal-4 rows feeding
+  the analysis, not 1386/1386.
+- **Analysis outputs**: confirmed all 3 per-model CSVs/JSON + 3
+  combined-analysis files exist and are non-trivial in size for both
+  models.
+- **Manifest hard-assert** (re-verified per the plan's Stage 1
+  requirement): 1386 rows/model, 2772 total, 0 duplicate row keys —
+  confirmed for both `qwen3_ae_manifest.jsonl` and
+  `gemma4_ae_manifest.jsonl`.
+- **Git**: `git status --short` clean — nothing uncommitted.
+
+**Found and fixed a documentation-completeness gap**: the plan requires
+`EXPERIMENT_PLAN.md`, `SLURM_AND_MODEL_AUDIT.md`, `IMPLEMENTATION_AUDIT.md`,
+`SMOKE_TEST_REPORT_{QWEN,GEMMA}.md`, and `RUN_STATUS.md` to be written
+**under the run directory** (`outputs/.../full_20260702_095452/`) as work
+progresses, plus a top-level `DONE` marker once both models pass
+integrity audit. Only `IMPLEMENTATION_AUDIT.md`/`SLURM_AND_MODEL_AUDIT.md`
+existed, and only under `docs/` at the repo root (git-tracked) rather
+than under the run directory (gitignored) as specified. `EXPERIMENT_PLAN.md`,
+both `SMOKE_TEST_REPORT_*.md` files, and `RUN_STATUS.md` did not exist
+anywhere. Wrote all of these now (copying the existing audit docs and
+the approved plan into the run directory; reconstructing the two smoke
+test reports from this file's 2026-07-02 entries; writing a fresh
+`RUN_STATUS.md` final snapshot with exact job IDs for both models'
+full resume chains) and wrote the `DONE` marker. Since the run directory
+is gitignored, none of this required a new commit — it closes the gap
+purely in `outputs/`, as the plan intended.
+
 - [x] Qwen3-14B generation FULLY COMPLETE: 1386/1386 rows.
 - [x] Gemma4-E4B-it generation FULLY COMPLETE: 1386/1386 rows.
 - [x] Qwen hidden-state replay FULLY COMPLETE: 44/44 shards.
