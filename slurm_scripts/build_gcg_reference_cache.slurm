@@ -25,8 +25,8 @@ PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahm
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 MANIFEST="${PROJECT_DIR}/outputs/stage_gcg_early/surrogate_manifest_v1.jsonl"
 CACHE_DIR="${PROJECT_DIR}/outputs/stage_gcg_early/reference_cache_v1"
-# Layers: ~every 6 layers + final for Qwen3-14B (48 layers total)
-LAYERS="${LAYERS:-0,6,12,18,24,30,36,42,47}"
+# Layers: every 5 layers + final for Qwen3-14B (40 transformer layers, valid 0..40)
+LAYERS="${LAYERS:-0,5,10,15,20,25,30,35,40}"
 POSITIONS="${POSITIONS:-0,1,2}"
 
 cd "$PROJECT_DIR"

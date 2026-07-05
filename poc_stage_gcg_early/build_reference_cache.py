@@ -35,8 +35,8 @@ def main(argv=None):
     parser.add_argument("--cache-dir", required=True)
     parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4"])
     parser.add_argument("--model-name-or-path", default="Qwen/Qwen3-14B")
-    parser.add_argument("--layers", default="0,8,16,24,32,40,47",
-                        help="Comma-separated layer indices to cache")
+    parser.add_argument("--layers", default="0,5,10,15,20,25,30,35,40",
+                        help="Comma-separated layer indices to cache (Qwen3-14B: 0..40)")
     parser.add_argument("--positions", default="0,1,2",
                         help="Comma-separated token positions to cache")
     parser.add_argument("--split", default="all", choices=["train", "all"])
