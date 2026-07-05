@@ -106,6 +106,15 @@ def main(argv=None):
     parser.add_argument("--checkpoint-every", type=int, default=10)
     parser.add_argument("--snapshot-every", type=int, default=50)
     parser.add_argument("--split", default="train", choices=["train", "all"])
+    parser.add_argument("--selection-mode", default="weighted",
+                        choices=["weighted", "constrained", "lexicographic"],
+                        help="Candidate selection strategy. 'weighted': argmin(total_loss). "
+                             "'constrained': argmin(task_loss) s.t. repr_loss<=threshold. "
+                             "'lexicographic': argmin(repr_loss) s.t. task_loss<=best+eps.")
+    parser.add_argument("--constrained-repr-threshold", type=float, default=0.3,
+                        help="repr_loss threshold for constrained selection mode.")
+    parser.add_argument("--lexicographic-task-eps", type=float, default=0.01,
+                        help="task_loss tolerance for lexicographic selection mode.")
     args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
@@ -133,6 +142,9 @@ def main(argv=None):
             lambda_kl=args.lambda_kl,
             repr_metric=args.repr_metric,
             repr_positions=args.repr_positions,
+            selection_mode=args.selection_mode,
+            constrained_repr_threshold=args.constrained_repr_threshold,
+            lexicographic_task_eps=args.lexicographic_task_eps,
         ),
         output_dir=str(output_dir),
         enable_thinking=not args.no_thinking,

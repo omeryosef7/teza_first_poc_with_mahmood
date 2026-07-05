@@ -40,6 +40,8 @@ REPR_POSITIONS="${REPR_POSITIONS:-3}"
 REPR_LAYERS="${REPR_LAYERS:-0,5,10,15,20,25,30,35}"
 REFERENCE_CACHE_DIR="${REFERENCE_CACHE_DIR:-${PROJECT_DIR}/outputs/stage_gcg_early/reference_cache_v1}"
 SELECTION_MODE="${SELECTION_MODE:-weighted}"
+CONSTRAINED_REPR_THRESHOLD="${CONSTRAINED_REPR_THRESHOLD:-0.3}"
+LEXICOGRAPHIC_TASK_EPS="${LEXICOGRAPHIC_TASK_EPS:-0.01}"
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
@@ -101,6 +103,9 @@ python -m poc_stage_gcg_early.run_optimization \
     --repr-positions "${REPR_POSITIONS}" \
     --repr-layers "${REPR_LAYERS}" \
     --reference-cache-dir "${REFERENCE_CACHE_DIR}" \
+    --selection-mode "${SELECTION_MODE}" \
+    --constrained-repr-threshold "${CONSTRAINED_REPR_THRESHOLD}" \
+    --lexicographic-task-eps "${LEXICOGRAPHIC_TASK_EPS}" \
     --no-filter-cand \
     --checkpoint-every 10 \
     --snapshot-every 50 \

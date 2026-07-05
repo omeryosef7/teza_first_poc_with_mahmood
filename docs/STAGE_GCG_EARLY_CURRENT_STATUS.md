@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-05  
-**Current stage:** Stage 8b — optimization run with correct repr_loss positions (job 641047 pending)
+**Current stage:** Stage 8c (lexicographic, lambda_repr=5.0, job 641092) + Stage 9 eval (job 641091) both running
 
 ---
 
@@ -60,17 +60,31 @@
 | Stage 8a: v1 (filter_cand=True) | ❌ FAILED — suffix frozen for all 200 steps (BPE filter rejects all candidates when suffix_length=16) |
 | Stage 8 v2: filter_cand=False, 200 steps | ✅ PASSED — job 640983: task_loss 2.52→0.05 (98% reduction); repr_loss ≈ 0 (expected — wrong positions) |
 | Stage 8b: reference cache v2 build | ✅ PASSED — job 641046: 4 tasks, positions task-specific (suffix-relative) |
-| Stage 8b: optimization run | ⏳ Pending — job 641047 (reference_cache_v2, lambda_repr=1.0) |
+| Stage 8b: optimization run | ✅ PASSED — job 641047: task_loss 2.81→0.012, repr_loss 0.20→0.51 (active gradient confirmed) |
+| Stage 8c: lexicographic + lambda_repr=5.0 | ⏳ Running — job 641092 (explore lower repr_loss region) |
+| Stage 9: free-generation evaluation | ⏳ Running — job 641091 (Stage 8b candidates) |
 
 ---
 
+## Stage 8b Findings (2026-07-05)
+
+| Metric | Step 0 | Final (step 199) |
+|---|---|---|
+| task_loss | 2.81 | 0.012 |
+| repr_loss | 0.205 | 0.514 |
+| total_loss | 3.02 | 0.526 |
+
+**Interpretation:** With lambda_repr=1.0 (weighted mode), task_loss objective dominates the gradient. The optimizer successfully reduces task_loss by 99%, but repr_loss actually INCREASES from ~0.20 (initial "! ! !" suffix) to ~0.51 (optimized suffix). This means the optimized suffix makes early hidden states MORE different from the neutral reference, not less — the two objectives are in conflict. The lexicographic and higher-lambda runs (Stage 8c) explore whether repr_loss can be kept low while still achieving task success.
+
 ## Next Actions
 
-1. **Monitor job 641047** (Stage 8b optimization). Expect repr_loss > 0 this time (positions are now suffix-relative, meaning they attend to the full suffix context). If task_loss continues decreasing while repr_loss stays near 0, something is still wrong. If repr_loss is non-zero and changes across steps, the objective is wired correctly.
+1. **Monitor job 641091** (Stage 9 free-generation): Wait for FREE_GENERATION_RESULTS.jsonl. Key metric: do optimized suffixes cause the model to generate the target task correctly in free-generation mode?
 
-2. **Stage 9 — free-generation evaluation**: After Stage 8b completes, implement `evaluate_optimized_suffixes.evaluate_all_candidates()` and submit the free-generation evaluation job on the best candidates.
+2. **Monitor job 641092** (Stage 8c lexicographic + lambda_repr=5.0): Does heavier repr weighting or lexicographic selection achieve lower repr_loss while keeping task_loss < 0.1?
 
-3. **Stage 10 — Gemma4 extension**: After Stage 9 analysis.
+3. **Analyze Pareto frontier**: Run `analyze_pareto_frontier.py` after Stage 9 to compare repr_loss vs task_loss across conditions.
+
+4. **Stage 10 — Gemma4 extension**: After Stage 9 analysis completes.
 
 ## Stage 8b Reference Cache v2 — Verified Positions (2026-07-05)
 
