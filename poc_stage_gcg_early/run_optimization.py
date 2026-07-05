@@ -88,6 +88,10 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--no-filter-cand", action="store_true",
+                        help="Disable BPE round-trip filter on candidates. Recommended when "
+                             "suffix_ids_override is used (avoids all candidates being rejected "
+                             "due to BPE tokenizer non-invertibility).")
     parser.add_argument("--lambda-repr", type=float, default=0.0)
     parser.add_argument("--lambda-kl", type=float, default=0.0)
     parser.add_argument("--repr-metric", default="cosine", choices=["cosine", "l2"])
@@ -122,6 +126,7 @@ def main(argv=None):
             seed=args.seed,
             checkpoint_every=args.checkpoint_every,
             snapshot_every=args.snapshot_every,
+            filter_cand=not args.no_filter_cand,
         ),
         objective=ObjectiveWeights(
             lambda_repr=args.lambda_repr,

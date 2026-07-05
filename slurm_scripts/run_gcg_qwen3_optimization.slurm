@@ -101,6 +101,7 @@ python -m poc_stage_gcg_early.run_optimization \
     --repr-positions "${REPR_POSITIONS}" \
     --repr-layers "${REPR_LAYERS}" \
     --reference-cache-dir "${REFERENCE_CACHE_DIR}" \
+    --no-filter-cand \
     --checkpoint-every 10 \
     --snapshot-every 50 \
     --split train
