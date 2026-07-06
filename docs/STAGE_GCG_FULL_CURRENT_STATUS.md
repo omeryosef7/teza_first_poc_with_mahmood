@@ -23,10 +23,10 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 
 | Step | Status | Details |
 |---|---|---|
-| Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val) at `outputs/stage_gcg_full/advbench_manifest_v1.jsonl` |
-| Reference cache (Qwen3) | 🔄 RUNNING | Job 641515 on n-801; ~45 min; `outputs/stage_gcg_full/reference_cache_v1/` |
-| Optimization: gcg_full_qwen3_weighted | ⏳ PENDING | Submit after cache completes |
-| Optimization: gcg_full_multimodel_weighted | ⏳ PENDING | Submit after cache completes; 2 GPUs |
+| Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val); SHA256: 4aef213... |
+| Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
+| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641602 on n-801; ~6h |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641603 on n-802; ~8h; 2 GPUs |
 | Free-gen evaluation | ⏳ PENDING | After each optimization run |
 | Hidden-state replay | ⏳ PENDING | After free-gen |
 | Detection delay analysis | ⏳ PENDING | After replay |
@@ -128,7 +128,9 @@ task_loss by text-decode-reencode to selection criterion.
 |---|---|---|---|---|
 | 641515 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: SurrogateTask.from_dict rejected extra manifest fields |
 | 641516 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: load_manifest hardcoded 2-train-task count assertion |
-| 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Fixed; ~45 min; 20 train behaviors |
+| 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ✅ DONE | 20 .pt files; all valid; ~10 min (cache hit) |
+| 641602 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | gcg_full_qwen3_weighted; 500 steps; λ_repr=1.0 |
+| 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-802) | gcg_full_multimodel_weighted; 500 steps; 2 GPUs |
 
 ### Bugs Fixed During Submission
 
