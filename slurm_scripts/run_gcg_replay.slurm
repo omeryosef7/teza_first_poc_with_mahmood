@@ -111,14 +111,17 @@ from poc_stage_gcg_early.selected_state_capture import capture_selected_states
 from poc_stage_gcg_early.model_adapter import apply_chat_template, tokenize_prompt
 
 free_gen_path = run_dir / "FREE_GENERATION_RESULTS.jsonl"
+manifest_path = run_dir / "MANIFEST.jsonl"
 hs_dir = run_dir / "hidden_states"
 hs_dir.mkdir(exist_ok=True)
 
 rows = [json.loads(l) for l in open(free_gen_path) if l.strip()]
-print(f"[replay] {len(rows)} rows to process", flush=True)
+manifest = {r["task_id"]: r for r in [json.loads(l) for l in open(manifest_path) if l.strip()]}
+print(f"[replay] {len(rows)} rows to process, {len(manifest)} tasks in manifest", flush=True)
 
 done = 0
 skipped = 0
+errors = 0
 for row in rows:
     suffix_hash = hashlib.sha256(row.get("suffix_str", "").encode()).hexdigest()[:8]
     out_name = f"{row['task_id']}_{row['condition_label']}_{suffix_hash}_{row['seed']}.pt"
@@ -127,37 +130,56 @@ for row in rows:
         skipped += 1
         continue
 
-    # Replay: encode the original formatted prompt + generation
-    user_content = row.get("suffix_str", "")  # full prompt is in generation_text
-    gen_text = row.get("generation_text", "")
-
-    # Reconstruct full token ids from prompt + generation
-    # The prompt token ids are not stored; re-build from instruction+suffix
-    # We store all-positions hidden states at the generated positions
-    gen_tokens = tokenizer.encode(gen_text, add_special_tokens=False)
-    if not gen_tokens:
+    task_id = row["task_id"]
+    if task_id not in manifest:
+        print(f"[replay] WARNING: task_id {task_id!r} not in manifest, skipping", flush=True)
+        errors += 1
         continue
 
-    # Capture hidden states at all generated-token positions
-    # For detection-delay analysis: positions 0..len(gen_tokens)-1 relative to generation start
-    # Absolute positions: boundary_index + i for i in range(len(gen_tokens))
-    # We don't have boundary_index here, so capture relative to full sequence
-    # Use only the first 32 generated tokens to keep cost manageable
-    max_gen_positions = min(len(gen_tokens), 32)
+    instruction = manifest[task_id]["instruction"]
+    suffix_str = row.get("suffix_str", "")
+    row_enable_thinking = row.get("enable_thinking", enable_thinking)
+    gen_text = row.get("generation_text", "")
 
-    with torch.no_grad():
-        input_ids = torch.tensor(gen_tokens[:max_gen_positions], dtype=torch.long)
-        positions = list(range(max_gen_positions))
-        hs = capture_selected_states(
-            model, input_ids, layers=layers, positions=positions, preserve_grad=False
-        )
+    # Reconstruct full sequence: formatted_prompt + generated_tokens
+    # This preserves the causal context the model had during generation.
+    prompt_str = apply_chat_template(
+        tokenizer, instruction + suffix_str,
+        model_family=model_family, enable_thinking=row_enable_thinking
+    )
+    prompt_ids = tokenize_prompt(tokenizer, prompt_str)
+    gen_ids = tokenizer.encode(gen_text, add_special_tokens=False)
+
+    if not gen_ids:
+        errors += 1
+        continue
+
+    max_gen_pos = min(len(gen_ids), 32)
+    full_ids = prompt_ids + gen_ids[:max_gen_pos]
+    gen_start = len(prompt_ids)
+    positions = list(range(gen_start, gen_start + max_gen_pos))
+
+    try:
+        with torch.no_grad():
+            hs = capture_selected_states(
+                model,
+                torch.tensor(full_ids, dtype=torch.long),
+                layers=layers,
+                positions=positions,
+                preserve_grad=False,
+            )
+    except Exception as e:
+        print(f"[replay] ERROR on {out_name}: {e}", flush=True)
+        errors += 1
+        continue
 
     torch.save({
-        "task_id": row["task_id"],
+        "task_id": task_id,
         "condition_label": row["condition_label"],
         "seed": row["seed"],
-        "suffix_str": row.get("suffix_str", ""),
-        "gen_tokens": gen_tokens[:max_gen_positions],
+        "suffix_str": suffix_str,
+        "gen_start": gen_start,          # absolute index of first generated token
+        "gen_tokens": gen_ids[:max_gen_pos],
         "positions": positions,
         "layers": layers,
         "hidden_states": {
@@ -167,9 +189,9 @@ for row in rows:
     }, out_path)
     done += 1
     if done % 5 == 0:
-        print(f"[replay] {done} done, {skipped} skipped", flush=True)
+        print(f"[replay] {done} done, {skipped} skipped, {errors} errors", flush=True)
 
-print(f"[replay] Complete: {done} new files, {skipped} skipped", flush=True)
+print(f"[replay] Complete: {done} new files, {skipped} skipped, {errors} errors", flush=True)
 PYEOF
 
 echo ""

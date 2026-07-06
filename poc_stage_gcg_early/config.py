@@ -66,6 +66,7 @@ class ObjectiveWeights:
     per_token_weights: List[float] = field(default_factory=list)  # empty = uniform
     kl_topk_vocab: Optional[int] = None  # None = exact KL; set to e.g. 1000 for memory efficiency
     whitened_l2: bool = False          # experimental flag; must be True to activate whitened_l2 metric
+    fluency_penalty_weight: float = 0.0  # EXPERIMENTAL: penalize low-frequency suffix bigrams (default off)
     selection_mode: str = "weighted"   # "weighted" | "constrained" | "lexicographic"
     constrained_repr_threshold: float = 0.1   # for constrained mode: repr_loss <= this
     lexicographic_task_eps: float = 0.01      # for lexicographic mode: task_loss tolerance

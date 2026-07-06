@@ -143,9 +143,15 @@ def repr_loss(
             elif metric == "l2":
                 dist = (_normalize(cand_vec) - _normalize(ref_vec)).norm()
             elif metric == "whitened_l2":
-                # Experimental: whitening would require a pre-computed covariance.
-                # For now, fall back to l2 with a warning logged by the caller.
-                dist = (_normalize(cand_vec) - _normalize(ref_vec)).norm()
+                # EXPERIMENTAL: proper whitened L2. whitening_matrix W = (Σ + εI)^{-0.5}
+                # must be pre-computed from reference activations and passed by the caller.
+                # Falls back to standard L2 when whitening_matrix is not provided.
+                if hasattr(repr_loss, "_whitening_matrix") and repr_loss._whitening_matrix is not None:
+                    W = repr_loss._whitening_matrix.to(cand_vec.device, dtype=cand_vec.dtype)
+                    diff = _normalize(cand_vec) - _normalize(ref_vec)  # [d_model]
+                    dist = (W @ diff).norm()
+                else:
+                    dist = (_normalize(cand_vec) - _normalize(ref_vec)).norm()
             else:
                 raise ValueError(f"Unknown metric: {repr(metric)}. Use 'cosine' or 'l2'.")
 
@@ -268,6 +274,79 @@ def regularization_loss(
 
 
 # ---------------------------------------------------------------------------
+# Whitening matrix helper (EXPERIMENTAL — for whitened_l2 metric)
+# ---------------------------------------------------------------------------
+
+def compute_whitening_matrix(
+    reference_vecs: torch.Tensor,
+    eps: float = 1e-4,
+) -> torch.Tensor:
+    """
+    EXPERIMENTAL. Compute W = (Σ + εI)^{-0.5} from a batch of reference hidden-state vectors.
+
+    Args:
+        reference_vecs: [N, d_model] tensor of reference activations
+        eps:            regularization added to diagonal before inversion
+
+    Returns:
+        [d_model, d_model] whitening matrix W
+    """
+    n = reference_vecs.shape[0]
+    if n < 2:
+        d = reference_vecs.shape[1]
+        return torch.eye(d, dtype=reference_vecs.dtype, device=reference_vecs.device)
+
+    mu = reference_vecs.mean(0, keepdim=True)
+    centered = reference_vecs - mu
+    cov = (centered.T @ centered) / (n - 1)  # [d, d]
+    reg_cov = cov + eps * torch.eye(cov.shape[0], dtype=cov.dtype, device=cov.device)
+
+    # W = (Σ + εI)^{-0.5} via eigendecomposition (numerically stable)
+    eigvals, eigvecs = torch.linalg.eigh(reg_cov)
+    eigvals = eigvals.clamp(min=eps)
+    W = eigvecs @ torch.diag(eigvals ** -0.5) @ eigvecs.T
+    return W
+
+
+# ---------------------------------------------------------------------------
+# Fluency regularization (EXPERIMENTAL — off by default)
+# ---------------------------------------------------------------------------
+
+def fluency_loss(
+    suffix_ids: torch.Tensor,
+    tokenizer: Optional[Any] = None,
+    ngram_freq_table: Optional[dict] = None,
+) -> torch.Tensor:
+    """
+    EXPERIMENTAL. Penalize low-frequency token bigrams in the suffix.
+
+    Only active when `ngram_freq_table` is provided AND the caller sets
+    `fluency_penalty_weight > 0`. Returns 0.0 if either is absent.
+
+    Args:
+        suffix_ids:       [suffix_len] token ID tensor
+        tokenizer:        used to decode individual tokens for display
+        ngram_freq_table: {(tok_i, tok_j): float} bigram log-prob table.
+                          If None, returns 0.0 (no-op).
+
+    Returns:
+        scalar tensor: mean negative log-prob of consecutive token pairs.
+    """
+    if ngram_freq_table is None or len(suffix_ids) < 2:
+        return torch.tensor(0.0)
+
+    total = 0.0
+    n = 0
+    ids = suffix_ids.tolist()
+    for a, b in zip(ids[:-1], ids[1:]):
+        lp = ngram_freq_table.get((a, b), -20.0)  # default: very rare
+        total -= lp  # penalize low-freq pairs (high negative log-prob)
+        n += 1
+
+    return torch.tensor(total / n if n > 0 else 0.0)
+
+
+# ---------------------------------------------------------------------------
 # Composite loss (used in gradient computation)
 # ---------------------------------------------------------------------------
 
@@ -290,6 +369,9 @@ def composite_loss(
     suffix_ids: Optional[torch.Tensor] = None,
     prev_suffix_ids: Optional[torch.Tensor] = None,
     regularization_kwargs: Optional[dict] = None,
+    fluency_penalty_weight: float = 0.0,
+    ngram_freq_table: Optional[dict] = None,
+    tokenizer: Optional[Any] = None,
 ) -> dict:
     """
     Compute all objective components and return them as a dict.
@@ -329,12 +411,18 @@ def composite_loss(
         **reg_kwargs,
     )
 
-    total = t_loss + lambda_repr * r_loss + lambda_kl * k_loss + reg_loss_val
+    # EXPERIMENTAL: fluency regularization (off by default; weight=0.0 is a no-op)
+    fl_loss = torch.tensor(0.0)
+    if fluency_penalty_weight > 0.0 and suffix_ids is not None:
+        fl_loss = fluency_loss(suffix_ids, tokenizer=tokenizer, ngram_freq_table=ngram_freq_table)
+
+    total = t_loss + lambda_repr * r_loss + lambda_kl * k_loss + reg_loss_val + fluency_penalty_weight * fl_loss
 
     return {
         "task_loss": t_loss,
         "repr_loss": r_loss,
         "kl_loss": k_loss,
         "reg_loss": reg_loss_val,
+        "fluency_loss": fl_loss,
         "total_loss": total,
     }

@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** PIPELINE COMPLETE — all 4 runs fully analyzed (Qwen3 + Gemma4)
+**Current stage:** EXTENDED PIPELINE RUNNING — replay jobs active; transfer + unseen-seed pending
 
 ---
 
@@ -17,14 +17,15 @@
 | `poc_stage_gcg_early/suffix_token_manager.py` | ✅ | SuffixSpans, build_suffix_spans, replace_suffix, get_filtered_cands |
 | `poc_stage_gcg_early/selected_state_capture.py` | ✅ | Wrapper over Stage AE hooks |
 | `poc_stage_gcg_early/reference_cache.py` | ✅ | Config-keyed cache with invalidation |
-| `poc_stage_gcg_early/objectives.py` | ✅ | task_loss, repr_loss, kl_loss, regularization_loss, composite_loss |
+| `poc_stage_gcg_early/objectives.py` | ✅ | task_loss, repr_loss, kl_loss, regularization_loss, composite_loss, fluency_loss (EXPERIMENTAL), compute_whitening_matrix (EXPERIMENTAL) |
 | `poc_stage_gcg_early/gcg_optimizer.py` | ✅ | Full loop: gradient → sample → filter → evaluate → select → checkpoint |
 | `poc_stage_gcg_early/build_safe_surrogate_manifest.py` | ✅ | 4-task harmless manifest |
 | `poc_stage_gcg_early/run_optimization.py` | ✅ | CLI entry point with --reference-cache-dir, --repr-layers, --no-filter-cand |
 | `poc_stage_gcg_early/evaluate_optimized_suffixes.py` | ✅ stub | Stage 9 — pending Stage 3 gate |
 | `poc_stage_gcg_early/audit_run.py` | ✅ | Run completeness audit + DONE flag |
 | `poc_stage_gcg_early/analyze_pareto_frontier.py` | ✅ Full impl | Writes RESULTS_SUMMARY.md; Pareto frontier, trajectory stats, Stage 3 gate check |
-| `poc_stage_gcg_early/analyze_detection_delay.py` | ✅ Full impl | Writes DETECTION_DELAY_ANALYSIS.md; condition table from FREE_GENERATION_RESULTS.jsonl |
+| `poc_stage_gcg_early/analyze_detection_delay.py` | ✅ Full impl | Writes DETECTION_DELAY_ANALYSIS.md; condition table, held-out task transfer, seed transfer, per-position repr distance, detector AUC (last 2 require hidden_states/) |
+| `poc_stage_gcg_early/evaluate_cross_model_transfer.py` | ✅ | Cross-model suffix text transfer; writes FREE_GENERATION_RESULTS.jsonl + analysis to output dir |
 | `poc_stage_gcg_early/tests/test_suffix_manager.py` | ✅ 17 tests | All passing |
 | `poc_stage_gcg_early/tests/test_objectives.py` | ✅ 12 tests | All passing |
 | `poc_stage_gcg_early/tests/test_state_capture.py` | ✅ 3 CPU tests | All passing; GPU integration test marked |
@@ -104,9 +105,26 @@
 | optimized_weighted | 0.833 (10/12) | 0.917 (11/12) |
 | optimized_lexicographic | — | 0.833 (10/12) |
 
-**Interpretation:** The optimized suffix achieves 83-92% task completion in free-generation mode (vs 100% for all baselines). The 1-2 failure cases per condition suggest the optimized suffix (with CJK/Arabic tokens) occasionally disrupts the model's ability to generate the correct final answer. This is consistent with the repr_loss/task_loss conflict observed in training: the suffix tokens that best minimize repr_loss are those that most disrupt the model's normal processing.
+**Interpretation (StrongREJECT, 2026-07-06):** All conditions score 12/12 success (≥0.5 threshold) with mean StrongREJECT 0.896–0.927. The optimized suffix does NOT degrade task completion quality vs. baselines. The 1-2 prefix-match failures were still high-quality responses that satisfied the GPT-4 rubric. This revision supersedes the earlier prefix-match-only finding.
 
-**StrongREJECT:** Not run (no API key). Prefix-match success is a conservative proxy.
+**StrongREJECT (Qwen3 8b):**
+| Condition | N | Mean SR | SR Success Rate |
+|---|---|---|---|
+| neutral_control | 12 | 0.906 | 12/12 |
+| optimized_weighted | 12 | 0.896 | 12/12 |
+| random_spaces | 12 | 0.927 | 12/12 |
+| task_only | 12 | 0.917 | 12/12 |
+
+**StrongREJECT (Qwen3 8c):**
+| Condition | N | Mean SR | SR Success Rate |
+|---|---|---|---|
+| neutral_control | 12 | 0.917 | 12/12 |
+| optimized_lexicographic | 12 | 0.896 | 12/12 |
+| optimized_weighted | 12 | 0.906 | 12/12 |
+| random_spaces | 12 | 0.906 | 12/12 |
+| task_only | 12 | 0.906 | 12/12 |
+
+**Bug fixed (2026-07-06):** `evaluate_suffix` read `sr.get("score")` (None) instead of `sr.get("strongreject_score")` — all prior runs silently produced null scores. Fixed + retroactively re-scored.
 
 ## Stage 10 Findings (2026-07-06)
 
@@ -132,7 +150,26 @@
 | optimized_weighted | 0.833 (10/12) | 0.833 (10/12) |
 | optimized_lexicographic | — | 0.917 (11/12) |
 
-**Note:** Gemma4 baseline is 75% (not 100% like Qwen3). The surrogate tasks (`safe_target_prefix`) were tuned for Qwen3's output format; Gemma4 uses different response formatting, causing 3/12 cases to miss the prefix match even with no suffix. The optimized suffix does NOT degrade performance vs. baseline — it slightly improves it (0.833-0.917 vs 0.750).
+**Gemma4 prefix-match note:** Baseline 75% because tasks were tuned for Qwen3 output format. Optimized suffix slightly improves over baseline (0.833-0.917 vs 0.750).
+
+**StrongREJECT (Gemma4 10a):**
+| Condition | N | Mean SR | SR Success Rate |
+|---|---|---|---|
+| neutral_control | 12 | 0.990 | 12/12 |
+| optimized_weighted | 12 | 1.000 | 12/12 |
+| random_spaces | 12 | 0.958 | 12/12 |
+| task_only | 12 | 1.000 | 12/12 |
+
+**StrongREJECT (Gemma4 10b):**
+| Condition | N | Mean SR | SR Success Rate |
+|---|---|---|---|
+| neutral_control | 12 | 0.979 | 12/12 |
+| optimized_lexicographic | 12 | 1.000 | 12/12 |
+| optimized_weighted | 12 | 0.969 | 12/12 |
+| random_spaces | 12 | 1.000 | 12/12 |
+| task_only | 12 | 0.979 | 12/12 |
+
+**Cross-model StrongREJECT finding (2026-07-06):** All 4 runs, all conditions: 100% task success (12/12 at ≥0.5 threshold). Mean scores range 0.896–1.000. The optimized suffix does NOT degrade task completion quality on either model. Supersedes prefix-match-based interpretation.
 
 ## Cross-Model Comparison: Primary Findings (2026-07-06)
 
@@ -162,7 +199,7 @@
 | Gemma4-E4B | optimized_lexicographic (10b) | 0.917 |
 | Gemma4-E4B | optimized_weighted (10b) | 0.833 |
 
-**Finding 3:** Qwen3 shows degradation (optimized suffix disrupts generation for 1-2/12 tasks). Gemma4 does not (optimized suffix slightly improves over the already-imperfect 75% baseline). This asymmetry is consistent with Gemma4's lower repr_loss increase — the suffix disrupts Qwen3's generation more because it drives its hidden states further from the neutral baseline.
+**Finding 3 (revised 2026-07-06):** StrongREJECT shows 100% task success (12/12 ≥0.5) for ALL conditions on BOTH models. The prefix-match "failures" were still high-quality responses. The optimized suffix does NOT degrade task completion on either Qwen3 or Gemma4. Mean StrongREJECT scores: 0.896–0.927 (Qwen3), 0.958–1.000 (Gemma4).
 
 ## Pipeline Complete — Artifact Inventory (2026-07-06)
 
@@ -175,10 +212,18 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 | gcg_gemma4_repr_10a | ✅ | ✅ | ✅ | ✅ | ✅ |
 | gcg_gemma4_repr_10b | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-**Remaining open items:**
-- StrongREJECT scoring: blocked on API key — all success rates use prefix-match proxy
-- Per-position repr distance (hidden_states/ .pt files): not computed (evaluate_optimized_suffixes.py generates these; not submitted as a separate stage)
-- Detector AUC analysis: not implemented (requires separate classifier training)
+**Remaining open items (2026-07-06):**
+- ✅ StrongREJECT scoring: COMPLETE — retroactively scored all 216 rows; bug fixed (wrong key)
+- ✅ Hidden-state replay scripts: written + submitted (641323-641326 RUNNING on n-801)
+- ✅ Cross-model transfer: `evaluate_cross_model_transfer.py` + SLURM written; 2 jobs submitted (641329 Qwen3→Gemma4, 641330 Gemma4→Qwen3 PENDING)
+- ✅ Unseen-seed eval: `run_gcg_unseen_seed_eval.slurm` written; submit after queue clears
+- ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, repr distance, detector AUC
+- ✅ `objectives.py` updated with whitened L2 (proper eigendecomposition W=(Σ+εI)^{-0.5}) + fluency_loss (EXPERIMENTAL, off by default)
+- ✅ `config.py` updated: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
+- ⏳ Per-position repr distance: hidden_states/ files created once jobs 641323-641326 complete
+- ⏳ Detector AUC: logistic regression on hidden states (runs automatically in `analyze_detection_delay.py` once .pt files exist)
+- ⏳ Analysis jobs (4 CPU): submit once replay jobs complete
+- ⏳ Unseen-seed eval (2 GPU): submit once queue has room
 
 ## Bug Fixes Applied (2026-07-06)
 
@@ -190,6 +235,7 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 | `analyze_detection_delay.py`: only reported StrongREJECT success (all 0 when no API key) | Added `compute_prefix_match()` function using MANIFEST.jsonl targets |
 | `model_adapter.py` `_EMBED_PATHS_BY_FAMILY["gemma4"]`: path `language_model.model.embed_tokens` incorrect (ValueError for jobs 641245/641246) | Root: `Gemma4ForConditionalGeneration.model` → `Gemma4Model.language_model` → text decoder → `embed_tokens`; correct path is `model.language_model.embed_tokens`. Fixed in `_EMBED_PATHS_BY_FAMILY` and fallback list. Resubmitted as jobs 641247/641248. |
 | `gcg_optimizer.py` `_token_gradients`: Gemma4 OOM (28 GiB) when `inputs_embeds` provided without `input_ids` (jobs 641247/641248) | Root: `get_per_layer_inputs(None, inputs_embeds)` creates `[seq, vocab_size, hidden]` comparison tensor (~62 GiB) to reverse-engineer input_ids. Fix: pre-compute `per_layer_inputs = text_lm.get_per_layer_inputs(input_ids, None)` and pass as `per_layer_inputs` kwarg to model forward (skips reverse-engineering). Official Gemma4 API pattern documented in `per_layer_inputs` docstring. |
+| `evaluate_optimized_suffixes.py` line 140: `sr.get("score")` always returns None (2026-07-06) | Root: `score_single_row` stores the score as `"strongreject_score"` not `"score"`. Fix: changed to `sr.get("strongreject_score")`. All 216 existing rows retroactively re-scored (2026-07-06). |
 
 ## Stage 10 Gemma4 Reference Cache — Verified Positions (2026-07-06)
 
@@ -268,5 +314,16 @@ These positions are within the suffix region (not before it), so causal attentio
 - `slurm_scripts/run_gcg_replay.slurm`
 - `slurm_scripts/build_gcg_reference_cache_gemma4.slurm` *(Stage 10)*
 - `slurm_scripts/run_gcg_gemma4_optimization.slurm` *(Stage 10)*
+- `docs/STAGE_GCG_EARLY_SMOKE_RESULTS.md` *(2026-07-06)*
+- `poc_stage_gcg_early/evaluate_cross_model_transfer.py` *(2026-07-06)*
+- `slurm_scripts/run_gcg_cross_model_transfer.slurm` *(2026-07-06)*
+- `slurm_scripts/run_gcg_unseen_seed_eval.slurm` *(2026-07-06)*
+
+**Updated (2026-07-06):**
+- `poc_stage_gcg_early/analyze_detection_delay.py` — rewritten with held-out transfer, seed transfer, per-position repr distance, detector AUC
+- `poc_stage_gcg_early/objectives.py` — added whitened_l2 (eigendecomposition), fluency_loss (EXPERIMENTAL), compute_whitening_matrix; integrated into composite_loss
+- `poc_stage_gcg_early/config.py` — added `fluency_penalty_weight: float = 0.0` to ObjectiveWeights
+- `poc_stage_gcg_early/evaluate_optimized_suffixes.py` — fixed `sr.get("score")` → `sr.get("strongreject_score")`
+- `slurm_scripts/run_gcg_replay.slurm` — fixed causal context reconstruction bug (now uses full formatted_prompt + gen_ids)
 
 **Untouched:** all of `llm-attacks/`, all of `poc_stage_ae/`, all existing SLURM scripts.
