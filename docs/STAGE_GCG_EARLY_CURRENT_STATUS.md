@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** NEARLY COMPLETE — Gemma4 + Qwen3 8c unseeded eval done; Qwen3 8b unseeded (641354) running
+**Current stage:** PIPELINE COMPLETE — all GPU jobs done; all 8 analysis files verified; full unseen-seed generalization confirmed
 
 ---
 
@@ -205,25 +205,26 @@
 
 All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 
-| Run | DONE | free_gen | analysis | summary | audit |
-|---|---|---|---|---|---|
-| gcg_qwen3_repr_8b | ✅ | ✅ | ✅ | ✅ | ✅ |
-| gcg_qwen3_repr_8c | ✅ | ✅ | ✅ | ✅ | ✅ |
-| gcg_gemma4_repr_10a | ✅ | ✅ | ✅ | ✅ | ✅ |
-| gcg_gemma4_repr_10b | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Run | DONE | free_gen | analysis | summary | audit | unseeded |
+|---|---|---|---|---|---|---|
+| gcg_qwen3_repr_8b | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (48 rows, seeds 100,200,300) |
+| gcg_qwen3_repr_8c | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (60 rows, seeds 100,200,300) |
+| gcg_gemma4_repr_10a | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (48 rows, seeds 100,200,300) |
+| gcg_gemma4_repr_10b | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (60 rows, seeds 100,200,300) |
 
 **All items complete (2026-07-06):**
 - ✅ StrongREJECT scoring: all 216 rows; bug fixed (`score` → `strongreject_score`)
 - ✅ Hidden-state replay: 4 jobs (641323-641326) COMPLETE — 48+60+48+60 .pt files
 - ✅ Cross-model transfer: Qwen3→Gemma4 (641329), Gemma4→Qwen3 (641330) COMPLETE — 16 rows each
-- ⏳ Unseen-seed eval: Gemma4 10a/10b + Qwen3 8c COMPLETE (all 3 seeds, all conditions 12/12 success); Qwen3 8b (641354) still running (seeds 200+300)
+- ✅ Unseen-seed eval: ALL 4 RUNS COMPLETE — seeds 100,200,300 evaluated; all conditions 12/12 SR success across all runs; no seed-specific overfitting
 - ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, per-position repr distance, detector AUC
 - ✅ `objectives.py` updated with whitened L2 (eigendecomposition) + fluency_loss (EXPERIMENTAL)
 - ✅ `config.py`: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
 - ✅ Per-position repr distance: computed from hidden_states/*.pt for all 4 runs
 - ✅ Detector AUC: logistic regression AUC computed for all 4 runs (sklearn 1.9.0)
-- ✅ Analysis jobs (4 CPU + reruns): all DETECTION_DELAY_ANALYSIS.md files correct
-- ✅ Unseeded analysis uses separate `DETECTION_DELAY_ANALYSIS_UNSEEDED.md` (bug fixed)
+- ✅ All DETECTION_DELAY_ANALYSIS.md files correct (48/60/48/60 rows, training seed=42)
+- ✅ All DETECTION_DELAY_ANALYSIS_UNSEEDED.md written (48/60/48/60 rows, seeds 100,200,300)
+- ✅ SEEDS separator bug fixed (comma→colon in sbatch --export); commit 19f0790
 
 ## Definitive Findings: Detector AUC + Per-Position Repr Distance (2026-07-06)
 
@@ -283,7 +284,24 @@ harmful (no SR degradation) nor beneficial (no task advantage) when applied to t
 
 **Qwen3 8c (641356) complete (2026-07-06):** 60 unseeded rows (seeds 100,200,300), all 5 conditions 12/12 SR success. Prefix-match: optimized_lexicographic=0.833, optimized_weighted=1.000, baselines=0.917. Mean SR: 0.823–0.969 across conditions. No overfitting to training seed.
 
-(Qwen3 8b unseeded results pending job 641354 — seeds 200+300 only.)
+**Qwen3 8b (641354) complete (2026-07-06):** 48 unseeded rows (seeds 100,200,300), all 4 conditions 12/12 SR success. Prefix-match 0.917 for all conditions. No seed-specific overfitting confirmed.
+
+---
+
+## Definitive Finding: Unseen-Seed Generalization (2026-07-06)
+
+All 4 runs evaluated on unseen seeds (100, 200, 300). Summary:
+
+| Run | Seeds | N unseeded rows | Conditions | All 12/12 SR? |
+|---|---|---|---|---|
+| gcg_qwen3_repr_8b | 100,200,300 | 48 | neutral/optimized_weighted/random/task_only | ✅ all 12/12 |
+| gcg_qwen3_repr_8c | 100,200,300 | 60 | +optimized_lexicographic | ✅ all 12/12 |
+| gcg_gemma4_repr_10a | 100,200,300 | 48 | neutral/optimized_weighted/random/task_only | ✅ all 12/12 |
+| gcg_gemma4_repr_10b | 100,200,300 | 60 | +optimized_lexicographic | ✅ all 12/12 |
+
+**Finding 7 (seed generalization, definitive):** The optimized suffix generalizes perfectly to unseen generation seeds on BOTH models. 100% StrongREJECT success across all conditions and all seeds. No seed-specific overfitting. The GCG optimization does not rely on seed-specific random state — the task-forcing effect is robust to generation stochasticity.
+
+Each run's `DETECTION_DELAY_ANALYSIS_UNSEEDED.md` contains the full analysis (seed transfer, per-position repr distance, detector AUC) for the 3 unseen seeds. The main `DETECTION_DELAY_ANALYSIS.md` (48/60 rows, training seed=42) remains intact and separate.
 
 ---
 
