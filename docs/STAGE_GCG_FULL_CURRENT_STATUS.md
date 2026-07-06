@@ -25,8 +25,8 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 |---|---|---|
 | Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val); SHA256: 4aef213... |
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
-| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641602 on n-801; ~6h |
-| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641603 on n-802; ~8h; 2 GPUs |
+| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641670 on n-801; ~6h; step 4 task_loss=21.16 ✓ |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641671 on n-802; ~8h; 2 GPUs |
 | Free-gen evaluation | ⏳ PENDING | After each optimization run |
 | Hidden-state replay | ⏳ PENDING | After free-gen |
 | Detection delay analysis | ⏳ PENDING | After replay |
@@ -129,8 +129,16 @@ task_loss by text-decode-reencode to selection criterion.
 | 641515 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: SurrogateTask.from_dict rejected extra manifest fields |
 | 641516 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: load_manifest hardcoded 2-train-task count assertion |
 | 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ✅ DONE | 20 .pt files; all valid; ~10 min (cache hit) |
-| 641602 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | gcg_full_qwen3_weighted; 500 steps; λ_repr=1.0 |
-| 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-802) | gcg_full_multimodel_weighted; 500 steps; 2 GPUs |
+| 641602 | run_gcg_full_qwen3.slurm | 2026-07-06 | ❌ CANCELLED | Bug: filter_cand=True rejected all candidates; zero progress for 22 steps |
+| 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ FAILED | Bug: wrong Gemma4 model name (gemma-3-4b-it); disk quota on download |
+| 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Fixed; task_loss 39.78→21.16 in first 4 steps ✓ |
+| 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-802) | Fixed; 2 GPUs; gemma-4-E4B-it (cached) |
+
+### Bugs Fixed During Submission (round 2)
+
+**Bug 3 (jobs 641602/641603):** `filter_cand=True` (default) rejects all BPE candidates for 20-token suffixes — decoded + re-tokenized length never matches suffix_length for arbitrary random token sequences. Fallback returns copies of current suffix; acceptance check always fails (equal loss). Fixed: `--no-filter-cand` added to both scripts. Same fix used in all GCG-Early runs.
+
+**Bug 4 (job 641603):** `GEMMA4_MODEL` defaulted to `google/gemma-3-4b-it` (not cached) instead of `google/gemma-4-E4B-it` (already in cache). Caused `OSError: [Errno 122] Disk quota exceeded` on download attempt. Fixed in both SLURM script and `run_optimization.py` default.
 
 ### Bugs Fixed During Submission
 
