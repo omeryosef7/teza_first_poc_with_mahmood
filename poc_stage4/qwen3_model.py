@@ -136,6 +136,7 @@ def load_qwen3_model(
     *,
     require_cuda: bool = False,
     log_device_placement: bool = False,
+    device_map: str = "auto",
 ) -> Qwen3Model:
     if require_cuda and not torch.cuda.is_available():
         raise RuntimeError(
@@ -162,7 +163,7 @@ def load_qwen3_model(
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
-        device_map="auto",
+        device_map=device_map,
         trust_remote_code=True,
         cache_dir=cache_dir,
         attn_implementation="sdpa",

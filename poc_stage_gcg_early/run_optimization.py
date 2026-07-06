@@ -190,8 +190,13 @@ def main(argv=None):
     print(f"[run_optimization] Loading model {args.model_name_or_path}...", flush=True)
     if args.model_family == "qwen3":
         from poc_stage4.qwen3_model import load_qwen3_model
+        # In multimodel mode: pin Qwen3 to cuda:0 so its gradient computation stays on one
+        # device. With device_map="auto" and 2 visible GPUs, HF splits Qwen3 across both,
+        # which causes NaN in the one-hot gradient path (cross-device hidden states vs CPU cache).
+        qwen3_device_map = "cuda:0" if args.multi_model_family else "auto"
         wrapped = load_qwen3_model(
-            args.model_name_or_path, require_cuda=True, log_device_placement=True
+            args.model_name_or_path, require_cuda=True, log_device_placement=True,
+            device_map=qwen3_device_map,
         )
         model = wrapped.model
         tokenizer = wrapped.tokenizer
