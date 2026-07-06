@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** PIPELINE COMPLETE — all GPU jobs done; analysis finalized with AUC results
+**Current stage:** NEARLY COMPLETE — unseen-seed eval (seeds 200+300) queued (jobs 641354-641357); all other pipeline items done
 
 ---
 
@@ -216,7 +216,7 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 - ✅ StrongREJECT scoring: all 216 rows; bug fixed (`score` → `strongreject_score`)
 - ✅ Hidden-state replay: 4 jobs (641323-641326) COMPLETE — 48+60+48+60 .pt files
 - ✅ Cross-model transfer: Qwen3→Gemma4 (641329), Gemma4→Qwen3 (641330) COMPLETE — 16 rows each
-- ✅ Unseen-seed eval: Gemma4 10a seeds 100 (641344), Qwen3 8b seeds 100,200,300 (641347) COMPLETE
+- ⏳ Unseen-seed eval: seeds 100 complete for 8b+10a; seeds 200+300 queued for all 4 runs (jobs 641354-641357); SEEDS comma-parsing bug fixed (colon separator, commit 19f0790)
 - ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, per-position repr distance, detector AUC
 - ✅ `objectives.py` updated with whitened L2 (eigendecomposition) + fluency_loss (EXPERIMENTAL)
 - ✅ `config.py`: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
@@ -282,6 +282,7 @@ harmful (no SR degradation) nor beneficial (no task advantage) when applied to t
 | `gcg_optimizer.py` `_token_gradients`: Gemma4 OOM (28 GiB) when `inputs_embeds` provided without `input_ids` (jobs 641247/641248) | Root: `get_per_layer_inputs(None, inputs_embeds)` creates `[seq, vocab_size, hidden]` comparison tensor (~62 GiB) to reverse-engineer input_ids. Fix: pre-compute `per_layer_inputs = text_lm.get_per_layer_inputs(input_ids, None)` and pass as `per_layer_inputs` kwarg to model forward (skips reverse-engineering). Official Gemma4 API pattern documented in `per_layer_inputs` docstring. |
 | `evaluate_optimized_suffixes.py` line 140: `sr.get("score")` always returns None (2026-07-06) | Root: `score_single_row` stores the score as `"strongreject_score"` not `"score"`. Fix: changed to `sr.get("strongreject_score")`. All 216 existing rows retroactively re-scored (2026-07-06). |
 | `run_gcg_unseen_seed_eval.slurm`: final `analyze_detection_delay` overwrites `DETECTION_DELAY_ANALYSIS.md` with unseeded-only data | Root: analysis call didn't specify `--output-file`. Fix: added `--output-file DETECTION_DELAY_ANALYSIS_UNSEEDED.md` to the analysis call. `analyze_detection_delay.py` updated to accept `--output-file` and `output_filename` parameter. |
+| `run_gcg_unseen_seed_eval.slurm` SEEDS=100,200,300 parsed as 3 separate env vars by sbatch | Root: `--export=ALL,KEY=v1,v2,v3` splits on commas — SEEDS=100 only; 200 and 300 silently ignored. Fix (commit 19f0790): changed separator to colon (`SEEDS=200:300`); Python parsing updated to `sys.argv[2].replace(":", ",").split(",")`. Resubmitted all 4 runs (jobs 641354-641357). |
 | `compute_detector_auc()` fails with `ModuleNotFoundError: No module named 'sklearn'` | sklearn not installed in conda env `poc_stage2`. Fix: `pip install scikit-learn` (version 1.9.0 installed 2026-07-06). |
 
 ## Stage 10 Gemma4 Reference Cache — Verified Positions (2026-07-06)
