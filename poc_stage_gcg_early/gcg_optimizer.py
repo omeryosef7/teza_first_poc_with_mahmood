@@ -120,9 +120,23 @@ def _token_gradients(
         and repr_positions
     )
 
+    # Gemma4: when inputs_embeds is passed without input_ids, get_per_layer_inputs
+    # reverse-engineers input_ids via a [batch, seq, vocab, hidden] comparison → OOM.
+    # Fix: pre-compute per_layer_inputs from the current input_ids and pass it
+    # directly — Gemma4TextModel skips get_per_layer_inputs when this is provided.
+    model_kwargs: Dict[str, Any] = {"inputs_embeds": combined}
+    if model_family == "gemma4":
+        text_lm = getattr(getattr(model, "model", None), "language_model", None)
+        if text_lm is not None and hasattr(text_lm, "get_per_layer_inputs"):
+            with torch.no_grad():
+                ple = text_lm.get_per_layer_inputs(
+                    input_ids.unsqueeze(0).to(device), None
+                )
+            model_kwargs["per_layer_inputs"] = ple
+
     if use_repr:
         # output_hidden_states=True so gradients flow through repr_loss → one_hot
-        output = model(inputs_embeds=combined, output_hidden_states=True)
+        output = model(**model_kwargs, output_hidden_states=True)
         logits = output.logits  # [1, seq_len, vocab]
         # Extract candidate hidden states (retain grad — they're on the comp graph via combined)
         cand_hs: Dict[int, Dict[int, torch.Tensor]] = {}
@@ -144,7 +158,7 @@ def _token_gradients(
         t_loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
         loss = t_loss + lambda_repr * r_loss
     else:
-        logits = model(inputs_embeds=combined).logits  # [1, seq_len, vocab]
+        logits = model(**model_kwargs).logits  # [1, seq_len, vocab]
         targets = input_ids[target_slice].to(device)
         loss = nn.CrossEntropyLoss()(logits[0, loss_slice, :], targets)
 
