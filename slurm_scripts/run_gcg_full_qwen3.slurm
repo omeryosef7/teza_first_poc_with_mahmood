@@ -118,7 +118,8 @@ python -m poc_stage_gcg_early.run_optimization \
     --selection-mode "${SELECTION_MODE}" \
     --checkpoint-every 10 \
     --snapshot-every 50 \
-    --split train
+    --split train \
+    --no-filter-cand
 
 echo ""
 echo "--- Running audit ---"

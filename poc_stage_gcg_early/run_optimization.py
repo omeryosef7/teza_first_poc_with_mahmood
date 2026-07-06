@@ -119,7 +119,7 @@ def main(argv=None):
                         help="Add a second model for cross-tokenizer candidate re-scoring. "
                              "Gradients stay in primary model's token space; second model's "
                              "task_loss is added to candidate selection criterion. Requires 2 GPUs.")
-    parser.add_argument("--multi-model-name-or-path", default="google/gemma-3-4b-it",
+    parser.add_argument("--multi-model-name-or-path", default="google/gemma-4-E4B-it",
                         help="HF model id or local path for the second model.")
     args = parser.parse_args(argv)
 

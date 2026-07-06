@@ -48,7 +48,7 @@ SELECTION_MODE="${SELECTION_MODE:-weighted}"
 REPR_LAYERS="${REPR_LAYERS:-0,5,10,15,20,25,30,35}"
 REPR_POSITIONS="${REPR_POSITIONS:-3}"
 # Second model: Gemma4 E4B
-GEMMA4_MODEL="${GEMMA4_MODEL:-google/gemma-3-4b-it}"
+GEMMA4_MODEL="${GEMMA4_MODEL:-google/gemma-4-E4B-it}"
 
 RUN_ID=$(basename "${RUN_DIR}")
 
@@ -138,6 +138,7 @@ python -m poc_stage_gcg_early.run_optimization \
     --checkpoint-every 10 \
     --snapshot-every 50 \
     --split train \
+    --no-filter-cand \
     --multi-model-family gemma4 \
     --multi-model-name-or-path "${GEMMA4_MODEL}"
 
