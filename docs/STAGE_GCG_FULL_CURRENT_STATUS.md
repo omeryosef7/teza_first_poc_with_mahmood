@@ -25,13 +25,10 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 |---|---|---|
 | Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val); SHA256: 4aef213... |
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
-| Optimization: gcg_full_qwen3_weighted | ✅ DONE | Job 641670; 500 steps; best task_loss=7.9746 (step 330); 74% reduction; AUDIT PASS |
-| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641884 (attempt 5); step 200/500; task_loss=28.30 (23% reduction); timeout ~step 407; resubmit needed ~02:00 UTC |
-| Free-gen evaluation (qwen3) | 🔄 RUNNING | Job 641983; 261/300 rows; ~20 min until complete |
-| Free-gen evaluation (multimodel) | ⏳ PENDING | After multimodel run completes |
-| Hidden-state replay (qwen3) | ⏳ PENDING | Watcher active (PID 3682623); will auto-submit when free-gen done |
-| Detection delay analysis (qwen3) | ⏳ PENDING | After replay + analysis resubmit |
-| Unseen-seed eval (qwen3) | 🔄 RUNNING | Job 641986; 218/300 rows; seeds 100:200:300 |
+| Optimization: gcg_full_qwen3_weighted | ✅ DONE | Job 641670; 500 steps; best task_loss=7.9746; AUDIT PASS |
+| Post-processing: qwen3 full pipeline | ✅ DONE | Free-gen, replay, analysis, unseen-seed all complete |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641884; step 250/500; timeout ~step 412 at 01:44 UTC Jul 7 |
+| Post-processing: multimodel | ⏳ PENDING | After multimodel completes; resubmit from checkpoint first |
 
 ---
 
