@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** Stage 10 Gemma4 optimization resubmitted (jobs 641247/641248) after embedding path fix
+**Current stage:** Stage 11 (Gemma4 free-gen evaluation) running — jobs 641253/641254
 
 ---
 
@@ -66,8 +66,10 @@
 | Stage 9: free-generation evaluation (8c) | ✅ DONE — job 641226; 60 rows; prefix-match 83-92% vs 100% baseline |
 | Stage 9: detection delay analysis (8b+8c) | ✅ DONE — DETECTION_DELAY_ANALYSIS.md written for both |
 | Stage 10: Gemma4 reference cache | ✅ DONE — job 641240; 4 tasks, layers 0,5,...,40, positions suffix-relative |
-| Stage 10: Gemma4 optimization (weighted λ=1.0) | ❌ Job 641245 FAILED (embedding path wrong) → ⏳ Job 641247 PENDING |
-| Stage 10: Gemma4 optimization (lexicographic λ=5.0) | ❌ Job 641246 FAILED (embedding path wrong) → ⏳ Job 641248 PENDING |
+| Stage 10: Gemma4 optimization (weighted λ=1.0) | ✅ DONE — jobs 641247→641249 PASSED (200 steps, task 2.78→0.05, repr 0.154→0.262) |
+| Stage 10: Gemma4 optimization (lexicographic λ=5.0) | ✅ DONE — jobs 641248→641250 PASSED (200 steps, task 2.73→0.16, repr 0.184→0.296) |
+| Stage 11: Gemma4 free-gen evaluation (10a) | ⏳ Job 641253 PENDING |
+| Stage 11: Gemma4 free-gen evaluation (10b) | ⏳ Job 641254 PENDING |
 
 ---
 
@@ -105,17 +107,29 @@
 
 **StrongREJECT:** Not run (no API key). Prefix-match success is a conservative proxy.
 
+## Stage 10 Findings (2026-07-06)
+
+| Run | Mode | λ_repr | Step 0 task | Final task | Step 0 repr | Final repr | Audit |
+|---|---|---|---|---|---|---|---|
+| gcg_gemma4_repr_10a | weighted | 1.0 | 2.781 | 0.051 | 0.154 | 0.262 | PASS 11/11 |
+| gcg_gemma4_repr_10b | lexicographic | 5.0 | 2.734 | 0.159 | 0.184 | 0.296 | PASS 11/11 |
+
+**Key finding:** The repr_loss/task_loss conflict replicates on Gemma4-E4B-it. Initial repr_loss (neutral suffix) ≈ 0.15-0.18; after 200 steps of optimization, repr_loss climbs to 0.26-0.30 while task_loss falls dramatically (96% reduction for 10a, 94% for 10b). This is the SAME pattern as Qwen3 (repr 0.20→0.51). The conflict is model-agnostic: GCG's token-discrete optimization cannot simultaneously minimize task_loss and keep repr_loss near the neutral baseline.
+
+**Stage 10 bugs fixed:**
+- jobs 641245/641246: embedding path `language_model.model.embed_tokens` (wrong) → `model.language_model.embed_tokens` (correct)
+- jobs 641247/641248: Gemma4 `get_per_layer_inputs` OOM when `inputs_embeds` provided without `input_ids` → fixed by pre-computing `per_layer_inputs` from `input_ids` and passing as `per_layer_inputs` kwarg (official Gemma4 API pattern)
+- jobs 641249/641250: ✅ PASSED
+
 ## Next Actions
 
-1. **Wait for jobs 641247/641248** (Gemma4 optimization, embedding path fixed): ~200 steps on L40S. When done, check DONE flags and ITERATION_LOG.jsonl for repr_loss trajectory.
+1. **Wait for jobs 641253/641254** (Gemma4 free-gen): Evaluates optimized suffix in free-generation mode. Check FREE_GENERATION_RESULTS.jsonl and DETECTION_DELAY_ANALYSIS.md.
 
-2. **After Gemma4 optimization completes**: Submit free-gen and analysis:
-   ```
-   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_gemma4_repr_10a slurm_scripts/run_gcg_free_generation.slurm
-   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_gemma4_repr_10b slurm_scripts/run_gcg_free_generation.slurm
-   ```
+2. **After free-gen completes**: Check prefix-match success rate. Expected: same 83-92% vs 100% baseline pattern as Qwen3.
 
-3. **Key question for Stage 10**: Does repr_loss/task_loss conflict appear on Gemma4 as well? If so, the conflict is model-agnostic. This would be the primary finding of Stage GCG-Early.
+3. **Cross-model summary**: Compare Gemma4 vs Qwen3 prefix-match success and repr_loss trajectory — primary finding of Stage GCG-Early.
+
+4. **Final deliverable**: Update `docs/STAGE_GCG_EARLY_CURRENT_STATUS.md` with cross-model comparison table.
 
 ## Bug Fixes Applied (2026-07-06)
 
@@ -126,6 +140,7 @@
 | `analyze_detection_delay.py` line 66+114: `sum(scores)` with `None` values (TypeError) | Filter `None` before summing; render as "N/A (no API key)" in table |
 | `analyze_detection_delay.py`: only reported StrongREJECT success (all 0 when no API key) | Added `compute_prefix_match()` function using MANIFEST.jsonl targets |
 | `model_adapter.py` `_EMBED_PATHS_BY_FAMILY["gemma4"]`: path `language_model.model.embed_tokens` incorrect (ValueError for jobs 641245/641246) | Root: `Gemma4ForConditionalGeneration.model` → `Gemma4Model.language_model` → text decoder → `embed_tokens`; correct path is `model.language_model.embed_tokens`. Fixed in `_EMBED_PATHS_BY_FAMILY` and fallback list. Resubmitted as jobs 641247/641248. |
+| `gcg_optimizer.py` `_token_gradients`: Gemma4 OOM (28 GiB) when `inputs_embeds` provided without `input_ids` (jobs 641247/641248) | Root: `get_per_layer_inputs(None, inputs_embeds)` creates `[seq, vocab_size, hidden]` comparison tensor (~62 GiB) to reverse-engineer input_ids. Fix: pre-compute `per_layer_inputs = text_lm.get_per_layer_inputs(input_ids, None)` and pass as `per_layer_inputs` kwarg to model forward (skips reverse-engineering). Official Gemma4 API pattern documented in `per_layer_inputs` docstring. |
 
 ## Stage 10 Gemma4 Reference Cache — Verified Positions (2026-07-06)
 
