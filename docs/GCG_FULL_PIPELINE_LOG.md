@@ -375,11 +375,14 @@ acts as a jailbreak detector signal, not a jailbreak tool.
 
 ### 4.2 Multi-Model Results (PENDING — job 641884 step 230/500)
 
-**Job 641884 progress:**
-- Step 230/500; task_loss=28.38 (only 23% reduction vs 74% for qwen3-only at same step)
-- Convergence is much slower because Gemma4's cross-tokenizer loss adds conflicting gradient signals
-- Timeout projected at ~step 411 (01:44 UTC Jul 7); resubmit from checkpoint needed
-- After optimization completes: submit full post-processing chain (free-gen → replay → analysis → unseen-seed)
+**Job 641884 progress (as of 23:12 UTC Jul 6):**
+- Step 280/500; task_loss=28.31 (23% reduction, PLATEAUED at ~28.2-28.4 since step 200)
+- Suffix stuck at 'нут_DEFAULT {/* こんなitional youел catchboard' — no progress last 80 steps
+- Convergence is much slower/stalled vs qwen3-only (74% reduction at same point)
+- Cause: Qwen3 + Gemma4 have conflicting cross-tokenizer optimization landscapes; decode-reencode adds noise preventing escape from local minimum
+- Timeout projected at ~step 409 (01:44 UTC Jul 7); resubmit from `checkpoint.pt` (rolling)
+- Expected final step after resubmission: ~500 (only ~91 steps remaining after timeout)
+- After optimization completes (will need 1 resubmission): submit full post-processing chain
 
 **Expected findings (TBD after completion):**
 - Multi-model ASR vs qwen3-only ASR: hypothesis = similar (both near-baseline) since CoT defense is model-agnostic
@@ -419,7 +422,7 @@ than no suffix, consistent with CoT identifying garbled tokens as suspicious.
 | 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | AttributeError: 'Gemma4Config' has no attribute 'vocab_size' (multimodal nested config) |
 | 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | NaN losses at steps 0-1: Gemma4 on cuda:1 correct but Qwen3 split (layers 18-39 on cuda:1 also) |
 | 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CANCELLED | NaN at steps 0-1: Qwen3 STILL split by auto device_map (layers 0-17→gpu0, 18-39→gpu1); commit ef995ca only fixed Gemma4 |
-| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | step 250/500; task_loss=28.33 (23% reduction); timeout ~step 412 at 01:44 UTC Jul 7; resubmit from checkpoint |
+| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | step 280/500; task_loss=28.31 (~23% reduction, PLATEAUED since step 200); timeout ~step 409 at 01:44 UTC Jul 7 |
 | 641983 | run_gcg_full_free_generation.slurm | 2026-07-06 | ✅ DONE | 300 rows; all 25 behaviors; finished ~22:01 UTC; ASR: optimized=0.040 task_only=0.027 |
 | 641984 | run_gcg_replay.slurm | 2026-07-06 | ❌ FAILED | Race condition: submitted before free-gen results existed |
 | 641985 | run_gcg_analysis.slurm | 2026-07-06 | ✅ PARTIAL | Pareto done; RESULTS_SUMMARY.md written; detection delay pending replay |
