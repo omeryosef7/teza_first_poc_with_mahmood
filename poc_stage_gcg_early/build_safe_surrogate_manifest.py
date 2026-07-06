@@ -88,14 +88,15 @@ _EXPECTED_VAL = 2
 _EXPECTED_TOTAL = 4
 
 
-def _validate_manifest(tasks: list) -> None:
+def _validate_manifest(tasks: list, strict_counts: bool = False) -> None:
     task_ids = [t.task_id for t in tasks]
     assert len(set(task_ids)) == len(task_ids), "Duplicate task_ids found."
-    train = [t for t in tasks if t.split == "train"]
-    val = [t for t in tasks if t.split == "val"]
-    assert len(train) == _EXPECTED_TRAIN, f"Expected {_EXPECTED_TRAIN} train tasks, got {len(train)}"
-    assert len(val) == _EXPECTED_VAL, f"Expected {_EXPECTED_VAL} val tasks, got {len(val)}"
-    assert len(tasks) == _EXPECTED_TOTAL, f"Expected {_EXPECTED_TOTAL} total tasks, got {len(tasks)}"
+    if strict_counts:
+        train = [t for t in tasks if t.split == "train"]
+        val = [t for t in tasks if t.split == "val"]
+        assert len(train) == _EXPECTED_TRAIN, f"Expected {_EXPECTED_TRAIN} train tasks, got {len(train)}"
+        assert len(val) == _EXPECTED_VAL, f"Expected {_EXPECTED_VAL} val tasks, got {len(val)}"
+        assert len(tasks) == _EXPECTED_TOTAL, f"Expected {_EXPECTED_TOTAL} total tasks, got {len(tasks)}"
     for t in tasks:
         assert t.safe_target_prefix, f"Task {t.task_id} has empty safe_target_prefix."
         assert t.neutral_control_suffix is not None, f"Task {t.task_id} has None neutral_control_suffix."
@@ -114,7 +115,7 @@ def build_manifest(output_path: Path) -> None:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    _validate_manifest(_TASKS)
+    _validate_manifest(_TASKS, strict_counts=True)
 
     if output_path.exists():
         print(f"[manifest] Output already exists: {output_path}")
