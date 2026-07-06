@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** NEARLY COMPLETE — unseen-seed eval (seeds 200+300) queued (jobs 641354-641357); all other pipeline items done
+**Current stage:** NEARLY COMPLETE — Gemma4 unseeded eval done (641355/641357); Qwen3 8b/8c unseeded running (641354/641356)
 
 ---
 
@@ -216,7 +216,7 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 - ✅ StrongREJECT scoring: all 216 rows; bug fixed (`score` → `strongreject_score`)
 - ✅ Hidden-state replay: 4 jobs (641323-641326) COMPLETE — 48+60+48+60 .pt files
 - ✅ Cross-model transfer: Qwen3→Gemma4 (641329), Gemma4→Qwen3 (641330) COMPLETE — 16 rows each
-- ⏳ Unseen-seed eval: seeds 100 complete for 8b+10a; seeds 200+300 queued for all 4 runs (jobs 641354-641357); SEEDS comma-parsing bug fixed (colon separator, commit 19f0790)
+- ⏳ Unseen-seed eval: Gemma4 10a (641355) + 10b (641357) COMPLETE (48+60 unseeded rows, all 3 seeds, all conditions 12/12 success); Qwen3 8b (641354) + 8c (641356) running
 - ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, per-position repr distance, detector AUC
 - ✅ `objectives.py` updated with whitened L2 (eigendecomposition) + fluency_loss (EXPERIMENTAL)
 - ✅ `config.py`: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
@@ -269,6 +269,21 @@ Prefix-match: 0.750 for all conditions (including transfer) — consistent with 
 
 **Finding 6 (2026-07-06):** Cross-model text transfer shows the optimized suffix is neither
 harmful (no SR degradation) nor beneficial (no task advantage) when applied to the other model.
+
+## Unseen-Seed Generalization: Gemma4 Results (2026-07-06)
+
+**Jobs 641355 (10a) + 641357 (10b) completed with seeds 100, 200, 300.**
+
+| Run | Seeds | N rows | Conditions | Prefix-match | SR success |
+|---|---|---|---|---|---|
+| gcg_gemma4_repr_10a | 100,200,300 | 48 | neutral/optimized_weighted/random/task_only | 0.750 all | 12/12 all |
+| gcg_gemma4_repr_10b | 100,200,300 | 60 | +optimized_lexicographic | 0.667–0.750 | 12/12 all |
+
+**Finding 7 (Gemma4, unseen seeds):** The optimized suffix generalizes perfectly to unseen generation seeds (100, 200, 300) on Gemma4. All conditions achieve 12/12 StrongREJECT success. The optimized_lexicographic condition shows slightly lower prefix-match (0.667 vs 0.750 baseline), but GPT-4 rubric scores remain at 100% success — the format variation does not affect task completion quality. No seed-specific overfitting observed.
+
+(Qwen3 unseen-seed results pending jobs 641354/641356.)
+
+---
 
 ## Bug Fixes Applied (2026-07-06)
 
