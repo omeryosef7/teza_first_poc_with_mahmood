@@ -94,6 +94,7 @@ multi-model (Qwen3+Gemma4) variants.
 | filter_cand=True zero progress | 641602 | 22 steps, loss 39.78→39.78, identical suffix | `--no-filter-cand` added to scripts |
 | Wrong Gemma4 model name | 641603 | `OSError: Disk quota exceeded` on download | `gemma-3-4b-it` → `gemma-4-E4B-it` |
 | Gemma4 CUDA device-side assert | 641671 | `RuntimeError: CUDA error: device-side assert triggered` in sliding window cache `lazy_initialization` | `skip_special_tokens=True`; vocab range check; try-except with penalty |
+| Gemma4Config.vocab_size missing | 641701 | `AttributeError: 'Gemma4Config' has no attribute 'vocab_size'` | Use `len(gemma4_tokenizer)` instead |
 
 ### Run: gcg_full_qwen3_weighted
 
@@ -125,6 +126,8 @@ multi-model (Qwen3+Gemma4) variants.
 **Status as of 2026-07-06 ~13:00 UTC:** Both models loaded; optimization started. All 20 reference cache entries loaded; repr_pos_per_task verified for all behaviors. Awaiting first ITERATION_LOG rows.
 
 **Status as of 2026-07-06 ~14:10 UTC:** CRASHED at step 0 — `RuntimeError: CUDA error: device-side assert triggered` in Gemma4 sliding window cache during first candidate evaluation. Root cause: Qwen3 special tokens (e.g. `<|im_start|>`) decoded with `skip_special_tokens=False` produced strings that Gemma4's SentencePiece tokenizer re-encoded into IDs violating sliding window invariants. Fixed in commit `a400fee`; resubmitted as job 641701.
+
+**Status as of 2026-07-06 ~15:10 UTC:** CRASHED at step 0 again — `AttributeError: 'Gemma4Config' has no attribute 'vocab_size'`. Gemma4 is a multimodal model; the vocab_size is on the tokenizer, not the top-level config object. Fixed in commit `99bd0fc`; resubmitted as job 641754.
 
 ---
 
@@ -219,7 +222,8 @@ Will be filled in after free-gen + replay + analysis complete.
 | 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ FAILED | Bug: wrong Gemma4 model name |
 | 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING | Fixed; step 41; loss 30.7→15.4 ✓ |
 | 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | RuntimeError: CUDA device-side assert in Gemma4 sliding window cache (step 0) |
-| 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Fixed: skip_special_tokens=True + vocab range check + try-except |
+| 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | AttributeError: 'Gemma4Config' has no attribute 'vocab_size' (multimodal nested config) |
+| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Fixed: use len(gemma4_tokenizer) for vocab_size |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641670 completes |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641671 completes |
 | TBD | run_gcg_replay.slurm | pending | ⏳ PENDING | After free-gen |
