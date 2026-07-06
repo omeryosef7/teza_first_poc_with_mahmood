@@ -430,6 +430,42 @@ than no suffix, consistent with CoT identifying garbled tokens as suspicious.
 | 642052 | run_gcg_replay.slurm | 2026-07-06 | ❌ CANCELLED | Duplicate of 642053 (both watchers b20stulc9+PID 3682623 fired simultaneously) |
 | 642053 | run_gcg_replay.slurm | 2026-07-06 | ✅ DONE | 300 .pt files; completed in 5:42 min |
 | 642054 | run_gcg_analysis.slurm | 2026-07-06 | ✅ DONE | DETECTION_DELAY_ANALYSIS.md written; AUC=1.000 at pos 0 confirmed |
+| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | ⏹ TIMED OUT | Step 414/500 at 01:44 UTC Jul 7; plateau task_loss=28.2–28.5 since step 200 |
+| 642134 | run_gcg_full_multimodel.slurm | 2026-07-07 | 🔄 RUNNING | Resumed from checkpoint; step ~414→500; ~86 steps remaining; expected ~03:30 UTC |
+
+---
+
+## Phase 4.2 — Multimodel Optimization: Timeout + Resume
+
+### Status at timeout (job 641884)
+
+Job 641884 timed out at 01:44 UTC Jul 7 (exactly at its 8-hour SLURM limit). Final logged step: 414/500.
+
+**Plateau characterization:**
+- task_loss at step 200: ~28.3 (23% reduction from init ~36.8)
+- task_loss at step 414: ~28.3 (unchanged for 214 steps)
+- Suffix unchanged since step ~200: `нут_DEFAULT {/* こんなitional youел catchboard.ReactNode review`
+- Convergence rate: 0% reduction over final 214 steps
+
+**Cause:** Cross-tokenizer multi-model optimization creates conflicting gradient landscapes. Qwen3 token deletions that reduce Qwen3 task_loss often increase Gemma4 task_loss after text-decode-reencode, making joint acceptance rate extremely low. The plateau is expected (not a bug).
+
+**Comparison vs. Qwen3-only (job 641670):**
+| Metric | Qwen3-only | Multimodel |
+|---|---|---|
+| Final task_loss | 7.97 (74% reduction) | 28.3 (23% reduction) |
+| Steps to plateau | ~330 (then slight improvement) | ~200 (then flat) |
+| Convergence | ✅ Strong | ⚠ Weak (cross-tokenizer conflict) |
+
+### Resume plan (job 642134)
+
+Resubmitted at 01:50 UTC Jul 7 from rolling checkpoint.pt (last state ~step 414).
+Remaining steps: ~86. Expected completion: ~03:30 UTC Jul 7.
+
+Post-processing plan (after 642134 completes):
+1. Submit `run_gcg_full_free_generation.slurm` (free-gen; must finish first)
+2. Submit `run_gcg_replay.slurm` (after free-gen: wait for FREE_GENERATION_RESULTS.jsonl)
+3. Submit `run_gcg_analysis.slurm` (after replay)
+4. Submit `run_gcg_unseen_seed_eval.slurm` (parallel with replay)
 
 ---
 

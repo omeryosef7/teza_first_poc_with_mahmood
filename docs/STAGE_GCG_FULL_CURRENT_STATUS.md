@@ -27,7 +27,7 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
 | Optimization: gcg_full_qwen3_weighted | ✅ DONE | Job 641670; 500 steps; best task_loss=7.9746; AUDIT PASS |
 | Post-processing: qwen3 full pipeline | ✅ DONE | Free-gen, replay, analysis, unseen-seed all complete |
-| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641884; step 250/500; timeout ~step 412 at 01:44 UTC Jul 7 |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 642134 (resumed); step ~414→500; ~87 steps remaining; expected done ~03:30 UTC Jul 7 |
 | Post-processing: multimodel | ⏳ PENDING | After multimodel completes; resubmit from checkpoint first |
 
 ---
@@ -135,11 +135,15 @@ task_loss by text-decode-reencode to selection criterion.
 | 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | Bug #6: Gemma4Config has no attribute 'vocab_size' |
 | 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | Bug #7: NaN — Gemma4 on cuda:0 corrupted Qwen3 context |
 | 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CANCELLED | Bug #9: Qwen3 split across GPUs → NaN; Gemma4 isolated but Qwen3 not |
-| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Step 200/500; task_loss=28.30 (23% reduction); timeout ~step 407; resubmit needed |
-| 641983 | run_gcg_full_free_generation.slurm | 2026-07-06 | 🔄 RUNNING | 261/300 rows; 22/25 behaviors; ~20 min until complete |
-| 641984 | run_gcg_replay.slurm | 2026-07-06 | ❌ FAILED | Race condition: submitted simultaneous with free-gen; watcher will resubmit |
+| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | ⏹ TIMED OUT (n-801) | Step 414/500; task_loss=28.5 plateau; resubmitted as 642134 |
+| 641983 | run_gcg_full_free_generation.slurm | 2026-07-06 | ✅ DONE | 300/300 rows; qwen3 only |
+| 641984 | run_gcg_replay.slurm | 2026-07-06 | ❌ FAILED | Race condition: submitted simultaneous with free-gen |
 | 641985 | run_gcg_analysis.slurm | 2026-07-06 | ✅ PARTIAL | Pareto done; detection delay skipped; RESULTS_SUMMARY.md written |
-| 641986 | run_gcg_unseen_seed_eval.slurm | 2026-07-06 | 🔄 RUNNING | 218/300 rows; seeds 100:200:300 |
+| 641986 | run_gcg_unseen_seed_eval.slurm | 2026-07-06 | ✅ DONE | 300/300 rows; seeds 100:200:300; GCG suppresses compliance |
+| 642052 | run_gcg_replay.slurm | 2026-07-06 | ❌ CANCELLED | Duplicate (race condition with watcher b20stulc9); kept 642053 instead |
+| 642053 | run_gcg_replay.slurm | 2026-07-06 | ✅ DONE | Hidden states 300 .pt files; replayed correctly |
+| 642054 | run_gcg_analysis.slurm | 2026-07-06 | ✅ DONE | DETECTION_DELAY_ANALYSIS.md; AUC=1.000 at pos 0 |
+| 642134 | run_gcg_full_multimodel.slurm | 2026-07-07 | 🔄 RUNNING (n-801) | Resumed from checkpoint; step ~414→500; ~87 steps remaining; ~1.7h |
 
 ### Bugs Fixed During Submission (round 2)
 
