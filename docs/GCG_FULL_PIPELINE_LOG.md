@@ -138,11 +138,11 @@ multi-model (Qwen3+Gemma4) variants.
 
 **Status as of 2026-07-06 ~17:15 UTC:** Job 641865 STILL NaN at steps 0-1. Bug #9: Gemma4 correctly on cuda:1 (`'first_parameter_device': 'cuda:1'` confirmed), but Qwen3 STILL split across both GPUs by `device_map="auto"` (layers 0-17 → cuda:0, 18-39 → cuda:1). Root cause: the repr_loss computation requires Qwen3 hidden states from layers 20, 25, 30, 35 — these land on cuda:1. Reference hidden states from cache are loaded to CPU. The cross-device gradient in `_compute_gradient` through a split model produces NaN. Fixed in commit `d413922`: pin Qwen3 to `device_map='cuda:0'` when `--multi-model-family` is set. Job 641865 cancelled; resubmitted as job 641884.
 
-**Job 641884 (5th attempt — in progress):**
-- Qwen3-14B: `device_map='cuda:0'` (all layers on GPU 0, ~28GB)
-- Gemma4-E4B-it: `device_map='cuda:1'` (all layers on GPU 1, ~10GB)
+**Job 641884 (5th attempt — CONFIRMED WORKING):**
+- Qwen3-14B: `device_map='cuda:0'` (all layers on GPU 0; `first_parameter_device=cuda:0` ✅)
+- Gemma4-E4B-it: `device_map='cuda:1'` (all layers on GPU 1; `first_parameter_device=cuda:1` ✅)
 - Total: ~38GB on 2× L40S (46GB each)
-- Status: models loading (~12 min); first step pending
+- Step 0: task_loss=36.73, repr_loss=0.403 — **valid, no NaN** ✅
 
 ---
 
