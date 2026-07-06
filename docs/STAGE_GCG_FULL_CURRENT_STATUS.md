@@ -25,8 +25,8 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 |---|---|---|
 | Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val); SHA256: 4aef213... |
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
-| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641670 on n-801; step 23 task_loss=17.71 (converging ✓) |
-| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641671 on n-802; loading models (normal, ~12 min) |
+| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641670 on n-801; step 275/500 task_loss=8.34 (73% reduction ✓) |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641884 on n-801 (attempt 5); Qwen3→cuda:0, Gemma4→cuda:1; models loading |
 | Free-gen evaluation | ⏳ PENDING | After each optimization run |
 | Hidden-state replay | ⏳ PENDING | After free-gen |
 | Detection delay analysis | ⏳ PENDING | After replay |
@@ -131,8 +131,12 @@ task_loss by text-decode-reencode to selection criterion.
 | 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ✅ DONE | 20 .pt files; all valid; ~10 min (cache hit) |
 | 641602 | run_gcg_full_qwen3.slurm | 2026-07-06 | ❌ CANCELLED | Bug: filter_cand=True rejected all candidates; zero progress for 22 steps |
 | 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ FAILED | Bug: wrong Gemma4 model name (gemma-3-4b-it); disk quota on download |
-| 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Fixed; task_loss 39.78→21.16 in first 4 steps ✓ |
-| 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-802) | Fixed; 2 GPUs; gemma-4-E4B-it (cached) |
+| 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | step 275/500; task_loss=8.34; repr_loss=0.475; 73% reduction ✓ |
+| 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | Bug #5: Gemma4 CUDA device-side assert (sliding window cache) |
+| 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | Bug #6: Gemma4Config has no attribute 'vocab_size' |
+| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | Bug #7: NaN — Gemma4 on cuda:0 corrupted Qwen3 context |
+| 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CANCELLED | Bug #9: Qwen3 split across GPUs → NaN; Gemma4 isolated but Qwen3 not |
+| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Fix: Qwen3 pinned to cuda:0, Gemma4 to cuda:1 (commit d413922) |
 
 ### Bugs Fixed During Submission (round 2)
 

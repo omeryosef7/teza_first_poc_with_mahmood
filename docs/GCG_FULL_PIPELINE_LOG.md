@@ -96,6 +96,7 @@ multi-model (Qwen3+Gemma4) variants.
 | Gemma4 CUDA device-side assert | 641671 | `RuntimeError: CUDA error: device-side assert triggered` in sliding window cache `lazy_initialization` | `skip_special_tokens=True`; vocab range check; try-except with penalty |
 | Gemma4Config.vocab_size missing | 641701 | `AttributeError: 'Gemma4Config' has no attribute 'vocab_size'` | Use `len(gemma4_tokenizer)` instead |
 | Gemma4 CUDA context contamination | 641754 | NaN losses: CUDA assert on Gemma4's cuda:0 layers corrupted Qwen3 context | Force Gemma4 to `device_map='cuda:1'`; add `device_map` param to `load_gemma4_model` |
+| Qwen3 split across GPUs (NaN) | 641865 | NaN at step 0: with 2 visible GPUs, `device_map="auto"` split Qwen3 (layers 0-17 → cuda:0, 18-39 → cuda:1); gradient NaN in cross-device hidden state path | Pin Qwen3 to `device_map='cuda:0'` in multimodel mode; add `device_map` param to `load_qwen3_model`; commit d413922 |
 
 ### Run: gcg_full_qwen3_weighted
 
@@ -114,8 +115,11 @@ multi-model (Qwen3+Gemma4) variants.
 | 20 | 18.1016 | 0.3723 | `(!_ ! Crafting Question FromFile And _ ` |
 | 23 | 17.7109 | 0.4668 | `(!_do! Crafting Question FromFile And` |
 | 41 | 15.4102 | 0.4744 | `(!_Sh! Crafting QuestionชFromFile And朕 IS +!IMPOR` |
+| 275 | 8.3418 | 0.4755 | `('<Wrong UNIX Character Question 奇蔓 (And楕 Its נ!important.Make หน*@z- **` |
 
 **Status as of 2026-07-06 ~13:00 UTC:** Step 41/500, task_loss=15.41 — healthy convergence. ~30% loss reduction in 41 steps.
+
+**Status as of 2026-07-06 ~17:45 UTC:** Step 275/500, task_loss=8.34 — repr_loss stable at 0.475. 73% total loss reduction (30.7→8.3). ~55% through optimization.
 
 ### Run: gcg_full_multimodel_weighted
 
@@ -129,6 +133,16 @@ multi-model (Qwen3+Gemma4) variants.
 **Status as of 2026-07-06 ~14:10 UTC:** CRASHED at step 0 — `RuntimeError: CUDA error: device-side assert triggered` in Gemma4 sliding window cache during first candidate evaluation. Root cause: Qwen3 special tokens (e.g. `<|im_start|>`) decoded with `skip_special_tokens=False` produced strings that Gemma4's SentencePiece tokenizer re-encoded into IDs violating sliding window invariants. Fixed in commit `a400fee`; resubmitted as job 641701.
 
 **Status as of 2026-07-06 ~15:10 UTC:** CRASHED at step 0 again — `AttributeError: 'Gemma4Config' has no attribute 'vocab_size'`. Gemma4 is a multimodal model; the vocab_size is on the tokenizer, not the top-level config object. Fixed in commit `99bd0fc`; resubmitted as job 641754.
+
+**Status as of 2026-07-06 ~16:00 UTC:** Job 641754 NaN at steps 0-1. Bug #7: Gemma4 now correctly isolated to cuda:1, but Qwen3 `device_map="auto"` with 2 visible GPUs split Qwen3 itself (layers 0-17 → cuda:0, 18-39 → cuda:1). Gemma4 and Qwen3's latter half shared cuda:1. CUDA assert from Gemma4 (on cuda:1) corrupted Qwen3's cuda:1 layers. Fixed in commit `ef995ca`; resubmitted as job 641865.
+
+**Status as of 2026-07-06 ~17:15 UTC:** Job 641865 STILL NaN at steps 0-1. Bug #9: Gemma4 correctly on cuda:1 (`'first_parameter_device': 'cuda:1'` confirmed), but Qwen3 STILL split across both GPUs by `device_map="auto"` (layers 0-17 → cuda:0, 18-39 → cuda:1). Root cause: the repr_loss computation requires Qwen3 hidden states from layers 20, 25, 30, 35 — these land on cuda:1. Reference hidden states from cache are loaded to CPU. The cross-device gradient in `_compute_gradient` through a split model produces NaN. Fixed in commit `d413922`: pin Qwen3 to `device_map='cuda:0'` when `--multi-model-family` is set. Job 641865 cancelled; resubmitted as job 641884.
+
+**Job 641884 (5th attempt — in progress):**
+- Qwen3-14B: `device_map='cuda:0'` (all layers on GPU 0, ~28GB)
+- Gemma4-E4B-it: `device_map='cuda:1'` (all layers on GPU 1, ~10GB)
+- Total: ~38GB on 2× L40S (46GB each)
+- Status: models loading (~12 min); first step pending
 
 ---
 
@@ -221,11 +235,12 @@ Will be filled in after free-gen + replay + analysis complete.
 | 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ✅ DONE | 20 .pt files; all valid |
 | 641602 | run_gcg_full_qwen3.slurm | 2026-07-06 | ❌ CANCELLED | Bug: filter_cand=True; zero progress |
 | 641603 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ FAILED | Bug: wrong Gemma4 model name |
-| 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING | Fixed; step 41; loss 30.7→15.4 ✓ |
+| 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING | Fixed; step 275; loss 30.7→8.3 ✓ (55% reduction) |
 | 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | RuntimeError: CUDA device-side assert in Gemma4 sliding window cache (step 0) |
 | 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | AttributeError: 'Gemma4Config' has no attribute 'vocab_size' (multimodal nested config) |
-| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | NaN losses at steps 0-1: CUDA assert on cuda:0 (shared with Qwen3) corrupted context |
-| 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Fixed: force Gemma4 to cuda:1 (device_map='cuda:1'); Qwen3 isolated on cuda:0 |
+| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | NaN losses at steps 0-1: Gemma4 on cuda:1 correct but Qwen3 split (layers 18-39 on cuda:1 also) |
+| 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CANCELLED | NaN at steps 0-1: Qwen3 STILL split by auto device_map (layers 0-17→gpu0, 18-39→gpu1); commit ef995ca only fixed Gemma4 |
+| 641884 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Bug #9 fix: Qwen3 pinned to cuda:0 (device_map='cuda:0'), Gemma4 on cuda:1; commit d413922 |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641670 completes |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641671 completes |
 | TBD | run_gcg_replay.slurm | pending | ⏳ PENDING | After free-gen |
