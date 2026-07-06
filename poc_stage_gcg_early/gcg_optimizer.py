@@ -554,7 +554,8 @@ def run_optimization(
             MULTIMODEL_TOPK = min(10, len(eval_results))
             topk_indices = sorted(range(len(eval_results)),
                                   key=lambda i: eval_results[i]["total_loss"])[:MULTIMODEL_TOPK]
-            g4_vocab_size = gemma4_model.config.vocab_size if hasattr(gemma4_model, "config") else 262144
+            # Gemma4 is multimodal — vocab_size is on the tokenizer, not the top-level config
+            g4_vocab_size = len(gemma4_tokenizer)
             g4_errors = 0
             for i in topk_indices:
                 # Decode with skip_special_tokens=True to avoid Qwen3 special token strings
