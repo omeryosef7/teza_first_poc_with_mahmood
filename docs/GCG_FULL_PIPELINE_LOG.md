@@ -95,6 +95,7 @@ multi-model (Qwen3+Gemma4) variants.
 | Wrong Gemma4 model name | 641603 | `OSError: Disk quota exceeded` on download | `gemma-3-4b-it` → `gemma-4-E4B-it` |
 | Gemma4 CUDA device-side assert | 641671 | `RuntimeError: CUDA error: device-side assert triggered` in sliding window cache `lazy_initialization` | `skip_special_tokens=True`; vocab range check; try-except with penalty |
 | Gemma4Config.vocab_size missing | 641701 | `AttributeError: 'Gemma4Config' has no attribute 'vocab_size'` | Use `len(gemma4_tokenizer)` instead |
+| Gemma4 CUDA context contamination | 641754 | NaN losses: CUDA assert on Gemma4's cuda:0 layers corrupted Qwen3 context | Force Gemma4 to `device_map='cuda:1'`; add `device_map` param to `load_gemma4_model` |
 
 ### Run: gcg_full_qwen3_weighted
 
@@ -223,7 +224,8 @@ Will be filled in after free-gen + replay + analysis complete.
 | 641670 | run_gcg_full_qwen3.slurm | 2026-07-06 | 🔄 RUNNING | Fixed; step 41; loss 30.7→15.4 ✓ |
 | 641671 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | RuntimeError: CUDA device-side assert in Gemma4 sliding window cache (step 0) |
 | 641701 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | AttributeError: 'Gemma4Config' has no attribute 'vocab_size' (multimodal nested config) |
-| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Fixed: use len(gemma4_tokenizer) for vocab_size |
+| 641754 | run_gcg_full_multimodel.slurm | 2026-07-06 | ❌ CRASHED | NaN losses at steps 0-1: CUDA assert on cuda:0 (shared with Qwen3) corrupted context |
+| 641865 | run_gcg_full_multimodel.slurm | 2026-07-06 | 🔄 RUNNING | Fixed: force Gemma4 to cuda:1 (device_map='cuda:1'); Qwen3 isolated on cuda:0 |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641670 completes |
 | TBD | run_gcg_full_free_generation.slurm | pending | ⏳ PENDING | After 641671 completes |
 | TBD | run_gcg_replay.slurm | pending | ⏳ PENDING | After free-gen |
