@@ -25,8 +25,8 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 |---|---|---|
 | Manifest build | ✅ DONE | 25 behaviors (20 train + 5 val); SHA256: 4aef213... |
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
-| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641670 on n-801; ~6h; step 4 task_loss=21.16 ✓ |
-| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641671 on n-802; ~8h; 2 GPUs |
+| Optimization: gcg_full_qwen3_weighted | 🔄 RUNNING | Job 641670 on n-801; step 23 task_loss=17.71 (converging ✓) |
+| Optimization: gcg_full_multimodel_weighted | 🔄 RUNNING | Job 641671 on n-802; loading models (normal, ~12 min) |
 | Free-gen evaluation | ⏳ PENDING | After each optimization run |
 | Hidden-state replay | ⏳ PENDING | After free-gen |
 | Detection delay analysis | ⏳ PENDING | After replay |
