@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** Stage 9 free-generation evaluation (job 641091 running); Stage 8c DONE
+**Current stage:** Stage 10 Gemma4 optimization resubmitted (jobs 641247/641248) after embedding path fix
 
 ---
 
@@ -62,7 +62,12 @@
 | Stage 8b: reference cache v2 build | ✅ PASSED — job 641046: 4 tasks, positions task-specific (suffix-relative) |
 | Stage 8b: optimization run | ✅ PASSED — job 641047: task_loss 2.81→0.012, repr_loss 0.20→0.51 (active gradient confirmed) |
 | Stage 8c: lexicographic + lambda_repr=5.0 | ✅ PASSED — job 641092: task_loss 3.0→0.071, repr_loss 0.21→0.41 (12 Pareto candidates) |
-| Stage 9: free-generation evaluation | ⏳ Running — job 641091 on n-803 (~144 evals, ~72 min) |
+| Stage 9: free-generation evaluation (8b) | ✅ DONE — job 641225; 48 rows; prefix-match 83% optimized vs 100% baseline |
+| Stage 9: free-generation evaluation (8c) | ✅ DONE — job 641226; 60 rows; prefix-match 83-92% vs 100% baseline |
+| Stage 9: detection delay analysis (8b+8c) | ✅ DONE — DETECTION_DELAY_ANALYSIS.md written for both |
+| Stage 10: Gemma4 reference cache | ✅ DONE — job 641240; 4 tasks, layers 0,5,...,40, positions suffix-relative |
+| Stage 10: Gemma4 optimization (weighted λ=1.0) | ❌ Job 641245 FAILED (embedding path wrong) → ⏳ Job 641247 PENDING |
+| Stage 10: Gemma4 optimization (lexicographic λ=5.0) | ❌ Job 641246 FAILED (embedding path wrong) → ⏳ Job 641248 PENDING |
 
 ---
 
@@ -86,13 +91,54 @@
 
 **Finding:** repr_loss and task_loss are in fundamental conflict. The "! ! !" initial suffix (repr_loss≈0.20) remains the best repr candidate — it is close to the neutral " " reference because it contains only exclamation marks and spaces. As the suffix becomes task-optimized (CJK/Arabic tokens), repr_loss climbs to 0.41-0.51. No run achieved repr_loss < 0.20 with task_loss < 0.5. This is the key mechanistic finding.
 
+## Stage 9 Key Findings (2026-07-06)
+
+| Condition | 8b prefix-match | 8c prefix-match |
+|---|---|---|
+| task_only | 1.000 (12/12) | 1.000 (12/12) |
+| neutral_control | 1.000 (12/12) | 1.000 (12/12) |
+| random_spaces | 1.000 (12/12) | 1.000 (12/12) |
+| optimized_weighted | 0.833 (10/12) | 0.917 (11/12) |
+| optimized_lexicographic | — | 0.833 (10/12) |
+
+**Interpretation:** The optimized suffix achieves 83-92% task completion in free-generation mode (vs 100% for all baselines). The 1-2 failure cases per condition suggest the optimized suffix (with CJK/Arabic tokens) occasionally disrupts the model's ability to generate the correct final answer. This is consistent with the repr_loss/task_loss conflict observed in training: the suffix tokens that best minimize repr_loss are those that most disrupt the model's normal processing.
+
+**StrongREJECT:** Not run (no API key). Prefix-match success is a conservative proxy.
+
 ## Next Actions
 
-1. **Wait for job 641091** (Stage 9): ~144 free-gen evaluations, expected ~72 min. When done, run `analyze_detection_delay.py` to get per-condition task success rates and StrongREJECT scores.
+1. **Wait for jobs 641247/641248** (Gemma4 optimization, embedding path fixed): ~200 steps on L40S. When done, check DONE flags and ITERATION_LOG.jsonl for repr_loss trajectory.
 
-2. **Stage 9 analysis**: After FREE_GENERATION_RESULTS.jsonl is written, run `run_gcg_analysis.slurm` on Stage 8b dir. Key question: do optimized suffixes actually produce correct task completions in free-gen mode (not teacher-forced)?
+2. **After Gemma4 optimization completes**: Submit free-gen and analysis:
+   ```
+   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_gemma4_repr_10a slurm_scripts/run_gcg_free_generation.slurm
+   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_gemma4_repr_10b slurm_scripts/run_gcg_free_generation.slurm
+   ```
 
-3. **Stage 10 — Gemma4 extension**: After Stage 9 analysis validates that free-gen task success is achievable.
+3. **Key question for Stage 10**: Does repr_loss/task_loss conflict appear on Gemma4 as well? If so, the conflict is model-agnostic. This would be the primary finding of Stage GCG-Early.
+
+## Bug Fixes Applied (2026-07-06)
+
+| Bug | Fix |
+|---|---|
+| `evaluate_optimized_suffixes.py` line 73: `from poc_stage4.qwen3_model import _get_effective_eos_ids` (ImportError) | Changed to `from poc_stage_gcg_early.model_adapter import get_effective_eos_ids`; updated call on line 84 |
+| `run_gcg_free_generation.slurm` summary: `r['suffix_label']` (KeyError) | Changed to `r['condition_label']` to match actual field written by `evaluate_suffix()` |
+| `analyze_detection_delay.py` line 66+114: `sum(scores)` with `None` values (TypeError) | Filter `None` before summing; render as "N/A (no API key)" in table |
+| `analyze_detection_delay.py`: only reported StrongREJECT success (all 0 when no API key) | Added `compute_prefix_match()` function using MANIFEST.jsonl targets |
+| `model_adapter.py` `_EMBED_PATHS_BY_FAMILY["gemma4"]`: path `language_model.model.embed_tokens` incorrect (ValueError for jobs 641245/641246) | Root: `Gemma4ForConditionalGeneration.model` → `Gemma4Model.language_model` → text decoder → `embed_tokens`; correct path is `model.language_model.embed_tokens`. Fixed in `_EMBED_PATHS_BY_FAMILY` and fallback list. Resubmitted as jobs 641247/641248. |
+
+## Stage 10 Gemma4 Reference Cache — Verified Positions (2026-07-06)
+
+| Task | suffix_slice | positions (last 3 suffix tokens) |
+|---|---|---|
+| fruit_list_alpha | slice(?, 47) | [36, 37, 38] |
+| celsius_convert | slice(?, ?) | [51, 52, 53] |
+| capital_france | slice(?, ?) | [42, 43, 44] |
+| count_vowels | slice(?, 47) | [44, 45, 46] |
+
+Neutral suffix: `[236743]*16` (Gemma4 space marker `▁`). Layers: 0,5,10,15,20,25,30,35,40.
+
+---
 
 ## Stage 8b Reference Cache v2 — Verified Positions (2026-07-05)
 
@@ -156,5 +202,7 @@ These positions are within the suffix region (not before it), so causal attentio
 - `slurm_scripts/run_gcg_free_generation.slurm`
 - `slurm_scripts/run_gcg_analysis.slurm`
 - `slurm_scripts/run_gcg_replay.slurm`
+- `slurm_scripts/build_gcg_reference_cache_gemma4.slurm` *(Stage 10)*
+- `slurm_scripts/run_gcg_gemma4_optimization.slurm` *(Stage 10)*
 
 **Untouched:** all of `llm-attacks/`, all of `poc_stage_ae/`, all existing SLURM scripts.

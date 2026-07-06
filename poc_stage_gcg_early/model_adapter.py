@@ -8,7 +8,7 @@ GPTNeoXForCausalLM and raise ValueError for Qwen3 or Gemma4.
 All functions accept a model_family string ("qwen3" | "gemma4") and dispatch
 accordingly. The embedding paths were verified against Stage AE model loading:
   Qwen3:  model.model.embed_tokens  (standard decoder)
-  Gemma4: model.language_model.model.embed_tokens  (multimodal wrapper prefix)
+  Gemma4: model.language_model.embed_tokens  (Gemma4Model.language_model is the text decoder)
 """
 from __future__ import annotations
 
@@ -29,10 +29,13 @@ if str(_REPO_ROOT) not in sys.path:
 
 _EMBED_PATHS_BY_FAMILY = {
     "qwen3": ["model.embed_tokens"],
-    "gemma4": ["language_model.model.embed_tokens", "model.embed_tokens"],
+    # Gemma4ForConditionalGeneration: .model → Gemma4Model, .language_model → text decoder
+    "gemma4": ["model.language_model.embed_tokens", "model.embed_tokens",
+               "language_model.model.embed_tokens"],
 }
 _EMBED_PATHS_FALLBACK = [
     "model.embed_tokens",
+    "model.language_model.embed_tokens",
     "language_model.model.embed_tokens",
     "transformer.wte",
 ]

@@ -190,7 +190,9 @@ def main(argv=None):
         tokenizer = wrapped.tokenizer
     elif args.model_family == "gemma4":
         from poc_stage4.qwen3_model import load_gemma4_model
-        wrapped = load_gemma4_model(require_cuda=True, log_device_placement=True)
+        wrapped = load_gemma4_model(
+            args.model_name_or_path, require_cuda=True, log_device_placement=True
+        )
         model = wrapped.model
         tokenizer = wrapped.tokenizer
     else:

@@ -70,9 +70,10 @@ def evaluate_suffix(
     import random
     import numpy as np
     import torch
-    from poc_stage4.qwen3_model import _get_effective_eos_ids
     from poc_stage_ae.thinking_position_utils import locate_positions
-    from poc_stage_gcg_early.model_adapter import apply_chat_template, tokenize_prompt
+    from poc_stage_gcg_early.model_adapter import (
+        apply_chat_template, tokenize_prompt, get_effective_eos_ids,
+    )
 
     random.seed(seed)
     np.random.seed(seed)
@@ -80,7 +81,7 @@ def evaluate_suffix(
     torch.cuda.manual_seed_all(seed)
 
     device = next(model.parameters()).device
-    eos_ids = _get_effective_eos_ids(model, tokenizer)
+    eos_ids = get_effective_eos_ids(model, tokenizer)
 
     user_content = instruction + suffix_str
     formatted = apply_chat_template(tokenizer, user_content, model_family, enable_thinking)

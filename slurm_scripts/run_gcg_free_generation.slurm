@@ -130,7 +130,7 @@ if [ -f "$RESULTS" ]; then
     python3 -c "
 import json, collections
 rows = [json.loads(l) for l in open('${RESULTS}')]
-by_label = collections.Counter(r['suffix_label'] for r in rows)
+by_label = collections.Counter(r['condition_label'] for r in rows)
 print('Rows by label:', dict(by_label))
 sr_rows = [r for r in rows if r.get('strongreject_score') is not None]
 if sr_rows:
