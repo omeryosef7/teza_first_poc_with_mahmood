@@ -554,19 +554,41 @@ def run_optimization(
             MULTIMODEL_TOPK = min(10, len(eval_results))
             topk_indices = sorted(range(len(eval_results)),
                                   key=lambda i: eval_results[i]["total_loss"])[:MULTIMODEL_TOPK]
+            g4_vocab_size = gemma4_model.config.vocab_size if hasattr(gemma4_model, "config") else 262144
+            g4_errors = 0
             for i in topk_indices:
-                cand_text = tokenizer.decode(cand_lists[i], skip_special_tokens=False)
+                # Decode with skip_special_tokens=True to avoid Qwen3 special token strings
+                # being passed to Gemma4 tokenizer, which can produce OOV/corrupt token IDs.
+                cand_text = tokenizer.decode(cand_lists[i], skip_special_tokens=True)
                 for eval_task in train_tasks:
-                    g4_spans = build_suffix_spans(
-                        gemma4_tokenizer, "gemma4", config.enable_thinking,
-                        eval_task.instruction, cand_text, eval_task.safe_target_prefix,
-                    )
-                    g4_result = _evaluate_candidates(
-                        gemma4_model, "gemma4", g4_spans, [g4_spans.suffix_ids_expected],
-                        eval_batch_size=1, config=config,
-                    )
-                    eval_results[i]["task_loss"] += g4_result[0]["task_loss"]
-                    eval_results[i]["total_loss"] += g4_result[0]["task_loss"]
+                    try:
+                        g4_spans = build_suffix_spans(
+                            gemma4_tokenizer, "gemma4", config.enable_thinking,
+                            eval_task.instruction, cand_text, eval_task.safe_target_prefix,
+                        )
+                        # Validate: skip if any token ID is out of Gemma4 vocab range
+                        ids = g4_spans.input_ids
+                        if ids is None or len(ids) == 0:
+                            continue
+                        if int(ids.max()) >= g4_vocab_size or int(ids.min()) < 0:
+                            continue
+                        torch.cuda.synchronize()
+                        g4_result = _evaluate_candidates(
+                            gemma4_model, "gemma4", g4_spans, [g4_spans.suffix_ids_expected],
+                            eval_batch_size=1, config=config,
+                        )
+                        torch.cuda.synchronize()
+                        eval_results[i]["task_loss"] += g4_result[0]["task_loss"]
+                        eval_results[i]["total_loss"] += g4_result[0]["task_loss"]
+                    except Exception as g4_exc:
+                        g4_errors += 1
+                        if g4_errors <= 5:
+                            print(f"[GCG] Gemma4 eval error (skipping cand {i}): {g4_exc}", flush=True)
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                        # Add a small penalty so corrupt candidates are deprioritised
+                        eval_results[i]["task_loss"] += 5.0
+                        eval_results[i]["total_loss"] += 5.0
 
         # --- Candidate selection ---
         n_train = len(train_tasks)
