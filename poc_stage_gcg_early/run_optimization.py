@@ -211,8 +211,14 @@ def main(argv=None):
     if args.multi_model_family == "gemma4":
         print(f"[run_optimization] Loading second model (Gemma4) for multi-model selection: {args.multi_model_name_or_path}", flush=True)
         from poc_stage4.qwen3_model import load_gemma4_model as _load_gemma4
+        # Force Gemma4 entirely onto cuda:1 to isolate it from Qwen3 on cuda:0.
+        # device_map="auto" would split Gemma4 across both GPUs, putting embed_tokens
+        # on cuda:0 alongside Qwen3 — any CUDA assert in Gemma4 would corrupt Qwen3's context.
+        # Gemma4-E4B (~10GB) fits comfortably on a single L40S (46GB).
+        g4_device_map = "cuda:1" if torch.cuda.device_count() >= 2 else "auto"
         wrapped2 = _load_gemma4(
-            args.multi_model_name_or_path, require_cuda=True, log_device_placement=True
+            args.multi_model_name_or_path, require_cuda=True, log_device_placement=True,
+            device_map=g4_device_map,
         )
         gemma4_model = wrapped2.model
         gemma4_tokenizer = wrapped2.tokenizer
