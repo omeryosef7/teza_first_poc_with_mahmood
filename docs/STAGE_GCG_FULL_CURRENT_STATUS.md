@@ -126,7 +126,15 @@ task_loss by text-decode-reencode to selection criterion.
 
 | Job ID | Script | Submitted | Status | Notes |
 |---|---|---|---|---|
-| 641515 | build_gcg_reference_cache_full.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | 20 train behaviors; Qwen3-14B |
+| 641515 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: SurrogateTask.from_dict rejected extra manifest fields |
+| 641516 | build_gcg_reference_cache_full.slurm | 2026-07-06 | ❌ FAILED | Bug: load_manifest hardcoded 2-train-task count assertion |
+| 641517 | build_gcg_reference_cache_full.slurm | 2026-07-06 | 🔄 RUNNING (n-801) | Fixed; ~45 min; 20 train behaviors |
+
+### Bugs Fixed During Submission
+
+**Bug 1 (job 641515):** `SurrogateTask.from_dict` passed ALL dict keys to `cls(**d)`, but AdvBench rows have extra fields (`source`, `advbench_row`). Fixed: filter to known dataclass fields only. (commit c0aecb0)
+
+**Bug 2 (job 641516):** `_validate_manifest` in `build_safe_surrogate_manifest.py` hardcoded `_EXPECTED_TRAIN=2`. Fixed: added `strict_counts=False` default parameter; `load_manifest` uses relaxed mode; original 4-task builder still uses strict. (commit 0b9d61d)
 
 ---
 
