@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** Stage 11 analysis running — jobs 641255/641256 (Gemma4 analysis)
+**Current stage:** PIPELINE COMPLETE — all 4 runs fully analyzed (Qwen3 + Gemma4)
 
 ---
 
@@ -70,7 +70,7 @@
 | Stage 10: Gemma4 optimization (lexicographic λ=5.0) | ✅ DONE — jobs 641248→641250 PASSED (200 steps, task 2.73→0.16, repr 0.184→0.296) |
 | Stage 11: Gemma4 free-gen evaluation (10a) | ✅ DONE — job 641253; 48 rows; prefix-match 83% optimized vs 75% baseline |
 | Stage 11: Gemma4 free-gen evaluation (10b) | ✅ DONE — job 641254; 60 rows; prefix-match 83-92% optimized vs 75% baseline |
-| Stage 11: Gemma4 analysis (10a+10b) | ⏳ Jobs 641255/641256 PENDING |
+| Stage 11: Gemma4 analysis (10a+10b) | ✅ DONE — jobs 641255/641256; DETECTION_DELAY_ANALYSIS.md + RESULTS_SUMMARY.md written |
 
 ---
 
@@ -164,15 +164,21 @@
 
 **Finding 3:** Qwen3 shows degradation (optimized suffix disrupts generation for 1-2/12 tasks). Gemma4 does not (optimized suffix slightly improves over the already-imperfect 75% baseline). This asymmetry is consistent with Gemma4's lower repr_loss increase — the suffix disrupts Qwen3's generation more because it drives its hidden states further from the neutral baseline.
 
-## Next Actions
+## Pipeline Complete — Artifact Inventory (2026-07-06)
 
-1. **Wait for analysis jobs 641255/641256** (CPU analysis — Pareto frontier + DETECTION_DELAY_ANALYSIS.md for 10a and 10b).
+All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 
-2. **After analysis**: Verify DETECTION_DELAY_ANALYSIS.md written for both runs. Pipeline complete.
+| Run | DONE | free_gen | analysis | summary | audit |
+|---|---|---|---|---|---|
+| gcg_qwen3_repr_8b | ✅ | ✅ | ✅ | ✅ | ✅ |
+| gcg_qwen3_repr_8c | ✅ | ✅ | ✅ | ✅ | ✅ |
+| gcg_gemma4_repr_10a | ✅ | ✅ | ✅ | ✅ | ✅ |
+| gcg_gemma4_repr_10b | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-3. **Pipeline completion**: All validation gates passed. The Stage GCG-Early pipeline is complete: optimization → free-gen → analysis for both Qwen3 and Gemma4.
-
-4. **StrongREJECT**: Still blocked on API key. All reported success rates use prefix-match proxy.
+**Remaining open items:**
+- StrongREJECT scoring: blocked on API key — all success rates use prefix-match proxy
+- Per-position repr distance (hidden_states/ .pt files): not computed (evaluate_optimized_suffixes.py generates these; not submitted as a separate stage)
+- Detector AUC analysis: not implemented (requires separate classifier training)
 
 ## Bug Fixes Applied (2026-07-06)
 
