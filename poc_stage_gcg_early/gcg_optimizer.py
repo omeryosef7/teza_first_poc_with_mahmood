@@ -357,9 +357,15 @@ def run_optimization(
     output_dir: Path,
     reference_hs_per_task: Optional[Dict[str, Dict]] = None,
     repr_layers: Optional[List[int]] = None,
+    gemma4_model: Optional[Any] = None,
+    gemma4_tokenizer: Optional[Any] = None,
 ) -> None:
     """
     Main GCG optimization loop with full resume support.
+
+    Multi-model mode (gemma4_model is not None): candidate selection sums Qwen3 task_loss
+    across all train tasks PLUS Gemma4 task_loss for the top-K Qwen3 candidates. Gradients
+    are computed from Qwen3 only (different tokenizers prevent gradient aggregation).
 
     Stages:
       - Stage 3 (task-only):   lambda_repr=0, lambda_kl=0
@@ -516,24 +522,60 @@ def run_optimization(
             config.gcg.suffix_length, config.gcg.filter_cand,
         )
 
-        # --- Candidate evaluation (using first train task for selection) ---
-        base_spans = build_suffix_spans(
-            tokenizer, model_family, config.enable_thinking,
-            train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
-            suffix_ids_override=suffix_ids,
-        )
-        eval_results = _evaluate_candidates(
-            model, model_family, base_spans, cand_lists,
-            eval_batch_size=config.gcg.batch_size,
-            config=config,
-        )
+        # --- Candidate evaluation across ALL train tasks (summed losses) ---
+        # Fix: previously only train_tasks[0] was used here; now we sum over all tasks
+        # so that selection is consistent with the multi-task gradient aggregation above.
+        summed_eval: Optional[List[Dict]] = None
+        for eval_task in train_tasks:
+            eval_spans = build_suffix_spans(
+                tokenizer, model_family, config.enable_thinking,
+                eval_task.instruction, suffix_str, eval_task.safe_target_prefix,
+                suffix_ids_override=suffix_ids,
+            )
+            t_results = _evaluate_candidates(
+                model, model_family, eval_spans, cand_lists,
+                eval_batch_size=config.gcg.batch_size,
+                config=config,
+            )
+            if summed_eval is None:
+                summed_eval = [dict(r) for r in t_results]
+            else:
+                for i, r in enumerate(t_results):
+                    for k in ("task_loss", "repr_loss", "kl_loss", "reg_loss", "total_loss"):
+                        summed_eval[i][k] += r[k]
+
+        eval_results = summed_eval  # type: ignore[assignment]
+
+        # --- Optional multi-model rescoring: add Gemma4 task_loss to top-K candidates ---
+        # Gradient is always Qwen3-only (different tokenizers prevent gradient aggregation).
+        # We decode the top-K Qwen3 candidates to text, re-encode for Gemma4, and add the
+        # Gemma4 task_loss to the selection criterion.
+        if gemma4_model is not None and gemma4_tokenizer is not None:
+            MULTIMODEL_TOPK = min(10, len(eval_results))
+            topk_indices = sorted(range(len(eval_results)),
+                                  key=lambda i: eval_results[i]["total_loss"])[:MULTIMODEL_TOPK]
+            for i in topk_indices:
+                cand_text = tokenizer.decode(cand_lists[i], skip_special_tokens=False)
+                for eval_task in train_tasks:
+                    g4_spans = build_suffix_spans(
+                        gemma4_tokenizer, "gemma4", config.enable_thinking,
+                        eval_task.instruction, cand_text, eval_task.safe_target_prefix,
+                    )
+                    g4_result = _evaluate_candidates(
+                        gemma4_model, "gemma4", g4_spans, [g4_spans.suffix_ids_expected],
+                        eval_batch_size=1, config=config,
+                    )
+                    eval_results[i]["task_loss"] += g4_result[0]["task_loss"]
+                    eval_results[i]["total_loss"] += g4_result[0]["task_loss"]
 
         # --- Candidate selection ---
+        n_train = len(train_tasks)
         selection_mode = config.objective.selection_mode
         if selection_mode == "weighted":
             best_idx = min(range(len(eval_results)), key=lambda i: eval_results[i]["total_loss"])
         elif selection_mode == "constrained":
-            thresh = config.objective.constrained_repr_threshold
+            # Scale threshold by number of tasks since losses are summed
+            thresh = config.objective.constrained_repr_threshold * n_train
             feasible = [i for i, r in enumerate(eval_results) if r["repr_loss"] <= thresh]
             if feasible:
                 best_idx = min(feasible, key=lambda i: eval_results[i]["task_loss"])
@@ -541,21 +583,36 @@ def run_optimization(
                 best_idx = min(range(len(eval_results)), key=lambda i: eval_results[i]["total_loss"])
         elif selection_mode == "lexicographic":
             best_task = min(r["task_loss"] for r in eval_results)
-            eps = config.objective.lexicographic_task_eps
+            eps = config.objective.lexicographic_task_eps * n_train
             eligible = [i for i, r in enumerate(eval_results) if r["task_loss"] <= best_task + eps]
             best_idx = min(eligible, key=lambda i: eval_results[i]["repr_loss"])
         else:
             best_idx = min(range(len(eval_results)), key=lambda i: eval_results[i]["task_loss"])
 
         best_cand = cand_lists[best_idx]
-        best_losses = dict(eval_results[best_idx])  # mutable copy
+        best_losses = dict(eval_results[best_idx])  # mutable copy (summed across tasks)
 
-        # Accept if better than current
-        current_eval = _evaluate_candidates(
-            model, model_family, base_spans, [suffix_ids],
-            eval_batch_size=1, config=config,
-        )
-        if best_losses["total_loss"] < current_eval[0]["total_loss"]:
+        # --- Acceptance check: summed loss over all train tasks ---
+        current_summed: Optional[List[Dict]] = None
+        per_task_task_losses: Dict[str, float] = {}
+        for eval_task in train_tasks:
+            eval_spans = build_suffix_spans(
+                tokenizer, model_family, config.enable_thinking,
+                eval_task.instruction, suffix_str, eval_task.safe_target_prefix,
+                suffix_ids_override=suffix_ids,
+            )
+            t_curr = _evaluate_candidates(
+                model, model_family, eval_spans, [suffix_ids],
+                eval_batch_size=1, config=config,
+            )
+            per_task_task_losses[eval_task.task_id] = t_curr[0]["task_loss"]
+            if current_summed is None:
+                current_summed = [dict(r) for r in t_curr]
+            else:
+                for k in ("task_loss", "repr_loss", "kl_loss", "reg_loss", "total_loss"):
+                    current_summed[0][k] += t_curr[0][k]
+
+        if best_losses["total_loss"] < current_summed[0]["total_loss"]:  # type: ignore[index]
             suffix_ids = best_cand
             suffix_str = tokenizer.decode(suffix_ids, skip_special_tokens=True)
 
@@ -616,6 +673,8 @@ def run_optimization(
             "kl_loss": best_losses["kl_loss"],
             "reg_loss": best_losses["reg_loss"],
             "total_loss": best_losses["total_loss"],
+            "n_train_tasks": len(train_tasks),
+            "task_losses_per_behavior": per_task_task_losses,
             "selected_candidate_idx": best_idx,
             "wall_time_sec": wall_time,
             "peak_gpu_mem_gb": peak_mem_gb,

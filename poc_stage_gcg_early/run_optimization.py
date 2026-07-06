@@ -115,6 +115,12 @@ def main(argv=None):
                         help="repr_loss threshold for constrained selection mode.")
     parser.add_argument("--lexicographic-task-eps", type=float, default=0.01,
                         help="task_loss tolerance for lexicographic selection mode.")
+    parser.add_argument("--multi-model-family", default=None, choices=["gemma4"],
+                        help="Add a second model for cross-tokenizer candidate re-scoring. "
+                             "Gradients stay in primary model's token space; second model's "
+                             "task_loss is added to candidate selection criterion. Requires 2 GPUs.")
+    parser.add_argument("--multi-model-name-or-path", default="google/gemma-3-4b-it",
+                        help="HF model id or local path for the second model.")
     args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
@@ -148,6 +154,7 @@ def main(argv=None):
         ),
         output_dir=str(output_dir),
         enable_thinking=not args.no_thinking,
+        multi_model_family=args.multi_model_family,
     )
 
     # Write CONFIG.json before any model load
@@ -197,6 +204,19 @@ def main(argv=None):
         tokenizer = wrapped.tokenizer
     else:
         raise ValueError(f"Unknown model_family: {args.model_family}")
+
+    # --- Second model for multi-model candidate selection ---
+    gemma4_model = None
+    gemma4_tokenizer = None
+    if args.multi_model_family == "gemma4":
+        print(f"[run_optimization] Loading second model (Gemma4) for multi-model selection: {args.multi_model_name_or_path}", flush=True)
+        from poc_stage4.qwen3_model import load_gemma4_model as _load_gemma4
+        wrapped2 = _load_gemma4(
+            args.multi_model_name_or_path, require_cuda=True, log_device_placement=True
+        )
+        gemma4_model = wrapped2.model
+        gemma4_tokenizer = wrapped2.tokenizer
+        print("[run_optimization] Second model loaded.", flush=True)
 
     # --- Reference cache (optional for task-only baseline) ---
     ref_cache = None
@@ -274,6 +294,8 @@ def main(argv=None):
         output_dir=output_dir,
         reference_hs_per_task=reference_hs_per_task,
         repr_layers=repr_layers_list,
+        gemma4_model=gemma4_model,
+        gemma4_tokenizer=gemma4_tokenizer,
     )
 
 

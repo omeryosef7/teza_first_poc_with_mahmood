@@ -90,6 +90,7 @@ class RunConfig:
     output_dir: str
     model_revision: Optional[str] = None
     enable_thinking: bool = True
+    multi_model_family: Optional[str] = None  # e.g. "gemma4" for cross-tokenizer multi-model selection
 
     def config_hash(self) -> str:
         """
@@ -106,6 +107,7 @@ class RunConfig:
             "model_name_or_path": self.model_name_or_path,
             "model_revision": self.model_revision,
             "enable_thinking": self.enable_thinking,
+            "multi_model_family": self.multi_model_family,
             "gcg": dataclasses.asdict(self.gcg),
             "objective": dataclasses.asdict(self.objective),
         }
@@ -128,6 +130,47 @@ class RunConfig:
         d["gcg"] = GCGHyperparams(**d["gcg"])
         d["objective"] = ObjectiveWeights(**d["objective"])
         return cls(**d)
+
+
+def make_full_config(
+    run_id: str,
+    manifest_path: str,
+    output_dir: str,
+    model_family: str = "qwen3",
+    model_name_or_path: str = "Qwen/Qwen3-14B",
+    n_steps: int = 500,
+    batch_size: int = 64,
+    suffix_length: int = 20,
+    seed: int = 42,
+    lambda_repr: float = 1.0,
+    selection_mode: str = "weighted",
+    multi_model_family: Optional[str] = None,
+) -> RunConfig:
+    """Full-scale config matching Zou et al. 2023 (500 steps, suffix_length=20)."""
+    return RunConfig(
+        run_id=run_id,
+        model_family=model_family,
+        model_name_or_path=model_name_or_path,
+        manifest_path=manifest_path,
+        gcg=GCGHyperparams(
+            suffix_length=suffix_length,
+            batch_size=batch_size,
+            topk=256,
+            n_steps=n_steps,
+            seed=seed,
+            allow_non_ascii=False,
+            checkpoint_every=10,
+            snapshot_every=50,
+        ),
+        objective=ObjectiveWeights(
+            lambda_repr=lambda_repr,
+            lambda_kl=0.0,
+            selection_mode=selection_mode,
+        ),
+        output_dir=output_dir,
+        enable_thinking=True,
+        multi_model_family=multi_model_family,
+    )
 
 
 def make_smoke_config(
