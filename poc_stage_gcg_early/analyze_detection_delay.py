@@ -515,10 +515,16 @@ def compute_detector_auc(run_dir: Path) -> str:
 # Main analysis function
 # ---------------------------------------------------------------------------
 
-def analyze_detection_delay(run_dir: Path, results_filename: str = "FREE_GENERATION_RESULTS.jsonl") -> None:
+def analyze_detection_delay(
+    run_dir: Path,
+    results_filename: str = "FREE_GENERATION_RESULTS.jsonl",
+    output_filename: str = "DETECTION_DELAY_ANALYSIS.md",
+) -> None:
     """
     Full detection delay analysis. Requires Stage 9 free-generation results.
-    Writes DETECTION_DELAY_ANALYSIS.md to run_dir.
+    Writes output_filename (default: DETECTION_DELAY_ANALYSIS.md) to run_dir.
+    Use output_filename="DETECTION_DELAY_ANALYSIS_UNSEEDED.md" for unseen-seed results
+    to avoid overwriting the main analysis file.
     """
     run_dir = Path(run_dir)
     rows = load_free_gen_results(run_dir, results_filename)
@@ -601,7 +607,7 @@ def analyze_detection_delay(run_dir: Path, results_filename: str = "FREE_GENERAT
         "",
     ]
 
-    out_path = run_dir / "DETECTION_DELAY_ANALYSIS.md"
+    out_path = run_dir / output_filename
     out_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"[detection_delay] Written {out_path}")
 
@@ -619,5 +625,7 @@ if __name__ == "__main__":
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--results-file", default="FREE_GENERATION_RESULTS.jsonl",
                         help="Name of the results file to analyze (default: FREE_GENERATION_RESULTS.jsonl)")
+    parser.add_argument("--output-file", default="DETECTION_DELAY_ANALYSIS.md",
+                        help="Output markdown filename in run-dir (default: DETECTION_DELAY_ANALYSIS.md)")
     args = parser.parse_args()
-    analyze_detection_delay(Path(args.run_dir), args.results_file)
+    analyze_detection_delay(Path(args.run_dir), args.results_file, args.output_file)

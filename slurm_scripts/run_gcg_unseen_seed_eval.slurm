@@ -229,9 +229,11 @@ fi
 
 echo ""
 echo "--- Running analysis on unseeded results ---"
+# Write to DETECTION_DELAY_ANALYSIS_UNSEEDED.md to avoid overwriting the main analysis
 python -m poc_stage_gcg_early.analyze_detection_delay \
     --run-dir "$RUN_DIR" \
-    --results-file "FREE_GENERATION_RESULTS_UNSEEDED.jsonl" 2>&1 || echo "WARNING: analysis failed"
+    --results-file "FREE_GENERATION_RESULTS_UNSEEDED.jsonl" \
+    --output-file "DETECTION_DELAY_ANALYSIS_UNSEEDED.md" 2>&1 || echo "WARNING: analysis failed"
 
 echo ""
 echo "========================================================"

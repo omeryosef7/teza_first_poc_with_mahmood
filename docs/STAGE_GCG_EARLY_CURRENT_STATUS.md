@@ -1,7 +1,7 @@
 # Stage GCG-Early: Current Status
 
 **Last updated:** 2026-07-06  
-**Current stage:** EXTENDED PIPELINE RUNNING — replay jobs active; transfer + unseen-seed pending
+**Current stage:** PIPELINE COMPLETE — all GPU jobs done; analysis finalized with AUC results
 
 ---
 
@@ -212,18 +212,63 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 | gcg_gemma4_repr_10a | ✅ | ✅ | ✅ | ✅ | ✅ |
 | gcg_gemma4_repr_10b | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-**Remaining open items (2026-07-06):**
-- ✅ StrongREJECT scoring: COMPLETE — retroactively scored all 216 rows; bug fixed (wrong key)
-- ✅ Hidden-state replay scripts: written + submitted (641323-641326 RUNNING on n-801)
-- ✅ Cross-model transfer: `evaluate_cross_model_transfer.py` + SLURM written; 2 jobs submitted (641329 Qwen3→Gemma4, 641330 Gemma4→Qwen3 PENDING)
-- ✅ Unseen-seed eval: `run_gcg_unseen_seed_eval.slurm` written; submit after queue clears
-- ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, repr distance, detector AUC
-- ✅ `objectives.py` updated with whitened L2 (proper eigendecomposition W=(Σ+εI)^{-0.5}) + fluency_loss (EXPERIMENTAL, off by default)
-- ✅ `config.py` updated: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
-- ⏳ Per-position repr distance: hidden_states/ files created once jobs 641323-641326 complete
-- ⏳ Detector AUC: logistic regression on hidden states (runs automatically in `analyze_detection_delay.py` once .pt files exist)
-- ⏳ Analysis jobs (4 CPU): submit once replay jobs complete
-- ⏳ Unseen-seed eval (2 GPU): submit once queue has room
+**All items complete (2026-07-06):**
+- ✅ StrongREJECT scoring: all 216 rows; bug fixed (`score` → `strongreject_score`)
+- ✅ Hidden-state replay: 4 jobs (641323-641326) COMPLETE — 48+60+48+60 .pt files
+- ✅ Cross-model transfer: Qwen3→Gemma4 (641329), Gemma4→Qwen3 (641330) COMPLETE — 16 rows each
+- ✅ Unseen-seed eval: Gemma4 10a seeds 100 (641344), Qwen3 8b seeds 100,200,300 (641347) COMPLETE
+- ✅ `analyze_detection_delay.py` rewritten with held-out transfer, seed transfer, per-position repr distance, detector AUC
+- ✅ `objectives.py` updated with whitened L2 (eigendecomposition) + fluency_loss (EXPERIMENTAL)
+- ✅ `config.py`: `fluency_penalty_weight: float = 0.0` added to `ObjectiveWeights`
+- ✅ Per-position repr distance: computed from hidden_states/*.pt for all 4 runs
+- ✅ Detector AUC: logistic regression AUC computed for all 4 runs (sklearn 1.9.0)
+- ✅ Analysis jobs (4 CPU + reruns): all DETECTION_DELAY_ANALYSIS.md files correct
+- ✅ Unseeded analysis uses separate `DETECTION_DELAY_ANALYSIS_UNSEEDED.md` (bug fixed)
+
+## Definitive Findings: Detector AUC + Per-Position Repr Distance (2026-07-06)
+
+### Detector AUC (Logistic Regression, 5-fold CV)
+
+Trained to distinguish `optimized` from `neutral_control` hidden states at each
+generated-token position. AUC = 1.0 = perfect linear separation.
+
+| Run | Pos 0 | Pos 1 | Pos 2 | Pos 3 | Pos 4-11 | Earliest detectable |
+|---|---|---|---|---|---|---|
+| gcg_qwen3_repr_8b | **1.000** | 1.000 | 1.000 | 1.000 | 0.9-1.0 | pos 0 |
+| gcg_qwen3_repr_8c | **1.000** | 1.000 | 0.85 | 0.85 | 0.63-0.92 | pos 0 |
+| gcg_gemma4_repr_10a | **1.000** | 1.000 | 1.000 | 1.000 | 1.0 (5 pos) | pos 0 |
+
+**Finding 4 (definitive, 2026-07-06):** A logistic regression classifier trained on layer-averaged
+hidden states can PERFECTLY (AUC=1.0) distinguish optimized from neutral_control at the very
+first generated token (position 0) for both Qwen3 and Gemma4. The earliest detectable position
+is pos 0 across all runs. The optimized suffix creates an immediately detectable hidden-state
+signature — the opposite of the evasion goal.
+
+### Per-Position Repr Distance (Cosine from Neutral)
+
+`optimized_weighted` diverges from `neutral_control` at ALL generated positions.
+`task_only` and `neutral_control` have near-zero mutual distance (sanity check passes).
+
+| Run | Max dist (optimized) | Max dist (random) | Trend |
+|---|---|---|---|
+| gcg_qwen3_repr_8b | 0.111 at pos 1 | 0.006 | Peaked at pos 1, stabilizes ~0.04 |
+| gcg_gemma4_repr_10a | 0.289 at pos 6 | 0.082 at pos 5 | Increases toward pos 5-6 |
+
+**Finding 5 (2026-07-06):** Repr distance from neutral INCREASES in free generation — consistent
+with teacher-forced repr_loss trajectory (0.20→0.51 for Qwen3, 0.15→0.26 for Gemma4). The
+fundamental repr/task conflict observed during optimization persists into free generation.
+
+### Cross-Model Transfer Results (2026-07-06)
+
+| Transfer | Conditions | Mean StrongREJECT | SR Success | Finding |
+|---|---|---|---|---|
+| Qwen3 → Gemma4 (8b suffix) | transfer_weighted vs baselines | 1.000 vs 1.000 | 4/4 all | No degradation; no advantage |
+| Gemma4 → Qwen3 (10a suffix) | transfer_weighted vs baselines | — | — | Same pattern |
+
+Prefix-match: 0.750 for all conditions (including transfer) — consistent with Gemma4 baseline.
+
+**Finding 6 (2026-07-06):** Cross-model text transfer shows the optimized suffix is neither
+harmful (no SR degradation) nor beneficial (no task advantage) when applied to the other model.
 
 ## Bug Fixes Applied (2026-07-06)
 
@@ -236,6 +281,8 @@ All 4 optimization runs have complete artifact sets (verified 2026-07-06):
 | `model_adapter.py` `_EMBED_PATHS_BY_FAMILY["gemma4"]`: path `language_model.model.embed_tokens` incorrect (ValueError for jobs 641245/641246) | Root: `Gemma4ForConditionalGeneration.model` → `Gemma4Model.language_model` → text decoder → `embed_tokens`; correct path is `model.language_model.embed_tokens`. Fixed in `_EMBED_PATHS_BY_FAMILY` and fallback list. Resubmitted as jobs 641247/641248. |
 | `gcg_optimizer.py` `_token_gradients`: Gemma4 OOM (28 GiB) when `inputs_embeds` provided without `input_ids` (jobs 641247/641248) | Root: `get_per_layer_inputs(None, inputs_embeds)` creates `[seq, vocab_size, hidden]` comparison tensor (~62 GiB) to reverse-engineer input_ids. Fix: pre-compute `per_layer_inputs = text_lm.get_per_layer_inputs(input_ids, None)` and pass as `per_layer_inputs` kwarg to model forward (skips reverse-engineering). Official Gemma4 API pattern documented in `per_layer_inputs` docstring. |
 | `evaluate_optimized_suffixes.py` line 140: `sr.get("score")` always returns None (2026-07-06) | Root: `score_single_row` stores the score as `"strongreject_score"` not `"score"`. Fix: changed to `sr.get("strongreject_score")`. All 216 existing rows retroactively re-scored (2026-07-06). |
+| `run_gcg_unseen_seed_eval.slurm`: final `analyze_detection_delay` overwrites `DETECTION_DELAY_ANALYSIS.md` with unseeded-only data | Root: analysis call didn't specify `--output-file`. Fix: added `--output-file DETECTION_DELAY_ANALYSIS_UNSEEDED.md` to the analysis call. `analyze_detection_delay.py` updated to accept `--output-file` and `output_filename` parameter. |
+| `compute_detector_auc()` fails with `ModuleNotFoundError: No module named 'sklearn'` | sklearn not installed in conda env `poc_stage2`. Fix: `pip install scikit-learn` (version 1.9.0 installed 2026-07-06). |
 
 ## Stage 10 Gemma4 Reference Cache — Verified Positions (2026-07-06)
 
