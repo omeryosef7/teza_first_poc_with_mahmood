@@ -24,10 +24,11 @@
 #
 # Required env vars:
 #   RUN_DIR    — completed optimization run directory
-#   SEEDS      — comma-separated list of unseen seeds (e.g., "100,200,300")
+#   SEEDS      — colon-separated unseen seeds (e.g., "100:200:300")
+#                IMPORTANT: use COLON (:) not comma — sbatch --export splits on commas!
 #
 # Usage:
-#   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_qwen3_repr_8b,SEEDS=100,200,300 \
+#   sbatch --export=ALL,RUN_DIR=outputs/stage_gcg_early/gcg_qwen3_repr_8b,SEEDS=100:200:300 \
 #          slurm_scripts/run_gcg_unseen_seed_eval.slurm
 
 set -euo pipefail
@@ -35,11 +36,13 @@ set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 RUN_DIR="${RUN_DIR:-}"
-SEEDS="${SEEDS:-100,200,300}"
+SEEDS="${SEEDS:-100:200:300}"
+# SEEDS uses colon separator to avoid sbatch --export splitting on commas.
+# e.g. SEEDS=100:200:300 (NOT 100,200,300)
 
 if [ -z "$RUN_DIR" ]; then
     echo "ERROR: RUN_DIR must be set."
-    echo "Usage: sbatch --export=ALL,RUN_DIR=...,SEEDS=100,200,300 run_gcg_unseen_seed_eval.slurm"
+    echo "Usage: sbatch --export=ALL,RUN_DIR=...,SEEDS=100:200:300 run_gcg_unseen_seed_eval.slurm"
     exit 1
 fi
 
@@ -90,7 +93,7 @@ from pathlib import Path
 import torch
 
 run_dir = Path(sys.argv[1])
-seeds = [int(s) for s in sys.argv[2].split(",")]
+seeds = [int(s) for s in sys.argv[2].replace(":", ",").split(",") if s.strip()]
 
 sys.path.insert(0, str(Path(".").resolve()))
 
