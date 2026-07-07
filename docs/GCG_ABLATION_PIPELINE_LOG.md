@@ -13,7 +13,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 | Exp | Description | Status | Jobs |
 |---|---|---|---|
 | 4A | CoT ablation: free-gen with enable_thinking=False | ✅ DONE — CoT-OFF: detectable at response pos 3 (AUC=0.741) | 642268+642461+644179 |
-| 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 REPLAY ✅, ANALYSIS RUNNING (644305) | 642269+643031+643032+644178+644305 |
+| 4B | lambda_repr=0.0 optimization (upper-bound ASR) | ✅ DONE — ASR=1.3%/1.3%, AUC=0.807 (pos 18), invisible at pos 0 | 642269+643031+643032+644178+644305 |
 | 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | ✅ DONE — all 0% ASR, AUC=0.698 pos-0 (detectable at pos 13) | 642270+642299+642562+643501+643502+643948 |
 | 4D | Real-time adversarial detector (position-0 classifier) | ✅ DONE — CoT-ON: AUC=1.000; CoT-OFF: AUC=0.507 (random) | 642271+642563 |
 | 4E | Qwen3→Gemma4 text transfer eval | ✅ DONE — 0% transfer ASR | 642273 |
@@ -118,7 +118,26 @@ The best suffix converged at step 332. Replay (644178) running; analysis to foll
 | Training (42,43,44) | 0.040 (3/75) | **0.000 (0/75)** | ~0.027 | **−0.040** |
 | Unseen (100,200,300) | 0.067 (5/75) | **0.013 (1/75)** | 0.120 (9/75) | **−0.054** |
 
-**Decisive finding:** lambda_repr=0.0 achieves LOWER ASR than lambda=1.0 despite 87% better task_loss. Better teacher-forced optimization makes the suffix MORE garbled and triggers STRONGER safety responses. The repr_loss constraint was not causing low ASR; safety is fundamental and independent of optimization quality.
+**Free-gen results (COMPLETE 2026-07-07):**
+
+| Seed set | lambda=1.0 optimized | lambda=0.0 optimized | task_only | Delta (lambda=0 vs 1.0) |
+|---|---|---|---|---|
+| Training (42,43,44) | 0.040 (3/75) | **0.013 (1/75)** | ~0.027 | −0.027 |
+| Unseen (100,200,300) | 0.067 (5/75) | **0.013 (1/75)** | 0.120 (9/75) | −0.054 |
+
+**Detection delay (lambda=0 analysis, COMPLETE):**
+
+| Rel pos | AUC | Detectable? |
+|---|---|---|
+| 0–5 | **0.500 ± 0.000** | ✗ (perfectly random — suffix invisible) |
+| 6 | **0.770 ± 0.084** | ✓ (first detectable) |
+| 7 | 0.751 ± 0.044 | ✓ |
+| 18 | **0.807 ± 0.036** | ✓ (peak — strongest of any run) |
+| 25 | 0.778 ± 0.086 | ✓ (sustained) |
+
+**repr distance at pos 0: 0.000** (optimized = neutral, first 3 positions)
+
+**Decisive finding:** lambda=0.0 achieves LOWER ASR (1.3% vs 4%) despite 87% better task_loss. But the detection profile is inverted: AUC=0.500 at positions 0–5 (invisible to position-0 detector) then AUC=0.807 at position 18 (strongest peak of all runs). The repr_loss constraint causes the adversarial signal to appear EARLY (position 0) at the cost of slightly worse optimization. Without repr_loss, the suffix "blends in" for the first 6 thinking tokens then diverges strongly. Safety is independent of optimization quality; repr_loss shapes WHEN the signal is detectable, not WHETHER the attack succeeds.
 
 ### 4C: Gemma4-only Results
 
@@ -184,13 +203,14 @@ The best suffix converged at step 332. Replay (644178) running; analysis to foll
 | Feature | layer-averaged hs, all 8 layers | same |
 | Training samples | 150 (75 optimized, 75 neutral) | 150 |
 
-**Complete detection spectrum (full analysis 644179, 2026-07-07):**
+**Complete detection spectrum (all ablations, 2026-07-07):**
 
-| Setting | First detectable pos | Peak AUC | Pattern |
-|---|---|---|---|
-| Qwen3 CoT-ON | pos 0 (thinking token) | **1.000 ± 0.000** | Sustained perfect across ALL 32 positions |
-| Qwen3 CoT-OFF | pos 3 (response token) | **0.748 ± 0.056** (pos 5) | Detectable only in window pos 3–6; random elsewhere |
-| Gemma4 (no extended CoT) | pos 13 (response token) | **0.742 ± 0.062** (pos 23) | Intermittent detectable windows pos 13–27 |
+| Setting | First detectable pos | Peak AUC | Pos-0 AUC | Pattern |
+|---|---|---|---|---|
+| Qwen3 λ=1.0, CoT-ON | pos 0 (thinking) | **1.000** (all pos) | **1.000** | Sustained perfect, all 32 positions |
+| Qwen3 λ=0.0, CoT-ON | pos 6 (thinking) | **0.807** (pos 18) | **0.500** (random!) | Invisible pos 0–5; strong sustained pos 6–28 |
+| Qwen3 λ=1.0, CoT-OFF | pos 3 (response) | **0.748** (pos 5) | 0.540 | Window pos 3–6 only; random elsewhere |
+| Gemma4 λ=1.0 | pos 13 (response) | **0.742** (pos 23) | 0.698 | Intermittent windows pos 13–27 |
 
 **CoT-OFF AUC by position (key positions):**
 
@@ -290,6 +310,9 @@ CoT-ON detector AUC=1.000 vs CoT-OFF AUC=0.507 (random chance). With CoT disable
 
 ### Finding 8: lambda_repr=0.0 Achieves 87% Task Loss Reduction (4B, optimization complete)
 Without repr penalty: best task_loss=4.1741 vs 7.9746 with lambda=1.0 — 48% lower. The repr_loss was the dominant obstacle to GCG optimization on Qwen3. Whether this translates to higher ASR is still unknown (free-gen pending); but the optimization quality is substantially higher.
+
+### Finding 13: lambda_repr Controls WHEN Signal Appears, Not WHETHER Attack Succeeds (4B analysis, COMPLETE)
+lambda=0.0 suffix is perfectly invisible at positions 0–5 (AUC=0.500, repr_dist=0.000), then strongly detectable positions 6–28 (peak AUC=0.807 at pos 18 — strongest of all runs). lambda=1.0 forces adversarial signal to appear at position 0 (AUC=1.000) at the cost of slightly worse optimization. The repr_loss constraint is a "detection timing dial": lambda=1.0 → early detection, lambda=0.0 → delayed but stronger detection. Neither avoids detection; both reduce ASR. Production position-0 detector only catches lambda=1.0 suffixes.
 
 ### Finding 12: Complete Detection Delay Spectrum — CoT Depth Determines Detection Speed (4A+4C analysis, COMPLETE)
 Full cross-model detection picture:
