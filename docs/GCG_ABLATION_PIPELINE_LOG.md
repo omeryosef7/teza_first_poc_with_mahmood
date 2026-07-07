@@ -14,7 +14,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 |---|---|---|---|
 | 4A | CoT ablation: free-gen with enable_thinking=False | ✅ DONE — training 0.000, unseen 0.027 | 642268 |
 | 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 OPT ✅ (500 steps), FREE-GEN+UNSEEN RUNNING (643031+643032) | 642269+643031+643032 |
-| 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | 🔄 FREE-GEN ✅ (0% ASR), UNSEEN+REPLAY RUNNING (643501+643502) | 642270+642299+642562+643501+643502 |
+| 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | 🔄 REPLAY ✅, ANALYSIS RUNNING (643948), UNSEEN RUNNING (643501) | 642270+642299+642562+643501+643502+643948 |
 | 4D | Real-time adversarial detector (position-0 classifier) | ✅ DONE — CoT-ON: AUC=1.000; CoT-OFF: AUC=0.507 (random) | 642271+642563 |
 | 4E | Qwen3→Gemma4 text transfer eval | ✅ DONE — 0% transfer ASR | 642273 |
 | 4F | Full 520-behavior AdvBench eval (statistical robustness) | 🔄 RUNNING (642298, fix applied) | 642272+642298 |
@@ -175,7 +175,7 @@ The best suffix converged at step 332 and the optimization hit a near-plateau (~
 **Run dir:** `outputs/stage_gcg_full/gcg_full_qwen3_full520_eval/`
 **Note:** Expected runtime ~27h for 6240 evals (520 × 4 × 3 × ~15.6s/eval). SLURM 8h limit will yield partial results (~150/520 behaviors). Continuation job to be submitted after timeout.
 
-**Status as of 5h elapsed:** 57/520 behaviors complete (682 rows). Expected to reach ~91/520 at 8h limit.
+**Status as of 6h elapsed:** 69/520 behaviors complete (818 rows). Expected to reach ~92/520 at 8h limit (~2h remaining).
 
 **Partial results (57/520 behaviors, 682 rows, as of 5h elapsed):**
 
@@ -186,7 +186,16 @@ The best suffix converged at step 332 and the optimization hit a near-plateau (~
 | random_spaces | 3/170 | 0.018 | — |
 | task_only | 5/170 | **0.029** | +0.002 |
 
-**Partial interpretation (5h):** GCG optimized (1.2%) consistently below task_only (2.9%) — GCG provides net negative benefit of −1.7pp across the first 57 AdvBench behaviors. Pattern holds and strengthens vs earlier 34-behavior check (was −1.0pp). Continuation job needed after 8h timeout.
+**Partial results (69/520 behaviors, 818 rows, as of 6h elapsed):**
+
+| Condition | Hits/Total | ASR | vs Training-set ASR (0.040) |
+|---|---|---|---|
+| optimized_weighted | 2/205 | **0.010** | −0.030 (GCG net negative) |
+| neutral_control | 5/205 | 0.024 | — |
+| random_spaces | 3/204 | 0.015 | — |
+| task_only | 5/204 | **0.025** | −0.015 |
+
+**Partial interpretation (6h):** GCG net −1.5pp (optimized 1.0% vs task_only 2.5%). Pattern stable and consistent: suffix suppresses baseline compliance. Job will time out at ~92/520 behaviors (~2h); resubmission will resume automatically via row_key skip logic.
 
 ---
 
