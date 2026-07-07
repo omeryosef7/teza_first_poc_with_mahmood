@@ -14,10 +14,10 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 |---|---|---|---|
 | 4A | CoT ablation: free-gen with enable_thinking=False | 🔄 RUNNING (642268) | 642268 |
 | 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 RUNNING (642269) | 642269 |
-| 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | 🔄 REF CACHE RUNNING (642270) | 642270 |
-| 4D | Real-time adversarial detector (position-0 classifier) | 🔄 RUNNING (642271) | 642271 |
+| 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | 🔄 REF CACHE ✅, OPT RUNNING (642299) | 642270+642299 |
+| 4D | Real-time adversarial detector (position-0 classifier) | ✅ DONE — AUC=1.000, P=1.000, R=1.000 | 642271 |
 | 4E | Qwen3→Gemma4 text transfer eval | 🔄 RUNNING (642273) | 642273 |
-| 4F | Full 520-behavior AdvBench eval (statistical robustness) | 🔄 RUNNING (642274) | 642272+642274 |
+| 4F | Full 520-behavior AdvBench eval (statistical robustness) | 🔄 RUNNING (642298, fix applied) | 642272+642298 |
 
 ---
 
@@ -40,11 +40,13 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 |---|---|---|
 | 642268 | run_gcg_cot_ablation.slurm | 4A: CoT disabled free-gen + unseen-seed | RUNNING |
 | 642269 | run_gcg_full_lambda0.slurm | 4B: lambda_repr=0.0 optimization | RUNNING |
-| 642270 | build_gcg_reference_cache_gemma4_full.slurm | 4C prep: Gemma4 reference cache | RUNNING |
-| 642271 | run_gcg_train_detector.slurm | 4D: position-0 detector training | RUNNING |
-| 642273 | run_gcg_cross_model_transfer.slurm | 4E: Qwen3→Gemma4 text transfer | RUNNING |
+| 642270 | build_gcg_reference_cache_gemma4_full.slurm | 4C prep: Gemma4 reference cache | ✅ DONE (20 behaviors) |
+| 642299 | run_gcg_full_gemma4.slurm | 4C: Gemma4 GCG-Full optimization | 🔄 RUNNING |
+| 642271 | run_gcg_train_detector.slurm | 4D: position-0 detector training | ✅ DONE — AUC=1.000, P=1.000, R=1.000 |
+| 642273 | run_gcg_cross_model_transfer.slurm | 4E: Qwen3→Gemma4 text transfer | 🔄 RUNNING |
 | 642272 | build_gcg_full520_manifest.slurm | 4F prep: build 520-behavior manifest | ✅ DONE (520 rows) |
-| 642274 | run_gcg_full520_eval.slurm | 4F: full 520-behavior eval | RUNNING |
+| 642274 | run_gcg_full520_eval.slurm | 4F: eval (FAILED — early_prefix missing) | ❌ FAILED |
+| 642298 | run_gcg_full520_eval.slurm | 4F: eval resubmit (bug fixed) | 🔄 RUNNING |
 
 ---
 
@@ -52,7 +54,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 - **4A post-processing:** replay + analysis (after 4A free-gen completes)
 - **4B post-processing:** free-gen + unseen-seed + replay + analysis (after 4B opt completes)
-- **4C optimization:** run_gcg_full_gemma4.slurm (after 4C ref cache completes)
+- **4C optimization:** ✅ SUBMITTED as 642299 (ref cache completed)
 - **4F evaluation:** run_gcg_full520_eval.slurm (after 4F manifest build completes)
 
 ---
@@ -104,11 +106,15 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 | Metric | Value |
 |---|---|
-| Training AUC (5-fold CV) | TBD |
-| Precision (threshold=0.5) | TBD |
-| Recall (threshold=0.5) | TBD |
+| Training AUC (5-fold CV mean) | **1.0000 ± 0.0000** |
+| Precision (threshold=0.5) | **1.0000** |
+| Recall (threshold=0.5) | **1.0000** |
+| Accuracy | **1.0000** |
 | Feature: position-0 hidden state | layer-averaged, all 8 layers |
-| Latency overhead | TBD ms |
+| All 5 folds | AUC=1.0000 each |
+| Model saved | `outputs/stage_gcg_ablation/detector/detector_model.pkl` |
+
+**Interpretation:** Perfect linear separability of adversarial vs neutral hidden states at position 0. A production logistic-regression detector on the first generated CoT token achieves zero false-positive and zero false-negative rate on this dataset.
 
 ### 4E: Transfer Eval Results
 
@@ -133,7 +139,12 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 ## Bugs Fixed
 
-(filled as found)
+### Bug 1: `early_prefix` missing from full-520 manifest (4F, job 642274 FAILED)
+
+**Symptom:** `SurrogateTask.__init__() missing 1 required positional argument: 'early_prefix'`  
+**Root cause:** `build_full520_manifest.py` omitted `early_prefix` field. `SurrogateTask.from_dict` filters to known fields only — if `early_prefix` is absent from dict, the dataclass constructor fails because it has no default.  
+**Fix:** Added `"early_prefix": None` to each row in `build_full520_manifest.py`; rebuilt manifest (SHA256: `f59446e...`); resubmitted as job 642298.  
+**Also removed:** `target_prefix` key (not a SurrogateTask field; harmless but cleaner).
 
 ---
 

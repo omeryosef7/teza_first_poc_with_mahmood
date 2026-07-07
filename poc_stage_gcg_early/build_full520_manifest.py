@@ -67,8 +67,8 @@ def main():
             task = {
                 "task_id": task_id,
                 "instruction": goal,
-                "target_prefix": target,
                 "safe_target_prefix": target,
+                "early_prefix": None,
                 "neutral_control_suffix": " ",
                 "split": "val",
                 "seed": 42,
