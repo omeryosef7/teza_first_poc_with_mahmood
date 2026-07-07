@@ -12,7 +12,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 | Exp | Description | Status | Jobs |
 |---|---|---|---|
-| 4A | CoT ablation: free-gen with enable_thinking=False | 🔄 RUNNING (642268) | 642268 |
+| 4A | CoT ablation: free-gen with enable_thinking=False | ✅ DONE — training 0.000, unseen 0.027 | 642268 |
 | 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 RUNNING (642269) | 642269 |
 | 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | 🔄 REF CACHE ✅, OPT RUNNING (642299) | 642270+642299 |
 | 4D | Real-time adversarial detector (position-0 classifier) | ✅ DONE — AUC=1.000, P=1.000, R=1.000 | 642271 |
@@ -71,13 +71,19 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 ### 4A: CoT Ablation Results
 
 **Run dir:** `outputs/stage_gcg_full/gcg_full_qwen3_cot_disabled/`
+**Status:** COMPLETE 2026-07-07 ~09:52 UTC. Replay job 642461 submitted.
 
-| Seed set | GCG optimized (CoT ON) | GCG optimized (CoT OFF) | Delta |
-|---|---|---|---|
-| Training (42,43,44) | 0.040 | **0.000** (0/75) | −0.040 |
-| Unseen (100,200,300) | 0.067 | TBD (eval running) | TBD |
+| Seed set | optimized (CoT ON) | optimized (CoT OFF) | task_only (CoT ON) | task_only (CoT OFF) |
+|---|---|---|---|---|
+| Training (42,43,44) | 0.040 | **0.000** (0/75) | 0.027 | **0.000** (0/75) |
+| Unseen (100,200,300) | 0.067 | **0.027** (2/75) | 0.120 | **0.000** (0/75) |
 
-**Interpretation (training seeds):** Disabling CoT does NOT raise ASR — optimized condition drops from 4% to 0%. Neutral condition also 0%. This suggests CoT is not the sole defense; the safety is also embedded in the direct-response pathway. Unseen-seed eval in progress; will resolve whether 0% holds on unseen seeds.
+**Critical finding:** Disabling CoT does NOT raise ASR — the hypothesis that CoT is the primary defense is **REJECTED**. More striking: disabling CoT causes task_only ASR to COLLAPSE from 12% to 0% on unseen seeds. The CoT enables both safety reasoning AND occasional compliance with borderline behaviors; without CoT, the model defaults to blanket refusal. The adversarial suffix provides marginal lift (0.027 vs 0.000 task_only) with CoT OFF, but both are near-zero.
+
+**Additional notes:**
+- random_spaces: 1/75 on training seeds (noise), 0/75 on unseen
+- No prefix-match successes under any condition in either seed set
+- Replay job 642461 submitted to capture hidden states for detector comparison (CoT OFF vs CoT ON)
 
 ### 4B: lambda_repr=0.0 Results
 
@@ -91,7 +97,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 | Unseen seed ASR | 0.067 | TBD |
 | AUC at pos 0 | 1.000 | TBD |
 
-**Interim finding (step 130/500):** lambda=0.0 already achieves task_loss=5.10, LOWER than original lambda=1.0 best of 7.97. repr_loss was significantly conflicting with optimization. Starting task_loss was 31.80 (vs 30.74 with lambda=1.0). Post-processing (free-gen + unseen-seed + replay + analysis) will be submitted after optimization completes.
+**Interim finding (step 290/500, as of 2h elapsed):** task_loss=4.40 at step 290 from initial 31.80 — **86% reduction, well below original best of 7.97**. Appears to plateau around 4.4-4.5 in steps 200-290. repr_loss=0.0000 throughout (expected). Post-processing (free-gen + unseen-seed + replay + analysis) will be submitted after optimization completes (~4h total).
 
 ### 4C: Gemma4-only Results
 
@@ -106,7 +112,7 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 | Unseen seed ASR | 0.067 | TBD |
 | AUC at pos 0 | 1.000 | TBD |
 
-**Interim finding (step 160/500):** Gemma4 shows faster proportional loss reduction (78% at 160 steps) than Qwen3 (74% at 330 steps). repr_loss on Gemma4 starts at 0.24 and increases to 0.29 at step 160 — same conflict pattern as Qwen3. post-processing chain (free-gen + unseen-seed + replay + analysis) will be submitted after optimization completes.
+**Interim finding (step 330/500, as of 2h elapsed):** task_loss=7.62 at step 330 from initial 46.34 — **83.6% reduction**, slightly better than Qwen3 at same step (7.97). Big jumps: step 300→310 (10.24→7.81) and 310→330 (7.81→7.62) suggest active optimization continuing. repr_loss on Gemma4 starts at 0.24 and increases to 0.29 at step 330 — same conflict pattern as Qwen3. Post-processing will be submitted after optimization completes (~1.5h more).
 
 ### 4D: Real-Time Detector Results
 
@@ -166,8 +172,8 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 ## Key Findings
 
-### Finding 1: CoT Disabled Does NOT Raise ASR (4A, 2026-07-07)
-With `enable_thinking=False`, the Qwen3 GCG suffix achieves **0.000 ASR** on training seeds (vs 0.040 with CoT enabled). Neutral control also 0%. Disabling CoT actually slightly REDUCES ASR rather than increasing it, suggesting the safety mechanism is not primarily CoT-dependent — it is also embedded in the direct response pathway. Unseen-seed eval pending.
+### Finding 1: CoT is NOT the Primary Defense — It Enables Both Compliance AND Refusal (4A, COMPLETE)
+With `enable_thinking=False`, optimized ASR drops from 4%/6.7% to 0%/2.7% on training/unseen seeds. More striking: task_only (no adversarial suffix) ASR collapses from 12% to 0% on unseen seeds. The CoT reasoning provides the cognitive space for the model to *sometimes* comply with borderline behaviors. Without it, blanket refusal. The adversarial suffix provides marginal net lift (0.027 vs 0.000) only on unseen seeds with CoT OFF. **CoT hypothesis is REJECTED as primary defense: the safety mechanism persists without CoT.**
 
 ### Finding 2: repr_loss Significantly Conflicts with Task Optimization (4B, in progress)
 With `lambda_repr=0.0`, GCG achieves task_loss=5.10 at step 130 — already **better than the original best of 7.97** at step 330 with lambda_repr=1.0. This quantitatively confirms that the representation regularization was pulling the optimizer away from the attack direction. Upper-bound ASR to be measured after full 500 steps.
