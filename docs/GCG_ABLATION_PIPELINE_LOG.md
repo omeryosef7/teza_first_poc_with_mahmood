@@ -12,12 +12,12 @@ All ablations build on existing GCG-Full results in `outputs/stage_gcg_full/`.
 
 | Exp | Description | Status | Jobs |
 |---|---|---|---|
-| 4A | CoT ablation: free-gen with enable_thinking=False | 🔄 FULL ANALYSIS RUNNING (644179) | 642268+642461+644179 |
-| 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 FREE-GEN+UNSEEN ✅, REPLAY RUNNING (644178) | 642269+643031+643032+644178 |
+| 4A | CoT ablation: free-gen with enable_thinking=False | ✅ DONE — CoT-OFF: detectable at response pos 3 (AUC=0.741) | 642268+642461+644179 |
+| 4B | lambda_repr=0.0 optimization (upper-bound ASR) | 🔄 REPLAY ✅, ANALYSIS RUNNING (644305) | 642269+643031+643032+644178+644305 |
 | 4C | Gemma4-only GCG-Full (cross-model CoT comparison) | ✅ DONE — all 0% ASR, AUC=0.698 pos-0 (detectable at pos 13) | 642270+642299+642562+643501+643502+643948 |
 | 4D | Real-time adversarial detector (position-0 classifier) | ✅ DONE — CoT-ON: AUC=1.000; CoT-OFF: AUC=0.507 (random) | 642271+642563 |
 | 4E | Qwen3→Gemma4 text transfer eval | ✅ DONE — 0% transfer ASR | 642273 |
-| 4F | Full 520-behavior AdvBench eval (statistical robustness) | 🔄 RUNNING (642298, fix applied) | 642272+642298 |
+| 4F | Full 520-behavior AdvBench eval (statistical robustness) | 🔄 92/520 done (642298 timed out), CONTINUATION RUNNING (644304) | 642272+642298+644304 |
 
 ---
 
@@ -184,7 +184,26 @@ The best suffix converged at step 332. Replay (644178) running; analysis to foll
 | Feature | layer-averaged hs, all 8 layers | same |
 | Training samples | 150 (75 optimized, 75 neutral) | 150 |
 
-**Critical finding (2026-07-07):** The adversarial hidden-state signature at position 0 is **CoT-specific**. With CoT ON, the first generated *thinking* token perfectly separates adversarial from neutral (AUC=1.000). With CoT OFF, the first generated *response* token has AUC=0.507 (random). The discriminative information lives entirely in the CoT pathway. This explains Finding 1: CoT enables detection, but also enables borderline compliance. Safety without CoT is achieved via a different (less mechanistically transparent) pathway.
+**Complete detection spectrum (full analysis 644179, 2026-07-07):**
+
+| Setting | First detectable pos | Peak AUC | Pattern |
+|---|---|---|---|
+| Qwen3 CoT-ON | pos 0 (thinking token) | **1.000 ± 0.000** | Sustained perfect across ALL 32 positions |
+| Qwen3 CoT-OFF | pos 3 (response token) | **0.748 ± 0.056** (pos 5) | Detectable only in window pos 3–6; random elsewhere |
+| Gemma4 (no extended CoT) | pos 13 (response token) | **0.742 ± 0.062** (pos 23) | Intermittent detectable windows pos 13–27 |
+
+**CoT-OFF AUC by position (key positions):**
+
+| Rel pos | AUC | Detectable? |
+|---|---|---|
+| 0 | 0.540 ± 0.033 | ✗ (near-random) |
+| 1 | 0.492 ± 0.071 | ✗ |
+| 2 | 0.699 ± 0.070 | ✗ |
+| 3 | **0.741 ± 0.059** | ✓ (first detectable) |
+| 5 | **0.748 ± 0.056** | ✓ (peak) |
+| 7+ | 0.396–0.685 | mostly ✗ (noisy) |
+
+**Mechanistic interpretation:** The adversarial hidden-state signal is present in CoT-OFF responses but is delayed and weak compared to CoT-ON. With CoT enabled, the thinking mechanism amplifies and concentrates the adversarial encoding immediately (position 0). Without CoT, the signal leaks into the response pathway only after 3 tokens of response generation, and fades after token 6. Gemma4's signal (first at pos 13) is even more delayed, consistent with shorter safety-processing chain.
 
 ### 4E: Transfer Eval Results
 
@@ -225,7 +244,16 @@ The best suffix converged at step 332. Replay (644178) running; analysis to foll
 | random_spaces | 3/204 | 0.015 | — |
 | task_only | 5/204 | **0.025** | −0.015 |
 
-**Partial interpretation (6h):** GCG net −1.5pp (optimized 1.0% vs task_only 2.5%). Pattern stable and consistent: suffix suppresses baseline compliance. Job will time out at ~92/520 behaviors (~2h); resubmission will resume automatically via row_key skip logic.
+**After first job (642298 timed out at 8h): 92/520 behaviors, 1103 rows. Continuation job 644304 submitted.**
+
+| Condition | Hits/Total | ASR | Pattern |
+|---|---|---|---|
+| optimized_weighted | 2/276 | **0.007** | GCG net negative |
+| neutral_control | 6/276 | 0.022 | — |
+| random_spaces | 3/276 | 0.011 | — |
+| task_only | 6/275 | **0.022** | Baseline |
+
+**Net GCG effect at 92 behaviors: −1.5pp (0.7% optimized vs 2.2% task_only).** Continuation job (644304) running — will need additional 8h passes to cover all 520 behaviors (~47h total runtime).
 
 ---
 
@@ -262,6 +290,13 @@ CoT-ON detector AUC=1.000 vs CoT-OFF AUC=0.507 (random chance). With CoT disable
 
 ### Finding 8: lambda_repr=0.0 Achieves 87% Task Loss Reduction (4B, optimization complete)
 Without repr penalty: best task_loss=4.1741 vs 7.9746 with lambda=1.0 — 48% lower. The repr_loss was the dominant obstacle to GCG optimization on Qwen3. Whether this translates to higher ASR is still unknown (free-gen pending); but the optimization quality is substantially higher.
+
+### Finding 12: Complete Detection Delay Spectrum — CoT Depth Determines Detection Speed (4A+4C analysis, COMPLETE)
+Full cross-model detection picture:
+- **Qwen3 CoT-ON:** AUC=1.000 at thinking token 0, sustained across all 32 positions — CoT amplifies adversarial signal immediately
+- **Qwen3 CoT-OFF:** AUC=0.540 at response token 0 (random); first detectable at token 3 (AUC=0.741), peak=0.748 at token 5; fades by token 7 — signal leaks into response pathway but weakly
+- **Gemma4 (no extended CoT):** AUC=0.698 at response token 0 (near-threshold); first detectable at token 13 (AUC=0.720), peak=0.742 at token 23 — slowest detection
+The depth/length of the thinking mechanism correlates directly with how early and reliably the adversarial signal can be detected. The position-0 detector (production deployment) only works reliably with CoT enabled.
 
 ### Finding 10: lambda_repr=0 Makes Attack WORSE Despite 87% Better Optimization (4B, COMPLETE)
 Removing repr_loss penalty produces task_loss=4.17 (87% reduction) but ASR=0%/1.3% on training/unseen seeds — lower than lambda=1.0 (4%/6.7%). Better teacher-forced optimization makes the suffix more extreme and garbled, triggering stronger safety responses. **repr_loss is not causing low ASR; the constraint incidentally produced a less-garbled suffix that had marginally better free-gen behavior.** Safety is robust to optimization quality.
