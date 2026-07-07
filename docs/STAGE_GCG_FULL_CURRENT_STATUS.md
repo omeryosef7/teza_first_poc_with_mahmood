@@ -27,10 +27,8 @@ and multi-model candidate selection (Qwen3 + Gemma4 simultaneous training).
 | Reference cache (Qwen3) | ✅ DONE | Job 641517; 20 .pt files; layers [0,5,10,15,20,25,30,35]; positions verified |
 | Optimization: gcg_full_qwen3_weighted | ✅ DONE | Job 641670; 500 steps; best task_loss=7.9746; AUDIT PASS |
 | Post-processing: qwen3 full pipeline | ✅ DONE | Free-gen, replay, analysis, unseen-seed all complete |
-| Optimization: gcg_full_multimodel_weighted | ✅ DONE | Job 642134; 500 steps; best task_loss=28.14; suffix plateau since step ~200; FINAL_CANDIDATES.jsonl written |
-| Post-processing: multimodel free-gen | 🔄 RUNNING | Job 642159; 25 behaviors × 4 conditions × 3 seeds = 300 rows expected |
-| Post-processing: multimodel unseen-seed | 🔄 RUNNING | Job 642160; seeds 100:200:300 |
-| Post-processing: multimodel replay+analysis | ⏳ PENDING | Chain watcher PID 3725559: replay after free-gen, analysis after replay |
+| Optimization: gcg_full_multimodel_weighted | ✅ DONE | Job 642134; 500 steps; best task_loss=28.14; FINAL_CANDIDATES.jsonl written |
+| Post-processing: multimodel full pipeline | ✅ DONE | Free-gen (642159), unseen-seed (642160), replay (642208), analysis (642209) all complete |
 
 ---
 

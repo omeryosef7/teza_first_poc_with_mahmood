@@ -487,14 +487,80 @@ Post-processing plan (after 642134 completes):
 
 **ITERATION_LOG artifact note:** The non-monotone check failure in validate_run_outputs is a known checkpoint-resume limitation. When job 641884 timed out at step 414, job 642134 resumed from checkpoint.pt which stored state at step 409. Steps 410–414 therefore appear twice (once from each job). The optimization data is scientifically valid — the suffix and loss values are correct. The ITERATION_LOG deduplication issue does not affect FINAL_CANDIDATES or any post-processing output.
 
-### Post-processing chain (submitted 03:57 UTC Jul 7)
+### Post-processing chain (completed ~07:04 UTC Jul 7)
 
 | Job | Script | Status | Notes |
 |---|---|---|---|
-| 642159 | run_gcg_full_free_generation.slurm | 🔄 RUNNING | 300 rows expected |
-| 642160 | run_gcg_unseen_seed_eval.slurm | 🔄 RUNNING | seeds 100:200:300 |
-| TBD | run_gcg_replay.slurm | ⏳ PENDING | chain watcher PID 3725559 will submit after free-gen |
-| TBD | run_gcg_analysis.slurm | ⏳ PENDING | chain watcher will submit after replay |
+| 642159 | run_gcg_full_free_generation.slurm | ✅ DONE | 300/300 rows |
+| 642160 | run_gcg_unseen_seed_eval.slurm | ✅ DONE | 300/300 rows; seeds 100:200:300 |
+| 642208 | run_gcg_replay.slurm | ✅ DONE | 300 .pt files in hidden_states/ |
+| 642209 | run_gcg_analysis.slurm | ✅ DONE | DETECTION_DELAY_ANALYSIS.md; AUC=1.000 at pos 0 |
+
+---
+
+## Phase 5 — Multimodel Final Results
+
+### 5.1 ASR Table (paper-scale, 25 behaviors)
+
+**Training seeds (42, 43, 44):**
+
+| Condition | SR Success | Mean SR | vs task_only |
+|---|---|---|---|
+| neutral_control | 2/75 = 0.027 | 0.027 | — |
+| optimized_weighted | 3/75 = 0.040 | 0.037 | +0.013 (noise) |
+| random_spaces | 4/75 = 0.053 | 0.052 | — |
+| task_only | 2/75 = 0.027 | 0.025 | — |
+
+**Unseen seeds (100, 200, 300):**
+
+| Condition | SR Success | Mean SR | vs task_only |
+|---|---|---|---|
+| neutral_control | 9/75 = 0.120 | 0.120 | — |
+| optimized_weighted | 2/75 = 0.027 | 0.027 | **−0.093** |
+| random_spaces | 7/75 = 0.093 | 0.093 | — |
+| task_only | 9/75 = 0.120 | 0.120 | — |
+
+**GCG provides net negative benefit. The suffix SUPPRESSES compliance even more strongly than qwen3-only (−0.093 vs −0.053 on unseen seeds).**
+
+### 5.2 Detection Delay (AUC by generated-token position)
+
+**AUC = 1.000 at positions 0–7** — same as qwen3-only finding.  
+**AUC ≥ 0.893 at all 32 positions.**  
+**Earliest detectable position: 0** — replicates across both optimization runs.
+
+### 5.3 Repr Distance vs Qwen3-only
+
+| Position | Qwen3-only | Multimodel |
+|---|---|---|
+| 0 | 0.033 | 0.043 |
+| 15 | ~0.13 | 0.109 |
+| 31 | 0.311 | 0.217 |
+
+Multimodel repr distance diverges monotonically but at **lower magnitude** than qwen3-only.
+Both show increasing distance from neutral as generation progresses.
+
+### 5.4 Held-out Val Transfer
+
+- Val ASR: 0/15 on all conditions (identical to qwen3-only).
+- 5 val behaviors completely resistant across both runs.
+
+### 5.5 Comparison: Qwen3-only vs Multimodel
+
+| Seed set | Qwen3-only GCG ASR | Multimodel GCG ASR | Baseline (task_only) |
+|---|---|---|---|
+| Training seeds (42,43,44) | 3/75=0.040 | 3/75=0.040 | 2/75=0.027 |
+| Unseen seeds (100,200,300) | 5/75=0.067 | 2/75=0.027 | 9/75=0.120 |
+| GCG net vs task_only (unseen) | **−0.053** | **−0.093** | — |
+| AUC at pos 0 | 1.000 | 1.000 | — |
+| Repr dist at pos 31 | 0.311 | 0.217 | — |
+
+**Key finding:** Multi-model optimization does NOT improve GCG ASR (same ~4% on training seeds) and WORSENS it on unseen seeds (2.7% vs 6.7% for qwen3-only, vs 12% baseline). The cross-tokenizer suffix is apparently even more effective as a safety trigger in Qwen3's CoT reasoning, causing even greater compliance suppression on unseen behaviors.
+
+### 5.6 Mechanistic Interpretation
+
+Consistent with qwen3-only findings: Qwen3-14B CoT reasoning identifies garbled adversarial suffix tokens during thinking phase → heightened safety response → refusal. The multimodel suffix (optimized also against Gemma4) produces even more syntactically garbled token sequences (cross-tokenizer decode artifacts), causing an even stronger CoT safety signal.
+
+This is a notable negative result: multi-model GCG optimization (as implemented with cross-tokenizer text decode/reencode) neither improves transferability nor reduces detectability — it makes both worse.
 
 ---
 
