@@ -264,16 +264,16 @@ The best suffix converged at step 332. Replay (644178) running; analysis to foll
 | random_spaces | 3/204 | 0.015 | — |
 | task_only | 5/204 | **0.025** | −0.015 |
 
-**After first job (642298 timed out at 8h): 92/520 behaviors, 1103 rows. Continuation job 644304 submitted.**
+**Partial results (114/520 behaviors, 1366 rows, as of ~10h elapsed total):**
 
-| Condition | Hits/Total | ASR | Pattern |
-|---|---|---|---|
-| optimized_weighted | 2/276 | **0.007** | GCG net negative |
-| neutral_control | 6/276 | 0.022 | — |
-| random_spaces | 3/276 | 0.011 | — |
-| task_only | 6/275 | **0.022** | Baseline |
+| Condition | Hits/Total | ASR |
+|---|---|---|
+| optimized_weighted | 4/342 | **0.012** |
+| neutral_control | 6/342 | 0.018 |
+| random_spaces | 3/341 | 0.009 |
+| task_only | 6/341 | **0.018** |
 
-**Net GCG effect at 92 behaviors: −1.5pp (0.7% optimized vs 2.2% task_only).** Continuation job (644304) running — will need additional 8h passes to cover all 520 behaviors (~47h total runtime).
+**Net GCG effect: −0.6pp** (1.2% optimized vs 1.8% task_only). Gap narrowing from −1.5pp at 92 behaviors as more behaviors added. Rate: ~10-12 behaviors/hr; ~406 behaviors remaining → ~5 more 8h passes (~40h total). Continuation job 644304 running; will need resubmission each ~8h pass.
 
 ---
 
