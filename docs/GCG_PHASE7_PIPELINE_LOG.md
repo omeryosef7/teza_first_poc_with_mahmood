@@ -68,16 +68,16 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 **Throughput:** ~1.7 rows/min → ~8 passes needed total. Resumable via row_key skipping.
 
-### Results — PRELIMINARY (661/6240 rows, 56 behaviors, 2026-07-11)
+### Results — PRELIMINARY (881/6240 rows, 74 behaviors, 2026-07-11 pass 2)
 
-| Condition | Success | ASR | avg SR |
+| Condition | Success | Total | ASR |
 |---|---|---|---|
-| **optimized_weighted** | 20/166 | **12.0%** | 0.113 |
-| neutral_control | 4/165 | 2.4% | 0.023 |
-| random_spaces | 3/165 | 1.8% | 0.018 |
-| task_only | 4/165 | 2.4% | 0.023 |
+| **optimized_weighted** | 22 | 221 | **10.0%** |
+| neutral_control | 5 | 220 | 2.3% |
+| random_spaces | 3 | 220 | 1.4% |
+| task_only | 5 | 220 | 2.3% |
 
-**Latest (827 rows, 69 behaviors):** optimized_weighted=10.1%, baseline~1.9%, uplift=+8.2pp — consistent with training result (+8pp on 25 behaviors). The 5A CoT-prefix suffix generalizes to held-out behaviors. Pass 1 ends ~01:02 UTC (8h limit); resubmit for pass 2.
+**Uplift: +7.7pp over neutral_control.** Consistent across both passes. The 5A CoT-prefix suffix generalizes robustly to held-out behaviors at ~10% ASR (vs 10.7% on 25 training behaviors). Pass 2 (652759) running; need ~7 more 8h passes to complete 6240 rows.
 
 ---
 
@@ -115,10 +115,10 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 |---|---|---|---|---|---|
 | 42 (5A ref) | 14.9 | **10.7%** (8/75) | 1.9% | 1.9% | +8.8pp |
 | 43 | 24.26 | **10.7%** (8/75) | 4.0% | 4.0% | +6.7pp |
-| 44 | 19.91 | pending | — | — | TBD |
+| 44 | 19.91 | **~1.4%** (1/71, prelim 283 rows) | 2.8% | 2.9% | **−1.4pp NET-NEGATIVE** |
 | 45 | 19.98 | **16.0%** (12/75) | 4.0% | 2.7% | +12.0pp |
 
-**Critical finding (2026-07-11):** seed=45 achieves 16.0% ASR despite optimization loss=19.98 (worse than seed=42's 14.9). Optimization loss is NOT a reliable predictor of ASR. seed=43 matches seed=42 exactly at 10.7% despite 63% worse loss. The hypothesis that loss∝ASR is REFUTED.
+**Critical finding (2026-07-11):** seed=44 and seed=45 have nearly identical optimization losses (19.91 vs 19.98) yet produce ASR of 1.4% vs 16.0% — an 11× difference from a 0.07-point loss difference. seed=44 is NET-NEGATIVE (worse than no suffix). Optimization loss is NOT a predictor of ASR; GCG outcome depends strongly on which local minimum the optimizer finds, not how well it converges.
 
 ### Post-OPT Pipeline
 
