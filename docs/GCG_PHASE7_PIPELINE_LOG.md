@@ -124,10 +124,10 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 | Phase | seed=43 | seed=44 | seed=45 |
 |---|---|---|---|
-| Free-gen | ✅ 652358 (300/300) | 🔄 652356 | ✅ 652357 (300/300) |
-| Replay | 🔄 652770 (PENDING) | TBD | 🔄 652760 (RUNNING) |
-| Analysis | TBD | TBD | TBD |
-| Unseeded | TBD | TBD | TBD |
+| Free-gen | ✅ 652358 (300/300, ASR=10.7%) | 🔄 652356 (292/300) | ✅ 652357 (300/300, ASR=16.0%) |
+| Replay | ✅ 652770 (300 hs) | TBD (bg task watching) | ✅ 652760 (300 hs) |
+| Analysis | 🔄 652802 (RUNNING t-806) | TBD | 🔄 652800 (RUNNING t-806) |
+| Unseeded | 🔄 652803 (RUNNING n-801) | TBD | 🔄 652801 (RUNNING n-801) |
 
 ---
 
@@ -230,8 +230,12 @@ ASR: 0/75 across all conditions including task_only (Gemma4 refuses even without
 | **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | 🔄 RUNNING (n-803) |
 | **652357** | run_gcg_full_free_generation.slurm | 7B seed=45 free-gen | ✅ DONE (300/300, ASR=16.0%) |
 | **652358** | run_gcg_full_free_generation.slurm | 7B seed=43 free-gen | ✅ DONE (300/300, ASR=10.7%) |
-| **652760** | run_gcg_replay.slurm | 7B seed=45 replay | 🔄 RUNNING (n-801) |
-| **652770** | run_gcg_replay.slurm | 7B seed=43 replay | 🔄 PENDING |
+| **652760** | run_gcg_replay.slurm | 7B seed=45 replay | ✅ DONE (300 hs files) |
+| **652770** | run_gcg_replay.slurm | 7B seed=43 replay | ✅ DONE (300 hs files) |
+| **652800** | run_gcg_analysis.slurm | 7B seed=45 analysis | 🔄 RUNNING (t-806) |
+| **652801** | run_gcg_unseen_seed_eval.slurm | 7B seed=45 unseeded | 🔄 RUNNING (n-801) |
+| **652802** | run_gcg_analysis.slurm | 7B seed=43 analysis | 🔄 RUNNING (t-806) |
+| **652803** | run_gcg_unseen_seed_eval.slurm | 7B seed=43 unseeded | 🔄 RUNNING (n-801) |
 | **652226** | run_gcg_full_7c_gemma4_nothink.slurm | 7C Gemma4 no-think opt | ✅ DONE 18:12 UTC |
 | **652319** | run_gcg_full_free_generation.slurm (7C) | 7C free-gen eval | ✅ DONE (300/300, ASR=0%) |
 | **652359** | run_gcg_replay.slurm (7C) | 7C replay (hidden states) | ✅ DONE (300 files) |
