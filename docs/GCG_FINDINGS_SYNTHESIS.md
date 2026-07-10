@@ -150,7 +150,7 @@ However, this data is from seed=42 optimization only. Phase 7B tests whether oth
 
 | Question | Experiment | Status | Answer |
 |---|---|---|---|
-| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (job 652222, 536/6240 rows) | Pending |
+| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (661/6240 rows, 56 behaviors) | **YES — preliminary: 12.0% ASR (+9.6pp over 2.4% baseline) on 56 held-out behaviors** |
 | Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | 🔄 Free-gen running (652356-358) | Pending (loss varies: 19.9–24.3 vs seed=42's 14.9) |
 | Is Gemma4 0% ASR due to CoT format or intrinsic robustness? | 7C (thinking=OFF) | ✅ COMPLETE | **Intrinsic robustness confirmed**: 0% ASR even with thinking=OFF, loss=12.58. Format was not the barrier. |
 

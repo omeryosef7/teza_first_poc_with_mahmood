@@ -65,9 +65,18 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 |---|---|---|---|
 | **652222** | 1 | 87 / 6240 | 🔄 RUNNING (1h07m elapsed) |
 
-**Throughput update (2026-07-10 ~16:32 UTC):** ~1.6 rows/min → ~753 rows per 8h pass → **~9 passes needed** (revised from 4). Pass 1 will cover ~behaviors 1–188 for seed=42 × 4 conditions. Resumable: `evaluate_suffix()` skips completed row_keys.
+**Throughput:** ~1.7 rows/min → ~8 passes needed total. Resumable via row_key skipping.
 
-### Results (TBD — accumulating across passes)
+### Results — PRELIMINARY (661/6240 rows, 56 behaviors, 2026-07-11)
+
+| Condition | Success | ASR | avg SR |
+|---|---|---|---|
+| **optimized_weighted** | 20/166 | **12.0%** | 0.113 |
+| neutral_control | 4/165 | 2.4% | 0.023 |
+| random_spaces | 3/165 | 1.8% | 0.018 |
+| task_only | 4/165 | 2.4% | 0.023 |
+
+**Uplift: +9.6pp vs baseline (12.0% − 2.4%)** — BETTER than training result (+8pp on 25 behaviors). The 5A CoT-prefix suffix generalizes to held-out behaviors. Accumulating more rows across passes to confirm.
 
 ---
 
