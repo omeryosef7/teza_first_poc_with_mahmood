@@ -125,9 +125,9 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 | Phase | seed=43 | seed=44 | seed=45 |
 |---|---|---|---|
 | Free-gen | ✅ 652358 (300/300, ASR=10.7%) | ✅ 652356 (300/300, ASR=1.3% NET-NEG) | ✅ 652357 (300/300, ASR=16.0%) |
-| Replay | ✅ 652770 (300 hs) | 🔄 652817 (PENDING→RUNNING) | ✅ 652760 (300 hs) |
-| Analysis | 🔄 652802 (RUNNING t-806) | TBD (bg watcher bex8hvoi8) | 🔄 652800 (RUNNING t-806) |
-| Unseeded | 🔄 652803 (RUNNING n-801) | TBD | 🔄 652801 (RUNNING n-801) |
+| Replay | ✅ 652770 (300 hs) | ✅ 652817 (300 hs) | ✅ 652760 (300 hs) |
+| Analysis | 🔄 652802 (RUNNING t-806) | 🔄 652826 (RUNNING t-806) | 🔄 652800 (RUNNING t-806) |
+| Unseeded | 🔄 652803 (RUNNING n-801) | 🔄 652827 (RUNNING n-802) | 🔄 652801 (RUNNING n-801) |
 
 ---
 
@@ -227,7 +227,10 @@ ASR: 0/75 across all conditions including task_only (Gemma4 refuses even without
 | **652223** | run_gcg_full_7b.slurm SEED=43 | 7B seed=43 opt | ✅ DONE (best=24.26) |
 | **652224** | run_gcg_full_7b.slurm SEED=44 | 7B seed=44 opt | ✅ DONE (best=19.91) |
 | **652225** | run_gcg_full_7b.slurm SEED=45 | 7B seed=45 opt | ✅ DONE (best=19.98) |
-| **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | 🔄 RUNNING (n-803) |
+| **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | ✅ DONE (300/300, ASR=1.3% NET-NEG) |
+| **652817** | run_gcg_replay.slurm | 7B seed=44 replay | ✅ DONE (300 hs files) |
+| **652826** | run_gcg_analysis.slurm | 7B seed=44 analysis | 🔄 RUNNING (t-806) |
+| **652827** | run_gcg_unseen_seed_eval.slurm | 7B seed=44 unseeded | 🔄 RUNNING (n-802) |
 | **652357** | run_gcg_full_free_generation.slurm | 7B seed=45 free-gen | ✅ DONE (300/300, ASR=16.0%) |
 | **652358** | run_gcg_full_free_generation.slurm | 7B seed=43 free-gen | ✅ DONE (300/300, ASR=10.7%) |
 | **652760** | run_gcg_replay.slurm | 7B seed=45 replay | ✅ DONE (300 hs files) |
