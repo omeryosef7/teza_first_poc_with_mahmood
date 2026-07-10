@@ -115,7 +115,7 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 |---|---|---|---|---|---|
 | 42 (5A ref) | 14.9 | **10.7%** (8/75) | 1.9% | 1.9% | +8.8pp |
 | 43 | 24.26 | **10.7%** (8/75) | 4.0% | 4.0% | +6.7pp |
-| 44 | 19.91 | **~1.4%** (1/71, prelim 283 rows) | 2.8% | 2.9% | **−1.4pp NET-NEGATIVE** |
+| 44 | 19.91 | **1.3%** (1/75, FINAL) | 2.7% | 2.7% | **−1.4pp NET-NEGATIVE** |
 | 45 | 19.98 | **16.0%** (12/75) | 4.0% | 2.7% | +12.0pp |
 
 **Critical finding (2026-07-11):** seed=44 and seed=45 have nearly identical optimization losses (19.91 vs 19.98) yet produce ASR of 1.4% vs 16.0% — an 11× difference from a 0.07-point loss difference. seed=44 is NET-NEGATIVE (worse than no suffix). Optimization loss is NOT a predictor of ASR; GCG outcome depends strongly on which local minimum the optimizer finds, not how well it converges.
@@ -124,9 +124,9 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 | Phase | seed=43 | seed=44 | seed=45 |
 |---|---|---|---|
-| Free-gen | ✅ 652358 (300/300, ASR=10.7%) | 🔄 652356 (292/300) | ✅ 652357 (300/300, ASR=16.0%) |
-| Replay | ✅ 652770 (300 hs) | TBD (bg task watching) | ✅ 652760 (300 hs) |
-| Analysis | 🔄 652802 (RUNNING t-806) | TBD | 🔄 652800 (RUNNING t-806) |
+| Free-gen | ✅ 652358 (300/300, ASR=10.7%) | ✅ 652356 (300/300, ASR=1.3% NET-NEG) | ✅ 652357 (300/300, ASR=16.0%) |
+| Replay | ✅ 652770 (300 hs) | 🔄 652817 (PENDING→RUNNING) | ✅ 652760 (300 hs) |
+| Analysis | 🔄 652802 (RUNNING t-806) | TBD (bg watcher bex8hvoi8) | 🔄 652800 (RUNNING t-806) |
 | Unseeded | 🔄 652803 (RUNNING n-801) | TBD | 🔄 652801 (RUNNING n-801) |
 
 ---

@@ -39,7 +39,7 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | 6C | Qwen3 | CoT+refusal_dir | **0% net-neg** | **0% net-neg** | **1.000** | **−10.7pp** |
 | **7C** | Gemma4 | thinking=OFF, std target | **0%** | **0%** | **1.000** | 0% (= all baselines) |
 | 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | pending | pending | +6.7pp vs 4% |
-| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **~1.4%** (prelim) | pending | pending | **−1.4pp net-neg** |
+| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, FINAL) | pending | pending | **−1.4pp net-neg** |
 | 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | pending | pending | +12.0pp vs 4% |
 
 ---
@@ -121,7 +121,7 @@ This is the **opposite** of the standard GCG result (where unseen seeds showed 6
 |---|---|---|---|---|
 | 42 (5A ref) | **14.9** (best) | 10.7% | ~1.9% | +8.8pp |
 | 43 | 24.26 (worst) | **10.7%** | 4.0% | +6.7pp |
-| 44 | 19.91 | **~1.4%** (prelim) | 2.8% | **−1.4pp net-neg** |
+| 44 | 19.91 | **1.3%** (1/75, FINAL) | 2.7% | **−1.4pp net-neg** |
 | 45 | 19.98 | **16.0%** | 4.0% | +12.0pp |
 
 **Key insight:** seed=44 (loss=19.91) and seed=45 (loss=19.98) differ by only 0.07 in optimization loss, yet produce ASR of 1.4% vs 16.0% — an 11× gap. seed=44 is net-negative (worse than baseline); seed=45 is the best attack overall. This is not a monotone relationship: even within nearly identical loss values, ASR varies by over 11×. The loss-ASR correlation across all four seeds is effectively zero (or even negative, since seed=42 with best loss gets intermediate ASR).
