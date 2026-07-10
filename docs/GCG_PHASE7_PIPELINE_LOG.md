@@ -61,9 +61,10 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 ### Job Log
 
-| Job | Pass | Rows | Status |
+| Job | Pass | Rows done | Status |
 |---|---|---|---|
-| **652222** | 1 | 87 / 6240 | 🔄 RUNNING (1h07m elapsed) |
+| **652222** | 1 | 876 / 6240 | ✅ DONE (killed at 8h limit, 2026-07-11) |
+| **652759** | 2 | — / 6240 | 🔄 RUNNING (resumes from row 876) |
 
 **Throughput:** ~1.7 rows/min → ~8 passes needed total. Resumable via row_key skipping.
 
@@ -76,7 +77,7 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 | random_spaces | 3/165 | 1.8% | 0.018 |
 | task_only | 4/165 | 2.4% | 0.023 |
 
-**Uplift: +9.6pp vs baseline (12.0% − 2.4%)** — BETTER than training result (+8pp on 25 behaviors). The 5A CoT-prefix suffix generalizes to held-out behaviors. Accumulating more rows across passes to confirm.
+**Latest (827 rows, 69 behaviors):** optimized_weighted=10.1%, baseline~1.9%, uplift=+8.2pp — consistent with training result (+8pp on 25 behaviors). The 5A CoT-prefix suffix generalizes to held-out behaviors. Pass 1 ends ~01:02 UTC (8h limit); resubmit for pass 2.
 
 ---
 
@@ -108,16 +109,25 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 **Key finding:** seed=42 achieved best_loss=14.9 vs seeds 43-45 at 19.9-24.3. Seed=42 appears to have found a rare favorable gradient path for the CoT-prefix target. ASR variance pending free-gen results.
 
+### Free-Gen ASR Results (COMPLETE for s43, s45; s44 pending)
+
+| Seed | opt loss | optimized_weighted | neutral_control | task_only | uplift vs neutral |
+|---|---|---|---|---|---|
+| 42 (5A ref) | 14.9 | **10.7%** (8/75) | 1.9% | 1.9% | +8.8pp |
+| 43 | 24.26 | **10.7%** (8/75) | 4.0% | 4.0% | +6.7pp |
+| 44 | 19.91 | pending | — | — | TBD |
+| 45 | 19.98 | **16.0%** (12/75) | 4.0% | 2.7% | +12.0pp |
+
+**Critical finding (2026-07-11):** seed=45 achieves 16.0% ASR despite optimization loss=19.98 (worse than seed=42's 14.9). Optimization loss is NOT a reliable predictor of ASR. seed=43 matches seed=42 exactly at 10.7% despite 63% worse loss. The hypothesis that loss∝ASR is REFUTED.
+
 ### Post-OPT Pipeline
 
 | Phase | seed=43 | seed=44 | seed=45 |
 |---|---|---|---|
-| Free-gen | 🔄 652358 | 🔄 652356 | 🔄 652357 |
-| Replay | TBD | TBD | TBD |
+| Free-gen | ✅ 652358 (300/300) | 🔄 652356 | ✅ 652357 (300/300) |
+| Replay | 🔄 652770 (PENDING) | TBD | 🔄 652760 (RUNNING) |
 | Analysis | TBD | TBD | TBD |
 | Unseeded | TBD | TBD | TBD |
-
-**Hypothesis:** If ASR tracks loss (seed=42 ASR=10.7% at loss=14.9), seeds 44/45 (loss≈20) may achieve ~5-7%, seed=43 (loss≈24) may achieve ~2-3%. If ASR is uniformly 0%, convergence loss is irrelevant — the suffix doesn't generalize across random seeds.
 
 ---
 
@@ -159,7 +169,7 @@ If ASR is still 0%, Gemma4 is intrinsically robust (not just format-mismatched).
 | Free-gen | **652319** | ✅ DONE (300/300 rows, ASR=0% all conditions) |
 | Replay | **652359** | ✅ DONE (300 hidden_states files) |
 | Analysis | **652360** | ✅ DONE — **AUC=1.000 at pos 0** (all 32 positions ≥0.825) |
-| Unseeded eval | **652361** | 🔄 RUNNING (23 min, loading model) |
+| Unseeded eval | **652361** | ✅ DONE — **0% ASR on seeds 100/200/300** (baseline ≤1.3% noise) |
 
 ### Analysis Results
 
@@ -212,13 +222,18 @@ ASR: 0/75 across all conditions including task_only (Gemma4 refuses even without
 
 | Job | Script | Experiment | Status |
 |---|---|---|---|
-| **652222** | run_gcg_full_7a_5a_full520.slurm | 7A full-520 eval pass 1 | 🔄 RUNNING |
+| **652222** | run_gcg_full_7a_5a_full520.slurm | 7A full-520 eval pass 1 | ✅ DONE (876/6240 rows, 8h limit) |
+| **652759** | run_gcg_full_7a_5a_full520.slurm | 7A full-520 eval pass 2 | 🔄 RUNNING (from row 876) |
 | **652223** | run_gcg_full_7b.slurm SEED=43 | 7B seed=43 opt | ✅ DONE (best=24.26) |
 | **652224** | run_gcg_full_7b.slurm SEED=44 | 7B seed=44 opt | ✅ DONE (best=19.91) |
 | **652225** | run_gcg_full_7b.slurm SEED=45 | 7B seed=45 opt | ✅ DONE (best=19.98) |
-| **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | 🔄 SUBMITTED |
-| **652357** | run_gcg_full_free_generation.slurm | 7B seed=45 free-gen | 🔄 SUBMITTED |
-| **652358** | run_gcg_full_free_generation.slurm | 7B seed=43 free-gen | 🔄 SUBMITTED |
+| **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | 🔄 RUNNING (n-803) |
+| **652357** | run_gcg_full_free_generation.slurm | 7B seed=45 free-gen | ✅ DONE (300/300, ASR=16.0%) |
+| **652358** | run_gcg_full_free_generation.slurm | 7B seed=43 free-gen | ✅ DONE (300/300, ASR=10.7%) |
+| **652760** | run_gcg_replay.slurm | 7B seed=45 replay | 🔄 RUNNING (n-801) |
+| **652770** | run_gcg_replay.slurm | 7B seed=43 replay | 🔄 PENDING |
 | **652226** | run_gcg_full_7c_gemma4_nothink.slurm | 7C Gemma4 no-think opt | ✅ DONE 18:12 UTC |
-| **652319** | run_gcg_full_free_generation.slurm (7C) | 7C free-gen eval | ✅ DONE (300/300 rows, ASR=0%) |
-| **652359** | run_gcg_replay.slurm (7C) | 7C replay (hidden states) | 🔄 SUBMITTED |
+| **652319** | run_gcg_full_free_generation.slurm (7C) | 7C free-gen eval | ✅ DONE (300/300, ASR=0%) |
+| **652359** | run_gcg_replay.slurm (7C) | 7C replay (hidden states) | ✅ DONE (300 files) |
+| **652360** | run_gcg_analysis.slurm (7C) | 7C analysis | ✅ DONE (AUC=1.000 pos 0) |
+| **652361** | run_gcg_unseen_seed_eval.slurm (7C) | 7C unseeded eval | ✅ DONE (0% seeds 100/200/300) |

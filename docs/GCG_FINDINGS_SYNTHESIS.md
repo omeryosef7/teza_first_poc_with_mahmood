@@ -37,10 +37,10 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | 6A | Gemma4 | +refusal_dir_loss | **0%** (noise) | **0%** | 0.070 pos 0 | +0pp |
 | 6B | Gemma4 | CoT-channel prefix | **0%** (OPT stalled) | — | — | +0pp |
 | 6C | Qwen3 | CoT+refusal_dir | **0% net-neg** | **0% net-neg** | **1.000** | **−10.7pp** |
-| **7C** | Gemma4 | thinking=OFF, std target | **0%** | pending | **1.000** | 0% (= all baselines) |
-| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | pending | pending | pending | TBD |
+| **7C** | Gemma4 | thinking=OFF, std target | **0%** | **0%** | **1.000** | 0% (= all baselines) |
+| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | pending | pending | +6.7pp vs 4% |
 | 7B s=44 | Qwen3 | CoT-prefix, seed=44 | pending | pending | pending | TBD |
-| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | pending | pending | pending | TBD |
+| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | pending | pending | +12.0pp vs 4% |
 
 ---
 
@@ -113,7 +113,22 @@ All Gemma4 conditions: 0% ASR (or 1.3% statistical noise). Experiments tried:
 
 This is the **opposite** of the standard GCG result (where unseen seeds showed 6.7% vs 4.0% training). The CoT-prefix suffix appears to generalize better — the suffix pushes the model toward a CoT trajectory that, once started in a compliant direction, continues compliantly regardless of random sampling variation.
 
-However, this data is from seed=42 optimization only. Phase 7B tests whether other optimization seeds give similar ASR or whether 10.7% is seed-specific.
+### Finding 6: Optimization loss is NOT a reliable predictor of ASR (Phase 7B)
+
+**Result (2026-07-11):** Cross-seed ASR comparison on 7B:
+
+| Opt seed | Best opt loss | optimized ASR | neutral baseline | uplift |
+|---|---|---|---|---|
+| 42 (5A ref) | **14.9** (best) | 10.7% | ~1.9% | +8.8pp |
+| 43 | 24.26 (worst) | **10.7%** | 4.0% | +6.7pp |
+| 45 | 19.98 | **16.0%** | 4.0% | +12.0pp |
+| 44 | 19.91 | pending | — | TBD |
+
+**Key insight:** seed=45 achieves 16.0% ASR with loss=19.98 — substantially HIGHER than seed=42's 10.7% at loss=14.9. seed=43 matches seed=42 exactly at 10.7% despite 63% worse loss. The correlation between optimization loss and ASR is effectively zero.
+
+**Interpretation:** Teacher-forced CE loss measures how well the suffix forces the model to *predict* the CoT-prefix target. But ASR measures whether the model *generates* compliant text in free generation. These are different objectives: a suffix that achieves lower prediction loss may still fail to sustain the compliance trajectory through full generation. The relevant quantity is not loss but whether the optimized suffix puts the model's sampling distribution in a region of the generation space that leads to harmful outputs.
+
+**Implication for future work:** Selecting GCG suffixes based on optimization loss (the standard criterion) is inadequate for CoT-prefix targets. Early-stopping based on live free-generation ASR (like 5C) may be preferable, but requires multiple free-generation samples per step.
 
 ---
 
@@ -121,7 +136,7 @@ However, this data is from seed=42 optimization only. Phase 7B tests whether oth
 
 | Result | Our work | CoT Hijacking paper |
 |---|---|---|
-| Best Qwen3 ASR (GCG) | **10.7%** (5A CoT-prefix, 25 behaviors) | N/A (no GCG experiments) |
+| Best Qwen3 ASR (GCG) | **16.0%** (7B s45 CoT-prefix, 25 behaviors) | N/A (no GCG experiments) |
 | Best Qwen3 ASR (inference-time ablation) | N/A | **91%** (v_refusal ablation) |
 | Detection (Qwen3, GCG) | **AUC=1.000** at pos 0 | N/A |
 | Gemma4 ASR (any method) | **0%** | N/A |
@@ -150,8 +165,8 @@ However, this data is from seed=42 optimization only. Phase 7B tests whether oth
 
 | Question | Experiment | Status | Answer |
 |---|---|---|---|
-| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (661/6240 rows, 56 behaviors) | **YES — preliminary: 12.0% ASR (+9.6pp over 2.4% baseline) on 56 held-out behaviors** |
-| Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | 🔄 Free-gen running (652356-358) | Pending (loss varies: 19.9–24.3 vs seed=42's 14.9) |
+| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (876/6240 rows, pass 2 active) | **YES — preliminary 10.1% ASR on 69 behaviors (+8.2pp)** |
+| Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | 🔄 s44 free-gen running; s43/s45 done | **NO — range 10.7–16.0%; loss ≠ ASR predictor (Finding 6)** |
 | Is Gemma4 0% ASR due to CoT format or intrinsic robustness? | 7C (thinking=OFF) | ✅ COMPLETE | **Intrinsic robustness confirmed**: 0% ASR even with thinking=OFF, loss=12.58. Format was not the barrier. |
 
 ---
