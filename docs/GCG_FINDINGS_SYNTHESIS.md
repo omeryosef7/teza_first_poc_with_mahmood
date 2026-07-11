@@ -38,9 +38,9 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | 6B | Gemma4 | CoT-channel prefix | **0%** (OPT stalled) | — | — | +0pp |
 | 6C | Qwen3 | CoT+refusal_dir | **0% net-neg** | **0% net-neg** | **1.000** | **−10.7pp** |
 | **7C** | Gemma4 | thinking=OFF, std target | **0%** | **0%** | **1.000** | 0% (= all baselines) |
-| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | pending | **1.000** | +6.7pp vs 4% |
-| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, net-neg) | pending | **1.000** | **−1.4pp net-neg** |
-| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | pending | **1.000** | +12.0pp vs 4% |
+| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | **16.0%** (12/75) | **1.000** | +6.7pp train / +4.0pp unseen |
+| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, net-neg) | **2.7%** (−8.0pp!) | **1.000** | **net-neg both regimes** |
+| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | **21.3%** (16/75) | **1.000** | +12.0pp train / +9.3pp unseen |
 
 ---
 
@@ -116,14 +116,23 @@ All Gemma4 conditions: 0% ASR (or 1.3% statistical noise). Experiments tried:
 2. **~~Infeasible CoT tokens~~:** Eliminated by 7C — not the primary cause
 3. **Distributed safety:** Gemma4's refusal is not reducible to a single 1D direction or a single layer; even aggressive suffix optimization cannot overcome it
 
-### Finding 5: Unseen seeds show higher ASR than training seeds (5A)
+### Finding 5: Unseen seeds (100/200/300) have a higher baseline and the suffix uplift varies by seed (Phase 7B complete)
 
-| Seed set | 5A optimized ASR |
-|---|---|
-| Training seeds (42 only) | 10.7% |
-| Unseen seeds (100, 200, 300) | **14.7%** |
+The full cross-seed picture for CoT-prefix suffixes on seeds 100/200/300:
 
-This is the **opposite** of the standard GCG result (where unseen seeds showed 6.7% vs 4.0% training). The CoT-prefix suffix appears to generalize better — the suffix pushes the model toward a CoT trajectory that, once started in a compliant direction, continues compliantly regardless of random sampling variation.
+| Seed | Training ASR | Unseen ASR | Baseline (unseen) | Uplift (unseen) |
+|---|---|---|---|---|
+| 42 (5A) | 10.7% | 14.7% | 12.0% | +2.7pp |
+| 43 | 10.7% | 16.0% | 12.0% | +4.0pp |
+| 44 | 1.3% (net-neg) | 2.7% | 10.7% | **−8.0pp** |
+| 45 | 16.0% | **21.3%** | 12.0% | **+9.3pp** |
+
+**Critical context:** The unseeded baseline (neutral_control) = 12.0% for seeds 100/200/300 vs 1.9-4.0% for training seeds 42/43/44. Seeds 100/200/300 are intrinsically more permissive in generation — the meaningful metric is uplift over neutral, not the headline ASR number.
+
+**Key patterns:**
+1. s44 is net-negative in BOTH training (−1.4pp) AND unseen (−8.0pp) regimes — consistent failure. The s44 suffix found a local minimum that actively suppresses generation regardless of task.
+2. s45 is best in BOTH regimes (+12.0pp training, +9.3pp unseen). The "good" suffix properties generalize across seed regimes.
+3. The rank ordering of seeds is consistent: s45 > s43 ≈ s42 >> s44 in both regimes.
 
 ### Finding 6: Optimization loss is NOT a reliable predictor of ASR (Phase 7B)
 
@@ -178,7 +187,7 @@ This is the **opposite** of the standard GCG result (where unseen seeds showed 6
 | Question | Experiment | Status | Answer |
 |---|---|---|---|
 | Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (881/6240 rows, pass 2 active) | **YES — 10.0% ASR on 74 behaviors (+7.7pp) — stable across passes** |
-| Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | 🔄 s44 replay pending; s43/s45 replays running | **NO — range 1.4% to 16.0%; s44≈s45 loss yet 11× ASR gap (Finding 6)** |
+| Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | ✅ COMPLETE | **NO — train ASR: 1.3–16.0%; unseen: 2.7–21.3%. s44 net-neg in BOTH regimes (−1.4pp / −8.0pp). s45 best in both (+12.0pp / +9.3pp). AUC=1.000 universal.** |
 | Is Gemma4 0% ASR due to CoT format or intrinsic robustness? | 7C (thinking=OFF) | ✅ COMPLETE | **Intrinsic robustness confirmed**: 0% ASR even with thinking=OFF, loss=12.58. Format was not the barrier. |
 
 ---

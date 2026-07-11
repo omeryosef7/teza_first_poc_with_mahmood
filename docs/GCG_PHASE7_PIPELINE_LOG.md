@@ -12,9 +12,9 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 | Exp | Description | Status |
 |---|---|---|
 | 7A | 5A suffix evaluated on all 520 AdvBench behaviors (scale) | 🔄 RUNNING |
-| 7B-s43 | 5A optimization re-run with seed=43 (variance) | 🔄 RUNNING |
-| 7B-s44 | 5A optimization re-run with seed=44 (variance) | 🔄 RUNNING |
-| 7B-s45 | 5A optimization re-run with seed=45 (variance) | 🔄 RUNNING |
+| 7B-s43 | 5A optimization re-run with seed=43 (variance) | ✅ COMPLETE |
+| 7B-s44 | 5A optimization re-run with seed=44 (variance) | ✅ COMPLETE |
+| 7B-s45 | 5A optimization re-run with seed=45 (variance) | ✅ COMPLETE |
 | 7C | Gemma4 GCG with enable_thinking=False (CoT-format robustness probe) | 🔄 RUNNING |
 | 7D | GCG findings synthesis document (no GPU) | 🔄 IN PROGRESS |
 
@@ -131,16 +131,18 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 **Universal finding:** AUC=1.000 at pos 0 for ALL seeds, including seed=44 (net-negative ASR). Detection is not correlated with attack success — a suffix can be perfectly detectable AND fail to jailbreak (s44) or perfectly detectable AND succeed (s45). s44 has the LARGEST repr shift (0.067) yet lowest ASR. Detection ≠ ASR direction.
 
-### Unseeded ASR Results (seeds 100/200/300) — PARTIAL
+### Unseeded ASR Results (seeds 100/200/300) — COMPLETE (2026-07-11)
 
-| Seed | optimized_weighted | neutral_control | uplift vs neutral | Note |
-|---|---|---|---|---|
-| 42 (5A ref) | **14.7%** (11/75) | **12.0%** (9/75) | +2.7pp | baseline inflated vs training |
-| 43 | TBD | — | TBD | job 652803 running |
-| 44 | TBD | — | TBD | job 652827 running |
-| 45 | **21.3%** (16/75) | **12.0%** (9/75) | **+9.3pp** | best unseeded result |
+| Seed | opt_weighted | neutral | task_only | uplift | Note |
+|---|---|---|---|---|---|
+| 42 (5A ref) | **14.7%** (11/75) | 12.0% (9/75) | 12.0% | +2.7pp | baseline inflated vs training |
+| 43 | **16.0%** (12/75) | 12.0% (9/75) | — | +4.0pp | beats s42 on unseeded |
+| 44 | **2.7%** (2/75) | 10.7% (8/75) | — | **−8.0pp** | WORST: actively suppresses |
+| 45 | **21.3%** (16/75) | 12.0% (9/75) | — | **+9.3pp** | best unseeded result |
 
-**Important context:** Neutral_control baseline = 12.0% on unseeded seeds (100/200/300) vs 1.9-4.0% on training seeds (42/43/44). Seeds 100/200/300 are intrinsically more permissive — the REAL suffix-attributable uplift is lower for unseeded evals. s45 achieves +9.3pp unseeded vs +12.0pp on training seeds.
+**Important context:** Neutral_control baseline = 12.0% on unseeded seeds (100/200/300) vs 1.9-4.0% on training seeds (42/43/44). Seeds 100/200/300 are intrinsically more permissive — the REAL suffix-attributable uplift is the vs-neutral column.
+
+**s44 is catastrophically bad on unseeded:** −8.0pp (2.7% opt vs 10.7% neutral). The s44 suffix ACTIVELY SUPPRESSES generation probability on unseen seeds — the worst result in the entire experiment. This strongly suggests s44 found a local minimum that happens to trigger heightened caution regardless of the task.
 
 ### Post-OPT Pipeline
 
@@ -149,7 +151,7 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 | Free-gen | ✅ 652358 (ASR=10.7%) | ✅ 652356 (ASR=1.3% NET-NEG) | ✅ 652357 (ASR=16.0%) |
 | Replay | ✅ 652770 (300 hs) | ✅ 652817 (300 hs) | ✅ 652760 (300 hs) |
 | Analysis | ✅ 652802 (AUC=1.000) | ✅ 652826 (AUC=1.000) | ✅ 652800 (AUC=1.000) |
-| Unseeded | 🔄 652803 (n-801) | 🔄 652827 (n-802) | 🔄 652801 (n-801) |
+| Unseeded | ✅ 652803 (16.0%, +4.0pp) | ✅ 652827 (2.7%, −8.0pp) | ✅ 652801 (21.3%, +9.3pp) |
 
 ---
 
@@ -251,16 +253,16 @@ ASR: 0/75 across all conditions including task_only (Gemma4 refuses even without
 | **652225** | run_gcg_full_7b.slurm SEED=45 | 7B seed=45 opt | ✅ DONE (best=19.98) |
 | **652356** | run_gcg_full_free_generation.slurm | 7B seed=44 free-gen | ✅ DONE (300/300, ASR=1.3% NET-NEG) |
 | **652817** | run_gcg_replay.slurm | 7B seed=44 replay | ✅ DONE (300 hs files) |
-| **652826** | run_gcg_analysis.slurm | 7B seed=44 analysis | 🔄 RUNNING (t-806) |
-| **652827** | run_gcg_unseen_seed_eval.slurm | 7B seed=44 unseeded | 🔄 RUNNING (n-802) |
+| **652826** | run_gcg_analysis.slurm | 7B seed=44 analysis | ✅ DONE (AUC=1.000 pos 0) |
+| **652827** | run_gcg_unseen_seed_eval.slurm | 7B seed=44 unseeded | ✅ DONE (2.7%, −8.0pp) |
 | **652357** | run_gcg_full_free_generation.slurm | 7B seed=45 free-gen | ✅ DONE (300/300, ASR=16.0%) |
 | **652358** | run_gcg_full_free_generation.slurm | 7B seed=43 free-gen | ✅ DONE (300/300, ASR=10.7%) |
 | **652760** | run_gcg_replay.slurm | 7B seed=45 replay | ✅ DONE (300 hs files) |
 | **652770** | run_gcg_replay.slurm | 7B seed=43 replay | ✅ DONE (300 hs files) |
 | **652800** | run_gcg_analysis.slurm | 7B seed=45 analysis | ✅ DONE (AUC=1.000 pos 0) |
-| **652801** | run_gcg_unseen_seed_eval.slurm | 7B seed=45 unseeded | 🔄 RUNNING (n-801) |
+| **652801** | run_gcg_unseen_seed_eval.slurm | 7B seed=45 unseeded | ✅ DONE (21.3%, +9.3pp) |
 | **652802** | run_gcg_analysis.slurm | 7B seed=43 analysis | ✅ DONE (AUC=1.000 pos 0) |
-| **652803** | run_gcg_unseen_seed_eval.slurm | 7B seed=43 unseeded | 🔄 RUNNING (n-801) |
+| **652803** | run_gcg_unseen_seed_eval.slurm | 7B seed=43 unseeded | ✅ DONE (16.0%, +4.0pp) |
 | **652226** | run_gcg_full_7c_gemma4_nothink.slurm | 7C Gemma4 no-think opt | ✅ DONE 18:12 UTC |
 | **652319** | run_gcg_full_free_generation.slurm (7C) | 7C free-gen eval | ✅ DONE (300/300, ASR=0%) |
 | **652359** | run_gcg_replay.slurm (7C) | 7C replay (hidden states) | ✅ DONE (300 files) |
