@@ -164,6 +164,49 @@ def repr_loss(
 
 
 # ---------------------------------------------------------------------------
+# Refusal-direction loss
+# ---------------------------------------------------------------------------
+
+def refusal_direction_loss(
+    candidate_hs: Dict[int, Dict[int, torch.Tensor]],
+    refusal_direction: torch.Tensor,
+    layer: int,
+    positions: List[int],
+) -> torch.Tensor:
+    """
+    Projection of candidate hidden states onto the refusal direction (to minimize).
+
+    Minimizing this pushes the adversarial suffix's activation away from the
+    refusal subspace, directly suppressing the causal 1D safety signal.
+
+    Based on CoT Hijacking paper (Zhao et al. 2026): ablating v_refusal at
+    layer 25 raises Qwen3-14B ASR from 11% to 91%. Here we learn a GCG suffix
+    that intrinsically minimizes this projection rather than intervening at inference.
+
+    Args:
+        candidate_hs:       {layer: {pos: Tensor[d_model]}} from current forward pass
+        refusal_direction:  [d_model] L2-normalized refusal direction vector
+        layer:              which layer to read activations from (paper: 25 for Qwen3)
+        positions:          which token positions to measure (typically [last_suffix_tok])
+
+    Returns:
+        scalar tensor — mean projection over positions (minimize to suppress refusal)
+    """
+    hs_layer = candidate_hs.get(layer, {})
+    total = torch.tensor(0.0)
+    n = 0
+    for pos in positions:
+        h = hs_layer.get(pos)
+        if h is None:
+            continue
+        h_norm = h / (h.norm() + 1e-8)
+        rd = refusal_direction.to(h.device, dtype=h.dtype)
+        total = total + torch.dot(h_norm, rd)
+        n += 1
+    return total / n if n > 0 else torch.tensor(0.0)
+
+
+# ---------------------------------------------------------------------------
 # Early-logit KL loss
 # ---------------------------------------------------------------------------
 

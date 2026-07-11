@@ -1,7 +1,0 @@
-{
-  "artifact_version": "stage4a2_subspace_v1",
-  "stage": "stage4a2_subspace_pca_candidate_scores",
-  "subspace_method": "pca",
-  "note": "No intervention evaluation performed (PCA method). See direction_subspace_metadata.json.",
-  "candidates": []
-}

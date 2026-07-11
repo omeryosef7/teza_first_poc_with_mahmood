@@ -66,15 +66,23 @@ def main(argv=None):
     parser.add_argument("--neutral-suffix-token-id", type=int, default=220,
                         help="Token ID repeated suffix_length times for the neutral reference suffix. "
                              "Default 220 = space token in Qwen3/tiktoken. Used with --suffix-length.")
+    parser.add_argument("--repr-at-cot-pos", action="store_true",
+                        help="5B mode: cache at target_slice.start (first target token = CoT pos 0). "
+                             "Requires --suffix-length. Mutually exclusive with --positions/--repr-positions.")
     parser.add_argument("--split", default="all", choices=["train", "all"])
     parser.add_argument("--no-thinking", action="store_true")
     args = parser.parse_args(argv)
 
-    if args.positions is not None and args.repr_positions is not None:
+    if args.repr_at_cot_pos:
+        if args.positions is not None or args.repr_positions is not None:
+            parser.error("--repr-at-cot-pos is mutually exclusive with --positions/--repr-positions")
+        if args.suffix_length is None:
+            parser.error("--repr-at-cot-pos requires --suffix-length")
+    elif args.positions is not None and args.repr_positions is not None:
         parser.error("--positions and --repr-positions are mutually exclusive")
-    if args.repr_positions is not None and args.suffix_length is None:
+    elif args.repr_positions is not None and args.suffix_length is None:
         parser.error("--repr-positions requires --suffix-length")
-    if args.positions is None and args.repr_positions is None:
+    elif args.positions is None and args.repr_positions is None:
         args.positions = "0,1,2"  # backward-compatible default
 
     layers = [int(x) for x in args.layers.split(",")]
@@ -111,7 +119,30 @@ def main(argv=None):
     for task in tasks:
         print(f"[build_reference_cache] Building cache for task={task.task_id} ...", flush=True)
 
-        if args.repr_positions is not None:
+        if args.repr_at_cot_pos:
+            # 5B mode: position = target_slice.start (first target token = CoT position 0)
+            neutral_suffix_ids = [args.neutral_suffix_token_id] * args.suffix_length
+            neutral_suffix_str = tokenizer.decode(neutral_suffix_ids, skip_special_tokens=True)
+            spans = build_suffix_spans(
+                tokenizer, args.model_family, enable_thinking,
+                task.instruction, neutral_suffix_str, safe_target=task.safe_target_prefix,
+                suffix_ids_override=neutral_suffix_ids,
+            )
+            positions = [spans.target_slice.start]
+            print(f"[build_reference_cache]   cot_pos mode: target_slice.start={positions[0]}", flush=True)
+            entry = cache.build_and_store(
+                task_id=task.task_id,
+                instruction=task.instruction,
+                model=model,
+                tokenizer=tokenizer,
+                model_family=args.model_family,
+                neutral_suffix=neutral_suffix_str,
+                enable_thinking=enable_thinking,
+                layers=layers,
+                positions=positions,
+                suffix_ids_override=neutral_suffix_ids,
+            )
+        elif args.repr_positions is not None:
             # Stage 8b: same-length neutral suffix; positions = last N suffix tokens
             neutral_suffix_ids = [args.neutral_suffix_token_id] * args.suffix_length
             neutral_suffix_str = tokenizer.decode(neutral_suffix_ids, skip_special_tokens=True)

@@ -11,7 +11,7 @@ import dataclasses
 import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 @dataclass
@@ -63,6 +63,8 @@ class ObjectiveWeights:
     lambda_kl: float = 0.0
     repr_metric: str = "cosine"        # "cosine" | "l2" | "whitened_l2" (experimental)
     repr_positions: int = 3            # first X generated positions to compare
+    repr_at_cot_pos: bool = False      # 5B: use target_slice.start instead of suffix positions
+    quick_asr_every: int = 0           # 5C: run quick prefix-match ASR check every N steps (0=off)
     repr_layers: List[int] = field(default_factory=list)  # empty = all layers
     per_layer_weights: List[float] = field(default_factory=list)  # empty = uniform
     per_token_weights: List[float] = field(default_factory=list)  # empty = uniform
@@ -72,6 +74,9 @@ class ObjectiveWeights:
     selection_mode: str = "weighted"   # "weighted" | "constrained" | "lexicographic"
     constrained_repr_threshold: float = 0.1   # for constrained mode: repr_loss <= this
     lexicographic_task_eps: float = 0.01      # for lexicographic mode: task_loss tolerance
+    lambda_refusal_dir: float = 0.0          # weight for refusal-direction projection loss
+    refusal_dir_layer: int = 25              # layer for refusal direction (CoT paper: layer 25)
+    refusal_dir_path: Optional[str] = None  # path to v_refusal .pt file
 
 
 @dataclass

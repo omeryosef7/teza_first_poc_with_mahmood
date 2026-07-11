@@ -11,7 +11,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
 
 # Stage GCG-Early — Unseen-seed free-generation evaluation.
 #

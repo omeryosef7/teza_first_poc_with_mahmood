@@ -115,12 +115,24 @@ def main(argv=None):
                         help="repr_loss threshold for constrained selection mode.")
     parser.add_argument("--lexicographic-task-eps", type=float, default=0.01,
                         help="task_loss tolerance for lexicographic selection mode.")
+    parser.add_argument("--repr-at-cot-pos", action="store_true",
+                        help="5B: use target_slice.start as repr position (CoT position 0 in teacher-forcing). "
+                             "Reference cache must be built with --repr-at-cot-pos flag.")
+    parser.add_argument("--quick-asr-every", type=int, default=0,
+                        help="5C: run quick prefix-match ASR check on top-5 candidates every N steps. "
+                             "0 = disabled. Adds ~10pct runtime overhead.")
     parser.add_argument("--multi-model-family", default=None, choices=["gemma4"],
                         help="Add a second model for cross-tokenizer candidate re-scoring. "
                              "Gradients stay in primary model's token space; second model's "
                              "task_loss is added to candidate selection criterion. Requires 2 GPUs.")
     parser.add_argument("--multi-model-name-or-path", default="google/gemma-4-E4B-it",
                         help="HF model id or local path for the second model.")
+    parser.add_argument("--lambda-refusal-dir", type=float, default=0.0,
+                        help="Weight for refusal-direction projection loss (CoT Hijacking paper, layer 25).")
+    parser.add_argument("--refusal-dir-layer", type=int, default=25,
+                        help="Layer index for refusal direction projection (default: 25 per CoT Hijacking paper).")
+    parser.add_argument("--refusal-dir-path", default=None,
+                        help="Path to v_refusal .pt file (from compute_refusal_direction.py). Required when --lambda-refusal-dir > 0.")
     args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
@@ -148,9 +160,14 @@ def main(argv=None):
             lambda_kl=args.lambda_kl,
             repr_metric=args.repr_metric,
             repr_positions=args.repr_positions,
+            repr_at_cot_pos=args.repr_at_cot_pos,
+            quick_asr_every=args.quick_asr_every,
             selection_mode=args.selection_mode,
             constrained_repr_threshold=args.constrained_repr_threshold,
             lexicographic_task_eps=args.lexicographic_task_eps,
+            lambda_refusal_dir=args.lambda_refusal_dir,
+            refusal_dir_layer=args.refusal_dir_layer,
+            refusal_dir_path=args.refusal_dir_path,
         ),
         output_dir=str(output_dir),
         enable_thinking=not args.no_thinking,

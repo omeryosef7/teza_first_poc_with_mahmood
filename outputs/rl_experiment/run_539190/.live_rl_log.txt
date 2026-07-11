@@ -1,5 +1,0 @@
-2026-06-12 12:16 — Step 1 COMPLETE
-  goal=2 condition=F sr_success=True sr_score=1.0
-  think_tokens=691 onset_pct=0.089 elapsed=177s reward=1.091
-  REINFORCE update: P(F) 0.250→0.260, P(A/D/E) 0.250→0.247
-  Step 2 started: goal=1 condition=A (~23 min)
