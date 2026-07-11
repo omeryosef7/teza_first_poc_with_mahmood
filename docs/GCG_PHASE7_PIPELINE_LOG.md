@@ -109,7 +109,7 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 **Key finding:** seed=42 achieved best_loss=14.9 vs seeds 43-45 at 19.9-24.3. Seed=42 appears to have found a rare favorable gradient path for the CoT-prefix target. ASR variance pending free-gen results.
 
-### Free-Gen ASR Results (COMPLETE for s43, s45; s44 pending)
+### Free-Gen ASR Results (ALL SEEDS COMPLETE)
 
 | Seed | opt loss | optimized_weighted | neutral_control | task_only | uplift vs neutral |
 |---|---|---|---|---|---|
@@ -130,6 +130,17 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 | 45 | **1.000** | 0.063±0.007 | 0.155 | 0.040 |
 
 **Universal finding:** AUC=1.000 at pos 0 for ALL seeds, including seed=44 (net-negative ASR). Detection is not correlated with attack success — a suffix can be perfectly detectable AND fail to jailbreak (s44) or perfectly detectable AND succeed (s45). s44 has the LARGEST repr shift (0.067) yet lowest ASR. Detection ≠ ASR direction.
+
+### Unseeded ASR Results (seeds 100/200/300) — PARTIAL
+
+| Seed | optimized_weighted | neutral_control | uplift vs neutral | Note |
+|---|---|---|---|---|
+| 42 (5A ref) | **14.7%** (11/75) | **12.0%** (9/75) | +2.7pp | baseline inflated vs training |
+| 43 | TBD | — | TBD | job 652803 running |
+| 44 | TBD | — | TBD | job 652827 running |
+| 45 | **21.3%** (16/75) | **12.0%** (9/75) | **+9.3pp** | best unseeded result |
+
+**Important context:** Neutral_control baseline = 12.0% on unseeded seeds (100/200/300) vs 1.9-4.0% on training seeds (42/43/44). Seeds 100/200/300 are intrinsically more permissive — the REAL suffix-attributable uplift is lower for unseeded evals. s45 achieves +9.3pp unseeded vs +12.0pp on training seeds.
 
 ### Post-OPT Pipeline
 
