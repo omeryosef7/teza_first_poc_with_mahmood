@@ -38,9 +38,9 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | 6B | Gemma4 | CoT-channel prefix | **0%** (OPT stalled) | — | — | +0pp |
 | 6C | Qwen3 | CoT+refusal_dir | **0% net-neg** | **0% net-neg** | **1.000** | **−10.7pp** |
 | **7C** | Gemma4 | thinking=OFF, std target | **0%** | **0%** | **1.000** | 0% (= all baselines) |
-| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | pending | pending | +6.7pp vs 4% |
-| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, FINAL) | pending | pending | **−1.4pp net-neg** |
-| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | pending | pending | +12.0pp vs 4% |
+| 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | pending | **1.000** | +6.7pp vs 4% |
+| 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, net-neg) | pending | **1.000** | **−1.4pp net-neg** |
+| 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | pending | **1.000** | +12.0pp vs 4% |
 
 ---
 
@@ -56,17 +56,29 @@ The standard GCG target "Sure, here is {task}" assumes this is the model's first
 
 **Implication:** GCG success is not about achieving low teacher-forced loss — it's about whether the optimized suffix aligns with a behaviorally meaningful generation trajectory.
 
-### Finding 2: GCG adversarial suffixes are perfectly detectable at position 0
+### Finding 2: GCG adversarial suffixes are perfectly detectable at position 0 — universally, regardless of attack success
 
-Across ALL Qwen3 GCG variants (standard, λ=0, CoT-prefix, CoT+repr, refusal-dir):
+Across ALL Qwen3 GCG variants tested (standard, CoT-prefix, CoT+repr, refusal-dir, all 4 optimization seeds):
 - **AUC = 1.000 at generated token 0** (first token, before any visible text)
 - Cosine distance from neutral_control baseline grows monotonically through generation
 - The GCG suffix creates a detectable signature in the **thinking phase**, not the response
 - Qwen3's CoT reasoning identifies garbled suffix tokens → heightened safety response
 
-**Exception:** 4B (λ_repr=0, repr_loss removed) has AUC=0.500 at position 0 (invisible!), peaking at AUC=0.807 at position 18. Removing repr_loss makes the suffix harder to detect early but makes it MORE garbled, which triggers stronger safety response → lower ASR.
+**Phase 7B cross-seed confirmation (2026-07-11):** AUC=1.000 at pos 0 holds for ALL optimization seeds:
 
-**Implication:** There is a detection–evasion tradeoff: repr_loss reduces early detectability but also reduces ASR. No current configuration achieves both low detectability AND high ASR.
+| Seed | ASR | AUC pos 0 | Repr dist pos 0 |
+|---|---|---|---|
+| 42 (5A ref) | 10.7% | **1.000** | 0.053 |
+| 43 | 10.7% | **1.000** | 0.053 |
+| 44 | **1.3% (net-neg)** | **1.000** | **0.067** (largest) |
+| 45 | **16.0%** (best) | **1.000** | 0.063 |
+| 7C Gemma4 | 0% | **1.000** | 0.007 |
+
+**Key insight:** Detection (AUC) and attack success (ASR) are independent. s44 has the LARGEST repr shift (0.067) and LOWEST ASR (1.3%) — a suffix that strongly displaces activations from the neutral trajectory can still be net-negative. The position-0 detector fires on ALL suffixes regardless of their effectiveness.
+
+**Exception:** 4B (λ_repr=0, repr_loss removed) has AUC=0.500 at position 0 (invisible!), peaking at AUC=0.807 at position 18. This is the only configuration that evades early detection, at the cost of lower ASR (~same as baseline). Removing repr_loss makes the suffix harder to detect early but makes it MORE garbled, triggering stronger safety response.
+
+**Implication:** There is a detection–evasion tradeoff, but detection evasion does not help ASR. No current configuration achieves both low detectability AND high ASR. The position-0 detector is robust to all optimization seeds and both model families tested.
 
 ### Finding 3: Refusal direction suppression is mutually destructive with CE optimization
 
