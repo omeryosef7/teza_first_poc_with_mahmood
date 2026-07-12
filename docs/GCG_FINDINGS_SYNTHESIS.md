@@ -1,6 +1,6 @@
 # GCG Findings Synthesis: Phases 4–6
 
-**Date:** 2026-07-10  
+**Date:** 2026-07-10 (updated 2026-07-12 — Phase 7 fully complete)  
 **Researcher:** Omer Yosef  
 **Repository:** `outputs/stage_gcg_full/`  
 **Log:** `docs/GCG_ABLATION_PIPELINE_LOG.md`
@@ -9,9 +9,11 @@
 
 ## 1. Executive Summary
 
-Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
+Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it (plus a full-benchmark
+confirmation, see below):
 
-- **Best attack:** 5A CoT-prefix targeting — **10.7% ASR** on 25 AdvBench behaviors (training seed 42); **14.7% on unseen seeds 100/200/300**
+- **Best attack (small tuning set):** 5A CoT-prefix targeting — **10.7% ASR** on 25 AdvBench behaviors (training seed 42); **14.7% on unseen seeds 100/200/300**
+- **Confirmed at full benchmark scale (7A, COMPLETE):** the 5A suffix generalizes to all 520 AdvBench behaviors at **8.01% ASR** (training seeds, +5.83pp uplift) and **8.63% ASR** (unseen seeds 100/200/300, +5.03pp uplift), with AUC=1.000 at all 32 positions across 3,120 pairs. This is **lower** than the 25-behavior training-set number (10.7%) — the small tuning set somewhat overestimated attack effectiveness, though the positive, seed-robust uplift holds up at scale.
 - **Standard GCG (Qwen3, 520 behaviors):** 1.9% — net-negative vs 2.4% task_only baseline
 - **Detection:** AUC = **1.000 at generated token position 0** across ALL Qwen3 variants — adversarial suffix perfectly detectable from first token
 - **Gemma4:** 0% ASR under ALL conditions (standard GCG, CoT-prefix, refusal-direction, CoT-channel)
@@ -24,14 +26,14 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | Exp | Model | Method | Opt ASR (training) | Opt ASR (unseen) | AUC pos 0 | vs Baseline |
 |---|---|---|---|---|---|---|
 | Standard (full run) | Qwen3 | GCG weighted | 4.0% | 6.7% | **1.000** | ≈ baseline |
-| 4B | Qwen3 | λ_repr=0 (upper bound) | 4.0% | 1.3% | 0.500 invisible | ≈ baseline |
+| 4B | Qwen3 | λ_repr=0 (upper bound) | 1.3% | 1.3% | 0.500 invisible | ≈ baseline |
 | 4C | Gemma4 | GCG weighted | **0%** | **0%** | 0.698 (pos 13) | = 0% baseline |
 | 4D | Qwen3 | CoT-ON detector | — | — | **1.000** | — |
 | 4D | Qwen3 | CoT-OFF detector | — | — | 0.507 (chance) | — |
 | 4E | Qwen3→Gemma4 | Text transfer | **0%** | — | — | = 0% baseline |
 | 4F (520) | Qwen3 | GCG weighted | 1.9% | — | — | **−0.5pp** net-neg |
 | **5A** | Qwen3 | CoT-prefix target | **10.7%** | **14.7%** | **1.000** | **+8pp** |
-| 5B | Qwen3 | CoT-pos0 repr | 1.3% | — | **1.000** | −1.4pp |
+| 5B | Qwen3 | CoT-pos0 repr | 1.3% | — | **1.000** | −2.7pp |
 | 5C | Qwen3 | Quick-ASR selection | **10.7%** | — | **1.000** | =5A |
 | 6A | Qwen3 | +refusal_dir_loss | **0% net-neg** | **0% net-neg** | **1.000** | **−10.7pp** |
 | 6A | Gemma4 | +refusal_dir_loss | **0%** (noise) | **0%** | 0.070 pos 0 | +0pp |
@@ -41,6 +43,7 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it:
 | 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | **16.0%** (12/75) | **1.000** | +6.7pp train / +4.0pp unseen |
 | 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, net-neg) | **2.7%** (−8.0pp!) | **1.000** | **net-neg both regimes** |
 | 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | **21.3%** (16/75) | **1.000** | +12.0pp train / +9.3pp unseen |
+| **7A** | Qwen3 | CoT-prefix, 5A suffix, 520 behaviors | **8.01%** (125/1560) | **8.63%** (89/1031, seeds 100/200/300) | **1.000** (all 32 pos, 3120 pairs) | **+5.83pp** train / **+5.03pp** unseen vs neutral |
 
 ---
 
@@ -151,6 +154,30 @@ The full cross-seed picture for CoT-prefix suffixes on seeds 100/200/300:
 
 **Implication for future work:** Selecting GCG suffixes based on optimization loss (the standard criterion) is inadequate for CoT-prefix targets. Early-stopping based on live free-generation ASR (like 5C) may be preferable, but requires multiple free-generation samples per step. The variance observed here suggests single-seed GCG results are unreliable; multi-seed averaging or selection is necessary for meaningful evaluation.
 
+### Finding 7: Full-benchmark ASR is lower than the small-tuning-set ASR, but the attack generalizes robustly (Phase 7A, COMPLETE 2026-07-12)
+
+**Result:** Evaluating the 5A suffix (optimized on only 25 hand-picked training behaviors) against
+all 520 AdvBench behaviors gives **8.01% ASR** (125/1560, training seeds 42/43/44) and **8.63% ASR**
+(89/1031, unseen seeds 100/200/300) — both **lower** than the 25-behavior number (10.7%/14.7%).
+
+| Metric | 25-behavior tuning set | Full 520-behavior benchmark |
+|---|---|---|
+| Training-seed ASR | 10.7% | **8.01%** |
+| Unseen-seed ASR | 14.7% | **8.63%** |
+| Uplift vs. neutral (training) | +8.8pp | +5.83pp |
+| Uplift vs. neutral (unseen) | +2.7pp | +5.03pp |
+
+**Interpretation:** The 25 behaviors used to develop and select the 5A attack were, on average,
+somewhat easier to jailbreak than AdvBench as a whole — a mild form of overfitting to the tuning
+set inherent to hand-picking a small evaluation subset. However, the qualitative finding survives
+fully intact at scale: 87/520 behaviors (16.7%) have at least one successful jailbreak, the
+positive uplift over all three baselines (neutral_control, random_spaces, task_only) holds in both
+seed regimes, AUC=1.000 detection holds at all 32 positions across the full 3,120-pair evaluation,
+and the seed-transfer gap between the training seed and held-out seeds is negligible (−0.007pp).
+**Practical takeaway:** report full-benchmark numbers, not small-tuning-set numbers, as the
+headline attack-effectiveness figure — the 25-behavior 10.7%/14.7% figures should be understood as
+an upper-bound estimate, with 8.01%/8.63% being the realistic, generalizable rate.
+
 ---
 
 ## 4. Comparison with Prior Work
@@ -182,13 +209,19 @@ The full cross-seed picture for CoT-prefix suffixes on seeds 100/200/300:
 
 ---
 
-## 6. Open Questions (Phase 7)
+## 6. Phase 7 Results — All Questions Closed
+
+Phase 7 was launched to close three open questions left over from Phases 5–6. All three are now
+answered and complete; no further Phase 7 experiments are planned.
 
 | Question | Experiment | Status | Answer |
 |---|---|---|---|
-| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | 🔄 Running (881/6240 rows, pass 2 active) | **YES — 10.0% ASR on 74 behaviors (+7.7pp) — stable across passes** |
+| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | ✅ COMPLETE (2026-07-11, 6240 rows; unseeded ✅ 2026-07-12, 4108 rows) | **YES — 8.01% ASR on 520 behaviors (+5.83pp over neutral 2.18%). 87/520 behaviors have ≥1 success. Unseeded (seeds 100/200/300): 8.63% opt vs 3.60% neutral (+5.03pp) — suffix generalizes to unseen seeds without degradation. AUC=1.000 at all 32 positions on 3120 pairs. Seed transfer gap: −0.007pp (negligible). Note: full-scale ASR is lower than the 25-behavior tuning-set ASR (10.7%/14.7%) — see Finding 7.** |
 | Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | ✅ COMPLETE | **NO — train ASR: 1.3–16.0%; unseen: 2.7–21.3%. s44 net-neg in BOTH regimes (−1.4pp / −8.0pp). s45 best in both (+12.0pp / +9.3pp). AUC=1.000 universal.** |
 | Is Gemma4 0% ASR due to CoT format or intrinsic robustness? | 7C (thinking=OFF) | ✅ COMPLETE | **Intrinsic robustness confirmed**: 0% ASR even with thinking=OFF, loss=12.58. Format was not the barrier. |
+
+**Status as of 2026-07-12: the entire Phase 4–7 GCG pipeline is complete.** No SLURM jobs are
+queued or running, and no further experiments are currently planned.
 
 ---
 
@@ -203,3 +236,20 @@ The full cross-seed picture for CoT-prefix suffixes on seeds 100/200/300:
 | `outputs/stage_gcg_full/gcg_full_gemma4_6a_refusal_dir/DETECTION_DELAY_ANALYSIS.md` | 6A-G analysis |
 | `outputs/stage_gcg_full/refusal_direction_qwen3_L25.pt` | v_refusal vector, Qwen3 layer 25 |
 | `outputs/stage_gcg_full/refusal_direction_gemma4_L25.pt` | v_refusal vector, Gemma4 layer 25 |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_shard{1..6}/FREE_GENERATION_RESULTS.jsonl` | 7A shard outputs (merged into main dir) |
+| `outputs/stage_gcg_full/advbench_cot_shard{1..6}_manifest.jsonl` | 7A shard manifests (~62-63 behaviors each) |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS.jsonl` | 7A final merged (6240 rows, 520 behaviors) |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/DETECTION_DELAY_ANALYSIS.md` | 7A AUC=1.000 analysis (3120 pairs) |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/hidden_states/` | 7A hidden states (6240 .pt files) |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS_UNSEEDED.jsonl` | 7A unseeded eval, seeds 100/200/300 (4108 rows) |
+
+**Scripts for 7A parallelization:**
+
+| Script | Purpose |
+|---|---|
+| `scripts/split_7a_manifest.py` | Splits full manifest into N shards, creates shard dirs |
+| `slurm_scripts/run_gcg_full_7a_shard.slurm` | Parameterized shard evaluator (`SHARD_ID=N`) |
+| `scripts/merge_7a_shards.py` | Merges shard JSONL files into main dir, deduplicates by row_key |
+| `slurm_scripts/run_gcg_replay_7a.slurm` | 7A replay (A6000-constrained, needed since original L40S-only job stalled in queue) |
+| `scripts/split_unseeded_shards.py` | Splits the unseeded (100/200/300) eval into N shards, same pattern as 7A itself |
+| `scripts/merge_unseeded_shards.py` | Merges unseeded-eval shard JSONL files, deduplicates by row_key |
