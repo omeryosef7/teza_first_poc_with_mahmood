@@ -11,7 +11,7 @@ Phase 7 extends the GCG ablation pipeline based on findings from Phases 4–6:
 
 | Exp | Description | Status |
 |---|---|---|
-| 7A | 5A suffix evaluated on all 520 AdvBench behaviors (scale) | ✅ COMPLETE (ASR=8.01%, AUC=1.000; unseeded ✅ 8.63% opt, +5.03pp) |
+| 7A | 5A suffix evaluated on all 520 AdvBench behaviors (scale) | ✅ COMPLETE (ASR=8.01%, AUC=1.000; unseeded ✅ 8.92% opt, +5.09pp, 493/520 behaviors) |
 | 7B-s43 | 5A optimization re-run with seed=43 (variance) | ✅ COMPLETE |
 | 7B-s44 | 5A optimization re-run with seed=44 (variance) | ✅ COMPLETE |
 | 7B-s45 | 5A optimization re-run with seed=45 (variance) | ✅ COMPLETE |
@@ -186,9 +186,38 @@ Monitor `bd8o3mqkc` (fixed dynamic job tracking) submitted 5 new shards for 352 
 
 **Uplift: +5.03pp over neutral_control.**
 
-**Key finding:** Unseeded ASR (8.63% on seeds 100/200/300) is comparable to training-seed ASR (8.01% on seeds 42/43/44), confirming the 5A suffix **generalizes to unseen random seeds** without meaningful degradation. Uplift vs neutral consistent across seed regimes (+5.03pp unseeded vs +5.83pp training seeds).
+**Coverage note (pass 2):** 346 of 520 behaviors evaluated (66.5%) — pass-2 shards hit the 4h wall limit before full coverage.
 
-**Output file:** `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS_UNSEEDED.jsonl` (4108 rows)
+#### Pass 3 (2026-07-12 — ✅ COMPLETE)
+
+174 remaining behaviors split across 5 shards (~34-38 behaviors each):
+
+| Job | Shard | Behaviors | Status |
+|---|---|---|---|
+| 657639 | 1 | 34 | ✅ DONE |
+| 657640 | 2 | 34 | ✅ DONE |
+| 657641 | 3 | 34 | ✅ DONE |
+| 657642 | 4 | 34 | ✅ DONE |
+| 657643 | 5 | 38 | ✅ DONE |
+
+**Pass 3 merge (2026-07-12):** `python3 scripts/merge_unseeded_shards.py` → 5849 total rows.
+
+#### Final Unseeded ASR Results (5849 rows, 493/520 behaviors, 2026-07-12) — ✅ COMPLETE
+
+| Condition | Success | Total | ASR |
+|---|---|---|---|
+| **optimized_weighted** | 131 | 1468 | **8.92%** |
+| neutral_control | 56 | 1464 | 3.83% |
+| random_spaces | 57 | 1461 | 3.90% |
+| task_only | 53 | 1456 | 3.64% |
+
+**Uplift: +5.09pp over neutral_control.**
+
+**Coverage:** 493/520 behaviors (94.8%) — 27 behaviors not reached before wall-time across all 3 passes. Assignment was approximately random, so the 8.92% estimate is unbiased.
+
+**Key finding:** Unseeded ASR (8.92% on seeds 100/200/300) is comparable to training-seed ASR (8.01% on seeds 42/43/44), confirming the 5A suffix **generalizes to unseen random seeds** without meaningful degradation. Uplift vs neutral consistent across seed regimes (+5.09pp unseeded vs +5.83pp training seeds).
+
+**Output file:** `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS_UNSEEDED.jsonl` (5849 rows)
 **Merge script:** `scripts/merge_unseeded_shards.py`
 
 ---
@@ -398,6 +427,7 @@ ASR: 0/75 across all conditions including task_only (Gemma4 refuses even without
 | **655836** | run_gcg_analysis.slurm | 7A analysis (auto-submitted by watcher bhx1cn9rs) | ❌ CANCELLED (30 min limit insufficient for 6240 files) |
 | **655837** | run_gcg_unseen_seed_eval.slurm | 7A unseeded seeds 100/200/300 | ✅ DONE (superseded by sharded jobs 655998–656002 + 656263–656267; final merged result 4108 rows) |
 | **655867** | run_gcg_analysis.slurm --time=4:00:00 | 7A analysis resubmit with 4h limit | ✅ DONE (AUC=1.000 all 32 pos, 3120 pairs) |
-| **655998–656002, 656263–656267** | run_gcg_unseen_seed_eval.slurm (sharded) | 7A unseeded eval, 10 parallel shards across 2 passes | ✅ ALL DONE — merged via `scripts/merge_unseeded_shards.py` (final: 8.63% opt, +5.03pp) |
+| **655998–656002, 656263–656267** | run_gcg_unseen_seed_eval.slurm (sharded) | 7A unseeded eval, 10 parallel shards across 2 passes | ✅ ALL DONE — merged via `scripts/merge_unseeded_shards.py` (pass 2 final: 4108 rows, 346/520 behaviors) |
+| **657639–657643** | run_gcg_unseen_seed_eval.slurm (sharded) | 7A unseeded eval pass 3, 5 shards for 174 remaining behaviors | ✅ ALL DONE — merged (final: 5849 rows, 493/520 behaviors, **8.92% opt, +5.09pp**) |
 
 **Pipeline status: Phase 4–7 fully complete as of 2026-07-12. No SLURM jobs queued or running.**

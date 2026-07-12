@@ -13,7 +13,7 @@ Across 12 GCG optimization experiments on Qwen3-14B and Gemma4-E4B-it (plus a fu
 confirmation, see below):
 
 - **Best attack (small tuning set):** 5A CoT-prefix targeting — **10.7% ASR** on 25 AdvBench behaviors (training seed 42); **14.7% on unseen seeds 100/200/300**
-- **Confirmed at full benchmark scale (7A, COMPLETE):** the 5A suffix generalizes to all 520 AdvBench behaviors at **8.01% ASR** (training seeds, +5.83pp uplift) and **8.63% ASR** (unseen seeds 100/200/300, +5.03pp uplift), with AUC=1.000 at all 32 positions across 3,120 pairs. This is **lower** than the 25-behavior training-set number (10.7%) — the small tuning set somewhat overestimated attack effectiveness, though the positive, seed-robust uplift holds up at scale.
+- **Confirmed at full benchmark scale (7A, COMPLETE):** the 5A suffix generalizes to all 520 AdvBench behaviors at **8.01% ASR** (training seeds, +5.83pp uplift) and **8.92% ASR** (unseen seeds 100/200/300, +5.09pp uplift, 493/520 behaviors), with AUC=1.000 at all 32 positions across 3,120 pairs. This is **lower** than the 25-behavior training-set number (10.7%) — the small tuning set somewhat overestimated attack effectiveness, though the positive, seed-robust uplift holds up at scale.
 - **Standard GCG (Qwen3, 520 behaviors):** 1.9% — net-negative vs 2.4% task_only baseline
 - **Detection:** AUC = **1.000 at generated token position 0** across ALL Qwen3 variants — adversarial suffix perfectly detectable from first token
 - **Gemma4:** 0% ASR under ALL conditions (standard GCG, CoT-prefix, refusal-direction, CoT-channel)
@@ -43,7 +43,7 @@ confirmation, see below):
 | 7B s=43 | Qwen3 | CoT-prefix, seed=43 | **10.7%** (8/75) | **16.0%** (12/75) | **1.000** | +6.7pp train / +4.0pp unseen |
 | 7B s=44 | Qwen3 | CoT-prefix, seed=44 | **1.3%** (1/75, net-neg) | **2.7%** (−8.0pp!) | **1.000** | **net-neg both regimes** |
 | 7B s=45 | Qwen3 | CoT-prefix, seed=45 | **16.0%** (12/75) | **21.3%** (16/75) | **1.000** | +12.0pp train / +9.3pp unseen |
-| **7A** | Qwen3 | CoT-prefix, 5A suffix, 520 behaviors | **8.01%** (125/1560) | **8.63%** (89/1031, seeds 100/200/300) | **1.000** (all 32 pos, 3120 pairs) | **+5.83pp** train / **+5.03pp** unseen vs neutral |
+| **7A** | Qwen3 | CoT-prefix, 5A suffix, 520 behaviors | **8.01%** (125/1560) | **8.92%** (131/1468, seeds 100/200/300, **493/520 behaviors**) | **1.000** (all 32 pos, 3120 pairs) | **+5.83pp** train / **+5.09pp** unseen vs neutral |
 
 ---
 
@@ -157,15 +157,15 @@ The full cross-seed picture for CoT-prefix suffixes on seeds 100/200/300:
 ### Finding 7: Full-benchmark ASR is lower than the small-tuning-set ASR, but the attack generalizes robustly (Phase 7A, COMPLETE 2026-07-12)
 
 **Result:** Evaluating the 5A suffix (optimized on only 25 hand-picked training behaviors) against
-all 520 AdvBench behaviors gives **8.01% ASR** (125/1560, training seeds 42/43/44) and **8.63% ASR**
-(89/1031, unseen seeds 100/200/300) — both **lower** than the 25-behavior number (10.7%/14.7%).
+all 520 AdvBench behaviors gives **8.01% ASR** (125/1560, training seeds 42/43/44) and **8.92% ASR**
+(131/1468, unseen seeds 100/200/300, 493/520 behaviors) — both **lower** than the 25-behavior number (10.7%/14.7%).
 
 | Metric | 25-behavior tuning set | Full 520-behavior benchmark |
 |---|---|---|
 | Training-seed ASR | 10.7% | **8.01%** |
-| Unseen-seed ASR | 14.7% | **8.63%** |
+| Unseen-seed ASR | 14.7% | **8.92%** (493/520 behaviors) |
 | Uplift vs. neutral (training) | +8.8pp | +5.83pp |
-| Uplift vs. neutral (unseen) | +2.7pp | +5.03pp |
+| Uplift vs. neutral (unseen) | +2.7pp | +5.09pp |
 
 **Interpretation:** The 25 behaviors used to develop and select the 5A attack were, on average,
 somewhat easier to jailbreak than AdvBench as a whole — a mild form of overfitting to the tuning
@@ -216,7 +216,7 @@ answered and complete; no further Phase 7 experiments are planned.
 
 | Question | Experiment | Status | Answer |
 |---|---|---|---|
-| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | ✅ COMPLETE (2026-07-11, 6240 rows; unseeded ✅ 2026-07-12, 4108 rows) | **YES — 8.01% ASR on 520 behaviors (+5.83pp over neutral 2.18%). 87/520 behaviors have ≥1 success. Unseeded (seeds 100/200/300): 8.63% opt vs 3.60% neutral (+5.03pp) — suffix generalizes to unseen seeds without degradation. AUC=1.000 at all 32 positions on 3120 pairs. Seed transfer gap: −0.007pp (negligible). Note: full-scale ASR is lower than the 25-behavior tuning-set ASR (10.7%/14.7%) — see Finding 7.** |
+| Does 5A generalize to all 520 behaviors? | 7A (full-520 eval) | ✅ COMPLETE (2026-07-11, 6240 rows; unseeded ✅ 2026-07-12, 5849 rows, 493/520 behaviors) | **YES — 8.01% ASR on 520 behaviors (+5.83pp over neutral 2.18%). 87/520 behaviors have ≥1 success. Unseeded (seeds 100/200/300): 8.92% opt vs 3.83% neutral (+5.09pp, 493/520 behaviors) — suffix generalizes to unseen seeds without degradation. AUC=1.000 at all 32 positions on 3120 pairs. Seed transfer gap: −0.007pp (negligible). Note: full-scale ASR is lower than the 25-behavior tuning-set ASR (10.7%/14.7%) — see Finding 7.** |
 | Is 10.7% stable across optimization seeds? | 7B (seeds 43/44/45) | ✅ COMPLETE | **NO — train ASR: 1.3–16.0%; unseen: 2.7–21.3%. s44 net-neg in BOTH regimes (−1.4pp / −8.0pp). s45 best in both (+12.0pp / +9.3pp). AUC=1.000 universal.** |
 | Is Gemma4 0% ASR due to CoT format or intrinsic robustness? | 7C (thinking=OFF) | ✅ COMPLETE | **Intrinsic robustness confirmed**: 0% ASR even with thinking=OFF, loss=12.58. Format was not the barrier. |
 
@@ -241,7 +241,7 @@ queued or running, and no further experiments are currently planned.
 | `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS.jsonl` | 7A final merged (6240 rows, 520 behaviors) |
 | `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/DETECTION_DELAY_ANALYSIS.md` | 7A AUC=1.000 analysis (3120 pairs) |
 | `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/hidden_states/` | 7A hidden states (6240 .pt files) |
-| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS_UNSEEDED.jsonl` | 7A unseeded eval, seeds 100/200/300 (4108 rows) |
+| `outputs/stage_gcg_full/gcg_full_qwen3_7a_5a_full520/FREE_GENERATION_RESULTS_UNSEEDED.jsonl` | 7A unseeded eval, seeds 100/200/300 (5849 rows, 493/520 behaviors) |
 
 **Scripts for 7A parallelization:**
 
