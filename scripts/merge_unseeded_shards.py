@@ -12,6 +12,7 @@ Usage:
 """
 import json
 import shutil
+import sys
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).parent.parent
@@ -38,6 +39,9 @@ def main():
                 new = 0
                 for r in rows:
                     k = r.get("row_key", "")
+                    if not k:
+                        print(f"WARNING: row missing row_key, skipping: {r.get('task_id', '?')}", file=sys.stderr)
+                        continue
                     if k not in seen_keys:
                         seen_keys.add(k)
                         all_rows.append(r)
@@ -46,7 +50,7 @@ def main():
                 break
 
     dst = MAIN_RUN_DIR / "FREE_GENERATION_RESULTS_UNSEEDED.jsonl"
-    if dst.exists():
+    if dst.exists() and not dst.with_suffix(".jsonl.pre_merge_backup").exists():
         shutil.copy2(dst, dst.with_suffix(".jsonl.pre_merge_backup"))
     with open(dst, "w") as f:
         for r in all_rows:
@@ -65,7 +69,7 @@ def main():
         vals = by_cond.get(c, [])
         if vals:
             print(f"  {c}: {sum(vals)}/{len(vals)} = {sum(vals)/len(vals)*100:.2f}%")
-    print(f"\nTotal rows: {len(all_rows)} / 3120")
+    print(f"\nTotal rows: {len(all_rows)} / 6240")
 
 
 if __name__ == "__main__":

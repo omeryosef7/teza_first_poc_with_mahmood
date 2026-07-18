@@ -88,6 +88,7 @@ def main() -> None:
         out_r["cot_target"] = True
         out_r["cot_text"] = args.cot_text
         out_r["original_safe_target_prefix"] = orig
+        out_r["model"] = "gemma4"
         out_rows.append(out_r)
         print(f"  {r['task_id']}: {repr(orig[:40])} -> {repr(new_target[:80])}", flush=True)
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=gcg_7a_shard
-#SBATCH --output=logs/gcg_7a_shard%x_%j.out
-#SBATCH --error=logs/gcg_7a_shard%x_%j.err
+#SBATCH --output=logs/gcg_7a_shard_%j.out
+#SBATCH --error=logs/gcg_7a_shard_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -92,6 +92,7 @@ model_family = config.get("model_family", "qwen3")
 model_name = config.get("model_name_or_path", "Qwen/Qwen3-14B")
 
 print(f"[7A-shard] Loading model {model_name}...", flush=True)
+# NOTE: hardcoded to Qwen3; add Gemma4 branch if reusing for Gemma4 experiments
 from poc_stage4.qwen3_model import load_qwen3_model
 wrapped = load_qwen3_model(model_name, require_cuda=True, log_device_placement=True)
 model = wrapped.model

@@ -11,7 +11,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-801,n-802,n-803,n-805,t-806
 
 # Stage GCG-Full — Free-generation evaluation of optimized suffixes.
 #
@@ -117,7 +117,7 @@ model_name = config.get("model_name_or_path", "Qwen/Qwen3-14B")
 enable_thinking = config.get("enable_thinking", True)
 
 print(f"[stage_eval] Loading model {model_name} (family={model_family})...", flush=True)
-if model_family == "qwen3":
+if model_family in ("qwen3", "deepseek_r1"):
     from poc_stage4.qwen3_model import load_qwen3_model
     wrapped = load_qwen3_model(model_name, require_cuda=True, log_device_placement=True)
 elif model_family == "gemma4":

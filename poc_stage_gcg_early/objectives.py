@@ -15,7 +15,7 @@ task_loss replicates the GCG formula from opt_utils.target_loss.
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -25,6 +25,39 @@ import torch.nn.functional as F
 # ---------------------------------------------------------------------------
 # Task loss (identical to GCG opt_utils.target_loss)
 # ---------------------------------------------------------------------------
+
+def task_loss_per_position(
+    logits: torch.Tensor,
+    ids: torch.Tensor,
+    loss_slice: slice,
+    target_slice: slice,
+) -> torch.Tensor:
+    """
+    Cross-entropy loss over the target token positions, WITHOUT collapsing
+    across the target length. Used by task_loss() (which .mean(dim=-1)s the
+    result) and, separately, by diagnostics that need loss at specific target
+    positions (e.g. Gemma4's channel-token positions, see
+    gcg_optimizer.py's --log-channel-token-positions).
+
+    Args / Returns: same conventions as task_loss(), but returns
+    [batch, target_len] (or [target_len] if the batch dim was absent).
+    """
+    if logits.dim() == 2:
+        logits = logits.unsqueeze(0)
+        ids = ids.unsqueeze(0)
+        squeeze = True
+    else:
+        squeeze = False
+
+    crit = nn.CrossEntropyLoss(reduction="none")
+    # logits[:, loss_slice, :] has shape [batch, target_len, vocab]
+    # ids[:, target_slice] has shape [batch, target_len]
+    loss = crit(
+        logits[:, loss_slice, :].transpose(1, 2),  # [batch, vocab, target_len]
+        ids[:, target_slice],                       # [batch, target_len]
+    )  # [batch, target_len]
+    return loss.squeeze(0) if squeeze else loss
+
 
 def task_loss(
     logits: torch.Tensor,
@@ -48,22 +81,7 @@ def task_loss(
     Returns:
         [batch] tensor of per-example losses (or scalar if batch dim absent).
     """
-    if logits.dim() == 2:
-        logits = logits.unsqueeze(0)
-        ids = ids.unsqueeze(0)
-        squeeze = True
-    else:
-        squeeze = False
-
-    crit = nn.CrossEntropyLoss(reduction="none")
-    # logits[:, loss_slice, :] has shape [batch, target_len, vocab]
-    # ids[:, target_slice] has shape [batch, target_len]
-    loss = crit(
-        logits[:, loss_slice, :].transpose(1, 2),  # [batch, vocab, target_len]
-        ids[:, target_slice],                       # [batch, target_len]
-    )  # [batch, target_len]
-    result = loss.mean(dim=-1)  # [batch]
-    return result.squeeze(0) if squeeze else result
+    return task_loss_per_position(logits, ids, loss_slice, target_slice).mean(dim=-1)
 
 
 # ---------------------------------------------------------------------------
@@ -204,6 +222,28 @@ def refusal_direction_loss(
         total = total + torch.dot(h_norm, rd)
         n += 1
     return total / n if n > 0 else torch.tensor(0.0)
+
+
+def refusal_direction_loss_multilayer(
+    candidate_hs: Dict[int, Dict[int, torch.Tensor]],
+    layer_direction_lambdas: List[Tuple[int, torch.Tensor, float]],
+    positions: List[int],
+) -> torch.Tensor:
+    """
+    Weighted sum of refusal-direction projections across multiple layers.
+
+    Args:
+        candidate_hs:          {layer: {pos: Tensor[d_model]}}
+        layer_direction_lambdas: list of (layer_idx, v_refusal_tensor, lambda_weight)
+        positions:             token positions to measure
+
+    Returns:
+        scalar tensor — weighted sum of per-layer projection losses
+    """
+    total = torch.tensor(0.0)
+    for layer, direction, lam in layer_direction_lambdas:
+        total = total + lam * refusal_direction_loss(candidate_hs, direction, layer, positions)
+    return total
 
 
 # ---------------------------------------------------------------------------

@@ -53,7 +53,7 @@ Qwen3 + Gemma4 have incompatible tokenizers (tiktoken vs SentencePiece) — cann
 gradients. Approach: gradient stays in Qwen3 space; for top-K Qwen3 candidates, add Gemma4
 task_loss by text-decode-reencode to selection criterion.
 
-**CLI:** `--multi-model-family gemma4 --multi-model-name-or-path google/gemma-3-4b-it`
+**CLI:** `--multi-model-family gemma4 --multi-model-name-or-path google/gemma-4-E4B-it`
 
 ### Per-task Loss Logging (`gcg_optimizer.py`)
 
@@ -143,7 +143,7 @@ task_loss by text-decode-reencode to selection criterion.
 | 642052 | run_gcg_replay.slurm | 2026-07-06 | ❌ CANCELLED | Duplicate (race condition with watcher b20stulc9); kept 642053 instead |
 | 642053 | run_gcg_replay.slurm | 2026-07-06 | ✅ DONE | Hidden states 300 .pt files; replayed correctly |
 | 642054 | run_gcg_analysis.slurm | 2026-07-06 | ✅ DONE | DETECTION_DELAY_ANALYSIS.md; AUC=1.000 at pos 0 |
-| 642134 | run_gcg_full_multimodel.slurm | 2026-07-07 | 🔄 RUNNING (n-801) | Resumed from checkpoint; step ~414→500; ~87 steps remaining; ~1.7h |
+| 642134 | run_gcg_full_multimodel.slurm | 2026-07-07 | ✅ DONE (n-801) | Completed ~03:55 UTC Jul 7; 500 steps total (resumed from step 414) |
 
 ### Bugs Fixed During Submission (round 2)
 

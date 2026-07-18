@@ -75,6 +75,10 @@ def main() -> None:
                         help="CoT thinking text to insert between <think> and </think>")
     parser.add_argument("--split", type=str, default=None,
                         help="Filter to this split only (default: include all splits)")
+    parser.add_argument("--model-family", type=str, default=None,
+                        help="Sprint 2 Track 3: override the 'model' field on output rows (e.g. "
+                             "'deepseek_r1'). Default None = keep whatever the input rows already "
+                             "have (backward compatible with existing callers).")
     args = parser.parse_args()
 
     if not args.input.exists():
@@ -94,6 +98,8 @@ def main() -> None:
         new_target = _build_cot_target(orig, args.cot_text)
         out_r = dict(r)
         out_r["safe_target_prefix"] = new_target
+        if args.model_family is not None:
+            out_r["model"] = args.model_family
         out_r["cot_target"] = True
         out_r["cot_text"] = args.cot_text
         out_r["original_safe_target_prefix"] = orig

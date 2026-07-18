@@ -19,6 +19,7 @@ safe completion appended directly after the suffix.
 from __future__ import annotations
 
 import sys
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
@@ -82,9 +83,11 @@ class SuffixSpans:
             f"Target mismatch at positions {self.target_slice}: "
             f"got {actual_target}, expected {self.target_ids}"
         )
-        assert self.suffix_slice.stop == self.target_slice.start, (
-            f"Gap between suffix and target: suffix ends at {self.suffix_slice.stop}, "
-            f"target starts at {self.target_slice.start}"
+        assert self.suffix_slice.stop <= self.target_slice.start, (
+            f"Suffix overlaps/follows target: suffix ends at {self.suffix_slice.stop}, "
+            f"target starts at {self.target_slice.start}. "
+            "(For user-turn placement a template trailer sits between suffix and target; "
+            "for assistant-turn placement they are adjacent — either way stop <= start.)"
         )
         assert self.loss_slice == slice(self.target_slice.start - 1, self.target_slice.stop - 1), (
             f"loss_slice {self.loss_slice} does not match expected "
@@ -126,6 +129,7 @@ def build_suffix_spans(
     suffix_str: str,
     safe_target: str,
     suffix_ids_override: Optional[List[int]] = None,
+    suffix_placement: str = "user",
 ) -> SuffixSpans:
     """
     Build the full token layout for one GCG input.
@@ -147,14 +151,10 @@ def build_suffix_spans(
     Raises ValueError if suffix_ids cannot be located in full_ids at the
     expected position (indicates tokenizer boundary issue).
     """
-    # Step 1-2: prefix (chat template applied to instruction alone)
-    formatted_prefix = apply_chat_template(
-        tokenizer, instruction, model_family, enable_thinking,
-        add_generation_prompt=True,
-    )
-    prefix_ids: List[int] = tokenize_prompt(tokenizer, formatted_prefix)
-
-    # Step 3: suffix tokens — use override if provided to avoid BPE decode→encode mismatch
+    # ------------------------------------------------------------------
+    # Resolve suffix + target token ids (shared by both placements).
+    # Use suffix_ids_override if provided to avoid BPE decode->encode mismatch.
+    # ------------------------------------------------------------------
     if suffix_ids_override is not None:
         suffix_ids: List[int] = list(suffix_ids_override)
         if not suffix_ids:
@@ -167,40 +167,112 @@ def build_suffix_spans(
                 "Use at least one non-empty token (e.g. '!')."
             )
 
-    # Step 4: target tokens
     target_ids: List[int] = tokenize_continuation(tokenizer, safe_target)
     if not target_ids:
         raise ValueError(
             f"safe_target {repr(safe_target)} tokenized to empty sequence."
         )
 
-    # Step 5: concatenate
-    full_ids: List[int] = prefix_ids + suffix_ids + target_ids
+    if suffix_placement == "assistant":
+        # ==============================================================
+        # LEGACY placement (pre-2026-07-19): suffix lands in the ASSISTANT
+        # turn (after add_generation_prompt appends the assistant header).
+        # This is the BUG documented in docs/GCG_BUGFIX_RERUN_PLAN.md: the
+        # optimizer placed the suffix after the assistant header while eval
+        # places it in the user turn. Retained VERBATIM for exact v1 replay.
+        # ==============================================================
+        formatted_prefix = apply_chat_template(
+            tokenizer, instruction, model_family, enable_thinking,
+            add_generation_prompt=True,
+        )
+        prefix_ids: List[int] = tokenize_prompt(tokenizer, formatted_prefix)
+        full_ids: List[int] = prefix_ids + suffix_ids + target_ids
+        expected_start = len(prefix_ids)
+        found_at = _find_subsequence(full_ids, suffix_ids, start=expected_start)
+        if found_at != expected_start:
+            raise ValueError(
+                f"Suffix token IDs {suffix_ids} not found at expected position "
+                f"{expected_start} in full_ids (found at {found_at}). "
+                "This indicates a tokenizer boundary issue — the chat template "
+                "may be merging tokens across the instruction/suffix boundary."
+            )
+        suffix_start = expected_start
 
-    # Step 6: verify suffix position
-    expected_start = len(prefix_ids)
-    found_at = _find_subsequence(full_ids, suffix_ids, start=expected_start)
-    if found_at != expected_start:
+    elif suffix_placement == "user":
+        # ==============================================================
+        # FIXED placement (2026-07-19): suffix lands in the USER turn,
+        # exactly where evaluate_optimized_suffixes.py places it
+        # (user_content = instruction + suffix_str). This makes the prompt
+        # the optimizer scores IN-DISTRIBUTION with the free-generation eval.
+        #
+        # Construction: split the user turn at the CHARACTER level using an
+        # instruction-only render (content-agnostic), hand-assemble
+        #   header_ids + suffix_ids + trailer_ids + target_ids
+        # keeping suffix_ids a fixed-length known-position block (required by
+        # GCG token substitution), then assert byte-equality with eval's exact
+        # tokenization of the whole prompt; warn (not fail) on BPE boundary merge.
+        # ==============================================================
+        suffix_text = (
+            tokenizer.decode(suffix_ids)
+            if suffix_ids_override is not None else suffix_str
+        )
+        # eval's EXACT prompt string (instruction + suffix in the user turn):
+        prompt_with = apply_chat_template(
+            tokenizer, instruction + suffix_text, model_family, enable_thinking,
+            add_generation_prompt=True,
+        )
+        # instruction-only render, to split header (<user>..instr) from
+        # trailer (<im_end>..<assistant>[..<think>]) at the character level:
+        prompt_wo = apply_chat_template(
+            tokenizer, instruction, model_family, enable_thinking,
+            add_generation_prompt=True,
+        )
+        content_start = prompt_wo.find(instruction)
+        if content_start < 0:
+            raise ValueError(
+                "Instruction text not found verbatim in its own chat-template "
+                "render; cannot locate the user-turn suffix insertion point."
+            )
+        split = content_start + len(instruction)
+        header_str = prompt_wo[:split]     # ...<im_start>user\n{instruction}
+        trailer_str = prompt_wo[split:]    # <im_end>\n<im_start>assistant\n[<think>...]
+        header_ids = tokenize_prompt(tokenizer, header_str)
+        trailer_ids = tokenize_continuation(tokenizer, trailer_str)
+        full_prompt_ids = header_ids + suffix_ids + trailer_ids
+
+        # In-distribution guard: hand-assembly should match eval's exact
+        # tokenization of the whole prompt. A mismatch = a BPE boundary merge
+        # at the instruction/suffix or suffix/<im_end> junction; placement is
+        # still correct (user turn) but not byte-identical to eval for this suffix.
+        eval_ids = tokenize_prompt(tokenizer, prompt_with)
+        if full_prompt_ids != eval_ids:
+            warnings.warn(
+                "[build_suffix_spans] user-turn hand-assembly differs from eval's "
+                f"tokenization by a boundary token (suffix_ids={suffix_ids}); "
+                "placement is correct but not byte-identical to eval for this suffix.",
+                RuntimeWarning,
+            )
+        full_ids = full_prompt_ids + target_ids
+        suffix_start = len(header_ids)
+
+    else:
         raise ValueError(
-            f"Suffix token IDs {suffix_ids} not found at expected position "
-            f"{expected_start} in full_ids (found at {found_at}). "
-            "This indicates a tokenizer boundary issue — the chat template "
-            "may be merging tokens across the instruction/suffix boundary."
+            f"Unknown suffix_placement {suffix_placement!r}; expected 'user' or 'assistant'."
         )
 
-    # Step 7: build slices
-    suffix_start = expected_start
-    suffix_end = suffix_start + len(suffix_ids)
-    target_start = suffix_end
-    target_end = target_start + len(target_ids)
-
-    suffix_slice = slice(suffix_start, suffix_end)
+    # ------------------------------------------------------------------
+    # Build slices (target is always the tail of full_ids; a template trailer
+    # may sit between suffix and target in user placement, none in assistant).
+    # ------------------------------------------------------------------
+    suffix_slice = slice(suffix_start, suffix_start + len(suffix_ids))
+    target_start = len(full_ids) - len(target_ids)
+    target_end = len(full_ids)
     target_slice = slice(target_start, target_end)
     loss_slice = slice(target_start - 1, target_end - 1)
 
     spans = SuffixSpans(
         input_ids=torch.tensor(full_ids, dtype=torch.long),
-        prefix_len=len(prefix_ids),
+        prefix_len=suffix_start,
         suffix_slice=suffix_slice,
         target_slice=target_slice,
         loss_slice=loss_slice,
@@ -304,13 +376,22 @@ def get_filtered_cands(
 
 def make_init_suffix(suffix_length: int, tokenizer: Any) -> Tuple[str, List[int]]:
     """
-    Build the standard GCG initialization suffix: '! ' repeated suffix_length times.
+    Build the standard GCG initialization suffix: ' !' (space-prefixed) repeated
+    suffix_length times.
 
-    Returns (suffix_str, token_ids). If '! ' tokenizes to more than 1 token per
+    The leading-space unit ' !' matches the original Zou et al. GCG reference,
+    where the control string is joined to the goal as f"{goal} {control}" so the
+    control's first in-context token is space-prefixed (' !'). Using ' !' here
+    makes our in-context suffix tokens identical to the reference's control tokens
+    ([' !'] * suffix_length) and guarantees a space separates the instruction from
+    the suffix in `instruction + suffix_str` (used by both optimizer and eval),
+    instead of merging ("...bomb! !" -> "...bomb ! !"). See docs/GCG_BUGFIX_RERUN_PLAN.md.
+
+    Returns (suffix_str, token_ids). If ' !' tokenizes to more than 1 token per
     repetition, the length is padded to reach exactly suffix_length total tokens
     by truncating or repeating the base unit.
     """
-    base_str = "! "
+    base_str = " !"
     base_ids = tokenizer(base_str, add_special_tokens=False).input_ids
     tokens_per_unit = len(base_ids)
 

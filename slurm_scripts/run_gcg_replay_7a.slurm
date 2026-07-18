@@ -11,11 +11,11 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806,n-102,n-601,n-602
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805
 
-# 7A variant of run_gcg_replay.slurm — expanded nodelist to include H100 (n-102)
-# and A6000 (n-601, n-602) nodes. GPU check relaxed to allow any GPU with >=40GB VRAM.
-# All three GPU types have sufficient VRAM for Qwen3-14B in bfloat16.
+# 7A variant of run_gcg_replay.slurm — L40S-only nodelist (n-801 through n-805).
+# GPU check requires >=44GB VRAM (L40S has 48GB). Non-L40S nodes were removed to
+# comply with project GPU constraint (L40S only for reproducibility).
 
 set -euo pipefail
 
@@ -54,11 +54,11 @@ echo "GIT_REVISION:    $(git rev-parse HEAD 2>/dev/null || echo unknown)"
 echo "DATE:            $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
-# Accept L40S (48GB), A6000 (48GB), H100 (80GB) — all sufficient for Qwen3-14B bfloat16
+# L40S only (48GB VRAM) — project rule; threshold 44000MB to require L40S-class VRAM
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
 GPU_MEM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | awk 'NR==1{print;exit}')
-if [[ "$GPU_MEM_MB" -lt 40000 ]]; then
-    echo "ERROR: GPU VRAM ${GPU_MEM_MB}MB < 40GB — insufficient for Qwen3-14B. Got: $GPU_NAME"
+if [[ "$GPU_MEM_MB" -lt 44000 ]]; then
+    echo "ERROR: GPU VRAM ${GPU_MEM_MB}MB < 44GB — L40S required (48GB). Got: $GPU_NAME"
     exit 1
 fi
 echo "GPU check passed: $GPU_NAME (${GPU_MEM_MB}MB)"
@@ -93,7 +93,7 @@ if model_family == "qwen3":
     wrapped = load_qwen3_model(model_name, require_cuda=True, log_device_placement=True)
 else:
     from poc_stage4.qwen3_model import load_gemma4_model
-    wrapped = load_gemma4_model(require_cuda=True, log_device_placement=True)
+    wrapped = load_gemma4_model(model_name, require_cuda=True, log_device_placement=True)
 
 model = wrapped.model
 tokenizer = wrapped.tokenizer
@@ -103,6 +103,7 @@ from poc_stage_gcg_early.selected_state_capture import capture_selected_states
 from poc_stage_gcg_early.model_adapter import apply_chat_template, tokenize_prompt
 
 free_gen_path = run_dir / "FREE_GENERATION_RESULTS.jsonl"
+# NOTE: RUN_DIR must be the merged main dir (e.g. gcg_full_qwen3_7a_5a_full520), NOT a shard dir. Shard dirs do not have MANIFEST.jsonl.
 manifest_path = run_dir / "MANIFEST.jsonl"
 hs_dir = run_dir / "hidden_states"
 hs_dir.mkdir(exist_ok=True)

@@ -6,7 +6,7 @@ After all shards complete, merge their FREE_GENERATION_RESULTS_UNSEEDED.jsonl
 into the main run dir.
 
 Usage:
-  python scripts/split_unseeded_shards.py [--n-shards 5] [--skip-done]
+  python scripts/split_unseeded_shards.py [--n-shards 5]
 """
 import argparse
 import json
@@ -21,8 +21,6 @@ MANIFEST_PATH = PROJECT_DIR / "outputs/stage_gcg_full/advbench_full520_manifest.
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-shards", type=int, default=5)
-    parser.add_argument("--skip-done", action="store_true", default=True,
-                        help="Skip behaviors already in UNSEEDED.jsonl or tmp file")
     args = parser.parse_args()
 
     manifest = [json.loads(l) for l in open(MANIFEST_PATH) if l.strip()]

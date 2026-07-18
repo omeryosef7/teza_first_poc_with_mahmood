@@ -44,7 +44,7 @@ from poc_stage_gcg_early.model_adapter import (
     get_embedding_matrix,
     get_embeddings,
 )
-from poc_stage_gcg_early.objectives import composite_loss, task_loss
+from poc_stage_gcg_early.objectives import composite_loss, task_loss, refusal_direction_loss_multilayer as _rd_multilayer_fn
 from poc_stage_gcg_early.reference_cache import ReferenceCache
 from poc_stage_gcg_early.suffix_token_manager import (
     SuffixSpans,
@@ -75,6 +75,7 @@ def _token_gradients(
     refusal_direction: Optional[torch.Tensor] = None,
     refusal_dir_layer: int = 25,
     refusal_dir_positions: Optional[List[int]] = None,
+    multilayer_rd_directions: Optional[List[Tuple[int, torch.Tensor, float]]] = None,
 ) -> torch.Tensor:
     """
     Compute gradients of the composite loss w.r.t. suffix token one-hot embeddings.
@@ -85,6 +86,8 @@ def _token_gradients(
 
     When lambda_refusal_dir > 0 and refusal_direction is provided, the gradient
     includes a refusal-direction projection term at refusal_dir_layer.
+    When multilayer_rd_directions is provided, it overrides the single-layer path
+    with a weighted sum across multiple layers.
 
     Returns Tensor[suffix_len, vocab_size]: gradient for each suffix position
     over the vocabulary (normalized by row norm, matching minimal_gcg convention).
@@ -127,10 +130,12 @@ def _token_gradients(
         and repr_layers
         and repr_positions
     )
+    use_multilayer_rd = bool(multilayer_rd_directions and refusal_dir_positions)
     use_refusal_dir = (
-        lambda_refusal_dir > 0.0
-        and refusal_direction is not None
-        and refusal_dir_positions
+        (lambda_refusal_dir > 0.0
+         and refusal_direction is not None
+         and refusal_dir_positions)
+        or use_multilayer_rd
     )
     need_hidden_states = use_repr or use_refusal_dir
 
@@ -154,8 +159,11 @@ def _token_gradients(
         logits = output.logits  # [1, seq_len, vocab]
         # Collect all layers we need (repr layers + refusal dir layer)
         layers_to_collect = set(repr_layers or [])
-        if use_refusal_dir:
+        if use_refusal_dir and not use_multilayer_rd:
             layers_to_collect.add(refusal_dir_layer)
+        if use_multilayer_rd:
+            for lay, _, _ in multilayer_rd_directions:
+                layers_to_collect.add(lay)
         all_positions = set(repr_positions or [])
         if use_refusal_dir:
             all_positions.update(refusal_dir_positions)
@@ -179,7 +187,12 @@ def _token_gradients(
                 metric=repr_metric,
             )
             loss = loss + lambda_repr * r_loss
-        if use_refusal_dir:
+        if use_multilayer_rd:
+            rd_loss = _rd_multilayer_fn(
+                cand_hs, multilayer_rd_directions, refusal_dir_positions,
+            )
+            loss = loss + rd_loss  # lambdas already folded into multilayer_rd_directions
+        elif use_refusal_dir:
             rd_loss = _rd_loss_fn(
                 cand_hs, refusal_direction,
                 layer=refusal_dir_layer,
@@ -464,6 +477,7 @@ def run_optimization(
             tokenizer, model_family, config.enable_thinking,
             task.instruction, suffix_str, task.safe_target_prefix,
             suffix_ids_override=suffix_ids,
+            suffix_placement=config.gcg.suffix_placement,
         )
         task_spans.append(spans)
 
@@ -488,6 +502,7 @@ def run_optimization(
                 tokenizer, model_family, config.enable_thinking,
                 task.instruction, suffix_str, task.safe_target_prefix,
                 suffix_ids_override=suffix_ids,
+                suffix_placement=config.gcg.suffix_placement,
             )
             if config.objective.repr_at_cot_pos:
                 repr_pos_per_task[task.task_id] = [init_spans.target_slice.start]
@@ -519,6 +534,7 @@ def run_optimization(
             tokenizer, model_family, config.enable_thinking,
             train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
             suffix_ids_override=suffix_ids,
+            suffix_placement=config.gcg.suffix_placement,
         )
         refusal_dir_positions = [init_spans_rd.suffix_slice.stop - 1]
         print(
@@ -528,6 +544,51 @@ def run_optimization(
             f"path={config.objective.refusal_dir_path}",
             flush=True,
         )
+
+    # Multi-layer refusal direction (10D): if refusal_dir_layers is set, overrides single-layer.
+    multilayer_rd_directions: Optional[List[Tuple[int, torch.Tensor, float]]] = None
+    if config.objective.refusal_dir_layers:
+        import torch as _torch2
+        multilayer_rd_directions = []
+        for lay, path, lam in zip(
+            config.objective.refusal_dir_layers,
+            config.objective.refusal_dir_paths,
+            config.objective.lambda_refusal_dir_per_layer,
+        ):
+            v = _torch2.load(path, map_location="cpu", weights_only=True)
+            multilayer_rd_directions.append((lay, v, lam))
+            if not refusal_dir_positions:
+                # Use the same position as single-layer (last suffix token)
+                init_spans_ml = build_suffix_spans(
+                    tokenizer, model_family, config.enable_thinking,
+                    train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
+                    suffix_ids_override=suffix_ids,
+                    suffix_placement=config.gcg.suffix_placement,
+                )
+                refusal_dir_positions = [init_spans_ml.suffix_slice.stop - 1]
+        print(
+            f"[GCG] multilayer refusal_dir_loss ENABLED: {len(multilayer_rd_directions)} layers: "
+            f"{[(lay, lam) for lay, _, lam in multilayer_rd_directions]}, "
+            f"position={refusal_dir_positions}",
+            flush=True,
+        )
+
+    # Lambda annealing schedule (10E): piecewise-linear interpolation over steps.
+    _rd_schedule = config.objective.lambda_refusal_dir_schedule  # [[step, lam], ...]
+
+    def _interp_lambda(step: int) -> float:
+        if not _rd_schedule:
+            return config.objective.lambda_refusal_dir
+        for i, (s, lam) in enumerate(_rd_schedule):
+            if step <= s:
+                if i == 0:
+                    return float(lam)
+                s0, l0 = _rd_schedule[i - 1]
+                return float(l0) + (float(lam) - float(l0)) * (step - s0) / (s - s0)
+        return float(_rd_schedule[-1][1])
+
+    if _rd_schedule:
+        print(f"[GCG] lambda_refusal_dir SCHEDULE ENABLED: {_rd_schedule}", flush=True)
 
     for step in range(start_step, config.gcg.n_steps):
         t_start = time.time()
@@ -542,8 +603,11 @@ def run_optimization(
                 tokenizer, model_family, config.enable_thinking,
                 task.instruction, suffix_str, task.safe_target_prefix,
                 suffix_ids_override=suffix_ids,
+                suffix_placement=config.gcg.suffix_placement,
             )
             ref_hs = (reference_hs_per_task or {}).get(task.task_id)
+            # Compute effective lambda (handles annealing schedule, 10E)
+            eff_lambda_rd = _interp_lambda(step)
             g = _token_gradients(
                 model, model_family,
                 spans.input_ids, spans.suffix_slice,
@@ -553,10 +617,11 @@ def run_optimization(
                 repr_layers=repr_layers,
                 repr_positions=repr_pos_per_task.get(task.task_id, []),
                 repr_metric=config.objective.repr_metric,
-                lambda_refusal_dir=config.objective.lambda_refusal_dir,
+                lambda_refusal_dir=eff_lambda_rd,
                 refusal_direction=refusal_direction,
                 refusal_dir_layer=config.objective.refusal_dir_layer,
                 refusal_dir_positions=refusal_dir_positions,
+                multilayer_rd_directions=multilayer_rd_directions,
             )
             if grad_accum is None:
                 grad_accum = g
@@ -591,6 +656,7 @@ def run_optimization(
                 tokenizer, model_family, config.enable_thinking,
                 eval_task.instruction, suffix_str, eval_task.safe_target_prefix,
                 suffix_ids_override=suffix_ids,
+                suffix_placement=config.gcg.suffix_placement,
             )
             t_results = _evaluate_candidates(
                 model, model_family, eval_spans, cand_lists,
@@ -626,6 +692,7 @@ def run_optimization(
                         g4_spans = build_suffix_spans(
                             gemma4_tokenizer, "gemma4", config.enable_thinking,
                             eval_task.instruction, cand_text, eval_task.safe_target_prefix,
+                            suffix_placement=config.gcg.suffix_placement,
                         )
                         # Validate: skip if any token ID is out of Gemma4 vocab range
                         ids = g4_spans.input_ids
@@ -676,6 +743,7 @@ def run_optimization(
                                 tokenizer, model_family, config.enable_thinking,
                                 qk_task.instruction, c_suffix_str, qk_task.safe_target_prefix,
                                 suffix_ids_override=c_suffix_ids,
+                                suffix_placement=config.gcg.suffix_placement,
                             )
                             prompt_ids = qk_spans.input_ids[:qk_spans.target_slice.start].unsqueeze(0).to(device)
                             gen_ids = model.generate(
@@ -743,6 +811,7 @@ def run_optimization(
                 tokenizer, model_family, config.enable_thinking,
                 eval_task.instruction, suffix_str, eval_task.safe_target_prefix,
                 suffix_ids_override=suffix_ids,
+                suffix_placement=config.gcg.suffix_placement,
             )
             t_curr = _evaluate_candidates(
                 model, model_family, eval_spans, [suffix_ids],
@@ -771,6 +840,7 @@ def run_optimization(
                     tokenizer, model_family, config.enable_thinking,
                     train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
                     suffix_ids_override=suffix_ids,
+                    suffix_placement=config.gcg.suffix_placement,
                 )
                 with torch.no_grad():
                     out = model(
@@ -805,6 +875,7 @@ def run_optimization(
                 tokenizer, model_family, config.enable_thinking,
                 train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
                 suffix_ids_override=suffix_ids,
+                suffix_placement=config.gcg.suffix_placement,
             )
             with torch.no_grad():
                 out_rd = model(
@@ -823,6 +894,44 @@ def run_optimization(
             rd_val_logged = _rd_loss_fn2(
                 rd_hs, refusal_direction, layer=rd_layer, positions=refusal_dir_positions
             ).item()
+
+        # --- Post-selection channel-token-position loss evaluation (Sprint 2 Track 1 diagnostic,
+        # no_grad, for logging only -- opt-in via config.log_channel_token_positions, no effect
+        # on selection/gradient/config_hash). Same train_tasks[0]-only convention as the
+        # refusal_dir_loss block above, so the two are directly comparable. ---
+        channel_token_positions_logged: Optional[List[int]] = None
+        channel_token_losses_logged: Optional[List[float]] = None
+        channel_token_ids_logged: Optional[List[int]] = None
+        if getattr(config, "log_channel_token_positions", False):
+            from poc_stage4.model_family_utils import get_thinking_start_token_ids, get_thinking_end_token_ids
+            from poc_stage_gcg_early.objectives import task_loss_per_position as _tlpp
+            try:
+                marker_ids = set(get_thinking_start_token_ids(tokenizer, model_family)
+                                  + get_thinking_end_token_ids(tokenizer, model_family))
+            except (KeyError, ValueError):
+                marker_ids = set()
+            if marker_ids:
+                sel_spans_ch = build_suffix_spans(
+                    tokenizer, model_family, config.enable_thinking,
+                    train_tasks[0].instruction, suffix_str, train_tasks[0].safe_target_prefix,
+                    suffix_ids_override=suffix_ids,
+                    suffix_placement=config.gcg.suffix_placement,
+                )
+                target_ids_ch = sel_spans_ch.input_ids[sel_spans_ch.target_slice].tolist()
+                match_offsets = [i for i, tid in enumerate(target_ids_ch) if tid in marker_ids]
+                if match_offsets:
+                    with torch.no_grad():
+                        out_ch = model(
+                            input_ids=sel_spans_ch.input_ids.unsqueeze(0).to(device),
+                        )
+                    per_pos = _tlpp(
+                        out_ch.logits, sel_spans_ch.input_ids.unsqueeze(0).to(device),
+                        sel_spans_ch.loss_slice, sel_spans_ch.target_slice,
+                    )  # [1, target_len] -- input was explicitly batched via unsqueeze(0) above,
+                       # so task_loss_per_position's dim==3 branch does NOT squeeze; must index [0].
+                    channel_token_positions_logged = match_offsets
+                    channel_token_losses_logged = [per_pos[0, o].item() for o in match_offsets]
+                    channel_token_ids_logged = [target_ids_ch[o] for o in match_offsets]
 
         # --- Memory stats ---
         if torch.cuda.is_available():
@@ -851,6 +960,10 @@ def run_optimization(
             "peak_gpu_mem_gb": peak_mem_gb,
             "seed": config.gcg.seed,
         }
+        if getattr(config, "log_channel_token_positions", False):
+            log_record["channel_token_positions"] = channel_token_positions_logged
+            log_record["channel_token_losses"] = channel_token_losses_logged
+            log_record["channel_token_ids"] = channel_token_ids_logged
         _append_jsonl(iter_log_path, log_record)
 
         # --- Pareto update ---

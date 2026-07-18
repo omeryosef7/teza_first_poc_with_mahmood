@@ -11,17 +11,18 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-802,n-803,n-805,t-806
 
-# Compute v_refusal for Gemma4-E4B at layer 25 (same layer as Qwen3 per paper default).
-# Output: outputs/stage_gcg_full/refusal_direction_gemma4_L25.pt
+# Compute v_refusal for Gemma4-E4B at the specified layer (default: 25).
+# L25/40=62.5% depth. For 78% depth equivalent (matching Qwen3's L25/32), use LAYER=31.
+# Output: outputs/stage_gcg_full/refusal_direction_gemma4_L<LAYER>.pt
 
 set -euo pipefail
 
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 LAYER="${LAYER:-25}"
-OUTPUT="${OUTPUT:-${PROJECT_DIR}/outputs/stage_gcg_full/refusal_direction_gemma4_L25.pt}"
+OUTPUT="${OUTPUT:-${PROJECT_DIR}/outputs/stage_gcg_full/refusal_direction_gemma4_L${LAYER}.pt}"
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh

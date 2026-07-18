@@ -88,6 +88,7 @@ model_family = config.get("model_family", "qwen3")
 model_name = config.get("model_name_or_path", "Qwen/Qwen3-14B")
 
 print(f"[7A] Loading model {model_name}...", flush=True)
+# NOTE: hardcoded to Qwen3; add Gemma4 branch if reusing for Gemma4 experiments
 from poc_stage4.qwen3_model import load_qwen3_model
 wrapped = load_qwen3_model(model_name, require_cuda=True, log_device_placement=True)
 model = wrapped.model

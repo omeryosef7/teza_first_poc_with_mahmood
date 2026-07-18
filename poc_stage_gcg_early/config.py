@@ -49,6 +49,11 @@ class GCGHyperparams:
     filter_cand: bool = True           # reject candidates that change token count on re-tokenization
     checkpoint_every: int = 10        # write checkpoint.pt every N steps
     snapshot_every: int = 50          # write permanent checkpoint_step_N.pt every N steps
+    # Where the adversarial suffix is placed in the optimized prompt:
+    #   "user"      -> inside the user turn, matching evaluate_optimized_suffixes.py (FIXED, 2026-07-19)
+    #   "assistant" -> after the assistant header (LEGACY/buggy pre-2026-07-19 behavior; v1 replay only)
+    # Included in config_hash (via dataclasses.asdict) so v1 and v2 never cross-resume.
+    suffix_placement: str = "user"
 
 
 @dataclass
@@ -77,6 +82,14 @@ class ObjectiveWeights:
     lambda_refusal_dir: float = 0.0          # weight for refusal-direction projection loss
     refusal_dir_layer: int = 25              # layer for refusal direction (CoT paper: layer 25)
     refusal_dir_path: Optional[str] = None  # path to v_refusal .pt file
+    # Multi-layer refusal direction suppression (10D): if non-empty, overrides the single-layer config.
+    # Each entry (layer, path, lambda) defines an additive refusal direction loss term.
+    refusal_dir_layers: List[int] = field(default_factory=list)
+    refusal_dir_paths: List[str] = field(default_factory=list)
+    lambda_refusal_dir_per_layer: List[float] = field(default_factory=list)
+    # Lambda annealing schedule (10E): list of (step, lambda) breakpoints; piecewise-linear interpolation.
+    # Empty = constant lambda_refusal_dir throughout. Format: [[0, 0.7], [100, 0.3], [300, 0.1]]
+    lambda_refusal_dir_schedule: List[List[float]] = field(default_factory=list)
 
 
 @dataclass
@@ -98,6 +111,10 @@ class RunConfig:
     model_revision: Optional[str] = None
     enable_thinking: bool = True
     multi_model_family: Optional[str] = None  # e.g. "gemma4" for cross-tokenizer multi-model selection
+    log_channel_token_positions: bool = False  # diagnostic only (Sprint 2 Track 1); excluded from config_hash
+                                                # like run_id/output_dir/manifest_path -- a logging toggle,
+                                                # not a scientific hyperparameter, so it must never change
+                                                # the hash of any existing or future config.
 
     def config_hash(self) -> str:
         """

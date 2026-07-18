@@ -78,7 +78,7 @@ def _collect_environment(model_name_or_path: str) -> dict:
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Stage GCG-Early optimization")
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4"])
+    parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4", "deepseek_r1"])
     parser.add_argument("--model-name-or-path", default="Qwen/Qwen3-14B")
     parser.add_argument("--model-revision", default=None)
     parser.add_argument("--manifest", required=True)
@@ -88,6 +88,10 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--suffix-placement", default="user", choices=["user", "assistant"],
+                        help="Where the adversarial suffix is placed in the optimized prompt. "
+                             "'user' (default, FIXED 2026-07-19) matches free-generation eval; "
+                             "'assistant' reproduces the legacy pre-2026-07-19 placement bug.")
     parser.add_argument("--no-filter-cand", action="store_true",
                         help="Disable BPE round-trip filter on candidates. Recommended when "
                              "suffix_ids_override is used (avoids all candidates being rejected "
@@ -133,6 +137,18 @@ def main(argv=None):
                         help="Layer index for refusal direction projection (default: 25 per CoT Hijacking paper).")
     parser.add_argument("--refusal-dir-path", default=None,
                         help="Path to v_refusal .pt file (from compute_refusal_direction.py). Required when --lambda-refusal-dir > 0.")
+    parser.add_argument("--refusal-dir-layers", default=None,
+                        help="Multi-layer RD (10D): comma-separated layer indices e.g. '20,25,28'. Overrides --refusal-dir-layer.")
+    parser.add_argument("--refusal-dir-paths", default=None,
+                        help="Multi-layer RD (10D): comma-separated paths to v_refusal .pt files, one per layer in --refusal-dir-layers.")
+    parser.add_argument("--lambda-refusal-dir-per-layer", default=None,
+                        help="Multi-layer RD (10D): comma-separated lambda weights, one per layer. e.g. '0.1,0.3,0.1'.")
+    parser.add_argument("--lambda-refusal-dir-schedule", default=None,
+                        help="Lambda annealing (10E): JSON schedule e.g. '[[0,0.7],[100,0.3],[300,0.1]]'.")
+    parser.add_argument("--log-channel-token-positions", action="store_true",
+                        help="Sprint 2 Track 1 diagnostic: log per-position task_loss at the target's "
+                             "opening/closing CoT-marker token positions into ITERATION_LOG.jsonl. "
+                             "No-op (and no effect on config_hash) for targets without those markers.")
     args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
@@ -154,6 +170,7 @@ def main(argv=None):
             checkpoint_every=args.checkpoint_every,
             snapshot_every=args.snapshot_every,
             filter_cand=not args.no_filter_cand,
+            suffix_placement=args.suffix_placement,
         ),
         objective=ObjectiveWeights(
             lambda_repr=args.lambda_repr,
@@ -168,10 +185,15 @@ def main(argv=None):
             lambda_refusal_dir=args.lambda_refusal_dir,
             refusal_dir_layer=args.refusal_dir_layer,
             refusal_dir_path=args.refusal_dir_path,
+            refusal_dir_layers=[int(x) for x in args.refusal_dir_layers.split(",")] if args.refusal_dir_layers else [],
+            refusal_dir_paths=[x.strip() for x in args.refusal_dir_paths.split(",")] if args.refusal_dir_paths else [],
+            lambda_refusal_dir_per_layer=[float(x) for x in args.lambda_refusal_dir_per_layer.split(",")] if args.lambda_refusal_dir_per_layer else [],
+            lambda_refusal_dir_schedule=json.loads(args.lambda_refusal_dir_schedule) if args.lambda_refusal_dir_schedule else [],
         ),
         output_dir=str(output_dir),
         enable_thinking=not args.no_thinking,
         multi_model_family=args.multi_model_family,
+        log_channel_token_positions=args.log_channel_token_positions,
     )
 
     # Write CONFIG.json before any model load
@@ -221,6 +243,19 @@ def main(argv=None):
         from poc_stage4.qwen3_model import load_gemma4_model
         wrapped = load_gemma4_model(
             args.model_name_or_path, require_cuda=True, log_device_placement=True
+        )
+        model = wrapped.model
+        tokenizer = wrapped.tokenizer
+    elif args.model_family == "deepseek_r1":
+        # Sprint 2 Track 3: DeepSeek-R1-Distill-Qwen-7B is a Qwen2.5-backbone distillation that
+        # uses the IDENTICAL <think>/</think> marker strings as Qwen3 (verified directly from its
+        # tokenizer_config.json chat_template before this was written) and has no enable_thinking
+        # toggle -- it thinks unconditionally. load_qwen3_model() is already generic in
+        # model_name_or_path (plain AutoModelForCausalLM/AutoTokenizer.from_pretrained calls, no
+        # Qwen3-14B-specific hardcoding), so it loads this model correctly as-is.
+        from poc_stage4.qwen3_model import load_qwen3_model
+        wrapped = load_qwen3_model(
+            args.model_name_or_path, require_cuda=True, log_device_placement=True,
         )
         model = wrapped.model
         tokenizer = wrapped.tokenizer

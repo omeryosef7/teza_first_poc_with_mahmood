@@ -29,16 +29,20 @@ from typing import Any
 DEFAULT_MODEL_BY_FAMILY: dict[str, str] = {
     "qwen3": "Qwen/Qwen3-14B",
     "gemma4": "google/gemma-4-E4B-it",
+    "deepseek_r1": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
 }
 
 DEFAULT_MODEL_SLUG_BY_FAMILY: dict[str, str] = {
     "qwen3": "qwen3-14b",
     "gemma4": "gemma4-e4b-it",
+    "deepseek_r1": "deepseek-r1-distill-qwen-7b",
 }
 
 # Both start AND end markers are stored. The end marker alone is ambiguous for Gemma4
 # (<channel|> closes the thought channel; having the start marker enables robust detection
 # and avoids false positives when scanning token sequences).
+# deepseek_r1 shares Qwen3's exact <think>/</think> marker strings (it's a Qwen2.5-backbone
+# distillation of R1's reasoning traces) -- confirmed live from its tokenizer_config.json.
 THINKING_MARKERS_BY_FAMILY: dict[str, dict[str, str]] = {
     "qwen3": {
         "start": "<think>",
@@ -48,6 +52,10 @@ THINKING_MARKERS_BY_FAMILY: dict[str, dict[str, str]] = {
         "start": "<|channel>thought",
         "end": "<channel|>",
     },
+    "deepseek_r1": {
+        "start": "<think>",
+        "end": "</think>",
+    },
 }
 
 # Segment label hints used when scanning Stage 6 token_table rows to find the
@@ -56,6 +64,7 @@ THINKING_MARKERS_BY_FAMILY: dict[str, dict[str, str]] = {
 THINKING_SEGMENT_HINTS_BY_FAMILY: dict[str, list[str]] = {
     "qwen3": ["think"],
     "gemma4": ["think", "channel", "thought"],
+    "deepseek_r1": ["think"],
 }
 
 
