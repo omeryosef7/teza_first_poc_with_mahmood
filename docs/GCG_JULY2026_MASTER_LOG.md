@@ -26,6 +26,8 @@
 - **Sprint 3 (07-14 → ongoing 07-18), scaling λ=0.3 to all 520 behaviors:** Qwen3 seed 42 reaches **11.2% combo-ASR (18.1% behavior-level, 94/520 behaviors)** `[RAW]`; seed 45 reaches **8.8% combo-ASR (13.8% behavior-level, 72/520 behaviors)** `[RAW]`. Gemma4 is 0.0-1.3% ASR across most configurations tried (batch-size, multi-layer refusal-dir, lambda-annealing, and most CoT-anchor/new-seed variants are all negative) `[RAW]`, **except one real exception that scales**: the EmptyThink CoT-anchor recipe at the corrected refusal-direction layer (L31) gives 2.7% ASR on a 25-behavior pilot and, scaled to the full 520-behavior benchmark, **3.91% ASR (61/1560) vs. 2.31% neutral (+1.6pp), consistent across 3 generation seeds and reaching 31/520 behaviors** `[RAW]` — Gemma4's best full-benchmark result of the project, modest but real. **The clearest positive new result overall: a union ensemble of the Qwen3 seed-42 and seed-45 runs reaches 14.0% combo-ASR across 110/520 behaviors (21.2% benchmark coverage)** `[RAW, independently recomputed and confirmed to match the live log's 14.0%/110 figures]` — meaningfully better than either seed alone (94 and 72 behaviors respectively), because the two seeds' successful behaviors only overlap 56/110 times.
 - **Cross-architecture suffix transfer (Gemma4↔Qwen3) is null in both directions** `[RAW]` — random-token suffixes beat optimized ones when transferred across model families.
 
+> 📋 **Single-table index of all ~35 experiments** (what/stage/data/result/verdict, one row each): see **Appendix C — Master Experiment Summary Table** at the end of this document.
+
 ---
 
 ## 2. Precursor Context: Late-June Mechanistic Validation Sprint
@@ -399,8 +401,8 @@ Non-destructive: all v2 runs write to `outputs/stage_gcg_full_v2_userfix/`; v1 u
 
 | Tier | Scope | Opt jobs | GPU-h | Status |
 |---|---|---|---|---|
-| **0 (GATE)** | 5A re-opt (25 beh) + eval — does the fix change ASR? | 1 | 4 | **opt RUNNING 2026-07-19** (job 667391, n-805; supersedes 667366 which ran before the space-init refinement); free-gen eval to follow when `FINAL_CANDIDATES.jsonl` lands |
-| 1 | Standard GCG, 5A, Gemma4-4C, 7B×3, Phase8 λ0.3(+s43) → 7A/9B/4F evals | 8 | 32 | **RUNNING** (per user 2026-07-19: fill slots in priority/blocker order, not strictly gating) — Phase8 λ0.3 = job **667427** (n-802), 7B-s45 = job **667428** (n-803); next as slots free: Standard GCG, Gemma4-4C, 7B s43/s44, Phase8 s43 |
+| **0 (GATE)** | 5A re-opt (25 beh) + eval — does the fix change ASR? | 1 | 4 | **opt DONE** (job 667391, audit PASS, suffix_placement=user); **free-gen eval RUNNING** (job 667598, seeds 42/43/44, cot_target 25-beh) — v2 ASR vs v1 10.7% pending (2026-07-19 ~16:46) |
+| 1 | Standard GCG, 5A, Gemma4-4C, 7B×3, Phase8 λ0.3(+s43) → 7A/9B/4F evals | 8 | 32 | **RUNNING** (per user 2026-07-19: fill slots in priority/blocker order, not strictly gating) — Phase8 λ0.3 = job **667427** (n-802, opt running), 7B-s45 = job **667428** (n-803, opt running), 7B-s43 = job **667599** (opt running); next as slots free: 7B-s44, Phase8-s43, 9C-s45; then (need v2 ref cache) Standard GCG, Gemma4-4C |
 | 2 | Sprint-3 scaling + ablations | 28 | 107 | gated on Tier 0 |
 | 3 | Low-value negatives + transfers + Track-2 + detector re-derive | ~10 | 48 | gated on Tier 0 |
 
@@ -588,3 +590,58 @@ Full-520: `gcg_full_qwen3_9a_lambda03_full520` (6245, +5 dup rows) & `_unseeded`
 - `stage_gcg_early/` also holds the early repr-loss development runs (`gcg_qwen3_repr_{v1,v2,8b,8c}`, `gcg_gemma4_repr_{10a,10b}` — full bundles + hidden_states), the smoke tests (`smoke_gcg_qwen3_{v1,v2,v2_resume_check,v3}`), the early transfer runs (`transfer_{gemma4_to_qwen3,qwen3_to_gemma4}`), and reference caches — the empirical basis for §3's "GCG-Early origins" note (repr⟂task conflict, first pos-0 AUC=1.000).
 - `stage_gcg_ablation/detector/` & `detector_cot_disabled/` — each `detector_metrics.json` + `detector_model.pkl` + `DETECTOR_REPORT.md` (the report with the AUC=0.5067 templating bug).
 - `stage_gcg_ablation/detector_groupkfold/` — 15 JSON files: `dev25_vs_495_behaviors.json` + per-run `*_groupkfold.json` (P-9.1 source for the §9 detector-robustness claims).
+
+---
+
+## Appendix C — Master Experiment Summary Table
+
+**Every experiment in the July-2026 GCG thread, in one place.** This is a scannable index, not a replacement for the section tables — each row's `§` cell links to the full detail (with its provenance tag) where the exact conditions, baselines, and caveats live. All figures are transcribed from the sections above; nothing here is a new or independently-recomputed number.
+
+> ⚠ **Read the B1 caveat first (see §13).** Every row flagged **⚠** in the last column is a *GCG-optimization-dependent ASR* confounded by the suffix train/eval placement bug — those **magnitudes are provisional pending the §13.6 v2 (user-turn) re-run**. Uplift *directions*, AUC/detection, baselines, and causal-test results are expected to survive the fix. The **one** substantive result **not** B1-affected (marked **—**) is Sprint-2 Track 2, a causal free-generation intervention that uses no optimized suffix.
+
+**Legend** — Verdict: ✅ positive (real uplift) · ➖ null (no effect / at noise floor) · ❌ negative (net-negative vs. a control) · 🔬 mechanistic (no single headline ASR; run for insight). Provenance tags (`[SOT]` source-of-truth CSV · `[RAW]` recomputed from raw jsonl · `[SYNTH]` findings synthesis · `[AUDIT]` audit doc · `[LOG-FINAL]` closed execution log) as defined in §1. "25-beh" = 25-behavior dev panel (3 generation seeds ⇒ /75); "520" = full AdvBench. ★ marks the five headline results (5A, 7A, Phase-8 λ=0.3, 10A, 10F).
+
+| ID / Track | § | Model | Stage | What we did | Data / scale | Result (ASR / key metric) | vs. baseline / uplift | Verdict | B1? |
+|---|---|---|---|---|---|---|---|---|---|
+| *— Ablation (Phases 4–6) —* | | | | | | | | | |
+| Standard GCG | §3 · [SOT] | Qwen3 | Ablation | Weighted objective (baseline GCG) | 25-beh | 4.0% train / 6.7% unseen | ≈ baseline | ➖ | ⚠ |
+| 4A | §3 · [SOT] | Qwen3 | Ablation | `enable_thinking=False`, standard target | 25-beh | 0% / 2.7% unseen | ≈ baseline — CoT rejected as *primary* defense | ➖ | ⚠ |
+| 4B | §3 · [SOT] | Qwen3 | Ablation | λ_repr=0 (repr loss disabled) | 25-beh | 1.3% | more task-effective but AUC pos-0 drops 1.000→0.500 (invisible) | ➖ | ⚠ |
+| 4C | §3 · [SOT] | Gemma4 | Ablation | Weighted objective | 25-beh | 0% | = 0% baseline | ➖ | ⚠ |
+| 4E | §3 · [SOT] | Qwen3→Gemma4 | Ablation | Suffix *text* transfer (1 seed) | 25-beh | 0% | = 0% baseline | ❌ | ⚠ |
+| 4F | §3 · [SOT] | Qwen3 | Ablation | Standard GCG at full scale | 520 | 1.9% | −0.5pp, net-negative | ❌ | ⚠ |
+| **5A ★** | §3 · [SOT][SYNTH] | Qwen3 | Ablation | **CoT-prefix target** (`<think>…</think>` + "Sure, here is…") | 25-beh | **10.7% (8/75) / 14.7% unseen** | **+8pp — the key unlock** | ✅ | ⚠ |
+| 5B | §3 · [SOT] | Qwen3 | Ablation | CoT-pos-0 repr loss | 25-beh | 1.3% | −2.7pp | ❌ | ⚠ |
+| 5C | §3 · [SOT] | Qwen3 | Ablation | 5A + quick-ASR candidate selection | 25-beh | 10.7% | = 5A (no change) | ✅ | ⚠ |
+| 6A-Q | §3 · [SOT] | Qwen3 | Ablation | Standard target + refusal-dir (λ=1.0, L25) | 25-beh | 0% / 1.3% (1/75) | −2.7pp vs task_only | ❌ | ⚠ |
+| 6A-G | §3 · [SOT] | Gemma4 | Ablation | Standard target + refusal-dir (λ=1.0) | 25-beh | 1.3% noise / 0% | ≈ 0% | ➖ | ⚠ |
+| 6B | §3 · [SOT] | Gemma4 | Ablation | CoT-channel target, no refusal-dir | 25-beh | 0% (optimizer stalled) | = 0% | ➖ | ⚠ |
+| 6C | §3 · [SOT] | Qwen3 | Ablation | CoT-prefix + refusal-dir (λ=1.0) | 25-beh | 0% | −10.7pp vs 5A | ❌ | ⚠ |
+| Multimodel | §3 · App. B | Qwen3+Gemma4 | Early | Joint-selection (Qwen3 gradient + Gemma4 rescore) | 25-beh | no headline ASR (best task_loss 28.14) | not pursued into ablation | 🔬 | ⚠ |
+| *— Phase 7 (scale to full AdvBench) —* | | | | | | | | | |
+| **7A ★** | §4 · [SOT][AUDIT] | Qwen3 | Phase 7 | Scale 5A to all 520 behaviors | 520 (493 eval unseen) | **8.01% (125/1560) seeded / 8.92% (131/1468) unseen** | **+5.83pp / +5.09pp, CI [+3.38,+6.80], McNemar p<10⁻¹⁰** | ✅ | ⚠ |
+| 7B | §4 · [SOT][SYNTH] | Qwen3 | Phase 7 | 5A across optimization seeds 43/44/45 | 520 | s43 10.7%/16.0% · s44 1.3% (net-neg) · s45 16.0%/21.3% | high seed variance (s45 > s43 ≈ s42 ≫ s44) | 🔬 | ⚠ |
+| 7C | §4 · [SOT][SYNTH] | Gemma4 | Phase 7 | thinking=OFF, standard target | 25-beh | 0% | 0% despite *better* loss convergence (12.47) | ➖ | ⚠ |
+| *— Phase 8 (refusal-direction sweep) —* | | | | | | | | | |
+| **Phase-8 sweep ★** | §5 · [SOT][AUDIT] | Qwen3 | Phase 8 | Refusal-dir layer/λ sweep on the 5A target | 25-beh | L25/λ1.0 0% · L20/λ1.0 5.33% · L30/λ1.0 0% · **L25/λ0.3 24.0% (18/75)** · L25/λ3.0 2.67% · s43 L25/λ0.3 12.0% | **+21.3pp at λ=0.3 — biggest surprise; weak-λ amplifies, strong-λ kills** | ✅ | ⚠ |
+| *— Sprint 2 (four parallel tracks) —* | | | | | | | | | |
+| Track 1 | §7.1 · [SOT][LOG-FINAL] | Gemma4 | Sprint 2 | CoT-channel v2, 800 steps (vs 500) | 25-beh | 0.0% (0/75) | channel tokens *are* trainable (loss −77–85%) but ASR unchanged | ➖ | ⚠ |
+| Track 2 | §7.2 · [LOG-FINAL] | Qwen3 | Sprint 2 | Causal CoT-framing intervention (force `<think>` opening, then free-gen) | n=10 pilot → n=25 | 12.0% (3/25) baseline vs 8.0% (2/25) forced-compliant, McNemar **p=1.0** | **no causal effect** — correlational framing finding not causally supported | ➖ | **—** |
+| Track 3 | §7.3 · [SOT][LOG-FINAL] | DeepSeek-R1-7B | Sprint 2 | 5A recipe on a 3rd model family (CoT + standard targets) | 25-beh | CoT 49.3% (37/75) vs 46.7% (p=0.84) · Std 41.3% (31/75) vs 48.0% (p=0.47) | ~47–51% baseline compliance — no headroom for GCG to add value | ➖ | ⚠ |
+| Track 4 | §7.4 · [SOT][LOG-FINAL] | Qwen3 | Sprint 2 | Attack-quality levers: suffix-len 35; seed-44 + quick-ASR | 25-beh | len-35 2.7% (2/75) · quick-ASR 4.0% (3/75) | both < 10.7% reference — negative | ❌ | ⚠ |
+| *— Sprint 3 (scaling λ=0.3 + follow-on ablations) —* | | | | | | | | | |
+| **9A ★** | §8.1 · [RAW] | Qwen3 | Sprint 3 | λ=0.3 (seed 42) scaled to full 520 | 520 | **11.21% combo (175/1561) / 18.08% behavior (94/520)** | net-positive vs ~2–4% neutral | ✅ | ⚠ |
+| 9B | §8.1 · [RAW] | Qwen3 | Sprint 3 | λ=0.3 (seed 45) scaled to full 520 | 520 | 8.83% (138/1562) / 13.85% (72/520) | net-positive | ✅ | ⚠ |
+| 9C | §8.1 · [RAW] | Qwen3 | Sprint 3 | λ=0.3 fresh-opt seed 45 (not reusing 9B's suffix) | 520 | 6.09% (95/1560) | λ=0.3 not additive across seeds | ✅ | ⚠ |
+| 9D | §8.2 · [RAW] | Gemma4 | Sprint 3 | Refusal-dir λ=0.3 at L25 vs corrected L31 | 25-beh | L25 0% (0/75) · L31 1.33% (1/75) | noise floor (0/75 neutral) — negative for refusal-dir on Gemma4 | ➖ | ⚠ |
+| 9E | §8.3 · [RAW] | Qwen3 | Sprint 3 | Candidate batch size 128 (vs 64) | 25-beh | 0.0% (0/75) | *better* loss (21.39) yet 0% ASR | ➖ | ⚠ |
+| 9G sweep | §8.4 · [RAW] | Qwen3 & Gemma4@L31 | Sprint 3 | CoT-anchor content sweep (NoCoT / EmptyThink / Tok1 / Tok5) | 25-beh | Qwen3: NoCoT 4.0% · Empty 0% · Tok1 0% · Tok5 6.67% — Gemma4@L31: Empty 2.67% · Tok1 0% · Tok5 0% | CoT *content* essential; Gemma4 EmptyThink = its only non-zero pilot | 🔬 | ⚠ |
+| **10A ★** | §8.5 · [RAW] | Gemma4 | Sprint 3 | EmptyThink@L31 scaled to full 520 | 520, 3 seeds | **3.91% (61/1560) vs 2.31% neutral · 31/520 behaviors** | **+1.6pp, 3-seed consistent — Gemma4's best full-benchmark result** | ✅ | ⚠ |
+| 10B | §8.6 · [RAW] | Gemma4 | Sprint 3 | EmptyThink@L31, optimization seeds 43/44/45 | 25-beh each | all 0.0% (0/75) | seed 42 the only pilot seed with Gemma4 signal | ➖ | ⚠ |
+| 10C | §8.6 · [RAW] | Qwen3 | Sprint 3 | λ=0.3, new optimization seeds 0/1/2 | 25-beh each | s0 20.0% (15/75) · s1 1.33% (dead) · s2 8.0% (6/75) | none beat seed-42's 24.0% | ✅ | ⚠ |
+| 10D | §8.7 · [RAW] | Qwen3 | Sprint 3 | Multi-layer refusal-dir (L20 λ0.1 + L25 λ0.3 + L28 λ0.1) | 25-beh | 14.67% (11/75) | < single-layer Phase-8 reference (24.0%) | ✅ | ⚠ |
+| 10E | §8.8 · [RAW] | Qwen3 | Sprint 3 | λ-annealing 0.7 → 0.3 → 0.1 over the run | 25-beh | 10.67% (8/75) | < constant λ=0.3 (24.0%) | ➖ | ⚠ |
+| **10F ★** | §8.9 · [RAW] | Qwen3 | Sprint 3 | **Union ensemble 9A ∪ 9B** (post-hoc, zero optimization cost) | 520 | **13.97% combo (218/1560) / 110/520 behaviors (21.2%)** | **> either seed alone (94 / 72 beh); overlap 38/16/56 — clearest new positive finding** | ✅ | ⚠ |
+| 10G | §8.10 · [RAW] | Gemma4→Qwen3 | Sprint 3 | Cross-architecture suffix transfer | 25-beh | 5.33% opt (4/75) vs 6.67% random_spaces (5/75) | worse than random text — transfer null in both directions | ❌ | ⚠ |
+
+**How to read the ASR pairs:** "X% / Y%" is train(-seed) / unseen(-seed) panel; unseen panels have an intrinsically higher neutral baseline (~12% at 25-beh, §4 Finding 5), so *uplift-over-neutral*, not the raw headline, is the load-bearing metric. Combo-ASR = task×seed pairs; behavior-ASR = fraction of the 520 behaviors with ≥1 success (always higher, since one success per behavior counts). Cross-run `task_loss` comparisons are directional only (raw, un-normalized — §10 item 10).

@@ -6982,3 +6982,115 @@ Projected 9B at wall: ~5790 rows → p7 needs ~450 more (~4h at 1.9/min).
 ## CHECK 443 — 2026-07-18 11:36 UTC — NO CHANGE (manual trigger, 2 min after 442)
 
 Queue 6/6, 9B p6 walls in ~1:41 (~13:17 UTC). Rows: 9A=4705, 9B=5599, 9C=3841. Pollers healthy.
+
+## CHECK 444 — 2026-07-18 12:04 UTC — NEW HIGHS; 9B p6 WALLS IN 1h13min
+
+Queue: 6/6, 9B p6 elapsed 6:46, walls in ~1:13 (~13:17 UTC). Pollers healthy at 12:03 UTC.
+| Track | Rows | Combo ASR | Beh ASR | Δ rows |
+|---|---|---|---|---|
+| 9A | 4747/6240 | 16.3% (160/980) | **24.2%** (79/327 behs) | +42 |
+| 9B | 5653/6240 | 14.1% (200/1414) | 23.5% (111/472 behs) | +54 |
+| 9C | 3892/6240 | 10.1% (98/973) | 16.0% (52/325 behs) | +51 |
+9A beh_ASR new high: 24.2% (79 behs). 9B hit 200 combo wins. 9C +1 behavior (52).
+9B projects to ~5791 at wall → poller_9b submits p7; p7 needs ~449 rows (~4h).
+
+## CHECK 445 — 2026-07-18 12:06 UTC — NO CHANGE (manual trigger, 2 min after 444)
+
+Queue 6/6. 9B p6 elapsed 6:48, walls in ~1:11 (~13:17 UTC). Rows: 9A=4749, 9B=5655, 9C=3896.
+
+## CHECK 446 — 2026-07-18 12:16 UTC — 9B p6 WALL IN 1h01min
+
+Queue: 6/6, 9B p6 elapsed 6:58, walls in ~1:01 (~13:17 UTC). Pollers healthy at 12:15 UTC.
+| Track | Rows | Combo ASR | Beh ASR | Δ rows |
+|---|---|---|---|---|
+| 9A | 4763/6240 | 16.3% (160/984) | 24.1% (79/328 behs) | +14 |
+| 9B | 5676/6240 | 14.1% (200/1419) | 23.5% (111/473 behs) | +21 |
+| 9C | 3912/6240 | 10.0% (98/978) | 16.0% (52/326 behs) | +16 |
+9B rate ~2.1/min; projects to ~5802 at wall → p7 needs ~438 rows (~3.5h at ~2.1/min).
+Poller 9b last logged 12:15:20 (rows=5673) — healthy, will fire 2min after 667211 drops.
+
+## CHECK 447 — 2026-07-18 12:56 UTC — CANONICAL RECOUNT + B1/v2 CONTEXT
+
+**Queue: 6/6 (AT CAP).** Slots are now split between the v1 Sprint-3 unseeded evals and the new **v2 (B1-fix) re-run campaign** (§13 of `GCG_JULY2026_MASTER_LOG.md`):
+- **v2 userfix (suffix-placement fix):** `667391` (5A Tier-0 GATE, n-805, elapsed 3:31), `667427` (Phase-8 λ=0.3 Tier-1, n-802, 3:07), `667428` (7B seed-45 Tier-1, n-803, 3:07)
+- **v1 unseeded evals:** `667277` (9A, n-805, 5:52), `667211` (9B, n-805, 7:38), `667424` (9C, n-802, 3:11)
+
+> ⚠ **B1 SUPERSESSION:** the 9A/9B/9C ASR below are GCG-optimization-dependent and **confounded by the suffix train/eval placement bug** (§13). They are **provisional pending the v2 user-turn re-runs now in flight** and are reported for continuity only.
+
+**Authoritative figures via `scripts/compute_canonical_asr.py` (deduped combo/behavior — the project source of truth), NOT the live poller counter:**
+
+| Track | Rows (raw) | Combo ASR (dedup) | Beh ASR (dedup) | String-match | vs neutral | Δ rows vs C446 |
+|---|---|---|---|---|---|---|
+| 9A | 4821/6240 | 14.8% (148/998) | 21.9% (73/333) | 19.6% | +10.2pp | +58 |
+| 9B | 5756/6240 | 11.8% (170/1439) | 20.0% (96/480) | 14.6% | +7.6pp | +80 |
+| 9C | 3976/6240 | 7.4% (74/994) | 11.7% (39/332) | 9.8% | +2.9pp | +64 |
+
+⚠ **Methodology note — these read LOWER than CHECK 446's poller figures (e.g. 9A 16.3%/24.1%) — this is a CORRECTION, not a regression.** The live poller counts wins over **raw** rows; the ~830 duplicate `row_key`s in 9A (SLURM-restart logging artifact = §13 bug **B5**) inflate that raw counter. The canonical tool deduplicates by `row_key` and is the correct, lower number. All future CHECK entries should cite canonical, not the poller.
+
+**Completed Sprint-3 opt/eval runs (all DONE, unchanged):**
+- Seeded (full-520): 9A **11.21%** (175/1561) · 9B **8.83%** (138/1562) · 9C **6.09%** (95/1560)
+- 9D Gemma4 refusal-dir λ=0.3: **L25 0.0%** (0/75) · **L31 (9d2) 1.33%** (1/75) — noise floor, negative
+- 9E batch-size 128: **0.0%** (0/75) — better loss (21.39) yet no ASR
+- Track 4b (job `661733`) **COMPLETE 2026-07-14: 4.0%** (3/75), +1.3pp — FAILED (see Sprint-2 Final State block above)
+
+**Follow-up / submissions needed: NONE.**
+- Queue at cap (6/6) → no free slot. SLURM rules satisfied (≤6 jobs, L40S, no dependency chains).
+- All Sprint-3 optimization + seeded evals complete; **9C free-gen already running** (`667424`) — no new free-gen to submit.
+- 9A/9B/9C unseeded evals self-complete via the existing poller auto-resubmit on wall.
+- **Recommendation (for decision, not actioned):** given B1 supersession, the three v1 unseeded evals will be replaced by the v2 user-turn re-runs regardless — consider deprioritizing them to free slots for the v2 Tier-1/2 campaign.
+
+## CHECK 448 — 2026-07-18 13:04 UTC — NO MATERIAL CHANGE (8 min after C447)
+
+Queue: **6/6 unchanged** (same jobs: v2 `667391`/`667427`/`667428`, v1 unseeded `667277`/`667211`/`667424`). No completions, no walls. Rows: 9A 4832 (+11), 9B 5779 (+23), 9C 3988 (+12) — normal ~1.5–2.9/min accumulation. No new opt/seeded runs finished since C447; Track 4b/9D/9E/seeded all still DONE. **Follow-up: NONE** (queue at cap; nothing pending submission; SLURM rules satisfied). B1 supersession context unchanged — v1 unseeded ASR still provisional pending the v2 re-runs.
+
+## CHECK 449 — 2026-07-18 13:34 UTC — 🏁 9B UNSEEDED WALLED · POLLER DEAD · 1 FREE SLOT
+
+**Queue: 5/6 (one free slot).** `667211` (9B unseeded) hit its 8h wall — `sacct` confirms **TIMEOUT** — and dropped, stopping at **5807/6240 rows**. Remaining running: v2 `667391`/`667427`/`667428`, v1 unseeded `667277` (9A), `667424` (9C).
+
+⚠ **The 9B auto-resubmit poller is DEAD** (no python poller process under the user; only vscode-server procs). Unlike the earlier poller-driven passes, **9B will NOT self-resume** — it needs a manual resubmit.
+
+**Canonical ASR (deduped, `scripts/compute_canonical_asr.py`) — still B1-confounded / provisional:**
+
+| Track | Rows (raw) | State | Combo ASR | Beh ASR | vs neutral |
+|---|---|---|---|---|---|
+| 9A | 4880/6240 | RUNNING (`667277`) | 14.7% (149/1013) | 21.9% (74/338) | +10.2pp |
+| 9B | 5807/6240 | **WALLED (TIMEOUT)** | 11.7% (170/1452) | 19.8% (96/484) | +7.6pp |
+| 9C | 4042/6240 | RUNNING (`667424`) | 7.5% (76/1011) | 11.9% (40/337) | +3.1pp |
+
+Seeded 9A/9B/9C, 9D (L25 0% / L31 1.33%), 9E (0%), Track 4b (4.0%) — all still DONE, unchanged.
+
+**Follow-up needed — 1 item (NOT auto-submitted, awaiting decision):**
+- **9B unseeded needs a manual resume** (~433 rows left) via `slurm_scripts/run_gcg_full_9b_unseeded.slurm`. A slot is free (5/6), so submitting is within SLURM rules (≤6, L40S, no dep chains).
+- **Decision required (B1 supersession trade-off):**
+  - **(A) Resume 9B v1** — completes the v1 unseeded panel (useful as the v1 baseline for the §13.6 v1-vs-v2 comparison table).
+  - **(B) Leave the slot for the v2 campaign** — the v1 unseeded numbers are B1-confounded and will be replaced by the v2 user-turn re-runs anyway.
+- Held on auto-submit because this is a research-priority call and I previously flagged deprioritizing the v1 unseeded evals. Say the word and I'll submit (A).
+
+## CHECK 450 — 2026-07-18 14:04 UTC — 🚦 5A v2 GATE OPT DONE · v2 SCHEDULER ADVANCED · 9B stayed deprioritized
+
+**Queue: 6/6 (back at cap; the freed 9B slot went to the v2 campaign, not a 9B resume — consistent with the CHECK 449 rec).** Jobs: `667598`+`667601` (`gcg_full_eval`, v2 free-gen), `667599` (`gcg_userfix`, v2 opt), `667428` (`gcg_userfix`, v2 opt), `667424` (9C unseed), `667277` (9A unseed).
+
+**🚦 PIVOTAL: the Tier-0 GATE (5A v2 re-opt with the B1 suffix-placement fix) COMPLETED.** `outputs/stage_gcg_full_v2_userfix/gcg_full_qwen3_cot_target/` now has `FINAL_CANDIDATES.jsonl` + `DONE`, and its **free-gen eval is RUNNING (6 rows in)**. The gate RESULT — v2 5A ASR vs the v1 10.7% reference — is **pending the free-gen completion**. This is the number that decides whether Tiers 1–3 run (§13.5 gate rule).
+
+**v2 rolling scheduler status** (`outputs/stage_gcg_full_v2_userfix/`):
+
+| v2 run | opt | free-gen |
+|---|---|---|
+| `gcg_full_qwen3_cot_target` (5A GATE) | ✅ DONE | ▶ RUNNING (6 rows) |
+| `gcg_full_qwen3_8_rd_lambda03` (Phase-8 λ0.3) | ✅ DONE | queued (0 rows) |
+| `gcg_full_qwen3_7b_seed45` (7B s45) | ✅ DONE | queued (0 rows) |
+| `gcg_full_qwen3_7b_seed43` (7B s43) | ▶ opt running (`667599`) | — |
+
+**Sprint-3 v1 unseeded (still B1-confounded / provisional; canonical ASR ~unchanged from C449):**
+
+| Track | Rows (raw) | State | Combo ASR |
+|---|---|---|---|
+| 9A | 4927/6240 (+47) | RUNNING (`667277`) | ~14.7% (≈C449) |
+| 9B | 5807/6240 | **WALLED, NOT resumed** | 11.7% (frozen) |
+| 9C | 4086/6240 (+44) | RUNNING (`667424`) | ~7.5% (≈C449) |
+
+Seeded 9A/9B/9C, 9D (L25 0% / L31 1.33%), 9E (0%), Track 4b (4.0%) — all still DONE, unchanged.
+
+**Follow-up / submissions: NONE from me** (queue at cap; the v2 rolling scheduler is auto-advancing opts→free-gens as slots free — no manual submit needed and none possible under the ≤6 rule).
+- **Watch next:** the 5A v2 free-gen result (the GATE). If v2 5A ASR ≫ 10.7% → Tiers 1–3 proceed; if ≈unchanged → the B1 bug did not drive the numbers and the campaign can stop (saves ~180 GPU-h).
+- **9B v1 resume:** now effectively moot — its freed slot was absorbed by v2, and the v1 unseeded panel is being superseded. Still submittable on request (option A), but recommend leaving it (option B).
