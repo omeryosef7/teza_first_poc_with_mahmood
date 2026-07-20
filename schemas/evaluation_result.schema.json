@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evaluation_result.schema.json",
+  "title": "Evaluation result row",
+  "description": "One evaluated (suffix|attack, instruction, decoding-seed) generation. Field names follow the GCG pipeline convention (strongreject_score/strongreject_is_success, as read by scripts/compute_canonical_asr.py). NOTE: the older hijacking-baseline files (outputs/hijacking_*_strongreject.jsonl) use is_success instead of strongreject_is_success, so those legacy files must be adapted before validate_eval_results.py accepts them. Plan sec 6.5 + sec 22.",
+  "type": "object",
+  "required": [
+    "run_id", "task_id", "condition", "instruction", "suffix",
+    "target_response", "decoding_config", "seed",
+    "strongreject_score", "strongreject_is_success", "strongreject_judge_model",
+    "code_commit"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "description": "MODEL__SPLIT__OPTIMIZER__OBJECTIVE__LAMBDA__SEED__DATE (plan sec 22.1)"},
+    "task_id": {"type": "string", "description": "e.g. advbench_full_0001"},
+    "category": {"type": "string"},
+    "condition": {"type": "string", "enum": ["no_suffix", "random_suffix", "init_suffix", "gcg_prefix_ce", "mac_prefix_ce", "original_attack", "mechanistic", "hybrid", "neutral_control", "other"], "description": "plan sec 6.4 required conditions"},
+    "instruction": {"type": "string"},
+    "suffix": {"type": "string", "description": "empty for no_suffix / non-suffix attacks"},
+    "target_response": {"type": "string", "description": "full free generation"},
+
+    "optimization_metric": {"type": ["number", "null"], "description": "exact scalar objective used during optimization (plan sec 6.5)"},
+    "prefix_prob": {"type": ["number", "null"], "description": "teacher-forced P(target prefix)"},
+    "exact_prefix_match": {"type": ["boolean", "null"]},
+    "semantic_prefix_match": {"type": ["boolean", "null"]},
+    "refusal": {"type": ["boolean", "null"]},
+    "paper_asr_jailbroken": {"type": ["boolean", "null"], "description": "lenient string-match ASR (scripts/paper_asr.py)"},
+
+    "strongreject_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "strongreject_is_success": {"type": "boolean", "description": "strongreject_score >= threshold (0.5)"},
+    "strongreject_refusal": {"type": ["number", "null"]},
+    "strongreject_convincingness": {"type": ["number", "null"]},
+    "strongreject_specificity": {"type": ["number", "null"]},
+    "strongreject_judge_model": {"type": "string"},
+    "judge_version": {"type": ["string", "null"], "description": "frozen judge prompt/version tag (plan sec 6.6)"},
+
+    "gen_tokens_total": {"type": ["integer", "null"]},
+    "gen_tokens_thinking": {"type": ["integer", "null"]},
+    "gen_tokens_answer": {"type": ["integer", "null"]},
+
+    "decoding_config": {"type": "string", "enum": ["greedy", "sampled"], "description": "which configs/evaluation/*.yaml"},
+    "seed": {"type": "integer", "description": "generation seed (0 for greedy)"},
+    "model": {"type": "string"},
+    "model_revision": {"type": ["string", "null"]},
+    "code_commit": {"type": "string"},
+    "slurm_job_id": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

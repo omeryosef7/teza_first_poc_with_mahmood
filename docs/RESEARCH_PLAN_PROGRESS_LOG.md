@@ -18,8 +18,8 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 |-------|-------|--------|
 | 0 | Freeze current state | 🔄 |
 | 1 | Redesign dataset split | ✅ (external_transfer deferred to Ph15) |
-| 2 | Freeze evaluation protocol | ⏳ |
-| 3 | Reproduce baselines in TROPT | ⏳ |
+| 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
+| 3 | Reproduce baselines in TROPT | ⛔ TROPT not installed — needs decision |
 | 4 | Real attack baseline (CoT Hijacking) | ⏳ |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
@@ -60,7 +60,41 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 - `docs/CURRENT_STATE_AUDIT.md` — facts/hypotheses table (plan §4.4), sourced from
   `docs/GCG_JULY2026_MASTER_LOG.md`.
 
+### 2026-07-21 — Iteration 2
+**Reorient:** SLURM queue empty; TROPT **not installed** (no files, `import tropt` fails).
+Phase 3 depends on it → blocked pending a decision (which TROPT — likely an external/Mahmood
+repo). Phase 2 comes first in order and is CPU/API-only, so progressed that.
+
+**Phase 2 — freeze evaluation protocol ✅** (plan §6; judge freeze still pending human labels)
+- Inspected the real judge output fields first (no duplication): GCG pipeline uses
+  `strongreject_score` + `strongreject_is_success` (threshold ≥0.5, per
+  `scripts/compute_canonical_asr.py`), sub-scores refusal/convincingness/specificity.
+- New files:
+  - `configs/evaluation/greedy.yaml` (primary, deterministic) + `sampled.yaml` (secondary).
+  - `schemas/evaluation_result.schema.json` — row contract, field names matched to the
+    GCG pipeline; documents the legacy `is_success` mismatch in hijacking baselines.
+  - `results/EXPERIMENT_REGISTRY.csv` — append-only header (plan §22.5 columns).
+  - `scripts/validate_eval_results.py` — §22.4 result validator (required fields, dup rows,
+    train/test split leakage, judge-score range incl. bool-reject, enum validation,
+    denominator/commit consistency). Smoke-tested pass+fail paths.
+  - `scripts/build_judge_validation_sample.py` — stratified judge-annotation sampler,
+    reuses existing scored outputs. Produced `docs/judge_validation_sample.csv` (19 rows).
+  - `docs/EVALUATION_PROTOCOL.md`, `docs/JUDGE_VALIDATION.md`.
+- **Bug-check subagent** found 3 real defects → all fixed & re-verified: all-empty-pool crash
+  in sampler (now clean SystemExit); `is_success` vs `strongreject_is_success` field mismatch
+  (sampler now falls back across both; schema docstring corrected); bool-score accepted by
+  validator (now rejected); added schema-enum validation for condition/decoding_config.
+- **Deferred (documented):** judge freeze needs human annotation of the sample (human task);
+  the bimodal baseline pool has ~no `partial` cases → redraw on our own Qwen3/Gemma
+  generations in Phase 4+. Remaining §22.4 checks (expected row count, config-hash-matches-
+  run-dir) need a run-directory context that doesn't exist yet → add with the Phase-3+ harness.
+- Determinism completion criterion (§6): configured (greedy `do_sample=false`) but not yet
+  GPU-verified; assert on first generation run.
+
 **Next iterations (in order)**
-- Finish Phase 0 audit cross-checks; then Phase 2 (freeze eval protocol: greedy config,
-  prefix-match metric, judge validation, experiment registry) — all CPU/API, no GPU.
-- Phase 3 (TROPT reproduction) needs TROPT installed — check availability before coding.
+- **Phase 3 is blocked on TROPT.** Options to surface to the user: (a) locate/clone the TROPT
+  repo (external), (b) proceed Phase 4 (real CoT-Hijacking attack baseline) first since the
+  reference impl already exists in-repo (`Chain_of_Thought_Hijacking/Hijacking/`) and is
+  API-based (no TROPT), (c) both in parallel. Phase 4 needs API keys (`.env`) + is the RQ1
+  baseline — good candidate to advance next without TROPT.
+- Meanwhile: build the judge confusion-matrix script once any human labels exist.
