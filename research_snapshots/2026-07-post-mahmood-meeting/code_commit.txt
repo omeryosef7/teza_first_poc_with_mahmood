@@ -1,0 +1,8 @@
+Frozen snapshot for RESEARCH_PLAN_DISTILLING_JAILBREAKS.md Phase 0.
+HEAD commit at freeze:
+36b79606690354eaa01ed6401c561f8ab08a6cd3
+Date: 2026-07-21
+
+Artifacts are preserved IN-PLACE under git at this commit (outputs/, scripts/,
+slurm_scripts/, docs/, *.pptx) rather than byte-copied, to avoid multi-GB duplication.
+To reconstruct exact state: git checkout 36b79606690354eaa01ed6401c561f8ab08a6cd3
