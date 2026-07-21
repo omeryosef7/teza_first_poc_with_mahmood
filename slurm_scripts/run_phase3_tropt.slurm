@@ -27,6 +27,8 @@ mkdir -p logs
 # Reuse the existing HF cache (Qwen3-14B already downloaded by prior GCG work).
 export HF_HOME="${PROJECT_DIR}/.cache/huggingface"
 export HF_HUB_CACHE="${PROJECT_DIR}/.cache/huggingface/hub"
+# Reduce CUDA fragmentation on the 14B run (matches run_gcg_percot_worker.slurm).
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
 TROPT_PY="$PROJECT_DIR/TROPT/.venv/bin/python"
 OPTIMIZER="${OPTIMIZER:-gcg}"
