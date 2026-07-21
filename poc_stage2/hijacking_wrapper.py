@@ -172,7 +172,17 @@ def run_hijacking_slice(
     dataset_split: str = DEFAULT_DATASET_SPLIT,
     verbosity: int = 1,
     wandb_mode: str = "disabled",
+    goals: list[str] | None = None,
 ) -> StructuredRunResult:
+    # `goals` (optional): run an explicit list of goal strings instead of a HF dataset
+    # slice, reusing the identical attacker/target/judge machinery. Used by the Phase-4
+    # driver to run our AdvBench dev-25 goals. When set, start/end are index bookkeeping only.
+    if goals is not None:
+        if not goals:
+            raise ValueError("goals list is empty")
+        # HF convention: N goals span train[start_index : start_index+N],
+        # i.e. end_example = (start_example-1) + N. Keeps the slice label accurate.
+        end_example = (start_example - 1) + len(goals)
     if end_example <= start_example:
         raise ValueError("--end-example must be greater than --start-example.")
 
@@ -198,7 +208,10 @@ def run_hijacking_slice(
 
     attack_lm, target_lm = load_attack_and_target_models(args)
     judge_lm = load_judge(args)
-    goals_to_test, start_index = load_goals(args)
+    if goals is not None:
+        goals_to_test, start_index = list(goals), start_example - 1
+    else:
+        goals_to_test, start_index = load_goals(args)
 
     timestamp_utc = datetime.now(timezone.utc).isoformat()
     dataset_slice = f"train[{start_example - 1}:{end_example}]"

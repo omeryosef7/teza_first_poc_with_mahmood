@@ -20,7 +20,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 | 1 | Redesign dataset split | ✅ (external_transfer deferred to Ph15) |
 | 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
 | 3 | Reproduce baselines in TROPT | ⛔ TROPT not installed — needs decision |
-| 4 | Real attack baseline (CoT Hijacking) | ⏳ |
+| 4 | Real attack baseline (CoT Hijacking) | 🔄 wiring done; smoke running |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
 ---
@@ -114,9 +114,31 @@ repo). Phase 2 comes first in order and is CPU/API-only, so progressed that.
   goals (`data/manifests/dev_25.csv`) instead of HarmBench. Read the wrapper's goal-loading +
   target-model path next.
 
+### 2026-07-21 — Iteration 3
+**User correction:** CoT-Hijacking is a **black-box check on the 25 examples** — it does NOT
+need white-box. I over-thought the white-box/API split (white-box is only for the separate
+mechanistic phases). Corrected course.
+
+**Phase 4 — clearly located + wired the existing pipeline (reuse, no rebuild):**
+- Runner already exists: `poc_stage2/collect_hijacking_results.py` → `poc_stage2/hijacking_wrapper.py:run_hijacking_slice`
+  (attacker `gemini-2.5-flash`, judge `gemini-judge`, target = API model). Core attack lives in
+  `Chain_of_Thought_Hijacking/Hijacking/core/` (`run_for_goal` is generic over a goal string).
+  Prior outputs = HarmBench examples 1–11 only (`outputs/hijacking_baseline_gpt-o4-mini_1_11*`);
+  the 25-run was **not** done yet.
+- Minimal reuse extension: added optional `goals: list[str]` kwarg to `run_hijacking_slice`
+  (backward-compatible; skips HF `load_goals`, reuses identical attacker/target/judge machinery).
+- New driver: `poc_stage2/run_phase4_cot_baseline.py` — feeds our **dev-25 AdvBench goals**
+  (`data/manifests/dev_25.csv`) through the pipeline, preserves `task_id`, writes
+  `outputs/phase4_cot_baseline/phase4_cot_<model>_dev25.{jsonl,_summary.json,_taskmap.json}`.
+- **Bug-check subagent: all functional checks PASS**; flagged one cosmetic off-by-one in the
+  slice label → fixed (`end_example = (start_example-1)+len(goals)`).
+- **Smoke** (2 goals, n_streams=1, n_iter=1, target gpt-o4-mini) launched in background to
+  validate end-to-end before the full 25. litellm import is slow (~1–2 min) — expected.
+
 **Next iterations (in order)**
-- Phase 4: inspect wrapper goal-loading & whether local Qwen3 target is supported; then run the
-  CoT-Hijacking baseline on dev-25 with the §8.4 controls; measure clean vs attacked ASR +
-  headroom (§8.5). Route generations through the frozen eval protocol + `validate_eval_results.py`.
+- When smoke passes → run full **dev-25** CoT-Hijacking baseline (gpt-o4-mini), then score via
+  StrongREJECT (`strong_reject/`) and report §8.5 headroom (clean vs attacked ASR, crackable
+  behaviors). Consider a second reasoning target for RQ1 breadth.
+- Add the §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
 - Phase 3 (parallel, no TROPT): reproduce prefix-CE GCG via `llm-attacks/` on dev-train-20.
 - Judge confusion-matrix script once human labels exist.
