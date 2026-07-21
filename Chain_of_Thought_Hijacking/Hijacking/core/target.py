@@ -13,6 +13,21 @@ from .attack import load_indiv_model
 class TargetLM:
 
     def __init__(self, model_name: str):
+        # Local open-source HF target: "hf:<repo_id>". Attacker+judge stay API.
+        if model_name.startswith("hf:"):
+            from types import SimpleNamespace
+            from models.hf_local import HFLocalLLM
+            hf_id = model_name.split("hf:", 1)[1]
+            self.model_name = SimpleNamespace(value=model_name)
+            self.reasoning_effort = None
+            self.temperature = TARGET_TEMP
+            self.top_p = TARGET_TOP_P
+            self.max_n_tokens = MODEL_TOKEN_LIMITS.get(model_name, 4096)
+            self.extra_params = {}
+            logger.info(f"Local HF target {hf_id} (max_n_tokens={self.max_n_tokens})")
+            self.model = HFLocalLLM(hf_id, max_new_tokens=self.max_n_tokens)
+            return
+
         base_model, reasoning_effort = self._parse_model_name(model_name)
         self.model_name = Model(base_model)
         self.reasoning_effort = reasoning_effort

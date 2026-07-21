@@ -21,6 +21,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 | 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
 | 3 | Reproduce baselines in TROPT | 🔄 TROPT installed; driver+slurm ready; smoke next |
 | 4 | Real attack baseline (CoT Hijacking) | ✅ dev-25 done: ASR 0.84 (gemini-judge); SR scoring pending |
+| 4X | Cross-model CoT-Hijacking (OPEN-SOURCE targets) | 🔄 local-HF target built+bug-checked; smoke submitted |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
 ---
@@ -313,13 +314,44 @@ Confirms login-node import hang was just the broken login GPU.
 l40s killable queue (Priority). Under the 30-min rule this iteration; **cancel+resubmit next
 iteration if still pending.**
 
+### 2026-07-21 — Iteration 13 (user: add Phase 4X + open-source-only)
+**Phase-4 headline finalized:** StrongREJECT behavior-level ASR **22/24=0.917** (0.88/25);
+gemini-judge 0.84. Registry row updated (status=scored).
+
+**★ NEW PHASE 4X added to the plan** (`docs/RESEARCH_PLAN_DISTILLING_JAILBREAKS.md` §31, a
+user-authorized amendment; §1–30 untouched): benchmark CoT-Hijacking on **open-source thinking
+models** as the TARGET.
+- **User correction mid-flight:** do NOT attack proprietary/public-API models. **Cancelled**
+  the two API runs I'd started (672938 gemini-2.5-pro, 672939 gpt-5-mini; no output written).
+  Attacker+judge may stay Gemini API (that's the harness, not a target); only the **target** must
+  be open-source local.
+- **Implemented the local open-source HF target** (design via subagent; approach = HF backend, not
+  vLLM which isn't installed):
+  - NEW `Chain_of_Thought_Hijacking/Hijacking/models/hf_local.py` — `HFLocalLLM(BaseLLM)`
+    (transformers `.generate`, bf16, apply_chat_template, strips `<think>`).
+  - EDIT `core/target.py` — `hf:<repo_id>` branch in `TargetLM.__init__` (early-return; API path
+    untouched; no `Model` enum leak).
+  - EDIT `poc_stage2/hijacking_wrapper.py` `require_api_keys` — hf: needs only GEMINI key.
+  - EDIT `poc_stage2/run_phase4_cot_baseline.py` — sanitize `hf:org/model` for filenames.
+  - NEW `slurm_scripts/run_phase4_hf_local.slurm` — l40s GPU, `poc_stage2` env, **node-local HF
+    cache `$SLURM_TMPDIR`** (user constraint: do NOT persist weights to project cache).
+  - **Bug-check subagent: A–G ALL PASS** (signature contract, hf: branch attrs, no enum leak,
+    node-local cache, arg match).
+  - Select via `--target-model hf:<id>`. Model set (§31.2): DeepSeek-R1-Distill-Llama-8B (true
+    `<think>`, 8B), Phi-4-reasoning, gemma (user-requested; note gemma-3 isn't native-reasoning).
+- **Smoke submitted: job 672989** — `hf:deepseek-ai/DeepSeek-R1-Distill-Llama-8B`, 2 goals, 1×1.
+
+**Phase-3 Qwen3 MAC (672744) + GCG probe (672793) COMPLETED** (dropped from queue) — read their
+`outputs/phase3_tropt/*/triggers.jsonl` next iteration (MAC full dev-train-20; GCG per-behavior
+timing to size the full GCG run).
+
 **Next iterations (in order)**
-- 672820 done → read StrongREJECT ASR, finalize the Phase-4 registry row + §8.5 headroom
-  (compare gemini-judge 0.84 vs StrongREJECT; the two diverge on CoT models per prior work).
-- Phase-3 jobs: if still PENDING >30m → `scancel` + resubmit. When they run: read GCG probe
-  timing → size/shard full GCG; read MAC triggers.
-- Re-run advbench_full_0333 through Phase-4 to close the 24/25 gap.
-- affirm-target GCG (naive baseline, expected weak — shows the CoT-fix matters).
+- 672989 smoke → verify HF-local rows (non-empty target_response, judge_score; project cache
+  unchanged) → then full dev-25 on ≥3 open-source thinking models (DeepSeek-R1-Distill, Phi-4-
+  reasoning, gemma) → StrongREJECT score → `CROSS_MODEL_COT_BENCHMARK_REPORT.md` + registry rows.
+- Read Phase-3 MAC/GCG-probe triggers → size/submit full Qwen3 GCG → then evaluate all triggers
+  via free-gen + StrongREJECT (frozen protocol).
+- Re-run advbench_full_0333 (Phase-4 gap).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.

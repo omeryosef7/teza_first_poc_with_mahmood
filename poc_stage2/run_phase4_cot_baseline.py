@@ -64,7 +64,9 @@ def main() -> int:
     out_dir = PROJECT_ROOT / args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     slice_tag = f"dev{len(goals)}" if not args.limit else f"smoke{len(goals)}"
-    stem = f"phase4_cot_{args.target_model}_{slice_tag}"
+    # sanitize target_model for filenames (hf:org/model -> hf_org_model)
+    safe_model = args.target_model.replace("hf:", "hf_").replace("/", "_").replace(":", "_")
+    stem = f"phase4_cot_{safe_model}_{slice_tag}"
 
     # task_id <-> goal_index map (goal_index is the absolute_index the wrapper stamps,
     # here start_index=0 so goal_index == position in our list)

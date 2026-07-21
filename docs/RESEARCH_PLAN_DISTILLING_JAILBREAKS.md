@@ -2154,6 +2154,59 @@ This should be the organizing structure for the codebase, experiments, future pr
 
 ---
 
+## 31. Phase 4X — Cross-Model CoT-Hijacking Benchmark (AMENDMENT — added on user request 2026-07-21)
+
+**Logical position:** executes **after Phase 4** (§8, the gpt-o4-mini dev-25 CoT-Hijacking baseline)
+and before Phase 5 (§9). Added by the plan owner; the rest of the plan (§1–30) is unchanged.
+
+### 31.1 Goal
+Measure how **general** the reasoning-model vulnerability is: run the *same* CoT-Hijacking attack
+on the *same* 25 development goals against **≥3 additional thinking models** beyond gpt-o4-mini.
+This gives RQ1 breadth and identifies which model(s) have enough attack headroom to serve as a
+white-box mechanistic target later (Phases 5–7).
+
+### 31.2 Model set — OPEN-SOURCE thinking models ONLY (≥3 NEW; user hard constraint 2026-07-21)
+**Do NOT attack proprietary / public-API models** (no gpt-*, gemini-*, grok, claude as *targets*).
+The attack TARGET must be an **open-source, locally-run HF thinking model**. "New" = beyond Qwen3
+(the GCG work). Candidates (all open-weight reasoning models):
+  - `gemma` — the group's "gemma4" (prior `gemma4-e4b-it` / `google/gemma-3-*`) — **user-requested**
+  - `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` — reasoning, Llama-based (non-Qwen), MIT
+  - `microsoft/Phi-4-reasoning` (or `Phi-4-mini-reasoning`) — native reasoning, open (MIT)
+  - (optional 4th) another open reasoning model, e.g. `nvidia/*-reasoning` or a QwQ variant if a
+    non-Qwen set isn't reachable.
+**Note:** the attacker LM and judge remain Gemini API (that's the harness, not a *target under
+attack*); only the **target** must be open-source. If the user wants attacker/judge open-source
+too, swap them to a local model as a follow-up.
+
+### 31.3 Constraint — DO NOT cache local model weights (user)
+Local HF model weights must **not** be persisted to the project HF cache (`.cache/huggingface`).
+Download to **node-local ephemeral storage** (`$SLURM_TMPDIR` or `/tmp/$SLURM_JOB_ID`) via
+`HF_HOME`/`HF_HUB_CACHE`, wiped when the job ends. API targets have no weights (n/a).
+
+### 31.4 Method (reuse, no new attack logic; open-source target only)
+- Same dev-25 goals (`data/manifests/dev_25.csv`), same StrongREJECT scoring
+  (`slurm_scripts/run_strongreject_cpu.slurm`, frozen protocol §6). Reuse
+  `poc_stage2/run_phase4_cot_baseline.py`.
+- The CoT-Hijacking core currently targets models via LiteLLM (API only). Add a **local open-source
+  HF target path** so the **target** is a local thinking model run on GPU (l40s). Options to
+  evaluate (minimal, reuse-first): (a) serve the local model behind a local OpenAI-compatible
+  endpoint (vLLM) that LiteLLM calls at `api_base=localhost`; or (b) a minimal HF-`generate()`
+  target backend implementing the core's target interface. Weights → node-local ephemeral storage
+  (31.3), NOT the project cache.
+- ~~API-target track~~ REMOVED per user (2026-07-21): do not attack proprietary API models.
+
+### 31.5 Deliverables
+Per model: behavior-level **StrongREJECT ASR** (any-stream ≥0.5) + gemini-judge ASR, per-category
+breakdown, clean-vs-attacked headroom, and a `results/EXPERIMENT_REGISTRY.csv` row.
+Cross-model synthesis: `docs/CROSS_MODEL_COT_BENCHMARK_REPORT.md` — which reasoning models are
+most/least vulnerable and how that tracks model family / thinking style.
+
+### 31.6 Decision gate
+A model with meaningful attack headroom **and** white-box access becomes a candidate mechanistic
+target feeding Phase 5+. API-only models give breadth but cannot be dissected mechanistically.
+
+---
+
 ## Working Rules (operational constraints for whoever executes this plan)
 
 * Don't run more than 6 SLURM runs at once. Use the configs that you know are working. If you have anything in pending for more than 30m, cancel and resubmit.

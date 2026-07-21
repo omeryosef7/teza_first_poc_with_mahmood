@@ -69,6 +69,13 @@ def normalize_target_model_name(target_model: str) -> str:
 
 
 def require_api_keys(target_model: str) -> None:
+    # Local open-source HF target ("hf:<repo_id>"): only the attacker/judge API key
+    # (Gemini) is needed; the target runs locally on GPU.
+    if target_model.startswith("hf:"):
+        attacker_env = MODEL_TO_ENV_VAR[DEFAULT_ATTACK_MODEL]
+        if not os.getenv(attacker_env):
+            raise RuntimeError(f"Missing required API credentials for this run. Set: {attacker_env}")
+        return
     normalized_target_model = normalize_target_model_name(target_model)
     if normalized_target_model not in MODEL_TO_ENV_VAR:
         raise ValueError("Unsupported target model: {0}".format(target_model))
