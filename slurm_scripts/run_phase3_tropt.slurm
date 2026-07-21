@@ -37,15 +37,17 @@ MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B}"
 MANIFEST="${MANIFEST:-data/manifests/dev_train_20.csv}"
 OUT_DIR="${OUT_DIR:-outputs/phase3_tropt/${OPTIMIZER}_qwen3_${TARGET_STYLE}}"
 LIMIT="${LIMIT:-0}"
+OFFSET="${OFFSET:-0}"
 NUM_STEPS="${NUM_STEPS:-0}"
 
-echo "[phase3] opt=$OPTIMIZER style=$TARGET_STYLE model=$MODEL_NAME manifest=$MANIFEST out=$OUT_DIR"
+echo "[phase3] opt=$OPTIMIZER style=$TARGET_STYLE model=$MODEL_NAME manifest=$MANIFEST out=$OUT_DIR offset=$OFFSET limit=$LIMIT"
 "$TROPT_PY" -u scripts/phase3_tropt_optimize.py \
     --optimizer "$OPTIMIZER" \
     --target-style "$TARGET_STYLE" \
     --model-name "$MODEL_NAME" \
     --manifest "$MANIFEST" \
     --out-dir "$OUT_DIR" \
+    --offset "$OFFSET" \
     --limit "$LIMIT" \
     --num-steps "$NUM_STEPS"
 echo "[phase3] done"

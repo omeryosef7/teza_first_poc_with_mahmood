@@ -345,12 +345,28 @@ models** as the TARGET.
 `outputs/phase3_tropt/*/triggers.jsonl` next iteration (MAC full dev-train-20; GCG per-behavior
 timing to size the full GCG run).
 
+### 2026-07-21 — Iteration 14
+**Phase-3 results read + full GCG launched (sharded):**
+- MAC done: `outputs/phase3_tropt/mac_qwen3_empty_think/triggers.jsonl` (20 behaviors, mean loss
+  1.47, 20 min total, 61s/behavior).
+- GCG probe: **41.8 min/behavior** on Qwen3-14B (500 steps, loss 0.40) → 20 behaviors = 13.9h >
+  8h wall. **Sharded GCG:** added `--offset` to `scripts/phase3_tropt_optimize.py` (+ OFFSET in
+  the slurm); submitted **2 parallel shards** — 673018 (beh 0–9) + 673043 (beh 10–19), separate
+  out-dirs `outputs/phase3_tropt/gcg_qwen3_empty_think_sh{0,1}/` (append not concurrency-safe).
+  Slicing verified disjoint+complete. ~7h/shard.
+**Phase-4X HF-local: bug found by smoke + fixed.**
+- Smoke 672989 FAILED: `apply_chat_template(return_tensors="pt")` returns a BatchEncoding in
+  transformers 5.12, so `generate(input_ids)` hit `AttributeError` on `.shape`. **Fixed**
+  `models/hf_local.py` → `return_dict=True` + `generate(**inputs)` + `out[0, prompt_len:]`
+  (also passes attention_mask). **Re-smoke submitted: job 673046.**
+- **Bug-check subagent: both changes (offset, hf_local fix) PASS** (transformers 5.12.1 confirmed
+  to accept return_dict; slicing correct).
+
 **Next iterations (in order)**
-- 672989 smoke → verify HF-local rows (non-empty target_response, judge_score; project cache
-  unchanged) → then full dev-25 on ≥3 open-source thinking models (DeepSeek-R1-Distill, Phi-4-
-  reasoning, gemma) → StrongREJECT score → `CROSS_MODEL_COT_BENCHMARK_REPORT.md` + registry rows.
-- Read Phase-3 MAC/GCG-probe triggers → size/submit full Qwen3 GCG → then evaluate all triggers
-  via free-gen + StrongREJECT (frozen protocol).
+- 673046 re-smoke → verify HF-local rows (non-empty target_response + judge_score; project cache
+  unchanged) → then full dev-25 on ≥3 open-source thinking models → StrongREJECT + cross-model report.
+- GCG shards 673018/673043 done → merge triggers; evaluate all Phase-3 triggers (MAC+GCG) via
+  free-gen + StrongREJECT vs no-suffix/random (frozen protocol) → registry rows.
 - Re-run advbench_full_0333 (Phase-4 gap).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.

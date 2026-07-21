@@ -45,15 +45,18 @@ class HFLocalLLM(BaseLLM):
         do_sample = temperature is not None and float(temperature) > 0
         outputs = []
         for conv in convs_list:
-            input_ids = self.tokenizer.apply_chat_template(
-                conv, add_generation_prompt=True, return_tensors="pt"
+            # return_dict=True gives input_ids + attention_mask (transformers>=5 returns a
+            # BatchEncoding, not a bare tensor); pass the whole encoding to generate().
+            inputs = self.tokenizer.apply_chat_template(
+                conv, add_generation_prompt=True, return_tensors="pt", return_dict=True
             ).to(self.model.device)
+            prompt_len = inputs["input_ids"].shape[1]
             gen_kwargs = dict(max_new_tokens=cap, do_sample=do_sample,
                               pad_token_id=self.tokenizer.pad_token_id)
             if do_sample:
                 gen_kwargs.update(temperature=float(temperature), top_p=float(top_p))
-            out = self.model.generate(input_ids, **gen_kwargs)
-            new_tokens = out[0, input_ids.shape[1]:]
+            out = self.model.generate(**inputs, **gen_kwargs)
+            new_tokens = out[0, prompt_len:]
             text = self.tokenizer.decode(new_tokens, skip_special_tokens=True)
             outputs.append(self._final_answer(text))
         return outputs

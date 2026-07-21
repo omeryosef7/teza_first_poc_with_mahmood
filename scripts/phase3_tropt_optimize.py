@@ -83,7 +83,8 @@ def main() -> int:
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--num-steps", type=int, default=0,
                     help="MAC only (gcg/gcg_hij hardcode steps); 0=recipe default")
-    ap.add_argument("--limit", type=int, default=0, help="first N behaviors; 0=all")
+    ap.add_argument("--limit", type=int, default=0, help="first N behaviors after offset; 0=all")
+    ap.add_argument("--offset", type=int, default=0, help="skip first N behaviors (sharding)")
     args = ap.parse_args()
 
     # Import TROPT lazily so --help works without the venv.
@@ -92,6 +93,11 @@ def main() -> int:
     from tropt.recipe_hub import gcg_hij__bentov2025
 
     behaviors = load_behaviors(ROOT / args.manifest)
+    # shard support: take behaviors[offset : offset+limit] (limit=0 => to the end).
+    # Parallel shards must use SEPARATE --out-dir (triggers.jsonl append is not
+    # concurrency-safe across jobs).
+    if args.offset:
+        behaviors = behaviors[args.offset:]
     if args.limit:
         behaviors = behaviors[: args.limit]
 
