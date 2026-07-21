@@ -213,9 +213,24 @@ script requests 2 GPUs, so a cpu variant or env-reuse decision comes next).
 (CPU-time>wall-time is normal for uv). `.venv` stays small until all wheels download, then links.
 Big CUDA/torch wheels over slow NFS → ~35min+ and counting. Will verify `list_recipes()` on finish.
 
+### 2026-07-21 — Iteration 7
+**Both background tracks progressing (nothing stuck):**
+- Phase-4 full baseline **672570 still RUNNING** (~32 min, 194 log lines — working through 25
+  goals × 3 streams × 3 iters).
+- TROPT install still downloading: uv cache **2.0G → 3.6G** (big CUDA wheels over slow NFS),
+  multi-threaded, active sockets. `.venv` links only after all downloads finish.
+
+**Prep done (reuse, no logic duplication):** new `slurm_scripts/run_strongreject_cpu.slurm` —
+a general **cpu-killable** StrongREJECT scorer (the existing `stage3_strongreject.slurm`
+wastefully requests 2 GPUs for an API-only rubric). Reuses `poc_stage3.run_strongreject_scoring`
++ `analyze_strongreject_results`, env-driven (`INPUT_JSONL`, derives sibling outputs), `--resume`
+safe. **Bug-check subagent: all 6 items PASS** (arg match, schema compat with Phase-4 rows, no
+clobbering). Ready to score 672570's output next iteration.
+
 **Next iterations (in order)**
-- When 672570 done → StrongREJECT-score it, compute §8.5 headroom (clean vs attacked ASR,
-  crackable behaviors, per-category), append a row to `results/EXPERIMENT_REGISTRY.csv`.
+- When 672570 done → `sbatch --export=ALL,INPUT_JSONL=outputs/phase4_cot_baseline/phase4_cot_gpt-o4-mini_dev25.jsonl slurm_scripts/run_strongreject_cpu.slurm`,
+  then compute §8.5 headroom (clean vs attacked ASR, crackable behaviors, per-category) and
+  append a row to `results/EXPERIMENT_REGISTRY.csv`.
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
