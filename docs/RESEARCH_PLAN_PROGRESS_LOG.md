@@ -251,11 +251,29 @@ optimizer/objective work is composition, not new code:
 - Phase-3 runner NOT written yet (deferred until install done so I can test imports + verify
   target formatting on a small model first, rather than ship untested code).
 
+### 2026-07-21 — Iteration 9
+**Status:** Phase-4 672570 still RUNNING (~1h26m; slow o4-mini). TROPT install on the **final
+wheel** — all CUDA wheels (nccl/cublas/cudnn/triton) downloaded, now pulling `torch` (792MB)
+slowly; `.venv` links after. Not stuck.
+
+**Phase-3 driver written (reuse TROPT recipes; tested statically, NOT run blind):**
+- `scripts/phase3_tropt_optimize.py` — loops dev-train-20, loads one `LMHFModel(Qwen/Qwen3-14B)`
+  reused via `model_obj=` across behaviors, resume-safe (skips done task_ids). Optimizers:
+  `--optimizer gcg|mac|gcg_hij` → `gcg__zou2023` / `mac__wang2024` / `gcg_hij__bentov2025`.
+  Thinking-model target via `--target-style affirm|empty_think|nonempty_think`.
+- Caught + fixed a real bug pre-run: `gcg__zou2023`/`gcg_hij__bentov2025` take **no** `num_steps`
+  (only MAC does) — `--num-steps` now MAC-only.
+- **Bug-check subagent: ALL PASS** — verified every recipe call's param names against the actual
+  TROPT sources (`gcg_hij` uses `target_output` not `target_response`; imports/exports exist;
+  `OptimizerResult.best_trigger_str/best_loss`; eager-attention setup for gcg_hij). `--help`
+  works without TROPT (lazy import).
+- NOT yet run (install pending). Gate: smoke on `google/gemma-3-270m-it --limit 1` first.
+
 **Next iterations (in order)**
-- When 672570 done → `sbatch --export=ALL,INPUT_JSONL=outputs/phase4_cot_baseline/phase4_cot_gpt-o4-mini_dev25.jsonl slurm_scripts/run_strongreject_cpu.slurm`,
-  then §8.5 headroom + registry row.
-- When TROPT `.venv` ready → `list_recipes()` smoke on `google/gemma-3-270m-it` (tiny), then
-  write + test the Phase-3 driver, then SLURM GCG+MAC on Qwen3 dev-train-20 (l40s).
+- When 672570 done → score with `slurm_scripts/run_strongreject_cpu.slurm`, §8.5 headroom + registry row.
+- When TROPT `.venv` ready → `list_recipes()`, smoke `phase3_tropt_optimize.py` on gemma-270m,
+  then write a Phase-3 SLURM wrapper (l40s) + submit GCG+MAC on Qwen3 dev-train-20
+  (empty_think target). Then evaluate triggers via free-gen + StrongREJECT (frozen protocol).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
