@@ -91,10 +91,32 @@ repo). Phase 2 comes first in order and is CPU/API-only, so progressed that.
 - Determinism completion criterion (§6): configured (greedy `do_sample=false`) but not yet
   GPU-verified; assert on first generation run.
 
+**USER DECISIONS (2026-07-21, end of iter 2):**
+1. **TROPT: skip for now** — reuse the in-repo GCG (`llm-attacks/`) as the discrete optimizer.
+   Phase 3 will reproduce baselines with llm-attacks GCG instead of TROPT; revisit TROPT/MAC
+   only if the user later supplies the repo. Plan is unchanged (do not edit it) — this is an
+   execution substitution recorded here.
+2. **Phase 4: the CoT-Hijacking attack is ALREADY implemented + wrapped** in-repo; API keys are
+   in `.env` (OPENAI_API_KEY, GEMINI_API_KEY, HF_TOKEN). External API runs are authorized.
+   → **Reuse, do not rebuild.**
+
+**Phase 4 recon (located the existing wrapper):**
+- Wrapper: `poc_stage2/hijacking_wrapper.py` (+ `poc_stage2/schemas.py`,
+  `poc_stage2/validate_hijacking_artifacts.py`). Calls `Chain_of_Thought_Hijacking/Hijacking/`.
+- Defaults: attacker `gemini-2.5-flash`, judge `gemini-judge`, dataset `walledai/HarmBench`
+  (`standard` split), target = an **API** model (o4-mini / gpt-5-mini / claude-4-sonnet /
+  gemini / grok). Prior outputs exist: `outputs/hijacking_baseline_gpt-o4-mini_*`.
+- **Open design point for Phase 4 (to resolve next fire):** this wrapper is **black-box API**;
+  the mechanistic distillation (Phases 5–7) needs **white-box Qwen3** activations. So either
+  (a) run the RQ1 baseline on API models as-is (reproduces the paper, but can't be dissected),
+  and/or (b) target local Qwen3/Gemma for the version we mechanistically analyze. Need to
+  check whether the wrapper/attack can target our local HF models + accept AdvBench dev-25
+  goals (`data/manifests/dev_25.csv`) instead of HarmBench. Read the wrapper's goal-loading +
+  target-model path next.
+
 **Next iterations (in order)**
-- **Phase 3 is blocked on TROPT.** Options to surface to the user: (a) locate/clone the TROPT
-  repo (external), (b) proceed Phase 4 (real CoT-Hijacking attack baseline) first since the
-  reference impl already exists in-repo (`Chain_of_Thought_Hijacking/Hijacking/`) and is
-  API-based (no TROPT), (c) both in parallel. Phase 4 needs API keys (`.env`) + is the RQ1
-  baseline — good candidate to advance next without TROPT.
-- Meanwhile: build the judge confusion-matrix script once any human labels exist.
+- Phase 4: inspect wrapper goal-loading & whether local Qwen3 target is supported; then run the
+  CoT-Hijacking baseline on dev-25 with the §8.4 controls; measure clean vs attacked ASR +
+  headroom (§8.5). Route generations through the frozen eval protocol + `validate_eval_results.py`.
+- Phase 3 (parallel, no TROPT): reproduce prefix-CE GCG via `llm-attacks/` on dev-train-20.
+- Judge confusion-matrix script once human labels exist.
