@@ -227,10 +227,35 @@ wastefully requests 2 GPUs for an API-only rubric). Reuses `poc_stage3.run_stron
 safe. **Bug-check subagent: all 6 items PASS** (arg match, schema compat with Phase-4 rows, no
 clobbering). Ready to score 672570's output next iteration.
 
+### 2026-07-21 — Iteration 8
+**Status:** Phase-4 full baseline 672570 still RUNNING (~56 min, slow o4-mini reasoning, on goal
+iters). TROPT install still going (~95 min): finished the big downloads, now **unpacking**
+cudnn/triton `.so` libs into cache (`.tmp` dirs) — slow on NFS but progressing (cache 4.7G).
+Not stuck.
+
+**★ TROPT recipe reconnaissance (read the on-disk recipe sources — big de-risk):**
+Mapped plan phases → ready TROPT recipes (all in `TROPT/tropt/recipe_hub/`), so most of the
+optimizer/objective work is composition, not new code:
+| Plan phase | TROPT recipe | notes |
+|---|---|---|
+| Ph3 GCG baseline (B1/B2) | `gcg__zou2023(model_name, instruction, target_response, model_obj, tracker)` | PrefillCELoss, 500 steps, 512 cand, ASCII+no-special constraints, retokenize. `GCG__zou2023.py:34` |
+| Ph3 MAC (B3/B5) | `mac__wang2024(model_name, instruction, target_response, num_steps=20, jailbroken_model_name=None)` | GCGPlusOptimizer + PrefillCELoss. `jailbroken_model_name` → generated target (plan B6). `MAC__wang2024.py:14` |
+| **Ph8 attention-hijack (§12.4)** | **`gcg_hij__bentov2025(...)`** + `attn_gcg__wang2024` | GCG + `AttentionEnhLoss` (trigger→chat-template-after, mid-layers). **Pre-built = Phase-8 objective.** Needs `use_eager_attention=True`, `use_prefix_cache=False`. `GCGHij.py` |
+| Ph12 universal (multi-prompt) | `GCGMult__zou2023.py` | multi-template universal trigger |
+- **Model id:** `Qwen/Qwen3-14B` (also 8B available). Large → L40S (48GB) SLURM.
+- **Thinking-model target (critical):** pass `target_response = "<think>\n\n</think>\n\n" + affirmative`
+  (SKILL §7) — matches our prior 5A CoT-prefix finding. Our manifest already stores a CoT-wrapped
+  `safe_target_prefix` (non-empty think "Okay, I can help..."); will A/B empty vs non-empty think.
+- **Reuse pattern:** load one `LMHFModel(model_name="Qwen/Qwen3-14B", ...)` and pass `model_obj=`
+  to the recipe across all dev-train-20 behaviors (avoids reloading the 14B each time).
+- Phase-3 runner NOT written yet (deferred until install done so I can test imports + verify
+  target formatting on a small model first, rather than ship untested code).
+
 **Next iterations (in order)**
 - When 672570 done → `sbatch --export=ALL,INPUT_JSONL=outputs/phase4_cot_baseline/phase4_cot_gpt-o4-mini_dev25.jsonl slurm_scripts/run_strongreject_cpu.slurm`,
-  then compute §8.5 headroom (clean vs attacked ASR, crackable behaviors, per-category) and
-  append a row to `results/EXPERIMENT_REGISTRY.csv`.
+  then §8.5 headroom + registry row.
+- When TROPT `.venv` ready → `list_recipes()` smoke on `google/gemma-3-270m-it` (tiny), then
+  write + test the Phase-3 driver, then SLURM GCG+MAC on Qwen3 dev-train-20 (l40s).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
