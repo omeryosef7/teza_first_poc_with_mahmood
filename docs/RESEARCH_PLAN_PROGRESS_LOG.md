@@ -377,13 +377,22 @@ leak; unit-tested: `ĊOkay,ĠsoĠI'm` → `\nOkay, so I'm`), think-strip now kee
 **Phase-3 GCG shards 673018/673043 still running** (~25min; first behavior ~42min, so triggers
 not written yet).
 
+### 2026-07-21 — Iteration 16 (monitoring + recon)
+Smoke v2 (673086) still running (generating DeepSeek response). GCG shards 673018/673043 running
+(~30min; first behavior ~42min → no triggers yet). Nothing to launch until the smoke gate passes
+(kept SLURM budget free for the 3 model runs). **Recon for the next step (reuse-first):**
+Phase-3 trigger evaluation (Qwen3 free-gen + StrongREJECT) should reuse
+`poc_stage_gcg_early/evaluate_optimized_suffixes.py` (existing suffix→free-gen→StrongREJECT
+harness) + `evaluate_cross_model_transfer.py`; adapt its input to TROPT's
+`outputs/phase3_tropt/*/triggers.jsonl` (fields: task_id, best_trigger_str, template, target).
+
 **Next iterations (in order)**
-- 673086 smoke → confirm target_response is clean readable text + post-`</think>` answer → then
-  full dev-25 on ≥3 open-source thinking models (DeepSeek-R1-Distill-Llama-8B, Phi-4-reasoning,
-  gemma) — bound streams/iters to fit 8h (local gen slow: ~2.5min/goal-unit) → StrongREJECT +
-  `CROSS_MODEL_COT_BENCHMARK_REPORT.md`.
-- GCG shards done → merge; evaluate MAC+GCG triggers via free-gen + StrongREJECT (frozen protocol).
-- Re-run advbench_full_0333 (Phase-4 gap).
+- 673086 smoke → confirm clean readable target_response (post-`</think>`) → then full dev-25 on ≥3
+  open-source thinking models (bound streams/iters to fit 8h; local gen ~2.5min/goal-unit) →
+  StrongREJECT + `CROSS_MODEL_COT_BENCHMARK_REPORT.md`.
+- GCG shards done → merge; evaluate MAC+GCG triggers via the reused
+  `evaluate_optimized_suffixes.py` path (frozen greedy protocol) vs no-suffix/random → registry rows.
+- Re-run advbench_full_0333 (Phase-4 gap) — defer until budget frees.
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
