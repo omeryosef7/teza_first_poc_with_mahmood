@@ -281,12 +281,28 @@ fits 48GB), runs under the **TROPT venv** (not conda), reuses the existing HF ca
 MODEL_NAME/MANIFEST/OUT_DIR/LIMIT/NUM_STEPS). Verified: bash -n OK, venv python exists,
 slurm args ↔ driver argparse match exactly.
 
+### 2026-07-21 — Iteration 11
+**Phase-3 path VALIDATED end-to-end ✅:** smoke job 672727 (gemma-3-270m, gcg, empty_think,
+limit 1) ran 500/500 GCG steps in ~7 min on l40s node n-802, loss 0.33, wrote a well-formed
+`outputs/phase3_tropt/smoke_gemma/triggers.jsonl` (all 12 fields; empty_think target correctly
+`<think>\n\n</think>\n\nSure, here is...`; real GCG suffix). TROPT `list_recipes()` = 38.
+Confirms login-node import hang was just the broken login GPU.
+
+**Qwen3 Phase-3 runs SUBMITTED (l40s):**
+- **672744** — MAC full dev-train-20 (`mac`, empty_think, 20 steps) → `outputs/phase3_tropt/mac_qwen3_empty_think/`.
+- **672793** — GCG **timing probe** (`gcg`, empty_think, LIMIT=1) → `outputs/phase3_tropt/gcg_qwen3_probe/`.
+- **Why probe-first:** gemma-270m did 500 GCG steps in 7 min (1.18 it/s); Qwen3-14B is far slower,
+  so 500-step GCG × 20 behaviors likely blows the 8h wall. Probe measures per-behavior 14B cost →
+  then decide sharding (≤6 parallel jobs) vs step reduction for the full GCG run. MAC (20 steps)
+  is tractable in one job.
+**Phase-4 672570:** 21/25 goals done, ~2h31m — nearly complete.
+
 **Next iterations (in order)**
-- Confirm `import tropt` works → smoke `phase3_tropt_optimize.py` on `google/gemma-3-270m-it
-  --limit 1` (via TROPT venv, CPU/quick) → then submit `run_phase3_tropt.slurm` (gcg + mac,
-  empty_think) on Qwen3 dev-train-20 (l40s).
-- 672570 done → score with `run_strongreject_cpu.slurm`, §8.5 headroom + registry row.
-- Then evaluate Phase-3 triggers via free-gen + StrongREJECT (frozen protocol).
+- Read 672793 probe timing → submit full GCG on dev-train-20 (sharded if needed, ≤6 jobs).
+- 672570 done → `run_strongreject_cpu.slurm`, §8.5 headroom + registry row.
+- When MAC/GCG triggers land → evaluate via free-gen + StrongREJECT (frozen greedy protocol),
+  compare to no-suffix/random baselines, append registry rows.
+- Also queue: affirm-target GCG (naive baseline, expected weak — demonstrates the CoT-fix matters).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
