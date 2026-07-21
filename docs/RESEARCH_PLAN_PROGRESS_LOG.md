@@ -20,7 +20,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 | 1 | Redesign dataset split | ✅ (external_transfer deferred to Ph15) |
 | 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
 | 3 | Reproduce baselines in TROPT | 🔄 TROPT installed; driver+slurm ready; smoke next |
-| 4 | Real attack baseline (CoT Hijacking) | 🔄 validated (2/3 smoke); full dev-25 running |
+| 4 | Real attack baseline (CoT Hijacking) | ✅ dev-25 done: ASR 0.84 (gemini-judge); SR scoring pending |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
 ---
@@ -297,12 +297,29 @@ Confirms login-node import hang was just the broken login GPU.
   is tractable in one job.
 **Phase-4 672570:** 21/25 goals done, ~2h31m — nearly complete.
 
+### 2026-07-21 — Iteration 12
+**★ Phase-4 RQ1 baseline DONE (job 672570, COMPLETED 2h55m):**
+`outputs/phase4_cot_baseline/phase4_cot_gpt-o4-mini_dev25.jsonl` (114 rows).
+**CoT-Hijacking ASR = 0.84 (21/25)** on gpt-o4-mini, gemini-judge. Verified rows use our
+**AdvBench dev-25** goals (the summary's `dataset: HarmBench` is a stale default label — the
+`goals=` override bypasses load_goals; task_ids map correctly).
+- **Data gap:** goal_index 16 = **advbench_full_0333** produced 0 conversation rows (silent
+  attacker/API failure) → 24/25 behaviors have data. Noted in registry; re-run just that goal later.
+- **StrongREJECT scoring submitted: job 672820** (cpu-killable) → frozen-protocol ASR (replaces
+  the gemini-judge number as headline). Provisional registry row appended to
+  `results/EXPERIMENT_REGISTRY.csv` (status=scored_pending).
+
+**Phase-3 Qwen3 jobs (672744 MAC, 672793 GCG probe): still PENDING** ~29 min on the contended
+l40s killable queue (Priority). Under the 30-min rule this iteration; **cancel+resubmit next
+iteration if still pending.**
+
 **Next iterations (in order)**
-- Read 672793 probe timing → submit full GCG on dev-train-20 (sharded if needed, ≤6 jobs).
-- 672570 done → `run_strongreject_cpu.slurm`, §8.5 headroom + registry row.
-- When MAC/GCG triggers land → evaluate via free-gen + StrongREJECT (frozen greedy protocol),
-  compare to no-suffix/random baselines, append registry rows.
-- Also queue: affirm-target GCG (naive baseline, expected weak — demonstrates the CoT-fix matters).
+- 672820 done → read StrongREJECT ASR, finalize the Phase-4 registry row + §8.5 headroom
+  (compare gemini-judge 0.84 vs StrongREJECT; the two diverge on CoT models per prior work).
+- Phase-3 jobs: if still PENDING >30m → `scancel` + resubmit. When they run: read GCG probe
+  timing → size/shard full GCG; read MAC triggers.
+- Re-run advbench_full_0333 through Phase-4 to close the 24/25 gap.
+- affirm-target GCG (naive baseline, expected weak — shows the CoT-fix matters).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
