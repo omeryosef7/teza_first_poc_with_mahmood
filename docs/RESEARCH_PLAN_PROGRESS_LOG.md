@@ -362,11 +362,27 @@ timing to size the full GCG run).
 - **Bug-check subagent: both changes (offset, hf_local fix) PASS** (transformers 5.12.1 confirmed
   to accept return_dict; slicing correct).
 
+### 2026-07-21 — Iteration 15
+**Phase-4X re-smoke (673046) ran end-to-end** (DeepSeek-R1-Distill-Llama-8B, ASR 0.5/2) and
+**confirmed the no-cache constraint** (project `.cache/huggingface` stayed 86G — weights went to
+node-local `/tmp`). BUT the smoke exposed **2 output bugs**:
+1. `target_response` was garbled byte-level BPE (`ĊOkay,ĠsoĠI'm...`) — the tokenizer's byte-decoder
+   didn't apply, so the judge scored garbage (0.5 ASR unreliable).
+2. `<think>` not stripped — DeepSeek's chat template injects the opening `<think>` into the prompt,
+   so the output has only `</think>`; the old `<think>.*?</think>` regex never matched.
+**Fixed `models/hf_local.py`:** added a GPT-2/Llama byte-level repair (fires only on `Ġ`/`Ċ`
+leak; unit-tested: `ĊOkay,ĠsoĠI'm` → `\nOkay, so I'm`), think-strip now keeps text after the last
+`</think>`, tokenizer loaded `use_fast=True`. **Re-smoke v2 submitted: job 673086**
+(→ `outputs/phase4_hf_local_v2/`). Full 3-model runs GATED on this smoke showing clean text.
+**Phase-3 GCG shards 673018/673043 still running** (~25min; first behavior ~42min, so triggers
+not written yet).
+
 **Next iterations (in order)**
-- 673046 re-smoke → verify HF-local rows (non-empty target_response + judge_score; project cache
-  unchanged) → then full dev-25 on ≥3 open-source thinking models → StrongREJECT + cross-model report.
-- GCG shards 673018/673043 done → merge triggers; evaluate all Phase-3 triggers (MAC+GCG) via
-  free-gen + StrongREJECT vs no-suffix/random (frozen protocol) → registry rows.
+- 673086 smoke → confirm target_response is clean readable text + post-`</think>` answer → then
+  full dev-25 on ≥3 open-source thinking models (DeepSeek-R1-Distill-Llama-8B, Phi-4-reasoning,
+  gemma) — bound streams/iters to fit 8h (local gen slow: ~2.5min/goal-unit) → StrongREJECT +
+  `CROSS_MODEL_COT_BENCHMARK_REPORT.md`.
+- GCG shards done → merge; evaluate MAC+GCG triggers via free-gen + StrongREJECT (frozen protocol).
 - Re-run advbench_full_0333 (Phase-4 gap).
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.

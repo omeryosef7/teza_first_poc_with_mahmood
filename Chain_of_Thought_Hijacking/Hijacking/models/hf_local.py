@@ -7,8 +7,8 @@ string of the form "hf:<hf_repo_id>". Weights load from whatever HF cache the
 environment points at (the SLURM script points HF_HOME at node-local storage,
 so nothing is written to the project cache).
 """
+import functools
 import os
-import re
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -17,7 +17,22 @@ from utils.logger import logger
 
 from .base import BaseLLM
 
-_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+@functools.lru_cache(maxsize=1)
+def _byte_decoder():
+    # Inverse of GPT-2/Llama bytes_to_unicode; used to repair byte-level BPE that
+    # leaks through .decode() on some (slow) tokenizers (e.g. "Ġ"/"Ċ" artifacts).
+    bs = (list(range(ord("!"), ord("~") + 1))
+          + list(range(ord("¡"), ord("¬") + 1))
+          + list(range(ord("®"), ord("ÿ") + 1)))
+    cs = bs[:]
+    n = 0
+    for b in range(256):
+        if b not in bs:
+            bs.append(b)
+            cs.append(256 + n)
+            n += 1
+    return {chr(c): b for b, c in zip(bs, cs)}
 
 
 class HFLocalLLM(BaseLLM):
@@ -25,7 +40,7 @@ class HFLocalLLM(BaseLLM):
         self.hf_id = hf_id
         self.max_new_tokens = int(os.getenv("HF_TARGET_MAX_NEW_TOKENS", max_new_tokens))
         logger.info(f"Loading local HF target {hf_id} (max_new_tokens={self.max_new_tokens})")
-        self.tokenizer = AutoTokenizer.from_pretrained(hf_id)
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_id, use_fast=True)
         self.model = AutoModelForCausalLM.from_pretrained(
             hf_id, torch_dtype=torch.bfloat16, device_map="cuda"
         )
@@ -33,11 +48,25 @@ class HFLocalLLM(BaseLLM):
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+    @staticmethod
+    def _repair_bytelevel(text: str) -> str:
+        # Only fires when raw byte-level BPE markers leaked through decode.
+        if "Ġ" not in text and "Ċ" not in text:
+            return text
+        dec = _byte_decoder()
+        try:
+            return bytearray(dec[ch] for ch in text).decode("utf-8", errors="replace")
+        except KeyError:
+            return text
+
     def _final_answer(self, text: str) -> str:
-        # Return the post-<think> answer; fall back to raw text if the whole
-        # generation stayed inside a (possibly truncated) think block.
-        stripped = _THINK_RE.sub("", text).strip()
-        return stripped if stripped else text.strip()
+        text = self._repair_bytelevel(text)
+        # Reasoning models emit a closing </think> even when the opening <think>
+        # was injected by the chat template (so it's absent from the output).
+        # Keep only the final answer after the last </think>.
+        if "</think>" in text:
+            text = text.split("</think>")[-1]
+        return text.strip()
 
     @torch.no_grad()
     def batched_generate(self, convs_list, max_n_tokens, temperature, top_p, **kwargs):
