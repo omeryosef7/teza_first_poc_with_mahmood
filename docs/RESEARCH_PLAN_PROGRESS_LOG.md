@@ -20,7 +20,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 | 1 | Redesign dataset split | ✅ (external_transfer deferred to Ph15) |
 | 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
 | 3 | Reproduce baselines in TROPT | ⛔ TROPT now in-repo but uninstalled — awaiting go |
-| 4 | Real attack baseline (CoT Hijacking) | 🔄 wiring done; smoke running |
+| 4 | Real attack baseline (CoT Hijacking) | 🔄 validated (2/3 smoke); full dev-25 running |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
 ---
@@ -198,9 +198,24 @@ TROPT now. No install performed.
 **TROPT install — still downloading** (torch/CUDA wheels, slow NFS; `.venv` not yet populated).
 `uv sync` (PID under btm79nmd6) still alive. Verify `list_recipes()` when it completes.
 
+### 2026-07-21 — Iteration 6
+**Phase 4 validation slice DONE (job 672546, COMPLETED 11m):** 3 goals, **ASR 0.667 (2/3)** with
+CoT-Hijacking on gpt-o4-mini (internal gemini judge). Outputs:
+`outputs/phase4_cot_baseline/phase4_cot_gpt-o4-mini_smoke3.{jsonl,_summary.json,_taskmap.json}`.
+Pipeline confirmed end-to-end on the compute node.
+**→ Full dev-25 baseline submitted: job 672570** (LIMIT=0, N_STREAMS=3, N_ITERATIONS=3, gpt-o4-mini),
+running on `cpu-killable`. StrongREJECT scoring path identified for reuse:
+`poc_stage3.run_strongreject_scoring --evaluator strongreject_rubric` (env-driven via
+`slurm_scripts/stage3_strongreject.slurm`; will score 672570's jsonl when done — note that
+script requests 2 GPUs, so a cpu variant or env-reuse decision comes next).
+
+**TROPT install: progressing (not stuck).** uv cache 2.0G, 5 active download sockets, multithreaded
+(CPU-time>wall-time is normal for uv). `.venv` stays small until all wheels download, then links.
+Big CUDA/torch wheels over slow NFS → ~35min+ and counting. Will verify `list_recipes()` on finish.
+
 **Next iterations (in order)**
-- When 672546 done → inspect its rows, confirm StrongREJECT scoring path, then submit **full
-  dev-25** CoT-Hijacking baseline (LIMIT=0) + record §8.5 headroom in the registry.
+- When 672570 done → StrongREJECT-score it, compute §8.5 headroom (clean vs attacked ASR,
+  crackable behaviors, per-category), append a row to `results/EXPERIMENT_REGISTRY.csv`.
 - When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
   Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
 - §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
