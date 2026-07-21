@@ -166,9 +166,27 @@ because the user earlier said "skip TROPT for now." TROPT appearing since then i
 (user may be setting it up, or wants it used). **Asked the user** whether to install + adopt
 TROPT now. No install performed.
 
+### 2026-07-21 — Iteration 4b (user answers: install+adopt TROPT; Phase 3 & 4 in parallel)
+**TROPT install RUNNING:** `uv sync` in `TROPT/` (dedicated `TROPT/.venv`) — downloading torch
+(cu126)/CUDA/transformers==5.8.1 (multi-GB), background job. Verify `list_recipes()` when done.
+
+**Phase-4 hang ROOT-CAUSED + a regression fixed:**
+- Ran the user-suggested `test_api_access.py`: it **timed out at 120s printing nothing** — it
+  stalls on `import litellm` at the top. Confirmed separately: `import litellm` exceeds 90s on
+  this **login node** even with `LITELLM_LOCAL_MODEL_COST_MAP=True`. This is the root cause of
+  the earlier CPU-pinned "hang" (the smoke got past the guard, then stalled importing litellm /
+  loading models). The prior `hijacking_baseline` outputs prove the pipeline works on a **compute
+  node**, so **Phase-4 API runs must go through SLURM**, not the login node. (Also means API-key
+  validity is still unconfirmed — the test never reached the API calls; SLURM run will confirm.)
+- **Regression fixed:** my iter-3 off-by-one "fix" made `end_example == start_example` for
+  `len(goals)==1`, tripping the `end>start` guard. Made that guard `elif` (goals path skips it —
+  end_example is a label only there). `poc_stage2/hijacking_wrapper.py`. Verified by the failing
+  diagnostic that exposed it; fix is a conditional guard (self-evident correctness).
+
 **Next iterations (in order)**
-- **Gated on TROPT decision.** If adopt → `uv sync` TROPT/.venv, verify `list_recipes()`, then
-  Phase 3 = run `gcg__zou2023` + MAC on Qwen3 (dev-train-20) with the thinking-model target fix,
-  route through the frozen eval protocol. If not → resume Phase 4 API baseline (fixed harness).
-- Phase 4 (independent of TROPT): re-run CoT-Hijacking smoke with the unbuffered/timeout fix.
+- When `uv sync` done → verify TROPT (`list_recipes()`), read `tropt/recipe_hub/README.md` +
+  the `gcg__zou2023` and MAC recipe sources, then Phase 3: SLURM job running TROPT GCG (+MAC)
+  on Qwen3 (dev-train-20) with the thinking-model target `"<think>\n\n</think>\n\n"+affirm`.
+- Phase 4 (parallel): wrap `run_phase4_cot_baseline` in a SLURM script (compute node) so litellm
+  imports normally; run dev-25 smoke there first.
 - Judge confusion-matrix script once human labels exist.

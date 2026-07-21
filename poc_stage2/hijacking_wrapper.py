@@ -181,9 +181,10 @@ def run_hijacking_slice(
         if not goals:
             raise ValueError("goals list is empty")
         # HF convention: N goals span train[start_index : start_index+N],
-        # i.e. end_example = (start_example-1) + N. Keeps the slice label accurate.
+        # i.e. end_example = (start_example-1) + N. Label only (goals path skips
+        # load_goals), so the end>start guard below does NOT apply here.
         end_example = (start_example - 1) + len(goals)
-    if end_example <= start_example:
+    elif end_example <= start_example:
         raise ValueError("--end-example must be greater than --start-example.")
 
     verify_target_model_mapping(target_model)
