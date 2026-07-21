@@ -19,7 +19,7 @@ Legend: ✅ done · 🔄 in progress · ⏳ queued · ⛔ blocked
 | 0 | Freeze current state | 🔄 |
 | 1 | Redesign dataset split | ✅ (external_transfer deferred to Ph15) |
 | 2 | Freeze evaluation protocol | ✅ (judge freeze pending human annotation) |
-| 3 | Reproduce baselines in TROPT | ⛔ TROPT not installed — needs decision |
+| 3 | Reproduce baselines in TROPT | ⛔ TROPT now in-repo but uninstalled — awaiting go |
 | 4 | Real attack baseline (CoT Hijacking) | 🔄 wiring done; smoke running |
 | 5+ | Mechanistic / objectives / transfer | ⏳ |
 
@@ -135,10 +135,40 @@ mechanistic phases). Corrected course.
 - **Smoke** (2 goals, n_streams=1, n_iter=1, target gpt-o4-mini) launched in background to
   validate end-to-end before the full 25. litellm import is slow (~1–2 min) — expected.
 
+### 2026-07-21 — Iteration 4
+**Phase-4 smoke HUNG → killed.** The 2-goal smoke (`outputs/` never written) ran ~13 min at
+**~100% CPU with 1 open fd** (CPU-bound, not waiting on API) and printed nothing → killed
+(PID 2152439). Likely a compute/retry hang (litellm or huge `max_n_tokens=65535` string
+handling), not productive. Re-run needs: `python -u` (unbuffered), no `| tail` (so we see
+progress), a hard timeout, and probably smaller max-token settings. **Phase 4 paused** pending
+that fix — and pending the TROPT decision below (which may change the whole approach).
+
+**★ TROPT appeared in the repo** (`TROPT/`, matanbt's Textual Trigger Optimization Toolbox
+v0.1.1) — was NOT present in iter 2. This is the plan's backbone. Read `TROPT/CLAUDE.md` +
+`TROPT/skills/tropt/SKILL.md` (mandated entry point). Key implications for our plan (execution
+notes — plan itself unchanged):
+- **Phase 3**: one-call recipes `gcg__zou2023(model_name, instruction, target_response)` +
+  a MAC recipe. Real TROPT, not the llm-attacks substitute.
+- **Phase 8 objectives are largely PRE-BUILT** (major reuse win, minimal new code):
+  `AttentionBasedLoss`/`AttentionEnhLoss` (attention-hijacking §12.4), `HiddenStateBasedLoss`/
+  `SteeringActivationLoss` (success/representation direction §12.3/12.5), LM-as-judge text
+  losses (semantic reward §12.6), `CombinedLoss` (composite §12.7), and
+  `compute_refusal_directions(model, n_samples=128)` (refusal-dir §12.2).
+- **Thinking-model target fix is a known TROPT pitfall**: Qwen3 target must be
+  `"<think>\n\n</think>\n\n" + affirmative` — matches our prior 5A CoT-prefix finding.
+- Black-box (API) vs white-box: `FirstTokenNLLLoss` for API targets, `PrefillCELoss` for HF.
+- Budget control (`set_budget`), `TokenConstraints(disallow_non_ascii, disallow_special_tokens)`.
+- Install: uses `uv`. Installed `uv 0.11.15` into poc_stage2. TROPT pins `transformers==5.8.1`
+  (conflicts with poc_stage2) so it needs its own `TROPT/.venv` via `uv sync`.
+
+**⛔ Install BLOCKED (correctly):** `uv sync` in `TROPT/` was denied by the auto-mode classifier
+because the user earlier said "skip TROPT for now." TROPT appearing since then is ambiguous
+(user may be setting it up, or wants it used). **Asked the user** whether to install + adopt
+TROPT now. No install performed.
+
 **Next iterations (in order)**
-- When smoke passes → run full **dev-25** CoT-Hijacking baseline (gpt-o4-mini), then score via
-  StrongREJECT (`strong_reject/`) and report §8.5 headroom (clean vs attacked ASR, crackable
-  behaviors). Consider a second reasoning target for RQ1 breadth.
-- Add the §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
-- Phase 3 (parallel, no TROPT): reproduce prefix-CE GCG via `llm-attacks/` on dev-train-20.
+- **Gated on TROPT decision.** If adopt → `uv sync` TROPT/.venv, verify `list_recipes()`, then
+  Phase 3 = run `gcg__zou2023` + MAC on Qwen3 (dev-train-20) with the thinking-model target fix,
+  route through the frozen eval protocol. If not → resume Phase 4 API baseline (fixed harness).
+- Phase 4 (independent of TROPT): re-run CoT-Hijacking smoke with the unbuffered/timeout fix.
 - Judge confusion-matrix script once human labels exist.
