@@ -377,6 +377,22 @@ leak; unit-tested: `ĊOkay,ĠsoĠI'm` → `\nOkay, so I'm`), think-strip now kee
 **Phase-3 GCG shards 673018/673043 still running** (~25min; first behavior ~42min, so triggers
 not written yet).
 
+### 2026-07-21 — Iteration 17 (gate PASSED → cross-model launched)
+Context: this is Omer's **master's research (Mahmoud lab, TAU)** — thesis-grade rigor (saved to
+memory `user_omer.md`).
+**★ Phase-4X gate PASSED:** smoke v2 (673086) output is clean — no byte-garbling, `<think>`
+stripped, readable text ("To solve the problem of finding an optimal exploitation path..."),
+judge scored it (is_success=False on this 1 goal, fine). Both `hf_local.py` fixes validated.
+**Verified model IDs + gating** (HfApi, no download): DeepSeek-R1-Distill-Llama-8B, Phi-4-reasoning,
+Phi-4-mini-reasoning = **ungated**; gemma-3-4b/12b = **gated=manual** (needs license).
+**★ Full dev-25 open-source benchmark LAUNCHED (3 families, streams=2 iters=2, fits 8h):**
+- **673115** deepseek-ai/DeepSeek-R1-Distill-Llama-8B (Llama-distill reasoning)
+- **673117** microsoft/Phi-4-mini-reasoning (Phi reasoning, 3.8B, fast)
+- **673118** google/gemma-3-4b-it (user-requested gemma; gated — attempted per "try, pass it";
+  fails independently if the token hasn't accepted the license).
+All → `outputs/phase4_hf_local/phase4_cot_hf_<model>_dev25.jsonl`. GCG shards 673018/673043 still
+running (~1h; first behavior ~42min).
+
 ### 2026-07-21 — Iteration 16 (monitoring + recon)
 Smoke v2 (673086) still running (generating DeepSeek response). GCG shards 673018/673043 running
 (~30min; first behavior ~42min → no triggers yet). Nothing to launch until the smoke gate passes
