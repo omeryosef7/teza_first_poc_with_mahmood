@@ -183,10 +183,25 @@ TROPT now. No install performed.
   end_example is a label only there). `poc_stage2/hijacking_wrapper.py`. Verified by the failing
   diagnostic that exposed it; fix is a conditional guard (self-evident correctness).
 
+### 2026-07-21 — Iteration 5 (both-in-parallel)
+**Phase 4 — VALIDATED end-to-end on SLURM ✅ (RQ1 pipeline live):**
+- New `slurm_scripts/run_phase4_cot_baseline.slurm` — API-only → **`cpu-killable`** partition
+  (no GPU wasted, doesn't touch the 6×L40S budget). Reuses `run_phase4_cot_baseline.py`.
+  Env-overridable (TARGET_MODEL/LIMIT/N_STREAMS/N_ITERATIONS/MANIFEST). Sets
+  `LITELLM_LOCAL_MODEL_COST_MAP=True` defensively.
+- Submitted validation slice **job 672546** (LIMIT=3, target gpt-o4-mini) → **running on a
+  compute node, litellm imports fine, API keys WORK**: log shows attacker generating adversarial
+  prompts + TargetLM (o4-mini) processing them. **Confirms the earlier hang was purely the
+  login-node litellm import.** So: all Phase-4 CoT-Hijacking runs go via `cpu-killable` SLURM.
+- Bug-check subagent on the guard fix + SLURM script + driver: **all PASS**.
+
+**TROPT install — still downloading** (torch/CUDA wheels, slow NFS; `.venv` not yet populated).
+`uv sync` (PID under btm79nmd6) still alive. Verify `list_recipes()` when it completes.
+
 **Next iterations (in order)**
-- When `uv sync` done → verify TROPT (`list_recipes()`), read `tropt/recipe_hub/README.md` +
-  the `gcg__zou2023` and MAC recipe sources, then Phase 3: SLURM job running TROPT GCG (+MAC)
-  on Qwen3 (dev-train-20) with the thinking-model target `"<think>\n\n</think>\n\n"+affirm`.
-- Phase 4 (parallel): wrap `run_phase4_cot_baseline` in a SLURM script (compute node) so litellm
-  imports normally; run dev-25 smoke there first.
+- When 672546 done → inspect its rows, confirm StrongREJECT scoring path, then submit **full
+  dev-25** CoT-Hijacking baseline (LIMIT=0) + record §8.5 headroom in the registry.
+- When TROPT `.venv` ready → `list_recipes()`, read `gcg__zou2023` + MAC recipe sources, then
+  Phase 3 SLURM (GPU/l40s) GCG+MAC on Qwen3 dev-train-20 with the thinking-model target.
+- §8.4 controls (length-/structure-matched scaffolds) as separate conditions.
 - Judge confusion-matrix script once human labels exist.
