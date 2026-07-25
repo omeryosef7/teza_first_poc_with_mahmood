@@ -1,5 +1,9 @@
 # Distillation Project — Findings Synthesis (maps to plan §28/§29)
 
+> **Canonical self-contained results doc:** `docs/PLAN_EXECUTION_SUMMARY.md` (read with the plan
+> `docs/RESEARCH_PLAN_DISTILLING_JAILBREAKS.md` = the whole project, output-verified). This file is
+> supporting narrative detail.
+
 > **Paper-ready write-up:** `docs/CROSS_MODEL_MECHANISTIC_REPORT.md` (the 4-model matrix + Gate-4 + external
 > transfer + honest negatives). **Full chronological trace + artifact index:** `docs/RESEARCH_PLAN_PROGRESS_LOG.md`.
 > **Registry:** `results/EXPERIMENT_REGISTRY.csv` (30 rows).

@@ -1,5 +1,9 @@
 # Cross-Model Mechanistic Report: CoT-Hijacking Is Predictive-but-Not-Causal
 
+> **Canonical self-contained results doc:** `docs/PLAN_EXECUTION_SUMMARY.md` (read with the plan
+> `docs/RESEARCH_PLAN_DISTILLING_JAILBREAKS.md` = the whole project, output-verified). This file is the
+> paper-ready prose version.
+
 *A standalone, paper-ready section. Every quantitative claim cites an artifact path and, where a
 run exists, a `results/EXPERIMENT_REGISTRY.csv` `run_id`. Sources: `docs/DISTILLATION_FINDINGS_SYNTHESIS.md`,
 `docs/CAUSAL_VALIDATION_REPORT.md`, `docs/PREDICTIVE_SIGNAL_REPORT.md`, `results/EXPERIMENT_REGISTRY.csv`.*
