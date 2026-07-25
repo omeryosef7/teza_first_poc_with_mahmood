@@ -43,6 +43,7 @@ from poc_stage4.model_family_utils import (
     THINKING_MARKERS_BY_FAMILY,
     get_thinking_end_token_ids,
     get_thinking_start_token_ids,
+    think_start_in_prefill,
 )
 
 _THINKING_ENABLED_POSITION_NAMES = (
@@ -115,7 +116,38 @@ def locate_positions(
             errors[name] = "empty_generation"
         return positions, errors
 
-    if enable_thinking:
+    if enable_thinking and think_start_in_prefill(model_family):
+        # The chat template emitted the think-START marker in the PREFILL (e.g.
+        # DeepSeek-R1-Distill: input ends "<think>\n"), so "<think>" is never in the
+        # generated text. Think content therefore begins at the first GENERATED token
+        # (boundary_index). We still locate the prefill "<think>" (for startofthink)
+        # and search the generated tokens for the end marker "</think>".
+        start_ids = get_thinking_start_token_ids(tokenizer, model_family)
+        end_ids = get_thinking_end_token_ids(tokenizer, model_family)
+
+        # startofthink: the "<think>" marker, located in the PREFILL region.
+        start_rel = _find_subsequence(full_token_ids[:boundary_index], start_ids, start=0)
+        positions["startofthink"] = start_rel if start_rel != -1 else None
+        if start_rel == -1:
+            errors["startofthink"] = "start_marker_not_found"
+
+        # think_content_1/2/3: first 3 tokens of the generated thinking span.
+        content_start = boundary_index
+        for idx, name in enumerate(("think_content_1", "think_content_2", "think_content_3")):
+            pos = content_start + idx
+            positions[name] = pos if pos < n_total else None
+            if positions[name] is None:
+                errors[name] = "insufficient_think_content_tokens"
+
+        end_rel = _find_subsequence(full_token_ids, end_ids, start=content_start)
+        if end_rel == -1:
+            positions["endofthink"] = None
+            errors["endofthink"] = "end_marker_not_found"
+        else:
+            positions["endofthink"] = end_rel
+
+        positions["endofresponse"] = n_total - 1
+    elif enable_thinking:
         start_ids = get_thinking_start_token_ids(tokenizer, model_family)
         end_ids = get_thinking_end_token_ids(tokenizer, model_family)
 

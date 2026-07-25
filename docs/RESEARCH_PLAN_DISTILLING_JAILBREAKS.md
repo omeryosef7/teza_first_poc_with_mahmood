@@ -2183,6 +2183,32 @@ Local HF model weights must **not** be persisted to the project HF cache (`.cach
 Download to **node-local ephemeral storage** (`$SLURM_TMPDIR` or `/tmp/$SLURM_JOB_ID`) via
 `HF_HOME`/`HF_HUB_CACHE`, wiped when the job ends. API targets have no weights (n/a).
 
+### 31.3-A — AMENDMENT [CLAUDE ADDITION, user-authorized 2026-07-23]
+> _This block was added by Claude with the user's explicit authorization; it amends §31.3 to reflect a
+> hardware reality discovered during execution. It does not weaken the original intent._
+>
+> **Finding:** the cluster's L40S nodes provide **no node-local scratch disk** — `sinfo` reports
+> `TMP_DISK=0` for every L40S node (n-801…n-805, t-806) and `scontrol show config` gives `TmpFS=/tmp`
+> with `$SLURM_TMPDIR` **unset**, so the only node-local location is `/tmp` on the shared root partition
+> (observed free: n-802 1.2 GB, n-803 8.9 GB). The DeepSeek-R1-Distill-Qwen-7B weights are **~15 GB**, so
+> the §31.3-mandated node-local ephemeral download is **infeasible on this cluster** (jobs die with
+> "Background writer channel closed" / requeue forever).
+>
+> **Resolution — Option A (user decision, 2026-07-23):** non-Qwen3 weights that are **already present**
+> in the project cache (`.cache/huggingface`) may be **READ** from it with `HF_HUB_OFFLINE=1` /
+> `TRANSFORMERS_OFFLINE=1`. This **preserves §31.3's actual intent** — *no NEW weights are ever downloaded
+> to or persisted in the project cache* (offline mode refuses network fetches; a not-yet-cached non-Qwen3
+> model fails loudly rather than downloading). Implemented in `slurm_scripts/run_phase5_ae_extract.slurm`
+> and `slurm_scripts/run_phase16_deepseek_reextract_positions.slurm`. DeepSeek-R1 (15G) is fully cached
+> → unblocked; Phi-4 (not yet cached) remains blocked pending a separate one-time download decision.
+
+### 31.3-B — AMENDMENT [CLAUDE ADDITION, user-authorized 2026-07-24]
+> _Added by Claude with the user's explicit authorization ("Can you do all?" — authorizing the Phi-4
+> cross-model work that §31.3-A had left blocked)._ Phi-4-mini-reasoning (~7.6 GB) is downloaded ONCE to
+> the project cache (`microsoft/Phi-4-mini-reasoning`) as a user-approved exception to §31.3, then read
+> offline (HF_HUB_OFFLINE=1) exactly like DeepSeek under §31.3-A. This enables the Phi-4 mechanistic
+> cross-model replication (extraction → signal → confound → causal), mirroring the DeepSeek §16-B pipeline.
+
 ### 31.4 Method (reuse, no new attack logic; open-source target only)
 - Same dev-25 goals (`data/manifests/dev_25.csv`), same StrongREJECT scoring
   (`slurm_scripts/run_strongreject_cpu.slurm`, frozen protocol §6). Reuse
@@ -2214,3 +2240,66 @@ target feeding Phase 5+. API-only models give breadth but cannot be dissected me
 * After every change you made, run another subagent that checks that you have no bug.
 * Always document your progress with path references in another md file (after every time you do something, make sure it's documented).
 * Don't change this md! This is the plan.
+
+---
+
+## APPENDIX C — CLAUDE-PROPOSED EXTENSIONS [CLAUDE ADDITION, user-authorized 2026-07-23]
+
+> _This appendix was authored by Claude with the user's explicit authorization ("if you have things
+> that you think are interesting and good for results ... add them to our plan in a way that it will be
+> clear that it is you"). Everything above this line is the user's original plan and is unchanged. Each
+> extension below was independently DESIGNED and then ADVERSARIALLY REVIEWED by separate agents; the
+> review verdicts + required fixes are folded into the specs. These extend the plan's core question
+> ("is there a CAUSAL, length-independent mechanism for CoT-Hijacking success?") past where the original
+> phases reached._
+
+### §C1 — Causal attention-concentration intervention (Qwen3) — PRIORITY: HIGH
+**Gap it closes:** the plan's §11.8 open item + MPO item 5 (a causal mechanism). Every success signal to
+date is non-causal (residual direction, Phase 7) or length-confounded (§10.1-D attention concentration),
+and ALL attention evidence is *observational*. This is the first CAUSAL intervention on attention itself.
+**Hypothesis:** attention concentration is a *causal* lever, not a length-confounded correlate.
+SUFFICIENCY: sharpening self-attention (temperature τ<1) on CLEAN harmful prompts raises ASR above ~0;
+NECESSITY: flattening (τ>1) on ATTACKED prompts lowers ASR below ~1. Null → "uniform attention-temperature
+is not a causal lever" (NOT "attention is not a mechanism" — see fix 3).
+**Mechanism (verified vs transformers 5.12.1):** rescale each targeted `Qwen3Attention.self_attn.scaling`
+by γ=1/τ. `forward` reads `self.scaling` fresh each prefill+decode step and forwards it to the active
+backend (eager/SDPA/flash), so this is a backend-agnostic pre-softmax attention-logit temperature — works
+under the default fast SDPA (no eager needed), and it holds the prompt (hence LENGTH) FIXED → structurally
+immune to the length confound. Applied via a context manager that restores `scaling` in `finally`.
+**Review-required fixes (folded in):** (1) analysis baseline keys on **τ=1.0**, not α=0 (phase7 `curve`
+looks for alpha==0.0); (2) use FULL n — all 25 clean, all 17 D-success rows (not 5/6) or a null is
+underpowered; (3) temper the null to "uniform-temperature" (the intervention is global over heads/positions,
+so it can't rule out a position/head-specific mechanism); (4) run NECESSITY first (higher value; sufficiency
+-on-clean is a-priori unlikely), confirm τ=1.0 reproduces ASR≈1 first; (5) assert every `scaling` restored
+after `finally` (preempt-safe). Two layer arms: TARGETED (§10.1-D band L22-30) + GLOBAL (all 40).
+**Controls:** §11.6 format-integrity (think_closed/answer_present) so a coherence collapse from extreme τ
+is not misread as a causal ASR move; full ASR-vs-τ curve (graded, not endpoints).
+**Reuse:** `poc_stage4/phase7_steer_generate.py` (helpers, resume-safety, row schema), `qwen3_model.py`,
+`scripts/phase7_analyze_causal.py` (prep+curve, w/ a small param-field mod), StrongREJECT CPU scoring.
+**New code:** `poc_stage4/phase8_attn_temp_generate.py` (attention-temperature ctx mgr + arg wiring; most
+logic imported from phase7), `slurm_scripts/run_phase8_attntemp.slurm`. GPU L40S; ~1 GPU-day over ≤4 jobs.
+
+### §C2 — Cross-model CAUSAL test on DeepSeek-R1 (unblocked by §31.3-A) — PRIORITY: MEDIUM
+**Gap it closes:** the residual causal NULL was Qwen3-only. Test replication on DeepSeek — unlike the
+existing cross-model AUC "difference" (a label-distribution artifact), steering is a REAL causal
+intervention, so this is the one cross-model claim that could be genuinely mechanistic.
+**Method:** fit DeepSeek's Fisher success direction on the **corrected** `extraction_fixed` shards (C vs D),
+run activation-addition steering (reuse `phase7_steer_generate.py`) — sufficiency (24 clean goals) +
+necessity (12 D-success) — score with frozen StrongREJECT. ~2 GPU-hours.
+**Review-required fixes (folded in):** (a) slurm MUST pass `--manifest` (else DeepSeek runs on Qwen3
+prompts), `--model-name`, `--model-family`, `HF_HUB_OFFLINE=1`; (b) add `--model-family` arg to phase7
+(cosmetic — `</think>` markers identical, encoded with DeepSeek tokenizer); (c) count is 24 goals not 25;
+(d) necessity denominator = MEASURED α=0 greedy ASR, not the original label; (e) fit on the corrected
+shards (extraction_fixed) once re-extraction lands. Honest caveat: severely underpowered (35-row direction
+fit, 12 successes) → a null is only WEAK evidence.
+
+### §C3 — Length identifiability diagnostic (Qwen3, CPU) — PRIORITY: LOW (reframed by review)
+**Gap it closes / reframing:** the original idea (length-matched-pair AUC to rescue-or-kill the signal) is
+UNACHIEVABLE — the review computed that success vs failure attack-prompt lengths are near-DISJOINT
+(success mean ~1012 tok, failure ~1388; optimal caliper matching yields ≤10 pairs → zero power). So C3 is
+reframed as an **identifiability diagnostic**: quantify and report the near-disjointness (n_matchable at
+calipers ±10/±25/±50, length-distribution overlap) → an honest, useful statement that *length and the
+residual signal are non-separable in this pool*, which STRENGTHENS the length-confound story without
+claiming an inferential verdict the N cannot support. CPU-only, reuses existing projections +
+`phase6_confound_control.py` utilities; minutes to run. (Do NOT ship the underpowered matched-pair AUC or
+the buggy perm/bootstrap the first draft proposed.)

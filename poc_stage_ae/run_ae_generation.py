@@ -135,6 +135,27 @@ def _load_model(model_family: str):
     from poc_stage4.qwen3_model import load_qwen3_model, load_gemma4_model
     if model_family == "gemma4":
         wrapped = load_gemma4_model(require_cuda=True, log_device_placement=True)
+    elif model_family == "deepseek_r1":
+        # DeepSeek-R1-Distill-Qwen-7B is a Qwen2 backbone → the generic Qwen3Model wrapper (.layers via
+        # model.model.layers) + its tokenizer (which carries the shared <think></think> markers) work
+        # unchanged. §31.3: weights must be node-local (HF_HOME set by the launcher), never project cache.
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["deepseek_r1"],
+                                   require_cuda=True, log_device_placement=True)
+    elif model_family == "phi4":
+        # Phi-4-mini-reasoning is Phi3ForCausalLM (hidden 3072, 32 layers); generic Qwen3Model wrapper
+        # (.layers via model.model.layers) + its tokenizer (plain-BPE <think></think>) work unchanged.
+        # §31.3-B: weights read offline from the project cache (user-authorized download).
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["phi4"],
+                                   require_cuda=True, log_device_placement=True)
+    elif model_family == "deepseek_llama":
+        # DeepSeek-R1-Distill-Llama-8B is LlamaForCausalLM (hidden 4096, 32 layers); generic Qwen3Model
+        # wrapper (.layers via model.model.layers) + tokenizer (single-token <think>=128013/</think>=128014,
+        # <think> in prefill) work unchanged. §31.3-B: offline project cache.
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["deepseek_llama"],
+                                   require_cuda=True, log_device_placement=True)
     else:
         wrapped = load_qwen3_model(require_cuda=True, log_device_placement=True)
     return wrapped.tokenizer, wrapped.model
@@ -441,10 +462,13 @@ def run_shard(
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Stage 2 — AE generation runner (one process per model x goal_index x condition).")
-    p.add_argument("--model", required=True, choices=["qwen3", "gemma4"])
+    p.add_argument("--model", required=True, choices=["qwen3", "gemma4", "deepseek_r1", "phi4", "deepseek_llama"])
     p.add_argument("--manifest", required=True, type=Path)
     p.add_argument("--goal-index", required=True, type=int)
-    p.add_argument("--condition", required=True, choices=["A", "D", "E", "G"])
+    # A/D/E/G = legacy stage-AE scheme; B/C/F added for the plan §9 mechanistic groups
+    # (build_phase5_mechanistic_manifest.py). `condition` is only used for row-filtering + shard
+    # naming here; positions/thinking come from enable_thinking, so new labels are safe.
+    p.add_argument("--condition", required=True, choices=["A", "B", "C", "D", "E", "F", "G"])
     p.add_argument("--output-dir", required=True, type=Path)
     return p.parse_args(argv)
 

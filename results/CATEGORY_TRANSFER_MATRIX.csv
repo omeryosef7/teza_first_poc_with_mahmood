@@ -1,0 +1,8 @@
+origin_category,n_origin_suffixes,academic_minor_dishonesty_deception,child_exploitation,cyber_hacking_malware,drugs_controlled_substances,fraud_financial_crime,harassment_bullying_stalking,hate_speech_discrimination,identity_theft_personal_data_theft,misinformation_disinformation,other_uncategorized,privacy_surveillance,self_harm_suicide,terrorism_extremism,theft_property_crime,violent_crime_physical_harm,weapons_explosives_mass_casualty
+cyber_hacking_malware,4,,,0.35,,,,,,,,,,,,,
+fraud_financial_crime,2,,,,,0.15,,,,,,,,,,,
+identity_theft_personal_data_theft,1,,,,,,,,0.4,,,,,,,,
+misinformation_disinformation,2,,,,,,,,,0.75,,,,,,,
+theft_property_crime,1,,,,,,,,,,,,,,0.0,,
+violent_crime_physical_harm,2,,,,,,,,,,,,,,,0.0,
+multi_instruction,,0.0,0.0,0.0777,0.0,0.0892,0.0702,0.0175,0.0238,0.246,0.1538,0.1667,0.0,0.0741,0.0,0.0833,0.05

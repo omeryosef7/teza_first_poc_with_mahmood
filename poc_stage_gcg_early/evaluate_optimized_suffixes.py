@@ -46,9 +46,14 @@ def evaluate_suffix(
     seed: int,
     output_dir: Path,
     max_new_tokens: int = 2048,
+    greedy: bool = False,
 ) -> Optional[dict]:
     """
     Generate freely with one suffix and record the result.
+
+    greedy=True selects deterministic decoding (do_sample=False) for the frozen
+    Phase-2 greedy protocol (configs/evaluation/greedy.yaml). Default False keeps
+    the legacy sampled behavior (temperature=0.7, top_p=0.95) unchanged.
 
     Returns the result dict or None if already completed (resume skip).
     Appends to FREE_GENERATION_RESULTS.jsonl in append mode.
@@ -89,15 +94,13 @@ def evaluate_suffix(
     boundary_index = len(input_ids)
 
     input_tensor = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0).to(device)
+    gen_kwargs: dict = dict(max_new_tokens=max_new_tokens, eos_token_id=eos_ids)
+    if greedy:
+        gen_kwargs.update(do_sample=False)
+    else:
+        gen_kwargs.update(do_sample=True, temperature=0.7, top_p=0.95)
     with torch.inference_mode():
-        output_ids = model.generate(
-            input_tensor,
-            max_new_tokens=max_new_tokens,
-            do_sample=True,
-            temperature=0.7,
-            top_p=0.95,
-            eos_token_id=eos_ids,
-        )
+        output_ids = model.generate(input_tensor, **gen_kwargs)
 
     gen_ids = output_ids[0][boundary_index:].tolist()
     full_ids = input_ids + gen_ids
@@ -126,6 +129,7 @@ def evaluate_suffix(
         "finish_reason": finish_reason,
         "enable_thinking": enable_thinking,
         "model_family": model_family,
+        "decoding": "greedy" if greedy else "sampled",
         "status": "ok",
     }
 

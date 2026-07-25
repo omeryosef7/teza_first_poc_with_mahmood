@@ -236,6 +236,32 @@ def _extract_position_vectors(
     return out
 
 
+def _load_replay_model(model_family: str):
+    """Load (tokenizer, model, n_layers, d_model) for `model_family` once. Factored
+    out so a driver can load the model a SINGLE time and replay many shards through it
+    (avoids re-downloading/re-loading 15GB weights per shard — critical under the
+    §31.3 node-local-cache constraint where repeated downloads thrash a small /tmp)."""
+    print(f"Loading model {model_family} ...")
+    from poc_stage4.qwen3_model import load_qwen3_model, load_gemma4_model
+    if model_family == "gemma4":
+        wrapped = load_gemma4_model(require_cuda=True)
+    elif model_family == "deepseek_r1":  # Qwen2 backbone → generic wrapper; §31.3 node-local cache
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["deepseek_r1"], require_cuda=True)
+    elif model_family == "phi4":  # Phi3ForCausalLM (hidden 3072, 32 layers); §31.3-B offline project cache
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["phi4"], require_cuda=True)
+    elif model_family == "deepseek_llama":  # LlamaForCausalLM (hidden 4096, 32 layers); §31.3-B offline
+        from poc_stage4.model_family_utils import DEFAULT_MODEL_BY_FAMILY
+        wrapped = load_qwen3_model(model_name=DEFAULT_MODEL_BY_FAMILY["deepseek_llama"], require_cuda=True)
+    else:
+        wrapped = load_qwen3_model(require_cuda=True)
+    n_layers = wrapped.num_layers
+    d_model = wrapped.hidden_size
+    print(f"Model loaded. n_layers={n_layers} d_model={d_model}")
+    return wrapped.tokenizer, wrapped.model, n_layers, d_model
+
+
 def replay_shard(
     *,
     model_family: str,
@@ -243,6 +269,8 @@ def replay_shard(
     output_dir: Path,
     verify_equivalence: bool,
     verify_n_examples: int,
+    recompute_positions: bool = False,
+    preloaded: tuple | None = None,
 ) -> None:
     import torch
 
@@ -264,13 +292,10 @@ def replay_shard(
         print("Nothing to do.")
         return
 
-    print(f"Loading model {model_family} ...")
-    from poc_stage4.qwen3_model import load_qwen3_model, load_gemma4_model
-    wrapped = load_gemma4_model(require_cuda=True) if model_family == "gemma4" else load_qwen3_model(require_cuda=True)
-    tokenizer, model = wrapped.tokenizer, wrapped.model
-    n_layers = wrapped.num_layers
-    d_model = wrapped.hidden_size
-    print(f"Model loaded. n_layers={n_layers} d_model={d_model}")
+    if preloaded is not None:
+        tokenizer, model, n_layers, d_model = preloaded
+    else:
+        tokenizer, model, n_layers, d_model = _load_replay_model(model_family)
 
     # --- optional equivalence smoke check ---
     if verify_equivalence:
@@ -326,7 +351,21 @@ def replay_shard(
 
         enable_thinking = bool(row.get("enable_thinking"))
         position_names = position_names_for_condition(enable_thinking)
-        positions = row.get("positions", {}) or {}
+        if recompute_positions:
+            # Repair path: derive positions from the SAVED token IDs (same tokens →
+            # same success labels) using the current (fixed) marker config. boundary =
+            # number of prompt tokens = input_token_count.
+            from poc_stage_ae.thinking_position_utils import locate_positions
+            boundary_index = int(row.get("input_token_count") or len(row["input_token_ids"]))
+            positions, _pos_errors = locate_positions(
+                full_token_ids=full_ids,
+                model_family=model_family,
+                tokenizer=tokenizer,
+                boundary_index=boundary_index,
+                enable_thinking=enable_thinking,
+            )
+        else:
+            positions = row.get("positions", {}) or {}
 
         try:
             captured = _hook_capture_forward(model, model_family, full_ids)
@@ -410,24 +449,74 @@ def _write_metadata(new_rows: list[dict], paths: dict[str, Path]) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Stage 4 — deterministic hidden-state replay.")
-    p.add_argument("--model", required=True, choices=["qwen3", "gemma4"])
-    p.add_argument("--generation-shard", required=True, type=Path)
+    p.add_argument("--model", required=True, choices=["qwen3", "gemma4", "deepseek_r1", "phi4", "deepseek_llama"])
+    p.add_argument(
+        "--generation-shard",
+        required=True,
+        type=Path,
+        nargs="+",
+        help="One or more generation-shard JSONLs. Multiple shards load the model ONCE "
+        "and replay all of them through it (efficient + avoids §31.3 download thrash).",
+    )
     p.add_argument("--output-dir", required=True, type=Path)
     p.add_argument("--verify-equivalence", action="store_true", default=False)
     p.add_argument("--verify-n-examples", type=int, default=2)
+    p.add_argument(
+        "--recompute-positions",
+        action="store_true",
+        default=False,
+        help="Recompute segmentation positions from the saved token IDs via "
+        "locate_positions (boundary=input_token_count) instead of trusting the "
+        "stored per-row 'positions'. Needed to repair shards generated before a "
+        "marker-config fix (e.g. deepseek_r1 <think>-in-prefill). Deterministic — "
+        "uses the SAME saved generation tokens, so success labels are unchanged.",
+    )
     return p.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    replay_shard(
-        model_family=args.model,
-        generation_shard_path=args.generation_shard,
-        output_dir=args.output_dir,
-        verify_equivalence=args.verify_equivalence,
-        verify_n_examples=args.verify_n_examples,
-    )
-    return 0
+    shards = args.generation_shard
+    if isinstance(shards, Path):
+        shards = [shards]
+
+    # Single-shard path: preserve the original fail-loud behavior exactly — call
+    # replay_shard directly (no model preload, no exception swallowing), so the
+    # existing phase-5 pipeline still crashes the SLURM task on any replay error.
+    if len(shards) == 1:
+        replay_shard(
+            model_family=args.model,
+            generation_shard_path=shards[0],
+            output_dir=args.output_dir,
+            verify_equivalence=args.verify_equivalence,
+            verify_n_examples=args.verify_n_examples,
+            recompute_positions=args.recompute_positions,
+        )
+        return 0
+
+    # Batch path: load the model a SINGLE time, replay each shard through it (one 15GB
+    # download, not one per shard). Tolerate per-shard failures so one bad shard doesn't
+    # sink the batch; exit non-zero if ANY shard failed so the caller still sees it.
+    preloaded = _load_replay_model(args.model)
+    n_ok = 0
+    n_fail = 0
+    for shard in shards:
+        try:
+            replay_shard(
+                model_family=args.model,
+                generation_shard_path=shard,
+                output_dir=args.output_dir,
+                verify_equivalence=args.verify_equivalence,
+                verify_n_examples=args.verify_n_examples,
+                recompute_positions=args.recompute_positions,
+                preloaded=preloaded,
+            )
+            n_ok += 1
+        except Exception as exc:  # keep going; one bad shard shouldn't sink the batch
+            print(f"[replay] SHARD FAILED {shard}: {exc}")
+            n_fail += 1
+    print(f"[replay] batch done: ok={n_ok} fail={n_fail} of {len(shards)} shards")
+    return 1 if n_fail else 0
 
 
 if __name__ == "__main__":
