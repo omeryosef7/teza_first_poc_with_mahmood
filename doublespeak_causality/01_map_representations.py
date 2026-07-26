@@ -172,6 +172,7 @@ def main():
                                                    "data", "seed_concepts.json"))
     ap.add_argument("--templated", action="store_true")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16","float16"])
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
@@ -182,7 +183,7 @@ def main():
         f"stage1_repmap_{args.model.split('/')[-1]}_{ts}")
     os.makedirs(out_dir, exist_ok=True)
 
-    lm = dc.load_model(args.model)
+    lm = dc.load_model(args.model, dtype=getattr(__import__('torch'), args.dtype))
     items = build_items(args.data)
 
     reps = collect_reps(lm, items, args.templated)
