@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=ds_stage1_llama8b
-#SBATCH --output=doublespeak_causality/logs/ds_stage1_%j.out
-#SBATCH --error=doublespeak_causality/logs/ds_stage1_%j.err
+#SBATCH --job-name=ds_stage2_llama8b
+#SBATCH --output=doublespeak_causality/logs/ds_stage2_%j.out
+#SBATCH --error=doublespeak_causality/logs/ds_stage2_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -12,7 +12,7 @@
 #SBATCH --gpus=1
 #SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
 #
-# Doublespeak Stage-1: plumbing smoke test + representation mapping on
+# Doublespeak Stage-2: plumbing smoke test + representation mapping on
 # Llama-3.1-8B-Instruct. Follows slurm_scripts/submit_qwen_ae.sh conventions
 # (account/partition/L40S guard/env). Honors user rules: L40S only, no deps,
 # HF cache -> project dir. Resumable via completion marker.
@@ -40,7 +40,7 @@ export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 export PYTHONUNBUFFERED=1          # so stdout is not lost if the job dies
 
-echo "=== Doublespeak Stage-1 ==="; date; hostname
+echo "=== Doublespeak Stage-2 ==="; date; hostname
 echo "SLURM_JOB_ID=${SLURM_JOB_ID:-local}"
 echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"
 python -c "import torch,transformers,sys; print('py',sys.version.split()[0],'torch',torch.__version__,'tfm',transformers.__version__)"
@@ -59,14 +59,11 @@ case "$GPU_TYPE" in
 esac
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
 
-MARK="doublespeak_causality/outputs/.stage1_llama8b.COMPLETE"
+MARK="doublespeak_causality/outputs/.stage2_llama8b.COMPLETE"
 if [ -f "$MARK" ]; then echo "Already COMPLETE ($MARK) — nothing to do."; exit 0; fi
 
-echo "--- [1/2] plumbing smoke test ---"
-python -u doublespeak_causality/smoke_pipeline.py --model "$MODEL" --max-new-tokens 64
-
-echo "--- [2/2] representation mapping (Stage 1) ---"
-python -u doublespeak_causality/01_map_representations.py \
+echo "--- activation patching (Stage 2: necessity + sufficiency + controls) ---"
+python -u doublespeak_causality/05_run_activation_patching.py \
     --model "$MODEL" --data doublespeak_causality/data/seed_concepts.json --templated
 
 echo "COMPLETE $(date)" > "$MARK"

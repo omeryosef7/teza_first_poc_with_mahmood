@@ -38,3 +38,42 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Status:** P0 ✅, P1a ✅, P1b ✅, P1c RUNNING (686481), P2 RUNNING (686481).
 - **Loop:** 30-min cadence set; each wake: poll 686481 → on COMPLETE analyze Stage-1 (check trajectories differ, α=0 identity, localization) → build+submit Stage-2 patching (§9) → update docs.
 - **Next highest-value experiment:** once 686481 completes and trajectories look sane, **P3 activation patching (necessity DS←Neutral + sufficiency Neutral←Direct)** — the first true causal test.
+
+### 2026-07-26 — SLURM resource triage
+- Job 686481 (killable, generic --gpus=1 + nodelist n-801..805) was PENDING w/ est start ~00:44 (+2.5h): **all L40S GPUs allocated cluster-wide** (8/8 on every L40S node) — genuine contention, not misconfig.
+- Tried faster routes: `--partition=gpu-sharifm,killable` → rejected ("Multiple partition job request not supported when a partition is set in the association"); `--partition=gpu-sharifm` alone → rejected ("User's group not permitted to use this partition"). So **killable is the only usable L40S partition**.
+- Cancelled 686481, resubmitted as **686492** on killable with improved `--gres=gpu:l40s:1` (any L40S node incl t-806, vs original nodelist). PENDING/Priority; job id saved to outputs/.current_job_id. Wait is inherent to contention; loop will poll.
+
+### 2026-07-26 — Align SLURM to proven house recipe (per Omer)
+- Surveyed slurm_scripts: **210/216 use `--partition=killable --account=gpu-research --gpus=1` + `--nodelist=<L40S>`**; NONE use `--gres=gpu:l40s`. Even `stage6_single_sharifm.slurm` submits to killable (not partition=gpu-sharifm).
+- Reverted my script from `--gres=gpu:l40s:1` to the proven `--gpus=1 --nodelist=n-801,n-802,n-803,n-804,n-805,t-806`. Cancelled 686492, resubmitted as **686494** (killable/gpu-research, PENDING/Priority). job id -> outputs/.current_job_id.
+
+### 2026-07-26 — Job 686494 FAILED (exit 13) → root-caused → hardened → repro validates code
+- **686494** got an L40S (n-802) but FAILED in 31s, **empty stderr**, ExitCode 13:0, Reason None. Died at the L40S guard (no "GPU check passed" printed).
+- **Root cause:** guard used `GPU_TYPE=$(nvidia-smi --query-gpu=name ... | head -1)`. Under `set -euo pipefail`, if `nvidia-smi`'s query returns nonzero (exit 13 on that node, while still printing) the pipeline returns 13 → `set -e` aborts with 13. The earlier full `nvidia-smi` line had `|| true` (protected); the guard didn't. Locally nvidia-smi returns 0 → passed → node-specific.
+- **Fix:** rewrote guard pipe-free with `|| true` + pure-bash first-line (`${GPU_ALL%%$'\n'*}`, case-match); added `PYTHONUNBUFFERED=1` and `python -u` so a future failure isn't swallowed by SLURM stdout buffering.
+- **Code validated independently** (login-node repro, Llama-8B float16 across 3 TITAN Xp): `LOADED layers 32 hidden 4096 eos [128001,128008,128009]` (list-valued EOS preserved ✅), `capture ['codeword_last','following'] [33,4096] nocc 6` → **REPRO_OK**. So ds_common load/localize/capture are correct on the real model; the SLURM failure was purely the guard.
+- Resubmitting hardened script to L40S for the canonical **bf16** Stage-1 run.
+
+### 2026-07-26 — Loop iter: P3 patching script built (productive wait)
+- 686553 PENDING/Priority (contention). While waiting, built **05_run_activation_patching.py** (§9): necessity (DS<-Neutral) + sufficiency (Neutral<-Direct) layer sweep with logit-lens P(harm)/P(code) readout; controls = identity (DS<-DS, must reproduce baseline) + norm-matched random. Offline-validated: compile OK; toy verifies LayerPatch indexing (reps[L+1]=layer-L hook output) + identity-replace is a no-op. Ready to submit once Stage-1 (686553) completes & trajectories are sane.
+- P4 (timing §10.3) intentionally NOT built yet — it needs Stage-1's per-layer harmful direction d_harm as input.
+
+### 2026-07-26 — 686553 ran past guard, hit real bug (smoke position mismatch) → fixed
+- Guard fix worked: 686553 RAN on L40S n-802 (dev7), passed the guard, entered smoke test. Unbuffered fix worked: real traceback captured in stderr.
+- **Bug (smoke_pipeline only):** `IndexError: index 100 out of bounds (size 53)` at ds_common LayerPatch. Cause: patch position `pos.codeword_last` computed on ds_text (pos 100, long w/ demos) but forward run on neu_text (53 tokens). Cross-text position mismatch.
+- **Verified NOT present in 01_map_representations.py or 05_run_activation_patching.py** (both compute each position from the same text they patch/read).
+- **Fix:** smoke now computes `neu_pos` from neu_text before patching; added `--dtype float16` for Pascal login-GPU validation. Compile OK. Re-validating end-to-end on login GPUs (float16) before spending another L40S slot.
+- Model load + capture confirmed working on L40S bf16 (crash was after load, in the patch check).
+
+### 2026-07-26 — Smoke FIX validated on Llama-8B; canonical run resubmitted
+- Fixed smoke on login GPUs (fp16): **all 5 checks PASS** — load(32L,hidden4096,EOS[128001,128008,128009]), localization(cw@100,following@101,seqlen110), capture[33,4096]+following, patching(α0-identity✅, replace Δ=6.42 @L16), generation(23 tok, stop=eos). smoke_llama_login.json.
+- **Known limitation logged:** find_word_occurrences returned 5 codeword occurrences here but repro counted 6 — it matches only ONE tokenization variant (space vs no-space), can undercount when the same word appears both sentence-initial and mid-sentence. codeword_LAST is still correct (used by Stage-1/2), so this does NOT affect P2/P3. **Must fix before P6 attention-knockout** (which needs ALL previous codeword occurrences). TODO in ds_common.find_word_occurrences: union matches across variants.
+- Resubmitted canonical bf16 L40S run as **686635** (PENDING/Resources).
+
+### 2026-07-26 — Stage-1 (P2) COMPLETE on L40S bf16; observational mechanism confirmed; P3 submitted
+- **686635 COMPLETE**: smoke all-pass (bf16), Stage-1 wrote stage1_repmap_Llama-3.1-8B-Instruct_20260726_231610. Model load ~5min (slow NetApp on n-804), not a hang.
+- **Observational findings (NOT causal — see CAUSAL_RESULTS_SUMMARY.md §1):** cos(DS,Direct) rises 0.06→~0.6 across layers (cos-to-Neutral stays ~0.85 = superposition); Patchscopes P(harm) crosses P(code) at L17/20/21, peaks late (L30-31); NN-decode aux: poison_mango codeword→" poison"/" deadly" at L24/28/31, bomb_potato→" makeshift"/" ingredients" L24. potato(0.125)≫carrot(0.009) for bomb (RQ6 signal). Effect directionally matches paper; absolute probs modest (hand-written seed demos).
+- **§25 gates passed** → advanced to P3.
+- **Built** slurm/run_stage2_llama8b.sh (from proven stage1 template), submitted **686643** (05_run_activation_patching.py: necessity DS<-Neutral + sufficiency Neutral<-Direct + identity/random controls). PENDING/Resources.
+- **Caveat logged:** strengthen with GPT-4o-mini demos + more items before quantitative claims.

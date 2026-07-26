@@ -13,9 +13,9 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P0 | Env audit + scaffold + docs (§4, §29.1-5) | ✅ COMPLETE | audit + all tracking docs done |
 | P1a | Core lib: load/localize/prompts/capture (§19) | ✅ COMPLETE | `ds_common.py` — reuses doublespeak/ + house conventions |
 | P1b | Unit tests (§23) | ✅ COMPLETE | **13/13 pass**: 6 synthetic LayerPatch (GPU-free) + 7 localization (real Llama BPE) |
-| P1c | Smoke test 3-5 prompts (§24) | 🟡 RUNNING | Llama-8B downloaded; smoke+Stage1 submitted as SLURM **job 686481** (L40S, PENDING) |
-| P2 | Representation mapping (§8) | 🟡 RUNNING | `01_map_representations.py` built + offline-validated; runs in job 686481 |
-| P3 | Activation patching (§9) | ⬜ NOT_RUN | necessity + sufficiency + controls |
+| P1c | Smoke test 3-5 prompts (§24) | ✅ COMPLETE | all 5 checks pass on Llama-8B (fp16/login): 3-token EOS preserved, α=0 identity, replace Δ=6.42, gen stops on eos. Canonical bf16 rerun = job 686635 |
+| P2 | Representation mapping (§8) | ✅ COMPLETE | Patchscopes late crossover (L17-21, peak L30-31); cos→Direct 0→0.6; NN-decode: mango→'poison'/'deadly' late. Observational only. See CAUSAL_RESULTS_SUMMARY.md |
+| P3 | Activation patching (§9) | 🟡 RUNNING | first CAUSAL test = SLURM job 686643 (killable L40S, PENDING) |
 | P4 | Timing: early vs late injection (§10.3) | ⬜ NOT_RUN | **highest-value experiment** |
 | P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
 | P6 | Attention knockout + path patching (§11) | ⬜ NOT_RUN | |

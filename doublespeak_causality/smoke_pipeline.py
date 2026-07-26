@@ -49,13 +49,15 @@ def main():
     ap.add_argument("--no-chat-template", action="store_true",
                     help="for base models without a chat template")
     ap.add_argument("--max-new-tokens", type=int, default=40)
+    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"],
+                    help="float16 for pre-Ampere GPUs (e.g. TITAN Xp) where bf16 is slow")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
     report = {"model": args.model, "checks": {}, "meta": None, "status": "RUNNING"}
 
     # 1. Load ------------------------------------------------------------------
-    lm = dc.load_model(args.model)
+    lm = dc.load_model(args.model, dtype=getattr(torch, args.dtype))
     report["meta"] = lm.meta()
     report["checks"]["load"] = {
         "ok": True, "num_layers": lm.num_layers, "hidden": lm.hidden_size,
@@ -99,20 +101,27 @@ def main():
     layers = dc._get_layers(lm.model)
     mid = lm.num_layers // 2
     tok = lm.tokenizer(neu_text, return_tensors="pt").to(lm.model.device)
+    # Patch position MUST be computed on the SAME text we run the forward on
+    # (neu_text), not on ds_text — the codeword sits at different indices in the
+    # two prompts (ds_text has the demos prepended). Using ds_pos here caused an
+    # out-of-bounds IndexError (job 686553).
+    neu_ids = tok["input_ids"][0].tolist()
+    neu_pos = dc.target_positions(lm.tokenizer, neu_ids, args.codeword).codeword_last
     with torch.no_grad():
         base_logits = lm.model(**tok).logits.float().cpu()
 
     # alpha=0 add must be identity
     zerovec = torch.zeros(lm.hidden_size)
-    with dc.LayerPatch(lm.model, mid, positions=[pos.codeword_last], vector=zerovec,
+    with dc.LayerPatch(lm.model, mid, positions=[neu_pos], vector=zerovec,
                        mode="add", alpha=0.0):
         with torch.no_grad():
             a0_logits = lm.model(**tok).logits.float().cpu()
     alpha0_identity = torch.allclose(base_logits, a0_logits, atol=1e-4)
 
-    # replace with a large vector must change last-token logits
+    # replace neutral codeword rep with the DS codeword rep (sufficiency-style) must
+    # change logits. ds_rep_mid is the DS codeword's layer-mid activation.
     ds_rep_mid = reps["codeword_last"][mid + 1].to(lm.model.device)  # +1: skip embedding row
-    with dc.LayerPatch(lm.model, mid, positions=[pos.codeword_last], vector=ds_rep_mid,
+    with dc.LayerPatch(lm.model, mid, positions=[neu_pos], vector=ds_rep_mid,
                        mode="replace"):
         with torch.no_grad():
             rep_logits = lm.model(**tok).logits.float().cpu()
@@ -124,7 +133,7 @@ def main():
         "alpha0_add_is_identity": bool(alpha0_identity),
         "replace_changes_logits": bool(changed),
         "max_logit_delta_after_replace": max_delta,
-        "patched_layer": mid, "patched_pos": pos.codeword_last,
+        "patched_layer": mid, "patched_pos": neu_pos,
     }
 
     # 6. Generation stops on EOS ----------------------------------------------
