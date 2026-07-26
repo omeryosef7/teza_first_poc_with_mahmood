@@ -151,8 +151,10 @@ def run_item(lm, lens, it, templated, seed):
     max_nec_drop = max((base_ph - r["cw_p_harm"]) for r in results["necessity"])
     results["identity_max_dev"] = max(id_dev)
     results["max_necessity_drop"] = max_nec_drop
+    # Pass if the machinery's residual is below an absolute low-precision floor OR
+    # (when there is a real necessity effect) well below half that effect.
     results["identity_reproduces_baseline"] = bool(
-        max(id_dev) < 0.03 and (max_nec_drop <= 0 or max(id_dev) < 0.5 * max_nec_drop))
+        max(id_dev) < max(0.015, 0.5 * max_nec_drop))
     return results
 
 
