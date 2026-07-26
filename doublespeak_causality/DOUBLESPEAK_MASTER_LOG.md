@@ -122,3 +122,10 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **What still stands:** C1 NECESSITY (05, in-context logit lens, controls identity✓ random 126-8181x) — a DIFFERENT, robust readout. NN/logit-lens argmax decoding (O3). 
 - **Correct sufficiency tests queued:** Neutral<-DS injection; a decoder that passes the Direct-rep control (alt inspection prompt / tuned-lens); behavioral sufficiency in a working attack.
 - Committed 7f0615a (08). Diagnostics: logs/diag_direct.log, logs/diag_vendored.log.
+
+### 2026-07-27 — BREAKTHROUGH: readout fixed; late-vs-early emergence; conditional sufficiency (RQ2)
+- **Root-caused the unreliable patchscope:** vendored "cat->cat;...;?" inspection prompt fails its positive control on Llama-3.1-8B (clean/Direct "virus" rep -> P~0.001). A **repetition prompt** ("hello hello\nworld world\ncat cat\nX", patch final token) PASSES: clean 0.668, **Direct 0.722**. Fixed 07's decoder to use it. (logs/diag_readout_eng.log, diag_readout2.log)
+- **Late-vs-early emergence (validated decoder):** Direct "virus" decodes EARLY (L2=0.72, L8=0.37, L16=0.001, gone by L30); DS hijacked "muffin" decodes LATE (L30=0.100); Neutral "muffin"=0. => time-of-check/time-of-use signature, now on a decoder that passes positive controls. Supersedes earlier weak/unreliable patchscope numbers.
+- **Sufficiency (RQ2) — CONDITIONAL (un-retracted, now real):** Neutral<-Direct NOT sufficient (0.001, all layers); **Neutral<-DS SUFFICIENT (0.135 @injectL15)**. (logs/diag_suff_ds.log)
+- **Novel insight:** the hijacked rep is qualitatively DISTINCT from the concept's own rep — direct=early-structured, hijack=late-structured; injecting the direct rep can't reproduce the late-emergence hijack, injecting the hijacked rep can. Doublespeak builds a new late-emerging representation, not a copy.
+- Added Neutral<-DS condition to 07. Committed a372c21. Submitted canonical bf16 all-6-concepts readout=30 = job 687378 (RUNNING n-803).

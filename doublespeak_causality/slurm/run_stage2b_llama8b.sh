@@ -64,7 +64,7 @@ if [ -f "$MARK" ]; then echo "Already COMPLETE ($MARK) — nothing to do."; exit
 
 echo "--- Stage 2b: Patchscopes necessity+sufficiency readout (GPT-4o-mini concepts) ---"
 python -u doublespeak_causality/07_patchscope_readout.py \
-    --model "$MODEL" --data doublespeak_causality/data/seed_concepts_gpt4omini.json --templated
+    --model "$MODEL" --data doublespeak_causality/data/seed_concepts_gpt4omini.json --templated --readout-layer 30
 
 echo "COMPLETE $(date)" > "$MARK"
 echo "=== done ==="; date
