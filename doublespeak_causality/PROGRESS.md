@@ -16,7 +16,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P1c | Smoke test 3-5 prompts (§24) | ✅ COMPLETE | all 5 checks pass on Llama-8B (fp16/login): 3-token EOS preserved, α=0 identity, replace Δ=6.42, gen stops on eos. Canonical bf16 rerun = job 686635 |
 | P2 | Representation mapping (§8) | ✅ COMPLETE | Patchscopes late crossover (L17-21, peak L30-31); cos→Direct 0→0.6; NN-decode: mango→'poison'/'deadly' late. Observational only. See CAUSAL_RESULTS_SUMMARY.md |
 | P3 | Activation patching (§9) | 🟡 RUNNING | **preliminary necessity confirmed** (fp16 login): DS←Neutral collapses P(harm) from mid-layers; canonical bf16 = job 686723. Sufficiency readout to refine (Patchscopes). |
-| P4 | Timing: early vs late injection (§10.3) | ⬜ NOT_RUN | **highest-value experiment** |
+| P4 | Timing: early vs late injection (§10.3) | 🟡 SCRIPT READY / BLOCKED | `06_run_timing.py` built+GPU-validated; **no signal on seed** (baseline already refuses) — needs GPT-4o-mini demos + StrongReject. See CAUSAL F1 |
 | P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
 | P6 | Attention knockout + path patching (§11) | ⬜ NOT_RUN | |
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |

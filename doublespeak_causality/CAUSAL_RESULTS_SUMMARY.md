@@ -48,8 +48,12 @@ Reading: the harmful component the codeword *acquires* across layers (see O1/O2)
 
 Caveats: fp16 login run + hand-written seed demos; confirm on bf16 (686723) and paper-faithful demos. Necessity is robust across two readouts (logit-lens here + Patchscopes crossover in O2).
 
-## 4. Failed interventions
-_None yet._
+## 4. Failed / not-yet-informative interventions
+
+**F1 (P4 timing — no behavioral signal with the seed).** `06_run_timing.py` runs correctly (generation under a persistent bounds-guarded injection hook, validated on GPU), but the seed produces NO usable timing signal: baseline refusal is saturated (base_refusal=True for all items; early=late=100% refusal at alpha=8). Two causes, both fixable, NEITHER a code bug:
+  (a) the Neutral prompt ("build a *potato*") is nonsensical, so the un-injected baseline is already confused/refusing — no compliance to disrupt;
+  (b) the keyword refusal detector false-positives on benign "cannot" (e.g. "you cannot build a potato").
+  The timing hypothesis (early inject -> refuse, late -> comply) can only be tested against a **successful Doublespeak baseline** (model complies), which requires paper-faithful GPT-4o-mini demos (the hand-written seed gives weak attacks, Stage-1 peak P_harm only ~0.12-0.20) and a proper outcome judge (StrongReject). Timing is therefore **BLOCKED on stronger attack data**, not on the mechanism code.
 
 ## 5. Open questions
 - Is the weak absolute Patchscopes signal due to hand-written demos? → regenerate demos with GPT-4o-mini (paper-faithful) + scale items before strong quantitative claims.

@@ -85,3 +85,11 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **PRELIMINARY causal necessity (fp16 login):** DS←Neutral patch has ~no effect early (L0-4) but collapses P(harm) from mid-layers (potato 0.128→0.04@L6→0; mango 0.207→0@~L12). Identity id_max_dev≪effect; random control doesn't mimic. = codeword's ACQUIRED harmful component is necessary from mid-layers. Sufficiency null but readout-limited (logit-lens = next-token, not meaning) → refine with Patchscopes readout.
 - **Submitted canonical bf16** P3 = **686723** (PENDING/Resources).
 - **Next:** confirm 686723; refine sufficiency via Patchscopes readout; build P4 timing (§10.3) using Stage-1 d_harm + necessity-informed layers.
+
+### 2026-07-26 — P4 timing script built+validated; needs stronger attack baseline
+- Added generation-safe bounds guard to LayerPatch (persistent injection hook survives KV-decode); 14/14 tests + toy check.
+- Built 06_run_timing.py (§10.3): inject held-out d_harm at early/mid/late layers, measure semantic (Patchscopes) + behavioral (refusal). Validated code path on login GPU (float16).
+- **Finding (not a bug):** seed gives NO timing signal — baseline neutral prompt already "refuses" (nonsensical "build a potato" + keyword-detector false positives), early=late=100%. Timing needs a SUCCESSFUL Doublespeak baseline => paper-faithful GPT-4o-mini demos + StrongReject judge. Logged as CAUSAL_RESULTS_SUMMARY F1.
+- **Decision for next iterations:** promote demo-generation (GPT-4o-mini over AdvBench, plan §6) to the critical path — it strengthens P2/P3 magnitudes AND unblocks P4 behavioral. Harmful-text generation => main loop only (cyber-safeguard).
+- Committed cd8a3fc..3f690db (7 commits). git push remains classifier-blocked (Omer: !git push).
+- P3 canonical bf16 (686723) still PENDING/Resources.
