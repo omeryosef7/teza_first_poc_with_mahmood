@@ -100,3 +100,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **KEY (O5):** projection metric norm_direct_vs_neutral DISAGREES with Patchscopes (drug_lantern 0.76 vs 0.001; NN-decodes to literal "lantern"). Pooled mean-diff inflates; Patchscopes+NN-decode trustworthy. De-emphasize projection metric.
 - Demo quality matters: hand > diverse GPT for bomb (0.125 vs 0.004).
 - Next: focus P3/P4 on virus_muffin; Patchscopes readout for necessity/sufficiency.
+
+### 2026-07-27 — P3 canonical bf16 COMPLETE: necessity CONFIRMED
+- 686723 COMPLETED (bf16, L40S t-806, 8:06, exit 0). identity_ok=True all items (robust tol works on bf16). baseDS P_harm 0.125/0.009/0.205 == fp16 preview (precision-robust).
+- **Necessity CONFIRMED (C1):** DS<-Neutral patch ~no effect early (L0-4), collapses P(harm) to 0 from mid-layers. Controls: identity id_max_dev<<effect; random norm-matched patch 126x (potato)/8181x (mango) smaller than necessity drop. Promoted PRELIMINARY->CONFIRMED in CAUSAL_RESULTS_SUMMARY.
+- Sufficiency C2 still readout-limited (logit-lens=next-token). Next: Patchscopes-based sufficiency readout.
+- Committed dec79b6, 63abf58. 

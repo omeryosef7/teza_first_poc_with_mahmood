@@ -48,13 +48,17 @@ _None yet._ (Would require: does an early-layer feature predict Malicious vs Rej
 
 ## 3. Causal findings
 
-**PRELIMINARY** (login-GPU fp16 validation run; canonical bf16 L40S = job 686723 pending). Not yet committed as a final claim.
+**C1 CONFIRMED on canonical bf16** (job 686723, L40S, COMPLETED); replicated across fp16-login and bf16, 2 concepts (potato, mango). C2 sufficiency remains readout-limited (below).
 
-**C1 (necessity, preliminary) — the codeword's mid/late-layer representation is causally necessary for harmful decoding.**
+**C1 (necessity — CONFIRMED) — the codeword's mid/late-layer representation is causally necessary for harmful decoding.**
 Intervention: during the Doublespeak forward, replace the codeword activation at layer L with the matched Neutral activation (DS←Neutral), sweep L, read P(harm) at the codeword (in-context logit lens).
 - Patching at EARLY layers (L0–4) barely changes P(harm) (potato ~0.11–0.14 vs baseline 0.128) — early the DS and Neutral codeword reps are ~identical (hijack not yet formed).
 - Patching from MID layers on collapses it (potato →0.04 by L6 →0 late; mango 0.207→0 by ~L12).
-- Controls: identity (DS←DS) reproduces baseline (id_max_dev 0.008 potato ≪ effect); random norm-matched patch does not mimic the necessity drop.
+- Three controls align (bf16 canonical):
+  - identity (DS←DS) reproduces baseline: id_max_dev = 0.010 (potato) / 0.040 (mango) ≪ the effect;
+  - random norm-matched patch does NOT mimic it: mean necessity drop (L8-19) vs random |deviation| = **126x** (potato), **8181x** (mango);
+  - effect is monotone in layer and specific to replacing with the Neutral (harm-free) rep.
+- bf16 baselines match fp16 preview (P_harm 0.125/0.205), so the finding is precision-robust.
 Reading: the harmful component the codeword *acquires* across layers (see O1/O2) is necessary for the harmful readout, and it lives in the codeword's own representation from mid-layers onward.
 
 **C2 (sufficiency, preliminary NULL — readout-limited).** A single-layer Neutral←Direct patch does NOT make the codeword decode as harmful (P(harm)=0 at all layers). BUT the in-context logit-lens readout measures next-token prediction, not concept meaning, so this is a lower bound. **Refinement queued:** re-measure sufficiency with the Patchscopes readout (Stage-1's paper-faithful method) before any sufficiency claim.
