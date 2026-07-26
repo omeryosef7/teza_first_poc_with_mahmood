@@ -32,7 +32,12 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ds_common as dc
 
-INSPECTION_PROMPT = "cat->cat; 1124->1124; hello->hello; ?"
+# Repetition-style inspection prompt: patch the rep at the final token and read
+# whether the model repeats the concept. The vendored "cat->cat; ...; ?" arrow
+# prompt FAILS its positive control on Llama-3.1-8B (a clean "virus" rep decodes to
+# P~0.001); this repeat prompt passes it (clean/Direct "virus" -> P~0.67-0.72),
+# verified in logs/diag_readout_eng.log & diag_readout2.log.
+INSPECTION_PROMPT = "hello hello\nworld world\ncat cat\nX"
 
 
 def token_id(tokenizer, word):
@@ -50,15 +55,9 @@ class PatchscopeDecoder:
         self.lm = lm
         tok = lm.tokenizer(inspection_prompt, return_tensors="pt").to(lm.model.device)
         self.inputs = tok
-        ids = tok["input_ids"][0].tolist()
-        qm = lm.tokenizer.encode(" ?", add_special_tokens=False)
-        pos = -1
-        for i in range(len(ids) - len(qm) + 1):
-            if ids[i:i + len(qm)] == qm:
-                pos = i + len(qm) - 1
-        if pos == -1:
-            raise ValueError("'?' not found in inspection prompt")
-        self.q_pos = pos
+        # Patch at the FINAL token of the repetition prompt (the slot the model
+        # should fill by "repeating" the injected concept).
+        self.q_pos = tok["input_ids"].shape[1] - 1
 
     @torch.no_grad()
     def decode(self, vector, inspect_layer, harm_id, code_id):
@@ -112,7 +111,8 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
     res = {"id": it["id"], "readout_layer": R,
            "baseline_ds_patchscope": {"p_harm": base_ds_ph, "p_code": base_ds_pc},
            "baseline_neutral_patchscope": {"p_harm": base_neu_ph, "p_code": base_neu_pc},
-           "necessity": [], "sufficiency": [], "control_identity": [], "control_random": []}
+           "necessity": [], "sufficiency": [], "sufficiency_ds": [],
+           "control_identity": [], "control_random": []}
 
     for L in range(R + 1):                       # patch layer must be <= readout layer
         neu_vec = neu_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)
@@ -126,10 +126,16 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
         ph, pc = dec.decode(rep, R, harm_id, code_id)
         res["necessity"].append({"layer": L, "p_harm": ph, "p_code": pc})
 
-        # Sufficiency: Neutral forward, Neutral<-Direct at L, read patchscope at R
+        # Sufficiency: Neutral forward, Neutral<-Direct at L (harmful concept's own,
+        # early-structured rep; expected NOT sufficient).
         rep = patched_codeword_rep(lm, neu_text, L, neu_pos, dir_vec, R)
         ph, pc = dec.decode(rep, R, harm_id, code_id)
         res["sufficiency"].append({"layer": L, "p_harm": ph, "p_code": pc})
+
+        # Sufficiency via the HIJACKED DS rep (late-structured; expected sufficient at mid).
+        rep = patched_codeword_rep(lm, neu_text, L, neu_pos, ds_vec, R)
+        ph, pc = dec.decode(rep, R, harm_id, code_id)
+        res["sufficiency_ds"].append({"layer": L, "p_harm": ph, "p_code": pc})
 
         # identity control (DS<-DS) and random control (DS<-random)
         rep = patched_codeword_rep(lm, ds_text, L, ds_pos, ds_vec, R)
@@ -176,12 +182,13 @@ def main():
     for it in items:
         r = run_item(lm, dec, it, args.templated, R, args.seed)
         report["items"].append(r)
-        nec = r["necessity"]; suf = r["sufficiency"]
+        nec = r["necessity"]; suf = r["sufficiency"]; sufds = r["sufficiency_ds"]
         bph = r["baseline_ds_patchscope"]["p_harm"]
         max_nec_drop = max(bph - x["p_harm"] for x in nec)
         max_suf = max(x["p_harm"] for x in suf)
-        print(f"[{r['id']}] R={R} baseDS_ps_pharm={bph:.3f} baseNeu={r['baseline_neutral_patchscope']['p_harm']:.3f} "
-              f"| necessity max drop={max_nec_drop:.3f} | sufficiency max P_harm={max_suf:.3f}")
+        max_sufds = max(x["p_harm"] for x in sufds)
+        print(f"[{r['id']}] R={R} baseDS={bph:.3f} baseNeu={r['baseline_neutral_patchscope']['p_harm']:.3f} "
+              f"| necessity drop={max_nec_drop:.3f} | suff(Direct)={max_suf:.3f} | suff(DS)={max_sufds:.3f}")
 
     report["status"] = "COMPLETE"
     with open(os.path.join(out_dir, "stage2b_results.json"), "w") as f:

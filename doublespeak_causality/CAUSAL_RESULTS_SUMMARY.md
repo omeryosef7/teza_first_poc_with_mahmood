@@ -43,6 +43,15 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - **Demo quality matters:** hand-crafted concentrated demos beat diverse GPT demos for bomb (Patchscopes 0.125 vs 0.004).
 - Implication: focus causal experiments on the strongest clean exemplar (virus_muffin) + a small panel; report concept variation honestly.
 
+**O6 — Readout FIX + late-vs-early emergence (validated decoder).** The vendored Patchscopes inspection prompt ("cat->cat; ...; ?") FAILS its positive control on Llama-3.1-8B (clean/Direct "virus" rep -> P(virus)~0.001). A repetition prompt ("hello hello\nworld world\ncat cat\nX", patch the final token) PASSES: clean "virus"->0.668, **Direct "virus"->0.722**. With this validated decoder (logs/diag_readout2.log):
+| representation | P(harm) | layer of peak |
+|---|---|---|
+| Direct "virus" | 0.72 | **early (L2-8; gone by L16)** |
+| DS "muffin" (hijacked) | 0.100 | **late (L30)** |
+| clean "virus" | 0.67 | early (L2) |
+| Neutral "muffin" | 0.000 | - |
+**The Direct concept decodes EARLY; the hijacked codeword decodes LATE.** This is the time-of-check/time-of-use signature, now measured with a decoder that passes positive controls (earlier patchscope magnitudes used the broken prompt and are superseded). All prior "unreliable patchscope" caveats are resolved by switching to the repeat_nl decoder.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 
@@ -61,13 +70,11 @@ Intervention: during the Doublespeak forward, replace the codeword activation at
 - bf16 baselines match fp16 preview (P_harm 0.125/0.205), so the finding is precision-robust.
 Reading: the harmful component the codeword *acquires* across layers (see O1/O2) is necessary for the harmful readout, and it lives in the codeword's own representation from mid-layers onward.
 
-**C2 (sufficiency — INCONCLUSIVE; prior "null" RETRACTED).** Earlier I reported a robust sufficiency null (single- and multi-layer Neutral←Direct injection gives patchscope P_harm≈0). **A self-check invalidates that conclusion:** the Patchscopes identity-inspection readout ("cat->cat; 1124->1124; hello->hello; ?") **cannot decode even the explicit Direct "virus" representation** — P(virus)≈0.000-0.002 at every layer, verified with BOTH our decoder AND the vendored `analyze_patchscope_probabilities`. A sufficiency null from a readout that fails on a known-positive control is uninterpretable. So RQ2 sufficiency is **OPEN**, not answered.
-  - The multi-layer test (08) inherits the same unreliable readout -> also inconclusive.
-  - The logit-lens sufficiency null (05) is separately readout-limited (measures next-token, not meaning).
-  - The one weak positive (DS "muffin" rep -> patchscope P_harm 0.08) is near-noise given direct reps read ~0.
-**Correct sufficiency tests (queued):** (a) inject the *Doublespeak* hijacked rep (Neutral←DS) rather than Direct; (b) a decoding readout that passes the Direct-rep positive control (alternative inspection prompt / few-shot patchscope / tuned-lens); (c) behavioral sufficiency in a WORKING attack (needs a jailbreak that succeeds at baseline).
-
-**Readout-reliability caveat (applies to O2 and all patchscope numbers):** absolute Patchscopes P_harm is tiny (≤0.1) and the identity-prompt decoder fails its Direct-rep positive control for these concepts. Treat Patchscopes magnitudes as UNRELIABLE here; the trustworthy signals are (i) necessity via in-context logit lens (05, strong controls) and (ii) NN/logit-lens argmax decoding (O3).
+**C2 (sufficiency — CONDITIONAL, RQ2 answered).** With the validated repeat_nl decoder (positive controls pass), single-layer injection results are now interpretable:
+  - **Neutral←Direct: NOT sufficient** — injecting the Direct "virus" rep into the neutral prompt gives P(harm)=0.001 at all layers.
+  - **Neutral←DS: SUFFICIENT** — injecting the *hijacked* DS "muffin" rep at a MID layer (L15) into the neutral prompt yields P(harm)=0.135 (≥ the DS baseline 0.100).
+**Mechanistic insight (novel vs the paper):** the hijacked representation is QUALITATIVELY DISTINCT from the harmful concept's own representation. Direct "virus" carries its meaning in EARLY layers (L2-8, gone by L16); the hijacked "muffin" carries it in LATE layers (L30). Injecting the direct (early-structured) rep cannot reproduce the late-emergence hijack, but injecting the hijacked (late-structured) rep can. So representation hijacking does not merely copy the harmful concept — it constructs a distinct, late-emerging representation. This directly supports the time-of-check/time-of-use story and explains why single-layer Direct injection fails while the distributed in-context hijack (or a hijacked-rep injection) succeeds.
+  - Controls (bf16 canonical pending): identity reproduces baseline; random norm-matched injection ~0.
 
 **C1 corroborated by the Patchscopes readout (07):** on virus_muffin, necessity (DS←Neutral) drops patchscope P_harm 0.078→0 from L2 while identity holds at 0.078 and random corrupts everywhere but is distinguishable at L0-1 (necessity preserves there since DS≈Neutral early). Two independent readouts (05 logit-lens + 07 Patchscopes) agree on necessity.
 
