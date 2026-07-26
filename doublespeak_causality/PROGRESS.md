@@ -16,7 +16,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P1c | Smoke test 3-5 prompts (§24) | ✅ COMPLETE | all 5 checks pass on Llama-8B (fp16/login): 3-token EOS preserved, α=0 identity, replace Δ=6.42, gen stops on eos. Canonical bf16 rerun = job 686635 |
 | P2 | Representation mapping (§8) | ✅ COMPLETE | Patchscopes late crossover (L17-21, peak L30-31); cos→Direct 0→0.6; NN-decode: mango→'poison'/'deadly' late. Observational only. See CAUSAL_RESULTS_SUMMARY.md |
 | P3 | Activation patching (§9) | ✅ COMPLETE (necessity) | **necessity CONFIRMED** bf16: DS←Neutral collapses P(harm) from mid-layers; identity✓ random✗ (126-8181x). **Necessity CONFIRMED + Sufficiency CONDITIONAL** (readout fixed): Neutral<-DS sufficient (0.135), Neutral<-Direct not; hijack rep is late-structured (L30) vs direct early (L2). Canonical=687378 |
-| P4 | Timing: early vs late injection (§10.3) | 🟡 SCRIPT READY / BLOCKED | `06_run_timing.py` built+GPU-validated; **no signal on seed** (baseline already refuses) — needs GPT-4o-mini demos + StrongReject. See CAUSAL F1 |
+| P4 | Timing: early vs late injection (§10.3) | 🟡 FEASIBLE | semantic timing = late-emergence CONFIRMED (O6); behavioral flip exists (bomb_potato refuse→non-refuse, O7) — needs StrongReject to confirm harm |
 | P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
 | P6 | Attention knockout + path patching (§11) | ⬜ NOT_RUN | |
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
