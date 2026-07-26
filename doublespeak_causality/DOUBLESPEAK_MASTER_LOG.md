@@ -129,3 +129,8 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Sufficiency (RQ2) — CONDITIONAL (un-retracted, now real):** Neutral<-Direct NOT sufficient (0.001, all layers); **Neutral<-DS SUFFICIENT (0.135 @injectL15)**. (logs/diag_suff_ds.log)
 - **Novel insight:** the hijacked rep is qualitatively DISTINCT from the concept's own rep — direct=early-structured, hijack=late-structured; injecting the direct rep can't reproduce the late-emergence hijack, injecting the hijacked rep can. Doublespeak builds a new late-emerging representation, not a copy.
 - Added Neutral<-DS condition to 07. Committed a372c21. Submitted canonical bf16 all-6-concepts readout=30 = job 687378 (RUNNING n-803).
+
+### 2026-07-27 — Canonical bf16 confirms conditional sufficiency (virus_muffin)
+- 687378 COMPLETED (bf16, all 6 concepts, readout=30). virus_muffin: baseDS=0.102, necessity drop=0.102, suff(Direct)=0.001, **suff(DS)=0.146**. Confirms fp16 findings on bf16.
+- Other 5 concepts baseDS~0 (concept-dependence; necessity separately confirmed on potato/mango via 05 logit-lens). Sufficiency-conditional currently rests on virus_muffin (1 concept) — N is small; strengthening needs more concepts that hijack.
+- Next: check if virus_muffin jailbreaks BEHAVIORALLY (gates P4/P5); else pivot to P6 attention-knockout (RQ4 information flow, tractable with the validated semantic readout).
