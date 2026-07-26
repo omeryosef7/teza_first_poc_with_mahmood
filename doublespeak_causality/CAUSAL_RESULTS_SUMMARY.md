@@ -30,6 +30,19 @@ For "bomb": potato (peak P_harm 0.125) ≫ carrot (0.009). Motivates the P8 code
 
 **Gate check (§25) — passed:** baseline reproducible ✅, target indices valid ✅, Direct/Neutral/Doublespeak trajectories differ meaningfully ✅, α=0 = identity ✅. → cleared to run the causal test (P3).
 
+**O5 — Hijacking is concept- AND demo-dependent; Patchscopes is the reliable readout (metric caution).**
+Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `seed_concepts_gpt4omini.json`, fp16 login):
+| concept | Patchscopes peak P_harm | NN-decode (codeword, late) | proj-metric late |
+|---|---|---|---|
+| virus_muffin | **0.100** (L30) | " virus", " Mal[ware]" | 0.75 |
+| drug_lantern | 0.001 | " lantern", " home", " DIY" | 0.76 |
+| bomb_potato | 0.004 | (weak) | 0.06 |
+| poison_mango | 0.000 | - | 0.14 |
+- Only **virus_muffin** shows genuine concept-specific hijacking (Patchscopes + NN-decode agree).
+- **Metric caution (validates 5.6):** projection metric `norm_direct_vs_neutral` is INFLATED - drug_lantern 0.76 on it but 0.001 on Patchscopes and NN-decodes to its literal meaning. The pooled mean-difference direction is a generic harmful-ish axis; movement along it does NOT imply decoding as the specific concept. Use Patchscopes/NN-decode as primary.
+- **Demo quality matters:** hand-crafted concentrated demos beat diverse GPT demos for bomb (Patchscopes 0.125 vs 0.004).
+- Implication: focus causal experiments on the strongest clean exemplar (virus_muffin) + a small panel; report concept variation honestly.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 

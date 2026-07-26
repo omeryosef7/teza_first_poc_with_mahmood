@@ -93,3 +93,10 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Decision for next iterations:** promote demo-generation (GPT-4o-mini over AdvBench, plan §6) to the critical path — it strengthens P2/P3 magnitudes AND unblocks P4 behavioral. Harmful-text generation => main loop only (cyber-safeguard).
 - Committed cd8a3fc..3f690db (7 commits). git push remains classifier-blocked (Omer: !git push).
 - P3 canonical bf16 (686723) still PENDING/Resources.
+
+### 2026-07-27 — Paper-faithful demos: concept/demo-dependence + metric caution
+- Built prepare_demos.py (GPT-4o-mini, paper method); seed_concepts_gpt4omini.json (6 concepts x 12 demos). AdvBench local (llm-attacks/data/advbench).
+- Re-ran Stage-1 (fp16 login, 6 concepts). virus_muffin strong (Patchscopes 0.100, NN->virus/Malware, onset L9); others weak on Patchscopes.
+- **KEY (O5):** projection metric norm_direct_vs_neutral DISAGREES with Patchscopes (drug_lantern 0.76 vs 0.001; NN-decodes to literal "lantern"). Pooled mean-diff inflates; Patchscopes+NN-decode trustworthy. De-emphasize projection metric.
+- Demo quality matters: hand > diverse GPT for bomb (0.125 vs 0.004).
+- Next: focus P3/P4 on virus_muffin; Patchscopes readout for necessity/sufficiency.
