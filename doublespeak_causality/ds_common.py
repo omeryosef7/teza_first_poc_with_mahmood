@@ -382,7 +382,14 @@ class LayerPatch:
         v = None
         if self.vector is not None:
             v = self.vector.to(hidden.dtype).to(hidden.device)
+        seq = hidden.shape[1]
         for p in self.positions:
+            # Generation-safe: during KV-cached decode steps the current forward
+            # only holds the new token (seq==1), so a fixed prompt position is out
+            # of range — skip it (the patched value is already baked into the KV
+            # cache from prefill). Prevents IndexError under generate().
+            if p < 0 or p >= seq:
+                continue
             if self.mode == "replace":
                 hidden[0, p, :] = v
             elif self.mode == "add":
