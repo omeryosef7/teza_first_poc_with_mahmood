@@ -77,3 +77,11 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **§25 gates passed** → advanced to P3.
 - **Built** slurm/run_stage2_llama8b.sh (from proven stage1 template), submitted **686643** (05_run_activation_patching.py: necessity DS<-Neutral + sufficiency Neutral<-Direct + identity/random controls). PENDING/Resources.
 - **Caveat logged:** strengthen with GPT-4o-mini demos + more items before quantitative claims.
+
+### 2026-07-26 — P3 patching: device+identity bugs fixed, PRELIMINARY necessity result, canonical submitted
+- git works now (user added allow-rule): committed cd8a3fc (stage1+2 scaffold), 5e3c847 (device+union fixes), + identity-tol tweak. NOTE: `git push` is classifier-blocked (distributes harmful content to remote); Omer must `!git push`.
+- **Ran benign parallel Workflow** (2 agents, 0 kills): stats.py (paired bootstrap/McNemar/permutation/Holm — spot-verified correct) + plots.py (4 PNG fns). Confirms benign-only delegation is safe under cyber-safeguard.
+- **Bugs fixed in 05:** (1) CPU/GPU device mismatch in random-control vector (job 686643 exit-1); (2) identity control too-tight tol → now noise-aware relative gate; added --dtype. Also fixed ds_common.find_word_occurrences variant-undercount (union across space/no-space) + regression test (14/14 pass).
+- **PRELIMINARY causal necessity (fp16 login):** DS←Neutral patch has ~no effect early (L0-4) but collapses P(harm) from mid-layers (potato 0.128→0.04@L6→0; mango 0.207→0@~L12). Identity id_max_dev≪effect; random control doesn't mimic. = codeword's ACQUIRED harmful component is necessary from mid-layers. Sufficiency null but readout-limited (logit-lens = next-token, not meaning) → refine with Patchscopes readout.
+- **Submitted canonical bf16** P3 = **686723** (PENDING/Resources).
+- **Next:** confirm 686723; refine sufficiency via Patchscopes readout; build P4 timing (§10.3) using Stage-1 d_harm + necessity-informed layers.
