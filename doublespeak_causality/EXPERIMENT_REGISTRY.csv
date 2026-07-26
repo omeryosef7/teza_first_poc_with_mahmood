@@ -1,0 +1,6 @@
+run_id,date,stage,experiment,model,git_commit,config,seed,status,key_metric,value,output_dir,notes
+env_audit_20260726,2026-07-26,P0,environment_audit,,f646dd4,,,COMPLETE,,,doublespeak_causality/ENV_AUDIT.md,"env+slurm+model+secrets audited; reuse map recorded"
+llama8b_download_20260726,2026-07-26,P0,model_download,meta-llama/Llama-3.1-8B-Instruct,f646dd4,ignore=pth/original/gguf,,RUNNING,,,.cache/huggingface/hub,"restarted into project cache after cc-home group-quota EDQUOT"
+core_lib_20260726,2026-07-26,P1a,core_library_ds_common,,f646dd4,,,COMPLETE,tests_pass,13/13,doublespeak_causality/ds_common.py,"load/localize/prompts/capture/LayerPatch/generate; reuses doublespeak+poc_stage4"
+smoke_gemma2b_20260726,2026-07-26,P1c,plumbing_validation,google/gemma-2b,f646dd4,no-chat-template,0,PARTIAL,checks_ok,3/5,doublespeak_causality/outputs/smoke_gemma-2b.json,"load/alpha0-identity/capture/gen OK; localization+patch inconclusive (broken gemma tokenizer, not pipeline)"
+stage1_llama8b_20260726,2026-07-26,P1c+P2,smoke+repmap,meta-llama/Llama-3.1-8B-Instruct,f646dd4,templated;seed_concepts;seed=0,0,RUNNING,slurm_job,686481,doublespeak_causality/outputs/,"L40S PENDING; smoke_pipeline + 01_map_representations"

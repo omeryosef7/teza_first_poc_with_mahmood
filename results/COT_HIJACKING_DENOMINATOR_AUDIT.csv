@@ -1,0 +1,4 @@
+model,n_delivered,n_success,n_missing,asr_delivered,asr_of25,matched_n,matched_attacked_asr,matched_clean_asr,matched_uplift
+deepseek-ai_DeepSeek-R1-Distill-Llama-8B,23,22,2,0.9565217391304348,0.88,23,0.9565217391304348,0.391304347826087,0.5652173913043479
+microsoft_Phi-4-mini-reasoning,22,17,3,0.7727272727272727,0.68,22,0.7727272727272727,0.36363636363636365,0.40909090909090906
+google_gemma-3-4b-it,25,25,0,1.0,1.0,25,1.0,0.0,1.0

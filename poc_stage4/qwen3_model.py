@@ -105,14 +105,24 @@ class Qwen3Model:
         }
 
     def format_prompts(self, prompts: list[str], *, enable_thinking: bool) -> list[str]:
+        # NOTE (2026-07-26 fix): previously the enable_thinking kwarg was passed ONLY when True
+        # (`if enable_thinking: kwargs["enable_thinking"] = True`). For Qwen3 the chat-template
+        # DEFAULT is thinking-ON, so passing enable_thinking=False did NOTHING — it was a SILENT
+        # NO-OP that left thinking ON (verified: no-kwarg == enable_thinking=True != False, which
+        # injects an empty `<think>\n\n</think>` block). Any stage-4 run configured ENABLE_THINKING=false
+        # therefore actually ran thinking-ON at the wrong template position. Now the flag is passed
+        # EXPLICITLY for both values so False truly means thinking-off. Pre-fix stage-4 outputs were
+        # generated with the buggy (thinking-ON) behavior — see docs audit note.
         formatted: list[str] = []
         for prompt in prompts:
             messages = [{"role": "user", "content": prompt}]
-            kwargs: dict = dict(tokenize=False, add_generation_prompt=True)
-            if enable_thinking:
-                kwargs["enable_thinking"] = True
             try:
-                text = self.tokenizer.apply_chat_template(messages, **kwargs)
+                text = self.tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                    enable_thinking=enable_thinking,
+                )
             except TypeError:
                 # Tokenizer doesn't support enable_thinking kwarg — fall back to standard call
                 text = self.tokenizer.apply_chat_template(

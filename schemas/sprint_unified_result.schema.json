@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sprint_unified_result.schema.json",
+  "title": "Sprint unified evaluation row (sec B3)",
+  "description": "One row of the sprint's unified evaluation table (plan docs/SPRINT_COMPLETION_PLAN_MATAN_MAHMOOD.md sec B3). It EXTENDS schemas/evaluation_result.schema.json without breaking it: every row valid under this schema carries the sprint fields below, and legacy evaluation_result rows remain valid because their required fields are optional-superset here. Field names follow the GCG-pipeline convention (strongreject_*). Report numerator/denominator per split; never mix AdvBench and ClearHarm denominators.",
+  "type": "object",
+  "$comment": "Lineage: this schema is the sprint-B3 superset of schemas/evaluation_result.schema.json. It deliberately does NOT `$ref`/`allOf` the legacy schema, because that schema requires legacy field names (condition, target_response, decoding_config, seed, strongreject_score) that a unified row expresses under new names (response, generation_seed, strongreject_raw). additionalProperties:true keeps every legacy field valid as a pass-through, so legacy evaluation_result rows augmented with the sprint fields still validate here, and the legacy schema continues to validate old files unchanged. Nothing about evaluation_result.schema.json is modified.",
+  "required": [
+    "run_id",
+    "task_id",
+    "source_dataset",
+    "split",
+    "attack_family",
+    "attack_setting",
+    "response",
+    "strongreject_raw",
+    "strongreject_success"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "MODEL__SPLIT__OPTIMIZER__OBJECTIVE__LAMBDA__SEED__DATE (plan sec 22.1)."
+    },
+    "task_id": {
+      "type": "string",
+      "description": "Stable manifest id, e.g. advbench_full_0001 or clearharm_<12hex>."
+    },
+    "source_dataset": {
+      "type": "string",
+      "description": "Originating dataset. Denominators must never mix across these.",
+      "examples": ["advbench", "clearharm", "malicious_instruct"]
+    },
+    "split": {
+      "type": "string",
+      "description": "Manifest split the task_id belongs to.",
+      "examples": [
+        "dev_train",
+        "dev_val",
+        "heldout",
+        "clearharm_opt",
+        "clearharm_val",
+        "clearharm_universal",
+        "clearharm_reserve",
+        "external_maliciousinstruct"
+      ]
+    },
+    "category": {
+      "type": ["string", "null"],
+      "description": "Harm taxonomy category (see data/manifests taxonomy)."
+    },
+    "attack_family": {
+      "type": "string",
+      "description": "Family of the attack producing this row.",
+      "examples": ["gcg", "mac", "beast", "none", "cot_hijacking", "steering", "mechanistic"]
+    },
+    "attack_setting": {
+      "type": "string",
+      "enum": ["single_instruction", "category_specific", "multi_category", "universal"],
+      "description": "Scope over which the attack/suffix was optimized."
+    },
+    "optimizer": {
+      "type": ["string", "null"],
+      "description": "Optimizer used (e.g. gcg, mac, rloo, soft_prompt); null for no-attack rows."
+    },
+    "objective": {
+      "type": ["string", "null"],
+      "description": "Optimization objective, e.g. prefix_ce, behavioral, reinforce, proxy_ce."
+    },
+    "objective_version": {
+      "type": ["string", "null"],
+      "description": "Versioned objective/reward tag for reproducibility (plan sec 6.5/6.6)."
+    },
+    "optimization_seed": {
+      "type": ["integer", "null"],
+      "description": "Seed used during trigger optimization; null if no optimization."
+    },
+    "generation_seed": {
+      "type": ["integer", "null"],
+      "description": "Decoding seed for the evaluated generation (0 for greedy)."
+    },
+    "checkpoint_step": {
+      "type": ["integer", "null"],
+      "description": "Optimizer step / checkpoint the evaluated suffix came from; null if N/A."
+    },
+    "suffix": {
+      "type": ["string", "null"],
+      "description": "Optimized suffix text; empty/null for no-suffix or non-suffix attacks."
+    },
+    "suffix_token_length": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Tokenized length of the suffix."
+    },
+    "prompt_token_length": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Tokenized length of the full input prompt fed to the model."
+    },
+    "response": {
+      "type": "string",
+      "description": "Full free-form generation (answer channel; excludes reasoning if separated)."
+    },
+    "reasoning": {
+      "type": ["string", "null"],
+      "description": "Reasoning / thinking-channel text for CoT models; null if none or not separated."
+    },
+    "refusal_label": {
+      "type": ["boolean", "null"],
+      "description": "True if the response is a refusal (refusal classifier / heuristic)."
+    },
+    "strongreject_raw": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Raw StrongREJECT score in [0,1]."
+    },
+    "strongreject_success": {
+      "type": ["boolean", "null"],
+      "description": "strongreject_raw >= threshold (0.5)."
+    },
+    "secondary_judge_score": {
+      "type": ["number", "null"],
+      "description": "Score from a secondary/independent judge for agreement checks."
+    },
+    "exact_prefix_match": {
+      "type": ["boolean", "null"],
+      "description": "Response begins with the exact target_prefix string."
+    },
+    "semantic_prefix_match": {
+      "type": ["boolean", "null"],
+      "description": "Response semantically matches the target prefix."
+    },
+    "answer_present": {
+      "type": ["boolean", "null"],
+      "description": "A non-empty answer channel was produced (relevant for thinking models)."
+    },
+    "think_closed": {
+      "type": ["boolean", "null"],
+      "description": "The reasoning/think block was properly closed (e.g. </think>)."
+    },
+    "degenerate": {
+      "type": ["boolean", "null"],
+      "description": "Generation was degenerate (empty, repetition loop, or truncated garbage)."
+    },
+    "generated_tokens": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Total number of generated tokens."
+    },
+    "error_type": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "none",
+        "oom",
+        "timeout",
+        "judge_error",
+        "generation_error",
+        "parse_error",
+        "empty_response",
+        "other"
+      ],
+      "description": "Error category if the row failed to evaluate cleanly; null/none on success."
+    }
+  },
+  "additionalProperties": true
+}

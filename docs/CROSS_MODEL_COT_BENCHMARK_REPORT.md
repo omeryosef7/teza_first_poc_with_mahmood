@@ -79,6 +79,27 @@ Behavior-level SR ASR (≥0.5); clean is 1 greedy generation per goal.
 DeepSeek/Phi is therefore approximate but the direction and magnitude are unambiguous. gpt-o4-mini
 clean ASR not measured — API model, out of §31 scope.)
 
+**DENOMINATOR-INTEGRITY CORRECTION (2026-07-26 bug-hunt, verified).** The uplift column above subtracts a
+clean ASR on /25 from an attacked ASR on /23 or /22 — a denominator mismatch. Verified root cause: the
+missing behaviors produced **zero scored rows** (attacker/API non-delivery), NOT model refusals — a
+refusal yields a low-*scored* row, not a missing one — so **excluding them from the attacked denominator
+is defensible** (they are non-delivered attacks, not hidden successes/refusals). The honest fix is to
+compute the uplift on the **matched behavior set** (behaviors present in BOTH attacked and clean):
+
+| Target | matched n | attacked | clean (on matched) | **matched uplift** | (was) |
+|---|---|---|---|---|---|
+| DeepSeek-R1-Distill-Llama-8B | 23 | 22/23 = 0.957 | 9/23 = 0.391 | **+0.565** | +0.597 |
+| Phi-4-mini-reasoning | 22 | 17/22 = 0.773 | 8/22 = 0.364 | **+0.409** | +0.373 |
+| google/gemma-3-4b-it | 25 | 25/25 = 1.000 | 0/25 = 0.000 | **+1.000** | +1.000 |
+
+The correction is small (≈ ±3–4 pp) and does **not** change any conclusion — direction and magnitude hold.
+**Two residual integrity gaps to close going forward** (do not affect these numbers' validity): (1) the
+frozen-primary behavior-ASR should be reported on a consistent denominator (matched-set or /25-with-
+explicit-N-delivered), not silently reduced; (2) generation rows carry **no provenance flag** separating a
+genuine refusal/empty output from an infra/API failure — add one so dropped behaviors are auditable
+rather than assumed-infra. Verified via the `cot-hijacking-bug-hunt` workflow (wf_8eadd8d9-1c1); the
+judge-grounding, thinking-ON, and attack/clean-input checks all PASSED (see the execution log).
+
 **Every open-source target has meaningful headroom** — the CoT-Hijacking attack produces real uplift,
 not baseline compliance, on all three. gemma has the cleanest separation (0→1). Phi is the most
 baseline-permissive (0.40 clean) yet the attack still adds +0.37.
