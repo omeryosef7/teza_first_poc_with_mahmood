@@ -114,3 +114,11 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Next experiment:** multi-layer sufficiency (inject Direct/direction across a layer window).
 - poison_mango all-zero here = consistent (GPT demos gave it Patchscopes 0; only virus strong with GPT demos).
 - Submitted canonical bf16 all-6-concepts = job 687215 (PENDING). Committed 80dd327.
+
+### 2026-07-27 — INTEGRITY CORRECTION: sufficiency "null" retracted (readout fails positive control)
+- Built 08_multilayer_sufficiency.py (window injection). virus_muffin: cumulative/sliding/random all ~0.001 (== baseline).
+- **Before claiming a multi-layer null, ran a positive control:** does the DIRECT "virus" rep patchscope-decode to "virus"? **No — P(virus)=0.000-0.002 at ALL layers, with BOTH our PatchscopeDecoder AND the vendored analyze_patchscope_probabilities.** The identity-inspection readout cannot decode even the explicit harmful rep for these concepts.
+- **=> RETRACT the "sufficiency robust null" from the previous iteration.** A null from a readout that fails its positive control is uninterpretable. RQ2 sufficiency is OPEN, not answered. Updated CAUSAL_RESULTS_SUMMARY C2 + added a readout-reliability caveat to all Patchscopes magnitudes (absolute P_harm <=0.1 and unreliable here).
+- **What still stands:** C1 NECESSITY (05, in-context logit lens, controls identity✓ random 126-8181x) — a DIFFERENT, robust readout. NN/logit-lens argmax decoding (O3). 
+- **Correct sufficiency tests queued:** Neutral<-DS injection; a decoder that passes the Direct-rep control (alt inspection prompt / tuned-lens); behavioral sufficiency in a working attack.
+- Committed 7f0615a (08). Diagnostics: logs/diag_direct.log, logs/diag_vendored.log.

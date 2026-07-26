@@ -61,11 +61,13 @@ Intervention: during the Doublespeak forward, replace the codeword activation at
 - bf16 baselines match fp16 preview (P_harm 0.125/0.205), so the finding is precision-robust.
 Reading: the harmful component the codeword *acquires* across layers (see O1/O2) is necessary for the harmful readout, and it lives in the codeword's own representation from mid-layers onward.
 
-**C2 (sufficiency — ROBUST NULL for single-layer injection; RQ2).** A single-layer, single-position Neutral←Direct patch does NOT induce harmful decoding — confirmed across BOTH readouts:
-  - in-context logit-lens (05): P(harm)=0 at all layers;
-  - Patchscopes concept-decoding (07, virus_muffin, the strong concept): P_harm=0 at all layers, while the identity control holds at the 0.078 baseline (so the readout is live, not dead).
-Interpretation: representation hijacking is a **distributed, multi-layer** phenomenon — the meaning is built up progressively across layers by the demos, and cannot be reproduced by injecting the harmful representation at a single layer. This distinguishes the levels of sufficiency the plan warns about (§5.4): the rep is *necessary* (C1) but a single-layer copy is not *sufficient*.
-**Next test (queued):** MULTI-layer sufficiency — inject the Direct rep / harmful direction across a WINDOW of layers (§9.2 / §10.1) to test whether distributed injection IS sufficient.
+**C2 (sufficiency — INCONCLUSIVE; prior "null" RETRACTED).** Earlier I reported a robust sufficiency null (single- and multi-layer Neutral←Direct injection gives patchscope P_harm≈0). **A self-check invalidates that conclusion:** the Patchscopes identity-inspection readout ("cat->cat; 1124->1124; hello->hello; ?") **cannot decode even the explicit Direct "virus" representation** — P(virus)≈0.000-0.002 at every layer, verified with BOTH our decoder AND the vendored `analyze_patchscope_probabilities`. A sufficiency null from a readout that fails on a known-positive control is uninterpretable. So RQ2 sufficiency is **OPEN**, not answered.
+  - The multi-layer test (08) inherits the same unreliable readout -> also inconclusive.
+  - The logit-lens sufficiency null (05) is separately readout-limited (measures next-token, not meaning).
+  - The one weak positive (DS "muffin" rep -> patchscope P_harm 0.08) is near-noise given direct reps read ~0.
+**Correct sufficiency tests (queued):** (a) inject the *Doublespeak* hijacked rep (Neutral←DS) rather than Direct; (b) a decoding readout that passes the Direct-rep positive control (alternative inspection prompt / few-shot patchscope / tuned-lens); (c) behavioral sufficiency in a WORKING attack (needs a jailbreak that succeeds at baseline).
+
+**Readout-reliability caveat (applies to O2 and all patchscope numbers):** absolute Patchscopes P_harm is tiny (≤0.1) and the identity-prompt decoder fails its Direct-rep positive control for these concepts. Treat Patchscopes magnitudes as UNRELIABLE here; the trustworthy signals are (i) necessity via in-context logit lens (05, strong controls) and (ii) NN/logit-lens argmax decoding (O3).
 
 **C1 corroborated by the Patchscopes readout (07):** on virus_muffin, necessity (DS←Neutral) drops patchscope P_harm 0.078→0 from L2 while identity holds at 0.078 and random corrupts everywhere but is distinguishable at L0-1 (necessity preserves there since DS≈Neutral early). Two independent readouts (05 logit-lens + 07 Patchscopes) agree on necessity.
 
