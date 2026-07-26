@@ -190,20 +190,35 @@ def find_word_occurrences(tokenizer, input_ids: Sequence[int], word: str) -> Wor
     Raises if not found so callers never silently analyze the wrong position.
     """
     ids = list(int(i) for i in input_ids)
-    for variant, tok_ids in _encode_variants(tokenizer, word):
+    variants = _encode_variants(tokenizer, word)
+    # Collect matches from ALL tokenization variants (a word can appear both
+    # sentence-initial and mid-sentence, tokenizing differently). Previously we
+    # returned only the first variant with any match, which UNDERCOUNTS occurrences
+    # (needed correct for attention-knockout over all codeword sites, plan §11).
+    # Dedup by last-subtoken index, keeping the longest span at each (a longer
+    # space-prefixed match subsumes a bare sub-match ending at the same token).
+    by_last: Dict[int, Tuple[int, int, str, List[int]]] = {}  # last -> (start,end,variant,ids)
+    for variant, tok_ids in variants:
         L = len(tok_ids)
-        spans = []
         for i in range(len(ids) - L + 1):
             if ids[i:i + L] == tok_ids:
-                spans.append((i, i + L))
-        if spans:
-            return WordHit(
-                word=word, variant=variant, subtoken_ids=tok_ids, spans=spans,
-                first_idx=[s for s, _ in spans],
-                last_idx=[e - 1 for _, e in spans],
-            )
-    raise ValueError(f"word {word!r} not found in token sequence (tried "
-                     f"{[v for v, _ in _encode_variants(tokenizer, word)]})")
+                last = i + L - 1
+                prev = by_last.get(last)
+                if prev is None or L > (prev[1] - prev[0]):
+                    by_last[last] = (i, i + L, variant, tok_ids)
+    if not by_last:
+        raise ValueError(f"word {word!r} not found in token sequence (tried "
+                         f"{[v for v, _ in variants]})")
+    order = sorted(by_last)
+    spans = [(by_last[l][0], by_last[l][1]) for l in order]
+    return WordHit(
+        word=word,
+        variant="+".join(sorted({by_last[l][2] for l in order})),
+        subtoken_ids=by_last[order[0]][3],   # ids of the first occurrence
+        spans=spans,
+        first_idx=[s for s, _ in spans],
+        last_idx=[e - 1 for _, e in spans],
+    )
 
 
 @dataclass

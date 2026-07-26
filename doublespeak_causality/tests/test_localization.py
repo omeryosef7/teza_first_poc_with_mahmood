@@ -44,6 +44,19 @@ def test_following_token_is_after_codeword(tok):
     assert nxt.strip() != "carrot"
 
 
+def test_union_across_tokenization_variants(tok):
+    """A word appearing both sentence-initial (bare) and mid-sentence (space-
+    prefixed) must ALL be found — regression for the variant-undercount bug that
+    would have broken attention-knockout over all codeword sites (plan §11)."""
+    text = "I like potato.\npotato is nice.\nThe potato fell."
+    ids = tok.encode(text, add_special_tokens=False)
+    hit = dc.find_word_occurrences(tok, ids, "potato")
+    assert hit.n == 3, f"union should find all 3, got {hit.n}"
+    for s, e in hit.spans:
+        assert tok.decode(ids[s:e]).strip() == "potato"
+    assert hit.last_idx == sorted(hit.last_idx)
+
+
 def test_missing_word_raises(tok):
     ids = tok.encode("nothing to see here", add_special_tokens=False)
     with pytest.raises(ValueError):
