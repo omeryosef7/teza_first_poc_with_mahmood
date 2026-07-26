@@ -83,6 +83,17 @@ Reading: the harmful component the codeword *acquires* across layers (see O1/O2)
 
 Caveats: fp16 login run + hand-written seed demos; confirm on bf16 (686723) and paper-faithful demos. Necessity is robust across two readouts (logit-lens here + Patchscopes crossover in O2).
 
+**C3 (information flow — CAUSAL, RQ4) — the hijacked meaning is routed from the demonstrations via attention.** Attention knockout on the Doublespeak prompt (eager attn + custom 4D mask, block the final codeword's attention to chosen keys, read patchscope P(harm) at L30; virus_muffin, validated decoder):
+| knockout | #blocked | P(virus) | P(muffin) |
+|---|---|---|---|
+| baseline (causal only) | 0 | 0.100 | 0.000 |
+| block -> all demo region | 216/227 | **0.000** | **0.006** |
+| block -> prev codeword occurrences | 12 | 0.068 | 0.000 |
+| block -> random earlier positions (matched) | 12 | 0.069 | 0.000 |
+- Blocking the codeword's attention to the demonstration region **removes the harmful decoding entirely (0.100->0)** and begins restoring the literal meaning (muffin 0->0.006). => the demos causally supply the harmful meaning through attention.
+- The signal is **distributed** across the demos: blocking the 12 prior codeword occurrences specifically is no more effective than blocking 12 random earlier positions (both ~0.068). No small set of tokens is the sole carrier.
+- Caveat: demos are 95% of the prompt, so "block all demos" ~= "block most context"; the muffin-restoration (0.006) and the distributed/random comparison are what give specificity. Next: per-LAYER knockout (§11.2) to localize WHERE in depth the routing happens; single concept so far.
+
 ## 4. Failed / not-yet-informative interventions
 
 **F1 (P4 timing — no behavioral signal with the seed).** `06_run_timing.py` runs correctly (generation under a persistent bounds-guarded injection hook, validated on GPU), but the seed produces NO usable timing signal: baseline refusal is saturated (base_refusal=True for all items; early=late=100% refusal at alpha=8). Two causes, both fixable, NEITHER a code bug:

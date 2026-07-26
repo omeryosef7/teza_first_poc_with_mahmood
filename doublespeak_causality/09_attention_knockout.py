@@ -1,0 +1,144 @@
+"""
+09_attention_knockout.py — Stage 4 / RQ4 (plan §11): where does the hijacked meaning
+come from? Block the final codeword's attention to the demonstrations and measure
+whether the late-layer harmful semantics collapse.
+
+Uses eager attention + a custom 4D additive mask (0 = allowed, large-negative =
+blocked) so we can zero out attention from the final-codeword query position to
+chosen key positions, at ALL layers, in one forward. Readout = the validated
+repeat-prompt Patchscopes decoder at a late layer R (07's PatchscopeDecoder).
+
+Knockouts (final-codeword query -> blocked keys):
+  * prev_codewords : all EARLIER codeword occurrences (the substitution history)
+  * demos_all      : every position before the final request line
+Controls:
+  * rand_before    : a random matched-size set of earlier NON-codeword positions
+  * baseline       : no knockout
+If blocking demos/prev-codewords drops patchscope P(harm) but the random control
+does not, the harmful meaning is causally routed from the demonstrations via
+attention to the codeword (RQ4).
+
+Deterministic; numbers only (plan §5.12).
+
+Run: python 09_attention_knockout.py --model meta-llama/Llama-3.1-8B-Instruct \
+     --data data/seed_concepts_gpt4omini.json --only virus_muffin --templated
+"""
+import os
+import sys
+import json
+import time
+import argparse
+
+import torch
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ds_common as dc
+from importlib import import_module
+_ps = import_module("07_patchscope_readout")
+PatchscopeDecoder = _ps.PatchscopeDecoder
+token_id = _ps.token_id
+
+
+def build_mask(seq, device, dtype, q_pos, blocked_keys):
+    """4D additive causal mask with (q_pos -> blocked_keys) additionally masked."""
+    min_val = torch.finfo(dtype).min
+    m = torch.full((seq, seq), min_val, device=device, dtype=dtype)
+    m = torch.triu(m, diagonal=1)          # causal: allow k<=q (0), block k>q (min)
+    for k in blocked_keys:
+        if 0 <= k <= q_pos:
+            m[q_pos, k] = min_val
+    return m.view(1, 1, seq, seq)
+
+
+@torch.no_grad()
+def rep_under_mask(lm, input_ids, mask4d, pos, readout_layer):
+    out = lm.model(input_ids=input_ids, attention_mask=mask4d,
+                   output_hidden_states=True)
+    return out.hidden_states[readout_layer + 1][0, pos, :]
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", default=dc.PRIMARY_MODEL)
+    ap.add_argument("--data", default=os.path.join(os.path.dirname(__file__), "data",
+                                                   "seed_concepts_gpt4omini.json"))
+    ap.add_argument("--templated", action="store_true")
+    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
+    ap.add_argument("--readout-layer", type=int, default=30)
+    ap.add_argument("--only", default="virus_muffin")
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--out-dir", default=None)
+    args = ap.parse_args()
+
+    dc.set_seed(args.seed)
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    out_dir = args.out_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        "outputs", f"stage4_knockout_{args.model.split('/')[-1]}_{ts}")
+    os.makedirs(out_dir, exist_ok=True)
+
+    # eager attention so the custom 4D mask is applied verbatim
+    lm = dc.load_model(args.model, dtype=getattr(torch, args.dtype),
+                       attn_implementation="eager")
+    dec = PatchscopeDecoder(lm)
+    R = args.readout_layer
+    data = json.load(open(args.data))
+    items = [it for it in data["items"]
+             if (not args.only or it["id"] in set(args.only.split(",")))]
+
+    report = {"model": args.model, "meta": lm.meta(), "readout_layer": R, "items": []}
+    for it in items:
+        demos = "\n".join(it["demos"]) if isinstance(it["demos"], list) else it["demos"]
+        cond = dc.build_conditions(it["harmful_instruction"], it["harmful_word"],
+                                   it["codeword"], demos)
+        text = dc.apply_template(lm.tokenizer, cond.doublespeak) if args.templated \
+            else cond.doublespeak
+        tok = lm.tokenizer(text, return_tensors="pt").to(lm.model.device)
+        ids = tok["input_ids"][0].tolist()
+        seq = len(ids)
+        hit = dc.find_word_occurrences(lm.tokenizer, ids, it["codeword"])
+        cw_last = hit.last_idx[-1]                    # final codeword (query)
+        prev_cw = hit.last_idx[:-1]                   # earlier occurrences
+        harm_id = token_id(lm.tokenizer, it["harmful_word"])
+        code_id = token_id(lm.tokenizer, it["codeword"])
+        # demo region = everything before the final codeword's occurrence start
+        final_start = hit.first_idx[-1]
+        demos_all = list(range(0, final_start))
+        gen = torch.Generator().manual_seed(args.seed)
+        # random matched control: |prev_cw| random earlier non-codeword positions
+        cw_set = set(hit.last_idx) | set(hit.first_idx)
+        pool = [p for p in range(0, final_start) if p not in cw_set]
+        k = min(len(prev_cw), len(pool))
+        perm = torch.randperm(len(pool), generator=gen)[:k].tolist()
+        rand_before = [pool[i] for i in perm]
+
+        dt = next(lm.model.parameters()).dtype
+        dev = lm.model.device
+        conds = {
+            "baseline": [],
+            "prev_codewords": prev_cw,
+            "demos_all": demos_all,
+            "rand_before": rand_before,
+        }
+        res = {"id": it["id"], "seq_len": seq, "cw_last": cw_last,
+               "n_prev_cw": len(prev_cw), "n_demos_tokens": len(demos_all),
+               "n_rand_ctrl": len(rand_before), "conds": {}}
+        for name, blocked in conds.items():
+            m = build_mask(seq, dev, dt, cw_last, blocked)
+            rep = rep_under_mask(lm, tok["input_ids"], m, cw_last, R)
+            ph, pc = dec.decode(rep, R, harm_id, code_id)
+            res["conds"][name] = {"p_harm": ph, "p_code": pc, "n_blocked": len(blocked)}
+        report["items"].append(res)
+        b = res["conds"]["baseline"]["p_harm"]
+        print(f"[{it['id']}] baseline P_harm={b:.3f} | "
+              f"prev_cw={res['conds']['prev_codewords']['p_harm']:.3f} | "
+              f"demos_all={res['conds']['demos_all']['p_harm']:.3f} | "
+              f"rand_ctrl={res['conds']['rand_before']['p_harm']:.3f}")
+
+    report["status"] = "COMPLETE"
+    with open(os.path.join(out_dir, "stage4_knockout_results.json"), "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"[stage4-knockout] -> {out_dir}")
+
+
+if __name__ == "__main__":
+    main()

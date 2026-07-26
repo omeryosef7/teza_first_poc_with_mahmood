@@ -134,3 +134,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - 687378 COMPLETED (bf16, all 6 concepts, readout=30). virus_muffin: baseDS=0.102, necessity drop=0.102, suff(Direct)=0.001, **suff(DS)=0.146**. Confirms fp16 findings on bf16.
 - Other 5 concepts baseDS~0 (concept-dependence; necessity separately confirmed on potato/mango via 05 logit-lens). Sufficiency-conditional currently rests on virus_muffin (1 concept) — N is small; strengthening needs more concepts that hijack.
 - Next: check if virus_muffin jailbreaks BEHAVIORALLY (gates P4/P5); else pivot to P6 attention-knockout (RQ4 information flow, tractable with the validated semantic readout).
+
+### 2026-07-27 — RQ4 attention knockout: hijacked meaning routed from demos (C3)
+- Built 09_attention_knockout.py (eager attn + custom 4D mask; block final-codeword query -> chosen keys; validated repeat-prompt patchscope readout at L30). Baseline mask reproduces P_harm=0.100 ✓.
+- virus_muffin (fp16 login): block->all demos P(virus) 0.100->0.000 AND P(muffin) 0->0.006 (literal partially restored); block->12 prev codewords 0.068 ≈ block->12 random earlier 0.069. => hijacked meaning causally routed from the demonstration region via attention, DISTRIBUTED (no small carrier set). Caveat: demos=95% of prompt.
+- Added C3 (causal information flow) to CAUSAL_RESULTS_SUMMARY. Submitted canonical bf16 = job 687520.
+- Next: per-LAYER knockout (§11.2) to localize depth of routing; more concepts.

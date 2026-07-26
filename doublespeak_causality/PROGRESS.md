@@ -18,7 +18,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P3 | Activation patching (§9) | ✅ COMPLETE (necessity) | **necessity CONFIRMED** bf16: DS←Neutral collapses P(harm) from mid-layers; identity✓ random✗ (126-8181x). **Necessity CONFIRMED + Sufficiency CONDITIONAL** (readout fixed): Neutral<-DS sufficient (0.135), Neutral<-Direct not; hijack rep is late-structured (L30) vs direct early (L2). Canonical=687378 |
 | P4 | Timing: early vs late injection (§10.3) | 🟡 FEASIBLE | semantic timing = late-emergence CONFIRMED (O6); behavioral flip exists (bomb_potato refuse→non-refuse, O7) — needs StrongReject to confirm harm |
 | P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
-| P6 | Attention knockout + path patching (§11) | ⬜ NOT_RUN | |
+| P6 | Attention knockout + path patching (§11) | 🟡 FIRST RESULT | RQ4: block codeword→demos removes hijack (0.10→0), distributed; canonical=687520. Per-layer sweep next |
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
 | P8 | Codeword study (§13) | ⬜ NOT_RUN | |
 | P9 | Scaling: Gemma-3 / 70B (§14) | ⬜ NOT_RUN | gated on reliable 8B result |
