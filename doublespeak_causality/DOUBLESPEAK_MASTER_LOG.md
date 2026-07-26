@@ -106,3 +106,11 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Necessity CONFIRMED (C1):** DS<-Neutral patch ~no effect early (L0-4), collapses P(harm) to 0 from mid-layers. Controls: identity id_max_dev<<effect; random norm-matched patch 126x (potato)/8181x (mango) smaller than necessity drop. Promoted PRELIMINARY->CONFIRMED in CAUSAL_RESULTS_SUMMARY.
 - Sufficiency C2 still readout-limited (logit-lens=next-token). Next: Patchscopes-based sufficiency readout.
 - Committed dec79b6, 63abf58. 
+
+### 2026-07-27 — Stage-2b Patchscopes readout: sufficiency robustly NULL, necessity corroborated
+- Built 07_patchscope_readout.py (paper-faithful readout: inject patched codeword rep into inspection prompt, read P(harm)). Validated login fp16 on virus_muffin + poison_mango.
+- **virus_muffin (strong concept, patchscope R=28):** identity=0.078 all layers (stable readout ✓); necessity DS<-Neutral 0.078->0 from L2; random corrupts everywhere (distinguishable at L0-1 where necessity preserves); **sufficiency Neutral<-Direct = 0 all layers**.
+- **C2 sufficiency ROBUST NULL across both readouts (05 logit-lens + 07 patchscope):** single-layer injection NOT sufficient => hijacking is distributed/multi-layer. C1 necessity corroborated by 2nd readout.
+- **Next experiment:** multi-layer sufficiency (inject Direct/direction across a layer window).
+- poison_mango all-zero here = consistent (GPT demos gave it Patchscopes 0; only virus strong with GPT demos).
+- Submitted canonical bf16 all-6-concepts = job 687215 (PENDING). Committed 80dd327.

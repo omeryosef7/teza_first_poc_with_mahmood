@@ -61,7 +61,13 @@ Intervention: during the Doublespeak forward, replace the codeword activation at
 - bf16 baselines match fp16 preview (P_harm 0.125/0.205), so the finding is precision-robust.
 Reading: the harmful component the codeword *acquires* across layers (see O1/O2) is necessary for the harmful readout, and it lives in the codeword's own representation from mid-layers onward.
 
-**C2 (sufficiency, preliminary NULL — readout-limited).** A single-layer Neutral←Direct patch does NOT make the codeword decode as harmful (P(harm)=0 at all layers). BUT the in-context logit-lens readout measures next-token prediction, not concept meaning, so this is a lower bound. **Refinement queued:** re-measure sufficiency with the Patchscopes readout (Stage-1's paper-faithful method) before any sufficiency claim.
+**C2 (sufficiency — ROBUST NULL for single-layer injection; RQ2).** A single-layer, single-position Neutral←Direct patch does NOT induce harmful decoding — confirmed across BOTH readouts:
+  - in-context logit-lens (05): P(harm)=0 at all layers;
+  - Patchscopes concept-decoding (07, virus_muffin, the strong concept): P_harm=0 at all layers, while the identity control holds at the 0.078 baseline (so the readout is live, not dead).
+Interpretation: representation hijacking is a **distributed, multi-layer** phenomenon — the meaning is built up progressively across layers by the demos, and cannot be reproduced by injecting the harmful representation at a single layer. This distinguishes the levels of sufficiency the plan warns about (§5.4): the rep is *necessary* (C1) but a single-layer copy is not *sufficient*.
+**Next test (queued):** MULTI-layer sufficiency — inject the Direct rep / harmful direction across a WINDOW of layers (§9.2 / §10.1) to test whether distributed injection IS sufficient.
+
+**C1 corroborated by the Patchscopes readout (07):** on virus_muffin, necessity (DS←Neutral) drops patchscope P_harm 0.078→0 from L2 while identity holds at 0.078 and random corrupts everywhere but is distinguishable at L0-1 (necessity preserves there since DS≈Neutral early). Two independent readouts (05 logit-lens + 07 Patchscopes) agree on necessity.
 
 Caveats: fp16 login run + hand-written seed demos; confirm on bf16 (686723) and paper-faithful demos. Necessity is robust across two readouts (logit-lens here + Patchscopes crossover in O2).
 
