@@ -97,8 +97,38 @@ captured in docs + `EXPERIMENT_REGISTRY.csv`. Tag marks the pre-sprint commit fo
 3 conditions → ≥1200 DS conditions target. Demos generated per unique (harmful_word, codeword, seed),
 cached, reusing the paper method.
 
-**Progress:** builder implementation in progress (see commits). Next: smoke on ~5 items, then submit
-the 200-prompt Direct/Neutral screening SLURM job on Llama-8B.
+**Progress (iter 2, 2026-07-27):** eligibility extraction DONE — **193/200 LLM-eligible**
+(wide funnel; rejects: 5 does_not_neutralize, 1 concept_too_long, 1 harm_not_from_concept).
+Category dist of eligible: cyber 53, fraud 61, other 39, explosives 14, malware 9, narcotics 7,
+weapons 6, toxins 3, bioweapon 1. **Concrete-object sweet-spot candidates ≈ 39** (explosives/
+weapons/malware/toxins/narcotics/bioweapon); cyber/fraud (114) likely fail the Neutral-benign
+check (verb/task-harm, substitution won't neutralize) — the GPU screen filters these automatically
+(same failure mode as the seed's `virus`). 95 unique eligible concepts. Matrix (Step 2, demo-gen
+for ~190 concept×codeword pairs) still building.
+
+---
+
+## PHASE 6 PRE-AUDIT (iter 2) — GCG/MAC reuse surface (plan §10.1)  ✅ MAJOR REUSE WIN
+
+Existing optimization stack found — **Temporal-GCG/MAC is a plug-in, not a rewrite:**
+- **`poc_stage_gcg_early/`** (full GCG): `gcg_optimizer.py` (`run_optimization`, `_token_gradients`,
+  `_sample_control`, `_evaluate_candidates`, checkpoint/pareto), `objectives.py` — **already has
+  `task_loss` (std GCG), `repr_loss` (representation distance to reference activations — labeled
+  "the new scientific contribution"), `kl_loss`, and `ObjectiveWeights`**; `selected_state_capture.py`
+  (`capture_selected_states` at chosen layers/positions); `suffix_token_manager.py`,
+  `model_adapter.py` (embedding grads); `evaluate_optimized_suffixes.py` +
+  `evaluate_cross_model_transfer.py` (held-out ASR + transfer); `build_*manifest.py`.
+  Driver `run_optimization.py` (`--model-family {qwen3,gemma4,deepseek_r1}`, `--suffix-length`,
+  `--n-steps`, `--topk`, `--batch-size`). Uses `--no-filter-cand` per memory.
+- **`scripts/reinforce_objective/`**: `reinforce_mac.py` (`momentum_update`, `reinforce_mac_optimize`)
+  = MAC; `trigger_gradient.py` (`topk_candidate_tokens`, `build_trigger_onehot`, `reinforce_trigger_gradient`)
+  = GCG-style coordinate grads; `gpu_runner.py` (`build_surrogate_loss`, `reinforce_step`, `HFTargetModel`);
+  `candidate_pool.py`, `proxy_ce_rerank.py`, `soft_prompt_reinforce.py` (soft-prompt baseline).
+
+**→ Temporal objective (benign-early / harmful-late) plugs in as a LAYER-WEIGHTED `repr_loss`
+variant** using `capture_selected_states` for early vs late layer sets, combined via `ObjectiveWeights`.
+MAC baseline = `reinforce_mac_optimize`. Held-out ASR + transfer eval already exist. Defer deep read
+to Phase 5/6; interface confirmed sufficient.
 
 ---
 
