@@ -210,7 +210,7 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
 | bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | ✅ DONE | `eligibility_v1.json` (193/200) + `screening_matrix_v1.json` (1158 cond, 0 invariant fails, gitignored) |
 | **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) DSTAG=llama8b_v1 | **RUNNING** n-803 (~140/1158 @ iter3; ETA ~2h) | `outputs/behavioral_screen_llama8b_v1/` |
-| _(ready)_ | 3 | `run_beh_necessity.sh` (18) | READY — fire on screen completion (needs DS_MALICIOUS set) | `outputs/beh_necessity_*/` |
+| _(ready)_ | 3 | `run_beh_causal_mvp.sh` (18 necessity + 19 sufficiency, one job) | READY — fire on screen completion | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first
@@ -230,8 +230,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## PHASE 3 (iter6) — sufficiency script WRITTEN + VERIFIED; combined MVP runner ready
+`19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Direct injection on eligible
+baseline-BENIGN Neutrals; tests the handoff-§2.3 prediction DS-inject > Direct-inject
+behaviorally) + `slurm/run_beh_causal_mvp.sh` (runs 18+19 in ONE job, one model load).
+19 IMPORTS the vetted helpers from 18 (capture_reps_for_gen/patched_generate/layer_windows/
+fixed classify) — zero mechanic duplication. CPU-verified: compiles, reuse-import works,
+imported classify is MALICIOUS-first, windows correct.
+
 ## NEXT SINGLE HIGHEST-VALUE STEP
-**Ingest SLURM 688994 (behavioral screen) when it completes** → read `screen_summary.json`
+**Ingest SLURM 688994 (behavioral screen) when it completes** (~45min ETA @ iter6, 780/1158) →
+run `analyze_screen.py` for the CORRECTED (MALICIOUS-first) yield → then `screen_summary.json`
 (triplet_label_dist, n_eligible_bases, n_clean_success_bases, category_yield).
 - If clean `DS_MALICIOUS` yield is healthy (≥30 clean-success bases, plan Phase 3 target):
   start Phase 3 behavioral-causal MVP (necessity DS←Neutral + sufficiency Neutral←DS with
