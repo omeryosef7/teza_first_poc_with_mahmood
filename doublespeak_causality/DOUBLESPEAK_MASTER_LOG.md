@@ -220,3 +220,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ### 2026-07-27 — 3rd model generality: Phi-4-mini-reasoning (phi3 family)
 - Submitted multi-concept suite on microsoft/Phi-4-mini-reasoning (phi3, 32 layers, distinct family) = job 688071, readout 28. Emergence Direct-peak doubles as the readout positive control on phi3.
+
+### 2026-07-27 — 3rd model Phi-4 COMPLETE: mechanism architecture-general
+- 688071 COMPLETE. Phi-4-mini (phi3): 11/36 hijack, timing +25.3[22.8,27.3], necFr 1.00, suffDS 0.390 vs suffDir 0.000 diff +0.39[0.11,0.68] (strongest). Figures written.
+- 3-model summary (Llama/Qwen3/Phi4) all CIs exclude 0 => necessity+conditional-sufficiency+late-timing ARCHITECTURE-GENERAL. Finalized G2.
