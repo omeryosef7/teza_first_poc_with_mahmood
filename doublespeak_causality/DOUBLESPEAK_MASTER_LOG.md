@@ -208,3 +208,6 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Extracted hijackers from multi-concept emergence (Llama 11, Qwen3 13, spanning virus/poison/gun/knife/bomb/drug).
 - slurm/run_knockout_gen.sh (param DSMODEL/DSREADOUT/DSTAG/DSONLY); submitted 687994 (Llama-8B) + 687995 (Qwen3-14B) running 09_attention_knockout across the hijacking items. Tests whether "block demos->hijack removed" (RQ4) generalizes beyond virus_muffin.
 - Note on P5 (Mal/Rej/Benign, §8.4): behavioral outcome is CONFOUNDED in this seed (some substituted-neutral prompts are already malicious e.g. virus-code; some DS are benign e.g. bomb-potato), so a clean behavioral trajectory comparison is limited — will document the confound rather than force a muddy result; representation-level generalization (B2 + knockout-gen) is the clean track.
+
+### 2026-07-27 — knockout-gen: hit sbatch --export comma bug (fixed)
+- 687994/688037 processed only 1 item: DSONLY comma-list truncated at first comma by sbatch --export (known bug). The 1 item per model was clean (virus_mirror base0.221->demos0.000 drop1.00 rand0.217; bomb_muffin base0.087->0.000). Resubmitted with DSONLY="" so 09 processes ALL 36 panel items (readout 31/38). Filter hijackers in analysis.
