@@ -117,6 +117,8 @@ Blocking the codeword's attention to the demonstration region eliminates the hij
 | Phi-4-mini | Phi3 | 0.31 | +25.3 [22.8,27.3] | 1.00 | +0.39 [0.11,0.68] |
 => The full causal mechanism (necessity + conditional sufficiency + late timing) is ARCHITECTURE-GENERAL across three distinct families.
 
+**C3-depth-gen — RQ4 depth localization generalizes across concepts.** Per-layer knockout across 12 Llama-8B hijackers: blocking demos->codeword attention cumulatively through the EARLY layers already collapses the hijack (10/12 items fall below 20% of baseline by blocking through layer 2; median consolidation depth = 2, range [2,14]); the single most-impactful layer is MID (median L18, range [2,26]). => the codeword reads the demo context via EARLY attention (that early read is necessary for the late-emerging hijack), with a mid-layer (~L18) carrying the most single-layer weight. Consistent with the virus_muffin depth finding, now across concepts.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 

@@ -228,3 +228,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 ### 2026-07-27 — info-flow knockout on Phi-4 (3rd family): both dimensions now architecture-general
 - 688110 COMPLETE. phi4 knockout: 6 hijackers, base 0.139 -> block demos 0.000 (100% drop), random 0.064, CI[0.060,0.220], 6/6. Info-flow generalizes to 3rd family. Extended C3-gen table.
 - SUMMARY: BOTH causal dimensions now hold across 3 model families — (a) necessity+conditional-sufficiency+late-timing (B2/G2: Llama/Qwen3/Phi4, all CIs exclude 0); (b) information-flow knockout (C3-gen: block demos eliminates hijack, unanimous on all 3). Mechanism is architecture-general.
+
+### 2026-07-27 — RQ4 depth localization generalized (688536, all 36 items)
+- Per-layer knockout across 12 Llama-8B hijackers: consolidation depth median 2 (10/12 <20% base by through-L2); most-impactful single layer median L18. Early demo-attention critical; mid-layer L18 carries most. Generalizes C3-depth across concepts. Added C3-depth-gen.
+- GENERALIZATION COMPLETE: both causal dimensions (necessity/suff/timing + info-flow position & depth) generalized across concepts x 3 model families, all with CIs/unanimity. Remaining plan items (P5 confounded, P7 low-value) are the only unstarted stages.
