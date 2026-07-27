@@ -1,5 +1,12 @@
 # Doublespeak Causality — Master Log (append-only)
 
+> **⚠️ SPRINT UPDATE (2026-07-27) — behavioral-causality sprint.** Full chronology now lives in
+> `SPRINT_EXECUTION_LOG.md`. Headlines since this log: refusal-signal judging bug fixed → behavioral
+> jailbreak is REAL (42 clean successes / 14 concepts); frozen rep-level controls audited + re-run
+> (conditional-sufficiency SURVIVES norm-matching; knockout CONFIRMED confound-free; multilayer rerunning);
+> behavioral necessity (Claim B) demonstrated early-window. Deliverables: `BEHAVIORAL_BENCHMARK.md`,
+> `BEHAVIORAL_CAUSALITY_RESULTS.md`, `UPDATED_PAPER_STORY.md`.
+
 Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ---

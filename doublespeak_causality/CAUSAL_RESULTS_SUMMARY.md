@@ -1,5 +1,15 @@
 # Causal Results Summary
 
+> **⚠️ SPRINT UPDATE (2026-07-27) — behavioral-causality sprint.** This doc predates the current sprint.
+> (1) A **refusal-signal judging bug** (StrongReject's harmful-goal refusal mislabeled benign answers as
+> refused) was found + fixed — it had manufactured the **behavioral null**; corrected, the Doublespeak
+> jailbreak **is behaviorally real** (42 clean successes / 14 concepts on the curated benchmark).
+> (2) Independent reviewers audited the **frozen rep-level controls**; all 3 HIGH findings fixed + re-run
+> — **conditional-sufficiency SURVIVES** norm-matching (real direction effect, not magnitude) and
+> **knockout demos-necessity is CONFIRMED confound-free**. Current docs:
+> `SPRINT_EXECUTION_LOG.md` (chronology + job registry), `BEHAVIORAL_BENCHMARK.md`,
+> `BEHAVIORAL_CAUSALITY_RESULTS.md`, `UPDATED_PAPER_STORY.md`.
+
 Per plan §5.6 / §22: **observational**, **predictive**, and **causal** findings are kept strictly separate. A layer-wise curve is NOT causal evidence. "Causal" is used only for results backed by an intervention + controls.
 
 Seed caveat (applies to all below): results use the small **hand-written seed** (`data/seed_concepts.json`, 3 items, seed-variant demos — NOT the paper's GPT-4o-mini-generated demos). Directionally informative; absolute magnitudes and statistics are not paper-faithful until we scale items + regenerate demos. Model: Llama-3.1-8B-Instruct, bf16, L40S, templated. Run: `stage1_repmap_*_20260726_231610`.

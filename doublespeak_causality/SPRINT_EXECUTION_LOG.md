@@ -21,7 +21,11 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 | 7 | Thinking vs non-thinking | ⬜ NOT STARTED | Qwen3 toggle validation can start in parallel |
 | 8 | Cross-model + paper story | ⬜ NOT STARTED | blocked by P3–P7 |
 
-**Success levels achieved (plan §24):** none yet. Target: ≥1 of Levels 1–6.
+**Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
+concepts); **Level 2 partial** (behavioral necessity early-window, sufficiency pending). Target: ≥1 of 1–6.
+
+**DELIVERABLE DOCS (plan §23) — all external MD, kept current:**
+`SPRINT_EXECUTION_LOG.md` (this, chronology+jobs) · `BEHAVIORAL_BENCHMARK.md` ✅ · `BEHAVIORAL_CAUSALITY_RESULTS.md` ✅ (necessity in; suff/timing pending) · `UPDATED_PAPER_STORY.md` ✅ · `MECHANISTIC_OBJECTIVE.md` ⬜ (Phase 5) · `GCG_MAC_COMPARISON.md` ⬜ (Phase 6) · `THINKING_VS_NONTHINKING.md` ⬜ (Phase 7). Frozen-era docs (CAUSAL_RESULTS_SUMMARY / RESULTS_SYNTHESIS / DOUBLESPEAK_MASTER_LOG / PROGRESS) banner-updated to point here.
 
 **Current honest headline (unchanged from baseline):** cross-model, causally-manipulable
 *representation-level* semantic hijacking with a *behavioral null* on the seed data. The
@@ -324,7 +328,7 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) AdvBench v1 | ✅ COMPLETE — 2/193 eligible, 1 clean (AdvBench harm not noun-localized) | `outputs/behavioral_screen_llama8b_v1/` |
 | bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
-| **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 necessity + 19 sufficiency) curated corrected | **RUNNING** n-802 | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
+| **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 nec + 19 suff) curated corrected | necessity ✅ DONE (Δ early 0.44/mid 0.28/late 0.21; identity 0.08; late-random 0.28 → late not specific); suff RUNNING | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
 | **SLURM 689556** | rerun | 07 sufficiency F1-fixed, 6×6 panel | ✅ DONE — **DS>Direct SURVIVES norm-match** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
 | **SLURM 689610** | rerun | 09 knockout F2-fixed, 6×6 panel | ✅ DONE — **demos_only kills hijack 8/8, confound removed** | `outputs/ko_gen_llama8b_fixed/` |
 | **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **SUBMITTED (PD)** | `outputs/multilayer_llama8b_fixed/` |

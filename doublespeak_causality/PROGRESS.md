@@ -1,5 +1,9 @@
 # Doublespeak Causality — Progress Tracker
 
+> **⚠️ SPRINT UPDATE (2026-07-27).** Live progress is now in `SPRINT_EXECUTION_LOG.md` (the
+> behavioral-causality sprint tracker). Deliverables: `BEHAVIORAL_BENCHMARK.md`,
+> `BEHAVIORAL_CAUSALITY_RESULTS.md`, `UPDATED_PAPER_STORY.md`, `NEXT_SPRINT_PLAN.md`.
+
 **Single source of truth for status.** Updated continuously (loop cadence: 30 min). States per plan §5.3: `NOT_RUN`, `RUNNING`, `FAILED`, `PARTIAL`, `COMPLETE`.
 
 Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) · [ENV_AUDIT.md](ENV_AUDIT.md) · [PAPER_REPRODUCTION_NOTES.md](PAPER_REPRODUCTION_NOTES.md) · [DOUBLESPEAK_MASTER_LOG.md](DOUBLESPEAK_MASTER_LOG.md) · [EXPERIMENT_REGISTRY.csv](EXPERIMENT_REGISTRY.csv)

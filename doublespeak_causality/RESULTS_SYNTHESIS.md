@@ -1,5 +1,12 @@
 # Doublespeak Causality — Results Synthesis
 
+> **⚠️ SPRINT UPDATE (2026-07-27).** Superseded/augmented by the behavioral-causality sprint: the
+> behavioral NULL here was a **judging artifact** (refusal-signal bug, now fixed) — the jailbreak is
+> behaviorally REAL (42 clean successes / 14 concepts); and the frozen rep-level controls were audited
+> + re-run (conditional-sufficiency SURVIVES norm-matching; knockout CONFIRMED confound-free). See
+> `SPRINT_EXECUTION_LOG.md`, `BEHAVIORAL_BENCHMARK.md`, `BEHAVIORAL_CAUSALITY_RESULTS.md`,
+> `UPDATED_PAPER_STORY.md`.
+
 **From observing in-context representation hijacking to causally controlling it.**
 Model: Llama-3.1-8B-Instruct (bf16, L40S; validated on fp16). Seed data: `data/seed_concepts_gpt4omini.json` (GPT-4o-mini demos) + `data/seed_concepts.json` (hand-written). All numbers below are from real runs (see `EXPERIMENT_REGISTRY.csv`, `DOUBLESPEAK_MASTER_LOG.md`); figures in `figures/`.
 
