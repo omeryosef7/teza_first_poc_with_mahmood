@@ -190,3 +190,10 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ### 2026-07-27 — Qwen3 full-panel CIs (generality statistically confirmed)
 - 687798 COMPLETE. Timing diff 33.5L 95%CI[32.6,34.0] (Direct L4/DS L37.6, 16/18 hijack); necessity 99%; suff(DS)0.135 vs suff(Direct)0.001 diff 0.133 95%CI[0.089,0.184]. Generality confirmed with CIs across model families. Folded into G1.
+
+### 2026-07-27 — GENERALIZATION phase: multi-concept panel on both models
+- Restarted loop (cron 5dc77aae). User asked to generalize numbers + more causality tests.
+- Built data/multi_concept_panel.json (6 concepts {bomb,virus,poison,gun,drug,knife} x 6 codewords {mirror,basket,table,muffin,carrot,river} = 36 items, GPT-4o-mini demos, all single-token harmful words + codewords).
+- slurm/run_multiconcept.sh (param by DSMODEL/DSREADOUT/DSTAG): runs 11 emergence + 07 necessity/sufficiency on the panel.
+- Submitted **687942 (Llama-8B, readout 30)** + **687943 (Qwen3-14B, readout 36)** — concurrent on L40S. Generalizes causal numbers across concepts x codewords x 2 models.
+- Next: aggregate per-concept necessity/sufficiency/timing with bootstrap CIs (benign -> can use subagents); then P5 Mal/Rej/Benign trajectory comparison via StrongReject labels.

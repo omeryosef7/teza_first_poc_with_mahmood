@@ -8,6 +8,9 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 
 ## Status board
 
+**GENERALIZATION PHASE (2026-07-27):** multi-concept (6 concepts x 6 codewords) causal suite running on Llama-8B (687942) + Qwen3-14B (687943) to generalize necessity/sufficiency/timing beyond virus. P5 Mal/Rej/Benign next.
+
+
 | # | Stage (plan ref) | Status | Notes |
 |---|---|---|---|
 | P0 | Env audit + scaffold + docs (§4, §29.1-5) | ✅ COMPLETE | audit + all tracking docs done |
