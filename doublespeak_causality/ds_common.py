@@ -88,7 +88,12 @@ class LoadedModel:
     eos_token_ids: List[int]
 
     def meta(self) -> Dict[str, Any]:
-        d = {k: v for k, v in asdict(self).items() if k not in ("model", "tokenizer")}
+        # Build explicitly — do NOT asdict(self): it deep-copies EVERY field first,
+        # including `model` (the whole nn.Module), which OOMs on large models
+        # (28GB Qwen3 -> 2x28GB > L40S) before the model/tokenizer keys are filtered.
+        d = {"model_id": self.model_id, "revision": self.revision, "dtype": self.dtype,
+             "device": self.device, "num_layers": self.num_layers,
+             "hidden_size": self.hidden_size, "eos_token_ids": self.eos_token_ids}
         d.update(env_metadata())
         return d
 
