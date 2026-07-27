@@ -137,8 +137,8 @@ to Phase 5/6; interface confirmed sufficient.
 | run/job | phase | cmd | status | output |
 |---|---|---|---|---|
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
-| bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | RUNNING (bg, main-loop) | `data/behavioral_benchmark/eligibility_v1.json` + `screening_matrix_v1.json` |
-| _(ready)_ | 2 | `sbatch slurm/run_behavioral_screen.sh` (17) | READY — submit when matrix validated | `outputs/behavioral_screen_llama8b/` |
+| bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | ✅ DONE | `eligibility_v1.json` (193/200) + `screening_matrix_v1.json` (1158 cond, 0 invariant fails, gitignored) |
+| **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) DSTAG=llama8b_v1 | **SUBMITTED (PD)** | `outputs/behavioral_screen_llama8b_v1/` |
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first
