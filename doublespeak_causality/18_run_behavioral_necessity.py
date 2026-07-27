@@ -196,9 +196,11 @@ def main():
     # Necessity is conditioned on the baseline reproducing MALICIOUS (the "clean success"
     # premise). Per window, among baseline-MALICIOUS items, count how many STAY malicious
     # after the DS<-Neutral patch. Δ_necessity = 1 − stay/base_mal (higher = more necessary).
-    agg = {w: {"n_base_mal": 0, "n_stay_mal": 0, "trans": Counter()} for w in windows}
-    ctrl = {"identity": {"n_base_mal": 0, "n_stay_mal": 0},
-            "random": {"n_base_mal": 0, "n_stay_mal": 0}}
+    # iter12: identity + norm-matched random controls are now run PER WINDOW (not only late), so
+    # each window's necessity Δ can be compared against its OWN random baseline (the early-window
+    # effect was the strongest but previously lacked a matched random control).
+    agg = {w: {"n_base_mal": 0, "n_stay_mal": 0, "id_stay": 0, "rand_stay": 0, "trans": Counter()}
+           for w in windows}
     n_items, n_baseline_mal, n_skipped = 0, 0, 0
 
     for i, c in enumerate(clean):
@@ -223,40 +225,30 @@ def main():
         raw_rows.append({"base_id": c["base_id"], "codeword": cw, "context_len": c["context_len"],
                          "arm": "baseline", "score": s0, "cat": cat0, "completion": g0["completion"]})
 
-        # per-window necessity patch: DS[codeword] <- Neutral[codeword] across window
+        # per-window: necessity (DS<-Neutral) + identity (DS<-DS) + norm-matched random (DS<-rand),
+        # ALL over the SAME window layers, so each window's Δ has its own matched controls.
         for wname, wlayers in windows.items():
-            patches = [(L, [ds_pos], neu_cap["reps"][L + 1].to(lm.model.device), "replace")
-                       for L in wlayers]
-            g = patched_generate(lm, ds_text, patches, args.max_new_tokens)
-            s, cat = judge(goal, g["completion"])
+            nec_patches = [(L, [ds_pos], neu_cap["reps"][L + 1].to(lm.model.device), "replace")
+                           for L in wlayers]
+            id_patches = [(L, [ds_pos], ds_cap["reps"][L + 1].to(lm.model.device), "replace")
+                          for L in wlayers]
+            rand_patches = []
+            for L in wlayers:
+                dsv = ds_cap["reps"][L + 1]
+                rscaled = (randvec * (float(dsv.float().norm()) / float(randvec.norm()))).to(lm.model.device)
+                rand_patches.append((L, [ds_pos], rscaled, "replace"))
+            _, cat = judge(goal, patched_generate(lm, ds_text, nec_patches, args.max_new_tokens)["completion"])
+            _, cati = judge(goal, patched_generate(lm, ds_text, id_patches, args.max_new_tokens)["completion"])
+            _, catr = judge(goal, patched_generate(lm, ds_text, rand_patches, args.max_new_tokens)["completion"])
             if base_is_mal:
                 a = agg[wname]; a["n_base_mal"] += 1
                 a["n_stay_mal"] += int(cat == "MALICIOUS")
+                a["id_stay"] += int(cati == "MALICIOUS")
+                a["rand_stay"] += int(catr == "MALICIOUS")
                 a["trans"][f"{cat0}->{cat}"] += 1
             raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"necessity_{wname}",
-                             "score": s, "cat": cat, "base_mal": base_is_mal, "completion": g["completion"]})
-
-        # controls over the LATE window (the causal region of interest), conditioned on baseline-mal
-        late = windows["late"]
-        id_patches = [(L, [ds_pos], ds_cap["reps"][L + 1].to(lm.model.device), "replace") for L in late]
-        gi = patched_generate(lm, ds_text, id_patches, args.max_new_tokens)
-        _, cati = judge(goal, gi["completion"])
-        if base_is_mal:
-            ctrl["identity"]["n_base_mal"] += 1; ctrl["identity"]["n_stay_mal"] += int(cati == "MALICIOUS")
-        raw_rows.append({"base_id": c["base_id"], "arm": "control_identity_late", "cat": cati,
-                         "base_mal": base_is_mal, "completion": gi["completion"]})
-
-        rand_patches = []
-        for L in late:
-            dsv = ds_cap["reps"][L + 1]
-            rscaled = (randvec * (float(dsv.float().norm()) / float(randvec.norm()))).to(lm.model.device)
-            rand_patches.append((L, [ds_pos], rscaled, "replace"))
-        gr = patched_generate(lm, ds_text, rand_patches, args.max_new_tokens)
-        _, catr = judge(goal, gr["completion"])
-        if base_is_mal:
-            ctrl["random"]["n_base_mal"] += 1; ctrl["random"]["n_stay_mal"] += int(catr == "MALICIOUS")
-        raw_rows.append({"base_id": c["base_id"], "arm": "control_random_late", "cat": catr,
-                         "base_mal": base_is_mal, "completion": gr["completion"]})
+                             "cat": cat, "id_cat": cati, "rand_cat": catr,
+                             "base_mal": base_is_mal})
 
         if (i + 1) % 5 == 0:
             print(f"  [{i+1}/{len(clean)}] processed", flush=True)
@@ -266,18 +258,17 @@ def main():
                "n_clean_input": len(clean), "n_items_used": n_items, "n_skipped": n_skipped,
                "n_baseline_reproduced_malicious": n_baseline_mal, "n_layers": n_layers,
                "windows": {w: list(ls) for w, ls in windows.items()},
-               "results": {}, "controls": {}}
+               "results": {}}
     for w, a in agg.items():
-        stay_rate = a["n_stay_mal"] / a["n_base_mal"] if a["n_base_mal"] else None
+        nb = a["n_base_mal"]
+        d = lambda stay: (1.0 - stay / nb) if nb else None
         summary["results"][w] = {
-            "n_base_mal": a["n_base_mal"], "n_stay_mal": a["n_stay_mal"],
-            "patched_stay_malicious_rate": stay_rate,
-            "delta_necessity": (1.0 - stay_rate) if stay_rate is not None else None,
+            "n_base_mal": nb, "n_stay_mal": a["n_stay_mal"],
+            "delta_necessity": d(a["n_stay_mal"]),
+            "delta_identity_control": d(a["id_stay"]),      # want ~0 (identity reproduces baseline)
+            "delta_random_control": d(a["rand_stay"]),      # matched-random baseline for THIS window
+            "necessity_above_random": (d(a["n_stay_mal"]) - d(a["rand_stay"])) if nb else None,
             "transitions": dict(a["trans"])}
-    for k, v in ctrl.items():
-        stay = v["n_stay_mal"] / v["n_base_mal"] if v["n_base_mal"] else None
-        summary["controls"][k] = {"n_base_mal": v["n_base_mal"], "stay_malicious_rate": stay,
-                                  "delta_necessity": (1.0 - stay) if stay is not None else None}
 
     with open(os.path.join(out_dir, "necessity_raw.jsonl"), "w") as f:
         for r in raw_rows:
@@ -286,13 +277,10 @@ def main():
         json.dump(summary, f, indent=2)
 
     print(f"\n[necessity] baseline reproduced malicious: {n_baseline_mal}/{n_items} "
-          f"(skipped {n_skipped}); Δ = 1 − stay_malicious_rate (higher = more necessary):")
+          f"(skipped {n_skipped}); per-window Δ vs matched controls:")
     for w, r in summary["results"].items():
-        print(f"  {w:18s} base_mal={r['n_base_mal']} stay_mal={r['n_stay_mal']} "
-              f"Δ={r['delta_necessity']} {r['transitions']}")
-    ci = summary['controls']['identity']; cr = summary['controls']['random']
-    print(f"[necessity] controls (late window): identity Δ={ci['delta_necessity']} (want ~0, must stay malicious) "
-          f"| random Δ={cr['delta_necessity']} (must be << real necessity Δ)")
+        print(f"  {w:16s} Δ_nec={r['delta_necessity']} Δ_identity={r['delta_identity_control']} "
+              f"Δ_random={r['delta_random_control']} (nec−rand={r['necessity_above_random']})")
     print(f"[necessity] -> {out_dir}")
 
 

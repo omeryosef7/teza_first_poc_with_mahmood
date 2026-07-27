@@ -331,7 +331,8 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 nec + 19 suff) curated corrected | necessity ✅ DONE (Δ early 0.44/mid 0.28/late 0.21; identity 0.08; late-random 0.28 → late not specific); suff RUNNING | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
 | **SLURM 689556** | rerun | 07 sufficiency F1-fixed, 6×6 panel | ✅ DONE — **DS>Direct SURVIVES norm-match** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
 | **SLURM 689610** | rerun | 09 knockout F2-fixed, 6×6 panel | ✅ DONE — **demos_only kills hijack 8/8, confound removed** | `outputs/ko_gen_llama8b_fixed/` |
-| **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **SUBMITTED (PD)** | `outputs/multilayer_llama8b_fixed/` |
+| **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **RUNNING** n-801 | `outputs/multilayer_llama8b_fixed/` |
+| **SLURM 689727** | 3-strengthen | 18 necessity with PER-WINDOW identity+random controls (addresses late-not-specific caveat) | **SUBMITTED (PD)** | `outputs/beh_necessity_*` (new) |
 
 ### FROZEN-RESULT RERUN PROGRESS (user request)
 - **F1 conditional-sufficiency (07)** — ✅ **RERUN 689556 COMPLETE → CLAIM SURVIVES.** DS>Direct holds
