@@ -175,3 +175,8 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Timing n=18:** Direct peak L0 (all), DS peak L31 (all 15 hijackers); paired diff 31 layers, 95%CI[31,31]. Perfectly consistent.
 - **Necessity n=7:** 98% drop. **Sufficiency n=7:** suff(DS)0.038 vs suff(Direct)0.001, paired diff 0.037 95%CI[0.027,0.047]. Conditional sufficiency holds across codewords.
 - Added B1; updated RESULTS_SYNTHESIS scope note (no longer N=1). Causal claims now properly powered on the virus concept.
+
+### 2026-07-27 — Scaling to 2nd model (Qwen3-14B, generality)
+- Chose Qwen3-14B (fully cached, different arch family) to test generality without downloads/quota (Gemma-3/70B need downloads). Qwen3: 40 layers, hidden 5120.
+- Login-GPU load pathologically slow (14B across Pascal, 42-min ETA) -> killed; submitted to L40S instead (fits 1x48GB). Job 687776 RUNNING (11 emergence + 07 necessity/suff on virus panel, readout L36).
+- Tests: does Direct decode early / Doublespeak late on Qwen3 (positive control = does Direct decode at all)? does necessity/conditional-sufficiency replicate?
