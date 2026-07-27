@@ -94,6 +94,12 @@ Caveats: fp16 login run + hand-written seed demos; confirm on bf16 (686723) and 
 - The signal is **distributed** across the demos: blocking the 12 prior codeword occurrences specifically is no more effective than blocking 12 random earlier positions (both ~0.068). No small set of tokens is the sole carrier.
 - Caveat: demos are 95% of the prompt, so "block all demos" ~= "block most context"; the muffin-restoration (0.006) and the distributed/random comparison are what give specificity. Next: per-LAYER knockout (§11.2) to localize WHERE in depth the routing happens; single concept so far.
 
+
+**C3-depth (RQ4 localization) — routing is distributed early-through-mid, consolidated by ~L14.** Per-layer attention knockout (block demos->codeword attention at chosen layers only; virus_muffin, validated readout):
+- Single-layer block (baseline 0.100): most impactful are L18 (->0.02) and L2 (->0.03); most layers give modest drops; L24 paradoxically INCREASES P_harm to 0.21 (removing a competing signal).
+- Cumulative [0..k] block: [0..2]->0.02, partial RECOVERY at k=5-11 (0.07-0.09), then fully killed from k>=14 (0.00).
+Reading: the codeword acquires the harmful meaning by attending to the demos across early-to-mid layers, with redundant pathways (blocking only the earliest layers is partially compensated by mid layers); blocking cumulatively through ~L14 removes it entirely. No single layer is solely responsible (consistent with the distributed position-level finding in C3). Caveat: single concept; non-monotonic recovery indicates measurement noise / redundancy.
+
 ## 4. Failed / not-yet-informative interventions
 
 **F1 (P4 timing — no behavioral signal with the seed).** `06_run_timing.py` runs correctly (generation under a persistent bounds-guarded injection hook, validated on GPU), but the seed produces NO usable timing signal: baseline refusal is saturated (base_refusal=True for all items; early=late=100% refusal at alpha=8). Two causes, both fixable, NEITHER a code bug:

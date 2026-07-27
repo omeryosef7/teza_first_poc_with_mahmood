@@ -140,3 +140,8 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - virus_muffin (fp16 login): block->all demos P(virus) 0.100->0.000 AND P(muffin) 0->0.006 (literal partially restored); block->12 prev codewords 0.068 ≈ block->12 random earlier 0.069. => hijacked meaning causally routed from the demonstration region via attention, DISTRIBUTED (no small carrier set). Caveat: demos=95% of prompt.
 - Added C3 (causal information flow) to CAUSAL_RESULTS_SUMMARY. Submitted canonical bf16 = job 687520.
 - Next: per-LAYER knockout (§11.2) to localize depth of routing; more concepts.
+
+### 2026-07-27 — RQ4 depth localization (per-layer knockout)
+- Probed LlamaAttention interface (4D attention_mask kwarg, logs/diag_attn_iface.log); built 10_layerwise_knockout.py (per-layer forward_pre_hook editing the mask).
+- virus_muffin (fp16 login): single-layer block most impactful at L18(0.02)/L2(0.03), L24 increases to 0.21; cumulative [0..2]=0.02, recovers k5-11 (~0.08), fully killed k>=14 (0.00). => distributed early-through-mid routing, consolidated by ~L14, redundant pathways. Added C3-depth to CAUSAL_RESULTS_SUMMARY.
+- Submitted canonical bf16 = job 687614. git commits through this iteration on branch doublespeak-causality.
