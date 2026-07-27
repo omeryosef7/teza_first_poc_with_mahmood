@@ -22,7 +22,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
 | P8 | Codeword study (§13) | 🟡 FIRST RESULT | RQ6: 16/18 codewords hijack; embedding distance NOT predictive (r=-0.18); mirror strongest. Canonical + 2nd concept next |
 | P9 | Scaling: Gemma-3 / 70B (§14) | ⬜ NOT_RUN | gated on reliable 8B result |
-| P10 | Mechanism defenses (§15) | ⬜ NOT_RUN | |
+| P10 | Mechanism defenses (§15) | 🟡 FIRST RESULT | late-harmful probe: TPR 1.00 / FPR 0.00 (complements early safety); benign-ICL preservation only weakly shown (no benign transfer in test) |
 
 Legend: ⬜ NOT_RUN · 🟡 PARTIAL/RUNNING · ✅ COMPLETE · 🔴 FAILED/BLOCKED
 
