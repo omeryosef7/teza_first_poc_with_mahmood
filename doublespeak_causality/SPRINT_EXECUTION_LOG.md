@@ -325,6 +325,15 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
 | **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 necessity + 19 sufficiency) curated corrected | **RUNNING** n-802 | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
+| **SLURM 689556** | rerun | 07 sufficiency FIXED (F1 norm-matched ctrl + F4 pos-control) + 11, 6×6 panel, DSTAG=llama8b_fixed | **SUBMITTED (PD)** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
+
+### FROZEN-RESULT RERUN PROGRESS (user request)
+- **F1 conditional-sufficiency (07)** — FIXED (added `sufficiency_direct_dsnorm` = Direct rescaled to
+  ‖ds_vec‖, `control_random_neutral` = ds-norm random into Neutral, `baseline_direct_patchscope` +
+  `positive_control_ok`). Rerun 689556. **Verdict pending:** DS>Direct is real (direction) only if
+  `sufficiency_ds` > `sufficiency_direct_dsnorm` AND > `control_random_neutral`.
+- **F2 knockout (09), F3 multilayer (08)** — HIGH, fix+rerun NEXT.
+- F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued.
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first

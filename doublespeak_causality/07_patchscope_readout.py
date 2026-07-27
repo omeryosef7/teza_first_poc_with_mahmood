@@ -104,6 +104,11 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
     neu_repR = neu_cap["reps"]["codeword_last"][R + 1].to(lm.model.device)
     base_ds_ph, base_ds_pc = dec.decode(ds_repR, R, harm_id, code_id)
     base_neu_ph, base_neu_pc = dec.decode(neu_repR, R, harm_id, code_id)
+    # F4 (iter11): record the Patchscopes POSITIVE CONTROL in-run — a clean Direct harm-word
+    # rep at the readout layer must decode to high P(harm). If it doesn't, the readout (not the
+    # mechanism) is the cause and this item's necessity/sufficiency numbers are floor-bound.
+    dir_repR = dir_cap["reps"]["codeword_last"][R + 1].to(lm.model.device)
+    base_dir_ph, base_dir_pc = dec.decode(dir_repR, R, harm_id, code_id)
 
     gen = torch.Generator().manual_seed(seed)
     randvec = torch.randn(lm.hidden_size, generator=gen)
@@ -111,7 +116,13 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
     res = {"id": it["id"], "readout_layer": R,
            "baseline_ds_patchscope": {"p_harm": base_ds_ph, "p_code": base_ds_pc},
            "baseline_neutral_patchscope": {"p_harm": base_neu_ph, "p_code": base_neu_pc},
+           "baseline_direct_patchscope": {"p_harm": base_dir_ph, "p_code": base_dir_pc},
+           "positive_control_ok": bool(base_dir_ph > 0.05 and base_neu_ph < base_dir_ph),
            "necessity": [], "sufficiency": [], "sufficiency_ds": [],
+           # F1 (iter11): norm-matched sufficiency controls to rule out a MAGNITUDE confound in
+           # the DS>Direct claim — inject Direct rescaled to ‖ds_vec‖, and a ds-norm RANDOM vector
+           # into the Neutral forward. DS>Direct is a direction/meaning effect only if it survives.
+           "sufficiency_direct_dsnorm": [], "control_random_neutral": [],
            "control_identity": [], "control_random": []}
 
     for L in range(R + 1):                       # patch layer must be <= readout layer
@@ -136,6 +147,21 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
         rep = patched_codeword_rep(lm, neu_text, L, neu_pos, ds_vec, R)
         ph, pc = dec.decode(rep, R, harm_id, code_id)
         res["sufficiency_ds"].append({"layer": L, "p_harm": ph, "p_code": pc})
+
+        # F1 norm-matched control: Direct rescaled to ‖ds_vec‖ injected into Neutral. If
+        # sufficiency_ds still > this, DS>Direct is NOT a pure magnitude effect. Record both norms.
+        dsn = float(ds_vec.float().norm()); dirn = float(dir_vec.float().norm())
+        dir_dsnorm = (dir_vec * (dsn / (dirn + 1e-8))).to(lm.model.device)
+        rep = patched_codeword_rep(lm, neu_text, L, neu_pos, dir_dsnorm, R)
+        ph, pc = dec.decode(rep, R, harm_id, code_id)
+        res["sufficiency_direct_dsnorm"].append({"layer": L, "p_harm": ph, "p_code": pc,
+                                                 "ds_norm": dsn, "dir_norm": dirn})
+
+        # F1 norm-matched RANDOM control on the Neutral forward (rand_vec is already ds-norm):
+        # a ds-norm random direction into Neutral should NOT create harm meaning.
+        rep = patched_codeword_rep(lm, neu_text, L, neu_pos, rand_vec, R)
+        ph, pc = dec.decode(rep, R, harm_id, code_id)
+        res["control_random_neutral"].append({"layer": L, "p_harm": ph, "p_code": pc})
 
         # identity control (DS<-DS) and random control (DS<-random)
         rep = patched_codeword_rep(lm, ds_text, L, ds_pos, ds_vec, R)
