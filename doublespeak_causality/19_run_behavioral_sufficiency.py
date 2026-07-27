@@ -157,7 +157,7 @@ def main():
         cat0 = judge(goal, g0["completion"])
         base_benign = (cat0 == "BENIGN")
         n_baseline_benign += int(base_benign)
-        raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": "baseline_neutral",
+        raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": "baseline_neutral", "context_len": c.get("context_len"),
                          "cat": cat0, "completion": g0["completion"]})
 
         for wname, wlayers in windows.items():
@@ -173,9 +173,9 @@ def main():
                 a["direct_mal"] += int(cat_dir == "MALICIOUS")
                 a["ds_trans"][f"{cat0}->{cat_ds}"] += 1
                 a["dir_trans"][f"{cat0}->{cat_dir}"] += 1
-            raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"suff_DS_{wname}",
+            raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"suff_DS_{wname}", "context_len": c.get("context_len"),
                              "cat": cat_ds, "base_benign": base_benign, "completion": gds["completion"]})
-            raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"suff_Direct_{wname}",
+            raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"suff_Direct_{wname}", "context_len": c.get("context_len"),
                              "cat": cat_dir, "base_benign": base_benign, "completion": gdir["completion"]})
 
         # controls over the LATE window (or the last available window if late was filtered out)

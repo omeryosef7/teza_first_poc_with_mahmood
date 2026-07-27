@@ -33,12 +33,18 @@ Strengthened rerun with identity + norm-matched random controls **per window** (
 | late (20–31) | 0.15 | 0.10 | 0.15 | 0.00 |
 | late-half (16–31) | 0.05 | 0.05 | 0.10 | −0.05 |
 
-**Verdict: behavioral necessity is REAL and EARLY-LAYER-SPECIFIC.** Patching the codeword's *early*
-representation toward Neutral flips harmful→benign 50% of the time — well above the identity control
-(0.05, machinery is clean) AND above its own matched random control (+0.25). Mid/late patching is NOT
-above random (any norm-matched vector disrupts late-layer generation equally). This resolves the first
-run's caveat with clean matched controls: **the codeword's early representation is behaviorally necessary
-for the hijack; later-layer necessity is not specific.** (Claim B supported, localized to early layers.)
+**Paired bootstrap CIs (n=20, plan §13):**
+- early Δ_necessity = **0.50 [0.30, 0.70]** → significant vs baseline (CI excludes 0).
+- early necessity−random = **0.25 [−0.05, 0.50]** → **CI CROSSES 0** — the specificity margin over the
+  matched random control is NOT statistically significant at n=20 (underpowered).
+- mid/late/late-half: Δ ≤ 0.15, necessity−random CIs all include 0.
+
+**Verdict (honest, CI-tempered): behavioral necessity is REAL at early layers** (Δ=0.50, CI excludes 0,
+identity control clean at 0.05). Patching the codeword's early representation toward Neutral flips
+harmful→benign 50% of the time. **The early-layer SPECIFICITY (effect above matched random) is suggestive
+(+0.25) but NOT yet significant at n=20** — needs more clean-success items to establish. Mid/late necessity
+is not above random. So: Claim B supported (necessity is real, early-concentrated); the *specificity*
+sub-claim requires more N before it can be asserted.
 
 Mechanistic reading: disrupting the codeword's early rep — before the demo-derived harmful meaning is
 consolidated and used — prevents the whole downstream harmful computation; once past that, generic
@@ -104,9 +110,13 @@ prompt (no demonstrations) it is a **context-dependent** state and is *less* beh
 context-independent raw concept rep. This is a caution for the field: **Patchscopes decoding-sufficiency
 does not predict — and here inverts — behavioral sufficiency.**
 
-**Limitation:** only the MID window was run (preemption budget). The DS-vs-Direct behavioral ordering may
-differ at other layers (e.g. late); a full-window sweep is needed before the dissociation is claimed
-complete. n=62 is adequate; multi-seed + CIs pending.
+**Paired bootstrap CI (plan §13):** mid-window **DS−Direct = −0.43 [−0.67, −0.19]** → **CI excludes 0,
+the Direct>DS dissociation is STATISTICALLY SIGNIFICANT.** (n=21 unique base×codeword; see limitation.)
+
+**Limitations:** (1) only the MID window was run in this job — the early/late window sweep (SLURM
+690096/690097) is in progress to test whether the dissociation holds across depth. (2) The sufficiency
+raw log did not store `context_len`, so the CI collapses the 3 context lengths per (base,codeword) to
+one point (n=21 of 72); fixed in 19 for future runs. (3) multi-seed generation pending.
 
 ---
 
