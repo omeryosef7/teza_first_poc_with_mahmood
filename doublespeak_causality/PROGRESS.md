@@ -20,7 +20,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
 | P6 | Attention knockout + path patching (§11) | 🟡 FIRST RESULT | RQ4: block codeword→demos removes hijack (0.10→0), distributed; canonical=687520. Per-layer sweep next |
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
-| P8 | Codeword study (§13) | ⬜ NOT_RUN | |
+| P8 | Codeword study (§13) | 🟡 FIRST RESULT | RQ6: 16/18 codewords hijack; embedding distance NOT predictive (r=-0.18); mirror strongest. Canonical + 2nd concept next |
 | P9 | Scaling: Gemma-3 / 70B (§14) | ⬜ NOT_RUN | gated on reliable 8B result |
 | P10 | Mechanism defenses (§15) | ⬜ NOT_RUN | |
 

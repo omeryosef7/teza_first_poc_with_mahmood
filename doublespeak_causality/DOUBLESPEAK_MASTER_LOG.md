@@ -151,3 +151,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Generated figures/ (fig1 emergence, fig2 necessity, fig3/4 knockout) via plots.py from result JSONs.
 - Wrote RESULTS_SYNTHESIS.md: full causal chain RQ1-4 with numbers, honest scope caveats, methodology corrections, remaining work.
 - Canonical per-layer knockout 687614 COMPLETE (confirms). Causal chain complete + confirmed on bf16.
+
+### 2026-07-27 — RQ6 codeword study (breadth): embedding distance does NOT predict hijacking
+- Built 13_codeword_study.py (fix virus concept, vary 18 single-token codewords, same GPT demos). fp16 login.
+- 16/18 hijack; strength varies 40x (mirror 0.315 > ... > turtle 0.008); **Pearson r(emb-distance, peak P_harm)=-0.18 (n=18)** => embedding distance does NOT predict hijacking (confirms RQ6). fig5_codeword_hijacking.png. Added O8.
+- Breadth achieved: mechanism robust across codewords; earlier single-concept impression was a demo-quality artifact.
+- Next: canonical bf16; optionally repeat for a 2nd concept.
