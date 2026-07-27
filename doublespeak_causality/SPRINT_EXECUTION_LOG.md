@@ -350,9 +350,14 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
   (block local query framing, demos intact) ALSO disrupts it (→0.002) → the query context ("build a X")
   is part of the causal path — an honest nuance, not a contradiction. Caveat: `rand_demos_matched`
   blocks ~90% of tokens so it's uninformative; the decisive contrast is demos_only vs request_only.
-- **F3 multilayer (08)** — ✅ FIXED + rerun 689683 (new `slurm/run_multilayer_gen.sh`). Injection
-  windows now capped to ≤ R−1 (never patch the readout layer R = trivially setting the readout);
-  added missing norm-matched `cumulative_random` control. Verdict pending 689683.
+- **F3 multilayer (08)** — ✅ **RERUN 689683 COMPLETE → claim was an ARTIFACT, RETRACTED.** Once the
+  readout layer is excluded, multi-layer DIRECT injection → ~0 (0/36 items >0.02; mean 0.001 ≈ random
+  0.009). The old "multi-layer Direct sufficiency" was driven by injecting at/near the readout layer.
+  This does NOT hurt the story — it **reinforces F1**: Direct injection is not sufficient any way
+  (single OR multi-layer); only the distinct DS state is.
+- **F1 re-checked excluding L=R (prompted by F3):** DS>Direct is NOT a readout-layer artifact — the DS
+  sufficiency peaks at a MID layer (DS@R≈0.001, not the peak), and DS>Direct AND DS>random survives
+  9/11 hijackers with L<R (mean suff_DS 0.055 vs Direct@DSnorm 0.001 vs random 0.008). **F1 fully clean.**
 - F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued (MED/LOW).
 
 **ALL 3 HIGH frozen findings addressed:** F1 conditional-sufficiency SURVIVES norm-matching; F2 knockout

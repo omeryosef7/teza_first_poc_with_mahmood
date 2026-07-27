@@ -67,9 +67,9 @@ findings were fixed and re-run on the 6-concept × 6-codeword panel (Llama-8B):
 
 | claim | fix | verdict |
 |---|---|---|
-| **Conditional sufficiency** (DS-inject > Direct-inject, Patchscopes) | norm-matched control: Direct rescaled to ‖ds_vec‖ + ds-norm random into Neutral (07) | ✅ **SURVIVES** — hijackers: DS 0.09 vs Direct@DSnorm 0.002 vs rand 0.002. A real direction/meaning effect, not magnitude. |
+| **Conditional sufficiency** (DS-inject > Direct-inject, Patchscopes) | norm-matched control (Direct rescaled to ‖ds_vec‖ + ds-norm random into Neutral) AND re-checked excluding the readout layer L=R (07) | ✅ **SURVIVES both** — DS peaks at a MID layer (DS@R≈0.001), and DS>Direct AND DS>random holds 9/11 hijackers with L<R (mean DS 0.055 vs Direct@DSnorm 0.001 vs random 0.008). Real direction/meaning effect, not magnitude, not a readout-layer artifact. |
 | **Information-flow / demos necessary** (attention knockout) | block ONLY demo tokens (request intact) + complementary request_only (09) | ✅ **CONFIRMED confound-free** — demos_only kills hijack 8/8 (P_harm→0). Bonus: query framing also in the causal path. |
-| **Multi-layer sufficiency** (distributed Direct injection) | exclude the readout layer R from injection windows + add cumulative random control (08) | ⏳ rerun 689683 (verdict pending) |
+| **Multi-layer sufficiency** (distributed *Direct* injection) | exclude the readout layer R from injection windows (08) | ❌ **ARTIFACT — RETRACTED.** With L=R excluded, multi-layer Direct injection → ~0 (0/36 ≈ random). The old effect was readout-layer injection. **Reinforces the story:** Direct is not sufficient any way (single OR multi-layer); only the distinct DS state is. |
 
 **Necessity (semantic, DS←Neutral Patchscopes)** was not flagged critical and stands (identity + random
 controls present).
