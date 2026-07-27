@@ -203,3 +203,8 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Llama: 11/36 hijack, timing +30.3[29.2,31.0], necFr 0.99, suffDiff +0.06[0.04,0.07]. Qwen3: 13/36, +32.0[30.2,33.8], 0.97, +0.07[0.04,0.10].
 - Per-concept: virus reliable (5-6/6), knife/gun/poison/bomb/drug variable (0-3/6). WHETHER hijack varies (concept/model-dependent); WHEN it does the causal signature is consistent across concepts+models (all CIs exclude 0). Added B2.
 - Next: P5 Mal/Rej/Benign (§8.4) via StrongReject labels on the panel (behavioral scoring on login for internet).
+
+### 2026-07-27 — RQ4 knockout generalization across concepts (submitted)
+- Extracted hijackers from multi-concept emergence (Llama 11, Qwen3 13, spanning virus/poison/gun/knife/bomb/drug).
+- slurm/run_knockout_gen.sh (param DSMODEL/DSREADOUT/DSTAG/DSONLY); submitted 687994 (Llama-8B) + 687995 (Qwen3-14B) running 09_attention_knockout across the hijacking items. Tests whether "block demos->hijack removed" (RQ4) generalizes beyond virus_muffin.
+- Note on P5 (Mal/Rej/Benign, §8.4): behavioral outcome is CONFOUNDED in this seed (some substituted-neutral prompts are already malicious e.g. virus-code; some DS are benign e.g. bomb-potato), so a clean behavioral trajectory comparison is limited — will document the confound rather than force a muddy result; representation-level generalization (B2 + knockout-gen) is the clean track.
