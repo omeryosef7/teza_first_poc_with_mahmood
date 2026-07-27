@@ -17,9 +17,9 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P2 | Representation mapping (§8) | ✅ COMPLETE | Patchscopes late crossover (L17-21, peak L30-31); cos→Direct 0→0.6; NN-decode: mango→'poison'/'deadly' late. Observational only. See CAUSAL_RESULTS_SUMMARY.md |
 | P3 | Activation patching (§9) | ✅ COMPLETE (necessity) | **necessity CONFIRMED** bf16: DS←Neutral collapses P(harm) from mid-layers; identity✓ random✗ (126-8181x). **Necessity CONFIRMED + Sufficiency CONDITIONAL** (readout fixed): Neutral<-DS sufficient (0.135), Neutral<-Direct not; hijack rep is late-structured (L30) vs direct early (L2). Canonical=687378 |
 | P4 | Timing: early vs late injection (§10.3) | 🟡 FEASIBLE | semantic timing = late-emergence CONFIRMED (O6); behavioral flip exists (bomb_potato refuse→non-refuse, O7) — needs StrongReject to confirm harm |
-| P5 | Malicious/Rejected/Benign trajectories (§8.4) | ⬜ NOT_RUN | |
+| P5 | Malicious/Rejected/Benign (§8.4) | 🟡 PARTIAL | behavioral StrongReject done (O9 honest null: repr≠jailbreak in seed) |
 | P6 | Attention knockout + path patching (§11) | 🟡 FIRST RESULT | RQ4: block codeword→demos removes hijack (0.10→0), distributed; canonical=687520. Per-layer sweep next |
-| P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
+| P7 | Temporal mechanistic objective (§12) | ⬜ DEFERRED | low value: behavioral jailbreak doesn't cleanly work in seed (O9); optimizing rep-signal only |
 | P8 | Codeword study (§13) | 🟡 FIRST RESULT | RQ6: 16/18 codewords hijack; embedding distance NOT predictive (r=-0.18); mirror strongest. Canonical + 2nd concept next |
 | P9 | Scaling: 2nd model (§14) | ✅ CONFIRMED | Qwen3-14B replicates ALL causal findings (timing Direct-L4/DS-L38, necessity full, suff(DS)>>suff(Direct)) — stronger than Llama. Job 687798 |
 | P10 | Mechanism defenses (§15) | 🟡 FIRST RESULT | late-harmful probe: TPR 1.00 / FPR 0.00 (complements early safety); benign-ICL preservation only weakly shown (no benign transfer in test) |
