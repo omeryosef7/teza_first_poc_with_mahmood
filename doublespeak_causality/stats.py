@@ -79,7 +79,15 @@ def paired_bootstrap_ci(
     boot_means = d[idx].mean(axis=1)
     lo = float(np.percentile(boot_means, 100.0 * (alpha / 2.0)))
     hi = float(np.percentile(boot_means, 100.0 * (1.0 - alpha / 2.0)))
-    return {"mean_diff": float(d.mean()), "lo": lo, "hi": hi}
+    # F7 (iter15): a percentile bootstrap is degenerate for tiny n (n<=2 reproduces the same
+    # value in every resample). Surface n + a reliability flag so no downstream "CI excludes 0"
+    # claim is made on an unreliable CI. Non-breaking (existing keys unchanged).
+    if n < 8:
+        import warnings
+        warnings.warn(f"paired_bootstrap_ci: n={n} is small; percentile CI unreliable "
+                      f"(ci_reliable=False) — do not draw 'CI excludes 0' conclusions.")
+    return {"mean_diff": float(d.mean()), "lo": lo, "hi": hi,
+            "n": int(n), "ci_reliable": bool(n >= 8)}
 
 
 def _binom_pmf(k: int, n: int, p: float) -> float:

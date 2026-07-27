@@ -359,7 +359,9 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 - **F1 re-checked excluding L=R (prompted by F3):** DS>Direct is NOT a readout-layer artifact — the DS
   sufficiency peaks at a MID layer (DS@R≈0.001, not the peak), and DS>Direct AND DS>random survives
   9/11 hijackers with L<R (mean suff_DS 0.055 vs Direct@DSnorm 0.001 vs random 0.008). **F1 fully clean.**
-- F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued (MED/LOW).
+- **F7 (stats n-guard)** — ✅ FIXED (code-only, no rerun): `paired_bootstrap_ci` now returns `n` +
+  `ci_reliable` (n≥8) and warns on small n, so no "CI excludes 0" claim rests on a degenerate bootstrap.
+- F5/F6 (01 timing clamp+reindex), F8 (05 random-averaging), F9 (10 head-mask) — queued (MED/LOW, code-only).
 
 **ALL 3 HIGH frozen findings addressed:** F1 conditional-sufficiency SURVIVES norm-matching; F2 knockout
 CONFIRMED confound-free; F3 multilayer fixed+rerunning. The frozen causal baseline holds under proper controls.
