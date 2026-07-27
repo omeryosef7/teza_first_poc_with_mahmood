@@ -150,6 +150,42 @@ validation job needed now — mechanism already proven.
 
 ---
 
+## ITER11 — BUG AUDIT ACROSS BOTH PLANS + rerun assessment (user request)
+
+Systematic audit of which results rest on bugs, across NEXT_SPRINT (16-19) AND the previous
+DOUBLESPEAK_CAUSALITY_PLAN (01-15, frozen baseline). Parallel reviewers on frozen scripts: `w7c619w96`.
+
+**Bug 1 — SR-refusal mislabels benign as refused** (iter10). Scope = every judge that folded
+StrongReject's harmful-goal refusal into `refused`: **14 (seed behavioral), 17 (screen), 18, 19**.
+- FIXED in all four (refused = kw_refusal only; classify MALICIOUS-first).
+- **Reruns:** the affected behavioral SCREENS were RE-DERIVED offline via `analyze_screen.py`
+  (raw stores response text → recompute refusal → no GPU rerun needed; equivalent to a rerun).
+  Corrected yields already in the ITER10 section. The Phase-3 MVP (689471) runs on FIXED code.
+  `14`'s seed behavioral null (handoff §5.5) is **superseded** by the curated benchmark; note its
+  core conclusion was SCORE-driven (bomb SR 0 / virus Neutral SR 1.0), not refusal-driven, so it
+  was directionally correct even under the bug — no rerun of value.
+
+**Bug 2 — double-BOS capture vs single-BOS generate** (found by reviewers iter4/5). `capture_target_reps`
+/`forward_hidden_states` tokenize already-templated text with add_special_tokens=True (double BOS);
+`generate` uses False (single BOS).
+- **Frozen REP-LEVEL results (necessity 05/07, sufficiency 07/08, timing 11, knockout 09/10, mapping
+  01, multiconcept generalization): NOT invalidated.** Verified: 05/07 patched-forward + Patchscopes
+  readout tokenize with the SAME add_special_tokens=True as capture (ds_common:325) → capture, patch,
+  readout, and positions are ALL on the identical double-BOS sequence → internally self-consistent;
+  the positive control (Direct decodes high) was validated under these exact conditions. These scripts
+  NEVER call generate. So the differential effects are real. Double-BOS is a cleanliness artifact
+  (reps on a distribution the model doesn't generate on), worth fixing for future generation-consistent
+  rep work, but not invalidating any frozen claim.
+- **Behavioral (18/19): already fixed** to single-BOS (`capture_reps_for_gen`) — generation-consistent.
+
+**Not affected:** 15_defense_detector (rep-level probe, no refusal). Rep-level generalization runs
+(Qwen3/Phi-4 multiconcept) use double-BOS consistently → sound.
+
+**Pending:** reviewer findings `w7c619w96` on 05/07/08/09/10/11/01/stats — if any flags a SPECIFIC
+invalidating bug in the frozen scripts, rerun that SLURM job. Otherwise the frozen baseline stands.
+
+---
+
 ## ⭐ ITER10 — BEHAVIORAL JAILBREAK IS REAL (judging bug found + fixed; the "null" was an artifact)
 
 **Critical bug (refusal signal).** The screen labeled `refused = kw_refusal OR StrongReject-refusal≥0.5`.
