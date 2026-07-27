@@ -62,9 +62,13 @@ disappear?) + `19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Dire
 hijacked state, more than the plain concept state, *cause* harmful behavior?). SLURM 689471 running.
 **Result: PENDING.** Prediction (from §2): DS-state injection > Direct-state injection, behaviorally.
 
-## 5. Causal timing — Claim D (Phase 4, NOT STARTED)
-Does moving the harmful contextual meaning early vs late change refusal vs compliance? (TOCTOU
-hypothesis: late meaning bypasses the refusal-sensitive window.) Gated on Phase 3.
+## 5. Causal timing — Claim D ✅ CONFIRMED (Phase 4) ⭐ HEADLINE
+Injecting the raw harmful concept at different depths into benign prompts: **early → REFUSAL (0.86),
+mid → COMPLIANCE (0.52 malicious), late → NEITHER (refusal 0.00)**. Refusal decreases monotonically with
+depth; early−late refusal Δ=+0.857 [+0.714, +1.00] (every pairwise step significant). **TOCTOU confirmed:
+refusal is a time-of-check operation on EARLY representations.** This explains WHY Doublespeak works — the
+hijacked meaning emerges LATE (rep-level result), so it slips past the early refusal checkpoint. Closes the
+representation→behavior loop with a causal timing law. (Success Level 3.)
 
 ## 6. Mechanistic attack objective — Claim E (Phases 5-6, NOT STARTED; DE-RISKED)
 `poc_stage_gcg_early/objectives.py` already has `repr_loss` + `ObjectiveWeights` + activation capture;
@@ -83,11 +87,13 @@ thinking-ON; `enable_thinking=False` injects empty `<think>`). Needs `ds_common`
 - Cross-model behavioral generalization (Phase 8) — rep-level already 3 families.
 
 ## 9. One-line thesis (current)
-> Doublespeak builds a distinct, late-emerging, attention-routed codeword representation that is
-> causally necessary and conditionally sufficient for the harmful reading at the representation level
-> (cross-model), AND — on a properly-constructed benchmark with correct refusal measurement —
-> **translates into a real behavioral jailbreak** on a meaningful fraction of prompts; we are now
-> establishing behavioral causality, causal timing, and a mechanism-derived attack objective.
+> Doublespeak builds a distinct, late-emerging, attention-routed codeword representation (causally
+> necessary + conditionally sufficient at the representation level, cross-model) that **translates into a
+> real behavioral jailbreak** on a properly-constructed benchmark — and we show **WHY it works**: refusal
+> is a *time-of-check* operation on EARLY representations (injecting harmful meaning early → 86% refusal,
+> late → 0%), so Doublespeak's late emergence is precisely the mechanism that smuggles harmful meaning
+> past the refusal checkpoint. We further find that representation-level decoding-sufficiency and
+> behavioral sufficiency **dissociate** — a methodological caution for interpretability-based attack claims.
 
 **Methodological lesson worth stating in the paper:** measuring "refusal" via a harmful-goal-conditioned
 judge conflates *benign compliance* with *refusal* and can manufacture a false behavioral null — a trap

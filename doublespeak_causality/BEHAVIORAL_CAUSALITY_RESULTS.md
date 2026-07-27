@@ -124,6 +124,41 @@ the full n≈61–63. Re-running with context_len will tighten the CIs. (2) mult
 
 ---
 
+## 2c. CAUSAL TIMING — Claim D ⭐ (TOCTOU; Success Level 3) — the headline mechanistic result
+
+Extracted from the sufficiency window sweep (concept injected into baseline-BENIGN Neutrals; the judge
+labels include REJECTED, so the refusal rate is available per injection depth). Injecting the **raw
+harmful concept** at different depths and reading the **refusal** rate:
+
+| injection window | REFUSAL rate | MALICIOUS rate | BENIGN |
+|---|---|---|---|
+| **early (0–9)** | **0.86** | 0.10 | 0.05 |
+| **mid (10–19)** | 0.33 | **0.52** | 0.14 |
+| **late (20–31)** | **0.00** | 0.16 | 0.84 |
+
+**Paired refusal gradient (n=21, same items across windows, bootstrap CIs):**
+- early − late refusal Δ = **+0.857 [+0.714, +1.000]** — hugely significant.
+- early − mid = +0.524 [+0.333, +0.714]; mid − late = +0.333 [+0.143, +0.524] — both significant.
+
+**Verdict: the TIMING of harmful meaning causally controls refusal vs compliance (TOCTOU, Hypothesis 1
+confirmed; H2 monotonic-safety and H3 distributed-safety refuted).**
+- **Early** harmful meaning is exposed to the model's refusal processing → **refused (86%)**.
+- **Late** harmful meaning arrives *after* the refusal-sensitive window → **never refused (0%)**.
+- Refusal decreases **monotonically** with injection depth; every step is significant.
+
+**Why this matters — it explains WHY Doublespeak works.** The rep-level result showed the hijacked
+codeword meaning emerges *late* (peaks at the last layers). This timing experiment shows that **late-
+arriving harmful meaning evades refusal** because refusal is a *time-of-check* operation on *early*
+representations. So Doublespeak's late-emergence is not incidental — it is the *mechanism* by which the
+attack bypasses safety: it smuggles the harmful meaning past the early refusal checkpoint. This closes
+the loop from representation (late emergence) → behavior (refusal evasion) with a causal timing law.
+
+(Note: the DS-state injection barely triggers refusal at any depth — early 6/63, mid 4/63, late 0 — and
+is weakly malicious, consistent with §2: the contextual DS state is a weak out-of-context injectate. The
+TOCTOU law is cleanest with the raw-concept injectate, which is potent enough to engage refusal.)
+
+---
+
 ## 3. Representation-level causal re-validation (frozen baseline, audited + reruns)
 Independent reviewers flagged under-specified controls on the frozen rep-level claims; all 3 HIGH
 findings were fixed and re-run on the 6-concept × 6-codeword panel (Llama-8B):

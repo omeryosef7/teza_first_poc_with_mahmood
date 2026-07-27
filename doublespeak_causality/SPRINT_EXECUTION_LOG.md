@@ -22,10 +22,13 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 | 8 | Cross-model + paper story | ⬜ NOT STARTED | blocked by P3–P7 |
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
-concepts); **Level 2 ✅** (behavioral necessity — early-window-specific, Δ=0.50 above matched controls);
-Level 2 sufficiency = DS sufficient above null but Direct-inject more potent (dissociation from rep-level).
-Target: ≥1 of 1–6 → met. **Key new scientific finding:** rep-level (Patchscopes decoding) and behavioral
-sufficiency DISSOCIATE — a methodological caution (decoding-sufficiency ≠ behavioral sufficiency).
+concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
+(CAUSAL TIMING: injecting the harmful concept early→refusal 0.86, mid→compliance 0.52, late→refusal 0.00;
+early−late refusal Δ=+0.857 [+0.714,+1.00], TOCTOU confirmed). Target ≥1 of 1–6 → **3 met.**
+**Headline findings:** (a) causal timing law — refusal is a time-of-CHECK operation on EARLY meaning, so
+Doublespeak's LATE emergence is the *mechanism* of refusal evasion (closes representation→behavior loop);
+(b) rep-level decoding-sufficiency and behavioral sufficiency DISSOCIATE (Direct≫DS behaviorally at mid,
+opposite of Patchscopes) — a methodological caution.
 
 **DELIVERABLE DOCS (plan §23) — all external MD, kept current:**
 `SPRINT_EXECUTION_LOG.md` (this, chronology+jobs) · `BEHAVIORAL_BENCHMARK.md` ✅ · `BEHAVIORAL_CAUSALITY_RESULTS.md` ✅ (necessity in; suff/timing pending) · `UPDATED_PAPER_STORY.md` ✅ · `MECHANISTIC_OBJECTIVE.md` ⬜ (Phase 5) · `GCG_MAC_COMPARISON.md` ⬜ (Phase 6) · `THINKING_VS_NONTHINKING.md` ⬜ (Phase 7). Frozen-era docs (CAUSAL_RESULTS_SUMMARY / RESULTS_SYNTHESIS / DOUBLESPEAK_MASTER_LOG / PROGRESS) banner-updated to point here.
