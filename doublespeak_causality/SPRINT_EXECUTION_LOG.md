@@ -24,7 +24,9 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
 concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
 (CAUSAL TIMING: injecting the harmful concept early→refusal 0.86, mid→compliance 0.52, late→refusal 0.00;
-early−late refusal Δ=+0.857 [+0.714,+1.00], TOCTOU confirmed). Target ≥1 of 1–6 → **3 met.**
+early−late refusal Δ=+0.857 [+0.714,+1.00], TOCTOU confirmed). **Level 4 ✅** (mechanistic signature PREDICTS held-out jailbreak: held-out-concept AUC 0.668±0.089,
+CV 0.73; the predictive component is EARLY-benign alignment — late_align alone inert at 0.502 — cohering
+with the TOCTOU law). Target ≥1 of 1–6 → **4 met.**
 **Headline findings:** (a) causal timing law — refusal is a time-of-CHECK operation on EARLY meaning, so
 Doublespeak's LATE emergence is the *mechanism* of refusal evasion (closes representation→behavior loop);
 (b) rep-level decoding-sufficiency and behavioral sufficiency DISSOCIATE (Direct≫DS behaviorally at mid,
@@ -410,7 +412,12 @@ The timing law (Claim D) motivates a "benign-early / harmful-late" attack object
   **SLURM 690288** (240 conditions, 46 positives).
 - `22_fit_success_predictors.py` (CPU, benign): univariate AUC per feature, the candidate temporal
   objective (late−λ·early) AUC, 5-fold CV, and **HELD-OUT-CONCEPT AUC** = the Level-4 criterion.
-Fires 22 on 690288's `features.json`. Verified: both compile; _auc tie-correct (sklearn); symmetric.
+**RESULT (690288 + 22):** ✅ **Level 4.** Multivariate CV AUC 0.732±0.060; **held-out-concept AUC
+0.668±0.089** (above chance → generalizes). Univariate: early_align 0.65, mid 0.66, early_to_late 0.65,
+temporal(late−λ·early) 0.65; **late_align alone 0.502 (inert)** → the predictive signal is EARLY-benign
+alignment + early→late change, NOT harmful-late per se — coheres with the TOCTOU timing law (low early
+harmful alignment evades the early refusal check). Deliverable: `MECHANISTIC_OBJECTIVE.md`. Honest: AUC
+moderate (0.67, not 0.9); objective UTILITY (does Temporal-GCG beat standard?) is Phase 6, not yet claimed.
 
 ## PHASE 4 (iter18-19) — sufficiency window sweep → DISSOCIATION IS MID-SPECIFIC (depth structure)
 Reuses 19 (no new code). SLURM 690096 (early ✅), 690097 (late, RUNNING). Submitted as TWO single-window
