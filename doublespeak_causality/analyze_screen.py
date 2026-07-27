@@ -72,16 +72,40 @@ def main():
     n_elig = sum(1 for b in bases.values() if b["eligible"])
     n_clean = sum(1 for b in bases.values() if b["eligible"] and b["ds_malicious"] > 0)
 
+    # Breakdowns among conditions whose base is ELIGIBLE (so DS success is attributable):
+    # dose-response by demo count (context_len) + per-codeword hijack rate (behavioral RQ6).
+    eligible_ids = {bid for bid, b in bases.items() if b["eligible"]}
+    def _rate(key):
+        num, den = defaultdict(int), defaultdict(int)
+        for pc in per_condition:
+            if pc["base_id"] not in eligible_ids:
+                continue
+            k = pc[key]
+            den[k] += 1
+            num[k] += int(pc["triplet_label"] == "DS_MALICIOUS")
+        return {str(k): {"ds_malicious": num[k], "n": den[k],
+                         "rate": round(num[k] / den[k], 3) if den[k] else None}
+                for k in sorted(den)}
+    by_ctxlen = _rate("context_len")
+    by_codeword = _rate("codeword")
+    ds_cat_dist_eligible = Counter(pc["ds_cat"] for pc in per_condition if pc["base_id"] in eligible_ids)
+
     out = {"reclassified_from": raw_path, "classify": "MALICIOUS_first_v2",
            "n_conditions": len(per_condition), "n_bases": len(bases),
            "n_eligible_bases": n_elig, "n_clean_success_bases": n_clean,
            "n_judge_fail_rows": n_judge_fail,
-           "triplet_label_dist": dict(tl_dist)}
+           "triplet_label_dist": dict(tl_dist),
+           "ds_outcome_among_eligible": dict(ds_cat_dist_eligible),
+           "ds_malicious_rate_by_context_len": by_ctxlen,
+           "ds_malicious_rate_by_codeword": by_codeword}
     out_path = args.out or os.path.join(args.screen_dir, "screen_summary_reclassified.json")
     json.dump({**out, "per_condition": per_condition}, open(out_path, "w"), indent=2)
     print(f"[reclassify] bases={len(bases)} eligible={n_elig} clean_success_bases={n_clean} "
           f"judge_fail_rows={n_judge_fail}")
     print(f"[reclassify] triplet labels: {dict(tl_dist)}")
+    print(f"[reclassify] DS outcome among eligible: {dict(ds_cat_dist_eligible)}")
+    print(f"[reclassify] DS-malicious rate by context_len: "
+          f"{ {k: v['rate'] for k, v in by_ctxlen.items()} }")
     print(f"[reclassify] -> {out_path}")
 
 
