@@ -90,18 +90,22 @@ generic late-layer perturbation sensitivity** — reported honestly, follow-up s
 Direct state at the Neutral codeword position across the **mid** window (10–19; where rep-level DS
 sufficiency peaks); re-judge. Prediction from rep-level §3 (Patchscopes): DS-injection > Direct-injection.
 
-| arm (mid window) | malicious rate |
-|---|---|
-| **Neutral ← DS** (hijacked state) | **0.16** |
-| **Neutral ← Direct** (raw concept state) | **0.52** |
-| control: identity (Neutral←Neutral) | 0.03 |
-| control: random (ds-norm) | 0.03 |
+**Depth-resolved (early 690096 / mid 689975 / late 690097; malicious rate among baseline-benign):**
 
-**Result — a genuine DISSOCIATION, opposite to the rep-level prediction:**
-- **DS-injection IS behaviorally sufficient above the null** (0.16 vs 0.03 identity/random) — the hijacked
-  state does causally induce harmful generation. So Claim C is *supported in the weak sense* (DS-inject >> controls).
-- **BUT raw Direct-concept injection is MUCH more behaviorally sufficient (0.52 ≫ 0.16)** — the *opposite*
-  of the rep-level Patchscopes finding (where Direct-inject was NOT sufficient for decoding, DS was).
+| window | Neutral←DS | Neutral←Direct | random ctrl | **DS−Direct [95% CI]** |
+|---|---|---|---|---|
+| early (0–9) | 0.13 | 0.10 | 0.079 | +0.00 [−0.14, 0.14] — NS |
+| **mid (10–19)** | 0.16 | **0.52** | 0.03 | **−0.43 [−0.67, −0.19] — SIGNIFICANT** |
+| late (20–31) | 0.02 | 0.16 | 0.098 | −0.10 [−0.24, 0.00] — borderline |
+
+**Result — a DEPTH-STRUCTURED DISSOCIATION, opposite to the rep-level prediction:**
+- **The hijacked DS state is only weakly behaviorally sufficient at any depth** (≤0.16), and at late layers
+  falls to ~0 (below its random control). It never becomes a potent behavioral injectate — consistent with
+  it being a *context-dependent* state that loses force when transplanted out of its demonstration context.
+- **The raw Direct concept has a MID-LAYER behavioral-steering sweet spot** (0.52 at mid vs 0.10/0.16 at
+  early/late; random 0.03 at mid) — injecting the concept mid-network strongly steers generation.
+- **Direct ≫ DS is significant ONLY at mid** (CI excludes 0); absent early (DS≈Direct), borderline late.
+  This is the *opposite* of the rep-level Patchscopes finding (DS>Direct for decoding).
 
 **Interpretation (honest, important):** representation-level *decoding*-sufficiency (Patchscopes P(concept))
 and *behavioral* sufficiency are **DISSOCIATED** for this mechanism. The hijacked DS rep is the distinct
@@ -113,10 +117,10 @@ does not predict — and here inverts — behavioral sufficiency.**
 **Paired bootstrap CI (plan §13):** mid-window **DS−Direct = −0.43 [−0.67, −0.19]** → **CI excludes 0,
 the Direct>DS dissociation is STATISTICALLY SIGNIFICANT.** (n=21 unique base×codeword; see limitation.)
 
-**Limitations:** (1) only the MID window was run in this job — the early/late window sweep (SLURM
-690096/690097) is in progress to test whether the dissociation holds across depth. (2) The sufficiency
-raw log did not store `context_len`, so the CI collapses the 3 context lengths per (base,codeword) to
-one point (n=21 of 72); fixed in 19 for future runs. (3) multi-seed generation pending.
+**Limitations:** (1) CIs collapse the 3 context-lengths per (base,codeword) to one point (n=21) because
+the raw log for these jobs pre-dates the `context_len` fix (now in 19); the summary point-estimates use
+the full n≈61–63. Re-running with context_len will tighten the CIs. (2) multi-seed generation pending.
+(3) 12 bases per window (all eligible would be 37) — scale-up pending a stable (non-preempting) slot.
 
 ---
 

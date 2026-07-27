@@ -408,12 +408,13 @@ jobs — `DSWINDOWS=early,late` (comma) hits the sbatch --export comma bug (memo
 |---|---|---|---|---|---|
 | early (0–9) | 0.13 | 0.10 | +0.03 (NS) | 0.079 | both weak, ≈ random, DS≈Direct |
 | mid (10–19) | 0.16 | **0.52** | **−0.43 [−0.67,−0.19]** | 0.03 | Direct≫DS, SIGNIFICANT |
-| late (20–31) | _pending 690097_ | | | | |
+| late (20–31) | 0.02 | 0.16 | −0.10 [−0.24,0.0] | 0.098 | borderline |
 
-**Emerging picture:** the Direct≫DS behavioral dissociation is **MID-window-specific** — at early layers
-both injections are weak and indistinguishable (≈random). So raw-concept injection becomes strongly
-behaviorally sufficient specifically at MID layers, while the hijacked DS state never does (stays ~0.16
-everywhere so far). This refines the dissociation into a depth-structured finding. Full CIs pending late.
+**COMPLETE (CI-backed):** the Direct≫DS behavioral dissociation is **significant ONLY at MID** (CI excludes
+0), absent early (DS≈Direct), borderline late. **Depth structure:** the hijacked DS state is weakly
+sufficient everywhere (≤0.16, →~0 late); the RAW concept has a MID-layer behavioral-steering sweet spot
+(0.52). Rep-level Patchscopes said DS>Direct (decoding); behaviorally Direct≫DS at mid — a clean
+depth-resolved dissociation the original paper never mapped. Jobs 690096/690097 both COMPLETE.
 
 ## PHASE 3 (iter6) — sufficiency script WRITTEN + VERIFIED; combined MVP runner ready
 `19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Direct injection on eligible
