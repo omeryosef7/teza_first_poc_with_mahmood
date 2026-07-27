@@ -107,11 +107,22 @@ the 200-prompt Direct/Neutral screening SLURM job on Llama-8B.
 | run/job | phase | cmd | status | output |
 |---|---|---|---|---|
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
-| _(pending)_ | 2 | 200-prompt screening | NOT_RUN | — |
+| bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | RUNNING (bg, main-loop) | `data/behavioral_benchmark/eligibility_v1.json` + `screening_matrix_v1.json` |
+| _(ready)_ | 2 | `sbatch slurm/run_behavioral_screen.sh` (17) | READY — submit when matrix validated | `outputs/behavioral_screen_llama8b/` |
+
+## USER DECISIONS (2026-07-27, binding for the loop)
+- **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first
+  Llama-8B screening job (not eligible-only staging). Single L40S job.
+- **Low-yield fallback:** if clean `DS_MALICIOUS` yield is low, EXPAND SOURCES — pull in
+  ClearHarm + curated concept-noun prompts BEFORE drawing conclusions (do not immediately
+  report null; do not pause for approval).
+- **Loop:** session-only cron `0e2d79c5` (`*/30`). User may move to /schedule for durability.
 
 ---
 
 ## NEXT SINGLE HIGHEST-VALUE STEP
-Finish `16_prepare_behavioral_benchmark.py`, smoke-validate concept extraction + condition
-construction on ~5 AdvBench items, then submit the Direct/Neutral behavioral screening SLURM
-job — its yield decides whether the behavioral sweet-spot exists and unblocks all of Phases 3–5.
+When extraction `b3p10mgkd` finishes: (1) validate `screening_matrix_v1.json` structure +
+category spread; (2) `sbatch slurm/run_behavioral_screen.sh` on Llama-8B (FULL matrix per
+user decision); (3) while it runs, start the benign parallel track — audit
+`scripts/reinforce_objective/` GCG/MAC code (Phase 6 §10.1) and validate the Qwen3 thinking
+toggle (Phase 7 §11.1). Screening yield decides the behavioral sweet-spot → unblocks Phases 3–5.
