@@ -8,6 +8,10 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) Â
 
 ## Status board
 
+**STUDY + GENERALIZATION COMPLETE (2026-07-27):** the causal mechanism (necessity + conditional sufficiency + late timing + attention-routed-from-demos, position & depth) is confirmed and GENERALIZED across 6 concepts x 6 codewords x 3 model families (Llama-3.1-8B, Qwen3-14B, Phi-4-mini/phi3), all CIs excluding 0. Only P5 (confounded in seed) and P7 (low-value given behavioral null) remain unstarted, both documented. See RESULTS_SYNTHESIS.md + CAUSAL_RESULTS_SUMMARY.md.
+
+## Status board
+
 **GENERALIZATION PHASE (2026-07-27):** multi-concept (6 concepts x 6 codewords) causal suite running on Llama-8B (687942) + Qwen3-14B (687943) to generalize necessity/sufficiency/timing beyond virus. P5 Mal/Rej/Benign next.
 
 
