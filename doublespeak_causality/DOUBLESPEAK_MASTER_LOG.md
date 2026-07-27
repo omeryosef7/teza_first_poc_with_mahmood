@@ -145,3 +145,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Probed LlamaAttention interface (4D attention_mask kwarg, logs/diag_attn_iface.log); built 10_layerwise_knockout.py (per-layer forward_pre_hook editing the mask).
 - virus_muffin (fp16 login): single-layer block most impactful at L18(0.02)/L2(0.03), L24 increases to 0.21; cumulative [0..2]=0.02, recovers k5-11 (~0.08), fully killed k>=14 (0.00). => distributed early-through-mid routing, consolidated by ~L14, redundant pathways. Added C3-depth to CAUSAL_RESULTS_SUMMARY.
 - Submitted canonical bf16 = job 687614. git commits through this iteration on branch doublespeak-causality.
+
+### 2026-07-27 — CONSOLIDATION: emergence trajectory + figures + synthesis
+- Built 11_emergence_trajectory.py (per-layer Patchscopes decode, validated decoder). virus_muffin: direct peak 0.768@L0, doublespeak 0.100@L30, neutral 0 => early-vs-late signature (figures/fig1_emergence.png).
+- Generated figures/ (fig1 emergence, fig2 necessity, fig3/4 knockout) via plots.py from result JSONs.
+- Wrote RESULTS_SYNTHESIS.md: full causal chain RQ1-4 with numbers, honest scope caveats, methodology corrections, remaining work.
+- Canonical per-layer knockout 687614 COMPLETE (confirms). Causal chain complete + confirmed on bf16.
