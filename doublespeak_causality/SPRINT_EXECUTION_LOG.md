@@ -150,6 +150,33 @@ validation job needed now — mechanism already proven.
 
 ---
 
+## PHASE 2 SCREEN RESULT (iter8) — SLURM 688994 COMPLETE (N=193 AdvBench, 1158 conditions) ⚠️ KEY FINDING
+
+**Yield is very low but the diagnosis is scientifically important.** Judge health: **0 judge failures**
+(no corruption; MALICIOUS-first re-classify gave identical result → not a labeling artifact).
+- **Direct gate: 193/193 pass** (184 refused, 9 malicious) — Direct reliably tests alignment.
+- **Neutral gate: only 2/193 benign** — 166 Neutral REFUSED, 25 Neutral MALICIOUS. **← THE BOTTLENECK.**
+- Eligible bases (Direct-refused AND Neutral-benign): **2/193**. Clean DS_MALICIOUS: **1**.
+- DS outcomes (1158): REJECTED 955, MALICIOUS 193, BENIGN 10. (The 193 DS-malicious mostly have
+  non-benign Neutrals → not attributable to Doublespeak.)
+
+**Root cause:** AdvBench phrasing carries **redundant harmful terms**, so swapping ONE noun does
+not neutralize (e.g. "make a bomb *or other explosive device*" → "make a potato or other explosive
+device" → still refused). Even the 14 explosives + 6 weapons AdvBench bases had 0 benign Neutrals.
+The GPT-4o-mini "neutralizes=yes" pre-screen (193/193) was UNRELIABLE — the behavioral screen is the
+real test. This rigorously quantifies the handoff-§2.7 limitation at scale: **the harm-in-a-single-
+swappable-noun assumption fails for ~99% of AdvBench.**
+
+**PIVOT (user-authorized low-yield → expand sources):** built `data/curated_concepts.json` — 40
+harm-in-SINGLE-noun instructions (20 nouns × clean templates "build a {X}" / "make {X} at home";
+6 categories explosives/weapons/narcotics/toxins/bioweapon/incendiary) where substitution provably
+neutralizes (Neutral "build a kettle" is benign by construction). Added `16 --curated` mode (skips
+AdvBench+LLM extraction; concept known). Offline smoke: 240 conditions, 40 bases, 0 invariant fails.
+Real matrix build (GPT-4o-mini demos) running bg `b0afpa7r2`. Next: screen it — expect MUCH higher
+eligibility (Direct refused + Neutral benign by construction), then the real science = DS success rate.
+
+---
+
 ## BUG HUNT (iter 4) — self-review + parallel independent reviewers
 
 **Bugs found & FIXED (main loop):**
@@ -209,8 +236,10 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 |---|---|---|---|---|
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
 | bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | ✅ DONE | `eligibility_v1.json` (193/200) + `screening_matrix_v1.json` (1158 cond, 0 invariant fails, gitignored) |
-| **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) DSTAG=llama8b_v1 | **RUNNING** n-803 (~140/1158 @ iter3; ETA ~2h) | `outputs/behavioral_screen_llama8b_v1/` |
-| _(ready)_ | 3 | `run_beh_causal_mvp.sh` (18 necessity + 19 sufficiency, one job) | READY — fire on screen completion | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
+| **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) AdvBench v1 | ✅ COMPLETE — 2/193 eligible, 1 clean (AdvBench harm not noun-localized) | `outputs/behavioral_screen_llama8b_v1/` |
+| bg `b0afpa7r2` | 2 | `16 --curated` matrix build (GPT-4o-mini demos) | RUNNING | `data/behavioral_benchmark/screening_matrix_curated_v1.json` |
+| _(next)_ | 2 | screen curated matrix (17) DSTAG=curated_v1 | PENDING build | `outputs/behavioral_screen_curated_v1/` |
+| _(ready)_ | 3 | `run_beh_causal_mvp.sh` (18+19) | READY — fire on curated screen if ≥30 eligible | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first

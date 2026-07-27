@@ -194,34 +194,51 @@ def main():
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--tag", default="v1")
     ap.add_argument("--max-demos", type=int, default=max(CONTEXT_LENGTHS))
+    ap.add_argument("--curated", default=None,
+                    help="path to a curated {items:[{task_id,instruction,concept,category}]} "
+                         "JSON with KNOWN harm-in-noun concepts; skips AdvBench + LLM extraction "
+                         "(the behavioral screen is the real eligibility test).")
     args = ap.parse_args()
 
-    n = args.limit or args.n_instructions
     os.makedirs(OUT_DIR, exist_ok=True)
-    instrs = load_advbench(n)
-    print(f"[bench] loaded {len(instrs)} AdvBench instructions (offline={args.offline})")
-
     client = None
     if not args.offline:
         from openai import OpenAI
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-    # ---- Step 1: eligibility extraction ----
-    elig_rows, n_elig = [], 0
-    for it in instrs:
-        instr = it["instruction"]
-        d = heuristic_extract(instr) if args.offline else openai_extract(
-            client, args.model, instr, args.seed)
-        eligible, reason = validate_extraction(d, instr)
-        n_elig += int(eligible)
-        elig_rows.append({**it, "concept": (d.get("concept") or "").strip().lower(),
-                          "category": d.get("category", "other"),
-                          "neutralizes": bool(d.get("neutralizes")),
-                          "harm_from_concept": bool(d.get("harm_from_concept")),
-                          "extractor": d.get("_extractor"),
-                          "eligible": eligible, "eligibility_reason": reason})
-        print(f"  {it['task_id']}: concept={d.get('concept','')!r:12} "
-              f"eligible={eligible} ({reason})")
+    # ---- Step 1: eligibility rows ----
+    if args.curated:
+        # Curated harm-in-single-noun set: concept is known + validated by construction;
+        # every base is a matrix candidate (the GPU screen decides behavioral eligibility).
+        cur = json.load(open(args.curated))["items"]
+        if args.limit:
+            cur = cur[:args.limit]
+        elig_rows = [{"task_id": it["task_id"], "instruction": it["instruction"],
+                      "concept": it["concept"].strip().lower(), "category": it["category"],
+                      "eligible": True, "eligibility_reason": "curated_known_concept",
+                      "extractor": "curated"} for it in cur]
+        n_elig = len(elig_rows)
+        instrs = cur
+        print(f"[bench] loaded {len(cur)} CURATED harm-in-noun instructions -> all matrix candidates")
+    else:
+        n = args.limit or args.n_instructions
+        instrs = load_advbench(n)
+        print(f"[bench] loaded {len(instrs)} AdvBench instructions (offline={args.offline})")
+        elig_rows, n_elig = [], 0
+        for it in instrs:
+            instr = it["instruction"]
+            d = heuristic_extract(instr) if args.offline else openai_extract(
+                client, args.model, instr, args.seed)
+            eligible, reason = validate_extraction(d, instr)
+            n_elig += int(eligible)
+            elig_rows.append({**it, "concept": (d.get("concept") or "").strip().lower(),
+                              "category": d.get("category", "other"),
+                              "neutralizes": bool(d.get("neutralizes")),
+                              "harm_from_concept": bool(d.get("harm_from_concept")),
+                              "extractor": d.get("_extractor"),
+                              "eligible": eligible, "eligibility_reason": reason})
+            print(f"  {it['task_id']}: concept={d.get('concept','')!r:12} "
+                  f"eligible={eligible} ({reason})")
 
     elig_path = os.path.join(OUT_DIR, f"eligibility_{args.tag}.json")
     with open(elig_path, "w") as f:
