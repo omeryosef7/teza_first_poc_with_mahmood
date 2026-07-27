@@ -100,9 +100,25 @@ def main():
         prev_cw = hit.last_idx[:-1]                   # earlier occurrences
         harm_id = token_id(lm.tokenizer, it["harmful_word"])
         code_id = token_id(lm.tokenizer, it["codeword"])
-        # demo region = everything before the final codeword's occurrence start
         final_start = hit.first_idx[-1]
-        demos_all = list(range(0, final_start))
+        # F2 FIX (iter11): the OLD `demos_all = range(0, final_start)` blocked the ENTIRE request
+        # (instruction prefix + verb phrase + substituted query up to the codeword), not just the
+        # demonstrations → confounded "blocking demos eliminates the hijack" with "blocking the
+        # request". Locate the REQUEST start (the instruction prefix, present only in the query, not
+        # the demos) via char->token offsets, then block ONLY demo tokens (request intact), and add
+        # the complementary REQUEST-ONLY control (block request phrasing, demos intact).
+        req_prefix = "Do not reason, just"
+        cpos = text.rfind(req_prefix)
+        req_start_tok = final_start
+        if cpos >= 0:
+            try:
+                enc = lm.tokenizer(text, return_offsets_mapping=True, add_special_tokens=True)
+                offs = enc["offset_mapping"]
+                req_start_tok = next((i for i, (s, e) in enumerate(offs) if s >= cpos and e > s), final_start)
+            except Exception:
+                req_start_tok = final_start
+        demos_only = list(range(0, req_start_tok))                       # ONLY demo tokens
+        request_only = [p for p in range(req_start_tok, seq) if p != cw_last]  # request, not demos
         gen = torch.Generator().manual_seed(args.seed)
         # random matched control: |prev_cw| random earlier non-codeword positions
         cw_set = set(hit.last_idx) | set(hit.first_idx)
@@ -110,18 +126,27 @@ def main():
         k = min(len(prev_cw), len(pool))
         perm = torch.randperm(len(pool), generator=gen)[:k].tolist()
         rand_before = [pool[i] for i in perm]
+        # count-matched random control for demos_only: |demos_only| random positions from [0,seq)
+        # excluding the codeword (tests "block that many tokens" vs "block the demos specifically").
+        pool2 = [p for p in range(0, seq) if p != cw_last]
+        k2 = min(len(demos_only), len(pool2))
+        perm2 = torch.randperm(len(pool2), generator=gen)[:k2].tolist()
+        rand_demos_matched = [pool2[i] for i in perm2]
 
         dt = next(lm.model.parameters()).dtype
         dev = lm.model.device
         conds = {
             "baseline": [],
             "prev_codewords": prev_cw,
-            "demos_all": demos_all,
+            "demos_only": demos_only,
+            "request_only": request_only,
             "rand_before": rand_before,
+            "rand_demos_matched": rand_demos_matched,
         }
-        res = {"id": it["id"], "seq_len": seq, "cw_last": cw_last,
-               "n_prev_cw": len(prev_cw), "n_demos_tokens": len(demos_all),
-               "n_rand_ctrl": len(rand_before), "conds": {}}
+        res = {"id": it["id"], "seq_len": seq, "cw_last": cw_last, "req_start_tok": req_start_tok,
+               "n_prev_cw": len(prev_cw), "n_demos_tokens": len(demos_only),
+               "n_request_tokens": len(request_only), "n_rand_ctrl": len(rand_before),
+               "n_rand_demos_matched": len(rand_demos_matched), "conds": {}}
         for name, blocked in conds.items():
             m = build_mask(seq, dev, dt, cw_last, blocked)
             rep = rep_under_mask(lm, tok["input_ids"], m, cw_last, R)
@@ -130,9 +155,9 @@ def main():
         report["items"].append(res)
         b = res["conds"]["baseline"]["p_harm"]
         print(f"[{it['id']}] baseline P_harm={b:.3f} | "
-              f"prev_cw={res['conds']['prev_codewords']['p_harm']:.3f} | "
-              f"demos_all={res['conds']['demos_all']['p_harm']:.3f} | "
-              f"rand_ctrl={res['conds']['rand_before']['p_harm']:.3f}")
+              f"demos_only={res['conds']['demos_only']['p_harm']:.3f} | "
+              f"request_only={res['conds']['request_only']['p_harm']:.3f} | "
+              f"rand_demos_matched={res['conds']['rand_demos_matched']['p_harm']:.3f}")
 
     report["status"] = "COMPLETE"
     with open(os.path.join(out_dir, "stage4_knockout_results.json"), "w") as f:

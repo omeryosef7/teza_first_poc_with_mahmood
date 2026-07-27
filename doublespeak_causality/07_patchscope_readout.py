@@ -109,6 +109,12 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
     # mechanism) is the cause and this item's necessity/sufficiency numbers are floor-bound.
     dir_repR = dir_cap["reps"]["codeword_last"][R + 1].to(lm.model.device)
     base_dir_ph, base_dir_pc = dec.decode(dir_repR, R, harm_id, code_id)
+    # Direct decodes EARLY, so reading its rep at the late layer R is ~0 by design — the WRONG
+    # positive control. Correct control: does a clean Direct concept rep, taken from ANY layer and
+    # read at R, decode to high P(harm)? Scan layers, take max (this is the readout-soundness test).
+    reps_all = dir_cap["reps"]["codeword_last"]
+    pos_ctrl_max = max(dec.decode(reps_all[l].to(lm.model.device), R, harm_id, code_id)[0]
+                       for l in range(len(reps_all)))
 
     gen = torch.Generator().manual_seed(seed)
     randvec = torch.randn(lm.hidden_size, generator=gen)
@@ -117,7 +123,8 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
            "baseline_ds_patchscope": {"p_harm": base_ds_ph, "p_code": base_ds_pc},
            "baseline_neutral_patchscope": {"p_harm": base_neu_ph, "p_code": base_neu_pc},
            "baseline_direct_patchscope": {"p_harm": base_dir_ph, "p_code": base_dir_pc},
-           "positive_control_ok": bool(base_dir_ph > 0.05 and base_neu_ph < base_dir_ph),
+           "positive_control_max": pos_ctrl_max,
+           "positive_control_ok": bool(pos_ctrl_max > 0.1 and base_neu_ph < pos_ctrl_max),
            "necessity": [], "sufficiency": [], "sufficiency_ds": [],
            # F1 (iter11): norm-matched sufficiency controls to rule out a MAGNITUDE confound in
            # the DS>Direct claim — inject Direct rescaled to ‖ds_vec‖, and a ds-norm RANDOM vector

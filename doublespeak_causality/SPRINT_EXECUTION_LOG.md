@@ -328,11 +328,19 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | **SLURM 689556** | rerun | 07 sufficiency FIXED (F1 norm-matched ctrl + F4 pos-control) + 11, 6×6 panel, DSTAG=llama8b_fixed | **SUBMITTED (PD)** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
 
 ### FROZEN-RESULT RERUN PROGRESS (user request)
-- **F1 conditional-sufficiency (07)** — FIXED (added `sufficiency_direct_dsnorm` = Direct rescaled to
-  ‖ds_vec‖, `control_random_neutral` = ds-norm random into Neutral, `baseline_direct_patchscope` +
-  `positive_control_ok`). Rerun 689556. **Verdict pending:** DS>Direct is real (direction) only if
-  `sufficiency_ds` > `sufficiency_direct_dsnorm` AND > `control_random_neutral`.
-- **F2 knockout (09), F3 multilayer (08)** — HIGH, fix+rerun NEXT.
+- **F1 conditional-sufficiency (07)** — ✅ **RERUN 689556 COMPLETE → CLAIM SURVIVES.** DS>Direct holds
+  even against Direct rescaled to ‖ds_vec‖ AND a ds-norm random control. Hijackers: virus_mirror
+  DS=0.093 vs Direct@DSnorm=0.002 vs rand=0.002; knife_carrot 0.075 vs 0.003; gun_river 0.078 vs 0.001;
+  drug_river 0.097 vs 0.002. Mean suff_DS=0.019 vs Direct@DSnorm=0.003. **Conditional sufficiency is a
+  real DIRECTION/meaning effect, not a magnitude artifact — frozen claim confirmed, now properly
+  controlled.** (F4 note: my first positive-control decoded the Direct rep at the LATE readout layer
+  where Direct is gone → 0/36 false alarm; fixed to scan-layers max — readout itself is sound, handoff
+  §4 validated Direct→0.67-0.84; F1 verdict independent of this.)
+- **F2 knockout (09)** — ✅ FIXED + rerun 689610. Old `demos_all` blocked the WHOLE request (confound);
+  now `demos_only` (request intact) + complementary `request_only` (demos intact) + count-matched
+  `rand_demos_matched`. Clean test: if demos_only kills the hijack but request_only doesn't → mapping
+  localized to demonstrations. Verdict pending 689610.
+- **F3 multilayer (08)** — HIGH, fix+rerun NEXT.
 - F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued.
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
