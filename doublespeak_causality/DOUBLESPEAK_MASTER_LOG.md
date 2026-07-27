@@ -187,3 +187,6 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ### 2026-07-27 — GENERALITY CONFIRMED on Qwen3-14B (G1)
 - 687798 (meta fix): Qwen3-14B replicates ALL causal findings, stronger than Llama. Positive control passes (Direct 0.80). Emergence: Direct early L4 / DS late L38/40 / Neutral flat. Necessity full (muffin 0.252->0.001, mirror 0.266->0, carrot 0.219->0.009). Conditional sufficiency: suff(DS)>>suff(Direct) all codewords (muffin 0.268 vs 0.001). => mechanism generalizes across model family + size. Added G1; P9 CONFIRMED. Full-panel CIs pending job completion.
+
+### 2026-07-27 — Qwen3 full-panel CIs (generality statistically confirmed)
+- 687798 COMPLETE. Timing diff 33.5L 95%CI[32.6,34.0] (Direct L4/DS L37.6, 16/18 hijack); necessity 99%; suff(DS)0.135 vs suff(Direct)0.001 diff 0.133 95%CI[0.089,0.184]. Generality confirmed with CIs across model families. Folded into G1.

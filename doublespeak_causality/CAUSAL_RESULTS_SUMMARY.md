@@ -85,7 +85,11 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - **Timing:** Direct peaks EARLY (virus_muffin L4, P=0.80); Doublespeak peaks LATE (L38/40, P=0.30); Neutral flat (0.005). Same early-vs-late signature.
 - **Necessity:** DS<-Neutral removes ~full P(harm) for every codeword (e.g. muffin 0.252->0.001, mirror 0.266->0.000, carrot 0.219->0.009).
 - **Conditional sufficiency:** suff(DS) >> suff(Direct) for every codeword (muffin 0.268 vs 0.001; basket 0.246 vs 0.000; mirror 0.270 vs 0.000).
-=> The causal account (late-emerging, attention-routed, necessary, conditionally-sufficient hijacked representation) is NOT specific to Llama-3.1-8B; it holds on Qwen3-14B, with a larger effect. (Full-panel CIs pending job 687798 completion; per-item results already unambiguous.)
+**Qwen3 full-panel statistics (n=18 codewords, job 687798 COMPLETE):**
+- Timing: Direct peak mean L4.0, Doublespeak peak mean L37.6 (of 40); paired diff **33.5 layers, 95% CI [32.6, 34.0]**; 16/18 hijack; DS strength mean 0.157.
+- Necessity (n=16 hijackers): DS<-Neutral removes **99%** of P(harm).
+- Conditional sufficiency (n=16): suff(DS) 0.135 vs suff(Direct) 0.001; paired diff **0.133, 95% CI [0.089, 0.184]** (excludes 0).
+=> The causal account (late-emerging, attention-routed, necessary, conditionally-sufficient hijacked representation) is NOT specific to Llama-3.1-8B; it holds on Qwen3-14B (different family + size) with larger effects and proper CIs.
 
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
