@@ -217,3 +217,6 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **Llama:** base 0.099 -> block demos 0.000 (100% drop), random 0.066; paired CI[0.060,0.141]; 12/12 dropped <20% base.
 - **Qwen3:** base 0.072 -> 0.000 (100%), random 0.059; CI[0.046,0.107]; 12/12.
 - => C3 (meaning routed from demos via attention) GENERALIZES across concepts + both models, unanimous. Added C3-gen.
+
+### 2026-07-27 — 3rd model generality: Phi-4-mini-reasoning (phi3 family)
+- Submitted multi-concept suite on microsoft/Phi-4-mini-reasoning (phi3, 32 layers, distinct family) = job 688071, readout 28. Emergence Direct-peak doubles as the readout positive control on phi3.
