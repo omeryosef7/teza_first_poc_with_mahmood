@@ -399,6 +399,12 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## PHASE 4 (iter18) — sufficiency window sweep (complete the Claim C dissociation across depth)
+Testing whether the mid-window Direct>DS dissociation holds at early/late layers. Reuses 19 (no new
+code). **SLURM 690096 (DSWINDOWS=early), 690097 (DSWINDOWS=late)**, max_bases=12 each (~40min, fits
+preemption). ⚠️ Submitted as TWO single-window jobs — `DSWINDOWS=early,late` (comma) would hit the
+sbatch --export comma-truncation bug (memory: feedback_sbatch_export_comma) and silently run only early.
+
 ## PHASE 3 (iter6) — sufficiency script WRITTEN + VERIFIED; combined MVP runner ready
 `19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Direct injection on eligible
 baseline-BENIGN Neutrals; tests the handoff-§2.3 prediction DS-inject > Direct-inject
