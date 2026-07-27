@@ -328,7 +328,8 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) AdvBench v1 | ✅ COMPLETE — 2/193 eligible, 1 clean (AdvBench harm not noun-localized) | `outputs/behavioral_screen_llama8b_v1/` |
 | bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
-| **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 nec + 19 suff) curated corrected | necessity ✅ DONE (Δ early 0.44/mid 0.28/late 0.21; identity 0.08; late-random 0.28 → late not specific); suff RUNNING | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
+| **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` MVP | necessity ✅ (Δ early 0.44/mid 0.28/late 0.21); **KILLED** iter15 — sufficiency kept getting killable-PREEMPTED (long job); superseded by 689727 (nec) + 689885 (suff) | — |
+| **SLURM 689885** | 3 | `run_beh_sufficiency.sh` (19-only, max_bases=12, preemption-robust) | **SUBMITTED (PD)** | `outputs/beh_sufficiency_*/` |
 | **SLURM 689556** | rerun | 07 sufficiency F1-fixed, 6×6 panel | ✅ DONE — **DS>Direct SURVIVES norm-match** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
 | **SLURM 689610** | rerun | 09 knockout F2-fixed, 6×6 panel | ✅ DONE — **demos_only kills hijack 8/8, confound removed** | `outputs/ko_gen_llama8b_fixed/` |
 | **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **RUNNING** n-801 | `outputs/multilayer_llama8b_fixed/` |
