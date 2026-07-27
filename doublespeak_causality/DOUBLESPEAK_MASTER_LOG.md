@@ -180,3 +180,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Chose Qwen3-14B (fully cached, different arch family) to test generality without downloads/quota (Gemma-3/70B need downloads). Qwen3: 40 layers, hidden 5120.
 - Login-GPU load pathologically slow (14B across Pascal, 42-min ETA) -> killed; submitted to L40S instead (fits 1x48GB). Job 687776 RUNNING (11 emergence + 07 necessity/suff on virus panel, readout L36).
 - Tests: does Direct decode early / Doublespeak late on Qwen3 (positive control = does Direct decode at all)? does necessity/conditional-sufficiency replicate?
+
+### 2026-07-27 — Qwen3 OOM root-caused to a latent meta() bug (fixed)
+- Qwen3 687776 FAILED: CUDA OOM in ds_common.meta() -> asdict(self) deep-copies EVERY dataclass field INCLUDING `model` (the 28GB nn.Module) before filtering model/tokenizer keys. 2x28GB > 44GB L40S -> OOM. Latent: worked on Llama-8B (2x16<44).
+- **Fix:** meta() builds the dict explicitly (never asdict the model). 14/14 tests pass. Resubmitted Qwen3 = 687798.
