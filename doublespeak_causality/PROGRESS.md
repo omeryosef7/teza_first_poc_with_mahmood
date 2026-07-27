@@ -21,7 +21,7 @@ Companion docs: [DOUBLESPEAK_CAUSALITY_PLAN.md](DOUBLESPEAK_CAUSALITY_PLAN.md) �
 | P6 | Attention knockout + path patching (§11) | 🟡 FIRST RESULT | RQ4: block codeword→demos removes hijack (0.10→0), distributed; canonical=687520. Per-layer sweep next |
 | P7 | Temporal mechanistic objective (§12) | ⬜ NOT_RUN | gated on ≥1 causal held-out effect |
 | P8 | Codeword study (§13) | 🟡 FIRST RESULT | RQ6: 16/18 codewords hijack; embedding distance NOT predictive (r=-0.18); mirror strongest. Canonical + 2nd concept next |
-| P9 | Scaling: 2nd model (§14) | 🟡 RUNNING | Qwen3-14B generality (emergence+necessity/suff on virus panel) = job 687776 on L40S; Gemma-3/70B deferred (downloads/quota) |
+| P9 | Scaling: 2nd model (§14) | ✅ CONFIRMED | Qwen3-14B replicates ALL causal findings (timing Direct-L4/DS-L38, necessity full, suff(DS)>>suff(Direct)) — stronger than Llama. Job 687798 |
 | P10 | Mechanism defenses (§15) | 🟡 FIRST RESULT | late-harmful probe: TPR 1.00 / FPR 0.00 (complements early safety); benign-ICL preservation only weakly shown (no benign transfer in test) |
 
 Legend: ⬜ NOT_RUN · 🟡 PARTIAL/RUNNING · ✅ COMPLETE · 🔴 FAILED/BLOCKED

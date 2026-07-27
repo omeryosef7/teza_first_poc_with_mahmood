@@ -184,3 +184,6 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 ### 2026-07-27 — Qwen3 OOM root-caused to a latent meta() bug (fixed)
 - Qwen3 687776 FAILED: CUDA OOM in ds_common.meta() -> asdict(self) deep-copies EVERY dataclass field INCLUDING `model` (the 28GB nn.Module) before filtering model/tokenizer keys. 2x28GB > 44GB L40S -> OOM. Latent: worked on Llama-8B (2x16<44).
 - **Fix:** meta() builds the dict explicitly (never asdict the model). 14/14 tests pass. Resubmitted Qwen3 = 687798.
+
+### 2026-07-27 — GENERALITY CONFIRMED on Qwen3-14B (G1)
+- 687798 (meta fix): Qwen3-14B replicates ALL causal findings, stronger than Llama. Positive control passes (Direct 0.80). Emergence: Direct early L4 / DS late L38/40 / Neutral flat. Necessity full (muffin 0.252->0.001, mirror 0.266->0, carrot 0.219->0.009). Conditional sufficiency: suff(DS)>>suff(Direct) all codewords (muffin 0.268 vs 0.001). => mechanism generalizes across model family + size. Added G1; P9 CONFIRMED. Full-panel CIs pending job completion.

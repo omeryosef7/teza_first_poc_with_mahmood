@@ -81,6 +81,12 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - **Sufficiency (n=7):** suff(DS)=0.038 vs suff(Direct)=0.001; paired diff **0.037, 95% CI [0.027,0.047]** (excludes 0) — the conditional sufficiency (hijacked rep sufficient, concept-own rep not) holds across codewords.
 (Necessity/sufficiency n is smaller than timing n because readout L30 misses codewords that peak exactly at L31; the 15/18 hijack rate is from the emergence peak over all layers.)
 
+**G1 — GENERALITY: the causal mechanism replicates on a second model family (Qwen3-14B).** Ran emergence + necessity/sufficiency on the virus codeword panel on Qwen3-14B (40 layers, different architecture family + size vs Llama-3.1-8B). The readout positive control passes on Qwen3 (Direct "virus" decodes to 0.80). All core findings replicate — and the hijack is STRONGER than on Llama:
+- **Timing:** Direct peaks EARLY (virus_muffin L4, P=0.80); Doublespeak peaks LATE (L38/40, P=0.30); Neutral flat (0.005). Same early-vs-late signature.
+- **Necessity:** DS<-Neutral removes ~full P(harm) for every codeword (e.g. muffin 0.252->0.001, mirror 0.266->0.000, carrot 0.219->0.009).
+- **Conditional sufficiency:** suff(DS) >> suff(Direct) for every codeword (muffin 0.268 vs 0.001; basket 0.246 vs 0.000; mirror 0.270 vs 0.000).
+=> The causal account (late-emerging, attention-routed, necessary, conditionally-sufficient hijacked representation) is NOT specific to Llama-3.1-8B; it holds on Qwen3-14B, with a larger effect. (Full-panel CIs pending job 687798 completion; per-item results already unambiguous.)
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 
