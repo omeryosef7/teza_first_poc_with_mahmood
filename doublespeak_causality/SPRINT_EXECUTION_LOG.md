@@ -325,7 +325,9 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
 | **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` (18 necessity + 19 sufficiency) curated corrected | **RUNNING** n-802 | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
-| **SLURM 689556** | rerun | 07 sufficiency FIXED (F1 norm-matched ctrl + F4 pos-control) + 11, 6×6 panel, DSTAG=llama8b_fixed | **SUBMITTED (PD)** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
+| **SLURM 689556** | rerun | 07 sufficiency F1-fixed, 6×6 panel | ✅ DONE — **DS>Direct SURVIVES norm-match** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
+| **SLURM 689610** | rerun | 09 knockout F2-fixed, 6×6 panel | ✅ DONE — **demos_only kills hijack 8/8, confound removed** | `outputs/ko_gen_llama8b_fixed/` |
+| **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **SUBMITTED (PD)** | `outputs/multilayer_llama8b_fixed/` |
 
 ### FROZEN-RESULT RERUN PROGRESS (user request)
 - **F1 conditional-sufficiency (07)** — ✅ **RERUN 689556 COMPLETE → CLAIM SURVIVES.** DS>Direct holds
@@ -343,8 +345,13 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
   (block local query framing, demos intact) ALSO disrupts it (→0.002) → the query context ("build a X")
   is part of the causal path — an honest nuance, not a contradiction. Caveat: `rand_demos_matched`
   blocks ~90% of tokens so it's uninformative; the decisive contrast is demos_only vs request_only.
-- **F3 multilayer (08)** — HIGH, fix+rerun NEXT.
-- F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued.
+- **F3 multilayer (08)** — ✅ FIXED + rerun 689683 (new `slurm/run_multilayer_gen.sh`). Injection
+  windows now capped to ≤ R−1 (never patch the readout layer R = trivially setting the readout);
+  added missing norm-matched `cumulative_random` control. Verdict pending 689683.
+- F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued (MED/LOW).
+
+**ALL 3 HIGH frozen findings addressed:** F1 conditional-sufficiency SURVIVES norm-matching; F2 knockout
+CONFIRMED confound-free; F3 multilayer fixed+rerunning. The frozen causal baseline holds under proper controls.
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first

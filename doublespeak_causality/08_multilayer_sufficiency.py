@@ -82,17 +82,26 @@ def run_item(lm, dec, it, templated, R, seed, width):
            "baseline_neutral": {"p_harm": base_ph, "p_code": base_pc},
            "cumulative": [], "sliding": [], "sliding_random": []}
 
-    # cumulative windows [0..k]
-    for k in range(2, R + 1, 3):
-        layers = list(range(0, k + 1))
+    # F3 FIX (iter11): NEVER inject at the readout layer R — patching layer R replaces
+    # hidden_states[R+1] (the readout itself), trivially setting it. Injection layers are capped
+    # to <= R-1 so the patched vector must PROPAGATE through block R to affect the readout.
+    res["cumulative_random"] = []
+    # cumulative windows [0..k], k <= R-1
+    for k in range(2, R, 3):
+        layers = list(range(0, k + 1))              # max layer k <= R-1
         rep = multilayer_patched_rep(lm, neu_text, layers, neu_pos, dir_vecs, R)
         ph, pc = dec.decode(rep, R, harm_id, code_id)
-        res["cumulative"].append({"k": k, "n_layers": len(layers),
-                                  "p_harm": ph, "p_code": pc})
+        res["cumulative"].append({"k": k, "n_layers": len(layers), "p_harm": ph, "p_code": pc})
+        # F3-low: norm-matched random control for the cumulative windows (was missing)
+        repr_c = multilayer_patched_rep(lm, neu_text, layers, neu_pos, rand_vecs, R)
+        phrc, pcrc = dec.decode(repr_c, R, harm_id, code_id)
+        res["cumulative_random"].append({"k": k, "p_harm": phrc, "p_code": pcrc})
 
-    # fixed-width sliding windows across the range
+    # fixed-width sliding windows; max layer capped at R-1 (exclude readout layer)
     for start in range(0, R - width + 2, 3):
-        layers = list(range(start, min(start + width, R + 1)))
+        layers = list(range(start, min(start + width, R)))   # exclude R
+        if not layers:
+            continue
         rep = multilayer_patched_rep(lm, neu_text, layers, neu_pos, dir_vecs, R)
         ph, pc = dec.decode(rep, R, harm_id, code_id)
         res["sliding"].append({"start": start, "end": layers[-1],
