@@ -106,6 +106,8 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 | Qwen3-14B | 12 | 0.072 | **0.000 (100% drop)** | 0.059 | [0.046, 0.107] | 12/12 |
 Blocking the codeword's attention to the demonstration region eliminates the hijacked decoding for EVERY hijacking concept x codeword on BOTH models (unanimous 12/12 x2), while a random-position block of matched size leaves it near baseline. => the "harmful meaning is attention-routed from the demonstrations" finding (C3) is general, not virus-specific.
 
+**G2 — Third model family (Phi-4-mini, phi3) confirms the timing signature.** Readout positive control PASSES on phi3 (Direct "bomb" decodes 0.838 @L3). Emergence replicates: Direct EARLY (L3), Doublespeak LATE when it hijacks (bomb_mirror 0.284 @L28), Neutral flat; concept x codeword-dependent. => early-vs-late signature holds across THREE distinct families (Llama, Qwen, Phi3). Full necessity/sufficiency aggregation pending job 688071 completion.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 
