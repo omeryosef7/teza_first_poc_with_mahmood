@@ -132,6 +132,24 @@ to Phase 5/6; interface confirmed sufficient.
 
 ---
 
+## PHASE 7 PRE-AUDIT (iter 2) — Qwen3 thinking toggle (plan §11.1)  ✅ ALREADY IMPLEMENTED+TESTED
+
+`poc_stage4/qwen3_model.py::Qwen3Model.format_prompts(prompts, enable_thinking=bool)` already
+handles the toggle, with a documented FIX + regression test (`tests/test_qwen3_format_prompts.py`,
+4/4 pass). **CRITICAL GOTCHA to respect in Phase 7** (verified fact, not assumption):
+- Qwen3 chat-template DEFAULT is **thinking-ON**.
+- `enable_thinking` must be passed EXPLICITLY for BOTH values; passing only `True` (omitting False)
+  was a SILENT NO-OP leaving thinking ON.
+- `enable_thinking=False` injects an empty `<think>\n\n</think>` block (this is the "non-thinking" form).
+- Same weights, only the template differs → clean within-model comparison is valid (§11.1 satisfied).
+
+**Extension needed for Phase 7 (small):** the doublespeak pipeline uses `ds_common.apply_template`,
+which does NOT yet pass `enable_thinking`. Phase 7 will add an `enable_thinking` pass-through to
+`ds_common.apply_template`/`generate` mirroring the qwen3_model fix (reuse, not rewrite). No
+validation job needed now — mechanism already proven.
+
+---
+
 ## RUN / JOB REGISTRY (this sprint)
 
 | run/job | phase | cmd | status | output |
@@ -151,8 +169,14 @@ to Phase 5/6; interface confirmed sufficient.
 ---
 
 ## NEXT SINGLE HIGHEST-VALUE STEP
-When extraction `b3p10mgkd` finishes: (1) validate `screening_matrix_v1.json` structure +
-category spread; (2) `sbatch slurm/run_behavioral_screen.sh` on Llama-8B (FULL matrix per
-user decision); (3) while it runs, start the benign parallel track — audit
-`scripts/reinforce_objective/` GCG/MAC code (Phase 6 §10.1) and validate the Qwen3 thinking
-toggle (Phase 7 §11.1). Screening yield decides the behavioral sweet-spot → unblocks Phases 3–5.
+**Ingest SLURM 688994 (behavioral screen) when it completes** → read `screen_summary.json`
+(triplet_label_dist, n_eligible_bases, n_clean_success_bases, category_yield).
+- If clean `DS_MALICIOUS` yield is healthy (≥30 clean-success bases, plan Phase 3 target):
+  start Phase 3 behavioral-causal MVP (necessity DS←Neutral + sufficiency Neutral←DS with
+  full-generation, reusing LayerPatch + generate on the eligible set).
+- If low yield: EXPAND SOURCES (user decision) — add ClearHarm + curated concept-noun prompts,
+  rebuild matrix, re-screen. Report per-category yield to isolate which concept types hit the
+  sweet spot (expect concrete-object categories to win over cyber/fraud).
+
+Parallel track ready (both de-risked): Phase 6 Temporal-GCG = layer-weighted `repr_loss` plug-in;
+Phase 7 thinking toggle already implemented — just needs `ds_common` enable_thinking pass-through.
