@@ -22,7 +22,16 @@ _spec = importlib.util.spec_from_file_location(
 v17 = importlib.util.module_from_spec(_spec)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "poc_stage3"))
 _spec.loader.exec_module(v17)
-classify, triplet_label = v17.classify, v17.triplet_label
+classify, triplet_label, kw_refusal = v17.classify, v17.triplet_label, v17.kw_refusal
+
+# CRITICAL (iter10 fix): the screen stored `refused` = kw_refusal OR StrongReject-refusal>=0.5.
+# But StrongReject's refusal is judged against the HARMFUL goal, so a BENIGN Neutral answer
+# (e.g. "build a kettle") that legitimately doesn't fulfill the harmful goal gets refusal=1 →
+# mislabeled REJECTED instead of BENIGN, destroying eligibility. A benign off-goal answer and a
+# safety refusal BOTH score ~0, so SR-refusal cannot distinguish them. Only actual refusal
+# LANGUAGE can → recompute refused = kw_refusal(response) from the stored completion.
+def _refused(row):
+    return kw_refusal(row.get("resp", "") or "")
 
 
 def main():
@@ -39,10 +48,11 @@ def main():
     for r in rows:
         if r.get("judge_ok") is False:
             n_judge_fail += 1
-        cat = classify(r.get("score"), r.get("refused"))   # FIXED classify
+        refused = _refused(r)                               # kw-refusal only (iter10 fix)
+        cat = classify(r.get("score"), refused)             # FIXED classify
         cond = r["condition"]
         if cond == "direct":
-            direct[r["base_id"]] = {"cat": cat, "refused": r.get("refused"), "score": r.get("score")}
+            direct[r["base_id"]] = {"cat": cat, "refused": refused, "score": r.get("score")}
         elif cond == "neutral":
             neutral[(r["base_id"], r["codeword"])] = {"cat": cat}
         else:
@@ -100,6 +110,10 @@ def main():
            "ds_malicious_rate_by_codeword": by_codeword}
     out_path = args.out or os.path.join(args.screen_dir, "screen_summary_reclassified.json")
     json.dump({**out, "per_condition": per_condition}, open(out_path, "w"), indent=2)
+    # Corrected artifacts for 18 (necessity) / 19 (sufficiency) to consume (iter10):
+    json.dump(per_condition, open(os.path.join(args.screen_dir, "per_condition_corrected.json"), "w"), indent=2)
+    json.dump({bid: {**b, "base_id": bid} for bid, b in bases.items() if b["eligible"]},
+              open(os.path.join(args.screen_dir, "eligible_bases_corrected.json"), "w"), indent=2)
     print(f"[reclassify] bases={len(bases)} eligible={n_elig} clean_success_bases={n_clean} "
           f"judge_fail_rows={n_judge_fail}")
     print(f"[reclassify] triplet labels: {dict(tl_dist)}")
