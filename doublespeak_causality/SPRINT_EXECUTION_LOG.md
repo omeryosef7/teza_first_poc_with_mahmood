@@ -181,8 +181,26 @@ StrongReject's harmful-goal refusal into `refused`: **14 (seed behavioral), 17 (
 **Not affected:** 15_defense_detector (rep-level probe, no refusal). Rep-level generalization runs
 (Qwen3/Phi-4 multiconcept) use double-BOS consistently → sound.
 
-**Pending:** reviewer findings `w7c619w96` on 05/07/08/09/10/11/01/stats — if any flags a SPECIFIC
-invalidating bug in the frozen scripts, rerun that SLURM job. Otherwise the frozen baseline stands.
+**Reviewer findings `w7c619w96` (COMPLETE, 4/4) — REAL methodological gaps in the frozen baseline
+→ RERUN with fixes.** No indexing bug in core capture/patch; double-BOS confirmed internally
+consistent (not flagged). But the controls are under-specified on several key claims:
+
+| # | sev | script | issue | affects frozen claim | action |
+|---|---|---|---|---|---|
+| F1 | HIGH | 07 | conditional-sufficiency has NO norm-matched control; ds_vec/dir_vec injected raw → DS>Direct may be a MAGNITUDE artifact (‖ds_vec‖≫‖dir_vec‖) | **conditional sufficiency (DS>Direct)** | fix+rerun 07 |
+| F2 | HIGH | 09 | `demos_all=range(0,final_start)` blocks the WHOLE request (prefix+verb), not just demos; random control count-matched to prev_cw (~few) not demos_all (~hundreds) | **knockout / info-flow** | fix+rerun 09 |
+| F3 | HIGH | 08 | sliding-window's last window max layer == readout R → injecting AT readout trivially sets it | multi-layer sufficiency | fix+rerun 08 |
+| F4 | MED | 07 | Patchscopes positive control (Direct decodes high) never recorded/asserted in-run | suff/nec generalization | add base_dir record+assert |
+| F5 | MED | 01 | norm_score ratio unclamped (+1e-8 only) → can explode when LOO Direct-Neutral proj ≈0 | timing trajectory | clamp |
+| F6 | LOW | 01 | reps include hidden_states[0]=embedding as "layer 0" → onset/argmax labels off by one | timing (labeling) | reindex |
+| F7 | LOW | stats | paired_bootstrap_ci degenerate for n≤2 | any small-n 'CI excludes 0' | guard n≥3 |
+| F8 | LOW | 05 | random control = 1 fixed direction (no averaging); norm-matched to ds_vec not injected dir_vec | control validity | avg draws + right norm |
+| F9 | LOW | 10 | per-layer mask edits only head 0 (assumes [1,1,seq,seq]) | RQ4 depth (latent) | edit all heads |
+
+**Assessment:** necessity (F-none-critical) looks robust; the **conditional-sufficiency (F1) and
+knockout (F2) claims are the ones genuinely at risk of being control artifacts** → highest-priority
+fix+rerun on canonical Llama-8B. Timing (F3/F5/F6) needs the readout-layer exclusion + clamp + reindex.
+Reruns tracked below.
 
 ---
 
