@@ -75,6 +75,12 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - **Benign-ICL control (honest limitation):** teaching the codeword a BENIGN new meaning (muffin->bicycle, same demo structure) does NOT fire the detector — but it also produced NO measurable representation transfer (P(bicycle)=0 at all layers), while the decoder DOES read a clean "bicycle" rep (0.864 positive control). So the §15 requirement "does not destroy ordinary contextual learning" is only WEAKLY addressed: the detector has no benign false positives, but this test provides no benign representation-transfer for it to (correctly) leave alone. A benign task with measurable representation-level ICL is needed to fully satisfy §15.
 - **Tentative asymmetry (needs more data):** harmful substitution hijacks the codeword rep (0.10) while an equivalent benign substitution does not (0.00) in this single test — possibly harmful concepts have stronger/more consistent demo semantics; do not overclaim from n=1 benign concept.
 
+**B1 — Statistical breadth across an 18-codeword panel (virus concept) — the causal claims are not N=1.** Ran timing (emergence) and necessity/sufficiency across 18 single-token codewords (same virus demos, only the codeword varies):
+- **Timing (n=18):** Direct peaks at layer **0.0** for all 18; Doublespeak peaks at layer **31.0** for all 15 hijackers. Paired DS-Direct peak-layer diff = **31 layers, 95% CI [31,31]** (zero variance). 15/15 DS peaks in the late third, 18/18 Direct in the early third. Early-vs-late emergence is perfectly consistent across codewords.
+- **Necessity (n=7 hijackers @readout L30):** DS<-Neutral removes **98%** of P(harm) on average.
+- **Sufficiency (n=7):** suff(DS)=0.038 vs suff(Direct)=0.001; paired diff **0.037, 95% CI [0.027,0.047]** (excludes 0) — the conditional sufficiency (hijacked rep sufficient, concept-own rep not) holds across codewords.
+(Necessity/sufficiency n is smaller than timing n because readout L30 misses codewords that peak exactly at L31; the 15/18 hijack rate is from the emergence peak over all layers.)
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 

@@ -169,3 +169,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - **TPR=9/9=1.00, FPR=0/18=0.00** (flags Doublespeak, not neutral/benign-ICL). Complementary to early safety (Direct decodes early, DS late).
 - **Honest limitation:** benign-ICL (muffin->bicycle) gave benign_learned=0. Diagnosed: NOT a decoder artifact (clean 'bicycle' decodes 0.864); benign substitution shows NO representation transfer (P=0 all layers) while harmful does (0.10). So the detector has no benign false positives, but there is no benign representation-transfer in this test to demonstrate preservation of ordinary ICL. Tentative asymmetry (harmful hijacks rep, benign doesn't) — n=1 benign, don't overclaim. Added D1.
 - Next: benign task with measurable representation-level ICL to fully satisfy §15; or consolidate.
+
+### 2026-07-27 — Statistical breadth: 18-codeword virus panel
+- Built virus_codeword_panel.json (18 codewords). Ran 11 emergence (login) + 07 necessity/sufficiency (L40S 687703 COMPLETE).
+- **Timing n=18:** Direct peak L0 (all), DS peak L31 (all 15 hijackers); paired diff 31 layers, 95%CI[31,31]. Perfectly consistent.
+- **Necessity n=7:** 98% drop. **Sufficiency n=7:** suff(DS)0.038 vs suff(Direct)0.001, paired diff 0.037 95%CI[0.027,0.047]. Conditional sufficiency holds across codewords.
+- Added B1; updated RESULTS_SYNTHESIS scope note (no longer N=1). Causal claims now properly powered on the virus concept.
