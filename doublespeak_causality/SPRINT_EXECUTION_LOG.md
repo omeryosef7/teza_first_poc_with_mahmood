@@ -402,6 +402,16 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## PHASE 5 (iter21) — mechanistic objective: does the temporal signature PREDICT jailbreak? (Level 4)
+The timing law (Claim D) motivates a "benign-early / harmful-late" attack objective. Infrastructure built:
+- `21_extract_behavioral_features.py` (forward-only, fast): captures DS/Neutral/Direct codeword-rep
+  trajectories, builds a train-split harmful direction d[l]=mean(Direct−Neutral), computes per-condition
+  temporal features (early/mid/late alignment, early→late change, onset, peak, AUC) + DS_MALICIOUS label.
+  **SLURM 690288** (240 conditions, 46 positives).
+- `22_fit_success_predictors.py` (CPU, benign): univariate AUC per feature, the candidate temporal
+  objective (late−λ·early) AUC, 5-fold CV, and **HELD-OUT-CONCEPT AUC** = the Level-4 criterion.
+Fires 22 on 690288's `features.json`. Verified: both compile; _auc tie-correct (sklearn); symmetric.
+
 ## PHASE 4 (iter18-19) — sufficiency window sweep → DISSOCIATION IS MID-SPECIFIC (depth structure)
 Reuses 19 (no new code). SLURM 690096 (early ✅), 690097 (late, RUNNING). Submitted as TWO single-window
 jobs — `DSWINDOWS=early,late` (comma) hits the sbatch --export comma bug (memory) → run only early.
