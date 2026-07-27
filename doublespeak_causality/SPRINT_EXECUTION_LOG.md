@@ -329,7 +329,14 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
 | **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` MVP | necessity ✅ (Δ early 0.44/mid 0.28/late 0.21); **KILLED** iter15 — sufficiency kept getting killable-PREEMPTED (long job); superseded by 689727 (nec) + 689885 (suff) | — |
-| **SLURM 689885** | 3 | `run_beh_sufficiency.sh` (19-only, max_bases=12, preemption-robust) | **SUBMITTED (PD)** | `outputs/beh_sufficiency_*/` |
+| **SLURM 689727/689885** | 3 | necessity(per-window) / sufficiency(full) | KILLED — killable preemption looped (jobs >preemption window ~50min never finished) | — |
+| **SLURM 689972** | 3 | `run_beh_necessity.sh` max_clean=20 (per-window controls, resized) | **RUNNING** n-805 | `outputs/beh_necessity_*` |
+| **SLURM 689975** | 3 | `run_beh_sufficiency.sh` DSWINDOWS=mid max_bases=12 (resized) | **SUBMITTED (PD)** | `outputs/beh_sufficiency_*` |
+
+**Cluster note (iter15):** killable partition heavily contended — long jobs (>~50min) get preempted &
+restart from scratch (no checkpoint) → never finish. Mitigation: resize Phase-3 jobs below the
+preemption window (necessity max_clean=20; sufficiency mid-window-only max_bases=12). Scale up in Phase 4
+when partition frees or add checkpointing.
 | **SLURM 689556** | rerun | 07 sufficiency F1-fixed, 6×6 panel | ✅ DONE — **DS>Direct SURVIVES norm-match** | `outputs/multiconcept_necsuff_llama8b_fixed/` |
 | **SLURM 689610** | rerun | 09 knockout F2-fixed, 6×6 panel | ✅ DONE — **demos_only kills hijack 8/8, confound removed** | `outputs/ko_gen_llama8b_fixed/` |
 | **SLURM 689683** | rerun | 08 multilayer F3-fixed (exclude readout layer), 6×6 panel | **RUNNING** n-801 | `outputs/multilayer_llama8b_fixed/` |
