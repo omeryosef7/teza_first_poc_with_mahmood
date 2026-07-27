@@ -235,10 +235,16 @@ def main():
     # ---- Step 2: screening-matrix construction for eligible candidates ----
     demo_cache = {}   # (harmful_word, codeword) -> list[str] (max_demos)
     matrix = []
+    n_build_skipped = 0
     for row in elig_rows:
         if not row["eligible"]:
             continue
-        concept = row["concept"]
+        concept = row["concept"]  # lowercased by the extractor
+        # Use the concept's ACTUAL case as it appears in the instruction so
+        # build_conditions' exact-case .replace()/assert never fails (robust for
+        # ClearHarm etc. where nouns may be capitalized; AdvBench is lowercase).
+        m = re.search(r"\b" + re.escape(concept) + r"\b", row["instruction"], re.IGNORECASE)
+        concept_cased = m.group(0) if m else concept
         for cw in assign_codewords(concept, args.codewords_per):
             key = (concept, cw)
             if key not in demo_cache:
@@ -253,7 +259,11 @@ def main():
                 demos = "\n".join(all_demos[:nlen])
                 if not demos.strip():
                     continue
-                cond = dc.build_conditions(row["instruction"], concept, cw, demos)
+                try:
+                    cond = dc.build_conditions(row["instruction"], concept_cased, cw, demos)
+                except AssertionError:
+                    n_build_skipped += 1
+                    continue
                 matrix.append({
                     "base_id": row["task_id"], "category": row["category"],
                     "concept": concept, "codeword": cw, "context_len": nlen,
@@ -267,6 +277,7 @@ def main():
                              "codewords_per": args.codewords_per,
                              "context_lengths": CONTEXT_LENGTHS,
                              "n_conditions": len(matrix), "offline": args.offline,
+                             "n_build_skipped": n_build_skipped,
                              "generated_at": time.strftime("%FT%T")},
                    "conditions": matrix}, f, indent=2)
     n_bases = len({m["base_id"] for m in matrix})

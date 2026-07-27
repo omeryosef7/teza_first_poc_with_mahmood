@@ -150,6 +150,38 @@ validation job needed now — mechanism already proven.
 
 ---
 
+## BUG HUNT (iter 4) — self-review + parallel independent reviewers
+
+**Bugs found & FIXED (main loop):**
+1. **[CRITICAL, script 18] BOS/tokenization mismatch** (plan §19.6). `capture_target_reps`
+   → `forward_hidden_states` tokenizes templated text with `add_special_tokens=True`
+   (**double BOS**), but the screen (17) generates via `dc.generate(templated=True)` =
+   `add_special_tokens=False` (**single BOS**), and 18's `patched_generate` used the default
+   `True`. → patch positions computed on a different token sequence than generation uses, AND
+   the baseline wouldn't reproduce the screen's DS_MALICIOUS. **Fix:** new
+   `capture_reps_for_gen` (add_special_tokens=False) + `patched_generate` forced to
+   add_special_tokens=False → capture, patched-gen, and screen-gen all single-BOS & aligned.
+2. **[HIGH, script 18] Δ_necessity not conditioned on baseline success.** Was averaging over
+   all clean items; if a baseline didn't reproduce MALICIOUS, Δ was diluted. **Fix:** Δ now =
+   1 − (stay_malicious / baseline_malicious), conditioned on baseline-MALICIOUS items; controls
+   likewise; report n_baseline_reproduced_malicious as QC.
+3. **[MEDIUM, script 16] concept case-sensitivity** would crash `build_conditions` (exact-case
+   `.replace()`/assert) on capitalized concepts (latent; AdvBench is lowercase so v1 built fine,
+   but ClearHarm expansion could hit it). **Fix:** use concept's actual case via IGNORECASE
+   regex + try/except guard with `n_build_skipped` counter.
+
+**Verified NOT bugs (checked):**
+- **StrongReject judge FUNCTIONAL** in this env (returns numeric score, not silent-None) →
+  running screen 688994 yield is trustworthy (the feared "OpenAI-unreachable → all None → false
+  low yield" corruption is NOT happening).
+- Script 17 goal-recovery round-trips 0/1158; Direct/Neutral dedup keys correct.
+- v1 matrix: 0/1158 invariant failures (concept swapped out of Neutral, present in Direct).
+
+**Independent parallel review:** Workflow `wqbqgjvhd` (4 reviewers, high-effort, on the benign-
+mechanics files ds_common/17/18/05/stats) RUNNING in background — findings to be ingested next iter.
+
+---
+
 ## RUN / JOB REGISTRY (this sprint)
 
 | run/job | phase | cmd | status | output |
