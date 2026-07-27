@@ -237,8 +237,8 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
 | bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | ✅ DONE | `eligibility_v1.json` (193/200) + `screening_matrix_v1.json` (1158 cond, 0 invariant fails, gitignored) |
 | **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) AdvBench v1 | ✅ COMPLETE — 2/193 eligible, 1 clean (AdvBench harm not noun-localized) | `outputs/behavioral_screen_llama8b_v1/` |
-| bg `b0afpa7r2` | 2 | `16 --curated` matrix build (GPT-4o-mini demos) | RUNNING | `data/behavioral_benchmark/screening_matrix_curated_v1.json` |
-| _(next)_ | 2 | screen curated matrix (17) DSTAG=curated_v1 | PENDING build | `outputs/behavioral_screen_curated_v1/` |
+| bg `b0afpa7r2` | 2 | `16 --curated` matrix build | ✅ DONE — 240 cond, 40 bases, all 20 concepts, 0 fails | `screening_matrix_curated_v1.json` |
+| **SLURM 689373** | 2 | screen curated matrix (17, fixed classify) DSTAG=curated_v1 | **SUBMITTED (PD)** | `outputs/behavioral_screen_curated_v1/` |
 | _(ready)_ | 3 | `run_beh_causal_mvp.sh` (18+19) | READY — fire on curated screen if ≥30 eligible | `outputs/beh_necessity_*/` + `beh_sufficiency_*/` |
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
