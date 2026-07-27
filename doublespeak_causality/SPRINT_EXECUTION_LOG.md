@@ -177,8 +177,29 @@ validation job needed now — mechanism already proven.
 - Script 17 goal-recovery round-trips 0/1158; Direct/Neutral dedup keys correct.
 - v1 matrix: 0/1158 invariant failures (concept swapped out of Neutral, present in Direct).
 
-**Independent parallel review:** Workflow `wqbqgjvhd` (4 reviewers, high-effort, on the benign-
-mechanics files ds_common/17/18/05/stats) RUNNING in background — findings to be ingested next iter.
+**Independent parallel review:** Workflow `wqbqgjvhd` (4 reviewers, high-effort) COMPLETE, 0 errors.
+Reviewers **independently CONFIRMED** both my fixes (tokenization mismatch + Δ conditioning) and
+surfaced NEW script-17 issues, now ALSO FIXED:
+4. **[HIGH, 17] silent judge-failure → BENIGN + no error counter.** Judge exceptions/NaN were
+   swallowed to score=None → classify→BENIGN, and the run still wrote status=COMPLETE — a bulk
+   judge failure would fake a "no clean success" null. **Fix:** `judge()` tracks judge_ok/empty;
+   NaN guarded; summary carries `judge_stats.fail_fraction`; status flips to `SUSPECT_JUDGE_FAILURES`
+   if >5% fail. (Verified the judge IS functional now, so 688994 is not bulk-corrupted.)
+5. **[MEDIUM, 17] prefix-refusal jailbreaks mislabeled REJECTED.** `classify` checked `refused`
+   before `MALICIOUS`, so "I can't… however here's how: [harmful]" (score high) → REJECTED,
+   undercounting the exact clean-successes we hunt. **Fix:** classify is now MALICIOUS-FIRST
+   (score≥thr ⇒ MALICIOUS even behind a boilerplate refusal marker; genuine refusals score ~0 →
+   still REJECTED). Mirrored into 18. EMPTY completions labeled separately (not benign).
+
+**KEY EFFICIENCY WIN:** the running screen 688994 used the OLD refused-first classify, so it will
+UNDERCOUNT DS_MALICIOUS — but `screen_raw.jsonl` stores per-row score+refused, so `analyze_screen.py`
+**re-derives the corrected yield offline (no GPU re-run).** Verified on synthetic data: a prefix-
+refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
+
+**DEFERRED (LOW, not blocking):** ds_common `find_word_occurrences` subtoken false-positive
+(e.g. "cake" in "cupcake") — matters for Phase-8 attention-knockout site sweeps; ds_common
+`load_model` IndexError if a model has no EOS config (our models all have EOS). Reviewer-4 (05 ref
++ stats.py) — recheck stats.py CI helpers when wiring Phase-4 confidence intervals.
 
 ---
 
