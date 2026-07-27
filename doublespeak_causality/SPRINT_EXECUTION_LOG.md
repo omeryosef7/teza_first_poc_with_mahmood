@@ -22,7 +22,10 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 | 8 | Cross-model + paper story | ⬜ NOT STARTED | blocked by P3–P7 |
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
-concepts); **Level 2 partial** (behavioral necessity early-window, sufficiency pending). Target: ≥1 of 1–6.
+concepts); **Level 2 ✅** (behavioral necessity — early-window-specific, Δ=0.50 above matched controls);
+Level 2 sufficiency = DS sufficient above null but Direct-inject more potent (dissociation from rep-level).
+Target: ≥1 of 1–6 → met. **Key new scientific finding:** rep-level (Patchscopes decoding) and behavioral
+sufficiency DISSOCIATE — a methodological caution (decoding-sufficiency ≠ behavioral sufficiency).
 
 **DELIVERABLE DOCS (plan §23) — all external MD, kept current:**
 `SPRINT_EXECUTION_LOG.md` (this, chronology+jobs) · `BEHAVIORAL_BENCHMARK.md` ✅ · `BEHAVIORAL_CAUSALITY_RESULTS.md` ✅ (necessity in; suff/timing pending) · `UPDATED_PAPER_STORY.md` ✅ · `MECHANISTIC_OBJECTIVE.md` ⬜ (Phase 5) · `GCG_MAC_COMPARISON.md` ⬜ (Phase 6) · `THINKING_VS_NONTHINKING.md` ⬜ (Phase 7). Frozen-era docs (CAUSAL_RESULTS_SUMMARY / RESULTS_SYNTHESIS / DOUBLESPEAK_MASTER_LOG / PROGRESS) banner-updated to point here.
@@ -330,8 +333,8 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
 | **SLURM 689373** | 2 | screen curated matrix (17) DSTAG=curated_v1 | ✅ COMPLETE — corrected: 37/40 eligible, 18 clean bases | `outputs/behavioral_screen_curated_v1/` |
 | **SLURM 689471** | 3 | `run_beh_causal_mvp.sh` MVP | necessity ✅ (Δ early 0.44/mid 0.28/late 0.21); **KILLED** iter15 — sufficiency kept getting killable-PREEMPTED (long job); superseded by 689727 (nec) + 689885 (suff) | — |
 | **SLURM 689727/689885** | 3 | necessity(per-window) / sufficiency(full) | KILLED — killable preemption looped (jobs >preemption window ~50min never finished) | — |
-| **SLURM 689972** | 3 | `run_beh_necessity.sh` max_clean=20 (per-window controls, resized) | **RUNNING** n-805 | `outputs/beh_necessity_*` |
-| **SLURM 689975** | 3 | `run_beh_sufficiency.sh` DSWINDOWS=mid max_bases=12 (resized) | **SUBMITTED (PD)** | `outputs/beh_sufficiency_*` |
+| **SLURM 689972** | 3 | necessity per-window controls (n=20) | ✅ DONE — **early-specific**: Δ_nec 0.50 vs identity 0.05, above random by +0.25; mid/late NOT above random | `outputs/beh_necessity_..204515` |
+| **SLURM 689975** | 3 | sufficiency mid-window (n=62 benign) | ✅ DONE — **DISSOCIATION**: DS 0.16 vs Direct 0.52 (controls 0.03); DS sufficient above null but Direct MORE (opposite of rep-level) | `outputs/beh_sufficiency_..203514` |
 
 **Cluster note (iter15):** killable partition heavily contended — long jobs (>~50min) get preempted &
 restart from scratch (no checkpoint) → never finish. Mitigation: resize Phase-3 jobs below the

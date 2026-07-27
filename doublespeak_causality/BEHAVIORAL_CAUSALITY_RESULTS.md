@@ -21,7 +21,32 @@ kw-refusal ONLY (the SR-refusal artifact fix, see §0).
 
 ---
 
-## 1. Behavioral necessity — Claim B (SLURM 689471 / 18)
+## 1b. Behavioral necessity — Claim B FINAL (per-window controls, SLURM 689972 / 18) ✅ EARLY-SPECIFIC
+
+Strengthened rerun with identity + norm-matched random controls **per window** (n=20 clean successes,
+**20/20 reproduced malicious** at baseline). Δ = fraction of malicious baselines flipped to non-malicious.
+
+| window | Δ_necessity | Δ_identity | Δ_random | **necessity − random** |
+|---|---|---|---|---|
+| **early (0–9)** | **0.50** | 0.05 | 0.25 | **+0.25** ✓ specific |
+| mid (10–19) | 0.15 | 0.05 | 0.25 | −0.10 |
+| late (20–31) | 0.15 | 0.10 | 0.15 | 0.00 |
+| late-half (16–31) | 0.05 | 0.05 | 0.10 | −0.05 |
+
+**Verdict: behavioral necessity is REAL and EARLY-LAYER-SPECIFIC.** Patching the codeword's *early*
+representation toward Neutral flips harmful→benign 50% of the time — well above the identity control
+(0.05, machinery is clean) AND above its own matched random control (+0.25). Mid/late patching is NOT
+above random (any norm-matched vector disrupts late-layer generation equally). This resolves the first
+run's caveat with clean matched controls: **the codeword's early representation is behaviorally necessary
+for the hijack; later-layer necessity is not specific.** (Claim B supported, localized to early layers.)
+
+Mechanistic reading: disrupting the codeword's early rep — before the demo-derived harmful meaning is
+consolidated and used — prevents the whole downstream harmful computation; once past that, generic
+perturbation and the specific Neutral patch are indistinguishable.
+
+---
+
+## 1. Behavioral necessity — Claim B (first run, SLURM 689471 / 18) [superseded by §1b]
 **Design:** on clean-success (DS_MALICIOUS) examples, replace the DS codeword state with the matched
 Neutral state across a layer WINDOW during FULL generation; re-judge. Δ = 1 − (stay_malicious /
 baseline_malicious), conditioned on baseline-MALICIOUS items. n=40 clean conditions; **39/40 reproduced
@@ -53,11 +78,35 @@ generic late-layer perturbation sensitivity** — reported honestly, follow-up s
 
 ---
 
-## 2. Behavioral sufficiency — Claim C (SLURM 689471 / 19)
-**Design:** on eligible, baseline-BENIGN Neutral prompts, inject the DS state vs the Direct state at the
-Neutral codeword position across windows; re-judge. Prediction (from rep-level §4): DS-injection >
-Direct-injection behaviorally. **Status: RUNNING (689471 sufficiency phase) — results pending; will fill
-suff_DS vs suff_Direct malicious-rate per window + identity/random controls.**
+## 2. Behavioral sufficiency — Claim C (SLURM 689975 / 19, mid window) ⚠️ DISSOCIATION FROM REP-LEVEL
+
+**Design:** on eligible baseline-BENIGN Neutral prompts (n=62 benign of 72), inject the DS state vs the
+Direct state at the Neutral codeword position across the **mid** window (10–19; where rep-level DS
+sufficiency peaks); re-judge. Prediction from rep-level §3 (Patchscopes): DS-injection > Direct-injection.
+
+| arm (mid window) | malicious rate |
+|---|---|
+| **Neutral ← DS** (hijacked state) | **0.16** |
+| **Neutral ← Direct** (raw concept state) | **0.52** |
+| control: identity (Neutral←Neutral) | 0.03 |
+| control: random (ds-norm) | 0.03 |
+
+**Result — a genuine DISSOCIATION, opposite to the rep-level prediction:**
+- **DS-injection IS behaviorally sufficient above the null** (0.16 vs 0.03 identity/random) — the hijacked
+  state does causally induce harmful generation. So Claim C is *supported in the weak sense* (DS-inject >> controls).
+- **BUT raw Direct-concept injection is MUCH more behaviorally sufficient (0.52 ≫ 0.16)** — the *opposite*
+  of the rep-level Patchscopes finding (where Direct-inject was NOT sufficient for decoding, DS was).
+
+**Interpretation (honest, important):** representation-level *decoding*-sufficiency (Patchscopes P(concept))
+and *behavioral* sufficiency are **DISSOCIATED** for this mechanism. The hijacked DS rep is the distinct
+state that *decodes* as the concept (rep-level, confirmed F1), but when transplanted into a bare Neutral
+prompt (no demonstrations) it is a **context-dependent** state and is *less* behaviorally potent than the
+context-independent raw concept rep. This is a caution for the field: **Patchscopes decoding-sufficiency
+does not predict — and here inverts — behavioral sufficiency.**
+
+**Limitation:** only the MID window was run (preemption budget). The DS-vs-Direct behavioral ordering may
+differ at other layers (e.g. late); a full-window sweep is needed before the dissociation is claimed
+complete. n=62 is adequate; multi-seed + CIs pending.
 
 ---
 
@@ -81,9 +130,16 @@ controls present).
   sufficient beyond the plain concept rep** (survives norm-matching), attention-routed from the
   demonstrations (survives the confound fix). Cross-model (3 families, frozen).
 - **Behavioral:** the hijack **translates into a real jailbreak** (~20% of eligible curated DS conditions;
-  42 clean successes / 14 concepts — see BEHAVIORAL_BENCHMARK.md), and **patching the codeword state
-  toward Neutral causally reduces harmful behavior** (Claim B, early window), with the honest caveat that
-  late-layer patching is not specific vs random. Sufficiency (Claim C) pending.
+  42 clean successes / 14 concepts — BEHAVIORAL_BENCHMARK.md). **Necessity (Claim B):** patching the
+  codeword's EARLY representation toward Neutral causally reduces harmful behavior (Δ=0.50), specifically
+  (above identity 0.05 and random by +0.25); later layers not specific. **Sufficiency (Claim C):**
+  DS-injection is behaviorally sufficient above the null (0.16 vs 0.03), but — a DISSOCIATION from the
+  rep-level result — raw Direct-injection is *more* behaviorally sufficient (0.52), so decoding-sufficiency
+  (DS>Direct) inverts behaviorally (Direct>DS) at the mid window.
+- **Headline nuance for the paper:** the representation-level and behavioral causal pictures **partly
+  dissociate** — the hijacked state is decoding-necessary/sufficient and behaviorally necessary (early),
+  but the *raw concept* is behaviorally the more potent injectate. Rep-level Patchscopes evidence should
+  NOT be read as behavioral evidence — a methodological contribution in itself.
 
 ## 5. Limitations / follow-ups
 - Per-window random+identity controls for necessity (not only late window). [queued]
