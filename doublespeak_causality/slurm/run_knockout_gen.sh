@@ -22,7 +22,8 @@ mkdir -p doublespeak_causality/logs doublespeak_causality/outputs "$PROJECT_DIR/
 export HF_HOME="$PROJECT_DIR/.cache/huggingface"; export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
-: "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"; : "${DSREADOUT:=30}"; : "${DSTAG:=llama8b}"; : "${DSONLY:=virus_muffin}"
+: "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"; : "${DSREADOUT:=30}"; : "${DSTAG:=llama8b}"
+DSONLY="${DSONLY-}"   # keep empty if set empty (empty => 09 processes ALL items)
 echo "=== knockout-gen: $DSMODEL readout=$DSREADOUT ==="; date; hostname
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
@@ -31,4 +32,6 @@ if [ -f "$MARK" ]; then echo "already COMPLETE"; exit 0; fi
 python -u doublespeak_causality/09_attention_knockout.py --model "$DSMODEL" \
   --data doublespeak_causality/data/multi_concept_panel.json --templated --readout-layer "$DSREADOUT" \
   --only "$DSONLY" --out-dir "doublespeak_causality/outputs/ko_gen_${DSTAG}"
+# NOTE: --only "" makes 09 process ALL panel items (filter hijackers in analysis);
+# never pass a comma-list via sbatch --export (it truncates at the first comma).
 echo "COMPLETE $(date)" > "$MARK"; echo "=== done ==="; date

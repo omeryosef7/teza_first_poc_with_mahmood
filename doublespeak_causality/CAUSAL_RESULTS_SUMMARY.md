@@ -99,6 +99,13 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - **Two-level result:** (a) WHETHER a concept x codeword hijacks is variable/concept-dependent (virus hijacks 5-6/6 reliably; bomb & drug rarely, 0-2/6; overall ~1/3 of combos) — consistent with O5/O8; (b) WHEN it hijacks, the causal signature is CONSISTENT across concepts AND both models: Doublespeak decodes late / Direct early (~30-32 layer gap, CI excludes 0), necessity removes ~97-99%, and conditional sufficiency holds (suff(DS)>>suff(Direct), CI excludes 0).
 - => The causal mechanism (late-emerging, necessary, conditionally-sufficient hijack) is NOT concept- or model-specific; it is the general form of successful hijacking. The variability is in attack SUCCESS (which combos hijack), not in the mechanism of those that do. Figures: figures/multiconcept/{llama8b,qwen3}/. Per-concept breakdown in outputs/multiconcept_aggregate_{tag}.json.
 
+**C3-gen — RQ4 information-flow GENERALIZES across concepts and models.** Ran the attention knockout across all multi-concept hijackers (readout at the peak layer):
+| model | hijackers | baseline P_harm | block demos | random-block | base-demos paired CI | items dropped <20% base |
+|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 12 | 0.099 | **0.000 (100% drop)** | 0.066 | [0.060, 0.141] | 12/12 |
+| Qwen3-14B | 12 | 0.072 | **0.000 (100% drop)** | 0.059 | [0.046, 0.107] | 12/12 |
+Blocking the codeword's attention to the demonstration region eliminates the hijacked decoding for EVERY hijacking concept x codeword on BOTH models (unanimous 12/12 x2), while a random-position block of matched size leaves it near baseline. => the "harmful meaning is attention-routed from the demonstrations" finding (C3) is general, not virus-specific.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 

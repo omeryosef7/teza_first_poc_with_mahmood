@@ -211,3 +211,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ### 2026-07-27 — knockout-gen: hit sbatch --export comma bug (fixed)
 - 687994/688037 processed only 1 item: DSONLY comma-list truncated at first comma by sbatch --export (known bug). The 1 item per model was clean (virus_mirror base0.221->demos0.000 drop1.00 rand0.217; bomb_muffin base0.087->0.000). Resubmitted with DSONLY="" so 09 processes ALL 36 panel items (readout 31/38). Filter hijackers in analysis.
+
+### 2026-07-27 — RQ4 knockout GENERALIZED (688045/688046, all 36 items)
+- After fixing --export comma bug + DSONLY empty-default: 09 ran on all 36 panel items per model. 12 hijackers@readout each.
+- **Llama:** base 0.099 -> block demos 0.000 (100% drop), random 0.066; paired CI[0.060,0.141]; 12/12 dropped <20% base.
+- **Qwen3:** base 0.072 -> 0.000 (100%), random 0.059; CI[0.046,0.107]; 12/12.
+- => C3 (meaning routed from demos via attention) GENERALIZES across concepts + both models, unanimous. Added C3-gen.
