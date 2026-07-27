@@ -336,10 +336,13 @@ refusal case (refused=True, score=0.8) is correctly recovered as DS_MALICIOUS.
   controlled.** (F4 note: my first positive-control decoded the Direct rep at the LATE readout layer
   where Direct is gone → 0/36 false alarm; fixed to scan-layers max — readout itself is sound, handoff
   §4 validated Direct→0.67-0.84; F1 verdict independent of this.)
-- **F2 knockout (09)** — ✅ FIXED + rerun 689610. Old `demos_all` blocked the WHOLE request (confound);
-  now `demos_only` (request intact) + complementary `request_only` (demos intact) + count-matched
-  `rand_demos_matched`. Clean test: if demos_only kills the hijack but request_only doesn't → mapping
-  localized to demonstrations. Verdict pending 689610.
+- **F2 knockout (09)** — ✅ **RERUN 689610 COMPLETE → CLAIM CONFIRMED, confound removed.** Blocking
+  ONLY demo tokens with the **request fully intact** removes the hijack **8/8 hijackers** (P_harm→0.000;
+  mean base 0.056→0.000). So the frozen "demonstrations are necessary / info routes from demos" claim
+  survives cleanly (old `demos_all` had blocked the request too). **Richer finding:** `request_only`
+  (block local query framing, demos intact) ALSO disrupts it (→0.002) → the query context ("build a X")
+  is part of the causal path — an honest nuance, not a contradiction. Caveat: `rand_demos_matched`
+  blocks ~90% of tokens so it's uninformative; the decisive contrast is demos_only vs request_only.
 - **F3 multilayer (08)** — HIGH, fix+rerun NEXT.
 - F5/F6 (01 timing clamp+reindex), F7 (stats n≥3), F8 (05 random), F9 (10 head-mask) — queued.
 
