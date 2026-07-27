@@ -104,7 +104,8 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 |---|---|---|---|---|---|---|
 | Llama-3.1-8B | 12 | 0.099 | **0.000 (100% drop)** | 0.066 | [0.060, 0.141] | 12/12 |
 | Qwen3-14B | 12 | 0.072 | **0.000 (100% drop)** | 0.059 | [0.046, 0.107] | 12/12 |
-Blocking the codeword's attention to the demonstration region eliminates the hijacked decoding for EVERY hijacking concept x codeword on BOTH models (unanimous 12/12 x2), while a random-position block of matched size leaves it near baseline. => the "harmful meaning is attention-routed from the demonstrations" finding (C3) is general, not virus-specific.
+| Phi-4-mini (phi3) | 6 | 0.139 | **0.000 (100% drop)** | 0.064 | [0.060, 0.220] | 6/6 |
+Blocking the codeword's attention to the demonstration region eliminates the hijacked decoding for EVERY hijacking concept x codeword on BOTH models (unanimous 12/12 x2), while a random-position block of matched size leaves it near baseline. => the "harmful meaning is attention-routed from the demonstrations" finding (C3) is general across concepts AND all THREE model families (Llama, Qwen, Phi3), unanimous.
 
 **G2 — Third model family (Phi-4-mini, phi3) confirms the timing signature.** Readout positive control PASSES on phi3 (Direct "bomb" decodes 0.838 @L3). Emergence replicates: Direct EARLY (L3), Doublespeak LATE when it hijacks (bomb_mirror 0.284 @L28), Neutral flat; concept x codeword-dependent. Full aggregation (n=36, 11 hijack): timing diff +25.3 [22.8, 27.3], necessity 1.00, suff(DS) 0.390 vs suff(Direct) 0.000 (diff +0.39 [0.11, 0.68] — strongest of the three models).
 

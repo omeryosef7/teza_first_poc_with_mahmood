@@ -224,3 +224,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 ### 2026-07-27 — 3rd model Phi-4 COMPLETE: mechanism architecture-general
 - 688071 COMPLETE. Phi-4-mini (phi3): 11/36 hijack, timing +25.3[22.8,27.3], necFr 1.00, suffDS 0.390 vs suffDir 0.000 diff +0.39[0.11,0.68] (strongest). Figures written.
 - 3-model summary (Llama/Qwen3/Phi4) all CIs exclude 0 => necessity+conditional-sufficiency+late-timing ARCHITECTURE-GENERAL. Finalized G2.
+
+### 2026-07-27 — info-flow knockout on Phi-4 (3rd family): both dimensions now architecture-general
+- 688110 COMPLETE. phi4 knockout: 6 hijackers, base 0.139 -> block demos 0.000 (100% drop), random 0.064, CI[0.060,0.220], 6/6. Info-flow generalizes to 3rd family. Extended C3-gen table.
+- SUMMARY: BOTH causal dimensions now hold across 3 model families — (a) necessity+conditional-sufficiency+late-timing (B2/G2: Llama/Qwen3/Phi4, all CIs exclude 0); (b) information-flow knockout (C3-gen: block demos eliminates hijack, unanimous on all 3). Mechanism is architecture-general.
