@@ -98,17 +98,24 @@ def trajectory(reps, items, dir_by_heldout, pos="codeword_last"):
         neu = reps[i]["neutral"][pos]
         dire = reps[i]["direct"][pos]
         proj, cos_dir, cos_neu, norm_score = [], [], [], []
-        for l in range(L):
-            dl = d[l]
+        # F6 (iter15): iterate over BLOCK OUTPUTS only, indexing reps[l+1] so trajectory index l is
+        # the 0-indexed transformer layer (matching 05/07 where layer L ↔ reps[L+1]). Previously
+        # range(L) used reps[0]=embedding as "layer 0", shifting every onset/argmax label by one.
+        for l in range(L - 1):
+            k = l + 1                              # reps index = output of block l (skips embedding)
+            dl = d[k]
             dn = dl / (dl.norm() + 1e-8)
             # projection of (DS - Neutral) onto harmful direction (centered)
-            proj.append(float(torch.dot((ds[l] - neu[l]).float(), dn.float())))
-            cos_dir.append(dc.cosine(ds[l], dire[l]))
-            cos_neu.append(dc.cosine(ds[l], neu[l]))
+            proj.append(float(torch.dot((ds[k] - neu[k]).float(), dn.float())))
+            cos_dir.append(dc.cosine(ds[k], dire[k]))
+            cos_neu.append(dc.cosine(ds[k], neu[k]))
             # normalized position between neutral(0) and direct(1) along d
-            denom = float(torch.dot((dire[l] - neu[l]).float(), dn.float())) + 1e-8
-            num = float(torch.dot((ds[l] - neu[l]).float(), dn.float()))
-            norm_score.append(num / denom)
+            denom = float(torch.dot((dire[k] - neu[k]).float(), dn.float()))
+            num = float(torch.dot((ds[k] - neu[k]).float(), dn.float()))
+            # F5 (iter15): when the Direct-vs-Neutral basis is ~degenerate (|denom| tiny) the ratio
+            # is undefined — clamp to avoid an exploding/garbage alignment value.
+            norm_score.append(0.0 if abs(denom) < 1e-4
+                              else max(-5.0, min(5.0, num / denom)))
         result[i] = {"proj_on_dharm": proj, "cos_to_direct": cos_dir,
                      "cos_to_neutral": cos_neu, "norm_direct_vs_neutral": norm_score}
     return result

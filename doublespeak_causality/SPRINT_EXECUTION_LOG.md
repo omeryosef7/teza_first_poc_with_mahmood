@@ -368,7 +368,12 @@ when partition frees or add checkpointing.
   9/11 hijackers with L<R (mean suff_DS 0.055 vs Direct@DSnorm 0.001 vs random 0.008). **F1 fully clean.**
 - **F7 (stats n-guard)** — ✅ FIXED (code-only, no rerun): `paired_bootstrap_ci` now returns `n` +
   `ci_reliable` (n≥8) and warns on small n, so no "CI excludes 0" claim rests on a degenerate bootstrap.
-- F5/F6 (01 timing clamp+reindex), F8 (05 random-averaging), F9 (10 head-mask) — queued (MED/LOW, code-only).
+- **F5/F6 (01 timing)** — ✅ FIXED (code): trajectory now iterates BLOCK OUTPUTS (`reps[l+1]`) so
+  onset/argmax layer labels are proper 0-indexed layers matching 05/07 (was using embedding as
+  "layer 0", off-by-one); and the norm_score ratio is clamped when the Direct-vs-Neutral basis is
+  degenerate (was unclamped → could explode). 01 rerun queued (cheap; early-vs-late claim also
+  corroborated by 11 emergence).
+- F8 (05 random-averaging), F9 (10 head-mask) — queued (LOW, code-only, latent).
 
 **ALL 3 HIGH frozen findings addressed:** F1 conditional-sufficiency SURVIVES norm-matching; F2 knockout
 CONFIRMED confound-free; F3 multilayer fixed+rerunning. The frozen causal baseline holds under proper controls.
