@@ -399,11 +399,21 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
-## PHASE 4 (iter18) — sufficiency window sweep (complete the Claim C dissociation across depth)
-Testing whether the mid-window Direct>DS dissociation holds at early/late layers. Reuses 19 (no new
-code). **SLURM 690096 (DSWINDOWS=early), 690097 (DSWINDOWS=late)**, max_bases=12 each (~40min, fits
-preemption). ⚠️ Submitted as TWO single-window jobs — `DSWINDOWS=early,late` (comma) would hit the
-sbatch --export comma-truncation bug (memory: feedback_sbatch_export_comma) and silently run only early.
+## PHASE 4 (iter18-19) — sufficiency window sweep → DISSOCIATION IS MID-SPECIFIC (depth structure)
+Reuses 19 (no new code). SLURM 690096 (early ✅), 690097 (late, RUNNING). Submitted as TWO single-window
+jobs — `DSWINDOWS=early,late` (comma) hits the sbatch --export comma bug (memory) → run only early.
+
+**Sufficiency DS vs Direct across depth (baseline-benign Neutrals):**
+| window | suff_DS | suff_Direct | DS−Direct | random ctrl | note |
+|---|---|---|---|---|---|
+| early (0–9) | 0.13 | 0.10 | +0.03 (NS) | 0.079 | both weak, ≈ random, DS≈Direct |
+| mid (10–19) | 0.16 | **0.52** | **−0.43 [−0.67,−0.19]** | 0.03 | Direct≫DS, SIGNIFICANT |
+| late (20–31) | _pending 690097_ | | | | |
+
+**Emerging picture:** the Direct≫DS behavioral dissociation is **MID-window-specific** — at early layers
+both injections are weak and indistinguishable (≈random). So raw-concept injection becomes strongly
+behaviorally sufficient specifically at MID layers, while the hijacked DS state never does (stays ~0.16
+everywhere so far). This refines the dissociation into a depth-structured finding. Full CIs pending late.
 
 ## PHASE 3 (iter6) — sufficiency script WRITTEN + VERIFIED; combined MVP runner ready
 `19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Direct injection on eligible
