@@ -91,6 +91,14 @@ Re-ran Stage-1 with paper-faithful GPT-4o-mini demos (6 concepts x 12 demos, `se
 - Conditional sufficiency (n=16): suff(DS) 0.135 vs suff(Direct) 0.001; paired diff **0.133, 95% CI [0.089, 0.184]** (excludes 0).
 => The causal account (late-emerging, attention-routed, necessary, conditionally-sufficient hijacked representation) is NOT specific to Llama-3.1-8B; it holds on Qwen3-14B (different family + size) with larger effects and proper CIs.
 
+**B2 — Multi-concept x multi-model generalization (6 concepts x 6 codewords x 2 models).** Ran the full causal suite on {bomb,virus,poison,gun,drug,knife} x {mirror,basket,table,muffin,carrot,river}:
+| model | hijack rate | timing diff (layers) | necessity frac | suff(DS)-suff(Direct) |
+|---|---|---|---|---|
+| Llama-3.1-8B | 11/36 (0.31) | +30.3 [29.2, 31.0] | 0.99 | +0.06 [0.04, 0.07] |
+| Qwen3-14B | 13/36 (0.36) | +32.0 [30.2, 33.8] | 0.97 | +0.07 [0.04, 0.10] |
+- **Two-level result:** (a) WHETHER a concept x codeword hijacks is variable/concept-dependent (virus hijacks 5-6/6 reliably; bomb & drug rarely, 0-2/6; overall ~1/3 of combos) — consistent with O5/O8; (b) WHEN it hijacks, the causal signature is CONSISTENT across concepts AND both models: Doublespeak decodes late / Direct early (~30-32 layer gap, CI excludes 0), necessity removes ~97-99%, and conditional sufficiency holds (suff(DS)>>suff(Direct), CI excludes 0).
+- => The causal mechanism (late-emerging, necessary, conditionally-sufficient hijack) is NOT concept- or model-specific; it is the general form of successful hijacking. The variability is in attack SUCCESS (which combos hijack), not in the mechanism of those that do. Figures: figures/multiconcept/{llama8b,qwen3}/. Per-concept breakdown in outputs/multiconcept_aggregate_{tag}.json.
+
 ## 2. Predictive findings
 _None yet._ (Would require: does an early-layer feature predict Malicious vs Rejected vs Benign outcome? — comes after P5.)
 

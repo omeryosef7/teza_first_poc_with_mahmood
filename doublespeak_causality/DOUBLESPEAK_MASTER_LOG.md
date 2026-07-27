@@ -197,3 +197,9 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - slurm/run_multiconcept.sh (param by DSMODEL/DSREADOUT/DSTAG): runs 11 emergence + 07 necessity/sufficiency on the panel.
 - Submitted **687942 (Llama-8B, readout 30)** + **687943 (Qwen3-14B, readout 36)** — concurrent on L40S. Generalizes causal numbers across concepts x codewords x 2 models.
 - Next: aggregate per-concept necessity/sufficiency/timing with bootstrap CIs (benign -> can use subagents); then P5 Mal/Rej/Benign trajectory comparison via StrongReject labels.
+
+### 2026-07-27 — Multi-concept x multi-model generalization COMPLETE (B2)
+- 687942 (Llama-8B) + 687943 (Qwen3-14B) COMPLETE (concurrent; llama load slow from shared-NFS but finished 20:44). Aggregated via aggregate_multiconcept.py; figures via plot_multiconcept.py (both benign-workflow tools).
+- Llama: 11/36 hijack, timing +30.3[29.2,31.0], necFr 0.99, suffDiff +0.06[0.04,0.07]. Qwen3: 13/36, +32.0[30.2,33.8], 0.97, +0.07[0.04,0.10].
+- Per-concept: virus reliable (5-6/6), knife/gun/poison/bomb/drug variable (0-3/6). WHETHER hijack varies (concept/model-dependent); WHEN it does the causal signature is consistent across concepts+models (all CIs exclude 0). Added B2.
+- Next: P5 Mal/Rej/Benign (§8.4) via StrongReject labels on the panel (behavioral scoring on login for internet).
