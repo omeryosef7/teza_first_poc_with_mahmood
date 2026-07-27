@@ -156,7 +156,8 @@ validation job needed now — mechanism already proven.
 |---|---|---|---|---|
 | tests | 1 | `pytest tests/` | ✅ 14/14 | — |
 | bg `b3p10mgkd` | 2 | `16_..benchmark.py --n-instructions 200 --tag v1` | ✅ DONE | `eligibility_v1.json` (193/200) + `screening_matrix_v1.json` (1158 cond, 0 invariant fails, gitignored) |
-| **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) DSTAG=llama8b_v1 | **SUBMITTED (PD)** | `outputs/behavioral_screen_llama8b_v1/` |
+| **SLURM 688994** | 2 | `run_behavioral_screen.sh` (17) DSTAG=llama8b_v1 | **RUNNING** n-803 (~140/1158 @ iter3; ETA ~2h) | `outputs/behavioral_screen_llama8b_v1/` |
+| _(ready)_ | 3 | `run_beh_necessity.sh` (18) | READY — fire on screen completion (needs DS_MALICIOUS set) | `outputs/beh_necessity_*/` |
 
 ## USER DECISIONS (2026-07-27, binding for the loop)
 - **Screen scale:** run the FULL 200-base matrix (×2 codewords ×3 lengths) as the first
@@ -167,6 +168,14 @@ validation job needed now — mechanism already proven.
 - **Loop:** session-only cron `0e2d79c5` (`*/30`). User may move to /schedule for durability.
 
 ---
+
+## PHASE 3 (iter3) — behavioral necessity script WRITTEN + VERIFIED (ahead of screen)
+`18_run_behavioral_necessity.py` + `slurm/run_beh_necessity.sh` ready. Reuses
+`capture_target_reps` + `LayerPatch` (validated 05 scheme) + StrongReject judge. NEW mechanic:
+multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks — CPU-verified
+(register/deregister correct on the right layers; windows early[0-9]/mid[10-19]/late[20-31]/
+late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
+identity/random controls over the late window. Fires on 688994 completion.
 
 ## NEXT SINGLE HIGHEST-VALUE STEP
 **Ingest SLURM 688994 (behavioral screen) when it completes** → read `screen_summary.json`
