@@ -78,6 +78,9 @@ def main():
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--max-bases", type=int, default=40)
     ap.add_argument("--max-new-tokens", type=int, default=200)
+    ap.add_argument("--windows", default=None,
+                    help="comma list of window names to test (default all: early,mid,late,"
+                         "late_half_to_end). Use e.g. 'mid' for a fast preemption-safe MVP.")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
@@ -100,6 +103,10 @@ def main():
 
     n_layers = lm.num_layers
     windows = layer_windows(n_layers)
+    if args.windows:
+        keep = set(args.windows.split(","))
+        windows = {w: ls for w, ls in windows.items() if w in keep}
+        print(f"[sufficiency] restricted to windows: {list(windows)}")
     gen = torch.Generator().manual_seed(args.seed)
     randvec = torch.randn(lm.hidden_size, generator=gen)
     jstats = {"n": 0, "judge_fail": 0}
@@ -171,8 +178,8 @@ def main():
             raw_rows.append({"base_id": c["base_id"], "codeword": cw, "arm": f"suff_Direct_{wname}",
                              "cat": cat_dir, "base_benign": base_benign, "completion": gdir["completion"]})
 
-        # controls over the LATE window
-        late = windows["late"]
+        # controls over the LATE window (or the last available window if late was filtered out)
+        late = windows.get("late") or list(windows.values())[-1]
         id_patches = [(L, [neu_pos], neu_cap["reps"][L + 1].to(lm.model.device), "replace") for L in late]
         gi = patched_generate(lm, neu_text, id_patches, args.max_new_tokens)
         if base_benign:
