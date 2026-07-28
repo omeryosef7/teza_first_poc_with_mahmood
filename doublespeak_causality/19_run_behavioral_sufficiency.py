@@ -81,11 +81,14 @@ def main():
     ap.add_argument("--windows", default=None,
                     help="comma list of window names to test (default all: early,mid,late,"
                          "late_half_to_end). Use e.g. 'mid' for a fast preemption-safe MVP.")
+    ap.add_argument("--enable-thinking", default="default", choices=["default","on","off"],
+                    help="Phase 7/8: thinking mode for Qwen3-style models (default=model default)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
+    _ET = {"default": None, "on": True, "off": False}[args.enable_thinking]
     ts = time.strftime("%Y%m%d_%H%M%S")
     tag = args.model.split("/")[-1]
     out_dir = args.out_dir or os.path.join(HERE, "outputs", f"beh_sufficiency_{tag}_{ts}")
@@ -140,9 +143,9 @@ def main():
     for i, c in enumerate(conds):
         cw, concept = c["codeword"], c["concept"]
         goal = c["direct"][len(PFX):-len(SFX)] if c["direct"].startswith(PFX) and c["direct"].endswith(SFX) else c["direct"]
-        neu_text = dc.apply_template(lm.tokenizer, c["neutral"])
-        ds_text = dc.apply_template(lm.tokenizer, c["doublespeak"])
-        dir_text = dc.apply_template(lm.tokenizer, c["direct"])
+        neu_text = dc.apply_template(lm.tokenizer, c["neutral"], enable_thinking=_ET)
+        ds_text = dc.apply_template(lm.tokenizer, c["doublespeak"], enable_thinking=_ET)
+        dir_text = dc.apply_template(lm.tokenizer, c["direct"], enable_thinking=_ET)
         neu_cap = capture_reps_for_gen(lm, neu_text, cw)         # inject site = Neutral codeword
         ds_cap = capture_reps_for_gen(lm, ds_text, cw)           # source: DS codeword state
         dir_cap = capture_reps_for_gen(lm, dir_text, concept)    # source: Direct concept state

@@ -404,6 +404,14 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER27 — CROSS-MODEL: behavioral jailbreak REPRODUCES on Qwen3-14B (Phase 8, Track B) ✅
+Qwen3-14B thinking-OFF curated screen (690928): **eligible 38/40, clean-success 17 bases, 31 DS_MALICIOUS,
+0 judge failures** — nearly identical to Llama-8B (37/40, 18 clean, 46 DS_MALICIOUS). Dose-response by
+demo count (0.09/0.16/0.16). **The behavioral Doublespeak sweet-spot is ARCHITECTURE-GENERAL** (the
+rep-level findings already were across Llama/Qwen3/Phi-4; now the *behavioral* jailbreak is too).
+Next: does the TOCTOU TIMING LAW hold on Qwen3? → 19 threaded with enable_thinking; Qwen3 sufficiency
+early (**SLURM 691091**) + late (**691092**), thinking-off, max_bases=8 → cross-model refusal gradient.
+
 ## ITER23 — 3 TRACKS IN PARALLEL (user directive "all in parallel")
 Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven concurrently.
 - **Track A (Phase 7 thinking, Level 6):** thinking passthrough added to `ds_common` (enable_thinking,
