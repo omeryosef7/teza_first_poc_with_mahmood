@@ -408,8 +408,8 @@ identity/random controls over the late window. Fires on 688994 completion.
 Codeword-selection Level-5 confirmed robustly directional-but-NS: univariate early_align Δ+0.092
 [−0.037,+0.225] AND multivariate LOCO Δ+0.067 [−0.046,+0.183], both cross 0 at n=40. Not a selection-rule
 artifact — the effect is genuinely small (moderate objective → moderate gain). Lever = more N. Expanded
-`curated_concepts.json` 20→42 concepts / 40→84 bases; building `curated_cw4x42` matrix (bg) → filter len8 →
-screen (~336 cond) → features → 24 retest at larger N. If still NS, the honest verdict stands (directional).
+`curated_concepts.json` 20→42 concepts / 40→84 bases; matrix `curated_cw4x42` built (1008 cond) → len8 filter → **SLURM 691336** (336 cond, 84 bases × 4 cw)
+screening → features → 24 retest at n≈84 (2× prior). If still NS, the honest verdict stands (directional).
 
 ## ITER28 — THINKING vs NON-THINKING (Phase 7, Level 6 partial): modest mixed effect
 Qwen3 same-weights, matched n=90 (690984 think + 690928 nothink first-90). **Thinking does NOT amplify
