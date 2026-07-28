@@ -114,7 +114,37 @@ def fig_sufficiency():
     print(f"  -> {p}")
 
 
+def fig_crossmodel():
+    """Behavioral reproduction across architectures: eligible + clean-success bases per model.
+    Auto-includes any curated screen whose corrected summary exists (Llama/Qwen3/Phi-4)."""
+    import glob
+    models = []  # (label, eligible, clean, n_bases)
+    for name, label in [("curated_v1", "Llama-3.1-8B"), ("curated_qwen3_nothink", "Qwen3-14B"),
+                        ("curated_phi4", "Phi-4-mini")]:
+        # prefer the corrected reclassified summary; else the raw
+        for fn in ("screen_summary_reclassified.json", "screen_summary.json"):
+            p = os.path.join(HERE, "outputs", f"behavioral_screen_{name}", fn)
+            if os.path.exists(p):
+                d = json.load(open(p))
+                models.append((label, d.get("n_eligible_bases"), d.get("n_clean_success_bases"), d.get("n_bases")))
+                break
+    if not models:
+        print("  (no screens for cross-model figure)"); return
+    xs = list(range(len(models)))
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar([x - 0.2 for x in xs], [m[1] for m in models], 0.4, label="eligible bases", color="#2c3e50")
+    ax.bar([x + 0.2 for x in xs], [m[2] for m in models], 0.4, label="clean-success bases", color="#c0392b")
+    for i, m in enumerate(models):
+        if m[3]:
+            ax.text(i - 0.2, (m[1] or 0) + 0.5, f"{m[1]}/{m[3]}", ha="center", fontsize=8)
+    ax.set_xticks(xs); ax.set_xticklabels([m[0] for m in models])
+    ax.set_ylabel("bases"); ax.set_title("Behavioral Doublespeak jailbreak reproduces across architectures", fontsize=10)
+    ax.legend(fontsize=8); ax.grid(alpha=0.25, axis="y")
+    fig.tight_layout(); p = os.path.join(OUT, "fig_crossmodel_behavioral.png"); fig.savefig(p, dpi=150); plt.close(fig)
+    print(f"  -> {p}")
+
+
 if __name__ == "__main__":
     print("[plot] generating behavioral-causality figures:")
-    fig_toctou(); fig_necessity(); fig_sufficiency()
+    fig_toctou(); fig_necessity(); fig_sufficiency(); fig_crossmodel()
     print("[plot] done -> figures/")
