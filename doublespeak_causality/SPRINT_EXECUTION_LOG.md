@@ -418,9 +418,12 @@ Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven 
   cw/concept, one context length) to fit the preemption window. **Staged** — submit Llama screen +
   features (21) → 24 once a slot frees (avoiding a 3-GPU-job thrash while the 2 Qwen3 screens run).
 
-**Run registry (iter23-24):** SLURM 690928 (Qwen3 curated screen thinking-OFF, RUNNING) → cross-model
-timing + thinking-off baseline; 690929 (Qwen3 thinking-ON, RUNNING) → thinking comparison; bg 6-cw matrix
-✅; `24` + reduced 6-cw matrix staged for Track C.
+**Run registry (iter23-25) — 3 GPU jobs, all tracks concurrent:**
+- **690928** Qwen3 screen thinking-OFF (240 cond, max_tok 200) → cross-model timing + thinking-off baseline.
+- **690984** Qwen3 screen thinking-ON (limit 90, max_tok 400) → thinking comparison [690929 killed: 240×600tok
+  CoT projected ~4h, never finishes preemption window; resized]. Matched comparison = first 90 of both.
+- **690985** Llama 6-cw screen (reduced len8, 240 cond) → Track-C codeword-selection Level-5 test (→ 21 → 24).
+Cluster: killable heavily contended + Qwen3-14B thinking is slow → jobs sized small to fit the ~50min window.
 
 ## PHASE 5 (iter21) — mechanistic objective: does the temporal signature PREDICT jailbreak? (Level 4)
 The timing law (Claim D) motivates a "benign-early / harmful-late" attack objective. Infrastructure built:
