@@ -411,9 +411,16 @@ Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven 
   max_tok 600)** + **thinking-OFF (690928, max_tok 200)** launched.
 - **Track B (Phase 8 cross-model timing):** the thinking-OFF Qwen3 screen (690928) → eligible bases →
   sufficiency window sweep on Qwen3 → refusal gradient (test the TOCTOU timing law is architecture-general).
-- **Track C (Phase 6 GCG, Level 5):** DESIGNED — `GCG_MAC_COMPARISON.md` (temporal objective = mixed
-  early-benign/late-harmful `repr_loss` against a reference cache, reusing `poc_stage_gcg_early`). Big build
-  (long preemption-prone jobs); execution starting; no ASR gain claimed yet.
+- **Track C (Phase 6 GCG, Level 5):** two paths — (i) full suffix-GCG DESIGNED (`GCG_MAC_COMPARISON.md`,
+  mixed-reference `repr_loss`), and (ii) FEASIBLE codeword-selection test (`24_codeword_selection.py`):
+  does picking codewords by min-early-alignment (temporal objective) beat random jailbreak rate?
+  6-codeword matrix built (720 cond) → reduced to `screening_matrix_curated_cw6_len8.json` (240 cond, 6
+  cw/concept, one context length) to fit the preemption window. **Staged** — submit Llama screen +
+  features (21) → 24 once a slot frees (avoiding a 3-GPU-job thrash while the 2 Qwen3 screens run).
+
+**Run registry (iter23-24):** SLURM 690928 (Qwen3 curated screen thinking-OFF, RUNNING) → cross-model
+timing + thinking-off baseline; 690929 (Qwen3 thinking-ON, RUNNING) → thinking comparison; bg 6-cw matrix
+✅; `24` + reduced 6-cw matrix staged for Track C.
 
 ## PHASE 5 (iter21) — mechanistic objective: does the temporal signature PREDICT jailbreak? (Level 4)
 The timing law (Claim D) motivates a "benign-early / harmful-late" attack objective. Infrastructure built:
