@@ -12,14 +12,14 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 
 | Phase | Title | Status | Evidence |
 |---|---|---|---|
-| 1 | Audit & freeze | ✅ COMPLETE | tests 14/14; tag `frozen-rep-result-2026-07-27`; this log |
-| 2 | Paper-faithful behavioral benchmark | 🔶 IN PROGRESS | builder `16_prepare_behavioral_benchmark.py` |
-| 3 | Behavioral causal MVP (≥30) | ⬜ NOT STARTED | blocked by P2 eligible set |
-| 4 | Full behavioral causality + timing | ⬜ NOT STARTED | blocked by P3 |
-| 5 | Mechanistic objective validation | ⬜ NOT STARTED | blocked by P4 |
-| 6 | GCG/MAC optimization | ⬜ NOT STARTED | audit can start in parallel |
-| 7 | Thinking vs non-thinking | ⬜ NOT STARTED | Qwen3 toggle validation can start in parallel |
-| 8 | Cross-model + paper story | ⬜ NOT STARTED | blocked by P3–P7 |
+| 1 | Audit & freeze | ✅ COMPLETE | tests 14/14; tag `frozen-rep-result-2026-07-27` |
+| 2 | Paper-faithful behavioral benchmark | ✅ COMPLETE | curated harm-in-noun; 37/40 eligible, 42 clean successes/14 concepts |
+| 3 | Behavioral causal MVP | ✅ COMPLETE | necessity (early Δ=0.50) + sufficiency (dissociation), CI-backed |
+| 4 | Full behavioral causality + timing | ✅ COMPLETE | ⭐ TOCTOU timing law (early→refuse 0.86, late→0.00), architecture-general |
+| 5 | Mechanistic objective validation | 🔶 Level 4 ✅ / Level 5 directional-NS | AUC 0.67 predicts; codeword-selection +0.09 (NS), larger-N retest running |
+| 6 | GCG/MAC optimization | 🔶 designed + selection-variant run | full suffix-GCG designed; codeword selection = feasible Level-5 test |
+| 7 | Thinking vs non-thinking | 🔶 Level 6 partial | Qwen3 same-weights: safety nudge + steeper dose-response, modest |
+| 8 | Cross-model + paper story | 🔶 in progress | behavioral + TOCTOU reproduce on Qwen3; paper story consolidated |
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
 concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
@@ -33,11 +33,13 @@ Doublespeak's LATE emergence is the *mechanism* of refusal evasion (closes repre
 opposite of Patchscopes) — a methodological caution.
 
 **DELIVERABLE DOCS (plan §23) — all external MD, kept current:**
-`SPRINT_EXECUTION_LOG.md` (this, chronology+jobs) · `BEHAVIORAL_BENCHMARK.md` ✅ · `BEHAVIORAL_CAUSALITY_RESULTS.md` ✅ (necessity in; suff/timing pending) · `UPDATED_PAPER_STORY.md` ✅ · `MECHANISTIC_OBJECTIVE.md` ⬜ (Phase 5) · `GCG_MAC_COMPARISON.md` ⬜ (Phase 6) · `THINKING_VS_NONTHINKING.md` ⬜ (Phase 7). Frozen-era docs (CAUSAL_RESULTS_SUMMARY / RESULTS_SYNTHESIS / DOUBLESPEAK_MASTER_LOG / PROGRESS) banner-updated to point here.
+`SPRINT_EXECUTION_LOG.md` (this) · `BEHAVIORAL_BENCHMARK.md` ✅ · `BEHAVIORAL_CAUSALITY_RESULTS.md` ✅ (necessity+sufficiency+timing+cross-model) · `UPDATED_PAPER_STORY.md` ✅ · `MECHANISTIC_OBJECTIVE.md` ✅ · `GCG_MAC_COMPARISON.md` ✅ · `THINKING_VS_NONTHINKING.md` ✅. Frozen-era docs banner-updated to point here.
 
-**Current honest headline (unchanged from baseline):** cross-model, causally-manipulable
-*representation-level* semantic hijacking with a *behavioral null* on the seed data. The
-whole sprint exists to convert this into behavioral causality.
+**Current honest headline:** the representation-level hijack is causally necessary + conditionally
+sufficient (re-validated with proper controls, cross-model), and it TRANSLATES INTO A REAL BEHAVIORAL
+JAILBREAK on a properly-built benchmark. WHY it works: refusal is a time-of-CHECK op on EARLY meaning;
+Doublespeak's LATE emergence smuggles harm past it — a causal TOCTOU timing law that is ARCHITECTURE-
+GENERAL (Llama + Qwen3). Rep-level decoding-sufficiency and behavioral sufficiency dissociate.
 
 ---
 
