@@ -406,6 +406,13 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER35 — extend TOCTOU to a 3rd architecture (Phi-4-mini) + publication figures
+Cluster showed idle capacity → retry GPU. **SLURM 691440** Phi-4-mini-reasoning curated screen (thinking
+default, max_tok 300) → eligible set → Phi-4 sufficiency early/late timing sweep → if early→refuse/late→comply
+holds, the TOCTOU law is 3-architecture-general (matching the rep-level 3-family generality). Figures done:
+`figures/fig_toctou_timing.png` (headline, Llama+Qwen3), `fig_necessity_windows.png`, `fig_sufficiency_depth.png`
+(`plot_behavioral.py`, benign).
+
 ## ITER33 — CONSOLIDATION: tests green; Level-5 larger-N cluster-infeasible (honest verdict stands)
 Full suite **18 passed** (14 doublespeak + 4 qwen3); all sprint scripts compile — 30+ iterations of code
 changes intact. The 336-condition expanded screen (691336) ran at ~2/min (~2.8h) → infeasible under the
