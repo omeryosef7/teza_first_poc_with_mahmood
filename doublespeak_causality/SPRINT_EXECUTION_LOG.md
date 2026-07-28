@@ -404,6 +404,14 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER28 — THINKING vs NON-THINKING (Phase 7, Level 6 partial): modest mixed effect
+Qwen3 same-weights, matched n=90 (690984 think + 690928 nothink first-90). **Thinking does NOT amplify
+the attack** (DS malicious 0.22 vs 0.24, NS) but **introduces DS refusals** (0.00→0.067, sig — reasoning
+catches some hijacks) AND **steepens the dose-response** (DS-mal by demos 0.14/0.23/0.36 vs 0.09/0.16/0.16).
+Net small/mixed. Level 6 PARTIAL (a real within-model difference exists, but modest + no causal thinking-
+time intervention yet). Deliverable `THINKING_VS_NONTHINKING.md`. Next (§11.7): thinking-time intervention
+(does refusal onset shift?) — the causal link to the TOCTOU law.
+
 ## ITER27 — CROSS-MODEL: behavioral jailbreak REPRODUCES on Qwen3-14B (Phase 8, Track B) ✅
 Qwen3-14B thinking-OFF curated screen (690928): **eligible 38/40, clean-success 17 bases, 31 DS_MALICIOUS,
 0 judge failures** — nearly identical to Llama-8B (37/40, 18 clean, 46 DS_MALICIOUS). Dose-response by
