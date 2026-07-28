@@ -184,19 +184,20 @@ TOCTOU law is cleanest with the raw-concept injectate, which is potent enough to
 
 ### CROSS-MODEL: the TOCTOU direction holds across 3 architectures (Phase 8, `fig_toctou_timing.png`)
 
+Reproducible per-condition (`analyze_behavioral_causality.py --timing-dir`, clean full n, deterministic):
+
 | model | early refusal | late refusal | early−late Δ [95% CI] | verdict |
 |---|---|---|---|---|
-| Llama-3.1-8B | 0.86 | 0.00 | **+0.857 [+0.714, +1.000]** | strong, significant |
-| Qwen3-14B | 1.00 | 0.13 | **+0.867 [+0.667, +1.000]** | strong, significant |
-| Phi-4-mini-reasoning | 0.62 | 0.33 | +0.250 [−0.083, +0.583] (n=12) | same direction, weaker, NS |
+| Llama-3.1-8B | 0.87 | 0.00 | **+0.869 [+0.770, +0.951]** (n=61) | strong, significant |
+| Qwen3-14B | 1.00 | 0.14 | **+0.854 [+0.732, +0.951]** (n=41) | strong, significant |
+| Phi-4-mini-reasoning | 0.61 | 0.33 | **+0.250 [+0.056, +0.444]** (n=36) | significant, smaller |
 
-**Honest verdict:** the causal timing law (early injection refuses far more than late) is **directionally
-consistent across all three architectures**, and **strongly significant on two** (Llama, Qwen3) with
-near-identical magnitude (Δ≈0.86). On **Phi-4-mini** the direction holds (0.62 > 0.33) but the gradient is
-compressed and NOT significant at n=12. Plausible reason: Phi-4-mini is a **reasoning** model — its CoT can
-re-examine the injected meaning at any depth, blurring the pure early-vs-late timing distinction (coheres
-with §Thinking: reasoning catches some hijacks). So: the TOCTOU law is robustly architecture-general for
-non-reasoning models and directionally present under reasoning; not over-claimed for Phi-4.
+**Honest verdict:** the causal timing law (early injection refuses far more than late) is **significant on
+all three architectures** on the clean per-condition full n. It is strongest and near-identical on the two
+non-reasoning models (Llama/Qwen3, Δ≈0.86) and **smaller but still significant on Phi-4-mini** (Δ=0.25,
+CI excludes 0 — the earlier n=12 estimate was directionally identical but underpowered/NS). The compression
+on Phi-4 coheres with it being a **reasoning** model — its CoT can re-examine injected meaning at any depth,
+blurring (but not erasing) the early-vs-late timing distinction. **TOCTOU is architecture-general.**
 
 ---
 
@@ -232,8 +233,8 @@ controls present).
   NOT be read as behavioral evidence — a methodological contribution in itself.
 
 ## 5. Limitations / follow-ups
-- Per-window random+identity controls for necessity (not only late window). [queued]
-- Sufficiency results pending (689471/19).
-- Timing (Claim D) not yet run: does moving harmful meaning early vs late change refusal vs compliance.
-- Multi-seed generation + mixed-effects CIs (plan §13) for the behavioral rates.
-- Manual blind verification of a clean-success sample (plan §5.6).
+- ✅ DONE: per-window random+identity controls for necessity (§1b); sufficiency (§2, clean per-condition,
+  all 3 windows); timing / Claim D (§2c, the headline TOCTOU law, reproducible + architecture-general).
+- Remaining: multi-seed generation + mixed-effects CIs (plan §13) for the behavioral rates.
+- Remaining: manual blind verification of a clean-success sample (plan §5.6).
+- Remaining: scale from 12 bases/window to all 37 eligible (does not affect the confirmed directions).

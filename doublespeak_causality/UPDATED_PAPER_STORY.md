@@ -56,16 +56,24 @@ rate ≈20% of eligible conditions. This is the sweet spot: Direct refused · Ne
 restores harmful compliance. **This flips the paper's (and our seed's) behavioral null into a positive,
 statistically-meaningful result.**
 
-## 4. Behavioral causality — Claims B & C (Phase 3, IN PROGRESS)
-`18_run_behavioral_necessity.py` (DS←Neutral patch during generation → does the malicious behavior
-disappear?) + `19_run_behavioral_sufficiency.py` (Neutral←DS vs Neutral←Direct injection → does the
-hijacked state, more than the plain concept state, *cause* harmful behavior?). SLURM 689471 running.
-**Result: PENDING.** Prediction (from §2): DS-state injection > Direct-state injection, behaviorally.
+## 4. Behavioral causality — Claims B & C (Phase 3) ✅ COMPLETE
+`18_run_behavioral_necessity.py` (DS←Neutral patch during generation) + `19_run_behavioral_sufficiency.py`
+(Neutral←DS vs Neutral←Direct injection). Clean per-condition CIs (audit-verified, deterministic):
+- **Necessity ✅ (Claim B):** patching the DS codeword state to its Neutral counterpart flips malicious→benign,
+  **early-layer specific** (early Δ=0.455 [0.303, 0.636]); specificity over a random patch is modest (necessity−random
+  +0.182 [−0.030, +0.394], underpowered — honest caveat).
+- **Sufficiency ✅ but DISSOCIATES from the rep-level prediction (Claim C):** the rep-level Patchscopes
+  prediction was DS-injection > Direct-injection. **Behaviorally it INVERTS: Direct ≫ DS** — the raw concept
+  is the more potent injectate at mid (DS−Direct −0.295 [−0.443, −0.148], n=61) AND late (−0.161 [−0.274,
+  −0.048], n=62); at early both are inert (DS≈Direct, +0.03 NS). The hijacked DS state is a *context-dependent*
+  state that loses behavioral force when transplanted out of its demonstrations — a **methodological caution:
+  Patchscopes decoding-sufficiency does not predict (here inverts) behavioral sufficiency.**
 
 ## 5. Causal timing — Claim D ✅ CONFIRMED (Phase 4) ⭐ HEADLINE
-Injecting the raw harmful concept at different depths into benign prompts: **early → REFUSAL (0.86),
+Injecting the raw harmful concept at different depths into benign prompts: **early → REFUSAL (0.87),
 mid → COMPLIANCE (0.52 malicious), late → NEITHER (refusal 0.00)**. Refusal decreases monotonically with
-depth; early−late refusal Δ=+0.857 [+0.714, +1.00] (every pairwise step significant). **TOCTOU confirmed:
+depth; early−late refusal Δ=+0.869 [+0.770, +0.951], n=61 (reproducible per-condition via
+`analyze_behavioral_causality.py --timing-dir`; every pairwise step significant). **TOCTOU confirmed:
 refusal is a time-of-check operation on EARLY representations.** This explains WHY Doublespeak works — the
 hijacked meaning emerges LATE (rep-level result), so it slips past the early refusal checkpoint. Closes the
 representation→behavior loop with a causal timing law. (Success Level 3.)
@@ -85,10 +93,12 @@ INTRODUCES some DS refusals (0.00→0.067, sig — reasoning catches some hijack
 thinking-time intervention yet. (`THINKING_VS_NONTHINKING.md`.)
 
 ## 7b. Cross-model generalization ⭐
-The **behavioral jailbreak** and the **TOCTOU causal-timing law** both reproduce on **Qwen3-14B**:
-behavioral eligibility 38/40 (~Llama 37/40); early−late refusal Δ=+0.867 [+0.667,+1.00] (~Llama +0.857).
-Together with the rep-level results (already cross-Llama/Qwen3/Phi-4), the causal story is
-architecture-general at every level.
+The **behavioral jailbreak** and the **TOCTOU causal-timing law** reproduce on **all three architectures**,
+and the timing gradient is **significant on all three** (clean per-condition, reproducible):
+early−late refusal Δ = Llama **+0.869 [+0.770, +0.951]** (n=61) · Qwen3 **+0.854 [+0.732, +0.951]** (n=41) ·
+Phi-4-mini **+0.250 [+0.056, +0.444]** (n=36) — Phi-4's is smaller (a reasoning model re-examines meaning
+at any depth) but its CI now excludes 0 on the full n. Together with the rep-level results (also
+cross-Llama/Qwen3/Phi-4), the causal story is **architecture-general at every level**.
 
 ## 8. What remains unresolved
 - **Level 5 clean:** a *significant* attack-ASR gain from the temporal objective — needs the full

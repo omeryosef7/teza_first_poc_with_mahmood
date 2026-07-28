@@ -19,7 +19,7 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 | 5 | Mechanistic objective validation | 🔶 Level 4 ✅ / Level 5 directional-NS | AUC 0.67 predicts; codeword-selection +0.09 (NS), larger-N retest running |
 | 6 | GCG/MAC optimization | 🔶 designed + selection-variant run | full suffix-GCG designed; codeword selection = feasible Level-5 test |
 | 7 | Thinking vs non-thinking | 🔶 Level 6 partial | Qwen3 same-weights: safety nudge + steeper dose-response, modest |
-| 8 | Cross-model + paper story | 🔶 in progress | behavioral + TOCTOU reproduce on Qwen3; paper story consolidated |
+| 8 | Cross-model + paper story | ✅ COMPLETE | behavioral + TOCTOU reproduce + SIGNIFICANT on all 3 (Llama/Qwen3/Phi-4); paper story consolidated |
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
 concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
@@ -39,7 +39,8 @@ opposite of Patchscopes) — a methodological caution.
 sufficient (re-validated with proper controls, cross-model), and it TRANSLATES INTO A REAL BEHAVIORAL
 JAILBREAK on a properly-built benchmark. WHY it works: refusal is a time-of-CHECK op on EARLY meaning;
 Doublespeak's LATE emergence smuggles harm past it — a causal TOCTOU timing law that is ARCHITECTURE-
-GENERAL (Llama + Qwen3). Rep-level decoding-sufficiency and behavioral sufficiency dissociate.
+GENERAL and SIGNIFICANT on all 3 (Llama +0.869, Qwen3 +0.854, Phi-4 +0.250, all CIs exclude 0, clean
+per-condition). Rep-level decoding-sufficiency and behavioral sufficiency dissociate.
 
 ---
 
@@ -405,6 +406,16 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 (register/deregister correct on the right layers; windows early[0-9]/mid[10-19]/late[20-31]/
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
+
+## ITER46 — doc-consistency pass + Phi-4 TOCTOU now SIGNIFICANT on clean n (all 3 architectures)
+Ran the new `timing_cis` on Qwen3 + Phi-4 dirs to make the cross-model TOCTOU table fully reproducible
+(all hand-computed numbers replaced). **Key upgrade:** Phi-4 early−late refusal = **+0.250 [+0.056, +0.444],
+n=36 — now EXCLUDES 0** (was +0.250 [−0.083,+0.583] NS on hand-computed n=12). So the TOCTOU timing law is
+**significant on ALL THREE architectures** (Llama +0.869 / Qwen3 +0.854 / Phi-4 +0.250), not just the two
+non-reasoning models — a real strengthening of the architecture-general claim. Fixed stale doc content:
+UPDATED_PAPER_STORY.md §4 ("Result: PENDING" → complete necessity+sufficiency), §5/§7b timing numbers;
+BEHAVIORAL_CAUSALITY_RESULTS.md cross-model table + limitations (removed done items); dashboard Phase 8
+→ ✅ COMPLETE. Marked Phase 8 task complete. No jobs; no stale claims remaining.
 
 ## ITER45 — headline TOCTOU gradient now REPRODUCIBLE FROM CODE (was hand-computed)
 Self-review: the headline refusal-gradient CIs in the results doc (+0.857 etc., n=21) were
