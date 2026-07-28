@@ -406,6 +406,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER43 — INGEST Llama sufficiency reruns → clean per-condition CI CONFIRMS mid dissociation
+692152 (early) + 692153 (mid) COMPLETE with `context_len` logged; 692154 (late) still running.
+Re-ran `analyze_behavioral_causality` on the clean dirs:
+- **mid DS−Direct = −0.295 [−0.443, −0.148], n=61 → EXCLUDES 0** (was −0.43 [−0.67,−0.19] on collapsed
+  n=21; proper per-condition pairing attenuates the point estimate, significance+direction UNCHANGED).
+- early +0.032 [−0.081, 0.145], n=62 — NS (DS≈Direct early), consistent.
+Updated `BEHAVIORAL_CAUSALITY_RESULTS.md` (depth table + CI + audit-fix table) and regenerated figures
+(auto-use clean early/mid dirs; late falls back to 215026 until 692154 lands). The headline behavioral
+dissociation (Direct≫DS at mid) now rests on the full per-condition n. **Only open number: Llama late
+clean CI (692154 pending).**
+
 ## ITER42 — PIPELINE BUG-AUDIT: FIXED + RESUBMITTED (user: "make sure we have no bugs, fix & resubmit")
 Ingested the wo3i2ehk1 audit (5 reviewers, all stages). **2 HIGH + MED/LOW. None invalidated a
 CONCLUSION; two corrupted reported NUMBERS.** All fixes are CPU-only except the Llama resubmit.
