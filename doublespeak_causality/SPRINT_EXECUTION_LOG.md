@@ -406,6 +406,18 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER45 — headline TOCTOU gradient now REPRODUCIBLE FROM CODE (was hand-computed)
+Self-review: the headline refusal-gradient CIs in the results doc (+0.857 etc., n=21) were
+hand-computed — not emitted by any script → not reproducible/auditable. Added `timing_cis()` to
+`analyze_behavioral_causality.py` (`--timing-dir`): Direct-injection REFUSAL per-condition
+(base,cw,context_len) among baseline-benign, paired across the early/mid/late dirs, deterministic.
+**Clean full-n result is STRONGER:** early−late refusal **+0.869 [+0.770, +0.951], n=61**
+(was hand +0.857 [+0.714,+1.000] n=21); early−mid +0.525 [+0.410,+0.639]; mid−late +0.350
+[+0.233,+0.467] — all sig. Per-window refusal early 0.871 / mid 0.344 / late 0.000. Updated doc
+TOCTOU table + gradient; canonical clean JSON now carries necessity/sufficiency/timing.
+**RESTING STATE:** core sprint (Levels 1–4) complete; every headline number now reproducible from
+code on clean, deterministic, per-condition data; no jobs running; no pending numbers; audit closed.
+
 ## ITER44 — AUDIT FULLY CLOSED: all 3 Llama windows clean; late now SIGNIFICANT too
 692154 (late) COMPLETE with context_len. All 3 clean Llama sufficiency CIs (per-condition, full n):
 - **mid −0.295 [−0.443, −0.148] n=61 — SIG** (strongest)
