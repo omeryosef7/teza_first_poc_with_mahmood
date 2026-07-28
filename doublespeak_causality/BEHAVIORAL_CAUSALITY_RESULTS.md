@@ -157,6 +157,12 @@ the loop from representation (late emergence) → behavior (refusal evasion) wit
 is weakly malicious, consistent with §2: the contextual DS state is a weak out-of-context injectate. The
 TOCTOU law is cleanest with the raw-concept injectate, which is potent enough to engage refusal.)
 
+### CROSS-MODEL: the TOCTOU law is ARCHITECTURE-GENERAL (Qwen3-14B, Phase 8)
+Same experiment on Qwen3-14B (thinking-off): early injection refusal **1.00** (45/45), late **0.13** (6/45);
+**early−late refusal Δ = +0.867 [+0.667, +1.000]** — near-identical to Llama's +0.857 [+0.714, +1.000].
+The causal timing law reproduces across two architectures with the same magnitude → the headline finding
+is not Llama-specific. (The rep-level necessity/sufficiency/timing were already cross-Llama/Qwen3/Phi-4.)
+
 ---
 
 ## 3. Representation-level causal re-validation (frozen baseline, audited + reruns)

@@ -27,10 +27,11 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
 : "${DSSCREEN:=doublespeak_causality/outputs/behavioral_screen_curated_v1}"
 : "${DSMATRIX:=doublespeak_causality/data/behavioral_benchmark/screening_matrix_curated_v1.json}"
+: "${DSFEATTAG:=llama8b}"
 echo "=== features: $DSMODEL ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/21_extract_behavioral_features.py \
   --matrix "$DSMATRIX" --screen-dir "$DSSCREEN" --model "$DSMODEL" \
-  --out-dir "doublespeak_causality/outputs/features_llama8b"
+  --out-dir "doublespeak_causality/outputs/features_${DSFEATTAG}"
 echo "=== done ==="; date

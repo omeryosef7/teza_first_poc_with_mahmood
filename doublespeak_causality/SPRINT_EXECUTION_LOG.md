@@ -417,8 +417,12 @@ Qwen3-14B thinking-OFF curated screen (690928): **eligible 38/40, clean-success 
 0 judge failures** — nearly identical to Llama-8B (37/40, 18 clean, 46 DS_MALICIOUS). Dose-response by
 demo count (0.09/0.16/0.16). **The behavioral Doublespeak sweet-spot is ARCHITECTURE-GENERAL** (the
 rep-level findings already were across Llama/Qwen3/Phi-4; now the *behavioral* jailbreak is too).
-Next: does the TOCTOU TIMING LAW hold on Qwen3? → 19 threaded with enable_thinking; Qwen3 sufficiency
-early (**SLURM 691091**) + late (**691092**), thinking-off, max_bases=8 → cross-model refusal gradient.
+**TOCTOU TIMING LAW IS ARCHITECTURE-GENERAL** (691091/691092 done): Qwen3 Direct-injection refusal
+early=**1.00** (45/45), late=**0.13**; early−late Δ=**+0.867 [+0.667,+1.000]** — near-identical to Llama's
++0.857 [+0.714,+1.000]. The headline causal timing law reproduces across TWO architectures. ⭐
+
+**Track C (6cw, Level 5):** 6-codeword screen (690985) done → 40/40 eligible, 24 clean bases; feature
+extraction resubmitted **691192** (features_cw6, forward-only) → then `24` codeword-selection test.
 
 ## ITER23 — 3 TRACKS IN PARALLEL (user directive "all in parallel")
 Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven concurrently.
