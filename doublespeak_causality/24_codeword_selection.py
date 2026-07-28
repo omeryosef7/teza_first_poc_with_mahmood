@@ -65,6 +65,57 @@ def main():
         print("[cw-select] too few bases for a meaningful test"); return
     ci_tr = stats.paired_bootstrap_ci(temporal, random_, n_boot=10000, seed=0)
     ci_ta = stats.paired_bootstrap_ci(temporal, anti, n_boot=10000, seed=0)
+
+    # --- MULTIVARIATE leave-one-concept-out selection (stronger predictor than early_align alone) ---
+    mv = None
+    try:
+        import numpy as np
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.pipeline import make_pipeline
+        FEATS = ["early_align", "mid_align", "late_align", "early_to_late", "onset_layer",
+                 "peak_align", "auc_align"]
+        # condition-level design (per-condition features + label + concept + base + codeword)
+        Xc = np.array([[r["feat"][f] for f in FEATS] for r in rows], float)
+        yc = np.array([r["ds_malicious"] for r in rows])
+        con = np.array([r["concept"] for r in rows]); base = np.array([r["key"][0] for r in rows])
+        cwv = np.array([r["codeword"] for r in rows])
+        prob = np.full(len(rows), np.nan)
+        for c in set(con):                     # leave-one-concept-out: fit on others, predict on c
+            tr = con != c
+            if len(set(yc[tr])) < 2:
+                continue
+            clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+            clf.fit(Xc[tr], yc[tr])
+            prob[con == c] = clf.predict_proba(Xc[con == c])[:, 1]
+        # aggregate predicted prob + actual jailbreak to (base, codeword)
+        bc_prob, bc_jb = defaultdict(list), defaultdict(list)
+        for i in range(len(rows)):
+            if np.isnan(prob[i]):
+                continue
+            bc_prob[(base[i], cwv[i])].append(prob[i]); bc_jb[(base[i], cwv[i])].append(yc[i])
+        by_b = defaultdict(list)
+        for k in bc_prob:
+            by_b[k[0]].append((k[1], float(np.mean(bc_prob[k])), float(np.mean(bc_jb[k]))))
+        mv_sel, mv_rand = [], []
+        for b, lst in by_b.items():
+            if len(lst) < args.min_codewords:
+                continue
+            best = max(lst, key=lambda x: x[1])          # argmax predicted jailbreak prob
+            mv_sel.append(best[2]); mv_rand.append(sum(x[2] for x in lst) / len(lst))
+        if len(mv_sel) >= 3:
+            ci_mv = stats.paired_bootstrap_ci(mv_sel, mv_rand, n_boot=10000, seed=0)
+            mv = {"n_bases": len(mv_sel),
+                  "jailbreak_rate": {"multivariate_selected": round(sum(mv_sel) / len(mv_sel), 3),
+                                     "random": round(sum(mv_rand) / len(mv_rand), 3)},
+                  "multivariate_minus_random": {"mean": round(ci_mv["mean_diff"], 3),
+                                                "lo": round(ci_mv["lo"], 3), "hi": round(ci_mv["hi"], 3),
+                                                "ci_reliable": ci_mv["ci_reliable"]}}
+            print(f"[cw-select] MULTIVARIATE (LOCO) selected={mv['jailbreak_rate']['multivariate_selected']} "
+                  f"random={mv['jailbreak_rate']['random']} | Δ={mv['multivariate_minus_random']['mean']} "
+                  f"[{mv['multivariate_minus_random']['lo']},{mv['multivariate_minus_random']['hi']}]")
+    except Exception as e:
+        print(f"[cw-select] multivariate selection skipped ({e!r})")
     result = {
         "n_bases": n,
         "mean_jailbreak_rate": {
@@ -76,6 +127,7 @@ def main():
                                   "ci_reliable": ci_tr["ci_reliable"]},
         "temporal_minus_anti": {"mean": round(ci_ta["mean_diff"], 3),
                                 "lo": round(ci_ta["lo"], 3), "hi": round(ci_ta["hi"], 3)},
+        "multivariate_loco": mv,
     }
     print(f"[cw-select] jailbreak rate: temporal={result['mean_jailbreak_rate']['temporal_selected']} "
           f"random={result['mean_jailbreak_rate']['random']} anti={result['mean_jailbreak_rate']['anti_selected']}")

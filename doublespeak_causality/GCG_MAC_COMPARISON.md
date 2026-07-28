@@ -68,6 +68,11 @@ selecting the codeword with **minimum early harmful alignment** (the temporal ob
 **temporal − random = +0.092 [−0.037, +0.225]** (n=40 bases). **Directionally positive** (temporal beats
 both random and the anti-objective), but the **CI crosses 0 → NOT statistically significant.**
 
+Robustness: a leave-one-concept-out **multivariate** predictor for selection gives Δ=+0.067 [−0.046,+0.183]
+— no better than univariate early_align (both directional, both NS at n=40). The effect is small and
+underpowered, not an artifact of the selection rule. Lever to reach significance: **more N** (more concepts
+→ more bases) — benchmark expansion underway.
+
 **Honest verdict: Level 5 is NOT cleanly achieved.** The mechanistic objective *improves the attack
 directionally* (+9 pp jailbreak rate via codeword selection) — consistent with its *moderate* predictive
 power (Level 4 AUC 0.67) — but the improvement is underpowered at n=40. A moderately-predictive objective
