@@ -70,8 +70,11 @@ both random and the anti-objective), but the **CI crosses 0 → NOT statisticall
 
 Robustness: a leave-one-concept-out **multivariate** predictor for selection gives Δ=+0.067 [−0.046,+0.183]
 — no better than univariate early_align (both directional, both NS at n=40). The effect is small and
-underpowered, not an artifact of the selection rule. Lever to reach significance: **more N** (more concepts
-→ more bases) — benchmark expansion underway.
+underpowered, not an artifact of the selection rule. Lever to reach significance: **more N** — a benchmark
+expansion to 84 bases (42 concepts) was built, but screening 336 conditions is **infeasible under the
+current ~50-min killable-preemption window** (jobs die at ~100 conditions; the screen was cancelled). So
+the honest directional-NS verdict stands at n=40. Reaching significance would need either a stable
+(non-preempting) allocation for the larger screen or the harder-optimizing full suffix-GCG (designed).
 
 **Honest verdict: Level 5 is NOT cleanly achieved.** The mechanistic objective *improves the attack
 directionally* (+9 pp jailbreak rate via codeword selection) — consistent with its *moderate* predictive
