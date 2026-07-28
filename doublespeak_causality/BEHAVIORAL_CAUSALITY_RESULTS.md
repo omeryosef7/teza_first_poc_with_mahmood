@@ -155,13 +155,15 @@ harmful concept** at different depths and reading the **refusal** rate:
 
 | injection window | REFUSAL rate | MALICIOUS rate | BENIGN |
 |---|---|---|---|
-| **early (0–9)** | **0.86** | 0.10 | 0.05 |
-| **mid (10–19)** | 0.33 | **0.52** | 0.14 |
+| **early (0–9)** | **0.87** | 0.10 | 0.05 |
+| **mid (10–19)** | 0.34 | **0.52** | 0.14 |
 | **late (20–31)** | **0.00** | 0.16 | 0.84 |
 
-**Paired refusal gradient (n=21, same items across windows, bootstrap CIs):**
-- early − late refusal Δ = **+0.857 [+0.714, +1.000]** — hugely significant.
-- early − mid = +0.524 [+0.333, +0.714]; mid − late = +0.333 [+0.143, +0.524] — both significant.
+**Paired refusal gradient — reproducible per-condition (base,cw,context_len), clean full n
+(`analyze_behavioral_causality.py --timing-dir`, deterministic; no longer hand-computed):**
+- early − late refusal Δ = **+0.869 [+0.770, +0.951], n=61** — hugely significant.
+- early − mid = +0.525 [+0.410, +0.639], n=61; mid − late = +0.350 [+0.233, +0.467], n=60 — both significant.
+- (pre-fix hand-computed values on n=21 were +0.857 / +0.524 / +0.333 — direction identical, CIs now tighter.)
 
 **Verdict: the TIMING of harmful meaning causally controls refusal vs compliance (TOCTOU, Hypothesis 1
 confirmed; H2 monotonic-safety and H3 distributed-safety refuted).**

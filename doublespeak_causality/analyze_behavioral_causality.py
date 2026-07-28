@@ -81,11 +81,43 @@ def sufficiency_cis(suf_dir):
     return out
 
 
+def timing_cis(suf_dirs):
+    """Headline TOCTOU refusal gradient, reproducibly from raw (no hand-computed numbers).
+    Direct-injection REFUSAL indicator (cat==REJECTED) per-CONDITION (base,cw,context_len), among
+    baseline-BENIGN, paired across the early/mid/late window dirs. Returns per-window refusal rate +
+    paired early−late / early−mid / mid−late deltas with bootstrap CIs on the conditions common to
+    both windows of each pair."""
+    # window -> {condition_key: refused(0/1)} for Direct injection on baseline-benign conditions
+    win_ref = {}
+    for d in suf_dirs:
+        rows = [json.loads(l) for l in open(os.path.join(d, "sufficiency_raw.jsonl"))]
+        key = lambda r: (r["base_id"], r["codeword"], r.get("context_len"))
+        benign = {key(r) for r in rows if r["arm"] == "baseline_neutral" and r["cat"] == "BENIGN"}
+        for r in rows:
+            if r["arm"].startswith("suff_Direct_") and key(r) in benign:
+                win_ref.setdefault(r["arm"][len("suff_Direct_"):], {})[key(r)] = float(r["cat"] == "REJECTED")
+    if not win_ref:
+        return {}
+    order = {"early": 0, "mid": 1, "late": 2}
+    wins = sorted(win_ref, key=lambda w: order.get(w, 9))
+    out = {"per_window_refusal": {w: _ci([win_ref[w][k] for k in sorted(win_ref[w],
+                                          key=lambda t: tuple(str(v) for v in t))]) for w in wins}}
+    for a, b in (("early", "late"), ("early", "mid"), ("mid", "late")):
+        if a in win_ref and b in win_ref:
+            common = sorted(set(win_ref[a]) & set(win_ref[b]), key=lambda t: tuple(str(v) for v in t))
+            if common:
+                out[f"{a}_minus_{b}_refusal"] = _ci([win_ref[a][k] for k in common],
+                                                     [win_ref[b][k] for k in common])
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--necessity-dir", default=None)
     ap.add_argument("--sufficiency-dir", action="append", default=[],
                     help="repeatable: one per window-sweep job")
+    ap.add_argument("--timing-dir", action="append", default=[],
+                    help="repeatable early/mid/late sufficiency dirs → reproducible TOCTOU refusal gradient")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
     result = {}
@@ -107,6 +139,15 @@ def main():
             print(f"  {w:16s} DS={r['suff_DS_rate']['mean']} Direct={r['suff_Direct_rate']['mean']} "
                   f"DS−Direct={r['DS_minus_Direct']['mean']} "
                   f"[{r['DS_minus_Direct']['lo']},{r['DS_minus_Direct']['hi']}] (n={r['n_base_benign']})")
+    if args.timing_dir:
+        result["timing"] = timing_cis(args.timing_dir)
+        t = result["timing"]
+        print("[timing] TOCTOU refusal gradient (Direct-injection, per-condition, baseline-benign):")
+        for w, r in t.get("per_window_refusal", {}).items():
+            print(f"  refusal[{w:5s}] = {r['mean']} [{r['lo']},{r['hi']}] (n={r['n']})")
+        for k in ("early_minus_late_refusal", "early_minus_mid_refusal", "mid_minus_late_refusal"):
+            if k in t:
+                r = t[k]; print(f"  {k:26s} = {r['mean']} [{r['lo']},{r['hi']}] (n={r['n']})")
     if args.out:
         json.dump(result, open(args.out, "w"), indent=2)
         print(f"-> {args.out}")
