@@ -150,6 +150,7 @@ def main():
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--max-clean", type=int, default=40)
+    ap.add_argument("--windows", default=None, help="comma list of windows (default all); e.g. early")
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default=None)
@@ -175,6 +176,10 @@ def main():
 
     n_layers = lm.num_layers
     windows = layer_windows(n_layers)
+    if args.windows:
+        keep=set(args.windows.split(","))
+        windows={w:ls for w,ls in windows.items() if w in keep}
+        print(f"[necessity] restricted to windows: {list(windows)}")
     gen = torch.Generator().manual_seed(args.seed)
     randvec = torch.randn(lm.hidden_size, generator=gen)
 

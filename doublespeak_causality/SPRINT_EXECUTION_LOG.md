@@ -406,6 +406,12 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER40 — cluster STABILIZED → firm up necessity specificity (Claim B)
+Recent Phi-4 jobs COMPLETED cleanly (49/38/43 min, no preemption) → ~50-min jobs now reliable. The one
+underpowered clean result is necessity SPECIFICITY (early Δ=0.50 sig, but necessity−random +0.25 [−0.05,
++0.50] NS at n=20). Added `--windows`/DSWINDOWS to 18 + runner; submitted **SLURM 691756** early-window
+necessity at max_clean=40 (2× N, ~160 gens ~30min) → does the early-window specificity reach significance?
+
 ## ITER37 — 3rd architecture (Phi-4) behavioral reproduction ✅; timing sweep launched
 Phi-4-mini-reasoning curated screen (691440) COMPLETE: **eligible 34/40, clean 18, 0 judge fail** — the
 behavioral jailbreak reproduces across ALL THREE architectures (Llama 37/40·18, Qwen3 38/40·17, Phi-4

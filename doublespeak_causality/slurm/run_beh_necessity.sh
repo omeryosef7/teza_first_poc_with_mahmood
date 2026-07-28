@@ -28,9 +28,11 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSSCREEN:=doublespeak_causality/outputs/behavioral_screen_llama8b_v1}"
 : "${DSMATRIX:=doublespeak_causality/data/behavioral_benchmark/screening_matrix_v1.json}"
 : "${DSMAXCLEAN:=40}"
+: "${DSWINDOWS:=}"
+WIN_ARG=""; [ -n "$DSWINDOWS" ] && WIN_ARG="--windows $DSWINDOWS"
 echo "=== behavioral necessity: $DSMODEL screen=$DSSCREEN ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/18_run_behavioral_necessity.py \
-  --screen-dir "$DSSCREEN" --matrix "$DSMATRIX" --model "$DSMODEL" --max-clean "$DSMAXCLEAN"
+  --screen-dir "$DSSCREEN" --matrix "$DSMATRIX" --model "$DSMODEL" --max-clean "$DSMAXCLEAN" $WIN_ARG
 echo "=== done ==="; date
