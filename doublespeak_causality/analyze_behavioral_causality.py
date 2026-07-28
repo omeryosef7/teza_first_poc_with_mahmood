@@ -69,7 +69,8 @@ def sufficiency_cis(suf_dir):
     out = {}
     for win, d in by_win.items():
         x_ds, x_dir = [], []
-        for k in benign:                       # per-condition, baseline-BENIGN-conditioned
+        # sorted → deterministic CI (set iteration order is hash-randomized per process)
+        for k in sorted(benign, key=lambda t: tuple(str(v) for v in t)):  # per-condition, baseline-BENIGN
             if k in d["ds"] and k in d["di"]:
                 x_ds.append(float(d["ds"][k]["cat"] == "MALICIOUS"))
                 x_dir.append(float(d["di"][k]["cat"] == "MALICIOUS"))

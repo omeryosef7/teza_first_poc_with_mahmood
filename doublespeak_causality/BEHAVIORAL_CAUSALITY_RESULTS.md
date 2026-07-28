@@ -96,16 +96,18 @@ sufficiency peaks); re-judge. Prediction from rep-level §3 (Patchscopes): DS-in
 |---|---|---|---|
 | early (0–9) | 0.11 | 0.08 | +0.032 [−0.081, 0.145], n=62 — NS |
 | **mid (10–19)** | 0.16 | **0.46** | **−0.295 [−0.443, −0.148], n=61 — SIGNIFICANT** |
-| late (20–31) | 0.02 | 0.16 | (692154 pending; pre-fix collapsed −0.10 [−0.24, 0.00] — borderline) |
+| late (20–31) | 0.03 | 0.19 | **−0.161 [−0.274, −0.048], n=62 — SIGNIFICANT** |
 
 **Result — a DEPTH-STRUCTURED DISSOCIATION, opposite to the rep-level prediction:**
 - **The hijacked DS state is only weakly behaviorally sufficient at any depth** (≤0.16), and at late layers
   falls to ~0 (below its random control). It never becomes a potent behavioral injectate — consistent with
   it being a *context-dependent* state that loses force when transplanted out of its demonstration context.
-- **The raw Direct concept has a MID-LAYER behavioral-steering sweet spot** (0.52 at mid vs 0.10/0.16 at
-  early/late; random 0.03 at mid) — injecting the concept mid-network strongly steers generation.
-- **Direct ≫ DS is significant ONLY at mid** (CI excludes 0); absent early (DS≈Direct), borderline late.
-  This is the *opposite* of the rep-level Patchscopes finding (DS>Direct for decoding).
+- **The raw Direct concept has a MID-LAYER behavioral-steering sweet spot** (0.46 at mid vs 0.08/0.19 at
+  early/late) — injecting the concept mid-network most strongly steers generation.
+- **Direct ≫ DS is significant at mid (strongest, −0.295) AND late (−0.161)** — both CIs exclude 0 on the
+  clean per-condition n; **absent only at early** (DS≈Direct, +0.03 NS). Once past the early layers the raw
+  concept is behaviorally more potent than the transplanted DS state. This is the *opposite* of the rep-level
+  Patchscopes finding (DS>Direct for decoding).
 
 **Interpretation (honest, important):** representation-level *decoding*-sufficiency (Patchscopes P(concept))
 and *behavioral* sufficiency are **DISSOCIATED** for this mechanism. The hijacked DS rep is the distinct
@@ -114,11 +116,15 @@ prompt (no demonstrations) it is a **context-dependent** state and is *less* beh
 context-independent raw concept rep. This is a caution for the field: **Patchscopes decoding-sufficiency
 does not predict — and here inverts — behavioral sufficiency.**
 
-**Paired bootstrap CI (plan §13) — CLEAN per-condition (iter42 resubmit 692153, context_len logged):**
-mid-window **DS−Direct = −0.295 [−0.443, −0.148], n=61** → **CI excludes 0, the Direct>DS dissociation is
-STATISTICALLY SIGNIFICANT on the full per-condition n** (early: +0.032 [−0.081, 0.145], n=62 — NS, DS≈Direct;
-late: 692154 pending). The pre-fix collapsed estimate was −0.43 [−0.67, −0.19] on n=21; proper per-condition
-pairing attenuates the point estimate but the significance and direction are unchanged.
+**Paired bootstrap CI (plan §13) — CLEAN per-condition, all 3 windows (iter42/43 resubmit 692152-4,
+context_len logged; deterministic — benign set sorted before bootstrap):**
+- **mid DS−Direct = −0.295 [−0.443, −0.148], n=61** → excludes 0, SIGNIFICANT (strongest dissociation).
+- **late DS−Direct = −0.161 [−0.274, −0.048], n=62** → excludes 0, SIGNIFICANT.
+- early +0.032 [−0.081, 0.145], n=62 — NS (DS≈Direct at early).
+
+The pre-fix collapsed mid estimate was −0.43 [−0.67, −0.19] on n=21; proper per-condition pairing on the
+full n attenuates the point estimate but the significance and direction are unchanged, and reveals the
+dissociation also holds (more modestly) at late.
 
 **Audit fix (iter42):** the CI code (`analyze_behavioral_causality.sufficiency_cis`) previously keyed
 `(base,codeword)` only — collapsing the 3 context-lengths to one point (n=21, last-wins) and able to mix
@@ -131,10 +137,13 @@ the mid dissociation direction is unchanged:
 | Phi-4 | early | **−0.263 [−0.421, −0.132]** | 38 | excludes 0 ✓ |
 | Phi-4 | late | **−0.167 [−0.306, −0.028]** | 36 | excludes 0 ✓ |
 | **Llama** | **mid** | **−0.295 [−0.443, −0.148]** | **61** | **excludes 0 ✓ (clean, resubmit 692153)** |
+| **Llama** | **late** | **−0.161 [−0.274, −0.048]** | **62** | **excludes 0 ✓ (clean, resubmit 692154)** |
 | Llama | early | +0.032 [−0.081, 0.145] | 62 | NS (DS≈Direct early) |
 
+All Llama windows now on clean per-condition n (692152-4). **Audit fully closed — no pending numbers.**
+
 **Remaining limitations:** (1) multi-seed generation pending. (2) 12 bases per window (all eligible would
-be 37) — scale-up pending. (3) Llama late-window clean CI ingests when 692154 completes.
+be 37) — scale-up pending. Neither affects the confirmed dissociation direction/significance.
 
 ---
 

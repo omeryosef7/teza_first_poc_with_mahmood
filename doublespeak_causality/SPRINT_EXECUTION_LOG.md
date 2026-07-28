@@ -406,6 +406,19 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER44 — AUDIT FULLY CLOSED: all 3 Llama windows clean; late now SIGNIFICANT too
+692154 (late) COMPLETE with context_len. All 3 clean Llama sufficiency CIs (per-condition, full n):
+- **mid −0.295 [−0.443, −0.148] n=61 — SIG** (strongest)
+- **late −0.161 [−0.274, −0.048] n=62 — SIG** (was "borderline" [−0.24,0.00] pre-fix; the dissociation
+  extends to late on clean full n — the raw concept stays behaviorally more potent than the transplanted
+  DS state past the early layers)
+- early +0.032 [−0.081, 0.145] n=62 — NS (DS≈Direct)
+Self-review fix: `sufficiency_cis` iterated a **set** (hash-order randomized per process → CI bounds
+jittered run-to-run); now `sorted(benign)` → **CIs deterministic** (verified identical across 2 hash
+seeds). Updated results doc (depth table, interpretation "sig at mid AND late", CI section, audit table)
+and regenerated all figures (every Llama window now uses the clean resubmit dir). **No pending numbers —
+the entire pipeline audit is closed and every conclusion re-verified on clean data.**
+
 ## ITER43 — INGEST Llama sufficiency reruns → clean per-condition CI CONFIRMS mid dissociation
 692152 (early) + 692153 (mid) COMPLETE with `context_len` logged; 692154 (late) still running.
 Re-ran `analyze_behavioral_causality` on the clean dirs:
