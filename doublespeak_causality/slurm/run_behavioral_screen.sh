@@ -30,11 +30,13 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSTAG:=llama8b}"
 : "${DSTHINK:=default}"   # Phase 7: default|on|off (Qwen3 thinking mode)
 : "${DSMAXTOK:=200}"      # raise for thinking-on (CoT needs room before the answer)
+: "${DSLIMIT:=}"          # cap #conditions (thinking-on is slow; first N conditions are deterministic)
+LIM_ARG=""; [ -n "$DSLIMIT" ] && LIM_ARG="--limit $DSLIMIT"
 echo "=== behavioral screen: $DSMODEL matrix=$DSMATRIX ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/17_validate_behavioral_triplets.py \
   --matrix "$DSMATRIX" --model "$DSMODEL" --templated \
-  --enable-thinking "$DSTHINK" --max-new-tokens "$DSMAXTOK" \
+  --enable-thinking "$DSTHINK" --max-new-tokens "$DSMAXTOK" $LIM_ARG \
   --out-dir "doublespeak_causality/outputs/behavioral_screen_${DSTAG}"
 echo "=== done ==="; date
