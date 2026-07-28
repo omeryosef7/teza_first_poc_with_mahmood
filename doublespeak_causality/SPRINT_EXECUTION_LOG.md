@@ -404,6 +404,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER23 — 3 TRACKS IN PARALLEL (user directive "all in parallel")
+Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven concurrently.
+- **Track A (Phase 7 thinking, Level 6):** thinking passthrough added to `ds_common` (enable_thinking,
+  Qwen3-gotcha-aware, verified: OFF≠ON, default=ON). Qwen3 curated screen **thinking-ON (SLURM 690929,
+  max_tok 600)** + **thinking-OFF (690928, max_tok 200)** launched.
+- **Track B (Phase 8 cross-model timing):** the thinking-OFF Qwen3 screen (690928) → eligible bases →
+  sufficiency window sweep on Qwen3 → refusal gradient (test the TOCTOU timing law is architecture-general).
+- **Track C (Phase 6 GCG, Level 5):** DESIGNED — `GCG_MAC_COMPARISON.md` (temporal objective = mixed
+  early-benign/late-harmful `repr_loss` against a reference cache, reusing `poc_stage_gcg_early`). Big build
+  (long preemption-prone jobs); execution starting; no ASR gain claimed yet.
+
 ## PHASE 5 (iter21) — mechanistic objective: does the temporal signature PREDICT jailbreak? (Level 4)
 The timing law (Claim D) motivates a "benign-early / harmful-late" attack objective. Infrastructure built:
 - `21_extract_behavioral_features.py` (forward-only, fast): captures DS/Neutral/Direct codeword-rep
