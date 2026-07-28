@@ -406,6 +406,41 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER42 — PIPELINE BUG-AUDIT: FIXED + RESUBMITTED (user: "make sure we have no bugs, fix & resubmit")
+Ingested the wo3i2ehk1 audit (5 reviewers, all stages). **2 HIGH + MED/LOW. None invalidated a
+CONCLUSION; two corrupted reported NUMBERS.** All fixes are CPU-only except the Llama resubmit.
+
+**HIGH-1 `analyze_behavioral_causality.sufficiency_cis`** — keyed `(base_id,codeword)` only →
+collapsed the 3 `context_len` replicates (last-wins → n=21 not full n) AND could mix windows AND
+could pull a non-benign-baseline ctx into the benign set. **Fix:** key `(base_id,codeword,context_len)`,
+group per-window from the arm suffix, per-condition baseline-BENIGN. Re-ran all 3 models:
+| model | window | DS−Direct (fixed) | n | verdict |
+|---|---|---|---|---|
+| Qwen3 | late | **−0.349 [−0.512,−0.186]** | 43 | excl 0 ✓ (was n≈21) |
+| Qwen3 | early | +0.190 [0.071,0.310] | 42 | DS>Direct early |
+| Phi-4 | early | **−0.263 [−0.421,−0.132]** | 38 | excl 0 ✓ |
+| Phi-4 | late | **−0.167 [−0.306,−0.028]** | 36 | excl 0 ✓ |
+| Llama | mid | −0.429 [−0.667,−0.19] | 21* | *collapsed — raw pre-iter18 lacks context_len |
+Llama raw predates the iter18 context_len logging → **RESUBMITTED early/mid/late (jobs 692152/3/4)**
+with current `19` so the raw logs context_len → clean per-condition Llama CI on ingest.
+
+**HIGH-2 `plot_behavioral.direct_rates`** (HEADLINE `fig_toctou_timing.png`) — same non-unique
+`(base,cw)` benign membership → included Direct rows from context-lengths whose baseline was not
+benign. **Fix:** per-condition `(base,cw,context_len)`. Regenerated: gradient ROBUST —
+early refusal **0.857 / 1.000 / 0.605** → late **0.000 / 0.140 / 0.333** (Llama/Qwen3/Phi-4),
+compliance rises inversely. Llama unchanged (no context_len to disambiguate); Qwen3/Phi-4 refined.
+
+**MED `22._auc`** — `max(a,1−a)` symmetric fold is biased upward for genuinely null features
+(sampling noise inflates |auc−0.5|). **Fix:** report RAW directional AUC + separate `|auc−0.5|`
+power. **Held-out-concept AUC 0.668±0.089 UNCHANGED** (Level-4 headline; always sklearn, never
+touched the buggy `_auc`). Univariate now honest+directional: early_align **0.349**, mid_align
+**0.343** (LOW alignment → DS-malicious, the mechanistically-expected sign the fold had hidden),
+late_align 0.502 (correctly null), early_to_late 0.654.
+
+**LOW fixed:** `22` bare-except→`ImportError`/`else`; `plot_behavioral.NEC` now auto-discovers the
+latest necessity dir that has all 4 windows (was hardcoded). Verified `necessity_cis` is clean
+(pairs intra-row, iterates all rows — no dict collapse). Committed + pushed. Llama reruns pending.
+
 ## ITER40 — cluster STABILIZED → firm up necessity specificity (Claim B)
 Recent Phi-4 jobs COMPLETED cleanly (49/38/43 min, no preemption) → ~50-min jobs now reliable. The one
 underpowered clean result is necessity SPECIFICITY (early Δ=0.50 sig, but necessity−random +0.25 [−0.05,
