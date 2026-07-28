@@ -55,7 +55,27 @@ benign-early-only, temporal-diff, +task, +refusal.
   (Phase 8) tracks per the user's directive; jobs sized/checkpointed for the preemption window.
 - **Not yet claimed:** any ASR gain. Level 5 remains open until E/F beat C/D on held-out ASR.
 
-## 6. Next concrete steps
+## 6b. RESULT — codeword-selection variant (the feasible Level-5 test, `24`)
+On the 6-codeword curated benchmark (Llama-8B, 40 bases × 6 codewords, screened + features via `21`):
+selecting the codeword with **minimum early harmful alignment** (the temporal objective) vs random:
+
+| selection | jailbreak rate |
+|---|---|
+| **temporal (argmin early-align)** | **0.30** |
+| random (expected pick) | 0.208 |
+| anti (argmax early-align) | 0.225 |
+
+**temporal − random = +0.092 [−0.037, +0.225]** (n=40 bases). **Directionally positive** (temporal beats
+both random and the anti-objective), but the **CI crosses 0 → NOT statistically significant.**
+
+**Honest verdict: Level 5 is NOT cleanly achieved.** The mechanistic objective *improves the attack
+directionally* (+9 pp jailbreak rate via codeword selection) — consistent with its *moderate* predictive
+power (Level 4 AUC 0.67) — but the improvement is underpowered at n=40. A moderately-predictive objective
+yields a moderate, non-significant attack gain. Larger N and/or the harder-optimizing full suffix-GCG (§2–5,
+designed) are needed before an ASR-gain claim can be made. Reporting the directional result honestly rather
+than over-claiming Level 5.
+
+## 6c. Next concrete steps
 1. Build the mixed reference cache for a dev set of eligible Doublespeak prompts (early=Neutral reps,
    late=Direct reps) via a Doublespeak-adapted `build_reference_cache`.
 2. Smoke Temporal-GCG (few steps, 1 behavior) to validate the objective wiring end-to-end.

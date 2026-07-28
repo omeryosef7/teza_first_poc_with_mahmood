@@ -421,8 +421,11 @@ rep-level findings already were across Llama/Qwen3/Phi-4; now the *behavioral* j
 early=**1.00** (45/45), late=**0.13**; early−late Δ=**+0.867 [+0.667,+1.000]** — near-identical to Llama's
 +0.857 [+0.714,+1.000]. The headline causal timing law reproduces across TWO architectures. ⭐
 
-**Track C (6cw, Level 5):** 6-codeword screen (690985) done → 40/40 eligible, 24 clean bases; feature
-extraction resubmitted **691192** (features_cw6, forward-only) → then `24` codeword-selection test.
+**Track C (6cw, Level 5) — RESULT (691192 features + 24):** codeword-selection by the temporal objective
+(min early-align) jailbreak rate **0.30** vs random **0.208** vs anti **0.225**; temporal−random =
+**+0.092 [−0.037, +0.225]** (n=40) — **directionally positive but NOT significant (CI crosses 0)**.
+**Level 5 NOT cleanly achieved** — the objective helps directionally (consistent with its moderate Level-4
+AUC 0.67) but underpowered. Honest; not over-claimed. Full suffix-GCG (designed) or larger N would be needed.
 
 ## ITER23 — 3 TRACKS IN PARALLEL (user directive "all in parallel")
 Remaining levels 5 (Temporal-GCG) + 6 (thinking) + Phase 8 (cross-model) driven concurrently.
