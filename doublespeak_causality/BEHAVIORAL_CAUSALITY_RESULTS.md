@@ -117,10 +117,20 @@ does not predict — and here inverts — behavioral sufficiency.**
 **Paired bootstrap CI (plan §13):** mid-window **DS−Direct = −0.43 [−0.67, −0.19]** → **CI excludes 0,
 the Direct>DS dissociation is STATISTICALLY SIGNIFICANT.** (n=21 unique base×codeword; see limitation.)
 
-**Limitations:** (1) CIs collapse the 3 context-lengths per (base,codeword) to one point (n=21) because
-the raw log for these jobs pre-dates the `context_len` fix (now in 19); the summary point-estimates use
-the full n≈61–63. Re-running with context_len will tighten the CIs. (2) multi-seed generation pending.
-(3) 12 bases per window (all eligible would be 37) — scale-up pending a stable (non-preempting) slot.
+**Audit fix (iter42):** the CI code (`analyze_behavioral_causality.sufficiency_cis`) previously keyed
+`(base,codeword)` only — collapsing the 3 context-lengths to one point (n=21, last-wins) and able to mix
+windows. **Fixed** to per-condition `(base,codeword,context_len)` + per-window grouping. For runs whose raw
+logs `context_len` (Qwen3/Phi-4, and Llama once resubmitted), the CI now uses the full per-condition n and
+the mid dissociation direction is unchanged:
+| model | window | DS−Direct [95% CI] | n | verdict |
+|---|---|---|---|---|
+| Qwen3 | late | **−0.349 [−0.512, −0.186]** | 43 | excludes 0 ✓ |
+| Phi-4 | early | **−0.263 [−0.421, −0.132]** | 38 | excludes 0 ✓ |
+| Phi-4 | late | **−0.167 [−0.306, −0.028]** | 36 | excludes 0 ✓ |
+| Llama | mid | −0.43 [−0.67, −0.19] | 21* | *pre-fix raw lacks context_len — **resubmitted (692152-4)** for clean per-condition n |
+
+**Remaining limitations:** (1) multi-seed generation pending. (2) 12 bases per window (all eligible would
+be 37) — scale-up pending. (Llama clean per-condition CI lands when 692152-4 are ingested.)
 
 ---
 
