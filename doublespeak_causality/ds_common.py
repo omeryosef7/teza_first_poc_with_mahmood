@@ -303,13 +303,22 @@ def to_messages(prompt: str) -> List[Dict[str, str]]:
     return [{"role": "user", "content": prompt}]
 
 
-def apply_template(tokenizer, prompt: str, add_generation_prompt: bool = True) -> str:
-    """Render the official chat template around a raw user prompt (plan D2)."""
-    return tokenizer.apply_chat_template(
-        to_messages(prompt),
-        tokenize=False,
-        add_generation_prompt=add_generation_prompt,
-    )
+def apply_template(tokenizer, prompt: str, add_generation_prompt: bool = True,
+                   enable_thinking: Optional[bool] = None) -> str:
+    """Render the official chat template around a raw user prompt (plan D2).
+
+    enable_thinking (Phase 7): None → model default (do NOT pass the kwarg); True/False → pass
+    explicitly. Qwen3's default is thinking-ON, and enable_thinking=False must be passed EXPLICITLY
+    (it injects an empty <think></think>); passing only True was a silent no-op — see qwen3_model.py.
+    Tokenizers that don't accept the kwarg fall back to a standard call.
+    """
+    kwargs = dict(tokenize=False, add_generation_prompt=add_generation_prompt)
+    if enable_thinking is not None:
+        try:
+            return tokenizer.apply_chat_template(to_messages(prompt), enable_thinking=enable_thinking, **kwargs)
+        except (TypeError, ValueError):
+            pass  # tokenizer doesn't support the kwarg → standard call
+    return tokenizer.apply_chat_template(to_messages(prompt), **kwargs)
 
 
 # --------------------------------------------------------------------------- #
@@ -423,13 +432,15 @@ class LayerPatch:
 # --------------------------------------------------------------------------- #
 @torch.no_grad()
 def generate(lm: LoadedModel, prompt: str, max_new_tokens: int = 256,
-             templated: bool = True) -> Dict[str, Any]:
+             templated: bool = True, enable_thinking: Optional[bool] = None) -> Dict[str, Any]:
     """Deterministic greedy generation using the native chat template + EOS.
+
+    enable_thinking (Phase 7): forwarded to apply_template when templated (None = model default).
 
     Returns the decoded completion (input stripped) and the stop reason. Does not
     print harmful content (plan §5.12) — callers decide what to persist/redact.
     """
-    text = apply_template(lm.tokenizer, prompt) if templated else prompt
+    text = apply_template(lm.tokenizer, prompt, enable_thinking=enable_thinking) if templated else prompt
     tok = lm.tokenizer(text, return_tensors="pt", add_special_tokens=not templated
                        ).to(lm.model.device)
     in_len = tok["input_ids"].shape[1]

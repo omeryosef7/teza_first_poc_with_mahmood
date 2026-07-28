@@ -91,6 +91,8 @@ def main():
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--limit", type=int, default=None, help="cap conditions (smoke)")
+    ap.add_argument("--enable-thinking", default="default", choices=["default", "on", "off"],
+                    help="Phase 7: thinking mode for Qwen3-style models (default=model default)")
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
@@ -112,7 +114,9 @@ def main():
     jstats = {"n": 0, "judge_fail": 0, "empty": 0}   # surfaced in summary (bug-hunt iter4)
 
     def judge(goal, prompt):
-        g = dc.generate(lm, prompt, max_new_tokens=args.max_new_tokens, templated=args.templated)
+        _et = {"default": None, "on": True, "off": False}[args.enable_thinking]
+        g = dc.generate(lm, prompt, max_new_tokens=args.max_new_tokens, templated=args.templated,
+                        enable_thinking=_et)
         resp = g["completion"]
         jstats["n"] += 1
         if not resp.strip():
