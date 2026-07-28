@@ -25,9 +25,11 @@ FEATS = ["early_align", "mid_align", "late_align", "early_to_late", "onset_layer
 
 
 def _auc(y, s):
-    """ROC AUC. Prefer sklearn (tie-correct; onset_layer is integer with ties); fallback to a
-    rank statistic. A feature and its negation are symmetric — report max(auc, 1-auc) so a
-    strongly *negative* predictor isn't reported as ~0 (direction is set by the sign of the coef)."""
+    """RAW directional ROC AUC (sklearn, tie-correct; rank-statistic fallback). Directional: <0.5
+    means the feature predicts the POSITIVE class *negatively* (e.g. low early_align → DS-malicious).
+    NOTE: report this raw value, NOT max(auc,1-auc) — the symmetric fold is biased upward for
+    genuinely null features (sampling noise pushes |auc-0.5| away from 0), which would make a
+    no-signal feature look predictive. Absolute predictive power = |auc-0.5| is reported separately."""
     y = np.asarray(y); s = np.asarray(s, float)
     if len(set(y.tolist())) < 2:
         return float("nan")
@@ -39,7 +41,7 @@ def _auc(y, s):
         order = np.argsort(s, kind="mergesort")
         ranks = np.empty(len(s), float); ranks[order] = np.arange(1, len(s) + 1)
         a = float((ranks[y == 1].sum() - len(pos) * (len(pos) + 1) / 2) / (len(pos) * len(neg)))
-    return max(a, 1.0 - a)
+    return a
 
 
 def main():
@@ -55,18 +57,20 @@ def main():
     concepts = np.array([r["concept"] for r in rows])
     print(f"[predict] n={len(rows)} pos(DS_MALICIOUS)={int(y.sum())} concepts={len(set(concepts))}")
 
-    # 1) univariate AUCs
-    print("[predict] univariate AUC (predicting DS_MALICIOUS):")
-    uni = {}
+    # 1) univariate AUCs (raw directional; abs power = |auc-0.5| reported alongside)
+    print("[predict] univariate AUC (predicting DS_MALICIOUS; <0.5 = negative predictor):")
+    uni, uni_abs = {}, {}
     for j, f in enumerate(FEATS):
-        a = _auc(y, X[:, j]); uni[f] = round(a, 3)
-        print(f"  {f:14s} AUC={a:.3f}")
+        a = _auc(y, X[:, j]); uni[f] = round(a, 3); uni_abs[f] = round(abs(a - 0.5), 3)
+        print(f"  {f:14s} AUC={a:.3f}  |power|={abs(a - 0.5):.3f}")
     # candidate temporal objective: late_align − λ·early_align
     to = X[:, FEATS.index("late_align")] - args.lam * X[:, FEATS.index("early_align")]
-    auc_to = _auc(y, to); print(f"  {'TEMPORAL late−λ·early':22s} AUC={auc_to:.3f}")
+    auc_to = _auc(y, to); print(f"  {'TEMPORAL late−λ·early':22s} AUC={auc_to:.3f}  |power|={abs(auc_to - 0.5):.3f}")
 
     result = {"n": len(rows), "n_pos": int(y.sum()), "univariate_auc": uni,
-              "temporal_objective_auc": round(auc_to, 3), "lam": args.lam}
+              "univariate_abs_power": uni_abs,
+              "temporal_objective_auc": round(auc_to, 3),
+              "temporal_objective_abs_power": round(abs(auc_to - 0.5), 3), "lam": args.lam}
 
     # 2) multivariate CV + held-out-concept — needs sklearn
     try:
@@ -75,6 +79,9 @@ def main():
         from sklearn.pipeline import make_pipeline
         from sklearn.model_selection import StratifiedKFold, GroupKFold
         from sklearn.metrics import roc_auc_score
+    except ImportError as e:
+        print(f"[predict] sklearn unavailable ({e!r}); univariate AUCs only")
+    else:
 
         def cv_auc(splitter, groups=None):
             aucs = []
@@ -97,8 +104,6 @@ def main():
             mg, sg, kg = cv_auc(gkf, groups=concepts)
             print(f"[predict] HELD-OUT-CONCEPT AUC = {mg:.3f} ± {sg:.3f} (k={kg}) <-- generalization test")
             result["heldout_concept_auc_mean"], result["heldout_concept_auc_std"] = round(mg, 3), round(sg, 3)
-    except Exception as e:
-        print(f"[predict] sklearn unavailable ({e!r}); univariate AUCs only")
 
     out = args.out or os.path.join(os.path.dirname(args.features), "success_predictors.json")
     json.dump(result, open(out, "w"), indent=2)

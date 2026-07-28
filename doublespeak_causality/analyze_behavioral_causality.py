@@ -54,21 +54,30 @@ def necessity_cis(nec_dir):
 
 
 def sufficiency_cis(suf_dir):
+    """Per-CONDITION (base_id, codeword, context_len) paired CI, PER WINDOW (from the arm name).
+    Fixes an audit bug where keying on (base,cw) only collapsed the 3 context_len replicates to 1
+    (last-wins) and mixed windows. context_len may be absent in pre-iter18 raw → falls back to a
+    (base,cw)-collapsed key for those runs (unavoidable without context_len in the log)."""
     rows = [json.loads(l) for l in open(os.path.join(suf_dir, "sufficiency_raw.jsonl"))]
-    # baseline-benign set per (base_id, codeword)
-    benign = {(r["base_id"], r["codeword"]) for r in rows
-              if r["arm"] == "baseline_neutral" and r["cat"] == "BENIGN"}
-    ds = {(r["base_id"], r["codeword"]): r for r in rows if r["arm"].startswith("suff_DS_")}
-    di = {(r["base_id"], r["codeword"]): r for r in rows if r["arm"].startswith("suff_Direct_")}
-    win = next((r["arm"][len("suff_DS_"):] for r in rows if r["arm"].startswith("suff_DS_")), "?")
-    x_ds, x_dir = [], []
-    for k in benign:
-        if k in ds and k in di:
-            x_ds.append(float(ds[k]["cat"] == "MALICIOUS"))
-            x_dir.append(float(di[k]["cat"] == "MALICIOUS"))
-    return {win: {"n_base_benign": len(x_ds),
-                  "suff_DS_rate": _ci(x_ds), "suff_Direct_rate": _ci(x_dir),
-                  "DS_minus_Direct": _ci(x_ds, x_dir)}}
+    key = lambda r: (r["base_id"], r["codeword"], r.get("context_len"))
+    benign = {key(r) for r in rows if r["arm"] == "baseline_neutral" and r["cat"] == "BENIGN"}
+    by_win = defaultdict(lambda: {"ds": {}, "di": {}})
+    for r in rows:
+        for pfx, side in (("suff_DS_", "ds"), ("suff_Direct_", "di")):
+            if r["arm"].startswith(pfx):
+                by_win[r["arm"][len(pfx):]][side][key(r)] = r
+    out = {}
+    for win, d in by_win.items():
+        x_ds, x_dir = [], []
+        for k in benign:                       # per-condition, baseline-BENIGN-conditioned
+            if k in d["ds"] and k in d["di"]:
+                x_ds.append(float(d["ds"][k]["cat"] == "MALICIOUS"))
+                x_dir.append(float(d["di"][k]["cat"] == "MALICIOUS"))
+        if x_ds:
+            out[win] = {"n_base_benign": len(x_ds),
+                        "suff_DS_rate": _ci(x_ds), "suff_Direct_rate": _ci(x_dir),
+                        "DS_minus_Direct": _ci(x_ds, x_dir)}
+    return out
 
 
 def main():

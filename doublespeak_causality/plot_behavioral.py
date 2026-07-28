@@ -54,7 +54,23 @@ SUFF = discover_sufficiency()
 LLAMA = SUFF.get("Llama-3.1-8B", {})
 QWEN = SUFF.get("Qwen3-14B", {})
 PHI4 = SUFF.get("Phi-4-mini", {})
-NEC = "beh_necessity_Llama-3.1-8B-Instruct_20260727_204515"
+def _latest_necessity(model_sub="Llama-3.1-8B-Instruct"):
+    """Latest necessity dir for a model that has all 4 windows in its summary (auto, not hardcoded)."""
+    cands = []
+    for d in sorted(glob.glob(os.path.join(HERE, "outputs", f"beh_necessity_{model_sub}_*"))):
+        p = os.path.join(d, "necessity_summary.json")
+        if not os.path.exists(p):
+            continue
+        try:
+            res = json.load(open(p)).get("results", {})
+        except Exception:
+            continue
+        if all(w in res for w in ("early", "mid", "late", "late_half_to_end")):
+            cands.append(os.path.basename(d))
+    return cands[-1] if cands else "beh_necessity_Llama-3.1-8B-Instruct_20260727_204515"
+
+
+NEC = _latest_necessity()
 
 
 def direct_rates(dirs):
@@ -65,9 +81,12 @@ def direct_rates(dirs):
         if not os.path.exists(p):
             continue
         rows = [json.loads(l) for l in open(p)]
-        benign = {(r["base_id"], r["codeword"]) for r in rows
-                  if r["arm"] == "baseline_neutral" and r["cat"] == "BENIGN"}
-        dr = [r for r in rows if r["arm"].startswith("suff_Direct_") and (r["base_id"], r["codeword"]) in benign]
+        # per-CONDITION baseline-BENIGN conditioning (base,cw,context_len); context_len absent in
+        # pre-iter18 raw falls back to (base,cw,None). Fixes an audit bug where (base,cw)-only
+        # membership pulled in Direct rows from context-lengths whose baseline was NOT benign.
+        k = lambda r: (r["base_id"], r["codeword"], r.get("context_len"))
+        benign = {k(r) for r in rows if r["arm"] == "baseline_neutral" and r["cat"] == "BENIGN"}
+        dr = [r for r in rows if r["arm"].startswith("suff_Direct_") and k(r) in benign]
         c = Counter(r["cat"] for r in dr); n = len(dr) or 1
         out[win] = {"refusal": c.get("REJECTED", 0) / n, "malicious": c.get("MALICIOUS", 0) / n, "n": len(dr)}
     return out
