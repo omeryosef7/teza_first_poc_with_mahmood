@@ -406,6 +406,13 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER37 — 3rd architecture (Phi-4) behavioral reproduction ✅; timing sweep launched
+Phi-4-mini-reasoning curated screen (691440) COMPLETE: **eligible 34/40, clean 18, 0 judge fail** — the
+behavioral jailbreak reproduces across ALL THREE architectures (Llama 37/40·18, Qwen3 38/40·17, Phi-4
+34/40·18). `fig_crossmodel_behavioral.png` refreshed (fixed a stale reclassified.json bug: Llama's cached
+file still had the pre-fix 4/40; re-ran analyze_screen → 37/40). Phi-4 timing sweep **691545 (early) +
+691546 (late)** launched (max_tok 400 for reasoning) → 3-architecture TOCTOU test.
+
 ## ITER35 — extend TOCTOU to a 3rd architecture (Phi-4-mini) + publication figures
 Cluster showed idle capacity → retry GPU. **SLURM 691440** Phi-4-mini-reasoning curated screen (thinking
 default, max_tok 300) → eligible set → Phi-4 sufficiency early/late timing sweep → if early→refuse/late→comply
