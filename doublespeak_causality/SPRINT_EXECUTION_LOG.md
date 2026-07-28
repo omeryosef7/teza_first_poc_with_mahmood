@@ -412,6 +412,11 @@ behavioral jailbreak reproduces across ALL THREE architectures (Llama 37/40·18,
 34/40·18). `fig_crossmodel_behavioral.png` refreshed (fixed a stale reclassified.json bug: Llama's cached
 file still had the pre-fix 4/40; re-ran analyze_screen → 37/40). Phi-4 timing sweep **691545 (early) +
 691546 (late)** launched (max_tok 400 for reasoning) → 3-architecture TOCTOU test.
+**RESULT:** Phi-4 early refusal 0.62 > late 0.33; early−late Δ=+0.250 [−0.083,+0.583] (n=12) — SAME
+DIRECTION as Llama (+0.857) / Qwen3 (+0.867) but weaker + NS. **TOCTOU is directionally 3-architecture-
+general, strongly significant on the 2 non-reasoning models; compressed under Phi-4's reasoning** (CoT
+re-examines injected meaning at any depth — coheres with the thinking result). Figure now 3-model
+(`fig_toctou_timing.png`). Documented honestly — not over-claimed for Phi-4.
 
 ## ITER35 — extend TOCTOU to a 3rd architecture (Phi-4-mini) + publication figures
 Cluster showed idle capacity → retry GPU. **SLURM 691440** Phi-4-mini-reasoning curated screen (thinking
