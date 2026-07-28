@@ -407,6 +407,15 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER47 — ROBUSTNESS SCALE-UP: flagship Llama sufficiency+timing 12→37 bases (all eligible)
+Core sprint complete + audit-clean; the single remaining unblocked GPU step is hardening the headline
+numbers, which rest on only 12 bases/window. Submitted **692572 (early) / 692573 (mid) / 692574 (late)**
+at DSMAXBASES=37 (all curated_v1 eligible), curated_v1 screen/matrix, current `19` (logs context_len).
+Prior 12-base run = 48 min → 37 bases ≈ 2.5 h/window, within the 6 h limit on the stabilized cluster.
+On ingest: re-run `analyze_behavioral_causality --sufficiency-dir … --timing-dir …` on the new dirs →
+the mid/late DS−Direct dissociation and the early−late TOCTOU gradient get ~3× the n. Reuses existing
+runner/analyzer only — no new code. Everything else at rest; no other jobs.
+
 ## ITER46 — doc-consistency pass + Phi-4 TOCTOU now SIGNIFICANT on clean n (all 3 architectures)
 Ran the new `timing_cis` on Qwen3 + Phi-4 dirs to make the cross-model TOCTOU table fully reproducible
 (all hand-computed numbers replaced). **Key upgrade:** Phi-4 early−late refusal = **+0.250 [+0.056, +0.444],
