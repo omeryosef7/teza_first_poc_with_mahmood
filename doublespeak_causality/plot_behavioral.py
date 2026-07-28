@@ -28,12 +28,32 @@ sys.path.insert(0, os.path.join(HERE, "..", "poc_stage3"))
 _s.loader.exec_module(v17)
 kw = v17.kw_refusal
 
-# result dirs (this sprint's runs)
-LLAMA = {"early": "beh_sufficiency_Llama-3.1-8B-Instruct_20260727_213542",
-         "mid": "beh_sufficiency_Llama-3.1-8B-Instruct_20260727_203514",
-         "late": "beh_sufficiency_Llama-3.1-8B-Instruct_20260727_215026"}
-QWEN = {"early": "beh_sufficiency_Qwen3-14B_20260728_091747",
-        "late": "beh_sufficiency_Qwen3-14B_20260728_091938"}
+import glob
+
+
+def discover_sufficiency():
+    """Auto-map {model_short: {window: dir}} from all sufficiency summaries (latest per model+window)."""
+    out = {}
+    for d in sorted(glob.glob(os.path.join(HERE, "outputs", "beh_sufficiency_*"))):
+        p = os.path.join(d, "sufficiency_summary.json")
+        if not os.path.exists(p):
+            continue
+        try:
+            s = json.load(open(p))
+        except Exception:
+            continue
+        model = s.get("model", "?").split("/")[-1]
+        short = {"Llama-3.1-8B-Instruct": "Llama-3.1-8B", "Qwen3-14B": "Qwen3-14B",
+                 "Phi-4-mini-reasoning": "Phi-4-mini"}.get(model, model)
+        for w in s.get("results", {}):
+            out.setdefault(short, {})[w] = os.path.basename(d)   # later dirs overwrite → latest wins
+    return out
+
+
+SUFF = discover_sufficiency()
+LLAMA = SUFF.get("Llama-3.1-8B", {})
+QWEN = SUFF.get("Qwen3-14B", {})
+PHI4 = SUFF.get("Phi-4-mini", {})
 NEC = "beh_necessity_Llama-3.1-8B-Instruct_20260727_204515"
 
 
@@ -54,23 +74,27 @@ def direct_rates(dirs):
 
 
 def fig_toctou():
-    ll, qw = direct_rates(LLAMA), direct_rates(QWEN)
+    ll, qw, ph = direct_rates(LLAMA), direct_rates(QWEN), direct_rates(PHI4)
     order = ["early", "mid", "late"]
     xs = list(range(len(order)))
-    fig, ax = plt.subplots(figsize=(6, 4))
+    xi = {w: xs[order.index(w)] for w in order}
+    fig, ax = plt.subplots(figsize=(6.2, 4.2))
     ax.plot(xs, [ll.get(w, {}).get("refusal", float("nan")) for w in order], "o-", color="#c0392b",
             lw=2.4, ms=9, label="Llama-3.1-8B refusal")
-    qorder = [order.index("early"), order.index("late")]
-    ax.plot([xs[order.index("early")], xs[order.index("late")]],
-            [qw.get("early", {}).get("refusal", float("nan")), qw.get("late", {}).get("refusal", float("nan"))],
-            "s--", color="#e67e22", lw=2.4, ms=9, label="Qwen3-14B refusal")
+    def two(rates, style, color, lbl):
+        pts = [(xi[w], rates[w]["refusal"]) for w in ("early", "late") if w in rates]
+        if len(pts) == 2:
+            ax.plot([p[0] for p in pts], [p[1] for p in pts], style, color=color, lw=2.4, ms=9, label=lbl)
+    two(qw, "s--", "#e67e22", "Qwen3-14B refusal")
+    two(ph, "D-.", "#27ae60", "Phi-4-mini refusal")
     ax.plot(xs, [ll.get(w, {}).get("malicious", float("nan")) for w in order], "^:", color="#2980b9",
             lw=1.8, ms=8, label="Llama malicious (compliance)")
     ax.set_xticks(xs); ax.set_xticklabels(["early\n(0–9)", "mid\n(10–19)", "late\n(20–31)"])
     ax.set_ylabel("rate (among benign Neutrals)"); ax.set_ylim(-0.03, 1.03)
     ax.set_xlabel("layer window where the harmful concept is injected")
-    ax.set_title("TOCTOU causal timing: early injection → refusal, late → compliance\n"
-                 "(architecture-general: Llama + Qwen3)", fontsize=10)
+    nmods = 1 + (1 if qw else 0) + (1 if ph else 0)
+    ax.set_title(f"TOCTOU causal timing: early injection → refusal, late → compliance\n"
+                 f"(architecture-general across {nmods} model{'s' if nmods > 1 else ''})", fontsize=10)
     ax.legend(fontsize=8, loc="center left"); ax.grid(alpha=0.25)
     fig.tight_layout(); p = os.path.join(OUT, "fig_toctou_timing.png"); fig.savefig(p, dpi=150); plt.close(fig)
     print(f"  -> {p}")
