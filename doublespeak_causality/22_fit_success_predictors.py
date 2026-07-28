@@ -38,8 +38,20 @@ def _auc(y, s):
         a = float(roc_auc_score(y, s))
     except Exception:
         pos, neg = s[y == 1], s[y == 0]
+        # tie-corrected midranks (average rank within ties) so the fallback matches sklearn on
+        # tied scores (e.g. integer-valued onset_layer); plain argsort ranks would diverge.
         order = np.argsort(s, kind="mergesort")
         ranks = np.empty(len(s), float); ranks[order] = np.arange(1, len(s) + 1)
+        su = np.sort(s)
+        i = 0
+        while i < len(su):
+            j = i
+            while j + 1 < len(su) and su[j + 1] == su[i]:
+                j += 1
+            if j > i:  # tie group [i..j] → assign the average of their ranks
+                avg = (i + 1 + j + 1) / 2.0
+                ranks[np.isin(s, su[i])] = avg
+            i = j + 1
         a = float((ranks[y == 1].sum() - len(pos) * (len(pos) + 1) / 2) / (len(pos) * len(neg)))
     return a
 

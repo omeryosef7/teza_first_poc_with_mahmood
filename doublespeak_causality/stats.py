@@ -86,8 +86,14 @@ def paired_bootstrap_ci(
         import warnings
         warnings.warn(f"paired_bootstrap_ci: n={n} is small; percentile CI unreliable "
                       f"(ci_reliable=False) — do not draw 'CI excludes 0' conclusions.")
+    # Also degenerate when the paired diffs have ZERO variance (all identical, e.g. every DS malicious
+    # & every Direct not → d=[1,1,...], or all-0): every resample reproduces the mean, so lo==hi==mean
+    # and a percentile bootstrap carries no uncertainty. Flag it unreliable so no "CI excludes 0" claim
+    # is drawn from a point-mass CI, even at n>=8.
+    degenerate = bool(np.std(d) == 0.0)
     return {"mean_diff": float(d.mean()), "lo": lo, "hi": hi,
-            "n": int(n), "ci_reliable": bool(n >= 8)}
+            "n": int(n), "ci_reliable": bool(n >= 8 and not degenerate),
+            "degenerate": degenerate}
 
 
 def _binom_pmf(k: int, n: int, p: float) -> float:
@@ -303,7 +309,7 @@ if __name__ == "__main__":
 
     # 1. paired_bootstrap_ci
     ci = paired_bootstrap_ci(xa, ya, n_boot=2000, seed=0)
-    assert set(ci) == {"mean_diff", "lo", "hi"}
+    assert {"mean_diff", "lo", "hi", "n", "ci_reliable"} <= set(ci)
     assert ci["lo"] <= ci["mean_diff"] <= ci["hi"]
     assert abs(ci["mean_diff"] - 1.0) < 1e-9
     # determinism

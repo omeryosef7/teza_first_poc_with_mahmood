@@ -144,9 +144,13 @@ def fig_sufficiency():
             out[win] = (r.get("suff_DS_malicious_rate"), r.get("suff_Direct_malicious_rate"))
         return out
     m = mal(LLAMA); order = ["early", "mid", "late"]; xs = list(range(len(order)))
+    nan = float("nan")
+    def val(w, i):  # guard: a window run may be missing (KeyError) or carry a None rate on a partial summary
+        v = m.get(w, (nan, nan))[i]
+        return nan if v is None else v
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.plot(xs, [m[w][0] for w in order], "o-", color="#8e44ad", lw=2.4, ms=9, label="Neutral←DS (hijacked state)")
-    ax.plot(xs, [m[w][1] for w in order], "s-", color="#16a085", lw=2.4, ms=9, label="Neutral←Direct (raw concept)")
+    ax.plot(xs, [val(w, 0) for w in order], "o-", color="#8e44ad", lw=2.4, ms=9, label="Neutral←DS (hijacked state)")
+    ax.plot(xs, [val(w, 1) for w in order], "s-", color="#16a085", lw=2.4, ms=9, label="Neutral←Direct (raw concept)")
     ax.set_xticks(xs); ax.set_xticklabels(["early", "mid", "late"])
     ax.set_ylabel("malicious rate (behavioral sufficiency)")
     ax.set_xlabel("injection window")

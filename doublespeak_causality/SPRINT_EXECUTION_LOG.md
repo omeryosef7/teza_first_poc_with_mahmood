@@ -407,6 +407,24 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER48 — 2nd ultracode bug audit (Workflow wlacvsx1b, 5 reviewers→verify): 5 fixed, NONE change results
+Code-only fan-out (benign .py + scalar JSON only; no subagent read raw generations). 13 raw → 5 REAL
+(all MED→LOW, no HIGH). **None require resubmitting the running jobs** (692572-4 use `19`, unaffected):
+1. **stats.paired_bootstrap_ci** — `ci_reliable` was `bool(n>=8)`, TRUE even on zero-variance samples
+   (all-identical paired diffs → point-mass CI lo==hi==mean read as "excludes 0"). Fixed: also require
+   `np.std(d)!=0`; added `degenerate` flag. **Checked: no reported significance claim rests on a degenerate
+   CI** — all "excludes 0" claims are on deltas with real variance (mid −0.295, timing +0.869 unchanged);
+   only descriptive point rates (late refusal 0.0[0,0], Qwen early 1.0[1,1]) flip to ci_reliable=False.
+2. **plot_behavioral.fig_sufficiency** — `m[w]` KeyError if a window run missing (latent; all 3 exist).
+   Fixed with `.get(w,(nan,nan))` + None→nan guard, mirroring fig_toctou.
+3. **stats.py self-test** — stale assertion (3 keys vs current 5) aborted `python stats.py`. Fixed → ALL PASS.
+4. **22._auc fallback** — rank stat not tie-correct (docstring claimed it was); diverged from sklearn on
+   ties. Fixed with averaged midranks — verified fallback==sklearn on 3 tie cases (0.75/0.75/0.583).
+5. **18 (necessity)** — no `--enable-thinking` passthrough while 19 had it → different thinking mode on
+   Qwen3-style models. Added arg+_ET mapping+apply_template threading + runner DSTHINK, mirroring 19.
+   (Latent: necessity was Llama-only/non-thinking, so no reported number affected.)
+Re-ran clean Llama analysis: all CIs identical. Committed+pushed. Scale-up jobs still running clean.
+
 ## ITER47 — ROBUSTNESS SCALE-UP: flagship Llama sufficiency+timing 12→37 bases (all eligible)
 Core sprint complete + audit-clean; the single remaining unblocked GPU step is hardening the headline
 numbers, which rest on only 12 bases/window. Submitted **692572 (early) / 692573 (mid) / 692574 (late)**

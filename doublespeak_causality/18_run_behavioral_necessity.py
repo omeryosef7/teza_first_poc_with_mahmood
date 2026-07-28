@@ -151,12 +151,15 @@ def main():
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--max-clean", type=int, default=40)
     ap.add_argument("--windows", default=None, help="comma list of windows (default all); e.g. early")
+    ap.add_argument("--enable-thinking", default="default", choices=["default", "on", "off"],
+                    help="thinking mode for chat template (mirrors 19; matters for Qwen3-style models)")
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
+    _ET = {"default": None, "on": True, "off": False}[args.enable_thinking]
     ts = time.strftime("%Y%m%d_%H%M%S")
     tag = args.model.split("/")[-1]
     out_dir = args.out_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -211,8 +214,8 @@ def main():
     for i, c in enumerate(clean):
         cw = c["codeword"]
         goal = c["direct"][len(PFX):-len(SFX)] if c["direct"].startswith(PFX) and c["direct"].endswith(SFX) else c["direct"]
-        ds_text = dc.apply_template(lm.tokenizer, c["doublespeak"])
-        neu_text = dc.apply_template(lm.tokenizer, c["neutral"])
+        ds_text = dc.apply_template(lm.tokenizer, c["doublespeak"], enable_thinking=_ET)
+        neu_text = dc.apply_template(lm.tokenizer, c["neutral"], enable_thinking=_ET)
         # capture positions + per-layer reps with GENERATION-CONSISTENT tokenization
         ds_cap = capture_reps_for_gen(lm, ds_text, cw)
         neu_cap = capture_reps_for_gen(lm, neu_text, cw)
