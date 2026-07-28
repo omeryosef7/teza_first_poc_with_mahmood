@@ -70,21 +70,41 @@ refusal is a time-of-check operation on EARLY representations.** This explains W
 hijacked meaning emerges LATE (rep-level result), so it slips past the early refusal checkpoint. Closes the
 representation→behavior loop with a causal timing law. (Success Level 3.)
 
-## 6. Mechanistic attack objective — Claim E (Phases 5-6, NOT STARTED; DE-RISKED)
-`poc_stage_gcg_early/objectives.py` already has `repr_loss` + `ObjectiveWeights` + activation capture;
-`reinforce_mac.py` = MAC. Temporal-GCG = a layer-weighted `repr_loss` plug-in. Must improve held-out
-behavioral ASR vs standard GCG/MAC to count.
+## 6. Mechanistic attack objective — Claim E (Phase 5-6) — PARTIAL
+**Level 4 ✅:** the "benign-early / harmful-late" signature PREDICTS held-out jailbreak (held-out-concept
+AUC 0.668, CV 0.73); the predictive component is EARLY-benign alignment (late_align alone inert) —
+cohering with the TOCTOU law. **Level 5 🔶 (directional, not significant):** using the objective to SELECT
+codewords (min early-align) raises jailbreak rate 0.30 vs 0.208 random (+0.092 [−0.037, +0.225], n=40) —
+positive but underpowered; consistent with the moderate objective. Full suffix-GCG designed
+(`GCG_MAC_COMPARISON.md`: temporal = mixed early-benign/late-harmful `repr_loss`), not yet run.
 
-## 7. Thinking vs non-thinking — Claim F (Phase 7, NOT STARTED; DE-RISKED)
-Qwen3 same-weights toggle already implemented+tested (`qwen3_model.py`); gotcha documented (default
-thinking-ON; `enable_thinking=False` injects empty `<think>`). Needs `ds_common` pass-through.
+## 7. Thinking vs non-thinking — Claim F (Phase 7) — PARTIAL (Level 6)
+Within-model on Qwen3 (same weights, n=90): thinking does NOT amplify success (DS mal 0.22 vs 0.24, NS) but
+INTRODUCES some DS refusals (0.00→0.067, sig — reasoning catches some hijacks) and STEEPENS the dose-response
+(DS-mal by demos 0.14/0.23/0.36 vs 0.09/0.16/0.16). A real but modest within-model difference; no causal
+thinking-time intervention yet. (`THINKING_VS_NONTHINKING.md`.)
+
+## 7b. Cross-model generalization ⭐
+The **behavioral jailbreak** and the **TOCTOU causal-timing law** both reproduce on **Qwen3-14B**:
+behavioral eligibility 38/40 (~Llama 37/40); early−late refusal Δ=+0.867 [+0.667,+1.00] (~Llama +0.857).
+Together with the rep-level results (already cross-Llama/Qwen3/Phi-4), the causal story is
+architecture-general at every level.
 
 ## 8. What remains unresolved
-- Behavioral necessity/sufficiency magnitudes + controls (Phase 3, imminent).
-- Whether timing is causal for refusal-vs-compliance (Phase 4).
-- Whether a mechanistic objective beats standard GCG/MAC on held-out ASR (Phases 5-6).
-- Thinking-mode mechanism differences (Phase 7).
-- Cross-model behavioral generalization (Phase 8) — rep-level already 3 families.
+- **Level 5 clean:** a *significant* attack-ASR gain from the temporal objective — needs the full
+  suffix-GCG (designed) or larger-N codeword selection. Currently directional only.
+- **Level 6 clean:** a causal thinking-time intervention (remove/add the harmful direction during early vs
+  late thinking; does refusal onset shift?) — would connect thinking to the TOCTOU law. Behavioral
+  comparison done; intervention not.
+- Necessity specificity-over-random is underpowered (n=20) — larger N.
+- Representation-level thinking trajectories (where in the CoT the hijack forms).
+- Phi-4 / Llama-3.3-70B behavioral + timing replication (rep-level already 3 families).
+
+## 10. Success scorecard (plan §24, honest)
+**Level 1 ✅** benchmark · **Level 2 ✅** behavioral necessity (early) · **Level 3 ✅ ⭐** causal timing
+(TOCTOU) — architecture-general · **Level 4 ✅** predictive objective (AUC 0.67) · **Level 5 🔶** directional
+attack gain (NS) · **Level 6 🔶** modest thinking difference. Plus: cross-model behavioral reproduction, a
+fully bug-audited/re-validated frozen baseline, and the rep↔behavioral **dissociation** methodological result.
 
 ## 9. One-line thesis (current)
 > Doublespeak builds a distinct, late-emerging, attention-routed codeword representation (causally
