@@ -404,6 +404,13 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER31 — Level-5 push: robustness + benchmark expansion
+Codeword-selection Level-5 confirmed robustly directional-but-NS: univariate early_align Δ+0.092
+[−0.037,+0.225] AND multivariate LOCO Δ+0.067 [−0.046,+0.183], both cross 0 at n=40. Not a selection-rule
+artifact — the effect is genuinely small (moderate objective → moderate gain). Lever = more N. Expanded
+`curated_concepts.json` 20→42 concepts / 40→84 bases; building `curated_cw4x42` matrix (bg) → filter len8 →
+screen (~336 cond) → features → 24 retest at larger N. If still NS, the honest verdict stands (directional).
+
 ## ITER28 — THINKING vs NON-THINKING (Phase 7, Level 6 partial): modest mixed effect
 Qwen3 same-weights, matched n=90 (690984 think + 690928 nothink first-90). **Thinking does NOT amplify
 the attack** (DS malicious 0.22 vs 0.24, NS) but **introduces DS refusals** (0.00→0.067, sig — reasoning
