@@ -89,7 +89,12 @@ def main():
 
     dc.set_seed(args.seed)
     _ET = {"default": None, "on": True, "off": False}[args.enable_thinking]
-    ts = time.strftime("%Y%m%d_%H%M%S")
+    # ts alone (second granularity) COLLIDES when parallel same-model window jobs start the same second
+    # → last-writer clobbers the others. Append SLURM_JOB_ID (or PID) to guarantee a unique dir; also
+    # fold in --windows for readability when a single window is swept.
+    uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
+    wtag = ("_" + args.windows.replace(",", "-")) if args.windows else ""
+    ts = time.strftime("%Y%m%d_%H%M%S") + wtag + "_" + uniq
     tag = args.model.split("/")[-1]
     out_dir = args.out_dir or os.path.join(HERE, "outputs", f"beh_sufficiency_{tag}_{ts}")
     os.makedirs(out_dir, exist_ok=True)

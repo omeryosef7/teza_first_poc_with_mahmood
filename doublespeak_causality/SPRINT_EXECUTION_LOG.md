@@ -407,6 +407,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER49 — CAUGHT + FIXED an output-dir COLLISION in the 37-base scale-up (real bug, self-review)
+The 3 scale-up jobs (692572-4) all started the SAME second → `19`'s `out_dir` used a second-granularity
+`ts=strftime("%Y%m%d_%H%M%S")` with no uniquifier → all three resolved to the SAME dir
+`beh_sufficiency_..._20260728_230505`, and the last finisher (late) clobbered early+mid. Net: only the
+**late** 37-base window survived (666 rows, 37 bases, verified). The earlier 12-base batch (692152-4) did
+NOT collide only because those started at different seconds (152 ran while 153/154 queued). **Fix:** append
+`SLURM_JOB_ID` (or PID) + the `--windows` tag to the dir name in BOTH `19` and `18` → collision-proof for
+parallel same-model window sweeps. **Resubmitted early (692637) + mid (692638)** at 37 bases with the fix;
+late 37-base kept as `20260728_230505`. On ingest: analyze all three 37-base dirs → flagship at full
+eligible n. (No result was previously mis-reported — the 37-base numbers had not yet been ingested.)
+
 ## ITER48 — 2nd ultracode bug audit (Workflow wlacvsx1b, 5 reviewers→verify): 5 fixed, NONE change results
 Code-only fan-out (benign .py + scalar JSON only; no subagent read raw generations). 13 raw → 5 REAL
 (all MED→LOW, no HIGH). **None require resubmitting the running jobs** (692572-4 use `19`, unaffected):
