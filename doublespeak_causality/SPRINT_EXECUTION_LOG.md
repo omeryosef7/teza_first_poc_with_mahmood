@@ -410,7 +410,11 @@ identity/random controls over the late window. Fires on 688994 completion.
 Recent Phi-4 jobs COMPLETED cleanly (49/38/43 min, no preemption) → ~50-min jobs now reliable. The one
 underpowered clean result is necessity SPECIFICITY (early Δ=0.50 sig, but necessity−random +0.25 [−0.05,
 +0.50] NS at n=20). Added `--windows`/DSWINDOWS to 18 + runner; submitted **SLURM 691756** early-window
-necessity at max_clean=40 (2× N, ~160 gens ~30min) → does the early-window specificity reach significance?
+necessity at max_clean=40. **RESULT:** early Δ_nec=0.455 [0.303,0.636] (significant vs baseline, ~n=20's
+0.50), but necessity−random=**0.182 [−0.030,0.394]** — STILL crosses 0 at n=33. Doubling N did NOT resolve
+it → the specificity over random is genuinely MODEST (neutral patch ~1.7× more disruptive than random early),
+not just small-N. Honest Claim B stands: necessity real (early Δ sig), specificity underpowered/modest.
+Also: comprehensive PIPELINE bug-audit fanned out (Workflow wo3i2ehk1, 5 reviewers over all stages).
 
 ## ITER37 — 3rd architecture (Phi-4) behavioral reproduction ✅; timing sweep launched
 Phi-4-mini-reasoning curated screen (691440) COMPLETE: **eligible 34/40, clean 18, 0 judge fail** — the
