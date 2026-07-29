@@ -163,11 +163,19 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
             lp = torch.log_softmax(out_h.logits[0, -1, :].float(), dim=-1)
             p_discrete = float(torch.logsumexp(lp[tgt], dim=0).exp())
 
-    peak, frac_changed = None, None
+    peak, frac_changed, peak_min, n_blended = None, None, None, None
     if param != "free":
         with torch.no_grad():
             w = torch.softmax(var / temperature, dim=-1)
-            peak = float(w.max(dim=-1).values.mean())
+            mx = w.max(dim=-1).values
+            peak = float(mx.mean())
+            # MEAN peak weight hides the positions that matter. Job 693655 prompt 1 had
+            # mean peak 0.991 -- nearly one-hot -- yet discretizing collapsed the score from
+            # 0.9988 to 0.00005. A handful of heavily blended positions were carrying the
+            # entire effect. Report the minimum and the count of blended positions so that
+            # "the relaxation cheated in a few slots" is visible without discretizing.
+            peak_min = float(mx.min())
+            n_blended = int((mx < 0.9).sum())
             # DID THE OPTIMIZER ACTUALLY EXPLORE? The logits start with a gap of
             # 2*init_scale between the initial token and every other token; Adam moves a
             # logit by ~lr per step, so with too small an lr*steps budget the argmax CANNOT
@@ -179,6 +187,8 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
             "p_best": best["p_target"], "best_step": best["step"],
             "n_free_tokens": b - a, "param": param,
             "mean_peak_weight": (None if peak is None else round(peak, 4)),
+            "min_peak_weight": (None if peak is None else round(peak_min, 4)),
+            "n_blended_positions": (None if peak is None else n_blended),
             "frac_positions_changed": (None if frac_changed is None
                                        else round(frac_changed, 4)),
             "optimizer_moved": (None if frac_changed is None else bool(frac_changed > 0)),

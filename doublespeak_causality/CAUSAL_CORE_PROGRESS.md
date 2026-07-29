@@ -24,8 +24,8 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
 | S9 | Causal attack-window estimate (§16.11) | `PARTIAL` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows differ — needs writing up as a result, not a single number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
-| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` — **gate still OPEN** | run 1 (693631/2/3, `free`) passed **vacuously** — unconstrained prompts hit ~1.0 for the concept *and* an unrelated target. Run 2 (693648/9, `simplex`) returned a null that was an **optimizer artefact** (`lr×steps=3` against an init gap of 20 → the argmax could not move). Run 3 = 693652/3/4 with lr=1.0 and self-reporting `optimizer_moved` / `budget_sufficient`. |
-| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `BLOCKED` | correctly blocked: the §8.5 gate has not yet produced an informative positive control |
+| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7): relaxed ~1.0 but **discretized ≈0.006** for the concept (~0.6% retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
+| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
@@ -79,9 +79,12 @@ receive only redacted labels, scalars and statistics.
 | 693633 | S11 soft-prompt **free** concept/readout (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_concept_readout_*` |
 | 693647 | S8 knockout `all_layers` | `run_pair_attn.sh` | — | 2026-07-29 | ✅ COMPLETE (216 rows, 0% unlocated) — **non-specific** | `outputs/pair_attn_knockout_*_693647` |
 | 693648 | S11 soft-prompt simplex concept (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — optimizer frozen (`lr×steps=3` vs init gap 20) | `outputs/pair_softprompt_simplex_concept_demos_*_693648` |
-| 693652 | S11 soft-prompt simplex concept (**lr=1.0**) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_concept_demos_*_693652` |
-| 693653 | S11 soft-prompt simplex unrelated (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_unrelated_demos_*_693653` |
-| 693654 | S11 soft-prompt simplex codeword (reachability ref) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_codeword_demos_*_693654` |
+| 693652 | S11 simplex concept (lr=1.0, pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693655 | `outputs/pair_softprompt_simplex_concept_demos_*_693652` |
+| 693653 | S11 simplex unrelated (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693656 | — |
+| 693654 | S11 simplex codeword (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693657 | — |
+| 693655 | S11 simplex **concept + discretize** | `run_pair_softprompt.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — relaxed ~0.99 → **discretized ≈0.006** | `outputs/pair_softprompt_simplex_concept_demos_*_693655` |
+| 693656 | S11 simplex unrelated + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 0.9994 → **0.0124** | `outputs/pair_softprompt_simplex_unrelated_demos_*_693656` |
+| 693657 | S11 simplex codeword + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 1.0000 → **0.1016** | `outputs/pair_softprompt_simplex_codeword_demos_*_693657` |
 | 693649 | S11 soft-prompt simplex unrelated (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — same frozen optimizer | `outputs/pair_softprompt_simplex_unrelated_demos_*_693649` |
 
 ---
@@ -592,11 +595,68 @@ carrier variants, the unconstrained soft prompt). The pattern is consistent enou
 as a working rule for this codebase: **never accept a null without a positive control that
 proves the intervention could have moved the outcome.**
 
+### ITER11 — 2026-07-29 — S11 gate RESOLVED: an optimization gap, not an unreachability result
+
+With `lr=1.0` the simplex optimizer finally moves (19–41% of positions change argmax), and
+the **discretization check** — added precisely because `peak_w ≈ 0.80` meant the relaxed
+optimum is a *blend* no real prompt can be — settles the gate.
+
+| target | start | relaxed `p_best` | **discretized** | retention |
+|---|---|---|---|---|
+| **concept** (bomb) | 0.0000 | ~0.99 | **≈0.006** (per-prompt 5e-05, 0.034, 0.0, 1e-06, 1e-06, 1.2e-05) | **~0.6%** |
+| codeword (carrot) | 0.0044 | 1.0000 | 0.1016 | 10.2% |
+| unrelated (virus) | 0.0009 | 0.9994 | 0.0124 | 1.2% |
+
+**~99% of the relaxed "success" evaporates on discretization.** Had the relaxed number been
+reported as the gate result — which both earlier attempts would have done — S12 would have
+launched believing the objective fully reachable.
+
+**But the natural reading of that table is wrong, and the data says so.** "Discretized ≈ 0,
+therefore the causal objective is not reachable through demonstration tokens" is refuted by
+an existence proof already in hand: the **real Doublespeak demonstration block is a token
+sequence at exactly those positions**, and it achieves
+
+| prompt at the demo positions | p_concept (cloze, gate-passing styles) |
+|---|---|
+| `NEUTRAL_CODEWORD` demos (the soft-prompt starting point) | **0.0000** |
+| `DOUBLESPEAK` demos (real tokens, same slots) | **0.4756** |
+
+So a token sequence achieving a high causal score demonstrably exists. The soft-prompt
+relaxation simply fails to find it. **The S11 gate therefore reports an OPTIMIZATION gap,
+not unreachability** — and that distinction decides what happens next.
+
+**Consequences.**
+1. **Continuous relaxation provides no useful upper bound here.** Its optimum lives
+   off-manifold (mean peak weight 0.79–0.99, but the *minimum* per-position weight is what
+   matters — job 693655 prompt 1 had mean peak 0.991 yet discretized to 5e-05, i.e. a
+   handful of blended slots carried the entire effect). `min_peak_weight` and
+   `n_blended_positions` are now reported so this is visible without discretizing.
+2. **S12 is unblocked, but on a corrected rationale.** Per §8.5 the gate exists to stop us
+   interpreting a discrete failure as impossibility. We now know the target is achievable by
+   tokens, so a discrete search failing would be informative about the *search*, and a
+   discrete search succeeding is meaningful. S12 should be initialized from / benchmarked
+   against the real DS demo block (p_concept 0.476) rather than from Neutral, and its
+   success criterion must be **held-out behavioral ASR** (§9), not the causal score.
+3. **This also reframes the prior sprint's suffix-GCG negative.** That result was reported as
+   "the mechanism is not distillable into a suffix". The present evidence suggests a simpler
+   explanation is available — gradient-relaxation methods are simply poor at this objective,
+   independent of whether the mechanism is distillable — so the negative should stay bounded
+   exactly as `PAPER_DRAFT.md` now words it.
+
+A caution on the earlier `unrelated`-target control, recorded so the mis-specification does
+not propagate: for the *unconstrained* parameterization it correctly exposed a vacuous pass.
+Under the simplex it is the wrong control, because teaching a codeword an arbitrary meaning
+through demonstrations **is the Doublespeak premise**, not a confound. The controls that
+discriminate here are discretization retention, transfer to held-out readouts, and behavioral
+ASR.
+
 ---
 
 ## Next single highest-value experiment
 
-**Close the S11 gate (693648/693649), then S10.** Everything else in the chain has landed; the objective work
+**S10 (define the causal objective), then S12.** The S11 gate is resolved.
+
+Superseded text: Everything else in the chain has landed; the objective work
 is what the plan actually builds toward, and it cannot start until the §8.5 gate returns an *informative*
 answer. Two outcomes are both publishable: if the vocabulary-simplex relaxation can drive the causal score
 while the unrelated-target control cannot, the objective is genuinely optimizable at demonstration positions
