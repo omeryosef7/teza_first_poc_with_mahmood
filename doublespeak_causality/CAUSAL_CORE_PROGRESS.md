@@ -24,7 +24,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
 | S9 | Causal attack-window estimate (§16.11) | `PARTIAL` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows differ — needs writing up as a result, not a single number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
-| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` — **gate still OPEN** | first run (693631/2/3) passed **vacuously**: unconstrained soft prompts hit ~1.0 for the concept *and* for an unrelated target. Re-running with a vocabulary-simplex relaxation (693648/693649), which is a true bound for a token sequence. |
+| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` — **gate still OPEN** | run 1 (693631/2/3, `free`) passed **vacuously** — unconstrained prompts hit ~1.0 for the concept *and* an unrelated target. Run 2 (693648/9, `simplex`) returned a null that was an **optimizer artefact** (`lr×steps=3` against an init gap of 20 → the argmax could not move). Run 3 = 693652/3/4 with lr=1.0 and self-reporting `optimizer_moved` / `budget_sufficient`. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `BLOCKED` | correctly blocked: the §8.5 gate has not yet produced an informative positive control |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
@@ -78,8 +78,11 @@ receive only redacted labels, scalars and statistics.
 | 693632 | S11 soft-prompt **free** unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_unrelated_demos_*` |
 | 693633 | S11 soft-prompt **free** concept/readout (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_concept_readout_*` |
 | 693647 | S8 knockout `all_layers` | `run_pair_attn.sh` | — | 2026-07-29 | ✅ COMPLETE (216 rows, 0% unlocated) — **non-specific** | `outputs/pair_attn_knockout_*_693647` |
-| 693648 | S11 soft-prompt **simplex** concept/demos | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_concept_demos_*` |
-| 693649 | S11 soft-prompt **simplex** unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_unrelated_demos_*` |
+| 693648 | S11 soft-prompt simplex concept (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — optimizer frozen (`lr×steps=3` vs init gap 20) | `outputs/pair_softprompt_simplex_concept_demos_*_693648` |
+| 693652 | S11 soft-prompt simplex concept (**lr=1.0**) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_concept_demos_*_693652` |
+| 693653 | S11 soft-prompt simplex unrelated (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_unrelated_demos_*_693653` |
+| 693654 | S11 soft-prompt simplex codeword (reachability ref) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_codeword_demos_*_693654` |
+| 693649 | S11 soft-prompt simplex unrelated (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — same frozen optimizer | `outputs/pair_softprompt_simplex_unrelated_demos_*_693649` |
 
 ---
 
@@ -553,6 +556,41 @@ Initialised at the actual tokens (step 0 reproduces the real prompt), and the ru
 
 **The S11 gate is therefore still OPEN**, and S12 (discrete GCG/MAC) remains blocked, which
 is the correct state per §8.5.
+
+### ITER10 — 2026-07-29 — the simplex "null" was an optimizer artefact; caught by arithmetic
+
+The vocabulary-simplex rerun (693648/693649) reported, for the concept target,
+`p_start = 0.00000 → p_best = 0.00000` on **every** prompt. Read naively that is a headline:
+*the causal objective is not reachable through the demonstration tokens at all.*
+
+It is not a result. The simplex logits are initialised at ±`init_scale` = ±10 so that step 0
+reproduces the real prompt, which puts a gap of **20 logit units** between the initial token
+and every alternative. Adam moves a logit by roughly `lr` per step, so the run's budget was
+`lr × steps = 0.01 × 300 ≈ 3` — **the argmax could not change even in principle.** The
+observed `mean_peak_weight` drifting only from 0.9997 to ~0.92 is the fingerprint of exactly
+that: the distribution wobbled and never switched a single token.
+
+The unrelated-target control shows the same fingerprint from the other side — it moved
+0.0005 → 0.0094 (≈18×, but still ~0.01 absolute), i.e. the optimizer nudged the distribution
+without ever leaving the initial token sequence.
+
+**Fixes, so this class of failure reports itself rather than masquerading as a finding:**
+- `--lr` default raised to **1.0** for `simplex` (it acts on vocabulary *logits*, not on
+  embeddings — an O(0.01) rate is appropriate only for `--param free`);
+- every run now emits `frac_positions_changed` (how many positions' argmax actually moved),
+  `optimizer_moved`, `logit_budget = lr × steps`, `init_gap = 2 × init_scale` and
+  `budget_sufficient = logit_budget > init_gap`. A null with `optimizer_moved: false` is
+  self-evidently uninterpretable.
+
+Rerun: 693652 (concept), 693653 (unrelated control), 693654 (**codeword** — a reachability
+reference: the literal reading is what the prompt already supports, so if the optimizer
+cannot even raise *that*, the harness is broken rather than the objective unreachable).
+
+This is the fourth time this sprint a null or a success turned out to be an artefact of the
+mechanism rather than the phenomenon (the others: the pre-F2 knockout span, the DeepSeek
+carrier variants, the unconstrained soft prompt). The pattern is consistent enough to state
+as a working rule for this codebase: **never accept a null without a positive control that
+proves the intervention could have moved the outcome.**
 
 ---
 

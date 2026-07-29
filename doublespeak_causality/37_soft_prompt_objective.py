@@ -82,7 +82,7 @@ def readout_span(lm, templated, raw_prompt):
 
 
 def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, seed,
-                 param="simplex", temperature=1.0):
+                 param="simplex", temperature=1.0, init_scale=10.0):
     """Adam over `free_slice`; maximize log p(target) at the last position.
 
     param="free"     — unconstrained vectors in R^d at each position.
@@ -113,9 +113,11 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
         var = torch.nn.Parameter(base[:, a:b, :].clone().float())
     else:
         # initialise the logits at the ACTUAL tokens, so step 0 reproduces the real prompt
-        init = torch.full((b - a, E.shape[0]), -10.0, device=dev, dtype=torch.float32)
-        init.scatter_(1, ids[0, a:b].unsqueeze(1), 10.0)
+        init = torch.full((b - a, E.shape[0]), -init_scale, device=dev,
+                          dtype=torch.float32)
+        init.scatter_(1, ids[0, a:b].unsqueeze(1), init_scale)
         var = torch.nn.Parameter(init)
+    init_ids = ids[0, a:b].clone()
     opt = torch.optim.Adam([var], lr=lr)
 
     def current_embeddings():
@@ -147,15 +149,27 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
     # How close is the relaxed solution to a real token sequence? A simplex solution whose
     # per-position max weight is near 1.0 IS (almost) a token sequence and its score is
     # achievable discretely; one spread across the vocabulary is not.
-    peak = None
+    peak, frac_changed = None, None
     if param != "free":
         with torch.no_grad():
             w = torch.softmax(var / temperature, dim=-1)
             peak = float(w.max(dim=-1).values.mean())
+            # DID THE OPTIMIZER ACTUALLY EXPLORE? The logits start with a gap of
+            # 2*init_scale between the initial token and every other token; Adam moves a
+            # logit by ~lr per step, so with too small an lr*steps budget the argmax CANNOT
+            # change and a "null" is an optimizer artefact, not a result. The first simplex
+            # run had init_scale=10 and lr=0.01 x 300 steps = ~3 logit units against a gap
+            # of 20, and duly reported p_best == p_start == 0.00000 for every prompt.
+            frac_changed = float((w.argmax(dim=-1) != init_ids).float().mean())
     return {"trajectory": traj, "p_start": traj[0], "p_end": traj[-1],
             "p_best": best["p_target"], "best_step": best["step"],
             "n_free_tokens": b - a, "param": param,
-            "mean_peak_weight": (None if peak is None else round(peak, 4))}
+            "mean_peak_weight": (None if peak is None else round(peak, 4)),
+            "frac_positions_changed": (None if frac_changed is None
+                                       else round(frac_changed, 4)),
+            "optimizer_moved": (None if frac_changed is None else bool(frac_changed > 0)),
+            "logit_budget": round(lr * steps, 2), "init_gap": 2 * init_scale,
+            "budget_sufficient": bool(lr * steps > 2 * init_scale)}
 
 
 def main():
@@ -177,8 +191,14 @@ def main():
                          "relaxation of a token sequence); free = unconstrained R^d, which "
                          "makes the gate vacuous (see optimize_one docstring)")
     ap.add_argument("--temperature", type=float, default=1.0)
+    ap.add_argument("--init-scale", type=float, default=10.0,
+                    help="simplex logits start at +/-init_scale, so step 0 reproduces the "
+                         "REAL prompt. lr*steps must exceed 2*init_scale or the argmax "
+                         "cannot move and a null is an optimizer artefact.")
     ap.add_argument("--steps", type=int, default=200)
-    ap.add_argument("--lr", type=float, default=0.01)
+    ap.add_argument("--lr", type=float, default=1.0,
+                    help="on VOCAB LOGITS for --param simplex (needs to be O(1), "
+                         "not O(0.01)); use ~0.01 only for --param free")
     ap.add_argument("--n-prompts", type=int, default=8)
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--seed", type=int, default=0)
@@ -227,7 +247,8 @@ def main():
             continue
         res = optimize_one(lm, templated, r["prompt"], target_ids, free_slice,
                            args.steps, args.lr, args.seed + i,
-                           param=args.param, temperature=args.temperature)
+                           param=args.param, temperature=args.temperature,
+                           init_scale=args.init_scale)
         res.update({"sid": r["sid"], "split": r["split"], "demo_style": r["demo_style"],
                     "n_demos": r["n_demos"], "free_slice": list(free_slice),
                     "n_prompt_tokens": n_tok})
@@ -235,7 +256,8 @@ def main():
         print(f"  [soft] {i+1}/{len(rows)} {r['sid']}: "
               f"p_start={res['p_start']:.5f} -> p_best={res['p_best']:.5f} "
               f"(step {res['best_step']}, {res['n_free_tokens']} free tokens, "
-              f"peak_w={res.get('mean_peak_weight')})")
+              f"peak_w={res.get('mean_peak_weight')} "
+              f"changed={res.get('frac_positions_changed')})")
 
     starts = [x["p_start"] for x in results]
     bests = [x["p_best"] for x in results]
@@ -250,6 +272,9 @@ def main():
         "free_positions": args.free_positions,
         "steps": args.steps, "lr": args.lr, "seed": args.seed,
         "param": args.param, "temperature": args.temperature,
+        "init_scale": args.init_scale,
+        "logit_budget": round(args.lr * args.steps, 2),
+        "budget_sufficient": bool(args.lr * args.steps > 2 * args.init_scale),
         "n_prompts": len(results), "n_skipped": n_skipped,
         "p_start_mean": (sum(starts) / len(starts)) if starts else None,
         "p_best_mean": (sum(bests) / len(bests)) if bests else None,

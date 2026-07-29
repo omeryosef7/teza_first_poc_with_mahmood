@@ -36,11 +36,12 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSTARGET:=concept}"                    # concept | unrelated (control) | codeword
 : "${DSFREE:=demos}"                        # demos | readout (locus control)
 : "${DSSTEPS:=150}"
-: "${DSLR:=0.01}"
+: "${DSLR:=1.0}"        # on VOCAB LOGITS for simplex; needs lr*steps > 2*init_scale
 : "${DSN:=8}"
 : "${DSPARAM:=simplex}"   # simplex (true token-sequence relaxation) | free (vacuous)
 : "${DSTEMP:=1.0}"
-for v in DSMODEL DSBENCH DSREADOUT DSSTYLES DSCOND DSTARGET DSFREE DSSTEPS DSLR DSN DSPARAM DSTEMP; do
+: "${DSINIT:=10.0}"
+for v in DSMODEL DSBENCH DSREADOUT DSSTYLES DSCOND DSTARGET DSFREE DSSTEPS DSLR DSN DSPARAM DSTEMP DSINIT; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists. Use ':' separators."; exit 1;; esac
 done
 STYLES="$(echo "$DSSTYLES" | tr ':' ',')"
@@ -52,5 +53,5 @@ python -u doublespeak_causality/37_soft_prompt_objective.py \
   --bench "$DSBENCH" --model "$DSMODEL" --out-root doublespeak_causality/outputs \
   --readout "$DSREADOUT" --demo-styles "$STYLES" --condition "$DSCOND" \
   --target "$DSTARGET" --free-positions "$DSFREE" \
-  --steps "$DSSTEPS" --lr "$DSLR" --n-prompts "$DSN" --param "$DSPARAM" --temperature "$DSTEMP"
+  --steps "$DSSTEPS" --lr "$DSLR" --n-prompts "$DSN" --param "$DSPARAM" --temperature "$DSTEMP" --init-scale "$DSINIT"
 echo "=== done ==="; date
