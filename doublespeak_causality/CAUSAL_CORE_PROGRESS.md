@@ -98,7 +98,8 @@ receive only redacted labels, scalars and statistics.
 | 693772–693775 | S2 gates (1st attempt) | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ⚠️ VACUOUS — 0/30 cells; hardcoded lexicon bug, not a model result | — |
 | 693783–693786 | S2 gates **rerun, lexicons fixed** | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ✅ ALL PASS (14–21/30 cells; hijack +0.45…+0.62) | `outputs/pair_readout_*_69378*` |
 | 693711 | S14 Qwen3 thinking (800 rows) | `run_pair_readout.sh` | n-802 | 2026-07-30 | ⚠️ CANCELLED — ~6h projected vs 4h wall | — |
-| 693798 | S14 Qwen3 thinking (stratified 200) | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693798` |
+| 693798 | S14 Qwen3 thinking (200 rows, 384 tok) | `run_pair_readout.sh` | n-803 | 2026-07-30 | ⚠️ gate 1/15 — **CoT TRUNCATED** (90/200 no `</think>`, 109/200 maxed) | `outputs/pair_readout_Qwen3-14B_*_693798` |
+| 693837 | S14 Qwen3 thinking retry (96 rows, 1536 tok) | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693837` |
 | ~~693773~~ | superseded S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693774~~ | superseded S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693775~~ | superseded S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
@@ -1174,6 +1175,29 @@ the JSON records both counts rather than asserting equality — a greedy win is 
 like-for-like search, not against "no search".
 
 Qwen3 thinking (693798, stratified 200) is still generating (~384 tokens/prompt).
+
+### ITER27 — 2026-07-30 — Qwen3 thinking readout collapses on TRUNCATION, not on mechanism
+
+The instrumented thinking run (693798, 200 rows, 384-token cap) gated at **1/15 cells**, and
+the diagnosis is unambiguous: **90/200 generations never emitted `</think>`** and **109/200
+hit exactly the 384-token cap** — the model was still inside its chain of thought when
+generation stopped, so there was no answer token to score. Even among rows that did finish
+thinking, the DIRECT positive control is weak (forced_choice 0.67, cloze 0.00, one_word 0.17).
+
+This is a **budget/instrumentation limit, not a result about the mechanism.** The
+answer-marker guard did exactly what it was built for — it refused to certify a readout that
+mostly never reached the answer, rather than scoring the `<think>` stream and reporting a
+confident but meaningless number (which is what the *un*-instrumented run would have done).
+
+Retry submitted (693837) with a real CoT budget — **1536 tokens**, 96 stratified rows. If the
+DIRECT control clears the gate at that budget, the thinking-vs-non-thinking comparison is on;
+if it still does not, **S14-thinking is a documented scoping limit**, not a forced number:
+Qwen3's chains on this benchmark are long enough that certifying the answer-transition readout
+at adequate sample size does not fit a `killable` 4-hour L40S window at the observed
+generation rate. That is the honest boundary of what this session can establish, and it will
+be recorded as such rather than papered over.
+
+The **non-thinking** Qwen3 result is unaffected and stands (hijack +0.694, ITER14).
 
 ---
 
