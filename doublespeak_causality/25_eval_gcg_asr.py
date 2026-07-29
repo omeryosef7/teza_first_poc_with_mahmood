@@ -70,15 +70,18 @@ def main():
     jstats = {"n": 0, "judge_fail": 0}
 
     def judge(goal, completion):                       # identical policy to 19.judge
-        refused = kw_refusal(completion)
-        try:
-            r = evaluate(goal, completion, ["strongreject_rubric"])
-            score = r.get("score") if isinstance(r, dict) else None
-        except Exception:
-            score = None
-        if score is None:
-            jstats["judge_fail"] += 1
         jstats["n"] += 1
+        if not completion.strip():
+            return "EMPTY"
+        refused = kw_refusal(completion)
+        import math as _m
+        try:
+            r = evaluate(goal, completion, ["strongreject_rubric"])   # returns a LIST of dicts
+            score = float(r[0].get("score")) if r and r[0].get("score") is not None else None
+            if score is not None and not _m.isfinite(score):
+                score = None; jstats["judge_fail"] += 1
+        except Exception:
+            score = None; jstats["judge_fail"] += 1
         return classify(score, refused)
 
     # held-out Neutral prompts (task_id -> instruction) for the requested split

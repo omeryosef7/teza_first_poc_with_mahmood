@@ -425,6 +425,14 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER62 — ASR eval judge bug caught + fixed (resubmit 692995); first run was a FALSE null
+692971 completed but `judge_fail_frac=1.0` (every StrongReject score None) → the ASR=0/0/0 was an
+ARTIFACT, not a real null. Root cause: `evaluate()` returns a LIST of dicts; my judge used `r.get("score")`
+(dict access) instead of `r[0].get("score")` — 19 does it right. Fixed 25_eval_gcg_asr.py to match 19's
+judge verbatim (r[0].get + finite check + EMPTY guard). The `judge_fail_frac` telemetry is exactly why this
+was caught, not silently reported as a temporal==baseline==0 null. Resubmitted **692995**. Generations were
+fine; only the judge was broken (no GPU waste beyond a re-gen). Real verdict lands on ingest.
+
 ## ITER61 — Both GCG runs DONE → Level-5 held-out ASR eval SUBMITTED (692971)
 temporal (692818) + baseline (692819) both completed 200 steps, distinct final suffixes written. Wrote
 `slurm/run_gcg_asr.sh` + submitted **692971**: applies each suffix to the 13 held-out (val) Neutral prompts,
