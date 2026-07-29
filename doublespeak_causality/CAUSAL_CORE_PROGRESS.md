@@ -1148,6 +1148,33 @@ been killed by the time limit with nothing written. Resubmitted as **693798** wi
 stratified `--limit 200`, which keeps every (condition × readout) cell represented while
 fitting comfortably inside the window.
 
+### ITER26 — 2026-07-30 — S12 slice 2 submitted: demonstration selection, causal objective vs behavior
+
+With S16 complete, the remaining substantive stage is S12. Slice 1 (codeword selection) showed
+that selecting on the causal score **worsens** held-out ASR, so the informative next step is
+not "optimize the causal objective harder" — it is to let the causal and behavioral objectives
+**compete head-to-head on held-out behavior** at the demonstration level (§8.2/§8.3).
+
+`42_demo_selection.py` (job 693816) selects k=6 of 12 demonstrations four ways and scores every
+arm on **held-out** paraphrases:
+
+- `causal_greedy` — greedy forward selection on the SAFE semantic causal score;
+- `behavior_greedy` — greedy forward selection on TRAIN behavioral MALICIOUS rate;
+- `random_search` — 20 subsets scored on TRAIN, best carried to held-out (the §8.6 search control);
+- `random_subset` — arbitrary subsets scored directly (baseline);
+- `full_default` — all 12 (the paper's configuration).
+
+Prediction from slice 1: `behavior_greedy` ≥ `random_search` > `causal_greedy`, and if the
+causal objective is genuinely counterproductive, `causal_greedy` should not beat `random_search`
+and may underperform `full_default`. Both outcomes are reportable; both are chosen on train and
+tested on held-out, so neither is a fit-to-the-test artefact.
+
+Budget honesty: greedy and random search do **not** spend identical candidate evaluations, so
+the JSON records both counts rather than asserting equality — a greedy win is read against a
+like-for-like search, not against "no search".
+
+Qwen3 thinking (693798, stratified 200) is still generating (~384 tokens/prompt).
+
 ---
 
 ## Next single highest-value experiment
