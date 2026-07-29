@@ -142,7 +142,7 @@ Intervention: during the Doublespeak forward, replace the codeword activation at
 - Patching from MID layers on collapses it (potato →0.04 by L6 →0 late; mango 0.207→0 by ~L12).
 - Three controls align (bf16 canonical):
   - identity (DS←DS) reproduces baseline: id_max_dev = 0.010 (potato) / 0.040 (mango) ≪ the effect;
-  - random norm-matched patch does NOT mimic it: mean necessity drop (L8-19) vs random |deviation| = **126x** (potato), **8181x** (mango);
+  - random norm-matched patch does NOT mimic it: mean necessity drop (L8-19) vs random |deviation| = **126x** (potato), **8181x** (mango); **[FLAGGED 2026-07-29 — RESULTS_FREEZE_AUDIT.md: this 126x/8181x ratio is NOT reproducible from `outputs/stage2_patching_*_20260727_001943/stage2_results.json` under any interpretation, and in fact points the opposite way. DO NOT CITE until recomputed; the superseding, artefact-backed control is `necessity - random = +0.181 [-0.021, 0.383]`, which crosses zero.]**
   - effect is monotone in layer and specific to replacing with the Neutral (harm-free) rep.
 - bf16 baselines match fp16 preview (P_harm 0.125/0.205), so the finding is precision-robust.
 Reading: the harmful component the codeword *acquires* across layers (see O1/O2) is necessary for the harmful readout, and it lives in the codeword's own representation from mid-layers onward.

@@ -47,6 +47,8 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 for v in DSMODEL DSBENCH DSREPS DSDIRS DSMODE DSREADOUT DSSITE DSALPHAS DSLAYERS DSWINS DSNPROMPTS DSSPLITS DSCROSSFIT DSGEN DSGROUPS DSALPHAMODE; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists. Use ':' separators."; exit 1;; esac
 done
+# NOTE: alpha lists contain NEGATIVE values, and argparse treats a value starting with "-"
+# as a flag ("--alphas -1.0,..." -> "expected one argument"). Always pass the EQUALS form.
 ALPHAS="$(echo "$DSALPHAS" | tr ':' ',')"
 SPLITS="$(echo "$DSSPLITS" | tr ':' ',')"
 LAYER_ARG=""; [ -n "$DSLAYERS" ] && LAYER_ARG="--layers $(echo "$DSLAYERS" | tr ':' ',')"
@@ -59,7 +61,8 @@ case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR nee
 python -u doublespeak_causality/34_intervention_sweep.py \
   --bench "$DSBENCH" --reps-dir "$DSREPS" --dir-dir "$DSDIRS" --model "$DSMODEL" \
   --out-root doublespeak_causality/outputs --mode "$DSMODE" --readout "$DSREADOUT" \
-  --site "$DSSITE" --alphas "$ALPHAS" --splits "$SPLITS" \
+  --site "$DSSITE" --splits "$SPLITS" \
+  --alphas="$ALPHAS" \
   --n-prompts "$DSNPROMPTS" --crossfit "$DSCROSSFIT" \
   --layer-groups "$DSGROUPS" --alpha-mode "$DSALPHAMODE" $LAYER_ARG $WIN_ARG $GEN_ARG
 echo "=== done ==="; date

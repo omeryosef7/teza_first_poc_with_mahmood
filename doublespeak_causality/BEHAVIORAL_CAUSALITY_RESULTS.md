@@ -121,7 +121,9 @@ Full eligible n (37 bases, iter50 — jobs 692637/692638/692574·230505; ~3× th
 
 **Result — a DEPTH-STRUCTURED DISSOCIATION, opposite to the rep-level prediction:**
 - **The hijacked DS state is only weakly behaviorally sufficient at any depth** (≤0.16), and at late layers
-  falls to ~0 (below its random control). It never becomes a potent behavioral injectate — consistent with
+  falls to ~0. ~~(below its random control)~~ **[CORRECTED 2026-07-29 — RESULTS_FREEZE_AUDIT.md: no random
+  arm was ever run in any sufficiency job, so there is no random control to be below. Claim withdrawn; the
+  ≤0.16 rates stand on their own.]** It never becomes a potent behavioral injectate — consistent with
   it being a *context-dependent* state that loses force when transplanted out of its demonstration context.
 - **The raw Direct concept has a MID-LAYER behavioral-steering sweet spot** (0.46 at mid vs 0.08/0.19 at
   early/late) — injecting the concept mid-network most strongly steers generation.

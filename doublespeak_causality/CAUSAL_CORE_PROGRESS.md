@@ -13,13 +13,13 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 
 | ID | Stage (plan ref) | Status | Evidence / notes |
 |----|------------------|--------|------------------|
-| S0 | Audit & freeze prior results; fix overclaims (§16.1–2) | `NOT_RUN` | |
+| S0 | Audit & freeze prior results; fix overclaims (§16.1–2) | ✅ `COMPLETE` | [`RESULTS_FREEZE_AUDIT.md`](RESULTS_FREEZE_AUDIT.md) — ~85% of ~100 claims VERIFIED; 12 wording corrections applied to `PAPER_DRAFT.md` (incl. title), 2 unsupported claims withdrawn/flagged |
 | S1 | Phase A: fixed-pair CARROT↔BOMB semantic benchmark (§3, §16.3) | ✅ `COMPLETE` | `data/pair_benchmark/pair_carrot_bomb.json` — 800 semantic + 900 behavioral prompts, 60 paraphrases, **0 skipped**, 21/21 tests pass |
 | S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | ✅ **COMPLETE — GATE PASSED per-cell** | full run 693557 (800 prompts). **17/30 (readout × demo-style) cells usable.** On usable cells: `DS − Neutral` reads-as-concept **+0.500 [+0.393, +0.607]**, p_concept **+0.307 [+0.249, +0.367]**, n=84. |
 | S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
-| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `RUNNING` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
-| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `NOT_RUN` | code ready: `--mode dose` / `--mode controls` |
+| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `PARTIAL` — replace arm done (clean negative), additive re-running | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
+| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `RUNNING` | jobs 693607/693608 (`dose`, signed α, windows, relative), 693609 (`controls`, 20 draws × 3 families) |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `NOT_RUN` | |
 | S9 | Causal attack-window estimate (§16.11) | `NOT_RUN` | |
@@ -30,7 +30,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `NOT_RUN` | |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
-| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file created |
+| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md`; registry/checksum manifest still owed (audit finding) |
 
 ---
 
@@ -63,8 +63,13 @@ receive only redacted labels, scalars and statistics.
 | 693559 | S3 `one_word` | `run_pair_reps.sh` | — | 2026-07-29 | ✅ COMPLETE | `outputs/pair_reps_*_693559` |
 | — | S4 `cloze` | `33_build_directions.py` (CPU) | login | 2026-07-29 | ✅ COMPLETE | `outputs/pair_directions_20260729_215640_299312` |
 | — | S4 `one_word` | `33_build_directions.py` (CPU) | login | 2026-07-29 | ✅ COMPLETE | `outputs/pair_directions_20260729_215701_299521` |
-| 693570 | S5 layer_scan `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_layer_scan_*_693570` |
-| 693571 | S5 layer_scan `one_word` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_layer_scan_*_693571` |
+| 693570 | S5 layer_scan `cloze` | `run_pair_interv.sh` | t-806 | 2026-07-29 | ✅ COMPLETE (15 390 rows) | `outputs/pair_interv_layer_scan_*_693570` |
+| 693571 | S5 layer_scan `one_word` | `run_pair_interv.sh` | n-803 | 2026-07-29 | ✅ COMPLETE (15 390 rows) — null after Holm | `outputs/pair_interv_layer_scan_*_693571` |
+| 693595/6 | S6 dose | `run_pair_interv.sh` | n-803 | 2026-07-29 | 🔴 FAILED — argparse read `-1.0,...` as a flag | — |
+| 693597 | S5 replace `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | ✅ COMPLETE (2 760 rows) — **clean negative** | `outputs/pair_interv_replace_*_693597` |
+| 693607 | S6 dose `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693607` |
+| 693608 | S6 dose `one_word` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693608` |
+| 693609 | S6 controls `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_controls_*_693609` |
 
 ---
 
@@ -218,12 +223,102 @@ demonstration context".
 `31_validate_readouts.py` gained a `--reanalyze` mode so a methodological correction like
 this one costs no GPU time.
 
+### ITER4 — 2026-07-29 — S5 first scan is a NEGATIVE, and the reason is methodological
+
+The first layer scan (job 693571, `one_word`, 15 390 rows) found **no significant additive
+effect after Holm correction**: peak `add_d_Direct` = +0.028 at L3, `add_d_DS` = 0.000.
+
+Reporting this honestly matters, and so does diagnosing it before believing it. Two causes,
+both about *how the intervention was applied* rather than about the mechanism:
+
+1. **The intervention was a one-layer, one-token edit.** The prior sprint's sufficiency
+   effects (mid-window `suff_Direct` = 0.52) needed **multi-layer windows** — ten-plus
+   layers patched simultaneously. Only the `replace` arm supported windows; the additive
+   and projection arms did not. Fixed: `--layer-groups {single,windows,both}`.
+2. **α was absolute.** The residual norm grows several-fold from L0 to L31, so a fixed α is
+   a *shrinking relative* perturbation with depth and layers are not comparable. Fixed:
+   `--alpha-mode relative`, where α is a fraction of the residual norm at that layer, taken
+   from the `NEUTRAL_CODEWORD` mean already stored in `means.npz` (no extra forward pass).
+
+Also, the intervention site is now `codeword_all` rather than only the final occurrence —
+the codeword appears throughout the demonstrations, and the prior code intervened on one
+token of it.
+
+**A reporting bug the scan exposed.** With only 2 random draws the control distribution had
+zero spread, so `z = eff/(sd+1e-9)` printed values around **1e7** — which look decisive and
+mean nothing. `z` is now emitted only when the control distribution has real spread *and*
+≥8 draws, and "exceeds all controls" is surfaced only when the effect is also materially
+non-zero (|eff| ≥ 0.01). Beating a control set that is identically 0.0 by +0.0001 is
+arithmetic, not a causal result. Had this gone unnoticed it would have produced a table of
+spectacular-looking z-scores backing a null.
+
+Re-run submitted: 693595/693596 (`--mode dose`, windows + single, relative α ∈
+{−1, −0.5, +0.5, +1, +2}, site `codeword_all`) and 693597 (`--mode replace`).
+
+### ITER5 — 2026-07-29 — S0 freeze done; the replacement arm is a clean NEGATIVE
+
+**S0 (audit & freeze) — COMPLETE.** A four-way independent audit of `PAPER_DRAFT.md`,
+`SPRINT_REPORT.md`, the results docs and the artefact inventory is written up in
+[`RESULTS_FREEZE_AUDIT.md`](RESULTS_FREEZE_AUDIT.md). Roughly **85% of ~100 claims
+VERIFIED**, and every headline interval reproduced exactly from raw artefacts. What did
+not hold up, and what was done about it:
+
+| finding | action |
+|---|---|
+| The central causal story is an **inference, not a demonstrated chain** — the timing experiment injects the *raw* concept at varying depth and never manipulates the emergence depth of the *hijacked* representation | Paper **title, abstract, §1 hypothesis box, §4.3 and §5 rewritten** to state this explicitly; added as an explicit Limitation. This is precisely the gap the fixed-pair study exists to close. |
+| "falls below its random control" (sufficiency, late) — **no random arm was ever run** in any sufficiency job | claim withdrawn in `BEHAVIORAL_CAUSALITY_RESULTS.md` |
+| the "126×/8181× random control" ratio is **not reproducible** and points the opposite way | flagged DO-NOT-CITE in all four docs that carry it, pointing at the artefact-backed `necessity − random = +0.181 [−0.021, 0.383]` instead |
+| early-window malicious rate 0.10 vs **0.123** on disk | corrected |
+| "late … compliance instead" / "never refused (0%)" | corrected — late malicious is **0.09**, *below* early and one fifth of mid; 89% of late generations are benign, so the low late refusal rate partly reflects loss of behavioral effect |
+| Qwen3 **early** DS−Direct was omitted everywhere — and on disk it runs the *other way*, **+0.190 [+0.071, +0.310]** | added; the dissociation is now described as mid-specific, not uniform |
+| "42 clean successes" quoted with no base rate; "66 malicious" for DeepSeek counts ineligible bases | both given denominators (42/240 across 18 bases; DeepSeek 37 on eligible bases) |
+| "monotone … significant across three architectures" — only Llama has three windows | corrected to "monotone on Llama; early-vs-late reproduced on two further architectures, windows scaled per model" |
+| "predictive" AUC 0.668 ± 0.089 presented beside causal results (±0.089 is a fold sd; a 2-sd band reaches chance) | relabelled modest and **correlational** |
+| "cannot be optimized" / "not suffix-optimizable" | bounded: one optimizer, one model, 16 tokens, 200 steps, one placement |
+| **Provenance**: `outputs/` and `data/behavioral_benchmark/` are gitignored; the registry has 39 rows all ≤ 2026-07-27 and names only 14 of ~83 output dirs | header note corrected; registry/manifest work tracked under S17 |
+
+Note the audit also warned that the output tree was **live during the audit** (83→100 dirs)
+because this sprint was writing into it. The new work uses distinct `pair_*` prefixes, so
+the freeze set and the new set do not overlap.
+
+**S5 replacement arm (job 693597, 2 760 rows) — a clean NEGATIVE, with the control the
+prior sprint never had.** Transplanting the source condition's `resid_post` into the
+codeword position, single layers and windows:
+
+| arm | group | effect vs identity | shuffled-source control |
+|---|---|---|---|
+| `DS_from_Neutral` | mid | +0.0317 [−0.010, +0.088] | **+0.0306** |
+| `DS_from_Neutral` | layer14 | +0.0308 [−0.006, +0.081] | **+0.0213** |
+| `Neutral_from_Direct` | layer2 | +0.0271 [+0.018, +0.038] | **+0.0301** (larger!) |
+| `Neutral_from_Direct` | layer6 | +0.0086 [+0.003, +0.015] | **+0.0138** (larger) |
+
+**Every arm is matched or beaten by its own shuffled-source control**, and every effect is
+≤ 0.03 against a DS−Neutral gap of +0.307. So single-position activation replacement shows
+**no content-specific causal transfer of the meaning**: what little it does is explained by
+transplanting *some* representation from that condition, not *this* prompt's.
+
+This matters twice over. It independently reproduces the prior sprint's "the hijacked state
+is only weakly sufficient when transplanted" — and it supplies the shuffled control whose
+absence the audit flagged as `SOURCE_MISSING`. The prior claim was directionally right for a
+reason nobody had tested.
+
+The additive route is not yet decided: those runs (693607/693608/693609) intervene at **all**
+codeword occurrences with α as a fraction of the residual norm, which is a much stronger
+manipulation than one token at α=1.
+
+**A third runner footgun found:** argparse reads a value beginning with `-` as a flag, so
+`--alphas -1.0,...` died with "expected one argument" and jobs 693595/693596 produced nothing.
+Signed α grids must be passed as `--alphas=...`. Fixed in the runner with a comment next to
+the existing comma-truncation guard.
+
 ---
 
 ## Next single highest-value experiment
 
-S5 layer scan (jobs 693570/693571) → then S6. The layer scan says *where* adding `d_DS` vs `d_Direct` moves
-the interpretation; S6 then runs the ≥20-draw control battery and the signed-α dose response at those
-layers, which is what converts "the direction correlates with meaning" into "the direction *causes*
-meaning, reversibly, beyond any matched perturbation". Also queued behind it: re-running the per-layer
-attention knockout with the corrected demo boundary (S8).
+S6 (jobs 693607–693609). The replacement route is now a documented negative and the first additive scan was
+underpowered by construction. S6 is the properly-powered test: **all** codeword occurrences, α as a fraction
+of the residual norm, multi-layer windows, signed α for reversibility, and the full ≥20-draw × 3-family
+control battery. If the additive route is also null under those conditions, that is a substantive result
+about the pair — a *representation-level* meaning that no rank-1 residual edit can install — and it must be
+reported as such rather than tuned around. Either way S8 (attention knockout with the corrected demo
+boundary) follows, since that is the route the prior sprint found strongest.

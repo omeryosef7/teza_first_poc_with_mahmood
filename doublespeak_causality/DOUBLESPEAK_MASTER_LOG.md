@@ -110,7 +110,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 
 ### 2026-07-27 — P3 canonical bf16 COMPLETE: necessity CONFIRMED
 - 686723 COMPLETED (bf16, L40S t-806, 8:06, exit 0). identity_ok=True all items (robust tol works on bf16). baseDS P_harm 0.125/0.009/0.205 == fp16 preview (precision-robust).
-- **Necessity CONFIRMED (C1):** DS<-Neutral patch ~no effect early (L0-4), collapses P(harm) to 0 from mid-layers. Controls: identity id_max_dev<<effect; random norm-matched patch 126x (potato)/8181x (mango) smaller than necessity drop. Promoted PRELIMINARY->CONFIRMED in CAUSAL_RESULTS_SUMMARY.
+- **Necessity CONFIRMED (C1):** DS<-Neutral patch ~no effect early (L0-4), collapses P(harm) to 0 from mid-layers. Controls: identity id_max_dev<<effect; random norm-matched patch 126x (potato)/8181x (mango) smaller than necessity drop. **[FLAGGED 2026-07-29 — RESULTS_FREEZE_AUDIT.md: this 126x/8181x ratio is NOT reproducible from `outputs/stage2_patching_*_20260727_001943/stage2_results.json` under any interpretation, and in fact points the opposite way. DO NOT CITE until recomputed; the superseding, artefact-backed control is `necessity - random = +0.181 [-0.021, 0.383]`, which crosses zero.]** Promoted PRELIMINARY->CONFIRMED in CAUSAL_RESULTS_SUMMARY.
 - Sufficiency C2 still readout-limited (logit-lens=next-token). Next: Patchscopes-based sufficiency readout.
 - Committed dec79b6, 63abf58. 
 
@@ -126,7 +126,7 @@ Chronological. Newest at bottom. One block per meaningful action (plan §22).
 - Built 08_multilayer_sufficiency.py (window injection). virus_muffin: cumulative/sliding/random all ~0.001 (== baseline).
 - **Before claiming a multi-layer null, ran a positive control:** does the DIRECT "virus" rep patchscope-decode to "virus"? **No — P(virus)=0.000-0.002 at ALL layers, with BOTH our PatchscopeDecoder AND the vendored analyze_patchscope_probabilities.** The identity-inspection readout cannot decode even the explicit harmful rep for these concepts.
 - **=> RETRACT the "sufficiency robust null" from the previous iteration.** A null from a readout that fails its positive control is uninterpretable. RQ2 sufficiency is OPEN, not answered. Updated CAUSAL_RESULTS_SUMMARY C2 + added a readout-reliability caveat to all Patchscopes magnitudes (absolute P_harm <=0.1 and unreliable here).
-- **What still stands:** C1 NECESSITY (05, in-context logit lens, controls identity✓ random 126-8181x) — a DIFFERENT, robust readout. NN/logit-lens argmax decoding (O3). 
+- **What still stands:** C1 NECESSITY (05, in-context logit lens, controls identity✓ random 126-8181x) **[FLAGGED 2026-07-29 — RESULTS_FREEZE_AUDIT.md: this 126x/8181x ratio is NOT reproducible from `outputs/stage2_patching_*_20260727_001943/stage2_results.json` under any interpretation, and in fact points the opposite way. DO NOT CITE until recomputed; the superseding, artefact-backed control is `necessity - random = +0.181 [-0.021, 0.383]`, which crosses zero.]** — a DIFFERENT, robust readout. NN/logit-lens argmax decoding (O3). 
 - **Correct sufficiency tests queued:** Neutral<-DS injection; a decoder that passes the Direct-rep control (alt inspection prompt / tuned-lens); behavioral sufficiency in a working attack.
 - Committed 7f0615a (08). Diagnostics: logs/diag_direct.log, logs/diag_vendored.log.
 
