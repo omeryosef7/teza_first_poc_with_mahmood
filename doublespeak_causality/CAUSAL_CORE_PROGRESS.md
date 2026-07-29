@@ -21,7 +21,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `PARTIAL` — replace arm done (clean negative), additive re-running | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
 | S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `PARTIAL` — ⭐ **controls COMPLETE** | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 running. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
-| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `RUNNING` | 693614 component COMPLETE (1 552 rows); 693613 knockout had a wrong demo/request boundary on the semantic prompts → fixed, rerun 693618 |
+| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `RUNNING` | 693614 component COMPLETE (1 552 rows, all effects ≤0.019). Knockout took **two** bad boundary attempts (693613, 693618) — see ITER7; boundary now verified 36/36 offline before submitting 693623 |
 | S9 | Causal attack-window estimate (§16.11) | `NOT_RUN` | |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `NOT_RUN` | |
@@ -72,7 +72,8 @@ receive only redacted labels, scalars and statistics.
 | 693609 | S6 controls `cloze` | `run_pair_interv.sh` | n-803 | 2026-07-29 | ✅ COMPLETE (11 760 rows) — ⭐ **main causal result** | `outputs/pair_interv_controls_*_693609` |
 | 693613 | S8 knockout | `run_pair_attn.sh` | n-804 | 2026-07-29 | ⚠️ SUPERSEDED — demo/request boundary unlocated on 216 rows | `outputs/pair_attn_knockout_*_693613` |
 | 693614 | S8 component | `run_pair_attn.sh` | n-804 | 2026-07-29 | ✅ COMPLETE (1 552 rows) | `outputs/pair_attn_component_*_693614` |
-| 693618 | S8 knockout (boundary fixed) | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693618` |
+| 693618 | S8 knockout ("boundary fixed") | — | 2026-07-29 | ⚠️ SUPERSEDED — the fix did NOT work: boundary unlocated on **6912/6948** rows | `outputs/pair_attn_knockout_*_693618` |
+| 693623 | S8 knockout (boundary verified 36/36 offline) | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693623` |
 
 ---
 
@@ -400,6 +401,33 @@ Also added `find_word_occurrences_in_text` (character-offset localization, exact
 `_offsets_are_sane`, because DeepSeek's own offset mapping is broken — it returns overlapping,
 non-monotonic spans covering 39 of 138 characters — and trusting it would have mislocated
 everything.
+
+### ITER7 — 2026-07-29 — the S8 knockout boundary fix did NOT work; caught before it was believed
+
+Job 693618 was submitted as "knockout with the demo/request boundary fixed". It was not
+fixed. The per-row flag says `request_boundary_located = False` on **6912 of 6948 rows**.
+
+The first fallback searched the **templated** string for the last `"\n\n"`. Llama-3.1's chat
+template *ends* with `"\n\n"` (the assistant header), so `rfind` returned the very end of
+the string, no token started after it, and the fallback silently declined — leaving the
+original confounded boundary (the codeword's own first token) in place.
+
+This is the third time in this sprint a boundary/localization fix looked right and was
+wrong in a way only a per-row correctness flag exposed (the others: the DeepSeek carrier
+variants pointing `codeword_last` at a comma, and `10_layerwise_knockout.py`'s pre-F2
+span). The lesson is already encoded in the code — **every localization helper now returns
+whether it actually succeeded, and every consumer records that per row** — and it is what
+caught this one.
+
+The corrected version locates the separator inside the **raw prompt** and maps it into the
+templated string. Verified offline before submitting: **36/36 located**, demo span ends
+`"...talk of the town.\n\n"` and the request span begins `"Complete the sentence with
+exactly one word..."`. Rerun submitted.
+
+**The 693618 numbers are therefore NOT interpretable and are not reported as a result.**
+For the record they were uniformly ~0 (largest |effect| 0.009 against a DOUBLESPEAK baseline
+of 0.474), but under a boundary where "demos" ran up to the final codeword and swallowed
+part of the readout question — so a null there says nothing about demonstration routing.
 
 ---
 

@@ -50,7 +50,7 @@ SOURCE_SETS = ("prev_codewords", "demos_all", "demos_first", "demos_last",
                "request_only", "random_matched")
 
 
-def source_positions(lm, templated, probe, name, rng):
+def source_positions(lm, templated, probe, name, rng, raw_prompt=None):
     """Key positions to block, per source-set name. Returns [] when not applicable."""
     ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
     hit = dc.find_word_occurrences(lm.tokenizer, ids, probe)
@@ -63,16 +63,23 @@ def source_positions(lm, templated, probe, name, rng):
     # boundary instead. Without this the boundary silently fell back to the codeword's own
     # position and the "demos" set swallowed the readout question (216 rows in job 693613).
     req_start, located = dc.request_start_token(lm.tokenizer, templated, hit.first_idx[-1])
-    if not located:
-        sep = templated.rfind("\n\n")
-        if sep > 0:
+    if not located and raw_prompt:
+        # Locate the separator INSIDE THE RAW PROMPT, then map it into the templated
+        # string. Searching the templated string directly does not work: Llama-3.1's chat
+        # template *ends* with "\n\n" (the assistant header), so rfind("\n\n") returns the
+        # very end of the string and no token starts after it — which is why job 693618
+        # reported the boundary unlocated on 6912/6948 rows despite the "fix".
+        pstart = templated.find(raw_prompt)
+        sep_local = raw_prompt.rfind("\n\n")
+        if pstart >= 0 and sep_local > 0:
+            sep = pstart + sep_local + 2
             try:
                 off = lm.tokenizer(templated, add_special_tokens=False,
                                    return_offsets_mapping=True)["offset_mapping"]
                 if dc._offsets_are_sane(off, len(templated)):
                     idx = next((i for i, (s, e) in enumerate(off)
-                                if e > s and s >= sep + 2), None)
-                    if idx is not None:
+                                if e > s and s >= sep), None)
+                    if idx is not None and idx <= hit.last_idx[-1]:
                         req_start, located = idx, True
             except Exception:
                 pass
@@ -184,7 +191,8 @@ def main():
                           "p_codeword": base.get("codeword")})
                     for sname in SOURCE_SETS:
                         keys, located = source_positions(
-                            lm, templated, r["probe_word"], sname, rng)
+                            lm, templated, r["probe_word"], sname, rng,
+                            raw_prompt=r["prompt"])
                         if not located:
                             n_unlocated += 1
                         if not keys:
