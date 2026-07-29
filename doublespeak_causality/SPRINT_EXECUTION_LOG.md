@@ -423,6 +423,16 @@ gcg_optimizer.py::run_optimization` + `objectives.py::repr_loss` both support `l
 reps, late layers→harmful Direct reps), optimize a suffix with lambda_repr>0, compare held-out ASR vs
 standard GCG. This needs a NEW runner (~real code) — deferring to next iter to write carefully + self-review
 rather than rush a bug. 4 jobs running (A+C), ≤6 cap respected; B lands next.
+**Track B path VERIFIED (iter52 scoping):** `poc_stage_gcg_early/run_optimization.py` entry already exposes
+`--lambda-repr --reference-cache-dir --repr-layers --model-family {qwen3,gemma4,deepseek_r1}` and
+`run_optimization()` consumes `reference_hs_per_task={task_id:{layer:{pos:tensor}}}`. Gap: the harness is
+built for AdvBench-style surrogate manifests + a SINGLE (neutral) reference cache (`build_reference_cache.py`),
+not the Doublespeak curated benchmark. Concrete build (multi-iter, careful): (1) Doublespeak→GCG manifest
+bridge (curated eligible bases → surrogate tasks); (2) MIXED reference-cache builder — early layers from
+benign (Neutral) reps, late layers from harmful (Direct) reps, merged by layer index into the cache format;
+(3) run_optimization `--lambda-repr>0` vs a `--lambda-repr 0` baseline → held-out ASR (Level-5 test = temporal
+> standard). Each step gets a tiny smoke + self-review before the full GPU job. No code written yet (read-only
+scoping) to avoid a rushed bug.
 
 ## ITER50 — INGESTED 37-base scale-up: flagship HARDENS at full eligible n (headline stronger + tighter)
 All three 37-base dirs (early 692637 / mid 692638 / late 230505, unique post-collision-fix, schema-verified
