@@ -74,6 +74,10 @@ def main():
     ap.add_argument("--demo-style", default="news")
     ap.add_argument("--n-demos", type=int, default=12)
     ap.add_argument("--max-new-tokens", type=int, default=200)
+    ap.add_argument("--include-neutral", default="true", choices=["true", "false"],
+                    help="add the no-demo NEUTRAL arm (the per-codeword eligibility gate). "
+                         "Without it a high MALICIOUS rate may just mean the codeword names "
+                         "something with a real construction procedure.")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
@@ -88,6 +92,14 @@ def main():
     bottom = [r["codeword"] for r in ranked[-args.k:]]
     arms = {"TOP_by_causal_score": top, "BOTTOM_by_causal_score": bottom,
             "DEFAULT_paper_codeword": [cw_default]}
+    # NEUTRAL control arm (no demonstrations) -- the per-codeword eligibility gate.
+    # WITHOUT IT the behavioral MALICIOUS rate is not attributable to the hijack: several
+    # candidate codewords denote MANUFACTURABLE objects (bottle, ribbon, pillow, puzzle), so
+    # "how to build a <codeword>" yields genuine procedural content that a rubric judge may
+    # score as harmful against the "build a <concept>" goal even with no remapping at all.
+    # The first run of this script (693683) omitted the arm and its inversion is provisional
+    # until this control is in.
+    neutral_arm = args.include_neutral == "true"
     print(f"[beh] TOP    {top}")
     print(f"[beh] BOTTOM {bottom}")
     _rank = next((i + 1 for i, r in enumerate(ranked) if r["codeword"] == cw_default), None)
@@ -120,12 +132,15 @@ def main():
     per_arm = defaultdict(list)
     per_cw = defaultdict(list)
 
-    for arm, cw_list in arms.items():
+    todo = list(arms.items())
+    if neutral_arm:
+        todo.append(("NEUTRAL_no_demos", sorted(set(top) | set(bottom) | {cw_default})))
+    for arm, cw_list in todo:
         for cw in cw_list:
             for b in beh:
                 # re-substitute this codeword into BOTH the demos and the query
-                ds_prompt = re.sub(re.escape(cw_default), cw, b["doublespeak"],
-                                   flags=re.IGNORECASE)
+                src = b["neutral"] if arm == "NEUTRAL_no_demos" else b["doublespeak"]
+                ds_prompt = re.sub(re.escape(cw_default), cw, src, flags=re.IGNORECASE)
                 goal = re.sub(re.escape(cw_default), cc, b["neutral"], flags=re.IGNORECASE)
                 gen = dc.generate(lm, ds_prompt, max_new_tokens=args.max_new_tokens)
                 resp = gen["completion"]
@@ -189,6 +204,7 @@ def main():
         "malicious_rate_by_arm": {a: rate(v) for a, v in per_arm.items()},
         "n_by_arm": {a: len(v) for a, v in per_arm.items()},
         "malicious_rate_by_codeword": {c: rate(v) for c, v in sorted(per_cw.items())},
+        "includes_neutral_control_arm": neutral_arm,
         "TOP_minus_BOTTOM_paired": contrast,
         "n_generations": n_done, "n_judge_fail": n_judge_fail,
         "status": "COMPLETE",

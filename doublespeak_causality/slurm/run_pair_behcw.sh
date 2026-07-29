@@ -43,5 +43,5 @@ case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR nee
 python -u doublespeak_causality/40_behavioral_codeword_eval.py \
   --bench "$DSBENCH" --codeword-summary "$DSCWSUM" --model "$DSMODEL" \
   --out-root doublespeak_causality/outputs --k "$DSK" --n-bases "$DSNBASES" \
-  --demo-style "$DSSTYLE" --n-demos "$DSNDEMOS" --max-new-tokens "$DSMAXTOK"
+  --demo-style "$DSSTYLE" --n-demos "$DSNDEMOS" --max-new-tokens "$DSMAXTOK" --include-neutral "${DSNEUTRAL:-true}"
 echo "=== done ==="; date
