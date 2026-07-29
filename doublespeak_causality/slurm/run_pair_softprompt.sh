@@ -38,11 +38,13 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSSTEPS:=150}"
 : "${DSLR:=0.01}"
 : "${DSN:=8}"
-for v in DSMODEL DSBENCH DSREADOUT DSSTYLES DSCOND DSTARGET DSFREE DSSTEPS DSLR DSN; do
+: "${DSPARAM:=simplex}"   # simplex (true token-sequence relaxation) | free (vacuous)
+: "${DSTEMP:=1.0}"
+for v in DSMODEL DSBENCH DSREADOUT DSSTYLES DSCOND DSTARGET DSFREE DSSTEPS DSLR DSN DSPARAM DSTEMP; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists. Use ':' separators."; exit 1;; esac
 done
 STYLES="$(echo "$DSSTYLES" | tr ':' ',')"
-echo "=== pair soft-prompt: target=$DSTARGET free=$DSFREE steps=$DSSTEPS lr=$DSLR n=$DSN ==="
+echo "=== pair soft-prompt: target=$DSTARGET free=$DSFREE param=$DSPARAM steps=$DSSTEPS lr=$DSLR n=$DSN ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
@@ -50,5 +52,5 @@ python -u doublespeak_causality/37_soft_prompt_objective.py \
   --bench "$DSBENCH" --model "$DSMODEL" --out-root doublespeak_causality/outputs \
   --readout "$DSREADOUT" --demo-styles "$STYLES" --condition "$DSCOND" \
   --target "$DSTARGET" --free-positions "$DSFREE" \
-  --steps "$DSSTEPS" --lr "$DSLR" --n-prompts "$DSN"
+  --steps "$DSSTEPS" --lr "$DSLR" --n-prompts "$DSN" --param "$DSPARAM" --temperature "$DSTEMP"
 echo "=== done ==="; date

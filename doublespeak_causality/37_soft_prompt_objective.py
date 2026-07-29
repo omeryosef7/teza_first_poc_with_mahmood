@@ -81,8 +81,23 @@ def readout_span(lm, templated, raw_prompt):
     return end, n
 
 
-def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, seed):
-    """Adam on free embeddings at `free_slice`; maximize log p(target) at the last position."""
+def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, seed,
+                 param="simplex", temperature=1.0):
+    """Adam over `free_slice`; maximize log p(target) at the last position.
+
+    param="free"     — unconstrained vectors in R^d at each position.
+    param="simplex"  — logits over the VOCABULARY; the embedding used is the softmax-weighted
+                       convex combination of embedding rows. This is the meaningful
+                       relaxation: its optimum is an upper bound on what a real *token*
+                       sequence can do, because any token sequence is a vertex of this
+                       simplex.
+
+    Why the default is `simplex`: with `free`, the first run of this gate drove the causal
+    score from 0.000 to 0.9999 — but so did the UNRELATED-target control (0.001 -> 0.9999).
+    An unconstrained soft prompt over 58-202 positions has far more capacity than any token
+    sequence, so it reaches any target and the "positive control" is vacuous. It proves the
+    optimizer works, not that the causal objective is reachable by a demonstration attack.
+    """
     torch.manual_seed(seed)
     dev = lm.model.device
     ids = torch.tensor([lm.tokenizer(templated, add_special_tokens=False)["input_ids"]],
@@ -90,16 +105,30 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
     emb_layer = lm.model.get_input_embeddings()
     with torch.no_grad():
         base = emb_layer(ids).detach()                       # [1, T, d]
+        E = emb_layer.weight.detach()                        # [V, d]
     a, b = free_slice
-    free = torch.nn.Parameter(base[:, a:b, :].clone().float())
-    opt = torch.optim.Adam([free], lr=lr)
     tgt = torch.tensor(target_ids, device=dev)
+
+    if param == "free":
+        var = torch.nn.Parameter(base[:, a:b, :].clone().float())
+    else:
+        # initialise the logits at the ACTUAL tokens, so step 0 reproduces the real prompt
+        init = torch.full((b - a, E.shape[0]), -10.0, device=dev, dtype=torch.float32)
+        init.scatter_(1, ids[0, a:b].unsqueeze(1), 10.0)
+        var = torch.nn.Parameter(init)
+    opt = torch.optim.Adam([var], lr=lr)
+
+    def current_embeddings():
+        if param == "free":
+            return var.to(base.dtype)
+        w = torch.softmax(var / temperature, dim=-1)          # [L, V]
+        return (w @ E.float()).to(base.dtype).unsqueeze(0)    # [1, L, d]
 
     traj = []
     best = {"step": 0, "p_target": None}
     for step in range(steps + 1):
         emb = base.clone()
-        emb[:, a:b, :] = free.to(base.dtype)
+        emb[:, a:b, :] = current_embeddings()
         out = lm.model(inputs_embeds=emb, return_dict=True)
         logits = out.logits[0, -1, :].float()
         logp = torch.log_softmax(logits, dim=-1)
@@ -115,9 +144,18 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
         opt.zero_grad(set_to_none=True)
         loss.backward()
         opt.step()
+    # How close is the relaxed solution to a real token sequence? A simplex solution whose
+    # per-position max weight is near 1.0 IS (almost) a token sequence and its score is
+    # achievable discretely; one spread across the vocabulary is not.
+    peak = None
+    if param != "free":
+        with torch.no_grad():
+            w = torch.softmax(var / temperature, dim=-1)
+            peak = float(w.max(dim=-1).values.mean())
     return {"trajectory": traj, "p_start": traj[0], "p_end": traj[-1],
             "p_best": best["p_target"], "best_step": best["step"],
-            "n_free_tokens": b - a}
+            "n_free_tokens": b - a, "param": param,
+            "mean_peak_weight": (None if peak is None else round(peak, 4))}
 
 
 def main():
@@ -134,6 +172,11 @@ def main():
                     help="'unrelated' is the triviality control")
     ap.add_argument("--free-positions", default="demos", choices=["demos", "readout"],
                     help="'readout' is the locus control")
+    ap.add_argument("--param", default="simplex", choices=["simplex", "free"],
+                    help="simplex = convex combination over the vocabulary (a true "
+                         "relaxation of a token sequence); free = unconstrained R^d, which "
+                         "makes the gate vacuous (see optimize_one docstring)")
+    ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--steps", type=int, default=200)
     ap.add_argument("--lr", type=float, default=0.01)
     ap.add_argument("--n-prompts", type=int, default=8)
@@ -164,11 +207,11 @@ def main():
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(
         args.out_root,
-        f"pair_softprompt_{args.target}_{args.free_positions}_{tag}_"
+        f"pair_softprompt_{args.param}_{args.target}_{args.free_positions}_{tag}_"
         f"{time.strftime('%Y%m%d_%H%M%S')}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
     print(f"[soft] target={args.target}({target_word}) free={args.free_positions} "
-          f"steps={args.steps} lr={args.lr} n={len(rows)} -> {out_dir}")
+          f"param={args.param} steps={args.steps} lr={args.lr} n={len(rows)} -> {out_dir}")
 
     results, n_skipped = [], 0
     for i, r in enumerate(rows):
@@ -183,14 +226,16 @@ def main():
             n_skipped += 1
             continue
         res = optimize_one(lm, templated, r["prompt"], target_ids, free_slice,
-                           args.steps, args.lr, args.seed + i)
+                           args.steps, args.lr, args.seed + i,
+                           param=args.param, temperature=args.temperature)
         res.update({"sid": r["sid"], "split": r["split"], "demo_style": r["demo_style"],
                     "n_demos": r["n_demos"], "free_slice": list(free_slice),
                     "n_prompt_tokens": n_tok})
         results.append(res)
         print(f"  [soft] {i+1}/{len(rows)} {r['sid']}: "
               f"p_start={res['p_start']:.5f} -> p_best={res['p_best']:.5f} "
-              f"(step {res['best_step']}, {res['n_free_tokens']} free tokens)")
+              f"(step {res['best_step']}, {res['n_free_tokens']} free tokens, "
+              f"peak_w={res.get('mean_peak_weight')})")
 
     starts = [x["p_start"] for x in results]
     bests = [x["p_best"] for x in results]
@@ -204,6 +249,7 @@ def main():
         "target": args.target, "target_word": target_word, "target_ids": target_ids,
         "free_positions": args.free_positions,
         "steps": args.steps, "lr": args.lr, "seed": args.seed,
+        "param": args.param, "temperature": args.temperature,
         "n_prompts": len(results), "n_skipped": n_skipped,
         "p_start_mean": (sum(starts) / len(starts)) if starts else None,
         "p_best_mean": (sum(bests) / len(bests)) if bests else None,

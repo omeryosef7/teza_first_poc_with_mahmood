@@ -21,11 +21,11 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | ✅ `COMPLETE` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
 | S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
-| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `RUNNING` | 693614 component COMPLETE (1 552 rows, all effects ≤0.019). Knockout took **two** bad boundary attempts (693613, 693618) — see ITER7; boundary now verified 36/36 offline before submitting 693623 |
+| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
 | S9 | Causal attack-window estimate (§16.11) | `PARTIAL` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows differ — needs writing up as a result, not a single number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
-| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` | 693631 (concept/demos, MAIN), 693632 (unrelated target — triviality control), 693633 (readout positions — locus control) |
-| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `NOT_RUN` | |
+| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` — **gate still OPEN** | first run (693631/2/3) passed **vacuously**: unconstrained soft prompts hit ~1.0 for the concept *and* for an unrelated target. Re-running with a vocabulary-simplex relaxation (693648/693649), which is a true bound for a token sequence. |
+| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `BLOCKED` | correctly blocked: the §8.5 gate has not yet produced an informative positive control |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
@@ -74,10 +74,12 @@ receive only redacted labels, scalars and statistics.
 | 693614 | S8 component | `run_pair_attn.sh` | n-804 | 2026-07-29 | ✅ COMPLETE (1 552 rows) | `outputs/pair_attn_component_*_693614` |
 | 693618 | S8 knockout ("boundary fixed") | — | 2026-07-29 | ⚠️ SUPERSEDED — the fix did NOT work: boundary unlocated on **6912/6948** rows | `outputs/pair_attn_knockout_*_693618` |
 | 693623 | S8 knockout `per_layer` (boundary verified) | `run_pair_attn.sh` | n-802 | 2026-07-29 | ✅ COMPLETE (5 796 rows, **0% unlocated**) — negative, beaten by random control | `outputs/pair_attn_knockout_*_693623` |
-| 693631 | S11 soft-prompt concept/demos | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_concept_demos_*` |
-| 693632 | S11 soft-prompt unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_unrelated_demos_*` |
-| 693633 | S11 soft-prompt concept/readout (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_concept_readout_*` |
-| 693647 | S8 knockout `all_layers` | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693647` |
+| 693631 | S11 soft-prompt **free** concept/demos | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_concept_demos_*` |
+| 693632 | S11 soft-prompt **free** unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_unrelated_demos_*` |
+| 693633 | S11 soft-prompt **free** concept/readout (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | ⚠️ VACUOUS — unconstrained params reach any target | `outputs/pair_softprompt_concept_readout_*` |
+| 693647 | S8 knockout `all_layers` | `run_pair_attn.sh` | — | 2026-07-29 | ✅ COMPLETE (216 rows, 0% unlocated) — **non-specific** | `outputs/pair_attn_knockout_*_693647` |
+| 693648 | S11 soft-prompt **simplex** concept/demos | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_concept_demos_*` |
+| 693649 | S11 soft-prompt **simplex** unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_simplex_unrelated_demos_*` |
 
 ---
 
@@ -495,11 +497,76 @@ knockout result blocked *all* layers simultaneously. The all-layers test is the 
 comparison and is running (693647). Until it lands, "demonstration routing is not required"
 is **not** a claim I am making.
 
+### ITER9 — 2026-07-29 — S8 all-layers knockout is NON-SPECIFIC; S11 gate is VACUOUS as first run
+
+**S8 all-layers knockout (693647, 0% unlocated).** Blocking attention from the final
+codeword token to the demonstrations, at *every* layer simultaneously, destroys the hijacked
+reading almost completely — and so does the count-matched random control:
+
+| source set | effect | mean after | baseline | reduction |
+|---|---|---|---|---|
+| `demos_all` | −0.4740 [−0.6131, −0.3296] | 0.0003 | 0.4742 | **−99.9%** |
+| `random_matched` (count-matched control) | −0.4728 [−0.6117, −0.3286] | 0.0015 | 0.4742 | **−99.7%** |
+| `demos_first` | −0.4391 | 0.0351 | 0.4742 | −92.6% |
+| `request_only` | −0.0781 | 0.3961 | 0.4742 | −16.5% |
+| `prev_codewords` | −0.0133 (NS) | 0.4609 | 0.4742 | −2.8% |
+
+**The demonstration knockout is indistinguishable from blocking the same number of random
+earlier tokens.** Removing ~154 tokens of attention at every layer simply destroys the
+codeword's representation; it is a lesion, not a localization. The same held at `per_layer`
+granularity (693623: `demos_all` −0.0057 vs `random_matched` −0.0077).
+
+**This bears directly on an existing claim.** The prior sprint recorded P6/RQ4 as "blocking
+codeword→demos removes the hijack (0.10→0), distributed across layers". That effect
+reproduces here in magnitude — but with a count-matched random control it is **not
+demonstration-specific**, so it does not support the conclusion that the mapping is *routed*
+from the demonstrations. Combined with the boundary bug in `10_layerwise_knockout.py`
+(ITER2), the attention-routing claim needs re-deriving before it is cited again. Logged for
+`SPRINT_REPORT.md` / `PAPER_DRAFT.md`.
+
+Note what *is* specific: `prev_codewords` (blocking only the earlier codeword occurrences,
+~4 tokens) does essentially nothing (−2.8%, NS). So the hijack does not depend on the final
+codeword attending to its own earlier mentions.
+
+**S11 gate (693631/2/3) — the positive control PASSED VACUOUSLY, and the control caught it.**
+
+| run | p_start → p_best |
+|---|---|
+| concept / demos (main) | 0.00000 → **0.99990** [+0.99977, +0.99997] |
+| **unrelated target / demos** | 0.00094 → **0.99985** [+0.99858, +0.99921] |
+| concept / readout positions | 0.00000 → 0.874 |
+
+Unconstrained soft prompts over 58–202 positions reach *any* target essentially perfectly.
+That says the optimizer works; it says **nothing** about whether the causal objective is
+reachable by a demonstration attack, because a free vector in ℝ^4096 per position has far
+more capacity than any token. Without the `unrelated` control this would have read as
+"the objective is optimizable — proceed to GCG", and the S12 result would have been built on
+sand.
+
+Fix: `--param simplex` parameterises each free position as **logits over the vocabulary**,
+using the softmax-weighted convex combination of embedding rows. Any real token sequence is
+a vertex of that simplex, so its optimum is a genuine upper bound for a discrete attack.
+Initialised at the actual tokens (step 0 reproduces the real prompt), and the run now reports
+`mean_peak_weight` — how close the relaxed solution is to a one-hot token sequence — so a
+"success" spread across the vocabulary can be told apart from an achievable one. Rerun as
+693648 (concept) / 693649 (unrelated control), 300 steps.
+
+**The S11 gate is therefore still OPEN**, and S12 (discrete GCG/MAC) remains blocked, which
+is the correct state per §8.5.
+
 ---
 
 ## Next single highest-value experiment
 
-**S9 + S10**, now that S6 has given a controlled causal effect with a sharp `d_Direct` / `d_DS` dissociation.
+**Close the S11 gate (693648/693649), then S10.** Everything else in the chain has landed; the objective work
+is what the plan actually builds toward, and it cannot start until the §8.5 gate returns an *informative*
+answer. Two outcomes are both publishable: if the vocabulary-simplex relaxation can drive the causal score
+while the unrelated-target control cannot, the objective is genuinely optimizable at demonstration positions
+and S12 proceeds; if it cannot, then the causal quantity that `d_Direct` controls so cleanly at the
+representation level is **not reachable through the demonstration tokens at all**, which would explain the
+prior sprint's suffix-GCG negative without appealing to optimizer weakness.
+
+Superseded plan text (kept for the record):
 Two things are worth more than anything else right now:
 
 1. **The signed dose response (693607/693608)** — reversibility is the remaining piece of §4.5. If negative α
