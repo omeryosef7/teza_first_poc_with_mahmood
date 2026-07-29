@@ -433,6 +433,18 @@ benign (Neutral) reps, late layers from harmful (Direct) reps, merged by layer i
 (3) run_optimization `--lambda-repr>0` vs a `--lambda-repr 0` baseline → held-out ASR (Level-5 test = temporal
 > standard). Each step gets a tiny smoke + self-review before the full GPU job. No code written yet (read-only
 scoping) to avoid a rushed bug.
+**Step 1 DONE (iter53) — manifest bridge, user approved full build.** Wrote `gcg_manifest_bridge.py`:
+reads the curated matrix + corrected eligibility → emits TWO SurrogateTask manifests (one entry/base at
+first-codeword × middle-context_len): `_neutral.jsonl` (instruction=Neutral benign prompt → benign ref
+reps) + `_direct.jsonl` (instruction=Direct harmful prompt → harmful ref reps). Manifest stays HARMLESS:
+`safe_target_prefix` = generic benign anchor; the temporal attack is carried by the layer-weighted repr_loss
+vs the mixed cache, harmful ASR judged separately. Smoke-tested: 37 tasks (23 train/14 val), both load via
+the REAL `load_manifest`, task_id parity neutral==direct holds (needed for per-task cache merge). Generated
+manifests gitignored (contain benchmark prompt text; regenerable). Design decisions: middle context_len +
+first codeword per base (matches the per-condition sweep); deterministic hash split for held-out-concept eval.
+**NEXT (Step 2):** `gcg_mixed_cache.py` — run existing `build_reference_cache.py` on each manifest (2 caches),
+then merge per-task by layer (early layers←benign, late←harmful) into one cache dir in the ReferenceCache
+`.pt` format ({layer:{pos:tensor}}) — tensor-only, benign, smoke-testable on 1 task.
 
 ## ITER50 — INGESTED 37-base scale-up: flagship HARDENS at full eligible n (headline stronger + tighter)
 All three 37-base dirs (early 692637 / mid 692638 / late 230505, unique post-collision-fix, schema-verified
