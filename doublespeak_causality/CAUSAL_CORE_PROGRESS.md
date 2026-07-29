@@ -29,7 +29,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
-| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `RUNNING` — **gate now open** | S1→S9 all pass, so §16.18's gate is satisfied. 4 further pairs built (`grenade`/`pistol`/`cocaine` ✅, `chlorine` building) — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control; **all CHECK PASSED, 0 skipped**. Reps running (693694/5/6) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
+| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `PARTIAL` — 5 pairs done, gates pending | S1→S9 all pass, so §16.18's gate is satisfied. 4 further pairs built (`grenade`/`pistol`/`cocaine` ✅, `chlorine` building) — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control; **all CHECK PASSED, 0 skipped**. Reps running (693694/5/6) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
 ---
@@ -93,8 +93,12 @@ receive only redacted labels, scalars and statistics.
 | 693702 | S16 controls `carrot`↔`chlorine` | `run_pair_interv.sh` | n-802 | 2026-07-30 | ✅ COMPLETE — dissociation holds, effect small | `outputs/pair_interv_controls_*_693702` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693696` |
-| 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693704` |
-| 693705 | S16 controls `carrot`↔`cocaine` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
+| 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — strongest `d_Direct` (mid +0.909) | `outputs/pair_interv_controls_*_693704` |
+| 693705 | S16 controls `carrot`↔`cocaine` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — **null for BOTH directions** | `outputs/pair_interv_controls_*_693705` |
+| 693772 | S2 gate `carrot`↔`grenade` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
+| 693773 | S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
+| 693774 | S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
+| 693775 | S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693696` |
 | 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
@@ -997,6 +1001,41 @@ is the fourth independent instance of the same representation-vs-behavior split,
 prior sprint's decoding/behaviour dissociation, `d_DS`'s causal inertness, and the
 `d_Direct`/`d_DS` divergence. §9 exists precisely to catch this: had success been declared on
 the causal score, the direction of the behavioral effect would have been missed entirely.
+
+### ITER22 — 2026-07-30 — the five-pair table, and a gate I skipped on my own new pairs
+
+`41_aggregate_pairs.py` over all five pairs (per-pair, never pooled):
+
+| pair | category | Direct.early | Direct.mid | Direct.late | DS.mid | DS.late |
+|---|---|---|---|---|---|---|
+| `bomb` | explosives | +0.167 | +0.533 | **+0.971** | 0.0000 | 0.0000 |
+| `pistol` | weapons | +0.169 | **+0.909** | +0.771 | 0.0053 | 0.0000 |
+| `grenade` | explosives | +0.003 | +0.211 | +0.302 | 0.0007 | 0.0000 |
+| `chlorine` | toxins | +0.003 | +0.048 | +0.058 | 0.0001 | 0.0000 |
+| `cocaine` | narcotics | +0.012 | +0.004 | +0.011 | 0.0002 | 0.0000 |
+
+**`d_DS` is inert in 5/5.** The load-bearing null generalizes without exception — the
+hijacked-state direction moves the interpretation in no pair, no window, at matched relative
+strength. That is the strongest single claim the sprint has.
+
+**`d_Direct` installs in 4/5**, spanning 0.011 → 0.971, i.e. two orders of magnitude. On
+`cocaine`, *neither* direction does anything material: it is not a dissociation there, it is a
+null for both. So `dissociation_holds_in_all_pairs = False`, and the aggregator says so
+rather than quietly reporting 4/5 as success.
+
+**The gap: I never ran the S2 readout gate on the four new pairs.** For `bomb` I insisted that
+no intervention number is interpretable until the readout separates `DIRECT_CONCEPT` from
+`NEUTRAL_CODEWORD` — and then I built four new pairs and went straight to reps → directions →
+controls. A null on `cocaine` therefore cannot currently be distinguished from *"the readout
+does not work for this pair"*, which is exactly the failure mode the per-cell gate was
+introduced to prevent (ITER3, where gating moved the headline from 0.313 to 0.500).
+
+Gates submitted for all four (693772 `grenade`, 693773 `pistol`, 693774 `cocaine`,
+693775 `chlorine`). Until they land:
+- the **`d_DS` 5/5 null stands** — an inert direction is inert regardless of readout quality,
+  and it is corroborated by `d_benign`/`d_unrelated`/`d_repeated` being equally inert;
+- the **`d_Direct` 4/5 count is provisional**, because `cocaine`'s null may be a readout
+  failure rather than a mechanism failure.
 
 ---
 
