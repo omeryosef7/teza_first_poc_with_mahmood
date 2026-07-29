@@ -425,7 +425,17 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
-## ITER58 — Track B step 4 SMOKE launched (temporal-GCG optimize on Qwen3 mixed cache)
+## ITER59 — Track B SMOKE PASSED → full temporal + baseline GCG runs launched (Level-5 test)
+Smoke 692793 PASSED end-to-end: `repr_loss ENABLED lambda_repr=0.3`, 25 train tasks loaded from the mixed
+cache with correct per-task last-3-suffix positions, step0 `task_loss=59.6 repr_loss=0.4464` (temporal term
+active + computing), 5 steps complete, no errors. The whole Track-B pipeline (bridge→caches→merge→optimize)
+works on Qwen3. Launched the full comparison, 200 steps each on the train split (25 tasks):
+- **TEMPORAL 692818** (lambda_repr=0.3 + mixed early-benign/late-harmful cache) → opt_qwen3_temporal
+- **BASELINE 692819** (lambda 0, task-only GCG) → opt_qwen3_baseline
+On completion → `evaluate_optimized_suffixes` held-out ASR on the val split (13 tasks) = the Level-5 test:
+does the mechanism-derived temporal objective beat standard GCG? (Either result is publishable: a win
+validates the objective; a null strengthens the "early-suppression is load-bearing but hard to optimize"
+caveat already in GCG_MAC_COMPARISON.)
 Wrote `slurm/run_gcg_optimize.sh` (wraps `run_optimization`; TEMPORAL=lambda_repr>0 + mixed cache, BASELINE=
 lambda 0; includes `--no-filter-cand` per the BPE-tokenizer rule, `--no-thinking`, repr-layers/positions
 matching the cache). Submitted **692793** — smoke: lambda_repr=0.3, n-steps=5, split=train, on the Qwen3
