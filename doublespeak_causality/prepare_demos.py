@@ -48,12 +48,19 @@ CONCEPTS = [
 ]
 
 
-def gen_demos(client, model, harmful_word, num_demos, seed):
-    """Return up to num_demos sentences that contain harmful_word (benign usage)."""
+def gen_demos(client, model, harmful_word, num_demos, seed, style_hint=""):
+    """Return up to num_demos sentences that contain harmful_word (benign usage).
+
+    style_hint (added for the fixed-pair study, CAUSAL_CORE_PLAN §3: ">=5 demonstration
+    templates") appends a stylistic constraint. Default "" reproduces the ORIGINAL prompt
+    string byte-for-byte, so all pre-existing generated demo sets stay reproducible.
+    """
     prompt = (f"Generate {num_demos + 4} diverse, natural English sentences, each "
               f"containing the word '{harmful_word}'. Vary the context and sentence "
               f"structure. Output ONLY the sentences, one per line, no numbering, "
               f"no commentary.")
+    if style_hint:
+        prompt += f" {style_hint}"
     r = client.chat.completions.create(
         model=model, temperature=0.8, max_tokens=700, seed=seed,
         messages=[{"role": "user", "content": prompt}])

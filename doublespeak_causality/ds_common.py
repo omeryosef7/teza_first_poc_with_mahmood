@@ -40,10 +40,41 @@ PRIMARY_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 # Reproducibility / metadata
 # --------------------------------------------------------------------------- #
 def git_commit() -> str:
+    """Current HEAD sha, for the plan §15 provenance record.
+
+    `git` is not on PATH inside every conda env we run in (it lives in base), which
+    silently degraded provenance to "unknown". Fall back to reading .git directly so
+    the commit is recorded even without the binary.
+    """
     try:
         return subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=_HERE, stderr=subprocess.DEVNULL
         ).decode().strip()
+    except Exception:
+        pass
+    try:
+        d = _HERE
+        while True:
+            gitdir = os.path.join(d, ".git")
+            if os.path.exists(gitdir):
+                break
+            parent = os.path.dirname(d)
+            if parent == d:
+                return "unknown"
+            d = parent
+        if os.path.isfile(gitdir):  # worktree: ".git" is a file pointing elsewhere
+            gitdir = open(gitdir).read().split("gitdir:", 1)[1].strip()
+        head = open(os.path.join(gitdir, "HEAD")).read().strip()
+        if head.startswith("ref:"):
+            ref = head.split(" ", 1)[1].strip()
+            ref_path = os.path.join(gitdir, ref)
+            if os.path.exists(ref_path):
+                return open(ref_path).read().strip()
+            for line in open(os.path.join(gitdir, "packed-refs")):
+                if line.rstrip().endswith(" " + ref):
+                    return line.split()[0]
+            return "unknown"
+        return head
     except Exception:
         return "unknown"
 
