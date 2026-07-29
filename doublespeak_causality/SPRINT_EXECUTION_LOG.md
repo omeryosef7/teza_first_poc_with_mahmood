@@ -425,6 +425,16 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER70 — FINAL: comprehensive sprint report + full reliability audit (user request)
+Wrote `SPRINT_REPORT.md` — self-contained, hand-off-ready (background, method, all CI-backed results from
+outputs, extensions, reliability, limitations). **Final reliability audit — ALL PASS:** (1) mixed cache
+verified early=benign/late=harmful (Track B negative NOT confounded); (2) ASR eval reliable (temporal 0 /
+baseline 0 malicious; none=1 is minor judge noise on curated_0001); (3) necessity seed-avg reproduces
+(−random 0.181 [−0.021,0.383]); (4) DeepSeek counts reproduce (27/40, 16 clean); (5) **core flagship numbers
+reproduce EXACTLY under current post-sprint code — no regression** (mid −0.393, late −0.064, early−late
+refusal +0.846). All sprint bugs (refusal-judge, 2 pipeline audits, output-dir collision, cache-key mismatch,
+position re-keying, false-null judge) documented + fixed; none reached a reported result. Sprint COMPLETE.
+
 ## ITER68 — Track B (temporal-GCG) COMPLETE: Level-5 negative locked; all 3 extension tracks done
 693114 (lex-wide eps=20) DONE 200 steps: repr_loss 0.4540→min 0.4504→0.4516, task_loss 77.7→71.1 (task
 sacrificed, repr STILL flat). Definitive across all 3 configs. §6d table finalized. **Track B closed:** full
