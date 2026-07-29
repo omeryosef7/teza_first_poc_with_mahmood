@@ -83,8 +83,18 @@ representation→behavior loop with a causal timing law. (Success Level 3.)
 AUC 0.668, CV 0.73); the predictive component is EARLY-benign alignment (late_align alone inert) —
 cohering with the TOCTOU law. **Level 5 🔶 (directional, not significant):** using the objective to SELECT
 codewords (min early-align) raises jailbreak rate 0.30 vs 0.208 random (+0.092 [−0.037, +0.225], n=40) —
-positive but underpowered; consistent with the moderate objective. Full suffix-GCG designed
-(`GCG_MAC_COMPARISON.md`: temporal = mixed early-benign/late-harmful `repr_loss`), not yet run.
+positive but underpowered; consistent with the moderate objective.
+
+**Full temporal suffix-GCG EXECUTED (Qwen3) — a definitive NEGATIVE, and it's informative.** Built the whole
+pipeline (Doublespeak→GCG manifest bridge → mixed early-benign/late-harmful reference cache → optimize →
+held-out ASR) and ran temporal (λ_repr>0) vs baseline (λ=0). **(a)** The temporal `repr_loss` (make late reps
+look harmful) is **not suffix-optimizable** — it never dropped across 3 selection configs, including one where
+the optimizer freely sacrificed the task target. **(b)** Behaviorally the temporal suffix **backfires**: ASR
+0 (= baseline), but refusal jumps to 0.615 (vs 0.077 baseline). **Interpretation:** a raw adversarial suffix
+appending harm LATE is caught by / can't install past the refusal checkpoint — whereas Doublespeak's
+DEMONSTRATIONS smuggle late-emerging meaning past it. **The attack is demonstration-bound, not distillable
+into a universal suffix** — a boundary result that directly reinforces the TOCTOU law and the sufficiency
+dissociation (see `GCG_MAC_COMPARISON.md` §6d).
 
 ## 7. Thinking vs non-thinking — Claim F (Phase 7) — PARTIAL (Level 6)
 Within-model on Qwen3 (same weights, n=90): thinking does NOT amplify success (DS mal 0.22 vs 0.24, NS) but

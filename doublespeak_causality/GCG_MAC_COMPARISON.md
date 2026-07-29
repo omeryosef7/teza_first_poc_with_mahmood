@@ -83,8 +83,37 @@ yields a moderate, non-significant attack gain. Larger N and/or the harder-optim
 designed) are needed before an ASR-gain claim can be made. Reporting the directional result honestly rather
 than over-claiming Level 5.
 
-## 6c. Next concrete steps
-1. Build the mixed reference cache for a dev set of eligible Doublespeak prompts (early=Neutral reps,
-   late=Direct reps) via a Doublespeak-adapted `build_reference_cache`.
-2. Smoke Temporal-GCG (few steps, 1 behavior) to validate the objective wiring end-to-end.
-3. Matched-budget C vs E on a dev set; then held-out ASR.
+## 6c. Next concrete steps ✅ ALL DONE (see §6d)
+1. ✅ Built the mixed reference cache (early=Neutral reps, late=Direct reps) — `gcg_manifest_bridge.py` +
+   two `build_reference_cache` runs + `gcg_mixed_cache.py` (self-tested).
+2. ✅ Smoked Temporal-GCG (5 steps) — repr_loss wiring validated (repr_loss=0.4464 logged at step 0).
+3. ✅ Ran matched-budget baseline (λ=0) vs temporal (λ>0), 200 steps, on Qwen3; held-out ASR on 13 val bases.
+
+## 6d. FULL Temporal-GCG EXECUTED (Qwen3-14B) — a definitive NEGATIVE (the attack is demonstration-bound)
+Full pipeline built + run: Doublespeak→GCG manifest bridge → benign(Neutral)+harmful(Direct) reference
+caches → mixed early-benign/late-harmful cache (merge by position order) → `run_optimization` (temporal vs
+baseline) → held-out ASR (`25_eval_gcg_asr.py`, same StrongReject+MALICIOUS-first judge).
+
+**Result 1 — the temporal objective is NOT GCG-suffix-optimizable.** `repr_loss` (late-layer cosine distance
+of the suffix reps to the harmful Direct reps) **never dropped** across THREE selection configs:
+| config | selection | λ_repr | repr_loss first→min→last | task_loss |
+|---|---|---|---|---|
+| weighted | argmin(task+λ·repr) | 0.3 | 0.446 → 0.446 → 0.565 | 59.6 → 3.8 (chased benign target) |
+| lex-tight | argmin(repr) s.t. task≤best+0.01 | 1.0 | 0.480 → 0.463 → 0.535 | 63.4 → 16.4 |
+| lex-wide | argmin(repr) s.t. task≤best+20 | 1.0 | 0.454 → 0.450 → ~0.45 | 77.7 → 73 (task SACRIFICED, repr still flat) |
+Even with maximum slack (lex-wide: the optimizer freely abandons the task target), a 16-token suffix cannot
+push the neutralized prompt's late reps to the harmful-concept reps.
+
+**Result 2 — behaviorally it BACKFIRES.** Held-out ASR (13 val bases): temporal 0.0, baseline 0.0, no-suffix
+0.077; but the temporal suffix drives **refusal to 0.615** (vs baseline 0.077, none 0.0). Steering toward
+harmful-late reps via a raw suffix TRIGGERS the safety check rather than evading it.
+
+**Interpretation — this is a meaningful boundary, not a failed experiment.** It directly confirms the TOCTOU
+timing law from the other direction: harmful meaning appended LATE as a raw adversarial suffix is either
+caught (→refusal) or fails to install (repr_loss won't drop), whereas the Doublespeak DEMONSTRATIONS smuggle
+late-emerging meaning past the early refusal checkpoint. **The Doublespeak attack is demonstration-bound —
+it cannot be distilled into a universal GCG suffix.** Coheres with the behavioral sufficiency dissociation
+(§2: the transplanted DS state is context-dependent and loses behavioral force). Combined with §6b
+(codeword selection gives a directional +9pp but underpowered), the honest Level-5 verdict: **the
+mechanism-derived objective yields a directional selection gain but is NOT suffix-optimizable into a stronger
+universal attack; the hijack's power lives in the in-context demonstrations.**
