@@ -90,7 +90,11 @@ receive only redacted labels, scalars and statistics.
 | 693694 | S16 reps `carrot`↔`grenade` | `run_pair_reps.sh` | n-802 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693694` |
 | 693699 | S16 controls `carrot`↔`grenade` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693699` |
 | 693700 | S16 reps `carrot`↔`chlorine` | `run_pair_reps.sh` | — | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693700` |
-| 693702 | S16 controls `carrot`↔`chlorine` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693702` |
+| 693702 | S16 controls `carrot`↔`chlorine` | `run_pair_interv.sh` | n-802 | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693702` |
+| 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693695` |
+| 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693696` |
+| 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693704` |
+| 693705 | S16 controls `carrot`↔`cocaine` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693696` |
 | 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
@@ -877,15 +881,17 @@ cross-concept number is a clean replication of ITER2's central geometric fact:
 | `carrot`↔`bomb` | explosives | 0.279 |
 | `carrot`↔`grenade` | explosives | **0.277** |
 | `carrot`↔`chlorine` | **toxins** | **0.259** |
+| `carrot`↔`cocaine` | **narcotics** | **0.223** |
+| `carrot`↔`pistol` | **weapons** | **0.216** |
 
-So the two causal directions are just as non-equivalent for a second explosives concept *and*
-for a toxin — the divergence is not a quirk of `bomb`, and it is not confined to one harm
-category. The interventional half (does `d_Direct` install while
+**All five pairs, four harm categories, cluster in 0.216–0.279.** The two causal directions
+are non-equivalent at the codeword position for every concept tested — the divergence is not a
+quirk of `bomb`, not confined to one harm category, and remarkably stable in magnitude. The interventional half (does `d_Direct` install while
 `d_DS` stays inert?) is the controls sweep now running as 693699; that is the number that
 decides whether the dissociation generalizes.
 
 Pipeline per pair is reps → directions (CPU) → controls sweep → `41_aggregate_pairs.py`.
-`pistol`/`cocaine` reps are running; `chlorine` reps submitted (693700).
+All five pairs now have reps (256 cells, 0 missing each) and directions; all four controls sweeps are running (693699 `grenade`, 693702 `chlorine`, 693704 `pistol`, 693705 `cocaine`).
 
 ---
 
