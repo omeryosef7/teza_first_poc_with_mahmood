@@ -110,7 +110,17 @@ def main():
         ids = tok["input_ids"][0].tolist()
         hit = dc.find_word_occurrences(lm.tokenizer, ids, it["codeword"])
         cw_last = hit.last_idx[-1]
-        demo_keys = list(range(0, hit.first_idx[-1]))
+        # F2 FIX (was applied to 09_attention_knockout.py only; this script silently kept
+        # the OLD boundary `range(0, hit.first_idx[-1])`, which blocks the instruction
+        # prefix and the substituted query as well as the demonstrations and therefore
+        # confounds "blocking demos removes the hijack" with "blocking the request removes
+        # the hijack"). Shared implementation: ds_common.request_start_token.
+        req_start_tok, req_located = dc.request_start_token(
+            lm.tokenizer, text, hit.first_idx[-1])
+        demo_keys = list(range(0, req_start_tok))
+        if not req_located:
+            print(f"[stage4-layerko] WARNING {it['id']}: request prefix not located; "
+                  f"demo/request boundary fell back to the CONFOUNDED value")
         harm_id = token_id(lm.tokenizer, it["harmful_word"])
         code_id = token_id(lm.tokenizer, it["codeword"])
 
@@ -130,6 +140,8 @@ def main():
 
         report["items"].append({"id": it["id"], "cw_last": cw_last,
                                 "n_demo_keys": len(demo_keys),
+                                "req_start_tok": req_start_tok,
+                                "request_boundary_located": req_located,
                                 "baseline": {"p_harm": base_ph, "p_code": base_pc},
                                 "single_layer": single, "cumulative": cumulative})
         # console: most-effective single layer + cumulative depth to reach ~0

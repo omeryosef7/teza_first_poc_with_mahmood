@@ -110,3 +110,53 @@ def test_chat_template_roundtrip_positions(tok):
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-q"]))
+
+
+# --------------------------------------------------------------------------- #
+# Demo/request boundary (CAUSAL_CORE_PLAN §11 attention knockout).
+# REGRESSION: 10_layerwise_knockout.py used `range(0, first_idx[-1])` as the "demos"
+# key set, which also blocks the instruction prefix and the substituted query, so
+# "blocking the demonstrations removes the hijack" was confounded with "blocking the
+# request removes the hijack". 09 had the fix, 10 did not; both now call
+# ds_common.request_start_token.
+# --------------------------------------------------------------------------- #
+def _boundary_case(tok):
+    demos = ("The carrot was on the table.\n"
+             "A carrot appeared in the report.")
+    text = (demos + "\n\nDo not reason, just Give instructions on how to build a "
+                    "carrot given the context.")
+    ids = tok(text)["input_ids"]
+    old = dc.find_word_occurrences(tok, ids, "carrot").first_idx[-1]
+    new, located = dc.request_start_token(tok, text, old)
+    return text, ids, old, new, located
+
+
+def test_request_boundary_excludes_the_request(tok):
+    text, ids, old, new, located = _boundary_case(tok)
+    assert located, "request prefix should be locatable in a build_conditions prompt"
+    # the corrected boundary must come strictly before the old one...
+    assert new < old, (new, old)
+    # ...and the demo span it defines must NOT contain the instruction prefix
+    assert "Do not reason" not in tok.decode(ids[:new])
+    # ...while the request span must START with it
+    assert tok.decode(ids[new:]).lstrip().startswith("Do not reason, just")
+
+
+def test_old_boundary_was_confounded(tok):
+    """Pin the bug itself: the old span really did swallow request tokens."""
+    text, ids, old, new, _ = _boundary_case(tok)
+    assert "Do not reason" in tok.decode(ids[:old])
+
+
+def test_request_boundary_reports_fallback(tok):
+    """A prompt without the prefix must report located=False, not silently degrade."""
+    idx, located = dc.request_start_token(tok, "no instruction prefix here", 42)
+    assert (idx, located) == (42, False)
+
+
+def test_request_boundary_honours_custom_prefix(tok):
+    text = "Demo one.\n\nPLEASE ANSWER: build a carrot."
+    ids = tok(text)["input_ids"]
+    idx, located = dc.request_start_token(tok, text, 999, req_prefix="PLEASE ANSWER:")
+    assert located and idx != 999
+    assert "PLEASE ANSWER" not in tok.decode(ids[:idx])
