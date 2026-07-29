@@ -39,8 +39,8 @@ opposite of Patchscopes) — a methodological caution.
 sufficient (re-validated with proper controls, cross-model), and it TRANSLATES INTO A REAL BEHAVIORAL
 JAILBREAK on a properly-built benchmark. WHY it works: refusal is a time-of-CHECK op on EARLY meaning;
 Doublespeak's LATE emergence smuggles harm past it — a causal TOCTOU timing law that is ARCHITECTURE-
-GENERAL and SIGNIFICANT on all 3 (Llama +0.869, Qwen3 +0.854, Phi-4 +0.250, all CIs exclude 0, clean
-per-condition). Rep-level decoding-sufficiency and behavioral sufficiency dissociate.
+GENERAL and SIGNIFICANT on all 3 (Llama +0.846 @37 bases, Qwen3 +0.854, Phi-4 +0.250, all CIs exclude 0,
+clean per-condition). Rep-level decoding-sufficiency and behavioral sufficiency dissociate.
 
 ---
 
@@ -406,6 +406,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 (register/deregister correct on the right layers; windows early[0-9]/mid[10-19]/late[20-31]/
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
+
+## ITER50 — INGESTED 37-base scale-up: flagship HARDENS at full eligible n (headline stronger + tighter)
+All three 37-base dirs (early 692637 / mid 692638 / late 230505, unique post-collision-fix, schema-verified
+666 rows each) analyzed at full eligible n (~180 per window, ~3× the 12-base). **Headline holds and improves:**
+- **Sufficiency DS−Direct:** mid **−0.393 [−0.470, −0.311] n=183** (LARGER than 12-base −0.295, CI ~3× tighter);
+  late **−0.064 [−0.116, −0.012] n=173** SIG; early −0.061 [−0.123, 0.000] n=179 borderline (hi touches 0).
+- **TOCTOU refusal gradient:** early−late **+0.846 [+0.787, +0.899] n=169**; early−mid +0.631; mid−late +0.214;
+  per-window refusal 0.87 / 0.25 / 0.02 — clean monotone, all significant, CIs much tighter than 12-base.
+Updated BEHAVIORAL_CAUSALITY_RESULTS.md (depth table, CI §, timing §, cross-model Llama row), UPDATED_PAPER_
+STORY.md (§4/§5/§7b), dashboard headline; regenerated all figures (auto-use 37-base dirs). Canonical JSON:
+outputs/behavioral_causality_llama_37base.json. **Scale-up limitation (12→37 bases) now CLOSED.**
 
 ## ITER49 — CAUGHT + FIXED an output-dir COLLISION in the 37-base scale-up (real bug, self-review)
 The 3 scale-up jobs (692572-4) all started the SAME second → `19`'s `out_dir` used a second-granularity

@@ -64,15 +64,15 @@ statistically-meaningful result.**
   +0.182 [−0.030, +0.394], underpowered — honest caveat).
 - **Sufficiency ✅ but DISSOCIATES from the rep-level prediction (Claim C):** the rep-level Patchscopes
   prediction was DS-injection > Direct-injection. **Behaviorally it INVERTS: Direct ≫ DS** — the raw concept
-  is the more potent injectate at mid (DS−Direct −0.295 [−0.443, −0.148], n=61) AND late (−0.161 [−0.274,
-  −0.048], n=62); at early both are inert (DS≈Direct, +0.03 NS). The hijacked DS state is a *context-dependent*
+  is the more potent injectate at mid (DS−Direct −0.393 [−0.470, −0.311], n=183, 37 bases) AND late (−0.064
+  [−0.116, −0.012], n=173); at early the dissociation is weak/borderline. The hijacked DS state is a *context-dependent*
   state that loses behavioral force when transplanted out of its demonstrations — a **methodological caution:
   Patchscopes decoding-sufficiency does not predict (here inverts) behavioral sufficiency.**
 
 ## 5. Causal timing — Claim D ✅ CONFIRMED (Phase 4) ⭐ HEADLINE
 Injecting the raw harmful concept at different depths into benign prompts: **early → REFUSAL (0.87),
 mid → COMPLIANCE (0.52 malicious), late → NEITHER (refusal 0.00)**. Refusal decreases monotonically with
-depth; early−late refusal Δ=+0.869 [+0.770, +0.951], n=61 (reproducible per-condition via
+depth; early−late refusal Δ=+0.846 [+0.787, +0.899], n=169 (37 bases; reproducible per-condition via
 `analyze_behavioral_causality.py --timing-dir`; every pairwise step significant). **TOCTOU confirmed:
 refusal is a time-of-check operation on EARLY representations.** This explains WHY Doublespeak works — the
 hijacked meaning emerges LATE (rep-level result), so it slips past the early refusal checkpoint. Closes the
@@ -95,7 +95,7 @@ thinking-time intervention yet. (`THINKING_VS_NONTHINKING.md`.)
 ## 7b. Cross-model generalization ⭐
 The **behavioral jailbreak** and the **TOCTOU causal-timing law** reproduce on **all three architectures**,
 and the timing gradient is **significant on all three** (clean per-condition, reproducible):
-early−late refusal Δ = Llama **+0.869 [+0.770, +0.951]** (n=61) · Qwen3 **+0.854 [+0.732, +0.951]** (n=41) ·
+early−late refusal Δ = Llama **+0.846 [+0.787, +0.899]** (n=169, 37 bases) · Qwen3 **+0.854 [+0.732, +0.951]** (n=41) ·
 Phi-4-mini **+0.250 [+0.056, +0.444]** (n=36) — Phi-4's is smaller (a reasoning model re-examines meaning
 at any depth) but its CI now excludes 0 on the full n. Together with the rep-level results (also
 cross-Llama/Qwen3/Phi-4), the causal story is **architecture-general at every level**.

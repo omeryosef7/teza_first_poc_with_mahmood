@@ -92,11 +92,16 @@ sufficiency peaks); re-judge. Prediction from rep-level §3 (Patchscopes): DS-in
 
 **Depth-resolved (early 690096 / mid 689975 / late 690097; malicious rate among baseline-benign):**
 
-| window | Neutral←DS | Neutral←Direct | **DS−Direct [95% CI] (clean per-condition, iter42)** |
+Full eligible n (37 bases, iter50 — jobs 692637/692638/692574·230505; ~3× the 12-base run):
+
+| window | Neutral←DS | Neutral←Direct | **DS−Direct [95% CI] (37 bases, full n)** |
 |---|---|---|---|
-| early (0–9) | 0.11 | 0.08 | +0.032 [−0.081, 0.145], n=62 — NS |
-| **mid (10–19)** | 0.16 | **0.46** | **−0.295 [−0.443, −0.148], n=61 — SIGNIFICANT** |
-| late (20–31) | 0.03 | 0.19 | **−0.161 [−0.274, −0.048], n=62 — SIGNIFICANT** |
+| early (0–9) | 0.06 | 0.12 | −0.061 [−0.123, 0.000], n=179 — borderline (hi touches 0) |
+| **mid (10–19)** | 0.10 | **0.49** | **−0.393 [−0.470, −0.311], n=183 — SIGNIFICANT (strongest)** |
+| late (20–31) | 0.03 | 0.09 | **−0.064 [−0.116, −0.012], n=173 — SIGNIFICANT** |
+
+(12-base clean per-condition, iter42–44, corroborates: mid −0.295 [−0.443,−0.148] n=61; late −0.161
+[−0.274,−0.048] n=62; early +0.032 NS. At full n the mid effect is *larger* and much tighter.)
 
 **Result — a DEPTH-STRUCTURED DISSOCIATION, opposite to the rep-level prediction:**
 - **The hijacked DS state is only weakly behaviorally sufficient at any depth** (≤0.16), and at late layers
@@ -104,8 +109,8 @@ sufficiency peaks); re-judge. Prediction from rep-level §3 (Patchscopes): DS-in
   it being a *context-dependent* state that loses force when transplanted out of its demonstration context.
 - **The raw Direct concept has a MID-LAYER behavioral-steering sweet spot** (0.46 at mid vs 0.08/0.19 at
   early/late) — injecting the concept mid-network most strongly steers generation.
-- **Direct ≫ DS is significant at mid (strongest, −0.295) AND late (−0.161)** — both CIs exclude 0 on the
-  clean per-condition n; **absent only at early** (DS≈Direct, +0.03 NS). Once past the early layers the raw
+- **Direct ≫ DS is significant at mid (strongest, −0.393 at full n) AND late (−0.064)** — both CIs exclude 0;
+  at early the dissociation is weak/borderline (−0.061, hi touches 0). Once past the early layers the raw
   concept is behaviorally more potent than the transplanted DS state. This is the *opposite* of the rep-level
   Patchscopes finding (DS>Direct for decoding).
 
@@ -116,15 +121,14 @@ prompt (no demonstrations) it is a **context-dependent** state and is *less* beh
 context-independent raw concept rep. This is a caution for the field: **Patchscopes decoding-sufficiency
 does not predict — and here inverts — behavioral sufficiency.**
 
-**Paired bootstrap CI (plan §13) — CLEAN per-condition, all 3 windows (iter42/43 resubmit 692152-4,
-context_len logged; deterministic — benign set sorted before bootstrap):**
-- **mid DS−Direct = −0.295 [−0.443, −0.148], n=61** → excludes 0, SIGNIFICANT (strongest dissociation).
-- **late DS−Direct = −0.161 [−0.274, −0.048], n=62** → excludes 0, SIGNIFICANT.
-- early +0.032 [−0.081, 0.145], n=62 — NS (DS≈Direct at early).
+**Paired bootstrap CI (plan §13) — FULL eligible n (37 bases, iter50; per-condition, deterministic):**
+- **mid DS−Direct = −0.393 [−0.470, −0.311], n=183** → excludes 0, SIGNIFICANT (strongest dissociation).
+- **late DS−Direct = −0.064 [−0.116, −0.012], n=173** → excludes 0, SIGNIFICANT.
+- early −0.061 [−0.123, 0.000], n=179 — borderline (hi touches 0).
 
-The pre-fix collapsed mid estimate was −0.43 [−0.67, −0.19] on n=21; proper per-condition pairing on the
-full n attenuates the point estimate but the significance and direction are unchanged, and reveals the
-dissociation also holds (more modestly) at late.
+Scaling 12→37 bases *strengthens* the headline: the mid dissociation grows (−0.295→−0.393) and its CI
+tightens ~3×. (The pre-fix collapsed estimate was −0.43 [−0.67,−0.19] on a spurious n=21; the clean 12-base
+per-condition was −0.295 [−0.443,−0.148] n=61.)
 
 **Audit fix (iter42):** the CI code (`analyze_behavioral_causality.sufficiency_cis`) previously keyed
 `(base,codeword)` only — collapsing the 3 context-lengths to one point (n=21, last-wins) and able to mix
@@ -155,14 +159,15 @@ harmful concept** at different depths and reading the **refusal** rate:
 
 | injection window | REFUSAL rate | MALICIOUS rate | BENIGN |
 |---|---|---|---|
-| **early (0–9)** | **0.87** | 0.10 | 0.05 |
-| **mid (10–19)** | 0.34 | **0.52** | 0.14 |
-| **late (20–31)** | **0.00** | 0.16 | 0.84 |
+| **early (0–9)** | **0.87** | 0.10 | 0.03 |
+| **mid (10–19)** | 0.25 | **0.49** | 0.26 |
+| **late (20–31)** | **0.02** | 0.09 | 0.89 |
 
-**Paired refusal gradient — reproducible per-condition (base,cw,context_len), clean full n
-(`analyze_behavioral_causality.py --timing-dir`, deterministic; no longer hand-computed):**
-- early − late refusal Δ = **+0.869 [+0.770, +0.951], n=61** — hugely significant.
-- early − mid = +0.525 [+0.410, +0.639], n=61; mid − late = +0.350 [+0.233, +0.467], n=60 — both significant.
+**Paired refusal gradient — reproducible per-condition (base,cw,context_len), FULL eligible n (37 bases,
+iter50; `analyze_behavioral_causality.py --timing-dir`, deterministic; no longer hand-computed):**
+- early − late refusal Δ = **+0.846 [+0.787, +0.899], n=169** — hugely significant.
+- early − mid = +0.631 [+0.562, +0.699], n=176; mid − late = +0.214 [+0.156, +0.277], n=173 — both significant.
+- (12-base corroborates: early−late +0.869 [+0.770,+0.951] n=61.)
 - (pre-fix hand-computed values on n=21 were +0.857 / +0.524 / +0.333 — direction identical, CIs now tighter.)
 
 **Verdict: the TIMING of harmful meaning causally controls refusal vs compliance (TOCTOU, Hypothesis 1
@@ -188,7 +193,7 @@ Reproducible per-condition (`analyze_behavioral_causality.py --timing-dir`, clea
 
 | model | early refusal | late refusal | early−late Δ [95% CI] | verdict |
 |---|---|---|---|---|
-| Llama-3.1-8B | 0.87 | 0.00 | **+0.869 [+0.770, +0.951]** (n=61) | strong, significant |
+| Llama-3.1-8B | 0.87 | 0.02 | **+0.846 [+0.787, +0.899]** (n=169, 37 bases) | strong, significant |
 | Qwen3-14B | 1.00 | 0.14 | **+0.854 [+0.732, +0.951]** (n=41) | strong, significant |
 | Phi-4-mini-reasoning | 0.61 | 0.33 | **+0.250 [+0.056, +0.444]** (n=36) | significant, smaller |
 
