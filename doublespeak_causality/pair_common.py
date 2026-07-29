@@ -184,6 +184,122 @@ def capture_components(lm, templated_text: str, probe_word: str,
 
 
 # --------------------------------------------------------------------------- #
+# Component-level patching (§6: "attention-output vs MLP-output patching")
+# --------------------------------------------------------------------------- #
+class SubmodulePatch:
+    """LayerPatch generalised to the attention / MLP sub-blocks.
+
+    ds_common.LayerPatch edits the residual stream at the block OUTPUT, which cannot
+    distinguish "the attention head wrote the mapping" from "the MLP consolidated it".
+    This edits `layer.self_attn` or `layer.mlp` (or the block, for parity) with the same
+    replace / add / project_out semantics and the same generation-safety guard.
+    """
+
+    _TARGETS = {"attn_out": "self_attn", "mlp_out": "mlp", "resid_post": None}
+
+    def __init__(self, model, layer_idx: int, component: str,
+                 positions: Sequence[int], vector: Optional[torch.Tensor] = None,
+                 mode: str = "replace", alpha: float = 1.0):
+        if component not in self._TARGETS:
+            raise ValueError(f"component must be one of {sorted(self._TARGETS)}")
+        layer = dc._get_layers(model)[layer_idx]
+        attr = self._TARGETS[component]
+        self.module = layer if attr is None else getattr(layer, attr)
+        self.positions = list(positions)
+        self.vector = vector
+        self.mode = mode
+        self.alpha = alpha
+        self._handle = None
+
+    def _hook(self, module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        hidden = (output[0] if is_tuple else output).clone()
+        v = None if self.vector is None else self.vector.to(hidden.dtype).to(hidden.device)
+        seq = hidden.shape[1]
+        for p in self.positions:
+            if p < 0 or p >= seq:      # KV-cached decode steps: already in the cache
+                continue
+            if self.mode == "replace":
+                hidden[0, p, :] = v
+            elif self.mode == "add":
+                hidden[0, p, :] = hidden[0, p, :] + self.alpha * v
+            elif self.mode == "project_out":
+                d = v / (v.norm() + 1e-8)
+                comp = torch.dot(hidden[0, p, :].float(), d.float()).to(hidden.dtype)
+                hidden[0, p, :] = hidden[0, p, :] - self.alpha * comp * d.to(hidden.dtype)
+            else:
+                raise ValueError(f"unknown mode {self.mode}")
+        return (hidden,) + tuple(output[1:]) if is_tuple else hidden
+
+    def __enter__(self):
+        self._handle = self.module.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+# --------------------------------------------------------------------------- #
+# Attention knockout (§6) — per-layer AND per-head
+# --------------------------------------------------------------------------- #
+class AttentionKnockout:
+    """Block attention from `query_positions` to `blocked_keys`, per layer and per head.
+
+    REQUIRES the model to be loaded with attn_implementation="eager": under SDPA/flash a
+    custom additive 4-D mask is not applied verbatim and the knockout silently becomes a
+    no-op. This is the single biggest footgun in the existing knockout scripts.
+
+    `heads=None` blocks every head (the existing all-head behaviour, whose mask has head
+    dim 1). A head list expands the mask over the QUERY-head axis — note GQA: the
+    attention-weight tensor is over `num_attention_heads`, not `num_key_value_heads`.
+    """
+
+    def __init__(self, model, layer_idxs: Sequence[int], query_positions: Sequence[int],
+                 blocked_keys: Sequence[int], heads: Optional[Sequence[int]] = None):
+        self.layers = [dc._get_layers(model)[i] for i in layer_idxs]
+        self.q = list(query_positions)
+        self.k = list(blocked_keys)
+        self.heads = None if heads is None else list(heads)
+        self.n_heads = int(model.config.num_attention_heads)
+        self._handles = []
+
+    def _pre(self, mod, args, kwargs):
+        am = kwargs.get("attention_mask")
+        if am is None or am.dim() != 4:
+            raise RuntimeError("expected a 4-D additive attention mask; is the model "
+                               "loaded with attn_implementation='eager'?")
+        am = am.clone()
+        if self.heads is not None and am.shape[1] == 1:
+            am = am.expand(-1, self.n_heads, -1, -1).clone()
+        min_val = torch.finfo(am.dtype).min
+        hs = range(am.shape[1]) if self.heads is None else self.heads
+        for qp in self.q:
+            if qp >= am.shape[2]:
+                continue
+            for kp in self.k:
+                if 0 <= kp <= qp and kp < am.shape[3]:
+                    for h in hs:
+                        am[0, h, qp, kp] = min_val
+        kwargs["attention_mask"] = am
+        return args, kwargs
+
+    def __enter__(self):
+        for layer in self.layers:
+            self._handles.append(
+                layer.self_attn.register_forward_pre_hook(self._pre, with_kwargs=True))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Forward-only semantic score (the cheap outcome used by the big sweeps)
 # --------------------------------------------------------------------------- #
 def word_first_ids(tokenizer, word: str) -> List[int]:

@@ -39,6 +39,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 POS_CONTROL_MIN = 0.80   # DIRECT_CONCEPT must be read as the concept at least this often
 NEG_CONTROL_MAX = 0.20   # NEUTRAL_CODEWORD must be read as the concept at most this often
 
+# The gate is evaluated PER CELL, not only per readout. The full run showed the positive
+# control is not uniform across demonstration styles: with `dialogue` demos, DIRECT_CONCEPT
+# — where the concept word appears literally — is often NOT read as the concept. In such a
+# cell a low DOUBLESPEAK score is uninterpretable, because "no hijack" and "the readout does
+# not work here" are indistinguishable. Plan §16.4: if a readout fails, fix/exclude the
+# readout; do not reinterpret the intervention. So causal analysis is restricted to cells
+# whose positive AND negative controls both pass, and the excluded cells are reported.
+GATE_CELL_KEYS = ("readout", "demo_style")
+
 
 # --------------------------------------------------------------------------- #
 # Token / answer helpers
@@ -97,6 +106,33 @@ def generate_with_first_scores(lm, templated_text, max_new_tokens, id_groups):
     return completion, p
 
 
+def _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
+                     max_new_tokens, think):
+    """Greedy readout pass over every prompt; writes one scalar record per row."""
+    n_done = 0
+    with open(raw_path, "w") as fh:
+        for r in rows_in:
+            templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
+            completion, p = generate_with_first_scores(
+                lm, templated, max_new_tokens, id_groups)
+            label = classify_answer(completion, lexicons)
+            fh.write(json.dumps({
+                "sid": r["sid"], "condition": r["condition"], "split": r["split"],
+                "demo_style": r["demo_style"], "n_demos": r["n_demos"],
+                "readout": r["readout"], "probe_word": r["probe_word"],
+                "expected_lexicon": r["expected_lexicon"],
+                "p": p, "answer_label": label, "answer": completion.strip()[:64],
+                # convenience scalars used by the gate + all downstream analyses
+                "p_concept": p.get("concept"), "p_codeword": p.get("codeword"),
+                "reads_as_concept": int(label == pair["concept"]),
+                "reads_as_codeword": int(label == pair["codeword"]),
+                "reads_as_expected": int(label == r["expected_lexicon"]),
+            }) + "\n")
+            n_done += 1
+            if n_done % 100 == 0:
+                print(f"  [readout] {n_done}/{len(rows_in)}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bench", required=True)
@@ -109,6 +145,9 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--enable-thinking", default=None,
                     choices=[None, "true", "false"], help="Qwen3-style thinking toggle")
+    ap.add_argument("--reanalyze", default=None,
+                    help="recompute the summary from an EXISTING run dir's "
+                         "readout_raw.jsonl (no GPU, no model load)")
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
@@ -132,48 +171,38 @@ def main():
 
     think = None if args.enable_thinking is None else (args.enable_thinking == "true")
 
-    lm = dc.load_model(args.model)
-    tag = args.model.split("/")[-1]
-    uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
-    ts = time.strftime("%Y%m%d_%H%M%S") + "_" + uniq
-    out_dir = os.path.join(args.out_root, f"pair_readout_{tag}_{ts}")
-    os.makedirs(out_dir, exist_ok=True)
-    print(f"[readout] model={tag} layers={lm.num_layers} rows={len(rows_in)} -> {out_dir}")
+    if args.reanalyze:
+        # Recompute the summary (gate, per-cell gate, contrasts) from an existing run's
+        # raw rows. Pure CPU — used when the ANALYSIS changes but the generations do not,
+        # so a methodological fix never costs another GPU pass.
+        out_dir = args.reanalyze
+        raw_path = os.path.join(out_dir, "readout_raw.jsonl")
+        prev = json.load(open(os.path.join(out_dir, "readout_summary.json")))
+        model_meta, single_tok = prev["model"], prev.get("single_token", {})
+        print(f"[readout] REANALYZE {out_dir}")
+    else:
+        lm = dc.load_model(args.model)
+        model_meta = lm.meta()
+        tag = args.model.split("/")[-1]
+        uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
+        ts = time.strftime("%Y%m%d_%H%M%S") + "_" + uniq
+        out_dir = os.path.join(args.out_root, f"pair_readout_{tag}_{ts}")
+        os.makedirs(out_dir, exist_ok=True)
+        print(f"[readout] model={tag} layers={lm.num_layers} rows={len(rows_in)} -> {out_dir}")
 
-    # Probability groups: the concept, the codeword, and both control sources.
-    id_groups = {}
-    for role in ("concept", "codeword", "benign_source", "unrelated_source"):
-        w = pair.get(role)
-        if w:
-            id_groups[role] = word_first_ids(lm.tokenizer, w)
-    # Single-token sanity (plan gotcha: multi-token words make the mass misleading).
-    single_tok = {r: len(lm.tokenizer.encode(" " + pair[r], add_special_tokens=False)) == 1
-                  for r in ("concept", "codeword") if pair.get(r)}
+        # Probability groups: the concept, the codeword, and both control sources.
+        id_groups = {}
+        for role in ("concept", "codeword", "benign_source", "unrelated_source"):
+            w = pair.get(role)
+            if w:
+                id_groups[role] = word_first_ids(lm.tokenizer, w)
+        # Single-token sanity (plan gotcha: multi-token words make the mass misleading).
+        single_tok = {r: len(lm.tokenizer.encode(" " + pair[r], add_special_tokens=False)) == 1
+                      for r in ("concept", "codeword") if pair.get(r)}
 
-    raw_path = os.path.join(out_dir, "readout_raw.jsonl")
-    n_done = 0
-    with open(raw_path, "w") as fh:
-        for r in rows_in:
-            templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
-            completion, p = generate_with_first_scores(
-                lm, templated, args.max_new_tokens, id_groups)
-            label = classify_answer(completion, lexicons)
-            rec = {
-                "sid": r["sid"], "condition": r["condition"], "split": r["split"],
-                "demo_style": r["demo_style"], "n_demos": r["n_demos"],
-                "readout": r["readout"], "probe_word": r["probe_word"],
-                "expected_lexicon": r["expected_lexicon"],
-                "p": p, "answer_label": label, "answer": completion.strip()[:64],
-                # convenience scalars used by the gate + all downstream analyses
-                "p_concept": p.get("concept"), "p_codeword": p.get("codeword"),
-                "reads_as_concept": int(label == pair["concept"]),
-                "reads_as_codeword": int(label == pair["codeword"]),
-                "reads_as_expected": int(label == r["expected_lexicon"]),
-            }
-            fh.write(json.dumps(rec) + "\n")
-            n_done += 1
-            if n_done % 100 == 0:
-                print(f"  [readout] {n_done}/{len(rows_in)}")
+        raw_path = os.path.join(out_dir, "readout_raw.jsonl")
+        _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
+                         args.max_new_tokens, think)
 
     rows = [json.loads(l) for l in open(raw_path)]
 
@@ -212,25 +241,61 @@ def main():
                          and pos_v >= POS_CONTROL_MIN and neg_v <= NEG_CONTROL_MAX),
         }
 
+    # ---- PER-CELL gate (plan §16.4): a cell is usable only if BOTH controls pass ----
+    def cell_of(r):
+        return tuple(r[k] for k in GATE_CELL_KEYS)
+
+    all_cells = sorted({cell_of(r) for r in rows})
+    gate_by_cell = {}
+    for cell in all_cells:
+        sel = lambda r, c=cell: cell_of(r) == c
+        # The no-demo conditions live in a `demo_style == "n/a"` cell that contains no
+        # DIRECT_CONCEPT rows, so they must be gated against their OWN matched controls
+        # rather than being dropped for lack of an in-cell positive control.
+        pos = (agg(lambda r: sel(r) and r["condition"] == "DIRECT_CONCEPT")
+               or agg(lambda r: sel(r) and r["condition"] == "DIRECT_CONCEPT_NODEMO") or {})
+        neg = (agg(lambda r: sel(r) and r["condition"] == "NEUTRAL_CODEWORD")
+               or agg(lambda r: sel(r) and r["condition"] == "NEUTRAL_CODEWORD_NODEMO") or {})
+        pv, nv = pos.get("reads_as_concept"), neg.get("reads_as_concept")
+        gate_by_cell["|".join(map(str, cell))] = {
+            "cell": dict(zip(GATE_CELL_KEYS, cell)),
+            "positive_control": pv, "negative_control": nv,
+            "n_positive": pos.get("n"), "n_negative": neg.get("n"),
+            "pass": bool(pv is not None and nv is not None
+                         and pv >= POS_CONTROL_MIN and nv <= NEG_CONTROL_MAX),
+        }
+    usable = {c for c, g in gate_by_cell.items() if g["pass"]}
+    in_usable = lambda r: "|".join(map(str, cell_of(r))) in usable
+
     # ---- paired DS-vs-Neutral contrast (matched on split/style/n_demos/readout) ----
     def key(r):
         return (r["split"], r["demo_style"], r["n_demos"], r["readout"])
-    ds = {key(r): r for r in rows if r["condition"] == "DOUBLESPEAK"}
-    nu = {key(r): r for r in rows if r["condition"] == "NEUTRAL_CODEWORD"}
-    shared = sorted(set(ds) & set(nu), key=lambda t: tuple(str(v) for v in t))
-    contrasts = {}
-    if shared:
+
+    def contrast(rowset):
+        ds = {key(r): r for r in rowset if r["condition"] == "DOUBLESPEAK"}
+        nu = {key(r): r for r in rowset if r["condition"] == "NEUTRAL_CODEWORD"}
+        shared = sorted(set(ds) & set(nu), key=lambda t: tuple(str(v) for v in t))
+        out = {}
         for metric in ("reads_as_concept", "p_concept"):
+            if not shared:
+                continue
             x = [ds[k][metric] for k in shared]
             y = [nu[k][metric] for k in shared]
             ci = st.paired_bootstrap_ci(x, y, n_boot=10000, seed=0)
-            contrasts[f"DS_minus_Neutral_{metric}"] = {
+            out[f"DS_minus_Neutral_{metric}"] = {
                 "mean": round(ci["mean_diff"], 4), "lo": round(ci["lo"], 4),
                 "hi": round(ci["hi"], 4), "n": ci["n"],
                 "ci_reliable": ci["ci_reliable"], "degenerate": ci["degenerate"]}
+        return out
+
+    contrasts = contrast(rows)                                    # all cells (biased low)
+    contrasts_gated = contrast([r for r in rows if in_usable(r)])  # gate-passing cells only
+
+    ds_gated = agg(lambda r: in_usable(r) and r["condition"] == "DOUBLESPEAK")
+    ds_all = agg(lambda r: r["condition"] == "DOUBLESPEAK")
 
     summary = {
-        "model": lm.meta(), "pair": pair, "bench": os.path.abspath(args.bench),
+        "model": model_meta, "pair": pair, "bench": os.path.abspath(args.bench),
         "bench_meta": bench["_meta"],
         "plan": "CAUSAL_CORE_PLAN §16.4 (S2 gate)",
         "thresholds": {"POS_CONTROL_MIN": POS_CONTROL_MIN,
@@ -240,7 +305,15 @@ def main():
         "gate": gate,
         "gate_pass_any": any(g["pass"] for g in gate.values()),
         "gate_pass_readouts": [ro for ro, g in gate.items() if g["pass"]],
+        "gate_cell_keys": list(GATE_CELL_KEYS),
+        "gate_by_cell": gate_by_cell,
+        "usable_cells": sorted(usable),
+        "excluded_cells": sorted(set(gate_by_cell) - usable),
+        "n_usable_cells": len(usable), "n_cells": len(gate_by_cell),
+        "doublespeak_all_cells": ds_all,
+        "doublespeak_gated_cells": ds_gated,
         "contrasts": contrasts,
+        "contrasts_gated": contrasts_gated,
         "status": "COMPLETE",
     }
     with open(os.path.join(out_dir, "readout_summary.json"), "w") as f:
@@ -254,6 +327,19 @@ def main():
               f"neg={g['negative_control_reads_as_concept']} "
               f"-> {'PASS' if g['pass'] else 'FAIL'}")
     print(f"[readout] passing readouts: {summary['gate_pass_readouts']}")
+    print(f"[readout] PER-CELL gate: {len(usable)}/{len(gate_by_cell)} "
+          f"({'|'.join(GATE_CELL_KEYS)}) cells usable")
+    for c in sorted(set(gate_by_cell) - usable):
+        g = gate_by_cell[c]
+        print(f"    EXCLUDED {c}: positive_control={g['positive_control']} "
+              f"(< {POS_CONTROL_MIN}) -> DS here is uninterpretable, not 'no effect'")
+    if ds_all and ds_gated:
+        print(f"[readout] DOUBLESPEAK reads-as-concept: all cells "
+              f"{ds_all['reads_as_concept']} (n={ds_all['n']})  vs  gate-passing cells "
+              f"{ds_gated['reads_as_concept']} (n={ds_gated['n']})")
+    for k, v in contrasts_gated.items():
+        print(f"[readout] GATED {k}: {v['mean']:+.4f} [{v['lo']:+.4f},{v['hi']:+.4f}] "
+              f"n={v['n']} reliable={v['ci_reliable']}")
     print(f"[readout] -> {out_dir}")
 
 

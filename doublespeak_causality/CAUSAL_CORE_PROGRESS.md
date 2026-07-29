@@ -15,7 +15,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 |----|------------------|--------|------------------|
 | S0 | Audit & freeze prior results; fix overclaims (§16.1–2) | `NOT_RUN` | |
 | S1 | Phase A: fixed-pair CARROT↔BOMB semantic benchmark (§3, §16.3) | ✅ `COMPLETE` | `data/pair_benchmark/pair_carrot_bomb.json` — 800 semantic + 900 behavioral prompts, 60 paraphrases, **0 skipped**, 21/21 tests pass |
-| S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | ✅ **GATE PASSED** (smoke) / `RUNNING` (full 693557) | 4/5 readouts pass **perfectly** (pos=1.00, neg=0.00): `cloze`, `one_word`, `forced_choice`, `repeat_concept`. `repeated_codeword` fails as a *label* readout by construction (free continuation, not a label) — use its probability mass instead. |
+| S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | ✅ **COMPLETE — GATE PASSED per-cell** | full run 693557 (800 prompts). **17/30 (readout × demo-style) cells usable.** On usable cells: `DS − Neutral` reads-as-concept **+0.500 [+0.393, +0.607]**, p_concept **+0.307 [+0.249, +0.367]**, n=84. |
 | S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `RUNNING` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
@@ -58,7 +58,7 @@ receive only redacted labels, scalars and statistics.
 |--------|-------|--------|------|-----------|--------|------------|
 | 693551 | S2 smoke | `run_pair_readout.sh` | — | 2026-07-29 | CANCELLED (unstratified `--limit` made the gate vacuous) | — |
 | 693555 | S2 smoke | `run_pair_readout.sh` `DSLIMIT=80` | n-803 | 2026-07-29 | ✅ COMPLETE — gate passed | `outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_215216_693555` |
-| 693557 | S2 full | `run_pair_readout.sh` (all 800) | n-802 | 2026-07-29 | RUNNING | `outputs/pair_readout_*_693557` |
+| 693557 | S2 full | `run_pair_readout.sh` (all 800) | n-802 | 2026-07-29 | ✅ COMPLETE — per-cell gate | `outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_220059_693557` |
 | 693558 | S3 `cloze` | `run_pair_reps.sh` | — | 2026-07-29 | ✅ COMPLETE | `outputs/pair_reps_*_693558` |
 | 693559 | S3 `one_word` | `run_pair_reps.sh` | — | 2026-07-29 | ✅ COMPLETE | `outputs/pair_reps_*_693559` |
 | — | S4 `cloze` | `33_build_directions.py` (CPU) | login | 2026-07-29 | ✅ COMPLETE | `outputs/pair_directions_20260729_215640_299312` |
@@ -174,6 +174,49 @@ computed with a confounded "demos" set. The boundary logic now lives in one plac
 (`ds_common.request_start_token`, which also reports whether it actually located the
 prefix rather than silently falling back) and both scripts call it. **The affected
 per-layer knockout claim must be re-run before it is cited again** — logged under S8.
+
+### ITER3 — 2026-07-29 — the full S2 run forced a methodological correction (and it mattered)
+
+The n=80 smoke had shown a perfect gate. The **full 800-prompt run did not**, and the
+reason turned out to be important rather than a nuisance:
+
+**The positive control is not uniform across demonstration styles.** With `dialogue`-style
+demonstrations, `DIRECT_CONCEPT` — where the concept word appears *literally* in the demos
+— is frequently *not* read as the concept (0.00 for `cloze`, 0.17 for `repeat_concept`).
+In such a cell a low `DOUBLESPEAK` score is **uninterpretable**: "no hijack" and "the
+readout does not work here" are indistinguishable.
+
+Per plan §16.4 the rule is *fix the readout, do not reinterpret the intervention*. So the
+gate is now evaluated **per (readout × demo-style) cell**, and causal analysis is
+restricted to cells where both controls pass. Excluded cells are listed explicitly in the
+summary rather than being silently averaged in.
+
+**This is not cosmetic — it changes the headline by ~60%:**
+
+| | all cells | gate-passing cells |
+|---|---|---|
+| `DOUBLESPEAK` reads-as-concept | 0.313 (n=150) | **0.500** (n=84) |
+
+and on the gate-passing cells the paired contrast is
+`DS − Neutral` reads-as-concept **+0.500 [+0.393, +0.607]** and
+`p_concept` **+0.307 [+0.249, +0.367]** (n=84, CI reliable).
+
+Averaging over cells where the readout is *demonstrably broken* understated the hijack by
+about 40%. Any study that fixes one demonstration style and one readout template would
+have landed somewhere in that range essentially by luck — which is a methodological point
+worth making in the paper.
+
+Per-style structure (`cloze`, DOUBLESPEAK reads-as-concept): technical 1.00, news 0.83,
+narrative 0.50, academic 0.00, dialogue 0.00 — but the last two are *excluded*, because
+their positive controls fail. The hijack is strongest exactly where the readout is
+demonstrably sound.
+
+**Specificity holds at full n:** `UNRELATED_TARGET` 0.00–0.03 and `BENIGN_REMAP` 0.00
+reads-as-concept across every readout — the effect is not "any remapping" or "any harmful
+demonstration context".
+
+`31_validate_readouts.py` gained a `--reanalyze` mode so a methodological correction like
+this one costs no GPU time.
 
 ---
 
