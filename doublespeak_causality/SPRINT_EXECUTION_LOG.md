@@ -407,6 +407,23 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER51 — USER: "do all in parallel + document" → 3 extension tracks launched
+Core sprint was complete; user chose to push all three follow-up directions at once.
+**Track A — 4th architecture (TOCTOU).** Offline cache limits the 4th model to **DeepSeek-R1-Distill-
+Llama-8B** (an R1-style reasoning model; only cached non-study model). Submitted curated screen
+**692697** (DSTHINK=default, DSMAXTOK=400 for reasoning). On ingest → eligible bases → submit its
+sufficiency early/late for the TOCTOU gradient (4th data point, complements Phi-4 reasoning).
+**Track C — necessity specificity firm-up.** The one underpowered caveat (necessity−random +0.182
+[−0.030,+0.394]). Added `DSSEED` to the necessity runner; launched early-window max-clean=40 at seeds
+**0/1/2 (692698/699/700)** → pool the 3 random-control draws (Δ_necessity is greedy-deterministic; only
+the random patch varies with seed) → ~3× random-control observations → tighter necessity−random CI.
+**Track B — full temporal suffix-GCG (Phase 6).** Infra VERIFIED reusable: `poc_stage_gcg_early/
+gcg_optimizer.py::run_optimization` + `objectives.py::repr_loss` both support `lambda_repr>0` against a
+`reference_hs` cache. Plan (GCG_MAC_COMPARISON §2): build a MIXED reference (early layers→benign Neutral
+reps, late layers→harmful Direct reps), optimize a suffix with lambda_repr>0, compare held-out ASR vs
+standard GCG. This needs a NEW runner (~real code) — deferring to next iter to write carefully + self-review
+rather than rush a bug. 4 jobs running (A+C), ≤6 cap respected; B lands next.
+
 ## ITER50 — INGESTED 37-base scale-up: flagship HARDENS at full eligible n (headline stronger + tighter)
 All three 37-base dirs (early 692637 / mid 692638 / late 230505, unique post-collision-fix, schema-verified
 666 rows each) analyzed at full eligible n (~180 per window, ~3× the 12-base). **Headline holds and improves:**
