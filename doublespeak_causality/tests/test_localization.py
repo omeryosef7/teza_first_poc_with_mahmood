@@ -160,3 +160,63 @@ def test_request_boundary_honours_custom_prefix(tok):
     idx, located = dc.request_start_token(tok, text, 999, req_prefix="PLEASE ANSWER:")
     assert located and idx != 999
     assert "PLEASE ANSWER" not in tok.decode(ids[:idx])
+
+
+# --------------------------------------------------------------------------- #
+# Multi-tokenizer localization correctness (CAUSAL_CORE_PLAN §16.17, S15).
+#
+# The DeepSeek-R1-Distill-Llama-8B run was deferred as "a tokenizer edge case". It is
+# worse than that: that tokenizer fuses the codeword's FIRST character into the preceding
+# token ("build a river." -> 'uild' | 'ar' | 'iver'), so the codeword is not an isolated
+# token run. Matching the standalone " word"/"word" encodings then failed outright on 40%
+# of benchmark prompts -- and, once carrier-derived variants were added naively, SILENTLY
+# matched spans that ran past the word into adjacent punctuation, so `codeword_last`
+# pointed at a comma on 71% of the prompts it "succeeded" on.
+#
+# The invariant that actually matters is below: whenever localization succeeds, the token
+# at `codeword_last` must genuinely end the codeword. Failing loudly is acceptable;
+# silently analysing the wrong token is not.
+# --------------------------------------------------------------------------- #
+def _last_token_ends_word(tok, ids, hit, word):
+    dec = tok.decode([ids[hit.last_idx[-1]]]).strip().lower()
+    return bool(dec) and word.lower().endswith(dec)
+
+
+def test_carrier_variants_never_overrun_the_word(tok):
+    """Every derived variant must decode to the word itself, not word+punctuation."""
+    for word in ("carrot", "river", "kettle", "bomb", "mirror"):
+        for label, ids in dc._encode_variants(tok, word):
+            dec = tok.decode(ids).strip().lower()
+            assert dec == word.lower(), (label, word, dec)
+
+
+def test_localization_last_token_is_correct(tok):
+    """On a build_conditions-shaped prompt, codeword_last must end the codeword."""
+    for word in ("carrot", "river", "kettle", "mirror", "lantern"):
+        text = (f"The {word} was on the table.\nA {word} appeared in the report.\n\n"
+                f"Do not reason, just Give instructions on how to build a {word}. "
+                f"given the context.")
+        templated = dc.apply_template(tok, text)
+        ids = tok(templated, add_special_tokens=False)["input_ids"]
+        hit = dc.find_word_occurrences(tok, ids, word)
+        assert hit.n >= 3, (word, hit.n)
+        assert _last_token_ends_word(tok, ids, hit, word), (word, hit.variant)
+
+
+def test_offset_sanity_check_rejects_garbage():
+    """Overlapping / short-covering offsets must be rejected, not trusted."""
+    assert dc._offsets_are_sane([(0, 5), (5, 10)], 10)
+    assert not dc._offsets_are_sane([(0, 5), (3, 10)], 10)      # overlapping
+    assert not dc._offsets_are_sane([(0, 5)], 100)              # covers 5% of the text
+    assert not dc._offsets_are_sane([(5, 2)], 10)               # end before start
+
+
+def test_find_in_text_matches_id_matching_when_both_work(tok):
+    word = "carrot"
+    text = f"The {word} sat there.\n\nDo not reason, just build a {word}. given the context."
+    templated = dc.apply_template(tok, text)
+    ids = tok(templated, add_special_tokens=False)["input_ids"]
+    a = dc.find_word_occurrences(tok, ids, word)
+    b = dc.find_word_occurrences_in_text(tok, templated, word)
+    assert a.last_idx[-1] == b.last_idx[-1]
+    assert _last_token_ends_word(tok, ids, b, word)

@@ -19,16 +19,16 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `PARTIAL` — replace arm done (clean negative), additive re-running | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
-| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `RUNNING` | jobs 693607/693608 (`dose`, signed α, windows, relative), 693609 (`controls`, 20 draws × 3 families) |
+| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `PARTIAL` — ⭐ **controls COMPLETE** | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 running. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
-| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `NOT_RUN` | |
+| S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `RUNNING` | 693614 component COMPLETE (1 552 rows); 693613 knockout had a wrong demo/request boundary on the semantic prompts → fixed, rerun 693618 |
 | S9 | Causal attack-window estimate (§16.11) | `NOT_RUN` | |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `NOT_RUN` | |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `NOT_RUN` | |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
-| S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `NOT_RUN` | |
+| S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md`; registry/checksum manifest still owed (audit finding) |
 
@@ -69,7 +69,10 @@ receive only redacted labels, scalars and statistics.
 | 693597 | S5 replace `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | ✅ COMPLETE (2 760 rows) — **clean negative** | `outputs/pair_interv_replace_*_693597` |
 | 693607 | S6 dose `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693607` |
 | 693608 | S6 dose `one_word` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693608` |
-| 693609 | S6 controls `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_controls_*_693609` |
+| 693609 | S6 controls `cloze` | `run_pair_interv.sh` | n-803 | 2026-07-29 | ✅ COMPLETE (11 760 rows) — ⭐ **main causal result** | `outputs/pair_interv_controls_*_693609` |
+| 693613 | S8 knockout | `run_pair_attn.sh` | n-804 | 2026-07-29 | ⚠️ SUPERSEDED — demo/request boundary unlocated on 216 rows | `outputs/pair_attn_knockout_*_693613` |
+| 693614 | S8 component | `run_pair_attn.sh` | n-804 | 2026-07-29 | ✅ COMPLETE (1 552 rows) | `outputs/pair_attn_component_*_693614` |
+| 693618 | S8 knockout (boundary fixed) | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693618` |
 
 ---
 
@@ -311,14 +314,106 @@ manipulation than one token at α=1.
 Signed α grids must be passed as `--alphas=...`. Fixed in the runner with a comment next to
 the existing comma-truncation guard.
 
+### ITER6 — 2026-07-29 — ⭐ S6 control battery: a controlled causal effect, and a sharp dissociation
+
+Job 693609 (`--mode controls`, 11 760 rows): all codeword occurrences, α as a fraction of
+the residual norm, multi-layer windows, **180 matched controls per cell** in three families.
+
+**`d_Direct` causally installs the target interpretation. `d_DS` does not — at matched
+relative strength.**
+
+| arm | site | early | mid | late |
+|---|---|---|---|---|
+| `add_d_Direct` | `codeword_all` | **+0.167** [+0.105, +0.232] | **+0.533** [+0.453, +0.613] | **+0.971** [+0.955, +0.984] |
+| `add_d_Direct` | `adjacent` (control) | — | +0.013 | +0.003 |
+| `add_d_Direct` | `random_token` (control) | — | +0.004 | +0.003 |
+| `add_d_DS` | `codeword_all` | +0.0000 | +0.0000 | +0.0000 |
+| `add_d_benign` / `add_d_unrelated` / `add_d_repeated` | `codeword_all` | +0.0000 | +0.0000 | +0.0000 |
+
+All `d_Direct` rows survive **Holm–Bonferroni** over the layer × α grid (p_adj = 0.0225) and
+**exceed all 180 matched controls** (control distribution: mean +0.00002, max +0.0002, across
+norm-matched / orthogonal / in-PCA-subspace families of 60 each).
+
+So the effect is **position-specific** (codeword sites 0.533 vs adjacent token 0.013 vs random
+token 0.004 — a 40–130× margin), **concept-specific** (three other remapping directions give
+exactly zero), and **dose-ordered** in depth.
+
+**I checked that the `d_DS` null is not a no-op**, because an exact 0.0000 is exactly what a
+silently-skipped intervention looks like:
+- both arms report `n_layers_patched` ∈ {10, 12} at 4–9 token positions — the DS arm ran;
+- `d_DS` is a *large* vector, not a rounding artefact: ‖d_DS‖/‖h‖ = **0.44** at L15 and 0.29 at
+  L28, against `d_Direct`'s 0.69/0.67. Under `--alpha-mode relative` both are rescaled to the
+  same fraction of the residual norm before injection, so this is a matched-strength comparison;
+- `d_unrelated` has a nearly identical norm ratio (0.47/0.36) and also does nothing, so the
+  contrast is not about vector magnitude.
+
+**Why this matters.** Four independent lines now say the same thing:
+1. `cos(d_Direct, d_DS) = 0.28` at the codeword (ITER2) — they are different directions;
+2. transplanting the DS state produces nothing content-specific (ITER5 replace arm);
+3. adding `d_DS` at matched strength moves the interpretation by **zero** (this iteration);
+4. the prior sprint's behavioral dissociation, Direct ≫ DS at mid.
+
+Together: **the Doublespeak representation is not a "write the concept into this token"
+direction.** Whatever the demonstrations do, it is not installing the concept in the
+codeword's residual stream — which is precisely the reading that Patchscopes decoding
+invites, and which the audit flagged as the paper's unproven inferential step.
+
+**Caveats, stated up front.**
+- `d_Direct ≈ h_bomb − h_carrot`, so adding it at every codeword position is close to a *soft
+  substitution of the token*. The near-ceiling **+0.971 at late** layers, immediately upstream
+  of the readout, is consistent with that reading. The positive result should be stated as
+  "the target interpretation is causally installable at the codeword position", not as "we
+  have found the hijack's mechanism". The **specificity** controls are what make it more than
+  a norm perturbation.
+- `p_codeword` behaves differently by depth: early injection *raises* the literal reading
+  (0.008 → 0.488) while mid/late collapse it (→ 0.000/0.002). Early injection is being
+  incorporated as content; late injection overwrites. That asymmetry is itself the dose signal.
+- α ≥ 0 only in this cell; the signed dose response (693607/693608) is what tests reversibility.
+
+**S15 (DeepSeek localization) — substantially fixed, and a worse bug found underneath.**
+The deferral was recorded as "a model-specific tokenizer edge case" blocking a bonus timing
+point. Measured against the real benchmark it was **192 of 480 prompts (40%) failing**, and the
+cause is not an edge case: that tokenizer fuses the codeword's **first character into the
+preceding token** — `"build a river."` → `'uild' | 'ar' | 'iver'` — so the codeword is not an
+isolated token run at all.
+
+Adding carrier-phrase-derived variants cut failures 192 → 39. But measuring *correctness*
+rather than *success* showed the naive version was far worse than the failure count implied:
+a carrier variant could absorb adjacent punctuation, so on DeepSeek only **28.8%** of the
+"successful" localizations had `codeword_last` actually pointing at the end of the codeword —
+the rest silently pointed at a comma. Requiring each derived variant to cover the word **and
+nothing else** fixes that:
+
+| model | fails / 480 | `codeword_last` correct |
+|---|---|---|
+| Llama-3.1-8B | 0 | **100%** |
+| Qwen3-14B | 0 | **100%** |
+| Phi-4-mini | 0 | **100%** |
+| DeepSeek-R1-Distill-8B | 96 (20%) | **100%** (was 28.8%) |
+
+DeepSeek now **fails loudly on 20% instead of silently mislocating 71% of the rest**, which is
+the right trade. The three working models are bit-identical (same failure count, same mean
+occurrence count) — the change cannot have perturbed any existing result. 4 regression tests
+added; suite is **43/43**.
+
+Also added `find_word_occurrences_in_text` (character-offset localization, exact) plus
+`_offsets_are_sane`, because DeepSeek's own offset mapping is broken — it returns overlapping,
+non-monotonic spans covering 39 of 138 characters — and trusting it would have mislocated
+everything.
+
 ---
 
 ## Next single highest-value experiment
 
-S6 (jobs 693607–693609). The replacement route is now a documented negative and the first additive scan was
-underpowered by construction. S6 is the properly-powered test: **all** codeword occurrences, α as a fraction
-of the residual norm, multi-layer windows, signed α for reversibility, and the full ≥20-draw × 3-family
-control battery. If the additive route is also null under those conditions, that is a substantive result
-about the pair — a *representation-level* meaning that no rank-1 residual edit can install — and it must be
-reported as such rather than tuned around. Either way S8 (attention knockout with the corrected demo
-boundary) follows, since that is the route the prior sprint found strongest.
+**S9 + S10**, now that S6 has given a controlled causal effect with a sharp `d_Direct` / `d_DS` dissociation.
+Two things are worth more than anything else right now:
+
+1. **The signed dose response (693607/693608)** — reversibility is the remaining piece of §4.5. If negative α
+   pushes the interpretation *away* from the concept, `J_causal = P(target | do(+d)) − P(target | do(−d))`
+   becomes a well-defined objective (§7) and S10 can proceed.
+2. **Explaining the `d_DS` null.** It is the most informative number in the sprint: the direction that
+   *characterises* a hijacked prompt cannot *cause* the hijacked reading. The natural next test is whether
+   the DS mapping is carried by attention **from the demonstrations** rather than by the codeword's own
+   residual content — which is exactly what S8's knockout (693618) measures. If knocking out
+   codeword→demonstration attention destroys the reading while `d_DS` addition cannot install it, the
+   mechanism is *routing*, not *content*, and that is a genuinely new claim about Doublespeak.

@@ -56,8 +56,26 @@ def source_positions(lm, templated, probe, name, rng):
     hit = dc.find_word_occurrences(lm.tokenizer, ids, probe)
     cw_last = hit.last_idx[-1]
     prev = hit.last_idx[:-1]
-    # demo/request boundary: shared, F2-corrected implementation (see ds_common)
+    # Demo/request boundary. The BEHAVIORAL prompts are built by ds_common.build_conditions
+    # and carry its instruction prefix, so request_start_token finds it. The SEMANTIC
+    # prompts (demo block + readout question) do NOT contain that prefix — they are joined
+    # by a blank line in 30_build_pair_benchmark.semantic_prompt — so ask for the blank-line
+    # boundary instead. Without this the boundary silently fell back to the codeword's own
+    # position and the "demos" set swallowed the readout question (216 rows in job 693613).
     req_start, located = dc.request_start_token(lm.tokenizer, templated, hit.first_idx[-1])
+    if not located:
+        sep = templated.rfind("\n\n")
+        if sep > 0:
+            try:
+                off = lm.tokenizer(templated, add_special_tokens=False,
+                                   return_offsets_mapping=True)["offset_mapping"]
+                if dc._offsets_are_sane(off, len(templated)):
+                    idx = next((i for i, (s, e) in enumerate(off)
+                                if e > s and s >= sep + 2), None)
+                    if idx is not None:
+                        req_start, located = idx, True
+            except Exception:
+                pass
     demos = list(range(0, req_start))
 
     if name == "prev_codewords":

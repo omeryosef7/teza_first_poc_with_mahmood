@@ -206,15 +206,58 @@ class WordHit:
         return len(self.spans)
 
 
+_CARRIERS = ("a {w} ", "the {w}.", "The {w} ", "({w})", "\n{w} ", " {w},")
+
+
 def _encode_variants(tokenizer, word: str) -> List[Tuple[str, List[int]]]:
-    """Return distinct (label, token_ids) tokenizations to search for."""
-    out = []
-    with_space = tokenizer.encode(f" {word}", add_special_tokens=False)
-    if with_space:
-        out.append((" word", with_space))
-    no_space = tokenizer.encode(word, add_special_tokens=False)
-    if no_space and no_space != with_space:
-        out.append(("word", no_space))
+    """Return distinct (label, token_ids) tokenizations to search for.
+
+    Encoding the word ALONE is not enough. Some tokenizers (notably
+    DeepSeek-R1-Distill-Llama-8B) give `" word"` and `"word"` the SAME ids — the
+    leading space is not carried by a Ġ-prefixed first token — while the word *in real
+    text* tokenizes differently again. Matching only the standalone encodings silently
+    failed to locate the codeword in **192 of 480** benchmark prompts (40%), which is why
+    the DeepSeek timing run was deferred as "a tokenizer edge case".
+
+    So we additionally derive variants from CARRIER PHRASES: encode the word inside a bit
+    of realistic context and keep exactly the tokens whose character offsets cover the
+    word. This is model-agnostic and exact. Standalone variants are still tried first, so
+    tokenizers that already worked (Llama/Qwen3/Phi-4) produce an identical variant set
+    and their results are unchanged.
+    """
+    out: List[Tuple[str, List[int]]] = []
+    seen = set()
+
+    def add(label, ids):
+        key = tuple(ids)
+        if ids and key not in seen:
+            seen.add(key)
+            out.append((label, list(ids)))
+
+    add(" word", tokenizer.encode(f" {word}", add_special_tokens=False))
+    add("word", tokenizer.encode(word, add_special_tokens=False))
+
+    for carrier in _CARRIERS:
+        text = carrier.format(w=word)
+        start = text.index(word)
+        end = start + len(word)
+        try:
+            enc = tokenizer(text, add_special_tokens=False, return_offsets_mapping=True)
+        except (TypeError, NotImplementedError, ValueError):
+            break  # slow tokenizer without offsets: standalone variants are all we have
+        ids, offs = enc["input_ids"], enc["offset_mapping"]
+        span = [i for i, (s, e) in enumerate(offs) if e > s and s < end and e > start]
+        if not span or span != list(range(span[0], span[-1] + 1)):
+            continue
+        # The span must cover the word and NOTHING ELSE. Without this check a tokenizer
+        # that merges the word with adjacent punctuation (e.g. a single "river," token)
+        # yields a "variant" whose last subtoken is the COMMA — and every downstream
+        # consumer reads `codeword_last`, so the analysis would silently run on the wrong
+        # token. Only a leading space may be absorbed.
+        covered = text[offs[span[0]][0]:offs[span[-1]][1]]
+        if covered.strip().lower() != word.lower():
+            continue
+        add(f"carrier:{carrier.strip()}", ids[span[0]:span[-1] + 1])
     return out
 
 
@@ -242,6 +285,35 @@ def find_word_occurrences(tokenizer, input_ids: Sequence[int], word: str) -> Wor
                 prev = by_last.get(last)
                 if prev is None or L > (prev[1] - prev[0]):
                     by_last[last] = (i, i + L, variant, tok_ids)
+    if not by_last:
+        # SUFFIX FALLBACK (DeepSeek-R1-Distill-Llama-8B).
+        # That tokenizer sometimes fuses the codeword's FIRST character into the preceding
+        # token: "build a river." -> 'uild' | 'ar' | 'iver'. The codeword is then not an
+        # isolated token run at all and no amount of better variant matching will find it.
+        # But every downstream consumer wants `codeword_last` — the LAST subtoken — so we
+        # match the longest proper SUFFIX of the word's tokenization instead, and verify by
+        # decoding that the matched run really ends the word. The reported span is the
+        # matched suffix, and `variant` records that it was partial, so callers that need
+        # the full span (rather than its last index) can tell.
+        for variant, tok_ids in variants:
+            for k in range(len(tok_ids) - 1, 0, -1):
+                suffix = tok_ids[-k:]
+                if not suffix:
+                    continue
+                dec = tokenizer.decode(suffix)
+                if not dec or not word.lower().endswith(dec.strip().lower()):
+                    continue
+                L = len(suffix)
+                for i in range(len(ids) - L + 1):
+                    if ids[i:i + L] == suffix:
+                        last = i + L - 1
+                        prev = by_last.get(last)
+                        if prev is None or L > (prev[1] - prev[0]):
+                            by_last[last] = (i, i + L, f"suffix:{variant}", suffix)
+                if by_last:
+                    break
+            if by_last:
+                break
     if not by_last:
         raise ValueError(f"word {word!r} not found in token sequence (tried "
                          f"{[v for v, _ in variants]})")
@@ -287,6 +359,108 @@ def request_start_token(tokenizer, text: str, fallback: int,
         return fallback, False
     idx = next((i for i, (s, e) in enumerate(offs) if s >= cpos and e > s), None)
     return (idx, True) if idx is not None else (fallback, False)
+
+
+def _offsets_are_sane(offs: Sequence[Tuple[int, int]], text_len: int) -> bool:
+    """Are these offsets usable? Monotonic, non-overlapping, and covering the string.
+
+    Some converted tokenizers (DeepSeek-R1-Distill-Llama-8B) return overlapping,
+    non-monotonic spans that stop a fraction of the way through the text. Trusting them
+    silently mislocates every position, so they are rejected here rather than downstream.
+    """
+    last_end = 0
+    covered = 0
+    for a, b in offs:
+        if b < a:
+            return False
+        if b > a:
+            if a < last_end:          # overlaps the previous token
+                return False
+            covered += b - a
+            last_end = b
+    return last_end <= text_len and covered >= 0.5 * text_len
+
+
+def _offsets_by_decode(tokenizer, ids: Sequence[int], text: str):
+    """Reconstruct character offsets by cumulative decoding. Exact if decoding round-trips.
+
+    O(n) decodes of growing prefixes — fine at the few-hundred-token prompts used here,
+    and only reached when the tokenizer's own offsets are unusable.
+    """
+    try:
+        offs, prev_len = [], 0
+        for k in range(len(ids)):
+            cur = tokenizer.decode(ids[:k + 1], skip_special_tokens=False)
+            offs.append((prev_len, len(cur)))
+            prev_len = len(cur)
+        full = tokenizer.decode(list(ids), skip_special_tokens=False)
+        # only trust it if the decode reproduces the text we searched
+        return offs if full == text else None
+    except Exception:
+        return None
+
+
+def find_word_occurrences_in_text(tokenizer, text: str, word: str,
+                                  add_special_tokens: bool = False) -> WordHit:
+    """Locate every occurrence of `word` by CHARACTER OFFSETS. Exact and tokenizer-agnostic.
+
+    Prefer this over `find_word_occurrences` whenever the caller still has the text.
+    Token-id matching has to guess how a word tokenizes in context; offset mapping just
+    reads it off. On DeepSeek-R1-Distill-Llama-8B, id matching found 3.74 codeword
+    occurrences per benchmark prompt and failed outright on 8%; offsets find all of them.
+    That completeness matters for attention knockout, which must block *every* codeword
+    site (plan §11).
+
+    Falls back to `find_word_occurrences` if the tokenizer cannot supply offsets.
+    """
+    import re as _re
+    ids = tokenizer(text, add_special_tokens=add_special_tokens)["input_ids"]
+    offs = None
+    try:
+        enc = tokenizer(text, add_special_tokens=add_special_tokens,
+                        return_offsets_mapping=True)
+        if len(enc["input_ids"]) == len(ids) and _offsets_are_sane(enc["offset_mapping"],
+                                                                  len(text)):
+            offs = enc["offset_mapping"]
+            ids = enc["input_ids"]
+    except (TypeError, NotImplementedError, ValueError):
+        pass
+    if offs is None:
+        # DeepSeek-R1-Distill-Llama-8B returns OVERLAPPING, non-monotonic offsets that
+        # cover only a fraction of the string, so they cannot be used. Rebuild offsets by
+        # cumulative decoding, which is exact for any tokenizer that round-trips.
+        offs = _offsets_by_decode(tokenizer, ids, text)
+    if offs is None:
+        return find_word_occurrences(tokenizer, ids, word)
+
+    spans, variants = [], set()
+    # word-boundary-ish: allow inflections (carrots) but not substrings inside a longer
+    # word (scarrot), matching the substring convention used to build the demo pools.
+    for m in _re.finditer(_re.escape(word), text, _re.IGNORECASE):
+        s, e = m.start(), m.end()
+        if s > 0 and (text[s - 1].isalnum() or text[s - 1] == "_"):
+            continue
+        idx = [i for i, (a, b) in enumerate(offs) if b > a and a < e and b > s]
+        if idx and idx == list(range(idx[0], idx[-1] + 1)):
+            spans.append((idx[0], idx[-1] + 1))
+            variants.add("offset")
+    if not spans:
+        raise ValueError(f"word {word!r} not found in text (offset localization)")
+    # dedup by last index, keeping the longest span (same rule as the id-matching path)
+    by_last = {}
+    for a, b in spans:
+        prev = by_last.get(b - 1)
+        if prev is None or (b - a) > (prev[1] - prev[0]):
+            by_last[b - 1] = (a, b)
+    ordered = [by_last[k] for k in sorted(by_last)]
+    ids = enc["input_ids"]
+    return WordHit(
+        word=word, variant="+".join(sorted(variants)),
+        subtoken_ids=list(ids[ordered[0][0]:ordered[0][1]]),
+        spans=ordered,
+        first_idx=[a for a, _ in ordered],
+        last_idx=[b - 1 for _, b in ordered],
+    )
 
 
 @dataclass
