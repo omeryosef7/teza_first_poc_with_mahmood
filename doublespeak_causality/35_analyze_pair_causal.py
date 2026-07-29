@@ -174,8 +174,15 @@ def main():
         if len(ctrl) < 3:
             continue
         arr = np.asarray(ctrl, float)
-        entry = {"n_controls": len(ctrl),
-                 "mean": round(float(arr.mean()), 5), "sd": round(float(arr.std(ddof=1)), 5),
+        sd = float(arr.std(ddof=1))
+        # A control distribution with (near) zero spread makes z meaningless: dividing by
+        # sd+1e-9 produced z values of ~1e7 in the first layer scan, which look decisive
+        # and mean nothing. Report z only when the control distribution actually has
+        # spread AND enough draws; otherwise report None and rely on the percentile /
+        # exceeds-all comparison. Plan §5 wants the DISTRIBUTION, not a spurious z.
+        sd_usable = sd > 1e-6 and len(ctrl) >= 8
+        entry = {"n_controls": len(ctrl), "sd_usable_for_z": sd_usable,
+                 "mean": round(float(arr.mean()), 5), "sd": round(sd, 8),
                  "min": round(float(arr.min()), 5), "max": round(float(arr.max()), 5),
                  "q05": round(float(np.quantile(arr, 0.05)), 5),
                  "q95": round(float(np.quantile(arr, 0.95)), 5),
@@ -194,11 +201,15 @@ def main():
                 continue
             eff = v["effect"]
             pct = float((arr < eff).mean())
-            z = (eff - arr.mean()) / (arr.std(ddof=1) + 1e-9)
             entry["concept_arms"][v["arm"]] = {
                 "effect": eff, "percentile_in_controls": round(pct, 4),
-                "z_vs_controls": round(float(z), 3),
+                "z_vs_controls": (round(float((eff - arr.mean()) / sd), 3)
+                                  if sd_usable else None),
                 "exceeds_all_controls": bool(eff > arr.max()),
+                # "exceeds all controls" is only evidence if the effect is also
+                # materially non-zero; a +0.0001 effect beating a control set that is
+                # identically 0.0 is arithmetic, not a causal result.
+                "materially_nonzero": bool(abs(eff) >= 0.01),
             }
         control_dist[f"{layer}|{alpha}|{site}"] = entry
 
@@ -278,11 +289,20 @@ def main():
             continue
         print(f"  {arm:22} peak L{aw['argmax_layer']} eff={aw['max_effect']:+.4f} "
               f"sig_layers(Holm)={aw['significant_layers_corrected'][:8]}")
+    shown = 0
     for k, v in sorted(control_dist.items()):
         for arm, c in sorted(v["concept_arms"].items()):
-            if c["exceeds_all_controls"]:
+            # only report a control comparison that is BOTH beyond every control and
+            # materially non-zero (see materially_nonzero above)
+            if c["exceeds_all_controls"] and c["materially_nonzero"]:
+                z = c["z_vs_controls"]
                 print(f"  [ctrl] {k} {arm}: eff={c['effect']:+.4f} "
-                      f"z={c['z_vs_controls']:+.2f} EXCEEDS all {v['n_controls']} controls")
+                      f"z={'n/a' if z is None else f'{z:+.2f}'} "
+                      f"EXCEEDS all {v['n_controls']} controls")
+                shown += 1
+    if not shown:
+        print("  [ctrl] no arm both exceeds its control distribution AND is materially "
+              "non-zero (|effect| >= 0.01)")
 
 
 if __name__ == "__main__":

@@ -42,7 +42,9 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSSPLITS:=dev:heldout}"
 : "${DSCROSSFIT:=true}"
 : "${DSGEN:=0}"           # 1 => also record the one-word label
-for v in DSMODEL DSBENCH DSREPS DSDIRS DSMODE DSREADOUT DSSITE DSALPHAS DSLAYERS DSWINS DSNPROMPTS DSSPLITS DSCROSSFIT DSGEN; do
+: "${DSGROUPS:=single}"   # single | windows | both
+: "${DSALPHAMODE:=absolute}"  # absolute | relative (fraction of residual norm)
+for v in DSMODEL DSBENCH DSREPS DSDIRS DSMODE DSREADOUT DSSITE DSALPHAS DSLAYERS DSWINS DSNPROMPTS DSSPLITS DSCROSSFIT DSGEN DSGROUPS DSALPHAMODE; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists. Use ':' separators."; exit 1;; esac
 done
 ALPHAS="$(echo "$DSALPHAS" | tr ':' ',')"
@@ -50,7 +52,7 @@ SPLITS="$(echo "$DSSPLITS" | tr ':' ',')"
 LAYER_ARG=""; [ -n "$DSLAYERS" ] && LAYER_ARG="--layers $(echo "$DSLAYERS" | tr ':' ',')"
 WIN_ARG="";   [ -n "$DSWINS" ]   && WIN_ARG="--windows $(echo "$DSWINS" | tr ':' ',')"
 GEN_ARG="";   [ "$DSGEN" = "1" ] && GEN_ARG="--generate"
-echo "=== pair intervention: mode=$DSMODE readout=$DSREADOUT site=$DSSITE alphas=$ALPHAS ==="
+echo "=== pair intervention: mode=$DSMODE readout=$DSREADOUT site=$DSSITE alphas=$ALPHAS groups=$DSGROUPS alpha_mode=$DSALPHAMODE ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
@@ -58,5 +60,6 @@ python -u doublespeak_causality/34_intervention_sweep.py \
   --bench "$DSBENCH" --reps-dir "$DSREPS" --dir-dir "$DSDIRS" --model "$DSMODEL" \
   --out-root doublespeak_causality/outputs --mode "$DSMODE" --readout "$DSREADOUT" \
   --site "$DSSITE" --alphas "$ALPHAS" --splits "$SPLITS" \
-  --n-prompts "$DSNPROMPTS" --crossfit "$DSCROSSFIT" $LAYER_ARG $WIN_ARG $GEN_ARG
+  --n-prompts "$DSNPROMPTS" --crossfit "$DSCROSSFIT" \
+  --layer-groups "$DSGROUPS" --alpha-mode "$DSALPHAMODE" $LAYER_ARG $WIN_ARG $GEN_ARG
 echo "=== done ==="; date

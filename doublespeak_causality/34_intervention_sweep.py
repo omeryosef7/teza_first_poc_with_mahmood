@@ -116,7 +116,19 @@ def main():
                     help="token site the direction is APPLIED at")
     ap.add_argument("--layers", default="", help="comma ints; empty => all layers")
     ap.add_argument("--windows", default="",
-                    help="comma window names for --mode replace (early,mid,late)")
+                    help="comma window names (early,mid,late,late_half_to_end). Applied "
+                         "as SIMULTANEOUS multi-layer interventions.")
+    ap.add_argument("--layer-groups", default="single",
+                    choices=["single", "windows", "both"],
+                    help="single layers, multi-layer windows, or both. The prior sprint's "
+                         "sufficiency effects needed WINDOWS; a one-layer one-token edit "
+                         "is a far weaker intervention.")
+    ap.add_argument("--alpha-mode", default="absolute", choices=["absolute", "relative"],
+                    help="absolute: h += alpha*d (d = the raw mean difference). relative: "
+                         "h += alpha*||h_bar_neutral(layer)||*d/||d||, i.e. alpha is a "
+                         "FRACTION OF THE RESIDUAL NORM at that layer. The residual norm "
+                         "grows with depth, so an absolute alpha is a shrinking relative "
+                         "perturbation and layers are not comparable.")
     ap.add_argument("--alphas", default="1.0")
     ap.add_argument("--n-prompts", type=int, default=20,
                     help="prompts per condition (matched cells, deterministic)")
@@ -175,11 +187,32 @@ def main():
             return None
         return torch.from_numpy(per_prompt[r, ell, :].astype(np.float32))
 
+    # Per-layer baseline residual norm, used by --alpha-mode relative to make alpha
+    # comparable across depth (the residual norm grows several-fold from L0 to L31).
+    means = np.load(os.path.join(args.reps_dir, "means.npz"))
+    _norm_cache = {}
+
+    def baseline_norm(split, ell):
+        key = f"NEUTRAL_CODEWORD|{split}|{args.component}|{args.dir_position}"
+        if key not in _norm_cache:
+            _norm_cache[key] = (np.linalg.norm(means[key], axis=1)
+                                if key in means else None)
+        arr = _norm_cache[key]
+        return float(arr[ell]) if arr is not None else None
+
     def direction(name, split, ell):
-        key = f"{name}|{other(split) if crossfit else split}|{args.component}|{args.dir_position}"
+        src_split = other(split) if crossfit else split
+        key = f"{name}|{src_split}|{args.component}|{args.dir_position}"
         if key not in dirs:
             return None
-        return torch.from_numpy(dirs[key][ell].astype(np.float32))
+        v = torch.from_numpy(dirs[key][ell].astype(np.float32))
+        if args.alpha_mode == "relative":
+            n = baseline_norm(src_split, ell)
+            vn = float(v.norm())
+            if n is None or vn < 1e-8:
+                return None
+            v = v / vn * n
+        return v
 
     def subspace(split, ell):
         key = f"pca_DS|{other(split) if crossfit else split}|{ell}"
@@ -249,7 +282,20 @@ def main():
         return out
 
     # ---- the four modes ---------------------------------------------------- #
+    def layer_groups(layer_list):
+        """(group_name, [layers]) pairs per --layer-groups."""
+        wmap = layer_windows(L)
+        out = []
+        if args.layer_groups in ("single", "both"):
+            out += [(f"L{l}", [l]) for l in layer_list]
+        if args.layer_groups in ("windows", "both"):
+            names = wins or ["early", "mid", "late"]
+            out += [(w, [l for l in wmap[w] if l in set(layer_list)])
+                    for w in names if w in wmap]
+        return [(n, ls) for n, ls in out if ls]
+
     def run_additive(target_condition, layer_list, alpha_list, n_rand, sites):
+        groups = layer_groups(layer_list)
         for split in splits:
             for row in pick(target_condition, split):
                 templated = dc.apply_template(lm.tokenizer, row["prompt"])
@@ -260,19 +306,30 @@ def main():
                         continue
                     # identity / alpha=0 control, once per (prompt, site)
                     emit(row, templated, positions, [],
-                         {"arm": "identity", "layer": None, "alpha": 0.0,
-                          "site": site, "mode": args.mode})
-                    for ell in layer_list:
-                        arms = add_arms(split, ell) + random_controls(split, ell, n_rand)
-                        for (aname, vec, pmode) in arms:
+                         {"arm": "identity", "layer": None, "group": "none",
+                          "alpha": 0.0, "site": site, "mode": args.mode})
+                    for gname, ells in groups:
+                        # arms are defined per layer; a window applies the SAME arm
+                        # simultaneously at every layer in the window
+                        specs = {}
+                        for ell in ells:
+                            for (aname, vec, pmode) in (
+                                    add_arms(split, ell)
+                                    + random_controls(split, ell, n_rand)):
+                                specs.setdefault(aname, []).append((ell, vec, pmode))
+                        for aname, per_layer in specs.items():
                             for a in alpha_list:
-                                emit(row, templated, positions,
-                                     [(ell, positions, vec, pmode, a)],
-                                     {"arm": aname, "layer": ell, "alpha": a,
-                                      "site": site, "mode": args.mode})
+                                patches = [(ell, positions, vec, pmode, a)
+                                           for (ell, vec, pmode) in per_layer]
+                                emit(row, templated, positions, patches,
+                                     {"arm": aname,
+                                      "layer": (ells[0] if len(ells) == 1 else None),
+                                      "group": gname, "alpha": a, "site": site,
+                                      "mode": args.mode, "n_layers_patched": len(patches)})
 
     def run_projection(layer_list, alpha_list, sites):
         """Removal (§4.3): project the direction OUT of a successful DS run."""
+        groups = layer_groups(layer_list)
         for split in splits:
             for row in pick("DOUBLESPEAK", split):
                 templated = dc.apply_template(lm.tokenizer, row["prompt"])
@@ -282,18 +339,24 @@ def main():
                     if not positions:
                         continue
                     emit(row, templated, positions, [],
-                         {"arm": "identity", "layer": None, "alpha": 0.0,
-                          "site": site, "mode": args.mode})
-                    for ell in layer_list:
+                         {"arm": "identity", "layer": None, "group": "none",
+                          "alpha": 0.0, "site": site, "mode": args.mode})
+                    for gname, ells in groups:
                         for dname in ("d_DS", "d_Direct"):
-                            v = direction(dname, split, ell)
-                            if v is None:
+                            per_layer = [(ell, direction(dname, split, ell))
+                                         for ell in ells]
+                            per_layer = [(e, v) for e, v in per_layer if v is not None]
+                            if not per_layer:
                                 continue
                             for a in alpha_list:
                                 emit(row, templated, positions,
-                                     [(ell, positions, v, "project_out", a)],
-                                     {"arm": f"projout_{dname}", "layer": ell,
-                                      "alpha": a, "site": site, "mode": args.mode})
+                                     [(e, positions, v, "project_out", a)
+                                      for e, v in per_layer],
+                                     {"arm": f"projout_{dname}",
+                                      "layer": (ells[0] if len(ells) == 1 else None),
+                                      "group": gname, "alpha": a, "site": site,
+                                      "mode": args.mode,
+                                      "n_layers_patched": len(per_layer)})
 
     def run_replace(window_names, layer_list):
         """Activation replacement (§4.4), single layers and multi-layer windows."""
@@ -373,6 +436,7 @@ def main():
         "readout": args.readout, "component": args.component,
         "dir_position": args.dir_position, "site": args.site,
         "layers": layers, "alphas": alphas, "windows": wins,
+        "layer_groups": args.layer_groups, "alpha_mode": args.alpha_mode,
         "splits": splits, "crossfit": crossfit,
         "n_prompts_per_cell": args.n_prompts, "n_random_controls": N_RANDOM_CONTROLS,
         "generate": args.generate, "seed": args.seed,
