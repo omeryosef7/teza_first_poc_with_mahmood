@@ -28,7 +28,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `PARTIAL` — slice 1 ✅ **CONFIRMED negative** | 693683: the selection rule transfers **BACKWARDS** — TOP−BOTTOM = **−0.183 [−0.267, −0.083]**, n=12, CI excludes 0; per-codeword ρ = −0.488. Refusal is **0/132**, so it is not a legibility→refusal effect. **CONFIRMED** by 693698: the NEUTRAL (no-demo) arm scores **0.0083** (n=120), so the harm requires the demonstrations and the manufacturable-object confound is refuted. Inversion **replicated across two independent judging passes** (−0.183, then −0.133 [−0.200,−0.050]). Selecting codewords by the causal score **worsens** held-out behavioral ASR. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
-| S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
+| S15 | DeepSeek tokenizer localization + regression tests (§16.17) | ✅ `COMPLETE` — correctness 100%, coverage 80% (documented limit) | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests. A further fix for the residual 20% was tried and **measured strictly worse** (96→364 failures, 100%→69% correct) and reverted — see ITER23. Remaining 20% fails **loudly**. |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `PARTIAL` — 5 pairs done, gates pending | S1→S9 all pass, so §16.18's gate is satisfied. 4 further pairs built (`grenade`/`pistol`/`cocaine` ✅, `chlorine` building) — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control; **all CHECK PASSED, 0 skipped**. Reps running (693694/5/6) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
@@ -1036,6 +1036,37 @@ Gates submitted for all four (693772 `grenade`, 693773 `pistol`, 693774 `cocaine
   and it is corroborated by `d_benign`/`d_unrelated`/`d_repeated` being equally inert;
 - the **`d_Direct` 4/5 count is provisional**, because `cocaine`'s null may be a readout
   failure rather than a mechanism failure.
+
+### ITER23 — 2026-07-30 — S15: attempted a fix for DeepSeek's residual 20%, measured it, reverted it
+
+Diagnosed the residual failures precisely. DeepSeek-R1-Distill-Llama-8B fuses the word's
+first character into the **preceding** token — `"a river"` → `'ar' | 'iver'`, `"the river."`
+→ `'ther' | 'iver' | '.'` — so the standalone `" river"` token id (`5586`) **never occurs in
+real text at all**. The suffix fallback I added earlier also cannot fire for a single-token
+word: its loop range `range(len-1, 0, -1)` is empty when `len == 1`.
+
+Tried the principled fix: stop requiring the cumulative decode to round-trip against the
+original text, and search the **decoded** string instead, so a non-round-tripping tokenizer
+could still be localized. Measured it before believing it:
+
+| | failures / 480 | `codeword_last` correct |
+|---|---|---|
+| before (round-trip required) | 96 | **100%** |
+| after (search decoded string) | **364** | **69%** |
+
+**Strictly worse on both axes, so reverted.** The reason is instructive: DeepSeek's decode is
+not lossless here — `['ar','iver']` decodes to `"ariver"`, dropping the space — so in the
+decoded string the word is preceded by a **letter**, and the word-boundary check rejects
+every occurrence. Requiring the round-trip is the correct conservative behaviour: fail loudly
+rather than localize inside a mangled string. The attempt and its numbers are recorded in the
+`_offsets_by_decode` docstring so nobody re-tries it.
+
+**S15 final state:** 96/480 (20%) of DeepSeek prompts remain unlocalizable and **fail loudly**;
+the 384 that succeed are **100% correct** (up from 28.8% before this sprint). Llama-3.1-8B,
+Qwen3-14B and Phi-4-mini are unaffected at 0 failures / 100% correct. 43/43 tests pass.
+Closing this fully would need a tokenizer-specific head-fusion matcher, which is not worth the
+regression risk for a replication-only model — logged as a known limitation rather than left
+as an open task.
 
 ---
 

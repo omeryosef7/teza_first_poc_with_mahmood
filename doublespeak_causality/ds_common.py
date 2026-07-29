@@ -382,10 +382,22 @@ def _offsets_are_sane(offs: Sequence[Tuple[int, int]], text_len: int) -> bool:
 
 
 def _offsets_by_decode(tokenizer, ids: Sequence[int], text: str):
-    """Reconstruct character offsets by cumulative decoding. Exact if decoding round-trips.
+    """Reconstruct character offsets by cumulative decoding, in DECODED coordinates.
 
-    O(n) decodes of growing prefixes — fine at the few-hundred-token prompts used here,
-    and only reached when the tokenizer's own offsets are unusable.
+    Returns (offsets, text) only when the decode ROUND-TRIPS to the caller's `text`;
+    otherwise (None, None) and the caller falls back to id matching.
+
+    ATTEMPTED AND REVERTED (2026-07-30): dropping the round-trip requirement and searching
+    the DECODED string instead — so that a non-round-tripping tokenizer could still be
+    localized — made DeepSeek strictly WORSE: failures 96 -> 364 and `codeword_last`
+    correctness 100% -> 69%. The reason is that DeepSeek's decode is not lossless here
+    ("a river" tokenizes to 'ar'|'iver', which decodes to "ariver"), so in the decoded
+    string the word is preceded by a LETTER and the word-boundary check rejects every
+    occurrence. Requiring the round-trip is the correct conservative behaviour: fail
+    loudly rather than localize into a mangled string.
+
+    O(n) decodes of growing prefixes — fine at the few-hundred-token prompts used here, and
+    only reached when the tokenizer's own offsets are unusable.
     """
     try:
         offs, prev_len = [], 0
@@ -394,10 +406,9 @@ def _offsets_by_decode(tokenizer, ids: Sequence[int], text: str):
             offs.append((prev_len, len(cur)))
             prev_len = len(cur)
         full = tokenizer.decode(list(ids), skip_special_tokens=False)
-        # only trust it if the decode reproduces the text we searched
-        return offs if full == text else None
+        return (offs, full) if full == text else (None, None)
     except Exception:
-        return None
+        return None, None
 
 
 def find_word_occurrences_in_text(tokenizer, text: str, word: str,
@@ -425,20 +436,21 @@ def find_word_occurrences_in_text(tokenizer, text: str, word: str,
             ids = enc["input_ids"]
     except (TypeError, NotImplementedError, ValueError):
         pass
+    search_text = text
     if offs is None:
         # DeepSeek-R1-Distill-Llama-8B returns OVERLAPPING, non-monotonic offsets that
-        # cover only a fraction of the string, so they cannot be used. Rebuild offsets by
-        # cumulative decoding, which is exact for any tokenizer that round-trips.
-        offs = _offsets_by_decode(tokenizer, ids, text)
+        # cover only a fraction of the string, so they cannot be used. Rebuild them by
+        # cumulative decoding and search the DECODED string (see _offsets_by_decode).
+        offs, search_text = _offsets_by_decode(tokenizer, ids, text)
     if offs is None:
         return find_word_occurrences(tokenizer, ids, word)
 
     spans, variants = [], set()
     # word-boundary-ish: allow inflections (carrots) but not substrings inside a longer
     # word (scarrot), matching the substring convention used to build the demo pools.
-    for m in _re.finditer(_re.escape(word), text, _re.IGNORECASE):
+    for m in _re.finditer(_re.escape(word), search_text, _re.IGNORECASE):
         s, e = m.start(), m.end()
-        if s > 0 and (text[s - 1].isalnum() or text[s - 1] == "_"):
+        if s > 0 and (search_text[s - 1].isalnum() or search_text[s - 1] == "_"):
             continue
         idx = [i for i, (a, b) in enumerate(offs) if b > a and a < e and b > s]
         if idx and idx == list(range(idx[0], idx[-1] + 1)):
