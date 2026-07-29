@@ -27,10 +27,10 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
-| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` | 693666 = Qwen3 **non-thinking** S2 gate (directly comparable to Llama). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
+| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` — non-thinking ✅ | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
-| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md`; registry/checksum manifest still owed (audit finding) |
+| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
 ---
 
@@ -84,7 +84,7 @@ receive only redacted labels, scalars and statistics.
 | 693654 | S11 simplex codeword (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693657 | — |
 | 693655 | S11 simplex **concept + discretize** | `run_pair_softprompt.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — relaxed **0.98861** → **discretized 0.00424** (0.43%) | `outputs/pair_softprompt_simplex_concept_demos_*_693655` |
 | 693656 | S11 simplex unrelated + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 0.9994 → **0.0124** | `outputs/pair_softprompt_simplex_unrelated_demos_*_693656` |
-| 693666 | S14 Qwen3 **non-thinking** S2 gate | `run_pair_readout.sh` | n-801 | 2026-07-29 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693666` |
+| 693666 | S14 Qwen3 **non-thinking** S2 gate | `run_pair_readout.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — hijack **stronger than Llama** | `outputs/pair_readout_Qwen3-14B_*_693666` |
 | 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
 | 693657 | S11 simplex codeword + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 1.0000 → **0.1016** | `outputs/pair_softprompt_simplex_codeword_demos_*_693657` |
 | 693649 | S11 soft-prompt simplex unrelated (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — same frozen optimizer | `outputs/pair_softprompt_simplex_unrelated_demos_*_693649` |
@@ -737,6 +737,25 @@ are underpowered by construction; `ds_p_concept` is continuous and is the outcom
 above rests on. The no-demo baseline is ≈1e-6 for every codeword, so none of them leans
 concept-ward before the demonstrations — the spread is genuinely about how each codeword
 *receives* the mapping.
+
+### ITER14 — 2026-07-29 — Qwen3 replicates and is STRONGER; artefact manifest closes the audit's provenance gap
+
+**S14 non-thinking half (693666) — the fixed-pair hijack replicates cross-model, larger:**
+
+| model | `DS − Neutral` reads-as-concept | `p_concept` | n | usable cells |
+|---|---|---|---|---|
+| Llama-3.1-8B | +0.500 [+0.393, +0.607] | +0.307 [+0.249, +0.367] | 84 | 17/30 |
+| **Qwen3-14B (thinking off)** | **+0.694 [+0.583, +0.792]** | **+0.580 [+0.482, +0.672]** | 72 | 15/30 |
+
+Same benchmark, same per-cell gate, same readouts. Note only `forced_choice` clears the
+*per-readout* gate on Qwen3 (vs 4/5 on Llama) — the per-cell gate is doing real work here, and
+without it the Qwen3 number would read 0.40 instead of 0.694.
+
+**S17 — `ARTEFACT_MANIFEST.json`** (55 files, 0.97 GB, sha256 + size + mtime, stamped with
+commit `0607a61`). The freeze audit's most structural finding was that `outputs/` is
+gitignored, so every headline number had no committed provenance. This is now closed for the
+causal-core (`pair_*`) artefacts; the prior sprint's tree still needs the same treatment
+before its own freeze.
 
 ---
 

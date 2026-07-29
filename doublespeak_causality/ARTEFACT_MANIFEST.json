@@ -1,0 +1,340 @@
+{
+ "_meta": {
+  "plan": "CAUSAL_CORE_PLAN \u00a715 provenance / RESULTS_FREEZE_AUDIT recommendation",
+  "generated_at": "2026-07-29T23:46:45",
+  "git_commit": "0607a6173b394a831f008fe69ac25aa017404fc5",
+  "note": "outputs/ is gitignored; this manifest is the committed provenance record for the causal-core (pair_*) artefacts. Regenerate with this script block.",
+  "n_files": 55,
+  "total_bytes": 967090264
+ },
+ "files": [
+  {
+   "path": "outputs/pair_attn_component_Llama-3.1-8B-Instruct_20260729_222640_693614/attn_raw.jsonl",
+   "bytes": 446044,
+   "sha256": "d9e2651d757f4eebd0cbe19b7eb6802f89ee955bef87c257d724129a1fcea895",
+   "mtime": "2026-07-29T22:29:13"
+  },
+  {
+   "path": "outputs/pair_attn_component_Llama-3.1-8B-Instruct_20260729_222640_693614/attn_summary.json",
+   "bytes": 1668,
+   "sha256": "7259350fd660211f2804ec5e57e0b948b1fe8ea7a1cc185b772bb2909389db59",
+   "mtime": "2026-07-29T22:29:13"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_222640_693613/attn_raw.jsonl",
+   "bytes": 2667448,
+   "sha256": "46ef81bf087f6621f8186e072985cf2426f20ddf7c5061954702705a55062261",
+   "mtime": "2026-07-29T22:32:32"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_222640_693613/attn_summary.json",
+   "bytes": 1517,
+   "sha256": "54f2cbc982216b26cde9b5e72fd237266d78aa5b764b1c838882dea4009f418d",
+   "mtime": "2026-07-29T22:32:32"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_223210_693618/attn_raw.jsonl",
+   "bytes": 2667448,
+   "sha256": "46ef81bf087f6621f8186e072985cf2426f20ddf7c5061954702705a55062261",
+   "mtime": "2026-07-29T22:38:01"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_223210_693618/attn_summary.json",
+   "bytes": 1517,
+   "sha256": "98ae5be07b579d6fe8aeffff93281ae7e8d3af1fcb1f008da73fd1d3771dcdcb",
+   "mtime": "2026-07-29T22:38:01"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_224033_693623/attn_raw.jsonl",
+   "bytes": 2220903,
+   "sha256": "39c5cc817fb773efca7531a4e6b17c6a0d2d52280e8f47b3d02721d62debc22e",
+   "mtime": "2026-07-29T22:45:43"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_224033_693623/attn_summary.json",
+   "bytes": 1515,
+   "sha256": "58edeaa513bc8c612273265d02bbebabdc030f39da50d551b46e6092ec5f9cca",
+   "mtime": "2026-07-29T22:45:43"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_231029_693647/attn_raw.jsonl",
+   "bytes": 101430,
+   "sha256": "960cc337bfb191d76469e169946f1e31705014553b5c91f3a12e77abdbc576d0",
+   "mtime": "2026-07-29T23:12:18"
+  },
+  {
+   "path": "outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_231029_693647/attn_summary.json",
+   "bytes": 1515,
+   "sha256": "0c4fa4b0572132cb16338dab360ae989ba92f5d23882b9df553d3543f364086e",
+   "mtime": "2026-07-29T23:12:18"
+  },
+  {
+   "path": "outputs/pair_causal_analysis_one_word_693571.json",
+   "bytes": 232911,
+   "sha256": "97353bb1b993d5435bd583f22e0f9ce5bb0a8816dfd1c4076717dea163d7724b",
+   "mtime": "2026-07-29T22:11:02"
+  },
+  {
+   "path": "outputs/pair_causal_controls_693609.json",
+   "bytes": 213871,
+   "sha256": "9b977701dc7d11e558b2ff0d927a161c7c51da83fcdc8afb76b8371b85cc9def",
+   "mtime": "2026-07-29T22:31:14"
+  },
+  {
+   "path": "outputs/pair_causal_dose_cloze_693607.json",
+   "bytes": 804767,
+   "sha256": "b213db6a78de03c46f634b61cdfd3fbfbbebd13fb21a52cf9c636fbf1d52c769",
+   "mtime": "2026-07-29T22:47:01"
+  },
+  {
+   "path": "outputs/pair_causal_dose_one_word_693608.json",
+   "bytes": 805211,
+   "sha256": "fb6323edb3557c7980f90f800bc50c83e2be4bed1108192eda368961cf4254cf",
+   "mtime": "2026-07-29T22:47:59"
+  },
+  {
+   "path": "outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669/codeword_summary.json",
+   "bytes": 13606,
+   "sha256": "21c4a34a986c45db1075b1f1130ca55ed7f877f9be5597e47170f1443c46507b",
+   "mtime": "2026-07-29T23:46:02"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215450_297894/directions.npz",
+   "bytes": 74105733,
+   "sha256": "abdca0e57cde43d9afab178144cf2d4293a6cbdffb06101c991586986ff67e85",
+   "mtime": "2026-07-29T21:56:37"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215450_297894/directions_summary.json",
+   "bytes": 118952,
+   "sha256": "faccef2543313d0b49038c24291f1461eb7434c228c672c738ff5f5897749932",
+   "mtime": "2026-07-29T21:56:44"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215640_299312/directions.npz",
+   "bytes": 74105733,
+   "sha256": "abdca0e57cde43d9afab178144cf2d4293a6cbdffb06101c991586986ff67e85",
+   "mtime": "2026-07-29T21:58:25"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215640_299312/directions_summary.json",
+   "bytes": 123080,
+   "sha256": "6cff172c8e653254004afd3230e2e60028b51d8f525252bf1cec5da0880c7abe",
+   "mtime": "2026-07-29T21:58:33"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215701_299521/directions.npz",
+   "bytes": 73964608,
+   "sha256": "6e232b3d391d1a776c6ada52db02fedf80a6f806acd149f673646fc6b6e0565d",
+   "mtime": "2026-07-29T21:58:50"
+  },
+  {
+   "path": "outputs/pair_directions_20260729_215701_299521/directions_summary.json",
+   "bytes": 123078,
+   "sha256": "a421be17eddf0636dc03142ef1f09676a73d342ad2dfdf2faa0ab9ff51679bd8",
+   "mtime": "2026-07-29T21:58:53"
+  },
+  {
+   "path": "outputs/pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609/interv_raw.jsonl",
+   "bytes": 5585603,
+   "sha256": "3e1890b0106a9023e3b6129d5de3d11cdc563749fac8c5030a1987e3e61230c6",
+   "mtime": "2026-07-29T22:27:30"
+  },
+  {
+   "path": "outputs/pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609/interv_summary.json",
+   "bytes": 2231,
+   "sha256": "ec952847dffe20317fa2cbbd1aaeed2fe05d9368592fbf2414fd70597e649aeb",
+   "mtime": "2026-07-29T22:27:30"
+  },
+  {
+   "path": "outputs/pair_interv_dose_Llama-3.1-8B-Instruct_20260729_221757_693608/interv_raw.jsonl",
+   "bytes": 18112246,
+   "sha256": "6f7fb2500c4356c481962ade11f2619862ab327713e6c9057099f8dbdbfc836e",
+   "mtime": "2026-07-29T22:42:58"
+  },
+  {
+   "path": "outputs/pair_interv_dose_Llama-3.1-8B-Instruct_20260729_221757_693608/interv_summary.json",
+   "bytes": 2258,
+   "sha256": "70c3d27a4b45d6313d79d6305a8b38c47787cf4943cf02452c87124e28162f60",
+   "mtime": "2026-07-29T22:42:58"
+  },
+  {
+   "path": "outputs/pair_interv_dose_Llama-3.1-8B-Instruct_20260729_221826_693607/interv_raw.jsonl",
+   "bytes": 17925004,
+   "sha256": "51561a73ffd424a409d3e50ecbdeb7559fc8bbde171c20a72fb99f33832cae7c",
+   "mtime": "2026-07-29T22:43:14"
+  },
+  {
+   "path": "outputs/pair_interv_dose_Llama-3.1-8B-Instruct_20260729_221826_693607/interv_summary.json",
+   "bytes": 2255,
+   "sha256": "5bbd487ebdab12d29146c254ab91152bab6060ed958ea491076c597bbbef68d8",
+   "mtime": "2026-07-29T22:43:14"
+  },
+  {
+   "path": "outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_215949_693571/interv_raw.jsonl",
+   "bytes": 6748532,
+   "sha256": "f63fb16366242fb5497c71a0b1cd6e85483553e5efe7505c8f14ed73a140630d",
+   "mtime": "2026-07-29T22:10:28"
+  },
+  {
+   "path": "outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_215949_693571/interv_summary.json",
+   "bytes": 2158,
+   "sha256": "9f0347cd87871ad23e954238a37f88c444cad664427a8a61e1c4cd7396952ab8",
+   "mtime": "2026-07-29T22:10:28"
+  },
+  {
+   "path": "outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_220702_693570/interv_raw.jsonl",
+   "bytes": 6669303,
+   "sha256": "4f780a3638e7fa741bd7864935b0e86e3c59f13cc676ac7527de27b313975eed",
+   "mtime": "2026-07-29T22:17:42"
+  },
+  {
+   "path": "outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_220702_693570/interv_summary.json",
+   "bytes": 2155,
+   "sha256": "f3994154989aed945bcac5dd4f4883814f3d70330c45708c490586ac247530de",
+   "mtime": "2026-07-29T22:17:42"
+  },
+  {
+   "path": "outputs/pair_interv_replace_Llama-3.1-8B-Instruct_20260729_221157_693597/interv_raw.jsonl",
+   "bytes": 1246497,
+   "sha256": "9072d2811898d29feb66b8d3212fce95138c4be8b2088bb9939f8ef3c7d421c1",
+   "mtime": "2026-07-29T22:15:09"
+  },
+  {
+   "path": "outputs/pair_interv_replace_Llama-3.1-8B-Instruct_20260729_221157_693597/interv_summary.json",
+   "bytes": 2092,
+   "sha256": "136223acd026411fe5fe09e5a0cc16f3c89a4de5d565bcb3de3655554ea5bc46",
+   "mtime": "2026-07-29T22:15:09"
+  },
+  {
+   "path": "outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_215216_693555/readout_raw.jsonl",
+   "bytes": 45595,
+   "sha256": "e2e85f9303853c8a25a83e5368dc092ddcf5460c50e22098df696a501154b08b",
+   "mtime": "2026-07-29T21:54:07"
+  },
+  {
+   "path": "outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_215216_693555/readout_summary.json",
+   "bytes": 12010,
+   "sha256": "7fc55d5cb48433b58a256656d84aa5b3e1d2530d23c82f8f649c7d484ebd115a",
+   "mtime": "2026-07-29T21:54:07"
+  },
+  {
+   "path": "outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_220059_693557/readout_raw.jsonl",
+   "bytes": 461800,
+   "sha256": "1abf7231199035653077c3553d84af98bacb3017b7fe3b7123b38928977fbce6",
+   "mtime": "2026-07-29T22:04:14"
+  },
+  {
+   "path": "outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_220059_693557/readout_summary.json",
+   "bytes": 21551,
+   "sha256": "a3990140ebcde78bbc401da950d7967dc4cfff1c9e6b24d2a3fd3f9e1bf7f009",
+   "mtime": "2026-07-29T22:08:14"
+  },
+  {
+   "path": "outputs/pair_readout_Qwen3-14B_20260729_234248_693666/readout_raw.jsonl",
+   "bytes": 461041,
+   "sha256": "25dfa0ac3689252ae3b6f775eea98a3a1c0d922125ab3f33bd7b3a5e7d3397bb",
+   "mtime": "2026-07-29T23:47:08"
+  },
+  {
+   "path": "outputs/pair_readout_Qwen3-14B_20260729_234248_693666/readout_summary.json",
+   "bytes": 21380,
+   "sha256": "381e872a5e158198a81acda6d47a85882810ded5a9f0e3cbc280a1f5ad1f7c02",
+   "mtime": "2026-07-29T23:47:08"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693558/means.npz",
+   "bytes": 86768598,
+   "sha256": "5d2c381fc81eabb86475374a0025872b5ad866ea03dfd059940938875215f367",
+   "mtime": "2026-07-29T21:55:59"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693558/per_prompt.npz",
+   "bytes": 41943332,
+   "sha256": "72a9a440d39639e870702c487eccff5e6d52141bf439234dd242e8ac6faa37b2",
+   "mtime": "2026-07-29T21:56:00"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693558/reps_summary.json",
+   "bytes": 105654,
+   "sha256": "a95a8e5ccfd2d3e105fe4df48d2a8e18f46859768da3e77562a5409a2880048c",
+   "mtime": "2026-07-29T21:56:02"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693558/subsample.npz",
+   "bytes": 209716102,
+   "sha256": "SKIPPED_TOO_LARGE"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693559/means.npz",
+   "bytes": 86508008,
+   "sha256": "37be8689df544148fe4442243e2e2971be55f054fdded0cd8a05ee1ee924a2b7",
+   "mtime": "2026-07-29T21:55:57"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693559/per_prompt.npz",
+   "bytes": 41943332,
+   "sha256": "5435105eb18e0d123fde6554cc73d42fa2d130c39eedf54230de89e12ddae7ef",
+   "mtime": "2026-07-29T21:55:57"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693559/reps_summary.json",
+   "bytes": 106628,
+   "sha256": "1cee718f8fc98617d1dabaf5c441e2cc0cb693204cba311ca8289bf5cb27d984",
+   "mtime": "2026-07-29T21:56:01"
+  },
+  {
+   "path": "outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693559/subsample.npz",
+   "bytes": 209716102,
+   "sha256": "SKIPPED_TOO_LARGE"
+  },
+  {
+   "path": "outputs/pair_softprompt_concept_demos_Llama-3.1-8B-Instruct_20260729_225548_693631/softprompt_summary.json",
+   "bytes": 20591,
+   "sha256": "c97c263c55f22a19ced9af968b76ee5660e942df79c0525d4987a93c72ec7b0c",
+   "mtime": "2026-07-29T23:00:32"
+  },
+  {
+   "path": "outputs/pair_softprompt_concept_readout_Llama-3.1-8B-Instruct_20260729_225549_693633/softprompt_summary.json",
+   "bytes": 19994,
+   "sha256": "899eb203d5e674aced884aa872d57ae73afffe81fec3adcbfe80c5b459790751",
+   "mtime": "2026-07-29T23:00:31"
+  },
+  {
+   "path": "outputs/pair_softprompt_simplex_codeword_demos_Llama-3.1-8B-Instruct_20260729_232505_693657/softprompt_summary.json",
+   "bytes": 33607,
+   "sha256": "54669435b2f8490c29a0de5c711976198e8051f76e95d69a886f7676e14a78a8",
+   "mtime": "2026-07-29T23:33:32"
+  },
+  {
+   "path": "outputs/pair_softprompt_simplex_concept_demos_Llama-3.1-8B-Instruct_20260729_231348_693648/softprompt_summary.json",
+   "bytes": 26167,
+   "sha256": "0ffbb8bbe2c6751356b2c779583269b08a54a69da096286a35a77c62fda7fdc4",
+   "mtime": "2026-07-29T23:22:14"
+  },
+  {
+   "path": "outputs/pair_softprompt_simplex_concept_demos_Llama-3.1-8B-Instruct_20260729_233028_693655/softprompt_summary.json",
+   "bytes": 38349,
+   "sha256": "14fed9ab73a2e8c0ab3f224a2e82649893d265dc62dbc29c3646fb33b30dff44",
+   "mtime": "2026-07-29T23:38:58"
+  },
+  {
+   "path": "outputs/pair_softprompt_simplex_unrelated_demos_Llama-3.1-8B-Instruct_20260729_231349_693649/softprompt_summary.json",
+   "bytes": 38054,
+   "sha256": "e46fa425616982d56c860d6cecaf63aab9c30eccc81449575d18ef51c3732d80",
+   "mtime": "2026-07-29T23:22:14"
+  },
+  {
+   "path": "outputs/pair_softprompt_simplex_unrelated_demos_Llama-3.1-8B-Instruct_20260729_232505_693656/softprompt_summary.json",
+   "bytes": 38703,
+   "sha256": "f98d10d1779a51ea475f9f0f36ede99ca12968ecfb4c8df063fdd491eca77215",
+   "mtime": "2026-07-29T23:33:33"
+  },
+  {
+   "path": "outputs/pair_softprompt_unrelated_demos_Llama-3.1-8B-Instruct_20260729_225549_693632/softprompt_summary.json",
+   "bytes": 20777,
+   "sha256": "ef440268770d8ca3d7ca283de7c2f1fb31d9816ee5cce3f64df31130830ce248",
+   "mtime": "2026-07-29T23:00:32"
+  }
+ ]
+}
