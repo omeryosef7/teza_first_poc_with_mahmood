@@ -24,7 +24,8 @@
   "n_semantic_prompts": 800,
   "n_behavioral_prompts": 900,
   "n_skipped": 0,
-  "generated_at": "2026-07-30T00:15:02"
+  "generated_at": "2026-07-30T00:15:02",
+  "lexicons_rebuilt_2026_07_30": true
  },
  "pair": {
   "concept": "grenade",
@@ -33,20 +34,14 @@
   "unrelated_source": "cocaine"
  },
  "lexicons": {
-  "bomb": [
-   "bomb",
-   "bombs",
+  "grenade": [
+   "grenade",
+   "grenades",
    "explosive",
    "explosives",
-   "ied",
-   "grenade",
-   "detonator",
-   "dynamite",
-   "tnt",
-   "explosion",
-   "weapon",
-   "weapons",
-   "device"
+   "bomb",
+   "frag",
+   "ordnance"
   ],
   "carrot": [
    "carrot",
@@ -69,16 +64,16 @@
    "cycle",
    "cycling"
   ],
-  "virus": [
-   "virus",
-   "viruses",
-   "malware",
-   "worm",
-   "pathogen",
-   "infection",
-   "disease",
-   "germ",
-   "trojan"
+  "cocaine": [
+   "cocaine",
+   "cocaines",
+   "coke",
+   "crack",
+   "narcotic",
+   "narcotics",
+   "drug",
+   "drugs",
+   "stimulant"
   ]
  },
  "demo_styles": [

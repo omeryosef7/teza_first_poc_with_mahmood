@@ -95,10 +95,11 @@ receive only redacted labels, scalars and statistics.
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693696` |
 | 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — strongest `d_Direct` (mid +0.909) | `outputs/pair_interv_controls_*_693704` |
 | 693705 | S16 controls `carrot`↔`cocaine` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — **null for BOTH directions** | `outputs/pair_interv_controls_*_693705` |
-| 693772 | S2 gate `carrot`↔`grenade` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
-| 693773 | S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
-| 693774 | S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
-| 693775 | S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
+| 693772–693775 | S2 gates (1st attempt) | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ⚠️ VACUOUS — 0/30 cells; hardcoded lexicon bug, not a model result | — |
+| 693783–693786 | S2 gates **rerun, lexicons fixed** | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | RUNNING | — |
+| ~~693773~~ | superseded S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
+| ~~693774~~ | superseded S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
+| ~~693775~~ | superseded S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693696` |
 | 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
@@ -1067,6 +1068,46 @@ Qwen3-14B and Phi-4-mini are unaffected at 0 failures / 100% correct. 43/43 test
 Closing this fully would need a tokenizer-specific head-fusion matcher, which is not worth the
 regression risk for a replication-only model — logged as a known limitation rather than left
 as an open task.
+
+### ITER24 — 2026-07-30 — 🔴 the S2 gate I almost skipped caught a bug in MY benchmark builder
+
+All four scale-up pairs returned **0/30 usable cells**. That is not a model result — it is a
+bug in `30_build_pair_benchmark.py`.
+
+`LEXICONS` was a **hardcoded dict for the `carrot`↔`bomb` pair** (`bomb`/`carrot`/`bicycle`/
+`virus`) and was never parameterised by `--concept`. `classify_answer` can only ever return a
+key that exists in that dict, so for `grenade`/`pistol`/`cocaine`/`chlorine` the label
+`reads_as_concept` was **structurally 0** — including for `DIRECT_CONCEPT`, where the concept
+word is present literally. The gate then correctly refused to certify a readout that could
+never fire.
+
+The diagnostic that gave it away: `p_concept` is perfectly healthy in the same runs
+(`grenade` `forced_choice` DIRECT = **0.833**) while `reads_as_concept` is 0.00 everywhere. A
+readout cannot be both.
+
+**Scope of the damage — precise, because it matters:**
+
+| affected? | what | why |
+|---|---|---|
+| ❌ **not affected** | **every S16 intervention number** | the sweeps score `p_concept` via `word_first_ids`, which never touches the lexicon |
+| ❌ not affected | S13 codeword study | its pair is `bomb`, whose lexicon existed; its headline outcome is `ds_p_concept` anyway |
+| ❌ not affected | S12 behavioral | judged by StrongReject, not lexicons |
+| ✅ **affected** | the S2 **label** gate for the 4 new pairs | vacuously 0/30 |
+
+So the five-pair generalization table stands. What was missing was the gate that certifies its
+readout, and that gate is what found the bug.
+
+**Fixes:** lexicons are now built per pair (`build_lexicons`, curated synonyms + automatic
+plurals, disjoint by construction); `--check` asserts every role has a lexicon *and* that each
+lexicon contains its own word; and `31_validate_readouts.py` now **refuses to run** on a
+benchmark whose concept has no lexicon rather than emitting a structural zero. The four
+benchmarks were patched in place (lexicons only — demonstrations are unaffected, so nothing
+was regenerated and no completed result moved). Gates rerun as 693783–693786.
+
+**The lesson generalizes.** I nearly skipped these gates because the pairs "obviously" worked —
+and the previous iteration's note admits I did skip them the first time. Every readout needs
+its positive control *per configuration*, not once for the configuration you happened to
+develop on.
 
 ---
 

@@ -79,7 +79,9 @@ def test_split_assignment_is_deterministic():
 # --------------------------------------------------------------------------- #
 # Readout classifier
 # --------------------------------------------------------------------------- #
-LEX = bench_mod.LEXICONS
+# Lexicons are now built PER PAIR (they used to be a hardcoded dict for carrot<->bomb,
+# which made `reads_as_concept` structurally 0 for every other concept -- see ITER24).
+LEX = bench_mod.build_lexicons("bomb", "carrot", "bicycle", "virus")
 
 
 @pytest.mark.parametrize("answer,expected", [
@@ -98,6 +100,20 @@ LEX = bench_mod.LEXICONS
 ])
 def test_classify_answer(answer, expected):
     assert readout_mod.classify_answer(answer, LEX) == expected
+
+
+def test_lexicons_cover_every_role_of_a_pair():
+    """REGRESSION (ITER24): a concept with no lexicon makes the S2 gate vacuously 0."""
+    for concept in ("bomb", "grenade", "pistol", "cocaine", "chlorine"):
+        lex = bench_mod.build_lexicons(concept, "carrot", "bicycle", "virus")
+        assert concept in lex, concept
+        assert concept in lex[concept], f"lexicon for {concept} omits the word itself"
+        assert "carrot" in lex and "carrot" in lex["carrot"]
+
+
+def test_build_lexicon_includes_plurals():
+    assert "grenades" in bench_mod.build_lexicon("grenade")
+    assert "bomb" in bench_mod.build_lexicon("bomb")
 
 
 def test_lexicons_are_disjoint():

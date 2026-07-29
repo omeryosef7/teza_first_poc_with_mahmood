@@ -24,7 +24,8 @@
   "n_semantic_prompts": 800,
   "n_behavioral_prompts": 900,
   "n_skipped": 0,
-  "generated_at": "2026-07-30T00:26:56"
+  "generated_at": "2026-07-30T00:26:56",
+  "lexicons_rebuilt_2026_07_30": true
  },
  "pair": {
   "concept": "chlorine",
@@ -33,20 +34,15 @@
   "unrelated_source": "grenade"
  },
  "lexicons": {
-  "bomb": [
-   "bomb",
-   "bombs",
-   "explosive",
-   "explosives",
-   "ied",
-   "grenade",
-   "detonator",
-   "dynamite",
-   "tnt",
-   "explosion",
-   "weapon",
-   "weapons",
-   "device"
+  "chlorine": [
+   "chlorine",
+   "chlorines",
+   "chloride",
+   "gas",
+   "bleach",
+   "chemical",
+   "toxin",
+   "poison"
   ],
   "carrot": [
    "carrot",
@@ -69,16 +65,14 @@
    "cycle",
    "cycling"
   ],
-  "virus": [
-   "virus",
-   "viruses",
-   "malware",
-   "worm",
-   "pathogen",
-   "infection",
-   "disease",
-   "germ",
-   "trojan"
+  "grenade": [
+   "grenade",
+   "grenades",
+   "explosive",
+   "explosives",
+   "bomb",
+   "frag",
+   "ordnance"
   ]
  },
  "demo_styles": [

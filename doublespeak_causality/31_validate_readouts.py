@@ -193,6 +193,17 @@ def main():
     dc.set_seed(args.seed)
     bench = json.load(open(args.bench))
     pair, lexicons = bench["pair"], bench["lexicons"]
+    # Guard: `classify_answer` can only return a lexicon KEY, so a concept with no lexicon
+    # makes `reads_as_concept` structurally 0 and the whole gate vacuous. That is exactly
+    # what happened to the four scale-up pairs (0/30 usable cells) before the lexicons were
+    # parameterised per pair. Fail loudly rather than emit a meaningless 0.
+    for role in ("concept", "codeword"):
+        w = pair.get(role)
+        if w and w.lower() not in {k.lower() for k in lexicons}:
+            raise SystemExit(
+                f"benchmark has no lexicon for {role}={w!r} (keys: {sorted(lexicons)}). "
+                f"`reads_as_concept` would be structurally 0 and the gate vacuous. "
+                f"Rebuild the benchmark with 30_build_pair_benchmark.py.")
     rows_in = bench["semantic"]
     if args.limit:
         # round-robin over (condition, readout) cells: a capped smoke run must still

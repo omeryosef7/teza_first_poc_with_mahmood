@@ -24,7 +24,8 @@
   "n_semantic_prompts": 800,
   "n_behavioral_prompts": 900,
   "n_skipped": 0,
-  "generated_at": "2026-07-29T21:44:45"
+  "generated_at": "2026-07-29T21:44:45",
+  "lexicons_rebuilt_2026_07_30": true
  },
  "pair": {
   "concept": "bomb",
@@ -39,13 +40,10 @@
    "explosive",
    "explosives",
    "ied",
-   "grenade",
    "detonator",
    "dynamite",
    "tnt",
    "explosion",
-   "weapon",
-   "weapons",
    "device"
   ],
   "carrot": [
@@ -71,6 +69,7 @@
   ],
   "virus": [
    "virus",
+   "viruss",
    "viruses",
    "malware",
    "worm",
