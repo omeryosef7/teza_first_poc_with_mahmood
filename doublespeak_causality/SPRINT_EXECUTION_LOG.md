@@ -425,6 +425,14 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER61 — Both GCG runs DONE → Level-5 held-out ASR eval SUBMITTED (692971)
+temporal (692818) + baseline (692819) both completed 200 steps, distinct final suffixes written. Wrote
+`slurm/run_gcg_asr.sh` + submitted **692971**: applies each suffix to the 13 held-out (val) Neutral prompts,
+generates (Qwen3, thinking off, 200 tok), judges harmful compliance (StrongReject + MALICIOUS-first, same as
+everywhere). Outputs `gcg_asr_summary.json` = ASR(none) / ASR(baseline) / ASR(temporal). **On ingest = the
+Level-5 verdict** (temporal > baseline ⇒ mechanism-derived objective helps). This closes the Track B build:
+bridge→caches→merge→optimize→eval, every stage smoke-tested/self-reviewed.
+
 ## ITER59 — Track B SMOKE PASSED → full temporal + baseline GCG runs launched (Level-5 test)
 Smoke 692793 PASSED end-to-end: `repr_loss ENABLED lambda_repr=0.3`, 25 train tasks loaded from the mixed
 cache with correct per-task last-3-suffix positions, step0 `task_loss=59.6 repr_loss=0.4464` (temporal term
