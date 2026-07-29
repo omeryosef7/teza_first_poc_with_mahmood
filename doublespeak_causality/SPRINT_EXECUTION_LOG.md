@@ -407,6 +407,24 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER57 — Track B mixed cache BUILT (merge bug fixed) + Track A TOCTOU tokenizer-blocked (screen stands)
+**Track B step 3 DONE.** Both Qwen3 caches built (692759/60, 38 tasks each). Caught a real merge bug: the
+neutral/direct caches have DIFFERENT cache_keys (cache_key hashes absolute suffix positions, which depend on
+prompt length — Neutral vs Direct differ). Fixed `gcg_mixed_cache.py` to merge by position ORDER (re-key
+late-layer harmful reps onto benign position keys; repr_loss uses last-N suffix positions relatively).
+Self-test updated to cover differing positions/keys: PASS. **Real Qwen3 mixed cache built: 38 tasks merged,
+0 skipped** → `outputs/gcg/cache_qwen3_mixed` (early layers 0/5/10/15 ← benign, late 20/25/30/35 ← harmful).
+**Track A DeepSeek TOCTOU sufficiency BLOCKED (692757/8 errored), screen result stands.** `find_word_occurrences`
+raised "word 'kettle' not found" — DeepSeek-R1's tokenizer/template fuses the codeword with surrounding
+context so it isn't an isolated token run (bare==space-prefixed encoding, neither matches). This shared
+function is used by all 3 working models (attention-knockout occurrence counting) → NOT risk-fixing it for a
+bonus timing point. **The 4th-model JAILBREAK reproduction (screen: 27/40 eligible, 66 DS_MALICIOUS) is the
+Track A deliverable and stands; DeepSeek TOCTOU-sufficiency is an honest deferral (model-specific tokenizer
+edge case).**
+**NEXT (Track B step 4):** `run_optimization --model-family qwen3 --manifest curated_qwen3_neutral.jsonl
+--reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
+n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
+
 ## ITER56 — Track A ingested (4th arch jailbreak reproduces) + Track B step 3 launched (Qwen3 caches)
 **Track A — DeepSeek-R1-Distill-Llama-8B screen DONE + ingested.** Corrected reclassify: **27/40 eligible,
 16 clean-success, 0 judge fails, DS_MALICIOUS=66** → the behavioral Doublespeak jailbreak reproduces on a
