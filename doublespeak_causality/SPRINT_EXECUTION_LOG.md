@@ -425,6 +425,22 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER68 — Track B (temporal-GCG) COMPLETE: Level-5 negative locked; all 3 extension tracks done
+693114 (lex-wide eps=20) DONE 200 steps: repr_loss 0.4540→min 0.4504→0.4516, task_loss 77.7→71.1 (task
+sacrificed, repr STILL flat). Definitive across all 3 configs. §6d table finalized. **Track B closed:** full
+temporal-GCG pipeline built (bridge→caches→mixed-merge→optimize→ASR), all self-tested; Level-5 = a publishable
+NEGATIVE (temporal objective not suffix-optimizable + backfires to refusal 0.615) that reinforces the
+demonstration-bound TOCTOU story. Bugs caught along the way: cache-key mismatch, position re-keying, false-null
+judge (evaluate returns a list) — none reached a reported result.
+**PARALLEL-EXTENSION SUMMARY (user "all in parallel"):**
+- **A (4th architecture):** DeepSeek-R1-Distill-Llama-8B jailbreak REPRODUCES (27/40 eligible, 66 DS_MALICIOUS);
+  TOCTOU-sufficiency deferred (model-specific codeword tokenization edge case, shared fn not risk-fixed).
+- **B (temporal-GCG):** Level-5 NEGATIVE, demonstration-bound (this iter).
+- **C (necessity specificity):** genuinely modest, multi-seed-confirmed (necessity−random +0.181 [−0.021,0.383],
+  seed-averaged; necessity−identity +0.399 SIG).
+All committed + pushed; docs (GCG_MAC_COMPARISON, UPDATED_PAPER_STORY, BEHAVIORAL_CAUSALITY_RESULTS) current.
+No jobs running. **RESTING STATE.**
+
 ## ITER66 — temporal_lex ASR: suffix INCREASES refusal 8× (backfires), ASR still 0; large-eps also flat
 693115 (ASR temporal_lex vs baseline, judge_fail=0.0): ASR none/baseline/temporal = 0.077/0/0, but
 **refusal temporal=0.615 vs baseline 0.077 vs none 0.0**. The temporal suffix does NOT jailbreak — it

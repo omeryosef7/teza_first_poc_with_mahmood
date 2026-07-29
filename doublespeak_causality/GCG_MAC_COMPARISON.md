@@ -100,7 +100,7 @@ of the suffix reps to the harmful Direct reps) **never dropped** across THREE se
 |---|---|---|---|---|
 | weighted | argmin(task+λ·repr) | 0.3 | 0.446 → 0.446 → 0.565 | 59.6 → 3.8 (chased benign target) |
 | lex-tight | argmin(repr) s.t. task≤best+0.01 | 1.0 | 0.480 → 0.463 → 0.535 | 63.4 → 16.4 |
-| lex-wide | argmin(repr) s.t. task≤best+20 | 1.0 | 0.454 → 0.450 → ~0.45 | 77.7 → 73 (task SACRIFICED, repr still flat) |
+| lex-wide | argmin(repr) s.t. task≤best+20 | 1.0 | 0.454 → 0.450 → 0.452 (200 steps) | 77.7 → 71.1 (task SACRIFICED, repr still flat) |
 Even with maximum slack (lex-wide: the optimizer freely abandons the task target), a 16-token suffix cannot
 push the neutralized prompt's late reps to the harmful-concept reps.
 
