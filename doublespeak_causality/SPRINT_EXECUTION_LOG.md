@@ -425,6 +425,19 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER65 — Lexicographic re-run also fails to optimize repr_loss → definitive large-eps check + ASR
+693001 (lexicographic λ=1.0, eps=0.01) DONE 200 steps: **repr_loss NEVER dropped below 0.4628** (first
+0.4801, last 0.5346) — the temporal objective is not achievable via a 16-token suffix under lexicographic
+selection either. Robust now across weighted(λ=0.3) AND lexicographic(λ=1.0). To fully close the "eps=0.01
+too tight" objection: added `DSLEXEPS` passthrough, launched **693114** (lexicographic, eps=20 → maximum
+repr slack, the selector can trade large task_loss for repr reduction). Also launched **693115** = ASR eval
+on temporal_lex vs baseline (expected ~0 given repr never dropped, but confirming). If 693114's repr_loss
+ALSO stays ~0.48, the Level-5 conclusion is definitive and honest: **the mechanism-derived temporal objective
+is NOT GCG-suffix-optimizable** — a 16-token suffix cannot reproduce the harmful-late representation that the
+Doublespeak DEMONSTRATIONS create. Coheres with (a) the behavioral sufficiency dissociation (DS state is
+context-dependent, loses force when transplanted) and (b) the in-context nature of the hijack. A publishable
+NEGATIVE result: the attack is demonstration-bound, not distillable into a universal suffix.
+
 ## ITER63 — Level-5 first result INCONCLUSIVE (temporal objective didn't optimize) → fair re-run launched
 Corrected eval 692995 (judge_fail=0.0): **ASR none/baseline/temporal = 0/0/0**, refusal ~0.08 both. But
 diagnosing the temporal run's ITERATION_LOG: **repr_loss did NOT decrease** (0.446→0.565, min=first) while

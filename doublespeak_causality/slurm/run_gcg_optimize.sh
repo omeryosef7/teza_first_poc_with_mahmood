@@ -44,6 +44,7 @@ REPR_ARGS=""
 if [ "$(python -c "print(1 if float('$DSLAMBDA')>0 else 0)")" = "1" ]; then
   : "${DSCACHEDIR:?DSLAMBDA>0 requires DSCACHEDIR (mixed reference cache)}"
   REPR_ARGS="--lambda-repr $DSLAMBDA --reference-cache-dir $DSCACHEDIR --repr-positions 3 --repr-layers 0,5,10,15,20,25,30,35 --selection-mode $DSSELMODE"
+  [ -n "${DSLEXEPS:-}" ] && REPR_ARGS="$REPR_ARGS --lexicographic-task-eps $DSLEXEPS"
 fi
 echo "=== gcg optimize: run=$DSRUNID lambda_repr=$DSLAMBDA split=$DSSPLIT steps=$DSSTEPS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
