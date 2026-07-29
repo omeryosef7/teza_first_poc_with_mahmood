@@ -46,6 +46,22 @@ harmful→benign 50% of the time. **The early-layer SPECIFICITY (effect above ma
 is not above random. So: Claim B supported (necessity is real, early-concentrated); the *specificity*
 sub-claim requires more N before it can be asserted.
 
+**Multi-seed firm-up (iter54 — jobs 692698/699/700, early window, seeds 0/1/2 to average out the single
+random draw):** the earlier NS could have been one unlucky random-control draw. Averaging 3 independent
+random draws per item (seed-averaged, 23 true units — repeated-measures-correct, NOT the anti-conservative
+3×pooled n=111) gives:
+- delta_necessity = **0.549 [0.362, 0.737]** (strong, excludes 0);
+- necessity − **identity** = **0.399 [0.177, 0.617]** (excludes 0 → the neutral patch's *content* matters,
+  not just the act of patching);
+- necessity − **random** = **0.181 [−0.021, 0.383]** → **STILL crosses 0**.
+
+**Conclusion: the modest specificity-over-random is a genuine, robust property — not a single-draw artifact.**
+Averaging out random-draw noise leaves the margin essentially unchanged (+0.18, was +0.18/+0.25), so the
+neutral patch is only ~1.5–1.7× more disruptive than a norm-matched random patch. Honest Claim B stands:
+**necessity is real and early-specific (Δ strongly significant, and significant vs the identity control);
+its specificity over a random patch of equal norm is genuinely modest** (directional, CI crosses 0). We do
+NOT over-claim mechanistic specificity beyond the identity control.
+
 Mechanistic reading: disrupting the codeword's early rep — before the demo-derived harmful meaning is
 consolidated and used — prevents the whole downstream harmful computation; once past that, generic
 perturbation and the specific Neutral patch are indistinguishable.

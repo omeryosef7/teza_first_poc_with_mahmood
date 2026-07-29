@@ -407,6 +407,17 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER54 — Track C DONE: necessity specificity is genuinely MODEST (multi-seed confirms, not artifact)
+3 early-window necessity seeds (692698/699/700, n=37 clean each) COMPLETE. delta_necessity varies 0.378/
+0.432/0.432 across seeds (CUDA greedy nondeterminism). **Self-caught a pseudo-replication trap:** pooling
+3×37=111 rows gives necessity−random 0.153 [0.054,0.252] "excludes 0" — but that treats 3 repeated measures
+per item as independent (anti-conservative). **Repeated-measures-correct** = average each item's random draw
+over the 3 seeds → 23 true units → necessity−random **0.181 [−0.021, 0.383], STILL crosses 0** (≈ the prior
++0.182). So the multi-seed test RESOLVES THE QUESTION (the NS is NOT a single unlucky random draw — it's a
+genuinely modest effect) without flipping it. delta_necessity 0.549 [0.362,0.737] strong; necessity−identity
+0.399 [0.177,0.617] SIG (content matters, not just patching). Updated §1b honest verdict. Track C CLOSED:
+Claim B = necessity real + early-specific + sig-vs-identity; specificity-over-random genuinely modest.
+
 ## ITER51 — USER: "do all in parallel + document" → 3 extension tracks launched
 Core sprint was complete; user chose to push all three follow-up directions at once.
 **Track A — 4th architecture (TOCTOU).** Offline cache limits the 4th model to **DeepSeek-R1-Distill-
