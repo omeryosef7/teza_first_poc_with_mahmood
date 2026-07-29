@@ -22,9 +22,9 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
-| S9 | Causal attack-window estimate (§16.11) | `PARTIAL` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows differ — needs writing up as a result, not a single number. |
-| S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
-| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7): relaxed ~1.0 but **discretized ≈0.006** for the concept (~0.6% retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
+| S9 | Causal attack-window estimate (§16.11) | ✅ `COMPLETE` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows **differ** — written up as an asymmetry in `CAUSAL_OBJECTIVE.md` §3 rather than collapsed to one number. |
+| S10 | Causal objective terms, each intervention-validated (§7, §16.12) | ✅ `COMPLETE` | [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md) — 8 candidate terms adjudicated against interventions: **2 validated** (`d_Direct` semantic score; early-neutral retention), **4 killed** (`d_DS` projection, attention routing, component patching, single-window framing), **2 excluded as unvalidated** (refusal suppression, task retention). |
+| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
@@ -82,7 +82,7 @@ receive only redacted labels, scalars and statistics.
 | 693652 | S11 simplex concept (lr=1.0, pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693655 | `outputs/pair_softprompt_simplex_concept_demos_*_693652` |
 | 693653 | S11 simplex unrelated (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693656 | — |
 | 693654 | S11 simplex codeword (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693657 | — |
-| 693655 | S11 simplex **concept + discretize** | `run_pair_softprompt.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — relaxed ~0.99 → **discretized ≈0.006** | `outputs/pair_softprompt_simplex_concept_demos_*_693655` |
+| 693655 | S11 simplex **concept + discretize** | `run_pair_softprompt.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — relaxed **0.98861** → **discretized 0.00424** (0.43%) | `outputs/pair_softprompt_simplex_concept_demos_*_693655` |
 | 693656 | S11 simplex unrelated + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 0.9994 → **0.0124** | `outputs/pair_softprompt_simplex_unrelated_demos_*_693656` |
 | 693657 | S11 simplex codeword + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 1.0000 → **0.1016** | `outputs/pair_softprompt_simplex_codeword_demos_*_693657` |
 | 693649 | S11 soft-prompt simplex unrelated (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — same frozen optimizer | `outputs/pair_softprompt_simplex_unrelated_demos_*_693649` |
@@ -603,7 +603,7 @@ optimum is a *blend* no real prompt can be — settles the gate.
 
 | target | start | relaxed `p_best` | **discretized** | retention |
 |---|---|---|---|---|
-| **concept** (bomb) | 0.0000 | ~0.99 | **≈0.006** (per-prompt 5e-05, 0.034, 0.0, 1e-06, 1e-06, 1.2e-05) | **~0.6%** |
+| **concept** (bomb) | 0.0000 | 0.98861 | **0.00424** (per-prompt 5e-05, 0.0338, 0.0, 1e-06, 1e-06, 1.2e-05, …) | **0.43%** |
 | codeword (carrot) | 0.0044 | 1.0000 | 0.1016 | 10.2% |
 | unrelated (virus) | 0.0009 | 0.9994 | 0.0124 | 1.2% |
 
