@@ -453,9 +453,18 @@ vs the mixed cache, harmful ASR judged separately. Smoke-tested: 37 tasks (23 tr
 the REAL `load_manifest`, task_id parity neutral==direct holds (needed for per-task cache merge). Generated
 manifests gitignored (contain benchmark prompt text; regenerable). Design decisions: middle context_len +
 first codeword per base (matches the per-condition sweep); deterministic hash split for held-out-concept eval.
-**NEXT (Step 2):** `gcg_mixed_cache.py` — run existing `build_reference_cache.py` on each manifest (2 caches),
-then merge per-task by layer (early layers←benign, late←harmful) into one cache dir in the ReferenceCache
-`.pt` format ({layer:{pos:tensor}}) — tensor-only, benign, smoke-testable on 1 task.
+**Step 2 DONE (iter55) — mixed-cache builder, self-tested.** Wrote `gcg_mixed_cache.py`: pure tensor/dict
+surgery merging a benign-instruction cache + a harmful-instruction cache per task by layer (idx<split←benign,
+idx>=split←harmful), keeping benign input_ids+metadata (candidate optimizes the Neutral prompt). Guards:
+cache_key/layer-set parity between the two caches (instruction is NOT in the cache_key, so both share keys →
+mergeable). `--self-test` (synthetic caches, no GPU/model): PASS — early layers = benign(1.0), late = harmful
+(2.0), benign input_ids kept, 2 merged. **Target model = Qwen3-14B** (the GCG adapter supports only qwen3/
+gemma4; Qwen3 is in-study AND has the curated screen, 38 eligible) — NOT Llama (unsupported by the harness).
+DeepSeek (Track A) stays the separate 4th-architecture TOCTOU screen.
+**NEXT (Step 3):** regenerate the bridge manifests for Qwen3 (curated_qwen3_nothink eligible, model-family
+qwen3, thinking off) → write a `build_reference_cache` SLURM runner → build the 2 Qwen3 caches (neutral +
+direct) → merge (split≈18). Then Step 4: `run_optimization --model-family qwen3 --lambda-repr>0` vs a
+`--lambda-repr 0` baseline → held-out ASR (Level-5 test). Each with a smoke before the full job.
 
 ## ITER50 — INGESTED 37-base scale-up: flagship HARDENS at full eligible n (headline stronger + tighter)
 All three 37-base dirs (early 692637 / mid 692638 / late 230505, unique post-collision-fix, schema-verified
