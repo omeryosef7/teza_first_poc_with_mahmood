@@ -58,7 +58,9 @@ def build(matrix_path, eligible_path, model_family, enable_thinking, out_prefix)
         if pick:
             chosen[bid] = pick[0]
 
-    os.makedirs(os.path.dirname(out_prefix), exist_ok=True)
+    _d = os.path.dirname(out_prefix)
+    if _d:
+        os.makedirs(_d, exist_ok=True)   # guard: dirname('') would raise; bare-prefix --out is valid
     neu_path, dir_path = out_prefix + "_neutral.jsonl", out_prefix + "_direct.jsonl"
     n = 0
     with open(neu_path, "w") as fn, open(dir_path, "w") as fd:

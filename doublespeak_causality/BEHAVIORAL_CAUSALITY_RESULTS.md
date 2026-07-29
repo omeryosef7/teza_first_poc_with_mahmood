@@ -243,11 +243,13 @@ controls present).
   demonstrations (survives the confound fix). Cross-model (3 families, frozen).
 - **Behavioral:** the hijack **translates into a real jailbreak** (~20% of eligible curated DS conditions;
   42 clean successes / 14 concepts — BEHAVIORAL_BENCHMARK.md). **Necessity (Claim B):** patching the
-  codeword's EARLY representation toward Neutral causally reduces harmful behavior (Δ=0.50), specifically
-  (above identity 0.05 and random by +0.25); later layers not specific. **Sufficiency (Claim C):**
-  DS-injection is behaviorally sufficient above the null (0.16 vs 0.03), but — a DISSOCIATION from the
-  rep-level result — raw Direct-injection is *more* behaviorally sufficient (0.52), so decoding-sufficiency
-  (DS>Direct) inverts behaviorally (Direct>DS) at the mid window.
+  codeword's EARLY representation toward Neutral causally reduces harmful behavior (seed-averaged Δ=0.549),
+  significantly above the identity control (necessity−identity +0.399 [0.177,0.617]); specificity over a
+  norm-matched random patch is modest (+0.181 [−0.021,0.383], crosses 0); later layers not specific.
+  **Sufficiency (Claim C, 37 bases):** DS-injection is only weakly behaviorally sufficient (mid 0.10), but —
+  a DISSOCIATION from the rep-level result — raw Direct-injection is *more* behaviorally sufficient (mid 0.49),
+  so decoding-sufficiency (DS>Direct) inverts behaviorally (Direct>DS) at mid (−0.393 [−0.470,−0.311]) and
+  late (−0.064 [−0.116,−0.012]).
 - **Headline nuance for the paper:** the representation-level and behavioral causal pictures **partly
   dissociate** — the hijacked state is decoding-necessary/sufficient and behaviorally necessary (early),
   but the *raw concept* is behaviorally the more potent injectate. Rep-level Patchscopes evidence should

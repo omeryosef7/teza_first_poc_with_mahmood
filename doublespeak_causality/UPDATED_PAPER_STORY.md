@@ -60,8 +60,9 @@ statistically-meaningful result.**
 `18_run_behavioral_necessity.py` (DS←Neutral patch during generation) + `19_run_behavioral_sufficiency.py`
 (Neutral←DS vs Neutral←Direct injection). Clean per-condition CIs (audit-verified, deterministic):
 - **Necessity ✅ (Claim B):** patching the DS codeword state to its Neutral counterpart flips malicious→benign,
-  **early-layer specific** (early Δ=0.455 [0.303, 0.636]); specificity over a random patch is modest (necessity−random
-  +0.182 [−0.030, +0.394], underpowered — honest caveat).
+  **early-layer specific** (seed-averaged early Δ=0.549 [0.362, 0.737]; necessity−identity +0.399 [0.177, 0.617]
+  — SIG, content matters); specificity over a random patch is genuinely modest (necessity−random +0.181
+  [−0.021, 0.383], crosses 0 — robust across 3 seeds, honest caveat).
 - **Sufficiency ✅ but DISSOCIATES from the rep-level prediction (Claim C):** the rep-level Patchscopes
   prediction was DS-injection > Direct-injection. **Behaviorally it INVERTS: Direct ≫ DS** — the raw concept
   is the more potent injectate at mid (DS−Direct −0.393 [−0.470, −0.311], n=183, 37 bases) AND late (−0.064
@@ -71,7 +72,7 @@ statistically-meaningful result.**
 
 ## 5. Causal timing — Claim D ✅ CONFIRMED (Phase 4) ⭐ HEADLINE
 Injecting the raw harmful concept at different depths into benign prompts: **early → REFUSAL (0.87),
-mid → COMPLIANCE (0.52 malicious), late → NEITHER (refusal 0.00)**. Refusal decreases monotonically with
+mid → COMPLIANCE (0.49 malicious), late → NEITHER (refusal 0.02)**. Refusal decreases monotonically with
 depth; early−late refusal Δ=+0.846 [+0.787, +0.899], n=169 (37 bases; reproducible per-condition via
 `analyze_behavioral_causality.py --timing-dir`; every pairwise step significant). **TOCTOU confirmed:
 refusal is a time-of-check operation on EARLY representations.** This explains WHY Doublespeak works — the

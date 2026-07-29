@@ -22,8 +22,9 @@ explain the *mechanism* of refusal evasion.
 
 **Headline result (one sentence):** refusal is a **time-of-check (TOCTOU) operation on EARLY
 representations**, so Doublespeak's LATE-emerging harmful meaning slips past the early refusal checkpoint —
-a **causal timing law** that we show is behavioral, significant across four model families, predictive, and
-that also **bounds the attack** (it is demonstration-bound, not distillable into an optimized suffix).
+a **causal timing law** that we show is behavioral, significant across three architectures (with the
+jailbreak reproducing on a fourth), predictive, and that also **bounds the attack** (it is
+demonstration-bound, not distillable into an optimized suffix).
 
 ---
 

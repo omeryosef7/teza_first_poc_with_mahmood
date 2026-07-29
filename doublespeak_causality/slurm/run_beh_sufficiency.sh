@@ -32,6 +32,7 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSWINDOWS:=}"   # e.g. "mid" for a fast preemption-safe MVP; empty => all windows
 : "${DSTHINK:=default}"
 : "${DSMAXTOK:=200}"
+case "$DSWINDOWS" in *,*) echo "ERROR: DSWINDOWS='$DSWINDOWS' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists. Submit ONE window per job."; exit 1;; esac
 WIN_ARG=""; [ -n "$DSWINDOWS" ] && WIN_ARG="--windows $DSWINDOWS"
 echo "=== behavioral sufficiency: $DSMODEL max_bases=$DSMAXBASES ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"

@@ -23,8 +23,8 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
 concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
-(CAUSAL TIMING: injecting the harmful concept early→refusal 0.86, mid→compliance 0.52, late→refusal 0.00;
-early−late refusal Δ=+0.857 [+0.714,+1.00], TOCTOU confirmed). **Level 4 ✅** (mechanistic signature PREDICTS held-out jailbreak: held-out-concept AUC 0.668±0.089,
+(CAUSAL TIMING: injecting the harmful concept early→refusal 0.87, mid→compliance 0.49, late→refusal 0.02;
+early−late refusal Δ=+0.846 [+0.787,+0.899], n=169 @37 bases, TOCTOU confirmed). **Level 4 ✅** (mechanistic signature PREDICTS held-out jailbreak: held-out-concept AUC 0.668±0.089,
 CV 0.73; the predictive component is EARLY-benign alignment — late_align alone inert at 0.502 — cohering
 with the TOCTOU law). Target ≥1 of 1–6 → **4 met.**
 **Headline findings:** (a) causal timing law — refusal is a time-of-CHECK operation on EARLY meaning, so
@@ -424,6 +424,24 @@ edge case).**
 **NEXT (Track B step 4):** `run_optimization --model-family qwen3 --manifest curated_qwen3_neutral.jsonl
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
+
+## ITER71 — 3rd ultracode audit (Workflow w4mjx6pnq, 5 reviewers→verify): 8 fixed, NO job resubmit needed
+Comprehensive benign-only audit (code/output/doc/consistency). 17 raw → 8 REAL (no HIGH). **Verified none
+require a job resubmit** (the DSWINDOWS comma bug never fired — all runs passed a SINGLE window). Fixes:
+1. [MED output] `25_eval_gcg_asr.py`: `gcg_asr_summary.json` embedded raw optimized SUFFIX STRINGS in a
+   "summary"-named file → store `suffix_len` only; raw strings → separate gitignored `gcg_suffixes_used.json`.
+   Sanitized the existing summary too (verified 0 suffix fragments remain).
+2. [MED incons] `SPRINT_REPORT.md` headline overclaim "significant across four model families" → "three
+   architectures (jailbreak reproduces on a fourth)" (matched §4/§7 + other docs).
+3. [MED doc] `SPRINT_EXECUTION_LOG` success-levels block: stale hand-computed +0.857 [+0.714,+1.00]/mid 0.52
+   → final 37-base +0.846 [+0.787,+0.899]/mid 0.49 (historical ITER entries left frozen).
+4. [LOW code] `gcg_manifest_bridge.py`: `os.makedirs(dirname(''))` crash on bare-prefix --out → guard empty.
+5. [LOW code] `run_beh_{sufficiency,necessity}.sh`: added a comma-guard that FAILS LOUDLY if DSWINDOWS has a
+   comma (sbatch --export silently truncates comma-lists) — prevents silent window-dropping.
+6-8. [LOW incons] `UPDATED_PAPER_STORY` necessity (→seed-avg 0.549/−id 0.399/−rand 0.181) + §5 point rates
+   (mid 0.49/late 0.02); `BEHAVIORAL_CAUSALITY_RESULTS` §4 combined-picture refreshed 12-base→37-base+seed-avg.
+Syntax/guard/consistency re-verified. Sprint audit trail: 3 code audits + 2 pipeline audits + raw-integrity
+sweep, ALL findings fixed, NONE reached a reported result.
 
 ## ITER70 — FINAL: comprehensive sprint report + full reliability audit (user request)
 Wrote `SPRINT_REPORT.md` — self-contained, hand-off-ready (background, method, all CI-backed results from

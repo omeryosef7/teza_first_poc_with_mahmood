@@ -121,14 +121,20 @@ def main():
         print(f"  {tid}: " + " ".join(f"{a}={raw[-len(suffixes)+i]['cat'][:3]}" for i, a in enumerate(suffixes)),
               flush=True)
 
+    # NOTE: keep this a SCALAR-only summary — do NOT embed the raw optimized suffix strings (adversarial
+    # text); store only their lengths here and write the strings to a separately-named non-summary artifact.
     summary = {"model": args.model, "split": args.split, "n_tasks": agg["none"]["n"],
                "judge_fail_frac": round(jstats["judge_fail"] / max(jstats["n"], 1), 3),
                "asr": {a: round(agg[a]["mal"] / agg[a]["n"], 3) if agg[a]["n"] else None for a in suffixes},
                "refusal_rate": {a: round(agg[a]["rej"] / agg[a]["n"], 3) if agg[a]["n"] else None for a in suffixes},
-               "counts": agg, "suffixes": suffixes}
+               "counts": agg,
+               "suffix_len": {a: (len(s) if s else 0) for a, s in suffixes.items()}}
     out_dir = args.out_dir or os.path.dirname(args.temporal_dir)
     with open(os.path.join(out_dir, "gcg_asr_summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
+    # raw suffix strings kept out of the "summary"-named file (separate artifact)
+    with open(os.path.join(out_dir, "gcg_suffixes_used.json"), "w") as f:
+        json.dump(suffixes, f, indent=2)
     with open(os.path.join(out_dir, "gcg_asr_raw.jsonl"), "w") as f:
         for r in raw:
             f.write(json.dumps(r) + "\n")
