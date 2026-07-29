@@ -149,6 +149,20 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
     # How close is the relaxed solution to a real token sequence? A simplex solution whose
     # per-position max weight is near 1.0 IS (almost) a token sequence and its score is
     # achievable discretely; one spread across the vocabulary is not.
+    # DISCRETIZATION CHECK — the number that actually bounds a token attack.
+    # peak_w < 1 means the relaxed optimum is a BLEND of tokens, which no real prompt can
+    # be. So take the argmax token sequence, run it as an ordinary hard prompt, and report
+    # the score it achieves. relaxed >> discretized means the relaxed win was bought with
+    # off-manifold blending and does NOT bound what a discrete attack can do.
+    p_discrete = None
+    if param != "free":
+        with torch.no_grad():
+            hard = ids.clone()
+            hard[0, a:b] = torch.softmax(var / temperature, dim=-1).argmax(dim=-1)
+            out_h = lm.model(input_ids=hard, return_dict=True)
+            lp = torch.log_softmax(out_h.logits[0, -1, :].float(), dim=-1)
+            p_discrete = float(torch.logsumexp(lp[tgt], dim=0).exp())
+
     peak, frac_changed = None, None
     if param != "free":
         with torch.no_grad():
@@ -169,7 +183,10 @@ def optimize_one(lm, templated, raw_prompt, target_ids, free_slice, steps, lr, s
                                        else round(frac_changed, 4)),
             "optimizer_moved": (None if frac_changed is None else bool(frac_changed > 0)),
             "logit_budget": round(lr * steps, 2), "init_gap": 2 * init_scale,
-            "budget_sufficient": bool(lr * steps > 2 * init_scale)}
+            "budget_sufficient": bool(lr * steps > 2 * init_scale),
+            "p_discretized": (None if p_discrete is None else round(p_discrete, 6)),
+            "discretization_retention": (None if (p_discrete is None or not best["p_target"])
+                                         else round(p_discrete / best["p_target"], 4))}
 
 
 def main():
@@ -257,7 +274,8 @@ def main():
               f"p_start={res['p_start']:.5f} -> p_best={res['p_best']:.5f} "
               f"(step {res['best_step']}, {res['n_free_tokens']} free tokens, "
               f"peak_w={res.get('mean_peak_weight')} "
-              f"changed={res.get('frac_positions_changed')})")
+              f"changed={res.get('frac_positions_changed')} "
+              f"DISCRETE={res.get('p_discretized')})")
 
     starts = [x["p_start"] for x in results]
     bests = [x["p_best"] for x in results]
@@ -278,6 +296,10 @@ def main():
         "n_prompts": len(results), "n_skipped": n_skipped,
         "p_start_mean": (sum(starts) / len(starts)) if starts else None,
         "p_best_mean": (sum(bests) / len(bests)) if bests else None,
+        "p_discretized_mean": (
+            (sum(x["p_discretized"] for x in results if x.get("p_discretized") is not None)
+             / max(1, sum(1 for x in results if x.get("p_discretized") is not None)))
+            if results else None),
         "improvement_ci": (None if ci is None else
                            {"mean": round(ci["mean_diff"], 6), "lo": round(ci["lo"], 6),
                             "hi": round(ci["hi"], 6), "n": ci["n"],
@@ -287,7 +309,8 @@ def main():
     with open(os.path.join(out_dir, "softprompt_summary.json"), "w") as f:
         json.dump(summary, f, indent=1)
     print(f"[soft] p_start={summary['p_start_mean']:.5f} -> "
-          f"p_best={summary['p_best_mean']:.5f}")
+          f"p_best={summary['p_best_mean']:.5f} "
+          f"-> DISCRETIZED={summary['p_discretized_mean']}")
     if ci:
         print(f"[soft] improvement {ci['mean_diff']:+.5f} "
               f"[{ci['lo']:+.5f},{ci['hi']:+.5f}] n={ci['n']}")
