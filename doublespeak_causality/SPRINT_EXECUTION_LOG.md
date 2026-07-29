@@ -432,10 +432,16 @@ active + computing), 5 steps complete, no errors. The whole Track-B pipeline (br
 works on Qwen3. Launched the full comparison, 200 steps each on the train split (25 tasks):
 - **TEMPORAL 692818** (lambda_repr=0.3 + mixed early-benign/late-harmful cache) → opt_qwen3_temporal
 - **BASELINE 692819** (lambda 0, task-only GCG) → opt_qwen3_baseline
-On completion → `evaluate_optimized_suffixes` held-out ASR on the val split (13 tasks) = the Level-5 test:
+On completion → held-out ASR on the val split (13 tasks) = the Level-5 test:
 does the mechanism-derived temporal objective beat standard GCG? (Either result is publishable: a win
 validates the objective; a null strengthens the "early-suppression is load-bearing but hard to optimize"
 caveat already in GCG_MAC_COMPARISON.)
+**Step 5 eval WRITTEN + offline-validated (iter60).** The repo's `evaluate_optimized_suffixes` is a StrongReject-
+on-SAFE-targets stub — wrong metric for our harmful ASR. Wrote `25_eval_gcg_asr.py`: applies each optimized
+suffix to the held-out Neutral prompts, generates, judges harmful compliance with the SAME StrongReject +
+MALICIOUS-first classifier (imports 18/19 helpers verbatim → zero judge drift). 3 arms: none / baseline /
+temporal. Offline-validated (no GPU): val filter=13 tasks, all 13 have goals (PFX/SFX strip works), suffix
+read from FINAL_CANDIDATES OK. Submit as SLURM once 692818/9 finish → ASR(temporal) vs ASR(baseline).
 Wrote `slurm/run_gcg_optimize.sh` (wraps `run_optimization`; TEMPORAL=lambda_repr>0 + mixed cache, BASELINE=
 lambda 0; includes `--no-filter-cand` per the BPE-tokenizer rule, `--no-thinking`, repr-layers/positions
 matching the cache). Submitted **692793** — smoke: lambda_repr=0.3, n-steps=5, split=train, on the Qwen3
