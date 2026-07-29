@@ -163,11 +163,11 @@ def fig_sufficiency():
 
 def fig_crossmodel():
     """Behavioral reproduction across architectures: eligible + clean-success bases per model.
-    Auto-includes any curated screen whose corrected summary exists (Llama/Qwen3/Phi-4)."""
+    Auto-includes any curated screen whose corrected summary exists (Llama/Qwen3/Phi-4/DeepSeek-R1)."""
     import glob
     models = []  # (label, eligible, clean, n_bases)
     for name, label in [("curated_v1", "Llama-3.1-8B"), ("curated_qwen3_nothink", "Qwen3-14B"),
-                        ("curated_phi4", "Phi-4-mini")]:
+                        ("curated_phi4", "Phi-4-mini"), ("curated_deepseek_r1", "DeepSeek-R1-8B")]:
         # prefer the corrected reclassified summary; else the raw
         for fn in ("screen_summary_reclassified.json", "screen_summary.json"):
             p = os.path.join(HERE, "outputs", f"behavioral_screen_{name}", fn)

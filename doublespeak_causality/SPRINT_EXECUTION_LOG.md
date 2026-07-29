@@ -16,10 +16,10 @@ Every entry records: what was done, commands/jobs, results-so-far, and next step
 | 2 | Paper-faithful behavioral benchmark | ✅ COMPLETE | curated harm-in-noun; 37/40 eligible, 42 clean successes/14 concepts |
 | 3 | Behavioral causal MVP | ✅ COMPLETE | necessity (early Δ=0.50) + sufficiency (dissociation), CI-backed |
 | 4 | Full behavioral causality + timing | ✅ COMPLETE | ⭐ TOCTOU timing law (early→refuse 0.86, late→0.00), architecture-general |
-| 5 | Mechanistic objective validation | 🔶 Level 4 ✅ / Level 5 directional-NS | AUC 0.67 predicts; codeword-selection +0.09 (NS), larger-N retest running |
-| 6 | GCG/MAC optimization | 🔶 designed + selection-variant run | full suffix-GCG designed; codeword selection = feasible Level-5 test |
-| 7 | Thinking vs non-thinking | 🔶 Level 6 partial | Qwen3 same-weights: safety nudge + steeper dose-response, modest |
-| 8 | Cross-model + paper story | ✅ COMPLETE | behavioral + TOCTOU reproduce + SIGNIFICANT on all 3 (Llama/Qwen3/Phi-4); paper story consolidated |
+| 5 | Mechanistic objective validation | ✅ RESOLVED | Level 4 ✅ (held-out AUC 0.67 predicts); Level 5: codeword-selection +0.09 NS AND full suffix-GCG executed → NEGATIVE (objective not suffix-optimizable; attack demonstration-bound, §6d) |
+| 6 | GCG/MAC optimization | ✅ COMPLETE | full temporal suffix-GCG BUILT + RUN on Qwen3; repr_loss not minimizable across 3 configs; temporal suffix backfires (refusal 0.615); publishable negative |
+| 7 | Thinking vs non-thinking | 🔶 Level 6 partial (honest verdict) | Qwen3 same-weights: safety nudge + steeper dose-response, modest (no further work planned) |
+| 8 | Cross-model + paper story | ✅ COMPLETE | behavioral + TOCTOU reproduce + SIGNIFICANT on 3 (Llama/Qwen3/Phi-4); jailbreak also reproduces on 4th (DeepSeek-R1 27/40); paper story consolidated |
 
 **Success levels achieved (plan §24):** **Level 1 ✅** (clean behavioral benchmark, 42 successes/14
 concepts); **Level 2 ✅** (behavioral necessity — early-layer, Δ=0.50 [0.30,0.70]); **Level 3 ✅ ⭐**
