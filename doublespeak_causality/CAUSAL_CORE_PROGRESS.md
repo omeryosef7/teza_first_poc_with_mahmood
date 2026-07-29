@@ -20,14 +20,14 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | ✅ `COMPLETE` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
 | S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
-| S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
+| S7 | Held-out paraphrase confirmation (§14, §16.9) | ✅ `COMPLETE` | Confirmed with directions fitted on the OPPOSITE split and **text-disjoint** demo pools: `add_d_Direct` mid **dev +0.584 / heldout +0.483**, late **+0.982 / +0.960**, all CIs excluding 0; `add_d_DS` exactly 0 on both. Holm correction applied over the layer×α grid. |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
 | S9 | Causal attack-window estimate (§16.11) | ✅ `COMPLETE` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows **differ** — written up as an asymmetry in `CAUSAL_OBJECTIVE.md` §3 rather than collapsed to one number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | ✅ `COMPLETE` | [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md) — 8 candidate terms adjudicated against interventions: **2 validated** (`d_Direct` semantic score; early-neutral retention), **4 killed** (`d_DS` projection, attention routing, component patching, single-window framing), **2 excluded as unvalidated** (refusal suppression, task retention). |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
-| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
+| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` | 693666 = Qwen3 **non-thinking** S2 gate (directly comparable to Llama). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md`; registry/checksum manifest still owed (audit finding) |
@@ -594,6 +594,43 @@ mechanism rather than the phenomenon (the others: the pre-F2 knockout span, the 
 carrier variants, the unconstrained soft prompt). The pattern is consistent enough to state
 as a working rule for this codebase: **never accept a null without a positive control that
 proves the intervention could have moved the outcome.**
+
+### ITER12 — 2026-07-29 — S7 + S9 + S10 closed; S14 scoped honestly rather than run blind
+
+**S7 (held-out confirmation) — COMPLETE.** Every sweep already ran both splits with
+cross-fitting on, so this is an analysis, not a new job. With the direction fitted on the
+*opposite* split and **text-disjoint** demonstration pools:
+
+| arm | window | dev | held-out |
+|---|---|---|---|
+| `add_d_Direct` | early | +0.178 [+0.083, +0.275] | +0.156 [+0.077, +0.239] |
+| `add_d_Direct` | mid | +0.584 [+0.483, +0.702] | **+0.483 [+0.365, +0.583]** |
+| `add_d_Direct` | late | +0.982 [+0.973, +0.990] | **+0.960 [+0.930, +0.984]** |
+| `add_d_DS` | all | 0.0000 | 0.0000 |
+
+The effect is not fitted to the split it is tested on, and the `d_DS` null is not either.
+
+**S9 (attack window) — COMPLETE**, reported as an asymmetry rather than a number: the
+**install** window is late (+0.971) and the **removal** window is mid (−0.157). Collapsing
+those to one "attack window" would hide a real structural fact.
+
+**S10 (causal objective) — COMPLETE** → [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md).
+8 candidate terms adjudicated against interventions: 2 validated, 4 killed, 2 excluded as
+unvalidated. The headline is T2: the *obvious* interpretability-derived objective — project
+onto `d_DS`, i.e. "make the state look like the hijacked state" — is **causally inert** and
+must not enter the objective. That is also the closest analogue of the temporal `repr_loss`
+the prior sprint tried to optimize into a suffix.
+
+**S14 (Qwen3 thinking) — scoped, and deliberately only half-submitted.** The non-thinking
+gate (693666) is directly comparable to Llama and is running. **Thinking mode is NOT
+submitted**, because the readout takes `scores[0]` — the probability of the *first generated
+token* — and in thinking mode that token is `<think>`. `p_concept` there would be a number
+about a control token, not about meaning, and the label readout would need enough tokens to
+get past `</think>`. Running it as-is would have produced a fifth artefact of exactly the
+kind this sprint keeps catching. §G's own wording ("capture the codeword state at the answer
+transition, first answer token") says the same thing: thinking mode needs answer-transition
+instrumentation before its numbers mean anything. Logged as the next code task rather than a
+job.
 
 ### ITER11 — 2026-07-29 — S11 gate RESOLVED: an optimization gap, not an unreachability result
 
