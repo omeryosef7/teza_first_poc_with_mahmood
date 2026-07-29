@@ -29,7 +29,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` — non-thinking ✅ | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
-| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
+| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `RUNNING` — **gate now open** | S1→S9 all pass, so §16.18's gate is satisfied. Building 4 further pairs (`grenade`/`pistol`/`cocaine`/`chlorine` — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
 ---
@@ -783,6 +783,37 @@ so this cannot be quietly forgotten.
 Verified offline before submitting: substitution carries the codeword into demos *and* query
 with no concept leakage, the judge goal correctly restores the concept, the StrongReject
 evaluator loads, and `classify` returns MALICIOUS/REJECTED/BENIGN as expected.
+
+### ITER16 — 2026-07-30 — S16 opened: is the dissociation a property of Doublespeak or of one pair?
+
+The fixed-pair chain S1→S9 passes, which satisfies §16.18's gate on scale-up. The single most
+valuable generalization test is **not** a bigger behavioral benchmark — it is whether the
+sprint's central dissociation survives a change of concept:
+
+> `add_d_Direct` installs the target reading (+0.53 mid / +0.97 late, beyond 180 controls)
+> while `add_d_DS` is **exactly inert** — does that hold for concepts other than `bomb`?
+
+If it holds on `bomb` and fails on four other concepts, it is a fact about `carrot`↔`bomb`,
+not about in-context representation hijacking, and §15 forbids reporting it as the latter.
+
+Building 4 further pairs, all single-token concepts spanning four categories, each with a
+**distinct** unrelated-source control so the specificity check is not shared across pairs:
+
+| pair | category | unrelated control |
+|---|---|---|
+| `carrot` ↔ `grenade` | explosives | cocaine |
+| `carrot` ↔ `pistol` | weapons | chlorine |
+| `carrot` ↔ `cocaine` | narcotics | pistol |
+| `carrot` ↔ `chlorine` | toxins | grenade |
+
+Codeword held fixed at `carrot` so the concept axis is isolated (§F also wants ≥5 codewords;
+S13 already covers 27 codewords on the semantic score, so the codeword axis is the better-
+covered one).
+
+`41_aggregate_pairs.py` reports the per-pair table **side by side and never pools**: a pooled
+mean would let one strong pair carry four null ones, which is precisely the
+one-pair→general-mechanism conversion §15 prohibits. It also records, per pair, whether the
+concept-specific arm exceeded its own matched-control distribution.
 
 ---
 
