@@ -48,10 +48,23 @@ SPLITS = ("dev", "heldout")
 
 
 def cos(a, b):
+    """Cosine, or NaN when either vector is degenerate.
+
+    NaN is EXPECTED and meaningful at resid_pre layer 0: that row is the static input
+    embedding, and `d_DS` there is exactly zero because DOUBLESPEAK and NEUTRAL_CODEWORD
+    contain the SAME codeword token — the hijack is purely contextual, never lexical
+    (plan §2's static-embedding vs contextual-state distinction). Callers must therefore
+    aggregate with nan-safe reductions rather than treating NaN as a failure.
+    """
     na, nb = np.linalg.norm(a), np.linalg.norm(b)
     if na < 1e-8 or nb < 1e-8:
         return float("nan")
     return float(np.dot(a, b) / (na * nb))
+
+
+def degenerate_layers(vecs):
+    """Layers where a direction is (numerically) the zero vector."""
+    return [l for l, v in enumerate(vecs) if float(np.linalg.norm(v)) < 1e-8]
 
 
 def main():
@@ -130,6 +143,8 @@ def main():
                     continue
                 diag[f"cos_Direct_DS|{split}|{c}|{p}"] = [round(cos(dd[l], ds[l]), 4)
                                                           for l in range(L)]
+                diag[f"degenerate_layers_d_DS|{split}|{c}|{p}"] = degenerate_layers(ds)
+                diag[f"degenerate_layers_d_Direct|{split}|{c}|{p}"] = degenerate_layers(dd)
                 diag[f"norm_Direct|{split}|{c}|{p}"] = [round(float(np.linalg.norm(dd[l])), 4)
                                                         for l in range(L)]
                 diag[f"norm_DS|{split}|{c}|{p}"] = [round(float(np.linalg.norm(ds[l])), 4)
@@ -168,10 +183,16 @@ def main():
         for p in poss:
             key = f"cos_Direct_DS|dev|{c}|{p}"
             if key in diag:
-                v = diag[key]
+                v = np.asarray(diag[key], dtype=float)
+                deg = diag.get(f"degenerate_layers_d_DS|dev|{c}|{p}", [])
+                if np.all(np.isnan(v)):
+                    print(f"[dir] cos(d_Direct, d_DS) {c}/{p} dev: all-degenerate")
+                    continue
                 print(f"[dir] cos(d_Direct, d_DS) {c}/{p} dev: "
-                      f"min={min(v):.3f} max={max(v):.3f} "
-                      f"argmax_layer={int(np.argmax(v))} mean={np.mean(v):.3f}")
+                      f"min={np.nanmin(v):.3f} max={np.nanmax(v):.3f} "
+                      f"argmax_layer={int(np.nanargmax(v))} mean={np.nanmean(v):.3f}"
+                      + (f"  [d_DS degenerate at layers {deg} — expected at "
+                         f"resid_pre L0: identical static embedding]" if deg else ""))
     print(f"[dir] {len(store)} directions + {len(subspaces)} subspaces -> {out_dir}")
     if missing:
         print(f"[dir] WARNING missing cells: {sorted(set(missing))[:5]}")

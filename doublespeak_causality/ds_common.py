@@ -257,6 +257,38 @@ def find_word_occurrences(tokenizer, input_ids: Sequence[int], word: str) -> Wor
     )
 
 
+DEFAULT_REQUEST_PREFIX = "Do not reason, just"
+
+
+def request_start_token(tokenizer, text: str, fallback: int,
+                        req_prefix: str = DEFAULT_REQUEST_PREFIX) -> Tuple[int, bool]:
+    """Token index where the REQUEST starts (demonstrations are everything before it).
+
+    Shared by the attention-knockout scripts (plan §11). The "F2 fix" (iter11): blocking
+    `range(0, first_idx[-1])` blocks the instruction prefix and the substituted query as
+    well as the demonstrations, which confounds "blocking demos kills the hijack" with
+    "blocking the request kills the hijack". Locating the request prefix via char->token
+    offsets keeps the two separable.
+
+    Lives here, and is called from BOTH 09 and 10, because the fix was originally applied
+    to 09 only and 10 silently kept the confounded boundary.
+
+    Returns (token_index, located) — `located` is False when the prefix was not found and
+    the caller fell back, so the caller can record the degraded condition instead of
+    silently reporting a confounded number.
+    """
+    cpos = text.rfind(req_prefix)
+    if cpos < 0:
+        return fallback, False
+    try:
+        offs = tokenizer(text, return_offsets_mapping=True,
+                         add_special_tokens=True)["offset_mapping"]
+    except Exception:
+        return fallback, False
+    idx = next((i for i, (s, e) in enumerate(offs) if s >= cpos and e > s), None)
+    return (idx, True) if idx is not None else (fallback, False)
+
+
 @dataclass
 class TargetPositions:
     """Positions to analyze for one prompt (plan §8.1: not only the codeword)."""

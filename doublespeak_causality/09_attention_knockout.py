@@ -107,16 +107,10 @@ def main():
         # request". Locate the REQUEST start (the instruction prefix, present only in the query, not
         # the demos) via char->token offsets, then block ONLY demo tokens (request intact), and add
         # the complementary REQUEST-ONLY control (block request phrasing, demos intact).
-        req_prefix = "Do not reason, just"
-        cpos = text.rfind(req_prefix)
-        req_start_tok = final_start
-        if cpos >= 0:
-            try:
-                enc = lm.tokenizer(text, return_offsets_mapping=True, add_special_tokens=True)
-                offs = enc["offset_mapping"]
-                req_start_tok = next((i for i, (s, e) in enumerate(offs) if s >= cpos and e > s), final_start)
-            except Exception:
-                req_start_tok = final_start
+        # (iter-ITER2 refactor: the boundary logic now lives in ds_common.request_start_token
+        #  and is shared with 10_layerwise_knockout.py, which had silently kept the OLD
+        #  confounded boundary. Behaviour here is unchanged.)
+        req_start_tok, req_located = dc.request_start_token(lm.tokenizer, text, final_start)
         demos_only = list(range(0, req_start_tok))                       # ONLY demo tokens
         request_only = [p for p in range(req_start_tok, seq) if p != cw_last]  # request, not demos
         gen = torch.Generator().manual_seed(args.seed)

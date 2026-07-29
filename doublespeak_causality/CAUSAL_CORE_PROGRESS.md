@@ -15,10 +15,10 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 |----|------------------|--------|------------------|
 | S0 | Audit & freeze prior results; fix overclaims (§16.1–2) | `NOT_RUN` | |
 | S1 | Phase A: fixed-pair CARROT↔BOMB semantic benchmark (§3, §16.3) | ✅ `COMPLETE` | `data/pair_benchmark/pair_carrot_bomb.json` — 800 semantic + 900 behavioral prompts, 60 paraphrases, **0 skipped**, 21/21 tests pass |
-| S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | `RUNNING` | job 693555 (smoke, `DSLIMIT=80`) |
-| S3 | Rep extraction: layers × positions × components (§16.5) | `NOT_RUN` | code ready: `32_extract_pair_reps.py` + `pair_common.py` |
-| S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | `NOT_RUN` | code ready: `33_build_directions.py` (CPU) |
-| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `NOT_RUN` | code ready: `34_intervention_sweep.py --mode layer_scan` |
+| S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | ✅ **GATE PASSED** (smoke) / `RUNNING` (full 693557) | 4/5 readouts pass **perfectly** (pos=1.00, neg=0.00): `cloze`, `one_word`, `forced_choice`, `repeat_concept`. `repeated_codeword` fails as a *label* readout by construction (free continuation, not a label) — use its probability mass instead. |
+| S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
+| S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
+| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `RUNNING` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
 | S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `NOT_RUN` | code ready: `--mode dose` / `--mode controls` |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `NOT_RUN` | |
@@ -57,7 +57,14 @@ receive only redacted labels, scalars and statistics.
 | Job ID | Stage | Script | Node | Submitted | Status | Output dir |
 |--------|-------|--------|------|-----------|--------|------------|
 | 693551 | S2 smoke | `run_pair_readout.sh` | — | 2026-07-29 | CANCELLED (unstratified `--limit` made the gate vacuous) | — |
-| 693555 | S2 smoke | `run_pair_readout.sh` `DSLIMIT=80` | n-803 | 2026-07-29 | RUNNING | `outputs/pair_readout_Llama-3.1-8B-Instruct_*` |
+| 693555 | S2 smoke | `run_pair_readout.sh` `DSLIMIT=80` | n-803 | 2026-07-29 | ✅ COMPLETE — gate passed | `outputs/pair_readout_Llama-3.1-8B-Instruct_20260729_215216_693555` |
+| 693557 | S2 full | `run_pair_readout.sh` (all 800) | n-802 | 2026-07-29 | RUNNING | `outputs/pair_readout_*_693557` |
+| 693558 | S3 `cloze` | `run_pair_reps.sh` | — | 2026-07-29 | ✅ COMPLETE | `outputs/pair_reps_*_693558` |
+| 693559 | S3 `one_word` | `run_pair_reps.sh` | — | 2026-07-29 | ✅ COMPLETE | `outputs/pair_reps_*_693559` |
+| — | S4 `cloze` | `33_build_directions.py` (CPU) | login | 2026-07-29 | ✅ COMPLETE | `outputs/pair_directions_20260729_215640_299312` |
+| — | S4 `one_word` | `33_build_directions.py` (CPU) | login | 2026-07-29 | ✅ COMPLETE | `outputs/pair_directions_20260729_215701_299521` |
+| 693570 | S5 layer_scan `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_layer_scan_*_693570` |
+| 693571 | S5 layer_scan `one_word` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_layer_scan_*_693571` |
 
 ---
 
@@ -109,10 +116,71 @@ receive only redacted labels, scalars and statistics.
 - Cross-fitting is the default: a `dev` prompt is intervened with the `heldout`
   direction and vice versa.
 
+### ITER2 — 2026-07-29 — S2 gate PASSED, S3+S4 complete, S5 running
+
+**S2 gate (job 693555, n=80 stratified smoke) — PASSED.** Four of five safe semantic
+readouts separate the controls *perfectly*:
+
+| readout | `DIRECT_CONCEPT` reads-as-concept | `NEUTRAL_CODEWORD` reads-as-concept | gate |
+|---|---|---|---|
+| `cloze` | 1.00 | 0.00 | PASS |
+| `one_word` | 1.00 | 0.00 | PASS |
+| `forced_choice` | 1.00 | 0.00 | PASS |
+| `repeat_concept` | 1.00 | 0.00 | PASS |
+| `repeated_codeword` | 0.00 | 0.00 | FAIL (by construction — free continuation, not a label; score it by probability mass instead) |
+
+**The hijack is already measurable, paired and CI-backed, at n=10 matched cells:**
+`DS − Neutral` on `p_concept` = **+0.150 [+0.062, +0.243]** (CI excludes 0).
+
+**New finding — the hijack is READOUT-DEPENDENT.** Under `cloze` ("…*carrot* refers to
+____") the model *states* the hijacked meaning (DS reads-as-concept 1.00, p_concept
+0.368). Under `one_word` ("what does *carrot* refer to?") it answers literally
+(reads-as-codeword 1.00) even though the probability mass on the concept still rises
+(0.0000 → 0.124). So the hijacked meaning is present but only *surfaces* under some
+probes. This matters methodologically: a single readout can make the effect look absent.
+Both readouts are carried through the whole causal chain from here on.
+
+**Specificity control already clean:** `UNRELATED_TARGET` (a different harmful concept
+remapped onto the same codeword) reads-as-concept 0.00 on every readout — the effect is
+not "any harmful demonstration context".
+
+**S3 (jobs 693558/693559) — COMPLETE.** 160 rows per readout, 4 components × 4 positions
+× 32 layers, **256 cells, 0 missing**.
+
+**S4 — COMPLETE, and it answers the plan's §2 question directly.**
+
+- `cos(d_Direct, d_DS)` at `resid_post` / codeword position is **low**: mean 0.279
+  (`cloze`) and 0.193 (`one_word`), range 0.10–0.49. **The two causal directions are not
+  equivalent** — independent confirmation, at the representation level, of the behavioral
+  sufficiency dissociation the prior sprint found. §2's instruction not to assume
+  `d_Direct ≡ d_DS` was correct.
+- The divergence is **position-specific**: at the *final prompt* token the same cosine is
+  0.83. So Direct and DS look alike where the request is summarised, and differ precisely
+  **at the codeword** — which is where the hijack lives.
+- **Cross-fit stability is high:** `cos(d_DS^dev, d_DS^heldout)` = 0.93–0.97 across layers,
+  on **text-disjoint** demonstration pools. The DS direction is a property of the pair,
+  not of the particular demonstration sentences.
+- **Static embeddings are untouched:** `d_DS` is *exactly zero* at `resid_pre` layer 0,
+  because DOUBLESPEAK and NEUTRAL contain the same codeword token. The hijack is purely
+  contextual, never lexical — the plan's §2 embedding/contextual-state distinction,
+  confirmed automatically by the pipeline. (This is why the cosine is NaN there; the
+  reporting is now nan-safe and records the degenerate layers explicitly.)
+
+**Third existing-code bug found (and fixed).** `10_layerwise_knockout.py:113` used
+`demo_keys = range(0, first_idx[-1])` — the *pre-F2* boundary, which blocks the
+instruction prefix and the substituted query as well as the demonstrations. The F2 fix
+had been applied to `09_attention_knockout.py` only, so the per-layer knockout result was
+computed with a confounded "demos" set. The boundary logic now lives in one place
+(`ds_common.request_start_token`, which also reports whether it actually located the
+prefix rather than silently falling back) and both scripts call it. **The affected
+per-layer knockout claim must be re-run before it is cited again** — logged under S8.
+
 ---
 
 ## Next single highest-value experiment
 
-S2 — the readout gate (job 693555). Nothing downstream is interpretable until at least one safe semantic
-readout separates `DIRECT_CONCEPT` from `NEUTRAL_CODEWORD`. Immediately after it passes: S3 rep extraction
-on the full benchmark, then S4 (CPU) and the S5 layer scan.
+S5 layer scan (jobs 693570/693571) → then S6. The layer scan says *where* adding `d_DS` vs `d_Direct` moves
+the interpretation; S6 then runs the ≥20-draw control battery and the signed-α dose response at those
+layers, which is what converts "the direction correlates with meaning" into "the direction *causes*
+meaning, reversibly, beyond any matched perturbation". Also queued behind it: re-running the per-layer
+attention knockout with the corrected demo boundary (S8).
