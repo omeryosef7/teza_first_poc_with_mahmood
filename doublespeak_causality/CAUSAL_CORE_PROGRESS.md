@@ -26,7 +26,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | ✅ `COMPLETE` | [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md) — 8 candidate terms adjudicated against interventions: **2 validated** (`d_Direct` semantic score; early-neutral retention), **4 killed** (`d_DS` projection, attention routing, component patching, single-window framing), **2 excluded as unvalidated** (refusal suppression, task retention). |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
-| S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
+| S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` | 693666 = Qwen3 **non-thinking** S2 gate (directly comparable to Llama). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `NOT_RUN` | |
@@ -84,6 +84,8 @@ receive only redacted labels, scalars and statistics.
 | 693654 | S11 simplex codeword (pre-discretize) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ CANCELLED — superseded by 693657 | — |
 | 693655 | S11 simplex **concept + discretize** | `run_pair_softprompt.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — relaxed **0.98861** → **discretized 0.00424** (0.43%) | `outputs/pair_softprompt_simplex_concept_demos_*_693655` |
 | 693656 | S11 simplex unrelated + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 0.9994 → **0.0124** | `outputs/pair_softprompt_simplex_unrelated_demos_*_693656` |
+| 693666 | S14 Qwen3 **non-thinking** S2 gate | `run_pair_readout.sh` | n-801 | 2026-07-29 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693666` |
+| 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
 | 693657 | S11 simplex codeword + discretize | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ✅ COMPLETE — 1.0000 → **0.1016** | `outputs/pair_softprompt_simplex_codeword_demos_*_693657` |
 | 693649 | S11 soft-prompt simplex unrelated (lr=0.01) | `run_pair_softprompt.sh` | n-802 | 2026-07-29 | ⚠️ INVALID — same frozen optimizer | `outputs/pair_softprompt_simplex_unrelated_demos_*_693649` |
 
@@ -686,6 +688,55 @@ Under the simplex it is the wrong control, because teaching a codeword an arbitr
 through demonstrations **is the Doublespeak premise**, not a confound. The controls that
 discriminate here are discretization retention, transfer to held-out readouts, and behavioral
 ASR.
+
+### ITER13 — 2026-07-29 — S13: codeword choice matters a lot; embedding geometry does not predict it
+
+Job 693669, 27 single-token codewords (3 dropped as multi-token), **demonstration text held
+identical across all of them**, `cloze` readout, gate-passing styles only.
+
+**Codeword choice matters — a 4.3× spread in hijack strength:**
+
+| | `ds_p_concept` |
+|---|---|
+| best carrier — `puzzle` | **0.737** |
+| `wagon` / `mango` / `harbor` | 0.594 / 0.570 / 0.556 |
+| `carrot` (this sprint's pair) | 0.547 |
+| `blanket` / `bottle` / `pillow` | 0.224 / 0.191 / 0.187 |
+| worst carrier — `ribbon` | **0.170** |
+
+min 0.170, median 0.398, max 0.737, sd 0.133. So there is a large, real effect to explain.
+
+**No static property explains it. All 15 property × outcome tests are non-significant after
+Holm (every `p_holm` = 1.000).** Best raw associations:
+
+| property → outcome | Spearman | p_raw | p_holm |
+|---|---|---|---|
+| input-embedding cosine → `ds_p_concept` | **−0.276** | 0.159 | 1.000 |
+| unembedding cosine → reads-as-concept | +0.248 | 0.215 | 1.000 |
+| input-embedding **L2** → `ds_p_concept` | **+0.186** | 0.351 | 1.000 |
+| embedding norm → `ds_p_concept` | +0.167 | 0.403 | 1.000 |
+| baseline p_concept → `ds_p_concept` | +0.115 | 0.562 | 1.000 |
+
+**Verdict on Matan's hypothesis (a codeword FARTHER from the concept is a better carrier):
+directionally consistent, statistically unsupported at n=27.** Both distance measures point
+the same way — cosine correlates *negatively* (−0.276) and L2 *positively* (+0.186) with
+hijack strength, which is the same claim expressed twice — but neither survives correction,
+and the raw p-values (0.16, 0.35) are not close. This **replicates the prior sprint's
+r = −0.18 in sign and magnitude**, now with the demonstration text held constant, so the
+earlier inconclusive read was not an artefact of unmatched demos.
+
+The practical consequence for the collaboration is clean: **codeword choice is worth
+optimizing (4.3×), but it cannot be chosen from embedding geometry — it has to be measured.**
+That is a useful negative for §8.1's selection strategy, and it is also why the prior sprint's
+codeword-selection variant gave only a directional NS +0.092.
+
+**A measurement caveat I want on the record.** The label outcome `ds_reads_as_concept` is
+near-constant (20+ of 27 codewords sit at exactly 0.83) because it has only 6 cells per
+codeword, so it takes 7 possible values and is quantization-limited. Correlations against it
+are underpowered by construction; `ds_p_concept` is continuous and is the outcome the verdict
+above rests on. The no-demo baseline is ≈1e-6 for every codeword, so none of them leans
+concept-ward before the demonstrations — the spread is genuinely about how each codeword
+*receives* the mapping.
 
 ---
 
