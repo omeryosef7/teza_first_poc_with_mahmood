@@ -86,9 +86,17 @@ blocking the **same number of random earlier tokens** (−99.7%). Per-layer: −
 | `chlorine` | toxins | +0.003 | +0.048 | +0.058 | 0.0001 |
 | `cocaine` | narcotics | +0.012 | +0.004 | +0.011 | 0.0002 |
 
+**All five pairs pass the S2 readout gate** (14–21/30 usable cells), and the *semantic hijack
+itself* replicates on every one: `DS − Neutral` reads-as-concept = +0.619 `grenade`,
++0.519 `pistol`, +0.500 `cocaine`, +0.449 `chlorine`, +0.500 `bomb`, every CI excluding zero.
+So the interventional numbers below are all measured through a certified readout.
+
 - **`d_DS` inert: 5/5.** No pair, no window.
-- **`d_Direct` installs: 4/5**, spanning **two orders of magnitude** (0.011 → 0.971). On
-  `cocaine` neither direction does anything — a null for both, not a dissociation.
+- **`d_Direct` installs: 4/5**, spanning **two orders of magnitude** (0.011 → 0.971).
+- **`cocaine` is a genuine exception, not a measurement failure.** Its readout works (hijack
+  +0.500), so the demonstrations *do* install the meaning there — yet `d_Direct` cannot
+  (+0.011). There exists a concept where the demonstrations achieve something the concept
+  direction cannot.
 - So the **qualitative asymmetry generalizes; the magnitude does not.** "Adding `d_Direct`
   installs the reading" is fair at +0.97 and an overstatement at +0.048.
 
@@ -152,11 +160,16 @@ was corrected for during this sprint's audit.
 ## 6. Limits — read before citing
 
 - **One codeword** (`carrot`) for the concept generalization; **one model** (Llama-3.1-8B) for
-  every causal number. Qwen3-14B replicates only the *behavioral* hijack so far (+0.694 vs
+  every causal number. Qwen3-14B replicates only the *semantic* hijack so far (+0.694 vs
   Llama's +0.500), not the interventions.
-- **`cocaine` is unresolved**: neither direction moves it, and the S2 readout gate for the
-  four new pairs had not landed at time of writing, so that null cannot yet be distinguished
-  from a readout failure.
+- **A readout-gate bug was found late** (2026-07-30): benchmark lexicons were hardcoded to the
+  `bomb` pair, so the four scale-up pairs' *label* gate was vacuously 0/30 until fixed. The
+  probability readout `p_concept` — which every intervention number uses — was unaffected, and
+  the gates pass cleanly on rerun. Recorded because it is the kind of thing a reader should
+  know was caught rather than assumed absent.
+- **`cocaine` is resolved and is a real exception** (its gate passed at +0.500), but it is a
+  single concept — whether "demonstrations can install what `d_Direct` cannot" is a general
+  class or a one-off is untested.
 - **The causal objective was never optimized into an attack.** The §8.5 gate found the target
   is token-achievable (the real DS demo block reaches 0.476 at the same positions) but that
   gradient relaxation retains only 0.43% of its win after discretization — an optimization
