@@ -87,7 +87,9 @@ receive only redacted labels, scalars and statistics.
 | 693666 | S14 Qwen3 **non-thinking** S2 gate | `run_pair_readout.sh` | n-801 | 2026-07-29 | ✅ COMPLETE — hijack **stronger than Llama** | `outputs/pair_readout_Qwen3-14B_*_693666` |
 | 693683 | S12 slice 1 — behavioral codeword eval | `run_pair_behcw.sh` | n-801 | 2026-07-30 | ✅ COMPLETE (132 gens, 0 judge fails) — **inversion, PROVISIONAL** | `outputs/pair_behcw_*_693683` |
 | 693698 | S12 slice 1 **rerun + NEUTRAL control arm** | `run_pair_behcw.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_behcw_*_693698` |
-| 693694 | S16 reps `carrot`↔`grenade` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693694` |
+| 693694 | S16 reps `carrot`↔`grenade` | `run_pair_reps.sh` | n-802 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693694` |
+| 693699 | S16 controls `carrot`↔`grenade` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693699` |
+| 693700 | S16 reps `carrot`↔`chlorine` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693700` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_reps_*_693696` |
 | 693669 | S13 codeword study (27 codewords) | `run_pair_codeword.sh` | — | 2026-07-29 | ✅ COMPLETE — **negative** | `outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669` |
@@ -863,6 +865,24 @@ causally inert while `d_Direct` controls the reading (S6); and now the semantic 
 *inverts* against behavioral harm. All three say the same thing — **measures of "the codeword
 means the concept" do not track attack success** — which is precisely the conversion §15
 forbids and which `PAPER_DRAFT.md` was corrected for.
+
+### ITER18 — 2026-07-30 — first S16 replication: the direction divergence reproduces on a second concept
+
+`carrot`↔`grenade` reps complete (256 cells, 0 missing) and directions built. The first
+cross-concept number is a clean replication of ITER2's central geometric fact:
+
+| pair | `cos(d_Direct, d_DS)` at the codeword, dev, mean over layers |
+|---|---|
+| `carrot`↔`bomb` | 0.279 |
+| **`carrot`↔`grenade`** | **0.277** |
+
+So the two causal directions are just as non-equivalent for a second explosives concept — the
+divergence is not a quirk of `bomb`. The interventional half (does `d_Direct` install while
+`d_DS` stays inert?) is the controls sweep now running as 693699; that is the number that
+decides whether the dissociation generalizes.
+
+Pipeline per pair is reps → directions (CPU) → controls sweep → `41_aggregate_pairs.py`.
+`pistol`/`cocaine` reps are running; `chlorine` reps submitted (693700).
 
 ---
 
