@@ -425,6 +425,16 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER72 — PAPER_DRAFT.md written (culmination; no GPU) — all numbers trace to the audited report
+With the sprint + report + all audits complete and no unblocked GPU work, produced the natural next
+deliverable: `PAPER_DRAFT.md` — a submission-oriented draft (title, abstract, intro, background, method,
+results §4.1–4.5, discussion, limitations, conclusion, reproducibility). Every quantitative claim copied
+from the audited `SPRINT_REPORT.md`/output JSONs (TOCTOU +0.846 [+0.787,+0.899]; necessity 0.549/−id 0.399/
+−rand 0.181; sufficiency mid −0.393/late −0.064; AUC 0.668; cross-model 3-sig + 4th reproduces; GCG negative
+ASR 0/refusal 0.615). Framed around the headline principle (refusal = time-of-check on early reps) with the
+two boundary results (decoding≠behavioral sufficiency; demonstration-bound). Authors can edit prose; numbers
+are stable. No jobs. Sprint deliverables now include a paper draft.
+
 ## ITER71 — 3rd ultracode audit (Workflow w4mjx6pnq, 5 reviewers→verify): 8 fixed, NO job resubmit needed
 Comprehensive benign-only audit (code/output/doc/consistency). 17 raw → 8 REAL (no HIGH). **Verified none
 require a job resubmit** (the DSWINDOWS comma bug never fired — all runs passed a SINGLE window). Fixes:
