@@ -893,6 +893,30 @@ decides whether the dissociation generalizes.
 Pipeline per pair is reps → directions (CPU) → controls sweep → `41_aggregate_pairs.py`.
 All five pairs now have reps (256 cells, 0 missing each) and directions; all four controls sweeps are running (693699 `grenade`, 693702 `chlorine`, 693704 `pistol`, 693705 `cocaine`).
 
+### ITER19 — 2026-07-30 — ⭐ the dissociation REPLICATES: `grenade` gives the same pattern as `bomb`
+
+First cross-concept **interventional** result (693699, `carrot`↔`grenade`, 11 760 rows,
+180 matched controls):
+
+| arm | early | mid | late | exceeds all 180 controls **and** material? |
+|---|---|---|---|---|
+| `add_d_Direct` | +0.003 | **+0.211** [+0.116, +0.318] | **+0.302** [+0.233, +0.369] | ✅ **yes** |
+| `add_d_DS` | +0.002 | +0.0007 | 0.0000 | ❌ no |
+| `add_d_benign` | +0.002 | +0.002 | 0.0000 | ❌ no |
+| `add_d_unrelated` | +0.001 | +0.0001 | 0.0000 | ❌ no |
+
+Same qualitative pattern as `bomb`: **`d_Direct` installs the reading, `d_DS` and every other
+remapping direction do nothing.** Magnitudes are smaller than `bomb` (mid 0.211 vs 0.533, late
+0.302 vs 0.971), so the *strength* is pair-dependent even though the *dissociation* is not.
+
+**A reporting trap worth naming.** The `d_DS` rows are flagged `significant_corrected: YES` —
+a +0.0007 effect with tight paired variance passes Holm comfortably. Statistical significance
+on an effect three orders of magnitude below the `d_Direct` effect is meaningless, and a table
+that showed only the significance column would read as "d_DS also has an effect". This is
+exactly why the analyzer requires the **conjunction** of `exceeds_all_controls` **and**
+`materially_nonzero` (|effect| ≥ 0.01), and only `d_Direct` clears it. Any write-up must use
+the conjunction, not the significance flag.
+
 ---
 
 ## Next single highest-value experiment
