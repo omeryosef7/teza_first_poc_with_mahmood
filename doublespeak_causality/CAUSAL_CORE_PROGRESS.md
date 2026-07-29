@@ -25,7 +25,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S9 | Causal attack-window estimate (§16.11) | ✅ `COMPLETE` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows **differ** — written up as an asymmetry in `CAUSAL_OBJECTIVE.md` §3 rather than collapsed to one number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | ✅ `COMPLETE` | [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md) — 8 candidate terms adjudicated against interventions: **2 validated** (`d_Direct` semantic score; early-neutral retention), **4 killed** (`d_DS` projection, attention routing, component patching, single-window framing), **2 excluded as unvalidated** (refusal suppression, task retention). |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
-| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `UNBLOCKED` — not yet started | gate resolved: the target IS token-achievable (existence proof), gradient relaxation just fails to find it. Must init from / benchmark against the real DS demo block, success = **held-out behavioral ASR** (§9), not the causal score. |
+| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `RUNNING` — slice 1 | 693683 = the §9 question in its cheapest honest form: **does selecting codewords by the SAFE semantic causal score improve HELD-OUT BEHAVIORAL malicious rate?** TOP-5 vs BOTTOM-5 vs the paper's default, paired on the same held-out paraphrases, StrongReject + MALICIOUS-first judging. The selection rule saw no behavioral data. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` — non-thinking ✅ | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
@@ -756,6 +756,33 @@ commit `0607a61`). The freeze audit's most structural finding was that `outputs/
 gitignored, so every headline number had no committed provenance. This is now closed for the
 causal-core (`pair_*`) artefacts; the prior sprint's tree still needs the same treatment
 before its own freeze.
+
+### ITER15 — 2026-07-30 — S12 slice 1 submitted: the §9 test, using S13's ranking
+
+S11 established that the causal target is token-achievable but that gradient relaxation
+cannot find it. Rather than jump straight to a full GCG build, the cheapest **honest**
+instance of demonstration-level optimization is already available: **codeword selection**
+(§8.1/§8.2). S13 ranked 27 codewords by the *safe semantic* causal score with **no behavioral
+information**, so that ranking is a selection rule derived purely from the causal quantity.
+
+Job 693683 tests whether it transfers to behavior — which is what §9 insists on:
+
+    TOP-5 by causal score   vs   BOTTOM-5   vs   the paper's default codeword
+    outcome = behavioral MALICIOUS rate, HELD-OUT paraphrases, paired per paraphrase
+    judging = StrongReject rubric + MALICIOUS-first classify (house pipeline, verbatim)
+
+Held out in two senses: the ranking never saw a behavioral outcome, and the behavioral
+paraphrase family is a different prompt distribution from the semantic readouts it was built on.
+
+**A caveat that weakens the test, recorded now rather than after seeing the result:** the
+paper's default codeword `carrot` itself ranks **5/27** on the causal score — it is *inside*
+the TOP arm. So "beat the default" is a weak comparison here; the informative contrast is
+**TOP vs BOTTOM**. The script records `default_rank_by_causal_score` and `default_in_top_arm`
+so this cannot be quietly forgotten.
+
+Verified offline before submitting: substitution carries the codeword into demos *and* query
+with no concept leakage, the judge goal correctly restores the concept, the StrongReject
+evaluator loads, and `classify` returns MALICIOUS/REJECTED/BENIGN as expected.
 
 ---
 
