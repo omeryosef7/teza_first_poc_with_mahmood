@@ -425,6 +425,19 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER63 — Level-5 first result INCONCLUSIVE (temporal objective didn't optimize) → fair re-run launched
+Corrected eval 692995 (judge_fail=0.0): **ASR none/baseline/temporal = 0/0/0**, refusal ~0.08 both. But
+diagnosing the temporal run's ITERATION_LOG: **repr_loss did NOT decrease** (0.446→0.565, min=first) while
+task_loss fell 59.6→3.76. Root cause: `--selection-mode weighted` picks argmin(total = task + λ·repr);
+at λ=0.3 with task_loss~10–60 vs repr_loss~0.5, the repr term (0.3·0.5≈0.15) is negligible → the optimizer
+chased the benign task target and never achieved the harmful-late reps. **So ASR=0 is INCONCLUSIVE about the
+mechanism** (the temporal objective was never actually optimized), NOT a clean "mechanism doesn't transfer".
+**Fair re-run 693001:** added `DSSELMODE` passthrough; `--selection-mode lexicographic` (argmin repr_loss
+s.t. task_loss≤best+eps) + λ=1.0 → directly minimizes the temporal objective. On completion: confirm
+repr_loss actually drops, then re-eval ASR (temporal_lex vs baseline). Baseline ASR=0 stands (standard GCG
+also can't jailbreak the neutralized prompts — expected, nothing harmful to elicit; coheres with the
+demonstration-driven nature of the hijack).
+
 ## ITER62 — ASR eval judge bug caught + fixed (resubmit 692995); first run was a FALSE null
 692971 completed but `judge_fail_frac=1.0` (every StrongReject score None) → the ASR=0/0/0 was an
 ARTIFACT, not a real null. Root cause: `evaluate()` returns a LIST of dicts; my judge used `r.get("score")`

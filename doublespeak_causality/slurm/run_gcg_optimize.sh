@@ -37,12 +37,13 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSFAMILY:=qwen3}"
 : "${DSMODEL:=Qwen/Qwen3-14B}"
 : "${DSNOTHINK:=1}"
+: "${DSSELMODE:=weighted}"    # weighted | constrained | lexicographic(=argmin repr_loss s.t. task feasible)
 NOTHINK_ARG=""; [ "$DSNOTHINK" = "1" ] && NOTHINK_ARG="--no-thinking"
 REPR_ARGS=""
 # reference cache only when the repr term is active (lambda>0)
 if [ "$(python -c "print(1 if float('$DSLAMBDA')>0 else 0)")" = "1" ]; then
   : "${DSCACHEDIR:?DSLAMBDA>0 requires DSCACHEDIR (mixed reference cache)}"
-  REPR_ARGS="--lambda-repr $DSLAMBDA --reference-cache-dir $DSCACHEDIR --repr-positions 3 --repr-layers 0,5,10,15,20,25,30,35"
+  REPR_ARGS="--lambda-repr $DSLAMBDA --reference-cache-dir $DSCACHEDIR --repr-positions 3 --repr-layers 0,5,10,15,20,25,30,35 --selection-mode $DSSELMODE"
 fi
 echo "=== gcg optimize: run=$DSRUNID lambda_repr=$DSLAMBDA split=$DSSPLIT steps=$DSSTEPS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
