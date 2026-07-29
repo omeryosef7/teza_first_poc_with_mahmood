@@ -18,13 +18,13 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S2 | Readout validation: Direct+ / Neutral− controls (§16.4) | ✅ **COMPLETE — GATE PASSED per-cell** | full run 693557 (800 prompts). **17/30 (readout × demo-style) cells usable.** On usable cells: `DS − Neutral` reads-as-concept **+0.500 [+0.393, +0.607]**, p_concept **+0.307 [+0.249, +0.367]**, n=84. |
 | S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
-| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | `PARTIAL` — replace arm done (clean negative), additive re-running | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
-| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | `PARTIAL` — ⭐ **controls COMPLETE** | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 running. |
+| S5 | Intervention sweeps add/remove/replace (§4, §16.7) | ✅ `COMPLETE` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
+| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | `NOT_RUN` | cross-fitting is ON by default in `34`; Holm correction wired in `35` |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | `RUNNING` | 693614 component COMPLETE (1 552 rows, all effects ≤0.019). Knockout took **two** bad boundary attempts (693613, 693618) — see ITER7; boundary now verified 36/36 offline before submitting 693623 |
-| S9 | Causal attack-window estimate (§16.11) | `NOT_RUN` | |
+| S9 | Causal attack-window estimate (§16.11) | `PARTIAL` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows differ — needs writing up as a result, not a single number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | `NOT_RUN` | |
-| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `NOT_RUN` | |
+| S11 | Continuous soft-prompt positive control (§8.5, §16.13) | `RUNNING` | 693631 (concept/demos, MAIN), 693632 (unrelated target — triviality control), 693633 (readout positions — locus control) |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `NOT_RUN` | |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | `NOT_RUN` | |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `NOT_RUN` | |
@@ -67,13 +67,17 @@ receive only redacted labels, scalars and statistics.
 | 693571 | S5 layer_scan `one_word` | `run_pair_interv.sh` | n-803 | 2026-07-29 | ✅ COMPLETE (15 390 rows) — null after Holm | `outputs/pair_interv_layer_scan_*_693571` |
 | 693595/6 | S6 dose | `run_pair_interv.sh` | n-803 | 2026-07-29 | 🔴 FAILED — argparse read `-1.0,...` as a flag | — |
 | 693597 | S5 replace `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | ✅ COMPLETE (2 760 rows) — **clean negative** | `outputs/pair_interv_replace_*_693597` |
-| 693607 | S6 dose `cloze` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693607` |
-| 693608 | S6 dose `one_word` | `run_pair_interv.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_interv_dose_*_693608` |
+| 693607 | S6 dose `cloze` | `run_pair_interv.sh` | t-806 | 2026-07-29 | ✅ COMPLETE (38 688 rows) | `outputs/pair_interv_dose_*_693607` |
+| 693608 | S6 dose `one_word` | `run_pair_interv.sh` | n-802 | 2026-07-29 | ✅ COMPLETE (38 688 rows) — replicates `cloze` | `outputs/pair_interv_dose_*_693608` |
 | 693609 | S6 controls `cloze` | `run_pair_interv.sh` | n-803 | 2026-07-29 | ✅ COMPLETE (11 760 rows) — ⭐ **main causal result** | `outputs/pair_interv_controls_*_693609` |
 | 693613 | S8 knockout | `run_pair_attn.sh` | n-804 | 2026-07-29 | ⚠️ SUPERSEDED — demo/request boundary unlocated on 216 rows | `outputs/pair_attn_knockout_*_693613` |
 | 693614 | S8 component | `run_pair_attn.sh` | n-804 | 2026-07-29 | ✅ COMPLETE (1 552 rows) | `outputs/pair_attn_component_*_693614` |
 | 693618 | S8 knockout ("boundary fixed") | — | 2026-07-29 | ⚠️ SUPERSEDED — the fix did NOT work: boundary unlocated on **6912/6948** rows | `outputs/pair_attn_knockout_*_693618` |
-| 693623 | S8 knockout (boundary verified 36/36 offline) | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693623` |
+| 693623 | S8 knockout `per_layer` (boundary verified) | `run_pair_attn.sh` | n-802 | 2026-07-29 | ✅ COMPLETE (5 796 rows, **0% unlocated**) — negative, beaten by random control | `outputs/pair_attn_knockout_*_693623` |
+| 693631 | S11 soft-prompt concept/demos | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_concept_demos_*` |
+| 693632 | S11 soft-prompt unrelated/demos (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_unrelated_demos_*` |
+| 693633 | S11 soft-prompt concept/readout (ctrl) | `run_pair_softprompt.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_softprompt_concept_readout_*` |
+| 693647 | S8 knockout `all_layers` | `run_pair_attn.sh` | — | 2026-07-29 | RUNNING | `outputs/pair_attn_knockout_*_693647` |
 
 ---
 
@@ -428,6 +432,68 @@ exactly one word..."`. Rerun submitted.
 For the record they were uniformly ~0 (largest |effect| 0.009 against a DOUBLESPEAK baseline
 of 0.474), but under a boundary where "demos" ran up to the final codeword and swallowed
 part of the readout question — so a null there says nothing about demonstration routing.
+
+### ITER8 — 2026-07-29 — ⭐ bidirectional control by `d_Direct`; `d_DS` inert on both readouts
+
+**Dose response (693607 `cloze`, 693608 `one_word`, 38 688 rows each).** Both readouts give
+the same picture, so this is not a readout artefact.
+
+`add_d_Direct` on NEUTRAL prompts (baseline p_concept ≈ 0.000), by window and signed α:
+
+| readout | window | α=−1.0 | α=−0.5 | α=+0.5 | α=+1.0 | α=+2.0 |
+|---|---|---|---|---|---|---|
+| `cloze` | early | 0.000 | 0.000 | +0.200 | +0.177 | **+0.673** |
+| `cloze` | mid | 0.000 | 0.000 | +0.357 | **+0.536** | +0.328 |
+| `cloze` | late | 0.000 | 0.000 | +0.654 | +0.973 | **+0.987** |
+| `one_word` | late | 0.000 | 0.000 | +0.088 | +0.332 | **+0.677** |
+
+Monotone in positive α (Spearman +0.81 `cloze`, +0.86 `one_word`). `mid` peaks at α=1 and
+*falls* at α=2 (over-steering); `late` saturates near ceiling.
+
+**Negative α is uninformative here, and the analyzer now says so rather than reporting a
+failed test.** The NEUTRAL baseline is already ≈0, so there is no room to push the concept
+reading *down* — every negative-α cell is identically 0.000 **by construction**. Reporting
+that as `reversible: False` would read as evidence against reversibility. `35_analyze` now
+emits `floor_limited_downward: true` and `reversible: null` for such cells, and downward
+control is measured where the score is high instead — by projecting the direction **out of a
+DOUBLESPEAK prompt**.
+
+**Downward control works, and it is `d_Direct` again** (`projout_*` on DOUBLESPEAK,
+baseline 0.215 `cloze` / 0.128 `one_word`):
+
+| arm | window | `cloze` | `one_word` |
+|---|---|---|---|
+| `projout_d_Direct` | mid | **−0.157 → −0.160** | −0.059 → −0.044 |
+| `projout_d_Direct` | late | −0.068 → −0.069 | −0.065 → −0.048 |
+| `projout_d_Direct` | early | **+0.192** | **+0.280** |
+| `projout_d_DS` | any | −0.03 … +0.04 | −0.05 … +0.01 |
+
+So `d_Direct` controls the interpretation **bidirectionally** — adding it to a Neutral prompt
+installs the reading, removing it from a Doublespeak prompt reduces it — while `d_DS` does
+**neither**, on both readouts. That is now five independent lines pointing the same way.
+
+One further result worth flagging: removing the Direct component **at early layers
+increases** the final concept reading (+0.19 / +0.28). Suppressing the concept signature
+early makes the meaning *more* readable later — which is the direction a time-of-check
+account predicts, and it is a manipulation the prior sprint never performed.
+
+**S8 attention knockout (693623, 5 796 rows, boundary 0% unlocated) — a NEGATIVE.**
+Blocking attention from the final codeword token to the demonstrations barely moves the
+reading, and is **beaten by its own count-matched random control**:
+
+| source set | effect | baseline |
+|---|---|---|
+| `random_matched` (control) | **−0.0077** [−0.0114, −0.0043] | 0.474 |
+| `demos_all` | −0.0057 [−0.0091, −0.0023] | 0.474 |
+| `request_only` (control) | +0.0032 | 0.474 |
+| `prev_codewords` | +0.0006 (NS) | 0.474 |
+
+Individual layers do show localized effects (L2 −0.072, L10 −0.060, L14 −0.049, all CI-
+excluding-0), but the aggregate is ≈ the random control. **Caveat that bounds this:** the run
+used `--granularity per_layer`, so each row blocks one layer only, whereas the prior sprint's
+knockout result blocked *all* layers simultaneously. The all-layers test is the correct
+comparison and is running (693647). Until it lands, "demonstration routing is not required"
+is **not** a claim I am making.
 
 ---
 

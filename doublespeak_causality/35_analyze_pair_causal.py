@@ -230,12 +230,29 @@ def main():
                 e = [p[1] for p in pts]
                 pos = [e[i] for i, v in enumerate(a) if v > 0]
                 neg = [e[i] for i, v in enumerate(a) if v < 0]
+                # Baseline level for this cell — needed to tell "not reversible" apart from
+                # "cannot go down". On NEUTRAL_CODEWORD prompts the concept probability is
+                # already ~0, so a negative alpha has no room to reduce it and the
+                # negative arm is identically 0 BY CONSTRUCTION. Reporting that as
+                # `reversible: False` would read as a failed reversibility test when in
+                # fact the test is uninformative in that direction. Downward control has to
+                # be measured where the score is HIGH — i.e. by projecting the direction
+                # OUT of a DOUBLESPEAK prompt (the `projout_*` arms).
+                base_lvl = [v["mean_identity"] for v in per_cell.values()
+                            if v["arm"] == arm and v["site"] == site and v["layer"] == layer]
+                b0 = float(np.mean(base_lvl)) if base_lvl else float("nan")
+                floor_limited = bool(neg and b0 < 0.01 and max(abs(x) for x in neg) < 0.01)
                 dose[f"{arm}|{layer}|{site}"] = {
-                    "alphas": a, "effects": e,
+                    "alphas": a, "effects": e, "baseline_level": round(b0, 5),
                     "spearman_alpha_effect": round(spearman(a, e), 4),
                     "J_causal": (round(float(np.mean(pos)) - float(np.mean(neg)), 5)
                                  if pos and neg else None),
-                    "reversible": bool(pos and neg and np.mean(pos) > 0 > np.mean(neg)),
+                    "monotone_positive_alpha": bool(len(pos) >= 3
+                                                    and spearman([v for v in a if v > 0],
+                                                                 pos) > 0.7),
+                    "floor_limited_downward": floor_limited,
+                    "reversible": (None if floor_limited else
+                                   bool(pos and neg and np.mean(pos) > 0 > np.mean(neg))),
                 }
 
     # ------------------------------------------------------------------ #
