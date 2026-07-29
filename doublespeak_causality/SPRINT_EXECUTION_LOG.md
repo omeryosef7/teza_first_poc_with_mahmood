@@ -425,6 +425,14 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER58 — Track B step 4 SMOKE launched (temporal-GCG optimize on Qwen3 mixed cache)
+Wrote `slurm/run_gcg_optimize.sh` (wraps `run_optimization`; TEMPORAL=lambda_repr>0 + mixed cache, BASELINE=
+lambda 0; includes `--no-filter-cand` per the BPE-tokenizer rule, `--no-thinking`, repr-layers/positions
+matching the cache). Submitted **692793** — smoke: lambda_repr=0.3, n-steps=5, split=train, on the Qwen3
+mixed cache — to validate the full path (cache lookup by benign key, repr_loss computed, checkpoints written)
+before the full runs. On smoke-pass → submit full temporal (lambda 0.3, 200 steps) + baseline (lambda 0)
+→ then `evaluate_optimized_suffixes` held-out ASR = the Level-5 test (temporal > standard?).
+
 ## ITER56 — Track A ingested (4th arch jailbreak reproduces) + Track B step 3 launched (Qwen3 caches)
 **Track A — DeepSeek-R1-Distill-Llama-8B screen DONE + ingested.** Corrected reclassify: **27/40 eligible,
 16 clean-success, 0 judge fails, DS_MALICIOUS=66** → the behavioral Doublespeak jailbreak reproduces on a
