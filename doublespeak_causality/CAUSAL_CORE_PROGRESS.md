@@ -29,7 +29,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | ✅ `COMPLETE` — correctness 100%, coverage 80% (documented limit) | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests. A further fix for the residual 20% was tried and **measured strictly worse** (96→364 failures, 100%→69% correct) and reverted — see ITER23. Remaining 20% fails **loudly**. |
-| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `PARTIAL` — 5 pairs done, gates pending | S1→S9 all pass, so §16.18's gate is satisfied. 4 further pairs built (`grenade`/`pistol`/`cocaine` ✅, `chlorine` building) — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control; **all CHECK PASSED, 0 skipped**. Reps running (693694/5/6) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
+| S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | ✅ `COMPLETE` — 5 pairs, all gated | S1→S9 all pass, so §16.18's gate is satisfied. 5 pairs across 4 harm categories, **all S2-gated** (14–21/30 cells, hijack +0.45…+0.62). **`d_DS` inert 5/5; `d_Direct` installs 4/5** (+0.011…+0.971). `cocaine` is a genuine exception, not a readout failure to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md) (self-contained hand-off summary) + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
 ---
@@ -96,7 +96,9 @@ receive only redacted labels, scalars and statistics.
 | 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — strongest `d_Direct` (mid +0.909) | `outputs/pair_interv_controls_*_693704` |
 | 693705 | S16 controls `carrot`↔`cocaine` | `run_pair_interv.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — **null for BOTH directions** | `outputs/pair_interv_controls_*_693705` |
 | 693772–693775 | S2 gates (1st attempt) | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ⚠️ VACUOUS — 0/30 cells; hardcoded lexicon bug, not a model result | — |
-| 693783–693786 | S2 gates **rerun, lexicons fixed** | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | RUNNING | — |
+| 693783–693786 | S2 gates **rerun, lexicons fixed** | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ✅ ALL PASS (14–21/30 cells; hijack +0.45…+0.62) | `outputs/pair_readout_*_69378*` |
+| 693711 | S14 Qwen3 thinking (800 rows) | `run_pair_readout.sh` | n-802 | 2026-07-30 | ⚠️ CANCELLED — ~6h projected vs 4h wall | — |
+| 693798 | S14 Qwen3 thinking (stratified 200) | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693798` |
 | ~~693773~~ | superseded S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693774~~ | superseded S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693775~~ | superseded S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
@@ -1108,6 +1110,43 @@ was regenerated and no completed result moved). Gates rerun as 693783–693786.
 and the previous iteration's note admits I did skip them the first time. Every readout needs
 its positive control *per configuration*, not once for the configuration you happened to
 develop on.
+
+### ITER25 — 2026-07-30 — ✅ gates pass on all 5 pairs; `cocaine`'s null is REAL, not a readout failure
+
+With lexicons fixed, the four scale-up gates rerun (693783–693786) and **all pass**:
+
+| pair | usable cells | `DS − Neutral` reads-as-concept |
+|---|---|---|
+| `grenade` | 17/30 | **+0.619** [+0.512, +0.726] (n=84) |
+| `pistol` | 21/30 | **+0.519** [+0.426, +0.611] (n=108) |
+| `cocaine` | 14/30 | **+0.500** [+0.389, +0.611] (n=72) |
+| `chlorine` | 17/30 | **+0.449** [+0.346, +0.564] (n=78) |
+| `bomb` (reference) | 17/30 | +0.500 [+0.393, +0.607] (n=84) |
+
+Two things follow.
+
+**1. The semantic hijack itself replicates on all five concepts** — every CI excludes zero,
+and the magnitudes are comparable to `bomb`. So Doublespeak-style remapping is not
+concept-specific at the level of "does the codeword acquire the meaning".
+
+**2. `cocaine`'s intervention null is a REAL mechanism result.** The readout demonstrably
+works for `cocaine` (14/30 usable cells, hijack +0.500), so `d_Direct` genuinely fails to
+install the reading there (+0.011) *even though the demonstrations install it fine*. That was
+the open question from ITER22, and it resolves in the more interesting direction: the final
+generalization table is
+
+- **`d_DS` inert: 5/5** — in every pair whose readout is now certified;
+- **`d_Direct` installs: 4/5**, spanning +0.011 → +0.971, with `cocaine` a genuine exception.
+
+So `dissociation_holds_in_all_pairs = False` is the honest verdict, and it is now a *finding*
+rather than an artefact: there exists a concept where the demonstrations install a meaning the
+concept direction cannot.
+
+**Also this iteration:** the Qwen3 thinking run (693711) was cancelled and resubmitted. It had
+done 100/800 rows in 57 minutes — a ~6-hour projection against a 4-hour wall, so it would have
+been killed by the time limit with nothing written. Resubmitted as **693798** with a
+stratified `--limit 200`, which keeps every (condition × readout) cell represented while
+fitting comfortably inside the window.
 
 ---
 
