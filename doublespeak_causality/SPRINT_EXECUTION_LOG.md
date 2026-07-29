@@ -425,6 +425,17 @@ edge case).**
 --reference-cache-dir cache_qwen3_mixed --lambda-repr>0` (temporal) vs `--lambda-repr 0` (baseline), small
 n-steps smoke first → then full → held-out ASR via evaluate_optimized_suffixes (Level-5 test).
 
+## ITER66 — temporal_lex ASR: suffix INCREASES refusal 8× (backfires), ASR still 0; large-eps also flat
+693115 (ASR temporal_lex vs baseline, judge_fail=0.0): ASR none/baseline/temporal = 0.077/0/0, but
+**refusal temporal=0.615 vs baseline 0.077 vs none 0.0**. The temporal suffix does NOT jailbreak — it
+increases refusal ~8× (steering toward harmful-late reps TRIGGERS the safety check rather than evading it).
+693114 (large-eps=20) at step 30: repr_loss flat again (0.4540→0.4516) — 3rd config (weighted/lex-tight/
+lex-wide) where a suffix can't reduce repr_loss. **Consolidating Level-5 negative:** (1) the temporal objective
+is not suffix-optimizable (repr_loss won't drop across all configs); (2) the attempt backfires behaviorally
+(more refusal, zero ASR). Both cohere with the demonstration-bound, TOCTOU story: harmful meaning injected
+LATE via a raw suffix hits the refusal checkpoint's residue / looks adversarial → refused; only DEMONSTRATIONS
+smuggle late-emerging meaning past it. Awaiting 693114 completion for the definitive large-eps repr curve.
+
 ## ITER65 — Lexicographic re-run also fails to optimize repr_loss → definitive large-eps check + ASR
 693001 (lexicographic λ=1.0, eps=0.01) DONE 200 steps: **repr_loss NEVER dropped below 0.4628** (first
 0.4801, last 0.5346) — the temporal objective is not achievable via a 16-token suffix under lexicographic
