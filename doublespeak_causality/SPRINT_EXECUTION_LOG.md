@@ -407,6 +407,19 @@ multi-layer window patch during generation via `ExitStack` of `LayerPatch` hooks
 late_half[16-31] for 32L; classify + goal-recovery correct). Δ_necessity per window +
 identity/random controls over the late window. Fires on 688994 completion.
 
+## ITER56 — Track A ingested (4th arch jailbreak reproduces) + Track B step 3 launched (Qwen3 caches)
+**Track A — DeepSeek-R1-Distill-Llama-8B screen DONE + ingested.** Corrected reclassify: **27/40 eligible,
+16 clean-success, 0 judge fails, DS_MALICIOUS=66** → the behavioral Doublespeak jailbreak reproduces on a
+4th model (2nd reasoning model). DS-malicious by context_len 0.22/0.26/0.20. Submitted its **TOCTOU
+sufficiency early (692757) + late (692758)** (DSTHINK=default, 400 tok, 14 bases) → 4th-architecture timing
+gradient. On ingest → `analyze_behavioral_causality --timing-dir` → add DeepSeek row to the cross-model table.
+**Track B — step 3 launched.** Generated Qwen3 manifests (38 tasks, 25/13). Wrote `slurm/run_gcg_refcache.sh`
+(wraps existing `build_reference_cache.py`; verified all CLI args match). Submitted the 2 Qwen3 caches:
+**neutral→benign (692759), direct→harmful (692760)** (layers 0,5,10,15,20,25,30,35; repr-positions 3;
+suffix-length 16; --no-thinking to match the nothink screen). On completion → `gcg_mixed_cache.py --split-layer
+18` merges them → then step 4 `run_optimization --model-family qwen3 --lambda-repr>0` vs baseline. 4 jobs
+running (A×2 + B×2), ≤6 cap OK.
+
 ## ITER54 — Track C DONE: necessity specificity is genuinely MODEST (multi-seed confirms, not artifact)
 3 early-window necessity seeds (692698/699/700, n=37 clean each) COMPLETE. delta_necessity varies 0.378/
 0.432/0.432 across seeds (CUDA greedy nondeterminism). **Self-caught a pseudo-replication trap:** pooling
