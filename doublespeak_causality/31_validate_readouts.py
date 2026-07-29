@@ -85,11 +85,24 @@ def classify_answer(text, lexicons):
 
 
 @torch.no_grad()
-def generate_with_first_scores(lm, templated_text, max_new_tokens, id_groups):
-    """Greedy-generate and return the completion plus first-token probability mass.
+def generate_with_first_scores(lm, templated_text, max_new_tokens, id_groups,
+                               answer_marker=None):
+    """Greedy-generate and return the completion plus answer-position probability mass.
 
     id_groups: {name: [token_id, ...]}. Returns p[name] = summed softmax mass of that
-    group at the FIRST generated position (the next-token-probability readout).
+    group at the scored position.
+
+    SCORED POSITION. By default this is the FIRST generated token, which is the readout the
+    whole sprint uses. That is WRONG for a thinking model: Qwen3 with thinking enabled emits
+    `<think>` as its first token, so `scores[0]` would describe a control token and not the
+    meaning. When `answer_marker` is given (e.g. "</think>"), we instead locate the first
+    generated token AFTER the marker — the first ANSWER token — and score there, which is
+    what plan §G actually asks for ("capture ... the answer transition, first answer token").
+    The returned completion is likewise the post-marker answer, so the label readout does not
+    classify the chain of thought.
+
+    Returns (completion, p, meta) where meta records which position was scored and whether
+    the marker was found, so a run that silently fell back is identifiable.
     """
     tok = lm.tokenizer(templated_text, return_tensors="pt",
                        add_special_tokens=False).to(lm.model.device)
@@ -99,22 +112,43 @@ def generate_with_first_scores(lm, templated_text, max_new_tokens, id_groups):
         eos_token_id=lm.eos_token_ids, pad_token_id=lm.tokenizer.pad_token_id,
         return_dict_in_generate=True, output_scores=True,
     )
-    probs = torch.softmax(out.scores[0][0].float(), dim=-1)
-    p = {name: float(probs[ids].sum()) for name, ids in id_groups.items()}
     gen_ids = out.sequences[0][in_len:]
-    completion = lm.tokenizer.decode(gen_ids, skip_special_tokens=True)
-    return completion, p
+    full = lm.tokenizer.decode(gen_ids, skip_special_tokens=False)
+
+    score_idx, marker_found, answer_text = 0, None, None
+    if answer_marker:
+        marker_found = answer_marker in full
+        if marker_found:
+            # first generated token whose decoded prefix already contains the marker
+            for k in range(1, len(gen_ids) + 1):
+                if answer_marker in lm.tokenizer.decode(gen_ids[:k],
+                                                        skip_special_tokens=False):
+                    score_idx = min(k, len(out.scores) - 1)
+                    break
+            answer_text = full.split(answer_marker, 1)[1]
+        else:
+            answer_text = full            # marker never emitted: record and fall back
+
+    probs = torch.softmax(out.scores[score_idx][0].float(), dim=-1)
+    p = {name: float(probs[ids].sum()) for name, ids in id_groups.items()}
+    completion = (answer_text if answer_text is not None
+                  else lm.tokenizer.decode(gen_ids, skip_special_tokens=True))
+    meta = {"scored_generated_index": int(score_idx),
+            "answer_marker": answer_marker,
+            "answer_marker_found": marker_found,
+            "n_generated": int(len(gen_ids))}
+    return completion, p, meta
 
 
 def _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
-                     max_new_tokens, think):
+                     max_new_tokens, think, answer_marker=None):
     """Greedy readout pass over every prompt; writes one scalar record per row."""
     n_done = 0
     with open(raw_path, "w") as fh:
         for r in rows_in:
             templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
-            completion, p = generate_with_first_scores(
-                lm, templated, max_new_tokens, id_groups)
+            completion, p, gmeta = generate_with_first_scores(
+                lm, templated, max_new_tokens, id_groups, answer_marker=answer_marker)
             label = classify_answer(completion, lexicons)
             fh.write(json.dumps({
                 "sid": r["sid"], "condition": r["condition"], "split": r["split"],
@@ -127,6 +161,7 @@ def _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
                 "reads_as_concept": int(label == pair["concept"]),
                 "reads_as_codeword": int(label == pair["codeword"]),
                 "reads_as_expected": int(label == r["expected_lexicon"]),
+                **gmeta,
             }) + "\n")
             n_done += 1
             if n_done % 100 == 0:
@@ -145,6 +180,11 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--enable-thinking", default=None,
                     choices=[None, "true", "false"], help="Qwen3-style thinking toggle")
+    ap.add_argument("--answer-marker", default="",
+                    help='e.g. "</think>". Score the first token AFTER this marker instead '
+                         'of the first generated token. REQUIRED for thinking models: with '
+                         'thinking on, the first generated token is <think>, so the default '
+                         'readout would describe a control token rather than meaning.')
     ap.add_argument("--reanalyze", default=None,
                     help="recompute the summary from an EXISTING run dir's "
                          "readout_raw.jsonl (no GPU, no model load)")
@@ -170,6 +210,12 @@ def main():
         rows_in = picked
 
     think = None if args.enable_thinking is None else (args.enable_thinking == "true")
+    answer_marker = args.answer_marker or None
+    if think and not answer_marker:
+        raise SystemExit(
+            "--enable-thinking true requires --answer-marker (e.g. '</think>'): the first "
+            "generated token in thinking mode is <think>, so scoring it would measure a "
+            "control token, not meaning. Refusing to produce an uninterpretable number.")
 
     if args.reanalyze:
         # Recompute the summary (gate, per-cell gate, contrasts) from an existing run's
@@ -202,7 +248,7 @@ def main():
 
         raw_path = os.path.join(out_dir, "readout_raw.jsonl")
         _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
-                         args.max_new_tokens, think)
+                         args.max_new_tokens, think, answer_marker=answer_marker)
 
     rows = [json.loads(l) for l in open(raw_path)]
 
@@ -301,6 +347,10 @@ def main():
         "thresholds": {"POS_CONTROL_MIN": POS_CONTROL_MIN,
                        "NEG_CONTROL_MAX": NEG_CONTROL_MAX},
         "single_token": single_tok,
+        "answer_marker": answer_marker,
+        "enable_thinking": args.enable_thinking,
+        "n_answer_marker_missing": sum(1 for r in rows
+                                       if r.get("answer_marker") and not r.get("answer_marker_found")),
         "n_rows": len(rows), "by_readout": by_readout,
         "gate": gate,
         "gate_pass_any": any(g["pass"] for g in gate.values()),

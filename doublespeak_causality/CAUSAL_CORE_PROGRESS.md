@@ -27,7 +27,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `PARTIAL` — slice 1 **PROVISIONAL** | 693683: the selection rule transfers **BACKWARDS** — TOP−BOTTOM = **−0.183 [−0.267, −0.083]**, n=12, CI excludes 0; per-codeword ρ = −0.488. Refusal is **0/132**, so it is not a legibility→refusal effect. **PROVISIONAL**: the high-scoring codewords are all *manufacturable objects*, so a judge may be scoring generic procedural content, not harm transfer. Rerun **693698** adds the per-codeword NEUTRAL (no-demo) eligibility arm that settles it. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
-| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `PARTIAL` — non-thinking ✅ | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). **Thinking mode is deliberately NOT submitted yet** — see ITER12: the readout scores the FIRST generated token, which in thinking mode is `<think>`, so `p_concept` would be meaningless. Needs answer-transition instrumentation first (§G). |
+| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | `PARTIAL` — correctness fixed, coverage 80% | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | `RUNNING` — **gate now open** | S1→S9 all pass, so §16.18's gate is satisfied. 4 further pairs built (`grenade`/`pistol`/`cocaine` ✅, `chlorine` building) — explosives / weapons / narcotics / toxins, each with a distinct unrelated-source control; **all CHECK PASSED, 0 skipped**. Reps running (693694/5/6) to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
@@ -88,9 +88,9 @@ receive only redacted labels, scalars and statistics.
 | 693683 | S12 slice 1 — behavioral codeword eval | `run_pair_behcw.sh` | n-801 | 2026-07-30 | ✅ COMPLETE (132 gens, 0 judge fails) — **inversion, PROVISIONAL** | `outputs/pair_behcw_*_693683` |
 | 693698 | S12 slice 1 **rerun + NEUTRAL control arm** | `run_pair_behcw.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_behcw_*_693698` |
 | 693694 | S16 reps `carrot`↔`grenade` | `run_pair_reps.sh` | n-802 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693694` |
-| 693699 | S16 controls `carrot`↔`grenade` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693699` |
+| 693699 | S16 controls `carrot`↔`grenade` | `run_pair_interv.sh` | n-801 | 2026-07-30 | ✅ COMPLETE — dissociation replicates | `outputs/pair_interv_controls_*_693699` |
 | 693700 | S16 reps `carrot`↔`chlorine` | `run_pair_reps.sh` | — | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693700` |
-| 693702 | S16 controls `carrot`↔`chlorine` | `run_pair_interv.sh` | n-802 | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693702` |
+| 693702 | S16 controls `carrot`↔`chlorine` | `run_pair_interv.sh` | n-802 | 2026-07-30 | ✅ COMPLETE — dissociation holds, effect small | `outputs/pair_interv_controls_*_693702` |
 | 693695 | S16 reps `carrot`↔`pistol` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693695` |
 | 693696 | S16 reps `carrot`↔`cocaine` | `run_pair_reps.sh` | n-804 | 2026-07-30 | ✅ COMPLETE (256 cells, 0 missing) | `outputs/pair_reps_*_693696` |
 | 693704 | S16 controls `carrot`↔`pistol` | `run_pair_interv.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693704` |
@@ -916,6 +916,33 @@ that showed only the significance column would read as "d_DS also has an effect"
 exactly why the analyzer requires the **conjunction** of `exceeds_all_controls` **and**
 `materially_nonzero` (|effect| ≥ 0.01), and only `d_Direct` clears it. Any write-up must use
 the conjunction, not the significance flag.
+
+### ITER20 — 2026-07-30 — dissociation 3/3, but effect STRENGTH varies by 20×
+
+`chlorine` controls (693702) in. Running tally of the interventional half:
+
+| pair | category | `d_Direct` mid | `d_Direct` late | `d_DS` (max, any window) | only `d_Direct` beats controls **and** is material? |
+|---|---|---|---|---|---|
+| `bomb` | explosives | **+0.533** | **+0.971** | 0.0000 | ✅ |
+| `grenade` | explosives | +0.211 | +0.302 | 0.0007 | ✅ |
+| `chlorine` | toxins | **+0.048** | **+0.058** | 0.0004 | ✅ |
+
+**The DISSOCIATION is 3/3** — in every pair, `d_Direct` is the only direction that both exceeds
+its 180-draw control distribution and is materially non-zero, while `d_DS`, `d_benign`,
+`d_unrelated` and `d_repeated` are all ≤0.0007.
+
+**But the effect STRENGTH varies by roughly 20×** (0.048 → 0.971 at late). That distinction
+matters for how this is written up:
+
+- what generalizes is the **qualitative asymmetry** — the hijacked-state direction is causally
+  inert while the concept direction is not;
+- what does **not** generalize is the *magnitude*. "Adding `d_Direct` installs the target
+  reading" is a fair description at +0.97 (`bomb`) and a considerable overstatement at +0.048
+  (`chlorine`), where it is material but small.
+
+Reporting a pooled mean across pairs would paper over exactly this, which is why
+`41_aggregate_pairs.py` prints the per-pair table and refuses to pool. `pistol` and `cocaine`
+(693704/693705) will complete the set.
 
 ---
 

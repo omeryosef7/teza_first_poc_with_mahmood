@@ -30,15 +30,17 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSMAXTOK:=8}"
 : "${DSTHINK:=}"       # empty => model default; "true"/"false" for Qwen3-style toggles
 : "${DSLIMIT:=}"       # empty => all rows
-for v in DSMODEL DSBENCH DSMAXTOK DSTHINK DSLIMIT; do
+: "${DSMARKER:=}"      # e.g. "</think>" -- REQUIRED when DSTHINK=true
+for v in DSMODEL DSBENCH DSMAXTOK DSTHINK DSLIMIT DSMARKER; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' contains a comma; sbatch --export SILENTLY TRUNCATES comma-lists."; exit 1;; esac
 done
 THINK_ARG=""; [ -n "$DSTHINK" ] && THINK_ARG="--enable-thinking $DSTHINK"
 LIMIT_ARG=""; [ -n "$DSLIMIT" ] && LIMIT_ARG="--limit $DSLIMIT"
+MARK_ARG="";  [ -n "$DSMARKER" ] && MARK_ARG="--answer-marker $DSMARKER"
 echo "=== pair readout validation: $DSMODEL bench=$DSBENCH ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/31_validate_readouts.py \
   --bench "$DSBENCH" --model "$DSMODEL" --out-root doublespeak_causality/outputs \
-  --max-new-tokens "$DSMAXTOK" $THINK_ARG $LIMIT_ARG
+  --max-new-tokens "$DSMAXTOK" $THINK_ARG $LIMIT_ARG $MARK_ARG
 echo "=== done ==="; date
