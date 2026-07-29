@@ -30,7 +30,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | ✅ `COMPLETE` — correctness 100%, coverage 80% (documented limit) | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests. A further fix for the residual 20% was tried and **measured strictly worse** (96→364 failures, 100%→69% correct) and reverted — see ITER23. Remaining 20% fails **loudly**. |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | ✅ `COMPLETE` — 5 pairs, all gated | S1→S9 all pass, so §16.18's gate is satisfied. 5 pairs across 4 harm categories, **all S2-gated** (14–21/30 cells, hijack +0.45…+0.62). **`d_DS` inert 5/5; `d_Direct` installs 4/5** (+0.011…+0.971). `cocaine` is a genuine exception, not a readout failure to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
-| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` | this file + [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md) (self-contained hand-off summary) + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
+| S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` — registry now updated | `EXPERIMENT_REGISTRY.csv` +6 causal-core rows (S1/S2/S6/S12×2/S16); this file + [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md) (self-contained hand-off summary) + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
 
 ---
 
@@ -1198,6 +1198,24 @@ generation rate. That is the honest boundary of what this session can establish,
 be recorded as such rather than papered over.
 
 The **non-thinking** Qwen3 result is unaffected and stands (hijack +0.694, ITER14).
+
+### ITER28 — 2026-07-30 — registry updated; both remaining jobs healthy mid-flight
+
+No new outputs to ingest this iteration (S12 slice 2 is in its behavior-greedy selection loop,
+which generates+judges 8 TRAIN paraphrases per candidate; Qwen3 thinking retry just started).
+Used the window for the last outstanding §16.19 item: the audit flagged that
+`EXPERIMENT_REGISTRY.csv` (39 rows, all ≤ 2026-07-27) covered **none** of the causal-core work.
+Added 6 rows — the S2 gate (693557), the main control result (693609), the dose response
+(693607), both S12 codeword-eval passes (693683/693698), and the S16 generalization
+(pair_generalization.json) — each with commit, config, key metric, and output path. CSV
+validated (45 data rows, 13 columns, parses).
+
+**Observation from the demo-selection log so far** (not yet a result — held-out scoring is
+pending): `causal_greedy` and `behavior_greedy` pick **disjoint** demonstrations. Causal picks
+{7,9,6,11,1,5} driving the semantic score to 0.92; behavior starts {3,4,…}. That the two
+objectives select different demonstrations is the mechanism behind slice 1's inversion,
+observed again at the demonstration level — but the number that matters is the held-out
+behavioral contrast, which is still running.
 
 ---
 
