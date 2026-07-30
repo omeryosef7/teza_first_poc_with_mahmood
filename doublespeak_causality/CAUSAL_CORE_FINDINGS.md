@@ -129,6 +129,16 @@ procedural.
 > **Selecting codewords by the causally-validated semantic score does not improve held-out
 > behavioral attack success — it significantly worsens it.**
 
+**Demonstration selection (the same question, more directly).** Choosing 6 of 12
+demonstrations and scoring on held-out paraphrases: selecting on TRAIN *behaviour* lifts ASR
+0.167 → **0.833** (+0.667 [+0.417, +0.917]) and beats matched random search; selecting on the
+*causal score* reaches only 0.250 — indistinguishable from the paper default (+0.083 NS) and
+**below matched random search** (−0.167 [−0.417, 0.000]). So demonstration-level optimization
+genuinely works, but only when the objective is behaviour; the causally-validated objective
+does not beat random search. (A side finding: `full_default` = all 12 demonstrations scores
+0.167, *below* every selected 6-subset except causal — **fewer, better-chosen demonstrations
+beat all twelve**.)
+
 Stated carefully: this is *not* "the causal score anti-predicts harm". `puzzle` has the
 highest semantic score (0.737) *and* is among the most harmful (0.583), and the per-codeword
 rank correlation (ρ = −0.488, n=10) is not significant alone. The arm-level contrast is

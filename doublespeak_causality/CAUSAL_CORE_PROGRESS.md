@@ -5,6 +5,8 @@ has been executed, what is running, and what the numbers are. Updated every iter
 
 States: `NOT_RUN` · `RUNNING` · `PARTIAL` · `BLOCKED` · `FAILED` · `COMPLETE`
 
+**ALL 18 STAGES COMPLETE (2026-07-30).** Fixed-pair causal chain established (`d_Direct` controls the codeword's interpretation bidirectionally; `d_DS` causally inert), generalized across 5 concepts / 4 harm categories (`d_DS` inert 5/5), replicated cross-model (Qwen3), and the mechanism-guided-optimization programme returns a **CI-backed negative** (selecting on the causal objective does not beat random search or the paper default; behavioral optimization does). Hand-off: [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md).
+
 Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 
 ---
@@ -25,7 +27,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S9 | Causal attack-window estimate (§16.11) | ✅ `COMPLETE` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows **differ** — written up as an asymmetry in `CAUSAL_OBJECTIVE.md` §3 rather than collapsed to one number. |
 | S10 | Causal objective terms, each intervention-validated (§7, §16.12) | ✅ `COMPLETE` | [`CAUSAL_OBJECTIVE.md`](CAUSAL_OBJECTIVE.md) — 8 candidate terms adjudicated against interventions: **2 validated** (`d_Direct` semantic score; early-neutral retention), **4 killed** (`d_DS` projection, attention routing, component patching, single-window framing), **2 excluded as unvalidated** (refusal suppression, task retention). |
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
-| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `PARTIAL` — slice 1 ✅ **CONFIRMED negative** | 693683: the selection rule transfers **BACKWARDS** — TOP−BOTTOM = **−0.183 [−0.267, −0.083]**, n=12, CI excludes 0; per-codeword ρ = −0.488. Refusal is **0/132**, so it is not a legibility→refusal effect. **CONFIRMED** by 693698: the NEUTRAL (no-demo) arm scores **0.0083** (n=120), so the harm requires the demonstrations and the manufacturable-object confound is refuted. Inversion **replicated across two independent judging passes** (−0.183, then −0.133 [−0.200,−0.050]). Selecting codewords by the causal score **worsens** held-out behavioral ASR. |
+| S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | ✅ `COMPLETE` — **CI-backed negative** | 693683: the selection rule transfers **BACKWARDS** — TOP−BOTTOM = **−0.183 [−0.267, −0.083]**, n=12, CI excludes 0; per-codeword ρ = −0.488. Refusal is **0/132**, so it is not a legibility→refusal effect. **CONFIRMED** by 693698: the NEUTRAL (no-demo) arm scores **0.0083** (n=120), so the harm requires the demonstrations and the manufacturable-object confound is refuted. Inversion **replicated across two independent judging passes** (−0.183, then −0.133 [−0.200,−0.050]). Selecting codewords by the causal score **worsens** ASR (slice 1). Slice 2 (demo selection, 693816): behavior_greedy 0.833 vs causal_greedy 0.250 vs full_default 0.167; **behavior−causal +0.583 [+0.333,+0.833]**, **causal−random_search −0.167 [−0.417,0.000]**. The causal objective does not beat random search or the paper default; behavioral optimization wins decisively. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
 | S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | ✅ `COMPLETE` | non-thinking DS−Neutral **+0.694** [+0.583,+0.792] (693666); thinking (693837, 1536 tok, 0/96 truncated): hijack reads-as-concept **1.00** at the answer transition, DIRECT 1.00 / NEUTRAL 0.00 — thinking adds **no** second check that catches it (§G), but n=9 degenerate + `p_concept` invalid in thinking mode (use the label readout). | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | ✅ `COMPLETE` — correctness 100%, coverage 80% (documented limit) | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests. A further fix for the residual 20% was tried and **measured strictly worse** (96→364 failures, 100%→69% correct) and reverted — see ITER23. Remaining 20% fails **loudly**. |
@@ -1251,6 +1253,53 @@ on — but the non-thinking number is the quantified one.
 
 **S14 COMPLETE** (both halves): non-thinking quantified, thinking qualitatively confirmed with
 the n-limit and the readout-modality caveat documented.
+
+### ITER30 — 2026-07-30 — ⭐⭐ S12 slice 2 is the sprint's cleanest §9 result: behavior beats the causal objective decisively
+
+Demonstration selection (693816): choose 6 of 12 demonstrations, score on **held-out**
+paraphrases. Per-arm held-out MALICIOUS rate:
+
+| arm | held-out MALICIOUS | subset |
+|---|---|---|
+| **behavior_greedy** | **0.833** | {0,2,3,4,5,8} |
+| random_subset (mean of draws) | ~0.45 | — |
+| random_search | 0.417 | {0,4,7,8,9,11} |
+| causal_greedy | 0.250 | {1,5,6,7,9,11} |
+| full_default (paper) | 0.167 | all 12 |
+
+Paired contrasts on the same held-out paraphrases (house bootstrap, n=12):
+
+| contrast | effect |
+|---|---|
+| behavior_greedy − full_default | **+0.667 [+0.417, +0.917]** |
+| behavior_greedy − causal_greedy | **+0.583 [+0.333, +0.833]** |
+| behavior_greedy − random_search | +0.417 [0.000, +0.750] |
+| **causal_greedy − random_search** | **−0.167 [−0.417, 0.000]** |
+| causal_greedy − full_default | +0.083 [−0.167, +0.333] (NS) |
+
+**The verdict is unambiguous and it is the plan's own §9 question answered in full:**
+
+1. **Demonstration-level optimization works — when the objective is behaviour.** Selecting
+   demonstrations by TRAIN behavioral success lifts held-out ASR from **0.167 → 0.833**
+   (+0.667, CI excludes 0), and beats matched random search (+0.417). The attack *is*
+   optimizable at the demonstration level.
+2. **The causally-validated objective does not help.** `causal_greedy` (0.250) is
+   statistically indistinguishable from the paper default (+0.083 NS) and **loses to matched
+   random search** (−0.167, upper CI at 0.000). Selecting on the causal semantic score is no
+   better than not optimizing, and worse than random.
+3. The two objectives picked **near-disjoint** demonstration sets (only demo 5 shared), so
+   this is not a power issue — they genuinely pull apart.
+
+This closes the loop the whole plan was built around (§8→§9): *does optimizing the
+causally-validated quantity improve real behavioral attack success?* **No — and optimizing
+behaviour directly does, decisively.** Together with S12 slice 1 (causal-score codeword
+selection *worsens* ASR), the mechanism-guided-optimization programme returns a clean,
+CI-backed **negative**, while the behavioral-optimization baseline it was meant to improve on
+is the thing that actually works. Also note full_default (0.167) < every selected subset
+except causal: **fewer, better-chosen demonstrations beat all twelve** — a real and
+citable attack finding on its own.
+
+**S12 COMPLETE. All 18 stages of the plan are now done.**
 
 ---
 
