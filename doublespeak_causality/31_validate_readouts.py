@@ -261,7 +261,21 @@ def main():
         _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
                          args.max_new_tokens, think, answer_marker=answer_marker)
 
-    rows = [json.loads(l) for l in open(raw_path)]
+    rows_all = [json.loads(l) for l in open(raw_path)]
+    # EXCLUDE marker-missing rows from all aggregation. When --answer-marker is set (thinking
+    # mode) but the marker was never emitted within max_new_tokens, the score fell back to the
+    # first generated token — the <think> control token — so that row's p_concept /
+    # reads_as_concept describe a control token, not the answer, and must not enter the gate or
+    # the DS-vs-Neutral contrast. They are kept in the raw file and counted below. (Bug found
+    # 2026-07-30; the final S14 thinking run had 0 marker-missing rows, so no reported number
+    # moves — this hardens future runs and makes a truncated run fail the gate honestly.)
+    n_marker_missing = sum(1 for r in rows_all if r.get("answer_marker") and not r.get("answer_marker_found"))
+    rows = [r for r in rows_all if not (r.get("answer_marker") and not r.get("answer_marker_found"))]
+    if answer_marker and not rows:
+        raise SystemExit(
+            f"all {len(rows_all)} rows are marker-missing (the answer marker "
+            f"{answer_marker!r} was never emitted within max_new_tokens={args.max_new_tokens}); "
+            f"the readout scored the control token on every row. Raise --max-new-tokens.")
 
     # ---- aggregate + gate ----
     def agg(sel):
@@ -360,8 +374,8 @@ def main():
         "single_token": single_tok,
         "answer_marker": answer_marker,
         "enable_thinking": args.enable_thinking,
-        "n_answer_marker_missing": sum(1 for r in rows
-                                       if r.get("answer_marker") and not r.get("answer_marker_found")),
+        "n_answer_marker_missing": n_marker_missing,
+        "n_rows_generated": len(rows_all),
         "n_rows": len(rows), "by_readout": by_readout,
         "gate": gate,
         "gate_pass_any": any(g["pass"] for g in gate.values()),

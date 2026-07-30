@@ -5,7 +5,7 @@ has been executed, what is running, and what the numbers are. Updated every iter
 
 States: `NOT_RUN` · `RUNNING` · `PARTIAL` · `BLOCKED` · `FAILED` · `COMPLETE`
 
-**ALL 18 STAGES COMPLETE (2026-07-30).** Fixed-pair causal chain established (`d_Direct` controls the codeword's interpretation bidirectionally; `d_DS` causally inert), generalized across 5 concepts / 4 harm categories (`d_DS` inert 5/5), replicated cross-model (Qwen3), and the mechanism-guided-optimization programme returns a **CI-backed negative** (selecting on the causal objective does not beat random search or the paper default; behavioral optimization does). Hand-off: [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md).
+**ALL 18 STAGES COMPLETE (2026-07-30).** **ADVERSARIAL CODE REVIEW PASSED (2026-07-30):** 12-agent review + empirical re-checks over the whole causal-core codebase found **no bug that inverts a conclusion**. One real fix changed a reported number cosmetically (control distribution was pooled across windows; corrected to 60 window-matched controls PER window, which verifies all three windows instead of one — the claim is now *stronger*). d_DS-inert confirmed 5/5 across all 15 window cells; matched-strength verified numerically (d_Direct and d_DS injected at exactly equal norm). See ITER31. Fixed-pair causal chain established (`d_Direct` controls the codeword's interpretation bidirectionally; `d_DS` causally inert), generalized across 5 concepts / 4 harm categories (`d_DS` inert 5/5), replicated cross-model (Qwen3), and the mechanism-guided-optimization programme returns a **CI-backed negative** (selecting on the causal objective does not beat random search or the paper default; behavioral optimization does). Hand-off: [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md).
 
 Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 
@@ -21,7 +21,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S3 | Rep extraction: layers × positions × components (§16.5) | ✅ `COMPLETE` ×2 | jobs 693558 (`cloze`) / 693559 (`one_word`); 160 rows each, **256 cells, 0 missing position cells**, 4 components × 4 positions × 32 layers |
 | S4 | Cross-fitted `d_Direct` / `d_DS` + subspaces (§2, §16.6) | ✅ `COMPLETE` ×2 | 160 directions + 64 PCA subspaces per readout |
 | S5 | Intervention sweeps add/remove/replace (§4, §16.7) | ✅ `COMPLETE` | jobs 693570 (`cloze`) / 693571 (`one_word`), `--mode layer_scan`, α∈{1,2}, all 32 layers, cross-fitted |
-| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 180 matched controls**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
+| S6 | Dose-response + ≥20 matched controls (§4.5, §5, §16.8) | ✅ `COMPLETE` — ⭐ | 693609: `add_d_Direct` at codeword sites **+0.533 mid / +0.971 late**, Holm-significant, **exceeds all 60 window-matched controls (180 across the three windows)**; `add_d_DS` and 3 other remap directions **exactly 0** at matched relative strength. Signed dose 693607/693608 COMPLETE: `d_Direct` controls the reading **bidirectionally** (add→install, project-out→reduce), monotone in α (Spearman +0.81/+0.86); `d_DS` inert in both directions on **both** readouts. |
 | S7 | Held-out paraphrase confirmation (§14, §16.9) | ✅ `COMPLETE` | Confirmed with directions fitted on the OPPOSITE split and **text-disjoint** demo pools: `add_d_Direct` mid **dev +0.584 / heldout +0.483**, late **+0.982 / +0.960**, all CIs excluding 0; `add_d_DS` exactly 0 on both. Holm correction applied over the layer×α grid. |
 | S8 | Attention knockout + attn-vs-MLP patching (§6, §16.10) | ✅ `COMPLETE` — **negative** | knockout at both granularities is **NOT demonstration-specific**: all-layers `demos_all` −99.9% vs count-matched `random_matched` −99.7% (693647); per-layer −0.0057 vs −0.0077 (693623). Component patching ≤0.019 (693614). Bears on the prior sprint's P6/RQ4 routing claim. |
 | S9 | Causal attack-window estimate (§16.11) | ✅ `COMPLETE` | `add_d_Direct` peaks at **late** (0.97) not mid; `projout_d_Direct` removal peaks at **mid** (−0.16). Install and remove windows **differ** — written up as an asymmetry in `CAUSAL_OBJECTIVE.md` §3 rather than collapsed to one number. |
@@ -354,7 +354,7 @@ the existing comma-truncation guard.
 ### ITER6 — 2026-07-29 — ⭐ S6 control battery: a controlled causal effect, and a sharp dissociation
 
 Job 693609 (`--mode controls`, 11 760 rows): all codeword occurrences, α as a fraction of
-the residual norm, multi-layer windows, **180 matched controls per cell** in three families.
+the residual norm, multi-layer windows, **60 window-matched controls per window** in three families.
 
 **`d_Direct` causally installs the target interpretation. `d_DS` does not — at matched
 relative strength.**
@@ -908,7 +908,7 @@ All five pairs now have reps (256 cells, 0 missing each) and directions; all fou
 First cross-concept **interventional** result (693699, `carrot`↔`grenade`, 11 760 rows,
 180 matched controls):
 
-| arm | early | mid | late | exceeds all 180 controls **and** material? |
+| arm | early | mid | late | exceeds all 60 window-matched controls **and** material? |
 |---|---|---|---|---|
 | `add_d_Direct` | +0.003 | **+0.211** [+0.116, +0.318] | **+0.302** [+0.233, +0.369] | ✅ **yes** |
 | `add_d_DS` | +0.002 | +0.0007 | 0.0000 | ❌ no |
@@ -1300,6 +1300,54 @@ except causal: **fewer, better-chosen demonstrations beat all twelve** — a rea
 citable attack finding on its own.
 
 **S12 COMPLETE. All 18 stages of the plan are now done.**
+
+### ITER31 — 2026-07-30 — adversarial code review: no conclusion-inverting bug; one number corrected (stronger)
+
+Ran a 12-agent adversarial review (5 subsystem reviewers × independent refutation) over the
+entire causal-core codebase, plus my own empirical re-checks from the saved arrays. **No bug
+was found that inverts any reported conclusion.** Seven issues surfaced; here is each and what
+was done:
+
+1. **[fixed — changes a number, makes it STRONGER] control-distribution window-collapse
+   (`35`).** In window mode all arms have `layer=None` and the window is in `group`, so the
+   control distribution keyed by `(layer,alpha,site)` pooled early/mid/late into one bucket
+   (n=180) and, because `concept_arms` was keyed by arm-name, only the *mid* window's
+   `d_Direct` was ever compared to controls. Fixed by adding `group` to the key. Re-ran all 6
+   controls analyses. Result: each window now compared to its own **60** matched controls, and
+   **all three windows** (early/mid/**late +0.971**) individually clear them — previously only
+   mid was checked. **`d_DS` non-material confirmed in all 15 cells** (5 pairs × 3 windows).
+   Docs updated: "180 matched controls" → "60 window-matched controls per window".
+2. **[fixed — stored field only] `40` pooled the NEUTRAL no-demo arm into
+   `malicious_rate_by_codeword`.** The headline TOP−BOTTOM contrast and per-arm rates were
+   always computed separately and are correct; only the persisted per-codeword field was
+   polluted in the 693698 run. Recomputed from raw — the corrected values (bottle 0.583,
+   ribbon 0.583, …) **match exactly what ITER21 reported** (I'd computed those from raw), so
+   no write-up number moves.
+3. **[fixed — no current impact] `31` scored marker-missing rows at the `<think>` token.** In
+   thinking mode, if `</think>` wasn't emitted the score fell back to the first token. The
+   final S14 run had **0/96** marker-missing, so no reported number moves; the fix now excludes
+   such rows and fails the gate honestly if a run is truncated.
+4. **[verified, recorded] `30` silently top-up-padded pools with offline template frames in
+   the real-API path.** Quantified from the shipped benchmarks via the tell-tale fixed offline
+   tails: **only `pistol`/dialogue had 2 frames (1.7%); every other pair 0; `bomb` (primary)
+   0.** Dialogue is a gate-excluded style, so those frames never enter a reported number. Added
+   an `n_offline_topups` counter + a `--check` warning so future builds surface it.
+5. **[docstring] `33` in-PCA-subspace control** spans within-DOUBLESPEAK variance, not the
+   d_DS axis — a real observation, but the control reads ~0 either way and does not touch the
+   headline. Docstring corrected to describe it accurately.
+6. **[docstring] `35` Holm** is applied over the full joint arm×site×window family (stricter
+   than the per-arm grid the docstring implied) — conservative direction, cannot create false
+   positives. Documented.
+7. **[docstring] `36` random_matched** blocks slightly fewer positions than `demos_all`; this
+   only strengthens the "not demonstration-specific" reading. Clarified.
+
+**Empirical re-checks I ran myself (independent of code reading):** (a) under relative-α,
+`d_Direct` and `d_DS` are rescaled to **exactly equal norm** at every layer — the dissociation
+is genuinely about direction; (b) `d_DS`-inert is not a no-op — identical patch path, same
+patched-position counts, `d_Direct` moves +0.97 through it. Tests: **45/45 pass** (2 new
+regression tests for the lexicon and offline-topup paths).
+
+---
 
 ---
 

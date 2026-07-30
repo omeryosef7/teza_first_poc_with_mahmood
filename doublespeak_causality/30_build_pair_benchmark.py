@@ -210,7 +210,7 @@ def build_sentence_pools(client, model, source_word, seed, offline, remap_to=Non
     substitution are kept, so every condition ends up with exactly the same number of
     demonstrations and prompt structure is not a confound across conditions.
     """
-    pools = {}
+    pools, topups = {}, {}
     for style, hint in DEMO_STYLES:
         need = 2 * MAX_DEMOS
         if offline:
@@ -228,17 +228,23 @@ def build_sentence_pools(client, model, source_word, seed, offline, remap_to=Non
                 continue
             seen.add(s.lower())
             keep.append(s)
-        if len(keep) < need:   # deterministic top-up so splits stay balanced
+        # If the model returned too few valid sentences, top up with offline template frames
+        # so splits stay balanced. In a REAL-API build this silently ships formulaic demos, so
+        # record how many were injected (n_offline_topups in _meta) and let --check warn.
+        n_topup = 0
+        if len(keep) < need:
             for s in offline_sentences(source_word, style, 3 * need):
                 if len(keep) >= need:
                     break
                 if s.lower() not in seen:
                     seen.add(s.lower())
                     keep.append(s)
+                    n_topup += 1
+        topups[style] = n_topup
         keep = keep[:need]
         assert len(keep) == need, f"{source_word}/{style}: {len(keep)}/{need} sentences"
         pools[style] = {"dev": keep[:MAX_DEMOS], "heldout": keep[MAX_DEMOS:]}
-    return pools
+    return pools, topups
 
 
 def remapped(pool, source_word, codeword):
@@ -315,13 +321,15 @@ def main():
     }
     # roles other than "codeword" are remapped onto the codeword, so their pools must be
     # pre-filtered for substitution survival (keeps all conditions exactly matched in size)
-    pools = {}
+    pools, offline_topups = {}, {}
     for role, word in sources.items():
         remap_to = None if role == "codeword" else cw
-        pools[role] = build_sentence_pools(client, args.model, word, args.seed,
-                                           args.offline, remap_to=remap_to)
+        pools[role], offline_topups[role] = build_sentence_pools(
+            client, args.model, word, args.seed, args.offline, remap_to=remap_to)
         print(f"[pair] sentence pool: role={role} styles={len(pools[role])} "
-              f"per_split={MAX_DEMOS} remap_to={remap_to}")
+              f"per_split={MAX_DEMOS} remap_to={remap_to} "
+              f"offline_topups={sum(offline_topups[role].values())}")
+    n_offline_topups = sum(sum(v.values()) for v in offline_topups.values())
 
     # ---- conditions ----
     # (name, demo_role, remap_source_or_None, probe_word, expected_lexicon, has_demos)
@@ -397,7 +405,9 @@ def main():
             "demo_counts": DEMO_COUNTS, "n_demo_styles": len(DEMO_STYLES),
             "n_readouts": len(READOUTS), "n_paraphrases": len(para),
             "n_semantic_prompts": len(semantic), "n_behavioral_prompts": len(behav),
-            "n_skipped": n_skipped, "generated_at": time.strftime("%FT%T"),
+            "n_skipped": n_skipped, "n_offline_topups": n_offline_topups,
+            "offline_topups_by_role_style": offline_topups,
+            "generated_at": time.strftime("%FT%T"),
         },
         "pair": {"concept": cc, "codeword": cw,
                  "benign_source": args.benign_source,
@@ -419,6 +429,12 @@ def main():
         assert m["n_readouts"] >= 3, "need >=3 readout templates"
         assert len(payload["conditions"]) >= 6, "need >=6 matched conditions"
         assert n_skipped == 0, f"{n_skipped} prompts skipped -> conditions are UNBALANCED"
+        # A real-API build should not silently ship formulaic offline template demos: warn
+        # (do not fail — a couple of frames in a gate-excluded style is tolerable, but it must
+        # be visible). The pistol pair in the 2026-07-30 run had 2 such frames in `dialogue`.
+        if not args.offline and n_offline_topups:
+            print(f"[pair] WARNING: {n_offline_topups} offline template demos were injected "
+                  f"(model returned too few valid sentences): {offline_topups}")
         # Every role that a readout can be scored against MUST have a lexicon, or
         # `reads_as_concept` is structurally 0 and the S2 gate is vacuous (the bug that
         # made all four scale-up pairs report 0/30 usable cells).

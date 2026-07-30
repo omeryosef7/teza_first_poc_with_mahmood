@@ -1,13 +1,13 @@
 {
  "_meta": {
   "hostname": "c-009",
-  "git_commit": "ef601550f8384f7e179a7be998b0fba2e54ac61e",
+  "git_commit": "7c2b26b73093114eded70ef32f33bbb13a0b9019",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA GeForce GTX TITAN X",
-  "timestamp": "2026-07-29T21:40:50",
+  "timestamp": "2026-07-30T07:21:04",
   "plan": "CAUSAL_CORE_PLAN.md Phase A (\u00a73)",
   "offline": true,
   "generator": null,
@@ -24,7 +24,38 @@
   "n_semantic_prompts": 800,
   "n_behavioral_prompts": 900,
   "n_skipped": 0,
-  "generated_at": "2026-07-29T21:40:50"
+  "n_offline_topups": 0,
+  "offline_topups_by_role_style": {
+   "concept": {
+    "news": 0,
+    "narrative": 0,
+    "technical": 0,
+    "dialogue": 0,
+    "academic": 0
+   },
+   "codeword": {
+    "news": 0,
+    "narrative": 0,
+    "technical": 0,
+    "dialogue": 0,
+    "academic": 0
+   },
+   "benign": {
+    "news": 0,
+    "narrative": 0,
+    "technical": 0,
+    "dialogue": 0,
+    "academic": 0
+   },
+   "unrelated": {
+    "news": 0,
+    "narrative": 0,
+    "technical": 0,
+    "dialogue": 0,
+    "academic": 0
+   }
+  },
+  "generated_at": "2026-07-30T07:21:04"
  },
  "pair": {
   "concept": "bomb",
@@ -39,13 +70,10 @@
    "explosive",
    "explosives",
    "ied",
-   "grenade",
    "detonator",
    "dynamite",
    "tnt",
    "explosion",
-   "weapon",
-   "weapons",
    "device"
   ],
   "carrot": [
@@ -71,6 +99,7 @@
   ],
   "virus": [
    "virus",
+   "viruss",
    "viruses",
    "malware",
    "worm",

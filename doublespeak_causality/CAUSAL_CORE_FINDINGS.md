@@ -46,9 +46,10 @@ Adding it at all codeword positions, α as a fraction of the residual norm:
 | mid | **+0.533** [+0.453, +0.613] | |
 | late | **+0.971** [+0.955, +0.984] | |
 
-All Holm-corrected over the layer×α grid, and all **exceed every one of 180 matched
-controls** (control mean +0.00002, max +0.0002; three families — norm-matched, orthogonal,
-in-PCA-subspace). Position-specific: adjacent token +0.013, random token +0.004. Concept-
+All Holm-corrected over the layer×α grid, and each window's effect **exceeds every one of the
+60 window-matched controls** (control mean +0.00002, max +0.0002; three families — norm-matched,
+orthogonal, in-PCA-subspace — 60 per window, 180 across the three windows). All three windows
+including the strongest late effect are individually verified. Position-specific: adjacent token +0.013, random token +0.004. Concept-
 specific: `d_benign`, `d_unrelated`, `d_repeated` all exactly 0. Monotone in α (Spearman
 +0.81/+0.86). Confirmed on **held-out** paraphrases with the direction fitted on the opposite
 split (mid +0.483, late +0.960).
@@ -91,12 +92,16 @@ itself* replicates on every one: `DS − Neutral` reads-as-concept = +0.619 `gre
 +0.519 `pistol`, +0.500 `cocaine`, +0.449 `chlorine`, +0.500 `bomb`, every CI excluding zero.
 So the interventional numbers below are all measured through a certified readout.
 
-- **`d_DS` inert: 5/5.** No pair, no window.
+- **`d_DS` inert: 5/5** — non-material in all **15** cells (5 pairs × 3 windows), each checked
+  against its own 60 window-matched controls. The load-bearing null generalizes without
+  exception.
 - **`d_Direct` installs: 4/5**, spanning **two orders of magnitude** (0.011 → 0.971).
 - **`cocaine` is a genuine exception, not a measurement failure.** Its readout works (hijack
-  +0.500), so the demonstrations *do* install the meaning there — yet `d_Direct` cannot
-  (+0.011). There exists a concept where the demonstrations achieve something the concept
-  direction cannot.
+  +0.500), so the demonstrations *do* install the meaning there — yet `d_Direct` barely moves
+  it (early 0.012, mid 0.004, late 0.011; only the early/late windows clear the 0.01
+  materiality bar, and then only just, ~85× weaker than `bomb`). So `cocaine` is best read as
+  a **floor case** — `d_Direct` effectively fails to install — rather than a strict zero.
+  There exists a concept where the demonstrations achieve what the concept direction cannot.
 - So the **qualitative asymmetry generalizes; the magnitude does not.** "Adding `d_Direct`
   installs the reading" is fair at +0.97 and an overstatement at +0.048.
 

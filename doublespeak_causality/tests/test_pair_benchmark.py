@@ -59,7 +59,8 @@ def test_carries_accepts_inflections():
 
 
 def test_offline_pools_are_split_disjoint_and_remap_safe():
-    pools = bench_mod.build_sentence_pools(None, None, "bomb", 7, True, remap_to="carrot")
+    pools, topups = bench_mod.build_sentence_pools(None, None, "bomb", 7, True, remap_to="carrot")
+    assert sum(topups.values()) == 0  # offline build fills from the template bank, not a top-up
     for style, sp in pools.items():
         assert len(sp["dev"]) == bench_mod.MAX_DEMOS
         assert len(sp["heldout"]) == bench_mod.MAX_DEMOS

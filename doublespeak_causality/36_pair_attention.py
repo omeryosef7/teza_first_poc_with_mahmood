@@ -101,6 +101,14 @@ def source_positions(lm, templated, probe, name, rng, raw_prompt=None):
     if name == "request_only":
         return [p for p in range(req_start, len(ids)) if p != cw_last], located
     if name == "random_matched":
+        # Random earlier NON-codeword tokens. NOTE: the pool excludes every codeword
+        # occurrence, so it is strictly smaller than `demos` (= range(0, req_start), which
+        # includes the codeword tokens); the block size is min(|demos|, |pool|), i.e. the
+        # random control blocks slightly FEWER positions than demos_all when the demo span
+        # contains codewords. For the reported knockout conclusion this only strengthens the
+        # "not demonstration-specific" reading (fewer random tokens do ~the same damage);
+        # if exact count-matching to demos_all is ever needed, match sizes explicitly. Not a
+        # correctness bug — the actual blocked count is recorded per row as n_blocked.
         pool = [p for p in range(0, req_start) if p not in set(hit.last_idx)]
         k = min(len(demos), len(pool))
         return sorted(rng.sample(pool, k)) if k else [], located

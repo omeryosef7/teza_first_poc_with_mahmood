@@ -118,6 +118,15 @@ def main():
         if not base_rows or not ds_rows:
             continue
         for ell in range(L):
+            # This is the WITHIN-DOUBLESPEAK centered-variance subspace: subtracting base_mu
+            # then re-centering (X - X.mean) cancels base_mu, so the SVD basis is the
+            # eigenbasis of cov(DOUBLESPEAK reps) with the mean (d_DS) axis REMOVED. The
+            # `rand_in_pca_subspace` control therefore samples the directions of DS-internal
+            # variation, NOT the d_DS mean-difference axis. That is the intended stringent
+            # control (random vectors in the space the hijacked reps actually spread over);
+            # note it does NOT contain d_DS itself. (Clarified in the 2026-07-30 review — the
+            # base_mu subtraction on the next line is mathematically redundant and kept only
+            # for readability of intent.)
             base_mu = pp[base_rows, ell, :].astype(np.float32).mean(axis=0)
             X = pp[ds_rows, ell, :].astype(np.float32) - base_mu      # [n, H]
             X = X - X.mean(axis=0, keepdims=True)

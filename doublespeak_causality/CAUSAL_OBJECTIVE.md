@@ -32,7 +32,7 @@ prompt** (baseline 0.215 `cloze`). Both halves are reported below.
 
 | # | candidate term (plan §7) | intervention evidence | verdict |
 |---|---|---|---|
-| T1 | semantic score along **`d_Direct`** at codeword positions | add on Neutral: early **+0.167**, mid **+0.533**, late **+0.971**; Holm-significant; **exceeds all 180 matched controls** (control mean +0.00002, max +0.0002); monotone in α (Spearman +0.81/+0.86); position-specific (adjacent +0.013, random token +0.004); concept-specific (3 other remap directions exactly 0). Project-out on DS: mid **−0.157**, late −0.068. | ✅ **VALIDATED — bidirectional.** The load-bearing term. |
+| T1 | semantic score along **`d_Direct`** at codeword positions | add on Neutral: early **+0.167**, mid **+0.533**, late **+0.971**; Holm-significant; **exceeds all 60 window-matched controls (180 across the three windows)** (control mean +0.00002, max +0.0002); monotone in α (Spearman +0.81/+0.86); position-specific (adjacent +0.013, random token +0.004); concept-specific (3 other remap directions exactly 0). Project-out on DS: mid **−0.157**, late −0.068. | ✅ **VALIDATED — bidirectional.** The load-bearing term. |
 | T2 | projection on the **`d_DS`** direction / DS subspace | add at matched relative strength (‖d_DS‖/‖h‖ = 0.44 vs `d_Direct` 0.69): **exactly 0.0000** at every window, on **both** readouts. Project-out of DS: −0.03…+0.04. Replacement (Neutral←DS): matched by its own shuffled-source control. | ❌ **KILLED.** The obvious objective — "make the state look like the hijacked state" — is **causally inert**. It must not appear in the objective. |
 | T3 | **early-Neutral retention** (`λ` term) | project-out `d_Direct` at **early** layers *increases* the final concept reading: **+0.192** (`cloze`) / **+0.280** (`one_word`). Adding `d_Direct` early is the *weakest* install (+0.167 vs +0.971 late) and raises the literal reading instead (p_codeword 0.008 → 0.488). | ✅ **VALIDATED**, and with the sign the plan predicted: suppressing concept content early *helps*. |
 | T4 | semantic score inside the **attack window** | install and remove windows **differ**: install peaks **late** (+0.971), removal peaks **mid** (−0.157). Mid over-steers at α=2 (+0.536 → +0.328); late saturates (+0.987). | ✅ **VALIDATED, but not a single window** — see §3. |
@@ -103,7 +103,7 @@ Per §15 this is not yet a general mechanism, and §16.18 gates scale-up on the 
 |---|---|---|
 | 1 | where do codeword and concept reps differ? | ✅ at the codeword position: `cos(d_Direct, d_DS)` = 0.28 there vs 0.83 at the final prompt token |
 | 2 | when does the codeword acquire the meaning? | ✅ purely contextual — `d_DS` is *exactly zero* at `resid_pre` L0 (identical static embedding) |
-| 3 | which intervention *causes* the target reading? | ✅ `d_Direct`, +0.533 mid / +0.971 late, beyond 180 controls |
+| 3 | which intervention *causes* the target reading? | ✅ `d_Direct`, +0.533 mid / +0.971 late, beyond all 60 window-matched controls (each window) |
 | 4 | which intervention *removes* it? | ✅ project-out `d_Direct` from DS, −0.157 mid |
 | 5 | where does attention carry the mapping? | ❌ no demonstration-specific route found (random control matches) |
 | 6 | is the causal quantity optimizable through tokens? | ⚠️ an existence proof says yes (real DS demos reach 0.476) but gradient relaxation retains only **0.43%** after discretization — an optimization gap |

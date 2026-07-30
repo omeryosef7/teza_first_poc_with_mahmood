@@ -153,8 +153,14 @@ def main():
         }
 
     # ------------------------------------------------------------------ #
-    # 2. multiple-comparison correction over the layer x alpha grid (§14)
+    # 2. multiple-comparison correction (§14)
     # ------------------------------------------------------------------ #
+    # Holm is applied over the FULL JOINT family of non-random concept cells — every
+    # (arm × site × window/layer × alpha) tested in this run, pooled — NOT per-arm. This is
+    # the STRICTER choice (larger m ⇒ harsher threshold): it can only suppress a genuine
+    # effect, never manufacture a false one, so a cell that clears it (e.g. d_Direct) is
+    # significant under an even more conservative bar than the plan's per-arm grid. Stated
+    # explicitly here because the docstring above (§14) describes the per-arm grid.
     concept_keys = [k for k, v in per_cell.items() if not v["arm"].startswith("rand_")]
     if concept_keys:
         adj = st.holm_bonferroni([per_cell[k]["p_raw"] for k in sorted(concept_keys)])
@@ -163,14 +169,23 @@ def main():
             per_cell[k]["significant_corrected"] = bool(pa < args.alpha_level)
 
     # ------------------------------------------------------------------ #
-    # 3. control DISTRIBUTION per (layer, alpha, site) — plan §5
+    # 3. control DISTRIBUTION per (layer, GROUP, alpha, site) — plan §5
     # ------------------------------------------------------------------ #
+    # The bucket key MUST include `group`. In window mode every arm has layer=None and the
+    # window is carried in `group` (early/mid/late), so keying on (layer, alpha, site) alone
+    # collapses all three windows into one bucket: their random controls get pooled (n=180
+    # instead of ~60 per window) and, worse, concept_arms is keyed by arm-name so the three
+    # windows of each concept arm overwrite each other and only ONE window (the last) is ever
+    # compared to controls — the strongest (late) d_Direct effect was never checked against a
+    # control distribution. Including `group` compares each window's concept arm only against
+    # controls injected over the SAME window. (Bug found in the 2026-07-30 adversarial review;
+    # per_cell CIs and the top-line dissociation were already correct.)
     control_dist = {}
-    for (layer, alpha, site) in sorted({(v["layer"], v["alpha"], v["site"])
-                                        for v in per_cell.values()}):
+    for (layer, group, alpha, site) in sorted(
+            {(v["layer"], v["group"], v["alpha"], v["site"]) for v in per_cell.values()}):
         ctrl = [v["effect"] for v in per_cell.values()
                 if v["arm"].startswith("rand_") and v["layer"] == layer
-                and v["alpha"] == alpha and v["site"] == site]
+                and v["group"] == group and v["alpha"] == alpha and v["site"] == site]
         if len(ctrl) < 3:
             continue
         arr = np.asarray(ctrl, float)
@@ -190,14 +205,14 @@ def main():
         for fam in ("rand_norm_matched", "rand_orthogonal", "rand_in_pca_subspace"):
             f = [v["effect"] for v in per_cell.values()
                  if v["arm"].startswith(fam) and v["layer"] == layer
-                 and v["alpha"] == alpha and v["site"] == site]
+                 and v["group"] == group and v["alpha"] == alpha and v["site"] == site]
             if f:
                 entry["by_family"][fam] = {"n": len(f), "mean": round(float(np.mean(f)), 5),
                                            "max": round(float(np.max(f)), 5)}
         entry["concept_arms"] = {}
         for v in per_cell.values():
             if v["arm"].startswith("rand_") or v["layer"] != layer \
-                    or v["alpha"] != alpha or v["site"] != site:
+                    or v["group"] != group or v["alpha"] != alpha or v["site"] != site:
                 continue
             eff = v["effect"]
             pct = float((arr < eff).mean())
@@ -211,7 +226,7 @@ def main():
                 # identically 0.0 is arithmetic, not a causal result.
                 "materially_nonzero": bool(abs(eff) >= 0.01),
             }
-        control_dist[f"{layer}|{alpha}|{site}"] = entry
+        control_dist[f"{layer}|{group}|{alpha}|{site}"] = entry
 
     # ------------------------------------------------------------------ #
     # 4. dose-response, reversibility, J_causal (§4.5, §7)
