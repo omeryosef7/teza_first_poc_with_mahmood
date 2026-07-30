@@ -24,7 +24,9 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S2 | transplant SMOKE (GPU job 694383) | DONE→BUG | pipeline perfect (faithfulness=0.0, all 6 arms resolve) but readout FLOORED — bench/reps provenance mismatch (see BUG_AND_DEVIATION_LOG B1) |
 | S2 | **PRIMARY** consistent rebuild + transplant (job 694417) | **DONE ✅** | gate passed; readout un-floored; **RESULT: context-carried (DE_context +0.20 ≈95% of TE), local state inert (IE_state≈0 equiv)** — see STAGE2_TRANSPLANT_FINDINGS.md |
 | S2 | Confirmatory seed-1 (694468) + additive positive control (694470) | RUNNING | replicate DE/IE on 2nd seed; reproduce d_Direct-installs/d_DS-inert additively on same triple |
-| S3 | Context/KV mediation + path patching | **GATE PASSED** | localize where in context; resolve cloze-readout-attends-context confound |
+| S3 | Context/KV mediation — code DONE + reviewed | DONE | `DemoStateSwap` hook + `44_kv_mediation.py` + 8 CPU tests; independent adversarial review clean; STAGE3_KV_PLAN.md |
+| S3 | KV mediation SMOKE (job 694554) | RUNNING | gates on real-model self-swap faithfulness; then ReRead_test / DE_via_demoKV headline |
+| S2 | Additive positive control (job 694473) | RUNNING | d_Direct install / d_DS inert on consistent triple |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
