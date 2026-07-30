@@ -30,6 +30,7 @@ DIR_DIR="${DIR_DIR:-$DSC/outputs/pair_directions_20260730_154944_694417}"
 NPROMPTS="${NPROMPTS:-12}"
 MODE="${MODE:-controls}"          # 'controls' (single alpha) or 'dose' (alpha sweep)
 ALPHAS="${ALPHAS:-1.0}"           # e.g. ALPHAS=1,2,4,8 with MODE=dose for the install curve
+READOUT="${READOUT:-forced_choice}"   # forced_choice has dynamic range (B3); cloze floors DIRECT
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh; conda activate "$CONDA_ENV"
@@ -46,7 +47,7 @@ cd "$DSC"
 
 echo "--- 34 --mode $MODE (add d_Direct / d_DS, alphas=$ALPHAS relative) ---"
 python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-dir "$DIR_DIR" \
-    --mode "$MODE" --readout cloze --component resid_post \
+    --mode "$MODE" --readout "$READOUT" --component resid_post \
     --dir-position codeword_last --site codeword_last \
     --layer-groups single --alpha-mode relative --alphas "$ALPHAS" \
     --n-prompts "$NPROMPTS" --splits dev,heldout --crossfit true --seed 0
