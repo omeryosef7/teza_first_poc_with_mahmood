@@ -28,6 +28,8 @@ BENCH="${BENCH:-$DSC/data/pair_benchmark/pair_carrot_bomb.json}"
 REPS_DIR="${REPS_DIR:-$DSC/outputs/pair_reps_Llama-3.1-8B-Instruct_20260730_154913_694417}"
 DIR_DIR="${DIR_DIR:-$DSC/outputs/pair_directions_20260730_154944_694417}"
 NPROMPTS="${NPROMPTS:-12}"
+MODE="${MODE:-controls}"          # 'controls' (single alpha) or 'dose' (alpha sweep)
+ALPHAS="${ALPHAS:-1.0}"           # e.g. ALPHAS=1,2,4,8 with MODE=dose for the install curve
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh; conda activate "$CONDA_ENV"
@@ -42,13 +44,13 @@ GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head 
 echo "$GPU_NAME" | grep -qi "L40S" || { echo "FATAL: GPU not L40S ($GPU_NAME)" >&2; exit 1; }
 cd "$DSC"
 
-echo "--- 34 --mode controls (add d_Direct / d_DS, alpha 1.0 relative) ---"
+echo "--- 34 --mode $MODE (add d_Direct / d_DS, alphas=$ALPHAS relative) ---"
 python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-dir "$DIR_DIR" \
-    --mode controls --readout cloze --component resid_post \
+    --mode "$MODE" --readout cloze --component resid_post \
     --dir-position codeword_last --site codeword_last \
-    --layer-groups single --alpha-mode relative --alphas 1.0 \
+    --layer-groups single --alpha-mode relative --alphas "$ALPHAS" \
     --n-prompts "$NPROMPTS" --splits dev,heldout --crossfit true --seed 0
-RUNDIR=$(ls -dt outputs/pair_interv_controls_* | head -1); echo "RUNDIR=$DSC/$RUNDIR"
+RUNDIR=$(ls -dt outputs/pair_interv_${MODE}_* | head -1); echo "RUNDIR=$DSC/$RUNDIR"
 [ -f "$RUNDIR/interv_raw.jsonl" ] || { echo "FATAL: no interv_raw.jsonl" >&2; exit 1; }
 
 echo "--- 35_analyze_pair_causal (d_Direct install / d_DS inert + control distribution) ---"
