@@ -36,6 +36,16 @@ Contrast, from data already on disk:
 
 ---
 
+## N3 — Patchscope readout: gated and CONFIRMED UNUSABLE for bomb (not a misconfiguration). **[honest negative]**
+#3 rescue (job 695115): the layer-scanned, positive-control-gated patchscope (reuse of `07.PatchscopeDecoder` + gate) was run on the forced_choice bomb transplant/KV cells. **The positive control FAILS: `pos_ctrl_max = 0.00025` (< 0.1), `positive_control_ok = False`** even after scanning all layers (best layer 25). So a *clean DIRECT bomb rep* does not decode as "bomb" through the repeat-inspection decoder (which the registry notes passes for "virus" at 0.67–0.72 — the decoder is word/pair-specific). Consequently every `ps_concept_gated ≈ 0` (C1/C2/C3), and it would be wrong to read anything into it.
+- **Correct conclusion:** the patchscope cross-check is **not achievable for this pair with this decoder** — the gate flags it unusable for a *principled* reason, not a late-layer misconfig. We therefore neither replicate nor refute the paper's "CARROT→BOMB via Patchscopes" on bomb; the **forced_choice next-token semantic readout remains the load-bearing signal** for all S2/S3/N1/N2 results. (A pair-tuned or vendored inspection prompt that passes the bomb positive control is future work; not low-hanging.)
+
+## N4 — d_Direct dose curve: small, concept-specific, NON-monotone. **[reframes B4 honestly]**
+#7 (job 695117, forced_choice, α∈{1,2,4,8}): best-layer additive `d_Direct` install (mean p_concept): α1 ≈ 0.001, α2 ≈ 0.003, α4 ≈ **0.114** (L4), α8 ≈ 0.048 (L20) — **peaks ~0.11 at α=4 then DROPS at α=8** (over-steering degrades it). So `d_Direct` is a *small, concept-specific* effect (it exceeds matched controls, B2) but **not near-ceiling and not cleanly dose-monotone** on this bench. This CONFIRMS B4 (the standing +0.971 does not reproduce) rather than rescuing it.
+- **Consequence for the paper:** the headline transplant dissociation (§3.1) does **not** depend on `d_Direct`'s magnitude — its validity controls are exact self-transplant faithfulness (0.0000, n=140) + `DE_context` (+0.35) + the clean NEUTRAL baseline, none of which involve `d_Direct`. State this explicitly to pre-empt the "your positive control is weak" objection: the positive control for "the machinery can produce a concept reading" is `DE_context` itself, not `d_Direct`.
+
+---
+
 *(Further NEXT2 items populated as they land — see NEXT2_PLAN.md.)*
 
 ### N-x — Cross-architecture (Qwen3-14B): readout gate is a clean NEGATIVE on thinking models. **[documented negative]**
