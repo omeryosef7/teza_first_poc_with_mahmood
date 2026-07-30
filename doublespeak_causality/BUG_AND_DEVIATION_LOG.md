@@ -66,3 +66,15 @@ Chronological. Each entry: what, evidence, impact, resolution.
 **Conclusion.** There is **no computational regression** in the current code — it faithfully reproduces the committed bench and the on-disk CAUSAL_CORE artifact (+0.028). The documented **+0.971 appears unbacked on disk** (deleted run, or a doc-vs-metric mislabel), consistent with the doc-vs-artifact drift class MERGED_MASTER_PLAN already flagged for CAUSAL_CORE. Flagged for Omer.
 
 **Impact on the NEW sprint (positive).** The Stage 2/3 conclusions do NOT depend on d_Direct's magnitude (their validity controls are exact self-transplant faithfulness + a strong DE_context +0.35). This finding *strengthens* the story: on the reproducible pipeline, **no local codeword intervention — full-state transplant OR additive d_Direct — installs the concept in a neutral context; only the surrounding context does.** The positive control for "the machinery can produce concept reading" is DE_context itself (+0.35), not d_Direct. Updated STAGE2 findings accordingly.
+
+---
+
+## B5 — Concurrent-run race in ds_rebuild_transplant.slurm dir capture (2026-07-30)
+
+**What.** Ran S5 generalization as 3 concurrent jobs (grenade/pistol/chlorine, 694882/3/4) sharing `outputs/`. The script captured intermediate dirs with `ls -dt outputs/pair_X_* | head -1` (newest across ALL jobs), so jobs cross-wired each other's reps/dir/rundir (694883 used 694882's reps + 694884's rundir). All 3 results INVALID.
+
+**Root cause.** `ls -dt | head -1` is not job-isolated; the dirs are named with `_${SLURM_JOB_ID}` but the glob didn't filter on it.
+
+**Fix.** Added `TAG="${SLURM_JOB_ID:-}"` and filtered every capture: `ls -dt outputs/pair_X_*${TAG} | head -1`. Concurrent runs are now isolated. Re-ran the 3 pairs. (Same racy pattern exists in ds_kv_mediation/ds_additive_control/ds_stage4_toctou but those were only ever run one-at-a-time; fix before any concurrent use.)
+
+**Lesson.** Single-pair bomb results (694691, run alone) are UNAFFECTED. Only the concurrent S5 batch was hit.
