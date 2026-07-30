@@ -32,7 +32,8 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S2 | forced_choice transplant (694691) | **DONE ✅** | CLEAN 2×3: Neutral rcv=0 all sources, DS rcv=~0.35 all sources; IE_state≈0, DE_context+0.35 (99% of TE); reading depends ONLY on context. STAGE2_TRANSPLANT_FINDINGS.md |
 | S3 | forced_choice KV mediation (694691) | **DONE ✅** | ReRead_test small (91% survives demo-KV neutralization → NOT trivial re-read); distributed (outcome C). STAGE3_KV_FINDINGS.md |
 | S2 | additive d_Direct PC (694706) | DONE→B4 | ALSO weak (+0.03, label 0.27) — NOT a regression (reproduces on-disk artifact 693571=+0.028); CAUSAL_CORE +0.971 unbacked on disk. STRENGTHENS story: no local intervention installs, only context |
-| S4 | TOCTOU factorial code (build+review workflow) | RUNNING | refusal-dir builder + 45_toctou_factorial + tests; STAGE4_PLAN.md |
+| S4 | TOCTOU factorial code + tests | DONE | 45_toctou_factorial + AllPositionProjectOut hook + refusal-dir builder; 9 CPU tests; adversarial review clean (no conclusion-inverting bug) |
+| S4 | Refusal-dir generation-validation + SLURM chain | RUNNING(agent) | validate refusal dir by generation (GATE) before factorial; then smoke+pilot |
 | S1 | SHUFFLED condition | TODO | off critical path |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
