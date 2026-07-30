@@ -132,7 +132,12 @@ def run_item(lm, dec, it, templated, readout_layer, seed):
            "sufficiency_direct_dsnorm": [], "control_random_neutral": [],
            "control_identity": [], "control_random": []}
 
-    for L in range(R + 1):                       # patch layer must be <= readout layer
+    # C1 FIX (NEXT_CAUSAL_SPRINT S0): patch layer L must be STRICTLY below the readout
+    # layer R. LayerPatch at L edits the post-block-L residual == hidden_states[L+1];
+    # the readout reads hidden_states[R+1]. At L==R the patch overwrites the readout
+    # vector itself (zero propagation), which floored necessity/sufficiency at the
+    # observational DS-Neutral gap and inflated false positives. Enforce L <= R-1.
+    for L in dc.patch_layer_sweep(R):            # L in [0, R-1]: at least one block of propagation
         neu_vec = neu_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)
         ds_vec = ds_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)
         dir_vec = dir_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)

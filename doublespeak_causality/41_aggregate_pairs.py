@@ -56,7 +56,14 @@ def main():
                          and v["site"] == "codeword_all"]
                 if not cells:
                     continue
-                c = max(cells, key=lambda v: abs(v["effect"]))
+                # C2 FIX (NEXT_CAUSAL_SPRINT S0): pick the window cell with a SIGNED max
+                # for the install arm (add_d_Direct) — max(abs) could pick a large NEGATIVE
+                # and mask a real +>=0.05 install. For the inert arm (add_d_DS) keep abs-max:
+                # the largest deviation is the strongest challenge to the inertness claim.
+                if arm == "add_d_Direct":
+                    c = max(cells, key=lambda v: v["effect"])
+                else:
+                    c = max(cells, key=lambda v: abs(v["effect"]))
                 row["windows"][f"{arm}|{win}"] = {
                     "effect": c["effect"], "lo": c["lo"], "hi": c["hi"], "n": c["n"],
                     "significant_corrected": c.get("significant_corrected"),
@@ -73,20 +80,38 @@ def main():
     def get(p, key):
         return p["windows"].get(key, {}).get("effect")
 
+    WINS = ("early", "mid", "late")
     n = len(pairs)
+
+    # C2 FIX (NEXT_CAUSAL_SPRINT S0): a MISSING cell must NEVER affirm a null. Previously
+    # `abs(get(...) or 0) < 0.05` turned every missing d_DS window into 0.0 -> "inert",
+    # so a pair with zero measured d_DS cells (e.g. sweep used a different `site`) was
+    # silently counted as inert. Now inertness is a POSITIVE claim that requires
+    # measurement: ALL THREE windows must be measured AND all |effect| < 0.05. Pairs with
+    # any missing d_DS window are quarantined into `pairs_d_DS_incomplete`, never counted.
+    def measured_windows(p, arm):
+        return [w for w in WINS if get(p, f"{arm}|{w}") is not None]
+
     direct_ok = [p for p in pairs
-                 if any((get(p, f"add_d_Direct|{w}") or 0) >= 0.05 for w in ("early", "mid", "late"))]
-    ds_inert = [p for p in pairs
-                if all(abs(get(p, f"add_d_DS|{w}") or 0) < 0.05 for w in ("early", "mid", "late"))]
+                 if any((get(p, f"add_d_Direct|{w}") is not None
+                         and get(p, f"add_d_Direct|{w}") >= 0.05) for w in WINS)]
+
+    ds_measured = [p for p in pairs if len(measured_windows(p, "add_d_DS")) == len(WINS)]
+    ds_incomplete = [p for p in pairs if len(measured_windows(p, "add_d_DS")) < len(WINS)]
+    ds_inert = [p for p in ds_measured
+                if all(abs(get(p, f"add_d_DS|{w}")) < 0.05 for w in WINS)]
 
     out = {
-        "plan": "CAUSAL_CORE_PLAN §F + §16.18 (S16)",
+        "plan": "CAUSAL_CORE_PLAN §F + §16.18 (S16); C2 fix NEXT_CAUSAL_SPRINT S0",
         "n_pairs": n,
-        "criterion_install": "max_window(add_d_Direct) >= 0.05",
-        "criterion_inert": "all windows |add_d_DS| < 0.05",
+        "criterion_install": "max_window(add_d_Direct) >= 0.05 (signed, measured cell required)",
+        "criterion_inert": "ALL THREE windows measured AND all |add_d_DS| < 0.05",
         "n_pairs_where_d_Direct_installs": len(direct_ok),
+        "n_pairs_where_d_DS_measured_all_windows": len(ds_measured),
         "n_pairs_where_d_DS_inert": len(ds_inert),
-        "dissociation_holds_in_all_pairs": bool(len(direct_ok) == n and len(ds_inert) == n),
+        "pairs_d_DS_incomplete": [p["pair"] for p in ds_incomplete],
+        "dissociation_holds_in_all_pairs": bool(
+            len(direct_ok) == n and len(ds_inert) == n and len(ds_incomplete) == 0),
         "pairs": pairs,
         "reporting_note": ("Per-pair effects are reported side by side and NOT pooled: a "
                            "pooled mean would let one strong pair carry several null ones, "
@@ -104,7 +129,9 @@ def main():
         print(f"{p['pair']:22} {f('add_d_Direct|early'):>13} {f('add_d_Direct|mid'):>11} "
               f"{f('add_d_Direct|late'):>12} {f('add_d_DS|mid'):>8} {f('add_d_DS|late'):>8}")
     print(f"\nd_Direct installs in {len(direct_ok)}/{n} pairs; "
-          f"d_DS inert in {len(ds_inert)}/{n} pairs")
+          f"d_DS inert in {len(ds_inert)}/{len(ds_measured)} FULLY-MEASURED pairs "
+          f"({len(ds_incomplete)} pairs quarantined for missing d_DS windows: "
+          f"{out['pairs_d_DS_incomplete']})")
     print(f"dissociation holds in ALL pairs: {out['dissociation_holds_in_all_pairs']}")
     print(f"-> {args.out}")
 

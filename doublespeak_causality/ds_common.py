@@ -676,6 +676,27 @@ class LayerPatch:
         return False
 
 
+def patch_layer_sweep(readout_layer: int) -> List[int]:
+    """Valid activation-patch layers for a readout taken at `readout_layer`.
+
+    Single source of truth for defects C1 (07_patchscope_readout.py) and C3
+    (05_run_activation_patching.py). A LayerPatch at layer L edits the post-block-L
+    residual == hidden_states[L+1]; a readout at layer R reads hidden_states[R+1].
+    Patching AT L==R overwrites the measured readout vector with ZERO propagation,
+    which floors necessity/sufficiency at the observational baseline gap and inflates
+    false positives. The sweep must therefore stop at R-1.
+
+    Returns [0, 1, ..., readout_layer-1]. Raises if readout_layer is too small to
+    leave any valid patch window, and asserts the readout layer is never included.
+    """
+    assert readout_layer >= 1, (
+        f"readout_layer={readout_layer} leaves no valid patch window (need >=1)")
+    layers = list(range(readout_layer))
+    assert readout_layer not in layers, (
+        f"invariant violated: readout layer {readout_layer} in patch sweep {layers}")
+    return layers
+
+
 # --------------------------------------------------------------------------- #
 # Generation (native EOS preserved) — plan §5.9
 # --------------------------------------------------------------------------- #
