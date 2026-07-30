@@ -35,9 +35,10 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S4 | TOCTOU factorial code + tests | DONE | 45_toctou_factorial + AllPositionProjectOut hook + refusal-dir builder; 9 CPU tests; adversarial review clean (no conclusion-inverting bug) |
 | S4 | Refusal-dir validation + SLURM chain | DONE | smoke 694789: Llama refuses 100% harmful (real signal); L14 validated (both gains>0); gate+factorial ran clean |
 | S4 | Multi-layer refusal ablation | DONE | Arditi all-layer project-out; L18 validated: harmful refusal 1.0→0.53 (ablate_gain 0.47), induce 0.67; both gains>0; 9/9+4/4 tests |
-| S4 | **TOCTOU full pilot (694811)** | RUNNING | ~40 items, L18 refusal dir; H5 interaction = refusal_gain(early)−refusal_gain(late), paired CI must exclude 0 |
-| S1 | SHUFFLED condition | TODO | off critical path |
-| Final | claim-to-artifact table + handoff + paper-contribution draft | TODO | after S4 |
+| S4 | **TOCTOU pilot (694811)** | **DONE ✅ POSITIVE** | INTERACTION +0.425 [+0.25,+0.60] Holm-sig; early concept→refusal (0.82, concept-specific: random/orth 0.00)→ablate→comply (0.53); late escapes. STAGE4_TOCTOU_FINDINGS.md |
+| Final | PAPER_CONTRIBUTION.md (2 new causal findings + negative + limits) | DONE | S2 dissociation + S3 + S4 TOCTOU + B4; artifact-backed, CIs verified |
+| Final | claim-to-artifact table + handoff | TODO | consolidate |
+| S1/S5/S6 | SHUFFLED / generalization / optimization | DEFERRED | off critical path; document rationale |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
