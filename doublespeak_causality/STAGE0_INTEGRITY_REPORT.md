@@ -32,7 +32,7 @@ Three fixes legitimately change committed numbers; all move in the methodologica
 
 1. **C7 (14)** — `malicious_rate` *rises* when judge failures exist (unscored ≠ benign is the correct estimator; gated by judge health).
 2. **C8 (18)** — `delta_necessity` *falls* (drops false empty-generation flips → strengthens the honest "not strictly necessary" negative).
-3. **C10 (31)** — discrete `reads_as_concept`/`answer_label` shift *toward* concept when the concept word appears. This is the **only** change that moves a number toward the hypothesis. It is principled (de-biases the null-favoring first-match rule) and affects **labels only**; `p_concept` is unchanged, so no intervention/dissociation number is affected. **→ Flagged for Omer's sign-off before any label-based number is cited.**
+3. **C10 (31)** — discrete `reads_as_concept`/`answer_label` shift *toward* concept when the concept word appears. This is the **only** change that moves a number toward the hypothesis. It is principled (de-biases the null-favoring first-match rule) and affects **labels only**; `p_concept` is unchanged, so no intervention/dissociation number is affected. **→ SIGNED OFF by Omer (2026-07-30): keep the fix.** Any label-based number recomputed with it will be marked as using the de-biased classifier.
 
 ---
 
