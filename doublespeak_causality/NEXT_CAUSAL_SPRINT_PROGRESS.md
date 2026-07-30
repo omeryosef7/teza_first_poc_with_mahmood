@@ -29,7 +29,11 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S3 | KV mediation FULL n=15 cloze (694667) | DONE | C1=0.31 (not floored); ReRead mid +0.068 (78% survives → NOT trivial re-read); random control large at early (distributed); patchscope floored under cloze |
 | S2 | d_Direct dose sweep cloze (694668) | DONE | d_Direct caps +0.096 under cloze — but that's the CLOZE FLOOR (B3), not the ceiling |
 | — | **B3: cloze floored the positive control** | KEY FIX | forced_choice: DIRECT reads 0.785 vs cloze 0.005; DS stable ~0.3. Re-running S2+S3 with forced_choice |
-| S2+S3 | forced_choice chain: transplant + KV (694691) | RUNNING | clean run with a WORKING positive control (n=15) |
+| S2 | forced_choice transplant (694691) | **DONE ✅** | CLEAN 2×3: Neutral rcv=0 all sources, DS rcv=~0.35 all sources; IE_state≈0, DE_context+0.35 (99% of TE); reading depends ONLY on context. STAGE2_TRANSPLANT_FINDINGS.md |
+| S3 | forced_choice KV mediation (694691) | **DONE ✅** | ReRead_test small (91% survives demo-KV neutralization → NOT trivial re-read); distributed (outcome C). STAGE3_KV_FINDINGS.md |
+| S2 | additive d_Direct positive control forced_choice (694706) | RUNNING | concept installable additively (vs 0 by transplant) — the key contrast |
+| S4 | Concept×refusal TOCTOU factorial | NEXT | reuse validated refusal direction + d_Direct; 2×2 pilot |
+| S1 | SHUFFLED condition | TODO | off critical path |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
