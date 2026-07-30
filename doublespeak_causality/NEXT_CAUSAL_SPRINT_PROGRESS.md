@@ -38,7 +38,10 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S4 | **TOCTOU pilot (694811)** | **DONE ✅ POSITIVE** | INTERACTION +0.425 [+0.25,+0.60] Holm-sig; early concept→refusal (0.82, concept-specific: random/orth 0.00)→ablate→comply (0.53); late escapes. STAGE4_TOCTOU_FINDINGS.md |
 | Final | PAPER_CONTRIBUTION.md (2 new causal findings + negative + limits) | DONE | S2 dissociation + S3 + S4 TOCTOU + B4; artifact-backed, CIs verified |
 | Final | claim-to-artifact table + handoff | TODO | consolidate |
-| S1/S5/S6 | SHUFFLED / generalization / optimization | DEFERRED | off critical path; document rationale |
+| S5 | **Generalization (grenade/pistol/chlorine, 694895-7)** | **DONE ✅** | dissociation replicates 4/4 pairs: IE_state≈0 + DE_context CI-excl-0 all pairs (pistol weakest). STAGE5_GENERALIZATION.md |
+| — | B5 concurrent-run race fix | DONE | job-isolated dir captures in ds_rebuild_transplant |
+| S1/S6 | SHUFFLED / optimization | DEFERRED | off critical path; documented in HANDOFF |
+| opt | S4 TOCTOU generalization + control-D cells | DEFERRED | valuable next-session extras (HANDOFF) |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
@@ -92,3 +95,16 @@ Builder `30_build_pair_benchmark.py` emits: `DIRECT_CONCEPT(+NODEMO)`, `NEUTRAL_
 - **2026-07-30** — S0 **C3–C10 fixed** (commit 7b0a834) via a 7-agent parallel workflow, each self-verified (py_compile). **Independent adversarial review agent** then cleared all diffs: no must-fix, no conclusion-inverting bug. 3 result-moving changes (14 malicious_rate↑, 18 delta_necessity↓, 31 label-shift) all conservative/correct; C10 label-shift flagged for Omer's sign-off (labels only, p_concept untouched). Wrote `STAGE0_INTEGRITY_REPORT.md` (fixes + claim-status table).
 - **2026-07-30** — S2 code done (commit 0034e20); SMOKE (694383) exposed the bench/reps mismatch (B1); rebuilt a consistent triple.
 - **2026-07-30** — S2 **PRIMARY RESULT** (job 694417): **Doublespeak reading is context-carried, not locally stored.** `IE_state ≈ 0` (equiv ±0.05) every window; `DE_context = +0.20` [+.11,+.32] ≈ 95% of `TE = +0.215`; faithfulness exactly 0.0. Answers primary question **B (context/downstream computation)**, not A. Committed `STAGE2_TRANSPLANT_FINDINGS.md` + mediation JSONs. **Stage 3 gate PASSED.** Launched confirmatory seed-1 (694468) + additive positive control (694470).
+
+---
+
+## SPRINT COMPLETE (2026-07-30)
+
+**Primary science delivered — three new causal contributions + one integrity negative, all artifact-backed and committed:**
+- **S2** the Doublespeak reading is causally carried by receiver context, not the local codeword state (IE_state≈0 equiv; DE_context +0.35 ≈99% of TE; exact faithfulness) — **generalizes 4/4 pairs (S5)**.
+- **S3** it is not a trivial demonstration re-read (91% survives demo-K/V neutralization); distributed.
+- **S4** causal TOCTOU: the refusal check is depth-gated — early concept install → refusal (0.82, concept-specific); ablating it → compliance (0.53); late escapes (0.07); interaction +0.425 Holm-sig.
+- **B4** the in-house d_Direct "+0.971 install" does NOT reproduce (no regression; doc-drift) — strengthens S2.
+Plus **S0** integrity repairs (C1–C10, reviewed) and docs: `PAPER_CONTRIBUTION.md`, `HANDOFF.md`, per-stage findings, `BUG_AND_DEVIATION_LOG.md` (B1–B5).
+
+**Deferred to a future session (documented in HANDOFF):** S4 TOCTOU generalization to more pairs; TOCTOU control-D cells; S6 optimization; a positive-control-gated patchscope; larger n/seeds. Loop stopped — the sprint's goal (a defensible NEW causal result added to the paper) is met.

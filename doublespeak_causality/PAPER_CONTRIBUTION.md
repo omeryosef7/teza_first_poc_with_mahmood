@@ -31,6 +31,8 @@ State × receiver-context transplant (forced_choice, n=30; `pair_interv_replace_
 
 **Significance vs the paper:** this is the *causal* counterpart to the paper's observational "codeword decodes as BOMB." The token *decodes* as the concept, yet its residual state is **not** what causally drives the behavior — the surrounding context's downstream computation is. This directly adjudicates the paper's open causal question (their evidence is decoding-only).
 
+**Generalization (§S5, `STAGE5_GENERALIZATION.md`):** the dissociation replicates on **4/4 pairs** across explosive/weapon/chemical harm categories (bomb, grenade, pistol, chlorine): `IE_state ≈ 0` (equivalence) and `DE_context` CI-excludes-0 (range +0.16 to +0.47, ≈95–99% of TE) on every pair. Absolute hijack strength is pair-dependent (pistol weakest at 0.16); the *structural* dissociation is universal. → a general property of Doublespeak on Llama-3.1-8B, not of CARROT↔BOMB.
+
 ### 3.2 The effect is NOT a trivial demonstration re-read, and is distributed. **[NEW]**
 Demonstration-K/V mediation (forced_choice, n=30; `pair_kv_mediation_...694691/kv_mediation_summary.json`; new `pair_common.DemoStateSwap` + `44_kv_mediation.py`):
 - **`ReRead_test` (C1−C3) is small** (mid +0.032 of a 0.35 baseline → **~91% of the reading survives** neutralizing the demonstration codeword K/V). If the readout merely re-read the demonstrations, neutralizing them would collapse it. It does not.
