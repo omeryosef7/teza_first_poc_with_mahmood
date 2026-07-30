@@ -32,3 +32,6 @@ Contrast, from data already on disk:
 ---
 
 *(N2+ populated as NEXT2 items land — see NEXT2_PLAN.md.)*
+
+### N-x — Cross-architecture (Qwen3-14B): readout gate is a clean NEGATIVE on thinking models. **[documented negative]**
+Job 695089 (`MODEL=Qwen/Qwen3-14B`, forced_choice, same bench): the readout validator **gate_pass_any=False** → the chain self-aborted before the transplant. Qwen3 is a thinking model; the next-token concept/codeword readout fires inside `<think>`, so DIRECT/DS do not separate under the non-thinking template. This is not a mechanism result — it is a **readout-transfer limitation**: the transplant method needs a thinking-aware readout (`enable_thinking=False`, or a post-`</think>` answer-position readout) before it can test Qwen3. Gemma-4 not cached (skipped). The Llama-3.1-8B dissociation therefore stands as single-architecture pending a thinking-aware readout rebuild (future work). The self-gating worked as designed (no wasted compute).
