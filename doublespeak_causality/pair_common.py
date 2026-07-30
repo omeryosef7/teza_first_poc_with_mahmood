@@ -382,6 +382,64 @@ class AttentionKnockout:
 
 
 # --------------------------------------------------------------------------- #
+# All-position / all-timestep directional ablation (S4 — TOCTOU factorial)
+# --------------------------------------------------------------------------- #
+def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0):
+    """S4: forward hook that projects `direction` out of the block output at EVERY
+    position and on EVERY forward call (prefill AND each KV-cached decode step).
+
+    Lifted from poc_stage4/run_reasoning_intervention_experiments.py:175-191 into the
+    ds_common/pair_common stack. UNLIKE ds_common.LayerPatch(mode="project_out"), which
+    edits only a FIXED set of prompt positions and skips decode steps (seq==1 rows are
+    out of range), this operates on the whole `hidden` tensor, so it also ablates the
+    direction from GENERATED tokens — required to keep a refusal axis suppressed through
+    the answer, not just on the prompt. The hook is registered on the decoder-LAYER
+    output (register_forward_hook), so `direction` lives in the post-block-L residual
+    == hidden_states[L+1]. `direction` need not be unit-norm; it is normalized here.
+    """
+    d_cpu = direction.detach().float().cpu()
+    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+
+    def hook(module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        h = output[0] if is_tuple else output
+        d = d_cpu.to(device=h.device, dtype=h.dtype)
+        proj = (h * d).sum(dim=-1, keepdim=True)          # [.., 1] over hidden
+        h = h - alpha * proj * d                          # broadcast over all positions
+        return (h,) + tuple(output[1:]) if is_tuple else h
+
+    return hook
+
+
+class AllPositionProjectOut:
+    """Context manager wrapping `make_project_out_hook` on a single decoder layer.
+
+    Registers the all-position/all-timestep projection hook on `layers[layer_idx]` and
+    removes it on exit. Composes freely with ds_common.LayerPatch (concept install) in a
+    shared ExitStack — the two hooks live on different mechanisms (this on the whole block
+    output, LayerPatch on specific positions) and both fire per forward call. LayerPatch
+    is left untouched (plan S4 §b/§g).
+    """
+
+    def __init__(self, model, layer_idx: int, direction: torch.Tensor,
+                 alpha: float = 1.0):
+        self.layer = dc._get_layers(model)[layer_idx]
+        self.layer_idx = layer_idx
+        self._hook = make_project_out_hook(direction, alpha)
+        self._handle = None
+
+    def __enter__(self):
+        self._handle = self.layer.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Forward-only semantic score (the cheap outcome used by the big sweeps)
 # --------------------------------------------------------------------------- #
 def word_first_ids(tokenizer, word: str) -> List[int]:
