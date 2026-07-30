@@ -34,8 +34,10 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S2 | additive d_Direct PC (694706) | DONE→B4 | ALSO weak (+0.03, label 0.27) — NOT a regression (reproduces on-disk artifact 693571=+0.028); CAUSAL_CORE +0.971 unbacked on disk. STRENGTHENS story: no local intervention installs, only context |
 | S4 | TOCTOU factorial code + tests | DONE | 45_toctou_factorial + AllPositionProjectOut hook + refusal-dir builder; 9 CPU tests; adversarial review clean (no conclusion-inverting bug) |
 | S4 | Refusal-dir validation + SLURM chain | DONE | smoke 694789: Llama refuses 100% harmful (real signal); L14 validated (both gains>0); gate+factorial ran clean |
-| S4 | Multi-layer refusal ablation fix | RUNNING(agent) | single-layer ablation too weak (1.0→0.933); switch to all-layer project-out (Arditi) for power, then re-validate + pilot |
+| S4 | Multi-layer refusal ablation | DONE | Arditi all-layer project-out; L18 validated: harmful refusal 1.0→0.53 (ablate_gain 0.47), induce 0.67; both gains>0; 9/9+4/4 tests |
+| S4 | **TOCTOU full pilot (694811)** | RUNNING | ~40 items, L18 refusal dir; H5 interaction = refusal_gain(early)−refusal_gain(late), paired CI must exclude 0 |
 | S1 | SHUFFLED condition | TODO | off critical path |
+| Final | claim-to-artifact table + handoff + paper-contribution draft | TODO | after S4 |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
