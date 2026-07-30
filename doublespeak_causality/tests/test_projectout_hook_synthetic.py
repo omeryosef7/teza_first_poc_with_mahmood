@@ -103,9 +103,61 @@ def test_hook_removed_after_context():
     assert torch.allclose(out, x), "hook must be removed on __exit__ (no projection)"
 
 
+def test_multilayer_zeroes_every_layer():
+    """AllPositionProjectOutMultiLayer over [0..n) zeroes the SAME direction at EVERY
+    layer's output (the standard Arditi et al. all-layer ablation)."""
+    n = 4
+    stack = ToyStack(n_layers=n, hidden=6)
+    d = torch.tensor([0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+    with pc.AllPositionProjectOutMultiLayer(stack, list(range(n)), d):
+        for li in range(n):
+            x = torch.randn(1, 5, 6) + 2.0 * d      # d-component present at this layer
+            assert (_comp(x, d).abs() > 1e-3).all()
+            out = stack.call_layer(li, x)
+            assert torch.allclose(_comp(out, d), torch.zeros(1, 5), atol=1e-5), \
+                f"d-component must be ~0 at every position of layer {li}"
+
+
+def test_multilayer_subset_only_targets():
+    """Only the layers in `layer_idxs` project out; untargeted layers pass through."""
+    stack = ToyStack(n_layers=3, hidden=4)
+    d = torch.tensor([1.0, 0.0, 0.0, 0.0])
+    x = torch.randn(1, 3, 4) + 2.0 * d
+    with pc.AllPositionProjectOutMultiLayer(stack, [0, 2], d):
+        out0 = stack.call_layer(0, x)
+        out1 = stack.call_layer(1, x)
+        out2 = stack.call_layer(2, x)
+    assert torch.allclose(_comp(out0, d), torch.zeros(1, 3), atol=1e-5)
+    assert torch.allclose(_comp(out2, d), torch.zeros(1, 3), atol=1e-5)
+    assert torch.allclose(out1, x), "untargeted layer 1 must be unmodified"
+
+
+def test_multilayer_hooks_removed_after_context():
+    stack = ToyStack(n_layers=3, hidden=4)
+    d = torch.tensor([1.0, 0.0, 0.0, 0.0])
+    x = torch.randn(1, 3, 4) + d
+    with pc.AllPositionProjectOutMultiLayer(stack, [0, 1, 2], d):
+        pass
+    for li in range(3):
+        assert torch.allclose(stack.call_layer(li, x), x), \
+            f"all handles must be removed on __exit__ (layer {li})"
+
+
+def test_multilayer_bad_index_raises():
+    stack = ToyStack(n_layers=2, hidden=4)
+    d = torch.tensor([1.0, 0.0, 0.0, 0.0])
+    try:
+        pc.AllPositionProjectOutMultiLayer(stack, [0, 5], d)
+    except IndexError:
+        return
+    raise AssertionError("out-of-range layer index must raise IndexError")
+
+
 TESTS = [test_all_positions_zeroed_prefill, test_decode_step_zeroed,
          test_compose_with_layerpatch_add, test_alpha_partial_projection,
-         test_hook_removed_after_context]
+         test_hook_removed_after_context,
+         test_multilayer_zeroes_every_layer, test_multilayer_subset_only_targets,
+         test_multilayer_hooks_removed_after_context, test_multilayer_bad_index_raises]
 
 if __name__ == "__main__":
     fails = 0

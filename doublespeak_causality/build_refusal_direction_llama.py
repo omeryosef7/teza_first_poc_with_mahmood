@@ -137,22 +137,28 @@ def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
                    induce_alpha, max_new_tokens):
     """Sign-correctness of v_refusal[L] by GENERATION (scalars only; no completions kept).
 
-      ABLATE arm (harmful `direct`): project v out at EVERY position/timestep
-        (pair_common.AllPositionProjectOut) -> should LOWER refusal / raise compliance.
+      ABLATE arm (harmful `direct`): project v out at EVERY position/timestep on EVERY
+        layer (pair_common.AllPositionProjectOutMultiLayer, the standard Arditi et al.
+        directional ablation) -> should LOWER refusal / raise compliance. This measures
+        the SAME multi-layer ablation the TOCTOU factorial applies, not a single-layer
+        projection at L. INDUCE below stays single-layer (add at the source layer L),
+        since induction only needs the axis written where it was fit.
         ablate_gain = refusal_rate_baseline_harmful - refusal_rate_ablated   (want > 0)
-      INDUCE arm (benign `neutral`): ADD +alpha*v at all prompt positions
+      INDUCE arm (benign `neutral`): ADD +alpha*v at all prompt positions of layer L
         (ds_common.LayerPatch mode="add") -> should RAISE refusal.
         induce_gain = refusal_rate_added - refusal_rate_baseline_neutral      (want > 0)
       score = ablate_gain + induce_gain.
     """
     vv = v.float().to(lm.model.device)
+    all_layers = list(range(lm.num_layers))
 
     b_h = a_h = 0
     for p in harmful_prompts:
         t = dc.apply_template(lm.tokenizer, p)
         base = _gen_completion(lm, t, [], max_new_tokens)
-        abl = _gen_completion(lm, t, [pc.AllPositionProjectOut(lm.model, L, vv, 1.0)],
-                              max_new_tokens)
+        abl = _gen_completion(
+            lm, t, [pc.AllPositionProjectOutMultiLayer(lm.model, all_layers, vv, 1.0)],
+            max_new_tokens)
         b_h += int(kw_refusal(base))
         a_h += int(kw_refusal(abl))
     n_h = max(len(harmful_prompts), 1)
@@ -179,6 +185,7 @@ def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
 
     return {
         "layer": L,
+        "ablation_scope": "all_layers", "induce_scope": "single_layer",
         "n_harmful": len(harmful_prompts), "n_neutral": len(neutral_prompts),
         "induce_alpha": induce_alpha, "max_new_tokens": max_new_tokens,
         "refusal_rate_baseline_harmful": round(rr_base_harmful, 4),

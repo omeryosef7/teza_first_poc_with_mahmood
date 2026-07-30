@@ -247,7 +247,13 @@ def run():
                                               mode="add", alpha=alpha))
         if refusal is not None:
             rl, rvec, ralpha = refusal
-            stack.enter_context(pc.AllPositionProjectOut(lm.model, rl, rvec, ralpha))
+            # STANDARD ablation (Arditi et al.): project the SINGLE selected refusal
+            # direction out at EVERY layer, not just the layer it was fit at (rl). The
+            # single-layer hook barely dents refusal (rl is re-written downstream); the
+            # all-layer projection is the strong ablation. `rl` is retained for metadata.
+            stack.enter_context(
+                pc.AllPositionProjectOutMultiLayer(
+                    lm.model, range(lm.num_layers), rvec, ralpha))
 
     @torch.no_grad()
     def run_cell(text, concept_patches, refusal, goal):

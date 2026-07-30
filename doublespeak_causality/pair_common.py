@@ -439,6 +439,53 @@ class AllPositionProjectOut:
         return False
 
 
+class AllPositionProjectOutMultiLayer:
+    """S4: the multi-layer ablation of Arditi et al. — project the SAME single direction
+    out of the block output at EVERY position/timestep on EVERY layer in `layer_idxs`.
+
+    Single-layer AllPositionProjectOut projects a refusal axis out at one layer only
+    (e.g. L14: refusal 1.0 -> 0.933), which barely dents refusal because the axis is
+    re-written by later layers. The standard "directional ablation" removes ONE refusal
+    direction from the residual stream at every layer during generation, which strongly
+    suppresses refusal. This registers an independent all-position project-out hook (via
+    the same `make_project_out_hook`) on each layer in `layer_idxs` and removes ALL handles
+    on exit. `direction` is a single vector (the diff-of-means from the validated layer);
+    the same vector is projected out at all layers — this is the standard ablation and
+    what the paper does, even though the axis was fit at one layer. `direction` need not be
+    unit-norm; each hook normalizes its own copy.
+
+    Composes freely with ds_common.LayerPatch (concept install) in a shared ExitStack, the
+    same as the single-layer class.
+
+    Note (risk): the residual basis drifts across depth, so a mid-layer refusal axis is
+    only an approximate refusal direction at very early / very late layers; projecting it
+    everywhere is nonetheless the established recipe and empirically the strong ablation.
+    """
+
+    def __init__(self, model, layer_idxs: Sequence[int], direction: torch.Tensor,
+                 alpha: float = 1.0):
+        all_layers = dc._get_layers(model)
+        self.layer_idxs = list(layer_idxs)
+        bad = [i for i in self.layer_idxs if i < 0 or i >= len(all_layers)]
+        if bad:
+            raise IndexError(f"layer index out of range for {len(all_layers)} layers: {bad}")
+        self.layers = [all_layers[i] for i in self.layer_idxs]
+        # one hook instance per layer (each holds its own normalized copy of `direction`)
+        self._hooks = [make_project_out_hook(direction, alpha) for _ in self.layers]
+        self._handles: List[Any] = []
+
+    def __enter__(self):
+        for layer, hook in zip(self.layers, self._hooks):
+            self._handles.append(layer.register_forward_hook(hook))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
 # --------------------------------------------------------------------------- #
 # Forward-only semantic score (the cheap outcome used by the big sweeps)
 # --------------------------------------------------------------------------- #
