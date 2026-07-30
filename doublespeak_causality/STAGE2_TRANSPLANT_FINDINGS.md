@@ -7,7 +7,24 @@
 
 ---
 
-## Headline result
+## DEFINITIVE RESULT (forced_choice readout, job 694691, n=30)
+
+The cloze run below established the dissociation but floored the `d_Direct` positive control (B3: cloze reads DIRECT_CONCEPT 0.005 vs forced_choice 0.785). The **forced_choice** re-run is the definitive, sharper version — same dissociation, stronger DS signal, and a fully clean 2×3:
+
+| receiver \ source | h_N | h_DS | h_Direct |
+|---|---|---|---|
+| **Neutral** (mid) | 0.000 | 0.000 | 0.000 |
+| **DS** (mid) | 0.347 | 0.353 | 0.314 |
+
+- **The reading depends ONLY on the receiver context, and is completely independent of the local codeword state.** Every source state (h_N, h_DS, h_Direct) transplanted into a **Neutral** receiver → **0.000**; every source state in a **DS** receiver → **~0.35**.
+- `IE_state ≈ 0` (equivalence) all windows; `DE_context = +0.347` [mid] ≈ **99% of TE (+0.352)**; faithfulness exactly 0.0.
+- `PORT_Direct ≈ 0` — even the DIRECT concept's own rep is **not portable** into a neutral context via full-state transplant. NO single-position state transplant installs the concept; only the context does.
+- **Positive control (pending, job 694706):** additive `d_Direct` under forced_choice — expected to install strongly (DIRECT source decodes 0.785), showing the concept IS installable *additively* even though it is not installable by *state transplant*. This is the key contrast: adding the concept direction on top of the context-appropriate state works; replacing the state with a foreign one does not — consistent with context-conditioned routing.
+- **Patchscope readout DROPPED** as configured: `ps_concept`=0 for all cells including the DS baseline, but 44 reads at a late layer (R=28) with no positive control, and per the project's readout saga concept reps decode *early* — so this is a mis-configuration artifact, not a meaningful null. A properly positive-control-gated patchscope is a future refinement; the forced_choice semantic readout is the clean signal.
+
+---
+
+## Headline result (original cloze run, job 694417 — dissociation holds, positive control floored)
 
 The Doublespeak concept reading is carried by the **receiver context**, not the **local codeword activation**.
 
