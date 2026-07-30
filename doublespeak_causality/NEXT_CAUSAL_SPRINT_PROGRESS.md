@@ -26,9 +26,10 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S2 | Confirmatory seed-1 (694468) + additive positive control (694470) | RUNNING | replicate DE/IE on 2nd seed; reproduce d_Direct-installs/d_DS-inert additively on same triple |
 | S3 | Context/KV mediation — code DONE + reviewed | DONE | `DemoStateSwap` hook + `44_kv_mediation.py` + 8 CPU tests; independent adversarial review clean; STAGE3_KV_PLAN.md |
 | S3 | KV mediation SMOKE (694554) | DONE | **self-swap faithfulness EXACT on real model** ✅; swap works (3-9 demos); floored by style-undersampling (B2) → full-n |
-| S3 | KV mediation FULL n=15 (694667) | RUNNING | all 5 styles; real ReRead_test / DE_via_demoKV (semantic + patchscope readouts) |
-| S2 | Additive control α=1 (694473) | DONE | d_Direct EXCEEDS all 60 controls but small (+0.019) — dose issue; d_DS inert ✅ |
-| S2 | d_Direct dose sweep α=1,2,4,8 (694668) | RUNNING | install curve = convincing positive control (B2 magnitude note) |
+| S3 | KV mediation FULL n=15 cloze (694667) | DONE | C1=0.31 (not floored); ReRead mid +0.068 (78% survives → NOT trivial re-read); random control large at early (distributed); patchscope floored under cloze |
+| S2 | d_Direct dose sweep cloze (694668) | DONE | d_Direct caps +0.096 under cloze — but that's the CLOZE FLOOR (B3), not the ceiling |
+| — | **B3: cloze floored the positive control** | KEY FIX | forced_choice: DIRECT reads 0.785 vs cloze 0.005; DS stable ~0.3. Re-running S2+S3 with forced_choice |
+| S2+S3 | forced_choice chain: transplant + KV (694691) | RUNNING | clean run with a WORKING positive control (n=15) |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
