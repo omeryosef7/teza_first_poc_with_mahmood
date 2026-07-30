@@ -33,3 +33,21 @@ Chronological. Each entry: what, evidence, impact, resolution.
 - The current bench is a **legitimate gpt-4o-mini API build** (`_meta.offline=False`, seed 7), not an offline/template build.
 
 **Scientific note (magnitudes; for Omer's awareness).** On this bench absolute effects are **modest and style-dependent**: DS natural reading ~0.2–0.3 (gate DS−Neutral p_concept +0.31), and the additive `d_Direct` at α=1.0 installs only **+0.019** (peak L4) — vs CAUSAL_CORE's near-ceiling +0.97 on the (now-overwritten) Jul-29 bench. The +0.02 is likely a **dose** effect (α=1.0 single point) not a bench defect, since the DS attack itself gives +0.31 and `d_Direct` still *exceeds all 60 matched controls* (specific, just small). → job 694668 runs a **dose sweep** (α=1,2,4,8) to get the install curve as a convincing positive control. The **dissociation is relative and holds regardless of scale**: context transplant (+0.20) vs local-state transplant (0). If a larger absolute effect is wanted for the paper, a stronger/higher-signal bench or readout (e.g. featuring the patchscope `ps_concept` readout 44 already records) is the lever — flagged, not blocking.
+
+---
+
+## B3 — Compression was the READOUT (cloze), not the bench (2026-07-30)
+
+**What.** B2 flagged modest magnitudes (d_Direct install capped ~+0.1, patchscope floored). Before treating this as a bench-rebuild fork, checked the readout-validation per-readout table (job 694417 `readout_summary.json`):
+
+| condition | cloze | forced_choice | one_word |
+|---|---|---|---|
+| NEUTRAL_CODEWORD | 0.000 | 0.000 | 0.000 |
+| DOUBLESPEAK | 0.307 | 0.353 | 0.209 |
+| **DIRECT_CONCEPT** | **0.005** | **0.785** | 0.007 |
+
+**Root cause.** The **cloze** readout FLOORS `p_concept` for DIRECT_CONCEPT (0.005), which is exactly the source of the `d_Direct`/PORT_Direct positive control — so the positive control looked crippled purely because of the readout, not the mechanism. `forced_choice` (a validated readout, gate-passed, NEUTRAL still clean at 0.000) has full dynamic range (DIRECT 0.785). The DS attack signal itself is stable across readouts (~0.3).
+
+**Resolution.** Re-run Stage 2 transplant + Stage 3 KV mediation with `--readout forced_choice` (parametrized `ds_rebuild_transplant.slurm`, now defaults to forced_choice + appends the 44 KV step; n=15 for all styles). This gives a **working positive control** (d_Direct source decodes 0.785) so IE_state≈0 / PORT_Direct are interpretable against a real installable reference — **without** rebuilding the bench. NOT a consequential fork after all; the cloze Stage-2 result stands (DS signal ~equal), this sharpens the positive control and the KV dynamic range.
+
+**Note on patchscope=0.** Under cloze the confound-free patchscope readout returned 0 for all cells. Re-checking under forced_choice will show whether that was a cloze artifact or a genuine "concept not in the query codeword's local rep" confirmation (which would be consistent with IE_state=0). Verify the patchscope positive control (DIRECT rep must decode >0) in the new run before citing ps_concept.
