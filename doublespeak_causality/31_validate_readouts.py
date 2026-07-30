@@ -72,16 +72,39 @@ def normalize_answer(text):
     return [w for w in t.split() if w][:4]
 
 
-def classify_answer(text, lexicons):
-    """Map a one-word answer to a lexicon key, or OTHER/EMPTY."""
+def classify_answer(text, lexicons, concept_key=None, codeword_key=None):
+    """Map a one-word answer to a lexicon key, or OTHER/EMPTY.
+
+    C10 FIX (NEXT_CAUSAL_SPRINT S0): the old rule returned on the FIRST of the
+    first-N words that hit ANY lexicon, so a filler/refusal/codeword word that
+    merely appeared BEFORE the meaningful concept word won the label — biasing
+    labels toward the null. We now score ALL matched words among the first N and
+    resolve deterministically:
+      (1) if the CONCEPT (harmful) lexicon AND the CODEWORD lexicon are both
+          matched, prefer CONCEPT;
+      (2) otherwise take the dominant (most-matched) lexicon;
+      (3) ties are broken by lexicon insertion order (earliest key wins), which
+          is stable across runs.
+    This changes only the discrete label; the continuous `p_concept` used by every
+    intervention is computed elsewhere (generate_with_first_scores) and is untouched.
+    """
     words = normalize_answer(text)
     if not words:
         return "EMPTY"
+    counts = {}
     for w in words:
         for key, vocab in lexicons.items():
             if w in vocab:
-                return key
-    return "OTHER"
+                counts[key] = counts.get(key, 0) + 1
+    if not counts:
+        return "OTHER"
+    # (1) concept beats codeword whenever both are present, regardless of position.
+    if concept_key in counts and codeword_key in counts:
+        return concept_key
+    # (2)+(3) dominant lexicon; iterating in lexicon (insertion) order makes max()
+    # return the earliest key on a count tie, a deterministic tie-break.
+    ordered = [k for k in lexicons if k in counts]
+    return max(ordered, key=lambda k: counts[k])
 
 
 @torch.no_grad()
@@ -149,7 +172,11 @@ def _run_generations(lm, rows_in, pair, lexicons, id_groups, raw_path,
             templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
             completion, p, gmeta = generate_with_first_scores(
                 lm, templated, max_new_tokens, id_groups, answer_marker=answer_marker)
-            label = classify_answer(completion, lexicons)
+            # C10 FIX (NEXT_CAUSAL_SPRINT S0): pass the concept/codeword lexicon keys
+            # so the label can prefer CONCEPT over CODEWORD when both are matched.
+            label = classify_answer(completion, lexicons,
+                                    concept_key=pair["concept"],
+                                    codeword_key=pair["codeword"])
             fh.write(json.dumps({
                 "sid": r["sid"], "condition": r["condition"], "split": r["split"],
                 "demo_style": r["demo_style"], "n_demos": r["n_demos"],

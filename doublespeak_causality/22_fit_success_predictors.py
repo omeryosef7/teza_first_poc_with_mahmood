@@ -56,6 +56,27 @@ def _auc(y, s):
     return a
 
 
+def _align_matrix(ds_move_sub, dvec):
+    """C9 FIX (NEXT_CAUSAL_SPRINT S0): cos( DS−Neutral movement, fold-specific harmful axis dvec ) per
+    (row, layer), matching 21's _cos = dot / (|a||b| + 1e-8). ds_move_sub: [m, L, H]; dvec: [L, H]."""
+    num = np.einsum("mlh,lh->ml", ds_move_sub, dvec)
+    dsn = np.linalg.norm(ds_move_sub, axis=2)
+    dvn = np.linalg.norm(dvec, axis=1)
+    return num / (dsn * dvn[None, :] + 1e-8)
+
+
+def _feats_from_align(align, bands, onset_thresh):
+    """C9 FIX (NEXT_CAUSAL_SPRINT S0): rebuild the FEATS vector from an alignment trajectory [m, L] in
+    the EXACT column order of FEATS (21's feature definitions), for leakage-free per-fold scoring."""
+    e = align[:, bands["early"]].mean(1)
+    mi = align[:, bands["mid"]].mean(1)
+    la = align[:, bands["late"]].mean(1)
+    mask = align >= onset_thresh
+    onset = np.where(mask.any(1), mask.argmax(1), -1).astype(float)
+    # order matches FEATS: early, mid, late, early_to_late, onset_layer, peak_align, auc_align
+    return np.column_stack([e, mi, la, la - e, onset, align.max(1), align.mean(1)])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--features", required=True)
@@ -68,6 +89,16 @@ def main():
     X = np.array([[r["feat"][f] for f in FEATS] for r in rows], float)
     concepts = np.array([r["concept"] for r in rows])
     print(f"[predict] n={len(rows)} pos(DS_MALICIOUS)={int(y.sum())} concepts={len(set(concepts))}")
+
+    # C9 FIX (NEXT_CAUSAL_SPRINT S0): load raw movement vectors (if 21 wrote them) so the held-out-
+    # concept AUC re-fits the harmful axis per fold using ONLY the fold's training concepts (no leak).
+    ds_move = dir_move = None
+    raw_path = os.path.join(os.path.dirname(os.path.abspath(args.features)), d.get("raw_npz", "features_raw.npz"))
+    if os.path.exists(raw_path):
+        with np.load(raw_path) as z:
+            ds_move, dir_move = z["ds_move"], z["dir_move"]
+    bands = d.get("bands")
+    onset_thresh = float(d.get("onset_thresh", 0.1))
 
     # 1) univariate AUCs (raw directional; abs power = |auc-0.5| reported alongside)
     print("[predict] univariate AUC (predicting DS_MALICIOUS; <0.5 = negative predictor):")
@@ -112,10 +143,35 @@ def main():
 
         ncon = len(set(concepts))
         if ncon >= 3:
-            gkf = GroupKFold(n_splits=min(5, ncon))
-            mg, sg, kg = cv_auc(gkf, groups=concepts)
-            print(f"[predict] HELD-OUT-CONCEPT AUC = {mg:.3f} ± {sg:.3f} (k={kg}) <-- generalization test")
+            nsplits = min(5, ncon)
+            leakfree = ds_move is not None and bands is not None
+            if leakfree:
+                # C9 FIX (NEXT_CAUSAL_SPRINT S0): per-fold harmful axis. For each GroupKFold split we
+                # rebuild dvec from the TRAINING concepts' Direct−Neutral movement only, recompute the
+                # alignment features for BOTH train and held-out rows on that fold-specific axis, then
+                # score — so a held-out concept never contributes to the axis it is evaluated against.
+                gkf = GroupKFold(n_splits=nsplits)
+                aucs = []
+                for tr, te in gkf.split(ds_move, y, concepts):
+                    if len(set(y[tr])) < 2 or len(set(y[te])) < 2:
+                        continue
+                    dvec = dir_move[tr].mean(0)
+                    dvec = dvec / (np.linalg.norm(dvec, axis=1, keepdims=True) + 1e-8)
+                    Xtr = _feats_from_align(_align_matrix(ds_move[tr], dvec), bands, onset_thresh)
+                    Xte = _feats_from_align(_align_matrix(ds_move[te], dvec), bands, onset_thresh)
+                    clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000, C=1.0))
+                    clf.fit(Xtr, y[tr])
+                    aucs.append(roc_auc_score(y[te], clf.predict_proba(Xte)[:, 1]))
+                mg, sg, kg = (float(np.mean(aucs)), float(np.std(aucs)), len(aucs)) if aucs else (float("nan"), 0.0, 0)
+                print(f"[predict] HELD-OUT-CONCEPT AUC = {mg:.3f} ± {sg:.3f} (k={kg}) <-- generalization test (leakage-free per-fold axis)")
+            else:
+                # C9 FIX (NEXT_CAUSAL_SPRINT S0): raw vectors absent (pre-fix features.json) — fall back
+                # to global-axis features and flag that this number still carries axis leakage.
+                gkf = GroupKFold(n_splits=nsplits)
+                mg, sg, kg = cv_auc(gkf, groups=concepts)
+                print(f"[predict] HELD-OUT-CONCEPT AUC = {mg:.3f} ± {sg:.3f} (k={kg}) <-- generalization test (WARNING: global axis; leakage — rerun 21 for per-fold axis)")
             result["heldout_concept_auc_mean"], result["heldout_concept_auc_std"] = round(mg, 3), round(sg, 3)
+            result["heldout_axis_per_fold"] = bool(leakfree)  # C9 FIX (NEXT_CAUSAL_SPRINT S0)
 
     out = args.out or os.path.join(os.path.dirname(args.features), "success_predictors.json")
     json.dump(result, open(out, "w"), indent=2)

@@ -110,7 +110,11 @@ def run_item(lm, lens, it, templated, seed):
                "necessity": [], "sufficiency": [], "control_identity": [],
                "control_random": []}
 
-    for L in range(n_layers):
+    # C3 FIX (NEXT_CAUSAL_SPRINT S0): the readout is hidden_states[-1] (post-final-
+    # block == readout layer index n_layers-1). Patching AT that layer overwrites the
+    # measured vector verbatim (zero-propagation contamination). Exclude the final
+    # block so every patched layer is strictly below the readout layer.
+    for L in dc.patch_layer_sweep(n_layers - 1):
         # source rows: hidden_states index = layer+1 (0 = embedding)
         neu_vec = neu_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)
         ds_vec = ds_cap["reps"]["codeword_last"][L + 1].to(lm.model.device)

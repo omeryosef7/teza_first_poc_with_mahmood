@@ -34,12 +34,23 @@ PatchscopeDecoder = _ps.PatchscopeDecoder
 token_id = _ps.token_id
 
 
-def make_block_hook(cw_pos, demo_keys, min_val):
+def make_block_hook(cw_pos, demo_keys, min_val, status=None):
     dk = list(demo_keys)
 
     def preh(mod, args, kwargs):
         am = kwargs.get("attention_mask", None)
-        if am is not None and am.dim() == 4 and cw_pos < am.shape[2]:
+        # C6b FIX (NEXT_CAUSAL_SPRINT S0): previously this silently no-oped whenever the
+        # backend passed None or a non-4-D mask, which would make the knockout do NOTHING
+        # while the run still reported "attention has no causal effect". Warn loudly and
+        # record a flag (status["mask_ok"]=False) so the degraded item is visible.
+        if am is None or am.dim() != 4:
+            if status is not None:
+                status["mask_ok"] = False
+            print(f"[stage4-layerko] WARNING: expected 4-D additive attention_mask, got "
+                  f"{'None' if am is None else str(am.dim()) + '-D'}; knockout NOT applied "
+                  f"at this layer", file=sys.stderr)
+            return (args, kwargs)
+        if cw_pos < am.shape[2]:
             am = am.clone()
             for k in dk:
                 if k <= cw_pos:
@@ -50,13 +61,18 @@ def make_block_hook(cw_pos, demo_keys, min_val):
 
 
 @torch.no_grad()
-def rep_with_layer_block(lm, tok, layers_to_block, cw_pos, demo_keys, readout_layer):
-    """Forward with demos->cw attention blocked at `layers_to_block` only."""
+def rep_with_layer_block(lm, tok, layers_to_block, cw_pos, demo_keys, readout_layer, status=None):
+    """Forward with demos->cw attention blocked at `layers_to_block` only.
+
+    C6b FIX (NEXT_CAUSAL_SPRINT S0): `status` (mutable dict) is forwarded to each block hook
+    so an absent 4-D attention_mask is surfaced (status["mask_ok"]=False) rather than silently
+    turning the knockout into a no-op.
+    """
     min_val = torch.finfo(next(lm.model.parameters()).dtype).min
     decoders = dc._get_layers(lm.model)
     with ExitStack() as stack:
         for L in layers_to_block:
-            hook = make_block_hook(cw_pos, demo_keys, min_val)
+            hook = make_block_hook(cw_pos, demo_keys, min_val, status=status)
             stack.enter_context(_hook_ctx(decoders[L].self_attn, hook))
         out = lm.model(**tok, output_hidden_states=True)
     return out.hidden_states[readout_layer + 1][0, cw_pos, :]
@@ -124,24 +140,34 @@ def main():
         harm_id = token_id(lm.tokenizer, it["harmful_word"])
         code_id = token_id(lm.tokenizer, it["codeword"])
 
-        base_rep = rep_with_layer_block(lm, tok, [], cw_last, demo_keys, R)
+        # C6b FIX (NEXT_CAUSAL_SPRINT S0): track whether every knockout hook actually saw a
+        # 4-D mask; flag the item if any layer failed to apply the block.
+        mask_status = {"mask_ok": True}
+
+        base_rep = rep_with_layer_block(lm, tok, [], cw_last, demo_keys, R, status=mask_status)
         base_ph, base_pc = dec.decode(base_rep, R, harm_id, code_id)
 
         single = []
         for L in range(0, R + 1, 2):
-            rep = rep_with_layer_block(lm, tok, [L], cw_last, demo_keys, R)
+            rep = rep_with_layer_block(lm, tok, [L], cw_last, demo_keys, R, status=mask_status)
             ph, pc = dec.decode(rep, R, harm_id, code_id)
             single.append({"layer": L, "p_harm": ph, "p_code": pc})
         cumulative = []
         for k in range(2, R + 1, 3):
-            rep = rep_with_layer_block(lm, tok, list(range(0, k + 1)), cw_last, demo_keys, R)
+            rep = rep_with_layer_block(lm, tok, list(range(0, k + 1)), cw_last, demo_keys, R,
+                                       status=mask_status)
             ph, pc = dec.decode(rep, R, harm_id, code_id)
             cumulative.append({"through_layer": k, "p_harm": ph, "p_code": pc})
+        if not mask_status["mask_ok"]:
+            print(f"[stage4-layerko] WARNING {it['id']}: at least one layer received no 4-D "
+                  f"attention_mask; knockout was NOT applied there (results DEGRADED)",
+                  file=sys.stderr)
 
         report["items"].append({"id": it["id"], "cw_last": cw_last,
                                 "n_demo_keys": len(demo_keys),
                                 "req_start_tok": req_start_tok,
                                 "request_boundary_located": req_located,
+                                "mask_4d_applied": mask_status["mask_ok"],  # C6b FIX (NEXT_CAUSAL_SPRINT S0)
                                 "baseline": {"p_harm": base_ph, "p_code": base_pc},
                                 "single_layer": single, "cumulative": cumulative})
         # console: most-effective single layer + cumulative depth to reach ~0

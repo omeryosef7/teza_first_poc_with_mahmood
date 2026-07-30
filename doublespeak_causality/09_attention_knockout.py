@@ -111,6 +111,12 @@ def main():
         #  and is shared with 10_layerwise_knockout.py, which had silently kept the OLD
         #  confounded boundary. Behaviour here is unchanged.)
         req_start_tok, req_located = dc.request_start_token(lm.tokenizer, text, final_start)
+        # C6a FIX (NEXT_CAUSAL_SPRINT S0): req_located was captured but never stored/used, so on
+        # locate-failure the CONFOUNDED fallback boundary was used SILENTLY. Warn loudly and flag
+        # the item (res["request_located"] set below) so degraded items are visible downstream.
+        if not req_located:
+            print(f"[stage4-knockout] WARNING {it['id']}: request prefix not located; "
+                  f"demo/request boundary fell back to the CONFOUNDED value", file=sys.stderr)
         demos_only = list(range(0, req_start_tok))                       # ONLY demo tokens
         request_only = [p for p in range(req_start_tok, seq) if p != cw_last]  # request, not demos
         gen = torch.Generator().manual_seed(args.seed)
@@ -120,9 +126,14 @@ def main():
         k = min(len(prev_cw), len(pool))
         perm = torch.randperm(len(pool), generator=gen)[:k].tolist()
         rand_before = [pool[i] for i in perm]
-        # count-matched random control for demos_only: |demos_only| random positions from [0,seq)
-        # excluding the codeword (tests "block that many tokens" vs "block the demos specifically").
-        pool2 = [p for p in range(0, seq) if p != cw_last]
+        # count-matched random control for demos_only: |demos_only| random positions
+        # (tests "block that many tokens" vs "block the demos specifically").
+        # C5 FIX (NEXT_CAUSAL_SPRINT S0): draw from positions strictly BEFORE the codeword
+        # (range(0, cw_last)) not range(0, seq). The readout is the rep at cw_last whose
+        # attention is causal; keys AFTER cw_last are already masked by the causal mask, so
+        # blocking them is a no-op and the "count-matched" control would block FEWER real
+        # keys than demos_only while recording n_blocked as equal (falsely count-matched).
+        pool2 = [p for p in range(0, cw_last)]
         k2 = min(len(demos_only), len(pool2))
         perm2 = torch.randperm(len(pool2), generator=gen)[:k2].tolist()
         rand_demos_matched = [pool2[i] for i in perm2]
@@ -138,6 +149,7 @@ def main():
             "rand_demos_matched": rand_demos_matched,
         }
         res = {"id": it["id"], "seq_len": seq, "cw_last": cw_last, "req_start_tok": req_start_tok,
+               "request_located": bool(req_located),  # C6a FIX (NEXT_CAUSAL_SPRINT S0): flag degraded items
                "n_prev_cw": len(prev_cw), "n_demos_tokens": len(demos_only),
                "n_request_tokens": len(request_only), "n_rand_ctrl": len(rand_before),
                "n_rand_demos_matched": len(rand_demos_matched), "conds": {}}

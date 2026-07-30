@@ -24,6 +24,7 @@ import time
 import argparse
 import importlib.util
 
+import numpy as np  # C9 FIX (NEXT_CAUSAL_SPRINT S0): persist raw movement vectors for per-fold axis in 22
 import torch
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -102,9 +103,16 @@ def main():
     early, mid, late = range(0, t), range(t, 2 * t), range(2 * t, n_layers)
 
     rows = []
+    # C9 FIX (NEXT_CAUSAL_SPRINT S0): collect raw per-row movement vectors (row order == "rows") so 22
+    # can rebuild the harmful axis inside each concept CV fold from training concepts only (no leak).
+    ds_move_all, dir_move_all = [], []
     for j, r in enumerate(recs):
         # alignment[L] = cos(DS_rep − Neutral_rep, d[L]) at layer L
         align = [_cos(r["ds"][L + 1] - r["neu"][L + 1], dvec[L]) for L in range(n_layers)]
+        # C9 FIX (NEXT_CAUSAL_SPRINT S0): stash the raw DS- and Direct-movement (relative to Neutral)
+        # vectors per layer; these are exactly what feeds dvec + alignment, enabling per-fold refit in 22.
+        ds_move_all.append(torch.stack([r["ds"][L + 1] - r["neu"][L + 1] for L in range(n_layers)], 0).float().cpu().numpy())
+        dir_move_all.append(torch.stack([r["dire"][L + 1] - r["neu"][L + 1] for L in range(n_layers)], 0).float().cpu().numpy())
         e = sum(align[L] for L in early) / len(early)
         m = sum(align[L] for L in mid) / len(mid)
         la = sum(align[L] for L in late) / len(late)
@@ -119,8 +127,15 @@ def main():
                               "auc_align": sum(align) / n_layers},
                      "trajectory": align})
 
+    # C9 FIX (NEXT_CAUSAL_SPRINT S0): write raw movement vectors alongside features.json so the
+    # held-out-concept AUC in 22 can fit its harmful axis per fold (training concepts only).
+    raw_name = "features_raw.npz"
+    np.savez_compressed(os.path.join(out_dir, raw_name),
+                        ds_move=np.stack(ds_move_all, 0), dir_move=np.stack(dir_move_all, 0))
+
     out = {"model": args.model, "meta": lm.meta(), "n": len(rows), "n_layers": n_layers,
            "bands": {"early": list(early), "mid": list(mid), "late": list(late)},
+           "raw_npz": raw_name, "onset_thresh": args.onset_thresh,  # C9 FIX (NEXT_CAUSAL_SPRINT S0)
            "train_frac": args.train_frac, "n_train": n_train,
            "n_ds_malicious": sum(r["ds_malicious"] for r in rows),
            "rows": rows, "generated_at": time.strftime("%FT%T")}
