@@ -128,6 +128,44 @@ def analyze_rows(rows, timings=TIMINGS):
                     pgrid.append((oc, "INTERACTION", None))
         out["outcomes"][oc] = res
 
+    # --- D-arm concept-specificity (plan §2): D-main vs D control arms, MALICIOUS ------- #
+    # The concept-direction controls (norm-matched-random, orthogonal) now run through
+    # cell D (concept+refusal-ablation), not only cell B. Per timing, paired-bootstrap the
+    # MALICIOUS compliance-flip of D-main against each D control arm. A positive, CI-clean
+    # effect means the compliance flip in D is SPECIFIC to the real concept direction.
+    allidx = {(r["pid"], r["cell"], r.get("timing"), r.get("arm", "main")): r for r in rows}
+
+    def getc(pid, cell, timing, arm, outcome):
+        r = allidx.get((pid, cell, timing, arm))
+        return None if r is None else _indicator(r, outcome)
+
+    dspec, dpgrid = {}, []
+    for t in timings:
+        blk_t = {}
+        for arm, label in (("concept_rand", "Dspec_rand"), ("concept_orth", "Dspec_orth")):
+            keep = [p for p in pids
+                    if getc(p, "D", t, "main", "MALICIOUS") is not None
+                    and getc(p, "D", t, arm, "MALICIOUS") is not None]
+            if len(keep) < 2:
+                continue
+            yMain = [getc(p, "D", t, "main", "MALICIOUS") for p in keep]
+            yCtrl = [getc(p, "D", t, arm, "MALICIOUS") for p in keep]
+            blk = _ci_block(yMain, yCtrl)
+            blk_t[label] = blk
+            if "p_raw" in blk:
+                dpgrid.append((t, label))
+        if blk_t:
+            dspec[t] = blk_t
+    # SEPARATE Holm family — does NOT disturb the existing refusal_gain/INTERACTION p_holm.
+    if dpgrid:
+        keys = sorted(dpgrid)
+        adj = st.holm_bonferroni([dspec[t][label]["p_raw"] for (t, label) in keys])
+        for (t, label), pa in zip(keys, adj):
+            blk = dspec[t][label]
+            blk["p_holm"] = round(float(pa), 6)
+            blk["significant_corrected"] = bool(pa < 0.05 and blk.get("ci_reliable"))
+    out["Dspec"] = dspec
+
     # Holm across the {outcome x (refusal_gain per timing, INTERACTION)} family
     if pgrid:
         def _fetch(k):
@@ -304,9 +342,14 @@ def run():
             emit("B", t, "main", cvec(d_by_L, wl, pos), None)              # B_t
             emit("D", t, "main", cvec(d_by_L, wl, pos), ref)              # D_t
         if not args.no_controls:
-            for t, wl in windows.items():                                  # concept controls (B-arm)
-                emit("B", t, "concept_rand", cvec(rand_c, wl, pos), None)
+            for t, wl in windows.items():                                  # concept controls
+                emit("B", t, "concept_rand", cvec(rand_c, wl, pos), None)   # B-arm (concept-only)
                 emit("B", t, "concept_orth", cvec(orth_c, wl, pos), None)
+                # D-arm (concept+refusal-ablation): SAME two control directions across the
+                # SAME timings as B, but with the refusal-ablation context applied (ref).
+                # Closes the S4 caveat that concept-specificity controls only ran through B.
+                emit("D", t, "concept_rand", cvec(rand_c, wl, pos), ref)
+                emit("D", t, "concept_orth", cvec(orth_c, wl, pos), ref)
             emit("C", None, "refusal_rand", [], (rlayer, rand_ref, 1.0))   # refusal control (C-arm)
         if (i + 1) % 5 == 0:
             print(f"  [{i+1}/{len(items)}] base_benign={n_base_benign}", flush=True)

@@ -45,6 +45,22 @@ def _rows(n=N, empty_cell=None):
     return rows
 
 
+# D-arm concept-control MALICIOUS thresholds (arm -> item-index cutoff), constant per timing.
+DCTRL_THR = {"concept_rand": 2, "concept_orth": 1}
+
+
+def _rows_with_dcontrols(n=N):
+    """Main rows PLUS D-arm concept_rand/concept_orth control rows (plan §2 cell-D controls)."""
+    rows = _rows(n)
+    for i in range(n):
+        for t in ("early", "mid", "late"):
+            for arm, thr in DCTRL_THR.items():
+                cat = "MALICIOUS" if i < thr else "BENIGN"
+                rows.append({"pid": f"p{i}", "cell": "D", "timing": t, "arm": arm,
+                             "cat": cat, "p_concept": 0.3, "p_codeword": 0.1})
+    return rows
+
+
 def _mal(res, est, t):
     return res["outcomes"]["MALICIOUS"][est][t]
 
@@ -85,8 +101,29 @@ def test_empty_cell_excluded_from_estimand():
     assert _mal(res, "concept_effect_ablate", "late")["n"] == N
 
 
+def test_dspec_specificity():
+    # D-main MALICIOUS rates: early 0.7 (THR 7), mid 0.5, late 0.4.
+    # D control rates: concept_rand 0.2 (THR 2), concept_orth 0.1 (THR 1).
+    res = m45.analyze_rows(_rows_with_dcontrols())
+    ds = res["Dspec"]
+    assert abs(ds["early"]["Dspec_rand"]["effect"] - 0.5) < 1e-9   # 0.7 - 0.2
+    assert abs(ds["early"]["Dspec_orth"]["effect"] - 0.6) < 1e-9   # 0.7 - 0.1
+    assert abs(ds["late"]["Dspec_rand"]["effect"] - 0.2) < 1e-9    # 0.4 - 0.2
+    assert abs(ds["late"]["Dspec_orth"]["effect"] - 0.3) < 1e-9    # 0.4 - 0.1
+    assert ds["early"]["Dspec_rand"]["n"] == N
+    # main-arm estimands must be UNCHANGED by the added control rows (regression guard)
+    assert abs(_mal(res, "refusal_gain", "early")["effect"] - 0.5) < 1e-9
+
+
+def test_dspec_empty_without_controls():
+    # No D control rows -> Dspec is present but empty; existing outputs untouched.
+    res = m45.analyze_rows(_rows())
+    assert res["Dspec"] == {}
+
+
 TESTS = [test_concept_effects_match_hand_computed, test_refusal_gain_and_interaction,
-         test_control_rows_ignored, test_empty_cell_excluded_from_estimand]
+         test_control_rows_ignored, test_empty_cell_excluded_from_estimand,
+         test_dspec_specificity, test_dspec_empty_without_controls]
 
 if __name__ == "__main__":
     fails = 0

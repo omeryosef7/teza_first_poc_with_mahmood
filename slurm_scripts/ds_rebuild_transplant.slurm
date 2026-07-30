@@ -66,19 +66,19 @@ TAG="${SLURM_JOB_ID:-}"   # job-isolate dir captures (concurrent-run race fix)
 
 echo "--- [1/5] 31_validate_readouts (GATE) ---"
 python 31_validate_readouts.py --bench "$BENCH" --model "$MODEL" $LIMIT --seed 0
-RDIR=$(ls -dt outputs/pair_readout_*${TAG} | head -1); echo "readout dir=$RDIR"
+RDIR=$(ls -dt outputs/pair_readout_*_${TAG} | head -1); echo "readout dir=$RDIR"
 GATE=$(python -c "import json;print(json.load(open('$RDIR/readout_summary.json')).get('gate_pass_any'))")
 echo "gate_pass_any=$GATE"
 [ "$GATE" = "True" ] || { echo "FATAL: readout gate FAILED on $BENCH — aborting before transplant." >&2; exit 2; }
 
 echo "--- [2/5] 32_extract_pair_reps (readout=$READOUT) ---"
 python 32_extract_pair_reps.py --bench "$BENCH" --model "$MODEL" --readout "$READOUT" $LIMIT --seed 0
-REPS_DIR="$DSC/$(ls -dt outputs/pair_reps_*${TAG} | head -1)"; echo "reps_dir=$REPS_DIR"
+REPS_DIR="$DSC/$(ls -dt outputs/pair_reps_*_${TAG} | head -1)"; echo "reps_dir=$REPS_DIR"
 [ -f "$REPS_DIR/per_prompt.npz" ] || { echo "FATAL: no per_prompt.npz" >&2; exit 1; }
 
 echo "--- [3/5] 33_build_directions ---"
 python 33_build_directions.py --reps-dir "$REPS_DIR" --seed 0
-DIR_DIR="$DSC/$(ls -dt outputs/pair_directions_*${TAG} | head -1)"; echo "dir_dir=$DIR_DIR"
+DIR_DIR="$DSC/$(ls -dt outputs/pair_directions_*_${TAG} | head -1)"; echo "dir_dir=$DIR_DIR"
 [ -f "$DIR_DIR/directions.npz" ] || { echo "FATAL: no directions.npz" >&2; exit 1; }
 
 echo "--- [4/6] 34_intervention_sweep --mode replace (2x3 specs, readout=$READOUT) ---"
@@ -87,7 +87,7 @@ python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-di
     --dir-position codeword_last --site codeword_last \
     --layer-groups single --alpha-mode absolute \
     --n-prompts "$NPROMPTS" --splits dev,heldout --crossfit true --seed 0
-RUNDIR=$(ls -dt outputs/pair_interv_replace_*${TAG} | head -1); echo "RUNDIR=$DSC/$RUNDIR"
+RUNDIR=$(ls -dt outputs/pair_interv_replace_*_${TAG} | head -1); echo "RUNDIR=$DSC/$RUNDIR"
 [ -f "$RUNDIR/interv_raw.jsonl" ] || { echo "FATAL: no interv_raw.jsonl" >&2; exit 1; }
 
 echo "--- [5/6] 43_transplant_mediation ---"
@@ -100,7 +100,7 @@ if [ "$RUN_KV" = "1" ]; then
   echo "--- [6/6] 44_kv_mediation (demo-K/V mediation, readout=$READOUT) ---"
   python 44_kv_mediation.py --bench "$BENCH" --reps-dir "$REPS_DIR" --model "$MODEL" \
       --readout "$READOUT" --n-prompts "$NPROMPTS" --splits dev,heldout --seed 0
-  KVDIR=$(ls -dt outputs/pair_kv_mediation_*${TAG} | head -1); echo "KVDIR=$DSC/$KVDIR"
+  KVDIR=$(ls -dt outputs/pair_kv_mediation_*_${TAG} | head -1); echo "KVDIR=$DSC/$KVDIR"
 fi
 
 echo "=== DONE ==="; date

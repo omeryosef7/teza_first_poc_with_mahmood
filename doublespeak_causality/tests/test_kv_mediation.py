@@ -91,8 +91,23 @@ def test_patchscope_metric_also_reduces():
     assert abs(_eff(res, "INT_2x2") - 0.40) < 1e-9
 
 
+def test_patchscope_gate_argmax_and_threshold():
+    g = _load_kv().patchscope_gate
+    # argmax layer, its value, and pass/fail on the 0.1 positive-control threshold
+    best, mx, ok = g([0.01, 0.02, 0.55, 0.30])
+    assert best == 2 and abs(mx - 0.55) < 1e-12 and ok is True
+    # all below threshold -> control FAILS but argmax still returned
+    best, mx, ok = g([0.01, 0.09, 0.05])
+    assert best == 1 and abs(mx - 0.09) < 1e-12 and ok is False
+    # empty scores -> safe default, not usable
+    assert g([]) == (0, 0.0, False)
+    # exactly at the threshold is NOT a pass (strict >)
+    assert g([0.1])[2] is False
+
+
 TESTS = [test_estimands_match_hand_computed, test_faithfulness_selfswap_is_zero,
-         test_verdicts_directional, test_patchscope_metric_also_reduces]
+         test_verdicts_directional, test_patchscope_metric_also_reduces,
+         test_patchscope_gate_argmax_and_threshold]
 
 if __name__ == "__main__":
     fails = 0

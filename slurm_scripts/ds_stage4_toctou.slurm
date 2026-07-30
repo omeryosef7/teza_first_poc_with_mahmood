@@ -36,6 +36,8 @@ DIR_DIR="${DIR_DIR:-$DSC/outputs/pair_directions_20260730_190505_694691}"
 OUT_STAGE="$DSC/outputs/stage_gcg_full"
 SELECTED="$OUT_STAGE/refusal_direction_llama_SELECTED.json"
 SMOKE_FLAG="${SMOKE:-0}"
+SKIP_REFUSAL="${SKIP_REFUSAL:-0}"        # 1 = reuse existing SELECTED.json (skip the build step);
+                                        # enables #6 pair-generalization on the concept-agnostic .pt
 N_ITEMS="${N_ITEMS:-40}"                 # full-run item count (smoke always uses 1)
 VAL_N_ITEMS="${VAL_N_ITEMS:-15}"
 INDUCE_ALPHA="${INDUCE_ALPHA:-8.0}"
@@ -55,11 +57,17 @@ echo "$GPU_NAME" | grep -qi "L40S" || { echo "FATAL: GPU not L40S ($GPU_NAME)" >
 [ -e "$BENCH" ] || { echo "FATAL: missing bench $BENCH" >&2; exit 1; }
 [ -d "$DIR_DIR" ] || { echo "FATAL: missing dir-dir $DIR_DIR" >&2; exit 1; }
 cd "$DSC"
+TAG="${SLURM_JOB_ID:-}"   # job-isolate the toctou run-dir capture (concurrent-run race fix, B5)
 
-echo "--- STEP 1: build_refusal_direction_llama.py --validate ---"
-python build_refusal_direction_llama.py --bench "$BENCH" --model "$MODEL" \
-    --layers 12,14,16,18,20 --out "$OUT_STAGE" --validate \
-    --val-n-items "$VAL_N_ITEMS" --val-max-new-tokens 64 --induce-alpha "$INDUCE_ALPHA" --seed 0
+if [ "$SKIP_REFUSAL" = "1" ]; then
+    echo "--- STEP 1: SKIPPED (SKIP_REFUSAL=1) — reusing existing $SELECTED ---"
+    [ -f "$SELECTED" ] || { echo "FATAL: SKIP_REFUSAL=1 but no $SELECTED to reuse" >&2; exit 2; }
+else
+    echo "--- STEP 1: build_refusal_direction_llama.py --validate ---"
+    python build_refusal_direction_llama.py --bench "$BENCH" --model "$MODEL" \
+        --layers 12,14,16,18,20 --out "$OUT_STAGE" --validate \
+        --val-n-items "$VAL_N_ITEMS" --val-max-new-tokens 64 --induce-alpha "$INDUCE_ALPHA" --seed 0
+fi
 
 echo "--- STEP 2: GATE on SELECTED.json ---"
 [ -f "$SELECTED" ] || { echo "FATAL: no $SELECTED" >&2; exit 2; }
@@ -78,7 +86,7 @@ run_factorial () {   # $1 = n-items, $2 = label
     echo "--- STEP 3 ($LABEL): 45_toctou_factorial.py --n-items $NI ---"
     python 45_toctou_factorial.py --bench "$BENCH" --refusal-pt "$BEST_PT" \
         --dir-dir "$DIR_DIR" --model "$MODEL" --n-items "$NI" --seed 0
-    local RUNDIR; RUNDIR=$(ls -dt outputs/toctou_* 2>/dev/null | head -1)
+    local RUNDIR; RUNDIR=$(ls -dt outputs/toctou_*_${TAG} 2>/dev/null | head -1)
     echo "RUNDIR=$DSC/$RUNDIR"
     [ -f "$RUNDIR/toctou_summary.json" ] || { echo "FATAL: no toctou_summary.json ($LABEL)" >&2; exit 3; }
     echo "=== $LABEL headline: INTERACTION + per-timing refusal_gain ==="

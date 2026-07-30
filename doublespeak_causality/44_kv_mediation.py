@@ -96,6 +96,22 @@ def _paired(a_map, b_map):
     return [a_map[k] for k in keys], [b_map[k] for k in keys], keys
 
 
+def patchscope_gate(scores, thresh=0.1):
+    """Pure/CPU: layer-scan argmax + positive-control gate (07 pattern, 07:114-117).
+
+    `scores` = per-layer P(concept) from decoding a clean DIRECT-concept rep (taken at
+    each layer) at the fixed inspection layer R. Returns (best_ps_layer, pos_ctrl_max,
+    positive_control_ok) where best_ps_layer is the argmax layer, pos_ctrl_max its value,
+    and positive_control_ok = (max > thresh). If the control fails the readout is unusable
+    but the argmax layer is still returned so the gated decode can be recorded + flagged.
+    """
+    if not scores:
+        return 0, 0.0, False
+    best = int(max(range(len(scores)), key=lambda l: scores[l]))
+    pc_max = float(scores[best])
+    return best, pc_max, bool(pc_max > thresh)
+
+
 # (name, minuend cell, subtrahend cell). INT_2x2 handled separately.
 _ESTIMANDS = [
     ("ReRead_test",   "C1", "C3"),
@@ -218,6 +234,33 @@ def run(args):
         or ["early", "mid", "late"]
     windows = [(w, list(wmap[w])) for w in win_names if w in wmap]
 
+    dev = lm.model.device
+    # --- Patchscope POSITIVE CONTROL, layer-scanned (07:114-127 pattern) -------------- #
+    # The old fixed-late-layer decode of the query rep floored ps_concept (~0) and was
+    # dropped. Rescue it the way 07 validates its readout: take a CLEAN DIRECT-concept
+    # codeword rep, scan its per-layer reps decoding each at the inspection layer R, take
+    # the max. best_ps_layer = the argmax layer where the concept is legible; the gated
+    # per-cell decode reads the query rep at that layer. If pos_ctrl_max <= 0.1 the readout
+    # is unusable (flagged) but still recorded.
+    pos_ctrl_max, best_ps_layer, positive_control_ok = 0.0, R + 1, False
+    dir_rows = sorted(
+        [r for r in bench["semantic"] if r["condition"] == "DIRECT_CONCEPT"
+         and r["readout"] == args.readout and r["split"] in splits],
+        key=lambda r: r["sid"])
+    if dir_rows:
+        try:
+            dr = dir_rows[0]
+            dtmpl = dc.apply_template(lm.tokenizer, dr["prompt"])
+            dcap = dc.capture_target_reps(lm, dtmpl, dr["probe_word"])
+            reps_all = dcap["reps"]["codeword_last"]
+            scores = [dec.decode(reps_all[l].to(dev), R, concept_id, code_id)[0]
+                      for l in range(reps_all.shape[0])]
+            best_ps_layer, pos_ctrl_max, positive_control_ok = patchscope_gate(scores)
+        except Exception as e:
+            print(f"[kv] patchscope positive control FAILED to compute: {e}")
+    print(f"[kv] patchscope positive control: max={pos_ctrl_max:.3f} "
+          f"best_ps_layer={best_ps_layer} ok={positive_control_ok}")
+
     tag = args.model.split("/")[-1]
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(
@@ -227,13 +270,14 @@ def run(args):
     raw_path = os.path.join(out_dir, "interv_raw.jsonl")
     fh = open(raw_path, "w")
     n_rows = [0]
-    dev = lm.model.device
 
     print(f"[kv] L={L} R={R} windows={win_names} splits={splits} -> {out_dir}")
 
     @torch.no_grad()
     def eval_cell(ds_tok, ds_query, contexts):
-        """Forward the DS receiver under `contexts`; return the two scalar readouts."""
+        """Forward the DS receiver under `contexts`; return the scalar readouts:
+        (p_concept, p_codeword, ps_concept[fixed R+1], ps_codeword[fixed R+1],
+         ps_concept_gated[best_ps_layer], ps_codeword_gated[best_ps_layer])."""
         with ExitStack() as stack:
             for c in contexts:
                 stack.enter_context(c)
@@ -243,13 +287,18 @@ def run(args):
         p_code = float(sum(probs[i] for i in id_groups["codeword"]))
         rep = out.hidden_states[R + 1][0, ds_query, :]
         ps_h, ps_c = dec.decode(rep.to(dev), R, concept_id, code_id)
-        return p_conc, p_code, float(ps_h), float(ps_c)
+        # gated: decode the query rep taken at the positive-control argmax layer
+        rep_g = out.hidden_states[best_ps_layer][0, ds_query, :]
+        ps_hg, ps_cg = dec.decode(rep_g.to(dev), R, concept_id, code_id)
+        return p_conc, p_code, float(ps_h), float(ps_c), float(ps_hg), float(ps_cg)
 
     def emit(base, window, cell, n_swapped, res):
-        p_conc, p_code, ps_h, ps_c = res
+        p_conc, p_code, ps_h, ps_c, ps_hg, ps_cg = res
         rec = {**base, "window": window, "cell": cell, "n_demo_swapped": n_swapped,
                "p_concept": p_conc, "p_codeword": p_code,
-               "ps_concept": ps_h, "ps_codeword": ps_c}
+               "ps_concept": ps_h, "ps_codeword": ps_c,
+               "ps_concept_gated": ps_hg, "ps_codeword_gated": ps_cg,
+               "best_ps_layer": best_ps_layer, "positive_control_ok": positive_control_ok}
         fh.write(json.dumps(rec) + "\n")
         n_rows[0] += 1
         if n_rows[0] % 200 == 0:
@@ -368,8 +417,13 @@ def run(args):
         "windows_def": {k: list(v) for k, v in wmap.items()},
         "n_layers": L, "readout_layer": R, "n_prompts_per_cell": args.n_prompts,
         "seed": args.seed, "n_rows": len(all_rows),
+        "patchscope_positive_control": {
+            "pos_ctrl_max": pos_ctrl_max, "best_ps_layer": best_ps_layer,
+            "positive_control_ok": positive_control_ok, "inspection_layer_R": R,
+            "note": "07-pattern layer-scanned gate; ps_*_gated unusable if not ok"},
         "p_concept": analyze_rows(all_rows, "p_concept"),
         "ps_concept": analyze_rows(all_rows, "ps_concept"),
+        "ps_concept_gated": analyze_rows(all_rows, "ps_concept_gated"),
         "status": "COMPLETE",
     }
     with open(os.path.join(out_dir, "kv_mediation_summary.json"), "w") as f:
