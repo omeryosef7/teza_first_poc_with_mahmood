@@ -21,7 +21,8 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S0 | Integrity-fix report + claim-status table | DONE | `STAGE0_INTEGRITY_REPORT.md` |
 | S1 | Matched dataset — add SHUFFLED_OR_INCONSISTENT_MAPPING | TODO | all other 5 conditions already exist in 30_build_pair_benchmark.py; NOT on Stage 2 critical path |
 | S2 | Complete 2×3 transplant specs (34) + analyzer (43) | DONE | commit 0034e20; analyzer positive-control tested |
-| S2 | **PRIMARY** transplant SMOKE (GPU job 694383) | RUNNING | validates DS_from_Direct + self-transplant diagonals resolve on existing carrot-bomb reps |
+| S2 | transplant SMOKE (GPU job 694383) | DONE→BUG | pipeline perfect (faithfulness=0.0, all 6 arms resolve) but readout FLOORED — bench/reps provenance mismatch (see BUG_AND_DEVIATION_LOG B1) |
+| S2 | **PRIMARY** consistent rebuild + transplant (gated chain) | READY | `ds_rebuild_transplant.slurm`: 31 gate → 32 reps → 33 dirs → 34 replace → 43 mediation on the current bench |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
