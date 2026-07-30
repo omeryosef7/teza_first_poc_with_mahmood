@@ -37,7 +37,7 @@ set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 DSC="$PROJECT_DIR/doublespeak_causality"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
-MODEL="meta-llama/Llama-3.1-8B-Instruct"
+MODEL="${MODEL:-meta-llama/Llama-3.1-8B-Instruct}"
 
 BENCH="${BENCH:-$DSC/data/pair_benchmark/pair_carrot_bomb.json}"
 READOUT="${READOUT:-forced_choice}"   # forced_choice has full dynamic range (DIRECT reads 0.785);
