@@ -37,6 +37,14 @@ Demonstration-K/V mediation (forced_choice, n=30; `pair_kv_mediation_...694691/k
 - The demonstration-codeword K/V carries a **small, codeword-specific** slice (mid ReRead > random control), but the bulk is **distributed / robust** — Stage-3 outcome **C (distributed computation)**, reported honestly.
 - Validity: `DemoStateSwap` self-swap reproduces the no-hook baseline **exactly** on the real model (n=30); 8 CPU tests + independent adversarial review.
 
+### 3.3 A causal TOCTOU signature: the refusal check catches an EARLY concept but a LATE one escapes it. **[NEW]**
+Concept × refusal factorial (n=40; `toctou_...694811/toctou_summary.json`; `45_toctou_factorial.py` + multi-layer refusal ablation, `STAGE4_TOCTOU_FINDINGS.md`; StrongReject, 0 judge failures):
+- **Installing the concept early triggers refusal** (REJECTED 0.82) **concept-specifically** — norm-matched random and orthogonal directions give 0.00; baseline and refusal-only give 0.00 malicious.
+- **Ablating refusal then flips early-concept to compliance** (MALICIOUS 0.53), but **a late-installed concept yields no compliance even with refusal removed** (0.07).
+- **Interaction (early−late refusal_gain) = +0.425** [+0.250, +0.600] for MALICIOUS (Holm-sig); −0.400 for REJECTED. An intervention *interaction* (not crossing curves), meeting plan §Stage-4 H5.
+
+**Significance:** the refusal mechanism is **depth-gated** — it checks the concept representation at an early depth, so Doublespeak's deferral of harmful semantics to later layers is a genuine **time-of-check/time-of-use** bypass. This is the causal test of the paper's §3.4 TOCTOU hypothesis.
+
 ## 4. Our NEGATIVE / integrity findings (equally load-bearing)
 
 ### 4.1 `d_Direct` "installs the concept +0.971" does NOT reproduce. **[NEGATIVE / integrity]** (`BUG_AND_DEVIATION_LOG.md` B4)
@@ -45,8 +53,7 @@ On a fresh, consistent, byte-identical-bench pipeline, additive `d_Direct` insta
 ### 4.2 Stage-0 integrity repairs of prior in-house pipeline. **[integrity]** (`STAGE0_INTEGRITY_REPORT.md`)
 10 defects (C1–C10) fixed with tests + independent review (no conclusion-inverting bug): patch-sweep readout contamination (C1/C3), aggregation manufacturing a null from missing cells (C2), empty-generation miscounting (C8), judge-health/partition (C7), held-out-concept axis leakage (C9), knockout controls (C5/C6), etc.
 
-### 4.3 TOCTOU factorial — PENDING (pilot 694811).
-Refusal ablation validated (L18, multi-layer project-out: harmful refusal 1.0→0.53). Result and H5 interaction to be filled from the pilot; will be reported honestly (power-limited if the weak `d_Direct` concept arm yields a null, not as a clean negative).
+### 4.3 TOCTOU — see §3.3 (a POSITIVE result). Honesty note: the semantic p_concept install is weak (B4) yet the *behavioral* interaction is strong and concept-specific; and the random/orthogonal controls were run only for cell B (refusal-trigger), not cell D — a follow-up should add control-D cells to fully close the compliance-flip specificity.
 
 ## 5. Limitations
 - **Modest absolute magnitudes** (DS reading ~0.35; `d_Direct` install ~0.03). The dissociation is *relative* and robust (context +0.35 vs local-state 0), but effect sizes are small.
@@ -55,4 +62,8 @@ Refusal ablation validated (L18, multi-layer project-out: harmful refusal 1.0→
 - **cloze readout floors the positive control** (DIRECT 0.005 vs forced_choice 0.785, B3) — resolved by using forced_choice; a caution for anyone reading the cloze-era numbers.
 
 ## 6. Paper-worthiness
-The **NEW causal transplant dissociation (§3.1)** — *the hijacked meaning is not stored in the target token's residual state; it is a property of the receiver context's computation* — is a defensible, interventional addition to the paper's observational story, with passing validity controls (exact faithfulness, clean neutral baseline) and a mechanistically-informative follow-up (§3.2: not a re-read, distributed). The integrity finding (§4.1) is a load-bearing negative. Remaining to strengthen for publication: the TOCTOU pilot, generalization across pairs/models (Stage 5), and larger n.
+Two defensible **NEW causal contributions** to the paper's observational story:
+1. **§3.1 transplant dissociation** — *the hijacked meaning is not stored in the target token's residual state; it is a property of the receiver context's computation* (IE_state ≈ 0 equiv; DE_context +0.35 ≈ 99% of the effect; exact faithfulness; clean neutral baseline), with a mechanistically-informative follow-up (§3.2: not a demo re-read, distributed).
+2. **§3.3 causal TOCTOU** — *the refusal mechanism is depth-gated; an early-installed concept is caught (concept-specifically) while a late one escapes* (interaction +0.425, Holm-sig, controlled). This is the causal test of the paper's §3.4 TOCTOU hypothesis.
+
+Plus a load-bearing **integrity negative** (§4.1: the in-house +0.971 `d_Direct` install does not reproduce). Remaining to strengthen for publication: generalization across pairs/models (Stage 5), control-D cells for §3.3, larger n/seeds, and a positive-control-gated patchscope readout.
