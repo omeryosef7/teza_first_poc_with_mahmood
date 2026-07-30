@@ -20,3 +20,16 @@ Chronological. Each entry: what, evidence, impact, resolution.
 **Resolution.** New gated chain `slurm_scripts/ds_rebuild_transplant.slurm`: rebuild reps (32) + directions (33) from the **current** bench, **gate on the readout validator (31, `gate_pass_any`)** before spending compute, then run the transplant (34) + mediation (43). If the current bench fails the gate, fall back to a fresh bench build (30, API) — which is also where Stage-1 SHUFFLED will be added. The mismatch is a data-hygiene lesson: **immutable, provenance-stamped bench/reps/dir triples** (the bench should never be overwritten in place).
 
 **Follow-up.** Stage-1 SHUFFLED_OR_INCONSISTENT_MAPPING will be added in a fresh bench build and re-run as an extra control; it is off the Stage-2 critical path.
+
+---
+
+## B2 — Stage 3 KV smoke floored by style-undersampling; modest bench magnitudes (2026-07-30)
+
+**What.** The Stage 3 KV-mediation SMOKE (job 694554, n=4) returned all cells ~0.01–0.03 → `ReRead_test`≈0, uninformative. Investigated before any full run.
+
+**Diagnosis (NOT a bug).**
+- **`DemoStateSwap` works end-to-end:** the real-model **self-swap faithfulness is exact** (`C1_selfswap`==`C1`=0.0146), and C3/C4 actually swapped **3–9** demonstration codewords (`n_demo_swapped`). `find_word_occurrences` correctly finds all codewords (12 in the academic|12 prompt). The `n_demo_swapped=0` first seen was on C1/C2, which do not swap by design.
+- **The floor is style-undersampling.** DS concept reading is strongly **style-dependent**: academic=0.004, dialogue=0.045 in the smoke; the 694417 full-set average of **0.21** is carried by the other styles (narrative/news/technical; max single-prompt 0.85). The n=4 smoke (first-by-sid) is academic/dialogue-heavy → floored. Fix: **run full-n (all 5 styles)** — no code change. → job 694667 (n=15).
+- The current bench is a **legitimate gpt-4o-mini API build** (`_meta.offline=False`, seed 7), not an offline/template build.
+
+**Scientific note (magnitudes; for Omer's awareness).** On this bench absolute effects are **modest and style-dependent**: DS natural reading ~0.2–0.3 (gate DS−Neutral p_concept +0.31), and the additive `d_Direct` at α=1.0 installs only **+0.019** (peak L4) — vs CAUSAL_CORE's near-ceiling +0.97 on the (now-overwritten) Jul-29 bench. The +0.02 is likely a **dose** effect (α=1.0 single point) not a bench defect, since the DS attack itself gives +0.31 and `d_Direct` still *exceeds all 60 matched controls* (specific, just small). → job 694668 runs a **dose sweep** (α=1,2,4,8) to get the install curve as a convincing positive control. The **dissociation is relative and holds regardless of scale**: context transplant (+0.20) vs local-state transplant (0). If a larger absolute effect is wanted for the paper, a stronger/higher-signal bench or readout (e.g. featuring the patchscope `ps_concept` readout 44 already records) is the lever — flagged, not blocking.
