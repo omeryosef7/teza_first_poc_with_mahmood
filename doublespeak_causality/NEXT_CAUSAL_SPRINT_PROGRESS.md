@@ -17,15 +17,11 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | Recon | Repo + defect map + code catalog | DONE | 5-agent audit; all C1–C10 confirmed STILL PRESENT (commit 8a9b91b did not fix them) |
 | S0 | C1 patch-sweep bound (07) | DONE | `ds_common.patch_layer_sweep(R)` → `range(R)`; test green |
 | S0 | C2 pair aggregation (41) | DONE | signed-max install; missing d_DS never affirms inert; 5/5 tests green |
-| S0 | C3 readout contamination (05) | TODO | same class as C1 — exclude final block |
-| S0 | C4 timing dead patchscope (06) | TODO | `ps` never called |
-| S0 | C5+C6 knockout controls (09/10) | TODO | pool before cw_last; record req_located; mask-dim guard |
-| S0 | C7 malicious_rate/judge health (14) | TODO | scored partition + health gate |
-| S0 | C8 empty-completion guard (18) | TODO | port EMPTY guard from 19 |
-| S0 | C9 axis leakage (21/22) | TODO | fit axis inside fold |
-| S0 | C10 classify_answer first-match (31) | TODO | p_concept unaffected (safe); label bias only |
-| S1 | Matched dataset — add SHUFFLED_OR_INCONSISTENT_MAPPING | TODO | all other 5 conditions already exist in 30_build_pair_benchmark.py |
-| S2 | **PRIMARY** State × receiver-context transplant | TODO | run_replace already covers 3/6 cells; add DS_from_Direct + 2 self-transplant diagonals |
+| S0 | C3–C10 fixes (05,06,09,10,14,18,21,22,31) | DONE | independent adversarial review: no conclusion-inverting bug; commit 7b0a834 |
+| S0 | Integrity-fix report + claim-status table | DONE | `STAGE0_INTEGRITY_REPORT.md` |
+| S1 | Matched dataset — add SHUFFLED_OR_INCONSISTENT_MAPPING | TODO | all other 5 conditions already exist in 30_build_pair_benchmark.py; NOT on Stage 2 critical path |
+| S2 | Complete 2×3 transplant specs (34) + analyzer (43) | DONE | commit 0034e20; analyzer positive-control tested |
+| S2 | **PRIMARY** transplant SMOKE (GPU job 694383) | RUNNING | validates DS_from_Direct + self-transplant diagonals resolve on existing carrot-bomb reps |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
 | S5 | Generalization (≥3 pairs, +1 arch) | TODO | Gated on primary |
@@ -75,4 +71,6 @@ Builder `30_build_pair_benchmark.py` emits: `DIRECT_CONCEPT(+NODEMO)`, `NEUTRAL_
 
 - **2026-07-30** — Wrote plan `NEXT_CAUSAL_SPRINT_PLAN.md`. Reconnaissance: mapped repo, extracted C1–C10 from MERGED_MASTER_PLAN.md.
 - **2026-07-30** — Ran 5-agent audit workflow (`ds-causal-recon`): confirmed all C1–C10 STILL PRESENT; cataloged `ds_common` utilities; found `run_replace` covers 3/6 transplant cells; dataset missing only SHUFFLED; extracted SLURM/env conventions.
-- **2026-07-30** — S0 **C1 fixed**: added `ds_common.patch_layer_sweep(R)` (single source of truth for C1+C3), routed `07_patchscope_readout.py` through it (`range(R)`, L≤R-1). S0 **C2 fixed**: `41_aggregate_pairs.py` uses signed-max for install arm, abs-max only for the inert challenge, and a missing d_DS window is now quarantined (`pairs_d_DS_incomplete`) instead of silently affirming inert. Added `tests/test_integrity_fixes.py` (5 tests, all green); existing layerpatch/localization tests still green. NOTE: real `pair_generalization.json` had measured cells, so the 5/5 dissociation claim is unchanged — now robustly backed. Next: C3–C10.
+- **2026-07-30** — S0 **C1/C2 fixed** (commit c48130a): `patch_layer_sweep` guard + signed-max/quarantine aggregation; `tests/test_integrity_fixes.py` 5/5 green. Real `pair_generalization.json` had measured cells → 5/5 dissociation unchanged, now robustly backed.
+- **2026-07-30** — S0 **C3–C10 fixed** (commit 7b0a834) via a 7-agent parallel workflow, each self-verified (py_compile). **Independent adversarial review agent** then cleared all diffs: no must-fix, no conclusion-inverting bug. 3 result-moving changes (14 malicious_rate↑, 18 delta_necessity↓, 31 label-shift) all conservative/correct; C10 label-shift flagged for Omer's sign-off (labels only, p_concept untouched). Wrote `STAGE0_INTEGRITY_REPORT.md` (fixes + claim-status table).
+- **2026-07-30** — S2 code done (commit 0034e20): extended `run_replace` specs to the full 2×3 table; wrote `43_transplant_mediation.py` (IE/DE/INT/TE/PORT/RESID + faithfulness + equivalence), positive-control tested 4/4 on synthetic data. SLURM `ds_transplant_mediation.slurm` reuses canonical carrot↔bomb bench/reps/dir. **Submitted SMOKE job 694383** (n-prompts 2) to validate the 3 new arms resolve before the full confirmatory run.
