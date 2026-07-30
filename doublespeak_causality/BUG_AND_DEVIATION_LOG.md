@@ -51,3 +51,18 @@ Chronological. Each entry: what, evidence, impact, resolution.
 **Resolution.** Re-run Stage 2 transplant + Stage 3 KV mediation with `--readout forced_choice` (parametrized `ds_rebuild_transplant.slurm`, now defaults to forced_choice + appends the 44 KV step; n=15 for all styles). This gives a **working positive control** (d_Direct source decodes 0.785) so IE_state≈0 / PORT_Direct are interpretable against a real installable reference — **without** rebuilding the bench. NOT a consequential fork after all; the cloze Stage-2 result stands (DS signal ~equal), this sharpens the positive control and the KV dynamic range.
 
 **Note on patchscope=0.** Under cloze the confound-free patchscope readout returned 0 for all cells. Re-checking under forced_choice will show whether that was a cloze artifact or a genuine "concept not in the query codeword's local rep" confirmation (which would be consistent with IE_state=0). Verify the patchscope positive control (DIRECT rep must decode >0) in the new run before citing ps_concept.
+
+---
+
+## B4 — CAUSAL_CORE "d_Direct installs +0.971" does NOT reproduce; no regression in current pipeline (2026-07-30)
+
+**What.** The additive `d_Direct` positive control is weak on the current pipeline across readouts (cloze +0.096, forced_choice +0.029, label-flip max 0.27 at α=4), NOT the standing CAUSAL_CORE headline of **+0.971 (late)**.
+
+**Investigation (user asked to check all options).**
+- **Bench is identical** to CAUSAL_CORE's: on-disk `pair_carrot_bomb.json` is byte-identical to the git-committed version and `_meta.generated_at = 2026-07-29T21:44` (the Jul-30 mtime was a git touch, not a rewrite — this also corrects B1's "bench rewrite" hypothesis: the *original* smoke floor was old-reps/new-code incompatibility, fixed by rebuilding reps).
+- **My pipeline reproduces the on-disk artifact.** The CAUSAL_CORE analysis that actually backs an install curve, `outputs/pair_causal_analysis_one_word_693571.json` (metric p_concept, one_word, codeword_last), reports `add_d_Direct max_effect = 0.0278` — **matching my +0.03**. No on-disk `pair_causal_analysis*.json` has `add_d_Direct > 0.4`.
+- **Metric reconciliation fails too:** label-flip (p_concept>p_codeword) install caps at **0.267** (α=4, L4), not 0.97.
+
+**Conclusion.** There is **no computational regression** in the current code — it faithfully reproduces the committed bench and the on-disk CAUSAL_CORE artifact (+0.028). The documented **+0.971 appears unbacked on disk** (deleted run, or a doc-vs-metric mislabel), consistent with the doc-vs-artifact drift class MERGED_MASTER_PLAN already flagged for CAUSAL_CORE. Flagged for Omer.
+
+**Impact on the NEW sprint (positive).** The Stage 2/3 conclusions do NOT depend on d_Direct's magnitude (their validity controls are exact self-transplant faithfulness + a strong DE_context +0.35). This finding *strengthens* the story: on the reproducible pipeline, **no local codeword intervention — full-state transplant OR additive d_Direct — installs the concept in a neutral context; only the surrounding context does.** The positive control for "the machinery can produce concept reading" is DE_context itself (+0.35), not d_Direct. Updated STAGE2 findings accordingly.
