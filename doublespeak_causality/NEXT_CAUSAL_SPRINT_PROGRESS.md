@@ -33,7 +33,8 @@ Claim labels: `CONFIRMATORY` · `EXPLORATORY` · `NEGATIVE` · `INVALIDATED` · 
 | S3 | forced_choice KV mediation (694691) | **DONE ✅** | ReRead_test small (91% survives demo-KV neutralization → NOT trivial re-read); distributed (outcome C). STAGE3_KV_FINDINGS.md |
 | S2 | additive d_Direct PC (694706) | DONE→B4 | ALSO weak (+0.03, label 0.27) — NOT a regression (reproduces on-disk artifact 693571=+0.028); CAUSAL_CORE +0.971 unbacked on disk. STRENGTHENS story: no local intervention installs, only context |
 | S4 | TOCTOU factorial code + tests | DONE | 45_toctou_factorial + AllPositionProjectOut hook + refusal-dir builder; 9 CPU tests; adversarial review clean (no conclusion-inverting bug) |
-| S4 | Refusal-dir generation-validation + SLURM chain | RUNNING(agent) | validate refusal dir by generation (GATE) before factorial; then smoke+pilot |
+| S4 | Refusal-dir validation + SLURM chain | DONE | smoke 694789: Llama refuses 100% harmful (real signal); L14 validated (both gains>0); gate+factorial ran clean |
+| S4 | Multi-layer refusal ablation fix | RUNNING(agent) | single-layer ablation too weak (1.0→0.933); switch to all-layer project-out (Arditi) for power, then re-validate + pilot |
 | S1 | SHUFFLED condition | TODO | off critical path |
 | S3 | Context/KV mediation + path patching | TODO | Gated on S2 |
 | S4 | Concept × refusal factorial (TOCTOU causal test) | TODO | |
