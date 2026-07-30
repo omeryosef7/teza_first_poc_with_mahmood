@@ -363,9 +363,21 @@ def main():
         wmap = layer_windows(L)
         groups = [(f"layer{l}", [l]) for l in layer_list]
         groups += [(w, list(wmap[w])) for w in window_names if w in wmap]
+        # (arm, RECEIVER cond, SOURCE cond). run_replace overwrites the receiver's
+        # codeword state with the source prompt's codeword state (mode='replace').
+        # NEXT_CAUSAL_SPRINT S2: complete the primary 2x3 {Neutral,DS} receiver x
+        # {h_N, h_DS, h_Direct} source mediation table. The three added specs are:
+        #   - DS_from_Direct     : DS receiver <- h_Direct   (positive control IN the DS receiver)
+        #   - Neutral_from_Neutral, DS_from_DS : SELF-TRANSPLANT diagonals. These are the
+        #     correct baselines for IE_state/DE_context/INT/TE because they route h through
+        #     the SAME replace machinery as the off-diagonal cells (the alpha=0 `identity`
+        #     arm does not — it is kept only to validate that self-transplant == no-patch).
         specs = [("Neutral_from_DS", "NEUTRAL_CODEWORD", "DOUBLESPEAK"),
                  ("Neutral_from_Direct", "NEUTRAL_CODEWORD", "DIRECT_CONCEPT"),
                  ("DS_from_Neutral", "DOUBLESPEAK", "NEUTRAL_CODEWORD"),
+                 ("DS_from_Direct", "DOUBLESPEAK", "DIRECT_CONCEPT"),
+                 ("Neutral_from_Neutral", "NEUTRAL_CODEWORD", "NEUTRAL_CODEWORD"),
+                 ("DS_from_DS", "DOUBLESPEAK", "DOUBLESPEAK"),
                  ("Neutral_from_Benign", "NEUTRAL_CODEWORD", "BENIGN_REMAP"),
                  ("Neutral_from_Unrelated", "NEUTRAL_CODEWORD", "UNRELATED_TARGET")]
         for split in splits:
