@@ -184,6 +184,88 @@ def capture_components(lm, templated_text: str, probe_word: str,
 
 
 # --------------------------------------------------------------------------- #
+# Demonstration K/V mediation (S3, NEXT_CAUSAL_SPRINT) — resid_pre write-hook
+# --------------------------------------------------------------------------- #
+class DemoStateSwap:
+    """S3 (NEXT_CAUSAL_SPRINT): overwrite the pre-attention residual (resid_pre) at a
+    FIXED set of positions with per-layer SOURCE rows, via forward-PRE hooks.
+
+    K and V are projected from the block INPUT (resid_pre), so overwriting the resid_pre
+    of the demonstration tokens swaps the K/V that the query attends to WITHOUT touching
+    sequence length (no insertion/deletion) and without needing a past_key_values cache.
+    This is the demo-K/V analogue of ds_common.LayerPatch (which edits the block OUTPUT).
+
+    Args:
+        model:      the HF model (layers found via ds_common._get_layers).
+        positions:  token indices to overwrite at EVERY hooked layer (shared across
+                    layers; length n_pos).
+        source:     dict {layer_idx: Tensor[n_pos, hidden]} — the rows written at that
+                    layer, aligned to `positions` order. The KEYS of this dict define the
+                    set of layers that get a hook.
+        batch_index: batch row to edit (default 0; the pipeline runs batch size 1).
+
+    Invariants (unit-tested in tests/test_demostateswap_synthetic.py):
+      (a) SELF-SWAP — if `source[L]` equals the receiver's OWN captured resid_pre at
+          `positions` for every hooked layer L, the forward reproduces the no-hook
+          baseline EXACTLY (bf16<->fp32 round-trips are lossless, so the write is a
+          numerical no-op).
+      (b) LOCALITY — only `positions` (and their causal downstream) change; earlier
+          positions are never modified.
+      (c) CLEANUP — all hook handles are removed on __exit__.
+
+    The pre-hook signature MIRRORS ComponentCapture's (`args[0] if args else
+    kwargs['hidden_states']`) so it works whether the decoder layer is called with the
+    hidden state positionally or by keyword; it returns the modified (args, kwargs).
+    """
+
+    def __init__(self, model, positions: Sequence[int],
+                 source: Dict[int, torch.Tensor], batch_index: int = 0):
+        self.layers = dc._get_layers(model)
+        self.positions = list(positions)
+        self.source = source
+        self.bi = batch_index
+        self._handles: List[Any] = []
+
+    def _pre_hook(self, li: int):
+        rows = self.source[li]
+        pos = self.positions
+
+        def f(mod, args, kwargs=None):
+            kwargs = {} if kwargs is None else kwargs
+            h = args[0] if args else kwargs.get("hidden_states")
+            h = h.clone()                                    # never edit in place
+            seq = h.shape[1]
+            # Length-preserving: write existing positions only. Keep source rows aligned
+            # to `positions` order; drop any position that is out of range (KV-cached
+            # decode steps hold only the new token) rather than raising.
+            keep = [k for k, p in enumerate(pos) if 0 <= p < seq]
+            if keep:
+                idx = torch.tensor([pos[k] for k in keep], device=h.device)
+                r = rows.to(h.dtype).to(h.device)
+                sel = torch.tensor(keep, device=r.device)
+                h[self.bi, idx, :] = r.index_select(0, sel)
+            if args:
+                return (h,) + tuple(args[1:]), kwargs
+            kwargs["hidden_states"] = h
+            return args, kwargs
+
+        return f
+
+    def __enter__(self):
+        for li in self.source:
+            self._handles.append(
+                self.layers[li].register_forward_pre_hook(self._pre_hook(li),
+                                                          with_kwargs=True))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Component-level patching (§6: "attention-output vs MLP-output patching")
 # --------------------------------------------------------------------------- #
 class SubmodulePatch:
