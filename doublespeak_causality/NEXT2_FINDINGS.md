@@ -22,4 +22,13 @@ Backing: `outputs/pair_interv_replace_*/transplant_mediation_p_concept.json` (es
 
 ---
 
-*(N2+ populated from the design-panel synthesis + execution — see NEXT2_PLAN.md.)*
+### N1 overlay — where the reading LIVES vs where the refusal CHECK acts (free, unifies S2/S3/S4)
+Contrast, from data already on disk:
+- **Concept reading (transplant, N1):** depth-INVARIANT — the codeword's local state is inert at every layer (IE_state|max| < 0.0002, L0–31), context re-supplies the reading at all depths (DE_context flat).
+- **Refusal check (TOCTOU, S4, `toctou_...694811`):** depth-GATED — additive concept install triggers *ablatable* refusal only when done EARLY: `refusal_gain` (MALICIOUS) = early **+0.45**, mid +0.10 (CI crosses 0), late +0.025 (CI crosses 0).
+
+**Unifying interpretation:** the hijacked *meaning* is a distributed, context-supplied property present at every depth, but the *safety mechanism* that would block it acts only at an early depth. Doublespeak wins by keeping the codeword benign through that early check while the concept is (re)constructed from context at every subsequent depth — a clean statement of the time-of-check (early, fixed depth) / time-of-use (all depths, context-supplied) split. This links S2 (context-carried), N1 (at every depth), and S4 (depth-gated refusal) into one picture, using no new compute.
+
+---
+
+*(N2+ populated as NEXT2 items land — see NEXT2_PLAN.md.)*
