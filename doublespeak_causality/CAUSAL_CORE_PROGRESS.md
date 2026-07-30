@@ -27,7 +27,7 @@ Branch: `behavioral-causality-sprint` · Started: 2026-07-29
 | S11 | Continuous soft-prompt positive control (§8.5, §16.13) | ✅ `COMPLETE` — **gate RESOLVED** | Took 4 attempts, 3 of them artefacts (vacuous `free` params → frozen optimizer → missing discretization). Final (693655/6/7, n=8 each): relaxed **0.98861** → **discretized 0.00424** for the concept (**0.43%** retention). NOT unreachability — the real DS demo block hits **0.476** at the same positions, so this is an **optimization gap**. |
 | S12 | Demonstration-level GCG/MAC — gated on S11 (§8.6, §16.14) | `PARTIAL` — slice 1 ✅ **CONFIRMED negative** | 693683: the selection rule transfers **BACKWARDS** — TOP−BOTTOM = **−0.183 [−0.267, −0.083]**, n=12, CI excludes 0; per-codeword ρ = −0.488. Refusal is **0/132**, so it is not a legibility→refusal effect. **CONFIRMED** by 693698: the NEUTRAL (no-demo) arm scores **0.0083** (n=120), so the harm requires the demonstrations and the manufacturable-object confound is refuted. Inversion **replicated across two independent judging passes** (−0.183, then −0.133 [−0.200,−0.050]). Selecting codewords by the causal score **worsens** held-out behavioral ASR. |
 | S13 | Codeword properties incl. embedding distance (§8.1, §16.15) | ✅ `COMPLETE` — **negative** | 693669, 27 codewords, demo text held identical. Hijack strength spans **4.3×** (0.170 `ribbon` → 0.737 `puzzle`), but **no static property predicts it** — all 15 tests NS after Holm. Matan's distance hypothesis is **directionally consistent** (cosine ρ=−0.276, L2 ρ=+0.186) but **unsupported** at n=27; replicates the prior r=−0.18 in sign and magnitude with matched demos. |
-| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | `RUNNING` — thinking half now instrumented | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
+| S14 | Qwen3 thinking on the fixed pair (§G, §16.16) | ✅ `COMPLETE` | non-thinking DS−Neutral **+0.694** [+0.583,+0.792] (693666); thinking (693837, 1536 tok, 0/96 truncated): hijack reads-as-concept **1.00** at the answer transition, DIRECT 1.00 / NEUTRAL 0.00 — thinking adds **no** second check that catches it (§G), but n=9 degenerate + `p_concept` invalid in thinking mode (use the label readout). | 693666 COMPLETE: the hijack **replicates on Qwen3-14B and is STRONGER** — `DS−Neutral` reads-as-concept **+0.694 [+0.583, +0.792]**, p_concept **+0.580 [+0.482, +0.672]**, n=72, 15/30 cells usable (vs Llama +0.500 / +0.307). Thinking half **now instrumented and submitted (693711)**: `--answer-marker '</think>'` scores the first token AFTER the marker (the answer transition, per §G) instead of `scores[0]`, and classifies the post-marker answer rather than the chain of thought. `31` now **refuses to run** with `--enable-thinking true` and no marker rather than emit an uninterpretable number. |
 | S15 | DeepSeek tokenizer localization + regression tests (§16.17) | ✅ `COMPLETE` — correctness 100%, coverage 80% (documented limit) | failures 192/480 → 96/480; `codeword_last` correctness on DeepSeek **28.8% → 100%**; other 3 models bit-identical; 43/43 tests. A further fix for the residual 20% was tried and **measured strictly worse** (96→364 failures, 100%→69% correct) and reverted — see ITER23. Remaining 20% fails **loudly**. |
 | S16 | Scale ≥10 pairs + replication — gated (§F, §16.18) | ✅ `COMPLETE` — 5 pairs, all gated | S1→S9 all pass, so §16.18's gate is satisfied. 5 pairs across 4 harm categories, **all S2-gated** (14–21/30 cells, hijack +0.45…+0.62). **`d_DS` inert 5/5; `d_Direct` installs 4/5** (+0.011…+0.971). `cocaine` is a genuine exception, not a readout failure to test whether the **`d_Direct` installs / `d_DS` inert** dissociation is a property of Doublespeak or of `carrot`↔`bomb`. Aggregator `41_aggregate_pairs.py` reports per-pair, **never pooled**. |
 | S17 | Documentation / registry / job tables (§15, §16.19) | `RUNNING` — registry now updated | `EXPERIMENT_REGISTRY.csv` +6 causal-core rows (S1/S2/S6/S12×2/S16); this file + [`CAUSAL_CORE_FINDINGS.md`](CAUSAL_CORE_FINDINGS.md) (self-contained hand-off summary) + `RESULTS_FREEZE_AUDIT.md` + `CAUSAL_OBJECTIVE.md` + **`ARTEFACT_MANIFEST.json`** (55 files / 0.97 GB, sha256 + mtime at commit `0607a61`) — closes the audit's provenance finding for the causal-core artefacts |
@@ -99,7 +99,7 @@ receive only redacted labels, scalars and statistics.
 | 693783–693786 | S2 gates **rerun, lexicons fixed** | `run_pair_readout.sh` | n-803/804 | 2026-07-30 | ✅ ALL PASS (14–21/30 cells; hijack +0.45…+0.62) | `outputs/pair_readout_*_69378*` |
 | 693711 | S14 Qwen3 thinking (800 rows) | `run_pair_readout.sh` | n-802 | 2026-07-30 | ⚠️ CANCELLED — ~6h projected vs 4h wall | — |
 | 693798 | S14 Qwen3 thinking (200 rows, 384 tok) | `run_pair_readout.sh` | n-803 | 2026-07-30 | ⚠️ gate 1/15 — **CoT TRUNCATED** (90/200 no `</think>`, 109/200 maxed) | `outputs/pair_readout_Qwen3-14B_*_693798` |
-| 693837 | S14 Qwen3 thinking retry (96 rows, 1536 tok) | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_readout_Qwen3-14B_*_693837` |
+| 693837 | S14 Qwen3 thinking retry (96 rows, 1536 tok) | `run_pair_readout.sh` | n-804 | 2026-07-30 | ✅ COMPLETE — 0/96 truncated; hijack 1.00 at answer transition | `outputs/pair_readout_Qwen3-14B_*_693837` |
 | ~~693773~~ | superseded S2 gate `carrot`↔`pistol` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693774~~ | superseded S2 gate `carrot`↔`cocaine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | — |
 | ~~693775~~ | superseded S2 gate `carrot`↔`chlorine` | `run_pair_readout.sh` | — | 2026-07-30 | RUNNING | `outputs/pair_interv_controls_*_693705` |
@@ -1216,6 +1216,41 @@ pending): `causal_greedy` and `behavior_greedy` pick **disjoint** demonstrations
 objectives select different demonstrations is the mechanism behind slice 1's inversion,
 observed again at the demonstration level — but the number that matters is the held-out
 behavioral contrast, which is still running.
+
+### ITER29 — 2026-07-30 — S14 thinking RESOLVED at 1536 tokens: hijack survives to the answer transition
+
+The retry (693837, 96 rows, 1536-token budget) fixes the truncation: **0/96 truncated,
+`</think>` found in 96/96**, and the gate now passes 4 readouts. At the **answer transition**
+(first token after `</think>`, per §G):
+
+| readout | DIRECT | NEUTRAL | DOUBLESPEAK |
+|---|---|---|---|
+| `cloze` / `forced_choice` / `one_word` / `repeat_concept` | 1.00 | 0.00 | **1.00** |
+
+**In thinking mode the Doublespeak hijack reads as the concept at the answer transition, every
+time** — the chain of thought does **not** add a second safety check that catches it here.
+That is the §G question ("does thinking add a check after semantic resolution?"), and on this
+evidence the answer is no.
+
+**Two caveats, stated because they bound the claim:**
+- **n is small.** The stratified 96-row cap leaves ~3 prompts per (readout × condition) cell,
+  so the `DS − Neutral` label contrast is **degenerate** (every DS row = 1.00, no variance to
+  bootstrap; `ci_reliable = false`). This is a *qualitative* confirmation — the hijack is
+  clearly present in thinking mode — not a CI-backed magnitude. A properly powered version
+  needs more prompts per cell, which does not fit a `killable` window at 1536 tok/prompt.
+- **The `p_concept` (probability) readout is 0.00 in thinking mode** and must NOT be used
+  there: the first post-`</think>` token is rarely the bare concept word (the answer is a
+  sentence), so next-token mass on the concept is ~0 even when the stated answer names it.
+  The **label** readout is the valid modality for thinking mode; the probability readout is a
+  non-thinking-only measure. Recorded so nobody reports the 0.00 as "no hijack".
+
+**Thinking vs non-thinking, side by side:** non-thinking DS−Neutral reads-as-concept
+**+0.694** [+0.583, +0.792] (693666, n=72); thinking DS reads-as-concept **1.00**, NEUTRAL
+0.00 (693837, n=9, degenerate). Directionally the hijack is *at least as strong* with thinking
+on — but the non-thinking number is the quantified one.
+
+**S14 COMPLETE** (both halves): non-thinking quantified, thinking qualitatively confirmed with
+the n-limit and the readout-modality caveat documented.
 
 ---
 
