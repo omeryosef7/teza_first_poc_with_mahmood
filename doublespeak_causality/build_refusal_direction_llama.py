@@ -34,6 +34,8 @@ import os
 import sys
 import json
 import argparse
+import importlib.util
+from contextlib import ExitStack
 
 import torch
 
@@ -88,6 +90,155 @@ def pooled_harmful_prompts(bench_paths):
     return prompts
 
 
+# --------------------------------------------------------------------------- #
+# Generation-based validation (the NON-tautological sign check)
+# --------------------------------------------------------------------------- #
+def _load_v18():
+    """Import 18_run_behavioral_necessity.py by path (numeric filename -> importlib idiom,
+    identical to 45_toctou_factorial.py / 19). Reuses its validated judge primitives."""
+    spec = importlib.util.spec_from_file_location(
+        "v18", os.path.join(HERE, "18_run_behavioral_necessity.py"))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def behavioral_field(bench_paths, field, n):
+    """First-n unique behavioral `field` prompts, pooled across benches (by key; never printed)."""
+    prompts, seen = [], set()
+    for p in bench_paths:
+        bench = json.load(open(p))
+        for row in bench["behavioral"]:
+            v = row[field]
+            if v not in seen:
+                seen.add(v)
+                prompts.append(v)
+    return prompts[:n] if n else prompts
+
+
+@torch.no_grad()
+def _gen_completion(lm, templated_text, ctx_managers, max_new_tokens):
+    """Greedy generation on already-templated text under a stack of context managers
+    (AllPositionProjectOut / LayerPatch). add_special_tokens=False mirrors patched_generate
+    (single BOS). Returns the decoded completion STRING (never persisted)."""
+    tok = lm.tokenizer(templated_text, return_tensors="pt",
+                       add_special_tokens=False).to(lm.model.device)
+    in_len = tok["input_ids"].shape[1]
+    with ExitStack() as stack:
+        for cm in ctx_managers:
+            stack.enter_context(cm)
+        out = lm.model.generate(**tok, max_new_tokens=max_new_tokens, do_sample=False,
+                                eos_token_id=lm.eos_token_ids,
+                                pad_token_id=lm.tokenizer.pad_token_id)
+    return lm.tokenizer.decode(out[0][in_len:], skip_special_tokens=True)
+
+
+def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
+                   induce_alpha, max_new_tokens):
+    """Sign-correctness of v_refusal[L] by GENERATION (scalars only; no completions kept).
+
+      ABLATE arm (harmful `direct`): project v out at EVERY position/timestep
+        (pair_common.AllPositionProjectOut) -> should LOWER refusal / raise compliance.
+        ablate_gain = refusal_rate_baseline_harmful - refusal_rate_ablated   (want > 0)
+      INDUCE arm (benign `neutral`): ADD +alpha*v at all prompt positions
+        (ds_common.LayerPatch mode="add") -> should RAISE refusal.
+        induce_gain = refusal_rate_added - refusal_rate_baseline_neutral      (want > 0)
+      score = ablate_gain + induce_gain.
+    """
+    vv = v.float().to(lm.model.device)
+
+    b_h = a_h = 0
+    for p in harmful_prompts:
+        t = dc.apply_template(lm.tokenizer, p)
+        base = _gen_completion(lm, t, [], max_new_tokens)
+        abl = _gen_completion(lm, t, [pc.AllPositionProjectOut(lm.model, L, vv, 1.0)],
+                              max_new_tokens)
+        b_h += int(kw_refusal(base))
+        a_h += int(kw_refusal(abl))
+    n_h = max(len(harmful_prompts), 1)
+    rr_base_harmful = b_h / n_h
+    rr_ablated = a_h / n_h
+    ablate_gain = rr_base_harmful - rr_ablated
+
+    add_vec = induce_alpha * vv
+    b_n = i_n = 0
+    for p in neutral_prompts:
+        t = dc.apply_template(lm.tokenizer, p)
+        in_len = lm.tokenizer(t, add_special_tokens=False,
+                              return_tensors="pt")["input_ids"].shape[1]
+        base = _gen_completion(lm, t, [], max_new_tokens)
+        add = _gen_completion(
+            lm, t, [dc.LayerPatch(lm.model, L, list(range(in_len)),
+                                  vector=add_vec, mode="add")], max_new_tokens)
+        b_n += int(kw_refusal(base))
+        i_n += int(kw_refusal(add))
+    n_n = max(len(neutral_prompts), 1)
+    rr_base_neutral = b_n / n_n
+    rr_added = i_n / n_n
+    induce_gain = rr_added - rr_base_neutral
+
+    return {
+        "layer": L,
+        "n_harmful": len(harmful_prompts), "n_neutral": len(neutral_prompts),
+        "induce_alpha": induce_alpha, "max_new_tokens": max_new_tokens,
+        "refusal_rate_baseline_harmful": round(rr_base_harmful, 4),
+        "refusal_rate_ablated": round(rr_ablated, 4),
+        "ablate_gain": round(ablate_gain, 4),
+        "refusal_rate_baseline_neutral": round(rr_base_neutral, 4),
+        "refusal_rate_added": round(rr_added, 4),
+        "induce_gain": round(induce_gain, 4),
+        "score": round(ablate_gain + induce_gain, 4),
+        "both_gains_positive": bool(ablate_gain > 0 and induce_gain > 0),
+    }
+
+
+def run_validation(args, lm, layers, vecs, metas):
+    """Validate every built layer by generation, stamp meta['validation'], and write
+    the top-level SELECTED.json naming the best sign-correct layer (max score, both gains>0)."""
+    pc = __import__("pair_common")
+    kw_refusal = _load_v18().kw_refusal
+    harmful = behavioral_field(args.bench, "direct", args.val_n_items)
+    neutral = behavioral_field(args.bench, "neutral", args.val_n_items)
+    print(f"[validate] harmful={len(harmful)} neutral={len(neutral)} "
+          f"alpha={args.induce_alpha} max_new_tokens={args.val_max_new_tokens}", flush=True)
+
+    for L in layers:
+        val = validate_layer(lm, pc, kw_refusal, L, vecs[L], harmful, neutral,
+                             args.induce_alpha, args.val_max_new_tokens)
+        metas[L][0]["validation"] = val
+        print(f"[validate] L{L}: ablate_gain={val['ablate_gain']:+.3f} "
+              f"induce_gain={val['induce_gain']:+.3f} score={val['score']:+.3f} "
+              f"valid={val['both_gains_positive']}", flush=True)
+
+    selected, best_score = None, None
+    for L in layers:
+        val = metas[L][0]["validation"]
+        if val["both_gains_positive"] and (best_score is None or val["score"] > best_score):
+            best_score, selected = val["score"], L
+
+    sel = {
+        "criterion": "max(ablate_gain + induce_gain) subject to both gains > 0",
+        "model": args.model, "layers_tested": layers,
+        "any_valid": selected is not None,
+        "selected_layer": selected,
+        "selected_pt": os.path.abspath(metas[selected][1]) if selected is not None else None,
+        "selected_json": os.path.abspath(metas[selected][1].replace(".pt", ".json"))
+        if selected is not None else None,
+        "score": best_score,
+        "per_layer": {str(L): metas[L][0]["validation"] for L in layers},
+        "env": dc.env_metadata(),
+    }
+    sel_path = os.path.join(args.out, "refusal_direction_llama_SELECTED.json")
+    json.dump(sel, open(sel_path, "w"), indent=2)
+    if selected is None:
+        print("[validate] NO layer passed (both gains > 0). SELECTED.selected_layer=null.",
+              flush=True)
+    else:
+        print(f"[validate] SELECTED layer L{selected} (score={best_score:+.3f}) "
+              f"-> {metas[selected][1]}", flush=True)
+    print(f"[validate] wrote {sel_path}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bench", nargs="+", required=True,
@@ -97,6 +248,15 @@ def main():
     ap.add_argument("--out", default=os.path.join(HERE, "outputs", "stage_gcg_full"))
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--validate", action="store_true",
+                    help="after building, validate each layer by GENERATION (non-tautological "
+                         "sign check) and write refusal_direction_llama_SELECTED.json")
+    ap.add_argument("--val-n-items", type=int, default=15,
+                    help="#behavioral direct/neutral prompts per validation arm")
+    ap.add_argument("--val-max-new-tokens", type=int, default=64,
+                    help="generation length during validation (small = fast)")
+    ap.add_argument("--induce-alpha", type=float, default=8.0,
+                    help="dose for the +alpha*v_refusal induce arm (v is unit-norm)")
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
@@ -121,12 +281,14 @@ def main():
         for L, h in last_token_hs(lm, p, layers).items():
             harmless_hs[L].append(h)
 
+    vecs, metas = {}, {}                       # {L: v}, {L: (meta, pt_path)}
     for L in layers:
         mh = torch.stack(harmful_hs[L]).mean(0)
         ml = torch.stack(harmless_hs[L]).mean(0)
         v = mh - ml
         v = v / (v.norm() + 1e-8)                              # unit refusal axis
-        # separation = mean cosine(h, v) gap between the two classes (the sign check)
+        # separation = mean cosine(h, v) gap between the two classes (TAUTOLOGICAL: >=0 by
+        # construction — kept for continuity, but validation is the real sign check).
         ph = torch.stack([torch.dot(h / (h.norm() + 1e-8), v) for h in harmful_hs[L]])
         pl = torch.stack([torch.dot(h / (h.norm() + 1e-8), v) for h in harmless_hs[L]])
         sep = float(ph.mean() - pl.mean())
@@ -140,11 +302,24 @@ def main():
             "proj_harmful_mean": float(ph.mean()), "proj_harmless_mean": float(pl.mean()),
             "separation": sep, "env": dc.env_metadata(),
         }
-        json.dump(meta, open(pt_path.replace(".pt", ".json"), "w"), indent=2)
+        vecs[L], metas[L] = v, (meta, pt_path)
         print(f"[refusal] L{L}: separation={sep:+.4f} -> {pt_path}", flush=True)
 
-    print("[refusal] done. Pick the largest-separation, sign-correct layer for --refusal-pt.",
-          flush=True)
+    # Generation-based validation (adds meta['validation'] + writes SELECTED.json) BEFORE the
+    # json dump, so each layer's .json carries its validation result.
+    if args.validate:
+        run_validation(args, lm, layers, vecs, metas)
+
+    for L in layers:
+        meta, pt_path = metas[L]
+        json.dump(meta, open(pt_path.replace(".pt", ".json"), "w"), indent=2)
+
+    if args.validate:
+        print("[refusal] done. Use refusal_direction_llama_SELECTED.json (selected_pt) "
+              "for --refusal-pt.", flush=True)
+    else:
+        print("[refusal] done. Re-run with --validate to sign-check + select a layer.",
+              flush=True)
 
 
 if __name__ == "__main__":
