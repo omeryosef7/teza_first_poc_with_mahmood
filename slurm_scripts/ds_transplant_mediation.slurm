@@ -37,10 +37,13 @@ PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahm
 DSC="$PROJECT_DIR/doublespeak_causality"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
+# Default to the CONSISTENT triple built by job 694417 (bench/reps/dir all matched).
+# Do NOT revert to the Jul29 reps — they mismatch the current bench (see BUG_AND_DEVIATION_LOG B1).
 BENCH="${BENCH:-$DSC/data/pair_benchmark/pair_carrot_bomb.json}"
-REPS_DIR="${REPS_DIR:-$DSC/outputs/pair_reps_Llama-3.1-8B-Instruct_20260729_215358_693558}"
-DIR_DIR="${DIR_DIR:-$DSC/outputs/pair_directions_20260729_215640_299312}"
+REPS_DIR="${REPS_DIR:-$DSC/outputs/pair_reps_Llama-3.1-8B-Instruct_20260730_154913_694417}"
+DIR_DIR="${DIR_DIR:-$DSC/outputs/pair_directions_20260730_154944_694417}"
 METRIC="${METRIC:-p_concept}"
+SEED="${SEED:-0}"
 SMOKE_FLAG="${SMOKE:-0}"
 if [ "$SMOKE_FLAG" = "1" ]; then NPROMPTS="${NPROMPTS:-2}"; else NPROMPTS="${NPROMPTS:-12}"; fi
 
@@ -78,7 +81,7 @@ python doublespeak_causality/34_intervention_sweep.py \
     --dir-position codeword_last --site codeword_last \
     --layer-groups single --alpha-mode absolute \
     --n-prompts "$NPROMPTS" \
-    --splits dev,heldout --crossfit true --seed 0
+    --splits dev,heldout --crossfit true --seed "$SEED"
 
 # Locate the run dir just produced (out_dir uniq == SLURM_JOB_ID, else PID; match newest).
 RUNDIR=$(ls -dt "$DSC/outputs/pair_interv_replace_"* 2>/dev/null | head -1)
