@@ -31,7 +31,12 @@ Contrast, from data already on disk:
 
 ---
 
-*(N2+ populated as NEXT2 items land — see NEXT2_PLAN.md.)*
+## N2 — MULTI-LAYER state replacement is also inert (free, from existing window arms)
+`run_replace` already emits *window* arms that replace the codeword state at ~11 layers (an early/mid/late third) **simultaneously**. Bomb 694691: `IE_state` at the early/mid/late windows = −5e-05 / −3e-05 / +1e-05 (all equivalence ✅). So injecting the DS codeword state into a Neutral receiver installs nothing even when done across a *third of the network at once* — not just single layers (N1). Combined with N1, no local intervention (single- or multi-layer state replacement, or additive d_Direct, B4) installs the concept in a neutral context; only the receiver context does. (An all-32-layers-at-once variant is a cheap optional confirmatory but is near-certain to agree given both single-layer and 11-layer-window replacements are inert.)
+
+---
+
+*(Further NEXT2 items populated as they land — see NEXT2_PLAN.md.)*
 
 ### N-x — Cross-architecture (Qwen3-14B): readout gate is a clean NEGATIVE on thinking models. **[documented negative]**
 Job 695089 (`MODEL=Qwen/Qwen3-14B`, forced_choice, same bench): the readout validator **gate_pass_any=False** → the chain self-aborted before the transplant. Qwen3 is a thinking model; the next-token concept/codeword readout fires inside `<think>`, so DIRECT/DS do not separate under the non-thinking template. This is not a mechanism result — it is a **readout-transfer limitation**: the transplant method needs a thinking-aware readout (`enable_thinking=False`, or a post-`</think>` answer-position readout) before it can test Qwen3. Gemma-4 not cached (skipped). The Llama-3.1-8B dissociation therefore stands as single-architecture pending a thinking-aware readout rebuild (future work). The self-gating worked as designed (no wasted compute).
