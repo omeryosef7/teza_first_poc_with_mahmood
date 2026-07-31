@@ -61,8 +61,9 @@ def capture_mlp_outputs(lm, text, layer_idxs):
 def run(lm, bench, args):
     pair = bench["pair"]; concept, codeword = pair["concept"], pair["codeword"]
     clean_row, corrupt_row = atp48._select_pair_rows(bench, args.readout, args.split)
-    clean_text = dc.apply_template(lm.tokenizer, clean_row["prompt"])
-    corrupt_text = dc.apply_template(lm.tokenizer, corrupt_row["prompt"])
+    think = dc.parse_enable_thinking(getattr(args, "enable_thinking", "default"))
+    clean_text = dc.apply_template(lm.tokenizer, clean_row["prompt"], enable_thinking=think)
+    corrupt_text = dc.apply_template(lm.tokenizer, corrupt_row["prompt"], enable_thinking=think)
 
     n_layers = lm.num_layers
     if args.layers:
@@ -145,6 +146,7 @@ def main():
     ap.add_argument("--bench", required=True); ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--out", required=True)
     ap.add_argument("--readout", default="one_word"); ap.add_argument("--split", default="dev")
+    ap.add_argument("--enable-thinking", default="default")
     ap.add_argument("--metric", default="logit_diff", choices=["logit_diff", "p_concept"])
     ap.add_argument("--layers", default="", help="comma ints; empty => sweep below readout")
     ap.add_argument("--include-last-mlp", action="store_true")

@@ -91,3 +91,11 @@ reads_as_concept trajectory (cot_0→cot_9 = CoT deciles, then answer):
   a larger-n rerun would tighten the trajectory. But the qualitative contrast (Qwen3 throughout vs
   DeepSeek answer-only, both Neutral-clean, both positive-control-passing) is clear.
 - Artifacts: `outputs/cot_traj_Qwen3-14B_..._698757`, `cot_traj_DeepSeek-..._698758`.
+
+### N7-B Phi-4 follow-up: readout does NOT certify (inconclusive).
+Anchored CoT probe on Phi-4-mini-reasoning fails its positive control (Direct@answer = 0.0): 13/18
+prompts truncated (CoT > 1536 tokens never reaches `</think>`) AND Phi-4's verbose `\boxed{}` math
+answers defeat the first-4-word `classify_answer` (the D5-flagged readout artifact). So we cannot
+resolve whether D5's Phi-4 "absent" is a readout artifact — the anchored readout is also broken on
+Phi-4. The Qwen3/DeepSeek N7-B result (both positive-control-passing) is unaffected. Honest
+inconclusive; not chased further (readout engineering rabbit hole on one model).
