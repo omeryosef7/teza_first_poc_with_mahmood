@@ -54,9 +54,14 @@ def main():
                     help="rows kept in the full component x position cube")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--enable-thinking", default="default",
+                    choices=["default", "true", "false"],
+                    help="Qwen3-style thinking toggle; 'default' => model default (Llama path "
+                         "unchanged, kwarg not passed)")
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
+    think = dc.parse_enable_thinking(args.enable_thinking)
     comps = [c.strip() for c in args.components.split(",") if c.strip()]
     poss = [p.strip() for p in args.positions.split(",") if p.strip()]
 
@@ -93,7 +98,7 @@ def main():
     meta_rows, n_missing = [], 0
 
     for i, r in enumerate(rows):
-        templated = dc.apply_template(lm.tokenizer, r["prompt"])
+        templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
         cap = pc.capture_components(lm, templated, r["probe_word"], comps, poss)
         got = cap["position_names"]
         reps = cap["reps"]                       # {comp: [L, n_got, H]}

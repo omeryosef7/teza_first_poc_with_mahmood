@@ -43,6 +43,10 @@ BENCH="${BENCH:-$DSC/data/pair_benchmark/pair_carrot_bomb.json}"
 READOUT="${READOUT:-forced_choice}"   # forced_choice has full dynamic range (DIRECT reads 0.785);
                                       # cloze FLOORS the positive control (DIRECT 0.005). See B3.
 RUN_KV="${RUN_KV:-1}"                 # also run 44_kv_mediation.py on the same reps
+# Thinking-aware readout: default => model default (Llama path UNCHANGED, kwarg not passed).
+# For thinking models (Qwen3, DeepSeek-R1) set ENABLE_THINKING=false to suppress the <think>
+# preamble before the readout; ENABLE_THINKING=true additionally requires ANSWER_MARKER in 31.
+ENABLE_THINKING="${ENABLE_THINKING:-default}"
 SMOKE_FLAG="${SMOKE:-0}"
 if [ "$SMOKE_FLAG" = "1" ]; then NPROMPTS="${NPROMPTS:-2}"; LIMIT="--limit 40"; else NPROMPTS="${NPROMPTS:-15}"; LIMIT=""; fi
 
@@ -65,14 +69,16 @@ cd "$DSC"
 TAG="${SLURM_JOB_ID:-}"   # job-isolate dir captures (concurrent-run race fix)
 
 echo "--- [1/5] 31_validate_readouts (GATE) ---"
-python 31_validate_readouts.py --bench "$BENCH" --model "$MODEL" $LIMIT --seed 0
+python 31_validate_readouts.py --bench "$BENCH" --model "$MODEL" $LIMIT --seed 0 \
+    --enable-thinking "$ENABLE_THINKING"
 RDIR=$(ls -dt outputs/pair_readout_*_${TAG} | head -1); echo "readout dir=$RDIR"
 GATE=$(python -c "import json;print(json.load(open('$RDIR/readout_summary.json')).get('gate_pass_any'))")
 echo "gate_pass_any=$GATE"
 [ "$GATE" = "True" ] || { echo "FATAL: readout gate FAILED on $BENCH — aborting before transplant." >&2; exit 2; }
 
 echo "--- [2/5] 32_extract_pair_reps (readout=$READOUT) ---"
-python 32_extract_pair_reps.py --bench "$BENCH" --model "$MODEL" --readout "$READOUT" $LIMIT --seed 0
+python 32_extract_pair_reps.py --bench "$BENCH" --model "$MODEL" --readout "$READOUT" $LIMIT --seed 0 \
+    --enable-thinking "$ENABLE_THINKING"
 REPS_DIR="$DSC/$(ls -dt outputs/pair_reps_*_${TAG} | head -1)"; echo "reps_dir=$REPS_DIR"
 [ -f "$REPS_DIR/per_prompt.npz" ] || { echo "FATAL: no per_prompt.npz" >&2; exit 1; }
 
@@ -86,7 +92,8 @@ python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-di
     --mode replace --readout "$READOUT" --component resid_post \
     --dir-position codeword_last --site codeword_last \
     --layer-groups single --alpha-mode absolute \
-    --n-prompts "$NPROMPTS" --splits dev,heldout --crossfit true --seed 0
+    --n-prompts "$NPROMPTS" --splits dev,heldout --crossfit true --seed 0 \
+    --enable-thinking "$ENABLE_THINKING"
 RUNDIR=$(ls -dt outputs/pair_interv_replace_*_${TAG} | head -1); echo "RUNDIR=$DSC/$RUNDIR"
 [ -f "$RUNDIR/interv_raw.jsonl" ] || { echo "FATAL: no interv_raw.jsonl" >&2; exit 1; }
 
@@ -98,7 +105,7 @@ python 43_transplant_mediation.py --interv-dir "$RUNDIR" --metric logodds --equi
 
 if [ "$RUN_KV" = "1" ]; then
   echo "--- [6/6] 44_kv_mediation (demo-K/V mediation, readout=$READOUT) ---"
-  python 44_kv_mediation.py --bench "$BENCH" --reps-dir "$REPS_DIR" --model "$MODEL" \
+  python 44_kv_mediation.py --bench "$BENCH" --reps-dir "$REPS_DIR" --model "$MODEL" --enable-thinking "$ENABLE_THINKING" \
       --readout "$READOUT" --n-prompts "$NPROMPTS" --splits dev,heldout --seed 0
   KVDIR=$(ls -dt outputs/pair_kv_mediation_*_${TAG} | head -1); echo "KVDIR=$DSC/$KVDIR"
 fi

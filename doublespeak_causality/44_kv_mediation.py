@@ -250,7 +250,7 @@ def run(args):
     if dir_rows:
         try:
             dr = dir_rows[0]
-            dtmpl = dc.apply_template(lm.tokenizer, dr["prompt"])
+            dtmpl = dc.apply_template(lm.tokenizer, dr["prompt"], enable_thinking=think)
             dcap = dc.capture_target_reps(lm, dtmpl, dr["probe_word"])
             reps_all = dcap["reps"]["codeword_last"]
             scores = [dec.decode(reps_all[l].to(dev), R, concept_id, code_id)[0]
@@ -321,7 +321,7 @@ def run(args):
         cand = sorted(by_cell.get(("DOUBLESPEAK", split), []),
                       key=lambda r: r["sid"])[: args.n_prompts]
         for r in cand:
-            templated = dc.apply_template(lm.tokenizer, r["prompt"])
+            templated = dc.apply_template(lm.tokenizer, r["prompt"], enable_thinking=think)
             pos = pc.resolve_positions(lm, templated, r["probe_word"])
             ds_query = pos.codeword_last
             ds_demo_cw = list(pos.codeword_all[:-1])          # prev_cw = hit.last_idx[:-1]
@@ -340,7 +340,7 @@ def run(args):
             neu_pre_demo = neu_post_query = None
             neu_pre_rand = ds_rand = None
             if nrow is not None:
-                ntmpl = dc.apply_template(lm.tokenizer, nrow["prompt"])
+                ntmpl = dc.apply_template(lm.tokenizer, nrow["prompt"], enable_thinking=think)
                 npos = pc.resolve_positions(lm, ntmpl, nrow["probe_word"])
                 neu_demo_cw = list(npos.codeword_all[:-1])
                 neu_cwset = set(npos.codeword_all)
@@ -448,7 +448,10 @@ def main():
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--n-prompts", type=int, default=12)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--enable-thinking", default="default", choices=["default","true","false"],
+                    help="T1: thinking-aware readout for thinking models (false suppresses <think>)")
     args = ap.parse_args()
+    think = dc.parse_enable_thinking(args.enable_thinking)
 
     if args.analyze:
         rows = [json.loads(x) for x in open(args.analyze)]

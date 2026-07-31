@@ -552,6 +552,26 @@ def to_messages(prompt: str) -> List[Dict[str, str]]:
     return [{"role": "user", "content": prompt}]
 
 
+def parse_enable_thinking(value: Optional[str]) -> Optional[bool]:
+    """Map a CLI --enable-thinking string to the apply_template kwarg (Phase 7 / thinking sprint).
+
+    "default" or None -> None (model default: do NOT pass the kwarg, so the Llama path is
+    byte-for-byte UNCHANGED). "true" -> True, "false" -> False (passed explicitly; on Qwen3
+    False injects an empty <think></think> and suppresses thinking, so the readout is not
+    preceded by a <think> control token). Accepts bools/None passthrough for convenience.
+    """
+    if value is None or isinstance(value, bool):
+        return value
+    v = str(value).strip().lower()
+    if v in ("default", "none", ""):
+        return None
+    if v in ("true", "1", "yes"):
+        return True
+    if v in ("false", "0", "no"):
+        return False
+    raise ValueError(f"invalid --enable-thinking {value!r}; expected default/true/false")
+
+
 def apply_template(tokenizer, prompt: str, add_generation_prompt: bool = True,
                    enable_thinking: Optional[bool] = None) -> str:
     """Render the official chat template around a raw user prompt (plan D2).

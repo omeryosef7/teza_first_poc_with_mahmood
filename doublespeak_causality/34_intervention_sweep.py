@@ -138,9 +138,14 @@ def main():
                     help="also record the one-word label (slower)")
     ap.add_argument("--max-new-tokens", type=int, default=8)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--enable-thinking", default="default",
+                    choices=["default", "true", "false"],
+                    help="Qwen3-style thinking toggle; 'default' => model default (Llama path "
+                         "unchanged, kwarg not passed)")
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
+    think = dc.parse_enable_thinking(args.enable_thinking)
     rng = random.Random(args.seed)
     crossfit = args.crossfit == "true"
 
@@ -298,7 +303,7 @@ def main():
         groups = layer_groups(layer_list)
         for split in splits:
             for row in pick(target_condition, split):
-                templated = dc.apply_template(lm.tokenizer, row["prompt"])
+                templated = dc.apply_template(lm.tokenizer, row["prompt"], enable_thinking=think)
                 pos = pc.resolve_positions(lm, templated, row["probe_word"])
                 for site in sites:
                     positions = patch_sites(pos, site, rng)
@@ -332,7 +337,7 @@ def main():
         groups = layer_groups(layer_list)
         for split in splits:
             for row in pick("DOUBLESPEAK", split):
-                templated = dc.apply_template(lm.tokenizer, row["prompt"])
+                templated = dc.apply_template(lm.tokenizer, row["prompt"], enable_thinking=think)
                 pos = pc.resolve_positions(lm, templated, row["probe_word"])
                 for site in sites:
                     positions = patch_sites(pos, site, rng)
@@ -383,7 +388,7 @@ def main():
         for split in splits:
             for (aname, tgt_cond, src_cond) in specs:
                 for row in pick(tgt_cond, split):
-                    templated = dc.apply_template(lm.tokenizer, row["prompt"])
+                    templated = dc.apply_template(lm.tokenizer, row["prompt"], enable_thinking=think)
                     pos = pc.resolve_positions(lm, templated, row["probe_word"])
                     positions = patch_sites(pos, args.site, rng)
                     if not positions:

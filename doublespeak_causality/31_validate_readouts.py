@@ -205,8 +205,10 @@ def main():
                     help="smoke cap on rows, STRATIFIED over (condition, readout) so a "
                          "capped run still exercises both gate controls")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--enable-thinking", default=None,
-                    choices=[None, "true", "false"], help="Qwen3-style thinking toggle")
+    ap.add_argument("--enable-thinking", default="default",
+                    choices=["default", "true", "false"],
+                    help="Qwen3-style thinking toggle; 'default' => model default (Llama path "
+                         "unchanged, kwarg not passed)")
     ap.add_argument("--answer-marker", default="",
                     help='e.g. "</think>". Score the first token AFTER this marker instead '
                          'of the first generated token. REQUIRED for thinking models: with '
@@ -247,7 +249,7 @@ def main():
             k += 1
         rows_in = picked
 
-    think = None if args.enable_thinking is None else (args.enable_thinking == "true")
+    think = dc.parse_enable_thinking(args.enable_thinking)
     answer_marker = args.answer_marker or None
     if think and not answer_marker:
         raise SystemExit(
