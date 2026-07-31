@@ -46,6 +46,7 @@ Demonstration-K/V mediation (forced_choice, n=30; `pair_kv_mediation_...694691/k
 - **`ReRead_test` (C1−C3) is small** (mid +0.032 of a 0.35 baseline → **~91% of the reading survives** neutralizing the demonstration codeword K/V). If the readout merely re-read the demonstrations, neutralizing them would collapse it. It does not.
 - The demonstration-codeword K/V carries a **small, codeword-specific** slice (mid ReRead > random control), but the bulk is **distributed / robust** — Stage-3 outcome **C (distributed computation)**, reported honestly.
 - Validity: `DemoStateSwap` self-swap reproduces the no-hook baseline **exactly** on the real model (n=30); 8 CPU tests + independent adversarial review.
+- **Cross-architecture (Qwen3-14B, `NEXT4_FINDINGS.md`):** qualitatively holds — **54% of the reading survives** demo-K/V neutralization (so not a pure re-read), codeword-specific (ReRead 0.354 ≫ random 0.093), faithfulness 0.0. But the demonstration K/V is **more load-bearing on Qwen3** than Llama (46% removed vs 9%) — the effect is *less distributed / more demo-localized* on Qwen3. An honest architecture difference within a shared qualitative mechanism.
 
 ### 3.3 A causal TOCTOU signature: the refusal check catches an EARLY concept but a LATE one escapes it. **[NEW]**
 Concept × refusal factorial (n=40; `toctou_...694811/toctou_summary.json`; `45_toctou_factorial.py` + multi-layer refusal ablation, `STAGE4_TOCTOU_FINDINGS.md`; StrongReject, 0 judge failures):

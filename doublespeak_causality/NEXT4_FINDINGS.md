@@ -10,4 +10,8 @@ Verdict: S2 dissociation, S4 TOCTOU, T1 cross-arch all clean. Fixes committed:
 ## T4 attribution generalization (grenade + chlorine): technique validated on 3 pairs.
 pearson AtP-vs-true: bomb 0.89, grenade 0.95, chlorine 0.92 (all trustworthy). Localization consistent across pairs: late/mid layers at the readout position (see C1 correction). The validated technique generalizes; the (retracted) demonstration-localization does not apply to any pair.
 
-## S3 KV mediation on Qwen3 — pending (first run cancelled on the C3 NameError; resubmitting with the fix).
+## S3 KV mediation on Qwen3: qualitative replication with an architecture difference.
+Job 696091 (forced_choice, thinking-aware). Faithfulness exactly 0.0. C1(DS baseline)=0.765, C3(demo-KV neutralized)=0.411 -> **54% of the reading SURVIVES** demo-KV neutralization (Llama was ~91%), and it is codeword-specific (ReRead_test 0.354 >> random_control 0.093). So the S3 "not a trivial demonstration re-read" holds QUALITATIVELY on Qwen3 (majority survives), but the demonstration K/V is MORE load-bearing there (46% removed vs 9% on Llama) — the effect is less distributed / more demo-codeword-localized on Qwen3. Honest cross-architecture difference, not a clean replication.
+
+## NEXT4 SUMMARY
+Bug-check found+fixed 4 defects (1 was a wrong published result of mine, corrected; 0 headline results invalidated). Low-hanging generalization: T4 attribution validated on 3 pairs (technique generalizes; localization corrected); S3 KV replicates qualitatively cross-arch on Qwen3 with a real architecture difference. All tests green; docs corrected to match artifacts.
