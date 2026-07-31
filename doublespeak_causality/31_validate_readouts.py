@@ -435,8 +435,15 @@ def main():
           f"({'|'.join(GATE_CELL_KEYS)}) cells usable")
     for c in sorted(set(gate_by_cell) - usable):
         g = gate_by_cell[c]
-        print(f"    EXCLUDED {c}: positive_control={g['positive_control']} "
-              f"(< {POS_CONTROL_MIN}) -> DS here is uninterpretable, not 'no effect'")
+        pv, nv = g["positive_control"], g["negative_control"]
+        # name the ACTUAL failing control(s) — a static "< POS" string is misleading when it
+        # is the NEGATIVE control (neutral also reads as concept) that failed separation.
+        why = []
+        if pv is None or (pv is not None and pv < POS_CONTROL_MIN):
+            why.append(f"pos={pv}(<{POS_CONTROL_MIN})")
+        if nv is None or (nv is not None and nv > NEG_CONTROL_MAX):
+            why.append(f"neg={nv}(>{NEG_CONTROL_MAX})")
+        print(f"    EXCLUDED {c}: {', '.join(why)} -> DS here is uninterpretable, not 'no effect'")
     if ds_all and ds_gated:
         print(f"[readout] DOUBLESPEAK reads-as-concept: all cells "
               f"{ds_all['reads_as_concept']} (n={ds_all['n']})  vs  gate-passing cells "

@@ -111,7 +111,53 @@ scoring the DOUBLESPEAK forced-choice concept reading. Reduced with `next5_w4_kn
   single-layer circuit; positive evidence for distributed computation.
 - Artifact: `outputs/pair_attn_knockout_..._696227/knockout_reduce.json`.
 
-### Tier B — per-HEAD z-attribution (layer×head AtP + true-patch gate): running (job 696255).
-`49_head_attribution.py` (new `ZHeadCapture`/`ZHeadPatch`) computes AtP[L,h,pos] on the per-head
-attention output z, validated against real per-head z-patches. Tests whether a sparse set of HEADS
-(across layers) carries the effect even though no single LAYER does. Result pending.
+### Tier B — per-HEAD z-attribution: a validated MID-BAND, distributed-across-heads circuit. **[WIN]**
+`49_head_attribution.py` (new `ZHeadCapture`/`ZHeadPatch`, job 696255) computes AtP[L,h,pos] on the
+per-head attention output z (clean=DOUBLESPEAK, corrupt=matched NEUTRAL, metric=logit_diff), then
+validates it against REAL per-head z-patches on the top-48 |AtP| cells.
+- **Validated:** AtP vs true per-head z-patch **pearson 0.969, spearman 0.953, trustworthy=True**
+  (43,648 cells, topk=48) — the new per-head z primitive faithfully tracks real patching on the
+  8B model (the same correctness contract as T4's residual AtP).
+- **Localization:** the per-head attention contribution to the concept reading concentrates in a
+  **MID band, layers ~7–14 (61.7% of total Σ|AtP|), peaking at L9**, then decays sharply after L15
+  (L0–6 ramp up 2.6→11.5; L9 = 25.9; L15 = 10.6; L18–31 ≈ 1–4). Top heads (L10h24, L11h24, L12h6,
+  L13h0, L10h0, L10h27 …) all sit in L10–13.
+- **Distributed WITHIN the band, not a sparse circuit:** the top-20 head cells are only **12%** of
+  total Σ|AtP| (of 992 layer×head cells); the single top head is ~2.0 of ~22 at its layer (≈9%). So
+  the effect is a mid-layer BAND spread across many heads — not a 1–3 head circuit.
+- **Reconciliation:** unlike T4's residual AtP (which peaked at the late/readout position, partly
+  mechanically), the head-level z-AtP shows where heads actually WRITE the concept — the **mid band
+  (peak L9)**, EARLIER than the readout, consistent with the reading being installed mid-stack then
+  carried forward. And unlike the per-LAYER knockout (no single-layer necessity), the AtP
+  CONTRIBUTION cleanly localizes the band — necessity is diffuse (distributed) while contribution is
+  band-localized. Both agree the mechanism is not sparse.
+- **Gate:** PASS (trustworthy, pearson 0.97 ≥ 0.7). Artifact:
+  `outputs/head_attr_..._696255/head_attribution.json`. Primitive tests: `tests/test_zhead_synthetic.py`.
+
+---
+
+## W2 — DeepSeek-R1-Distill-8B 3rd architecture: readout method validated, but the DS hijack is weak. **[methodological win + honest inconclusive]**
+
+**Method (job 696201):** DeepSeek hardcodes `<think>`, so the concept/codeword readout is taken at
+the first ANSWER token after `</think>` (`31 --answer-marker '</think>' --max-new-tokens 2048`,
+120 rows). New slurm `ds_next5_deepseek_readout.slurm` (marker quoted inline).
+
+- **Methodological win:** the post-`</think>` answer-position readout **works on DeepSeek** —
+  **0/120 rows marker-missing** (2048 tokens always reached `</think>`; not a truncation problem),
+  and the `forced_choice` / `one_word` DIRECT positive controls PASS (pos=1.0, neg=0.0 aggregate).
+  DeepSeek is now *readable* with this technique (the deferred NEXT3 gap is closed methodologically).
+- **Honest inconclusive science:** the DeepSeek Doublespeak reading is **weak**. Only 4–6 of 15
+  (readout|demo_style) cells pass BOTH controls (several cells fail the NEGATIVE control — neutral
+  also reads as concept, so no separation). On the gate-passing cells, `DS−Neutral reads_as_concept`
+  = **+0.333 [0.000, 0.667], n=6, reliable=False** (CI touches 0, n too small) and
+  `DS−Neutral p_concept = +0.000`. All-cell DS reads-as-concept is 0.133 — far below Qwen3's +0.76.
+- **Decision (per plan gate):** the readout gate does NOT cleanly exclude 0 (n=6, unreliable), so
+  the S2 transplant is **NOT run** — a mediation on a floored/unreliable readout would be
+  uninterpretable (cf. the patchscope negative T2). Reported as an honest architecture-scope bound:
+  the primary dissociation stands on **2 architectures** (Llama-3.1-8B + Qwen3-14B); DeepSeek-R1 was
+  attempted, its readout validated, but its Doublespeak hijack is too weak/small-n at the answer
+  position to support the transplant. (Plausibly the reasoning-distilled model resolves the codeword
+  differently through its CoT.)
+- Minor code fix: 31's per-cell EXCLUDED message printed a static "(< 0.8)" even when the NEGATIVE
+  control was the failing one — corrected to name the actual failing control.
+- Artifact: `outputs/pair_readout_DeepSeek-R1-Distill-Llama-8B_..._696201/readout_summary.json`.
