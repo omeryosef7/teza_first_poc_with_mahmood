@@ -55,7 +55,7 @@ On a fresh, consistent, byte-identical-bench pipeline, additive `d_Direct` insta
 ### 4.2 Stage-0 integrity repairs of prior in-house pipeline. **[integrity]** (`STAGE0_INTEGRITY_REPORT.md`)
 10 defects (C1–C10) fixed with tests + independent review (no conclusion-inverting bug): patch-sweep readout contamination (C1/C3), aggregation manufacturing a null from missing cells (C2), empty-generation miscounting (C8), judge-health/partition (C7), held-out-concept axis leakage (C9), knockout controls (C5/C6), etc.
 
-### 4.3 TOCTOU — see §3.3 (a POSITIVE result). Honesty note: the semantic p_concept install is weak (B4) yet the *behavioral* interaction is strong and concept-specific; and the random/orthogonal controls were run only for cell B (refusal-trigger), not cell D — a follow-up should add control-D cells to fully close the compliance-flip specificity.
+### 4.3 TOCTOU — see §3.3 (a POSITIVE result). The compliance-flip specificity caveat is now CLOSED (NEXT2 #2, job 695111): cell-D random/orthogonal controls give Dspec early +0.475 [+0.30,+0.65] (D-main 0.525 vs controls ~0.05) — so both the refusal-trigger AND the compliance-flip are concept-specific. Honesty note retained: the semantic next-token p_concept install is weak (B4/N4) yet the *behavioral* interaction is strong and concept-specific.
 
 ## 5. Limitations
 - **Modest absolute magnitudes** (DS reading ~0.35; `d_Direct` install ~0.03). The dissociation is *relative* and robust (context +0.35 vs local-state 0), but effect sizes are small.

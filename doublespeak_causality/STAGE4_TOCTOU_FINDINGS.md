@@ -49,8 +49,16 @@ A norm-matched random or orthogonal direction installed at the same early layers
 
 ---
 
-## Caveats / limitations (honest)
-- **Control D cells not run** (the pilot generated the random/orthogonal controls only for cell B, not cell D). So concept-specificity is established for the *refusal-triggering* half (B/early: concept 0.82 vs random 0.00) but the *compliance-flip* half (D) lacks a random-direction interaction. A follow-up should run D for the controls to fully rule out that ablation+any-early-perturbation flips to compliance. (The B-side control is already strong evidence, since without early refusal there is nothing for ablation to convert.)
+## Caveat CLOSED — compliance-flip is concept-specific (cell-D controls, job 695111, n=40). **[NEXT2 #2]**
+The pilot ran random/orthogonal controls only for cell B; the follow-up (`toctou_...695111`) added them to cell D. Result — **Dspec** (D-main MALICIOUS − D-control MALICIOUS, per timing):
+
+| timing | vs concept_rand | vs concept_orth | D-main / D-rand rates |
+|---|---|---|---|
+| **early** | **+0.475** [+0.300,+0.650] | **+0.475** [+0.300,+0.650] | 0.525 / ~0.05 |
+| mid | +0.225 [+0.050,+0.400] | +0.150 [−0.025,+0.325] | 0.35 / ~0.13 |
+| late | +0.000 [−0.125,+0.125] | −0.025 [−0.150,+0.100] | 0.10 / ~0.10 |
+
+So ablating refusal converts an **early-installed CONCEPT** to compliance (D/early 0.525), but a norm-matched **random** or **orthogonal** direction installed at the same early layers + the same refusal ablation does **not** (~0.05) — CI excludes 0 at early. **Both halves of the TOCTOU are now concept-specific**: refusal-trigger (B/early concept 0.82 vs random 0.00) and compliance-flip (D/early concept 0.525 vs random 0.05). Baselines A (none) and C (refusal-only, no concept) are 0.0. The main interaction is unperturbed (refusal_gain early +0.45, late +0.05). This closes the sole remaining S4 caveat.
 - **Semantic vs behavioral dissociation:** the additive `d_Direct` moves the p_concept next-token readout only trivially (B4), yet behaviorally it triggers strong early refusal (0.82) and, under ablation, compliance (0.53). The behavioral generation integrates the small representational nudge over the whole completion. p_concept interaction is +0.0002 (tiny) — the effect lives in behavior, not the single-token semantic readout.
 - **Single pair / single model / n=40**, one seed. Deterministic greedy decoding.
 - Refusal ablation is partial (harmful refusal 1.0→0.53 at validation), so absolute compliance rates are conservative lower bounds.
