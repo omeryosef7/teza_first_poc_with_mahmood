@@ -92,7 +92,7 @@ def analyze_rows(rows, timings=TIMINGS):
     pgrid = []
     for oc in OUTCOMES:
         res = {"concept_effect_noablate": {}, "concept_effect_ablate": {},
-               "refusal_gain": {}, "INTERACTION": None}
+               "refusal_gain": {}, "INTERACTION": None, "INTERACTION_mid_late": None}
         for t in timings:
             # pair over items with A,B_t,C,D_t all defined
             keep = [p for p in pids if all(get(p, c, tt, oc) is not None
@@ -126,6 +126,28 @@ def analyze_rows(rows, timings=TIMINGS):
                 res["INTERACTION"] = blk
                 if "p_raw" in blk:
                     pgrid.append((oc, "INTERACTION", None))
+        # INTERACTION_mid_late = refusal_gain(mid) - refusal_gain(late): the depth-matched
+        # TOCTOU contrast for pairs whose refusal check localizes at MID (grenade/chlorine),
+        # where the early-vs-late INTERACTION above misses it. The dominant depth is
+        # PRE-REGISTERED from the INDEPENDENT representational probe (47_repr_toctou's
+        # early_vs_mid), NOT selected from this behavioral data -> not double-dipping. Computed
+        # generically for every run; which contrast is "the" test for a pair is documented per
+        # T3 (bomb->early == existing INTERACTION; grenade/chlorine->mid == this one).
+        if "mid" in timings and "late" in timings:
+            keep = [p for p in pids if all(get(p, c, tt, oc) is not None for c, tt in
+                    [("A", None), ("C", None), ("B", "mid"), ("D", "mid"),
+                     ("B", "late"), ("D", "late")])]
+            if len(keep) >= 2:
+                ii = []
+                for p in keep:
+                    a, c = get(p, "A", None, oc), get(p, "C", None, oc)
+                    bm, dm = get(p, "B", "mid", oc), get(p, "D", "mid", oc)
+                    bl, dl = get(p, "B", "late", oc), get(p, "D", "late", oc)
+                    ii.append(((dm - c) - (bm - a)) - ((dl - c) - (bl - a)))
+                blk = _ci_block(ii, [0.0] * len(ii))
+                res["INTERACTION_mid_late"] = blk
+                if "p_raw" in blk:
+                    pgrid.append((oc, "INTERACTION_mid_late", None))
         out["outcomes"][oc] = res
 
     # --- D-arm concept-specificity (plan §2): D-main vs D control arms, MALICIOUS ------- #
@@ -170,8 +192,9 @@ def analyze_rows(rows, timings=TIMINGS):
     if pgrid:
         def _fetch(k):
             oc, est, t = k
-            return out["outcomes"][oc]["INTERACTION"] if est == "INTERACTION" \
-                else out["outcomes"][oc][est][t]
+            if est in ("INTERACTION", "INTERACTION_mid_late"):
+                return out["outcomes"][oc][est]
+            return out["outcomes"][oc][est][t]
         keys = sorted(pgrid)
         adj = st.holm_bonferroni([_fetch(k)["p_raw"] for k in keys])
         for k, pa in zip(keys, adj):
@@ -386,10 +409,12 @@ def analyze_only(path):
     json.dump(res, open(out, "w"), indent=2)
     print(f"[toctou] reduce-only over {len(rows)} rows -> {out}")
     for oc in OUTCOMES:
-        inter = res["outcomes"].get(oc, {}).get("INTERACTION")
-        if inter and "effect" in inter:
-            print(f"  {oc:10s} INTERACTION eff={inter['effect']:+.4f} "
-                  f"[{inter['lo']:+.4f},{inter['hi']:+.4f}] n={inter['n']}")
+        for est in ("INTERACTION", "INTERACTION_mid_late"):
+            inter = res["outcomes"].get(oc, {}).get(est)
+            if inter and "effect" in inter:
+                print(f"  {oc:10s} {est:20s} eff={inter['effect']:+.4f} "
+                      f"[{inter['lo']:+.4f},{inter['hi']:+.4f}] n={inter['n']} "
+                      f"p_holm={inter.get('p_holm')} sig={inter.get('significant_corrected')}")
 
 
 if __name__ == "__main__":
