@@ -52,3 +52,18 @@ Low-hanging follow-ups (see `NEXT2_FINDINGS.md`, `NEXT2_PLAN.md`):
 - **#4 attribution-patching map** (`47_attribution_patching.py`) to localize the distributed DE_context (deferred: gradient-approx correctness risk).
 - **All-32-layer cumulative replacement** (near-certain confirmatory given N1+N2).
 - A **stronger/pair-robust concept-install lever** to test TOCTOU generality behaviorally.
+
+---
+
+## NEXT3 addendum (2026-07-31) — executed the 4 deferred levers
+See `NEXT3_PLAN.md` / `NEXT3_FINDINGS.md`.
+- **T1 cross-architecture ✅ (major):** the context-carried dissociation **replicates on Qwen3-14B** (IE_state≈0 equiv; DE_context +0.70 ≈92% of TE; faithfulness 0.0; hijack stronger than Llama) via a thinking-aware readout (`--enable-thinking false`, threaded through 31/32/34/44 + a `--model`-to-34 slurm fix). The primary claim is now on **2 architectures**. DeepSeek-R1 deferred (hardcoded `<think>` → needs `31 --answer-marker '</think>'`).
+- **T4 attribution patching ✅ (validated new technique, `48_attribution_patching.py`):** AtP≈true-patching (pearson 0.89); localizes the DS-context effect to the **earliest layers + demonstration-codeword positions**. Refines S3's "distributed."
+- **T3 representational TOCTOU ◐ (`47_repr_toctou.py`):** refusal-direction projection is depth-gated concept-specifically for all 3 pairs but at a **pair-dependent depth** (bomb early, grenade/chlorine mid) — explains the behavioral #6 non-generalization.
+- **T2 forced-choice patchscope ✗ (`46_forced_choice_patchscope.py`):** positive control fails for bomb → cannot cross-check via patchscope; consistent with IE_state=0 (concept not locally in the rep).
+
+### Remaining deferred (future)
+- DeepSeek-R1 (and other thinking models) via a post-`</think>` answer-position readout; more architectures.
+- A behavioral TOCTOU per pair using that pair's OWN dominant depth (T3 predicts it should recover the interaction).
+- A pair-tuned / non-safety-suppressed patchscope to positively replicate the paper's decoding.
+- New code: `46/47/48_*.py` + `ds_run.slurm` (generic GPU runner); `--enable-thinking` threaded through 31/32/34/44.

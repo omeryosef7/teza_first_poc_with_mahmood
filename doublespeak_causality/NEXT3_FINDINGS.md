@@ -2,10 +2,21 @@
 
 Plan: `NEXT3_PLAN.md`. Env: Llama-3.1-8B / Qwen3-14B, L40S, poc_stage2, forced_choice. Honest — negatives included.
 
+## NEXT3 SUMMARY (2026-07-31)
+Executed the 4 deferred high-value levers with new techniques. **Two clear wins, one nuanced win that explains a prior negative, one honest negative that reinforces the headline.**
+- **T1 cross-architecture ✅ (the big one):** the context-carried dissociation **replicates on Qwen3-14B** (IE_state≈0 equiv; DE_context +0.70 ≈92% of TE; faithfulness 0.0) — the primary claim is no longer single-model Llama. Required a thinking-aware readout (`enable_thinking=false`) + a `--model` threading fix. DeepSeek-R1 deferred (hardcoded `<think>` → needs `--answer-marker`).
+- **T4 attribution patching ✅ (validated new technique):** AtP tracks true patching (pearson 0.89) and localizes the DS-context effect to the **earliest layers + demonstration-codeword positions** — refines S3's "distributed."
+- **T3 representational TOCTOU ◐ (nuanced):** the refusal check is depth-gated concept-specifically for all 3 pairs, but at a **pair-dependent depth** (bomb early, grenade/chlorine mid) — which **explains** why the behavioral TOCTOU (#6) only generalized to bomb.
+- **T2 forced-choice patchscope ✗ (honest negative that helps):** fails its positive control (a clean DIRECT bomb rep won't decode) — consistent with IE_state=0 (the concept isn't locally in the rep); a second line of evidence via the paper's own readout family.
+
+Bugs caught+fixed mid-flight: bench-path prefix (ds_run cd), `--model` not threaded to 34 (cross-arch), output-dir globs.
+
+---
+
 ## T1 — Cross-architecture (Qwen3-14B): the readout now WORKS with a thinking-aware template. **[partial success]**
 The Qwen3 gate FAILED in NEXT2 because the next-token readout fired inside `<think>`. Threading `--enable-thinking false` through 31/32/34/44 (verified it injects an empty `<think></think>` and suppresses thinking) fixes it:
 - **Qwen3 readout gate PASSES** (job 695749/695832): `DS−Neutral reads_as_concept = +0.7576` [+0.65,+0.85], `DS−Neutral p_concept = +0.6322` [+0.54,+0.73], n=66 — i.e. **the Doublespeak hijack is present on Qwen3, even STRONGER than on Llama (+0.31)**. This alone lifts the *attack* off single-model Llama.
-- The transplant itself hit a latent bug (the slurm never passed `--model` to `34`, so it loaded Llama-32 against Qwen-40 reps → "layer mismatch"). Fixed (commit) and re-running (695832) — pending IE_state/DE_context on Qwen3.
+- **The full dissociation REPLICATES on Qwen3-14B** (job 695832, after fixing a latent bug where the slurm never passed `--model` to `34`): 2×3 (mid) — Neutral receiver 0.00 for all sources (h_N/h_DS/h_Direct), DS receiver **0.70 / 0.77 / 0.70**. `IE_state ≈ 0` (equivalence, every window); `DE_context = +0.703` [0.551, 0.846] (mid), +0.774 (early), +0.748 (late) ≈ **92% of TE (+0.765)**; self-transplant faithfulness exactly **0.0**. Same structure as Llama, stronger hijack (DS ~0.7 vs Llama ~0.35). → **the context-carried, local-state-inert dissociation is cross-architecture** (Qwen3-14B, a different family and size), not a Llama artifact.
 - **DeepSeek-R1-Distill** hardcodes `<think>` in its template, so `enable_thinking=false` cannot suppress it; it needs the `31 --answer-marker '</think>'` path (deferred).
 
 ## T3 — Representational TOCTOU (refusal-direction projection by concept-install timing). **[bomb: strong; generalization pending]**
