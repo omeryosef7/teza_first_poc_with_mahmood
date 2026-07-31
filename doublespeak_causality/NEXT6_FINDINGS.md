@@ -52,8 +52,14 @@ control (the load-bearing superposition claim).
 | **bomb / Llama** | yes | **+0.555 [+0.26,+0.87]** | **YES** |
 | **bomb / Qwen3-14B** | yes | **+8.96 [+6.39,+11.63]** | **YES (cross-arch)** |
 | grenade / Llama | yes | +0.078 [−0.23,+0.38] | no |
-| chlorine / Llama | yes | −0.118 [−0.48,+0.26] | no |
-| pistol / Llama | yes | −0.176 [−0.51,+0.16] | no |
+| chlorine / Llama | yes | +0.215 [−0.11,+0.54] | no |
+| pistol / Llama | yes | −0.110 [−0.43,+0.21] | no |
+
+*(Integrity note: an initial chlorine/pistol run accidentally paired the pair's reps with GRENADE's
+`d_Direct` directions — a reps↔directions dir suffix collision caught by the NEXT6 artifact-map
+workflow. Numbers above are the CORRECTED runs (chlorine reps 694897 + dir 694897; pistol reps
+694896 + dir 694896), validated by the strong in-pair DIRECT positive control (concept +13.3/+14.1).
+The conclusion — not DS-specific for these pairs — is unchanged from either pairing.)*
 
 - **Co-loading is universal:** every pair's DS rep loads BOTH the codeword and concept axes (both
   CIs exclude 0) — the basic superposition geometry is general.
@@ -69,3 +75,25 @@ control (the load-bearing superposition claim).
   band (analogous to T3's pair-dependent depths) is untested future work (avoided here to prevent
   post-hoc band-tuning / double-dipping).
 - Artifacts: `w3b_superposition.json` in each pair's reps dir (`..._694882/883/884`, Qwen3 `..._695832`).
+
+---
+
+## D3 — Circuit generalization: the mid-band head circuit REPLICATES across pairs. **[WIN]**
+
+z-AtP head map (`49_head_attribution.py`) on grenade + chlorine (heldout, validated against true
+per-head z-patch), compared to bomb (NEXT5 W4-B):
+
+| pair | peak layer | band L7–14 share of Σ\|AtP\| | AtP-vs-true pearson | trustworthy |
+|---|---|---|---|---|
+| bomb | L9 | 61.7% | 0.969 | yes |
+| grenade | L9 | 66.6% | 0.988 | yes |
+| chlorine | L13 | 55.1% | 0.970 | yes |
+
+- **The validated mid-band (L7–14, peak L9–13) circuit generalizes to all three pairs** — each is
+  trustworthy (pearson 0.97–0.99 vs true per-head z-patch) and mid-band-dominant (55–67% of total
+  |AtP|). So while the SUPERPOSITION specificity is bomb-only (D2), the CIRCUIT localization — where
+  attention heads causally contribute to the concept readout — is a **general** property of the
+  Doublespeak mechanism on Llama, distributed across many mid-band heads for every pair.
+- This strengthens the NEXT5 W4-B result from single-pair to a cross-pair regularity, and reinforces
+  the D6 depth story (mid-band attention writes the demo→query context link for all pairs).
+- Artifacts: `outputs/head_attr_..._697370` (grenade), `..._697371` (chlorine).
