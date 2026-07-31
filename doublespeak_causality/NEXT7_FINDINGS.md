@@ -27,3 +27,31 @@ estimand; random control ~0):
 - **Prediction (tested next):** a behavioral TOCTOU factorial should recover the interaction at each
   pair's OWN dominant depth — early for cocaine, mid for pistol.
 - Artifacts: `outputs/repr_toctou_..._698695` (cocaine), `..._698696` (pistol).
+
+---
+
+## N7-A — MLP-node attribution: the D4 mediation lands in mid-band MLPs. **[WIN, validated]**
+
+`51_mlp_attribution.py` (per-layer MLP AtP, validated against a true SubmodulePatch(mlp) on the
+top-40 cells). D4 showed the mid-band heads have DIRECT≈0 (all effect mediated downstream) and
+head→head edges don't reconstruct it → the mediation runs through MLPs. N7-A localizes it:
+
+| pair | MLP AtP peak | band L7–14 share | AtP-vs-true pearson | trustworthy |
+|---|---|---|---|---|
+| bomb | L11 | 47.3% | 0.936 | yes |
+| grenade | L11 | 52.9% | 0.950 | yes |
+| chlorine | L14 | 40.9% | 0.932 | yes |
+
+- **The MLP mediation is mid-band-concentrated** (41–53% of Σ|AtP| in L7–14) and **validated**
+  (pearson 0.93–0.95 vs true MLP patch) for all three pairs — directly confirming D4's inference
+  that the effect the mid-band heads do NOT write directly is carried by the **mid-band MLP
+  sublayers**.
+- **A mid-band attention→MLP cascade.** The MLP contribution peaks slightly LATER (L11–14) than the
+  attention z-AtP (peak L9): attention heads write the demo→query context link in L7–9, and MLP
+  sublayers process/consolidate the concept in L9–14. Both are distributed (many heads, many MLP
+  layers) — together a mid-band "processing zone" (L7–14), not a sparse circuit.
+- **Unified mechanism (D3+W4+D4+N7-A):** the Doublespeak context effect is a **distributed mid-band
+  computation across BOTH attention and MLP** — attention links the context, MLPs consolidate the
+  concept, no single node is a bottleneck. This is the fullest mechanistic characterization to date,
+  each step validated against true patching.
+- Artifacts: `outputs/mlp_atp_{bomb,grenade,chlorine}/mlp_atp_results.json`.
