@@ -173,3 +173,28 @@ re-add the refusal axis ONLY at the late/use layers (24,26,28,30) in the same Ex
   the early check depth (i.e. simply not ablating the early refusal), which is not a novel
   intervention. Reported honestly. Gate: FAIL (no α suppresses; over-refusal high). Artifacts:
   `outputs/d7_defense_..._697705` (early, headroom) and `..._697454` (late, no headroom — first run).
+
+---
+
+## D1 — Per-pair TOCTOU at n=60 (verified dirs): grenade CONFIRMS, chlorine is NULL. **[refines W1; integrity]**
+
+Reran the TOCTOU factorial at n=60 (bench max) with VERIFIED-correct directions (grenade dir 694882,
+chlorine dir 694897 — after the D2/D3 reps↔dir collision was caught). Re-reduced `INTERACTION_mid_late`.
+
+| pair | n | INTERACTION_mid_late [CI] | p | vs committed n=40 |
+|---|---|---|---|---|
+| **grenade** | 60 | **+0.1833 [+0.0667,+0.3000]** | **0.008** | strengthened (n=40 was +0.125, CI incl 0) |
+| chlorine | 60 | +0.0333 [−0.0667,+0.1171] | 0.73 | **does NOT reproduce** (n=40 was +0.15, CI excl 0) |
+| **POOLED** | 120 | **+0.1083 [+0.0333,+0.1833]** | **0.012** | still significant, but **grenade-driven** |
+
+- **Grenade robustly confirms** the per-pair-timing TOCTOU at its own MID depth (n=60, p=0.008, CI
+  excludes 0) — the strongest single-pair behavioral confirmation.
+- **Chlorine is NULL** with a verified-correct direction (+0.033, p=0.73). The committed NEXT5 W1
+  chlorine number (+0.15, CI excluded 0) **does not reproduce** at n=60 — whether from the
+  reps↔directions collision or n=40 sampling noise, the authoritative result is null for chlorine.
+- **The pooled interaction remains significant** (+0.108, p=0.012, n=120) but is now understood as
+  **grenade-driven**, not "both mid-dominant pairs."
+- **Honest revision to NEXT5 W1:** the per-pair-timing TOCTOU generalizes **robustly to grenade**
+  (and bomb at early depth), but **NOT to chlorine**; the pooled significance holds but should not be
+  read as "both pairs." This tempers the W1 "win" to a grenade+bomb result with an honest chlorine
+  null. Artifacts: `outputs/toctou_..._697392` (grenade), `..._697405` (chlorine).

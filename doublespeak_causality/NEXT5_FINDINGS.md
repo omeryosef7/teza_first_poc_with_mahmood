@@ -44,6 +44,8 @@ pairs with `next5_w1_pooled_toctou.py`.
   Holm-robust confirmation would need larger n (tier-2 GPU rerun; bench has 60 unique pids) — noted
   as available, not required for the generalized claim.
 - **Gate:** PASS — pooled CI excludes 0 with the T3-predicted sign; bomb regression unchanged.
+> **NEXT6 D1 revision (integrity):** at n=60 with a VERIFIED-correct chlorine direction, chlorine's mid-late interaction is NULL (+0.033, p=0.73) and does NOT reproduce the +0.15 above; the pooled effect holds (+0.108, p=0.012, n=120) but is GRENADE-DRIVEN. The per-pair-timing TOCTOU generalizes robustly to grenade (n=60, p=0.008), not chlorine. See NEXT6_FINDINGS.md D1.
+
 - Code: `45_toctou_factorial.py` (new `INTERACTION_mid_late`), `next5_w1_pooled_toctou.py` (pooled +
   stratified). Artifacts: `outputs/toctou_*_695290/695291/694811/toctou_reanalysis.json`.
 
