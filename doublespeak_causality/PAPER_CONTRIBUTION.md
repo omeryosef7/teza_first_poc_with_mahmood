@@ -33,6 +33,8 @@ State × receiver-context transplant (forced_choice, n=30; `pair_interv_replace_
 
 **Generalization (§S5, `STAGE5_GENERALIZATION.md`):** the dissociation replicates on **4/4 pairs** across explosive/weapon/chemical harm categories (bomb, grenade, pistol, chlorine): `IE_state ≈ 0` (equivalence) and `DE_context` CI-excludes-0 (range +0.16 to +0.47, ≈95–99% of TE) on every pair. Absolute hijack strength is pair-dependent (pistol weakest at 0.16); the *structural* dissociation is universal. → a general property of Doublespeak on Llama-3.1-8B, not of CARROT↔BOMB.
 
+**Depth-invariance (N1/N2, `NEXT2_FINDINGS.md`):** the dissociation holds at **every depth** — single-layer state replacement is inert at all 32 layers (|IE_state| < 0.0002 everywhere, 4/4 pairs) and `DE_context` is flat across depth; even multi-layer (11-layer-window) replacement is inert (N2). The codeword's local state is causally irrelevant at all depths; the context re-supplies the reading continuously.
+
 ### 3.2 The effect is NOT a trivial demonstration re-read, and is distributed. **[NEW]**
 Demonstration-K/V mediation (forced_choice, n=30; `pair_kv_mediation_...694691/kv_mediation_summary.json`; new `pair_common.DemoStateSwap` + `44_kv_mediation.py`):
 - **`ReRead_test` (C1−C3) is small** (mid +0.032 of a 0.35 baseline → **~91% of the reading survives** neutralizing the demonstration codeword K/V). If the readout merely re-read the demonstrations, neutralizing them would collapse it. It does not.
@@ -45,7 +47,7 @@ Concept × refusal factorial (n=40; `toctou_...694811/toctou_summary.json`; `45_
 - **Ablating refusal then flips early-concept to compliance** (MALICIOUS 0.53), but **a late-installed concept yields no compliance even with refusal removed** (0.07).
 - **Interaction (early−late refusal_gain) = +0.425** [+0.250, +0.600] for MALICIOUS (Holm-sig); −0.400 for REJECTED. An intervention *interaction* (not crossing curves), meeting plan §Stage-4 H5.
 
-**Significance:** the refusal mechanism is **depth-gated** — it checks the concept representation at an early depth, so Doublespeak's deferral of harmful semantics to later layers is a genuine **time-of-check/time-of-use** bypass. This is the causal test of the paper's §3.4 TOCTOU hypothesis.
+**Significance:** the refusal mechanism is **depth-gated** — it checks the concept representation at an early depth, so Doublespeak's deferral of harmful semantics to later layers is a genuine **time-of-check/time-of-use** bypass. This is the causal test of the paper's §3.4 TOCTOU hypothesis. **Both halves are concept-specific** (NEXT2 #2: refusal-trigger B/early concept 0.82 vs random 0.00; compliance-flip Dspec early +0.475). **Scope:** demonstrated on CARROT↔BOMB; it does **not** clearly generalize to grenade (null) or chlorine (directional, NS) — the behavioral effect needs a strong concept install (weak/pair-dependent `d_Direct`), unlike the representational §3.1 dissociation which is 4/4. Reported honestly in `STAGE4_TOCTOU_FINDINGS.md`.
 
 ## 4. Our NEGATIVE / integrity findings (equally load-bearing)
 
@@ -62,6 +64,10 @@ On a fresh, consistent, byte-identical-bench pipeline, additive `d_Direct` insta
 - **Single pair / single model** for the primary causal claims (CARROT↔BOMB, Llama-3.1-8B). Generalization (Stage 5) deferred.
 - **Patchscope confound-free readout unusable as configured** (reads a late layer with no positive control; concept reps decode early) — dropped from claims; the forced_choice semantic readout carries the signal.
 - **cloze readout floors the positive control** (DIRECT 0.005 vs forced_choice 0.785, B3) — resolved by using forced_choice; a caution for anyone reading the cloze-era numbers.
+- **Patchscope cross-check not achievable for bomb** (N3): a layer-scanned, positive-control-gated patchscope fails its positive control (a clean DIRECT bomb rep does not decode via the repeat-prompt decoder; pos_ctrl_max 0.0003) — so we neither replicate nor refute the paper's patchscope decoding on this pair. The forced_choice next-token readout is load-bearing. A pair-tuned inspection prompt is future work.
+- **`d_Direct` install is small and non-monotone** (N4: peaks ~0.11 at α=4, drops at α=8) — the transplant conclusion (§3.1) does NOT depend on it (validity = faithfulness + `DE_context`), but `d_Direct` is not a strong positive control.
+- **Cross-architecture untested** (§5-cross-arch): Qwen3-14B's readout gate fails because it is a thinking model (the next-token readout fires inside `<think>`); a thinking-aware readout (`enable_thinking=False`) is needed. Gemma-4 not available. Primary claims are Llama-3.1-8B only.
+- **TOCTOU (§3.3) does not clearly generalize** beyond bomb (grenade null, chlorine NS) — behavioral compliance requires a strong concept install. The representational dissociation (§3.1) does generalize 4/4.
 
 ## 6. Paper-worthiness
 Two defensible **NEW causal contributions** to the paper's observational story:

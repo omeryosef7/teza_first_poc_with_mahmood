@@ -2,6 +2,20 @@
 
 Continuation of `HANDOFF.md` / `PAPER_CONTRIBUTION.md`. New low-cost experiments + techniques.
 
+## NEXT2 SUMMARY (2026-07-31)
+Low-hanging follow-ups after the primary sprint. **Net: one clean strengthening (depth-invariance), one closed caveat (TOCTOU specificity), and several honest negatives that sharpen the write-up.**
+- **N1 depth-invariance** ✅ (free) — local state inert at ALL 32 layers, DE_context flat, 4/4 pairs.
+- **#1 depth-overlay** ✅ (free) — meaning is context-supplied at every depth, refusal check acts only early (unifies S2/S3/S4).
+- **N2 multi-layer-inert** ✅ (free) — 11-layer-window state replacement also inert.
+- **#2 TOCTOU cell-D controls** ✅ — compliance-flip is concept-specific (Dspec early +0.475); **S4 caveat CLOSED**.
+- **#5 Qwen3 cross-arch** ✗ NEGATIVE — thinking-model readout gate fails; needs `enable_thinking=False`.
+- **N3 patchscope rescue** ✗ NEGATIVE — positive control fails for bomb (unusable, principled).
+- **N4 d_Direct dose** ✗ — small, non-monotone (confirms B4); transplant conclusion independent of it.
+- **#6 TOCTOU generalization** ✗ NEGATIVE — does NOT clearly generalize (grenade null, chlorine NS); TOCTOU is a bomb-pair result, unlike the 4/4 representational dissociation.
+- **#4 attribution patching** — deferred (correctness risk, low marginal value).
+
+**Bottom line:** the headline representational dissociation (context-carried, depth-invariant, 4/4 pairs) is now *stronger*; the TOCTOU is fully controlled on bomb but honestly scoped to that pair; the readout/positive-control limitations are documented rather than papered over.
+
 ---
 
 ## N1 — The context-carried dissociation is DEPTH-INVARIANT. **[NEW, CPU-free, from existing data]**

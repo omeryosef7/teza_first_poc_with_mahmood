@@ -37,3 +37,18 @@
 ## Open flags for Omer
 - **B4**: CAUSAL_CORE's +0.971 `d_Direct` claim is unbacked on disk — decide whether to retract/relabel it in the older docs.
 - **C10** label de-bias was signed off (kept); it affects discrete labels only, not `p_concept`.
+
+---
+
+## NEXT2 addendum (2026-07-31)
+Low-hanging follow-ups (see `NEXT2_FINDINGS.md`, `NEXT2_PLAN.md`):
+- **Strengthened:** representational dissociation is **depth-invariant** (N1: local state inert at all 32 layers; N2: 11-layer-window replacement also inert; 4/4 pairs). Depth-overlay (#1) unifies S2/S3/S4: meaning is context-supplied at every depth, refusal check acts only early.
+- **Closed caveat:** TOCTOU **compliance-flip is concept-specific** (#2 cell-D: Dspec early +0.475) — both halves now controlled.
+- **Honest negatives:** Qwen3 cross-arch (thinking-model readout gate fails); patchscope (N3, positive control fails for bomb — unusable); d_Direct dose (N4, small/non-monotone); TOCTOU does **not** clearly generalize beyond bomb (#6: grenade null, chlorine NS) — the representational dissociation does (4/4), the behavioral TOCTOU does not.
+
+### Remaining deferred (future sessions)
+- **Thinking-aware readout** (`enable_thinking=False` / post-`</think>` answer-position) to test cross-architecture (Qwen3, DeepSeek-R1-Distill; both cached) — the main way to lift the primary claim off single-model Llama.
+- **Pair-tuned patchscope** inspection prompt that passes the bomb positive control → then cross-check IE_state=0 via the paper's own readout.
+- **#4 attribution-patching map** (`47_attribution_patching.py`) to localize the distributed DE_context (deferred: gradient-approx correctness risk).
+- **All-32-layer cumulative replacement** (near-certain confirmatory given N1+N2).
+- A **stronger/pair-robust concept-install lever** to test TOCTOU generality behaviorally.

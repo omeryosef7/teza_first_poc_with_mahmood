@@ -63,5 +63,16 @@ So ablating refusal converts an **early-installed CONCEPT** to compliance (D/ear
 - **Single pair / single model / n=40**, one seed. Deterministic greedy decoding.
 - Refusal ablation is partial (harmful refusal 1.0→0.53 at validation), so absolute compliance rates are conservative lower bounds.
 
+## Generalization to other pairs — does NOT clearly replicate (honest negative). **[NEXT2 #6]**
+Ran the same factorial (concept-agnostic L18 refusal dir + per-pair `d_Direct`, cell-D controls, n=40, 0 judge failures) on grenade + chlorine (`toctou_...695290/695291`):
+
+| pair | INTERACTION (MALICIOUS) [CI] | refusal_gain early / mid / late | D_early MAL | verdict |
+|---|---|---|---|---|
+| **bomb** | **+0.425** [+0.25,+0.60] Holm-sig | +0.45 / +0.05 / +0.05 | 0.525 | depth-gated ✅ |
+| grenade | −0.025 [−0.15,+0.10] NS | +0.00 / +0.15 / +0.03 | 0.075 | null (no early gating) |
+| chlorine | +0.15 [−0.05,+0.33] NS | +0.175 / +0.175 / +0.03 | 0.275 | directionally like bomb but NOT significant; flat (not early-specific) |
+
+**Honest conclusion:** the depth-gated-refusal TOCTOU is **strong and significant on bomb but does NOT clearly generalize** — grenade is null and chlorine is directionally consistent but underpowered/non-significant with a *flat* (not early-specific) refusal_gain. The likely cause: the *behavioral* effect requires the concept install to actually flip generation to harmful compliance, and the additive `d_Direct` install is weak and pair-dependent (B4/N4), with much lower base compliance for grenade/chlorine (D_early 0.075/0.275 vs bomb 0.525). This contrasts with the *representational* dissociation (§3.1), which generalizes 4/4 pairs (S5) because it measures the semantic reading, not behavioral compliance. **The TOCTOU depth-gating stands as a bomb-pair result**, pending a stronger/pair-robust concept-install lever or larger n to test generality.
+
 ## Significance
-A **second new causal contribution**: beyond §3.1 (the reading is context-carried), this shows the *safety consequence* — the refusal mechanism is depth-gated, so the Doublespeak strategy of deferring harmful semantics to later layers is a genuine TOCTOU bypass. Concept-specific, controlled, and significant.
+A **second new causal contribution**: beyond §3.1 (the reading is context-carried), this shows the *safety consequence* — on the CARROT↔BOMB pair the refusal mechanism is depth-gated, so deferring harmful semantics to later layers is a genuine TOCTOU bypass. Concept-specific (both refusal-trigger and compliance-flip), controlled, and significant on bomb; generalization to other pairs is **not** established (see above).
