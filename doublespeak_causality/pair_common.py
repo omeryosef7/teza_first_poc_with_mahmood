@@ -487,6 +487,91 @@ class AllPositionProjectOutMultiLayer:
 
 
 # --------------------------------------------------------------------------- #
+# All-position / all-timestep directional ADD (NEXT5 W5 — mechanism-derived defense)
+# --------------------------------------------------------------------------- #
+def make_add_hook(direction: torch.Tensor, alpha: float = 1.0):
+    """NEXT5 W5: forward hook that ADDS `alpha * d_hat` to the block output at EVERY
+    position and on EVERY forward call (prefill AND each KV-cached decode step).
+
+    The additive counterpart of `make_project_out_hook`. It exists because BOTH existing
+    add paths are prefill-only — `ds_common.LayerPatch(mode="add")` edits a FIXED set of
+    prompt positions and SKIPS decode steps (seq==1 rows are out of range). To keep a
+    refusal axis PRESENT throughout generation (so late-emerging compliance keeps hitting
+    the refusal direction on every generated token), the add must fire on the whole
+    `hidden` tensor, including generated tokens. Registered on the decoder-LAYER output, so
+    `direction` lives in the post-block-L residual == hidden_states[L+1]. `direction` is
+    normalized to unit norm here, so `alpha` is an absolute residual-space magnitude,
+    directly comparable across layers.
+    """
+    d_cpu = direction.detach().float().cpu()
+    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+
+    def hook(module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        h = output[0] if is_tuple else output
+        d = d_cpu.to(device=h.device, dtype=h.dtype)
+        h = h + alpha * d                                 # broadcast over ALL positions/timesteps
+        return (h,) + tuple(output[1:]) if is_tuple else h
+
+    return hook
+
+
+class AllPositionAdd:
+    """Context manager wrapping `make_add_hook` on a single decoder layer (W5 defense)."""
+
+    def __init__(self, model, layer_idx: int, direction: torch.Tensor, alpha: float = 1.0):
+        self.layer = dc._get_layers(model)[layer_idx]
+        self.layer_idx = layer_idx
+        self._hook = make_add_hook(direction, alpha)
+        self._handle = None
+
+    def __enter__(self):
+        self._handle = self.layer.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+class AllPositionAddMultiLayer:
+    """NEXT5 W5: ADD the SAME single direction (e.g. the validated refusal axis) to the block
+    output at EVERY position/timestep on EVERY layer in `layer_idxs`, throughout generation.
+
+    The additive mirror of `AllPositionProjectOutMultiLayer`. The mechanism-derived defense:
+    harmful semantics in Doublespeak emerge at a LATE/use depth while the refusal check acts
+    earlier — so re-installing `+alpha * refusal_dir` at the late (use) layers on every
+    generated token should re-engage refusal against the late-emerging compliance. Each layer
+    gets its own hook holding a normalized copy of `direction`; all handles are removed on
+    exit. Composes freely with ds_common.LayerPatch / the Doublespeak prompt in an ExitStack.
+    """
+
+    def __init__(self, model, layer_idxs: Sequence[int], direction: torch.Tensor,
+                 alpha: float = 1.0):
+        all_layers = dc._get_layers(model)
+        self.layer_idxs = list(layer_idxs)
+        bad = [i for i in self.layer_idxs if i < 0 or i >= len(all_layers)]
+        if bad:
+            raise IndexError(f"layer index out of range for {len(all_layers)} layers: {bad}")
+        self.layers = [all_layers[i] for i in self.layer_idxs]
+        self._hooks = [make_add_hook(direction, alpha) for _ in self.layers]
+        self._handles: List[Any] = []
+
+    def __enter__(self):
+        for layer, hook in zip(self.layers, self._hooks):
+            self._handles.append(layer.register_forward_hook(hook))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Forward-only semantic score (the cheap outcome used by the big sweeps)
 # --------------------------------------------------------------------------- #
 def word_first_ids(tokenizer, word: str) -> List[int]:
