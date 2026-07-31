@@ -191,3 +191,16 @@ StrongReject-judged; two-sided gate (DS malicious drop CI<0 AND benign over-refu
   additive injection compounds — a real methodological lesson.
 - **Gate:** FAIL (no config passes the two-sided gate). Artifact:
   `outputs/w5_defense_..._696220/w5_defense_summary.json`.
+
+### Tier A (per-HEAD, in-band): no single necessary head — redundant/distributed. **[corroboration]**
+Per-head knockout restricted to the z-AtP band L7–14 (heldout, n=8, 1280 groups, job 696265),
+reduced with the same machinery.
+- **No single head is necessary:** the largest concept-reading drop from knocking out any one head's
+  view of the demos is **~0.015** (≤4% relative), and **none survive Holm** (all p_holm = 1.0).
+- **Convergent localization:** the largest (tiny) necessity effects cluster at **L7–L9 heads**
+  (L7h26, L9h11, L9h9, L8h0/h1, L9h22/h13) — the SAME mid region where the z-AtP contribution peaks
+  (L9). So the CONTRIBUTION map (z-AtP) and the NECESSITY map (knockout) agree on the band, and both
+  show the mechanism is **redundant**: many mid-band heads write the concept, so ablating any one
+  barely matters. A coherent, validated picture — mid-band (L7–14, peak L9), distributed across
+  heads, redundant — consistent with S3/T4. Artifact:
+  `outputs/pair_attn_knockout_..._696265/knockout_reduce.json`.
