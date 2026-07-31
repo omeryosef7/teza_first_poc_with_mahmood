@@ -161,3 +161,33 @@ the first ANSWER token after `</think>` (`31 --answer-marker '</think>' --max-ne
 - Minor code fix: 31's per-cell EXCLUDED message printed a static "(< 0.8)" even when the NEGATIVE
   control was the failing one — corrected to name the actual failing control.
 - Artifact: `outputs/pair_readout_DeepSeek-R1-Distill-Llama-8B_..._696201/readout_summary.json`.
+
+---
+
+## W5 — Mechanism-derived defense (add refusal at the use-depth): honest NEGATIVE. **[negative]**
+
+**Hypothesis:** harmful semantics emerge late while the refusal check acts earlier → ADD
+`+α·v_refusal` at late/mid layers throughout generation to re-engage refusal specifically.
+`next5_w5_defense_eval.py` + `AllPositionAddMultiLayer`; paired on 30 bomb Doublespeak items,
+StrongReject-judged; two-sided gate (DS malicious drop CI<0 AND benign over-refusal bounded).
+
+- **No attack headroom:** baseline DS `malicious_rate = 0.033` (1/30) — on this StrongReject-judged
+  set the raw Doublespeak attack barely jailbreaks at baseline (consistent with our standing finding
+  that Doublespeak ASR is modest). There is essentially nothing to reduce, so no config can show a
+  significant malicious drop (all `works=False`, malicious 0.033→0.0, CI includes 0).
+- **The additive intervention is not clean / destabilizes generation:** at every config, **30/30**
+  neutral generations hit max-length with no EOS (vs 19/30 at baseline) — the all-position additive
+  steering pushes the residual persistently off-distribution and accumulates across timesteps,
+  degrading decoding. `late_a8` over-refuses benign (refusal 0.30→0.73, 22/30) — blanket, not
+  specific; `late_a16` / `midfit_a8` / `midfit_a16` drive benign refusal to 0/30 **not** because
+  they are safe but because the output degenerates into non-terminating garbage that matches no
+  refusal keyword.
+- **Honest conclusion:** the mechanism-derived defense is **NOT supported** by this experiment. The
+  primitive (`AllPositionAdd`, 9/9 unit tests) works and the direction is right (adding refusal does
+  raise refusal at `late_a8`), but (a) additive all-position steering at behavior-changing
+  magnitudes destabilizes generation and over-refuses, and (b) the baseline attack is at floor, so a
+  specific ASR reduction cannot be demonstrated here. Reported as a first-class negative (plan §W5
+  fallback). Contrast: the project-OUT ablation is stable because it removes energy; persistent
+  additive injection compounds — a real methodological lesson.
+- **Gate:** FAIL (no config passes the two-sided gate). Artifact:
+  `outputs/w5_defense_..._696220/w5_defense_summary.json`.
