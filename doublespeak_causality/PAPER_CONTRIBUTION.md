@@ -82,3 +82,37 @@ Two defensible **NEW causal contributions** to the paper's observational story:
 2. **§3.3 causal TOCTOU** — *the refusal mechanism is depth-gated; an early-installed concept is caught (concept-specifically) while a late one escapes* (interaction +0.425, Holm-sig, controlled). This is the causal test of the paper's §3.4 TOCTOU hypothesis.
 
 Plus a load-bearing **integrity negative** (§4.1: the in-house +0.971 `d_Direct` install does not reproduce). Remaining to strengthen for publication: generalization across pairs/models (Stage 5), control-D cells for §3.3, larger n/seeds, and a positive-control-gated patchscope readout.
+
+---
+
+## NEXT5 addendum (2026-07-31) — new results (see `NEXT5_FINDINGS.md`)
+All new inferential claims survive a SINGLE Holm-Bonferroni family (p_holm: W1 0.014; W3b
+DS−benign 0.002, DS−unrelated 0.007) — `outputs/next5_holm_family.json`.
+
+- **§3.3 TOCTOU now generalizes behaviorally (W1) [NEW/WIN].** Using each pair's OWN dominant
+  depth (mid for grenade/chlorine, pre-registered from the *independent* T3 probe), the behavioral
+  compliance-flip interaction is positive; **pooled across the two mid-dominant pairs = +0.1375
+  [+0.0375,+0.2375], n=80, p=0.015** (robust to a cluster bootstrap). This converts the prior #6
+  behavioral non-generalization into a confirmation: the depth-gated-refusal TOCTOU is general; only
+  the gating *depth* is pair-dependent. Bomb early−late interaction reproduces unchanged (+0.425).
+- **§3.4 Superposition SUPPORTED (W3-b) [NEW/WIN].** By direction projection (dev axes, heldout
+  reps), the DS codeword-position rep carries BOTH a codeword component (shared with all remap
+  conditions) AND a harmful-concept component that is DS-specific above benign-remap (+0.55) and
+  unrelated (+0.46) controls. So **both** of the paper's §3.4 hypothesized mechanisms are now
+  empirically tested — TOCTOU causally (§3.3), superposition representationally. (Concept loading is
+  weak, ~13% of DIRECT — superposition with a small concept component.)
+- **§3.5 Head-circuit localization (W4) [NEW].** A validated per-head z-attribution
+  (AtP-vs-true-z-patch pearson 0.97) localizes the concept contribution to a **mid-layer band
+  (L7–14, peak L9)**, distributed across many heads (top-20 cells = 12%); per-LAYER knockout shows
+  no single-layer necessity. So the context effect is a mid-band, distributed-across-heads mechanism
+  — not a sparse circuit (refines §3.2 "distributed" and T4). New primitive `ZHeadPatch`/`ZHeadCapture`.
+- **Cross-architecture (W2) [scope bound].** The post-`</think>` answer-position readout is
+  validated on DeepSeek-R1-Distill-8B (0/120 truncation; forced_choice positive control passes), but
+  its Doublespeak hijack is weak/inconclusive (gated DS−Neutral reads-as-concept +0.33, n=6, CI
+  incl. 0; p_concept 0), so the transplant was not run. Primary dissociation stands on 2
+  architectures (Llama-3.1-8B + Qwen3-14B); DeepSeek attempted, readout-validated, attack too weak.
+- **Mechanism-derived defense (W5) [NEGATIVE].** Adding +α·v_refusal at late/mid layers throughout
+  generation does NOT yield a specific defense: baseline DS malicious is at floor (0.033 — no attack
+  headroom on the StrongReject-judged set) and the all-position additive steering destabilizes
+  generation (30/30 neutral hit max-length; over-refusal at α=8, degenerate output at α=16). The
+  additive analogue of the ablation is unstable; reported as a first-class negative.

@@ -67,3 +67,24 @@ See `NEXT3_PLAN.md` / `NEXT3_FINDINGS.md`.
 - A behavioral TOCTOU per pair using that pair's OWN dominant depth (T3 predicts it should recover the interaction).
 - A pair-tuned / non-safety-suppressed patchscope to positively replicate the paper's decoding.
 - New code: `46/47/48_*.py` + `ds_run.slurm` (generic GPU runner); `--enable-thinking` threaded through 31/32/34/44.
+
+---
+
+## NEXT5 addendum (2026-07-31) — max-depth sprint (see `NEXT5_PLAN.md` / `NEXT5_FINDINGS.md`)
+All new inferential claims survive a single Holm family (`outputs/next5_holm_family.json`): W1
+p_holm 0.014, W3b 0.002/0.007. Full test suite 93 passed (was 52).
+- **W1 [WIN]:** per-pair-timing behavioral TOCTOU — pooled mid−late interaction +0.1375
+  [+0.0375,+0.2375] n=80 p=0.015 (grenade+chlorine at their own MID depth, pre-registered from T3).
+  Turns the #6 negative into a confirmation. New `INTERACTION_mid_late` in `45`; `next5_w1_pooled_toctou.py`.
+- **W3-b [WIN]:** superposition supported — DS rep carries codeword + DS-specific concept component
+  (DS−benign +0.55, DS−unrelated +0.46). Both §3.4 mechanisms now tested. `next5_w3b_superposition.py`.
+- **W4 [NEW]:** per-head z-AtP (validated pearson 0.97) localizes to a MID band (L7–14, peak L9),
+  distributed across heads; per-layer knockout = no single-layer bottleneck. New primitives
+  `ZHeadPatch`/`ZHeadCapture` (`pair_common`), `49_head_attribution.py`, `next5_w4_knockout_reduce.py`.
+- **W2 [scope bound]:** DeepSeek post-`</think>` readout validated (0/120 truncation) but DS hijack
+  weak (n=6, CI incl 0) → transplant not run; primary claim stays on Llama+Qwen3.
+  `ds_next5_deepseek_readout.slurm`; fixed 31's misleading per-cell EXCLUDED message.
+- **W5 [NEGATIVE]:** mechanism-derived defense (`AllPositionAdd`) does not work — no baseline attack
+  headroom (DS malicious 0.033) + additive all-position steering destabilizes generation.
+  `next5_w5_defense_eval.py`.
+- New tests: `test_alladd_hook_synthetic.py` (9), `test_zhead_synthetic.py` (6, incl. AtP-exactness).
