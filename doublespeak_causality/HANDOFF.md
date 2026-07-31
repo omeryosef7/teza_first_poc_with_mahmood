@@ -88,3 +88,22 @@ p_holm 0.014, W3b 0.002/0.007. Full test suite 93 passed (was 52).
   headroom (DS malicious 0.033) + additive all-position steering destabilizes generation.
   `next5_w5_defense_eval.py`.
 - New tests: `test_alladd_hook_synthetic.py` (9), `test_zhead_synthetic.py` (6, incl. AtP-exactness).
+
+---
+
+## NEXT6 addendum (2026-07-31) — "all new directions" (see `NEXT6_PLAN.md` / `NEXT6_FINDINGS.md`)
+All new positive claims survive one Holm family (`outputs/next6_holm_family.json`). Full suite still green.
+- **D6 [WIN]:** unified depth timeline (TOCTOU = 22.5x concept gradient). `next6_d6_depth_story.py`.
+- **D3 [WIN]:** mid-band head circuit (L7-14) replicates on grenade/chlorine (pearson .97-.99).
+- **D4 [sharpening]:** NOT a sparse head circuit -- DIRECT~0 for every mid-band head, head->head
+  edges don't reconstruct TOTAL -> MLP/distributed. New `50_path_patching.py` + `ZHeadPatchMulti`/
+  `FreezeAllHeadsExcept`/`FreezeMLP` (linear-toy test 4/4).
+- **D2 [nuanced]:** superposition bomb-specific but cross-arch (Qwen3 +8.96); other pairs NS.
+- **D1 [integrity]:** grenade confirms n=60 (p=.008); chlorine NULL (committed n=40 +0.15 not robust);
+  pooled grenade-driven (+.108, p=.012). W1 tempered.
+- **D5 [negative]:** Phi-4 hijack absent; both reasoning models don't carry it to the answer.
+- **D7 [negative]:** late/use-depth defense fails w/ headroom (compliance gated early).
+- **Bug caught+fixed:** reps<->directions suffix collision (chlorine/pistol used grenade d_Direct);
+  all affected runs redone with verified dirs.
+- New tests: `test_path_patching.py` (4). New code: `50_path_patching.py`, `next6_d7_defense_redo.py`,
+  `next6_d6_depth_story.py`, `next6_w4_knockout_reduce.py`, `next6_holm_family` computation.

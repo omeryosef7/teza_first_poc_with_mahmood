@@ -116,3 +116,37 @@ DS−benign 0.002, DS−unrelated 0.007) — `outputs/next5_holm_family.json`.
   headroom on the StrongReject-judged set) and the all-position additive steering destabilizes
   generation (30/30 neutral hit max-length; over-refusal at α=8, degenerate output at α=16). The
   additive analogue of the ablation is unstable; reported as a first-class negative.
+
+---
+
+## NEXT6 addendum (2026-07-31) — "all new directions" (see `NEXT6_FINDINGS.md`)
+All new NEXT6 positive claims survive a single Holm family (`outputs/next6_holm_family.json`): D1
+grenade p_holm 0.015, D1 pooled 0.015, D2 Qwen3 specificity 0.0002.
+
+- **§3.5 head-circuit — NOT a sparse attention circuit [NEW, sharpened].** Three independent lenses
+  converge: z-AtP is distributed across many mid-band heads (D3), no single layer/head is necessary
+  (W4 knockout), and path patching (D4) finds every mid-band head has large TOTAL true-patch effect
+  but **DIRECT ≈ 0** (all effect mediated downstream) with head→head edges that do NOT reconstruct
+  the total (recon fails) — the effect routes through MLPs/residual, not sender→receiver head edges.
+  The Doublespeak context effect is a **distributed, MLP-involving mid-band computation**, and this
+  mid-band circuit (L7–14, peak L9–13) **replicates across bomb/grenade/chlorine** (D3, validated
+  pearson 0.97–0.99). New validated primitives: per-head z capture/patch + path patching.
+- **§3.4 superposition — bomb-specific, cross-architecture [NEW, nuanced].** DS-specific concept
+  elevation replicates strongly on Qwen3-14B (+8.96) but is bomb-only on Llama (grenade/chlorine/
+  pistol NS vs benign remap). Co-loading (both axes) is universal.
+- **§3.3 TOCTOU generalization — grenade robust, chlorine null [refined].** At n=60 with verified
+  directions, grenade confirms the per-pair-timing TOCTOU (+0.183, p=0.008); chlorine does NOT
+  reproduce (+0.033, p=0.73); pooled significant but grenade-driven (+0.108, p=0.012). The NEXT5 W1
+  chlorine number was not robust. (Integrity: a reps↔directions suffix collision was caught by the
+  design workflow and all affected analyses rerun with correct dirs.)
+- **§Depth story [NEW, synthesis].** One depth timeline unifies S2/superposition/circuit/TOCTOU:
+  codeword-first superposition, mid-band attention writes the context link, and TOCTOU as a 22.5×
+  concept-emergence gradient (early check sees concept ≈0.18, late use ≈4.1). Honest nuance: the
+  attention write-band is decoupled from the concept-projection growth rate.
+- **Cross-architecture bound [NEW].** Two reasoning models — DeepSeek-R1-Distill (weak) and
+  Phi-4-mini-reasoning (absent, reads-as-concept +0.00) — do NOT carry the hijack to the
+  post-`</think>` answer, while Llama (+0.50) and Qwen3 (+0.69) show it strongly. The primary
+  dissociation stands on 2 architectures; a plausible reasoning-model robustness property is noted.
+- **Mechanism-derived defense [NEGATIVE].** Re-adding refusal at the late/use depth does not
+  suppress the attack even with headroom (attack malicious 0.5) — the compliance is gated EARLY, so
+  a late intervention is too late; it only adds benign over-refusal. Honest negative.
