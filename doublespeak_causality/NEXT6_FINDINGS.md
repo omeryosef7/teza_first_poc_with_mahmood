@@ -97,3 +97,47 @@ per-head z-patch), compared to bomb (NEXT5 W4-B):
 - This strengthens the NEXT5 W4-B result from single-pair to a cross-pair regularity, and reinforces
   the D6 depth story (mid-band attention writes the demo→query context link for all pairs).
 - Artifacts: `outputs/head_attr_..._697370` (grenade), `..._697371` (chlorine).
+
+---
+
+## D4 — Path patching: NOT a sparse attention-head circuit (rules out head→head edges). **[negative that sharpens the mechanism]**
+
+`50_path_patching.py` (new `FreezeAllHeadsExcept`/`FreezeMLP`/`ZHeadPatchMulti`, exploiting o_proj
+linearity to freeze all non-sender components) on bomb, top-8 mid-band heads (L7–14) from the z-AtP
+map. Validated in a linear toy (4/4 tests, completeness identity exact). On the real model:
+
+- **Every mid-band head has a large TOTAL true-patch effect but DIRECT ≈ 0.** TOTAL (single-head
+  true patch, logit_diff, m_clean=1.23): L9h19 −2.89, L10h27 −1.30, L11h24 −1.16, L12h6 −1.06,
+  L13h0 +0.92, L10h24 +0.48, L9h17 +0.64. DIRECT (sender→logits with ALL other heads+MLPs frozen):
+  **−0.03 … +0.06 for every head** (essentially zero). → no mid-band head writes directly to the
+  logits; each head's entire effect is **mediated through downstream computation**.
+- **The head→head EDGE decomposition does NOT reconstruct TOTAL** (median rel_err 1.006 ≫ tol 0.15,
+  `recon_ok=False`) → the mediation runs through components the head-only path patch freezes out
+  (MLPs and multi-hop residual paths), NOT through direct sender-head→receiver-head edges. Per the
+  gate, the edge matrix is **not interpreted**; only the exact TOTAL/DIRECT single-head deltas are.
+- **Mechanistic conclusion (honest):** the Doublespeak context effect is **not a sparse
+  attention-head circuit**. The mid-band heads matter (large TOTAL) but act entirely through
+  downstream MLP/residual computation (DIRECT≈0), and their pairwise routing is not
+  edge-decomposable. This converges with D3 (distributed across many heads) and W4 (no single-layer
+  or single-head bottleneck): a distributed, MLP-involving mid-band computation, not a tidy circuit.
+- Gate: correctness gate PASSED (linear-toy exactness); on-model recon gate FAILED → fall back to
+  TOTAL/DIRECT (the designed, honest fallback). Artifact: `outputs/path_patch_..._697419/`.
+
+---
+
+## D5 — Phi-4-mini-reasoning 3rd architecture: readout certifies, hijack ABSENT. **[honest negative]**
+
+`31 --answer-marker '</think>'` on `microsoft/Phi-4-mini-reasoning` (a genuinely distinct non-Llama
+reasoning architecture; Phi3ForCausalLM). forced_choice DIRECT positive control PASSES (pos=1.0,
+neg=0.0), so the post-`</think>` readout method certifies on Phi-4 too.
+- **The Doublespeak hijack does NOT manifest on Phi-4:** gated `DS−Neutral reads_as_concept =
+  +0.000` [0,0] (n=5–6 usable cells), all-cell DS reads-as-concept = 0.095 — i.e. Phi-4 reads the
+  codeword as the codeword, not the concept, at the answer position. Transplant not run (no effect).
+- **Cross-architecture pattern (both reasoning models):** DeepSeek-R1-Distill (weak, +0.33 n=6 NS)
+  and Phi-4-mini-reasoning (absent, +0.00) both fail to show the hijack at the post-`</think>`
+  answer position, while Llama-3.1-8B (non-thinking readout, +0.50) and Qwen3-14B
+  (thinking-suppressed, +0.69) show it strongly. A consistent, honest observation: the
+  Doublespeak reading is present in these reasoning models' prompts but does not survive to the
+  answer through their chain-of-thought — a plausibly meaningful robustness property worth noting.
+  The primary dissociation stands on **2 architectures** (Llama + Qwen3).
+- Artifact: `outputs/pair_readout_Phi-4-mini-reasoning_..._697414/readout_summary.json`.
