@@ -141,3 +141,35 @@ neg=0.0), so the post-`</think>` readout method certifies on Phi-4 too.
   answer through their chain-of-thought — a plausibly meaningful robustness property worth noting.
   The primary dissociation stands on **2 architectures** (Llama + Qwen3).
 - Artifact: `outputs/pair_readout_Phi-4-mini-reasoning_..._697414/readout_summary.json`.
+
+---
+
+## D7 — Defense redo (with headroom): the late/use-depth defense FAILS. **[honest negative, mechanistically informative]**
+
+`next6_d7_defense_redo.py`. Fixed W5's two flaws: (1) attack-with-headroom (recreate 45's cell-D:
+install concept EARLY + ablate refusal → malicious 0.5, real headroom, matching 45's 0.53); (2)
+small-α {2,4,8} + full {EMPTY,MALICIOUS,REJECTED,BENIGN} split + degeneration guardrail. Defense =
+re-add the refusal axis ONLY at the late/use layers (24,26,28,30) in the same ExitStack.
+
+| α | attack→defended malicious | suppression [CI] | benign over-refusal | REJ@atk-def |
+|---|---|---|---|---|
+| 2 | 0.50 → 0.47 | −0.033 [−0.17,+0.10] NS | +0.233 | 0.067 |
+| 4 | 0.50 → 0.53 | +0.033 [−0.10,+0.17] NS | +0.267 | 0.033 |
+| 8 | 0.50 → 0.47 | −0.033 [−0.27,+0.17] NS | +0.433 | 0.100 |
+
+- **The mechanism-derived defense does NOT work even with headroom.** Re-adding refusal at the
+  late/use layers gives no malicious suppression at any α (all NS, |δ|≤0.03), does NOT re-engage
+  refusal on the attack (REJ stays ~0.03–0.10), and imposes large benign over-refusal (+0.23 to
+  +0.43).
+- **Why (the informative part):** the Doublespeak malicious COMPLIANCE is gated EARLY — the concept
+  must be installed early to be caught by (and then released from) the early refusal check (early
+  install → 0.5 malicious; a late-installed concept escapes entirely → 0.07, NEXT5 W1). So the
+  behavioral decision is set at early depth, and re-adding refusal at LATE layers is **too late** to
+  intervene — the compliance is already determined upstream. This refutes the "harm emerges late →
+  defend late" hypothesis for the BEHAVIORAL attack and reinforces the TOCTOU depth structure (the
+  action is early). (The D6 late concept-PROJECTION growth is a readout-space phenomenon; the
+  compliance gate is early — an honest distinction.)
+- **Verdict:** mechanism-derived late-depth defense is a **negative**; a defense would have to act at
+  the early check depth (i.e. simply not ablating the early refusal), which is not a novel
+  intervention. Reported honestly. Gate: FAIL (no α suppresses; over-refusal high). Artifacts:
+  `outputs/d7_defense_..._697705` (early, headroom) and `..._697454` (late, no headroom — first run).
