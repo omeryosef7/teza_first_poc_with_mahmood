@@ -38,3 +38,34 @@ depth) — no GPU — the Doublespeak mechanism resolves into a single depth tim
   the mid-band distributed circuit (where attention links context), and TOCTOU (early check sees
   concept ≈0.18, late use sees ≈4.1 → 22.5× bypass gradient).
 - Artifact: `outputs/next6_depth_story.json`. Code: `next6_d6_depth_story.py`.
+
+---
+
+## D2 — Superposition generalization: bomb-specific but CROSS-ARCHITECTURE. **[nuanced / honest]**
+
+Ran `next5_w3b_superposition.py` on grenade/chlorine/pistol (Llama, fixed band L12–24) and bomb on
+Qwen3-14B (band L15–30, proportional). DS-specific = DS concept component above the benign-remap
+control (the load-bearing superposition claim).
+
+| pair / model | DS loads both? | DS−BENIGN concept [CI] | DS-specific? |
+|---|---|---|---|
+| **bomb / Llama** | yes | **+0.555 [+0.26,+0.87]** | **YES** |
+| **bomb / Qwen3-14B** | yes | **+8.96 [+6.39,+11.63]** | **YES (cross-arch)** |
+| grenade / Llama | yes | +0.078 [−0.23,+0.38] | no |
+| chlorine / Llama | yes | −0.118 [−0.48,+0.26] | no |
+| pistol / Llama | yes | −0.176 [−0.51,+0.16] | no |
+
+- **Co-loading is universal:** every pair's DS rep loads BOTH the codeword and concept axes (both
+  CIs exclude 0) — the basic superposition geometry is general.
+- **DS-specific concept elevation is a BOMB property that CROSSES ARCHITECTURES.** Only bomb shows
+  the concept component elevated above the benign-remap control — and it does so on **both** Llama
+  (+0.55) and Qwen3-14B (**+8.96**, even stronger). For grenade/chlorine/pistol the DS concept-axis
+  loading is statistically indistinguishable from a benign remap (all NS vs BENIGN) — i.e. the
+  concept axis `d_Direct` for those pairs captures generic "codeword-is-remapped" structure that any
+  remap shares, not a DS-specific harmful-concept component.
+- **Honest reading:** this mirrors the recurring pattern (S4/T3) that bomb is the strongest, cleanest
+  hijack — the DS-specific superposition is a bomb property, but a robust one (replicates on a second
+  architecture). The non-generalization to other Llama pairs is reported honestly; a pair-specific
+  band (analogous to T3's pair-dependent depths) is untested future work (avoided here to prevent
+  post-hoc band-tuning / double-dipping).
+- Artifacts: `w3b_superposition.json` in each pair's reps dir (`..._694882/883/884`, Qwen3 `..._695832`).
