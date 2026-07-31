@@ -90,3 +90,28 @@ axis = `d_repeated` (REPEATED_CODEWORD−NEUTRAL). Per rep: `(r−μ_NEUTRAL)·a
   superposition) are now empirically tested — TOCTOU causally, superposition representationally.
 - Code: `next5_w3b_superposition.py`. Artifact:
   `outputs/pair_reps_..._694691/w3b_superposition.json`.
+
+---
+
+## W4 — Attention-head circuit localization. **[tier-A: distributed (no sparse bottleneck); tier-B pending]**
+
+### Tier A — per-LAYER attention knockout: no single-layer bottleneck. **[negative that reinforces S3/T4]**
+`36_pair_attention.py --mode knockout --granularity per_layer --readout forced_choice` (heldout,
+n=10 prompts, 3220 rows, job 696227) blocks attention from the query codeword to each source set
+(demos_all/first/last, prev_codewords; request_only + random_matched controls) one layer at a time,
+scoring the DOUBLESPEAK forced-choice concept reading. Reduced with `next5_w4_knockout_reduce.py`
+(paired bootstrap CI + Holm + random control).
+- **Blocking query→demo attention at any single layer barely moves the reading** — the largest
+  concept-reading drop is **+0.024** (L1), and **NO group survives Holm** (all p_holm = 1.0). The
+  demonstration-blocking sets (demos_*) give ≤ ~0.014. Baseline DS reading ~0.35, so the biggest
+  single-layer knockout removes < 7% relative.
+- **Interpretation:** there is **no sparse single-layer attention bottleneck** carrying the
+  context effect — consistent with S3 (91% of the reading survives neutralizing the demo K/V) and
+  T4 (the effect is distributed, not localized to demonstrations). An honest negative for a clean
+  single-layer circuit; positive evidence for distributed computation.
+- Artifact: `outputs/pair_attn_knockout_..._696227/knockout_reduce.json`.
+
+### Tier B — per-HEAD z-attribution (layer×head AtP + true-patch gate): running (job 696255).
+`49_head_attribution.py` (new `ZHeadCapture`/`ZHeadPatch`) computes AtP[L,h,pos] on the per-head
+attention output z, validated against real per-head z-patches. Tests whether a sparse set of HEADS
+(across layers) carries the effect even though no single LAYER does. Result pending.
