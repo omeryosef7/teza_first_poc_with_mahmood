@@ -64,7 +64,8 @@ def build_grid(gen_ids, tokenizer, marker, n_deciles=10):
 def anchored_read(lm, prompt_ids, gen_prefix_ids, anchor_ids, id_groups, lexicons, pair):
     """Forward(prompt + CoT_prefix + anchor); score concept/codeword id-group mass at the next token
     AND classify a short greedy continuation to a meaning LABEL. One generate call. No text kept."""
-    ids = torch.cat([prompt_ids, gen_prefix_ids, anchor_ids])[None].to(lm.model.device)
+    dev = lm.model.device
+    ids = torch.cat([prompt_ids.to(dev), gen_prefix_ids.to(dev), anchor_ids.to(dev)])[None]
     out = lm.model.generate(ids, max_new_tokens=4, do_sample=False,
                             eos_token_id=lm.eos_token_ids, pad_token_id=lm.tokenizer.pad_token_id,
                             return_dict_in_generate=True, output_scores=True)
