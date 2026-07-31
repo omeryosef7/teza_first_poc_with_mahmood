@@ -211,7 +211,7 @@ def main():
         adj = st.holm_bonferroni([est[k]["p_raw"] for k in sorted(pgrid)])
         for k, pa in zip(sorted(pgrid), adj):
             est[k]["p_holm"] = round(float(pa), 6)
-            est[k]["significant_corrected"] = bool(pa < args.alpha_level)
+            est[k]["significant_corrected"] = bool(pa < args.alpha_level and est[k].get("ci_reliable"))
 
     # ------------------------------------------------------------------ #
     # 3. faithfulness: self-transplant vs identity (should be ~0), paired on sid

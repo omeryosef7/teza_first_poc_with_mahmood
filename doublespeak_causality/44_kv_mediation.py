@@ -170,7 +170,7 @@ def analyze_rows(rows, metric="p_concept"):
         adj = st.holm_bonferroni([est[k]["p_raw"] for k in sorted(pgrid)])
         for k, pa in zip(sorted(pgrid), adj):
             est[k]["p_holm"] = round(float(pa), 6)
-            est[k]["significant_corrected"] = bool(pa < 0.05)
+            est[k]["significant_corrected"] = bool(pa < 0.05 and est[k].get("ci_reliable"))
 
     def eff(name, g):
         e = est.get(f"{name}|{g}")
@@ -204,6 +204,7 @@ def _single_id(tokenizer, word):
 
 
 def run(args):
+    think = dc.parse_enable_thinking(getattr(args, 'enable_thinking', 'default'))
     dc.set_seed(args.seed)
     rng = random.Random(args.seed)
 

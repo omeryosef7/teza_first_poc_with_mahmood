@@ -74,18 +74,18 @@ def test_pooling_across_pairs_and_generalization():
     pev = res["pooled"]["early_vs_late"]
     assert pev["n"] == 3 * N
     assert abs(pev["effect"] - (0.25 + 0.18 + 0.15) / 3.0) < 1e-5, pev["effect"]  # effect rounded to 6dp
-    assert res["pooled"]["early_gt_late_all_pairs"] is True
-    assert res["pooled"]["generalizes"] is True     # all pairs positive + pooled lo>0 (zero-variance CI)
+    assert res["pooled"]["early_gt_mid_all_pairs"] is True
+    assert res["pooled"]["generalizes_early_dominant"] is True     # all pairs positive + pooled lo>0 (zero-variance CI)
 
 
 def test_non_generalization_flagged():
-    # one pair has late > early -> not all-pairs-positive -> generalizes False
+    # one pair has late > early -> not all-pairs-positive -> generalizes_early_dominant False
     rows = (_rows_one_pair("bomb", early_gain=0.30, late_gain=0.05)
             + _rows_one_pair("grenade", early_gain=0.02, late_gain=0.20))  # reversed
     res = m47.analyze_rows(rows)
     assert res["pairs"]["grenade"]["early_vs_late"]["effect"] < 0
-    assert res["pooled"]["early_gt_late_all_pairs"] is False
-    assert res["pooled"]["generalizes"] is False
+    assert res["pooled"]["early_gt_mid_all_pairs"] is False
+    assert res["pooled"]["generalizes_early_dominant"] is False
 
 
 def test_pairs_paired_on_pid_not_crossed():

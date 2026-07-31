@@ -88,13 +88,14 @@ def analyze_rows(rows, timings=TIMINGS):
 
     per_pair = {}
     pooled_evl = []                       # early-late main diffs, concatenated across pairs
+    pooled_evm = []                       # early-MID main diffs (the non-degenerate test), across pairs
     pooled_ar = {t: [] for t in timings}  # install-above-random diffs, per timing, across pairs
-    pgrid = []                            # (pair, "early_vs_late") keys for Holm across pairs
+    pgrid = []                            # pairs with an early_vs_mid p_raw, for Holm across pairs
 
     for pair in pairs:
         pids = sorted({r["pid"] for r in rows if r["pair"] == pair})
         res = {"install_effect": {}, "random_effect": {}, "install_above_random": {},
-               "early_vs_late": None, "n_items": 0}
+               "early_vs_late": None, "early_vs_mid": None, "n_items": 0}
         for t in timings:
             keep = [p for p in pids
                     if g(p, pair, t, "main") is not None and g(p, pair, "baseline") is not None]
@@ -122,30 +123,48 @@ def analyze_rows(rows, timings=TIMINGS):
                 xl = [g(p, pair, "late", "main") for p in keep]
                 res["early_vs_late"] = _paired(xe, xl)
                 pooled_evl += [a - b for a, b in zip(xe, xl)]
-                if "p_raw" in res["early_vs_late"]:
+        # BUG-CHECK C4: early_vs_late is MECHANICALLY DEGENERATE — the late window (layers
+        # > refusal readout layer) is causally after the readout, so proj_main(late) is
+        # bit-identical to baseline and early_vs_late == install_effect(early). The genuine
+        # depth-differential is early_vs_MID (both windows propagate to the readout layer).
+        # Headline this instead; keep early_vs_late only for reference.
+        if "early" in timings and "mid" in timings:
+            keepm = [p for p in pids
+                     if g(p, pair, "early", "main") is not None and g(p, pair, "mid", "main") is not None]
+            if len(keepm) >= 2:
+                xe = [g(p, pair, "early", "main") for p in keepm]
+                xm = [g(p, pair, "mid", "main") for p in keepm]
+                res["early_vs_mid"] = _paired(xe, xm)
+                pooled_evm += [a - b for a, b in zip(xe, xm)]
+                if "p_raw" in res["early_vs_mid"]:
                     pgrid.append(pair)
         per_pair[pair] = res
 
     pooled = {"install_above_random": {}}
-    if pooled_evl:
+    if pooled_evl:   # kept for reference only (degenerate: late arm == baseline)
         pooled["early_vs_late"] = _paired(pooled_evl, [0.0] * len(pooled_evl))
-        # generalization verdict: hypothesis is early > late in EVERY pair AND pooled CI clean
-        signs = [per_pair[p]["early_vs_late"]["effect"] for p in pairs
-                 if per_pair[p].get("early_vs_late") is not None]
-        pooled["early_gt_late_all_pairs"] = bool(signs) and all(s > 0 for s in signs)
-        pev = pooled["early_vs_late"]
-        pooled["generalizes"] = bool(pooled["early_gt_late_all_pairs"]
-                                     and pev.get("ci_reliable") and pev["lo"] > 0)
+    if pooled_evm:
+        pooled["early_vs_mid"] = _paired(pooled_evm, [0.0] * len(pooled_evm))
+    # GENERALIZATION VERDICT is based on early_vs_MID (the non-degenerate depth contrast).
+    # NOTE: the dominant depth is pair-dependent (bomb early>mid; grenade/chlorine mid>early),
+    # so 'early>mid in every pair' is NOT expected to hold — this flag is descriptive only.
+    signs = [per_pair[p]["early_vs_mid"]["effect"] for p in pairs
+             if per_pair[p].get("early_vs_mid") is not None]
+    pooled["early_gt_mid_all_pairs"] = bool(signs) and all(s > 0 for s in signs)
+    if pooled.get("early_vs_mid"):
+        pem = pooled["early_vs_mid"]
+        pooled["generalizes_early_dominant"] = bool(pooled["early_gt_mid_all_pairs"]
+                                                    and pem.get("ci_reliable") and pem["lo"] > 0)
     for t, v in pooled_ar.items():
         if len(v) >= 2:
             pooled["install_above_random"][t] = _paired(v, [0.0] * len(v))
 
-    # Holm across the per-pair early_vs_late family (generalization is a multi-pair claim)
+    # Holm across the per-pair early_vs_MID family (generalization is a multi-pair claim)
     if pgrid:
         keys = sorted(pgrid)
-        adj = st.holm_bonferroni([per_pair[p]["early_vs_late"]["p_raw"] for p in keys])
+        adj = st.holm_bonferroni([per_pair[p]["early_vs_mid"]["p_raw"] for p in keys])
         for p, pa in zip(keys, adj):
-            blk = per_pair[p]["early_vs_late"]
+            blk = per_pair[p]["early_vs_mid"]
             blk["p_holm"] = round(float(pa), 6)
             blk["significant_corrected"] = bool(pa < 0.05 and blk.get("ci_reliable"))
     return {"pairs": per_pair, "pooled": pooled, "timings": list(timings)}
