@@ -88,7 +88,7 @@ DIR_DIR="$DSC/$(ls -dt outputs/pair_directions_*_${TAG} | head -1)"; echo "dir_d
 [ -f "$DIR_DIR/directions.npz" ] || { echo "FATAL: no directions.npz" >&2; exit 1; }
 
 echo "--- [4/6] 34_intervention_sweep --mode replace (2x3 specs, readout=$READOUT) ---"
-python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-dir "$DIR_DIR" \
+python 34_intervention_sweep.py --bench "$BENCH" --reps-dir "$REPS_DIR" --dir-dir "$DIR_DIR" --model "$MODEL" \
     --mode replace --readout "$READOUT" --component resid_post \
     --dir-position codeword_last --site codeword_last \
     --layer-groups single --alpha-mode absolute \
