@@ -55,3 +55,39 @@ head→head edges don't reconstruct it → the mediation runs through MLPs. N7-A
   concept, no single node is a bottleneck. This is the fullest mechanistic characterization to date,
   each step validated against true patching.
 - Artifacts: `outputs/mlp_atp_{bomb,grenade,chlorine}/mlp_atp_results.json`.
+
+---
+
+## N7-B — Reasoning-model CoT trajectory: hypothesis REFUTED; D5 refined. **[novel, honest]**
+
+`52_cot_concept_trajectory.py` on Qwen3-14B (thinking-on) and DeepSeek-R1-Distill. At a grid of
+CoT-depth checkpoints + the answer, INTERRUPT with a benign forced-naming anchor ("in one word, the
+object referred to above is:") and read the concept-vs-codeword LABEL. n=6/condition (small).
+Positive control PASSES on both (Direct@answer 0.8/1.0; Neutral 0.0 throughout).
+
+reads_as_concept trajectory (cot_0→cot_9 = CoT deciles, then answer):
+
+| model | condition | mid-CoT | answer |
+|---|---|---|---|
+| **Qwen3-14B** | DOUBLESPEAK | **0.67–1.00 (high throughout)** | **1.00** |
+| Qwen3-14B | NEUTRAL | 0.00 | 0.00 |
+| **DeepSeek** | DOUBLESPEAK | **~0.00–0.25 (near zero)** | **0.67** |
+| DeepSeek | NEUTRAL | 0.00 | 0.00 |
+
+- **The "reasoning resolves the codeword" hypothesis is REFUTED.** Neither model resolves the
+  hijack away: Qwen3 names the concept at EVERY CoT checkpoint (the reading is fully present from the
+  start and persists to the answer); DeepSeek names it only at the answer (it emerges LATE, the
+  opposite of resolution). Neutral stays 0.0 for both — the anchored readout is specific.
+- **This REFINES D5 (important):** D5's natural post-`</think>` readout found the hijack weak/absent
+  on reasoning models, but the **anchored forced-naming** readout reveals it IS present (DeepSeek
+  0.67 at the answer vs D5's +0.33 natural; Qwen3 ~1.0 throughout). So reasoning is NOT a
+  representational defense — the hijacked reading is there when the model is forced to name the
+  referent; it simply isn't verbalized in the free-form answer. The D5 "absent" is a readout
+  property (natural answers don't name the object), not evidence the concept is gone.
+- **Model contrast:** Qwen3-thinking carries the concept from the CoT's first token (consistent with
+  the reading being context-installed early/mid-stack, per D6); DeepSeek's concept naming builds up
+  and only surfaces at the answer.
+- **Honest scope:** n=6/condition, single seed, per-bin counts small — suggestive, not definitive;
+  a larger-n rerun would tighten the trajectory. But the qualitative contrast (Qwen3 throughout vs
+  DeepSeek answer-only, both Neutral-clean, both positive-control-passing) is clear.
+- Artifacts: `outputs/cot_traj_Qwen3-14B_..._698757`, `cot_traj_DeepSeek-..._698758`.
