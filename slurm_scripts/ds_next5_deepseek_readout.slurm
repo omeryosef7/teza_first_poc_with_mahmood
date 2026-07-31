@@ -27,7 +27,7 @@
 set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 DSC="$PROJECT_DIR/doublespeak_causality"; CONDA_ENV="${CONDA_ENV:-poc_stage2}"
-MODEL="deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+MODEL="${MODEL:-deepseek-ai/DeepSeek-R1-Distill-Llama-8B}"
 BENCH="${BENCH:-$DSC/data/pair_benchmark/pair_carrot_bomb.json}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-2048}"   # DeepSeek CoT is long; must reach </think>+1 answer tok
 LIMIT="${LIMIT:-120}"                       # stratified cap over (condition, readout)
