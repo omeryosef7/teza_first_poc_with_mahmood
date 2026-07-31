@@ -382,6 +382,98 @@ class AttentionKnockout:
 
 
 # --------------------------------------------------------------------------- #
+# Per-head z capture / patch (NEXT5 W4 tier-B — attention-head circuit)
+# --------------------------------------------------------------------------- #
+# The attention OUTPUT before o_proj is the concatenation of per-QUERY-head outputs z:
+# o_proj input has shape [batch, seq, n_heads * head_dim]. (GQA shrinks the K/V heads, NOT
+# this tensor — it is over num_attention_heads.) These hook o_proj to capture z (for AtP) or
+# replace a single head's z at chosen positions (for true head-output patching / validation).
+# Nothing else in the stack touches the head axis for OUTPUT/patching (AttentionKnockout only
+# masks attention weights); this is the single new primitive tier-B needs.
+def _attn_head_dims(model):
+    cfg = model.config
+    n_heads = int(cfg.num_attention_heads)
+    hidden = int(getattr(cfg, "hidden_size", None) or cfg.n_embd)
+    head_dim = int(getattr(cfg, "head_dim", 0) or (hidden // n_heads))
+    return n_heads, head_dim
+
+
+class ZHeadPatch:
+    """Replace the per-head attention output z[head] at `positions` with `corrupt_vec`.
+
+    Registers a forward_pre_hook on `layers[layer_idx].self_attn.o_proj` that reshapes the
+    o_proj INPUT to [batch, seq, n_heads, head_dim], overwrites head `head` at each position
+    in `positions`, and flattens back. Generation-safe: a decode step (seq==1) whose position
+    index is out of range is skipped, mirroring ds_common.LayerPatch. `corrupt_vec` is a
+    [head_dim] tensor (the corrupt counterpart of this head's z at that position).
+    """
+
+    def __init__(self, model, layer_idx: int, head: int, positions: Sequence[int],
+                 corrupt_vec: torch.Tensor):
+        self.o_proj = dc._get_layers(model)[layer_idx].self_attn.o_proj
+        self.n_heads, self.head_dim = _attn_head_dims(model)
+        if not (0 <= head < self.n_heads):
+            raise IndexError(f"head {head} out of range for {self.n_heads} heads")
+        self.head = head
+        self.positions = list(positions)
+        self.vec = corrupt_vec.detach().float()
+        self._handle = None
+
+    def _pre(self, module, args):
+        z = args[0]
+        b, seq, hh = z.shape
+        zr = z.view(b, seq, self.n_heads, self.head_dim).clone()
+        v = self.vec.to(device=z.device, dtype=z.dtype)
+        for p in self.positions:
+            if 0 <= p < seq:                       # skip out-of-range (decode-step safe)
+                zr[0, p, self.head, :] = v
+        return (zr.view(b, seq, hh),) + tuple(args[1:])
+
+    def __enter__(self):
+        self._handle = self.o_proj.register_forward_pre_hook(self._pre)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+class ZHeadCapture:
+    """Capture the per-head attention output z (o_proj input) at target layers, retaining its
+    grad — the per-head analogue of 48's _ActGradCapture (which captures the residual). After a
+    backward, `grads[L]` / `acts[L]` are [seq, n_heads*head_dim]; reshape to [seq, n_heads,
+    head_dim] for a per-(layer, head, pos) AtP: g_z . (z_corrupt - z_clean)."""
+
+    def __init__(self, model, layer_idxs: Sequence[int]):
+        self.o_projs = {li: dc._get_layers(model)[li].self_attn.o_proj for li in layer_idxs}
+        self.n_heads, self.head_dim = _attn_head_dims(model)
+        self.acts: Dict[int, torch.Tensor] = {}
+        self._handles: List[Any] = []
+
+    def _pre(self, li):
+        def f(module, args):
+            z = args[0]
+            if z.requires_grad:
+                z.retain_grad()
+            self.acts[li] = z                       # keep graph node (do NOT detach/clone)
+            return None
+        return f
+
+    def __enter__(self):
+        for li, op in self.o_projs.items():
+            self._handles.append(op.register_forward_pre_hook(self._pre(li)))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # All-position / all-timestep directional ablation (S4 — TOCTOU factorial)
 # --------------------------------------------------------------------------- #
 def make_project_out_hook(direction: torch.Tensor, alpha: float = 1.0):
