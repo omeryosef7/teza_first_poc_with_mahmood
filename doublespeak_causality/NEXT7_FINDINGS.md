@@ -99,3 +99,29 @@ answers defeat the first-4-word `classify_answer` (the D5-flagged readout artifa
 resolve whether D5's Phi-4 "absent" is a readout artifact — the anchored readout is also broken on
 Phi-4. The Qwen3/DeepSeek N7-B result (both positive-control-passing) is unaffected. Honest
 inconclusive; not chased further (readout engineering rabbit hole on one model).
+
+---
+
+## N7-E — The attention→MLP cascade quantified; D6 decoupling clarified. **[synthesis, CPU]**
+
+Reusing committed artifacts (D3 head z-AtP, N7-A MLP AtP, D6/W3-b concept projection) — no GPU:
+
+| pair | attn peak | MLP peak | lag | attn L7–14 | MLP L7–14 | MLP late (L20–31) |
+|---|---|---|---|---|---|---|
+| bomb | L9 | L11 | +2 | 62% | 47% | 17% |
+| grenade | L9 | L11 | +2 | 67% | 53% | 11% |
+| chlorine | L13 | L14 | +1 | 55% | 41% | 23% |
+
+- **The cascade is robust:** MLP |AtP| peaks **1–2 layers after** the attention z-AtP for every pair —
+  attention writes the demo→query context link, MLPs consolidate the concept ~2 layers downstream.
+- **D6's "decoupling" is clarified (honest):** the concept PROJECTION grows +8.82 across L20–31, but
+  late-layer MLPs carry only **17% of Σ|AtP|** (bomb; 11–23% across pairs) and MLP AtP anti-correlates
+  with the concept-emergence rate (−0.26). So the late projection growth is **passive residual /
+  RMSNorm accumulation toward the unembedding, NOT new causal computation** — the causally-important
+  computation (both attention and MLP) is confined to the mid-band (L7–14). The projection keeps
+  rising late only because the residual accumulates and its overlap with the concept axis grows as
+  the rep approaches the readout, not because late layers compute anything.
+- **Fully unified mechanism (D3+W4+D4+N7-A+N7-E):** (1) attention heads write the context link at
+  L7–9 (peak L9), (2) MLP sublayers consolidate the concept at L9–14 (peak L11–14, +2-layer cascade),
+  (3) late layers passively carry/scale it to the readout (low AtP), (4) all distributed across many
+  heads and MLPs — no bottleneck, no sparse circuit. Every step validated against true patching.
