@@ -47,13 +47,32 @@ class ComponentPatchMulti:
         return False
 
 
+def _select_clean(bench, readout, split, clean_cond):
+    """Matched (clean_cond, NEUTRAL_CODEWORD) row pair (generalizes atp48._select_pair_rows to any
+    clean condition, e.g. BENIGN_REMAP for the general-remapping comparison)."""
+    sem = bench["semantic"]
+    cl = [r for r in sem if r["condition"] == clean_cond and r["readout"] == readout
+          and r["split"] == split and r.get("has_demos")]
+    neu = {(r["demo_style"], r["n_demos"], r["probe_word"]): r for r in sem
+           if r["condition"] == "NEUTRAL_CODEWORD" and r["readout"] == readout
+           and r["split"] == split and r.get("has_demos")}
+    for r in cl:
+        k = (r["demo_style"], r["n_demos"], r["probe_word"])
+        if k in neu:
+            return r, neu[k]
+    raise ValueError(f"no matched {clean_cond}/NEUTRAL pair for {readout}/{split}")
+
+
 @torch.no_grad()
 def run(lm, bench, args):
-    pair = bench["pair"]; concept, codeword = pair["concept"], pair["codeword"]
+    pair = bench["pair"]
+    concept = getattr(args, "concept_word", "") or pair["concept"]
+    codeword = pair["codeword"]
     cap = getattr(args, "demo_cap", 0)
     if cap:
         bench = {**bench, "semantic": [r for r in bench["semantic"] if r.get("n_demos", 99) <= cap]}
-    clean_row, corrupt_row = atp48._select_pair_rows(bench, args.readout, args.split)
+    clean_cond = getattr(args, "clean_condition", "DOUBLESPEAK")
+    clean_row, corrupt_row = _select_clean(bench, args.readout, args.split, clean_cond)
     think = dc.parse_enable_thinking(getattr(args, "enable_thinking", "default"))
     clean_text = dc.apply_template(lm.tokenizer, clean_row["prompt"], enable_thinking=think)
     corrupt_text = dc.apply_template(lm.tokenizer, corrupt_row["prompt"], enable_thinking=think)
@@ -106,6 +125,8 @@ def main():
     ap.add_argument("--readout", default="forced_choice"); ap.add_argument("--split", default="heldout")
     ap.add_argument("--metric", default="logit_diff", choices=["logit_diff", "p_concept"])
     ap.add_argument("--enable-thinking", default="default"); ap.add_argument("--demo-cap", type=int, default=0)
+    ap.add_argument("--clean-condition", default="DOUBLESPEAK")
+    ap.add_argument("--concept-word", default="", help="override the metric target (e.g. benign_source)")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
     dc.set_seed(args.seed); os.makedirs(args.out, exist_ok=True)
