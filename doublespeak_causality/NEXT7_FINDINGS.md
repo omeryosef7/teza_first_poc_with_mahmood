@@ -190,3 +190,26 @@ forced_choice/thinking-off) — the metric doesn't cleanly capture Qwen3's hijac
 localization (attn L24 / mlp L16) is UNRELIABLE and not interpreted. The fine-grained circuit result
 stands on Llama (3 pairs, AtP-validated + sweep-cross-validated). Cross-architecture evidence for the
 mechanism remains at the S2/superposition/S3-KV level (Qwen3), not the per-layer circuit level.
+
+---
+
+## N7-G — The hijack SATURATES at low demonstration count. **[new, CPU]**
+
+Reusing committed bomb reps (694691), binned the DS mid-band concept-component (projection onto
+`d_Direct`, L12–24) by the prompt's demonstration count:
+
+| n_demos | DS concept-component | n |
+|---|---|---|
+| 4 | +1.749 | 10 |
+| 8 | +1.712 | 10 |
+| 12 | +1.634 | 10 |
+
+- **The hijack does NOT scale with more demonstrations** — it is flat (slightly decreasing) across
+  4/8/12 demos. So the in-context codeword→concept remapping **saturates at ≤4 demonstrations**: a
+  few examples fully install the reading, and additional examples do not deepen it. This is a
+  threshold/saturating phenomenon, not gradual accumulation — complementing S2/S3 (the reading is
+  context-installed, and the install saturates quickly).
+- **Honest scope:** single pair (bomb), n=10/bin, tested range 4–12; the saturation threshold could
+  sit below 4 (untested — the bench has no 1–2-demo prompts). The claim is "saturated across 4–12",
+  i.e. the install completes by 4 demos.
+- Artifact: reuses `outputs/pair_reps_..._694691`.
