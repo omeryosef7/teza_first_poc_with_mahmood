@@ -339,3 +339,29 @@ DeepSeek's hijack is genuinely WEAK (matching D5's natural readout); the n=6 anc
 replicate. Net: the headline (Qwen3 carries the hijack throughout its CoT, refuting "reasoning
 resolves") is robust; the anchored-readout-reveals-more claim holds strongly for Qwen3 but is weak
 for DeepSeek at larger n. Artifacts: `outputs/cot_traj_*_699020` (Qwen3), `..._699021` (DeepSeek).
+
+---
+
+## N7-K — The install is CODEWORD-SPECIFIC, not a general remapping rule. **[new phenomenon, WIN]**
+
+After demos establish carrot→bomb, does a NOVEL benign query word also decode as bomb?
+`next7_novelword_transfer.py`: replace only the QUERY word (last codeword occurrence) with a novel
+word ("banana"), keep the demos intact, read whether the answer is still the concept (Llama, n=20).
+
+| variant | reads_as_concept | mean p_concept | mean p_query_word |
+|---|---|---|---|
+| DS + carrot query (baseline) | **0.70** | 0.208 | 0.0007 |
+| DS + novel "banana" query | **0.10** | 0.000 | 2e-5 |
+| NEUTRAL + banana (control) | 0.00 | 0.000 | 0.0002 |
+
+- **The carrot→bomb mapping does NOT transfer to a novel query word:** replacing the query codeword
+  with "banana" (demos still carrot→bomb) collapses the concept-reading from 0.70 to 0.10 (p_concept
+  0.208→0.0) — near the neutral floor (0.0). The model applies the remapping ONLY to the specific
+  codeword the demos bound, not a general "benign word = harmful concept" rule.
+- **The Doublespeak install is a specific, saturating binding:** codeword-specific (N7-K) and
+  saturated at ≤4 demonstrations (N7-G). It is an in-context lookup entry for one codeword, not a
+  transferable rule — a mechanistically important characterization of the attack's nature.
+- **Honest scope:** one novel word (banana), one pair (bomb), n=20; the collapse (0.70→0.10) is
+  clean but a couple more novel words would fully confirm. A negligible residual (0.10 vs neutral
+  0.0) hints at a faint general component, but p_concept=0.0 makes it immaterial.
+- Artifact: `outputs/novelword_..._699189`.
