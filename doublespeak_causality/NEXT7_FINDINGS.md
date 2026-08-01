@@ -125,3 +125,29 @@ Reusing committed artifacts (D3 head z-AtP, N7-A MLP AtP, D6/W3-b concept projec
   L7–9 (peak L9), (2) MLP sublayers consolidate the concept at L9–14 (peak L11–14, +2-layer cascade),
   (3) late layers passively carry/scale it to the readout (low AtP), (4) all distributed across many
   heads and MLPs — no bottleneck, no sparse circuit. Every step validated against true patching.
+
+---
+
+## N7-C — Cross-arch circuit via a forward-only true-patch sweep. **[method win + honest caveat]**
+
+Gradient AtP (49/51) OOMs for a 14B model on a 44GB L40S (backward doubles memory on top of 28GB
+weights). `next7_layer_patch_sweep.py` measures per-layer attn_out/mlp_out contribution by TRUE
+patching only (replace the whole component at the aligned positions with matched-NEUTRAL, record the
+metric delta) — no backward, so it fits Qwen3-14B.
+
+**Llama cross-validation (true-patch sweep vs the validated AtP):**
+- **Attention AGREES:** true-patch peak L12 vs AtP peak L9, corr **0.63**, 58% of |Δ| in L7–14 —
+  both localize attention to the mid-band. The sweep reproduces the D3/W4 attention circuit.
+- **MLP DISSOCIATES (informative):** true-patch peaks at **L31** (the last layer), AtP at **L11**
+  (mid), corr 0.11. This is exactly the **computation-vs-proximity split N7-E predicted**: the
+  all-position layer true-patch is dominated by the LAST MLP's mechanical proximity to the readout
+  (patching it directly perturbs the logits), while the per-cell AtP isolates the mid-band
+  COMPUTATION. Late MLPs have large true-patch deltas but ~0 AtP → they passively carry, they don't
+  compute — confirming N7-E from a second method.
+- **Caveat:** the all-position layer true-patch conflates computation with readout-proximity, so for
+  localizing the concept-FORMING computation the per-cell AtP is the cleaner tool; the sweep's value
+  is (a) it runs on any model size and (b) it cross-validates the attention mid-band + the N7-E
+  passive-late-carry claim.
+- Qwen3-14B full-demo sweep running (the demo-capped run had a weak/reversed m_clean=−9.95, so it
+  was re-launched without the cap for a strong-hijack signal). Artifacts:
+  `outputs/patchsweep_llama_bomb/`, `outputs/patchsweep_qwen3_bomb*/`.
