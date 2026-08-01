@@ -107,3 +107,19 @@ All new positive claims survive one Holm family (`outputs/next6_holm_family.json
   all affected runs redone with verified dirs.
 - New tests: `test_path_patching.py` (4). New code: `50_path_patching.py`, `next6_d7_defense_redo.py`,
   `next6_d6_depth_story.py`, `next6_w4_knockout_reduce.py`, `next6_holm_family` computation.
+
+---
+
+## NEXT7 addendum (2026-08-01) — see `NEXT7_PLAN.md` / `NEXT7_FINDINGS.md`
+Holm family (`outputs/next7_holm_family.json`): cocaine/pistol behavioral TOCTOU p_holm 0.001.
+- **Full circuit [WIN]:** distributed mid-band attention(L7-9)→MLP(L9-14) cascade, late=passive
+  carry; validated by AtP + forward-only true-patch sweep. New: `51_mlp_attribution.py`,
+  `next7_layer_patch_sweep.py`, `next7_layer_patch_sweep` primitives, `--enable-thinking`/`--demo-cap`
+  on 49/51.
+- **TOCTOU [capstone]:** 5/5 representational depth-gating (T3 cocaine EARLY, pistol MID), 4/5
+  behavioral at own depth (cocaine +0.333, pistol +0.467, both Holm-sig; only chlorine null).
+- **N7-B:** reasoning doesn't resolve the codeword (anchored CoT probe; refines D5).
+- **N7-G:** hijack saturates at <=4 demos.
+- **Defense/detection:** intervention fails (D7/N7-F, distinct principled reasons); detection perfect
+  in-domain (AUC 1.0, Llama+Qwen3) but partial cross-pair transfer.
+- **Infra:** solved Qwen3 AtP OOM via forward-only sweep; Phi-4/Qwen3 metric limitations documented.

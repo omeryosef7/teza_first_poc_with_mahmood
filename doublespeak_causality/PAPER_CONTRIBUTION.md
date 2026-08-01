@@ -150,3 +150,35 @@ grenade p_holm 0.015, D1 pooled 0.015, D2 Qwen3 specificity 0.0002.
 - **Mechanism-derived defense [NEGATIVE].** Re-adding refusal at the late/use depth does not
   suppress the attack even with headroom (attack malicious 0.5) — the compliance is gated EARLY, so
   a late intervention is too late; it only adds benign over-refusal. Honest negative.
+
+---
+
+## NEXT7 addendum (2026-08-01) — deep mechanism + defense/detection (see `NEXT7_FINDINGS.md`)
+New behavioral TOCTOU claims survive a NEXT7 Holm family (`outputs/next7_holm_family.json`): cocaine
+p_holm 0.001, pistol 0.001.
+
+- **§3.5 Full circuit — a distributed mid-band attention→MLP cascade [NEW, validated].** Combining
+  D3+W4+D4+N7-A+N7-C+N7-E: (1) attention heads write the demo→query context link at L7–9 (peak L9,
+  z-AtP validated), (2) MLP sublayers consolidate the concept at L9–14 (peak L11–14, +1–2-layer
+  cascade; MLP AtP validated pearson 0.93–0.95 vs true patch), (3) late layers passively carry it to
+  the readout (high mechanical true-patch but ~0 AtP — computation vs proximity dissociate). No
+  single head/layer/MLP is a bottleneck (W4 knockout, D4 path-patch DIRECT≈0). A forward-only
+  true-patch sweep (`next7_layer_patch_sweep.py`) cross-validates the attention mid-band (corr 0.63)
+  and runs on any model size. Cross-arch circuit on Qwen3 is metric-blocked (honest limitation).
+- **§3.3 TOCTOU — 5/5 representational, 4/5 behavioral [NEW, capstone].** The refusal check is
+  depth-gated for ALL 5 pairs (T3, concept-specific, pair-dependent depth: EARLY bomb/cocaine, MID
+  grenade/chlorine/pistol). The behavioral compliance-flip reappears at each pair's OWN T3-predicted
+  depth for 4/5 pairs (bomb +0.425, cocaine +0.333, grenade +0.183, pistol +0.467 — all Holm-sig;
+  chlorine null). The representational depth PREDICTS the behavioral effect location.
+- **§3.4 Reasoning models carry the hijack [NEW, refines D5].** An anchored forced-naming CoT probe
+  shows Qwen3-thinking names the concept throughout its CoT + answer (~1.0), DeepSeek at the answer
+  (0.67) — reasoning does NOT resolve the codeword; D5's "absent" was a natural-answer readout
+  property, not concept resolution.
+- **Install saturates [NEW].** The mid-band hijack is flat across n_demos 4/8/12 — ≤4 demonstrations
+  fully install the remapping (threshold, not gradual).
+- **Defense vs detection [NEW].** Both mechanism-derived intervention defenses fail for principled
+  reasons — late refusal-add (D7: wrong depth, destabilizes) and mid-band concept-ablation (N7-F:
+  specific but the concept is distributed, not one direction). But **in-domain detection is perfect**
+  (linear probe AUC 1.0 on Llama AND Qwen3), though cross-pair transfer is only partial (grenade/
+  pistol yes, chlorine/cocaine no). Actionable takeaway: Doublespeak resists representation-surgery
+  defense but is reliably detectable in-domain.
