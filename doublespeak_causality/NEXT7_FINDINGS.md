@@ -329,3 +329,13 @@ transfer tracks the alignment of each pair's concept direction with bomb's:
   (bomb-specific superposition): the mid-band Doublespeak representation is dominated by a
   pair-specific concept direction.
 - Artifacts: reuses `outputs/pair_directions_*` (bomb/grenade/chlorine/pistol/cocaine).
+
+### N7-B larger-n (n=12) update: Qwen3 confirmed, DeepSeek refined.
+Reran with n=12/condition (36 prompts). **Qwen3-thinking CONFIRMED** (gate passes: Direct@answer
+0.875, Neutral 0.0): DS names the concept throughout the CoT (0.44–0.80) and at the answer (1.0) —
+reasoning robustly does NOT resolve the codeword. **DeepSeek refined:** DS ~0 mid-CoT and only 0.33
+at the answer (down from the noisy n=6 value 0.67), with a marginal positive control (0.727) — so
+DeepSeek's hijack is genuinely WEAK (matching D5's natural readout); the n=6 anchored spike did not
+replicate. Net: the headline (Qwen3 carries the hijack throughout its CoT, refuting "reasoning
+resolves") is robust; the anchored-readout-reveals-more claim holds strongly for Qwen3 but is weak
+for DeepSeek at larger n. Artifacts: `outputs/cot_traj_*_699020` (Qwen3), `..._699021` (DeepSeek).
