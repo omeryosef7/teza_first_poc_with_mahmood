@@ -262,6 +262,8 @@ DOUBLESPEAK from benign conditions (BENIGN_REMAP + UNRELATED_TARGET + NEUTRAL):
   overlapping distributions of W3-b/D2), but the FULL probe reaches 1.0 — the DS signal lives across
   many dimensions, not one. This exactly reconciles N7-F: you can DETECT the distributed reading
   (linear probe over all dims) but you can't REMOVE it by ablating a single direction.
+
+- **Cross-architecture (N7-H):** the in-domain detector also reaches **AUC 1.000 on Qwen3-14B** (proportional mid-band L15–29, heldout) — perfect in-domain Doublespeak detection replicates on a second architecture.
 - **Practical synthesis of the defense thread:** representation-surgery defense is hard (the decision
   is early — D7; the representation is distributed — N7-F), but **detection is easy and reliable**
   (AUC 1.0). The actionable takeaway is detection, not intervention.
