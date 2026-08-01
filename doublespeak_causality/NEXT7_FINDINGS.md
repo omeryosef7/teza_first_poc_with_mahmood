@@ -393,6 +393,8 @@ codeword position, mean attention mass (per key, head-averaged) to each source s
   binding at the query codeword → mid-band attention writes it (L7–9) → MLPs consolidate (L9–14) →
   late layers carry it to the readout. Distributed across many heads/MLPs, no bottleneck, and
   concept-specific.
-- **Honest scope:** n=12, single pair, small absolute attentions (0.016 vs 0.005); the 3.5× ratio and
+
+- **Cross-pair (pair-general retrieval):** the demo-codeword/random ratio replicates across all 3 pairs — bomb 3.51×, grenade 3.54×, chlorine 3.25×. The induction-like RETRIEVAL is pair-general (it operates on the shared codeword 'carrot'), while the CONCEPT retrieved is pair-specific — a clean split: shared retrieval circuit, pair-specific content (consistent with D2/N7-J concept-specificity).
+- **Honest scope:** n=12/pair, small absolute attentions (0.016 vs 0.005); the 3.5× ratio and
   the demo-codeword≫random pattern are clear and exactly the token-identity prediction.
 - Artifact: `outputs/attn_retrieval_..._699219`.
