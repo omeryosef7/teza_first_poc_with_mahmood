@@ -213,3 +213,32 @@ Reusing committed bomb reps (694691), binned the DS mid-band concept-component (
   sit below 4 (untested — the bench has no 1–2-demo prompts). The claim is "saturated across 4–12",
   i.e. the install completes by 4 demos.
 - Artifact: reuses `outputs/pair_reps_..._694691`.
+
+---
+
+## N7-F — Concept-ablation defense at the mid-band: specific but INEFFECTIVE. **[honest negative, ties to distributed mechanism]**
+
+Mechanism-derived defense at the RIGHT depth (unlike D7's late refusal-add): project out `d_Direct`
+(the concept axis) at the mid-band (L7–13) throughout generation, on the headroom attack (early
+install + refusal ablation, malicious 0.47).
+
+| α | attack→defended malicious | suppression | benign over-refusal | REJ@atk-def |
+|---|---|---|---|---|
+| 1 (full project) | 0.47 → 0.67 | +0.20 [0.0,0.4] NS | +0.00 | 0.0 |
+| 2 (over-project) | 0.47 → 0.53 | +0.07 [−0.13,0.27] NS | +0.00 | 0.0 |
+
+- **Specific but ineffective:** projecting the concept direction out at the mid-band causes **zero
+  benign over-refusal** (d=0.0 — a clean improvement over D7's blanket refusal) but does **NOT reduce
+  malicious behavior** (no suppression; REJ stays 0).
+- **Why (ties to the mechanism):** the concept is a **distributed mid-band computation** (D4:
+  DIRECT≈0 for every head; N7-A: MLP-mediated), **not a single direction** — so ablating one axis
+  (`d_Direct`) does not remove the distributed reading, and the harmful trajectory (set by the early
+  install) proceeds. This is consistent with S2/B4 (the reading is context-carried, and the single
+  `d_Direct` direction is not the causal carrier).
+- **Defense synthesis (both mechanism-derived defenses fail, for distinct principled reasons):**
+  D7 (add refusal LATE) fails because the compliance is gated EARLY (wrong depth) and destabilizes
+  generation; N7-F (ablate concept MID) is specific but fails because the concept is DISTRIBUTED
+  (no single direction to remove). Together they explain WHY Doublespeak is hard to defend by
+  representation surgery: the decision is early and the representation is distributed. Honest,
+  mechanistically-grounded negative.
+- Artifact: `outputs/d7_defense_..._698953`.
