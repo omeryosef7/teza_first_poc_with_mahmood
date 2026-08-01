@@ -361,7 +361,9 @@ word ("banana"), keep the demos intact, read whether the answer is still the con
 - **The Doublespeak install is a specific, saturating binding:** codeword-specific (N7-K) and
   saturated at ≤4 demonstrations (N7-G). It is an in-context lookup entry for one codeword, not a
   transferable rule — a mechanistically important characterization of the attack's nature.
-- **Honest scope:** one novel word (banana), one pair (bomb), n=20; the collapse (0.70→0.10) is
+
+- **Confirmed across 3 novel words:** DS+novel reads-as-concept = banana 0.10, table 0.00, pencil 0.00 (vs DS+carrot 0.70) — the codeword-specificity is robust, not an artifact of one novel word.
+- **Honest scope:** 3 novel words confirm; one pair (bomb), n=20/word; the collapse (0.70→0.10) is
   clean but a couple more novel words would fully confirm. A negligible residual (0.10 vs neutral
   0.0) hints at a faint general component, but p_concept=0.0 makes it immaterial.
 - Artifact: `outputs/novelword_..._699189`.
