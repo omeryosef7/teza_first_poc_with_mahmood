@@ -151,3 +151,34 @@ metric delta) — no backward, so it fits Qwen3-14B.
 - Qwen3-14B full-demo sweep running (the demo-capped run had a weak/reversed m_clean=−9.95, so it
   was re-launched without the cap for a strong-hijack signal). Artifacts:
   `outputs/patchsweep_llama_bomb/`, `outputs/patchsweep_qwen3_bomb*/`.
+
+---
+
+## N7-D (part 2) — Behavioral TOCTOU confirms at each pair's T3-predicted depth: 4/5 pairs. **[WIN, capstone]**
+
+Behavioral TOCTOU factorial (n=60) on cocaine and pistol, reduced at the depth the INDEPENDENT T3
+representational probe predicted (cocaine EARLY, pistol MID):
+
+- **cocaine (EARLY-dominant):** `INTERACTION` (early−late) = **+0.333 [+0.15,+0.52], p_holm=0.0075** ✅
+- **pistol (MID-dominant):** `INTERACTION_mid_late` = **+0.467 [+0.33,+0.58], p_holm=0.0075** ✅
+
+Each pair recovers the TOCTOU at its own T3 depth and NOT at the other (cocaine mid_late −0.03 NS;
+pistol early−late +0.18 borderline). The full cross-pair picture:
+
+| pair | T3 depth | behavioral TOCTOU at own depth | Holm-sig |
+|---|---|---|---|
+| bomb | EARLY | +0.425 | ✅ |
+| **cocaine** | EARLY | **+0.333** | ✅ (new) |
+| grenade | MID | +0.183 (n=60) | ✅ |
+| **pistol** | MID | **+0.467** | ✅ (new) |
+| chlorine | MID | +0.033 | ✗ (null) |
+
+- **The behavioral depth-gated TOCTOU now generalizes to 4/5 pairs**, each confirmed at the depth
+  its T3 representational probe independently predicted — only chlorine is null. This is a strong
+  **predictive** structure: the representational refusal-check depth (T3) predicts WHERE the
+  behavioral compliance-flip interaction appears. It turns the NEXT5/NEXT6 chlorine-driven doubt
+  into a robust cross-pair regularity (4/5, all Holm-sig at their own depth).
+- Together with N7-D part 1 (T3 depth-gating 5/5) this closes the TOCTOU thread: the refusal check
+  is depth-gated for every pair (5/5 representationally), and the behavioral bypass reappears at each
+  pair's own depth for 4/5 pairs — a representation→behavior prediction confirmed.
+- Artifacts: `outputs/toctou_..._698713` (cocaine), `..._698714` (pistol).
