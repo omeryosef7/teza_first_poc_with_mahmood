@@ -60,6 +60,9 @@ def capture_mlp_outputs(lm, text, layer_idxs):
 
 def run(lm, bench, args):
     pair = bench["pair"]; concept, codeword = pair["concept"], pair["codeword"]
+    cap = getattr(args, "demo_cap", 0)
+    if cap:                                    # shorten prompt (fewer demos) to fit big-model backward
+        bench = {**bench, "semantic": [r for r in bench["semantic"] if r.get("n_demos", 99) <= cap]}
     clean_row, corrupt_row = atp48._select_pair_rows(bench, args.readout, args.split)
     think = dc.parse_enable_thinking(getattr(args, "enable_thinking", "default"))
     clean_text = dc.apply_template(lm.tokenizer, clean_row["prompt"], enable_thinking=think)
@@ -147,6 +150,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--readout", default="one_word"); ap.add_argument("--split", default="dev")
     ap.add_argument("--enable-thinking", default="default")
+    ap.add_argument("--demo-cap", type=int, default=0)
     ap.add_argument("--metric", default="logit_diff", choices=["logit_diff", "p_concept"])
     ap.add_argument("--layers", default="", help="comma ints; empty => sweep below readout")
     ap.add_argument("--include-last-mlp", action="store_true")
