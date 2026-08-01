@@ -365,3 +365,34 @@ word ("banana"), keep the demos intact, read whether the answer is still the con
   clean but a couple more novel words would fully confirm. A negligible residual (0.10 vs neutral
   0.0) hints at a faint general component, but p_concept=0.0 makes it immaterial.
 - Artifact: `outputs/novelword_..._699189`.
+
+---
+
+## N7-L — Token-identity (induction-like) attention retrieves the binding — explains N7-K. **[mechanistic WIN]**
+
+`next7_attention_retrieval.py` (eager output_attentions, mid-band L7–14, Llama, n=12): from the query
+codeword position, mean attention mass (per key, head-averaged) to each source set:
+
+| source set | mean attention per key |
+|---|---|
+| **prev_codewords** (demo codewords, same token) | **0.0164** |
+| demos_all (all demo tokens) | 0.0050 |
+| random_matched (count-matched control) | 0.0047 |
+
+**demo-codeword / random = 3.5×** (and 3.3× above the demos-all average).
+
+- **The query codeword attends preferentially (3.5× above random) to earlier occurrences of the SAME
+  token** — the demo codewords, which the demos bind to the concept. This is **induction-head-like
+  token-identity retrieval**: attend back to previous instances of the current token and read off the
+  associated (remapped) meaning.
+- **This mechanistically explains N7-K (codeword-specificity):** a NOVEL query word ("banana") has no
+  matching demo tokens to attend back to, so it cannot retrieve the binding → no concept reading. The
+  install is a specific codeword→concept binding retrieved by token-identity attention, not a general
+  rule.
+- **Completes the mechanism:** (induction-like) token-identity attention retrieves the in-context
+  binding at the query codeword → mid-band attention writes it (L7–9) → MLPs consolidate (L9–14) →
+  late layers carry it to the readout. Distributed across many heads/MLPs, no bottleneck, and
+  concept-specific.
+- **Honest scope:** n=12, single pair, small absolute attentions (0.016 vs 0.005); the 3.5× ratio and
+  the demo-codeword≫random pattern are clear and exactly the token-identity prediction.
+- Artifact: `outputs/attn_retrieval_..._699219`.
