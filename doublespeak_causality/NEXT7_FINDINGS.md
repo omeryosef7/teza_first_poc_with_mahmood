@@ -269,3 +269,30 @@ DOUBLESPEAK from benign conditions (BENIGN_REMAP + UNRELATED_TARGET + NEUTRAL):
   is striking but on small n; a multi-pair, larger-n probe would confirm robustness. Still, the
   detection-vs-ablation asymmetry is clear and mechanistically grounded.
 - Artifact: reuses `outputs/pair_reps_..._694691`.
+
+---
+
+## N7-I — Detector transfer is PARTIAL, not universal. **[honest refinement of N7-H]**
+
+Trained the mid-band linear probe on BOMB, tested on each pair (and leave-one-pair-out):
+
+| test pair | bomb-trained AUC | leave-one-out AUC |
+|---|---|---|
+| bomb | 1.000 (in-domain) | 0.617 |
+| grenade | 0.995 | 0.639 |
+| pistol | 0.981 | 0.610 |
+| chlorine | 0.557 | 0.280 |
+| cocaine | 0.316 (below chance) | 0.298 |
+
+- **The detector transfers to some pairs but not others:** a bomb-trained probe detects grenade/
+  pistol Doublespeak nearly perfectly (AUC ≥0.98) but fails on chlorine (0.557) and cocaine (0.316 —
+  below chance, i.e. cocaine's DS signature is anti-aligned with bomb's on the probe axis). Leave-
+  one-pair-out (train 4, test 5th) is weak for all (~0.6 for the transferring pairs, below chance
+  for chlorine/cocaine).
+- **Honest tempering of N7-H:** in-domain Doublespeak detection is perfect (AUC 1.0), but the
+  mid-band signature is **pair-specific** enough that a single-pair (or even 4-pair) detector does
+  NOT universally generalize. A practical detector would need per-concept calibration or a more
+  concept-invariant feature — the hijack representation is not a single universal "Doublespeak
+  direction". This is consistent with the distributed, partly pair-specific mechanism (D2's
+  bomb-specific superposition; the pair-dependent TOCTOU depths).
+- Artifacts: reuses pair reps `694691/694882/694897/694896/693696`.
