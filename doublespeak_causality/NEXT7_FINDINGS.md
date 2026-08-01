@@ -398,3 +398,24 @@ codeword position, mean attention mass (per key, head-averaged) to each source s
 - **Honest scope:** n=12/pair, small absolute attentions (0.016 vs 0.005); the 3.5× ratio and
   the demo-codeword≫random pattern are clear and exactly the token-identity prediction.
 - Artifact: `outputs/attn_retrieval_..._699219`.
+
+---
+
+## N7-M — All-layer induction-edge knockout: CONFOUNDED (honest inconclusive).
+
+Tested whether blocking the induction edge (query codeword → demo codewords) at ALL 32 layers
+collapses the reading (necessity complement to N7-L's pattern). `36 --granularity all_layers`.
+- **The intervention is degenerate:** blocking attention at all 32 layers is so severe that it
+  raises p_concept rather than lowering it — baseline 0.257 → prev_codewords 0.467, demos_all 0.580,
+  random_matched 0.604. Disrupting attention broadly pushes the crippled model's forced-choice
+  distribution toward the concept token (the random control raises it MOST), an artifact rather than
+  a clean necessity signal.
+- The induction-specific residual (prev_codewords raises p_concept 0.137 LESS than the random
+  control, Holm-sig) hints the induction edge does carry some of the reading, but it is swamped by
+  the artifact — so N7-M does NOT cleanly establish induction-edge necessity.
+- **Honest conclusion:** the all-layer attention mask is too heavy-handed to interpret. The clean
+  induction evidence remains N7-L (the query→demo-codeword attention pattern, 3.5× above random,
+  pair-general). A surgical necessity test would require path-patching only the induction heads at
+  the retrieval layers, not masking all layers — noted as future work. Reported honestly rather than
+  over-claiming necessity from a degenerate intervention.
+- Artifact: `outputs/pair_attn_knockout_..._699294`.
