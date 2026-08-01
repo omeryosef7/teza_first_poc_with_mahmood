@@ -298,3 +298,34 @@ Trained the mid-band linear probe on BOMB, tested on each pair (and leave-one-pa
   direction". This is consistent with the distributed, partly pair-specific mechanism (D2's
   bomb-specific superposition; the pair-dependent TOCTOU depths).
 - Artifacts: reuses pair reps `694691/694882/694897/694896/693696`.
+
+---
+
+## N7-J — Detector transfer tracks concept-axis alignment (explains N7-I). **[explanatory, CPU]**
+
+Why does the bomb-trained detector transfer to grenade/pistol but not chlorine/cocaine (N7-I)? Because
+transfer tracks the alignment of each pair's concept direction with bomb's:
+
+| pair | cos(d_Direct, bomb) mid-band | bomb-detector transfer AUC |
+|---|---|---|
+| bomb | +1.000 | 1.000 |
+| grenade | +0.763 | 0.995 |
+| pistol | +0.702 | 0.981 |
+| chlorine | +0.627 | 0.557 |
+| cocaine | +0.398 | 0.316 |
+
+**corr(cosine, transfer AUC) = 0.857.**
+
+- **The bomb-trained detector is really detecting bomb's CONCEPT direction**, so it transfers to the
+  extent a pair's concept axis is aligned with bomb's — cleanly explaining N7-I's partial transfer.
+  Cocaine has the most orthogonal concept axis (cos 0.40) and correspondingly anti-transfers (AUC
+  0.32, below chance).
+- **The alignment tracks harm-category SEMANTICS:** the two other weapons (grenade, pistol) align
+  with bomb (cos ≥0.70) and transfer nearly perfectly; the chemical (chlorine) is intermediate; the
+  drug (cocaine) is the most orthogonal and fails. So cross-concept Doublespeak detection generalizes
+  within a harm category but not across — the "hijack signature" is the concept direction, which is
+  pair/category-specific, not a universal "Doublespeak-ness" axis.
+- This ties together N7-H (in-domain detection perfect), N7-I (partial transfer), and D2
+  (bomb-specific superposition): the mid-band Doublespeak representation is dominated by a
+  pair-specific concept direction.
+- Artifacts: reuses `outputs/pair_directions_*` (bomb/grenade/chlorine/pistol/cocaine).
