@@ -242,3 +242,30 @@ install + refusal ablation, malicious 0.47).
   representation surgery: the decision is early and the representation is distributed. Honest,
   mechanistically-grounded negative.
 - Artifact: `outputs/d7_defense_..._698953`.
+
+---
+
+## N7-H — Doublespeak is perfectly DETECTABLE from the mid-band representation. **[WIN, defensive]**
+
+Where intervention defenses fail (D7, N7-F), DETECTION succeeds. A linear probe (L2 logistic,
+trained on DEV, tested on HELDOUT) on the mid-band residual (codeword_last, L12–24 mean) separating
+DOUBLESPEAK from benign conditions (BENIGN_REMAP + UNRELATED_TARGET + NEUTRAL):
+
+| detector | heldout AUC |
+|---|---|
+| **full mid-band linear probe** | **1.000** |
+| 1-D concept-component (d_Direct projection) | 0.858 |
+
+- **Doublespeak is perfectly detectable** (AUC 1.0 on held-out prompts) by a linear probe on the
+  mid-band representation — the hijack signature is linearly accessible.
+- **Distributed but linearly separable:** the 1-D concept-component alone gives only 0.858 (the
+  overlapping distributions of W3-b/D2), but the FULL probe reaches 1.0 — the DS signal lives across
+  many dimensions, not one. This exactly reconciles N7-F: you can DETECT the distributed reading
+  (linear probe over all dims) but you can't REMOVE it by ablating a single direction.
+- **Practical synthesis of the defense thread:** representation-surgery defense is hard (the decision
+  is early — D7; the representation is distributed — N7-F), but **detection is easy and reliable**
+  (AUC 1.0). The actionable takeaway is detection, not intervention.
+- **Honest scope:** single pair (bomb), n=60 dev / 60 heldout, one regularization setting — AUC 1.0
+  is striking but on small n; a multi-pair, larger-n probe would confirm robustness. Still, the
+  detection-vs-ablation asymmetry is clear and mechanistically grounded.
+- Artifact: reuses `outputs/pair_reps_..._694691`.
