@@ -421,3 +421,25 @@ collapses the reading (necessity complement to N7-L's pattern). `36 --granularit
   the retrieval layers, not masking all layers — noted as future work. Reported honestly rather than
   over-claiming necessity from a degenerate intervention.
 - Artifact: `outputs/pair_attn_knockout_..._699294`.
+
+---
+
+## N7-N — Doublespeak is generic in-context remapping (same mid-band circuit as a BENIGN remap). **[conceptual]**
+
+Forward-only sweep with clean=BENIGN_REMAP (carrot→bicycle, metric = logit_diff(bicycle−carrot)) vs
+the harmful Doublespeak sweep (carrot→bomb):
+
+| clean condition | attn peak | MLP peak | attn L7–14 share |
+|---|---|---|---|
+| DOUBLESPEAK (carrot→bomb) | L12 | L31 | 58% |
+| BENIGN_REMAP (carrot→bicycle) | L13 | L31 | 37% |
+
+- **The benign remap uses the SAME mid-band attention circuit** (peak L12–13) as the harmful hijack —
+  the in-context remapping mechanism (mid-band attention writes whatever target the demos bind) is
+  **generic**, not special to harmful concepts. So "Doublespeak" is normal in-context remapping; the
+  **safety failure is SOLELY the depth-gated refusal miss** (§4), not a special hijack mechanism.
+- **Honest scope:** the benign reading is weaker in this metric (m_clean −2.64; L7–14 share 37% vs
+  58%) — bicycle is a weaker attractor target than bomb — so magnitudes differ, but the LOCALIZATION
+  (mid-band attention peak) matches. (Cosmetic: the script's stdout label prints the unmodified pair
+  'carrot→bomb'; the metric used the bicycle override — verified in code.)
+- Artifact: `outputs/patchsweep_benign_remap/`.
