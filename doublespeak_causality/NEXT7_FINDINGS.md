@@ -182,3 +182,11 @@ pistol early−late +0.18 borderline). The full cross-pair picture:
   is depth-gated for every pair (5/5 representationally), and the behavioral bypass reappears at each
   pair's own depth for 4/5 pairs — a representation→behavior prediction confirmed.
 - Artifacts: `outputs/toctou_..._698713` (cocaine), `..._698714` (pistol).
+
+### N7-C Qwen3 caveat: metric doesn't transfer.
+The forward-only sweep RUNS on Qwen3-14B (memory solved), but the logit_diff(concept−codeword) metric
+is reversed there (m_clean = −9.95; codeword > concept at the readout position under
+forced_choice/thinking-off) — the metric doesn't cleanly capture Qwen3's hijack, so the Qwen3 circuit
+localization (attn L24 / mlp L16) is UNRELIABLE and not interpreted. The fine-grained circuit result
+stands on Llama (3 pairs, AtP-validated + sweep-cross-validated). Cross-architecture evidence for the
+mechanism remains at the S2/superposition/S3-KV level (Qwen3), not the per-layer circuit level.

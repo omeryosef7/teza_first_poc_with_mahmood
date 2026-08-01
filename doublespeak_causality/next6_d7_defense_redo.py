@@ -55,6 +55,8 @@ def main():
     ap.add_argument("--attack-timing", default="late", choices=["early", "mid", "late"])
     ap.add_argument("--defense-layers", default="24,26,28,30")
     ap.add_argument("--defense-alphas", default="2,3,4,6")
+    ap.add_argument("--defense-mode", default="add_refusal",
+                    choices=["add_refusal", "project_concept"])
     ap.add_argument("--n-items", type=int, default=30)
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
@@ -77,6 +79,8 @@ def main():
     windows = layer_windows(n_layers)
     attack_window = windows[args.attack_timing]
     def_layers = [int(x) for x in args.defense_layers.split(",")]
+    # concept-ablation defense uses d_Direct at the middle of the defense band
+    d_concept_vec = d_by_L[def_layers[len(def_layers) // 2]]
     def_alphas = [float(x) for x in args.defense_alphas.split(",")]
 
     bench = json.load(open(args.bench)); pair = bench["pair"]; codeword = pair["codeword"]
@@ -100,7 +104,12 @@ def main():
                 s.enter_context(pc.AllPositionProjectOutMultiLayer(lm.model, range(n_layers), v_ref, 1.0))
             if defense is not None:
                 dl, dalpha = defense
-                s.enter_context(pc.AllPositionAddMultiLayer(lm.model, dl, v_ref, dalpha))
+                if args.defense_mode == "project_concept":
+                    # mechanism-derived defense: ABLATE the concept direction at the mid-band
+                    # (where N7-A/D3 localize the concept computation), NOT add refusal late (D7).
+                    s.enter_context(pc.AllPositionProjectOutMultiLayer(lm.model, dl, d_concept_vec, dalpha))
+                else:
+                    s.enter_context(pc.AllPositionAddMultiLayer(lm.model, dl, v_ref, dalpha))
             tok = lm.tokenizer(text, return_tensors="pt", add_special_tokens=False).to(lm.model.device)
             in_len = tok["input_ids"].shape[1]
             g = lm.model.generate(**tok, max_new_tokens=args.max_new_tokens, do_sample=False,
