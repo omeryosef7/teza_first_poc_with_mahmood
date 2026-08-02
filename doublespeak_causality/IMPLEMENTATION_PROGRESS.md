@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 14, loop tick)** — Built the **pivotal multi-concept patching harness**. Found the
+  prior pair scripts (44_kv_mediation) hardwire a single global concept/codeword for the readout →
+  can't run on the multi-concept split. Wrote `scripts/phase3_demo_neutralize.py` reusing 44's exact
+  primitives (DemoStateSwap at demo-codeword resid_pre, PatchscopeDecoder gated readout,
+  resolve_positions, ComponentCapture) but **per-row concept/codeword + per-example positive control**.
+  Cells C1 / C3_demoKV (neutralize demo K/V = necessity) / C1_selfswap (faithfulness) / random_control;
+  per window AND per layer; ReRead_test=mean(C1−C3). Syntax ok, bench pairing verified (0 missing).
+  **SMOKE submitted 703105** (curated, n=2, window). Next tick: validate smoke (positive-control passes?
+  self-swap≈0? ReRead sign?), then full runs both cohorts × {window, layer} granularity → the core
+  retrieval-necessity result on ClearHarm.
+
+
 - **2026-08-03 (iter 13, loop tick)** — **Phase 3 cell #1 (resid_post × query-codeword, logit-lens)
   COMPLETE → NULL, as expected.** Jobs 702995/702996 done. Baseline DS p_harm ≈0 (logit-lens floors at
   codeword) → necessity ≈ random control, sufficiency ≈0, ALL layers, both cohorts/splits.
