@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 15, loop tick)** — demoKO smoke 703105 ran clean (24 rows, no crash) but exposed
+  a real bug: **C3_demoKV never fired** because I sourced neutralization from NEUTRAL (which is
+  demo-free → no demo-codeword K/V). **Fixed:** source from BENIGN_REMAP (same codeword in benign demo
+  sentences = correct non-harmful-binding source). Also the smoke drew LSD/MDMA (weak-decoding
+  concepts → positive control failed); resubmitted larger smoke **703115** (curated n=8) to confirm C3
+  fires + positive control passes for strong concepts + ReRead sign. Next tick validates, then full runs.
+
+
 - **2026-08-03 (iter 14, loop tick)** — Built the **pivotal multi-concept patching harness**. Found the
   prior pair scripts (44_kv_mediation) hardwire a single global concept/codeword for the readout →
   can't run on the multi-concept split. Wrote `scripts/phase3_demo_neutralize.py` reusing 44's exact
