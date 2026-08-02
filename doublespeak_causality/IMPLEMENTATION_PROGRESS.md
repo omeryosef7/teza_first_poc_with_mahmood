@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 12, loop tick)** — **Phase 3 (resid_post core) STARTED.** Found `05_run_activation_
+  patching.py` consumes items in my `beh_<cohort>.json` format → per-example necessity(neutral→DS) +
+  sufficiency(Direct/DS→neutral) + identity + norm-matched-random controls across ALL 32 layers,
+  forced-choice logit-lens P(harm)/P(code) at resid_post/codeword_last+following. Fixed
+  `ds_common.target_positions` with a BOS-aligned offset-finder fallback (all 137 items resolve;
+  localization+resid_pre tests 20/20). Submitted **702995 (clearharm) + 702996 (curated)** via new
+  `slurm/run_stage2_patch_split.sh`. Next tick: per-layer necessity/sufficiency curves (does patching
+  the final codeword state at any layer remove/install the harmful reading? — prior work said
+  final-state-only was insufficient; now tested exhaustively per-layer on the split, both cohorts).
+  Then extend to 4 locations (resid_pre/attn_out/mlp_out via SubmodulePatch) + all-occurrence positions.
+
+
 - **2026-08-02 (iter 11, loop tick)** — **curated behavioral 702862 COMPLETE → Phase 2.1 core DONE,
   Gate 1 (reproduction) SATISFIED.** Curated neutral = clean **0.039** floor (harm-in-one-noun), DS
   train **0.333 vs neutral 0.033 = +0.30 (10×)** — clean Doublespeak effect. ClearHarm DS>>direct
@@ -134,7 +146,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 | 0 | Repo & result audit → `reports/CAUSAL_PATCHING_AUDIT.md` + validation checks | ☑ | audit report + data-integrity validator done; Gate 1 satisfiable from artifacts |
 | 1 | ClearHarm locked split → `data/splits/clearharm_doublespeak_v1.json` (≥20 train/≥20 test) | ☑ | 137 recs, both cohorts ≥20/≥20, validator 0 FATAL, contract written |
 | 2 | Baseline reproduction + concept/refusal directions | ◐ | 2.2 directions DONE; 2.1 core behavioral DONE (Gate 1 met); extended conditions + interventions pending |
-| 3 | Exhaustive all-occurrence residual patching (L0–31 × 4 loc × 10 pos × 2 dir) | ☐ | reuse LayerPatch/SubmodulePatch |
+| 3 | Exhaustive all-occurrence residual patching (L0–31 × 4 loc × 10 pos × 2 dir) | ◐ | resid_post/codeword core RUNNING (702995/702996 via reused 05); 4-loc + all-pos pending |
 | 4 | Exhaustive attention: all-head scan + edge knockout + edge sufficiency | ☐ | reuse AttentionKnockout, ZHeadPatch |
 | 5 | Exhaustive all-head activation patching (Q/K/V/z/pattern/result) | ☐ | reuse ZHeadCapture/Patch |
 | 6 | Exhaustive MLP write-location analysis | ☐ | reuse 51_mlp_attribution, SubmodulePatch |
