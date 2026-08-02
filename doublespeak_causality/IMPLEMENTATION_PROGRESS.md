@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 11, loop tick)** — **curated behavioral 702862 COMPLETE → Phase 2.1 core DONE,
+  Gate 1 (reproduction) SATISFIED.** Curated neutral = clean **0.039** floor (harm-in-one-noun), DS
+  train **0.333 vs neutral 0.033 = +0.30 (10×)** — clean Doublespeak effect. ClearHarm DS>>direct
+  (0.349 vs 0.116, refusal bypass) stable train/test. **Honest weak result:** curated TEST DS=0.095
+  (n=21, 2 malicious) — big train→test drop, small-n/concept-composition (baseline, not overfitting;
+  flagged, needs more test ex). Wrote `reports/PHASE2_BEHAVIORAL.md` (per-split table + caveats).
+  Gate 1 met (attack reproduces behaviorally + representationally). **Next: Phase 3** exhaustive
+  all-occurrence residual patching (causal core, forced-choice readout) — or Phase 2.1 extended
+  conditions first.
+
+
 - **2026-08-02 (iter 10, loop tick)** — **ClearHarm behavioral baseline 702861 COMPLETE** (n=86,
   StrongReject): malicious rate **direct 0.116 / neutral 0.256 / doublespeak 0.349**; mean_SR 0.108 /
   0.218 / 0.294. **Core Doublespeak result holds: doublespeak >> direct (+0.23)** — codeword rephrase
@@ -122,7 +133,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 |------|-------------|--------|-------|
 | 0 | Repo & result audit → `reports/CAUSAL_PATCHING_AUDIT.md` + validation checks | ☑ | audit report + data-integrity validator done; Gate 1 satisfiable from artifacts |
 | 1 | ClearHarm locked split → `data/splits/clearharm_doublespeak_v1.json` (≥20 train/≥20 test) | ☑ | 137 recs, both cohorts ≥20/≥20, validator 0 FATAL, contract written |
-| 2 | Baseline reproduction + concept/refusal directions | ◐ | 2.2 directions DONE (concept⊥refusal both cohorts); 2.1 behavioral baselines pending (SLURM) |
+| 2 | Baseline reproduction + concept/refusal directions | ◐ | 2.2 directions DONE; 2.1 core behavioral DONE (Gate 1 met); extended conditions + interventions pending |
 | 3 | Exhaustive all-occurrence residual patching (L0–31 × 4 loc × 10 pos × 2 dir) | ☐ | reuse LayerPatch/SubmodulePatch |
 | 4 | Exhaustive attention: all-head scan + edge knockout + edge sufficiency | ☐ | reuse AttentionKnockout, ZHeadPatch |
 | 5 | Exhaustive all-head activation patching (Q/K/V/z/pattern/result) | ☐ | reuse ZHeadCapture/Patch |
