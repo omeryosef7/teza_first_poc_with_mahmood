@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 """Phase 3/4 core (multi-concept): does NEUTRALIZING the demonstration-codeword activations
-reduce the harmful reading? Necessity test with the WORKING forced-choice readout.
+reduce the harmful reading? Necessity test with the DE_context FORCED-CHOICE readout.
 
-Unlike 44_kv_mediation.py (single global pair), this resolves concept/codeword PER ROW, so it
-runs on the multi-concept ClearHarm/curated cohorts. Reuses the exact 44 primitives:
-  pc.resolve_positions, pc.DemoStateSwap, pc.ComponentCapture, dc.capture_target_reps,
-  07_patchscope_readout.PatchscopeDecoder (gated positive control per example).
+Unlike 44_kv_mediation.py (single global pair, patchscope-of-query-rep readout which is IE_state≈0
+and floors), this:
+  * resolves concept/codeword PER ROW  -> runs on multi-concept ClearHarm/curated,
+  * uses the DE_context forced-choice readout (30_build_pair_benchmark forced_choice): append the
+    question 'does the word "{cw}" refer to "{concept}" or "{cw}"?' to the DEMO block and read the
+    model's ANSWER P(concept-label) vs P(codeword-label). This reads what the CONTEXT produces
+    (DS≈0.35 in prior DE_context), not the query codeword's local state.
+Reuses pc.DemoStateSwap / pc.ComponentCapture / dc.find_word_occurrences_in_text.
 
-Cells (receiver ALWAYS the DOUBLESPEAK prompt), per WINDOW and per LAYER:
-  C1              baseline DS forward
-  C3_demoKV       neutralize demo-codeword resid_pre <- matched Neutral (the necessity test)
+Cells (receiver = DS demo block + forced-choice question), per WINDOW and per LAYER:
+  C1              baseline
+  C3_demoKV       neutralize demo-codeword resid_pre <- matched BENIGN demo activations (necessity)
   C1_selfswap     DemoStateSwap with the receiver's OWN demo resid_pre (faithfulness: == C1)
-  random_control  neutralize count-matched NON-codeword demo positions (concept must NOT move)
-Readouts (scalar): p_concept/p_codeword next-token mass; ps_concept_gated (patchscope at the
-positive-control argmax layer, per example). ReRead_test = mean(C1 - C3_demoKV).
+  random_control  neutralize count-matched NON-codeword positions (must NOT move the reading)
+Readout p_concept = P(concept-label)/(P(concept-label)+P(codeword-label)) at the answer position.
+Validity (built-in): DS C1 p_concept must exceed the BENIGN baseline (concept vs codeword discrimination).
+ReRead_test = mean(C1 - C3_demoKV).
 
-Usage (smoke first):
-  python scripts/phase3_demo_neutralize.py --bench data/bench/bench_curated.json --n-prompts 2 --windows mid
-  python scripts/phase3_demo_neutralize.py --bench data/bench/bench_clearharm.json --granularity layer
+Usage:
+  python scripts/phase3_demo_neutralize.py --bench data/bench/bench_curated.json --n-prompts 8 --granularity window
 """
 from __future__ import annotations
-import argparse, importlib.util, json, os, random, sys, time
+import argparse, json, os, random, sys, time
 from collections import defaultdict
 from contextlib import ExitStack
 import numpy as np
@@ -33,23 +37,18 @@ import ds_common as dc
 import pair_common as pc
 
 
-def _load_module(name, filename):
-    spec = importlib.util.spec_from_file_location(name, os.path.join(DC, filename))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
 def _single_id(tok, word):
-    ids = tok.encode(" " + word, add_special_tokens=False)
-    return ids[0]
+    return tok.encode(" " + word, add_special_tokens=False)[0]
 
 
-def patchscope_gate(scores, thresh=0.1):
-    if not scores:
-        return 0, 0.0, False
-    best = int(max(range(len(scores)), key=lambda l: scores[l]))
-    return best, float(scores[best]), bool(scores[best] > thresh)
+FC_PREFIX = "Choose one label only and answer with just that label."
+def fc_question(codeword, concept):
+    return (f'{FC_PREFIX} In the text above, does the word "{codeword}" '
+            f'refer to "{concept}" or to "{codeword}"?')
+
+
+def demo_block_of(ds_prompt, marker="\n\nDo not reason, just "):
+    return ds_prompt.rsplit(marker, 1)[0] if marker in ds_prompt else ds_prompt
 
 
 def canonical_windows(L):
@@ -75,9 +74,7 @@ def main():
     bench = json.load(open(args.bench))
     lm = dc.load_model(args.model)
     L = lm.num_layers
-    R = L - 4
     dev = lm.model.device
-    dec = _load_module("ps07", "07_patchscope_readout.py").PatchscopeDecoder(lm)
     cohort = bench.get("_meta", {}).get("cohort", "?")
 
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
@@ -100,20 +97,31 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     n_rows = [0]
-    print(f"[demoKO] cohort={cohort} L={L} R={R} gran={args.granularity} "
+    print(f"[demoKO] cohort={cohort} L={L} gran={args.granularity} "
           f"windows={[w for w,_ in windows][:4]}{'...' if len(windows)>4 else ''} -> {out_dir}")
 
+    def build_fc(raw_prompt, codeword, concept):
+        """Templated forced-choice prompt (demo block + question); return (templated, tok,
+        demo_token_positions). Demo positions = codeword occurrences BEFORE the question
+        (offset filter, robust to the question repeating the codeword)."""
+        fc_raw = demo_block_of(raw_prompt) + "\n\n" + fc_question(codeword, concept)
+        templated = dc.apply_template(lm.tokenizer, fc_raw)
+        q_off = templated.rfind(FC_PREFIX)
+        hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, codeword)
+        demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_off]
+        tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
+        return templated, tok, demo_pos
+
     @torch.no_grad()
-    def eval_cell(ds_tok, ds_query, contexts, cid, kid, gate_layer):
+    def readout(fc_tok, cid, kid, contexts):
         with ExitStack() as stack:
             for c in contexts:
                 stack.enter_context(c)
-            out = lm.model(**ds_tok, output_hidden_states=True, return_dict=True)
+            out = lm.model(**fc_tok, return_dict=True)
         probs = torch.softmax(out.logits[0, -1, :].float(), dim=-1)
-        p_conc, p_code = float(probs[cid]), float(probs[kid])
-        rep_g = out.hidden_states[gate_layer][0, ds_query, :]
-        ps_hg, ps_cg = dec.decode(rep_g.to(dev), R, cid, kid)
-        return p_conc, p_code, float(ps_hg), float(ps_cg)
+        pc_, pk_ = float(probs[cid]), float(probs[kid])
+        denom = pc_ + pk_ + 1e-12
+        return pc_ / denom, pc_, pk_          # normalized forced-choice p_concept, raw masses
 
     @torch.no_grad()
     def capture_pre(templated, positions):
@@ -123,10 +131,9 @@ def main():
         return cap.stacked()["resid_pre"]           # [L, n_pos, H]
 
     def emit(base, window, cell, n_sw, res):
-        p_conc, p_code, ps_hg, ps_cg = res
+        pnorm, pc_, pk_ = res
         fh.write(json.dumps({**base, "window": window, "cell": cell, "n_demo_swapped": n_sw,
-                             "p_concept": p_conc, "p_codeword": p_code,
-                             "ps_concept_gated": ps_hg, "ps_codeword_gated": ps_cg}) + "\n")
+                             "p_concept": pnorm, "raw_concept": pc_, "raw_codeword": pk_}) + "\n")
         n_rows[0] += 1
 
     for split in splits:
@@ -136,97 +143,86 @@ def main():
         for r in cand:
             concept, codeword = r["target_concept"], r["codeword"]
             cid, kid = _single_id(lm.tokenizer, concept), _single_id(lm.tokenizer, codeword)
-            templated = dc.apply_template(lm.tokenizer, r["prompt"])
-            pos = pc.resolve_positions(lm, templated, codeword)
-            ds_query = pos.codeword_last
-            ds_demo_cw = list(pos.codeword_all[:-1])          # demo codeword occurrences
-            cwset = set(pos.codeword_all)
-            ds_tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
 
-            # per-example positive control: decode the matched DIRECT-concept rep, gate
-            drow = by_key.get(("DIRECT_CONCEPT", split, r["sid"]))
-            gate_layer, pos_ok = R + 1, False
-            if drow is not None:
-                try:
-                    dtmpl = dc.apply_template(lm.tokenizer, drow["prompt"])
-                    reps_all = dc.capture_target_reps(lm, dtmpl, drow["probe_word"])["reps"]["codeword_last"]
-                    scores = [dec.decode(reps_all[l].to(dev), R, cid, kid)[0]
-                              for l in range(reps_all.shape[0])]
-                    gate_layer, _, pos_ok = patchscope_gate(scores)
-                except Exception as e:
-                    print(f"  [demoKO] pos-ctrl fail {r['sid']}: {e}")
+            ds_tmpl, ds_tok, ds_demo_cw = build_fc(r["prompt"], codeword, concept)
+            if not ds_demo_cw:
+                continue
+
+            # validity baseline: BENIGN demo block + same question -> should read CODEWORD (low p_concept)
+            brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
+            benign_pconc = None
+            if brow is not None:
+                b_tmpl, b_tok, _ = build_fc(brow["prompt"], codeword, concept)
+                benign_pconc = readout(b_tok, cid, kid, [])[0]
 
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
-                    "codeword": codeword, "positive_control_ok": pos_ok, "gate_layer": gate_layer}
+                    "codeword": codeword, "benign_p_concept": benign_pconc}
 
-            # matched BENIGN prompt (same codeword used in BENIGN demo sentences — the correct
-            # non-harmful-binding source; NEUTRAL has no demos so it carries no demo-codeword K/V).
-            # Capture its resid_pre at demo codewords + count-matched random non-cw positions.
-            nrow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
+            # BENIGN demo activations = neutralization source; count-matched random non-cw positions
             neu_pre_demo = neu_pre_rand = None
-            ds_rand = []
-            if nrow is not None and ds_demo_cw:
-                ntmpl = dc.apply_template(lm.tokenizer, nrow["prompt"])
-                npos = pc.resolve_positions(lm, ntmpl, codeword)
-                neu_demo_cw = list(npos.codeword_all[:-1])
-                m = min(len(ds_demo_cw), len(neu_demo_cw))
-                ds_pool = [p for p in range(ds_query) if p not in cwset]
+            ds_rand, m = [], 0
+            if brow is not None:
+                bd_tmpl, _, b_demo_cw = build_fc(brow["prompt"], codeword, concept)
+                m = min(len(ds_demo_cw), len(b_demo_cw))
+                cwset = set(ds_demo_cw)
+                last_demo = max(ds_demo_cw)
+                ds_pool = [p for p in range(last_demo) if p not in cwset]
                 rlen = min(m, len(ds_pool))
                 ds_rand = sorted(rng.sample(ds_pool, rlen)) if rlen else []
-                neu_rand = sorted(rng.sample(range(npos.codeword_last), rlen)) if rlen else []
-                cap_pos = neu_demo_cw[:m] + neu_rand
-                ncap = capture_pre(ntmpl, cap_pos) if cap_pos else None
+                b_pool = list(range(max(b_demo_cw)))
+                b_rand = sorted(rng.sample(b_pool, rlen)) if rlen and len(b_pool) >= rlen else []
+                cap_pos = b_demo_cw[:m] + b_rand
+                ncap = capture_pre(bd_tmpl, cap_pos) if cap_pos else None
                 if ncap is not None:
                     neu_pre_demo = ncap[:, :m, :]
-                    neu_pre_rand = ncap[:, m:m + rlen, :]
-                ds_swap_pos = ds_demo_cw[-m:] if m else []
-            else:
-                m, ds_swap_pos = 0, []
+                    if b_rand:
+                        neu_pre_rand = ncap[:, m:m + len(b_rand), :]
+            ds_swap_pos = ds_demo_cw[-m:] if m else []
+            ds_pre_demo = capture_pre(ds_tmpl, ds_demo_cw)
 
-            ds_pre_demo = capture_pre(templated, ds_demo_cw) if ds_demo_cw else None
-            c1 = eval_cell(ds_tok, ds_query, [], cid, kid, gate_layer)
-
+            c1 = readout(ds_tok, cid, kid, [])
             for wname, ells in windows:
                 emit(base, wname, "C1", 0, c1)
                 if m and neu_pre_demo is not None:
                     src3 = {l: neu_pre_demo[l, -m:, :] for l in ells}
                     emit(base, wname, "C3_demoKV", m,
-                         eval_cell(ds_tok, ds_query, [pc.DemoStateSwap(lm.model, ds_swap_pos, src3)],
-                                   cid, kid, gate_layer))
-                if ds_pre_demo is not None:
-                    srcs = {l: ds_pre_demo[l] for l in ells}
-                    emit(base, wname, "C1_selfswap", len(ds_demo_cw),
-                         eval_cell(ds_tok, ds_query, [pc.DemoStateSwap(lm.model, ds_demo_cw, srcs)],
-                                   cid, kid, gate_layer))
+                         readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_swap_pos, src3)]))
+                srcs = {l: ds_pre_demo[l] for l in ells}
+                emit(base, wname, "C1_selfswap", len(ds_demo_cw),
+                     readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_demo_cw, srcs)]))
                 if ds_rand and neu_pre_rand is not None:
                     srcr = {l: neu_pre_rand[l] for l in ells}
                     emit(base, wname, "random_control", len(ds_rand),
-                         eval_cell(ds_tok, ds_query, [pc.DemoStateSwap(lm.model, ds_rand, srcr)],
-                                   cid, kid, gate_layer))
+                         readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_rand, srcr)]))
     fh.close()
 
-    # aggregate ReRead_test = mean(C1 - C3_demoKV) per window (gated readout, positive-control-ok only)
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
-    def by(cell, w, metric="ps_concept_gated"):
-        return {r["sid"]: r[metric] for r in all_rows
-                if r["cell"] == cell and r["window"] == w and r["positive_control_ok"]}
-    windows_seen = sorted({r["window"] for r in all_rows})
+    def cellmap(cell, w):
+        return {r["sid"]: r["p_concept"] for r in all_rows if r["cell"] == cell and r["window"] == w}
+    # validity: examples where DS C1 reads concept MORE than benign (readout discriminates)
+    valid = {r["sid"] for r in all_rows if r["cell"] == "C1"
+             and r.get("benign_p_concept") is not None and r["p_concept"] > r["benign_p_concept"]}
     summ = {}
-    for w in windows_seen:
-        c1 = by("C1", w); c3 = by("C3_demoKV", w); rc = by("random_control", w); ss = by("C1_selfswap", w)
-        common = set(c1) & set(c3)
+    for w in sorted({r["window"] for r in all_rows}):
+        c1, c3 = cellmap("C1", w), cellmap("C3_demoKV", w)
+        rc, ss = cellmap("random_control", w), cellmap("C1_selfswap", w)
+        common = (set(c1) & set(c3)) & valid
         rr = float(np.mean([c1[s] - c3[s] for s in common])) if common else None
-        rcv = ([c1[s] - rc[s] for s in set(c1) & set(rc)] or [None])
-        ssv = ([abs(c1[s] - ss[s]) for s in set(c1) & set(ss)] or [None])
-        summ[w] = {"n": len(common), "ReRead_test_mean": rr,
-                   "random_control_mean": (float(np.mean(rcv)) if rcv[0] is not None else None),
-                   "selfswap_max_abs_dev": (float(np.max(ssv)) if ssv[0] is not None else None)}
+        rcc = (set(c1) & set(rc)) & valid
+        ssc = (set(c1) & set(ss)) & valid
+        summ[w] = {"n_valid": len(common),
+                   "ReRead_test_mean": rr,
+                   "random_control_mean": (float(np.mean([c1[s] - rc[s] for s in rcc])) if rcc else None),
+                   "selfswap_max_abs_dev": (float(np.max([abs(c1[s] - ss[s]) for s in ssc])) if ssc else None),
+                   "mean_C1_p_concept": (float(np.mean([c1[s] for s in common])) if common else None)}
     json.dump({"cohort": cohort, "model": args.model, "n_rows": len(all_rows),
-               "granularity": args.granularity, "windows": summ}, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
-    print(f"[demoKO] {len(all_rows)} rows -> {out_dir}")
+               "n_valid_examples": len(valid), "granularity": args.granularity, "windows": summ},
+              open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
+    print(f"[demoKO] {len(all_rows)} rows, {len(valid)} valid examples -> {out_dir}")
     for w, s in summ.items():
-        print(f"  {w}: n={s['n']} ReRead(C1-C3)={s['ReRead_test_mean']} "
-              f"random={s['random_control_mean']} selfswap_dev={s['selfswap_max_abs_dev']}")
+        print(f"  {w}: n_valid={s['n_valid']} C1_pconc={s['mean_C1_p_concept']} "
+              f"ReRead(C1-C3)={s['ReRead_test_mean']} random={s['random_control_mean']} "
+              f"selfswap_dev={s['selfswap_max_abs_dev']}")
 
 
 if __name__ == "__main__":
