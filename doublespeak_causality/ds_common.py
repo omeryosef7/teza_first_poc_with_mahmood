@@ -487,13 +487,28 @@ class TargetPositions:
         return asdict(self)
 
 
-def target_positions(tokenizer, input_ids: Sequence[int], codeword: str) -> TargetPositions:
+def target_positions(tokenizer, input_ids: Sequence[int], codeword: str,
+                     text: Optional[str] = None) -> TargetPositions:
     """Resolve the codeword position, the following token, and seq length.
 
     `following` is the position right after the last codeword subtoken (the
     downstream-transfer probe site, plan §8.1). None if the codeword is the last
-    token (e.g. immediately before the generation prompt)."""
-    hit = find_word_occurrences(tokenizer, input_ids, codeword)
+    token (e.g. immediately before the generation prompt).
+
+    If strict id-matching misses the codeword (in-context tokenization differs from
+    standalone variants, e.g. 'pumpkin' in some ClearHarm prompts) AND `text` is
+    supplied, fall back to the offset-based finder (audit-preferred, more complete).
+    The fallback only runs where the strict finder already raised => no regression."""
+    try:
+        hit = find_word_occurrences(tokenizer, input_ids, codeword)
+    except ValueError:
+        if text is None:
+            raise
+        # `input_ids` came from the default tokenizer call (add_special_tokens=True, e.g.
+        # forward_hidden_states). Re-tokenize the same way so offset-derived token indices
+        # align; guard on length so a mismatch re-raises instead of returning bad indices.
+        add_special = (len(tokenizer(text)["input_ids"]) == len(input_ids))
+        hit = find_word_occurrences_in_text(tokenizer, text, codeword, add_special_tokens=add_special)
     last = hit.last_idx[-1]
     seq_len = len(input_ids)
     following = last + 1 if (last + 1) < seq_len else None
@@ -620,7 +635,7 @@ def capture_target_reps(
     position_name in {"codeword_last", "following"} (following omitted if None).
     """
     fwd = forward_hidden_states(lm, text)
-    pos = target_positions(lm.tokenizer, fwd["input_ids"], codeword)
+    pos = target_positions(lm.tokenizer, fwd["input_ids"], codeword, text=text)
     hs = fwd["hidden_states"]
     n = len(hs)
     reps: Dict[str, torch.Tensor] = {}
