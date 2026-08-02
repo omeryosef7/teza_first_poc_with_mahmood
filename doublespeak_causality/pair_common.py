@@ -277,7 +277,11 @@ class SubmodulePatch:
     replace / add / project_out semantics and the same generation-safety guard.
     """
 
-    _TARGETS = {"attn_out": "self_attn", "mlp_out": "mlp", "resid_post": None}
+    # component -> submodule attr. None => the block itself. "resid_pre" is special:
+    # it edits the INPUT to the block via a forward_pre_hook (== resid_post of L-1, but
+    # enumerated as its own Phase-3 cell). The other three edit sub-block / block OUTPUT.
+    _TARGETS = {"attn_out": "self_attn", "mlp_out": "mlp",
+                "resid_post": None, "resid_pre": None}
 
     def __init__(self, model, layer_idx: int, component: str,
                  positions: Sequence[int], vector: Optional[torch.Tensor] = None,
@@ -286,16 +290,18 @@ class SubmodulePatch:
             raise ValueError(f"component must be one of {sorted(self._TARGETS)}")
         layer = dc._get_layers(model)[layer_idx]
         attr = self._TARGETS[component]
-        self.module = layer if attr is None else getattr(layer, attr)
+        self.component = component
+        self.is_pre = (component == "resid_pre")
+        self.module = layer if (attr is None) else getattr(layer, attr)
         self.positions = list(positions)
         self.vector = vector
         self.mode = mode
         self.alpha = alpha
         self._handle = None
 
-    def _hook(self, module, inputs, output):
-        is_tuple = isinstance(output, tuple)
-        hidden = (output[0] if is_tuple else output).clone()
+    def _edit(self, hidden):
+        """Apply replace/add/project_out at the requested positions (in-place on a clone)."""
+        hidden = hidden.clone()
         v = None if self.vector is None else self.vector.to(hidden.dtype).to(hidden.device)
         seq = hidden.shape[1]
         for p in self.positions:
@@ -311,10 +317,31 @@ class SubmodulePatch:
                 hidden[0, p, :] = hidden[0, p, :] - self.alpha * comp * d.to(hidden.dtype)
             else:
                 raise ValueError(f"unknown mode {self.mode}")
+        return hidden
+
+    def _pre_hook(self, module, args, kwargs):
+        """Edit the block INPUT hidden_states (resid_pre). Decoder layers receive
+        hidden_states as args[0] (or kwargs['hidden_states'])."""
+        if len(args) > 0 and torch.is_tensor(args[0]):
+            new = self._edit(args[0])
+            return (new,) + tuple(args[1:]), kwargs
+        if "hidden_states" in kwargs and torch.is_tensor(kwargs["hidden_states"]):
+            kwargs = dict(kwargs)
+            kwargs["hidden_states"] = self._edit(kwargs["hidden_states"])
+            return args, kwargs
+        raise RuntimeError("resid_pre: could not locate hidden_states in block inputs")
+
+    def _hook(self, module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        hidden = self._edit(output[0] if is_tuple else output)
         return (hidden,) + tuple(output[1:]) if is_tuple else hidden
 
     def __enter__(self):
-        self._handle = self.module.register_forward_hook(self._hook)
+        if self.is_pre:
+            self._handle = self.module.register_forward_pre_hook(
+                self._pre_hook, with_kwargs=True)
+        else:
+            self._handle = self.module.register_forward_hook(self._hook)
         return self
 
     def __exit__(self, *exc):
