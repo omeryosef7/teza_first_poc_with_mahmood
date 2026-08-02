@@ -78,6 +78,27 @@ A single-layer · B canonical windows · C sliding (w2/4/8) · D cumulative pref
 `HEAD_TO_MLP_PATH_PATCHING` ☐ · `JACOBIAN_READOUT` ☐ · `CAUSAL_OBJECTIVE` ☐ ·
 `GCG_MAC_EVALUATION` ☐ · `FINAL_CAUSAL_CIRCUIT_REPORT` ☐ · `SLACK_UPDATE` ☐
 
+## Phase 2 — concrete next actions (queued for next loop iteration; GPU/L40S/SLURM)
+Phase 2 is GPU-bound (model forward passes) and must run on **L40S** via SLURM (login node is
+TITAN Xp 12GB, too small for 8B bf16). Plan, reusing `32_extract_pair_reps` + `33_build_directions`
++ `build_refusal_direction_llama`:
+1. **Split→bench adapter** (`scripts/split_to_bench.py`, CPU, testable): convert
+   `clearharm_doublespeak_v1.json` → the bench schema `32_extract_pair_reps` expects (rows with
+   `condition, split, probe_word=codeword, sid=example_id, prompt`), mapping conditions
+   doublespeak→DOUBLESPEAK, neutral→NEUTRAL_CODEWORD, direct→DIRECT_CONCEPT, benign→BENIGN_REMAP,
+   shuffled→SHUFFLED_BINDING, unrelated→UNRELATED_TARGET; split train→dev, test→heldout. Per cohort.
+2. **Reps extraction** (SLURM, L40S): run `32_extract_pair_reps.py --bench <adapter out>` for each
+   cohort → per-(condition,split,component,position,layer) reps. bf16.
+3. **Directions** (CPU): `33_build_directions.py --reps-dir <...>` → `d_Direct` (concept), `d_DS`
+   (doublespeak_signature), `d_benign`/`d_unrelated` controls, PCA subspaces, cross-fit dev/heldout,
+   per-layer cosines. Then `build_refusal_direction_llama.py --validate` → `refusal_direction[L]`.
+4. **Unify** (`scripts/build_unified_directions.py`): co-locate concept/refusal/doublespeak_signature
+   as separate per-layer objects + per-layer cos(concept,refusal), cos(signature,refusal),
+   covariance-adjusted sim, norms → `reports/`-ready. Keep them SEPARATE (never merge concept+refusal).
+5. **2.1 behavioral baselines** (SLURM, L40S, larger): 10 conditions × ≥20/≥20, forced-choice prob +
+   logit-diff + StrongREJECT + ASR + refusal-rate. Reuse `14/18/19` + StrongREJECT harness.
+Guardrail: bf16 for causal claims; discovery on `train` only; `test` only for frozen replication.
+
 ## Decisions / open questions for Omer
 - **2026-08-02 — ClearHarm construction (RESOLVED):** (1) **Blend** — ClearHarm-native single-token
   subset = PRIMARY cohort; curated 40-pair set = parallel REPLICATION cohort; results reported
