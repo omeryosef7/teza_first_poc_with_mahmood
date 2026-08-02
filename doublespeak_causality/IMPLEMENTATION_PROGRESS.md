@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 4, loop tick)** — **Phase 2 reps extraction SUBMITTED** on L40S:
+  job **702652** (clearharm bench) + **702653** (curated bench), `32_extract_pair_reps --readout fixed`,
+  killable partition, PENDING. Outputs → `doublespeak_causality/outputs/pair_reps_*`. **Next tick:**
+  when both COMPLETE, run `33_build_directions --reps-dir <each>` (concept d_Direct + signature d_DS +
+  controls + per-layer cosines), check for a reusable existing `refusal_direction` in
+  `outputs/stage_gcg_full/*.pt` (else rebuild via `build_refusal_direction_llama --validate`), then
+  unify into separate per-layer concept/refusal/signature objects + cross-direction cosines.
+
+
 - **2026-08-02 (iter 3, loop)** — **Phase 1 COMPLETE.** Locked split `data/splits/clearharm_doublespeak_v1.json`
   finalized: **137 records, both cohorts ≥20/≥20** (clearharm PRIMARY 44/42, curated REPLICATION 30/21).
   Validator **12 ok / 0 warn / 0 FATAL** (no id/cluster/prompt leakage, all single-token). Caught+fixed a
