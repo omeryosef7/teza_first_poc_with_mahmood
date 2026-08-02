@@ -100,6 +100,17 @@ def check_split(path, tokenizer_id, rep: Report):
         else:
             rep.o(f"{name} has {len(ids)} unique examples (>= {MIN_PER_SPLIT})")
 
+    # per-cohort >=20/>=20 (cohorts are reported as separate statistical claims)
+    cohorts = sorted({e.get("cohort") for e in examples if e.get("cohort")})
+    for coh in cohorts:
+        tr = {e.get("example_id") for e in train_like if e.get("cohort") == coh}
+        te = {e.get("example_id") for e in test_like if e.get("cohort") == coh}
+        for nm, ids in ((f"cohort '{coh}' train", tr), (f"cohort '{coh}' test", te)):
+            if len(ids) < MIN_PER_SPLIT:
+                rep.f(f"{nm} has {len(ids)} unique examples (< {MIN_PER_SPLIT})")
+            else:
+                rep.o(f"{nm} has {len(ids)} unique examples (>= {MIN_PER_SPLIT})")
+
     # ID overlap
     tr_ids = {e.get("example_id") for e in train_like}
     te_ids = {e.get("example_id") for e in test_like}

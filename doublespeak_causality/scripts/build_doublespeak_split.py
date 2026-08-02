@@ -223,19 +223,32 @@ def load_curated(tok, limit, min_per_concept=3):
     return out
 
 
+CONCEPT_CACHE = os.path.join(DC, "data", "splits", "_concept_cache.json")
+
+
 def extract_clearharm_concepts(tok, client, model, use_api, limit):
     """Extract a single-token harmful WORD that literally appears in each instruction.
-    Uses gpt-4o-mini; in --no-api mode picks the longest single-token word in the instruction."""
+    Uses gpt-4o-mini; in --no-api mode picks the longest single-token word in the instruction.
+    LLM extractions are CACHED to disk (keyed by instruction hash) so the locked split is
+    reproducible and re-runs don't re-hit the API with nondeterministic results."""
     import csv
+    ccache = json.load(open(CONCEPT_CACHE)) if os.path.exists(CONCEPT_CACHE) else {}
     rows = list(csv.DictReader(open(CLEARHARM_CSV)))
     out = []
+    dirty = False
     for row in rows:
         instr = row.get("instruction") or row.get("content") or ""
         cat = row.get("category") or "other"
         cid = f"clearharm_{sha16(instr)[:12]}"
         concept = None
         if use_api:
-            concept = _llm_pick_concept(client, model, instr)
+            ckey = sha16(instr)
+            if ckey in ccache:
+                concept = ccache[ckey]
+            else:
+                concept = _llm_pick_concept(client, model, instr)
+                ccache[ckey] = concept
+                dirty = True
         else:
             # heuristic: longest alphabetic word that is single-token and appears verbatim
             cands = sorted({w.strip(".,;:'\"()").lower() for w in instr.split() if w.isalpha()},
@@ -260,6 +273,9 @@ def extract_clearharm_concepts(tok, client, model, use_api, limit):
                     "instruction": instr, "concept": concept})
         if limit and len(out) >= limit:
             break
+    if use_api and dirty:
+        os.makedirs(os.path.dirname(CONCEPT_CACHE), exist_ok=True)
+        json.dump(ccache, open(CONCEPT_CACHE, "w"), indent=1)
     return out
 
 
@@ -304,13 +320,15 @@ def main():
         "clearharm": extract_clearharm_concepts(tok, client, args.model, use_api, args.smoke),
     }
 
+    # single-token codewords only (dropping items with a multi-token codeword would silently
+    # shrink cells; instead restrict the lexicon so every item gets a single-token codeword).
+    cws = [w for w in CODEWORD_LEXICON if is_single_token(tok, w)]
+    assert len(cws) >= 2, f"need >=2 single-token codewords, got {len(cws)}: {cws}"
+
     records = []
     for cohort, items in cohorts.items():
-        cws = list(CODEWORD_LEXICON)
         for i, it in enumerate(items):
             codeword = cws[i % len(cws)]
-            if not is_single_token(tok, codeword):
-                continue
             wrong = items[(i + 1) % len(items)]
             wrong_codeword = cws[(i + 1) % len(cws)]
             ex_id = f"{cohort}_{i:04d}_{sha16(it['instruction'])[:8]}"
