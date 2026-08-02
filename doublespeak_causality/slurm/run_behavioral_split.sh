@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH --job-name=ds_behsplit
+#SBATCH --output=doublespeak_causality/logs/ds_behsplit_%j.out
+#SBATCH --error=doublespeak_causality/logs/ds_behsplit_%j.err
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=04:00:00
+#SBATCH --partition=killable
+#SBATCH --account=gpu-research
+#SBATCH --nodes=1
+#SBATCH --gpus=1
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#
+# CAUSAL_CIRCUIT_MASTER_PLAN Phase 2.1: behavioral baseline (direct/neutral/doublespeak +
+# StrongReject) on the locked split, per cohort. Needs OPENAI_API_KEY (StrongReject grader).
+#   sbatch --export=ALL,DSDATA=doublespeak_causality/data/behavioral/beh_clearharm.json run_behavioral_split.sh
+set -euo pipefail
+PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
+cd "$PROJECT_DIR"
+source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
+conda activate poc_stage2
+if [ -f "$PROJECT_DIR/.env" ]; then set -a; source "$PROJECT_DIR/.env"; set +a; fi
+mkdir -p doublespeak_causality/logs "$PROJECT_DIR/.cache"/{huggingface,torch,triton}
+export HF_HOME="$PROJECT_DIR/.cache/huggingface"; export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
+export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
+: "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
+: "${DSDATA:?set DSDATA to a data/behavioral/beh_<cohort>.json}"
+: "${DSMAXNEW:=200}"
+for v in DSMODEL DSDATA DSMAXNEW; do
+  case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
+done
+echo "=== behavioral baseline: $DSDATA ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
+[ -n "${OPENAI_API_KEY:-}" ] && echo "OPENAI key present" || { echo "ERROR: no OPENAI_API_KEY for StrongReject"; exit 1; }
+GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
+case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+TAG="$(basename "$DSDATA" .json)"
+python -u doublespeak_causality/14_behavioral_eval.py \
+  --data "$DSDATA" --model "$DSMODEL" --templated --max-new-tokens "$DSMAXNEW" \
+  --out-dir "doublespeak_causality/outputs/behavioral_split_${TAG}"
+echo "=== done ==="; date
