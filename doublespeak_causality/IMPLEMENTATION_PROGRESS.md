@@ -9,9 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 5, loop tick)** — reps jobs 702652/702653 **FAILED** at the summary-write
+  (`KeyError: 'pair'` — `32_extract_pair_reps` records `bench["pair"]`; adapter omitted it). Reps
+  arrays (means/per_prompt/subsample) were saved fine; only `reps_summary.json` crashed. **Fixed**
+  adapter to emit a `pair` key (multi-concept descriptor), regenerated bench, **resubmitted:
+  702691 (clearharm) + 702692 (curated)**, PENDING. Next tick: verify COMPLETE → `33_build_directions`.
 - **2026-08-02 (iter 4, loop tick)** — **Phase 2 reps extraction SUBMITTED** on L40S:
   job **702652** (clearharm bench) + **702653** (curated bench), `32_extract_pair_reps --readout fixed`,
-  killable partition, PENDING. Outputs → `doublespeak_causality/outputs/pair_reps_*`. **Next tick:**
+  killable partition. Outputs → `doublespeak_causality/outputs/pair_reps_*`. **Next tick:**
   when both COMPLETE, run `33_build_directions --reps-dir <each>` (concept d_Direct + signature d_DS +
   controls + per-layer cosines), check for a reusable existing `refusal_direction` in
   `outputs/stage_gcg_full/*.pt` (else rebuild via `build_refusal_direction_llama --validate`), then
