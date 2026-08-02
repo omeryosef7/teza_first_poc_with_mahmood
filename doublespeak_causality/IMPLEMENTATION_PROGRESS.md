@@ -59,7 +59,13 @@ A single-layer · B canonical windows · C sliding (w2/4/8) · D cumulative pref
 `GCG_MAC_EVALUATION` ☐ · `FINAL_CAUSAL_CIRCUIT_REPORT` ☐ · `SLACK_UPDATE` ☐
 
 ## Decisions / open questions for Omer
-- (none yet)
+- **2026-08-02 — ClearHarm construction (RESOLVED):** (1) **Blend** — ClearHarm-native single-token
+  subset = PRIMARY cohort; curated 40-pair set = parallel REPLICATION cohort; results reported
+  separately, claim only what replicates (~2x compute on L×head scans accepted). (2) **Reuse
+  gpt-4o-mini pipeline** (seed_concepts_gpt4omini convention: harmful_word/codeword/12 demos,
+  fixed openai_seed, content-hash provenance) + single-token filter.
+- Constraint reminder: all concept-extraction + demo-generation runs in the MAIN LOOP (cyber-safeguard
+  kills subagents on harmful codeword-binding text); subagents only for scalar/structural work.
 
 ## Known constraints (from project memory)
 - SLURM: no deps, max 6 parallel, L40S only, no trimming. bf16 + default SDPA (don't disable flash). GCG always `--no-filter-cand`.
