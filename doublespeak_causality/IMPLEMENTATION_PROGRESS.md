@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 9, loop tick)** — **Phase 2.1 behavioral baseline SUBMITTED.** Confirmed
+  StrongReject available (OPENAI_API_KEY + `strongreject_scoring`). Wrote `scripts/split_to_behavioral.py`
+  (split → `14_behavioral_eval` data; demos extracted from DS prompt — verified byte-identical rebuild
+  of direct/neutral/doublespeak) + `slurm/run_behavioral_split.sh`. Submitted jobs **702861 (clearharm,
+  86 items) + 702862 (curated, 51)** → direct/neutral/doublespeak generation + StrongReject, per cohort.
+  Next tick: read per-condition StrongReject/ASR/refusal (does Doublespeak jailbreak vs direct/neutral
+  on the locked split). Extended conditions (benign/shuffled/unrelated + interventions) = follow-up.
+
+
 - **2026-08-02 (iter 8, loop tick)** — refusal 32-layer build **702750 COMPLETE** (L0–31.pt; sep
   0.33→peak ~1.03 @ L20-23→0.94, concentrated mid-late). Wrote `scripts/build_unified_directions.py`
   → `outputs/unified_directions/{clearharm,curated}.{npz,json}`. **HEADLINE RESULT: concept_direction
