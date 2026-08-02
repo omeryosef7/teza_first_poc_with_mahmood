@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 3, loop)** — **Phase 1 COMPLETE.** Locked split `data/splits/clearharm_doublespeak_v1.json`
+  finalized: **137 records, both cohorts ≥20/≥20** (clearharm PRIMARY 44/42, curated REPLICATION 30/21).
+  Validator **12 ok / 0 warn / 0 FATAL** (no id/cluster/prompt leakage, all single-token). Caught+fixed a
+  cross-split leakage bug (duplicate neutral prompts from shared codeword+template → now unique codeword
+  per concept). Reproducible via committed `_concept_cache.json`+`_demo_cache.json`. Wrote
+  `reports/DATASET_AND_SPLIT_CONTRACT.md` (schema, 6 matched conditions, methodology, 4 honest limitations
+  incl. ClearHarm concept noisiness + near-dup clustering not yet applied). **Gate for Phase 2/3 open.**
+
+
 - **2026-08-02 (iter 2, autonomous loop)** — Cron loop set (`*/30 * * * *`, job a5747db4). **Phase 1
   nearly done.** Built `data/splits/clearharm_doublespeak_v1.json` (both cohorts). Found + fixed two
   builder bugs: (a) curated template top-up, (b) **codeword-skip bug** — main loop dropped any item
@@ -45,7 +54,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 | Phase | Description | Status | Notes |
 |------|-------------|--------|-------|
 | 0 | Repo & result audit → `reports/CAUSAL_PATCHING_AUDIT.md` + validation checks | ☑ | audit report + data-integrity validator done; Gate 1 satisfiable from artifacts |
-| 1 | ClearHarm locked split → `data/splits/clearharm_doublespeak_v1.json` (≥20 train/≥20 test) | ☐ | clearharm data present at `data/clearharm/` |
+| 1 | ClearHarm locked split → `data/splits/clearharm_doublespeak_v1.json` (≥20 train/≥20 test) | ☑ | 137 recs, both cohorts ≥20/≥20, validator 0 FATAL, contract written |
 | 2 | Baseline reproduction + concept/refusal directions | ☐ | reuse 33_build_directions, build_refusal_direction_llama |
 | 3 | Exhaustive all-occurrence residual patching (L0–31 × 4 loc × 10 pos × 2 dir) | ☐ | reuse LayerPatch/SubmodulePatch |
 | 4 | Exhaustive attention: all-head scan + edge knockout + edge sufficiency | ☐ | reuse AttentionKnockout, ZHeadPatch |

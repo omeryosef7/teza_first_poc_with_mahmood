@@ -327,10 +327,18 @@ def main():
 
     records = []
     for cohort, items in cohorts.items():
+        # ONE codeword per concept (consistent binding + avoids neutral-prompt collisions:
+        # the concept->codeword substitution erases the concept, so two concepts sharing a
+        # codeword + a canonical template would yield identical neutral prompts -> cross-split
+        # leakage). #curated concepts (17) <= #single-token codewords (21) => all distinct.
+        concepts = sorted({it["concept"] for it in items})
+        cw_map = {c: cws[j % len(cws)] for j, c in enumerate(concepts)}
         for i, it in enumerate(items):
-            codeword = cws[i % len(cws)]
+            codeword = cw_map[it["concept"]]
             wrong = items[(i + 1) % len(items)]
-            wrong_codeword = cws[(i + 1) % len(cws)]
+            wrong_codeword = cw_map.get(wrong["concept"], cws[0])
+            if wrong_codeword == codeword:
+                wrong_codeword = cws[(cws.index(codeword) + 1) % len(cws)]
             ex_id = f"{cohort}_{i:04d}_{sha16(it['instruction'])[:8]}"
             try:
                 rec = build_item(tok, cohort, ex_id, it["clearharm_id"], it["category"],
