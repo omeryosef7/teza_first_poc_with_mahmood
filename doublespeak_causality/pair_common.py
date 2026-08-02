@@ -67,11 +67,23 @@ def resolve_positions(lm, templated_text: str, probe_word: str) -> PairPositions
     Tokenizes with add_special_tokens=False because apply_template already emitted BOS.
     """
     ids = lm.tokenizer(templated_text, add_special_tokens=False)["input_ids"]
-    hit = dc.find_word_occurrences(lm.tokenizer, ids, probe_word)
-    last = hit.last_idx[-1]
+    try:
+        hit = dc.find_word_occurrences(lm.tokenizer, ids, probe_word)
+        last_idxs = list(hit.last_idx)
+    except ValueError:
+        # Strict id-matching can miss a word whose in-context tokenization differs from its
+        # standalone variants (e.g. 'pumpkin' in some ClearHarm prompts). Fall back to the
+        # offset-based finder, which reads token spans off character offsets (audit-preferred,
+        # "more complete"). add_special_tokens=False keeps indices aligned with `ids`. This
+        # branch only runs where the strict finder ALREADY raised => no regression for callers
+        # whose words resolve strictly.
+        hit = dc.find_word_occurrences_in_text(
+            lm.tokenizer, templated_text, probe_word, add_special_tokens=False)
+        last_idxs = list(hit.last_idx)
+    last = last_idxs[-1]
     n = len(ids)
     return PairPositions(
-        codeword_all=list(hit.last_idx), codeword_last=last,
+        codeword_all=last_idxs, codeword_last=last,
         following=(last + 1 if last + 1 < n else None),
         final_prompt=n - 1, seq_len=n,
     )
