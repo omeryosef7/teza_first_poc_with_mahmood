@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 16, loop tick)** — smoke 703115 confirmed the BENIGN-source fix (C3 fires, 48
+  rows/cell, self-swap=0) but exposed the readout was still wrong: **ps_concept_gated≈0 even for clean
+  bomb** — I was reading the patchscope of the query-codeword rep (IE_state≈0, floors), not the
+  DE_context reading. **Rewrote to the forced-choice-question readout** (30's forced_choice template):
+  append 'does the word "cw" refer to "concept" or to "cw"?' to the demo block, read
+  P(concept-label)/(P(concept)+P(codeword)) at the answer position (this is the DS≈0.35 DE_context
+  measurement). Demo positions via char-offset filter (before the question); validity = DS C1
+  p_concept > BENIGN (built-in discrimination, no patchscope gate). Syntax ok, smoke **703123** submitted.
+  Next tick: does DS C1 discriminate from benign? self-swap≈0? ReRead sign → then full runs.
+
+
 - **2026-08-03 (iter 15, loop tick)** — demoKO smoke 703105 ran clean (24 rows, no crash) but exposed
   a real bug: **C3_demoKV never fired** because I sourced neutralization from NEUTRAL (which is
   demo-free → no demo-codeword K/V). **Fixed:** source from BENIGN_REMAP (same codeword in benign demo
