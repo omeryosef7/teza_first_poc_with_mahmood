@@ -82,11 +82,10 @@ A single-layer · B canonical windows · C sliding (w2/4/8) · D cumulative pref
 Phase 2 is GPU-bound (model forward passes) and must run on **L40S** via SLURM (login node is
 TITAN Xp 12GB, too small for 8B bf16). Plan, reusing `32_extract_pair_reps` + `33_build_directions`
 + `build_refusal_direction_llama`:
-1. **Split→bench adapter** (`scripts/split_to_bench.py`, CPU, testable): convert
-   `clearharm_doublespeak_v1.json` → the bench schema `32_extract_pair_reps` expects (rows with
-   `condition, split, probe_word=codeword, sid=example_id, prompt`), mapping conditions
-   doublespeak→DOUBLESPEAK, neutral→NEUTRAL_CODEWORD, direct→DIRECT_CONCEPT, benign→BENIGN_REMAP,
-   shuffled→SHUFFLED_BINDING, unrelated→UNRELATED_TARGET; split train→dev, test→heldout. Per cohort.
+1. ☑ **Split→bench adapter** DONE (`scripts/split_to_bench.py`, CPU). Output
+   `data/bench/bench_{clearharm,curated}.json` — every condition×split cell ≥20 (clearharm 44/42,
+   curated 30/21; 516 + 306 rows). probe_word = concept for DIRECT_CONCEPT else codeword; train→dev,
+   test→heldout. **Next loop: submit SLURM.**
 2. **Reps extraction** (SLURM, L40S): run `32_extract_pair_reps.py --bench <adapter out>` for each
    cohort → per-(condition,split,component,position,layer) reps. bf16.
 3. **Directions** (CPU): `33_build_directions.py --reps-dir <...>` → `d_Direct` (concept), `d_DS`
