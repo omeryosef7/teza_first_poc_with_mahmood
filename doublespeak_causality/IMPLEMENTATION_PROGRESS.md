@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 13, loop tick)** — **Phase 3 cell #1 (resid_post × query-codeword, logit-lens)
+  COMPLETE → NULL, as expected.** Jobs 702995/702996 done. Baseline DS p_harm ≈0 (logit-lens floors at
+  codeword) → necessity ≈ random control, sufficiency ≈0, ALL layers, both cohorts/splits.
+  **Reproduces IE_state≈0** (harmful concept NOT in local query-codeword state) on the new ClearHarm
+  split — plan's known-findings #1-3 confirmed. Diagnosed: logit-lens-at-codeword fails its positive
+  control (prior T2/N3); the **validated readout is the forced-choice patchscope** (`46`, DS≈0.35 in
+  DE_context job 694691). Wrote `reports/PHASE3_RESIDUAL.md`. **Next: circuit-discovery cells** =
+  DEMO/all-occurrence positions (binding is in the demos, not query state) × 4 locations, forced-choice
+  readout, reusing 43/44/46 patch+forced_choice machinery. That's where signal is predicted.
+
+
 - **2026-08-02 (iter 12, loop tick)** — **Phase 3 (resid_post core) STARTED.** Found `05_run_activation_
   patching.py` consumes items in my `beh_<cohort>.json` format → per-example necessity(neutral→DS) +
   sufficiency(Direct/DS→neutral) + identity + norm-matched-random controls across ALL 32 layers,
