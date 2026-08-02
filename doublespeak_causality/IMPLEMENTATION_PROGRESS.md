@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 6, loop tick — user nudged "be on loop")** — reps job 702692 **curated COMPLETE**
+  (306 rows, 0 missing); 702691 clearharm **FAILED** (`resolve_positions` strict finder missed codeword
+  'pumpkin' in a ClearHarm context). **Fixed** `pair_common.resolve_positions` with an offset-finder
+  fallback (only fires where strict raised → no regression); verified all 822 bench rows resolve, tests
+  10/10. Resubmitted clearharm reps → **702731 PENDING**. Ran **`33_build_directions` on curated** →
+  `outputs/pair_directions_20260802_200945_1610756` (128 directions + 64 subspaces). **Result:**
+  cos(d_Direct, d_DS) resid_post/codeword_last dev mean **0.14** (max .39) — the concept↔signature
+  **dissociation replicates** on the ClearHarm-style curated cohort (keep concept & signature separate).
+  Next: 33 on clearharm reps when 702731 done; refusal direction (reuse `outputs/stage_gcg_full/*.pt`
+  if valid); unify per-layer concept/refusal/signature.
+
+
 - **2026-08-02 (iter 5, loop tick)** — reps jobs 702652/702653 **FAILED** at the summary-write
   (`KeyError: 'pair'` — `32_extract_pair_reps` records `bench["pair"]`; adapter omitted it). Reps
   arrays (means/per_prompt/subsample) were saved fine; only `reps_summary.json` crashed. **Fixed**
