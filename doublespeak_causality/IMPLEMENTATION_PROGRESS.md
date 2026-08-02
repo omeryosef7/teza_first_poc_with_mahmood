@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 2, autonomous loop)** — Cron loop set (`*/30 * * * *`, job a5747db4). **Phase 1
+  nearly done.** Built `data/splits/clearharm_doublespeak_v1.json` (both cohorts). Found + fixed two
+  builder bugs: (a) curated template top-up, (b) **codeword-skip bug** — main loop dropped any item
+  whose cycled codeword was multi-token, silently shrinking cells (curated 19→51 after fix). Added
+  **concept-extraction caching** (locked split reproducibility) + **per-cohort ≥20/≥20** validator
+  check. ClearHarm primary cohort already ≥20/≥20; curated now yields 51 (17 concepts×3) → ≥20/≥20.
+  Also advanced Phase-3 infra: **added `resid_pre` to `SubmodulePatch`** (unified 4-location patch:
+  resid_pre/attn_out/mlp_out/resid_post) + 4 GPU-free tests (10/10 pass). Final cached canonical
+  build running; then validate + write `reports/DATASET_AND_SPLIT_CONTRACT.md`. All committed+pushed.
+
+
 - **2026-08-02 (iter 1)** — **Phase 0 audit COMPLETE.** 7-lane parallel audit finished (0 errors,
   367k tok). Wrote `reports/CAUSAL_PATCHING_AUDIT.md` (full repo map, reusable primitives,
   provenance, reproducible-vs-not values, gap list, 10 footguns). Wrote
