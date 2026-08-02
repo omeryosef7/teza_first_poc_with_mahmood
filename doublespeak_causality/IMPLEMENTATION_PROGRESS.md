@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 7, loop tick)** — reps job **702731 clearharm COMPLETE** (516 rows, 0 missing).
+  Ran **`33_build_directions` on clearharm** → `outputs/pair_directions_20260802_201124_1612201`
+  (192 direction keys; `d_Direct|…`, `d_DS|…` each [32,4096]). cos(d_Direct,d_DS) resid_post/
+  codeword_last dev mean **0.245** (curated 0.14) — dissociation holds on BOTH cohorts.
+  **Both cohorts now have concept + signature + control directions.** Existing refusal artifact only
+  covered L12-20 → submitted **all-32-layer refusal build (job 702750)** via new
+  `slurm/run_refusal_alllayers.sh` (bench pair_carrot_bomb, layers hardcoded via seq to dodge
+  --export comma bug). **Next tick:** when 702750 done, write `scripts/build_unified_directions.py`
+  co-locating concept/refusal/signature per-layer + cos(concept,refusal), cos(signature,refusal),
+  norms; then Phase 2.1 behavioral baselines.
+
+
 - **2026-08-02 (iter 6, loop tick — user nudged "be on loop")** — reps job 702692 **curated COMPLETE**
   (306 rows, 0 missing); 702691 clearharm **FAILED** (`resolve_positions` strict finder missed codeword
   'pumpkin' in a ClearHarm context). **Fixed** `pair_common.resolve_positions` with an offset-finder
