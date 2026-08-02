@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 8, loop tick)** — refusal 32-layer build **702750 COMPLETE** (L0–31.pt; sep
+  0.33→peak ~1.03 @ L20-23→0.94, concentrated mid-late). Wrote `scripts/build_unified_directions.py`
+  → `outputs/unified_directions/{clearharm,curated}.{npz,json}`. **HEADLINE RESULT: concept_direction
+  ⊥ refusal_direction at every layer, both cohorts** — mean cos(concept,refusal) **0.012** (clearharm)
+  / **0.061** (curated), max|·|≤0.15. Concept axis is independent of refusal → separate levers (plan §2
+  validated). cos(signature,refusal) ~0.13-0.15; cos(concept,signature) 0.14-0.25 (dissociation).
+  Wrote `reports/PHASE2_DIRECTIONS.md`. **Phase 2.2 (direction separation) essentially DONE**
+  (representational). Remaining Phase 2: 2.1 behavioral baselines (SLURM); covariance-adjusted sim (queued).
+
+
 - **2026-08-02 (iter 7, loop tick)** — reps job **702731 clearharm COMPLETE** (516 rows, 0 missing).
   Ran **`33_build_directions` on clearharm** → `outputs/pair_directions_20260802_201124_1612201`
   (192 direction keys; `d_Direct|…`, `d_DS|…` each [32,4096]). cos(d_Direct,d_DS) resid_post/
@@ -93,7 +103,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 |------|-------------|--------|-------|
 | 0 | Repo & result audit → `reports/CAUSAL_PATCHING_AUDIT.md` + validation checks | ☑ | audit report + data-integrity validator done; Gate 1 satisfiable from artifacts |
 | 1 | ClearHarm locked split → `data/splits/clearharm_doublespeak_v1.json` (≥20 train/≥20 test) | ☑ | 137 recs, both cohorts ≥20/≥20, validator 0 FATAL, contract written |
-| 2 | Baseline reproduction + concept/refusal directions | ☐ | reuse 33_build_directions, build_refusal_direction_llama |
+| 2 | Baseline reproduction + concept/refusal directions | ◐ | 2.2 directions DONE (concept⊥refusal both cohorts); 2.1 behavioral baselines pending (SLURM) |
 | 3 | Exhaustive all-occurrence residual patching (L0–31 × 4 loc × 10 pos × 2 dir) | ☐ | reuse LayerPatch/SubmodulePatch |
 | 4 | Exhaustive attention: all-head scan + edge knockout + edge sufficiency | ☐ | reuse AttentionKnockout, ZHeadPatch |
 | 5 | Exhaustive all-head activation patching (Q/K/V/z/pattern/result) | ☐ | reuse ZHeadCapture/Patch |
