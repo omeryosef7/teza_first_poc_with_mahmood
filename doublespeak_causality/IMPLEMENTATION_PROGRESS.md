@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-02 (iter 10, loop tick)** — **ClearHarm behavioral baseline 702861 COMPLETE** (n=86,
+  StrongReject): malicious rate **direct 0.116 / neutral 0.256 / doublespeak 0.349**; mean_SR 0.108 /
+  0.218 / 0.294. **Core Doublespeak result holds: doublespeak >> direct (+0.23)** — codeword rephrase
+  bypasses the refusal that blocks the direct request. **Neutral elevated (0.256)** = ClearHarm concept
+  noisiness (harm not always in the single swapped noun; e.g. "boosted-fission weapon"→"…potato" keeps
+  harmful context) — predicted in split-contract Limitation 2; motivates curated cohort. Curated
+  702862 RUNNING → next tick reads it (expect neutral≈0, cleaner direct/DS gap), then write
+  `reports/PHASE2_BEHAVIORAL.md`.
+
+
 - **2026-08-02 (iter 9, loop tick)** — **Phase 2.1 behavioral baseline SUBMITTED.** Confirmed
   StrongReject available (OPENAI_API_KEY + `strongreject_scoring`). Wrote `scripts/split_to_behavioral.py`
   (split → `14_behavioral_eval` data; demos extracted from DS prompt — verified byte-identical rebuild
