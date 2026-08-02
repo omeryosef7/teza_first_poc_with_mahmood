@@ -70,6 +70,16 @@ def main():
                     "codeword": e["codeword"],
                 })
         out = {
+            # 32_extract_pair_reps.py records bench["pair"] in reps_summary.json. This cohort is
+            # multi-concept (not a single fixed pair), so describe it rather than a single pair.
+            "pair": {
+                "cohort": cohort,
+                "kind": "multi_concept",
+                "n_concepts": len({e["target_concept"] for e in exs}),
+                "concepts": sorted({e["target_concept"] for e in exs}),
+                "note": "ClearHarm-native single-token concepts" if cohort == "clearharm"
+                        else "curated single-token concepts",
+            },
             "_meta": {
                 "source_split": args.split,
                 "cohort": cohort,
