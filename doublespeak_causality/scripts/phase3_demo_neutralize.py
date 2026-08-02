@@ -159,8 +159,10 @@ def main():
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                     "codeword": codeword, "positive_control_ok": pos_ok, "gate_layer": gate_layer}
 
-            # matched Neutral: capture resid_pre at demo codewords + random non-cw positions
-            nrow = by_key.get(("NEUTRAL_CODEWORD", split, r["sid"]))
+            # matched BENIGN prompt (same codeword used in BENIGN demo sentences — the correct
+            # non-harmful-binding source; NEUTRAL has no demos so it carries no demo-codeword K/V).
+            # Capture its resid_pre at demo codewords + count-matched random non-cw positions.
+            nrow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
             neu_pre_demo = neu_pre_rand = None
             ds_rand = []
             if nrow is not None and ds_demo_cw:
