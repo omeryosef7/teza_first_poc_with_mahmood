@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 60, loop tick — publication circuit-summary FIGURE)** — Built
+  `scripts/make_circuit_figure.py` (scalar-only; Okabe-Ito colorblind-safe; dataviz-skill principles).
+  `figures/circuit_summary.png`: Panel A = per-layer causal necessity across depth (MLP-write peak L9 +
+  head-carry Σ/layer peak L14, ClearHarm locked test) with the 3 co-localized stage bands (retrieval+write
+  L8–12, carry L14–21, output L30–31); Panel B = direct-to-logit vs mediated (carry 0.00, output 0.62,
+  L9→carry mediation 0.79, random 0.00). Fixed a y-limit/label layout bug (was 10k px tall) → clean
+  1920×672. The paper-ready visual summary of the complete audited circuit. Plan 0–11 done + circuit closed
+  + figure. Next: optional carry-head sufficiency-install, or consolidate.
+
 - **2026-08-03 (iter 59, loop tick — CIRCUIT CLOSED: L9-write→carry edge is CAUSAL)** — full mediation
   705295/705296 done. **DECISIVE POSITIVE, both cohorts+splits:** freezing the L14–21 carry band to clean
   after neutralizing L9 **restores ~75–83% of the drop** (curated dev .76 / heldout .83; clearharm dev .75 /
