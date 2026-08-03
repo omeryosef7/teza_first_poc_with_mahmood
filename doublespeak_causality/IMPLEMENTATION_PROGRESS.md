@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 70, loop tick — new harnesses VALIDATED (self-swap gates pass); NEW result: attn
+  pattern causal)** — smokes: **phase4b_pattern selfdev=0.0 ✓ + NEW causal result** — patching the DS
+  attention PATTERN with benign at the carry heads drops the reading (C1 1.0→0.905, nec_specific +0.095),
+  while a UNIFORM pattern barely moves it (+0.001) → it's the SPECIFIC benign pattern that matters, not
+  just disrupting attention. The in-file eager-attn capture/patch primitive fires correctly (self-swap
+  tripwire passed). **phase5b_qkv selfdev=0.0 ✓ but Q/K/V-at-answer necessity ≈0** (honest null — the head
+  OUTPUT carries the concept, not its answer-position Q/K/V input; consistent w/ the mediation finding +
+  the workflow's flagged scope caveat). **phase6b_windows** running (707410, heavy 143-window scan).
+  → the subagent-written harnesses (incl. tricky in-file primitives) are CORRECT. Parametrized the 3
+  wrappers (DSBENCH/DSNPROMPTS/DSSPLITS env). Launched **phase4b_pattern FULL on v2 (116 ex, 707446)** =
+  more-examples + more-patching combined. Next: read pattern-full (does the attn-pattern causality hold at
+  n≥20 both splits?) + windows result; document the qkv null; then phase5 heads + phase7c sufficiency on v2.
+
 - **2026-08-04 (iter 69, loop tick — MORE-EXAMPLES result: L9 write GENERALIZES + strengthens)** — v2 MLP
   re-run 707203 done on **116 examples** (Wilcoxon-Holm per split): **dev n_valid=59 → L8–L13 all survive
   Holm, L9 peak +0.080 [.041,.127]; heldout n_valid=55 → L9–L13 survive, L9 +0.030 [.012,.052].** The L9

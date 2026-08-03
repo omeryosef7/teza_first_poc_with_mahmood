@@ -29,6 +29,6 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 echo "=== run_ds_p6bw smoke ==="; date; hostname
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
-python -u doublespeak_causality/scripts/phase6b_windows.py --bench doublespeak_causality/data/bench/bench_curated.json --widths 2,4,8 --n-prompts 2 --splits dev,heldout
+python -u doublespeak_causality/scripts/phase6b_windows.py --bench "${DSBENCH:-doublespeak_causality/data/bench/bench_curated.json}" --widths 2,4,8 --n-prompts "${DSNPROMPTS:-2}" --splits "${DSSPLITS:-dev,heldout}"
   --granularity "$DSGRAN" --positions "$DSPOS" --component "$DSCOMP" --n-prompts "$DSNPROMPTS"
 echo "=== done ==="; date
