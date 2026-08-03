@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 56, loop tick — Phase 11 design + prior-evidence synthesis)** — Surveyed GCG infra:
+  built for **Qwen3 + curated + temporal(mixed-cache) objective** — a full fresh Llama+ClearHarm+concept-
+  objective GCG rebuild = disproportionate for an expected null. Wrote `reports/GCG_MAC_EVALUATION.md`:
+  13-arm compute-matched design + integration point (existing `DSLAMBDA·repr_loss` hook), synthesized the
+  **substantial prior GCG evidence** (temporal-GCG net-negative/backfired ASR 0.0; signature inert; soft-
+  prompt gate null) → honest prediction **well-controlled NULL** (Gate-6 sufficiency fails + distributed +
+  prior). Defined the proportionate decisive test = plan's §8.5 gate on the NEW objective: **G1 = behavioral
+  sufficiency of the concept-region install** (add d_Direct L9–L12 to neutral/benign, StrongREJECT ASR, vs
+  signature/random/wrong-layer controls) reusing 18/19 + directions + AllPositionAddMultiLayer. Key honest
+  framing: the circuit is behaviorally actionable via **white-box concept-install + refusal-removal** (prior
+  finding #5 = works) but NOT via a **black-box suffix objective** (distributed + prior GCG null). Next:
+  launch G1 on the ClearHarm split (confirm white-box sufficiency on the new split).
+
 - **2026-08-03 (iter 55, loop tick — FINAL SYNTHESIS report; Omer: synthesis now, Phase 11 after)** —
   Consulted Omer on Phase 11 → **"Both: synthesis now, Phase 11 after."** Rewrote
   `reports/FINAL_CAUSAL_CIRCUIT_REPORT.md` for the complete Phases 0–10 (was interim 0–6, pre-audit):
