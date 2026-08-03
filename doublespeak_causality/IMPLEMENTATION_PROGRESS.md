@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 20, loop tick)** — sufficiency smoke 703199 clean → **necessity/sufficiency
+  ASYMMETRY.** Necessity holds (curated early 0.154 [.038,.290], mid 0.220 [.099,.346] SIG). But
+  **sufficiency FAILS**: installing DS demo-codeword K/V into a benign receiver gives S3 p_concept=0.0
+  at ALL windows (incl. late) → does NOT create the reading. So demo-codeword K/V is **necessary but
+  not sufficient** — the binding needs the codeword K/V *within* its harmful demo context, not the
+  local activations (consistent with IE_state≈0 / DE_context≈99% distributed mechanism). Launched full
+  nec+suf window runs **703213/703214** to confirm on full data. Next tick: aggregate → write the
+  asymmetry into PHASE4_DEMO_RETRIEVAL.
+
+
 - **2026-08-03 (iter 19, loop tick)** — Extended demoKO harness with the **sufficiency leg**: install
   DS demo-codeword K/V into the BENIGN receiver (mirror of necessity), + built-in paired bootstrap CIs
   (necessity specific = random−C3; sufficiency specific = S3_install−S_random) + self-swap faithfulness
