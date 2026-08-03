@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 55, loop tick — FINAL SYNTHESIS report; Omer: synthesis now, Phase 11 after)** —
+  Consulted Omer on Phase 11 → **"Both: synthesis now, Phase 11 after."** Rewrote
+  `reports/FINAL_CAUSAL_CIRCUIT_REPORT.md` for the complete Phases 0–10 (was interim 0–6, pre-audit):
+  one-line circuit, all **12 plan questions answered** with per-phase evidence, novel contributions,
+  methodological rigor (Wilcoxon correction + audit + coverage), honest limitations. **Circuit:
+  demo-KV retrieval (L8–11) + L9 MLP write → L14–21 carry heads (mediated) → L30–31 proximal output →
+  logit; distributed within bands; concept⊥refusal.** Phases 0–10 ✅, Phase 11 ⏳ queued. Next tick: set
+  up the compute-matched Phase-11 GCG comparison (naïve GCG vs concept-region objective vs signature vs
+  random control) reusing 25_eval_gcg_asr + gcg infra, over subsequent ticks (expected well-controlled null).
+
 - **2026-08-03 (iter 54, loop tick — Phase 10 causal objective distilled, Gate 6 assessed)** — Wrote
   `reports/CAUSAL_OBJECTIVE.md`: distilled the objective from the complete circuit, terms kept SEPARATE
   (concept / refusal / retrieval / mlp_write / path; **doublespeak_signature KILLED — causally inert**,
