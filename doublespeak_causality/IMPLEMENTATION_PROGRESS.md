@@ -9,6 +9,22 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 65, loop tick — SCALE-UP: more examples + more patching, per Omer)** — Omer:
+  generalize all tests with MORE examples (train+test), more activation-patching/knockout, doc everything,
+  keep /loop 30m, ultracode fan out. Two parallel efforts launched:
+  **(1) MORE EXAMPLES** — current 137 is near-max single-token yield of existing sources (curated 17 s-tok
+  concepts, clearharm 86/179). So generating NEW single-token concepts via gpt-4o-mini (tested: 9/12
+  single-token, correct categories). `scripts/expand_concepts.py` running in BACKGROUND (PID 2510853,
+  resumable, checkpoints each accept) → target 60 new concepts + 12 demos each, deduped vs existing →
+  `data/expanded_concepts_v2.json`. Next: `build_expanded_split.py` folds them into a v2 split w/ fresh
+  train/test, rebuild bench, re-run ALL key causal tests on the larger n (esp. fixes curated-heldout n=21
+  low-power). **(2) MORE PATCHING** — Workflow **wwjhplcgs** (ultracode) writing 3 NEW causal harnesses in
+  parallel (code-only, no data): `phase6b_windows` (MLP sliding/cumulative granularity windows — plan
+  mandate), `phase4b_pattern` (attention-PATTERN patching vs edge-KO), `phase5b_qkv` (per-head Q/K/V
+  decomposition) + adversarial review of the 2 high-risk ones. I smoke+fix each in main loop before
+  launching. RULES held: ≥20/cell, train/test sep, Wilcoxon-Holm, no trimming, max-6 SLURM L40S, harmful
+  text main-loop only. Next tick: check expander + workflow harnesses → smoke → launch on both splits.
+
 - **2026-08-03 (iter 64, loop tick — sufficiency onset = gradual, L17H27 pivotal)** — onset 706055/706056
   done (controls pass, selfdev 0.0). **Sufficiency accumulates GRADUALLY across L14–21** (not an abrupt L14
   switch): cumulative p_concept curated .004→.077(L17)→.162; clearharm .19→.41(L17)→.47. **Biggest single
