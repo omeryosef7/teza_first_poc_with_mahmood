@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 51, loop tick — Phase 9 dose smoke validated, full launched)** — dose smoke 704785:
+  **α=0 no-op check PASSES** (α=0 = DS baseline p≈1.0 = C1) — harness correct. Curve flat at n=2 (drew weak
+  examples; L9 necessity is small + right-skewed, median ~.015, so a 2-example curve is uninformative — the
+  effect lives in the strong-concept subset). Launched full both cohorts × {L9 single, L9–11 band}:
+  **704861/704863 (L9) + 704862/704864 (L9–11 band)**. The band (concentrated write region) should give a
+  cleaner graded curve than L9 alone. Next tick: read dose curves + monotonicity → is the MLP write a graded
+  lever (Phase 9)? Then Phase 10 (causal objective) / Phase 11 (GCG) + final synthesis.
+
 - **2026-08-03 (iter 50, loop tick — Phase 9 dose-response harness)** — Built `scripts/phase9_dose.py`
   (reuses audited phase6 machinery: FC readout, demo positions, pc.ComponentOutSwap with an INTERPOLATED
   donor (1−α)·DS + α·BENIGN). Sweeps the L9 demo-codeword MLP patch at α∈{0,.25,.5,.75,1,1.5,2}: α=0 =
