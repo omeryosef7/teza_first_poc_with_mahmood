@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 52, loop tick — Phase 9 dose-response COMPLETE: graded lever)** — full runs
+  704861–704864 done. **Clean MONOTONE graded dose-response over α∈[0,1] on ALL 4 cells** (both cohorts ×
+  train/test), single-L9 AND L9–L11 band: as the DS MLP write is interpolated toward benign, p_concept
+  falls smoothly (single-L9 drop .017–.115; band .028–.107). α=0 no-op anchor = DS baseline (exact);
+  α=1 = phase6 necessity (internally consistent). curated's only non-monotonicity is a trivial α>1
+  EXTRAPOLATION plateau. → **the mid-band MLP write is a GRADED causal lever, not on/off** (Phase 9 met).
+  Wrote `reports/PHASE9_DOSE.md`. **Phases done: 0–7, 9.** Remaining: Phase 8 (Jacobian, descriptive),
+  Phase 10 (causal objective — gated on the validated handle, now available), Phase 11 (GCG/MAC), final
+  synthesis. Next: Phase 10 objective (target the L9 write / concept direction) or Phase 8 Jacobian.
+
 - **2026-08-03 (iter 51, loop tick — Phase 9 dose smoke validated, full launched)** — dose smoke 704785:
   **α=0 no-op check PASSES** (α=0 = DS baseline p≈1.0 = C1) — harness correct. Curve flat at n=2 (drew weak
   examples; L9 necessity is small + right-skewed, median ~.015, so a 2-example curve is uninformative — the
