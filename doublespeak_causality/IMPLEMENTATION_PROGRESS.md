@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 43, loop tick — Phase 7 DIRECT-vs-TOTAL path harness)** — Built
+  `scripts/phase7_direct_total.py` reusing 50_path_patching's freeze primitives VERBATIM
+  (FreezeAllHeadsExcept + FreezeMLP + capture_clean_all). For each Phase-5 candidate head: TOTAL =
+  z-patch←benign (everything recomputes) vs DIRECT = same but ALL downstream heads+MLPs frozen to clean-DS
+  (skip-path only). **direct_frac = DIRECT/TOTAL separates readout-proximal OUTPUT heads (frac≈1) from
+  genuine CARRY heads (frac≪1)** — resolves the Phase-5 proximity caveat on L14–18. Metric = logit_diff
+  (concept−codeword), same as 48/49/50. Built-in sanity: `freeze_consistency_dev` (freeze-all-clean +
+  clean sender must reproduce m_clean) + self-swap. parse_heads is regex-based (L\d+H\d+) so SLURM
+  --export uses underscores (dodges the comma bug). Smoke **704416** (curated n=2, mid heads
+  L14H4/L15H4/L15H8/L17H27/L18H20 + late output L30H15/L31H0 as proximity contrast). Next: validate
+  freeze-consistency≈0 → full run both cohorts → are the mid-band L14–18 heads genuine carry (frac<1) vs
+  the late L30–31 proximal output (frac≈1)? = Gate 5 (path mediation) for the concept-carry band.
+
 - **2026-08-03 (iter 42, loop tick — Phase 5 clearharm confirm + honest cross-cohort correction)** —
   clearharm Phase-5 halves done (704131/704133). **Cross-cohort correction to iter-41:** the heads
   Holm-sig in ALL 4 cells are **late/output-proximal** (L21H10, L22H19, L26H13, L30H15, L31H0/H1), NOT the
