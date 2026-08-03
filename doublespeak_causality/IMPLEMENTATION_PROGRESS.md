@@ -9,6 +9,24 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 45, AUDIT FIXES applied)** — 6-auditor workflow returned **20 confirmed findings**
+  (2 high, 4 medium, 14 low). Numeric main-loop checks: `cid==kid`=0, `rlen<m`=0, all n_valid≥16 →
+  low-sev findings 6/7/12 **INERT in data**; demo_cw count mismatch = 3 curated/5 clearharm (conservative).
+  **MATERIAL FIX (both high):** the Holm significance used a sign-flip permutation whose resolution floor
+  (1/nperm=5e-5) is coarser than the 1024-cell head threshold (α/m=4.9e-5) AND could return p=0 → the Phase-5
+  "60–75 Holm-sig heads" was a **p=0 artifact**. Switched phase5+phase6 analyzers to **Wilcoxon signed-rank**
+  (robust to the right-skew — a paired t-test was over-conservative and wrongly nulled L9; Wilcoxon +
+  properly-resolved permutation agree). **RE-DERIVED:** *Phase 6* — **L9 survives Holm on ALL 4 cells**
+  (result HOLDS); L9–L12 band on clearharm heldout; L10 split-dependent. *Phase 5* — heads survive on **3/4
+  powered cells** (curated dev 58, clearharm dev 31, clearharm heldout 31); **curated heldout=0** (n=21
+  low-power negative, not structural). Robust mid+late heads (L17H27, L15H8, L18H20, L14H23, L21H10, L22H19,
+  L30H15, L31H0, L26H13) — conclusion (specific heads, distributed within L14–18 + late bands) UNCHANGED.
+  Also fixed: **phase6_analyze cell C3/C3_mlpout alias** (broken reproduce path, finding 3), **(+1) MC
+  correction**, **underpowered flag** (finding 1), **bootci only for Holm-sig cells** (speed). Rewrote
+  `reports/PHASE5_HEADS.md` + corrected `reports/PHASE6_MLP.md` (Wilcoxon numbers, pending-contradiction +
+  L10 + L14/L15-cohort-overstatement fixed). Test suite still 109 pass. Remaining low-sev code hardening
+  (random-pool range, cid==kid guard, demo-count log, batch asserts) = next, then resume phases.
+
 - **2026-08-03 (iter 44, loop tick — full correctness AUDIT, per Omer)** — Numeric export verification
   (main loop, can read harmful data): **all clean** — phase6 demo runs 0 duplicate rows, all 8 cells
   present, n_valid ≥20 both splits/cohorts, self-swap dev EXACTLY 0.0; phase5 curated merge 0 dup

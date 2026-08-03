@@ -34,15 +34,20 @@ distinguishes the demonstration codewords (n=12/prompt) from the query codewords
 Clean per-layer jobs 703531/703532 (demo) + 703533/703534 (query), both cohorts. Primitive
 `pc.ComponentOutSwap` (per-position mlp/attn-output swap; 4/4 synthetic tests; code-reviewed clean).
 
-**DEMO codeword — necessity, Holm-corrected across 32 layers (specific = random_control − C3):**
-- curated dev: **L9 +0.049 [.021,.080]** (p<1e-4), L12 +0.020 — survive Holm.
-- curated heldout (locked test): **L9 +0.097 [.039,.163]** (p=4e-4) — survives Holm.
-- clearharm dev: **L9 +0.063 [.024,.115]** (p<1e-4) — survives Holm.
-- clearharm heldout (locked test): **L9 +0.015, L10 +0.009, L11 +0.013, L12 +0.006** — the whole **L9–L12
-  band survives Holm**.
-- → **L9 is the one layer significant on ALL FOUR cells** (both cohorts × train+test) after 32-layer Holm
-  correction. Same band as the demo-KV retrieval necessity (PHASE4, L8–11 peak L9–10): the MLP write and
-  the K/V retrieval **co-localize at L9 on the demonstration codeword**.
+**DEMO codeword — necessity, Wilcoxon signed-rank, Holm-corrected across 32 layers (specific =
+random_control − C3).** *(Statistics corrected 2026-08-03 audit: switched from a sign-flip permutation —
+RNG-order-dependent + resolution-limited — to Wilcoxon, which is robust to the strong right-skew of the
+necessity diffs. The paired t-test is over-conservative here because a few strong-concept examples dominate
+the mean; Wilcoxon and the properly-resolved permutation agree. L9 survives on all four cells under both.)*
+- curated dev: **L9 +0.049 [.021,.082]** (also L5, L12, L20) — survive Holm.
+- curated heldout (locked test): **L9 +0.097 [.040,.166]** — survives Holm (the only layer).
+- clearharm dev: **L9 +0.063 [.023,.115]** (also L11 +.017, L12 +.018) — survive Holm.
+- clearharm heldout (locked test): **L9 +0.015, L10 +0.009, L11 +0.013, L12 +0.006** (also L5, L13) — the
+  **L9–L12 band survives Holm** on this cell.
+- → **L9 is the one layer significant on ALL FOUR cells** (both cohorts × train+test). The broader L9–L12
+  band survives on clearharm heldout; L10 is split-dependent (clearharm heldout yes, clearharm dev no). Same
+  band as the demo-KV retrieval necessity (PHASE4, L8–11 peak L9–10): the MLP write and the K/V retrieval
+  **co-localize at L9 on the demonstration codeword**.
 
 **Sufficiency ≈ 0 at every layer** (installing DS `mlp_out` into benign does NOT create the reading) →
 necessary but **not sufficient**, mirroring demo-KV. Effect sizes are **small** (~0.02–0.10): L9 is one
