@@ -43,8 +43,16 @@ inflated the effect; caught and fixed).
 robust **null** — installing does NOT create the reading. S3 `p_concept`: curated ≈ **0.0001** (all
 windows), clearharm 0.05–0.12 (small, non-specific: SUF_specific CIs include/below 0 at every window).
 
-**Per-layer localization** (from the corrected-control layer runs 703248/703249): peaks in the
-**L9–L11 mid-band on both cohorts** (updating; earlier L9–11 peak was from the inflated control).
+**Per-layer localization** (corrected-control layer runs 703248/703249, single-layer necessity
+specific effect, 95% CI): **significantly localized to L8–L11 on both cohorts** (each layer's CI
+excludes 0), peaking L9–L10:
+- curated: L9 [0.136, 0.310], L10 [0.129, 0.299], L8 [0.084, 0.266], L11 [0.045, 0.186] — all SIG
+- clearharm: L10 [0.045, 0.189], L9 [0.018, 0.148], L8 [0.003, 0.136] — SIG; L11 ns; ~0 elsewhere
+
+This is a per-layer, matched-control confirmation that the demonstration-codeword K/V is causally read
+out in the **L8–L11 mid-band** — the same band the prior carrot↔bomb work identified for the attention
+write (L7–9, peak L9), now on a multi-concept dataset. Window neutralization (early/mid) exceeds any
+single layer → distributed within the band, not a single-layer bottleneck.
 
 Self-swap faithfulness (DS demo K/V ← DS own): max deviation **0.0** both directions (exact no-op).
 

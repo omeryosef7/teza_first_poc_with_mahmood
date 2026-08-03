@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 23, loop tick)** — **Phase 4.2 demo-KV necessity localization COMPLETE + SIG
+  per-layer.** Corrected-control layer runs 703248/703249: necessity effect significantly localized to
+  **L8–L11 both cohorts** (each layer CI excludes 0), peak L9–L10 (curated L9 [.136,.310]; clearharm
+  L10 [.045,.189]). Matches prior attention-write band L7–9. Finalized `reports/PHASE4_DEMO_RETRIEVAL.md`.
+  **DEMO-KV CELL DONE:** necessary (mid band, both cohorts, per-layer SIG) but not sufficient;
+  distributed within L8–11. Next: surgical **per-head query→demo attention-edge knockout** (Phase 4.2
+  induction test — the N7-M "future work" flagged in the audit), reusing `pc.AttentionKnockout` (eager).
+
+
 - **2026-08-03 (iter 22, loop tick)** — **corrected-control result FINAL (window).** Necessity SIG in
   the **mid band on BOTH cohorts** (curated mid +0.177 [.087,.278] & early +0.258 [.146,.372]; clearharm
   mid +0.081 [.012,.151]); late ns; sufficiency robust NULL (S3≈0). → demo-codeword K/V **necessary but
