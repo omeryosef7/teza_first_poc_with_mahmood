@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 71, loop tick — windows harness validated; v2 full battery relaunched)** —
+  **phase6b_windows smoke passed self-swap=0.0** across all windows (cumpre/slide/etc.) — the granularity
+  harness is correct; smoke landscape shows cumulative-prefix necessity building through the mid band.
+  Caught 2 more wrapper bugs (self-review): phase4b uses `--heads` not `--carry` (707446 arg error); and
+  `DSSPLITS=dev,heldout` via --export truncates (comma bug) → moved split default INTO the wrappers.
+  Relaunched the v2 (116-ex) full battery both splits: **707474 phase4b_pattern** (attn-pattern causality),
+  **707475 phase6b_windows** (granularity landscape), **707473 phase5 heads** (carry necessity on more
+  examples). Next tick: read all three → does attn-pattern causality hold at n≥20 both splits + the head
+  band generalize? Then phase7c sufficiency on v2.
+
 - **2026-08-04 (iter 70, loop tick — new harnesses VALIDATED (self-swap gates pass); NEW result: attn
   pattern causal)** — smokes: **phase4b_pattern selfdev=0.0 ✓ + NEW causal result** — patching the DS
   attention PATTERN with benign at the carry heads drops the reading (C1 1.0→0.905, nec_specific +0.095),
