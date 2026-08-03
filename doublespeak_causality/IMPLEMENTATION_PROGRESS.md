@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 72, loop tick — NEW RESULT: carry-head attention PATTERN is causal, on v2)** —
+  phase4b_pattern full on v2 (116 ex) DONE, self-swap 0.0: **uniform-pattern knockout (clean, same-length)
+  drops the reading +0.166 [.097,.238] dev / +0.134 [.077,.199] heldout** — the carry heads' attention
+  PATTERN (WHERE they read) is causally necessary + replicates on locked test. The benign-pattern transplant
+  is bigger (+0.45) but cross-length-approximate (caveated); uniform is the clean claim. **NEW causal handle:
+  the carry stage is causal in its pattern (Phase 4b), its output (Phase 5), and downstream-mediated (Phase
+  7).** Stronger + more specific than the null query→demo edge-KO. Wrote `reports/PHASE4B_PATTERN.md`.
+  phase5 heads (707473) + phase6b_windows (707475) on v2 still RUNNING (heavy 1024-cell / 143-window scans).
+  Next tick: read those (head band + granularity landscape on more examples) + phase7c sufficiency on v2.
+
 - **2026-08-04 (iter 71, loop tick — windows harness validated; v2 full battery relaunched)** —
   **phase6b_windows smoke passed self-swap=0.0** across all windows (cumpre/slide/etc.) — the granularity
   harness is correct; smoke landscape shows cumulative-prefix necessity building through the mid band.
