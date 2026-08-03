@@ -9,6 +9,22 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 34, loop tick — Phase 6 causal MLP result CONFIRMED, confound resolved)** — Recurring
+  30-min loop cron **13dcff00** set (single loop; prior one-shot wakeup cleared). All 4 Phase 6 demo-position
+  jobs COMPLETE; re-aggregated per-split. **Per-layer curve resolves the iter-33 degradation worry:** the
+  demo-position MLP-output necessity is **localized to a contiguous mid band L8–L12, sharply peaking L9, on
+  BOTH cohorts, replicating dev→heldout** (curated heldout L9 +0.179 [.10,.27]; clearharm dev L8–12 all SIG
+  peak L9 +0.084). **Sufficiency ≈0 every layer** → NECESSARY not sufficient — the SAME band + signature as
+  the demo-KV retrieval (PHASE4 L8–11/L9). The broad `early`-window +0.42 was degradation (neg sufficiency);
+  the clean per-layer L9 (~.03–.18) is the real effect. **Gate 4 (partial):** a mid-band MLP contributes
+  causally at the demo position (necessity, both cohorts, locked-test, controls, self-swap 0) but it's a
+  distributed necessity-only contribution, not a transplantable write. Updated `reports/PHASE6_MLP.md`.
+  **Bug found:** `--positions query` run 703460 = **0 rows** — the FC question quotes the codeword
+  (`the word "banana"`) so it's undetected, and the FC readout has no unquoted request-line query codeword.
+  → the query-codeword MLP write needs the FULL DS-prompt readout (reuse Phase-3 05/query-position machinery)
+  — next tick. Mechanism now: mid-band L8–12/L9 demo-position computation (K/V + MLP) = causal locus, both
+  necessary, neither sufficient = distributed context-bound binding.
+
 - **2026-08-03 (iter 33, loop tick — self-caught misread + rigor fix)** — Code review of the Phase 6
   harness came back **clean** (alignment/signs/control-sourcing/hooks all correct); flagged 3 minor items.
   Acting on them exposed that **my iter-32 "demo-position null" claim was WRONG**: I read only the truncated
