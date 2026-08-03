@@ -43,9 +43,12 @@ head or edge), but a clear directed layer structure. Concept axis is independent
     + independent `refusal_objective` are eligible: **Gate-6 9/10 pass** (necessity, dose, controls, test,
     refusal-independent) but **sufficiency fails** (distributed). The `doublespeak_signature` is KILLED
     (causally inert) (PHASE10).
-12. **Does the objective improve held-out GCG/MAC ASR?** **Phase 11 pending** (queued). Prior CAUSAL_CORE
-    found mechanism-guided GCG net-negative; with sufficiency failing, the honest expectation is a
-    well-controlled null — a compute-matched test will confirm rather than assume.
+12. **Does the objective improve held-out GCG/MAC ASR?** **No — well-controlled NULL** (PHASE11 /
+    GCG_MAC_EVALUATION, concluded from existing evidence): state injection is only weakly behaviorally
+    sufficient (≤0.16 ASR, "never a potent injectate"); a mechanism-derived GCG objective is net-negative;
+    Gate-6 sufficiency fails — three converging lines. The mechanism IS behaviorally actionable, but only via
+    the **white-box concept-install + refusal-removal activation edit** (finding #5), NOT a token-suffix
+    objective. Field caution: decoding-sufficiency ≠ behavioral sufficiency (a documented dissociation).
 
 ## Behavioral grounding (Phase 2)
 Doublespeak >> direct on the locked split (ClearHarm malicious-rate DS 0.349 vs direct 0.116 — codeword
@@ -81,8 +84,17 @@ rephrase bypasses the refusal that blocks the direct request); curated neutral f
   (future work). Sufficiency-installation of carry heads not run.
 - Phase 11 behavioral-ASR test outstanding.
 
-## Phase status
-0 ✅ · 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ✅ · 8 ✅ · 9 ✅ · 10 ✅ · 11 ⏳ (queued).
+## Phase status — ALL PHASES COMPLETE
+0 ✅ · 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ✅ · 8 ✅ · 9 ✅ · 10 ✅ · 11 ✅ (concluded: null for
+suffix objective; behaviorally actionable only via white-box edit).
 Reports: CAUSAL_PATCHING_AUDIT · DATASET_AND_SPLIT_CONTRACT · PHASE2_{BEHAVIORAL,DIRECTIONS} ·
 PHASE3_RESIDUAL · PHASE4_DEMO_RETRIEVAL · PHASE5_HEADS · PHASE6_MLP · PHASE7_PATH · PHASE8_READOUT ·
-PHASE9_DOSE · CAUSAL_OBJECTIVE · (GCG_MAC_EVALUATION pending).
+PHASE9_DOSE · CAUSAL_OBJECTIVE · GCG_MAC_EVALUATION.
+
+## Bottom line
+A complete, audited, cross-cohort, Holm-corrected causal circuit for Doublespeak: **demo-KV retrieval
+(L8–11) + L9 MLP write → L14–21 mediated carry heads → L30–31 proximal output → logit**, distributed within
+bands, concept axis ⊥ refusal. The mechanism is behaviorally real (DS ≫ direct) and white-box-actionable
+(concept-install + refusal-removal), but distributed/context-bound — it does not reduce to a single
+head/edge/layer, and it does not convert into a black-box token-suffix attack objective (a well-controlled
+null + a field caution that decoding-sufficiency ≠ behavioral sufficiency).

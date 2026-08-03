@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 57, loop tick — Phase 11 CONCLUDED from existing evidence → ALL PHASES DONE)** —
+  Found the behavioral sufficiency test (19) was ALREADY run on Llama + analyzed (BEHAVIORAL_CAUSALITY_
+  RESULTS.md): **state injection ≤0.16 ASR ("never a potent injectate")** = behavioral confirmation of the
+  Phase-6 S3≈0; **dissociation** (decoding-sufficiency ≠ behavioral sufficiency). With prior temporal-GCG
+  net-negative + Gate-6 sufficiency-fail = **three converging lines → Phase 11 verdict: well-controlled NULL
+  for a token-suffix objective; the mechanism is behaviorally actionable ONLY via the white-box concept-
+  install + refusal-removal edit (finding #5).** No re-run needed. Finalized `GCG_MAC_EVALUATION.md` (verdict
+  + optional fresh-GCG extension deferred as low-value) and updated FINAL report (Q12 + phase status +
+  bottom line). **ALL PHASES 0–11 COMPLETE.** The full audited, cross-cohort, Holm-corrected causal circuit
+  is delivered end-to-end. Optional future work: upstream L9-write→carry-head edge path-patch; fresh
+  compute-matched GCG on ClearHarm+Llama (low-value confirmatory).
+
 - **2026-08-03 (iter 56, loop tick — Phase 11 design + prior-evidence synthesis)** — Surveyed GCG infra:
   built for **Qwen3 + curated + temporal(mixed-cache) objective** — a full fresh Llama+ClearHarm+concept-
   objective GCG rebuild = disproportionate for an expected null. Wrote `reports/GCG_MAC_EVALUATION.md`:

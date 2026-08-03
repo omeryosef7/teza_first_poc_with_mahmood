@@ -46,8 +46,30 @@ expected null), run the plan's **prerequisite gate** on the newly-validated obje
   (concept-region loss term via the existing `DSLAMBDA` hook); otherwise report the gate-negative and cite
   the prior GCG null as the Phase-11 conclusion.
 
-**Status:** design + prior-evidence synthesis complete; G1 to be launched next (main-loop SLURM). Expected:
-a well-controlled null that confirms — with the newly-precise, audited objective — the prior finding that
-the distributed, context-bound Doublespeak mechanism does not convert into a token-suffix ASR gain. That
-honest negative is itself a contribution: it delimits which parts of the circuit are *behaviorally
-actionable* (the white-box concept-install + refusal-removal edit) vs not (a black-box suffix objective).
+## Behavioral evidence already on disk (Phase 11 concludes from existing runs + Gate-6)
+The behavioral sufficiency experiment (`19_run_behavioral_sufficiency.py`, Llama-3.1-8B, StrongREJECT) has
+already been run extensively and analyzed in `BEHAVIORAL_CAUSALITY_RESULTS.md`:
+- **State injection is only WEAKLY behaviorally sufficient (≤0.16 malicious rate at any depth)** — "it never
+  becomes a potent behavioral injectate." This is the behavioral confirmation of the Phase-6 representational
+  `S3_install ≈ 0` sufficiency-failure.
+- **Dissociation:** representation-level decoding-sufficiency (Patchscopes P(concept)) does NOT predict — and
+  here inverts — behavioral sufficiency. A caution for the field: a decodable concept ≠ a behaviorally
+  potent one.
+- **Temporal/mechanistic GCG net-negative** (prior GCG work): the mechanism-derived suffix objective did not
+  beat task-only GCG on held-out ASR; the representational objective backfired.
+- **White-box concept-install + refusal-removal DOES increase harmful behavior** (known finding #5) — the one
+  behaviorally-potent lever, but it is an activation edit, not a suffix objective.
+
+## Phase 11 verdict (concluded)
+**The distributed, context-bound Doublespeak mechanism does NOT convert into a token-suffix ASR gain.** Its
+necessary components are only weakly behaviorally sufficient in isolation (≤0.16), a mechanism-derived GCG
+objective is net-negative, and Gate-6 sufficiency fails — three independent lines converge on a
+well-controlled NULL for a black-box optimization objective. The mechanism IS behaviorally actionable, but
+only via the **white-box concept-install + refusal-removal activation edit**, not a suffix. This honest
+negative delimits what is behaviorally actionable and is itself a contribution (and a field caution:
+decoding-sufficiency ≠ behavioral sufficiency).
+
+**Remaining optional extension (not needed for the verdict):** a fresh compute-matched GCG suffix comparison
+(arms 3/6/7/8/9/10 above) on the ClearHarm+Llama split with the newly-precise concept-region loss term —
+would re-confirm the null with the sharper objective. Deferred as low-value given the converging evidence;
+launchable via the existing `DSLAMBDA` hook if desired.
