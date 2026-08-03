@@ -5,7 +5,7 @@ Reads raw.jsonl, reports dev(train)/heldout(test) SEPARATELY (plan mandate), and
 Holm correction across the 32-layer family (paired sign-flip permutation p-values) so tiny
 per-layer CIs that don't survive multiple comparisons are not over-claimed.
 
-Necessity specific effect per (split, window) = random_control - C3_mlpout (paired).
+Necessity specific effect per (split, window) = random_control - C3 (necessity cell; legacy alias C3_mlpout accepted) (paired).
 Sufficiency specific = S3_install - S_random (paired).
 
 Usage: python scripts/phase6_analyze.py <output_dir> [<output_dir> ...]
@@ -13,18 +13,25 @@ Usage: python scripts/phase6_analyze.py <output_dir> [<output_dir> ...]
 from __future__ import annotations
 import json, os, sys
 import numpy as np
+from scipy import stats
 
 RNG = np.random.default_rng(0)
 
 
-def perm_p(vals, nperm=20000):
+def perm_p(vals):
+    """Two-sided WILCOXON signed-rank p (H0: median diff = 0). Chosen over (a) the sign-flip
+    permutation — RNG-order-dependent + resolution-limited to 1/nperm — and (b) the paired
+    t-test — which is over-conservative here because the necessity diffs are strongly RIGHT-
+    SKEWED (a few strong-concept examples dominate the mean while the sign is consistent).
+    Wilcoxon is robust to that skew, deterministic, and resolves below any Holm threshold used
+    here. Effect size + CI still via bootci."""
     a = np.array(vals, dtype=float)
-    if a.size == 0:
+    if a.size < 6 or np.allclose(a, 0):
         return 1.0
-    obs = abs(a.mean())
-    signs = RNG.integers(0, 2, size=(nperm, a.size)) * 2 - 1
-    null = np.abs((signs * a).mean(axis=1))
-    return float((null >= obs).mean())
+    try:
+        return float(stats.wilcoxon(a).pvalue)
+    except ValueError:
+        return 1.0
 
 
 def bootci(vals, nboot=2000):
@@ -62,9 +69,13 @@ def analyze_dir(d):
         wins = sorted({r["window"] for r in sr},
                       key=lambda w: int(w[1:]) if w.startswith("L") else 99)
         pv, mean, cis, suf = {}, {}, {}, {}
-        npos = next((r.get("n_pos_swapped") for r in sr if r["cell"] == "C3"), None)
+        # cell alias: dirs generated before commit e3802f4 store the necessity cell as
+        # "C3_mlpout"; later renamed "C3". Accept both so the reproduce path works on old + new dirs.
+        _ALIAS = {"C3": ("C3", "C3_mlpout")}
+        npos = next((r.get("n_pos_swapped") for r in sr if r["cell"] in _ALIAS["C3"]), None)
         for w in wins:
-            cm = lambda c: {r["sid"]: r["p_concept"] for r in sr if r["cell"] == c and r["window"] == w}
+            cm = lambda c: {r["sid"]: r["p_concept"] for r in sr
+                            if r["cell"] in _ALIAS.get(c, (c,)) and r["window"] == w}
             c3, rc, s3, sr_ = cm("C3"), cm("random_control"), cm("S3_install"), cm("S_random")
             nec = [s for s in valid if s in c3 and s in rc]
             sfx = [s for s in valid if s in s3 and s in sr_]
