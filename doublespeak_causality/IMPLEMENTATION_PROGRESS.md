@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 35, loop tick — self-caught position-classification BUG + clean re-run)** — Diagnosing
+  the query-run n=0 exposed a **token-index-vs-char-offset bug in `build_fc`** (same class as the iter-25
+  edgeKO bug): `hit.spans` are TOKEN indices but the demo/query boundary `q_off` was a CHAR offset from
+  `rfind`, so `span[0] < q_off` was ALWAYS true → `demo_pos` captured the 2 question-codeword tokens too and
+  `query_pos` was always empty. So the iter-34 "demo-position" runs actually patched **demo (12) + question
+  (2) codewords**, and the query run got nothing. **Fixed** (convert the question boundary to a token index
+  via prefix tokenization); verified offline **n_demo=12, n_query=2**, cleanly partitioned. The 2 question
+  tokens are near the answer (proximity), but the iter-34 effect localized to **L9 (mid), not late** → the
+  finding is very likely demo-driven, BUT I'm re-running clean to confirm rather than assume. Launched
+  **703531/703532 (demo-only, layer, both cohorts)** + **703533/703534 (query, layer, both cohorts)** = the
+  real query-codeword MLP-write test (paper's core claim). Marked the iter-34 PHASE6_MLP result PROVISIONAL
+  pending the demo-only re-run. Next tick: confirm demo-only L9 necessity holds + read the query-write result.
+
 - **2026-08-03 (iter 34, loop tick — Phase 6 causal MLP result CONFIRMED, confound resolved)** — Recurring
   30-min loop cron **13dcff00** set (single loop; prior one-shot wakeup cleared). All 4 Phase 6 demo-position
   jobs COMPLETE; re-aggregated per-split. **Per-layer curve resolves the iter-33 degradation worry:** the

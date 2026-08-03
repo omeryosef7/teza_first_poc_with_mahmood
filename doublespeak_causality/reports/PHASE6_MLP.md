@@ -23,7 +23,14 @@ bump (L11, L13) consistent with the true mid-band write, swamped in raw projecti
 **Conclusion:** the projection metric reproduces the known late-proximity artifact on the new split and must
 NOT be read as the write location. The causal write requires exact MLP intervention (next).
 
-## Causal MLP write (DONE — demo positions) — NECESSARY mid-band L8–L12 (peak L9), NOT sufficient
+## Causal MLP write (demo positions) — NECESSARY mid-band L8–L12 (peak L9), NOT sufficient
+
+> **PROVISIONAL (iter 35):** the iter-34 runs below patched demo (12) + question (2) codeword tokens due to
+> a token-index-vs-char-offset classification bug in `build_fc` (now fixed). Because the effect localized to
+> **L9 (mid), not the late/proximate layers**, it is very likely demo-driven; a clean demo-only re-run
+> (703531/703532, layer, both cohorts) is in flight to confirm, alongside the real query-codeword write test
+> (703533/703534). Numbers below to be reconfirmed.
+
 
 `scripts/phase6_mlp_causal.py` (exact intervention, not projection): patch DS `mlp_out` ← matched BENIGN
 `mlp_out` at demonstration-codeword positions, per layer & per canonical window, FC DE_context readout,

@@ -116,10 +116,16 @@ def main():
         matches across donor/receiver (aligned by order, as with demo occurrences)."""
         fc_raw = demo_block_of(raw_prompt) + "\n\n" + fc_question(codeword, concept)
         templated = dc.apply_template(lm.tokenizer, fc_raw)
-        q_off = templated.rfind(FC_PREFIX)
+        # BUGFIX: hit.spans are TOKEN indices; the question boundary must also be a TOKEN
+        # index (rfind gives a CHAR offset). Convert by tokenizing the prefix up to the
+        # question start ("\n\n" before FC_PREFIX is a clean split point). Previously demo_pos
+        # compared token-index < char-offset (always true) -> demo captured the question
+        # codewords too and query_pos was always empty (query run n=0).
+        q_char = templated.rfind(FC_PREFIX)
+        q_tok = len(lm.tokenizer(templated[:q_char], add_special_tokens=False)["input_ids"])
         hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, codeword)
-        demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_off]
-        query_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] >= q_off]
+        demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_tok]
+        query_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] >= q_tok]
         pos = {"demo": demo_pos, "query": query_pos, "all": demo_pos + query_pos}[args.positions]
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
         return templated, tok, pos
