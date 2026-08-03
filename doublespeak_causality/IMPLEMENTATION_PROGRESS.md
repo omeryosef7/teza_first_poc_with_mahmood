@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 63, loop tick — sufficiency ONSET scan: where does it emerge?)** — Verified the
+  iter-62 sufficiency is robust (controls S_rand=head-specific + S_self=DS-content-specific both pass;
+  replicates on locked test). Built `scripts/phase7d_onset.py` (reuses phase7c capture/readout): installs
+  CUMULATIVE carry subsets DS→benign (L14 → L14–15 → L14–17 → L14–18 → L14–21) to locate the
+  context-bound→transplantable transition — WHERE does the concept become sufficient? One z-capture/example,
+  reused across groups. Caught + fixed a `set -u` unbound-var bug in the wrapper echo (leftover $DSCARRY);
+  cancelled 706053/54, resubmitted **706055/706056**. Next tick: read the cumulative curve → does
+  sufficiency turn on at L14, or build gradually across the band?
+
 - **2026-08-03 (iter 62, loop tick — SURPRISE: carry heads are SUFFICIENT — sufficiency EMERGES)** — full
   706024/706025 done. **UNEXPECTED POSITIVE, all 4 cells:** installing DS carry-head z into a BENIGN prompt
   RAISES the reading from ≈0 to **0.16 (curated) / 0.43–0.47 (clearharm)** — suf_specific(S3−S_rand) SIG:
