@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 48, loop tick — Phase 7 smoke CONFIRMS carry-vs-proximal split)** — phase7 smoke
+  704606 validated: **freeze_consistency_dev=0.0, selfswap=0.0, trust=True** all heads (freeze machinery
+  exact). **Result (n=3): mid-band heads L14H4/L15H8/L18H20 have direct_frac≈0.0** (DIRECT≈0, TOTAL large 1–2
+  logits) → their logit effect is ENTIRELY mediated through downstream layers = genuine **CARRY heads**;
+  **late heads L30H15/L31H0 have direct_frac≈1.0** (DIRECT≈TOTAL) = **readout-proximal OUTPUT heads** (the
+  proximity concern, now confirmed). So the L14–18 mid-band is real mechanistic carry, NOT a readout
+  artifact — separates the two head groups causally. Launched full **704725 (curated) / 704726 (clearharm)**
+  on L40S nodes (excl. slow n-801), 10 heads (mid carry candidates + late proximal contrast), n≥20/split.
+  Next tick: confirm frac≈0 (mid) vs ≈1 (late) at full n both cohorts → Gate 5 (path mediation) for the
+  answer-position carry band.
+
 - **2026-08-03 (iter 47, loop tick — coverage validator (plan deliverable) while phase7 smoke loads)** —
   phase7 smoke 704606 still loading on n-803 (slow). Built the plan-required
   `scripts/validate_experiment_coverage.py` (institutionalizes the audit's ad-hoc integrity checks):
