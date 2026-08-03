@@ -39,6 +39,40 @@ class ToyBlock(nn.Module):
         return (x + self.mlp(x), None)
 
 
+class ToyAttn(nn.Module):
+    """Returns a TUPLE (attn_out, weights) like a real HF self_attn — exercises the
+    tuple-output branch of ComponentOutSwap that mlp (plain tensor) does not."""
+    def __init__(self, shift: float):
+        super().__init__()
+        self.shift = shift
+
+    def forward(self, x):
+        return (x + self.shift, None)
+
+
+class ToyAttnBlock(nn.Module):
+    """resid_post = resid_pre + self_attn(resid_pre)[0]; self_attn returns a TUPLE."""
+    def __init__(self, shift: float):
+        super().__init__()
+        self.self_attn = ToyAttn(shift)
+
+    def forward(self, x):
+        return (x + self.self_attn(x)[0], None)
+
+
+class ToyAttnStack(nn.Module):
+    def __init__(self, n_layers=3, shifts=None):
+        super().__init__()
+        shifts = shifts or [i + 1 for i in range(n_layers)]
+        self.model = nn.Module()
+        self.model.layers = nn.ModuleList(ToyAttnBlock(s) for s in shifts)
+
+    def forward(self, x):
+        for blk in self.model.layers:
+            x, _ = blk(x)
+        return x
+
+
 class ToyStack(nn.Module):
     def __init__(self, n_layers=4, shifts=None):
         super().__init__()
@@ -114,10 +148,51 @@ def test_hook_removed_after_context():
     assert torch.allclose(stack(x), stack(x)), "hook must be removed"
 
 
+def _capture_attn_out(stack, x, positions, layers):
+    store, handles = {}, []
+    for li in layers:
+        def mk(li):
+            def f(mod, inp, out):
+                h = out[0] if isinstance(out, tuple) else out
+                store[li] = h[0, positions, :].clone()
+            return f
+        handles.append(stack.model.layers[li].self_attn.register_forward_hook(mk(li)))
+    stack(x)
+    for h in handles:
+        h.remove()
+    return store
+
+
+def test_attn_out_tuple_self_swap_exact():
+    """component='attn_out' hooks a TUPLE-returning submodule; self-swap must still be exact."""
+    torch.manual_seed(1)
+    stack = ToyAttnStack(n_layers=3)
+    x = torch.randn(1, 5, 8)
+    positions, layers = [1, 4], [0, 1, 2]
+    base = stack(x).clone()
+    src = _capture_attn_out(stack, x, positions, layers)
+    with ComponentOutSwap(stack, positions, src, component="attn_out"):
+        out = stack(x)
+    assert torch.equal(out, base), "attn_out (tuple) self-swap must reproduce baseline EXACTLY"
+
+
+def test_attn_out_tuple_per_position_and_locality():
+    stack = ToyAttnStack(n_layers=1, shifts=[0.0])
+    x = torch.zeros(1, 3, 4)
+    src = {0: torch.stack([torch.full((4,), 7.0), torch.full((4,), 9.0)])}
+    with ComponentOutSwap(stack, [0, 2], src, component="attn_out"):
+        out = stack(x)
+    assert torch.allclose(out[0, 0], torch.full((4,), 7.0)), out[0, 0]
+    assert torch.allclose(out[0, 2], torch.full((4,), 9.0)), out[0, 2]
+    assert torch.allclose(out[0, 1], torch.zeros(4)), "untouched pos1"
+
+
 TESTS = [test_self_swap_equals_baseline_exactly,
          test_swap_changes_only_target_positions,
          test_per_position_rows_written_distinctly,
-         test_hook_removed_after_context]
+         test_hook_removed_after_context,
+         test_attn_out_tuple_self_swap_exact,
+         test_attn_out_tuple_per_position_and_locality]
 
 if __name__ == "__main__":
     fails = 0
