@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 18, loop tick)** — **Phase 4.2 demo-KV necessity result COMPLETE (full runs
+  703151-703154).** Neutralizing demonstration-codeword K/V reduces the hijacked reading, above random
+  controls, **significantly on curated** (early specific +0.180 [.026,.328], mid +0.133 [.053,.217],
+  both CI>0, mid survives Holm/3; late ns) and **same direction (ns) on clearharm** (concept noise).
+  **Per-layer peak L9-L11 on BOTH cohorts** — replicates the prior mid-band retrieval/write on the
+  multi-concept split. Readout validated (DS C1 p_concept .76/.88 vs benign 0.0; self-swap dev 0).
+  Wrote `reports/PHASE4_DEMO_RETRIEVAL.md` (paired bootstrap CIs, per-layer localization, honest
+  cohort split). **Gate 3 (attention causality) partially met on curated.** Next: sufficiency leg
+  (install DS demo K/V into benign) + other locations + the exact per-head edge knockout (Phase 4.2 full).
+
+
 - **2026-08-03 (iter 17, loop tick)** — **demoKO harness WORKS + first real circuit signal.** FC-readout
   smoke 703123: DS C1 p_concept high (bomb .99, mean .74) vs **benign 0.0 for every example** (clean
   discrimination), self-swap dev=0 (faithfulness). **Core result (n=16 smoke): neutralizing demo-codeword
