@@ -69,6 +69,37 @@ its surrounding harmful demonstration context — the local activations alone do
 direct multi-concept, matched-control confirmation of the prior **IE_state ≈ 0 / DE_context ≈ 99%**
 dissociation, and it rules out a naive "the codeword state stores the concept" account.
 
+## Attention-edge knockout — query→demo edges are NOT the bottleneck (honest negative)
+
+Surgical per-head and band query→demonstration edge knockout (`scripts/phase4_edge_knockout.py`, eager
+attention; jobs per-head 703327, band **703334/703335**). Destination = request-line query codeword +
+answer position; source = demo-codeword positions; matched random-edge control + all-query-edges
+broad-degradation control; FC readout, paired bootstrap CIs.
+
+- **Per-head** (L8–11 × 32 heads): every single-head query→demo knockout is negligible (raw drop
+  ≈ 0.0001) → no single-head bottleneck (matches prior D4; distributed).
+- **Band** (ALL heads across L8–11 jointly):
+
+| cohort (n) | raw KO drop (demo edges) | specific vs random-edge | all-query-edges (degradation) |
+|---|---|---|---|
+| clearharm (83) | 0.0024 [0.0001, 0.0049] | +0.002 [−0.0004, 0.0046] **ns** | 0.031 [0.012, 0.055] |
+| curated (51) | 0.0022 [−0.006, 0.012] | −0.003 [−0.014, 0.009] **ns** | 0.108 [0.048, 0.182] |
+
+**Result: the query→demonstration attention edges are NOT causally necessary** for the hijacked
+reading — removing them (even all heads across the whole retrieval band) does essentially nothing, and
+is indistinguishable from the random-edge control, on **both** cohorts. Blocking *all* query edges
+degrades more (a general-attention effect, not specific to the demo edges).
+
+**Reconciliation with the demo-KV necessity + the 3.5× attention pattern.** The demo-codeword
+*activations* are necessary (neutralizing them reduces the reading, SIG L8–11) and the query codeword
+*attends* to demo codewords 3.5× (N7-L, descriptive). Yet the specific query→demo *edges* are not
+load-bearing. So the binding is read from the demonstrations **not via a surgical query→demo induction
+edge** but through a **distributed/redundant** route (the demo-codeword information is integrated into
+the residual stream and reused broadly; many paths carry it, so cutting the direct edges is compensated).
+This **resolves N7-M**: run properly (surgical, with random-edge and degradation controls, both cohorts)
+it is a clean **negative**, not the degenerate artifact the all-layer all-edge version produced. It also
+cautions against reading the 3.5× attention *pattern* as the causal retrieval mechanism.
+
 ## Honest notes
 - The corrected matched control lowered the necessity effect vs an earlier inflated version; ClearHarm
   early dropped to ns (only mid survives), curated stayed strongly SIG at early+mid. Reported values are

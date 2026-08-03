@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 27, loop tick)** — **band edge-knockout 703334/703335 → honest NEGATIVE.** Knocking
+  out query→demo attention edges across ALL heads in L8-11 has negligible, ns effect (clearharm specific
+  +0.002 [−.0004,.005]; curated −0.003 [−.014,.009]) — on BOTH cohorts. all-query-edges degrades more
+  (0.03/0.11, general effect). So query→demo edges are **NOT the retrieval bottleneck**, despite demo-KV
+  activations being necessary + the 3.5× attention pattern → retrieval is **distributed/redundant, not a
+  surgical induction edge**. Resolves N7-M (proper controls = clean negative, not degenerate). Updated
+  `reports/PHASE4_DEMO_RETRIEVAL.md`. **Gate 3 nuance: demo CONTENT necessary, demo EDGES not.** Next:
+  Phase 6 MLP write-location (does an MLP write the concept?) — the other half of the mechanism.
+
+
 - **2026-08-03 (iter 26, loop tick)** — edgeKO smoke 703327 WORKS (1024 rows) but **per-head KO is
   negligible** (raw drop ≈0.0001) → single-head query→demo knockout does nothing = **distributed**
   retrieval (matches prior D4: no single-head bottleneck, top-20=12%). Added **band mode**: knock out
