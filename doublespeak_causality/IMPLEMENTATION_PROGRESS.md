@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 54, loop tick — Phase 10 causal objective distilled, Gate 6 assessed)** — Wrote
+  `reports/CAUSAL_OBJECTIVE.md`: distilled the objective from the complete circuit, terms kept SEPARATE
+  (concept / refusal / retrieval / mlp_write / path; **doublespeak_signature KILLED — causally inert**,
+  confirmed on both the pair and the new split). Filled the 10-point **Gate-6 checklist** from Phases 3–9:
+  **9/10 PASS** (necessity Wilcoxon-Holm all 4 cells, dose-response, random-controls-fail, not-degradation,
+  refusal-independent cos≈0.01–0.06, test-replication, transfer) **but sufficiency (4) FAILS** (S3_install≈0
+  — necessary-not-sufficient, distributed/context-bound). → the concept-write handle is an eligible
+  NECESSITY target but not standalone-sufficient. **Phase 11 (GCG/MAC) is a large GPU ask with an expected
+  well-controlled NULL** (prior CAUSAL_CORE: mechanism-guided GCG net-negative; sufficiency fails here) —
+  **consulting Omer: run the compute-matched Phase-11 test, or go to final synthesis?** Phases done: 0–10.
+
 - **2026-08-03 (iter 53, loop tick — Phase 8 readout emergence, CPU-only)** — Built
   `scripts/phase8_readout.py` (reuses extracted Llama reps + unified concept direction; no GPU). Per-layer
   linear concept projection at the answer position. **RESULT: linear readability emerges LATE (peaks L31,
