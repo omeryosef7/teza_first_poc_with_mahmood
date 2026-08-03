@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 41, loop tick — Phase 5 HEAD RESULT: L13–L15 answer-position carry band)** — Merged
+  curated Phase-5 halves (704129/704130) → full 32×32 Holm. **NEW FINDING: specific answer-position heads
+  ARE necessary** (unlike the null query→demo edges). 75 dev / 60 heldout Holm-sig heads; top heldout
+  **L15H4 .106, L14H4 .104, L18H20 .094**; L14H4/L15H8/L15H11/L18H20/L21H10 SIG on BOTH splits.
+  **Layer-concentrated L13–L15 (peak L14–15)** + secondary L17–18, L21–22; but top-10 heads = only 20–31%
+  of total → **distributed within the band**. self-swap dev 0.0. The iter-40 smoke "~0.0007" was only
+  because it covered L8–11 (weak heads); the carry lives higher. **Circuit so far: L8–11 demo
+  retrieval/write (K/V+MLP@L9) → L13–L15 answer-position head carry (distributed) → logit.** Wrote
+  `reports/PHASE5_HEADS.md`. (attn_out 703669 NOT stuck — 79min was model weight-LOADING on a slow-disk
+  node.) Caveat: answer-pos DIRECT effect only; L13–15 may mix retrieval vs output heads → **Phase 7
+  path-patching** to separate. clearharm 704131/704133 pending (cross-cohort). Next: clearharm confirm →
+  Phase 7 path patch (demo-write@L9 → L14–15 heads → logit).
+
 - **2026-08-03 (iter 40, loop tick — Phase 5 full all-head scan launched)** — Phase 5 smoke 703876
   VALIDATED: **self-swap dev 0.0** (ZHeadPatch faithful), and mid-band (L8–11) top-head necessity at the
   answer position is **~0.0007 = negligible** (n=2) → preliminary no-single-head signal (matches edge-KO
