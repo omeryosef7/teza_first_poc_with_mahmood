@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 50, loop tick — Phase 9 dose-response harness)** — Built `scripts/phase9_dose.py`
+  (reuses audited phase6 machinery: FC readout, demo positions, pc.ComponentOutSwap with an INTERPOLATED
+  donor (1−α)·DS + α·BENIGN). Sweeps the L9 demo-codeword MLP patch at α∈{0,.25,.5,.75,1,1.5,2}: α=0 =
+  DS baseline (exact no-op check), α=1 = full benign swap (= phase6 C3 necessity). A **monotone p_concept
+  decrease with α** = the plan's evidence that L9 is a GRADED causal lever, not an on/off artifact (Phase 9
+  requirement). Reports per-split curve + monotonicity flag. Smoke **704785** (curated n=2, L9). Next tick:
+  validate smoke (α=0≈DS baseline, monotone drop) → full both cohorts → dose-response for the L9 write; then
+  optionally the mid-band window + concept-direction dose-response.
+
 - **2026-08-03 (iter 49, loop tick — Phase 7 FULL: carry vs proximal RESOLVED, Gate 5)** — full runs
   704725/704726 done (both cohorts, n≥20/split, all trust=True, freeze_dev=0.0). **CLEAN DECISIVE RESULT
   replicating on all 4 cells:** mid-to-late-mid heads **L14,L15,L17,L18,L21 = CARRY (direct_frac≈0.0)** —
