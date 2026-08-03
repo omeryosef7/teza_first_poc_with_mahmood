@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 58, loop tick — NEW: circuit-closure mediation L9-write→carry band)** — Plan fully
+  done (0–11); taking the flagged high-value NEW extension that closes the last open link. Built
+  `scripts/phase7b_mediation.py` (reuses ComponentOutSwap + ZHeadPatch + ZHeadCapture): does the L14–21
+  carry band READ the L9 MLP write? Neutralize L9 (Phase-6 necessity) → then FREEZE carry-head answer-z to
+  clean DS; if freezing RESTORES the reading, the L9 effect is mediated by the carry band.
+  mediation_frac=(pB−pA)/(C1−pA); random-head-freeze control + self-check (freeze carry w/o L9 = no-op ≈C1).
+  Smoke **705185** (curated n=3, carry=L14H4/H5/H23,L15H8,L17H27,L18H20,L21H10). Next: validate self-check≈0
+  → full both cohorts → is the L9→carry edge causal (mediation_frac carry ≫ random)?
+
 - **2026-08-03 (iter 57, loop tick — Phase 11 CONCLUDED from existing evidence → ALL PHASES DONE)** —
   Found the behavioral sufficiency test (19) was ALREADY run on Llama + analyzed (BEHAVIORAL_CAUSALITY_
   RESULTS.md): **state injection ≤0.16 ASR ("never a potent injectate")** = behavioral confirmation of the
