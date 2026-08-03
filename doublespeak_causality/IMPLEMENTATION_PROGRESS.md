@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 39, loop tick — attn_out null (Phase 3 dissociation) + built Phase 5 head harness)** —
+  **clearharm attn_out 703670 done → Holm NULL** (dev none; heldout only L15 +0.001, negligible). So the
+  demo codeword's own attention OUTPUT is NOT necessary — a clean **componential dissociation at the demo
+  codeword: resid_pre (K/V it exposes) YES, mlp_out (write) YES @L9, attn_out (what it reads) NO.** Completes
+  the Phase 3 attn_out cell. (curated attn_out 703669 still running to confirm.) → the retrieval acts at the
+  QUERY/answer position, not via demo-position attention. **Built the Phase 5 per-head z-patch harness**
+  `scripts/phase5_head_zpatch.py` (reuses pc.ZHeadCapture + pc.ZHeadPatch + phase6 FC readout): per
+  (layer,head) replace DS head-z at the ANSWER position ← BENIGN (necessity = direct head→logit effect),
+  self-swap + norm-matched-random controls, per-split, **Holm across the 32×32 head family**. Scope note:
+  answer-position DIRECT effect (indirect writes at earlier positions = follow-up). Smoke **703876**
+  (curated n=2, L8–11). Next: validate smoke (self-swap≈0), full all-head scan both cohorts → which heads
+  (if any) are necessary, or confirm distributed (prior edge-KO negative + top-20=12% predict distributed).
+
 - **2026-08-03 (iter 38, loop tick — validate attn_out path deterministically + launch)** — The iter-37
   "attn_out smoke" 703639 actually ran the **stale mlp_out** code (summary `component:None`, NEC matched
   mlp_out) — a submit-timing/stale-file slip; it validated self-swap=0 + C1 discrimination but NOT the
