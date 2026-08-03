@@ -364,6 +364,68 @@ class SubmodulePatch:
 
 
 # --------------------------------------------------------------------------- #
+# Sub-block OUTPUT swap (Phase 6 causal MLP write) — per-position rows
+# --------------------------------------------------------------------------- #
+class ComponentOutSwap:
+    """Overwrite the OUTPUT of a sub-block (`mlp` / `self_attn`) or the block itself at a
+    FIXED set of positions with per-position SOURCE rows, per layer. This is the mlp/attn
+    OUTPUT analogue of DemoStateSwap (which writes the block INPUT resid_pre) and of
+    SubmodulePatch (which writes ONE shared vector to every position; this writes a distinct
+    row per position, needed for a faithful donor->receiver swap).
+
+    Args mirror DemoStateSwap:
+        source: {layer_idx: Tensor[n_pos, hidden]} aligned to `positions`; its KEYS define
+                which layers get a hook.
+    Invariants (tests/test_componentoutswap_synthetic.py):
+      (a) SELF-SWAP — source == receiver's OWN captured output at `positions` -> exact no-op.
+      (b) LOCALITY — only `positions` (and causal downstream) change.
+      (c) CLEANUP — handles removed on __exit__.
+    """
+    _ATTR = {"mlp_out": "mlp", "attn_out": "self_attn", "resid_post": None}
+
+    def __init__(self, model, positions: Sequence[int], source: Dict[int, torch.Tensor],
+                 component: str = "mlp_out", batch_index: int = 0):
+        if component not in self._ATTR:
+            raise ValueError(f"component must be one of {sorted(self._ATTR)}")
+        self.layers = dc._get_layers(model)
+        self.attr = self._ATTR[component]
+        self.positions = list(positions)
+        self.source = source
+        self.bi = batch_index
+        self._handles: List[Any] = []
+
+    def _hook(self, li: int):
+        rows = self.source[li]
+        pos = self.positions
+
+        def f(mod, inp, out):
+            is_tuple = isinstance(out, tuple)
+            h = (out[0] if is_tuple else out).clone()          # never edit in place
+            seq = h.shape[1]
+            keep = [k for k, p in enumerate(pos) if 0 <= p < seq]
+            if keep:
+                idx = torch.tensor([pos[k] for k in keep], device=h.device)
+                r = rows.to(h.dtype).to(h.device)
+                sel = torch.tensor(keep, device=r.device)
+                h[self.bi, idx, :] = r.index_select(0, sel)
+            return (h,) + tuple(out[1:]) if is_tuple else h
+
+        return f
+
+    def __enter__(self):
+        for li in self.source:
+            mod = self.layers[li] if self.attr is None else getattr(self.layers[li], self.attr)
+            self._handles.append(mod.register_forward_hook(self._hook(li)))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # Attention knockout (§6) — per-layer AND per-head
 # --------------------------------------------------------------------------- #
 class AttentionKnockout:

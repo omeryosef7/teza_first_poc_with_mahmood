@@ -9,6 +9,20 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 30, loop tick)** — **Built the Phase 6 CAUSAL MLP-write harness** (the intervention
+  the projection metric can't provide; Gate 4). Added a reusable primitive `pc.ComponentOutSwap` — the
+  mlp/attn-OUTPUT analogue of `DemoStateSwap` (writes per-position donor rows to `layer.mlp` output;
+  `SubmodulePatch` only writes one shared vector, so it couldn't do a faithful benign↔DS swap). 4/4
+  synthetic tests pass (self-swap exact no-op, locality, per-position distinctness, cleanup); DemoStateSwap
+  regression 4/4. `scripts/phase6_mlp_causal.py` clones the demo-neutralize harness exactly (same split, FC
+  DE_context readout, cells, paired bootstrap CIs) but patches **mlp_out** at demo-codeword positions:
+  necessity (DS mlp_out ← BENIGN), sufficiency (BENIGN ← DS), self-swap + random-position controls. Directly
+  comparable to the demo-KV (resid_pre) retrieval result — retrieval vs write, same positions. Smoke
+  **703439** (curated n=2, window) submitted. Next tick: validate smoke (self-swap dev≈0, C1 discriminates),
+  then full runs both cohorts × {window, layer} → does an MLP causally write the concept, and where (expect
+  mid-band L9–14 if the write is real, NOT late L29–31 where the projection artifact peaked).
+  *(Note: iter 29 below was a concurrent doc-only consolidation tick; this tick is the causal-MLP build.)*
+
 - **2026-08-03 (iter 29, loop tick)** — **Consolidation.** Wrote `reports/SLACK_UPDATE.md` (shareable
   team summary) + interim `reports/FINAL_CAUSAL_CIRCUIT_REPORT.md` (answers the 12 final questions with
   established-vs-pending, honesty/confidence section). Synthesizes Phases 0-6: attack reproduces;
