@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 19, loop tick)** — Extended demoKO harness with the **sufficiency leg**: install
+  DS demo-codeword K/V into the BENIGN receiver (mirror of necessity), + built-in paired bootstrap CIs
+  (necessity specific = random−C3; sufficiency specific = S3_install−S_random) + self-swap faithfulness
+  both directions. Syntax ok; smoke **703199** (curated n=8). Next tick: does installing DS demo K/V
+  into benign CREATE the reading (S3>S_random)? Then full runs both cohorts × window/layer → the
+  necessity+sufficiency pair for demo-KV retrieval, completing the Phase 4.2 demo-position core.
+
+
 - **2026-08-03 (iter 18, loop tick)** — **Phase 4.2 demo-KV necessity result COMPLETE (full runs
   703151-703154).** Neutralizing demonstration-codeword K/V reduces the hijacked reading, above random
   controls, **significantly on curated** (early specific +0.180 [.026,.328], mid +0.133 [.053,.217],
