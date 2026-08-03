@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 67, loop tick — v2 bench DONE + new harnesses launched)** — `bench_clearharm_v2.json`
+  built: **116 DOUBLESPEAK** (clearharm dev 44/heldout 42 + expanded dev 15/heldout 15; original test
+  preserved). Workflow wwjhplcgs finished — 3 harnesses written with honest risk disclosures + self-swap=0
+  tripwires: **phase6b_windows** (reuses ComponentOutSwap, low-risk), **phase4b_pattern** (in-file eager
+  attn capture/patch; flagged risk = eager-global-swap version fragility, self-swap tripwire catches it),
+  **phase5b_qkv** (in-file QKVHeadCapture/Patch, GQA-aware, self-swap tripwire). Launched 4 jobs: **706092**
+  = phase6 MLP-necessity on v2 (more-examples re-run, 116 ex) + smokes **706093/94/95** for the 3 new
+  harnesses. **Decisive gate next tick: self-swap_max_dev == 0.0 on each smoke** (if not, the hook is
+  broken) AND the intervention has a nonzero effect. Then launch the full battery on v2 + expanded.
+
 - **2026-08-04 (iter 66, loop tick — v2 bench build + new harnesses landed)** — Expander DONE: **30 new
   single-token concepts** (dedup/single-token capped yield). `scripts/build_expanded_bench.py` running in
   BACKGROUND (PID 2517781): generates benign-codeword demos + folds the 30 into the clearharm bench as a new
