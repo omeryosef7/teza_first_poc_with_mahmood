@@ -31,7 +31,9 @@ head or edge), but a clear directed layer structure. Concept axis is independent
    all 4 cells + a monotone dose-response (PHASE6, PHASE9). Necessary, not sufficient.
 7. **Which head→MLP paths mediate?** The L14–L21 carry heads are **downstream-mediated** (DIRECT/TOTAL
    `direct_frac ≈ 0` — freezing downstream removes their whole logit effect); only **L30–31 are readout-
-   proximal output** (direct_frac ≈ 0.5–0.76), both cohorts+splits (PHASE7, Gate 5).
+   proximal output** (direct_frac ≈ 0.5–0.76). **And the L9-write→carry EDGE is causal**: freezing the
+   L14–21 carry band to clean restores ~75–83% of the L9-neutralization drop (random heads restore 0%),
+   so the carry band *reads* the L9 write — a directed, edge-connected pathway (PHASE7 + PHASE7b, Gate 5).
 8. **Localized or distributed?** **Distributed within concentrated bands** — an L8–12 retrieval/write region
    and an L14–21 carry band. No single necessary head or edge; clear layer structure.
 9. **How is the concept mechanism separated from refusal?** `cos(concept, refusal) ≈ 0.01–0.06` at every
@@ -80,8 +82,8 @@ rephrase bypasses the refusal that blocks the direct request); curated neutral f
   (sufficiency ≈0 across Phases 4/5/6). No single head/edge/layer is the bottleneck.
 - curated heldout (n=21) is under-powered for the 1024-cell head family — head claims rest on the 3 powered
   cells.
-- The upstream L9-write → carry-head EDGE (does the carry band read the L9 write?) is not yet path-patched
-  (future work). Sufficiency-installation of carry heads not run.
+- Sufficiency-installation of carry heads (install carry-head z into benign) not run. (The upstream
+  L9-write → carry-head EDGE is now closed — PHASE7b mediation, ~75–83% mediated, random-control 0%.)
 - Phase 11 behavioral-ASR test outstanding.
 
 ## Phase status — ALL PHASES COMPLETE

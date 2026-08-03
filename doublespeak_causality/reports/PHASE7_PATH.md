@@ -50,11 +50,33 @@ Holm all 4 cells), head necessity L14–18 (Phase 5, Wilcoxon Holm 3/4 powered c
 carry-vs-output separation (Phase 7). Distributed within each band (no single necessary head/edge), but
 clear directed layer structure. Gate 5 met for the carry band.
 
+## Phase 7b — circuit closure: the L14–L21 carry band READS the L9 MLP write (mediation)
+
+`scripts/phase7b_mediation.py`. Neutralize the L9 demo-codeword MLP write (ComponentOutSwap ← benign,
+= Phase-6 necessity, drop `C1→pA`), then FREEZE the carry-head answer-position z to their clean DS values
+(ZHeadPatch) so they output the concept contribution regardless of the L9 change. If freezing RESTORES the
+reading, the L9 effect is mediated by the carry band. `mediation_frac = (pB − pA)/(C1 − pA)`. Control =
+freeze the same COUNT of RANDOM non-carry heads. self-check = freeze carry without touching L9 (must ≈ C1).
+Jobs 705295/705296, on L9-responsive examples (C1−pA > 0.02).
+
+| cell | n(L9-resp) | median mediation_frac (carry) | random-head control |
+|------|-----------|-------------------------------|---------------------|
+| curated dev      | 9  | **0.76** | 0.0 |
+| curated heldout  | 9  | **0.83** | 0.0 |
+| clearharm dev    | 13 | **0.75** | −0.0 |
+| clearharm heldout| 9  | **1.46** (overshoot, n=9) | −0.0 |
+
+- **Freezing the L14–L21 carry band restores ~75–83% of the L9-neutralization drop** (clearharm heldout
+  overshoots at small n) — the L9 write's effect on the reading is **mediated by the carry band**. self-check
+  exact (0.0) all cells.
+- **Random-head freeze restores 0%** — perfectly specific to the carry heads, both cohorts+splits.
+- → **the L9-write → L14–21-carry EDGE is causal.** The circuit is now a directed, edge-connected pathway,
+  not two separately-validated endpoints.
+
 ## Caveats / next
-- direct_frac is a median over |TOTAL|>0.05 examples; TOTAL is in raw logit_diff units (mid heads have
-  large TOTAL 1–2 logits, confirming a real effect being mediated, not a near-zero ratio artifact).
-- This tests the head→logit split. The upstream L9-write → L14–21-head EDGE (does the carry band read the
-  L9 MLP write?) is the remaining path-patch (sender=L9 MLP, receiver=carry heads) — future work.
+- mediation medians are over the L9-responsive subset (n=9–13); clearharm heldout (n=9) overshoots >1
+  (carry heads also carry other context) — strongly positive but noisy at small n.
+- direct_frac (above) is a median over |TOTAL|>0.05 examples; TOTAL is in raw logit_diff units.
 - Sufficiency (install carry-head z into benign) not yet run.
 
 Reproduce: `python scripts/phase7_direct_total.py --bench data/bench/bench_<cohort>.json --heads <L..H..list>`.

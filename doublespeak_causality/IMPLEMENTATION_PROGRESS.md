@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 59, loop tick — CIRCUIT CLOSED: L9-write→carry edge is CAUSAL)** — full mediation
+  705295/705296 done. **DECISIVE POSITIVE, both cohorts+splits:** freezing the L14–21 carry band to clean
+  after neutralizing L9 **restores ~75–83% of the drop** (curated dev .76 / heldout .83; clearharm dev .75 /
+  heldout 1.46 overshoot n=9), while **random-head freeze restores 0%** (perfect specificity); self-check
+  exact 0.0. → **the L9-write → L14–21-carry EDGE is causal — the carry band READS the L9 write.** Circuit
+  upgraded from two validated endpoints to a **directed, edge-connected pathway**. Updated PHASE7_PATH.md
+  (Phase 7b section) + FINAL report (Q7 + closed the limitation). New result beyond the plan. Next: optional
+  sufficiency-install of carry heads, or wrap. Plan 0–11 done + circuit closed.
+
 - **2026-08-03 (iter 58, loop tick — NEW: circuit-closure mediation L9-write→carry band)** — Plan fully
   done (0–11); taking the flagged high-value NEW extension that closes the last open link. Built
   `scripts/phase7b_mediation.py` (reuses ComponentOutSwap + ZHeadPatch + ZHeadCapture): does the L14–21
