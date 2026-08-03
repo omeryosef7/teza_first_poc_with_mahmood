@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 24, loop tick)** — Built **surgical per-head query→demo edge-knockout harness**
+  (`scripts/phase4_edge_knockout.py` + `slurm/run_phase4_edgeko.sh`): eager `AttentionKnockout`, per
+  (layer,head) knock out query-codeword→demo-codeword edges, read FC concept, matched random-edge
+  control, paired bootstrap CI. This is the N7-M surgical follow-up (prior all-layer version degenerate).
+  Layers via dash-range to dodge --export comma bug. Syntax ok; smoke **703282** (curated n=2, L8-11,
+  the localized retrieval band). Next tick: validate eager KO works + candidate retrieval heads → full
+  all-layer×all-head scan, both cohorts.
+
+
 - **2026-08-03 (iter 23, loop tick)** — **Phase 4.2 demo-KV necessity localization COMPLETE + SIG
   per-layer.** Corrected-control layer runs 703248/703249: necessity effect significantly localized to
   **L8–L11 both cohorts** (each layer CI excludes 0), peak L9–L10 (curated L9 [.136,.310]; clearharm
