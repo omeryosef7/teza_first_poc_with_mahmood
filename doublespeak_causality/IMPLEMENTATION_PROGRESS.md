@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 26, loop tick)** — edgeKO smoke 703327 WORKS (1024 rows) but **per-head KO is
+  negligible** (raw drop ≈0.0001) → single-head query→demo knockout does nothing = **distributed**
+  retrieval (matches prior D4: no single-head bottleneck, top-20=12%). Added **band mode**: knock out
+  query→demo edges across ALL heads in the L8-11 band jointly (the retrieval pathway) + random-edge
+  control + all-query-edges broad-degradation control. Launched **703334/703335** (band L8-11, both
+  cohorts, full). Next tick: does removing the query→demo pathway across the band collapse the reading
+  (vs random-edge, vs all-query-edges)? = decisive edge-necessity test (the surgical N7-M answer).
+
+
 - **2026-08-03 (iter 25, loop tick)** — edgeKO smoke 703282 ran clean but 0 rows: bug — I compared
   `find_word_occurrences_in_text` spans (which are TOKEN indices) against CHAR offsets → all classified
   as demo, query_pos empty. **Fixed:** keep full DS prompt (request-line query codeword is findable),
