@@ -190,9 +190,11 @@ def main():
                      readout(ds_tok, cid, kid,
                              [pc.DemoStateSwap(lm.model, ds_demo_cw, {l: ds_pre_demo[l] for l in ells})]))
                 if ds_rand:
+                    # MATCHED control: same benign donor as C3 (b_pre_rand), but at random NON-codeword
+                    # positions. (Sourcing from DS-own would be a near-no-op and inflate the effect.)
                     emit(base, wname, "random_control", len(ds_rand),
                          readout(ds_tok, cid, kid,
-                                 [pc.DemoStateSwap(lm.model, ds_rand, {l: ds_pre_rand[l] for l in ells})]))
+                                 [pc.DemoStateSwap(lm.model, ds_rand, {l: b_pre_rand[l] for l in ells})]))
                 # ---- SUFFICIENCY (BENIGN receiver): install DS demo K/V ----
                 emit(base, wname, "S1", 0, s1)
                 if m:
