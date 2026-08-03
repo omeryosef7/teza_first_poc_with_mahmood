@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 69, loop tick — MORE-EXAMPLES result: L9 write GENERALIZES + strengthens)** — v2 MLP
+  re-run 707203 done on **116 examples** (Wilcoxon-Holm per split): **dev n_valid=59 → L8–L13 all survive
+  Holm, L9 peak +0.080 [.041,.127]; heldout n_valid=55 → L9–L13 survive, L9 +0.030 [.012,.052].** The L9
+  mid-band MLP-write necessity **generalizes to the expanded dataset (30 new concepts) and STRENGTHENS**
+  (more of the L8–13 band survives on the larger n) — direct delivery of Omer's "generalize with more
+  examples." Fixed 2 bugs in the auto-cloned smoke wrappers (leftover `${DSBENCH:?}` guard → job died at
+  line 30; then `--bench` path relative to root not doublespeak_causality/) — resubmitted smokes
+  **707410/11/12**. Next tick: self-swap gates on the 3 new harnesses → then full battery on v2 + expanded.
+
 - **2026-08-04 (iter 68, loop tick — transient SLURM cgroup fail, resubmitted)** — jobs 706092-95 all died
   at slurmstepd cgroup setup (`_cgroup_procs_check: failed on path (null)/cgroup.procs`) — a NODE-LEVEL
   SLURM infra error, NOT code (empty .out, never reached python). Resubmitted all 4 → **707203** (phase6 MLP

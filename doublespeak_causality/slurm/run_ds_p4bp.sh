@@ -26,18 +26,9 @@ mkdir -p doublespeak_causality/logs "$PROJECT_DIR/.cache"/{huggingface,torch,tri
 export HF_HOME="$PROJECT_DIR/.cache/huggingface"; export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
-: "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
-: "${DSBENCH:?set DSBENCH to a data/bench/bench_<cohort>.json}"
-: "${DSNPROMPTS:=0}"
-: "${DSGRAN:=window}"
-: "${DSPOS:=demo}"
-: "${DSCOMP:=mlp_out}"
-for v in DSMODEL DSBENCH DSNPROMPTS DSGRAN DSPOS DSCOMP; do
-  case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
-done
-echo "=== Phase6 mlpKO: $DSBENCH n=$DSNPROMPTS gran=$DSGRAN pos=$DSPOS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
+echo "=== run_ds_p4bp smoke ==="; date; hostname
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
-python -u doublespeak_causality/scripts/phase4b_pattern.py --bench data/bench/bench_curated.json --n-prompts 2 --splits dev
+python -u doublespeak_causality/scripts/phase4b_pattern.py --bench doublespeak_causality/data/bench/bench_curated.json --n-prompts 2 --splits dev
   --granularity "$DSGRAN" --positions "$DSPOS" --component "$DSCOMP" --n-prompts "$DSNPROMPTS"
 echo "=== done ==="; date
