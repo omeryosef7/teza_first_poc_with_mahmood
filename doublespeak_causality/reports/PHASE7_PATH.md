@@ -100,6 +100,27 @@ Jobs 705295/705296, on L9-responsive examples (C1−pA > 0.02).
   concept is carried in the L14–21 answer-position heads it has become a **transplantable representation**.
   This is a progression: context-bound retrieval/write → transplantable carried concept.
 
+## Phase 7d — sufficiency ONSET: cumulative across L14–21, L17H27 pivotal
+
+`scripts/phase7d_onset.py` installs CUMULATIVE carry subsets (L14 → L14–15 → L14–17 → L14–18 → L14–21)
+DS→benign to locate the context-bound→transplantable transition. Controls pass (S_rand ≈ S1, self-dev 0.0).
+Jobs 706055/706056. p_concept by cumulative subset:
+
+| cell | L14 | L14–15 | L14–17 | L14–18 | L14–21 |
+|------|-----|--------|--------|--------|--------|
+| curated dev      | .004 | .007 | **.077** | .117 | .162 |
+| curated heldout  | .017 | .052 | **.208** | .185 | .240 |
+| clearharm dev    | .193 | .209 | **.409** | .359 | .434 |
+| clearharm heldout| .157 | .179 | **.388** | .349 | .467 |
+
+- **Sufficiency accumulates GRADUALLY across the band — not an abrupt L14 switch.** The single largest jump
+  is **adding L17 (H27)**: curated dev ×11 (.007→.077), heldout ×4 (.052→.208), clearharm ×2 both splits.
+  L17H27 is also the top necessity head on clearharm — a pivotal carry head.
+- **Cohort difference:** clearharm has substantial L14-alone sufficiency (.16–.19) while curated builds from
+  ≈0 (L14) with the jump at L17 — clearharm carries concept-signal earlier (its concept-in-context nature).
+- → sufficiency, like necessity, is **distributed within the L14–21 band** (pivotal head L17H27); the full
+  band gives maximal transplantability. Consistent with the whole-circuit "distributed within a band" theme.
+
 ## Caveats / next
 - Partial sufficiency (20–53% of the full reading) — the carry heads are a strong but not complete injectate.
 - Representational sufficiency (FC p_concept). Whether the carry-head install is BEHAVIORALLY sufficient

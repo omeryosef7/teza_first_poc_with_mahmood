@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 64, loop tick — sufficiency onset = gradual, L17H27 pivotal)** — onset 706055/706056
+  done (controls pass, selfdev 0.0). **Sufficiency accumulates GRADUALLY across L14–21** (not an abrupt L14
+  switch): cumulative p_concept curated .004→.077(L17)→.162; clearharm .19→.41(L17)→.47. **Biggest single
+  jump = adding L17(H27)** (curated dev ×11, heldout ×4; clearharm ×2 both splits) — also the top necessity
+  head on clearharm = pivotal carry head. clearharm has substantial L14-alone sufficiency (.16–.19),
+  curated builds from ≈0 — clearharm carries concept-signal earlier. → sufficiency, like necessity, is
+  **distributed within the band, pivotal head L17H27**; full band = max transplantability. Updated
+  PHASE7_PATH (Phase 7d). Consistent with the whole-circuit distributed-within-band theme.
+
 - **2026-08-03 (iter 63, loop tick — sufficiency ONSET scan: where does it emerge?)** — Verified the
   iter-62 sufficiency is robust (controls S_rand=head-specific + S_self=DS-content-specific both pass;
   replicates on locked test). Built `scripts/phase7d_onset.py` (reuses phase7c capture/readout): installs
