@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 66, loop tick — v2 bench build + new harnesses landed)** — Expander DONE: **30 new
+  single-token concepts** (dedup/single-token capped yield). `scripts/build_expanded_bench.py` running in
+  BACKGROUND (PID 2517781): generates benign-codeword demos + folds the 30 into the clearharm bench as a new
+  'expanded' sub-cohort → `bench_clearharm_v2.json` (86+30=116, ~15 appended to dev / ~15 to heldout;
+  ORIGINAL locked test preserved, no leak → keeps ≥20/cell). Workflow **wwjhplcgs** wrote all 3 new harnesses
+  (phase6b_windows, phase4b_pattern, phase5b_qkv) — all syntax-OK, reference right primitives + controls
+  (phase4b handles eager+GQA, phase5b handles num_key_value). NOT yet trusted — will smoke each + read the
+  workflow's adversarial review before launching (subagent GPU code needs verification). Next tick: verify
+  v2 bench discriminates (DS reads concept), smoke the 3 harnesses, then launch the full causal battery
+  (phase6 MLP, phase5 heads, phase7c sufficiency + the 3 NEW ones) on v2 (116 ex) + the expanded cohort.
+
 - **2026-08-04 (iter 65, loop tick — SCALE-UP: more examples + more patching, per Omer)** — Omer:
   generalize all tests with MORE examples (train+test), more activation-patching/knockout, doc everything,
   keep /loop 30m, ultracode fan out. Two parallel efforts launched:
