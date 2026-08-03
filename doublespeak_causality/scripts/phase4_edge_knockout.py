@@ -43,6 +43,8 @@ def main():
     ap.add_argument("--out-root", default=os.path.join(DC, "outputs"))
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--layers", default="", help="comma list; empty = all layers")
+    ap.add_argument("--mode", default="perhead", choices=["perhead", "band"],
+                    help="perhead = scan each (layer,head); band = all heads across all --layers jointly")
     ap.add_argument("--n-prompts", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -134,6 +136,26 @@ def main():
             brow_row = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                         "codeword": cw, "valid": valid, "base_p_concept": base_pc,
                         "benign_p_concept": benign_pc, "n_demo_edges": k}
+
+            if args.mode == "band":
+                # ALL heads across ALL specified layers, query->demo edges only (the retrieval PATHWAY).
+                # Single-head KO is negligible (distributed); this tests the pathway's necessity without
+                # the global degradation of masking all attention (which made N7-M degenerate).
+                ko = pc.AttentionKnockout(lm.model, layers, qdest, demo_pos, heads=None)
+                fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "edge_KO",
+                                     "p_concept": readout(tok, cid, kid, [ko])}) + "\n"); n_rows += 1
+                if rand_src:
+                    rk = pc.AttentionKnockout(lm.model, layers, qdest, rand_src, heads=None)
+                    fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "rand_edge",
+                                         "p_concept": readout(tok, cid, kid, [rk])}) + "\n"); n_rows += 1
+                # broad-degradation control: knock out ALL outgoing query edges (query->everything causal)
+                allsrc = list(range(min(qdest)))
+                if allsrc:
+                    ak = pc.AttentionKnockout(lm.model, layers, qdest, allsrc, heads=None)
+                    fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "all_query_edges",
+                                         "p_concept": readout(tok, cid, kid, [ak])}) + "\n"); n_rows += 1
+                continue
+
             for lyr in layers:
                 for h in range(Hn):
                     ko = pc.AttentionKnockout(lm.model, [lyr], qdest, demo_pos, heads=[h])
@@ -155,6 +177,27 @@ def main():
     for r in all_rows:
         if r["valid"]:
             cells[(r["layer"], r["head"], r["cell"])][r["sid"]] = r["p_concept"]
+
+    if args.mode == "band":
+        def cm(cell):
+            return {sid: p for (l, h, c), d in cells.items() if c == cell for sid, p in d.items()}
+        ko, rk, aq = cm("edge_KO"), cm("rand_edge"), cm("all_query_edges")
+        sids = set(ko) & set(rk)
+        def ci(vals):
+            a = np.array(vals); b = [rng2.choice(a, len(a), replace=True).mean() for _ in range(2000)]
+            return [round(float(a.mean()), 4), round(float(np.percentile(b, 2.5)), 4), round(float(np.percentile(b, 97.5)), 4)]
+        band = {"n": len(sids), "layers": layers,
+                "raw_KO_drop": ci([base[s] - ko[s] for s in sids]) if sids else None,
+                "specific_vs_random": ci([rk[s] - ko[s] for s in sids]) if sids else None,
+                "mean_base_p": round(float(np.mean([base[s] for s in sids])), 4) if sids else None,
+                "all_query_edges_drop": (ci([base[s] - aq[s] for s in set(base) & set(aq)]) if aq else None)}
+        json.dump({"cohort": cohort, "mode": "band", "layers": layers, "band": band},
+                  open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
+        print(f"[edgeKO band L{layers[0]}-{layers[-1]}] n={band['n']} base_p={band['mean_base_p']} "
+              f"raw_KO_drop={band['raw_KO_drop']} specific_vs_random={band['specific_vs_random']} "
+              f"all_query_edges_drop={band['all_query_edges_drop']}")
+        return
+
     results = []
     for lyr in layers:
         for h in range(Hn):
