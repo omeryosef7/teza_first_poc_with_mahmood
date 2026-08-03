@@ -62,10 +62,10 @@ def analyze_dir(d):
         wins = sorted({r["window"] for r in sr},
                       key=lambda w: int(w[1:]) if w.startswith("L") else 99)
         pv, mean, cis, suf = {}, {}, {}, {}
-        npos = next((r.get("n_pos_swapped") for r in sr if r["cell"] == "C3_mlpout"), None)
+        npos = next((r.get("n_pos_swapped") for r in sr if r["cell"] == "C3"), None)
         for w in wins:
             cm = lambda c: {r["sid"]: r["p_concept"] for r in sr if r["cell"] == c and r["window"] == w}
-            c3, rc, s3, sr_ = cm("C3_mlpout"), cm("random_control"), cm("S3_install"), cm("S_random")
+            c3, rc, s3, sr_ = cm("C3"), cm("random_control"), cm("S3_install"), cm("S_random")
             nec = [s for s in valid if s in c3 and s in rc]
             sfx = [s for s in valid if s in s3 and s in sr_]
             diffs = [rc[s] - c3[s] for s in nec]

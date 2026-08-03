@@ -14,7 +14,7 @@ component; mlp_out = the write component, at the same demo-codeword positions.
 
 Cells (per WINDOW and per LAYER):
   C1              DS baseline
-  C3_mlpout       necessity: DS mlp_out <- matched BENIGN mlp_out at demo-codeword positions
+  C3              necessity: DS <component>_out <- matched BENIGN mlp_out at demo-codeword positions
   C1_selfswap     faithfulness: DS mlp_out <- DS OWN mlp_out (must == C1, exact no-op)
   random_control  necessity control: benign mlp_out at count-matched NON-codeword positions
   S1              BENIGN baseline
@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--windows", default="early,mid,late")
     ap.add_argument("--granularity", default="window", choices=["window", "layer"])
+    ap.add_argument("--component", default="mlp_out", choices=["mlp_out", "attn_out"],
+                    help="which sub-block OUTPUT to patch: MLP (write) or attention (retrieval/read)")
     ap.add_argument("--positions", default="demo", choices=["demo", "query", "all"],
                     help="codeword positions to patch mlp_out at: demo-block occurrences, "
                          "query occurrences (inside the FC question = paper's 'MLP writes when "
@@ -102,11 +104,11 @@ def main():
     ts = time.strftime("%Y%m%d_%H%M%S")
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(args.out_root,
-                           f"phase6_mlpKO_{cohort}_{args.positions}_{args.granularity}_{ts}_{uniq}")
+                           f"phase6_KO_{cohort}_{args.component}_{args.positions}_{args.granularity}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     n_rows = [0]
-    print(f"[mlpKO] cohort={cohort} L={L} positions={args.positions} gran={args.granularity} "
+    print(f"[KO] cohort={cohort} L={L} comp={args.component} positions={args.positions} gran={args.granularity} "
           f"windows={[w for w,_ in windows][:4]}{'...' if len(windows)>4 else ''} -> {out_dir}")
 
     def build_fc(raw_prompt, codeword, concept):
@@ -142,14 +144,14 @@ def main():
         return pc_ / denom, pc_, pk_
 
     @torch.no_grad()
-    def capture_mlp(templated, positions):
+    def capture_comp(templated, positions):
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
-        with pc.ComponentCapture(lm, ["mlp_out"], positions) as cap:
+        with pc.ComponentCapture(lm, [args.component], positions) as cap:
             lm.model(**tok, return_dict=True)
-        return cap.stacked()["mlp_out"]                 # [L, n_pos, H]
+        return cap.stacked()[args.component]            # [L, n_pos, H]
 
     def swap(positions, src_by_layer):
-        return pc.ComponentOutSwap(lm.model, positions, src_by_layer, component="mlp_out")
+        return pc.ComponentOutSwap(lm.model, positions, src_by_layer, component=args.component)
 
     def emit(base, window, cell, n_sw, res):
         pnorm, pc_, pk_ = res
@@ -192,8 +194,8 @@ def main():
 
             ds_swap_pos = ds_demo_cw[-m:] if m else []
             b_swap_pos = b_demo_cw[-m:] if m else []
-            ds_cap = capture_mlp(ds_tmpl, ds_demo_cw + ds_rand)
-            b_cap = capture_mlp(b_tmpl, b_demo_cw + b_rand)
+            ds_cap = capture_comp(ds_tmpl, ds_demo_cw + ds_rand)
+            b_cap = capture_comp(b_tmpl, b_demo_cw + b_rand)
             ds_out_demo, ds_out_rand = ds_cap[:, :len(ds_demo_cw), :], ds_cap[:, len(ds_demo_cw):, :]
             b_out_demo, b_out_rand = b_cap[:, :len(b_demo_cw), :], b_cap[:, len(b_demo_cw):, :]
 
@@ -204,7 +206,7 @@ def main():
                 emit(base, wname, "C1", 0, c1)
                 if m:
                     src3 = {l: b_out_demo[l, -m:, :] for l in ells}
-                    emit(base, wname, "C3_mlpout", m,
+                    emit(base, wname, "C3", m,
                          readout(ds_tok, cid, kid, [swap(ds_swap_pos, src3)]))
                 emit(base, wname, "C1_selfswap", len(ds_demo_cw),
                      readout(ds_tok, cid, kid,
@@ -229,7 +231,7 @@ def main():
     fh.close()
 
     if skips:
-        print(f"[mlpKO] skipped examples by reason: {dict(skips)}")     # F1
+        print(f"[KO] skipped examples by reason: {dict(skips)}")     # F1
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
     rng2 = np.random.default_rng(0)
     def bootci(vals):
@@ -250,7 +252,7 @@ def main():
                  and r.get("benign_p_concept") is not None and r["p_concept"] > r["benign_p_concept"]}
         out = {}
         for w in sorted({r["window"] for r in srows}):
-            c1, c3 = cellmap("C1", w), cellmap("C3_mlpout", w)
+            c1, c3 = cellmap("C1", w), cellmap("C3", w)
             rc, ss = cellmap("random_control", w), cellmap("C1_selfswap", w)
             s1, s3 = cellmap("S1", w), cellmap("S3_install", w)
             sr, sss = cellmap("S_random", w), cellmap("S1_selfswap", w)
@@ -272,7 +274,7 @@ def main():
                "positions": args.positions, "granularity": args.granularity,
                "skips": dict(skips), "by_split": by_split},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
-    print(f"[mlpKO] {len(all_rows)} rows -> {out_dir}")
+    print(f"[KO] {len(all_rows)} rows -> {out_dir}")
     for sp in splits:
         print(f"  == split={sp} (n_valid={by_split[sp]['n_valid_examples']}) ==")
         for w, s in by_split[sp]["windows"].items():

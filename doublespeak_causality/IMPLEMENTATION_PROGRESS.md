@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 37, loop tick — generalize harness to attn_out; fill Phase 3 attention-output gap)** —
+  Toward Phase 5 (per-head), first close the **Phase 3 `attn_out` per-layer cell** (resid_post done=null,
+  mlp_out done=L9; attention-output necessity NOT yet done). Generalized `phase6_mlp_causal.py` with
+  `--component {mlp_out, attn_out}` (ComponentOutSwap/ComponentCapture already support attn_out; renamed the
+  necessity cell C3_mlpout→C3, updated `phase6_analyze.py`). This patches the whole-layer attention OUTPUT at
+  demo codewords (necessity benign↔DS, FC readout, Holm) = the layer-level attention necessity that says
+  WHICH layers to decompose into heads for Phase 5. `attn_out` hooks `self_attn` (TUPLE output, unlike mlp's
+  plain tensor) so smoking first: **703639** (curated n=2, window, attn_out). Backward-compatible (mlp_out
+  default). Next: validate attn_out path → full attn_out layer runs both cohorts → then per-head z-patch
+  (ZHeadPatch) on the necessary attention layers.
+
 - **2026-08-03 (iter 36, loop tick — Phase 6 causal MLP FINAL, Holm-corrected, clean)** — Clean re-runs
   703531–703534 done. Built reusable `scripts/phase6_analyze.py` (per-split + **Holm across 32 layers**,
   paired sign-flip permutation). **RESULT:** DEMO-codeword `mlp_out` necessity — **L9 survives 32-layer Holm

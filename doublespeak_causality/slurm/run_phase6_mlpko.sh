@@ -31,7 +31,8 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSNPROMPTS:=0}"
 : "${DSGRAN:=window}"
 : "${DSPOS:=demo}"
-for v in DSMODEL DSBENCH DSNPROMPTS DSGRAN DSPOS; do
+: "${DSCOMP:=mlp_out}"
+for v in DSMODEL DSBENCH DSNPROMPTS DSGRAN DSPOS DSCOMP; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
 done
 echo "=== Phase6 mlpKO: $DSBENCH n=$DSNPROMPTS gran=$DSGRAN pos=$DSPOS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
@@ -39,5 +40,5 @@ GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase6_mlp_causal.py \
   --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --windows early,mid,late \
-  --granularity "$DSGRAN" --positions "$DSPOS" --n-prompts "$DSNPROMPTS"
+  --granularity "$DSGRAN" --positions "$DSPOS" --component "$DSCOMP" --n-prompts "$DSNPROMPTS"
 echo "=== done ==="; date
