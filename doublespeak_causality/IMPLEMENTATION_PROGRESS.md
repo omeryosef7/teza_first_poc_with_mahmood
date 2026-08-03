@@ -9,9 +9,23 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
-- **2026-08-03 (iter 32, loop tick)** — **Phase 6 demo-position null CONFIRMED at full n** (703456
-  curated/window n=51: necessity_specific mid [-0.017,-0.056,0.015] CI incl. 0; sufficiency ≈0; S3=0.0002)
-  → MLP output at demo-codeword positions is NOT the causal write, at n≥20. **Extended the harness to the
+- **2026-08-03 (iter 33, loop tick — self-caught misread + rigor fix)** — Code review of the Phase 6
+  harness came back **clean** (alignment/signs/control-sourcing/hooks all correct); flagged 3 minor items.
+  Acting on them exposed that **my iter-32 "demo-position null" claim was WRONG**: I read only the truncated
+  log tail (the `mid` line). The job's own summary actually has **early-window NEC = +0.44 [0.31,0.57]** —
+  significant. **Fixed the aggregation to report dev (train) / heldout (test) SEPARATELY** (plan mandate;
+  was pooling both into one CI) keyed on `(split,sid)` (F2, no collisions confirmed) + skip-logging (F1).
+  Re-aggregated 703456 per-split: **demo-position MLP-output necessity is SIG at EARLY (L0–9) and
+  REPLICATES on locked test** (dev +0.42 [.24,.58]; heldout +0.47 [.28,.65]); mid/late ≈0. **BUT sufficiency
+  is NEGATIVE (−0.18)** and it's a broad 10-layer window with a cross-context benign donor → the plan's
+  **"destructive broad intervention" / positional-sensitivity confound.** NO causal-write claim yet: need
+  the per-layer curve (703457 running) to localize + within-window controls (random-window, shifted-window)
+  to rule out degradation. Self-swap dev exactly 0 throughout. Committed the fix; corrected the record.
+
+- **2026-08-03 (iter 32, loop tick)** — **Phase 6 demo-position necessity (early-window) — see iter 33
+  correction; the "null at full n" wording was a log-tail misread — mid/late ARE ≈0 but early is SIG).**
+  (703456 curated/window n=51: mid [-0.017,-0.056,0.015] CI incl. 0, late ≈0, but early +0.44 — see iter 33.)
+  **Extended the harness to the
   plan's remaining Phase 6 position sets** (`--positions {demo,query,all}`): `query` = codeword occurrences
   inside the FC question — this is the paper's core hypothesis "an MLP writes the retrieved concept when the
   model sees the QUERY codeword", which the demo-only test skipped. Small reuse-only change (query/demo

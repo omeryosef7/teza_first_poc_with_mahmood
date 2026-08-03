@@ -151,6 +151,7 @@ def main():
                              "p_concept": pnorm, "raw_concept": pc_, "raw_codeword": pk_}) + "\n")
         n_rows[0] += 1
 
+    skips = defaultdict(int)                              # F1: log why examples are dropped
     for split in splits:
         cand = sorted(ds_rows.get(split, []), key=lambda r: r["sid"])
         if args.n_prompts:
@@ -161,12 +162,15 @@ def main():
 
             ds_tmpl, ds_tok, ds_demo_cw = build_fc(r["prompt"], codeword, concept)
             if not ds_demo_cw:
+                skips[f"{split}:no_ds_{args.positions}_pos"] += 1
                 continue
             brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
             if brow is None:
+                skips[f"{split}:no_benign_row"] += 1
                 continue
             b_tmpl, b_tok, b_demo_cw = build_fc(brow["prompt"], codeword, concept)
             if not b_demo_cw:
+                skips[f"{split}:no_benign_{args.positions}_pos"] += 1
                 continue
             benign_pconc = readout(b_tok, cid, kid, [])[0]
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
@@ -218,11 +222,9 @@ def main():
                                  [swap(b_rand, {l: ds_out_rand[l] for l in ells})]))
     fh.close()
 
+    if skips:
+        print(f"[mlpKO] skipped examples by reason: {dict(skips)}")     # F1
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
-    def cellmap(cell, w):
-        return {r["sid"]: r["p_concept"] for r in all_rows if r["cell"] == cell and r["window"] == w}
-    valid = {r["sid"] for r in all_rows if r["cell"] == "C1"
-             and r.get("benign_p_concept") is not None and r["p_concept"] > r["benign_p_concept"]}
     rng2 = np.random.default_rng(0)
     def bootci(vals):
         if not vals:
@@ -231,32 +233,46 @@ def main():
         boot = [rng2.choice(a, len(a), replace=True).mean() for _ in range(2000)]
         return [round(float(a.mean()), 4), round(float(np.percentile(boot, 2.5)), 4),
                 round(float(np.percentile(boot, 97.5)), 4)]
-    summ = {}
-    for w in sorted({r["window"] for r in all_rows}):
-        c1, c3 = cellmap("C1", w), cellmap("C3_mlpout", w)
-        rc, ss = cellmap("random_control", w), cellmap("C1_selfswap", w)
-        s1, s3 = cellmap("S1", w), cellmap("S3_install", w)
-        sr, sss = cellmap("S_random", w), cellmap("S1_selfswap", w)
-        nec = [s for s in valid if s in c1 and s in c3 and s in rc]
-        suf = [s for s in valid if s in s1 and s in s3 and s in sr]
-        summ[w] = {
-            "n_valid": len(nec),
-            "mean_C1_p_concept": (round(float(np.mean([c1[s] for s in nec])), 4) if nec else None),
-            "necessity_specific_ci": bootci([rc[s] - c3[s] for s in nec]),
-            "nec_selfswap_max_dev": (round(float(np.max([abs(c1[s] - ss[s]) for s in nec if s in ss])), 5) if nec else None),
-            "sufficiency_specific_ci": bootci([s3[s] - sr[s] for s in suf]),
-            "mean_S3_install_p_concept": (round(float(np.mean([s3[s] for s in suf])), 4) if suf else None),
-            "suf_selfswap_max_dev": (round(float(np.max([abs(s1[s] - sss[s]) for s in suf if s in sss])), 5) if suf else None),
-        }
+
+    # PLAN train/test separation: aggregate dev (train) and heldout (test) SEPARATELY, never
+    # pooled. Key on (split, sid) so same-sid rows in different splits can never collide (F2).
+    def summarize(split):
+        srows = [r for r in all_rows if r["split"] == split]
+        def cellmap(cell, w):
+            return {r["sid"]: r["p_concept"] for r in srows if r["cell"] == cell and r["window"] == w}
+        valid = {r["sid"] for r in srows if r["cell"] == "C1"
+                 and r.get("benign_p_concept") is not None and r["p_concept"] > r["benign_p_concept"]}
+        out = {}
+        for w in sorted({r["window"] for r in srows}):
+            c1, c3 = cellmap("C1", w), cellmap("C3_mlpout", w)
+            rc, ss = cellmap("random_control", w), cellmap("C1_selfswap", w)
+            s1, s3 = cellmap("S1", w), cellmap("S3_install", w)
+            sr, sss = cellmap("S_random", w), cellmap("S1_selfswap", w)
+            nec = [s for s in valid if s in c1 and s in c3 and s in rc]
+            suf = [s for s in valid if s in s1 and s in s3 and s in sr]
+            out[w] = {
+                "n_valid": len(nec),
+                "mean_C1_p_concept": (round(float(np.mean([c1[s] for s in nec])), 4) if nec else None),
+                "necessity_specific_ci": bootci([rc[s] - c3[s] for s in nec]),
+                "nec_selfswap_max_dev": (round(float(np.max([abs(c1[s] - ss[s]) for s in nec if s in ss])), 5) if nec else None),
+                "sufficiency_specific_ci": bootci([s3[s] - sr[s] for s in suf]),
+                "mean_S3_install_p_concept": (round(float(np.mean([s3[s] for s in suf])), 4) if suf else None),
+                "suf_selfswap_max_dev": (round(float(np.max([abs(s1[s] - sss[s]) for s in suf if s in sss])), 5) if suf else None),
+            }
+        return {"n_valid_examples": len(valid), "windows": out}
+
+    by_split = {sp: summarize(sp) for sp in splits}
     json.dump({"cohort": cohort, "model": args.model, "n_rows": len(all_rows),
-               "n_valid_examples": len(valid), "positions": args.positions,
-               "granularity": args.granularity, "windows": summ},
+               "positions": args.positions, "granularity": args.granularity,
+               "skips": dict(skips), "by_split": by_split},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
-    print(f"[mlpKO] {len(all_rows)} rows, {len(valid)} valid examples -> {out_dir}")
-    for w, s in summ.items():
-        print(f"  {w}: n={s['n_valid']} C1={s['mean_C1_p_concept']} "
-              f"NEC_specific(rand-C3)={s['necessity_specific_ci']} "
-              f"SUF_specific(S3-Srand)={s['sufficiency_specific_ci']} S3={s['mean_S3_install_p_concept']}")
+    print(f"[mlpKO] {len(all_rows)} rows -> {out_dir}")
+    for sp in splits:
+        print(f"  == split={sp} (n_valid={by_split[sp]['n_valid_examples']}) ==")
+        for w, s in by_split[sp]["windows"].items():
+            print(f"    {w}: n={s['n_valid']} C1={s['mean_C1_p_concept']} "
+                  f"NEC_specific(rand-C3)={s['necessity_specific_ci']} "
+                  f"SUF_specific(S3-Srand)={s['sufficiency_specific_ci']} S3={s['mean_S3_install_p_concept']}")
 
 
 if __name__ == "__main__":
