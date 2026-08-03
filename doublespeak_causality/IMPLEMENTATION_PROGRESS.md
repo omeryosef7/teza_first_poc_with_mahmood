@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 29, loop tick)** — **Consolidation.** Wrote `reports/SLACK_UPDATE.md` (shareable
+  team summary) + interim `reports/FINAL_CAUSAL_CIRCUIT_REPORT.md` (answers the 12 final questions with
+  established-vs-pending, honesty/confidence section). Synthesizes Phases 0-6: attack reproduces;
+  concept⊥refusal; local state inert; demo-KV necessary mid-band L8-11 (both cohorts) not sufficient;
+  query→demo edges not necessary (distributed); MLP projection = proximity artifact. Headline: Doublespeak
+  binding is **distributed, context-bound, mid-band L8-11**. Next: causal MLP write (intervention).
+
+
 - **2026-08-03 (iter 28, loop tick)** — band jobs confirmed COMPLETE. **Phase 6 representational MLP
   projection** (CPU, reused reps+directions): concept-direction MLP write projection **late-dominated
   L29-31** (clearharm L31 proj 11.5 cos .69; band late 25 ≫ mid 4 ≫ early 2) — but this is the
