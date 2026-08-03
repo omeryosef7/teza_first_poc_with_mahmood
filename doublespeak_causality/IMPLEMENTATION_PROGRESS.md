@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 28, loop tick)** — band jobs confirmed COMPLETE. **Phase 6 representational MLP
+  projection** (CPU, reused reps+directions): concept-direction MLP write projection **late-dominated
+  L29-31** (clearharm L31 proj 11.5 cos .69; band late 25 ≫ mid 4 ≫ early 2) — but this is the
+  **readout-proximity artifact** the plan warns about (large late projection ≠ causal write; prior N7-C
+  showed late MLP AtP≈0). curated shows a faint true mid-band bump (L11,L13). Reproduces the proximity
+  confound on the new split. Wrote `reports/PHASE6_MLP.md`. **Causal MLP write (mid-band expected) needs
+  intervention — next.** `scripts/phase6_mlp_projection.py` added.
+
+
 - **2026-08-03 (iter 27, loop tick)** — **band edge-knockout 703334/703335 → honest NEGATIVE.** Knocking
   out query→demo attention edges across ALL heads in L8-11 has negligible, ns effect (clearharm specific
   +0.002 [−.0004,.005]; curated −0.003 [−.014,.009]) — on BOTH cohorts. all-query-edges degrades more
