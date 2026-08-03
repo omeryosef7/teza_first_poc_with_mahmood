@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 53, loop tick — Phase 8 readout emergence, CPU-only)** — Built
+  `scripts/phase8_readout.py` (reuses extracted Llama reps + unified concept direction; no GPU). Per-layer
+  linear concept projection at the answer position. **RESULT: linear readability emerges LATE (peaks L31,
+  onset-50% at L31) on all 4 cells — ≈0 at the causal write layer L9, only 10–16% of max by L14.** So
+  linear READABLE (late/L31) ≠ causally WRITTEN/CARRIED (L9/L14–21). This is residual accumulation toward
+  the unembedding (readout-proximity, same as the Phase-6 MLP-projection artifact), mechanistically
+  consistent (write@L9 → carry@L14–21 → readable@L31). **Confirms the plan's point: a naive logit-lens
+  readout is descriptive + misleading about mechanism — why the causal interventions (not readout) localized
+  the circuit.** Wrote `reports/PHASE8_READOUT.md`. **Phases done: 0–9.** Remaining: Phase 10 (causal
+  objective — unblocked), Phase 11 (GCG/MAC), final synthesis. Next: Phase 10.
+
 - **2026-08-03 (iter 52, loop tick — Phase 9 dose-response COMPLETE: graded lever)** — full runs
   704861–704864 done. **Clean MONOTONE graded dose-response over α∈[0,1] on ALL 4 cells** (both cohorts ×
   train/test), single-L9 AND L9–L11 band: as the DS MLP write is interpolated toward benign, p_concept
