@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 31, loop consolidation + Phase 6 full launch)** — Per Omer: **collapsed to a single
+  loop.** Found 3 concurrent `claude` loop processes (started together Aug 2 17:36); SIGTERM'd the two
+  siblings (1454057, 1454684 — one had committed the iter-29 consolidation `18c68b1`), kept mine (1455207).
+  Their work is already on-branch, so continuity = keep building on HEAD. Queue confirmed no duplicate jobs.
+  **Phase 6 causal-MLP smoke 703439 VALIDATED:** self-swap dev **exactly 0.0** (ComponentOutSwap faithful
+  no-op), C1 p_concept **0.9991** (readout discriminates). Preliminary (n=4): patching `mlp_out` at
+  demo-codeword positions → **≈0 necessity AND ≈0 sufficiency at every window** — clean null, same direction
+  as the demo-KV story (demo codeword's *input* K/V drives retrieval; its *MLP output* is not a local write
+  site). Launched **full runs 703456 (curated/window) 703457 (curated/layer) 703458 (clearharm/window)
+  703459 (clearharm/layer)**. Next tick: confirm the demo-position null at n≥20 + per-layer curve, then
+  extend Phase 6 positions to **query-codeword / all-occurrence** MLP-output (the demo-position null does
+  NOT close Phase 6 — the write, if any, may be at the query/answer position or distributed).
+
 - **2026-08-03 (iter 30, loop tick)** — **Built the Phase 6 CAUSAL MLP-write harness** (the intervention
   the projection metric can't provide; Gate 4). Added a reusable primitive `pc.ComponentOutSwap` — the
   mlp/attn-OUTPUT analogue of `DemoStateSwap` (writes per-position donor rows to `layer.mlp` output;
