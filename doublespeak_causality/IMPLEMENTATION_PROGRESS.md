@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 42, loop tick — Phase 5 clearharm confirm + honest cross-cohort correction)** —
+  clearharm Phase-5 halves done (704131/704133). **Cross-cohort correction to iter-41:** the heads
+  Holm-sig in ALL 4 cells are **late/output-proximal** (L21H10, L22H19, L26H13, L30H15, L31H0/H1), NOT the
+  L14–15 heads. The big curated L14H4/L15H4 (.10) are **cohort-dependent** (don't hit Holm on clearharm),
+  though L14H5/L15H8/L15H11 do. Robust (≥3/4 cells) = **MID band L14,15,17,18 + LATE band L21,22,25–31.**
+  Late heads are partly **readout-proximal** (near unembedding). So: mid-band L14–18 heads (further from
+  readout, cross-cohort) = the mechanistically informative carry; late L30–31 = output/proximal. Updated
+  `reports/PHASE5_HEADS.md` with the robust set + Phase-7 candidates `L14H5,L15H8,L15H11,L17H27,L18H20,L18H16`.
+  self-swap 0.0 all cells. **Circuit: L8–11 demo retrieval/write (K/V+MLP@L9) → L14–18 mid-band answer-pos
+  carry (cross-cohort) → L30–31 output → logit.** Next: Phase 7 path-patching — do the L14–18 candidate
+  heads MEDIATE the L9 demo-write → logit path (separating retrieval-carry from readout proximity)? Reuse
+  50_path_patching.
+
 - **2026-08-03 (iter 41, loop tick — Phase 5 HEAD RESULT: L13–L15 answer-position carry band)** — Merged
   curated Phase-5 halves (704129/704130) → full 32×32 Holm. **NEW FINDING: specific answer-position heads
   ARE necessary** (unlike the null query→demo edges). 75 dev / 60 heldout Holm-sig heads; top heldout

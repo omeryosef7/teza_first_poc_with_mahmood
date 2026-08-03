@@ -12,6 +12,25 @@ paired over valid examples (DS C1 p_concept > benign). **Holm-corrected across t
 head family, per split.** self-swap = exact no-op (dev 0.0). Model Llama-3.1-8B bf16. Layer-split jobs
 704129/704130 (curated) merged; clearharm 704131/704133 pending.
 
+## Cross-cohort robust head set (corrects an earlier curated-only over-claim)
+
+Robustness = Holm-significant positive necessity in each of the 4 cells (curated dev/heldout,
+clearharm dev/heldout), computed independently per cell:
+- **Significant in ALL 4 cells:** `L21H10, L22H19, L26H13, L30H15, L31H0, L31H1` — these are **late /
+  output-proximal** heads.
+- **Significant in ≥3 cells:** + `L14H20, L15H8, L17H27, L18H16, L25H23, L27H7, L31H6` → a **MID band
+  (L14,15,17,18)** plus a **LATE band (L21,22,25,26,27,30,31)**.
+- The very large curated L14–L15 effects (L14H4 .10, L15H4 .11) are **cohort-dependent** — they do NOT hit
+  Holm on clearharm (smaller, noisier cohort), though nearby heads L14H5 / L15H8 / L15H11 do. So L14–L15 is
+  real and curated-strong but per-head cohort-sensitive; the **cross-cohort-robust** necessity is broader
+  and includes a late output band.
+- **Caveat (readout proximity):** late heads (L30–L31, and to a degree L21+) sit near the unembedding, so
+  patching their answer-position z DIRECTLY perturbs the final logit — their necessity is partly proximal
+  and less mechanistically informative than the mid-band (L14–18) heads, which are further from the readout.
+
+**Phase-7 candidate heads (mid-band, cross-cohort-replicating, non-proximal):**
+`L14H5, L15H8, L15H11, L17H27, L18H20, L18H16` (+ curated-strong L14H4, L15H4 as a secondary set).
+
 ## Result (curated; dev=train, heldout=test — both REPLICATE)
 
 **Specific answer-position heads ARE necessary** (unlike the query→demo *edges*, which were null in the
