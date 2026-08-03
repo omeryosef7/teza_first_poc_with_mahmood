@@ -73,10 +73,38 @@ Jobs 705295/705296, on L9-responsive examples (C1−pA > 0.02).
 - → **the L9-write → L14–21-carry EDGE is causal.** The circuit is now a directed, edge-connected pathway,
   not two separately-validated endpoints.
 
+## Phase 7c — the carry band is (partially) SUFFICIENT: sufficiency EMERGES at L14–21
+
+`scripts/phase7c_sufficiency.py`. Install the DS carry-head answer-position z into a BENIGN receiver
+(ZHeadPatch) — does the concept reading appear? Arms S1 (benign) / S3_carry (install DS carry z) / S_rand
+(install DS z from the same count of RANDOM non-carry heads) / S_self (benign's own z, no-op). Jobs
+706024/706025, full n both cohorts.
+
+| cell | S1 (benign) | S3 (install DS carry) | sufficiency_specific = S3−S_rand [95% CI] |
+|------|-------------|-----------------------|--------------------------------------------|
+| curated dev      | 0.000 | **0.162** | **+0.162 [.086,.254]** |
+| curated heldout  | 0.001 | **0.240** | **+0.239 [.126,.370]** |
+| clearharm dev    | 0.064 | **0.434** | **+0.369 [.268,.477]** |
+| clearharm heldout| 0.068 | **0.467** | **+0.406 [.297,.509]** |
+
+- **Installing the DS carry-head z into a benign prompt RAISES the reading substantially** (to 0.16–0.47;
+  the full DS reading is ~0.8–0.88, so 20–53% of it), **significant and specific on all 4 cells** (random-
+  head install does nothing — S3−S_rand ≈ S3−S_1), self-check exact (0.0).
+- **This is the FIRST component with both necessity AND sufficiency.** Every earlier sufficiency test was
+  ≈0: demo-KV install (Phase 4), MLP-write install (Phase 6 S3), behavioral state-injection (≤0.16). The
+  carry-head output, uniquely, **transplants the concept reading** into a benign context.
+- **Not readout-proximity:** Phase 7 showed these heads are mediated (direct_frac ≈ 0), so injecting their z
+  is not a direct-logit hack — the effect propagates through downstream layers.
+- **Interpretation — sufficiency EMERGES at the carry stage.** The binding is context-bound / non-
+  transplantable at the demonstration/write stage (necessary-not-sufficient at L8–12), but by the time the
+  concept is carried in the L14–21 answer-position heads it has become a **transplantable representation**.
+  This is a progression: context-bound retrieval/write → transplantable carried concept.
+
 ## Caveats / next
-- mediation medians are over the L9-responsive subset (n=9–13); clearharm heldout (n=9) overshoots >1
-  (carry heads also carry other context) — strongly positive but noisy at small n.
-- direct_frac (above) is a median over |TOTAL|>0.05 examples; TOTAL is in raw logit_diff units.
-- Sufficiency (install carry-head z into benign) not yet run.
+- Partial sufficiency (20–53% of the full reading) — the carry heads are a strong but not complete injectate.
+- Representational sufficiency (FC p_concept). Whether the carry-head install is BEHAVIORALLY sufficient
+  (StrongREJECT ASR) is a separate question (prior state-injection was ≤0.16 behaviorally) — future work.
+- mediation medians (Phase 7b) are over the L9-responsive subset (n=9–13); clearharm heldout overshoots at
+  small n. direct_frac (Phase 7) is a median over |TOTAL|>0.05 examples.
 
 Reproduce: `python scripts/phase7_direct_total.py --bench data/bench/bench_<cohort>.json --heads <L..H..list>`.

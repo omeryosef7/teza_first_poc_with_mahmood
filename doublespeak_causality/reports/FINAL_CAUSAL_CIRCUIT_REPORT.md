@@ -22,8 +22,11 @@ head or edge), but a clear directed layer structure. Concept axis is independent
 3. **Which heads are necessary?** Answer-position **carry heads in a mid band L14–L18** (+ L21), Wilcoxon-
    Holm significant on 3/4 powered cells (curated dev 58, clearharm dev/heldout 31 each; curated heldout
    n=21 low-power → 0). Robust: L17H27, L15H8, L18H20, L14H23, L21H10, L14H5 (PHASE5).
-4. **Which heads/head-sets are sufficient?** **No single head** — top-10 = only ~20–31% of total necessity;
-   distributed within the band. Collective band, not one head (PHASE5).
+4. **Which heads/head-sets are sufficient?** **No single head, but the L14–21 carry HEAD-SET is partially
+   sufficient** — installing the DS carry-head z into a benign prompt raises the reading to 0.16–0.47
+   (20–53% of the full DS reading), significant + specific on all 4 cells (PHASE7c). This is the FIRST
+   component with both necessity and sufficiency (demo-KV / MLP-write installs were ≈0): the concept becomes
+   a **transplantable representation** once carried by these heads.
 5. **At which layers is the binding first causally available?** The MLP write appears at **L9** (necessity
    Holm all 4 cells), co-located with the L8–11 K/V retrieval. Linear *readability* only emerges late (L31),
    which is a readout-proximity artifact, NOT the write layer (PHASE6, PHASE8).
@@ -77,9 +80,18 @@ rephrase bypasses the refusal that blocks the direct request); curated neutral f
   controls; `scripts/validate_experiment_coverage.py` confirms no dup rows / n≥20 / cells present on all
   committed dirs. 20/20 audit findings fixed or verified-inert.
 
+## Sufficiency emerges at the carry stage (refinement)
+The binding is **context-bound at the demonstration/write stage** — demo-KV, MLP-write, and behavioral
+state injections are all ≈0 sufficient (Phases 4/6). But by the time the concept is carried in the **L14–21
+answer-position heads it becomes a transplantable representation**: installing that carry-head z into a
+benign prompt raises the reading to 0.16–0.47, specific and replicating (PHASE7c). So the mechanism is a
+**progression** — context-bound retrieval/write → transplantable carried concept — not uniformly
+non-sufficient.
+
 ## Honest limitations
-- The mechanism is **distributed and context-bound**: necessary components do not individually transplant
-  (sufficiency ≈0 across Phases 4/5/6). No single head/edge/layer is the bottleneck.
+- No single head/edge/layer is the bottleneck; effects are distributed within concentrated bands.
+- The carry-head sufficiency is **partial (20–53%)** and **representational** (FC p_concept); its behavioral
+  (StrongREJECT) sufficiency is untested (prior state-injection was ≤0.16 behaviorally).
 - curated heldout (n=21) is under-powered for the 1024-cell head family — head claims rest on the 3 powered
   cells.
 - Sufficiency-installation of carry heads (install carry-head z into benign) not run. (The upstream

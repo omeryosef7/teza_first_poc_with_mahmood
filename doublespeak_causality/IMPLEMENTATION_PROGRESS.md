@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 62, loop tick — SURPRISE: carry heads are SUFFICIENT — sufficiency EMERGES)** — full
+  706024/706025 done. **UNEXPECTED POSITIVE, all 4 cells:** installing DS carry-head z into a BENIGN prompt
+  RAISES the reading from ≈0 to **0.16 (curated) / 0.43–0.47 (clearharm)** — suf_specific(S3−S_rand) SIG:
+  curated dev +0.16 [.09,.25] / heldout +0.24 [.13,.37]; clearharm dev +0.37 [.27,.48] / heldout +0.41
+  [.30,.51]. **Specific** (random-head install ≈0), self-check exact 0.0. **FIRST component with BOTH
+  necessity AND sufficiency** — demo-KV/MLP-write/state-inject were all ≈0. Not readout-proximity (carry
+  heads mediated, direct_frac≈0). **REFINES the narrative: binding is context-bound at demo/write (not
+  transplantable) but becomes a TRANSPLANTABLE representation once carried in L14–21** — a progression, not
+  uniformly non-sufficient. Updated PHASE7_PATH (Phase 7c) + FINAL (Q4 + sufficiency-emerges section). This
+  is the session's most novel finding. Next: consider behavioral sufficiency of the carry install, or
+  consolidate.
+
 - **2026-08-03 (iter 61, loop tick — carry-head sufficiency install, final n/s pair)** — Built
   `scripts/phase7c_sufficiency.py` (reuses ZHeadCapture/ZHeadPatch): install DS carry-head answer-z into a
   BENIGN receiver — does the concept reading appear? Completes the carry-band necessity+sufficiency pair
