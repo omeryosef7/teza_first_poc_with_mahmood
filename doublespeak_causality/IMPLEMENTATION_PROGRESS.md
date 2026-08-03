@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 40, loop tick — Phase 5 full all-head scan launched)** — Phase 5 smoke 703876
+  VALIDATED: **self-swap dev 0.0** (ZHeadPatch faithful), and mid-band (L8–11) top-head necessity at the
+  answer position is **~0.0007 = negligible** (n=2) → preliminary no-single-head signal (matches edge-KO
+  negative + top-20=12% distributed prior). Launched the **full all-head z-patch necessity scan**, both
+  cohorts, all 32 layers. NOTE: these FC scans are slow (curated attn_out 703669 ran ~1h), so I **split by
+  layer range L0–15 / L16–31** (independent layers, safe parallelism, well under the 4h wall) → jobs
+  704129/704130 (curated) + 704131/704133 (clearharm). Will **re-Holm the union of the two halves offline**
+  (raw per-(l,h) necessity is in each raw.jsonl) for the proper 32×32 correction. Next tick: merge halves →
+  is ANY head necessary at the answer position (Holm 1024), or distributed? + read curated attn_out confirm.
+
 - **2026-08-03 (iter 39, loop tick — attn_out null (Phase 3 dissociation) + built Phase 5 head harness)** —
   **clearharm attn_out 703670 done → Holm NULL** (dev none; heldout only L15 +0.001, negligible). So the
   demo codeword's own attention OUTPUT is NOT necessary — a clean **componential dissociation at the demo
