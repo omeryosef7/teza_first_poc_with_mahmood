@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 21, loop tick)** — full nec+suf runs 703213/703214 done, but **caught a control
+  bug** by cross-checking vs my earlier ad-hoc CI (clearharm ns then, "SIG" in unified harness). The
+  unified harness's necessity `random_control` sourced from DS-OWN random activations (a near-no-op)
+  instead of the BENIGN donor that C3 uses → inflated the specific effect. **Fixed** random_control to
+  use benign donor (matched to C3). Re-ran full window **703237/703238**. Sufficiency result unaffected
+  (S3≈0 both cohorts, robust null). Next tick: corrected necessity CIs (expect curated SIG, clearharm
+  conservative) → finalize PHASE4_DEMO_RETRIEVAL asymmetry. Rigor note: self-caught control error.
+
+
 - **2026-08-03 (iter 20, loop tick)** — sufficiency smoke 703199 clean → **necessity/sufficiency
   ASYMMETRY.** Necessity holds (curated early 0.154 [.038,.290], mid 0.220 [.099,.346] SIG). But
   **sufficiency FAILS**: installing DS demo-codeword K/V into a benign receiver gives S3 p_concept=0.0
