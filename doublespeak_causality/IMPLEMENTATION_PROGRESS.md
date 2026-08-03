@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 38, loop tick — validate attn_out path deterministically + launch)** — The iter-37
+  "attn_out smoke" 703639 actually ran the **stale mlp_out** code (summary `component:None`, NEC matched
+  mlp_out) — a submit-timing/stale-file slip; it validated self-swap=0 + C1 discrimination but NOT the
+  attn_out path. Instead of re-smoking on GPU, **validated the tuple-output path deterministically**: added
+  a `ToyAttn`/`ToyAttnBlock` (self_attn returns a TUPLE like HF) to the ComponentOutSwap synthetic test and
+  covered `component="attn_out"` self-swap-exact + per-position + locality — **6/6 pass**, GPU-free. Launched
+  full **703669 (curated) / 703670 (clearharm)** attn_out per-layer, demo positions. Next tick: does
+  attention OUTPUT at the demo codeword show the same L9 mid-band necessity as MLP/KV (Phase 3 attn_out cell)
+  → then per-head z-patch (ZHeadPatch) on the necessary attention layers (Phase 5 core).
+
 - **2026-08-03 (iter 37, loop tick — generalize harness to attn_out; fill Phase 3 attention-output gap)** —
   Toward Phase 5 (per-head), first close the **Phase 3 `attn_out` per-layer cell** (resid_post done=null,
   mlp_out done=L9; attention-output necessity NOT yet done). Generalized `phase6_mlp_causal.py` with
