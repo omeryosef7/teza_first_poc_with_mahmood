@@ -160,13 +160,18 @@ def main():
             tot = np.array([r["TOTAL"] for r in hr]); dr = np.array([r["DIRECT"] for r in hr])
             selfdev = float(np.max(np.abs([r["TOTAL_self"] for r in hr]))) if hr else None
             frz = float(np.median([abs(r["m_frozen_clean"] - r["m_clean"]) for r in hr]))
-            # direct fraction on examples where TOTAL is meaningfully nonzero
+            # SANITY GATE (audit findings 14/15): direct_frac is only trustworthy if the freeze
+            # machinery reproduces m_clean (freeze-all-clean + clean sender) AND the self-swap is a
+            # no-op. If either dev is large the freeze/patch is compromised -> null out direct_frac.
+            TOL = 0.05
+            trustworthy = (frz <= TOL) and (selfdev is not None and selfdev <= TOL)
             mask = np.abs(tot) > 0.05
             fracs = (dr[mask] / tot[mask]) if mask.any() else np.array([])
             per[f"L{ls}H{hs}"] = {
                 "n": len(hr), "mean_TOTAL": round(float(tot.mean()), 4),
                 "mean_DIRECT": round(float(dr.mean()), 4),
-                "median_direct_frac": (round(float(np.median(fracs)), 3) if fracs.size else None),
+                "median_direct_frac": (round(float(np.median(fracs)), 3) if fracs.size and trustworthy else None),
+                "trustworthy": bool(trustworthy),
                 "n_frac": int(mask.sum()), "selfswap_max_dev": round(selfdev, 5) if selfdev is not None else None,
                 "freeze_consistency_dev": round(frz, 4),
             }
@@ -178,7 +183,7 @@ def main():
         print(f"  [{split}]")
         for h, s in per.items():
             print(f"    {h}: TOTAL={s['mean_TOTAL']} DIRECT={s['mean_DIRECT']} "
-                  f"direct_frac={s['median_direct_frac']} (n_frac={s['n_frac']}) "
+                  f"direct_frac={s['median_direct_frac']} trust={s['trustworthy']} (n_frac={s['n_frac']}) "
                   f"selfdev={s['selfswap_max_dev']} freezedev={s['freeze_consistency_dev']}")
 
 

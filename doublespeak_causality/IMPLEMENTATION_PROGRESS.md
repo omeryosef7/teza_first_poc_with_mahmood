@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 46, loop tick — resume Phase 7 on audited foundations)** — phase7 smoke 704416 had
+  run **1h09m** on n-801 (that node's weight-load is pathologically slow — same as the 1h27m attn_out job);
+  cancelled + resubmitted **704605 with `--exclude=n-801`**. Applied the last audit item (findings 14/15):
+  phase7 now emits a **`trustworthy` gate** — direct_frac is nulled unless freeze_consistency_dev ≤ 0.05
+  AND selfswap_dev ≤ 0.05, so a compromised freeze can't be read as a real DIRECT/TOTAL split. Next tick:
+  validate freeze-consistency≈0 on 704605 → full DIRECT-vs-TOTAL run (are the mid-band L14–18 heads genuine
+  carry, frac<1, vs late L30–31 proximal output, frac≈1). Audit response now complete (20/20 confirmed
+  findings fixed or verified-inert; only cosmetic test-coverage items deferred).
+
 - **2026-08-03 (iter 45, AUDIT FIXES applied)** — 6-auditor workflow returned **20 confirmed findings**
   (2 high, 4 medium, 14 low). Numeric main-loop checks: `cid==kid`=0, `rlen<m`=0, all n_valid≥16 →
   low-sev findings 6/7/12 **INERT in data**; demo_cw count mismatch = 3 curated/5 clearharm (conservative).
