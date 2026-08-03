@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 44, loop tick — full correctness AUDIT, per Omer)** — Numeric export verification
+  (main loop, can read harmful data): **all clean** — phase6 demo runs 0 duplicate rows, all 8 cells
+  present, n_valid ≥20 both splits/cohorts, self-swap dev EXACTLY 0.0; phase5 curated merge 0 dup
+  benign-rows, 32 layers covered, **heldout top heads L15H4 .106 / L14H4 .104 match reports.md EXACTLY**.
+  **Full test suite: 109 passed / 13 GPU-skipped, 0 fail.** Launched a **6-auditor + adversarial-verify
+  Workflow** (wvrceb4zt) over the harnesses/analyzers/reports — scoped to CODE + scalar summary.json ONLY
+  (subagents forbidden from reading bench/splits/raw.jsonl harmful text; numeric raw checks done in main
+  loop). Awaiting confirmed findings → will fix any real bug, then continue loop. (phase7 smoke 704416 still
+  loading on slow node n-801.)
+
 - **2026-08-03 (iter 43, loop tick — Phase 7 DIRECT-vs-TOTAL path harness)** — Built
   `scripts/phase7_direct_total.py` reusing 50_path_patching's freeze primitives VERBATIM
   (FreezeAllHeadsExcept + FreezeMLP + capture_clean_all). For each Phase-5 candidate head: TOTAL =
