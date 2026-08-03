@@ -9,6 +9,12 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 68, loop tick — transient SLURM cgroup fail, resubmitted)** — jobs 706092-95 all died
+  at slurmstepd cgroup setup (`_cgroup_procs_check: failed on path (null)/cgroup.procs`) — a NODE-LEVEL
+  SLURM infra error, NOT code (empty .out, never reached python). Resubmitted all 4 → **707203** (phase6 MLP
+  on v2, 116 ex) + **707204/05/06** (smokes: windows/pattern/qkv). Pending on L40S. Next tick: read the
+  decisive self-swap gates (must be 0.0) + v2 more-examples MLP result.
+
 - **2026-08-04 (iter 67, loop tick — v2 bench DONE + new harnesses launched)** — `bench_clearharm_v2.json`
   built: **116 DOUBLESPEAK** (clearharm dev 44/heldout 42 + expanded dev 15/heldout 15; original test
   preserved). Workflow wwjhplcgs finished — 3 harnesses written with honest risk disclosures + self-swap=0
