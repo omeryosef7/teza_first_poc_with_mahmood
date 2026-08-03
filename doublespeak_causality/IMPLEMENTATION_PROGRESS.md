@@ -15,7 +15,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
   carry band READ the L9 MLP write? Neutralize L9 (Phase-6 necessity) → then FREEZE carry-head answer-z to
   clean DS; if freezing RESTORES the reading, the L9 effect is mediated by the carry band.
   mediation_frac=(pB−pA)/(C1−pA); random-head-freeze control + self-check (freeze carry w/o L9 = no-op ≈C1).
-  Smoke **705185** (curated n=3, carry=L14H4/H5/H23,L15H8,L17H27,L18H20,L21H10). Next: validate self-check≈0
+  Smoke 705185 validated (selfdev=0.0 exact no-op) but L9resp=0 at n=3 (small skewed L9 effect); launched full 705295/706296.
   → full both cohorts → is the L9→carry edge causal (mediation_frac carry ≫ random)?
 
 - **2026-08-03 (iter 57, loop tick — Phase 11 CONCLUDED from existing evidence → ALL PHASES DONE)** —
