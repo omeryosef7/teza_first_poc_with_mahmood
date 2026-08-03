@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 47, loop tick — coverage validator (plan deliverable) while phase7 smoke loads)** —
+  phase7 smoke 704606 still loading on n-803 (slow). Built the plan-required
+  `scripts/validate_experiment_coverage.py` (institutionalizes the audit's ad-hoc integrity checks):
+  auto-detects phase6/phase5 schema; checks no duplicate rows, n_valid≥20 per split, self-swap no-op
+  (≤1e-4), all required cells present, split-sid disjointness; exits nonzero on any FAIL. **Ran it on all 6
+  committed causal-KO + head-patch dirs → all `ok`** (ssdev=0.0, 0 dups, n_valid ≥20; curated heldout 21).
+  Confirms the exports are clean post-audit. Next tick: validate phase7 freeze-consistency → full
+  DIRECT-vs-TOTAL (mid L14–18 carry vs late L30–31 proximal).
+
 - **2026-08-03 (iter 46, loop tick — resume Phase 7 on audited foundations)** — phase7 smoke 704416 had
   run **1h09m** on n-801 (that node's weight-load is pathologically slow — same as the 1h27m attn_out job);
   cancelled + resubmitted **704605 with `--exclude=n-801`**. Applied the last audit item (findings 14/15):
