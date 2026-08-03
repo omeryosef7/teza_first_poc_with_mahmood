@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 32, loop tick)** — **Phase 6 demo-position null CONFIRMED at full n** (703456
+  curated/window n=51: necessity_specific mid [-0.017,-0.056,0.015] CI incl. 0; sufficiency ≈0; S3=0.0002)
+  → MLP output at demo-codeword positions is NOT the causal write, at n≥20. **Extended the harness to the
+  plan's remaining Phase 6 position sets** (`--positions {demo,query,all}`): `query` = codeword occurrences
+  inside the FC question — this is the paper's core hypothesis "an MLP writes the retrieved concept when the
+  model sees the QUERY codeword", which the demo-only test skipped. Small reuse-only change (query/demo
+  occurrences split by the question offset; count-matched donor alignment identical to demo mode). Syntax
+  clean; `--positions` wired through SLURM (DSPOS, default=demo, backward-compatible). Query smoke **703460**
+  submitted. **Fanned out a background code-review subagent** on the new Phase 6 code (code-only, no bench
+  text) per Omer's "double-check for bugs". Next tick: read review + query/all-position full runs → does the
+  MLP write the concept at the QUERY codeword (the decisive Phase 6 / Gate 4 test)?
+
 - **2026-08-03 (iter 31, loop consolidation + Phase 6 full launch)** — Per Omer: **collapsed to a single
   loop.** Found 3 concurrent `claude` loop processes (started together Aug 2 17:36); SIGTERM'd the two
   siblings (1454057, 1454684 — one had committed the iter-29 consolidation `18c68b1`), kept mine (1455207).

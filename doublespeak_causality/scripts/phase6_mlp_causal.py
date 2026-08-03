@@ -69,6 +69,10 @@ def main():
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--windows", default="early,mid,late")
     ap.add_argument("--granularity", default="window", choices=["window", "layer"])
+    ap.add_argument("--positions", default="demo", choices=["demo", "query", "all"],
+                    help="codeword positions to patch mlp_out at: demo-block occurrences, "
+                         "query occurrences (inside the FC question = paper's 'MLP writes when "
+                         "it sees the query codeword'), or all occurrences")
     ap.add_argument("--n-prompts", type=int, default=0, help="0 = all DS prompts per split")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -97,21 +101,28 @@ def main():
 
     ts = time.strftime("%Y%m%d_%H%M%S")
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
-    out_dir = os.path.join(args.out_root, f"phase6_mlpKO_{cohort}_{args.granularity}_{ts}_{uniq}")
+    out_dir = os.path.join(args.out_root,
+                           f"phase6_mlpKO_{cohort}_{args.positions}_{args.granularity}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     n_rows = [0]
-    print(f"[mlpKO] cohort={cohort} L={L} gran={args.granularity} "
+    print(f"[mlpKO] cohort={cohort} L={L} positions={args.positions} gran={args.granularity} "
           f"windows={[w for w,_ in windows][:4]}{'...' if len(windows)>4 else ''} -> {out_dir}")
 
     def build_fc(raw_prompt, codeword, concept):
+        """Return (templated, tok, positions) where `positions` is the codeword-occurrence
+        set selected by args.positions: demo-block only / query (inside the FC question) /
+        all. The question is identical text across DS & benign, so query-occurrence COUNT
+        matches across donor/receiver (aligned by order, as with demo occurrences)."""
         fc_raw = demo_block_of(raw_prompt) + "\n\n" + fc_question(codeword, concept)
         templated = dc.apply_template(lm.tokenizer, fc_raw)
         q_off = templated.rfind(FC_PREFIX)
         hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, codeword)
         demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_off]
+        query_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] >= q_off]
+        pos = {"demo": demo_pos, "query": query_pos, "all": demo_pos + query_pos}[args.positions]
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
-        return templated, tok, demo_pos
+        return templated, tok, pos
 
     @torch.no_grad()
     def readout(fc_tok, cid, kid, contexts):
@@ -238,7 +249,8 @@ def main():
             "suf_selfswap_max_dev": (round(float(np.max([abs(s1[s] - sss[s]) for s in suf if s in sss])), 5) if suf else None),
         }
     json.dump({"cohort": cohort, "model": args.model, "n_rows": len(all_rows),
-               "n_valid_examples": len(valid), "granularity": args.granularity, "windows": summ},
+               "n_valid_examples": len(valid), "positions": args.positions,
+               "granularity": args.granularity, "windows": summ},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
     print(f"[mlpKO] {len(all_rows)} rows, {len(valid)} valid examples -> {out_dir}")
     for w, s in summ.items():
