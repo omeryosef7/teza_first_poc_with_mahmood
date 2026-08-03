@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 49, loop tick — Phase 7 FULL: carry vs proximal RESOLVED, Gate 5)** — full runs
+  704725/704726 done (both cohorts, n≥20/split, all trust=True, freeze_dev=0.0). **CLEAN DECISIVE RESULT
+  replicating on all 4 cells:** mid-to-late-mid heads **L14,L15,L17,L18,L21 = CARRY (direct_frac≈0.0)** —
+  freezing downstream removes their whole logit effect ⇒ mediated; only **L30,L31 = readout-PROXIMAL output
+  (direct_frac≈0.5–0.76)**. **Resolves the Phase-5 proximity caveat**: the mid-band L14–21 is genuine carry,
+  NOT artifact; proximity applies only to L30–31. **Full assembled circuit: L8–11 demo retrieval (K/V) + L9
+  MLP write → L14–L21 answer-position CARRY heads (mediated) → L30–31 proximal OUTPUT → logit** — every
+  stage causally tested + Holm(Wilcoxon) + cross-cohort + audited + coverage-validated. Gate 5 met (carry
+  band). Wrote `reports/PHASE7_PATH.md`. Next: (a) upstream L9-MLP-write → carry-head EDGE path-patch
+  (does the carry band read the L9 write?), or (b) Phase 8 Jacobian / Phase 9 dose-response / synthesis.
+
 - **2026-08-03 (iter 48, loop tick — Phase 7 smoke CONFIRMS carry-vs-proximal split)** — phase7 smoke
   704606 validated: **freeze_consistency_dev=0.0, selfswap=0.0, trust=True** all heads (freeze machinery
   exact). **Result (n=3): mid-band heads L14H4/L15H8/L18H20 have direct_frac≈0.0** (DIRECT≈0, TOTAL large 1–2
