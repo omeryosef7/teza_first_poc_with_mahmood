@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 22, loop tick)** — **corrected-control result FINAL (window).** Necessity SIG in
+  the **mid band on BOTH cohorts** (curated mid +0.177 [.087,.278] & early +0.258 [.146,.372]; clearharm
+  mid +0.081 [.012,.151]); late ns; sufficiency robust NULL (S3≈0). → demo-codeword K/V **necessary but
+  not sufficient** = distributed/context-bound binding (direct multi-concept confirmation of IE_state≈0/
+  DE_context≈99%). Self-swap dev 0. Updated `reports/PHASE4_DEMO_RETRIEVAL.md` with corrected CIs +
+  asymmetry. Launched corrected per-layer localization **703248/703249** (peak expected L9-11). Next
+  tick: finalize localization, then the surgical per-head query→demo edge knockout (Phase 4.2 induction).
+
+
 - **2026-08-03 (iter 21, loop tick)** — full nec+suf runs 703213/703214 done, but **caught a control
   bug** by cross-checking vs my earlier ad-hoc CI (clearharm ns then, "SIG" in unified harness). The
   unified harness's necessity `random_control` sourced from DS-OWN random activations (a near-no-op)

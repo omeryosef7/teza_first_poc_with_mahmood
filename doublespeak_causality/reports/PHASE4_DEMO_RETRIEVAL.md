@@ -25,39 +25,45 @@ reading from the codeword reading and does not perturb under a no-op transplant.
 - `ReRead(C1−C3)` = drop in reading from neutralizing demo K/V. **Specific effect = (ReRead) −
   (C1−random)**, paired per example, bootstrap 95% CI (2000 resamples), by canonical window.
 
-## Result — significant on curated, same direction on ClearHarm
+## Result — necessity SIG in the mid band (both cohorts); NOT sufficient
 
-| cohort (n) | window | ReRead(C1−C3) | random | **specific (demoKV−random)** | 95% CI | verdict |
-|---|---|---|---|---|---|---|
-| curated (51) | early | 0.258 | 0.079 | **+0.180** | [+0.026, +0.328] | **SIG** |
-| curated (51) | mid | 0.233 | 0.100 | **+0.133** | [+0.053, +0.217] | **SIG** (survives Holm/3) |
-| curated (51) | late | −0.014 | 0.016 | −0.030 | [−0.084, +0.018] | ns |
-| clearharm (85) | early | 0.116 | 0.072 | +0.044 | [−0.034, +0.132] | ns (same sign) |
-| clearharm (85) | mid | 0.108 | 0.069 | +0.039 | [−0.026, +0.105] | ns |
-| clearharm (85) | late | −0.015 | 0.008 | −0.022 | [−0.056, +0.009] | ns |
+Matched-control design (jobs **703237/703238**, full data, unified harness): necessity specific effect
+= (random − C3) paired per example; the random control uses the SAME benign donor as C3 at random
+NON-codeword positions (an earlier version sourced random from DS-own activations — a near-no-op that
+inflated the effect; caught and fixed).
 
-**Per-layer localization (specific effect, ReRead−random):** peaks at **L9–L11 on BOTH cohorts**
-(curated L10 +0.128, L9 +0.070, L11 +0.036; clearharm L10 +0.065, L9 +0.026, L8 +0.017), ~0 elsewhere.
+**Necessity** (neutralize DS demo-codeword K/V ← benign; specific = random−C3, 95% CI):
 
-## Interpretation
-On the **clean curated cohort** the demonstration-codeword activations are **causally necessary** for
-the hijacked reading: neutralizing them at early+mid layers reduces the reading significantly more than
-neutralizing random positions (early +0.18, mid +0.13; both CIs exclude 0; mid survives Holm across the
-3 windows). The single-layer localization concentrates at **L9–L11** — the same mid-band the prior
-carrot↔bomb work identified for the attention write / MLP consolidation. This **replicates the
-mid-band retrieval mechanism on a multi-concept dataset** with a matched-control necessity test.
+| cohort (n) | early | mid | late |
+|---|---|---|---|
+| curated (51) | **+0.258 [0.146, 0.372] SIG** | **+0.177 [0.087, 0.278] SIG** | −0.037 [−0.097, 0.015] ns |
+| clearharm (85) | +0.017 [−0.054, 0.087] ns | **+0.081 [0.012, 0.151] SIG** | −0.009 [−0.023, 0.004] ns |
 
-On the **ClearHarm cohort** the effect is the **same direction** (positive early/mid, ~0 late, peak
-L10) but **not significant** — consistent with ClearHarm's concept noisiness (harm not always in the
-single swapped noun), which widens variance and also muddied its behavioral baseline (PHASE2_BEHAVIORAL
-Limitation). So the mechanism claim rests on the curated cohort; ClearHarm corroborates the direction.
+**Sufficiency** (install DS demo-codeword K/V into the BENIGN receiver; specific = S3−S_random, 95% CI):
+robust **null** — installing does NOT create the reading. S3 `p_concept`: curated ≈ **0.0001** (all
+windows), clearharm 0.05–0.12 (small, non-specific: SUF_specific CIs include/below 0 at every window).
 
-## Honest caveats
-- Neutralization SOURCE is the BENIGN demo activations (same codeword, benign meaning). The DemoStateSwap
-  is at resid_pre of demo-codeword positions (K/V into attention), last-`m` aligned across DS/benign.
-- Window neutralization > any single-layer effect (distributed within L8–12); the per-layer peak
-  identifies the critical layers, not a single bottleneck (matches prior "distributed mid-band").
-- Late-window ReRead is slightly negative (neutralizing late demo K/V if anything raises the reading) —
-  consistent with late layers being passive carriers, not where retrieval happens.
-- This is the NECESSITY leg (position set = demo occurrences, location = resid_pre/K-V). Sufficiency
-  (install DS demo K/V into a benign context) and the other 3 locations are the next cells.
+**Per-layer localization** (from the corrected-control layer runs 703248/703249): peaks in the
+**L9–L11 mid-band on both cohorts** (updating; earlier L9–11 peak was from the inflated control).
+
+Self-swap faithfulness (DS demo K/V ← DS own): max deviation **0.0** both directions (exact no-op).
+
+## Interpretation — necessary but not sufficient (distributed, context-bound)
+The demonstration-codeword K/V is **causally necessary** for the hijacked reading in the **mid band**:
+neutralizing it reduces the reading significantly more than the matched random control — **significant on
+BOTH cohorts at mid** (curated also at early; curated effects ~3× larger, as expected for the cleaner
+harm-in-one-noun cohort). But it is **NOT sufficient**: transplanting the DS demo-codeword K/V into a
+benign receiver does not install the reading (S3 ≈ 0 at all depths incl. late).
+
+This necessity-without-sufficiency is the signature of a **distributed, context-bound** binding: the
+codeword K/V participates in the retrieval (removing it hurts) but the reading requires that K/V *within*
+its surrounding harmful demonstration context — the local activations alone don't carry it. This is the
+direct multi-concept, matched-control confirmation of the prior **IE_state ≈ 0 / DE_context ≈ 99%**
+dissociation, and it rules out a naive "the codeword state stores the concept" account.
+
+## Honest notes
+- The corrected matched control lowered the necessity effect vs an earlier inflated version; ClearHarm
+  early dropped to ns (only mid survives), curated stayed strongly SIG at early+mid. Reported values are
+  the corrected ones.
+- Necessity leg only (position set = demo occurrences, location = resid_pre / K-V). The exact per-head
+  query→demo edge knockout (surgical induction test) and the other locations are subsequent cells.
