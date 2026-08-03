@@ -148,52 +148,64 @@ def main():
             if not ds_demo_cw:
                 continue
 
-            # validity baseline: BENIGN demo block + same question -> should read CODEWORD (low p_concept)
             brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
-            benign_pconc = None
-            if brow is not None:
-                b_tmpl, b_tok, _ = build_fc(brow["prompt"], codeword, concept)
-                benign_pconc = readout(b_tok, cid, kid, [])[0]
-
+            if brow is None:
+                continue
+            # BENIGN forced-choice prompt: validity baseline (should read CODEWORD) AND the
+            # sufficiency receiver + the necessity source.
+            b_tmpl, b_tok, b_demo_cw = build_fc(brow["prompt"], codeword, concept)
+            if not b_demo_cw:
+                continue
+            benign_pconc = readout(b_tok, cid, kid, [])[0]
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                     "codeword": codeword, "benign_p_concept": benign_pconc}
 
-            # BENIGN demo activations = neutralization source; count-matched random non-cw positions
-            neu_pre_demo = neu_pre_rand = None
-            ds_rand, m = [], 0
-            if brow is not None:
-                bd_tmpl, _, b_demo_cw = build_fc(brow["prompt"], codeword, concept)
-                m = min(len(ds_demo_cw), len(b_demo_cw))
-                cwset = set(ds_demo_cw)
-                last_demo = max(ds_demo_cw)
-                ds_pool = [p for p in range(last_demo) if p not in cwset]
-                rlen = min(m, len(ds_pool))
-                ds_rand = sorted(rng.sample(ds_pool, rlen)) if rlen else []
-                b_pool = list(range(max(b_demo_cw)))
-                b_rand = sorted(rng.sample(b_pool, rlen)) if rlen and len(b_pool) >= rlen else []
-                cap_pos = b_demo_cw[:m] + b_rand
-                ncap = capture_pre(bd_tmpl, cap_pos) if cap_pos else None
-                if ncap is not None:
-                    neu_pre_demo = ncap[:, :m, :]
-                    if b_rand:
-                        neu_pre_rand = ncap[:, m:m + len(b_rand), :]
-            ds_swap_pos = ds_demo_cw[-m:] if m else []
-            ds_pre_demo = capture_pre(ds_tmpl, ds_demo_cw)
+            m = min(len(ds_demo_cw), len(b_demo_cw))
+            # count-matched random NON-codeword positions on both sides
+            ds_cwset, b_cwset = set(ds_demo_cw), set(b_demo_cw)
+            ds_pool = [p for p in range(max(ds_demo_cw)) if p not in ds_cwset]
+            b_pool = [p for p in range(max(b_demo_cw)) if p not in b_cwset]
+            rlen = min(m, len(ds_pool), len(b_pool))
+            ds_rand = sorted(rng.sample(ds_pool, rlen)) if rlen else []
+            b_rand = sorted(rng.sample(b_pool, rlen)) if rlen else []
 
-            c1 = readout(ds_tok, cid, kid, [])
+            ds_swap_pos = ds_demo_cw[-m:] if m else []
+            b_swap_pos = b_demo_cw[-m:] if m else []
+            # captures: DS demo/rand resid_pre, BENIGN demo/rand resid_pre
+            ds_cap = capture_pre(ds_tmpl, ds_demo_cw + ds_rand)
+            b_cap = capture_pre(b_tmpl, b_demo_cw + b_rand)
+            ds_pre_demo, ds_pre_rand = ds_cap[:, :len(ds_demo_cw), :], ds_cap[:, len(ds_demo_cw):, :]
+            b_pre_demo, b_pre_rand = b_cap[:, :len(b_demo_cw), :], b_cap[:, len(b_demo_cw):, :]
+
+            c1 = readout(ds_tok, cid, kid, [])         # necessity baseline (DS receiver)
+            s1 = readout(b_tok, cid, kid, [])          # sufficiency baseline (BENIGN receiver)
             for wname, ells in windows:
+                # ---- NECESSITY (DS receiver): neutralize DS demo K/V <- BENIGN ----
                 emit(base, wname, "C1", 0, c1)
-                if m and neu_pre_demo is not None:
-                    src3 = {l: neu_pre_demo[l, -m:, :] for l in ells}
+                if m:
+                    src3 = {l: b_pre_demo[l, -m:, :] for l in ells}
                     emit(base, wname, "C3_demoKV", m,
                          readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_swap_pos, src3)]))
-                srcs = {l: ds_pre_demo[l] for l in ells}
                 emit(base, wname, "C1_selfswap", len(ds_demo_cw),
-                     readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_demo_cw, srcs)]))
-                if ds_rand and neu_pre_rand is not None:
-                    srcr = {l: neu_pre_rand[l] for l in ells}
+                     readout(ds_tok, cid, kid,
+                             [pc.DemoStateSwap(lm.model, ds_demo_cw, {l: ds_pre_demo[l] for l in ells})]))
+                if ds_rand:
                     emit(base, wname, "random_control", len(ds_rand),
-                         readout(ds_tok, cid, kid, [pc.DemoStateSwap(lm.model, ds_rand, srcr)]))
+                         readout(ds_tok, cid, kid,
+                                 [pc.DemoStateSwap(lm.model, ds_rand, {l: ds_pre_rand[l] for l in ells})]))
+                # ---- SUFFICIENCY (BENIGN receiver): install DS demo K/V ----
+                emit(base, wname, "S1", 0, s1)
+                if m:
+                    srci = {l: ds_pre_demo[l, -m:, :] for l in ells}
+                    emit(base, wname, "S3_install", m,
+                         readout(b_tok, cid, kid, [pc.DemoStateSwap(lm.model, b_swap_pos, srci)]))
+                emit(base, wname, "S1_selfswap", len(b_demo_cw),
+                     readout(b_tok, cid, kid,
+                             [pc.DemoStateSwap(lm.model, b_demo_cw, {l: b_pre_demo[l] for l in ells})]))
+                if b_rand:  # install DS demo activations at random benign positions (control)
+                    emit(base, wname, "S_random", len(b_rand),
+                         readout(b_tok, cid, kid,
+                                 [pc.DemoStateSwap(lm.model, b_rand, {l: ds_pre_rand[l] for l in ells})]))
     fh.close()
 
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
@@ -202,27 +214,41 @@ def main():
     # validity: examples where DS C1 reads concept MORE than benign (readout discriminates)
     valid = {r["sid"] for r in all_rows if r["cell"] == "C1"
              and r.get("benign_p_concept") is not None and r["p_concept"] > r["benign_p_concept"]}
+    def bootci(vals):
+        if not vals:
+            return None
+        a = np.array(vals)
+        boot = [rng2.choice(a, len(a), replace=True).mean() for _ in range(2000)]
+        return [round(float(a.mean()), 4), round(float(np.percentile(boot, 2.5)), 4),
+                round(float(np.percentile(boot, 97.5)), 4)]
+    rng2 = np.random.default_rng(0)
     summ = {}
     for w in sorted({r["window"] for r in all_rows}):
         c1, c3 = cellmap("C1", w), cellmap("C3_demoKV", w)
         rc, ss = cellmap("random_control", w), cellmap("C1_selfswap", w)
-        common = (set(c1) & set(c3)) & valid
-        rr = float(np.mean([c1[s] - c3[s] for s in common])) if common else None
-        rcc = (set(c1) & set(rc)) & valid
-        ssc = (set(c1) & set(ss)) & valid
-        summ[w] = {"n_valid": len(common),
-                   "ReRead_test_mean": rr,
-                   "random_control_mean": (float(np.mean([c1[s] - rc[s] for s in rcc])) if rcc else None),
-                   "selfswap_max_abs_dev": (float(np.max([abs(c1[s] - ss[s]) for s in ssc])) if ssc else None),
-                   "mean_C1_p_concept": (float(np.mean([c1[s] for s in common])) if common else None)}
+        s1, s3 = cellmap("S1", w), cellmap("S3_install", w)
+        sr, sss = cellmap("S_random", w), cellmap("S1_selfswap", w)
+        nec = [s for s in valid if s in c1 and s in c3 and s in rc]
+        suf = [s for s in valid if s in s1 and s in s3 and s in sr]
+        summ[w] = {
+            "n_valid": len(nec),
+            "mean_C1_p_concept": (round(float(np.mean([c1[s] for s in nec])), 4) if nec else None),
+            # necessity specific effect = (C1-C3) - (C1-random) = random - C3, paired, CI
+            "necessity_specific_ci": bootci([rc[s] - c3[s] for s in nec]),
+            "nec_selfswap_max_dev": (round(float(np.max([abs(c1[s] - ss[s]) for s in nec if s in ss])), 5) if nec else None),
+            # sufficiency specific effect = (S3-S1) - (S_random-S1) = S3 - S_random, paired, CI
+            "sufficiency_specific_ci": bootci([s3[s] - sr[s] for s in suf]),
+            "mean_S3_install_p_concept": (round(float(np.mean([s3[s] for s in suf])), 4) if suf else None),
+            "suf_selfswap_max_dev": (round(float(np.max([abs(s1[s] - sss[s]) for s in suf if s in sss])), 5) if suf else None),
+        }
     json.dump({"cohort": cohort, "model": args.model, "n_rows": len(all_rows),
                "n_valid_examples": len(valid), "granularity": args.granularity, "windows": summ},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
     print(f"[demoKO] {len(all_rows)} rows, {len(valid)} valid examples -> {out_dir}")
     for w, s in summ.items():
-        print(f"  {w}: n_valid={s['n_valid']} C1_pconc={s['mean_C1_p_concept']} "
-              f"ReRead(C1-C3)={s['ReRead_test_mean']} random={s['random_control_mean']} "
-              f"selfswap_dev={s['selfswap_max_abs_dev']}")
+        print(f"  {w}: n={s['n_valid']} C1={s['mean_C1_p_concept']} "
+              f"NEC_specific(rand-C3)={s['necessity_specific_ci']} "
+              f"SUF_specific(S3-Srand)={s['sufficiency_specific_ci']} S3={s['mean_S3_install_p_concept']}")
 
 
 if __name__ == "__main__":
