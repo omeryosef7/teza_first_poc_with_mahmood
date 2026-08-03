@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 17, loop tick)** — **demoKO harness WORKS + first real circuit signal.** FC-readout
+  smoke 703123: DS C1 p_concept high (bomb .99, mean .74) vs **benign 0.0 for every example** (clean
+  discrimination), self-swap dev=0 (faithfulness). **Core result (n=16 smoke): neutralizing demo-codeword
+  K/V reduces the reading SPECIFICALLY at EARLY layers** — ReRead(C1−C3) early **0.154 vs random 0.048**;
+  mid 0.220≈random 0.222 (non-specific); late 0.013<random 0.103. = early induction-style retrieval binding.
+  **Launched FULL runs 703151-703154** (clearharm/curated × window/layer, all examples) to confirm with
+  proper n + per-layer curve. Next tick: aggregate → the demo-KV necessity result + per-layer localization,
+  then random/self-swap controls, both cohorts. This is the Phase 4.2 retrieval-necessity core.
+
+
 - **2026-08-03 (iter 16, loop tick)** — smoke 703115 confirmed the BENIGN-source fix (C3 fires, 48
   rows/cell, self-swap=0) but exposed the readout was still wrong: **ps_concept_gated≈0 even for clean
   bomb** — I was reading the patchscope of the query-codeword rep (IE_state≈0, floors), not the
