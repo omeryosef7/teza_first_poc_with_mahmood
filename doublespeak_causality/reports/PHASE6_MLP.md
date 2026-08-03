@@ -23,48 +23,44 @@ bump (L11, L13) consistent with the true mid-band write, swamped in raw projecti
 **Conclusion:** the projection metric reproduces the known late-proximity artifact on the new split and must
 NOT be read as the write location. The causal write requires exact MLP intervention (next).
 
-## Causal MLP write (demo positions) — NECESSARY mid-band L8–L12 (peak L9), NOT sufficient
+## Causal MLP write — DEMO codeword L9 (mid-band L9–L12) necessary [Holm]; QUERY codeword inert
 
-> **PROVISIONAL (iter 35):** the iter-34 runs below patched demo (12) + question (2) codeword tokens due to
-> a token-index-vs-char-offset classification bug in `build_fc` (now fixed). Because the effect localized to
-> **L9 (mid), not the late/proximate layers**, it is very likely demo-driven; a clean demo-only re-run
-> (703531/703532, layer, both cohorts) is in flight to confirm, alongside the real query-codeword write test
-> (703533/703534). Numbers below to be reconfirmed.
-
-
-`scripts/phase6_mlp_causal.py` (exact intervention, not projection): patch DS `mlp_out` ← matched BENIGN
-`mlp_out` at demonstration-codeword positions, per layer & per canonical window, FC DE_context readout,
-paired bootstrap CIs, dev(train)/heldout(test) reported SEPARATELY, self-swap = exact no-op (dev 0.0),
-random-non-codeword-position control. Jobs 703456–703459 (both cohorts × window/layer). Primitive
+**Method.** `scripts/phase6_mlp_causal.py` (exact intervention, not projection): patch DS `mlp_out` ←
+matched BENIGN `mlp_out` at codeword positions, per layer, FC DE_context readout, paired sign-flip
+permutation p-values **Holm-corrected across all 32 layers**, dev(train)/heldout(test) reported SEPARATELY,
+self-swap = exact no-op (dev 0.0), random-non-codeword-position control. `--positions {demo,query}`
+distinguishes the demonstration codewords (n=12/prompt) from the query codewords in the FC question
+(n=2/prompt) — after fixing a token-index-vs-char-offset classification bug that had merged them.
+Clean per-layer jobs 703531/703532 (demo) + 703533/703534 (query), both cohorts. Primitive
 `pc.ComponentOutSwap` (per-position mlp/attn-output swap; 4/4 synthetic tests; code-reviewed clean).
 
-**Per-layer necessity (specific = random_control − C3, paired CI; SIG = CI excludes 0):**
-- curated: dev peak **L9 +0.103 [.037,.189]** (also L6/L8/L12); heldout peak **L9 +0.179 [.097,.274]** (also L8).
-- clearharm: dev **L8–L12 all SIG** (peak L9 +0.084 [.039,.141], L10 .046, L11 .030, L12 .034);
-  heldout peak **L9 +0.030 [.010,.058]** (also L5/L7/L12).
-- **Localized to a contiguous mid band L8–L12, sharply peaking at L9, on BOTH cohorts, replicating
-  dev→heldout.** This is the SAME band as the demo-KV (resid_pre) retrieval necessity (PHASE4, L8–11 peak
-  L9–10) — the MLP write and the K/V retrieval co-localize at the demonstration codeword.
+**DEMO codeword — necessity, Holm-corrected across 32 layers (specific = random_control − C3):**
+- curated dev: **L9 +0.049 [.021,.080]** (p<1e-4), L12 +0.020 — survive Holm.
+- curated heldout (locked test): **L9 +0.097 [.039,.163]** (p=4e-4) — survives Holm.
+- clearharm dev: **L9 +0.063 [.024,.115]** (p<1e-4) — survives Holm.
+- clearharm heldout (locked test): **L9 +0.015, L10 +0.009, L11 +0.013, L12 +0.006** — the whole **L9–L12
+  band survives Holm**.
+- → **L9 is the one layer significant on ALL FOUR cells** (both cohorts × train+test) after 32-layer Holm
+  correction. Same band as the demo-KV retrieval necessity (PHASE4, L8–11 peak L9–10): the MLP write and
+  the K/V retrieval **co-localize at L9 on the demonstration codeword**.
 
-**Sufficiency ≈ 0 at every layer** (installing DS `mlp_out` into a benign receiver does NOT create the
-reading). → the demo-position MLP write is **necessary but not sufficient**, exactly mirroring demo-KV:
-the binding is context-bound / distributed, not a transplantable local write.
+**Sufficiency ≈ 0 at every layer** (installing DS `mlp_out` into benign does NOT create the reading) →
+necessary but **not sufficient**, mirroring demo-KV. Effect sizes are **small** (~0.02–0.10): L9 is one
+contributor in a distributed set, not a dominant sufficient write.
 
-**Confound resolved (honest):** the broad canonical `early` WINDOW (L0–9 jointly) gave a much larger
-necessity (+0.42) but with NEGATIVE sufficiency (−0.18) — a broad-intervention degradation signature. The
-per-layer curve isolates the real, clean, replicating driver at L8–L12/L9 (effect ~0.03–0.18); the inflated
-window number is degradation from replacing 10 layers of MLP output and is NOT the effect size. Report the
-per-layer L9 necessity, not the window value.
+**QUERY codeword — NOT robustly necessary.** After Holm: curated heldout = **nothing survives**; clearharm
+dev/heldout = **nothing survives** (only curated dev shows tiny L11/L20). → the MLP output at the QUERY
+codeword is essentially inert, consistent with the query-codeword *local state* being inert (Phase 3 /
+iter-13, IE_state≈0). **The concept-binding MLP write is at the DEMONSTRATION codeword (where the binding is
+defined), not at the query codeword (where it is used).**
 
-**Gate 4 status:** an MLP in the mid band (L8–L12, peak L9) contributes causally (necessity, both cohorts,
-locked-test replication, matched controls, self-swap 0) — but it is a necessity-only, non-sufficient,
-distributed contribution at the DEMO position, not a sufficient "concept write." Pairs with the demo-KV
-retrieval necessity: the mid-band demo-position computation (its exposed K/V AND its MLP contribution) is
-the causal locus; neither transplants.
+**Confound resolved.** The broad canonical `early` WINDOW (L0–9 jointly) gave a large necessity (+0.42) with
+NEGATIVE sufficiency (−0.18) = broad-intervention degradation. The per-layer Holm analysis isolates the
+real, small, replicating driver at L9; the window number is degradation, not the effect size.
 
-### Limitation — query-codeword MLP write not testable in the FC readout (n=0)
-The `--positions query` run (703460) produced **0 rows**: in the forced-choice question the codeword is
-QUOTED (`the word "banana"`), so `find_word_occurrences_in_text` does not detect it, and the FC readout has
-NO unquoted request-line query codeword (the request was replaced by the question). The paper's
-"MLP writes the concept when it sees the QUERY codeword" therefore needs the FULL doublespeak-prompt readout
-(request line present), reusing the Phase-3 query-position machinery (05/mlp_out) — flagged for next tick.
+**Gate 4:** an MLP at L9 (mid-band L9–L12) contributes causally at the demonstration codeword (necessity,
+both cohorts, locked-test replication, 32-layer Holm, matched controls, self-swap 0) — a small,
+necessity-only, non-sufficient, distributed contribution; the query-codeword MLP is inert. Answers plan
+Q5 (binding first causally available ≈ L9) and Q6 (which MLP writes ≈ L9 demo-position, distributed L9–L12).
+
+Reproduce: `python scripts/phase6_analyze.py <output_dir>` (per-split + Holm).

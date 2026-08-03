@@ -9,6 +9,20 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 36, loop tick — Phase 6 causal MLP FINAL, Holm-corrected, clean)** — Clean re-runs
+  703531–703534 done. Built reusable `scripts/phase6_analyze.py` (per-split + **Holm across 32 layers**,
+  paired sign-flip permutation). **RESULT:** DEMO-codeword `mlp_out` necessity — **L9 survives 32-layer Holm
+  on ALL FOUR cells** (curated dev p<1e-4 / heldout p=4e-4; clearharm dev p<1e-4 / heldout, where the whole
+  **L9–L12 band survives**). Effect small (~.02–.10), **not sufficient** (S3≈0). The 2 question tokens had
+  inflated it ~2× (heldout L9 .18→.097 clean) — real but proximity-boosted; the clean L9 is the true effect.
+  **QUERY-codeword `mlp_out`: nothing survives Holm on locked test in EITHER cohort** → inert, matching the
+  inert query state (iter-13). **So the binding MLP write is at the DEMONSTRATION codeword (L9, where the
+  binding is DEFINED), not the query codeword (where it's USED).** Co-localizes with demo-KV retrieval (L8–11
+  peak L9). Answers plan Q5 (binding available ≈L9) + Q6 (write ≈L9 demo-pos, distributed L9–L12). Finalized
+  `reports/PHASE6_MLP.md`. **Gate 4 met (partial): causal mid-band demo-position MLP necessity, corrected,
+  replicated; necessity-only + distributed, not a sufficient localized write.** Next: Phase 5 (all-head
+  activation patching — which HEADS are necessary/sufficient; reuse ZHeadPatch/ZHeadCapture + 49_head_attribution).
+
 - **2026-08-03 (iter 35, loop tick — self-caught position-classification BUG + clean re-run)** — Diagnosing
   the query-run n=0 exposed a **token-index-vs-char-offset bug in `build_fc`** (same class as the iter-25
   edgeKO bug): `hit.spans` are TOKEN indices but the demo/query boundary `q_off` was a CHAR offset from
