@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-03 (iter 61, loop tick — carry-head sufficiency install, final n/s pair)** — Built
+  `scripts/phase7c_sufficiency.py` (reuses ZHeadCapture/ZHeadPatch): install DS carry-head answer-z into a
+  BENIGN receiver — does the concept reading appear? Completes the carry-band necessity+sufficiency pair
+  (Phase 5/7 necessity done). Arms S1/S3_carry/S_rand/S_self (self = benign own z, no-op check). Full runs
+  **706024 (curated) / 706025 (clearharm)** launched. Expected ≈0 (every sufficiency test S3≈0 across
+  Phases 4/5/6 = distributed/context-bound). Next tick: read sufficiency_specific (S3−S_rand) + self-check
+  → confirm the honest "necessary + edge-connected but NOT sufficient" close of the carry analysis.
+
 - **2026-08-03 (iter 60, loop tick — publication circuit-summary FIGURE)** — Built
   `scripts/make_circuit_figure.py` (scalar-only; Okabe-Ito colorblind-safe; dataviz-skill principles).
   `figures/circuit_summary.png`: Panel A = per-layer causal necessity across depth (MLP-write peak L9 +
