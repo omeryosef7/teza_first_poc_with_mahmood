@@ -72,13 +72,22 @@ def main():
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     print(f"[edgeKO] cohort={cohort} L={L} Hn={Hn} layers={layers[:6]}{'...' if len(layers)>6 else ''} -> {out_dir}")
 
+    REQ_MARKER = "Do not reason, just "
     def build_fc(raw_prompt, cw, concept):
-        fc_raw = demo_block_of(raw_prompt) + "\n\n" + fc_question(cw, concept)
+        # KEEP the full DS prompt (demos + request-line QUERY codeword) and append the FC question,
+        # so the retrieval destination is the actual query codeword (space-prefixed, findable), not
+        # the quote-wrapped codeword inside the question. demo = before request; query = request..question.
+        fc_raw = raw_prompt + "\n\n" + fc_question(cw, concept)
         templated = dc.apply_template(lm.tokenizer, fc_raw)
+        # find_word_occurrences_in_text returns TOKEN indices; convert the request/question char
+        # boundaries to token indices via prefix tokenization (occurrences sit clearly on one side).
+        req_off = templated.rfind(REQ_MARKER)
         q_off = templated.rfind(FC_PREFIX)
+        req_tok = len(lm.tokenizer(templated[:req_off], add_special_tokens=False)["input_ids"])
+        q_tok = len(lm.tokenizer(templated[:q_off], add_special_tokens=False)["input_ids"])
         hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, cw)
-        demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_off]
-        query_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] >= q_off]
+        demo_pos = [li for li in hit.last_idx if li < req_tok]
+        query_pos = [li for li in hit.last_idx if req_tok <= li < q_tok]  # request-line query codeword
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
         seqlen = tok["input_ids"].shape[1]
         return tok, demo_pos, query_pos, seqlen
