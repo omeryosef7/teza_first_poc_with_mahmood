@@ -313,6 +313,8 @@ class SubmodulePatch:
 
     def _edit(self, hidden):
         """Apply replace/add/project_out at the requested positions (in-place on a clone)."""
+        if hidden.shape[0] != 1:      # edits row 0 only; fail loud on batch>1 (audit finding 5)
+            raise NotImplementedError("SubmodulePatch supports batch size 1 only")
         hidden = hidden.clone()
         v = None if self.vector is None else self.vector.to(hidden.dtype).to(hidden.device)
         seq = hidden.shape[1]
@@ -454,6 +456,8 @@ class AttentionKnockout:
         if am is None or am.dim() != 4:
             raise RuntimeError("expected a 4-D additive attention mask; is the model "
                                "loaded with attn_implementation='eager'?")
+        if am.shape[0] != 1:          # edits row 0 only; fail loud on batch>1 (audit finding 5)
+            raise NotImplementedError("AttentionKnockout supports batch size 1 only")
         am = am.clone()
         if self.heads is not None and am.shape[1] == 1:
             am = am.expand(-1, self.n_heads, -1, -1).clone()
@@ -523,6 +527,8 @@ class ZHeadPatch:
     def _pre(self, module, args):
         z = args[0]
         b, seq, hh = z.shape
+        if b != 1:                    # edits row 0 only; fail loud on batch>1 (audit finding 5)
+            raise NotImplementedError("ZHeadPatch supports batch size 1 only")
         zr = z.view(b, seq, self.n_heads, self.head_dim).clone()
         v = self.vec.to(device=z.device, dtype=z.dtype)
         for p in self.positions:

@@ -184,10 +184,17 @@ def main():
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                     "codeword": codeword, "benign_p_concept": benign_pconc}
 
+            if cid == kid:                       # degenerate FC readout (shared first subtoken)
+                skips[f"{split}:cid_eq_kid"] += 1
+                continue
+            if len(ds_demo_cw) != len(b_demo_cw):  # demo-codeword count mismatch (trailing-aligned)
+                skips[f"{split}:demo_cw_count_mismatch"] += 1
             m = min(len(ds_demo_cw), len(b_demo_cw))
             ds_cwset, b_cwset = set(ds_demo_cw), set(b_demo_cw)
-            ds_pool = [p for p in range(max(ds_demo_cw)) if p not in ds_cwset]
-            b_pool = [p for p in range(max(b_demo_cw)) if p not in b_cwset]
+            # pool = in-demo-text non-codeword positions (range from FIRST to LAST codeword),
+            # excluding BOS/system/template tokens before the first occurrence (audit finding 8).
+            ds_pool = [p for p in range(min(ds_demo_cw), max(ds_demo_cw)) if p not in ds_cwset]
+            b_pool = [p for p in range(min(b_demo_cw), max(b_demo_cw)) if p not in b_cwset]
             rlen = min(m, len(ds_pool), len(b_pool))
             ds_rand = sorted(rng.sample(ds_pool, rlen)) if rlen else []
             b_rand = sorted(rng.sample(b_pool, rlen)) if rlen else []

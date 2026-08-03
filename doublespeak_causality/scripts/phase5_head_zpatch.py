@@ -5,8 +5,10 @@ position, FC DE_context readout, dev/heldout separate, Holm across the 32x32 hea
 Which attention HEADS carry the Doublespeak reading? For every (layer, head), replace the DS
 per-head attention output z[head] at the FC ANSWER position (last token) with the matched
 BENIGN z[head] (necessity: does removing that head's contribution drop the concept reading?).
-Patching at the last position measures the head's DIRECT contribution to the final logit
-(nothing attends to it downstream), the cleanest per-head necessity readout.
+Patching at the last position measures the head's TOTAL effect on the final logit via the
+remaining layers at the answer position (no other position attends to the last token; this is
+a total/carry effect, NOT a strict direct-path contribution — Phase 7 separates direct vs mediated).
+Authoritative significance is recomputed by scripts/phase5_analyze.py (Wilcoxon + Holm).
 
 Reuses pc.ZHeadCapture (per-head z, o_proj input) + pc.ZHeadPatch (replace one head's z at a
 position) + the phase6 FC readout. Controls: self-swap (DS's own z -> exact no-op, sampled),
@@ -155,13 +157,18 @@ def main():
 
     # ---- per-split + Holm across (layer,head) family ----
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
-    def perm_p(vals, nperm=10000):
+    def perm_p(vals):
+        # Wilcoxon signed-rank (robust to right-skew, deterministic, resolves below the 1024-cell
+        # Holm threshold). A sign-flip permutation at feasible nperm returns p=0 artifacts here;
+        # a t-test is over-conservative. Matches scripts/phase5_analyze.py (authoritative).
+        from scipy import stats
         a = np.array(vals, float)
-        if a.size == 0:
+        if a.size < 6 or np.allclose(a, 0):
             return 1.0
-        obs = abs(a.mean())
-        signs = rng.integers(0, 2, size=(nperm, a.size)) * 2 - 1
-        return float((np.abs((signs * a).mean(1)) >= obs).mean())
+        try:
+            return float(stats.wilcoxon(a).pvalue)
+        except ValueError:
+            return 1.0
     def holm(pv, alpha=0.05):
         order = sorted(pv, key=lambda k: pv[k]); m = len(order); rej = {}; ok = True
         for i, k in enumerate(order):
