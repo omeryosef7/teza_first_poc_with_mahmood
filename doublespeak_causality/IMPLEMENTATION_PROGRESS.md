@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 81, loop tick — carry→demo edge-KO: machinery FIRES, demo-edge null)** — re-smoke
+  with positive control (n=5): **KO_all FIRES** (heldout C1−KO_all +0.086; dev −0.026 noisy) = the
+  AttentionKnockout machinery works AND the carry heads' answer attention has a (small, matching their small
+  z-necessity) effect; **KO_demo stays ≈0** → the carry heads do NOT specifically retrieve from the demo
+  codewords via answer-position attention. n=5 noisy → launched full on v2 **707708**. Emerging conclusion:
+  by the answer position the concept is already in the RESIDUAL (written@L9, carried up); the carry heads
+  read it from the residual, not by fresh demo-codeword attention (matches the original all-head edge-KO
+  null). Next tick: confirm at n≥55 (KO_all sig-nonzero fires, KO_demo null) → the "how carry heads get the
+  concept = from residual not demos" answer.
+
 - **2026-08-04 (iter 80, loop tick — carry→demo edge-KO preliminary NULL; added positive control)** —
   carry-edge smoke (n=3): C1=1.0 but necessity(C1−KO_demo) **exactly 0.0** — knocking out the carry heads'
   answer→demo-codeword edges does nothing. Exactly-0 needs a firing-check, so **added a KO_all positive
