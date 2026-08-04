@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 78, loop tick — definitive summary FIGURE refreshed w/ v2 + new results)** — Updated
+  `scripts/make_circuit_figure.py` to read the v2 (116-ex) job outputs (707203 MLP, 707473 heads) and
+  enriched Panel B into the carry-stage causal-handle profile (Δp_concept, one axis): **head-output
+  necessity +0.03, attn-PATTERN knockout +0.13, carry-head SUFFICIENCY +0.35, random 0.00**, + mediation
+  0.79 / direct_frac annotation. Panel A = per-layer necessity on v2 (MLP peak L9, head peak L14, stage
+  bands). Fixed annotation overlap + title width. `figures/circuit_summary.png` is now the definitive
+  publication figure of the complete, scaled, audited circuit. Sent to Omer. **Scale-up program fully
+  consolidated (data + all patching results + figure).**
+
 - **2026-08-04 (iter 77, loop tick — attn-pattern is DISTRIBUTED (per-head decomposition))** — 5 per-head
   pattern runs done (self-swap 0). **No single head's pattern is individually necessary**: clean per-head
   uniform-KO ≈0 (even slightly NEG for L14H5 = compensated by others), yet the JOINT 7-head knockout drops

@@ -30,7 +30,7 @@ def newest(patt):
 
 
 def mlp_necessity_by_layer(split="heldout"):
-    d = newest(os.path.join(DC, "outputs", "phase6_mlpKO_clearharm_demo_layer_*_703532"))
+    d = newest(os.path.join(DC, "outputs", "phase6_KO_clearharm_mlp_out_demo_layer_*_707203"))  # v2 116-ex
     rows = [json.loads(l) for l in open(os.path.join(d, "raw.jsonl"))]
     sr = [r for r in rows if r["split"] == split]
     valid = {r["sid"] for r in sr if r["cell"] == "C1" and r["p_concept"] > r.get("benign_p_concept", 1)}
@@ -44,10 +44,8 @@ def mlp_necessity_by_layer(split="heldout"):
 
 
 def head_necessity_by_layer(split="heldout"):
-    dirs = [newest(os.path.join(DC, "outputs", f"phase5_headz_clearharm_*_{j}")) for j in (704131, 704133)]
-    rows = []
-    for d in dirs:
-        rows += [json.loads(l) for l in open(os.path.join(d, "raw.jsonl"))]
+    d = newest(os.path.join(DC, "outputs", "phase5_headz_clearharm_*_707473"))  # v2 116-ex single dir
+    rows = [json.loads(l) for l in open(os.path.join(d, "raw.jsonl"))]
     sr = [r for r in rows if r["split"] == split]
     valid = {r["sid"] for r in sr if r["cell"] == "benign" and r["C1"] > r.get("benign_p_concept", 1)}
     nec = defaultdict(list)
@@ -95,25 +93,26 @@ def main():
         axA.spines[s].set_visible(False)
     axA.legend(frameon=False, fontsize=8, loc="upper left", bbox_to_anchor=(0.02, 0.80))
 
-    # ---- Panel B: direct_frac + mediation summary (verified numbers) ----
-    labels = ["carry\nL14-18", "output\nL30-31", "L9→carry\nmediation", "random\ncontrol"]
-    vals = [0.0, 0.62, 0.79, 0.0]
-    cols = [ORANGE, PURPLE, GREEN, MUTED]
+    # ---- Panel B: carry-stage causal handles, Δp_concept (v2 heldout, one axis) ----
+    labels = ["head-output\nnecessity", "attn-PATTERN\nknockout", "carry-head\nSUFFICIENCY", "random\ncontrol"]
+    vals = [0.030, 0.134, 0.348, 0.0]                      # v2 heldout: L9-ish head nec / uniform-KO / install / ctrl
+    cols = [ORANGE, SKY, GREEN, MUTED]
     bars = axB.bar(range(4), vals, color=cols, width=0.62, zorder=3)
-    for i, (bar, v) in enumerate(zip(bars, vals)):
-        axB.text(bar.get_x() + bar.get_width() / 2, v + 0.02, f"{v:.2f}", ha="center", va="bottom", fontsize=9, color=INK)
-    axB.axhline(1.0, color=GRID, lw=0.8, ls="--", zorder=1)
+    for bar, v in zip(bars, vals):
+        axB.text(bar.get_x() + bar.get_width() / 2, v + 0.008, f"+{v:.2f}", ha="center", va="bottom", fontsize=9, color=INK)
     axB.set_xticks(range(4)); axB.set_xticklabels(labels, fontsize=8)
-    axB.set_ylabel("fraction"); axB.set_ylim(0, 1.15)
-    axB.set_title("B · Direct-to-logit vs mediated (Phase 7 / 7b)", fontsize=10, loc="left")
+    axB.set_ylabel("Δ p_concept  (causal effect)"); axB.set_ylim(0, 0.42)
+    axB.set_title("B · Carry-stage causal handles (v2, locked test)", fontsize=10, loc="left")
+    axB.text(0.03, 0.97, "L9→carry mediation = 0.79\ncarry direct_frac ≈ 0 (mediated)\noutput L30–31 direct_frac ≈ 0.6",
+             transform=axB.transAxes, ha="left", va="top", fontsize=7.5, color=MUTED)
     for s in ("top", "right"):
         axB.spines[s].set_visible(False)
     axB.grid(axis="y", color=GRID, lw=0.6, zorder=0)
 
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.text(0.01, 0.965, "Doublespeak causal circuit:  demo-KV retrieval (L8–11) + L9 MLP write → "
+    fig.text(0.01, 0.965, "Doublespeak causal circuit (v2: 116 ex, 30 novel concepts):  demo-KV retrieval + L9 MLP write → "
              "L14–21 carry heads (mediated) → L30–31 output → logit",
-             fontsize=11, ha="left", color=INK, fontweight="bold")
+             fontsize=10.5, ha="left", color=INK, fontweight="bold")
     fig.savefig(OUT, dpi=160, facecolor="white")
     print(f"wrote {OUT}")
     print(f"  MLP peak L{int(np.argmax(mlp_y))}={mlp_y.max():.3f}; head peak L{pl}={head_y[pl]:.3f}")
