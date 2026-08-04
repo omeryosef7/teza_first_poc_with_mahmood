@@ -1,11 +1,30 @@
-# Doublespeak causal-circuit sprint — status (2026-08-03)
+# Doublespeak causal-circuit sprint — status (2026-08-04)
 
-**TL;DR:** New locked ClearHarm split + curated replication cohort built; the Doublespeak attack and its
-representational structure reproduce; and the retrieval mechanism is now pinned on the new data with
-matched controls: **the demonstration-codeword content is causally necessary in the L8–11 mid-band
-(significant on both cohorts) but NOT sufficient, and NOT carried by a surgical query→demo attention
-edge — it's a distributed, context-bound binding.** All on Llama-3.1-8B bf16, forced-choice readout,
-paired bootstrap CIs, both cohorts.
+**TL;DR (headline, updated Aug 4):** We mapped the full concept circuit **and** then tested whether it
+actually drives the jailbreak — it does **not**. **The Doublespeak jailbreak is, mechanistically, an
+imperfect in-context *refusal-suppression* technique; the elaborate token→concept remap is behaviorally
+epiphenomenal.** Two independent behavioral experiments (both cohorts, locked splits, StrongREJECT-judged,
+paired McNemar, count-matched controls):
+- **Concept circuit → behaviorally NULL.** Ablating the components that are necessary+sufficient for the
+  concept *readout* (L8–11 demo write; L14–21 carry heads) throughout harmful generation leaves ASR
+  statistically unchanged.
+- **Refusal axis → behaviorally NECESSARY + SUFFICIENT.** Ablating one (orthogonal, cos≈0.03) refusal
+  direction turns a refusing model into a complying one (ASR +0.43–0.48, every split p≤0.004) and is a
+  *stronger* attack than Doublespeak itself; and re-injecting it *into* Doublespeak drives ASR→**0.000**
+  (dose-dependent, axis-specific, generations verified as coherent refusals).
+- **Defense implication (sharp):** monitor/scrub the **refusal** axis, not the concept subspace — the
+  latter is causally disconnected from compliance.
+
+Detail: `reports/PHASE_BEHAV_REFUSAL.md` (+ `_CARRY`/`_WRITE`), folded into `FINAL_CAUSAL_CIRCUIT_REPORT.md`.
+
+---
+
+**Earlier status (Aug 3 — representational circuit):** New locked ClearHarm split + curated replication
+cohort built; the Doublespeak attack and its representational structure reproduce; and the retrieval
+mechanism is now pinned on the new data with matched controls: **the demonstration-codeword content is
+causally necessary in the L8–11 mid-band (significant on both cohorts) but NOT sufficient, and NOT carried
+by a surgical query→demo attention edge — it's a distributed, context-bound binding.** All on Llama-3.1-8B
+bf16, forced-choice readout, paired bootstrap CIs, both cohorts.
 
 ## What's done
 - **Data (Phase 1):** `data/splits/clearharm_doublespeak_v1.json` — 137 examples, 2 cohorts, both ≥20/≥20
@@ -37,13 +56,16 @@ ClearHarm dataset with matched-control necessity + sufficiency tests — and add
 - ClearHarm-native concepts are noisier (harm not always in one swapped noun) → its effects are weaker /
   sometimes ns; the clean **curated** cohort carries the significant claims, ClearHarm corroborates direction.
 - Curated test split is small (n=21).
-- Results are forced-choice (DE_context) readout; behavioral-generation confirmation of the decisive
-  causal cells is a remaining step.
+- The representational claims are forced-choice (DE_context) readout. **Behavioral-generation confirmation
+  is now DONE** (BEHAV-* above) — and it revealed the concept cells are behaviorally inert while refusal is
+  the causal locus. That is the sprint's main scientific result.
 
 ## Next
-Causal MLP write (mid-band, intervention) → head→MLP path → concept-direction dose-response →
-(only if a signal passes the causal gate) GCG/MAC objective. Prior priors (temporal objective backfires,
-d_DS inert) mean the objective/GCG phases are at genuine risk of null — will be reported as such.
+Behavioral causal frontier is complete (concept null ×2, refusal necessary+sufficient, coherence-audited).
+Remaining is consolidation/write-up: unify the representational circuit (retrieval→write→carry→readout) with
+the behavioral dissociation into the paper narrative. Optional deeper probes: refusal-axis onset layer for
+the injection, and whether Doublespeak's *partial* refusal suppression is what makes it weaker than direct
+ablation.
 
 Full detail: `reports/PHASE2_*`, `PHASE3_RESIDUAL`, `PHASE4_DEMO_RETRIEVAL`, `PHASE6_MLP`,
 `FINAL_CAUSAL_CIRCUIT_REPORT`. Tracking: `IMPLEMENTATION_PROGRESS.md`.

@@ -41,8 +41,15 @@ head or edge), but a clear directed layer structure. Concept axis is independent
    so the carry band *reads* the L9 write — a directed, edge-connected pathway (PHASE7 + PHASE7b, Gate 5).
 8. **Localized or distributed?** **Distributed within concentrated bands** — an L8–12 retrieval/write region
    and an L14–21 carry band. No single necessary head or edge; clear layer structure.
-9. **How is the concept mechanism separated from refusal?** `cos(concept, refusal) ≈ 0.01–0.06` at every
-   layer, both cohorts — orthogonal, separate levers (PHASE2_DIRECTIONS).
+9. **How is the concept mechanism separated from refusal?** Two ways, and the second is the study's headline.
+   **(a) Representationally orthogonal:** `cos(concept, refusal) ≈ 0.01–0.06` at every layer, both cohorts
+   (PHASE2_DIRECTIONS). **(b) Causally dissociated (BEHAV-*):** the two are separated not just in geometry but
+   in *what drives harmful behavior* — ablating the concept circuit (write OR carry, each necessary+sufficient
+   for the readout) leaves ASR unchanged (behaviorally NULL), whereas the refusal axis is behaviorally
+   **necessary AND sufficient**: ablating it jailbreaks the model (>Doublespeak), and re-injecting it into
+   Doublespeak drives ASR→0.000 (dose-dependent, axis-specific, coherence-audited). So Doublespeak's harm runs
+   entirely through the refusal channel, with the concept channel a behaviorally-inert bystander
+   (PHASE_BEHAV_REFUSAL / PHASE_BEHAV_CARRY / PHASE_BEHAV_WRITE).
 10. **Does it generalize to locked test?** Yes — L9 write survives Holm on heldout (both cohorts); carry
     heads on clearharm heldout; dose-response on heldout; every claim replicates on ≥20 locked-test examples
     (except curated heldout heads, n=21 low-power, honestly flagged).

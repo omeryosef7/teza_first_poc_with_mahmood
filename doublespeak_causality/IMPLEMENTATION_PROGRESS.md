@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 93, loop tick — consolidation: plan Q9 answered + stakeholder update refreshed)** —
+  Behavioral frontier complete, so consolidated into plan deliverables. **Upgraded FINAL Q9** ("how is the
+  concept mechanism separated from refusal?") from representational-only (cos≈0.03 orthogonal) to the CAUSAL
+  dissociation: concept circuit behaviorally NULL, refusal axis behaviorally necessary+sufficient → Doublespeak's
+  harm runs entirely through the refusal channel, concept channel an inert bystander. **Refreshed SLACK_UPDATE.md**
+  (was Aug-3 mid-sprint, listed behavioral confirmation as "remaining") with the completed headline + defense
+  implication + corrected Next. No new compute. MECHANISM_SYNTHESIS.md left as the NEXT5-7 (fixed-pair) doc;
+  behavioral synthesis lives in FINAL + PHASE_BEHAV_*.
+
 - **2026-08-04 (iter 92, loop tick — refusal NECESSITY ✓ LOCKED: re-injection kills Doublespeak (dose-dependent, specific) → refusal-bypass account CAUSALLY COMPLETE)** —
   Full inject runs landed (710769 clearharm 86 rows, 710770 curated 51). **Result ✓ definitive:** re-injecting
   +α·L18-refusal into DS drives ASR **monotonically to 0.000 at α=12 in ALL 4 cells** (clearharm train
