@@ -81,6 +81,17 @@ mechanisms are now tested: TOCTOU causally (§4), superposition representational
 - **Depth timeline:** concept @ early-check depth ≈0.18 vs @ late-use depth ≈4.1 = 22.5× gradient —
   the early check reads a near-benign residual; the harmful concept materializes downstream. [D6]
 
+> **Scope note / bridge to the later behavioral-necessity work (CAUSAL_CIRCUIT sprint, `reports/PHASE_BEHAV_*`).**
+> "Representation predicts behavior" here is specific: the concept×refusal *interaction* (compliance-flip under
+> concept-install **plus** refusal-ablation) appears at the T3-predicted depth. It is NOT the claim that the
+> concept circuit alone drives compliance. The later ClearHarm behavioral experiments tested exactly that and
+> found the opposite: ablating the concept circuit (write or carry) throughout generation leaves ASR unchanged
+> (behaviorally **inert**), while the **refusal axis** is behaviorally necessary+sufficient (ablate→jailbreak;
+> re-inject→ASR 0) and is the axis Doublespeak actually suppresses (onset at the L8 write band; decision read
+> mid-late ~L16+). So both docs agree: the harmful behavior rides the **refusal** channel — the compliance-flip
+> above is driven by the refusal-ablation factor, with concept-install modulating only where/how much. The
+> concept representation predicts the *readout*, not *compliance*.
+
 ---
 
 ## 5. Reasoning models carry the hijack
