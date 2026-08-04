@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 98, loop tick — NUMERIC INTEGRITY CHECK: all behavioral/refusal report numbers match raw exactly)** —
+  Recomputed every headline number from raw.jsonl and compared to the reports: concept nulls (carry Δ+.091/+.071,
+  write Δ−.023/0.0), refusal sufficiency (clearharm direct_refabl .568/.548 vs ds_base .386/.357; curated
+  .700/.714 vs base .267/.286), refusal necessity (clearharm inject .386→.159→.091→.000 / .381→.190→.071→.000;
+  curated →.000; random controls .50/.43/.29). **All match exactly — zero transcription errors.** L28 late-inject
+  numbers also locked (train .41→.21, test .29→.29 under-driven). Behavioral+refusal deliverable is now
+  numerically integrity-verified in addition to code-audited (iter95) + coherence-audited (iter92b). Queue clean.
+
 - **2026-08-04 (iter 97, loop tick — injection-layer localization: mid clean, fixed-α confounds early/late (α-norm))** —
   Swept single-layer refusal re-injection L9/L18/L28 at α=12 (clearharm) to localize WHERE restoring refusal
   rescues from Doublespeak. **L18 (mid): CLEAN specific full rescue** — refusal inj → ASR .000/refusal 1.0,
