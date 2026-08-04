@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 104, loop tick — numeric integrity check now covers ALL results; behavioral report index added)** —
+  Cluster saturated (~65 GPU jobs ahead; trajectory 711956/711957 pending, waiter tracking) → disciplined
+  no-GPU consolidation. **Numeric integrity: recomputed the two NEWEST results from raw, both match reports
+  exactly** — interaction (p_concept .884→.799 clearharm / .690→.457 curated; max|frac_restored|≤.048 =
+  refusal unmoved) and calibrated (clearharm L9 −.068 ns/L22 −.250 p=.001; curated L9 ns/L22 p=.031). Combined
+  with iter98 (carry/write/refusal/inject), **EVERY behavioral/refusal result is now numerically verified vs
+  raw, zero transcription errors.** Also added a behavioral-frontier report INDEX to FINAL (PHASE_BEHAV_*/
+  WRITE_REFUSAL_INTX + harnesses) for discoverability. Deliverable now: complete (6 evidence levels + causal
+  decoupling), code-audited (all harnesses, no off-by-one), coherence-audited, AND fully numerically verified.
+
 - **2026-08-05 (iter 103, loop tick — full bug audit of ALL new harnesses ✓ (per Omer's 'no bugs'); trajectory probe queued)** —
   Independent review of the two newest harnesses (interaction + trajectory): **both CLEAN, key
   projection/position conventions verified CONSISTENT with NO off-by-one** — trajectory `idx=inlen-1+t` is
