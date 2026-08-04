@@ -129,9 +129,10 @@ clearharm (ds_base ASR ≈ .29–.40; refusal_rate ≈ .45–.50; empty=0 everyw
 |---|---|---|---|
 | **L9 (early)** | .000 / 1.00 | **.000 / 0.00** | CONFOUNDED — random also kills ASR (no refusal) |
 | **L18 (mid)** | .000 / 1.00 | **.62 / 0.00** | CLEAN — refusal-specific full rescue |
-| **L28 (late)** | ~.20 / ~.63 | ~.33 / ~.43 (≈ base) | specific but PARTIAL (under-driven) |
+| **L28 (late)** | train .21 / .64 · test **.29 / .67** | ≈ base (.34 / .38) | specific but WEAK/under-driven (test ASR unchanged) |
 
-(L9/L18 = final, both splits, n=44/42; L28 shown from the train split, test finalizing.)
+(All final, both splits, n=44 train / 42 test. L18 shown = test; identical on train. L28 refusal injection
+raises refusal_rate but barely moves ASR — at high residual norm α=12 is too small to rescue.)
 
 The result **confirms the necessity claim at L18 with an internal random control** (refusal injection → ASR
 0, random → ASR .62), and is a clean methodological illustration of the α-norm caveat: because `alpha` is an
