@@ -1,4 +1,4 @@
-# FINAL_CAUSAL_CIRCUIT_REPORT.md — Doublespeak causal circuit (Phases 0–10)
+# FINAL_CAUSAL_CIRCUIT_REPORT.md — Doublespeak causal circuit (Phases 0–10 + behavioral frontier BEHAV-*)
 
 Complete causal account of the Doublespeak / in-context representation-hijacking mechanism on a locked
 ClearHarm split, **Llama-3.1-8B-Instruct bf16**. Two cohorts reported separately: ClearHarm-native
@@ -6,10 +6,27 @@ ClearHarm split, **Llama-3.1-8B-Instruct bf16**. Two cohorts reported separately
 **Wilcoxon signed-rank, Holm-corrected**; dev(train)/heldout(test) always separate. Every claim links to a
 phase report with n, CIs, controls. **Audited (20/20 confirmed findings fixed/verified) + coverage-validated.**
 
+## Headline (the main result)
+We mapped the full concept circuit **and then tested whether it drives the jailbreak — it does not.**
+Two dissociations, both cross-cohort/locked-test/controlled:
+1. **The concept circuit is representationally necessary+sufficient (for the codeword→concept readout) but
+   behaviorally INERT.** Ablating the L8–11 write OR the L14–21 carry heads throughout harmful generation
+   leaves attack-success unchanged (BEHAV-CARRY/WRITE, both null).
+2. **The behavioral locus is the (orthogonal) REFUSAL axis.** Ablating one refusal direction jailbreaks the
+   model *more* than Doublespeak does (+0.43–0.48 ASR, p≤.004, specific); re-injecting it *into* Doublespeak
+   drives ASR→0.000 (dose-dependent, axis-specific, coherence-audited); and Doublespeak's residual sits at/below
+   the benign level on that axis, with suppression onsetting at the L8–11 write band and growing with depth.
+
+**⇒ Doublespeak is, mechanistically, an imperfect in-context refusal-suppression technique; the elaborate
+token→concept remap is a behaviorally epiphenomenal bystander.** Defense: scrub the refusal axis, not the
+concept subspace. (Details: PHASE_BEHAV_REFUSAL / _CARRY / _WRITE.)
+
 ## The circuit (one line)
 **Demonstration-codeword K/V retrieval (L8–11) + L9 MLP write → L14–L21 answer-position carry heads
 (downstream-mediated) → L30–31 proximal output → logit.** Distributed within each band (no single necessary
-head or edge), but a clear directed layer structure. Concept axis is independent of refusal.
+head or edge), but a clear directed layer structure. Concept axis is independent of refusal — and, per the
+headline above, that independence is *causal*, not just geometric: the concept circuit is behaviorally inert
+while the refusal axis is behaviorally necessary+sufficient.
 
 ## Answers to the 12 final-deliverable questions
 
