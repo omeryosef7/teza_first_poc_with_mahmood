@@ -160,9 +160,12 @@ restore that layer's refusal signal to the level a *refused* (direct-harmful) pr
 robust mid-late rescue — significant on BOTH splits** (train p=.001, test Δ−0.167 p=.039); L16/L28 sig on train,
 ns on the lower-powered test (base ASR .33); **L9 ns on both splits**.) **Restoring the refusal signal rescues
 the model at MID-LATE layers (L16–28; L22 significant on both splits) but NOT at the early layer (L9, ns both
-splits)** — with clean specificity (random null throughout). Combined with the projection result (DS *suppresses* refusal
+splits)** — with clean specificity (random null throughout). **Cross-cohort: curated replicates** — L22
+significant (train ΔASR −0.20 p=.031; pooled n=51 −0.14 p=.016), L9 ns everywhere, random ≈ null (curated-test
+n=21 is floor-limited at ds_base .095, no power). So in **both cohorts L22 (mid-late) is the significant rescue
+layer and L9 (early) is null.** Combined with the projection result (DS *suppresses* refusal
 starting at the L8–11 write band and growing with depth), the picture sharpens: **Doublespeak suppresses
-refusal early, but the behavioral refusal DECISION is read mid-late (~L16+)** — restoring the signal only early
+refusal early, but the behavioral refusal DECISION is read mid-late (~L16–22)** — restoring the signal only early
 is not enough; it must be restored where the decision is made. (Rescue is partial, not →0, because the
 calibrated α is a *minimal* restore-to-refused push — the larger fixed α=12 at L18 drove ASR fully to 0.)
 

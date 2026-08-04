@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 100, loop tick — calibrated depth-localization REPLICATES cross-cohort; docs bridged)** —
+  Curated calibrated depth-localization done (711769, n=51): **L22 (mid-late) significant** (train ΔASR −0.20
+  p=.031; pooled −0.14 p=.016), **L9 (early) ns** everywhere, random ≈ null (curated-test n=21 floor-limited
+  ds_base .095). ⇒ mid-late refusal-decision localization holds in BOTH cohorts (L22 sig / L9 null). Depth-
+  localization now cross-cohort like every other finding. Also bridged MECHANISM_SYNTHESIS.md (fixed-pair
+  TOCTOU 'representation predicts behavior' = concept×refusal INTERACTION depth, NOT concept-alone → cross-refs
+  the behavioral-necessity result; both docs agree harm rides the refusal channel). Report finalized.
+  **SPRINT SCIENTIFIC CORE COMPLETE** — 5 evidence levels (concept behav-inert; refusal necessary+sufficient +
+  representational signature + mid-late decision-localization), all cross-cohort/locked-test, triple-audited
+  (code/coherence/numeric). Remaining = paper write-up (reports already comprehensive; FINAL leads with headline).
+
 - **2026-08-04 (iter 99, loop tick — CALIBRATED depth-localization ✓: refusal DECISION read mid-late, confound resolved)** —
   Built+ran `phase_refusal_inject_calibrated.py`: inject each layer's own refusal dir at α = its measured
   direct−ds projection gap (restore refusal to "refused" level), matched random control. **Resolves the iter97
