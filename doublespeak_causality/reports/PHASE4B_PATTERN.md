@@ -65,14 +65,18 @@ firing control)**. v2, both splits:
 | **KO_all (positive control, C1−KO_all)** | **+0.246 [.167,.329]** | **+0.207 [.135,.288]** |
 | KO_demo (C1 − KO_demo) | +0.007 [.003,.012] | +0.003 [.001,.005] |
 
-- **The knockout machinery fires strongly** (KO_all drops the reading ~0.21–0.25, both splits) — the carry
-  heads' answer-position attention IS causally important.
-- **But knocking out only the demo-codeword edges is negligible** (KO_demo ~0.005 = only ~2–3% of KO_all).
-- → **the carry heads retrieve the concept from the DISTRIBUTED context at the answer position, NOT from the
-  demonstration codeword tokens specifically.** By the answer position the concept is already in the residual
-  stream (written @L9 on the demo positions, carried up); the carry heads read it from the broad context, not
-  by fresh demo-codeword attention. Reconciles the original all-head query→demo edge-KO null (Phase 4) — no
-  privileged demo-codeword retrieval edge anywhere.
+- **CLEAN CLAIM — the demo-codeword edges are negligible** (KO_demo ~0.005 = only ~2–3% of KO_all): the
+  carry heads do NOT read the concept binding from the demonstration-codeword tokens. This is the clean,
+  unconfounded result and it reconciles the original all-head query→demo edge-KO null (Phase 4) — **no
+  privileged demo-codeword retrieval edge anywhere in the circuit.**
+- **KO_all is a firing control, NOT a pure retrieval measure (honest caveat):** it drops the reading
+  ~0.21–0.25, confirming the AttentionKnockout machinery fires — but blocking answer→ALL-earlier keys also
+  removes the carry heads' access to the FC QUESTION, which literally contains the concept/codeword answer
+  options. So part of KO_all is the model losing the answer options, not concept retrieval. Do not read
+  KO_all as "the carry heads retrieve 0.21 from context"; read it only as "the knockout fires."
+- **Net:** the demo codewords are not a retrieval source for the carry heads; by the answer position the
+  concept is already in the residual (written @L9, carried up) and read from there — consistent with the
+  distributed, no-privileged-edge theme.
 
 ## Caveats / next
 - The benign transplant is cross-length-approximate; the uniform knockout is the clean claim.
