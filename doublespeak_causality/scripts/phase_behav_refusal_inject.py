@@ -54,6 +54,8 @@ def main():
     ap.add_argument("--max-new", type=int, default=220)
     ap.add_argument("--n", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--save-gen", action="store_true",
+                    help="also store the (truncated) generated text per arm — for coherence audit")
     args = ap.parse_args()
 
     from strongreject_scoring import load_strongreject_evaluate
@@ -118,6 +120,7 @@ def main():
             for arm, comp in gens.items():
                 score, label = judge(goal, comp)
                 rec[f"{arm}_label"] = label; rec[f"{arm}_score"] = score
+                if args.save_gen: rec[f"{arm}_gen"] = comp[:400]
             fh.write(json.dumps(rec) + "\n"); fh.flush()
     fh.close()
 
