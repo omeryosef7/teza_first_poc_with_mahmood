@@ -53,6 +53,12 @@ def main():
     ap.add_argument("--refusal-pt", required=True)
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--alphas", default="4,8,12")
+    ap.add_argument("--inject-layer", type=int, default=-1,
+                    help="decoder layer to inject at (-1 = use the refusal dir's own fit layer). "
+                         "Sweeping this localizes WHERE restoring refusal rescues the model. "
+                         "CAVEAT: alpha is an absolute residual magnitude, and residual norm grows with "
+                         "depth, so a fixed alpha is a RELATIVELY stronger push at early (low-norm) layers "
+                         "— read empty_rate to catch over-drive, and compare layers qualitatively.")
     ap.add_argument("--splits", default="train,test")
     ap.add_argument("--max-new", type=int, default=220)
     ap.add_argument("--n", type=int, default=0)
@@ -67,7 +73,8 @@ def main():
     lm = dc.load_model(args.model); dev = lm.model.device
     pad_id = lm.tokenizer.pad_token_id if lm.tokenizer.pad_token_id is not None else lm.eos_token_ids[0]
     v_ref = torch.load(args.refusal_pt).float().flatten()
-    rlayer = int(json.load(open(args.refusal_pt.replace(".pt", ".json"))).get("layer", 18))
+    fit_layer = int(json.load(open(args.refusal_pt.replace(".pt", ".json"))).get("layer", 18))
+    rlayer = args.inject_layer if args.inject_layer >= 0 else fit_layer   # where to ADD (may differ from fit)
     rand_ref = pc.norm_matched_random(v_ref, 1, args.seed)[0]
     alphas = [float(x) for x in args.alphas.split(",")]
     mid_alpha = alphas[len(alphas) // 2]
