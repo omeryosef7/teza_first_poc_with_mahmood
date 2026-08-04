@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 91, loop tick — refusal NECESSITY arm built + smoke CONFIRMS; clearharm test cell LOCKED)** —
+  Two threads. (1) **Locked the clearharm refusal cell:** preemption restart 708038 finished (86 rows) — final
+  refabl vs base **+0.432 train (19/0, p<1e-5) / +0.476 test (20/0, p<1e-5)**, random control exactly null,
+  ds_base vs refabl −0.182/−0.190 p=.057 (refusal-ablation ≥ DS both splits). Updated PHASE_BEHAV_REFUSAL.md +
+  FINAL to complete-cell numbers (noted ~1-2 ex/cell greedy-decode wobble across nodes; effect dwarfs it).
+  (2) **Built the NECESSITY arm** `scripts/phase_behav_refusal_inject.py` — re-inject +α·L18-refusal-axis at
+  every position through DS generation (`pc.AllPositionAdd`, single-layer L18, α∈{4,8,12}) + norm-matched
+  random-dir control @α8 + empty_rate guard. **Smoke (710762, n=3) CONFIRMS necessity+specificity:** refusal
+  re-injection FLIPS malicious DS gens → REJECTED (α=12 always; α=4/8 dose-dependent) while random-dir @α8
+  leaves them MALICIOUS; 0 empties (α=12 doesn't break gen). **Full runs launched:** 710769 (clearharm), 710770
+  (curated). Awaiting quantified ASR drop + dose curve → closes sufficiency→necessity for refusal-bypass.
+
 - **2026-08-04 (iter 90, loop tick — POSITIVE RESULT ✓: REFUSAL suppression is the behavioral locus (sufficient, specific, > Doublespeak) — mechanistic story COMPLETE)** —
   Full refusal runs landed (backfill-scheduled 1.5h walltime unstuck the hours-long queue). **Result ✓ across
   BOTH cohorts/splits:** (1) refusal-ablation ALONE raises Direct-harmful ASR **+0.36–0.43, every split
