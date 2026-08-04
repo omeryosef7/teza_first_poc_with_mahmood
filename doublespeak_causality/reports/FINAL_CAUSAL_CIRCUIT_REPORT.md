@@ -138,6 +138,17 @@ self-swap-gated + code-reviewed):
   machinery. Falsifies "remap committed early." Consistent with the suffix-objective null, the mechanism-guided
   optimization negative, and ≤0.16 state-injection sufficiency — four converging lines.
   (PHASE_BEHAV_CARRY.md, PHASE_BEHAV_WRITE.md)
+- **NEW: the POSITIVE locus — REFUSAL suppression is behaviorally sufficient, specific, and STRONGER than
+  Doublespeak** (BEHAV-REFUSAL). Standard Arditi ablation of the validated L18 refusal axis (project out at every
+  layer/position through generation) on Direct-harmful raises ASR **+0.36–0.43 over baseline, every split
+  p≤0.004** (refusal_rate .70–.86→.23–.29); a norm-matched **random** direction does **nothing** (p≥0.5) =
+  clean specificity; and refusal-ablation-alone **≥ Doublespeak** on all 4 splits (sig 3/4). Doublespeak only
+  *partially* suppresses refusal (ds refusal_rate .44–.48 vs full-ablation .05–.11). → **Doublespeak's harm is
+  refusal bypass, NOT the concept remap:** ablating the concept circuit (necessary+sufficient for the readout)
+  does nothing, while ablating the orthogonal refusal axis (which the concept circuit never touches) reproduces
+  and exceeds the jailbreak. The concept mechanism is representationally faithful but causally disconnected from
+  compliance. **Defense: scrub the refusal axis, not the concept subspace.** (Sufficiency shown; the necessity-
+  of-refusal-suppression re-injection arm is the flagged next test.) (PHASE_BEHAV_REFUSAL.md)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 
@@ -150,5 +161,8 @@ head/edge/layer, and it does not convert into a black-box token-suffix attack ob
 null + a field caution that decoding-sufficiency ≠ behavioral sufficiency). **And a complete
 representation≠behavior dissociation:** ablating the concept-control machinery (L8–11 write OR L14–21 carry)
 throughout generation leaves harmful ASR statistically unchanged — the circuit is a faithful account of how
-the concept is *represented and carried*, but harmful *compliance* does not causally depend on it. Concept-
-subspace defenses are therefore unlikely to blunt Doublespeak.
+the concept is *represented and carried*, but harmful *compliance* does not causally depend on it. **And the
+positive counterpart: the behavioral locus is the REFUSAL axis** — ablating the (orthogonal, L18) refusal
+direction is sufficient, specific, and a *stronger* attack than Doublespeak itself, while the concept circuit
+never touches it. Doublespeak is, mechanistically, an imperfect in-context refusal-suppression technique.
+Concept-subspace defenses will not blunt it; the actionable axis is refusal.

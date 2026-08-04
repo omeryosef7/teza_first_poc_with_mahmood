@@ -9,6 +9,21 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 90, loop tick — POSITIVE RESULT ✓: REFUSAL suppression is the behavioral locus (sufficient, specific, > Doublespeak) — mechanistic story COMPLETE)** —
+  Full refusal runs landed (backfill-scheduled 1.5h walltime unstuck the hours-long queue). **Result ✓ across
+  BOTH cohorts/splits:** (1) refusal-ablation ALONE raises Direct-harmful ASR **+0.36–0.43, every split
+  p≤0.004** (refusal_rate .70–.86→.23–.29) = refusal suppression behaviorally SUFFICIENT; (2) norm-matched
+  RANDOM-direction ablation does NOTHING (McNemar p≥0.5) = clean specificity; (3) refusal-ablation-alone **≥
+  Doublespeak** on all 4 splits (sig 3/4; curated test ds .095 vs refabl .714 p=2e-4) = pure refusal removal is
+  a STRONGER attack than the jailbreak. Doublespeak only partially suppresses refusal (ds .44–.48 vs
+  full-ablation .05–.11) → **imperfect in-context refusal suppressor.** → **Doublespeak's harm is refusal
+  bypass, NOT the concept remap:** concept circuit (necessary+sufficient for readout) behaviorally inert, while
+  the ORTHOGONAL refusal axis it never touches reproduces+exceeds the jailbreak. Unifies all objective-level
+  results (concept nulls + suffix null + mech-opt negative + ≤0.16 injection). **Defense: scrub refusal axis,
+  not concept subspace.** Wrote PHASE_BEHAV_REFUSAL.md; folded into FINAL (Scale-up + Bottom line). Curated
+  complete (30/21); clearharm train complete (44), test 36/42 (preemption restart 708038 finalizing → will
+  lock those 2 numbers). **Next: the necessity arm** — re-inject refusal INTO DS generation, test ASR drop.
+
 - **2026-08-04 (iter 89, loop tick — POSITIVE search: is the REFUSAL-BYPASS the behavioral locus? harness built + smoke confirms mechanism + full runs launched)** —
   The two concept-circuit nulls (iter87/88) motivate the complementary positive test (plan Phase 2.1/goal #5,
   in-scope). Built `scripts/phase_behav_refusal.py` — 5 arms (Direct & DS × {none, **L18 refusal-ablation** via
