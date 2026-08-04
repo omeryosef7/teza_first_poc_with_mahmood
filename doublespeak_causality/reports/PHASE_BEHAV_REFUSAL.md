@@ -120,6 +120,28 @@ undoes Doublespeak. Note the onset coincides with the concept write — the demo
 L8–11 band, do two **orthogonal** things: remap codeword→concept (the behaviorally-inert readout circuit)
 **and** suppress refusal (the behavioral driver). (PHASE_REFUSAL_PROJECTION via `phase_refusal_projection.py`.)
 
+## Injection-layer localization — mid-layer rescue is clean; fixed-α sweep confounds early/late
+
+Where along depth does restoring the refusal axis rescue the model? Single-layer re-injection at α=12,
+clearharm (ds_base ASR ≈ .29–.40; refusal_rate ≈ .45–.50; empty=0 everywhere):
+
+| inject layer | ds+refusal α12 (ASR / refusal) | ds+RANDOM α12 (ASR / refusal) | reading |
+|---|---|---|---|
+| **L9 (early)** | .000 / 1.00 | **.000 / 0.00** | CONFOUNDED — random also kills ASR (no refusal) |
+| **L18 (mid)** | .000 / 1.00 | **.62 / 0.00** | CLEAN — refusal-specific full rescue |
+| **L28 (late)** | ~.20 / ~.63 | ~.33 / ~.43 (≈ base) | specific but PARTIAL (under-driven) |
+
+(L9/L18 = final, both splits, n=44/42; L28 shown from the train split, test finalizing.)
+
+The result **confirms the necessity claim at L18 with an internal random control** (refusal injection → ASR
+0, random → ASR .62), and is a clean methodological illustration of the α-norm caveat: because `alpha` is an
+absolute residual magnitude while the residual norm grows with depth, a *fixed* α is **over-driven at the
+low-norm early layer** (L9: even a random push disrupts the harmful output — non-specifically, refusal stays
+0) and **under-driven at the high-norm late layer** (L28: refusal only partially rescues). So a fixed-α depth
+sweep cannot localize the causal refusal layer; **a clean localization needs α scaled to each layer's residual
+norm** (or calibrated to the direct−ds projection gap — noted as the follow-up). What IS clean: at mid-depth,
+restoring the refusal axis specifically and completely neutralizes Doublespeak.
+
 ## Interpretation — the mechanistic account completes
 
 Combining all three behavioral experiments:

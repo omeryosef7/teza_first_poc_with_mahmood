@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 97, loop tick — injection-layer localization: mid clean, fixed-α confounds early/late (α-norm))** —
+  Swept single-layer refusal re-injection L9/L18/L28 at α=12 (clearharm) to localize WHERE restoring refusal
+  rescues from Doublespeak. **L18 (mid): CLEAN specific full rescue** — refusal inj → ASR .000/refusal 1.0,
+  RANDOM-dir → ASR .62 (no rescue) → confirms necessity at the fit layer with an internal random control, both
+  splits. **L9 (early): CONFOUNDED** — random ALSO kills ASR (→0, refusal 0) = over-drive at low-norm layer.
+  **L28 (late): PARTIAL** — refusal inj only ASR→~.20 (under-drive at high-norm layer), random ≈ base (specific
+  but weak). empty=0 all. ⇒ fixed-α depth sweep can't localize (α absolute vs residual-norm grows with depth:
+  over-driven early, right at mid, under-driven late) — EXACTLY the α-norm caveat flagged upfront. Clean
+  localization needs per-layer α calibration (follow-up). Section added to PHASE_BEHAV_REFUSAL.md; L9/L18 final,
+  L28-test finalizing. Honest methodological result; core necessity finding (L18) reinforced.
+
 - **2026-08-04 (iter 95, loop tick — CODE AUDIT of all behavioral harnesses: no finding affects any conclusion)** —
   Fanned out 3 independent static reviewers over the 6 new harnesses (concept-ablation / refusal ablate+inject /
   projection+analyzer). **Projection layer-indexing CLEAN** (key check). Findings triaged against ACTUAL run
