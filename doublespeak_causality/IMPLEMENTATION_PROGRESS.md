@@ -9,6 +9,13 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 76, loop tick — per-head attention-PATTERN decomposition on v2)** — New causal
+  experiment: which INDIVIDUAL carry head reads the concept via its attention pattern? phase4b patched all
+  heads jointly (+.13–.17); now running per-head (single --heads each) on v2, top-5 necessity heads →
+  jobs **707625=L17H24, 707626=L14H5, 707627=L17H27, 707628=L14H4, 707629=L15H8**. Clean measure =
+  per-head uniform-pattern knockout (C1−C_uniform, same-length, no cross-len caveat). Next tick: rank which
+  head's pattern is the retrieval lever (expect it tracks the necessity ranking, L17 pivotal).
+
 - **2026-08-04 (iter 75, loop tick — SCALE-UP COMPLETE: carry sufficiency confirmed on v2; FINAL refresh)** —
   phase7c sufficiency on v2 (116 ex) DONE: **dev +0.326 [.246,.411] / heldout +0.348 [.261,.439]** (S1≈.05→
   S3≈.40, selfdev 0) — the surprising carry-head sufficiency GENERALIZES to 30 novel concepts, both splits,
