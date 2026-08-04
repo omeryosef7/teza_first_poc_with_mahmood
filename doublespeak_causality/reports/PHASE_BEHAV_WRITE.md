@@ -83,3 +83,6 @@ python scripts/phase_behav_carry_analyze.py outputs/behav_write_<cohort>_L8_9_10
 ```
 Runs: clearharm `behav_write_clearharm_L8_9_10_11_20260804_110157_707908`,
 curated `behav_write_curated_L8_9_10_11_20260804_110156_707909`.
+
+## Code audit
+Static-reviewed with the other behavioral harnesses (iter 95); see the "Code audit" section of PHASE_BEHAV_REFUSAL.md. Verified against this run: 0 judge failures, 0 EMPTY labels, 0 items repeat the harmful_word (so the write query/demo split was clean), and the paired McNemar/CI (via phase_behav_carry_analyze.py) is what these reports cite. No finding affected the NULL conclusion.

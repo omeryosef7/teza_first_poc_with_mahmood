@@ -76,3 +76,6 @@ sbatch --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.
 python scripts/phase_behav_carry_analyze.py outputs/behav_carry_<cohort>_<ts>_<jid>
 ```
 Runs: clearharm `behav_carry_clearharm_20260804_100009_707831`, curated `behav_carry_curated_20260804_100428_707832`.
+
+## Code audit
+Static-reviewed with the other behavioral harnesses (iter 95); see the "Code audit" section of PHASE_BEHAV_REFUSAL.md. Verified against this run: 0 judge failures, 0 EMPTY labels, 0 items repeat the harmful_word (so the write query/demo split was clean), and the paired McNemar/CI (via phase_behav_carry_analyze.py) is what these reports cite. No finding affected the NULL conclusion.

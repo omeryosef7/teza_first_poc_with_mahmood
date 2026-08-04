@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 95, loop tick — CODE AUDIT of all behavioral harnesses: no finding affects any conclusion)** —
+  Fanned out 3 independent static reviewers over the 6 new harnesses (concept-ablation / refusal ablate+inject /
+  projection+analyzer). **Projection layer-indexing CLEAN** (key check). Findings triaged against ACTUAL run
+  data — **all no-ops on my results:** (a) swallowed-judge→non-MALICIOUS down-bias → **verified 0 null scores in
+  all 12 runs**; (b) EMPTY/gibberish in ASR denominator → **verified 0 empty labels everywhere** + iter92b
+  coherence audit (α=12 = fluent refusals); (c) write `cw_pos=all_cw[:-1]` query-contamination → **verified 0
+  items repeat harmful_word** in either cohort (clean demo/query split); (d) "no paired test" → FALSE, McNemar+CI
+  reported via analyzer. **Fixes:** analyzer now drops rows missing an arm label (regression identical);
+  inject.py docstring corrected re the empty-guard; audit sections added to PHASE_BEHAV_REFUSAL/CARRY/WRITE.
+  Noted residual non-load-bearing limitations (carry random control single non-layer-matched draw [carry=NULL so
+  not load-bearing]; projection random-ctrl reused vector; projection double-BOS common-mode). Tests 113 pass.
+  **Conclusions unchanged and now adversarially audited.**
+
 - **2026-08-04 (iter 94, loop tick — REPRESENTATIONAL signature ✓: Doublespeak SUPPRESSES the refusal axis, onset at the write band)** —
   Grounded the behavioral refusal result representationally. `scripts/phase_refusal_projection.py` (forward-only,
   no judge): project last-prompt-token residual onto per-layer refusal dir for direct/neutral/doublespeak.

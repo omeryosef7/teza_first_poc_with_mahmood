@@ -159,6 +159,30 @@ access.
   44/42, curated 30/21). Greedy-decode/judge numerics vary ~1–2 examples/cell across GPU nodes
   (a clearharm run was preempted+restarted); the +0.43–0.48 effect dwarfs that wobble.
 
+## Code audit (iter 95 — 3 independent static reviewers over all behavioral harnesses)
+
+An adversarial static review of the six harnesses raised several code-quality issues. **Each was checked
+against the actual run data; none affected any reported conclusion:**
+- *Swallowed judge exception → score=None → non-MALICIOUS (would down-bias ASR).* **Verified 0 null scores
+  across all 12 runs** — the judge never failed. (Fix for future runs: count/log judge failures.)
+- *EMPTY / non-empty-gibberish in the ASR denominator (ablation could "work" by breaking the decoder).*
+  **Verified empty_rate=0 in every cell of every run**, and the necessity α=12 completions were separately
+  inspected and found to be fluent refusals (Coherence audit above). Docstring corrected to state this guard
+  explicitly.
+- *Write harness `cw_pos=all_cw[:-1]` could mislabel a repeated query codeword as a demo write.* **Verified 0
+  items in either cohort repeat the harmful_word** → exactly one (query) occurrence was excluded per item;
+  zero contamination.
+- *Harnesses report only point ASR deltas, no paired test.* The paired **McNemar + bootstrap CI IS computed**
+  (via `phase_behav_carry_analyze.py` / the refusal harness summaries) and those p-values are what this report
+  cites — not bare deltas.
+- *Analyzer counted rows missing an arm's label as non-malicious (latent; my runs are complete).* **Fixed** —
+  such rows are now dropped; regression identical on the complete data.
+- Acknowledged residual limitations (do not affect the null/large-effect conclusions): the carry-harness
+  random-head control is a single non-layer-matched draw (the carry result is a NULL, so the specificity
+  control's power is not load-bearing); the refusal-projection per-layer random control reuses one seeded
+  vector (each layer's projection onto it is ≈0 regardless); the projection forward pass double-BOSes, which
+  is common-mode and cancels in the paired direct−ds delta.
+
 ## Reproduce
 ```
 sbatch --time=01:30:00 --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSMAXNEW=220,DSN=0 \

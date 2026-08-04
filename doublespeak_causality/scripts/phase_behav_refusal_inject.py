@@ -7,9 +7,12 @@ reduce harmful compliance.
 Adds +alpha * L18-refusal-axis at every position/timestep through DS generation (single-layer L18 =
 the validated induce layer; pc.AllPositionAdd normalizes the axis so alpha is an absolute residual
 magnitude). Alpha sweep + a norm-matched RANDOM-direction control at the middle alpha (specificity:
-a random push must not restore refusal / drop ASR). empty_rate guards against alpha over-driving into
-incoherent generation (a broken decoder is not "refusal", so EMPTY/incoherent is excluded from the
-necessity claim). StrongREJECT-judged; paired McNemar vs ds_base.
+a random push must not restore refusal / drop ASR). CONFOUND NOTE (audit): the ASR/McNemar do NOT drop
+EMPTY rows, so `empty_rate` is only a PARTIAL guard against alpha over-driving generation into incoherence
+(non-empty gibberish scores BENIGN and would also lower ASR). The necessity claim is valid only WHEN
+empty_rate≈0 AND the low-ASR completions are verified coherent — both confirmed out-of-band: empty_rate=0 in
+every cell, and a `--save-gen` inspection of the alpha=12 outputs found fluent natural refusals (see
+PHASE_BEHAV_REFUSAL.md "Coherence audit"). StrongREJECT-judged; paired McNemar vs ds_base.
 
 Usage: python scripts/phase_behav_refusal_inject.py --bench data/behavioral/beh_clearharm.json \
   --refusal-pt outputs/stage_gcg_full/refusal_direction_llama_L18.pt --alphas 4,8,12 --max-new 220 --n 0
