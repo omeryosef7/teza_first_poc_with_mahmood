@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 79, loop tick — NEW test: do carry heads retrieve FROM the demo codewords?)** — The
+  precise open question: Phase 4b showed the carry heads' answer-row attention PATTERN is causal, but from
+  WHICH keys? Built `scripts/phase4c_carryedge.py` (reuses pc.AttentionKnockout, eager; per-layer carry-head
+  groups): knock out the carry heads' ANSWER→demo-codeword edges, read FC p_concept. Cells C1 / KO_demo
+  (necessity) / KO_rand (count-matched random non-demo keys, specificity). If removing carry→demo-codeword
+  attention drops the reading, the carry heads RETRIEVE from the demonstrations (closing the last
+  how-do-they-get-the-concept gap). Smoke **707677** (curated n=3). Next: validate → full on v2. Note: prior
+  all-head query→demo edge-KO was null (Phase 4) but that was L8–11 all-heads; this targets the L14–21 carry
+  heads at the answer position specifically.
+
 - **2026-08-04 (iter 78, loop tick — definitive summary FIGURE refreshed w/ v2 + new results)** — Updated
   `scripts/make_circuit_figure.py` to read the v2 (116-ex) job outputs (707203 MLP, 707473 heads) and
   enriched Panel B into the carry-stage causal-handle profile (Δp_concept, one axis): **head-output
