@@ -156,9 +156,11 @@ restore that layer's refusal signal to the level a *refused* (direct-harmful) pr
 | **L22 (5.11)** | **−0.250 (p=0.001)** | .73 | +0.023 |
 | **L28 (7.59)** | **−0.227 (p=0.002)** | .73 | −0.045 |
 
-(empty=0 all; test n=31 partial/underpowered but direction-consistent, L22 strongest.) **Restoring the refusal
-signal rescues the model at MID-LATE layers (L16–28, all p≤.004) but NOT at the early layer (L9, ns)** — with
-clean specificity (random null throughout). Combined with the projection result (DS *suppresses* refusal
+(empty=0 all; random null every layer both splits. **Test n=42 complete** confirms the pattern: **L22 the
+robust mid-late rescue — significant on BOTH splits** (train p=.001, test Δ−0.167 p=.039); L16/L28 sig on train,
+ns on the lower-powered test (base ASR .33); **L9 ns on both splits**.) **Restoring the refusal signal rescues
+the model at MID-LATE layers (L16–28; L22 significant on both splits) but NOT at the early layer (L9, ns both
+splits)** — with clean specificity (random null throughout). Combined with the projection result (DS *suppresses* refusal
 starting at the L8–11 write band and growing with depth), the picture sharpens: **Doublespeak suppresses
 refusal early, but the behavioral refusal DECISION is read mid-late (~L16+)** — restoring the signal only early
 is not enough; it must be restored where the decision is made. (Rescue is partial, not →0, because the

@@ -16,8 +16,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
   **L9 Δ−0.068 p=0.45 NS; L16 Δ−0.205 p=0.004; L22 Δ−0.250 p=0.001; L28 Δ−0.227 p=0.002** — calibrated refusal
   restoration significantly rescues at MID-LATE (L16–28) but NOT early (L9); empty=0 all; random null. ⇒
   **DS suppresses refusal EARLY (from L8 write band, per projection) but the behavioral refusal DECISION is
-  read MID-LATE (~L16+)** — restoring only early isn't enough. Test n=31 partial (underpowered, direction-
-  consistent, L22 strongest). Section added to PHASE_BEHAV_REFUSAL.md (train decisive; test finalizing — job
+  read MID-LATE (~L16+)** — restoring only early isn't enough. Test n=42 COMPLETE: L22 significant on BOTH splits (train p=.001, test p=.039); L9 ns both; random null both. Section added to PHASE_BEHAV_REFUSAL.md (train decisive; test finalizing — job
   711685 slow node still writing). Sharpest version of the refusal mechanism; confound-free.
 
 - **2026-08-04 (iter 98, loop tick — NUMERIC INTEGRITY CHECK: all behavioral/refusal report numbers match raw exactly)** —
