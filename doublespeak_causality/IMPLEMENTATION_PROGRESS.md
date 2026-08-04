@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 80, loop tick — carry→demo edge-KO preliminary NULL; added positive control)** —
+  carry-edge smoke (n=3): C1=1.0 but necessity(C1−KO_demo) **exactly 0.0** — knocking out the carry heads'
+  answer→demo-codeword edges does nothing. Exactly-0 needs a firing-check, so **added a KO_all positive
+  control** (block carry heads' answer→ALL earlier keys — must move the reading if the machinery fires).
+  Re-smoke **707693** (n=5). Preliminary read (pending confirmation): the null is PLAUSIBLE + consistent —
+  the concept is already in the residual by the answer position (written@L9, carried up), so the carry heads
+  read it from the RESIDUAL, not by fresh demo-codeword attention; and the whole-pattern uniform-KO (P4b)
+  matters because it changes ALL keys, while removing just demo-codeword keys renormalizes. Matches the
+  original all-head edge-KO null. Next tick: confirm KO_all ≠ 0 (machinery fires) → then the demo-edge null
+  is real; full on v2.
+
 - **2026-08-04 (iter 79, loop tick — NEW test: do carry heads retrieve FROM the demo codewords?)** — The
   precise open question: Phase 4b showed the carry heads' answer-row attention PATTERN is causal, but from
   WHICH keys? Built `scripts/phase4c_carryedge.py` (reuses pc.AttentionKnockout, eager; per-layer carry-head

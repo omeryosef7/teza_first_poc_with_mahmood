@@ -109,8 +109,11 @@ def main():
             pool = [p for p in range(ans) if p not in set(demo)]
             rk = sorted(rng.choice(pool, size=min(len(demo), len(pool)), replace=False).tolist()) if pool else []
             KO_rand = readout(ds_tok, cid, kid, ko_ctx(ans, rk)) if rk else None
+            # POSITIVE-firing control: block carry heads' answer -> ALL earlier keys (must change the
+            # reading if the knockout fires AND the carry heads' attention matters at all).
+            KO_all = readout(ds_tok, cid, kid, ko_ctx(ans, list(range(ans))))
             fh.write(json.dumps({"sid": r["sid"], "split": split, "cohort": cohort, "n_demo": len(demo),
-                                 "C1": C1, "KO_demo": KO_demo, "KO_rand": KO_rand}) + "\n")
+                                 "C1": C1, "KO_demo": KO_demo, "KO_rand": KO_rand, "KO_all": KO_all}) + "\n")
     fh.close()
 
     allr = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
@@ -129,13 +132,14 @@ def main():
             "mean_C1": round(float(np.mean([r["C1"] for r in sr])), 4) if sr else None,
             "necessity_raw_C1_minus_KOdemo": ci([r["C1"] - r["KO_demo"] for r in sr]),
             "specific_KOrand_minus_KOdemo": ci([r["KO_rand"] - r["KO_demo"] for r in sr if r["KO_rand"] is not None]),
+            "posctrl_C1_minus_KOall": ci([r["C1"] - r.get("KO_all", r["C1"]) for r in sr]),
         }
     json.dump({"cohort": cohort, "carry": args.carry, "by_split": summ},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
     print(f"[cedge] {len(allr)} rows -> {out_dir}")
     for sp, s in summ.items():
         print(f"  [{sp}] n={s['n']} C1={s['mean_C1']} necessity(C1-KOdemo)={s['necessity_raw_C1_minus_KOdemo']} "
-              f"specific(KOrand-KOdemo)={s['specific_KOrand_minus_KOdemo']}")
+              f"specific={s['specific_KOrand_minus_KOdemo']} POSCTRL(C1-KOall)={s['posctrl_C1_minus_KOall']}")
 
 
 if __name__ == "__main__":
