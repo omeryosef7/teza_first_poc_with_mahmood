@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 99, loop tick — CALIBRATED depth-localization ✓: refusal DECISION read mid-late, confound resolved)** —
+  Built+ran `phase_refusal_inject_calibrated.py`: inject each layer's own refusal dir at α = its measured
+  direct−ds projection gap (restore refusal to "refused" level), matched random control. **Resolves the iter97
+  α-norm confound — random now NULL at every layer.** Result (clearharm train n=44 complete, ds_base .386):
+  **L9 Δ−0.068 p=0.45 NS; L16 Δ−0.205 p=0.004; L22 Δ−0.250 p=0.001; L28 Δ−0.227 p=0.002** — calibrated refusal
+  restoration significantly rescues at MID-LATE (L16–28) but NOT early (L9); empty=0 all; random null. ⇒
+  **DS suppresses refusal EARLY (from L8 write band, per projection) but the behavioral refusal DECISION is
+  read MID-LATE (~L16+)** — restoring only early isn't enough. Test n=31 partial (underpowered, direction-
+  consistent, L22 strongest). Section added to PHASE_BEHAV_REFUSAL.md (train decisive; test finalizing — job
+  711685 slow node still writing). Sharpest version of the refusal mechanism; confound-free.
+
 - **2026-08-04 (iter 98, loop tick — NUMERIC INTEGRITY CHECK: all behavioral/refusal report numbers match raw exactly)** —
   Recomputed every headline number from raw.jsonl and compared to the reports: concept nulls (carry Δ+.091/+.071,
   write Δ−.023/0.0), refusal sufficiency (clearharm direct_refabl .568/.548 vs ds_base .386/.357; curated

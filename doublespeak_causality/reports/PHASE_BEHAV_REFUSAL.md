@@ -139,9 +139,30 @@ The result **confirms the necessity claim at L18 with an internal random control
 absolute residual magnitude while the residual norm grows with depth, a *fixed* α is **over-driven at the
 low-norm early layer** (L9: even a random push disrupts the harmful output — non-specifically, refusal stays
 0) and **under-driven at the high-norm late layer** (L28: refusal only partially rescues). So a fixed-α depth
-sweep cannot localize the causal refusal layer; **a clean localization needs α scaled to each layer's residual
-norm** (or calibrated to the direct−ds projection gap — noted as the follow-up). What IS clean: at mid-depth,
-restoring the refusal axis specifically and completely neutralizes Doublespeak.
+sweep cannot localize the causal refusal layer; the clean version (next) calibrates α per layer.
+
+### Calibrated localization (confound-free) — the refusal DECISION is read MID-LATE, not early
+
+To remove the α-norm confound, inject each layer's OWN refusal direction at **α = the measured direct−ds
+refusal-projection GAP at that layer** (`phase_refusal_inject_calibrated.py`) — i.e. add exactly enough to
+restore that layer's refusal signal to the level a *refused* (direct-harmful) prompt has (α = 0.47/1.97/5.11/
+7.59 at L9/16/22/28), matched random control at the same α. Now the random control is **null at every layer**
+(the confound is gone). Result (clearharm **train n=44, complete**; ds_base ASR .386):
+
+| inject layer (α=gap) | calibrated refusal ΔASR (p) | refusal_rate | random ΔASR |
+|---|---|---|---|
+| **L9 (0.47)** | −0.068 (p=0.45, **ns**) | .55 | −0.045 |
+| **L16 (1.97)** | **−0.205 (p=0.004)** | .73 | −0.068 |
+| **L22 (5.11)** | **−0.250 (p=0.001)** | .73 | +0.023 |
+| **L28 (7.59)** | **−0.227 (p=0.002)** | .73 | −0.045 |
+
+(empty=0 all; test n=31 partial/underpowered but direction-consistent, L22 strongest.) **Restoring the refusal
+signal rescues the model at MID-LATE layers (L16–28, all p≤.004) but NOT at the early layer (L9, ns)** — with
+clean specificity (random null throughout). Combined with the projection result (DS *suppresses* refusal
+starting at the L8–11 write band and growing with depth), the picture sharpens: **Doublespeak suppresses
+refusal early, but the behavioral refusal DECISION is read mid-late (~L16+)** — restoring the signal only early
+is not enough; it must be restored where the decision is made. (Rescue is partial, not →0, because the
+calibrated α is a *minimal* restore-to-refused push — the larger fixed α=12 at L18 drove ASR fully to 0.)
 
 ## Interpretation — the mechanistic account completes
 
