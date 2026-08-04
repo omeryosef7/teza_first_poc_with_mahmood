@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 103, loop tick — full bug audit of ALL new harnesses ✓ (per Omer's 'no bugs'); trajectory probe queued)** —
+  Independent review of the two newest harnesses (interaction + trajectory): **both CLEAN, key
+  projection/position conventions verified CONSISTENT with NO off-by-one** — trajectory `idx=inlen-1+t` is
+  exactly the decision position for each generated token and always in-bounds; interaction's cross-prompt
+  cw_pos reuse is valid because demo_block is a byte-identical shared prefix (codewords in whitespace-bounded
+  pre-tokens). Only LOW findings; hardened both (assert rsplit-sentinel found; exists-guard on refusal-dir
+  load). **Bug-check now covers EVERY new harness this sprint** (calibrated iter101 mapping consistent;
+  interaction+trajectory iter103 consistent) — all verified, none off-by-one, no material defects. Trajectory
+  runs 711910/711911 queued (heavy GPU contention). NOTE for cross-refs: interaction/trajectory use single-BOS
+  (cleaner) so absolute refusal-proj magnitudes differ from the original refproj harness (double-BOS); internal
+  contrasts valid.
+
 - **2026-08-04 (iter 102, loop tick — COUPLING PROBE ✓: concept-write & refusal-suppression causally INDEPENDENT)** —
   Full write×refusal interaction runs done (711887/711888, forward-only, both cohorts). **Result ✓ clean, both
   cohorts/splits:** ablating the L8-11 concept WRITE (zero mlp_out @ demo cw positions) **fires the positive
