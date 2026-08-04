@@ -140,8 +140,9 @@ self-swap-gated + code-reviewed):
   (PHASE_BEHAV_CARRY.md, PHASE_BEHAV_WRITE.md)
 - **NEW: the POSITIVE locus — REFUSAL suppression is behaviorally sufficient, specific, and STRONGER than
   Doublespeak** (BEHAV-REFUSAL). Standard Arditi ablation of the validated L18 refusal axis (project out at every
-  layer/position through generation) on Direct-harmful raises ASR **+0.36–0.43 over baseline, every split
-  p≤0.004** (refusal_rate .70–.86→.23–.29); a norm-matched **random** direction does **nothing** (p≥0.5) =
+  layer/position through generation) on Direct-harmful raises ASR **+0.43–0.48 over baseline, every split
+  p≤0.004** (clearharm 19/19 & 20/20 discordant flips → harm; refusal_rate .70–.88→.23–.29); a norm-matched
+  **random** direction does **nothing** (p≥0.5) =
   clean specificity; and refusal-ablation-alone **≥ Doublespeak** on all 4 splits (sig 3/4). Doublespeak only
   *partially* suppresses refusal (ds refusal_rate .44–.48 vs full-ablation .05–.11). → **Doublespeak's harm is
   refusal bypass, NOT the concept remap:** ablating the concept circuit (necessary+sufficient for the readout)

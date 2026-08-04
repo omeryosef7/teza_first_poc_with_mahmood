@@ -14,8 +14,8 @@ induce_gain +0.67):
   suppression ALONE) · `direct_randabl` — Direct + norm-matched **random**-direction ablation
   (specificity control) · `ds_base` — Doublespeak (the jailbreak) · `ds_refabl` — Doublespeak +
   refusal ablation. Metric = ASR (MALICIOUS rate) + refusal_rate + paired McNemar exact. Cohorts:
-  curated (30/21, **complete**) + clearharm (44 train **complete**, 42 test — 36/42 shown, preemption
-  restart finalizing). Reuses `refusal_direction_llama_L18.pt` + 45_toctou ablation recipe.
+  curated (30/21) + clearharm (44/42), **all cells complete**. Reuses `refusal_direction_llama_L18.pt`
+  + 45_toctou ablation recipe.
 
 ## Result — refusal suppression is behaviorally SUFFICIENT, SPECIFIC, and STRONGER than Doublespeak
 
@@ -23,24 +23,25 @@ induce_gain +0.67):
 
 | cohort·split | direct_base | direct_refabl | direct_randabl | ds_base | ds_refabl |
 |---|---|---|---|---|---|
-| clearharm train (44) | .159 / .841 | **.591** / .273 | .136 / .864 | .386 / .477 | .773 / .045 |
-| clearharm test (36*) | .111 / .861 | **.472** / .278 | .083 / .861 | .361 / .444 | .556 / .111 |
+| clearharm train (44) | .136 / .841 | **.568** / .273 | .136 / .864 | .386 / .477 | .727 / .045 |
+| clearharm test (42) | .071 / .881 | **.548** / .262 | .071 / .881 | .357 / .452 | .548 / .095 |
 | curated train (30) | .267 / .700 | **.700** / .233 | .233 / .700 | .300 / .000 | .367 / .000 |
 | curated test (21) | .286 / .667 | **.714** / .286 | .381 / .619 | .095 / .000 | .095 / .000 |
 
 **Paired McNemar (exact):**
 
-| comparison | clearharm train | clearharm test* | curated train | curated test |
+| comparison | clearharm train | clearharm test | curated train | curated test |
 |---|---|---|---|---|
-| refusal-ablation vs Direct base (ΔASR, p) | **+.432, p=2e-5** | **+.361, p=2e-4** | **+.433, p=1e-3** | **+.429, p=4e-3** |
-| random-ablation vs Direct base (control) | −.023, p=1.0 | −.028, p=1.0 | −.033, p=1.0 | +.095, p=0.5 |
-| Doublespeak vs refusal-ablation (ΔASR, p) | −.205, p=.035 | −.111, p=.34 | −.400, p=2e-3 | −.619, p=2e-4 |
+| refusal-ablation vs Direct base (ΔASR, p) | **+.432, p<1e-5** (19/0) | **+.476, p<1e-5** (20/0) | **+.433, p=1e-3** | **+.429, p=4e-3** |
+| random-ablation vs Direct base (control) | .000, p=1.0 | .000, p=1.0 | −.033, p=1.0 | +.095, p=0.5 |
+| Doublespeak vs refusal-ablation (ΔASR, p) | −.182, p=.057 | −.190, p=.057 | −.400, p=2e-3 | −.619, p=2e-4 |
 
 Three findings, consistent across both cohorts and splits:
 
 1. **Refusal suppression ALONE is behaviorally sufficient** — projecting out one refusal direction
-   turns a refusing model into a complying one (ASR +0.36–0.43 over Direct baseline, **every split
-   p ≤ 0.004**; refusal_rate collapses .70–.86 → .23–.29).
+   turns a refusing model into a complying one (ASR +0.43–0.48 over Direct baseline, **every split
+   p ≤ 0.004**, clearharm flipping 19/19 and 20/20 discordant cases toward harm; refusal_rate
+   collapses .70–.88 → .23–.29).
 2. **Clean specificity** — a norm-matched **random** direction has **no effect** on any split (McNemar
    p ≥ 0.5, refusal_rate unchanged). The effect is the refusal axis, not generic perturbation.
 3. **Refusal suppression is at least as strong as Doublespeak — usually stronger.** `direct_refabl`
@@ -85,9 +86,9 @@ access.
   arm (add the refusal direction back *into* DS generation and test whether ASR drops). Flagged as the
   next experiment. The convergence (concept null + refusal sufficient + DS partially suppresses
   refusal) strongly implies it, but the necessity arm would close it.
-- L18 direction, α=1.0, greedy decode, StrongREJECT MAL≥0.25. *clearharm test = 36/42 (preemption
-  restart 708038 finalizing); train (44) complete, curated (30/21) complete — headline rests on the
-  complete cells.
+- L18 direction, α=1.0, greedy decode, StrongREJECT MAL≥0.25. All four cells complete (clearharm
+  44/42, curated 30/21). Greedy-decode/judge numerics vary ~1–2 examples/cell across GPU nodes
+  (a clearharm run was preempted+restarted); the +0.43–0.48 effect dwarfs that wobble.
 
 ## Reproduce
 ```
