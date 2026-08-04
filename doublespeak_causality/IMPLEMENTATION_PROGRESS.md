@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 86, loop tick — AUDIT ww3tvlc9z resolved: 15 findings fixed)** — Code audit returned
+  **15 confirmed** (2 high, 4 med, 9 low). **MATERIAL fixes:** (1) **RETRACTED the phase5b Q/K/V "clean
+  null"** — the K/V cells patched only the ANSWER position but K/V are read from EARLIER source positions
+  (never touched) = positioning artifact; + no positive control + n=2 smoke → INCONCLUSIVE not a null.
+  Corrected FINAL report; added retraction note to the script. (2) **FIXED the delivered FIGURE** — Panel B
+  bar0 was the L9 MLP-write value (0.030) MISLABELED as "head-output necessity"; and "mediation 0.79" was an
+  unsourced average → relabeled bar0 "L9 MLP-write" (blue), mediation "0.75–0.83" (sourced), retitled panel;
+  re-rendered + RE-SENT to Omer. **Code hardening:** phase9 monotonicity restricted to [0,1] (not α>1
+  extrapolation); AllPositionZHeadAblate mean-mode documented prefill-only (use zero for generation);
+  phase7d per-group count-matched control added. Tests 113 pass. Deferred (LOW, diagnostic-only, don't affect
+  results): skip-counter transparency (phase4c/7b), phase6b mislabeled-skip rename, phase5_analyze pfloor
+  from n_nonzero, validator silent-SKIP false-OK. Numeric outputs already verified clean (iter 85).
+
 - **2026-08-04 (iter 85, loop tick — mid-stream AUDIT (Omer): outputs clean, code audit running)** — Per
   Omer: check bugs + bad outputs, resubmit if needed. **Numeric output verification (main loop): ALL
   headline numbers match raw EXACTLY** — p7c sufficiency dev+.326/heldout+.348 (selfdev 0, 0 dups); p4c
