@@ -9,17 +9,20 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
-- **2026-08-04 (iter 87, loop tick — BEHAVIORAL necessity of carry heads: harness built + full runs launched)** —
-  Resumed the regular frontier: connect the representational circuit to real harmful behavior. Built
-  `scripts/phase_behav_carry.py` — on DS-malicious prompts, generate 3 arms (baseline · **carry-ablated** via
-  `pc.AllPositionZHeadAblate(CARRY, "zero")`, decode-safe per the iter-86 audit · **random-ablated**, same 9-head
-  count = specificity control), StrongReject-judge each vs the harmful goal (reuses 18's judge + MALICIOUS-first
-  classify), compare ASR per arm/split. CARRY={14:[4,5,23],15:[8,11],17:[24,27],18:[20],21:[10]}. Reuses
-  `build_conditions`/`apply_template` + `.env` OpenAI key + L40S wrapper (n-801 excluded). **Smoke (n=2, 707820):
-  full pipeline runs clean end-to-end — 3-arm gen + ablation hooks + judge + summary; 0 empties under zero-ablation
-  (generation stays coherent).** Compile OK. **Full runs launched:** 707831 (clearharm 86, both splits), 707832
-  (curated, cross-cohort), max-new=220. Awaiting results = behavioral necessity Δ (baseline ASR − carry-ablated ASR)
-  vs random-ablation control.
+- **2026-08-04 (iter 87, loop tick — BEHAVIORAL necessity of carry heads: WELL-CONTROLLED NULL ✗ = representation≠behavior dissociation)** —
+  Built `scripts/phase_behav_carry.py` (3-arm DS generation: baseline · carry-ablated `pc.AllPositionZHeadAblate(CARRY,"zero")`
+  decode-safe · random-ablated 9-head count-matched control; StrongReject-judged) + `phase_behav_carry_analyze.py`
+  (**paired McNemar exact** on baseline→ablated flips + bootstrap CI, Holm; McNemar/Holm unit-checked). Smoke (707820)
+  validated pipeline; full runs 707831 (clearharm) + 707832 (curated). **RESULT ✗ NULL:** clearharm consistent-direction
+  but **non-significant** ASR drop (train +0.091 [−0.023,+0.227] McNemar p=.289; test +0.071 [−0.024,+0.167] p=.375;
+  both > ~2pp random control) — **all CIs include 0, all McNemar p≥.28**; curated **does not replicate** (train −0.10
+  reversed, test 0.0 floor). **0 empty-gen** everywhere (not a decoder-break artifact). Numbers spot-verified vs raw.
+  **Interpretation:** carry heads are a causal handle on the concept REPRESENTATION (FC readout: necessary+sufficient)
+  but NOT shown behaviorally necessary for the jailbreak — remap likely committed early (L9 write) + distributed
+  redundancy + probe≠behavior. **Consistent with the suffix-objective null** → strong representational circuit, weak
+  end-to-end behavioral grip. Wrote reports/PHASE_BEHAV_CARRY.md; folded into FINAL (Honest limitations + Scale-up).
+  **Next causal test:** behavioral necessity of the **L9 MLP WRITE** (the write site, not the carry) — if the remap
+  is committed early, the write may be behaviorally necessary where the carry is not.
 
 - **2026-08-04 (iter 86, loop tick — AUDIT ww3tvlc9z resolved: 15 findings fixed)** — Code audit returned
   **15 confirmed** (2 high, 4 med, 9 low). **MATERIAL fixes:** (1) **RETRACTED the phase5b Q/K/V "clean

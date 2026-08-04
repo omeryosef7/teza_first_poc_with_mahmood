@@ -93,7 +93,9 @@ non-sufficient.
 ## Honest limitations
 - No single head/edge/layer is the bottleneck; effects are distributed within concentrated bands.
 - The carry-head sufficiency is **partial (20–53%)** and **representational** (FC p_concept); its behavioral
-  (StrongREJECT) sufficiency is untested (prior state-injection was ≤0.16 behaviorally).
+  (StrongREJECT) sufficiency is untested (prior state-injection was ≤0.16 behaviorally). Behavioral
+  **necessity** IS now tested (BEHAV-CARRY, below) and is a **well-controlled NULL** — a representation≠behavior
+  dissociation.
 - curated heldout (n=21) is under-powered for the 1024-cell head family — head claims rest on the 3 powered
   cells.
 - Sufficiency-installation of carry heads (install carry-head z into benign) not run. (The upstream
@@ -123,6 +125,13 @@ self-swap-gated + code-reviewed):
   positive control and the only run was the n=2 smoke. The Q cell (query originates at the answer position)
   is well-posed but likewise underpowered. **Retracted as a result; a corrected K/V-at-source-positions +
   positive-control re-run is future work.**
+- **NEW: BEHAVIORAL necessity of the carry heads** (BEHAV-CARRY) — **well-controlled NULL.** Ablating the
+  9 carry heads throughout harmful generation (decode-safe zero, all positions) vs baseline vs a
+  count-matched random-head arm, StrongREJECT-judged, paired McNemar. clearharm shows a *consistent-direction
+  but non-significant* ASR drop (train −9pp, test −7pp; > the ~2pp random control; McNemar p≥0.29, all CIs
+  include 0); curated does not replicate (reversed/null). No empty-gen confound. **The carry heads are a
+  causal handle on the concept REPRESENTATION but NOT shown to be behaviorally necessary** — a
+  representation≠behavior dissociation, consistent with the suffix-objective null. (PHASE_BEHAV_CARRY.md)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 
