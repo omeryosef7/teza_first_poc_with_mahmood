@@ -88,6 +88,38 @@ malicious tool."; "I cannot provide information on the creation of a nuclear dev
 norm-matched **random** control at the same α produces coherent *harmful* text (never a refusal). The
 ASR→0 is genuine refusal restoration, not decoder breakage.
 
+## Representational signature — Doublespeak SUPPRESSES the refusal axis (forward-only)
+
+The behavioral arms use generation; this grounds them in the *representation*. `phase_refusal_projection.py`
+projects the last-prompt-token residual (the position deciding the first output token) onto the validated
+**per-layer** refusal direction, for matched **direct** (harmful) / **doublespeak** / **neutral** (benign
+codeword, no demos) prompts. If Doublespeak works by pushing the state off the refusal axis, DS's projection
+should sit far below direct-harmful — near the benign/neutral level. It does (both cohorts, all layers):
+
+**direct − doublespeak refusal-axis projection by depth (clearharm test, n=42; + = DS suppresses):**
+
+| hs row (~layer) | direct | doublespeak | neutral | direct−ds (95% CI) | random ctrl |
+|---|---|---|---|---|---|
+| hs5 (~L4) | 0.20 | 0.21 | 0.22 | −0.02 [−.03,.00] **ns** | ≈0 |
+| hs9 (~L8) | 0.11 | −0.08 | 0.17 | +0.19 [.16,.22] | ≈0 |
+| hs17 (~L16) | 4.09 | 1.54 | 2.02 | +2.55 [2.0,3.1] | ≈0 |
+| hs25 (~L24) | 7.70 | 0.72 | 2.58 | +6.98 [5.6,8.4] | ≈0 |
+| hs31 (~L30) | 15.19 | 3.65 | 6.94 | +11.54 [9.4,13.6] | ≈0 |
+| hs32 (~L31) | 71.23 | 30.01 | 40.07 | +41.21 [33,49] | ≈0 |
+
+Three facts (both cohorts): (1) **DS's refusal-axis projection is far below direct-harmful and at/below the
+neutral (benign) level** — DS makes a harmful request look, refusal-wise, like a benign one (on curated DS
+goes *negative*, below neutral, at hs21–31). (2) **The suppression onsets at hs9 (~L8) — exactly the
+L8–11 concept-write band — and grows monotonically through depth** (nothing at hs5). (3) **Axis-specific:**
+the norm-matched random direction shows zero condition gap at every layer (CIs straddle 0), so this is the
+refusal axis, not residual-norm drift.
+
+This is the representational mechanism behind the causal arms: Doublespeak drives the hidden state off the
+refusal axis (to benign levels), which is *why* removing that axis reproduces Doublespeak and re-adding it
+undoes Doublespeak. Note the onset coincides with the concept write — the demonstrations, in the same
+L8–11 band, do two **orthogonal** things: remap codeword→concept (the behaviorally-inert readout circuit)
+**and** suppress refusal (the behavioral driver). (PHASE_REFUSAL_PROJECTION via `phase_refusal_projection.py`.)
+
 ## Interpretation — the mechanistic account completes
 
 Combining all three behavioral experiments:

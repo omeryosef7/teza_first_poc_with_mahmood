@@ -160,6 +160,14 @@ self-swap-gated + code-reviewed):
   0.000 at α=12 in all 4 cells** (clearharm α12 p=2e-5/3e-5; α8 p=2e-4; curated-train p=2e-3), refusal_rate→1.0,
   **empty=0** (coherent, not a broken decoder); a norm-matched **random** direction never lowers ASR (p≥.125).
   Refusal suppression is thus **necessary AND sufficient** for Doublespeak's harm. (PHASE_BEHAV_REFUSAL.md)
+- **NEW: representational signature (forward-only)** — projecting the decision-position residual onto the
+  per-layer refusal axis shows **Doublespeak's projection sits far below direct-harmful, at/below the neutral
+  (benign) level**, both cohorts, every layer (clearharm hs32 direct 71 vs ds 30 vs neutral 40; curated ds
+  even goes *negative*). The suppression **onsets at ~L8 (the L8–11 concept-write band) and grows monotonically
+  through depth**; a norm-matched random direction shows zero condition gap (axis-specific, not norm-drift). So
+  the demonstrations, in the same band, do two ORTHOGONAL things — remap codeword→concept (behaviorally inert)
+  AND suppress the refusal representation (the behavioral driver). This is the representational mechanism behind
+  the causal arms.
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 

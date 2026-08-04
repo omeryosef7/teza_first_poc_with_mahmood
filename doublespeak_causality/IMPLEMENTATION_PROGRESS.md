@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 94, loop tick — REPRESENTATIONAL signature ✓: Doublespeak SUPPRESSES the refusal axis, onset at the write band)** —
+  Grounded the behavioral refusal result representationally. `scripts/phase_refusal_projection.py` (forward-only,
+  no judge): project last-prompt-token residual onto per-layer refusal dir for direct/neutral/doublespeak.
+  **Result ✓ both cohorts:** DS's refusal-axis projection sits FAR below direct-harmful, at/below the NEUTRAL
+  (benign) level (clearharm hs32 direct 71 / ds 30 / neutral 40; curated DS goes NEGATIVE below neutral).
+  **Suppression onsets at hs9 (~L8) = the L8–11 concept-write band, grows monotonically through depth** (hs5
+  ns → hs32 huge, all SIG); norm-matched random-dir control = zero gap every layer (axis-specific). ⇒ DS pushes
+  the state off the refusal axis → why ablation reproduces it & re-injection undoes it. Unifies: the demos, in
+  the same band, do two ORTHOGONAL things — remap codeword→concept (behaviorally inert) AND suppress refusal
+  (the driver). Runs 711392/711393. Section added to PHASE_BEHAV_REFUSAL.md + FINAL fold. Rep↔behavior loop now
+  closed for BOTH axes (concept: rep necessary+suff / behav null; refusal: rep-suppressed + behav nec+suff).
+
 - **2026-08-04 (iter 93, loop tick — consolidation: plan Q9 answered + stakeholder update refreshed)** —
   Behavioral frontier complete, so consolidated into plan deliverables. **Upgraded FINAL Q9** ("how is the
   concept mechanism separated from refusal?") from representational-only (cos≈0.03 orthogonal) to the CAUSAL
