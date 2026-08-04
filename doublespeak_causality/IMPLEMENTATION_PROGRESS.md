@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 83, loop tick — accuracy fix + integrity + state assessment)** — Self-caught an
+  over-framing: phase4c KO_all is a firing CONTROL, not a pure retrieval measure (blocking answer→ALL keys
+  also removes the FC QUESTION, which contains the concept/codeword answer options) — refined
+  PHASE4B_PATTERN to lead with the clean **KO_demo-null** claim (carry heads don't read the binding from demo
+  codewords) and note the KO_all confound honestly. v2 outputs integrity-validated (n≥55, ssdev 0, 0 dups).
+  **STATE: the representational (FC-readout) circuit is now comprehensively established + scaled + audited** —
+  retrieval (demo-KV necessary, no privileged edge), write (L9, distributed L8–11, dose-response), carry
+  (necessary+sufficient+pattern-causal, mediated, read from residual not demos), output (L30–31 proximal),
+  concept⊥refusal, ALL distributed within bands, cross-cohort, Wilcoxon-Holm, 116-ex v2. **Next frontier =
+  BEHAVIORAL** (StrongREJECT generation): carry-head necessity/sufficiency for actual harmful behavior —
+  needs an all-position head-ablation primitive + patched_generate/judge (18/19). A distinct sub-effort;
+  will build next tick. Reusable infra confirmed present (patched_generate, StrongReject judge).
+
 - **2026-08-04 (iter 82, loop tick — RESULT: carry heads read from RESIDUAL, not demo codewords)** — full
   carry-edge on v2 (707708), positive-controlled: **KO_all (block carry heads' answer→ALL keys) FIRES
   STRONGLY** dev +0.246 [.167,.329] / heldout +0.207 [.135,.288] — machinery works + carry answer-attention
