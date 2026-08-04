@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 73, loop tick — MLP-write GRANULARITY sweep on v2 (plan mandate))** — phase6b_windows
+  full on v2 DONE (143 windows, self-swap 0.0, both splits). **Write distributed across L8–11, narrow window
+  captures it:** sliding W4 L8–11 +0.111 dev/+0.076 heldout; W8 L8–15 ≈ W4 (SATURATES); single L9 +0.03–0.08
+  (< window → NOT one-layer); canonical mid(L11–21) weak +0.02 (write sits at the early/mid boundary L8–12).
+  Answers plan granularity Qs: distributed-contiguous causality localized to L8–11, narrow-window-
+  reproducible, replicates on locked test. Added granularity table to `reports/PHASE6_MLP.md`. phase5 heads
+  on v2 (707473) STILL running (57min, heavy 1024×116 scan). Next tick: heads band generalization + phase7c
+  sufficiency on v2 → then update FINAL report with all v2/new-patching results.
+
 - **2026-08-04 (iter 72, loop tick — NEW RESULT: carry-head attention PATTERN is causal, on v2)** —
   phase4b_pattern full on v2 (116 ex) DONE, self-swap 0.0: **uniform-pattern knockout (clean, same-length)
   drops the reading +0.166 [.097,.238] dev / +0.134 [.077,.199] heldout** — the carry heads' attention

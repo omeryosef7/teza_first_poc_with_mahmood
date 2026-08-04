@@ -69,3 +69,25 @@ necessity-only, non-sufficient, distributed contribution; the query-codeword MLP
 Q5 (binding first causally available ≈ L9) and Q6 (which MLP writes ≈ L9 demo-position, distributed L9–L12).
 
 Reproduce: `python scripts/phase6_analyze.py <output_dir>` (per-split + Holm).
+
+## Granularity sweep (Phase 6b, v2 116-ex) — write distributed across L8–11, narrow window captures it
+`scripts/phase6b_windows.py` (self-swap 0.0; 143 windows; necessity_specific = random_control − C3, both
+splits). Key windows:
+
+| window | dev (n=59) | heldout (n=55) |
+|--------|-----------|-----------------|
+| single L9 (per-layer, above) | +0.080 | +0.030 |
+| sliding W2 L8–9 | +0.083 | +0.052 |
+| **sliding W4 L8–11** | **+0.111** | **+0.076** |
+| sliding W8 L8–15 | +0.112 | +0.077 |
+| cumulative-prefix L0–13 | +0.229 | +0.250 |
+| cumulative-suffix L8–31 | +0.096 | +0.069 |
+| canonical mid (L11–21) | +0.023 | +0.004 |
+
+- **One layer is NOT sufficient**: the L8–11 window (+0.11) exceeds any single layer (L9 +0.03–0.08) → the
+  write is DISTRIBUTED across L8–11.
+- **Saturates at W4**: W8 (L8–15) ≈ W4 (L8–11) → the write is concentrated in **L8–11**; wider windows add
+  nothing. (The larger cumulative-prefix L0–13 number folds in broad early layers, not a localized write.)
+- **Canonical "mid" (L11–21) is weak** — the write sits at L8–12, in the canonical EARLY/MID boundary, not
+  the L11–21 third. Replicates on locked test. Answers the plan's granularity questions: distributed
+  contiguous causality localized to L8–11, narrow-window-reproducible, not single-layer, not all-layer-only.
