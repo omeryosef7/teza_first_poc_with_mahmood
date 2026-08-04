@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 85, loop tick — mid-stream AUDIT (Omer): outputs clean, code audit running)** — Per
+  Omer: check bugs + bad outputs, resubmit if needed. **Numeric output verification (main loop): ALL
+  headline numbers match raw EXACTLY** — p7c sufficiency dev+.326/heldout+.348 (selfdev 0, 0 dups); p4c
+  carryedge KOdemo~.005 / KOall .21-.25; p4b pattern uniform-KO +.166/+.134 (selfdev 0); p5 heads n_valid
+  59/55 selfswap 0; p6 MLP L9 (prior). Self-swap/self-check controls exactly 0 everywhere; no dup rows.
+  Queue empty, NO failed jobs to resubmit. Launched **6-auditor code Workflow ww3tvlc9z** over all harnesses
+  added since iter-44 (attn/qkv/windows/dose/mediation/suf/analyzers/primitives/datagen) — code+scalar only.
+  Holding the behavioral harness (reuses AllPositionZHeadAblate, under audit) until findings return, then
+  fix→resubmit→continue.
+
 - **2026-08-04 (iter 84, loop tick — BEHAVIORAL frontier: carry-head ablation primitive built + tested)** —
   Started the behavioral validation (does the carry-head circuit control actual StrongREJECT ASR?). Added
   reusable `pc.AllPositionZHeadAblate` (zero/mean-ablate heads at EVERY position through generation — the
