@@ -185,6 +185,13 @@ self-swap-gated + code-reviewed):
   the demonstrations, in the same band, do two ORTHOGONAL things — remap codeword→concept (behaviorally inert)
   AND suppress the refusal representation (the behavioral driver). This is the representational mechanism behind
   the causal arms.
+- **NEW: refusal depth-localization (calibrated, confound-free)** — injecting each layer's own refusal direction
+  at α = its measured direct−ds projection gap (restore-to-"refused" level; matched random control null at every
+  layer) rescues the model **only at MID-LATE layers** — L16/L22/L28 ΔASR −0.21/−0.25/−0.23 (p=.004/.001/.002)
+  but **L9 ns** (p=0.45), clearharm train. So although DS *suppresses* refusal from the early write band, the
+  behavioral refusal **decision is read mid-late (~L16+)** — restoring the signal only early is insufficient.
+  (A prior fixed-α sweep confounded this via over-drive at low-norm early layers; the calibration removes it.)
+  (PHASE_BEHAV_REFUSAL "Calibrated localization".)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 
