@@ -182,3 +182,45 @@ p_holm 0.001, pistol 0.001.
   (linear probe AUC 1.0 on Llama AND Qwen3), though cross-pair transfer is only partial (grenade/
   pistol yes, chlorine/cocaine no). Actionable takeaway: Doublespeak resists representation-surgery
   defense but is reliably detectable in-domain.
+
+## CAUSAL_CIRCUIT addendum (2026-08-05) — the behavioral locus: Doublespeak is refusal suppression, not concept remapping [NEW, headline]
+
+*ClearHarm behavioral bench, Llama-3.1-8B, two cohorts (clearharm 86 + curated 51), locked train/test,
+StrongREJECT-judged, paired McNemar, cross-cohort. Reports: `reports/PHASE_BEHAV_{CARRY,WRITE,REFUSAL}.md`,
+`PHASE_WRITE_REFUSAL_INTX.md`. All harnesses code-audited (mappings verified, no off-by-one), coherence-
+audited, numerically verified vs raw.*
+
+The prior sections map **how the concept is represented** (retrieval→L9 write→L14–21 carry→readout). This
+addendum tests whether that circuit **causes the jailbreak** — and finds it does not. **The behavioral driver
+is the refusal axis, causally decoupled from the concept remap.** Six mutually-reinforcing lines:
+
+1. **Concept circuit is behaviorally INERT [causal, NULL].** Ablating the L8–11 demo-write OR the L14–21
+   carry heads (each representationally necessary+sufficient for the concept *readout*) throughout harmful
+   generation leaves ASR statistically unchanged (carry ΔASR +.07–.09 ns, write ≈0; every McNemar p≥.28, all
+   CIs include 0; empty=0). A representation≠behavior dissociation.
+2. **Refusal axis is behaviorally SUFFICIENT [causal].** Ablating one L18 refusal direction (Arditi all-layer)
+   on plain Direct-harmful raises ASR **+0.43–0.48 over baseline (every split p≤.004)**; a norm-matched random
+   direction does nothing (p≥.5). Refusal-removal-alone is a **stronger** attack than Doublespeak itself.
+3. **Refusal axis is behaviorally NECESSARY [causal].** Re-injecting +α·refusal into Doublespeak generation
+   drives ASR **monotonically to 0.000 at α=12 in all 4 cells** (McNemar p=2e-5…2e-3); a random direction never
+   lowers ASR; the low-ASR outputs are inspected and found to be **fluent refusals** (coherence-audited), not
+   decoder breakage (empty=0).
+4. **Representational signature [repr].** At the decision token, Doublespeak's refusal-axis projection sits far
+   below Direct-harmful, at/below the benign level, every layer both cohorts; suppression **onsets at ~L8 (the
+   concept-write band) and grows with depth**; random direction null.
+5. **Depth-localization [causal, calibrated/confound-free].** Injecting each layer's refusal direction at its
+   measured direct−ds gap (restore-to-refused; matched random null) rescues at **mid-late layers (L22 sig both
+   cohorts, p≤.03) but NOT early (L9 ns)** — DS suppresses refusal early, but the refusal *decision* is read
+   mid-late (~L16+).
+6. **Causal DECOUPLING [causal, the mechanistic why].** Ablating the concept-write reduces the concept readout
+   (positive control fires: p_concept .88→.80, curated .69→.46) but leaves DS's refusal suppression **completely
+   unmoved** (`frac_of_direct_gap_restored ≈ 0`, every layer/cohort). The demos' two L8–11 effects run on
+   **separate pathways** — knocking out the remap does nothing to the refusal bypass.
+
+**Contribution.** A clean causal dissociation resolving what the representational circuit is *for*: the
+elaborate token→concept remap is a behaviorally **epiphenomenal bystander**; Doublespeak's harm is (imperfect)
+in-context **refusal suppression**, via an axis orthogonal to and causally independent of the concept machinery.
+**Sharp defense implication:** monitor/scrub the **refusal** axis — concept-subspace interventions cannot stop
+Doublespeak (they leave the actual causal channel untouched), matching the NEXT7 finding that concept-ablation
+defense fails. *(Open refinement, GPU-blocked: per-token refusal-trajectory dynamics to explain the ~0.35 base
+ASR — hypothesis: refusal re-engages mid-generation for the attempts that still refuse.)*

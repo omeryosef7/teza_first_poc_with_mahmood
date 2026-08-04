@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 105, loop tick — GPU still saturated → PAPER CONTRIBUTION drafted (the stated research goal))** —
+  Trajectory still pending (cluster 100% GPU-saturated, queue grown to 70; no long poller re-armed — 30m tick
+  suffices). Since "more Llama" experiments are hard-blocked and the goal is "add to the paper," added the
+  behavioral refusal-locus finding to **PAPER_CONTRIBUTION.md** as the headline CAUSAL_CIRCUIT addendum — the
+  six-level causal dissociation (concept behav-inert; refusal necessary+sufficient; representational signature;
+  mid-late decision-localization; concept-write⊥refusal-suppression decoupling) with key numbers + the sharp
+  defense implication (scrub refusal axis, matches NEXT7 concept-ablation-defense-fails). Non-duplicative (paper
+  docs previously had only the fixed-pair transplant/TOCTOU results, no behavioral-locus). Trajectory noted as
+  the one GPU-blocked open refinement. All harnesses compile + tests green (113 pass).
+
 - **2026-08-05 (iter 104, loop tick — numeric integrity check now covers ALL results; behavioral report index added)** —
   Cluster saturated (~65 GPU jobs ahead; trajectory 711956/711957 pending, waiter tracking) → disciplined
   no-GPU consolidation. **Numeric integrity: recomputed the two NEWEST results from raw, both match reports
