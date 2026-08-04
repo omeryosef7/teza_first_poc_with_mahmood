@@ -27,16 +27,14 @@ export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export T
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
 : "${DSBENCH:=doublespeak_causality/data/behavioral/beh_clearharm.json}"
 : "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
-: "${DSMAXNEW:=220}"
 : "${DSN:=0}"
 : "${DSSPLITS:=train,test}"   # comma-list kept as a DEFAULT here (not via --export, which truncates)
 : "${DSREFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${DSPROJ:=doublespeak_causality/outputs/refproj_clearharm_20260804_162641_711392/summary.json}"
 : "${DSCALLAYERS:=9,16,22,28}"
 : "${DSMAXNEW:=180}"
-: "${DSALPHAS:=4,8,12}"
 : "${DSSEED:=0}"
-echo "=== behav carry: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
+echo "=== cal-inject: $DSMODEL bench=$DSBENCH layers=$DSCALLAYERS maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_refusal_inject_calibrated.py \
