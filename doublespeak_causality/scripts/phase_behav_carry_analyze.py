@@ -42,17 +42,22 @@ def holm(pvals):
 def analyze_dir(d):
     rows = [json.loads(x) for x in open(os.path.join(d, "raw.jsonl"))]
     splits = sorted({r["split"] for r in rows})
-    out = {"dir": os.path.basename(d), "by_split": {}}
+    # auto-detect arms from *_label keys (works for behav_carry AND behav_write); baseline first,
+    # then the ablation arms in stable order (the concept-arm before the random control).
+    label_arms = sorted({k[:-6] for r in rows for k in r if k.endswith("_label")})
+    abl_arms = [a for a in label_arms if a != "baseline"]
+    all_arms = ["baseline"] + abl_arms
+    out = {"dir": os.path.basename(d), "arms": all_arms, "by_split": {}}
     rng = np.random.default_rng(0)
     for sp in splits:
         sr = [r for r in rows if r["split"] == sp]
         mal = lambda r, arm: r.get(f"{arm}_label") == "MALICIOUS"
         emp = lambda r, arm: r.get(f"{arm}_label") == "EMPTY"
         n = len(sr)
-        asr = {arm: round(float(np.mean([mal(r, arm) for r in sr])), 4) for arm in ("baseline", "carry_abl", "rand_abl")}
+        asr = {arm: round(float(np.mean([mal(r, arm) for r in sr])), 4) for arm in all_arms}
         res = {"n": n, "ASR": asr}
         pvals, keys = [], []
-        for arm in ("carry_abl", "rand_abl"):
+        for arm in abl_arms:
             pair = [r for r in sr if not emp(r, "baseline") and not emp(r, arm)]
             b = sum(1 for r in pair if not mal(r, "baseline") and mal(r, arm))    # 0->1 (ablation ADDED harm)
             c = sum(1 for r in pair if mal(r, "baseline") and not mal(r, arm))    # 1->0 (ablation REMOVED harm)
@@ -67,7 +72,7 @@ def analyze_dir(d):
             pvals.append(p); keys.append(arm)
         for k, pa in zip(keys, holm(pvals)):
             res[k]["mcnemar_p_holm"] = round(pa, 5)
-        res["empty_rate"] = {arm: round(float(np.mean([emp(r, arm) for r in sr])), 4) for arm in ("baseline", "carry_abl", "rand_abl")}
+        res["empty_rate"] = {arm: round(float(np.mean([emp(r, arm) for r in sr])), 4) for arm in all_arms}
         out["by_split"][sp] = res
     return out
 
@@ -79,12 +84,15 @@ def main():
     for d in dirs:
         r = analyze_dir(d)
         json.dump(r, open(os.path.join(d, "paired_stats.json"), "w"), indent=1)
-        print(f"\n=== {r['dir']} ===")
+        print(f"\n=== {r['dir']}  arms={r['arms']} ===")
+        abl_arms = [a for a in r["arms"] if a != "baseline"]
         for sp, s in r["by_split"].items():
-            c = s["carry_abl"]; ra = s["rand_abl"]
-            print(f" [{sp}] n={s['n']} ASR base={s['ASR']['baseline']} carry={s['ASR']['carry_abl']} rand={s['ASR']['rand_abl']}")
-            print(f"    carry: ΔASR={c['delta_ASR']} CI{c['delta_CI']} (off 1->0={c['flip_off_1to0']}, on 0->1={c['flip_on_0to1']}) McNemar p={c['mcnemar_p']} Holm={c['mcnemar_p_holm']}")
-            print(f"    rand : ΔASR={ra['delta_ASR']} CI{ra['delta_CI']} McNemar p={ra['mcnemar_p']} Holm={ra['mcnemar_p_holm']} | empty carry={s['empty_rate']['carry_abl']}")
+            asrstr = " ".join(f"{a}={s['ASR'][a]}" for a in r["arms"])
+            print(f" [{sp}] n={s['n']} ASR {asrstr}")
+            for a in abl_arms:
+                c = s[a]
+                print(f"    {a}: ΔASR={c['delta_ASR']} CI{c['delta_CI']} (off 1->0={c['flip_off_1to0']}, on 0->1={c['flip_on_0to1']}) "
+                      f"McNemar p={c['mcnemar_p']} Holm={c['mcnemar_p_holm']} | empty={s['empty_rate'][a]}")
 
 
 if __name__ == "__main__":
