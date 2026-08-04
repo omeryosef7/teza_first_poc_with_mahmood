@@ -36,9 +36,27 @@ This refines Phase 5/7: the carry stage is causal both in its **pattern** (where
 **output** (what it writes, Phase 5) and is downstream-mediated (Phase 7). New causal handle beyond the
 head output.
 
+## Per-head decomposition (v2) — the pattern causality is DISTRIBUTED, no single necessary head
+Ran the harness per-head (single `--heads` each) for the top-5 necessity heads on v2 (all self-swap 0.0):
+
+| head | uniform-KO (C1−C_uniform, clean) dev / heldout | benign-transplant specific dev / heldout |
+|------|-----------------------------------------------|------------------------------------------|
+| L14H5  | **−0.050 / −0.031** | **+0.136 / +0.086** |
+| L17H24 | −0.013 / −0.007 | +0.105 / +0.046 |
+| L14H4  | +0.015 / +0.005 | +0.071 / +0.060 |
+| L17H27 | +0.011 / +0.006 | +0.016 / +0.024 |
+| L15H8  | ≈0 / ≈0 | ≈0 / ≈0 |
+
+- **No single head's pattern is individually necessary** — the clean per-head uniform-knockout is ≈0 (even
+  slightly NEGATIVE for L14H5, i.e. removing that one head's pattern alone is compensated by the others),
+  yet the JOINT 7-head uniform knockout drops the reading +0.13–0.17. → the attention-pattern causality is
+  **distributed / emergent across the carry set**, with redundant compensation — the same "distributed
+  within a band" signature as the head output (Phase 5) and the MLP write (Phase 6/6b).
+- By the (cross-length-caveated) benign-transplant measure, **L14H5 carries the most** concept-relevant
+  attention, then L17H24, L14H4 — but even the top head is not individually necessary.
+
 ## Caveats / next
 - The benign transplant is cross-length-approximate; the uniform knockout is the clean claim.
 - Answer-position pattern only; the pattern at the demo/query positions is separate.
-- Per-head pattern-necessity (which head's pattern matters most) not yet decomposed — future.
 
 Reproduce: `DSBENCH=...bench_clearharm_v2.json DSNPROMPTS=0 sbatch slurm/run_ds_p4bp.sh` (heads via DSHEADS).

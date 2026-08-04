@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 77, loop tick — attn-pattern is DISTRIBUTED (per-head decomposition))** — 5 per-head
+  pattern runs done (self-swap 0). **No single head's pattern is individually necessary**: clean per-head
+  uniform-KO ≈0 (even slightly NEG for L14H5 = compensated by others), yet the JOINT 7-head knockout drops
+  +0.13–0.17 → the attention-pattern causality is **distributed/emergent w/ redundant compensation**, same
+  signature as head-output (P5) + MLP-write (P6). By the (caveated) benign-transplant measure L14H5 carries
+  most (+.14/+.09), then L17H24, L14H4. Updated `reports/PHASE4B_PATTERN.md`. Coherent close: EVERY circuit
+  component (retrieval, write, carry output, carry pattern) is distributed within its band — no single
+  head/edge/layer bottleneck anywhere. Next: refresh summary figure w/ v2 numbers + new results, or wrap.
+
 - **2026-08-04 (iter 76, loop tick — per-head attention-PATTERN decomposition on v2)** — New causal
   experiment: which INDIVIDUAL carry head reads the concept via its attention pattern? phase4b patched all
   heads jointly (+.13–.17); now running per-head (single --heads each) on v2, top-5 necessity heads →
