@@ -192,6 +192,14 @@ self-swap-gated + code-reviewed):
   behavioral refusal **decision is read mid-late (~L16+)** — restoring the signal only early is insufficient.
   (A prior fixed-α sweep confounded this via over-drive at low-norm early layers; the calibration removes it.)
   (PHASE_BEHAV_REFUSAL "Calibrated localization".)
+- **NEW: concept-write × refusal-suppression are causally INDEPENDENT** (WRITE×REFUSAL, forward-only). Ablating
+  the L8–11 concept-write (zero mlp_out @ demo codeword positions) **reduces the concept readout** (positive
+  control fires: p_concept .88→.80 / curated .69→.46, CIs exclude 0) but leaves DS's **refusal-axis suppression
+  completely unmoved** — `frac_of_direct_gap_restored ≈ 0` (|·|<0.05) at every layer, every cohort/split;
+  ds_writeabl refusal projection ≡ ds_base, both far below direct. So the demos' two L8–11 effects run on
+  **separate pathways**: knocking out the remap does nothing to the refusal bypass. **This is the mechanistic
+  reason the concept circuit is behaviorally epiphenomenal** — the harm-enabling refusal suppression is
+  decoupled from the concept machinery at the source. (PHASE_WRITE_REFUSAL_INTX.md)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 

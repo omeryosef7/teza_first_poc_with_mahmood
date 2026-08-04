@@ -9,6 +9,19 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 102, loop tick — COUPLING PROBE ✓: concept-write & refusal-suppression causally INDEPENDENT)** —
+  Full write×refusal interaction runs done (711887/711888, forward-only, both cohorts). **Result ✓ clean, both
+  cohorts/splits:** ablating the L8-11 concept WRITE (zero mlp_out @ demo cw positions) **fires the positive
+  control** (p_concept drops: clearharm .88→.80/.86→.82; curated .81→.75/**.69→.46**, all CIs exclude 0) but
+  leaves DS's **refusal-axis suppression COMPLETELY UNMOVED** — frac_of_direct_gap_restored ≈ 0 (|·|<0.05) at
+  EVERY layer/cell; ds_writeabl refusal proj ≡ ds_base, both ≪ direct. ⇒ **the demos' two L8-11 effects
+  (concept-remap + refusal-suppression) run on SEPARATE pathways — knocking out the remap does nothing to the
+  refusal bypass.** This is the MECHANISTIC REASON the concept circuit is behaviorally epiphenomenal: the
+  harm-enabling refusal suppression is decoupled from the concept machinery at the source. (Bonus: single-BOS
+  projection replicates DS≪direct refusal-suppression, cleaner tokenization.) Wrote PHASE_WRITE_REFUSAL_INTX.md;
+  folded into FINAL. Caveat noted (rules out remap→suppression chain; shared-upstream demos cause both). Both
+  new-code audit findings resolved (mapping consistent + per-layer-seed fix).
+
 - **2026-08-04 (iter 101, loop tick — user: MORE Llama + verify no bugs, ultracode. Audit ✓ + new coupling probe)** —
   Per Omer's steer (more Llama probes + bug-check, detailed, ultracode). **(1) Bug audit** of the un-audited
   calibrated harness (fanned-out reviewer): **KEY VERDICT — the layer↔dir↔alpha mapping is CONSISTENT, not

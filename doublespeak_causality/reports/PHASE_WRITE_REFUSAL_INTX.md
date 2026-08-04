@@ -1,0 +1,69 @@
+# Phase WRITE×REFUSAL — Are the concept-remap and refusal-suppression causally coupled?
+
+**Question.** The demonstrations do two things that both onset in the **L8–11 band** (per the projection
+result): (a) remap codeword→concept (the L8–11 MLP write) and (b) suppress the refusal axis. Are these
+**causally independent**, or does the concept-write **cause** the refusal suppression? This decides the
+mechanistic framing: if independent, the concept circuit is a genuine bystander and the refusal bypass rides
+a separate pathway (explaining the behavioral nulls); if coupled, the remap is the *vehicle* for the bypass.
+
+**Design (forward-only, matched to BEHAV-WRITE + the projection readout).** For each DS prompt, ablate the
+concept **write** exactly as BEHAV-WRITE — zero the L8–11 MLP output at the **DEMO** codeword positions
+(`pc.ComponentOutSwap`, prefill) — and measure the **refusal-axis projection** of the decision-token residual
+(per-layer refusal direction), for three conditions: **direct** (harmful, high-refusal reference), **ds_base**,
+**ds_writeabl**. Metric = `frac_of_direct_gap_restored = (ds_writeabl − ds_base)/(direct − ds_base)` per layer
+(0 = write-ablation does nothing to refusal; 1 = it fully restores refusal to direct-harmful level).
+**Positive control:** the FC `p_concept` readout under the same write-ablation must **drop** (confirms the
+ablation fired). Single-BOS tokenization (cleaner than the original projection harness). Cohorts clearharm
+(44/42) + curated (30/21).
+
+## Result — CAUSALLY INDEPENDENT (write-ablation kills the concept readout, leaves refusal suppression intact)
+
+**Positive control (write-ablation fired):** `p_concept` drops in every cell (CIs exclude 0) —
+clearharm .884→.799 / .858→.817; curated .811→.751 / **.690→.457**. The demo-write ablation genuinely
+degrades the concept representation (strongly on curated).
+
+**Main readout — refusal suppression is UNMOVED by write-ablation:**
+
+| cohort·split | p_concept ds→wabl | refusal `frac_of_direct_gap_restored` (range over layers) |
+|---|---|---|
+| clearharm train | .884→.799 | −0.017 … +0.004 (≈ 0) |
+| clearharm test  | .858→.817 | −0.013 … +0.015 (≈ 0) |
+| curated train   | .811→.751 | −0.048 … −0.016 (≈ 0) |
+| curated test    | .690→.457 | −0.010 … +0.004 (≈ 0) |
+
+At **every layer in every cell**, `frac_restored ≈ 0` (|value| < 0.05) — the refusal-axis projection under
+DS+write-ablation is statistically identical to DS alone (`Δ(writeabl−ds)` CIs include 0 throughout), and
+stays far below direct-harmful. E.g. clearharm test hs32: direct 65.5, ds 27.5, ds_writeabl 27.3.
+
+**⇒ The concept-write and the refusal-suppression are causally INDEPENDENT.** Ablating the concept-write
+measurably reduces the concept readout (control fires, curated .69→.46) but leaves Doublespeak's refusal
+suppression **completely intact**.
+
+## Interpretation — this is WHY the concept circuit is behaviorally epiphenomenal
+
+The demonstrations do two things in the same L8–11 band, but via **separate pathways**:
+1. **Concept remap** (L8–11 write → carry → readout) — representationally necessary+sufficient for the
+   codeword→concept *readout*, but **behaviorally inert** (BEHAV-CARRY/WRITE).
+2. **Refusal suppression** (the axis DS pushes the hidden state off) — the **behavioral driver**
+   (necessary+sufficient; BEHAV-REFUSAL).
+
+These are not just orthogonal in representation (cos≈0.03) and dissociated in behavior — they are
+**causally decoupled at the source**: knocking out (1) does nothing to (2). That directly explains the
+central dissociation — the harm-enabling refusal bypass does not depend on the concept machinery at all, so
+ablating the concept circuit cannot reduce ASR. The concept remap is a genuine *bystander*, not the vehicle
+for the bypass. (It also confirms the projection result with cleaner single-BOS tokenization: DS ≪ direct on
+the refusal axis at every layer, both cohorts.)
+
+**Caveat.** This shows the concept-write does not *causally sustain* the refusal suppression at the readout
+position (forward pass). It does not rule out that a *shared upstream* cause (the demonstration context
+itself) produces both — indeed that is the natural reading: the demos independently (i) install the remap and
+(ii) push off the refusal axis. What is ruled out is the "remap → refusal-suppression" causal chain.
+
+## Reproduce
+```
+sbatch --time=00:40:00 --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSN=0 \
+  doublespeak_causality/slurm/run_wrxintx.sh          # + beh_curated.json
+```
+Runs: clearharm `write_refusal_intx_clearharm_20260804_231656_711887`, curated `..._711888`.
+Harness `scripts/phase_write_refusal_interaction.py` (ComponentOutSwap write-zero + per-layer refusal
+projection + FC p_concept firing control).
