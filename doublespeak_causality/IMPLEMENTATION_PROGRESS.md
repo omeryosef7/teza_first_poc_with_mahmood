@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 92, loop tick — refusal NECESSITY ✓ LOCKED: re-injection kills Doublespeak (dose-dependent, specific) → refusal-bypass account CAUSALLY COMPLETE)** —
+  Full inject runs landed (710769 clearharm 86 rows, 710770 curated 51). **Result ✓ definitive:** re-injecting
+  +α·L18-refusal into DS drives ASR **monotonically to 0.000 at α=12 in ALL 4 cells** (clearharm train
+  .386→.159→.091→.000; test .381→.190→.071→.000; curated train .333→.200→.000→.000), refusal_rate→1.0. McNemar
+  **clearharm α12 p=2e-5/3e-5 (17/0, 16/0 flips off); α8 p=2e-4; curated-train α8/12 p=2e-3.** **Specificity:**
+  norm-matched random-dir @α8 NEVER lowers ASR (Δ+.10..+.19, p≥.125, refusal unchanged). **empty=0.000 EVERY
+  cell/α** → genuine refusal restoration, not decoder-break. Combined with iter90 sufficiency → **refusal
+  suppression is NECESSARY AND SUFFICIENT for Doublespeak's harm**, via a single axis orthogonal to (and
+  untouched by) the behaviorally-inert concept circuit. **Doublespeak = imperfect in-context refusal
+  suppression.** Wrote necessity section + dose table into PHASE_BEHAV_REFUSAL.md; folded into FINAL. Behavioral
+  causal story COMPLETE (concept: repr necessary+sufficient / behav null; refusal: behav necessary+sufficient).
+
 - **2026-08-04 (iter 91, loop tick — refusal NECESSITY arm built + smoke CONFIRMS; clearharm test cell LOCKED)** —
   Two threads. (1) **Locked the clearharm refusal cell:** preemption restart 708038 finished (86 rows) — final
   refabl vs base **+0.432 train (19/0, p<1e-5) / +0.476 test (20/0, p<1e-5)**, random control exactly null,

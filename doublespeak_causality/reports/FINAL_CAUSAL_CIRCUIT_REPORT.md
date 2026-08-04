@@ -148,8 +148,11 @@ self-swap-gated + code-reviewed):
   refusal bypass, NOT the concept remap:** ablating the concept circuit (necessary+sufficient for the readout)
   does nothing, while ablating the orthogonal refusal axis (which the concept circuit never touches) reproduces
   and exceeds the jailbreak. The concept mechanism is representationally faithful but causally disconnected from
-  compliance. **Defense: scrub the refusal axis, not the concept subspace.** (Sufficiency shown; the necessity-
-  of-refusal-suppression re-injection arm is the flagged next test.) (PHASE_BEHAV_REFUSAL.md)
+  compliance. **Defense: scrub the refusal axis, not the concept subspace.** **NECESSITY now also confirmed**
+  (re-injection arm): adding +α·refusal-axis back into Doublespeak generation drives ASR **monotonically to
+  0.000 at α=12 in all 4 cells** (clearharm α12 p=2e-5/3e-5; α8 p=2e-4; curated-train p=2e-3), refusal_rate→1.0,
+  **empty=0** (coherent, not a broken decoder); a norm-matched **random** direction never lowers ASR (p≥.125).
+  Refusal suppression is thus **necessary AND sufficient** for Doublespeak's harm. (PHASE_BEHAV_REFUSAL.md)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 

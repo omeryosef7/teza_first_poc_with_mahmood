@@ -53,6 +53,32 @@ Corroborating detail: **Doublespeak only *partially* suppresses refusal** (ds_ba
 (`ds_refabl`) climbs higher than either alone (clearharm train .773) — i.e. Doublespeak leaves refusal
 headroom that explicit ablation still removes. Doublespeak is an **imperfect** refusal suppressor.
 
+## Necessity — re-injecting refusal INTO Doublespeak kills the jailbreak (dose-dependent, specific)
+
+Sufficiency (above) shows refusal removal is *enough*. The necessity arm (`phase_behav_refusal_inject.py`)
+tests the converse: ADD +α·refusal-axis at every position/timestep through Doublespeak generation
+(`pc.AllPositionAdd`, single-layer L18 = validated induce layer), α∈{4,8,12}, vs a norm-matched
+random-direction control at α=8, with an empty_rate coherence guard. Paired McNemar vs ds_base.
+
+**Dose-response — ASR (refusal_rate):**
+
+| cohort·split | ds_base | +refusal α4 | +refusal α8 | +refusal α12 | +random α8 |
+|---|---|---|---|---|---|
+| clearharm train (44) | .386 (.48) | .159 (.77) | .091 (.91) | **.000 (1.00)** | .500 (.32) |
+| clearharm test (42)  | .381 (.45) | .190 (.79) | .071 (.93) | **.000 (1.00)** | .500 (.31) |
+| curated train (30)   | .333 (.00) | .200 (.53) | .000 (.97) | **.000 (1.00)** | .433 (.00) |
+| curated test (21)    | .095 (.00) | .095 (.33) | .000 (1.00)| **.000 (1.00)** | .286 (.00) |
+
+**Paired McNemar vs ds_base (ΔASR, p):** clearharm α12 **−.386 p=2e-5** (17/0 flips off) / **−.381 p=3e-5**
+(16/0); α8 −.296/−.310 **p=2e-4**; curated train α8/α12 −.333 **p=2e-3**. Random control: ΔASR **+.10 to
++.19, p≥.125 everywhere** (never reduces ASR; refusal_rate stays ≈ ds_base). **empty_rate = 0.000 in every
+cell at every α** — the ASR→0 is genuine refusal restoration, not a broken decoder.
+
+Three facts, all four cells: (1) refusal re-injection **monotonically drives ASR to 0** and refusal_rate
+to 1.0; (2) at α=12 **every** Doublespeak jailbreak is neutralized (ASR .000) with generation still
+coherent; (3) the effect is **axis-specific** — a random push of equal norm never restores refusal and
+never lowers ASR (if anything nudges it up). Necessity is established.
+
 ## Interpretation — the mechanistic account completes
 
 Combining all three behavioral experiments:
@@ -61,7 +87,7 @@ Combining all three behavioral experiments:
 |---|---|---|
 | L8–11 concept WRITE | Holm-sig necessary (readout) | **NULL** (BEHAV-WRITE) |
 | L14–21 carry heads | necessary + sufficient (readout) | **NULL** (BEHAV-CARRY) |
-| **refusal axis (L18)** | (orthogonal to concept, cos≈0.01–0.06) | **+0.4 ASR, sufficient, specific, > Doublespeak** |
+| **refusal axis (L18)** | (orthogonal to concept, cos≈0.01–0.06) | **NECESSARY + SUFFICIENT** — ablate→jailbreak (>Doublespeak); re-inject→ASR .000, dose-dependent, specific |
 
 **Doublespeak's harm is driven by refusal bypass, not by the token→concept remap.** The concept
 circuit is a faithful, rigorously-mapped account of *how the codeword is re-interpreted*, but that
@@ -81,12 +107,14 @@ access.
 
 ## Honest scope
 
-- Shows refusal suppression **sufficient** (+ that it exceeds Doublespeak). It does **not** directly
-  show refusal suppression is **necessary** to Doublespeak — that needs the complementary re-injection
-  arm (add the refusal direction back *into* DS generation and test whether ASR drops). Flagged as the
-  next experiment. The convergence (concept null + refusal sufficient + DS partially suppresses
-  refusal) strongly implies it, but the necessity arm would close it.
-- L18 direction, α=1.0, greedy decode, StrongREJECT MAL≥0.25. All four cells complete (clearharm
+- Refusal suppression is now shown **both sufficient** (ablation → jailbreak, > Doublespeak) **and
+  necessary** (re-injection → ASR .000, dose-dependent, axis-specific, coherent). The causal loop is
+  closed in both directions.
+- Necessity α-injection is single-layer L18 all-position; the effect saturates by α=12 (ASR 0 all cells)
+  and is already significant at α=8 on clearharm + curated-train. curated-test is floor-limited (ds_base
+  ASR .095) but still → 0. Random-direction control excludes generic-perturbation and decoder-break
+  explanations (empty=0).
+- L18 direction, ablation α=1.0, greedy decode, StrongREJECT MAL≥0.25. All four cells complete (clearharm
   44/42, curated 30/21). Greedy-decode/judge numerics vary ~1–2 examples/cell across GPU nodes
   (a clearharm run was preempted+restarted); the +0.43–0.48 effect dwarfs that wobble.
 
@@ -95,5 +123,12 @@ access.
 sbatch --time=01:30:00 --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSMAXNEW=220,DSN=0 \
   doublespeak_causality/slurm/run_behav_refusal.sh      # + beh_curated.json
 ```
-Runs: curated `behav_refusal_curated_a1.0_20260804_125055_708039` (complete),
-clearharm `behav_refusal_clearharm_a1.0_..._708038`.
+Runs (sufficiency): curated `behav_refusal_curated_a1.0_20260804_125055_708039`,
+clearharm `behav_refusal_clearharm_a1.0_20260804_133355_708038`.
+```
+# necessity (re-injection):
+sbatch --time=01:30:00 --export=ALL,DSBENCH=...beh_clearharm.json,DSMAXNEW=220,DSN=0 \
+  doublespeak_causality/slurm/run_behav_refinject.sh    # alphas 4,8,12 + random@8
+```
+Runs (necessity): clearharm `behav_refinject_clearharm_L18_20260804_141615_710769`,
+curated `behav_refinject_curated_L18_20260804_142104_710770`.
