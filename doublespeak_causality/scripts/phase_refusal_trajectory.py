@@ -48,6 +48,8 @@ def main():
     refdir = {}
     for L in Ls:
         p = os.path.join(args.refusal_dir, f"refusal_direction_llama_L{L}.pt")
+        if not os.path.exists(p):
+            raise SystemExit(f"[traj] missing refusal dir for L{L}: {p}")
         v = torch.load(p, map_location="cpu").float().flatten(); refdir[L] = v / (v.norm() + 1e-8)
     data = json.load(open(args.bench)); items = data["items"] if isinstance(data, dict) else data
     cohort = (data.get("_meta", {}) if isinstance(data, dict) else {}).get("cohort", os.path.basename(args.bench))

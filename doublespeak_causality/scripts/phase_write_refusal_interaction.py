@@ -108,6 +108,7 @@ def main():
                    "ds_writeabl": proj_last(ds_t, wctx)}
             # positive control: FC p_concept DS vs DS+writeabl (demo block only, codeword substituted)
             demo_block = conds.doublespeak.rsplit("\n\nDo not reason, just", 1)[0]
+            assert demo_block != conds.doublespeak, "rsplit sentinel not found — non-default instruction_prefix?"
             pc_base = fc_pconcept(demo_block, cw, co); pc_wabl = fc_pconcept(demo_block, cw, co, wctx)
             rec["pconcept_ds"] = pc_base; rec["pconcept_writeabl"] = pc_wabl
             fh.write(json.dumps(rec) + "\n"); fh.flush()
