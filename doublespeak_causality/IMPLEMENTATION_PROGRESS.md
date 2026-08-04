@@ -9,7 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
-- **2026-08-04 (iter 88, loop tick — BEHAVIORAL necessity of L8–11 WRITE: CLEAN NULL ✗ → dissociation now COMPLETE across the circuit)** —
+- **2026-08-04 (iter 89, loop tick — POSITIVE search: is the REFUSAL-BYPASS the behavioral locus? harness built + smoke confirms mechanism + full runs launched)** —
+  The two concept-circuit nulls (iter87/88) motivate the complementary positive test (plan Phase 2.1/goal #5,
+  in-scope). Built `scripts/phase_behav_refusal.py` — 5 arms (Direct & DS × {none, **L18 refusal-ablation** via
+  `pc.AllPositionProjectOutMultiLayer` = standard Arditi all-layer directional ablation, **norm-matched random**
+  ablation control}), StrongReject ASR + refusal_rate + paired McNemar. Reuses `refusal_direction_llama_L18.pt`
+  (selected_layer=18, score 1.13) + `build_conditions(.direct/.doublespeak)` + 45_toctou recipe. **Smoke (707968,
+  n=3) CONFIRMS the mechanism with clean specificity:** direct_base ASR .33/refusal .67 → **direct_refabl ASR
+  .67/refusal .00** (ablation eliminates refusal, raises ASR) while **direct_randabl refusal stays .67** (random
+  dir does NOT suppress refusal → specific). No empties. **Full runs launched:** 708006 (clearharm 86), 708007
+  (curated), max-new=220. Decisive comparison awaiting: does `direct_refabl ASR ≈ ds_base ASR`? If yes,
+  refusal-suppression ALONE reproduces Doublespeak (behaviorally sufficient) → mechanistically explains why the
+  concept circuit is behaviorally inert (the demos' real work is refusal bypass, not the token→concept remap).
   Tested the "remap committed early" hypothesis from iter87: is the demo WRITE behaviorally necessary where the
   carry heads were null? Built `scripts/phase_behav_write.py` — zero L8–11 mlp_out at the **DEMO** codeword
   positions (query occurrence preserved → no query-parse confound) via `pc.ComponentOutSwap` (auto-no-ops on
