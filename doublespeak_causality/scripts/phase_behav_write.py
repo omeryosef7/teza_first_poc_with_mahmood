@@ -8,9 +8,11 @@ judge. If the write is behaviorally necessary where the carry is not, ablation d
 
 Reuses pc.ComponentOutSwap (mlp_out, source=zeros at codeword positions) — it auto-no-ops on
 decode steps (positions >= seq=1 fail the `p<seq` guard), so ablation is prefill-only = exactly
-the "corrupt the early write, then generate" test. Arms per DS prompt:
-  baseline · write_abl (zero L8-11 mlp_out @ codeword positions) · rand_pos_abl (zero same layers
-  @ count-matched RANDOM non-codeword prompt positions = position-specificity control).
+the "corrupt the early write, then generate" test. Ablates the DEMO codeword positions only
+(excludes the final/QUERY codeword occurrence) so it isolates the demonstration-write necessity
+and does not confound with query-parsing. Arms per DS prompt:
+  baseline · write_abl (zero L8-11 mlp_out @ DEMO codeword positions) · rand_pos_abl (zero same
+  layers @ count-matched RANDOM non-codeword prompt positions = position-specificity control).
 Judge = StrongReject + MALICIOUS-first classify (mirrors phase_behav_carry).
 
 Usage: python scripts/phase_behav_write.py --bench data/behavioral/beh_clearharm.json --layers 8-11 --max-new 220 --n 0
@@ -98,14 +100,18 @@ def main():
             demos = it["demos"] if isinstance(it["demos"], str) else "\n".join(it["demos"])
             conds = dc.build_conditions(instr, hw, cw, demos)
             templated = dc.apply_template(lm.tokenizer, conds.doublespeak, add_generation_prompt=True)
-            # codeword (last-token) positions in the PROMPT = the demo-codeword write sites
+            # codeword (last-token) positions in the PROMPT. The LAST occurrence is the QUERY
+            # codeword ("...just make a <cw>..."); all earlier ones are DEMO writes. Ablate the
+            # DEMO positions only (exclude query) so this isolates the demonstration-write necessity
+            # (the L8-11 write characterized in phase6) and does NOT confound with query-parsing.
             hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, cw)
             promptlen = len(lm.tokenizer(templated, add_special_tokens=False)["input_ids"])
-            cw_pos = sorted({li for li in hit.last_idx if 0 <= li < promptlen})
-            if not cw_pos:
+            all_cw = sorted({li for li in hit.last_idx if 0 <= li < promptlen})
+            if len(all_cw) < 2:                  # need >=1 demo occurrence + the query occurrence
                 continue
-            # count-matched random NON-codeword prompt positions (exclude BOS region)
-            forbid = set(cw_pos); pool = [p for p in range(1, promptlen) if p not in forbid]
+            cw_pos = all_cw[:-1]                  # DEMO codeword positions (query = all_cw[-1] preserved)
+            # count-matched random NON-codeword prompt positions (exclude BOS + query cw)
+            forbid = set(all_cw); pool = [p for p in range(1, promptlen) if p not in forbid]
             rp = sorted(rng.choice(pool, size=min(len(cw_pos), len(pool)), replace=False).tolist()) if pool else []
             goal = instr
             base, _ = generate(templated, [])
