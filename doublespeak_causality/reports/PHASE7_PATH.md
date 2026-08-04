@@ -121,6 +121,10 @@ Jobs 706055/706056. p_concept by cumulative subset:
 - → sufficiency, like necessity, is **distributed within the L14–21 band** (pivotal head L17H27); the full
   band gives maximal transplantability. Consistent with the whole-circuit "distributed within a band" theme.
 
+### v2 confirmation (116-ex expanded bench)
+Carry-head sufficiency generalizes to the larger data: dev (n=59) suf_specific **+0.326 [.246,.411]**,
+heldout (n=57) **+0.348 [.261,.439]** (S1≈0.05 → S3≈0.40), self-swap 0.0. Confirmed on 30 novel concepts.
+
 ## Caveats / next
 - Partial sufficiency (20–53% of the full reading) — the carry heads are a strong but not complete injectate.
 - Representational sufficiency (FC p_concept). Whether the carry-head install is BEHAVIORALLY sufficient

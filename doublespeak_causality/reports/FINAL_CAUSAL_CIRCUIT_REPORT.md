@@ -107,6 +107,21 @@ Reports: CAUSAL_PATCHING_AUDIT · DATASET_AND_SPLIT_CONTRACT · PHASE2_{BEHAVIOR
 PHASE3_RESIDUAL · PHASE4_DEMO_RETRIEVAL · PHASE5_HEADS · PHASE6_MLP · PHASE7_PATH · PHASE8_READOUT ·
 PHASE9_DOSE · CAUSAL_OBJECTIVE · GCG_MAC_EVALUATION.
 
+## Scale-up validation (v2, 116-example bench = clearharm 86 + 30 NEW gpt-4o-mini concepts)
+Every core finding replicates or STRENGTHENS on the expanded data (locked test preserved, no leak), and two
+new activation-patching experiments were added (harnesses authored by an ultracode workflow, each
+self-swap-gated + code-reviewed):
+- **L9 MLP-write necessity** — strengthens: dev L8–L13 Holm-sig (L9 +0.080), heldout L9–L13 (L9 +0.030).
+- **Carry-head necessity** — heldout POWER FIXED: dev 58 / heldout 44 Holm-sig heads (was 0 on n=21).
+- **Carry-head sufficiency** — confirmed: install DS carry-z into benign +0.33/+0.35 specific (dev/heldout).
+- **MLP-write granularity** (Phase 6b) — write distributed L8–11, sliding-W4-reproducible, saturates by W8.
+- **NEW: attention-PATTERN causality** (Phase 4b) — uniform-pattern knockout at the carry heads −0.13–0.17
+  (both splits) → the carry heads read via WHERE they attend, not only their output.
+- **NEW: Q/K/V decomposition** (Phase 5b) — answer-position Q/K/V patching is inert (the head OUTPUT carries
+  the concept, not its answer-position input) — a clean null.
+All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
+train/test separation, no trimming).
+
 ## Bottom line
 A complete, audited, cross-cohort, Holm-corrected causal circuit for Doublespeak: **demo-KV retrieval
 (L8–11) + L9 MLP write → L14–21 mediated carry heads → L30–31 proximal output → logit**, distributed within

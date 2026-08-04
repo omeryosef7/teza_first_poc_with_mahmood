@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 75, loop tick — SCALE-UP COMPLETE: carry sufficiency confirmed on v2; FINAL refresh)** —
+  phase7c sufficiency on v2 (116 ex) DONE: **dev +0.326 [.246,.411] / heldout +0.348 [.261,.439]** (S1≈.05→
+  S3≈.40, selfdev 0) — the surprising carry-head sufficiency GENERALIZES to 30 novel concepts, both splits,
+  full power. **ALL v2 re-runs complete — every core finding replicated/strengthened + 2 new patching
+  results:** L9 write (L8–13 Holm-sig), carry necessity (heldout 44, power fixed), carry sufficiency (+.33),
+  granularity (L8–11 distributed), attn-PATTERN (NEW causal −.13–.17), Q/K/V (clean null). Added Scale-up
+  Validation section to FINAL report + PHASE7_PATH v2 note. Rules held (Wilcoxon-Holm, locked test, no
+  trim, self-swap 0). **Scale-up program (more examples + more patching) delivered end-to-end.** Next:
+  optional per-head attention-pattern decomposition / demo-position Q/K/V, or consolidate/refresh figure.
+
 - **2026-08-04 (iter 74, loop tick — MORE-EXAMPLES fixes heldout power: 44 Holm-sig heads)** — phase5 heads
   on v2 (116 ex) DONE: **dev n=59 → 58 Holm-sig heads; heldout n=55 → 44 Holm-sig heads** (underpowered=
   False, selfswap 0). **The original curated-heldout n=21→0 low-power caveat is RESOLVED by more examples** —
