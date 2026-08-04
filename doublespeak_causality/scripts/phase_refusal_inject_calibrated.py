@@ -76,7 +76,7 @@ def main():
         v = torch.load(p, map_location="cpu").float().flatten()
         dirs[L] = v / (v.norm() + 1e-8)
         alpha[L] = float(proj[str(L + 1)]["direct_minus_ds"][0])       # calibrated to restore direct-level
-    randdir = {L: pc.norm_matched_random(dirs[L], 1, args.seed)[0] for L in layers}
+    randdir = {L: pc.norm_matched_random(dirs[L], 1, args.seed + L)[0] for L in layers}  # per-layer seed (audit: independent draws)
     randdir = {L: randdir[L] / (randdir[L].norm() + 1e-8) for L in layers}
 
     data = json.load(open(args.bench)); items = data["items"] if isinstance(data, dict) else data

@@ -49,7 +49,7 @@ def main():
             v = torch.load(p, map_location="cpu").float().flatten()
             refdir[k + 1] = v / (v.norm() + 1e-8)
     rows_hs = sorted(refdir)                                  # hidden_states indices with a dir
-    rand = {h: pc.norm_matched_random(refdir[h], 1, args.seed)[0] for h in rows_hs}
+    rand = {h: pc.norm_matched_random(refdir[h], 1, args.seed + h)[0] for h in rows_hs}  # per-layer seed (audit: independent draws)
     rand = {h: rand[h] / (rand[h].norm() + 1e-8) for h in rows_hs}
     print(f"[refproj] {len(rows_hs)} per-layer refusal dirs (hs rows {rows_hs[0]}..{rows_hs[-1]})", flush=True)
 

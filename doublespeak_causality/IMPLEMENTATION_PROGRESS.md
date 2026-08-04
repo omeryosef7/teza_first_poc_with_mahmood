@@ -9,6 +9,20 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 101, loop tick — user: MORE Llama + verify no bugs, ultracode. Audit ✓ + new coupling probe)** —
+  Per Omer's steer (more Llama probes + bug-check, detailed, ultracode). **(1) Bug audit** of the un-audited
+  calibrated harness (fanned-out reviewer): **KEY VERDICT — the layer↔dir↔alpha mapping is CONSISTENT, not
+  off-by-one** (direction file L{L}, alpha row str(L+1), AllPositionAdd(L) injection site ALL = hidden_states[L+1],
+  same unit dir; sign correct +α↑refusal; normalization idempotent; McNemar correct) → the calibrated depth-
+  localization result is verified sound. Only LOW nit: per-layer random control reused one vector across layers
+  (specificity still holds; **FIXED** — per-layer seed in projection + calibrated harnesses). **(2) New coupling
+  probe** `phase_write_refusal_interaction.py`: the deep question — are the demos' TWO L8-11 effects (concept-
+  remap + refusal-suppression) causally INDEPENDENT or coupled? Forward-only: ablate the concept WRITE (zero
+  L8-11 mlp_out @ demo cw positions) then measure the REFUSAL-axis projection. If refusal stays suppressed →
+  independent (explains why write-ablation left ASR unchanged); if it rises toward direct → write causes the
+  suppression. + p_concept FC positive control (must drop = ablation fired). Single-BOS (cleaner than the
+  original projection harness). Smoke 711868 pending.
+
 - **2026-08-04 (iter 100, loop tick — calibrated depth-localization REPLICATES cross-cohort; docs bridged)** —
   Curated calibrated depth-localization done (711769, n=51): **L22 (mid-late) significant** (train ΔASR −0.20
   p=.031; pooled −0.14 p=.016), **L9 (early) ns** everywhere, random ≈ null (curated-test n=21 floor-limited
