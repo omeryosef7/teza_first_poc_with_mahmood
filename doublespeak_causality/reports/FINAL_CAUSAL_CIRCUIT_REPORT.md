@@ -94,8 +94,9 @@ non-sufficient.
 - No single head/edge/layer is the bottleneck; effects are distributed within concentrated bands.
 - The carry-head sufficiency is **partial (20–53%)** and **representational** (FC p_concept); its behavioral
   (StrongREJECT) sufficiency is untested (prior state-injection was ≤0.16 behaviorally). Behavioral
-  **necessity** IS now tested (BEHAV-CARRY, below) and is a **well-controlled NULL** — a representation≠behavior
-  dissociation.
+  **necessity** IS now tested at BOTH concept-control sites (BEHAV-CARRY carry heads + BEHAV-WRITE L8–11 demo
+  write, below) and is a **well-controlled NULL at each** — a complete representation≠behavior dissociation:
+  the circuit explains how the concept is represented/carried, not why the model complies.
 - curated heldout (n=21) is under-powered for the 1024-cell head family — head claims rest on the 3 powered
   cells.
 - Sufficiency-installation of carry heads (install carry-head z into benign) not run. (The upstream
@@ -125,13 +126,18 @@ self-swap-gated + code-reviewed):
   positive control and the only run was the n=2 smoke. The Q cell (query originates at the answer position)
   is well-posed but likewise underpowered. **Retracted as a result; a corrected K/V-at-source-positions +
   positive-control re-run is future work.**
-- **NEW: BEHAVIORAL necessity of the carry heads** (BEHAV-CARRY) — **well-controlled NULL.** Ablating the
-  9 carry heads throughout harmful generation (decode-safe zero, all positions) vs baseline vs a
-  count-matched random-head arm, StrongREJECT-judged, paired McNemar. clearharm shows a *consistent-direction
-  but non-significant* ASR drop (train −9pp, test −7pp; > the ~2pp random control; McNemar p≥0.29, all CIs
-  include 0); curated does not replicate (reversed/null). No empty-gen confound. **The carry heads are a
-  causal handle on the concept REPRESENTATION but NOT shown to be behaviorally necessary** — a
-  representation≠behavior dissociation, consistent with the suffix-objective null. (PHASE_BEHAV_CARRY.md)
+- **NEW: BEHAVIORAL necessity — complete representation≠behavior DISSOCIATION** (BEHAV-CARRY + BEHAV-WRITE).
+  Ablating throughout harmful generation (decode-safe/prefill, StrongREJECT-judged, paired McNemar, 2 cohorts,
+  count-matched random controls) — **BOTH concept-control sites are behaviorally NULL:**
+  (a) **carry heads** L14–21 — consistent-direction but non-significant (clearharm train −9pp/test −7pp,
+  McNemar p≥0.29, CIs include 0; curated reversed/null);
+  (b) **L8–11 demo WRITE** — even flatter (all ΔASR ∈ [−.02,+.07], every McNemar p≥0.69, CIs include 0,
+  indistinguishable from the random-position control). 0 empty-gen everywhere.
+  So the very components that are causally **necessary (+ carry: sufficient) for the concept READOUT** are
+  **NOT behaviorally necessary for the jailbreak** — harmful behavior does not reduce to the concept-carrying
+  machinery. Falsifies "remap committed early." Consistent with the suffix-objective null, the mechanism-guided
+  optimization negative, and ≤0.16 state-injection sufficiency — four converging lines.
+  (PHASE_BEHAV_CARRY.md, PHASE_BEHAV_WRITE.md)
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 
@@ -141,4 +147,8 @@ A complete, audited, cross-cohort, Holm-corrected causal circuit for Doublespeak
 bands, concept axis ⊥ refusal. The mechanism is behaviorally real (DS ≫ direct) and white-box-actionable
 (concept-install + refusal-removal), but distributed/context-bound — it does not reduce to a single
 head/edge/layer, and it does not convert into a black-box token-suffix attack objective (a well-controlled
-null + a field caution that decoding-sufficiency ≠ behavioral sufficiency).
+null + a field caution that decoding-sufficiency ≠ behavioral sufficiency). **And a complete
+representation≠behavior dissociation:** ablating the concept-control machinery (L8–11 write OR L14–21 carry)
+throughout generation leaves harmful ASR statistically unchanged — the circuit is a faithful account of how
+the concept is *represented and carried*, but harmful *compliance* does not causally depend on it. Concept-
+subspace defenses are therefore unlikely to blunt Doublespeak.

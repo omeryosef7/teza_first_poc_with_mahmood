@@ -58,11 +58,13 @@ patching (well-controlled null) and the mechanism-guided optimization (CI-backed
 holds: **a strong, rigorously-established representational circuit whose causal grip on end-to-end harmful
 behavior is weak.** That is a finding, not a failure — it bounds what "the circuit" explains.
 
-## What would change the verdict (not run)
+## Follow-up (now run) — the write site is ALSO null
 
-- **Behavioral necessity of the L9 write** (the *write* site, not the *carry*) — ablate the demo-position
-  L9 MLP write through generation. If the remap is committed early, the write may be behaviorally
-  necessary where the carry is not. This is the natural next causal test.
+- **Behavioral necessity of the L8–11 demo write** was the natural next test (if the remap is
+  "committed early" the write might be necessary where the carry is not). **It was run
+  (PHASE_BEHAV_WRITE.md) and is ALSO a clean null** (every McNemar p ≥ 0.69, all CIs include 0). So
+  the dissociation is *complete*: neither the write nor the carry is behaviorally necessary — see the
+  combined interpretation there.
 - **Wider-band / top-k carry ablation** — but the random control shows 9 heads is near the behavioral
   noise floor; a larger set risks non-specific decoder damage and would need a matched large random arm.
 

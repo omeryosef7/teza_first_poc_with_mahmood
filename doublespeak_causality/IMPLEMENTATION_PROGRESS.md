@@ -9,6 +9,23 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 88, loop tick — BEHAVIORAL necessity of L8–11 WRITE: CLEAN NULL ✗ → dissociation now COMPLETE across the circuit)** —
+  Tested the "remap committed early" hypothesis from iter87: is the demo WRITE behaviorally necessary where the
+  carry heads were null? Built `scripts/phase_behav_write.py` — zero L8–11 mlp_out at the **DEMO** codeword
+  positions (query occurrence preserved → no query-parse confound) via `pc.ComponentOutSwap` (auto-no-ops on
+  decode → prefill-only "corrupt the early write, then generate"); arms baseline/write_abl/rand_pos_abl
+  (count-matched random positions). Generalized `phase_behav_carry_analyze.py` to auto-detect arms (regression
+  OK). Early rows validated (n_cw≈12, 0 empty, coherent gen). Full runs 707908 (clearharm) + 707909 (curated).
+  **RESULT ✗ CLEAN NULL — flatter than carry:** all ΔASR ∈ [−0.023,+0.067], **every McNemar p≥0.69**, all CIs
+  include 0, **indistinguishable from the random-position control**; 0 empty-gen. **"Committed early" FALSIFIED
+  in the strong direction** — neither write NOR carry is behaviorally necessary. **→ COMPLETE
+  representation≠behavior dissociation:** the components necessary (+carry: sufficient) for the concept READOUT
+  are NOT behaviorally necessary for the jailbreak. Account: the demonstration MODE (comply-with-in-context-task
+  + refusal bypass) drives compliance, not the concept subspace; massive redundancy; probe≠behavior. Converges
+  with suffix-objective null + mechanism-guided-opt negative + ≤0.16 state-injection (4 lines). Defense
+  implication: concept-subspace interventions unlikely to blunt Doublespeak. Wrote PHASE_BEHAV_WRITE.md; updated
+  PHASE_BEHAV_CARRY.md + FINAL (limitations + Scale-up + Bottom line).
+
 - **2026-08-04 (iter 87, loop tick — BEHAVIORAL necessity of carry heads: WELL-CONTROLLED NULL ✗ = representation≠behavior dissociation)** —
   Built `scripts/phase_behav_carry.py` (3-arm DS generation: baseline · carry-ablated `pc.AllPositionZHeadAblate(CARRY,"zero")`
   decode-safe · random-ablated 9-head count-matched control; StrongReject-judged) + `phase_behav_carry_analyze.py`
