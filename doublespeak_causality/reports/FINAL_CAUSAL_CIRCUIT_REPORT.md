@@ -130,9 +130,22 @@ non-sufficient.
 ## Phase status — ALL PHASES COMPLETE
 0 ✅ · 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ✅ · 8 ✅ · 9 ✅ · 10 ✅ · 11 ✅ (concluded: null for
 suffix objective; behaviorally actionable only via white-box edit).
-Reports: CAUSAL_PATCHING_AUDIT · DATASET_AND_SPLIT_CONTRACT · PHASE2_{BEHAVIORAL,DIRECTIONS} ·
-PHASE3_RESIDUAL · PHASE4_DEMO_RETRIEVAL · PHASE5_HEADS · PHASE6_MLP · PHASE7_PATH · PHASE8_READOUT ·
-PHASE9_DOSE · CAUSAL_OBJECTIVE · GCG_MAC_EVALUATION.
+Reports (representational circuit): CAUSAL_PATCHING_AUDIT · DATASET_AND_SPLIT_CONTRACT ·
+PHASE2_{BEHAVIORAL,DIRECTIONS} · PHASE3_RESIDUAL · PHASE4_DEMO_RETRIEVAL · PHASE5_HEADS · PHASE6_MLP ·
+PHASE7_PATH · PHASE8_READOUT · PHASE9_DOSE · CAUSAL_OBJECTIVE · GCG_MAC_EVALUATION.
+
+**Reports (behavioral frontier — the headline dissociation, read these for the main result):**
+- **PHASE_BEHAV_CARRY.md** — carry-head behavioral necessity = NULL.
+- **PHASE_BEHAV_WRITE.md** — L8–11 demo-write behavioral necessity = NULL.
+- **PHASE_BEHAV_REFUSAL.md** — refusal axis: sufficiency (ablate→jailbreak > DS), necessity (re-inject→ASR 0),
+  representational signature (DS suppresses refusal), calibrated depth-localization (decision read mid-late),
+  coherence + code audit. *The central behavioral report.*
+- **PHASE_WRITE_REFUSAL_INTX.md** — concept-write × refusal-suppression are causally INDEPENDENT pathways
+  (why the concept circuit is behaviorally epiphenomenal).
+- *(in progress)* refusal-trajectory (does refusal re-engage mid-generation — explains partial base ASR).
+Harnesses: `scripts/phase_behav_{carry,write,refusal,refusal_inject}.py`,
+`phase_refusal_{projection,inject_calibrated,trajectory}.py`, `phase_write_refusal_interaction.py`,
+`phase_behav_carry_analyze.py`. All new harnesses code-audited (mappings verified consistent, no off-by-one).
 
 ## Scale-up validation (v2, 116-example bench = clearharm 86 + 30 NEW gpt-4o-mini concepts)
 Every core finding replicates or STRENGTHENS on the expanded data (locked test preserved, no leak), and two
