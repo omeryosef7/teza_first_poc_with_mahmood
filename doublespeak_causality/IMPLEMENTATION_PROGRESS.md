@@ -9,6 +9,18 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 87, loop tick — BEHAVIORAL necessity of carry heads: harness built + full runs launched)** —
+  Resumed the regular frontier: connect the representational circuit to real harmful behavior. Built
+  `scripts/phase_behav_carry.py` — on DS-malicious prompts, generate 3 arms (baseline · **carry-ablated** via
+  `pc.AllPositionZHeadAblate(CARRY, "zero")`, decode-safe per the iter-86 audit · **random-ablated**, same 9-head
+  count = specificity control), StrongReject-judge each vs the harmful goal (reuses 18's judge + MALICIOUS-first
+  classify), compare ASR per arm/split. CARRY={14:[4,5,23],15:[8,11],17:[24,27],18:[20],21:[10]}. Reuses
+  `build_conditions`/`apply_template` + `.env` OpenAI key + L40S wrapper (n-801 excluded). **Smoke (n=2, 707820):
+  full pipeline runs clean end-to-end — 3-arm gen + ablation hooks + judge + summary; 0 empties under zero-ablation
+  (generation stays coherent).** Compile OK. **Full runs launched:** 707831 (clearharm 86, both splits), 707832
+  (curated, cross-cohort), max-new=220. Awaiting results = behavioral necessity Δ (baseline ASR − carry-ablated ASR)
+  vs random-ablation control.
+
 - **2026-08-04 (iter 86, loop tick — AUDIT ww3tvlc9z resolved: 15 findings fixed)** — Code audit returned
   **15 confirmed** (2 high, 4 med, 9 low). **MATERIAL fixes:** (1) **RETRACTED the phase5b Q/K/V "clean
   null"** — the K/V cells patched only the ANSWER position but K/V are read from EARLIER source positions
