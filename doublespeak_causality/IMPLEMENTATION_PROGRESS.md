@@ -19,7 +19,7 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
   suppression is NECESSARY AND SUFFICIENT for Doublespeak's harm**, via a single axis orthogonal to (and
   untouched by) the behaviorally-inert concept circuit. **Doublespeak = imperfect in-context refusal
   suppression.** Wrote necessity section + dose table into PHASE_BEHAV_REFUSAL.md; folded into FINAL. Behavioral
-  causal story COMPLETE (concept: repr necessary+sufficient / behav null; refusal: behav necessary+sufficient).
+  causal story COMPLETE (concept: repr necessary+sufficient / behav null; refusal: behav necessary+sufficient). **iter92b coherence audit ✓:** inspected α=8/12 completions (--save-gen) — the REJECTED outputs are FLUENT NATURAL refusals ('I can't provide information on how to design a malicious tool.'), random-dir control stays coherent-harmful → ASR→0 is genuine refusal restoration, not decoder-break. Confound closed; necessity fully audited.
 
 - **2026-08-04 (iter 91, loop tick — refusal NECESSITY arm built + smoke CONFIRMS; clearharm test cell LOCKED)** —
   Two threads. (1) **Locked the clearharm refusal cell:** preemption restart 708038 finished (86 rows) — final

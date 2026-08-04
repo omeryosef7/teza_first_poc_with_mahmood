@@ -79,6 +79,15 @@ to 1.0; (2) at α=12 **every** Doublespeak jailbreak is neutralized (ASR .000) w
 coherent; (3) the effect is **axis-specific** — a random push of equal norm never restores refusal and
 never lowers ASR (if anything nudges it up). Necessity is established.
 
+**Coherence audit (adversarial check).** The one confound for an "ASR→0" claim is that a strong α could
+*garble* generation, and garbled text might just trip the refusal keyword-markers (a fake refusal). Ruled
+out three ways: `empty_rate=0` at every α; the effect is already strong at the *milder* α=8; and — the
+gold check — **inspecting the actual completions** (`--save-gen`, main-loop only) shows the α=8/12
+"REJECTED" outputs are **fluent, natural refusals** ("I can't provide information on how to design a
+malicious tool."; "I cannot provide information on the creation of a nuclear device."), while the
+norm-matched **random** control at the same α produces coherent *harmful* text (never a refusal). The
+ASR→0 is genuine refusal restoration, not decoder breakage.
+
 ## Interpretation — the mechanistic account completes
 
 Combining all three behavioral experiments:
