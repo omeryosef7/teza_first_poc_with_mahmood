@@ -547,6 +547,52 @@ class ZHeadPatch:
         return False
 
 
+class AllPositionZHeadAblate:
+    """Ablate a set of attention heads' output z at EVERY position, on EVERY forward (prefill AND
+    each KV-cached decode step) — the generation-time, all-position analogue of ZHeadPatch. Used
+    for behavioral necessity: does removing the carry heads' contribution throughout generation
+    reduce harmful behavior? `heads_by_layer` = {layer_idx: [head, ...]}; mode "zero" sets those
+    head slices to 0, "mean" sets them to their per-head mean over the current positions.
+
+    Registers a forward_pre_hook on each layer's o_proj (the head-concat = o_proj input). Unlike
+    ZHeadPatch (fixed prompt positions), this edits ALL rows of the current forward, so ablation
+    persists through generated tokens.
+    """
+
+    def __init__(self, model, heads_by_layer: Dict[int, Sequence[int]], mode: str = "zero"):
+        self.layers = dc._get_layers(model)
+        self.n_heads, self.head_dim = _attn_head_dims(model)
+        self.heads_by_layer = {int(l): list(hs) for l, hs in heads_by_layer.items()}
+        self.mode = mode
+        self._handles: List[Any] = []
+
+    def _pre(self, heads):
+        def f(module, args):
+            z = args[0]
+            b, seq, hh = z.shape
+            zr = z.view(b, seq, self.n_heads, self.head_dim).clone()
+            for h in heads:
+                if self.mode == "zero":
+                    zr[:, :, h, :] = 0.0
+                elif self.mode == "mean":
+                    zr[:, :, h, :] = zr[:, :, h, :].mean(dim=1, keepdim=True)
+                else:
+                    raise ValueError(f"unknown mode {self.mode}")
+            return (zr.view(b, seq, hh),) + tuple(args[1:])
+        return f
+
+    def __enter__(self):
+        for li, hs in self.heads_by_layer.items():
+            self._handles.append(self.layers[li].self_attn.o_proj.register_forward_pre_hook(self._pre(hs)))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
 class ZHeadCapture:
     """Capture the per-head attention output z (o_proj input) at target layers, retaining its
     grad — the per-head analogue of 48's _ActGradCapture (which captures the residual). After a

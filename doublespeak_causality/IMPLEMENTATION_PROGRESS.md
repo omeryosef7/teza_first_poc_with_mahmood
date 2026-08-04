@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 84, loop tick — BEHAVIORAL frontier: carry-head ablation primitive built + tested)** —
+  Started the behavioral validation (does the carry-head circuit control actual StrongREJECT ASR?). Added
+  reusable `pc.AllPositionZHeadAblate` (zero/mean-ablate heads at EVERY position through generation — the
+  generation-time all-position analogue of ZHeadPatch; decode-step safe). **4/4 synthetic tests pass** (zero
+  + mean modes, decode-step single-pos, cleanup); full suite green. Resolved harness inputs: beh_clearharm
+  demos = codeword-bound STRING (usable directly for the DS prompt); StrongReject judge lives at
+  `poc_stage3/strongreject_scoring.py` (behavioral SLURM adds it to PYTHONPATH) + OPENAI. Next tick: build
+  `phase_behav_carry.py` — on DS-malicious prompts, generate baseline vs carry-ablated (AllPositionZHeadAblate
+  on the L14–21 carry heads), StrongReject-judge both, compare ASR = behavioral necessity of the carry heads.
+
 - **2026-08-04 (iter 83, loop tick — accuracy fix + integrity + state assessment)** — Self-caught an
   over-framing: phase4c KO_all is a firing CONTROL, not a pure retrieval measure (blocking answer→ALL keys
   also removes the FC QUESTION, which contains the concept/codeword answer options) — refined
