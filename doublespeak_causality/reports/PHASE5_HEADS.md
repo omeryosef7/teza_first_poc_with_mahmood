@@ -9,6 +9,15 @@
 > than the 1024-cell Holm threshold α/m=4.9e-5. The corrected result and its conclusion (specific heads,
 > mid + late bands, distributed) are below and are robust; only the significance counts changed.
 
+## v2 UPDATE (116-ex expanded bench) — heldout low-power caveat RESOLVED
+Re-run on the expanded v2 bench (clearharm 86 + 30 new gpt-4o-mini concepts) with proper heldout power
+(n_valid dev 59 / heldout 55, underpowered=False): **dev 58 Holm-sig heads, heldout 44 Holm-sig heads** —
+the locked-test cell that returned 0 on the original 21-example curated heldout now has **44 significant
+heads**. Robust on BOTH splits (mid L14–18 + late L21–31): **L17H24 (new top .051/.023)**, L14H4/H5, L17H27,
+L15H8, L14H23, L21H10, L18H20, L22H11/H19, L27H7, L30H15, L31H0/H1. selfswap 0.0. → the carry-head necessity
+now REPLICATES on the locked test with full power; the earlier "curated heldout underpowered" caveat is
+resolved by more examples. (Original curated/clearharm results below stand; this strengthens them.)
+
 ## Method
 `scripts/phase5_head_zpatch.py` + `scripts/phase5_analyze.py`. For every (layer, head), replace the
 DS per-head attention output z[head] at the FC **answer position** (last token) with the matched BENIGN

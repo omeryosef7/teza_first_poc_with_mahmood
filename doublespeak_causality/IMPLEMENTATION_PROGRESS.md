@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 74, loop tick — MORE-EXAMPLES fixes heldout power: 44 Holm-sig heads)** — phase5 heads
+  on v2 (116 ex) DONE: **dev n=59 → 58 Holm-sig heads; heldout n=55 → 44 Holm-sig heads** (underpowered=
+  False, selfswap 0). **The original curated-heldout n=21→0 low-power caveat is RESOLVED by more examples** —
+  the carry-head necessity now replicates on the locked test with full power. New top head **L17H24**
+  (.051/.023) alongside L17H27; robust set (mid L14–18 + late L21–31) significant on BOTH splits. This is the
+  cleanest possible delivery of Omer's "generalize with more examples." Updated PHASE5_HEADS + FINAL Q3.
+  **All v2 re-runs in: L9 write (strengthens), attn-PATTERN (new causal), granularity (L8–11 distributed),
+  heads (heldout fixed).** Next tick: phase7c sufficiency on v2 → then consolidated FINAL-report refresh.
+
 - **2026-08-04 (iter 73, loop tick — MLP-write GRANULARITY sweep on v2 (plan mandate))** — phase6b_windows
   full on v2 DONE (143 windows, self-swap 0.0, both splits). **Write distributed across L8–11, narrow window
   captures it:** sliding W4 L8–11 +0.111 dev/+0.076 heldout; W8 L8–15 ≈ W4 (SATURATES); single L9 +0.03–0.08

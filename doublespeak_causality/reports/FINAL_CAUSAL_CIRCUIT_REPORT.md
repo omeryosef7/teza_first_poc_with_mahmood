@@ -19,9 +19,11 @@ head or edge), but a clear directed layer structure. Concept axis is independent
 2. **Which query→demo attention edges retrieve it?** **None specifically.** Surgical query→demo edge
    knockout (all heads, L8–11) is ns on both cohorts — retrieval is distributed/redundant, not a single
    induction edge (PHASE4). The observed attention pattern is descriptive, not causal.
-3. **Which heads are necessary?** Answer-position **carry heads in a mid band L14–L18** (+ L21), Wilcoxon-
-   Holm significant on 3/4 powered cells (curated dev 58, clearharm dev/heldout 31 each; curated heldout
-   n=21 low-power → 0). Robust: L17H27, L15H8, L18H20, L14H23, L21H10, L14H5 (PHASE5).
+3. **Which heads are necessary?** Answer-position **carry heads in a mid band L14–L18** (+ L21) and a late
+   band (L21–31), Wilcoxon-Holm significant. On the expanded **v2 (116-ex)** bench the locked-test power is
+   fixed: **dev 58 / heldout 44 Holm-sig heads** (the original curated-heldout n=21 low-power=0 is resolved
+   by more examples). Robust both splits: L17H24, L14H4/H5, L17H27, L15H8, L14H23, L21H10, L18H20 (PHASE5).
+   Also causal in their **attention PATTERN** (Phase 4b: uniform-pattern knockout −0.13–0.17 both splits).
 4. **Which heads/head-sets are sufficient?** **No single head, but the L14–21 carry HEAD-SET is partially
    sufficient** — installing the DS carry-head z into a benign prompt raises the reading to 0.16–0.47
    (20–53% of the full DS reading), significant + specific on all 4 cells (PHASE7c). This is the FIRST
