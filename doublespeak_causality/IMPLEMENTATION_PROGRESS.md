@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-04 (iter 82, loop tick — RESULT: carry heads read from RESIDUAL, not demo codewords)** — full
+  carry-edge on v2 (707708), positive-controlled: **KO_all (block carry heads' answer→ALL keys) FIRES
+  STRONGLY** dev +0.246 [.167,.329] / heldout +0.207 [.135,.288] — machinery works + carry answer-attention
+  is causally important. **KO_demo (demo-codeword edges) negligible** +0.007/+0.003 = ~2–3% of KO_all.
+  → **the carry heads retrieve the concept from the DISTRIBUTED context at the answer position, NOT from the
+  demo-codeword tokens.** By the answer position the concept is already in the residual (written@L9, carried
+  up); carry heads read it from the broad context, not fresh demo attention. Closes the "how carry heads get
+  the concept" gap + reconciles the original edge-KO null. Updated PHASE4B_PATTERN (Phase 4c section). Every
+  retrieval/read mechanism = distributed, no privileged demo edge anywhere.
+
 - **2026-08-04 (iter 81, loop tick — carry→demo edge-KO: machinery FIRES, demo-edge null)** — re-smoke
   with positive control (n=5): **KO_all FIRES** (heldout C1−KO_all +0.086; dev −0.026 noisy) = the
   AttentionKnockout machinery works AND the carry heads' answer attention has a (small, matching their small

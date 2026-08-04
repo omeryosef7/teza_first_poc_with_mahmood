@@ -55,6 +55,25 @@ Ran the harness per-head (single `--heads` each) for the top-5 necessity heads o
 - By the (cross-length-caveated) benign-transplant measure, **L14H5 carries the most** concept-relevant
   attention, then L17H24, L14H4 — but even the top head is not individually necessary.
 
+## Phase 4c — WHERE do the carry heads read? NOT from the demo codewords (v2, positive-controlled)
+`scripts/phase4c_carryedge.py` (pc.AttentionKnockout, eager). Knock out the carry heads' ANSWER→key edges:
+KO_demo (→ demo-codeword keys), KO_rand (→ random non-demo keys), **KO_all (→ ALL earlier keys = positive
+firing control)**. v2, both splits:
+
+| cell | dev (n=59) | heldout (n=57) |
+|------|-----------|-----------------|
+| **KO_all (positive control, C1−KO_all)** | **+0.246 [.167,.329]** | **+0.207 [.135,.288]** |
+| KO_demo (C1 − KO_demo) | +0.007 [.003,.012] | +0.003 [.001,.005] |
+
+- **The knockout machinery fires strongly** (KO_all drops the reading ~0.21–0.25, both splits) — the carry
+  heads' answer-position attention IS causally important.
+- **But knocking out only the demo-codeword edges is negligible** (KO_demo ~0.005 = only ~2–3% of KO_all).
+- → **the carry heads retrieve the concept from the DISTRIBUTED context at the answer position, NOT from the
+  demonstration codeword tokens specifically.** By the answer position the concept is already in the residual
+  stream (written @L9 on the demo positions, carried up); the carry heads read it from the broad context, not
+  by fresh demo-codeword attention. Reconciles the original all-head query→demo edge-KO null (Phase 4) — no
+  privileged demo-codeword retrieval edge anywhere.
+
 ## Caveats / next
 - The benign transplant is cross-length-approximate; the uniform knockout is the clean claim.
 - Answer-position pattern only; the pattern at the demo/query positions is separate.
