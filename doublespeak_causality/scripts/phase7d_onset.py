@@ -105,9 +105,12 @@ def main():
             z_ds, _ = cap_headz_last(ds_tok); z_b, b_last = cap_headz_last(b_tok)
             rec = {"sid": r["sid"], "split": split, "cohort": cohort,
                    "S1": readout(b_tok, cid, kid)}
+            pool = [(l, h) for l in range(L) for h in range(nH) if (l, h) not in full_set]
             for g, heads in groups.items():
                 rec[g] = readout(b_tok, cid, kid, install(z_ds, heads, b_last))
-            pool = [(l, h) for l in range(L) for h in range(nH) if (l, h) not in full_set]
+                # audit fix: per-group COUNT-MATCHED random control (len(heads) random heads)
+                rh = [pool[i] for i in rng.choice(len(pool), size=len(heads), replace=False)]
+                rec[f"S_rand_{g}"] = readout(b_tok, cid, kid, install(z_ds, rh, b_last))
             rand_heads = [pool[i] for i in rng.choice(len(pool), size=len(FULL), replace=False)]
             rec["S_rand"] = readout(b_tok, cid, kid, install(z_ds, rand_heads, b_last))
             rec["S_self"] = readout(b_tok, cid, kid, install(z_b, FULL, b_last))
@@ -128,7 +131,9 @@ def main():
                        "S_rand": round(srand, 4),
                        "self_dev": round(float(np.max([abs(r["S_self"] - r["S1"]) for r in sr])), 5) if sr else None,
                        "cumulative_p_concept": {g: (round(float(np.mean([r[g] for r in sr])), 4) if sr else None) for g in groups},
-                       "specific_over_rand": {g: ci([r[g] - r["S_rand"] for r in sr]) for g in groups}}
+                       # count-matched specificity (audit): per-group random control matched in head count
+                       "specific_over_rand_countmatched": {g: ci([r[g] - r.get(f"S_rand_{g}", r["S_rand"]) for r in sr]) for g in groups},
+                       "specific_over_rand_fullctrl": {g: ci([r[g] - r["S_rand"] for r in sr]) for g in groups}}
     json.dump({"cohort": cohort, "groups": GROUPS, "by_split": summ},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
     print(f"[onset] {len(allr)} rows -> {out_dir}")

@@ -117,8 +117,12 @@ self-swap-gated + code-reviewed):
 - **MLP-write granularity** (Phase 6b) — write distributed L8–11, sliding-W4-reproducible, saturates by W8.
 - **NEW: attention-PATTERN causality** (Phase 4b) — uniform-pattern knockout at the carry heads −0.13–0.17
   (both splits) → the carry heads read via WHERE they attend, not only their output.
-- **NEW: Q/K/V decomposition** (Phase 5b) — answer-position Q/K/V patching is inert (the head OUTPUT carries
-  the concept, not its answer-position input) — a clean null.
+- **Q/K/V decomposition** (Phase 5b) — **INCONCLUSIVE, not a clean null** (audit iter-85): the K/V cells
+  patched only the ANSWER position, but under causal masking K/V are read from EARLIER source positions that
+  were never touched → the K/V ~0 is a positioning artifact, not inertness; the harness also lacked a
+  positive control and the only run was the n=2 smoke. The Q cell (query originates at the answer position)
+  is well-posed but likewise underpowered. **Retracted as a result; a corrected K/V-at-source-positions +
+  positive-control re-run is future work.**
 All self-swap controls exact (0.0); all CIs on ≥55 locked-test examples; rules held (Wilcoxon-Holm,
 train/test separation, no trimming).
 

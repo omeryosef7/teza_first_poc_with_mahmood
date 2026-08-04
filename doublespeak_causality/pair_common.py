@@ -552,7 +552,9 @@ class AllPositionZHeadAblate:
     each KV-cached decode step) — the generation-time, all-position analogue of ZHeadPatch. Used
     for behavioral necessity: does removing the carry heads' contribution throughout generation
     reduce harmful behavior? `heads_by_layer` = {layer_idx: [head, ...]}; mode "zero" sets those
-    head slices to 0, "mean" sets them to their per-head mean over the current positions.
+    head slices to 0, "mean" sets them to their per-head mean over the current positions. NOTE (audit): mean over
+    the seq axis is an identity no-op on KV-cached decode steps (seq==1) — mean mode is PREFILL-ONLY;
+    use mode="zero" (decode-safe) for any generation-time necessity test.
 
     Registers a forward_pre_hook on each layer's o_proj (the head-concat = o_proj input). Unlike
     ZHeadPatch (fixed prompt positions), this edits ALL rows of the current forward, so ablation

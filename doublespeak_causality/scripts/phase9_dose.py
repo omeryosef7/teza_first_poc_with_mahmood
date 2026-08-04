@@ -123,7 +123,7 @@ def main():
             vals = [r["p_concept"] for r in sr if r["alpha"] == a and r["sid"] in valid]
             curve[a] = round(float(np.mean(vals)), 4) if vals else None
         # monotone-decreasing check (dose response)
-        seq = [curve[a] for a in alphas if curve[a] is not None]
+        seq = [curve[a] for a in alphas if a <= 1.0 and curve[a] is not None]  # audit: [0,1] only, not alpha>1 extrapolation
         mono = all(seq[i] >= seq[i + 1] - 1e-6 for i in range(len(seq) - 1)) if len(seq) > 1 else None
         summ[split] = {"n_valid": len(valid), "p_concept_by_alpha": curve, "monotone_decreasing": mono}
     json.dump({"cohort": cohort, "layers": ells, "alphas": alphas, "by_split": summ},

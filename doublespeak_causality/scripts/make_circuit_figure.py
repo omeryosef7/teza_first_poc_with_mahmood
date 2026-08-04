@@ -93,17 +93,19 @@ def main():
         axA.spines[s].set_visible(False)
     axA.legend(frameon=False, fontsize=8, loc="upper left", bbox_to_anchor=(0.02, 0.80))
 
-    # ---- Panel B: carry-stage causal handles, Δp_concept (v2 heldout, one axis) ----
-    labels = ["head-output\nnecessity", "attn-PATTERN\nknockout", "carry-head\nSUFFICIENCY", "random\ncontrol"]
-    vals = [0.030, 0.134, 0.348, 0.0]                      # v2 heldout: L9-ish head nec / uniform-KO / install / ctrl
-    cols = [ORANGE, SKY, GREEN, MUTED]
+    # ---- Panel B: causal handles, Δp_concept (v2 heldout, one axis) — labels audit-corrected ----
+    # values verified vs raw (iter-85 audit): L9 MLP-write necessity +0.030 (BLUE, = Panel-A MLP series),
+    # attn-PATTERN uniform-knockout +0.134, carry-head SUFFICIENCY install +0.348, random control 0.
+    labels = ["L9 MLP-write\nnecessity", "attn-PATTERN\nknockout", "carry-head\nSUFFICIENCY", "random\ncontrol"]
+    vals = [0.030, 0.134, 0.348, 0.0]
+    cols = [BLUE, SKY, GREEN, MUTED]
     bars = axB.bar(range(4), vals, color=cols, width=0.62, zorder=3)
     for bar, v in zip(bars, vals):
         axB.text(bar.get_x() + bar.get_width() / 2, v + 0.008, f"+{v:.2f}", ha="center", va="bottom", fontsize=9, color=INK)
     axB.set_xticks(range(4)); axB.set_xticklabels(labels, fontsize=8)
     axB.set_ylabel("Δ p_concept  (causal effect)"); axB.set_ylim(0, 0.42)
-    axB.set_title("B · Carry-stage causal handles (v2, locked test)", fontsize=10, loc="left")
-    axB.text(0.03, 0.97, "L9→carry mediation = 0.79\ncarry direct_frac ≈ 0 (mediated)\noutput L30–31 direct_frac ≈ 0.6",
+    axB.set_title("B · Causal handles (v2, locked test)", fontsize=10, loc="left")
+    axB.text(0.03, 0.97, "L9→carry mediation = 0.75–0.83\ncarry direct_frac ≈ 0 (mediated)\noutput L30–31 direct_frac ≈ 0.6",
              transform=axB.transAxes, ha="left", va="top", fontsize=7.5, color=MUTED)
     for s in ("top", "right"):
         axB.spines[s].set_visible(False)

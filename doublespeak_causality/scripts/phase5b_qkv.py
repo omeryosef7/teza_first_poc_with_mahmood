@@ -33,6 +33,14 @@ necessity_specific = patched_rand - patched   (paired: head-identity-specific dr
 Usage:
   python scripts/phase5b_qkv.py --bench data/bench/bench_curated.json \
       --carry L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10 --n-prompts 4
+
+
+*** AUDIT RETRACTION (iter-85): this result is INCONCLUSIVE, not a clean null. The K/V cells
+patch only the ANSWER position, but under causal masking K/V are read from EARLIER source positions
+(never patched) -> the K/V ~0 is a POSITIONING ARTIFACT. There is also NO positive control proving the
+patch fires, and the only run was the n=2 smoke. FIX before re-use: patch K/V at the SOURCE positions the
+head attends to; add a positive control (zero/large-donor must move the readout); record ||donor-self||;
+run full n both splits. The Q cell (query at answer) is well-posed but underpowered. ***
 """
 from __future__ import annotations
 import argparse, json, os, re, sys, time
