@@ -417,7 +417,52 @@ old forward exactly; the choice is recorded in RUNMETA.
 
 ---
 
+### 🔥 P8.1 PROVISIONAL (n=36/86) — the sub-additivity may be ENTIRELY a ceiling artifact
+**This is the most consequential thing the sprint has produced, and it points AGAINST our own P8.0
+headline.** Read from the partial `raw.jsonl` of the running sweep. **PROVISIONAL — do not cite.**
+
+| α | ASR(0,1) direct+refabl | I_max | **Î** | D=+2 | D=−2 |
+|---|---|---|---|---|---|
+| **0.25** | **0.306** ✓ in band | **+0.472** ✓ ≥ target | **+0.000** | 0 | 0 |
+| 0.5 | 0.528 | +0.250 | −0.111 | 0 | 2 |
+| 0.75 | 0.528 | +0.250 | −0.083 | 0 | 3 |
+| 1.0 | 0.556 | +0.222 | −0.083 | 0 | 1 |
+| 1.5 | 0.722 | +0.056 | −0.139 | 0 | 1 |
+| 2.0 | 0.833 | −0.056 | −0.361 | 0 | 1 |
+
+**Î tracks the ceiling.** As `I_max` shrinks with rising α, Î becomes progressively more negative; at the
+**non-saturating α = 0.25 it is exactly 0.000** — additive — with **zero** items at D=+2 *and* **zero** at
+D=−2. That is precisely the signature of a ceiling artifact: at α=1.0 the design cannot express a positive
+interaction, so the estimator is pushed negative regardless of mechanism.
+
+**⇒ If this holds at full n, the P8.0 reading changes.** We reported "Doublespeak and refusal-ablation are
+sub-additive ⇒ shared refusal bottleneck", with the ceiling flagged only as making the *magnitude* unclean.
+This suggests the ceiling may account for **all** of it, and that at a non-saturating dose the two are
+**additive — i.e. independent channels**, which is closer to the *opposite* conclusion.
+
+**Restraint required:** n=36 of 86, and the partial α=1.0 estimate here (Î=−0.083) differs from the full-86
+value (−0.186), so these point estimates are noisy. What is robust even now is the **monotone Î-vs-I_max
+relationship**, which is a statement about the design rather than about any one cell. Re-derive on the
+complete data before concluding anything.
+
+**P8.1's operating point (provisional): α = 0.25** — ASR(0,1) = 0.306 (target band 0.20–0.40) and
+`I_max` = +0.472 (target ≥ +0.33, and 2.1× the +0.222 available at α=1.0).
+
+**Controls at every α (this is what the project never had before — previously only α=1.0 was tested):**
+α=0.0 is an **exact no-op** (direct_refabl_a0.0 ASR 0.111 = direct_base 0.111; refusal_rate 0.861 = 0.861),
+and the norm-matched **random control is flat across the entire grid** (ASR 0.083–0.139 vs base 0.111;
+refusal_rate **0.861 at every single α**). Specificity is now demonstrated across the whole dose range.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 14 — 2026-08-05 — provisional α curve read; it challenges our own P8.0 headline
+Sweeps healthy (clearharm 36/86, curated 29/51, ~2.6 min/item, ETA ~20:50). GPU saturated, so no launches.
+Mined the partial `raw.jsonl` for the α curve rather than idling — and it produced the sprint's most
+consequential provisional finding: **Î tracks the ceiling**, reaching exactly 0.000 (additive) at the
+non-saturating α = 0.25 where `I_max` = +0.472. If that survives full n, the P8.0 sub-additivity result is
+a ceiling artifact and the honest reading flips toward *independent channels*. Flagged, not concluded.
 
 ### Tick 13 — 2026-08-05 — P6 landed; double-BOS inconsistency confirmed and scoped
 P6 Jacobian readout complete with a closed-form correctness proof (suite 205 → 224). Confirmed the
