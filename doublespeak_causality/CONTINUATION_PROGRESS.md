@@ -746,6 +746,32 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 35 — 2026-08-06 — 30-min rule applied to P8; v3 benches pre-flighted; an n caveat found
+**Cluster is worse, not better:** all 48 L40S allocated and the `killable` queue has grown **66 → 89**
+pending. P8's jobs had sat **119 min**, so per §1.3.0 they were cancelled and resubmitted as **720320**
+(v3 clearharm) / **720321** (v3 generated). The rule was followed, but it cannot manufacture a GPU — this
+is the §1.3.0 case-3 situation, and the honest note is that we are simply waiting on other groups.
+
+**Pre-flighted the v3 benches before burning a 10 h job on them.** Both are structurally sound: correct
+field schema for `phase_behav_refusal`, **170 / 154** items, **all ids unique**, **all demos non-empty**,
+**all `harmful_word`s single-token**, splits sane.
+
+⚠️ **But the check surfaced a caveat that changes the P8 power arithmetic.** The wrapper defaults to
+`DSSPLITS=train,test`, and v3 has **three** splits (train / dev / test). So P8 will process
+**train + test only**:
+
+| cohort | train | test | **P8 n** | (dev held back) |
+|---|---|---|---|---|
+| clearharm | 85 | 42 | **127** | 43 |
+| generated | 77 | 38 | **115** | 39 |
+| **total** | | | **242** | 82 |
+
+That is **242, not the 324** the power table targets — because dev is reserved for selection **by design**,
+which is correct methodology, not a bug. It is still **2.8× the n=86** that made P8.1 uninterpretable, so
+the run is well worth doing; but the write-up must quote **n=242** and not imply 324. If the interaction CI
+is still too wide at 242, the options are to fold dev in for a final confirmatory pass (only after the
+analysis is frozen) or to state the residual width honestly.
+
 ### Tick 34 — 2026-08-06 — traded P7's full sweep for the answer we actually need
 **Cancelled 718937 at 2 h 15 m and relaunched as 720175 with a targeted layer set.** This was a judgement
 call, so the reasoning is recorded.
