@@ -1,0 +1,12 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_curated.json n=0 gran=window ===
+Mon Aug  3 09:23:50 AM IDT 2026
+n-802
+git=d5a999c0e0652d1ef291e65193035c59a6bf2e9f
+GPU ok: NVIDIA L40S
+[mlpKO] cohort=curated L=32 gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_curated_window_20260803_092504_703456
+[mlpKO] 1224 rows, 51 valid examples -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_curated_window_20260803_092504_703456
+  early: n=51 C1=0.7609 NEC_specific(rand-C3)=[0.4384, 0.3059, 0.5692] SUF_specific(S3-Srand)=[-0.1779, -0.2752, -0.0902] S3=0.0001
+  late: n=51 C1=0.7609 NEC_specific(rand-C3)=[-0.0142, -0.0235, -0.0065] SUF_specific(S3-Srand)=[-0.0, -0.0001, 0.0] S3=0.0003
+  mid: n=51 C1=0.7609 NEC_specific(rand-C3)=[-0.0172, -0.0561, 0.0151] SUF_specific(S3-Srand)=[-0.0009, -0.0019, -0.0002] S3=0.0002
+=== done ===
+Mon Aug  3 09:25:52 AM IDT 2026

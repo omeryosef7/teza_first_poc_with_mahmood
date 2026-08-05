@@ -1,0 +1,21 @@
+=== behavioral necessity: meta-llama/Llama-3.1-8B-Instruct screen=doublespeak_causality/outputs/behavioral_screen_curated_v1 ===
+Wed Jul 29 07:32:11 AM IDT 2026
+n-802
+git=ff04a62f5df2a1da36c84e606fc939ff5323c98e
+GPU ok: NVIDIA L40S
+[necessity] 40 clean-success (DS_MALICIOUS) examples | out=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_necessity_Llama-3.1-8B-Instruct_20260729_073223_early_692699
+[necessity] restricted to windows: ['early']
+  [5/40] processed
+  [10/40] processed
+  [15/40] processed
+  [20/40] processed
+  [25/40] processed
+  [30/40] processed
+  [35/40] processed
+  [40/40] processed
+
+[necessity] baseline reproduced malicious: 37/40 (skipped 0); per-window Δ vs matched controls:
+  early            Δ_nec=0.43243243243243246 Δ_identity=0.10810810810810811 Δ_random=0.32432432432432434 (nec−rand=0.10810810810810811)
+[necessity] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_necessity_Llama-3.1-8B-Instruct_20260729_073223_early_692699
+=== done ===
+Wed Jul 29 07:57:47 AM IDT 2026

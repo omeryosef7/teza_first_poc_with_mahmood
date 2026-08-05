@@ -1,0 +1,12 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_clearharm.json n=0 gran=window ===
+Mon Aug  3 09:31:56 AM IDT 2026
+t-806
+git=e5b141b8a4d6cff3ce49652c46583ef5f47fdda3
+GPU ok: NVIDIA L40S
+[mlpKO] cohort=clearharm L=32 positions=demo gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_clearharm_demo_window_20260803_093749_703458
+[mlpKO] 2064 rows, 85 valid examples -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_clearharm_demo_window_20260803_093749_703458
+  early: n=85 C1=0.8819 NEC_specific(rand-C3)=[0.121, 0.0421, 0.2032] SUF_specific(S3-Srand)=[-0.151, -0.2122, -0.0946] S3=0.0369
+  late: n=85 C1=0.8819 NEC_specific(rand-C3)=[-0.0016, -0.0057, 0.0021] SUF_specific(S3-Srand)=[-0.002, -0.0039, -0.0006] S3=0.0654
+  mid: n=85 C1=0.8819 NEC_specific(rand-C3)=[0.0295, 0.0045, 0.0601] SUF_specific(S3-Srand)=[-0.0143, -0.0259, -0.0044] S3=0.0562
+=== done ===
+Mon Aug  3 09:39:17 AM IDT 2026

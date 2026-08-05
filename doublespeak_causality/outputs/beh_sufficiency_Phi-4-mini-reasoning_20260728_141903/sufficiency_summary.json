@@ -1,0 +1,76 @@
+{
+  "model": "microsoft/Phi-4-mini-reasoning",
+  "meta": {
+    "model_id": "microsoft/Phi-4-mini-reasoning",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 3072,
+    "eos_token_ids": [
+      200020,
+      199999
+    ],
+    "hostname": "n-804",
+    "git_commit": "01cc0e4724d3c3a2ee45eaa089e74acff928701f",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-28T15:01:32"
+  },
+  "status": "COMPLETE",
+  "judge_stats": {
+    "n": 216,
+    "judge_fail": 0,
+    "fail_fraction": 0.0
+  },
+  "n_items_used": 48,
+  "n_skipped": 0,
+  "n_baseline_benign": 36,
+  "n_layers": 32,
+  "windows": {
+    "late": [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ]
+  },
+  "results": {
+    "late": {
+      "n_base_benign": 36,
+      "suff_DS_malicious_rate": 0.027777777777777776,
+      "suff_Direct_malicious_rate": 0.19444444444444445,
+      "DS_minus_Direct": -0.16666666666666669,
+      "ds_transitions": {
+        "BENIGN->BENIGN": 35,
+        "BENIGN->MALICIOUS": 1
+      },
+      "dir_transitions": {
+        "BENIGN->REJECTED": 12,
+        "BENIGN->BENIGN": 17,
+        "BENIGN->MALICIOUS": 7
+      }
+    }
+  },
+  "controls": {
+    "identity": {
+      "n": 36,
+      "malicious_rate": 0.027777777777777776
+    },
+    "random": {
+      "n": 36,
+      "malicious_rate": 0.05555555555555555
+    }
+  }
+}

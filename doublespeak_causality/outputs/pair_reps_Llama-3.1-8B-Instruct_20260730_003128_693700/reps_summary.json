@@ -1,0 +1,5549 @@
+{
+ "model": {
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": null,
+  "dtype": "torch.bfloat16",
+  "device": "cuda:0",
+  "num_layers": 32,
+  "hidden_size": 4096,
+  "eos_token_ids": [
+   128001,
+   128008,
+   128009
+  ],
+  "hostname": "n-802",
+  "git_commit": "5e52b6d7a09832c3d1386effd51365edbceed530",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "timestamp": "2026-07-30T00:31:56"
+ },
+ "pair": {
+  "concept": "chlorine",
+  "codeword": "carrot",
+  "benign_source": "bicycle",
+  "unrelated_source": "grenade"
+ },
+ "bench": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/pair_benchmark/pair_carrot_chlorine.json",
+ "bench_meta": {
+  "hostname": "c-009",
+  "git_commit": "29d3c1c2658b0a3eb73014da4a1fb7cce45c220c",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce GTX TITAN X",
+  "timestamp": "2026-07-30T00:26:56",
+  "plan": "CAUSAL_CORE_PLAN.md Phase A (\u00a73)",
+  "offline": false,
+  "generator": "gpt-4o-mini",
+  "openai_seed": 7,
+  "max_demos": 12,
+  "demo_counts": [
+   4,
+   8,
+   12
+  ],
+  "n_demo_styles": 5,
+  "n_readouts": 5,
+  "n_paraphrases": 60,
+  "n_semantic_prompts": 800,
+  "n_behavioral_prompts": 900,
+  "n_skipped": 0,
+  "generated_at": "2026-07-30T00:26:56"
+ },
+ "plan": "CAUSAL_CORE_PLAN \u00a716.5 (S3)",
+ "n_layers": 32,
+ "hidden": 4096,
+ "components": [
+  "resid_pre",
+  "attn_out",
+  "mlp_out",
+  "resid_post"
+ ],
+ "positions": [
+  "codeword_last",
+  "following",
+  "final_prompt",
+  "first_generated"
+ ],
+ "readout": "cloze",
+ "n_rows": 160,
+ "n_missing_position_cells": 0,
+ "subsample_rows": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  60,
+  61,
+  62,
+  63,
+  64,
+  65,
+  66,
+  67,
+  90,
+  91,
+  92,
+  93,
+  94,
+  95,
+  96,
+  97,
+  120,
+  121,
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  150,
+  151,
+  152,
+  153,
+  154,
+  155,
+  156,
+  157,
+  158,
+  159
+ ],
+ "cell_counts": {
+  "DIRECT_CONCEPT|dev|resid_pre|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|following": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|first_generated": 15,
+  "DIRECT_CONCEPT|dev|attn_out|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|attn_out|following": 15,
+  "DIRECT_CONCEPT|dev|attn_out|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|attn_out|first_generated": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|following": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|first_generated": 15,
+  "DIRECT_CONCEPT|dev|resid_post|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|resid_post|following": 15,
+  "DIRECT_CONCEPT|dev|resid_post|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|resid_post|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|following": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|following": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|following": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|following": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|following": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|following": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|following": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|following": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|following": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|following": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|following": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|following": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|first_generated": 15,
+  "DOUBLESPEAK|dev|resid_pre|codeword_last": 15,
+  "DOUBLESPEAK|dev|resid_pre|following": 15,
+  "DOUBLESPEAK|dev|resid_pre|final_prompt": 15,
+  "DOUBLESPEAK|dev|resid_pre|first_generated": 15,
+  "DOUBLESPEAK|dev|attn_out|codeword_last": 15,
+  "DOUBLESPEAK|dev|attn_out|following": 15,
+  "DOUBLESPEAK|dev|attn_out|final_prompt": 15,
+  "DOUBLESPEAK|dev|attn_out|first_generated": 15,
+  "DOUBLESPEAK|dev|mlp_out|codeword_last": 15,
+  "DOUBLESPEAK|dev|mlp_out|following": 15,
+  "DOUBLESPEAK|dev|mlp_out|final_prompt": 15,
+  "DOUBLESPEAK|dev|mlp_out|first_generated": 15,
+  "DOUBLESPEAK|dev|resid_post|codeword_last": 15,
+  "DOUBLESPEAK|dev|resid_post|following": 15,
+  "DOUBLESPEAK|dev|resid_post|final_prompt": 15,
+  "DOUBLESPEAK|dev|resid_post|first_generated": 15,
+  "DOUBLESPEAK|heldout|resid_pre|codeword_last": 15,
+  "DOUBLESPEAK|heldout|resid_pre|following": 15,
+  "DOUBLESPEAK|heldout|resid_pre|final_prompt": 15,
+  "DOUBLESPEAK|heldout|resid_pre|first_generated": 15,
+  "DOUBLESPEAK|heldout|attn_out|codeword_last": 15,
+  "DOUBLESPEAK|heldout|attn_out|following": 15,
+  "DOUBLESPEAK|heldout|attn_out|final_prompt": 15,
+  "DOUBLESPEAK|heldout|attn_out|first_generated": 15,
+  "DOUBLESPEAK|heldout|mlp_out|codeword_last": 15,
+  "DOUBLESPEAK|heldout|mlp_out|following": 15,
+  "DOUBLESPEAK|heldout|mlp_out|final_prompt": 15,
+  "DOUBLESPEAK|heldout|mlp_out|first_generated": 15,
+  "DOUBLESPEAK|heldout|resid_post|codeword_last": 15,
+  "DOUBLESPEAK|heldout|resid_post|following": 15,
+  "DOUBLESPEAK|heldout|resid_post|final_prompt": 15,
+  "DOUBLESPEAK|heldout|resid_post|first_generated": 15,
+  "BENIGN_REMAP|dev|resid_pre|codeword_last": 15,
+  "BENIGN_REMAP|dev|resid_pre|following": 15,
+  "BENIGN_REMAP|dev|resid_pre|final_prompt": 15,
+  "BENIGN_REMAP|dev|resid_pre|first_generated": 15,
+  "BENIGN_REMAP|dev|attn_out|codeword_last": 15,
+  "BENIGN_REMAP|dev|attn_out|following": 15,
+  "BENIGN_REMAP|dev|attn_out|final_prompt": 15,
+  "BENIGN_REMAP|dev|attn_out|first_generated": 15,
+  "BENIGN_REMAP|dev|mlp_out|codeword_last": 15,
+  "BENIGN_REMAP|dev|mlp_out|following": 15,
+  "BENIGN_REMAP|dev|mlp_out|final_prompt": 15,
+  "BENIGN_REMAP|dev|mlp_out|first_generated": 15,
+  "BENIGN_REMAP|dev|resid_post|codeword_last": 15,
+  "BENIGN_REMAP|dev|resid_post|following": 15,
+  "BENIGN_REMAP|dev|resid_post|final_prompt": 15,
+  "BENIGN_REMAP|dev|resid_post|first_generated": 15,
+  "BENIGN_REMAP|heldout|resid_pre|codeword_last": 15,
+  "BENIGN_REMAP|heldout|resid_pre|following": 15,
+  "BENIGN_REMAP|heldout|resid_pre|final_prompt": 15,
+  "BENIGN_REMAP|heldout|resid_pre|first_generated": 15,
+  "BENIGN_REMAP|heldout|attn_out|codeword_last": 15,
+  "BENIGN_REMAP|heldout|attn_out|following": 15,
+  "BENIGN_REMAP|heldout|attn_out|final_prompt": 15,
+  "BENIGN_REMAP|heldout|attn_out|first_generated": 15,
+  "BENIGN_REMAP|heldout|mlp_out|codeword_last": 15,
+  "BENIGN_REMAP|heldout|mlp_out|following": 15,
+  "BENIGN_REMAP|heldout|mlp_out|final_prompt": 15,
+  "BENIGN_REMAP|heldout|mlp_out|first_generated": 15,
+  "BENIGN_REMAP|heldout|resid_post|codeword_last": 15,
+  "BENIGN_REMAP|heldout|resid_post|following": 15,
+  "BENIGN_REMAP|heldout|resid_post|final_prompt": 15,
+  "BENIGN_REMAP|heldout|resid_post|first_generated": 15,
+  "UNRELATED_TARGET|dev|resid_pre|codeword_last": 15,
+  "UNRELATED_TARGET|dev|resid_pre|following": 15,
+  "UNRELATED_TARGET|dev|resid_pre|final_prompt": 15,
+  "UNRELATED_TARGET|dev|resid_pre|first_generated": 15,
+  "UNRELATED_TARGET|dev|attn_out|codeword_last": 15,
+  "UNRELATED_TARGET|dev|attn_out|following": 15,
+  "UNRELATED_TARGET|dev|attn_out|final_prompt": 15,
+  "UNRELATED_TARGET|dev|attn_out|first_generated": 15,
+  "UNRELATED_TARGET|dev|mlp_out|codeword_last": 15,
+  "UNRELATED_TARGET|dev|mlp_out|following": 15,
+  "UNRELATED_TARGET|dev|mlp_out|final_prompt": 15,
+  "UNRELATED_TARGET|dev|mlp_out|first_generated": 15,
+  "UNRELATED_TARGET|dev|resid_post|codeword_last": 15,
+  "UNRELATED_TARGET|dev|resid_post|following": 15,
+  "UNRELATED_TARGET|dev|resid_post|final_prompt": 15,
+  "UNRELATED_TARGET|dev|resid_post|first_generated": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|following": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|first_generated": 15,
+  "UNRELATED_TARGET|heldout|attn_out|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|attn_out|following": 15,
+  "UNRELATED_TARGET|heldout|attn_out|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|attn_out|first_generated": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|following": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|first_generated": 15,
+  "UNRELATED_TARGET|heldout|resid_post|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|resid_post|following": 15,
+  "UNRELATED_TARGET|heldout|resid_post|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|resid_post|first_generated": 15,
+  "REPEATED_CODEWORD|dev|resid_pre|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|following": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|first_generated": 3,
+  "REPEATED_CODEWORD|dev|attn_out|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|attn_out|following": 3,
+  "REPEATED_CODEWORD|dev|attn_out|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|attn_out|first_generated": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|following": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|first_generated": 3,
+  "REPEATED_CODEWORD|dev|resid_post|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|resid_post|following": 3,
+  "REPEATED_CODEWORD|dev|resid_post|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|resid_post|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|following": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|following": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|following": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|following": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|first_generated": 3,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|first_generated": 1
+ },
+ "rows": [
+  {
+   "row": 0,
+   "sid": "DIRECT_CONCEPT|dev|news|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     53,
+     71,
+     106
+    ],
+    "codeword_last": 106,
+    "following": 107,
+    "final_prompt": 116,
+    "seq_len": 117
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 1,
+   "sid": "DIRECT_CONCEPT|dev|news|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     53,
+     71,
+     93,
+     112,
+     135,
+     163
+    ],
+    "codeword_last": 163,
+    "following": 164,
+    "final_prompt": 173,
+    "seq_len": 174
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 2,
+   "sid": "DIRECT_CONCEPT|dev|news|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     53,
+     71,
+     93,
+     112,
+     135,
+     157,
+     188,
+     197,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 233,
+    "seq_len": 234
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 3,
+   "sid": "DIRECT_CONCEPT|dev|narrative|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     123
+    ],
+    "codeword_last": 123,
+    "following": 124,
+    "final_prompt": 133,
+    "seq_len": 134
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 4,
+   "sid": "DIRECT_CONCEPT|dev|narrative|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     119,
+     137,
+     149,
+     171,
+     198
+    ],
+    "codeword_last": 198,
+    "following": 199,
+    "final_prompt": 208,
+    "seq_len": 209
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 5,
+   "sid": "DIRECT_CONCEPT|dev|narrative|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     119,
+     137,
+     149,
+     171,
+     196,
+     206,
+     219,
+     245,
+     272
+    ],
+    "codeword_last": 272,
+    "following": 273,
+    "final_prompt": 282,
+    "seq_len": 283
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 6,
+   "sid": "DIRECT_CONCEPT|dev|technical|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     49,
+     65,
+     76,
+     103
+    ],
+    "codeword_last": 103,
+    "following": 104,
+    "final_prompt": 113,
+    "seq_len": 114
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 7,
+   "sid": "DIRECT_CONCEPT|dev|technical|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     49,
+     65,
+     76,
+     109,
+     119,
+     165
+    ],
+    "codeword_last": 165,
+    "following": 166,
+    "final_prompt": 175,
+    "seq_len": 176
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 8,
+   "sid": "DIRECT_CONCEPT|dev|technical|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     49,
+     65,
+     76,
+     109,
+     119,
+     152,
+     180,
+     226
+    ],
+    "codeword_last": 226,
+    "following": 227,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 9,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     87,
+     107
+    ],
+    "codeword_last": 107,
+    "following": 108,
+    "final_prompt": 117,
+    "seq_len": 118
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 10,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     87,
+     92,
+     106,
+     138,
+     146,
+     176
+    ],
+    "codeword_last": 176,
+    "following": 177,
+    "final_prompt": 186,
+    "seq_len": 187
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 11,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     87,
+     92,
+     106,
+     138,
+     146,
+     163,
+     201,
+     221,
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 251,
+    "seq_len": 252
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 12,
+   "sid": "DIRECT_CONCEPT|dev|academic|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     50,
+     64,
+     111
+    ],
+    "codeword_last": 111,
+    "following": 112,
+    "final_prompt": 121,
+    "seq_len": 122
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 13,
+   "sid": "DIRECT_CONCEPT|dev|academic|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     50,
+     64,
+     98,
+     117,
+     130,
+     181
+    ],
+    "codeword_last": 181,
+    "following": 182,
+    "final_prompt": 191,
+    "seq_len": 192
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 14,
+   "sid": "DIRECT_CONCEPT|dev|academic|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     50,
+     64,
+     98,
+     117,
+     130,
+     171,
+     185,
+     228,
+     256
+    ],
+    "codeword_last": 256,
+    "following": 257,
+    "final_prompt": 266,
+    "seq_len": 267
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 15,
+   "sid": "DIRECT_CONCEPT|heldout|news|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     51,
+     63,
+     109
+    ],
+    "codeword_last": 109,
+    "following": 110,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 16,
+   "sid": "DIRECT_CONCEPT|heldout|news|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     51,
+     63,
+     99,
+     124,
+     164
+    ],
+    "codeword_last": 164,
+    "following": 165,
+    "final_prompt": 174,
+    "seq_len": 175
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 17,
+   "sid": "DIRECT_CONCEPT|heldout|news|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     51,
+     63,
+     99,
+     124,
+     154,
+     176,
+     197,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 18,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     115
+    ],
+    "codeword_last": 115,
+    "following": 116,
+    "final_prompt": 125,
+    "seq_len": 126
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 19,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     110,
+     132,
+     142,
+     161,
+     182
+    ],
+    "codeword_last": 182,
+    "following": 183,
+    "final_prompt": 192,
+    "seq_len": 193
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 20,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     110,
+     132,
+     142,
+     161,
+     185,
+     198,
+     215,
+     230,
+     255
+    ],
+    "codeword_last": 255,
+    "following": 256,
+    "final_prompt": 265,
+    "seq_len": 266
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 21,
+   "sid": "DIRECT_CONCEPT|heldout|technical|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     73,
+     103
+    ],
+    "codeword_last": 103,
+    "following": 104,
+    "final_prompt": 113,
+    "seq_len": 114
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 22,
+   "sid": "DIRECT_CONCEPT|heldout|technical|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     73,
+     105,
+     123,
+     156
+    ],
+    "codeword_last": 156,
+    "following": 157,
+    "final_prompt": 166,
+    "seq_len": 167
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 23,
+   "sid": "DIRECT_CONCEPT|heldout|technical|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     73,
+     105,
+     123,
+     142,
+     166,
+     210
+    ],
+    "codeword_last": 210,
+    "following": 211,
+    "final_prompt": 220,
+    "seq_len": 221
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 24,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     57,
+     71,
+     110
+    ],
+    "codeword_last": 110,
+    "following": 111,
+    "final_prompt": 120,
+    "seq_len": 121
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 25,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     57,
+     71,
+     98,
+     120,
+     130,
+     144,
+     171
+    ],
+    "codeword_last": 171,
+    "following": 172,
+    "final_prompt": 181,
+    "seq_len": 182
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 26,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     57,
+     71,
+     98,
+     120,
+     130,
+     144,
+     156,
+     174,
+     212,
+     233
+    ],
+    "codeword_last": 233,
+    "following": 234,
+    "final_prompt": 243,
+    "seq_len": 244
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 27,
+   "sid": "DIRECT_CONCEPT|heldout|academic|4|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     33,
+     64,
+     114
+    ],
+    "codeword_last": 114,
+    "following": 115,
+    "final_prompt": 124,
+    "seq_len": 125
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 28,
+   "sid": "DIRECT_CONCEPT|heldout|academic|8|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     33,
+     64,
+     100,
+     116,
+     145,
+     176
+    ],
+    "codeword_last": 176,
+    "following": 177,
+    "final_prompt": 186,
+    "seq_len": 187
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 29,
+   "sid": "DIRECT_CONCEPT|heldout|academic|12|cloze",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     33,
+     64,
+     100,
+     116,
+     145,
+     175,
+     214,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 253,
+    "seq_len": 254
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 30,
+   "sid": "NEUTRAL_CODEWORD|dev|news|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     52,
+     62,
+     95
+    ],
+    "codeword_last": 95,
+    "following": 96,
+    "final_prompt": 105,
+    "seq_len": 106
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 31,
+   "sid": "NEUTRAL_CODEWORD|dev|news|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     52,
+     62,
+     79,
+     92,
+     107,
+     118,
+     143
+    ],
+    "codeword_last": 143,
+    "following": 144,
+    "final_prompt": 153,
+    "seq_len": 154
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 32,
+   "sid": "NEUTRAL_CODEWORD|dev|news|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     52,
+     62,
+     79,
+     92,
+     107,
+     118,
+     129,
+     146,
+     161,
+     173,
+     194
+    ],
+    "codeword_last": 194,
+    "following": 195,
+    "final_prompt": 204,
+    "seq_len": 205
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 33,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     60,
+     80,
+     85,
+     119
+    ],
+    "codeword_last": 119,
+    "following": 120,
+    "final_prompt": 129,
+    "seq_len": 130
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 34,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     60,
+     80,
+     85,
+     106,
+     125,
+     138,
+     186
+    ],
+    "codeword_last": 186,
+    "following": 187,
+    "final_prompt": 196,
+    "seq_len": 197
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 35,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     60,
+     80,
+     85,
+     106,
+     125,
+     138,
+     176,
+     207,
+     220,
+     249
+    ],
+    "codeword_last": 249,
+    "following": 250,
+    "final_prompt": 259,
+    "seq_len": 260
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 36,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     58,
+     74,
+     98
+    ],
+    "codeword_last": 98,
+    "following": 99,
+    "final_prompt": 108,
+    "seq_len": 109
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 37,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     58,
+     74,
+     81,
+     102,
+     106,
+     152
+    ],
+    "codeword_last": 152,
+    "following": 153,
+    "final_prompt": 162,
+    "seq_len": 163
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 38,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     58,
+     74,
+     81,
+     102,
+     106,
+     135,
+     148,
+     172,
+     200
+    ],
+    "codeword_last": 200,
+    "following": 201,
+    "final_prompt": 210,
+    "seq_len": 211
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 39,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     103
+    ],
+    "codeword_last": 103,
+    "following": 104,
+    "final_prompt": 113,
+    "seq_len": 114
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 40,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     91,
+     102,
+     124,
+     140,
+     164
+    ],
+    "codeword_last": 164,
+    "following": 165,
+    "final_prompt": 174,
+    "seq_len": 175
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 41,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     91,
+     102,
+     124,
+     140,
+     195,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 42,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     134
+    ],
+    "codeword_last": 134,
+    "following": 135,
+    "final_prompt": 144,
+    "seq_len": 145
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 43,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     159,
+     177,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 44,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     159,
+     177,
+     219,
+     240,
+     254,
+     288
+    ],
+    "codeword_last": 288,
+    "following": 289,
+    "final_prompt": 298,
+    "seq_len": 299
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 45,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     78,
+     99
+    ],
+    "codeword_last": 99,
+    "following": 100,
+    "final_prompt": 109,
+    "seq_len": 110
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 46,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     78,
+     93,
+     129,
+     150
+    ],
+    "codeword_last": 150,
+    "following": 151,
+    "final_prompt": 160,
+    "seq_len": 161
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 47,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     78,
+     93,
+     129,
+     140,
+     155,
+     163,
+     172,
+     202
+    ],
+    "codeword_last": 202,
+    "following": 203,
+    "final_prompt": 212,
+    "seq_len": 213
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 48,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     58,
+     76,
+     89,
+     119
+    ],
+    "codeword_last": 119,
+    "following": 120,
+    "final_prompt": 129,
+    "seq_len": 130
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 49,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     58,
+     76,
+     89,
+     113,
+     127,
+     155,
+     164,
+     192
+    ],
+    "codeword_last": 192,
+    "following": 193,
+    "final_prompt": 202,
+    "seq_len": 203
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 50,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     58,
+     76,
+     89,
+     113,
+     127,
+     155,
+     164,
+     183,
+     199,
+     217,
+     230,
+     262
+    ],
+    "codeword_last": 262,
+    "following": 263,
+    "final_prompt": 272,
+    "seq_len": 273
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 51,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     45,
+     62,
+     73,
+     102
+    ],
+    "codeword_last": 102,
+    "following": 103,
+    "final_prompt": 112,
+    "seq_len": 113
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 52,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     45,
+     62,
+     73,
+     85,
+     96,
+     116,
+     129,
+     153
+    ],
+    "codeword_last": 153,
+    "following": 154,
+    "final_prompt": 163,
+    "seq_len": 164
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 53,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     45,
+     62,
+     73,
+     85,
+     96,
+     116,
+     129,
+     136,
+     163,
+     176,
+     209
+    ],
+    "codeword_last": 209,
+    "following": 210,
+    "final_prompt": 219,
+    "seq_len": 220
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 54,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     66,
+     104
+    ],
+    "codeword_last": 104,
+    "following": 105,
+    "final_prompt": 114,
+    "seq_len": 115
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 55,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     66,
+     100,
+     107,
+     121,
+     163
+    ],
+    "codeword_last": 163,
+    "following": 164,
+    "final_prompt": 173,
+    "seq_len": 174
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 56,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     66,
+     100,
+     107,
+     121,
+     149,
+     178,
+     185,
+     198,
+     227
+    ],
+    "codeword_last": 227,
+    "following": 228,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 57,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|4|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     93,
+     127
+    ],
+    "codeword_last": 127,
+    "following": 128,
+    "final_prompt": 137,
+    "seq_len": 138
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 58,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|8|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     93,
+     140,
+     154,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 59,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|12|cloze",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     93,
+     140,
+     154,
+     206,
+     256,
+     289
+    ],
+    "codeword_last": 289,
+    "following": 290,
+    "final_prompt": 299,
+    "seq_len": 300
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 60,
+   "sid": "DOUBLESPEAK|dev|news|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     70,
+     73,
+     104
+    ],
+    "codeword_last": 104,
+    "following": 105,
+    "final_prompt": 114,
+    "seq_len": 115
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 61,
+   "sid": "DOUBLESPEAK|dev|news|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     70,
+     73,
+     91,
+     110,
+     114,
+     132,
+     160
+    ],
+    "codeword_last": 160,
+    "following": 161,
+    "final_prompt": 170,
+    "seq_len": 171
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 62,
+   "sid": "DOUBLESPEAK|dev|news|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     70,
+     73,
+     91,
+     110,
+     114,
+     132,
+     154,
+     158,
+     184,
+     193,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 63,
+   "sid": "DOUBLESPEAK|dev|narrative|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     123
+    ],
+    "codeword_last": 123,
+    "following": 124,
+    "final_prompt": 133,
+    "seq_len": 134
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 64,
+   "sid": "DOUBLESPEAK|dev|narrative|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     119,
+     137,
+     149,
+     171,
+     198
+    ],
+    "codeword_last": 198,
+    "following": 199,
+    "final_prompt": 208,
+    "seq_len": 209
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 65,
+   "sid": "DOUBLESPEAK|dev|narrative|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     61,
+     72,
+     93,
+     119,
+     137,
+     149,
+     171,
+     196,
+     206,
+     219,
+     245,
+     272
+    ],
+    "codeword_last": 272,
+    "following": 273,
+    "final_prompt": 282,
+    "seq_len": 283
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 66,
+   "sid": "DOUBLESPEAK|dev|technical|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     75,
+     102
+    ],
+    "codeword_last": 102,
+    "following": 103,
+    "final_prompt": 112,
+    "seq_len": 113
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 67,
+   "sid": "DOUBLESPEAK|dev|technical|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     75,
+     85,
+     107,
+     117,
+     130,
+     162
+    ],
+    "codeword_last": 162,
+    "following": 163,
+    "final_prompt": 172,
+    "seq_len": 173
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 68,
+   "sid": "DOUBLESPEAK|dev|technical|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     75,
+     85,
+     107,
+     117,
+     130,
+     149,
+     157,
+     176,
+     189,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 69,
+   "sid": "DOUBLESPEAK|dev|dialogue|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     58,
+     86,
+     106
+    ],
+    "codeword_last": 106,
+    "following": 107,
+    "final_prompt": 116,
+    "seq_len": 117
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 70,
+   "sid": "DOUBLESPEAK|dev|dialogue|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     58,
+     86,
+     91,
+     105,
+     137,
+     145,
+     175
+    ],
+    "codeword_last": 175,
+    "following": 176,
+    "final_prompt": 185,
+    "seq_len": 186
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 71,
+   "sid": "DOUBLESPEAK|dev|dialogue|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     49,
+     58,
+     86,
+     91,
+     105,
+     137,
+     145,
+     162,
+     176,
+     199,
+     219,
+     239
+    ],
+    "codeword_last": 239,
+    "following": 240,
+    "final_prompt": 249,
+    "seq_len": 250
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 72,
+   "sid": "DOUBLESPEAK|dev|academic|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     63,
+     78,
+     109
+    ],
+    "codeword_last": 109,
+    "following": 110,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 73,
+   "sid": "DOUBLESPEAK|dev|academic|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     63,
+     78,
+     96,
+     115,
+     128,
+     143,
+     178
+    ],
+    "codeword_last": 178,
+    "following": 179,
+    "final_prompt": 188,
+    "seq_len": 189
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 74,
+   "sid": "DOUBLESPEAK|dev|academic|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     63,
+     78,
+     96,
+     115,
+     128,
+     143,
+     168,
+     182,
+     196,
+     224,
+     252
+    ],
+    "codeword_last": 252,
+    "following": 253,
+    "final_prompt": 262,
+    "seq_len": 263
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 75,
+   "sid": "DOUBLESPEAK|heldout|news|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     74,
+     107
+    ],
+    "codeword_last": 107,
+    "following": 108,
+    "final_prompt": 117,
+    "seq_len": 118
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 76,
+   "sid": "DOUBLESPEAK|heldout|news|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     74,
+     97,
+     101,
+     121,
+     126,
+     160
+    ],
+    "codeword_last": 160,
+    "following": 161,
+    "final_prompt": 170,
+    "seq_len": 171
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 77,
+   "sid": "DOUBLESPEAK|heldout|news|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     74,
+     97,
+     101,
+     121,
+     126,
+     150,
+     157,
+     171,
+     192,
+     215
+    ],
+    "codeword_last": 215,
+    "following": 216,
+    "final_prompt": 225,
+    "seq_len": 226
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 78,
+   "sid": "DOUBLESPEAK|heldout|narrative|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     115
+    ],
+    "codeword_last": 115,
+    "following": 116,
+    "final_prompt": 125,
+    "seq_len": 126
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 79,
+   "sid": "DOUBLESPEAK|heldout|narrative|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     110,
+     132,
+     142,
+     161,
+     182
+    ],
+    "codeword_last": 182,
+    "following": 183,
+    "final_prompt": 192,
+    "seq_len": 193
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 80,
+   "sid": "DOUBLESPEAK|heldout|narrative|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     75,
+     86,
+     110,
+     132,
+     142,
+     161,
+     185,
+     198,
+     215,
+     230,
+     255
+    ],
+    "codeword_last": 255,
+    "following": 256,
+    "final_prompt": 265,
+    "seq_len": 266
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 81,
+   "sid": "DOUBLESPEAK|heldout|technical|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     41,
+     55,
+     72,
+     102
+    ],
+    "codeword_last": 102,
+    "following": 103,
+    "final_prompt": 112,
+    "seq_len": 113
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 82,
+   "sid": "DOUBLESPEAK|heldout|technical|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     41,
+     55,
+     72,
+     85,
+     103,
+     121,
+     124,
+     153
+    ],
+    "codeword_last": 153,
+    "following": 154,
+    "final_prompt": 163,
+    "seq_len": 164
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 83,
+   "sid": "DOUBLESPEAK|heldout|technical|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     41,
+     55,
+     72,
+     85,
+     103,
+     121,
+     124,
+     139,
+     148,
+     162,
+     174,
+     205
+    ],
+    "codeword_last": 205,
+    "following": 206,
+    "final_prompt": 215,
+    "seq_len": 216
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 84,
+   "sid": "DOUBLESPEAK|heldout|dialogue|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     56,
+     70,
+     75,
+     108
+    ],
+    "codeword_last": 108,
+    "following": 109,
+    "final_prompt": 118,
+    "seq_len": 119
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 85,
+   "sid": "DOUBLESPEAK|heldout|dialogue|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     56,
+     70,
+     75,
+     96,
+     118,
+     128,
+     142,
+     169
+    ],
+    "codeword_last": 169,
+    "following": 170,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 86,
+   "sid": "DOUBLESPEAK|heldout|dialogue|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     56,
+     70,
+     75,
+     96,
+     118,
+     128,
+     142,
+     154,
+     172,
+     179,
+     209,
+     230
+    ],
+    "codeword_last": 230,
+    "following": 231,
+    "final_prompt": 240,
+    "seq_len": 241
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 87,
+   "sid": "DOUBLESPEAK|heldout|academic|4|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     45,
+     63,
+     78,
+     112
+    ],
+    "codeword_last": 112,
+    "following": 113,
+    "final_prompt": 122,
+    "seq_len": 123
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 88,
+   "sid": "DOUBLESPEAK|heldout|academic|8|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     45,
+     63,
+     78,
+     98,
+     114,
+     127,
+     142,
+     173
+    ],
+    "codeword_last": 173,
+    "following": 174,
+    "final_prompt": 183,
+    "seq_len": 184
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 89,
+   "sid": "DOUBLESPEAK|heldout|academic|12|cloze",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     45,
+     63,
+     78,
+     98,
+     114,
+     127,
+     142,
+     156,
+     171,
+     186,
+     209,
+     238
+    ],
+    "codeword_last": 238,
+    "following": 239,
+    "final_prompt": 248,
+    "seq_len": 249
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 90,
+   "sid": "BENIGN_REMAP|dev|news|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     98
+    ],
+    "codeword_last": 98,
+    "following": 99,
+    "final_prompt": 108,
+    "seq_len": 109
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 91,
+   "sid": "BENIGN_REMAP|dev|news|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     86,
+     100,
+     109,
+     121,
+     144
+    ],
+    "codeword_last": 144,
+    "following": 145,
+    "final_prompt": 154,
+    "seq_len": 155
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 92,
+   "sid": "BENIGN_REMAP|dev|news|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     86,
+     100,
+     109,
+     121,
+     135,
+     138,
+     159,
+     169,
+     193
+    ],
+    "codeword_last": 193,
+    "following": 194,
+    "final_prompt": 203,
+    "seq_len": 204
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 93,
+   "sid": "BENIGN_REMAP|dev|narrative|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     123
+    ],
+    "codeword_last": 123,
+    "following": 124,
+    "final_prompt": 133,
+    "seq_len": 134
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 94,
+   "sid": "BENIGN_REMAP|dev|narrative|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     111,
+     142,
+     162,
+     183
+    ],
+    "codeword_last": 183,
+    "following": 184,
+    "final_prompt": 193,
+    "seq_len": 194
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 95,
+   "sid": "BENIGN_REMAP|dev|narrative|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     111,
+     142,
+     162,
+     171,
+     187,
+     208,
+     224,
+     245
+    ],
+    "codeword_last": 245,
+    "following": 246,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 96,
+   "sid": "BENIGN_REMAP|dev|technical|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     61,
+     80,
+     109
+    ],
+    "codeword_last": 109,
+    "following": 110,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 97,
+   "sid": "BENIGN_REMAP|dev|technical|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     61,
+     80,
+     95,
+     109,
+     120,
+     134,
+     164
+    ],
+    "codeword_last": 164,
+    "following": 165,
+    "final_prompt": 174,
+    "seq_len": 175
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 98,
+   "sid": "BENIGN_REMAP|dev|technical|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     61,
+     80,
+     95,
+     109,
+     120,
+     134,
+     147,
+     176,
+     195,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 99,
+   "sid": "BENIGN_REMAP|dev|dialogue|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     66,
+     74,
+     97
+    ],
+    "codeword_last": 97,
+    "following": 98,
+    "final_prompt": 107,
+    "seq_len": 108
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 100,
+   "sid": "BENIGN_REMAP|dev|dialogue|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     66,
+     74,
+     85,
+     104,
+     122,
+     132,
+     161
+    ],
+    "codeword_last": 161,
+    "following": 162,
+    "final_prompt": 171,
+    "seq_len": 172
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 101,
+   "sid": "BENIGN_REMAP|dev|dialogue|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     66,
+     74,
+     85,
+     104,
+     122,
+     132,
+     147,
+     161,
+     174,
+     185,
+     206
+    ],
+    "codeword_last": 206,
+    "following": 207,
+    "final_prompt": 216,
+    "seq_len": 217
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 102,
+   "sid": "BENIGN_REMAP|dev|academic|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     124
+    ],
+    "codeword_last": 124,
+    "following": 125,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 103,
+   "sid": "BENIGN_REMAP|dev|academic|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     109,
+     127,
+     145,
+     162,
+     191
+    ],
+    "codeword_last": 191,
+    "following": 192,
+    "final_prompt": 201,
+    "seq_len": 202
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 104,
+   "sid": "BENIGN_REMAP|dev|academic|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     109,
+     127,
+     145,
+     162,
+     177,
+     194,
+     209,
+     226,
+     258
+    ],
+    "codeword_last": 258,
+    "following": 259,
+    "final_prompt": 268,
+    "seq_len": 269
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 105,
+   "sid": "BENIGN_REMAP|heldout|news|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     61,
+     75,
+     98
+    ],
+    "codeword_last": 98,
+    "following": 99,
+    "final_prompt": 108,
+    "seq_len": 109
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 106,
+   "sid": "BENIGN_REMAP|heldout|news|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     61,
+     75,
+     87,
+     95,
+     114,
+     121,
+     148
+    ],
+    "codeword_last": 148,
+    "following": 149,
+    "final_prompt": 158,
+    "seq_len": 159
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 107,
+   "sid": "BENIGN_REMAP|heldout|news|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     61,
+     75,
+     87,
+     95,
+     114,
+     121,
+     141,
+     152,
+     164,
+     170,
+     197
+    ],
+    "codeword_last": 197,
+    "following": 198,
+    "final_prompt": 207,
+    "seq_len": 208
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 108,
+   "sid": "BENIGN_REMAP|heldout|narrative|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     52,
+     79,
+     92,
+     117
+    ],
+    "codeword_last": 117,
+    "following": 118,
+    "final_prompt": 127,
+    "seq_len": 128
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 109,
+   "sid": "BENIGN_REMAP|heldout|narrative|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     52,
+     79,
+     92,
+     108,
+     126,
+     141,
+     152,
+     185
+    ],
+    "codeword_last": 185,
+    "following": 186,
+    "final_prompt": 195,
+    "seq_len": 196
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 110,
+   "sid": "BENIGN_REMAP|heldout|narrative|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     52,
+     79,
+     92,
+     108,
+     126,
+     141,
+     152,
+     175,
+     200,
+     213,
+     219,
+     255
+    ],
+    "codeword_last": 255,
+    "following": 256,
+    "final_prompt": 265,
+    "seq_len": 266
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 111,
+   "sid": "BENIGN_REMAP|heldout|technical|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     44,
+     57,
+     74,
+     101
+    ],
+    "codeword_last": 101,
+    "following": 102,
+    "final_prompt": 111,
+    "seq_len": 112
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 112,
+   "sid": "BENIGN_REMAP|heldout|technical|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     44,
+     57,
+     74,
+     84,
+     101,
+     112,
+     133,
+     153
+    ],
+    "codeword_last": 153,
+    "following": 154,
+    "final_prompt": 163,
+    "seq_len": 164
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 113,
+   "sid": "BENIGN_REMAP|heldout|technical|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     44,
+     57,
+     74,
+     84,
+     101,
+     112,
+     133,
+     137,
+     156,
+     160,
+     171,
+     201
+    ],
+    "codeword_last": 201,
+    "following": 202,
+    "final_prompt": 211,
+    "seq_len": 212
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 114,
+   "sid": "BENIGN_REMAP|heldout|dialogue|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     50,
+     64,
+     72,
+     96
+    ],
+    "codeword_last": 96,
+    "following": 97,
+    "final_prompt": 106,
+    "seq_len": 107
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 115,
+   "sid": "BENIGN_REMAP|heldout|dialogue|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     50,
+     64,
+     72,
+     97,
+     114,
+     127,
+     151
+    ],
+    "codeword_last": 151,
+    "following": 152,
+    "final_prompt": 161,
+    "seq_len": 162
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 116,
+   "sid": "BENIGN_REMAP|heldout|dialogue|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     50,
+     64,
+     72,
+     97,
+     114,
+     127,
+     137,
+     152,
+     165,
+     178,
+     200
+    ],
+    "codeword_last": 200,
+    "following": 201,
+    "final_prompt": 210,
+    "seq_len": 211
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 117,
+   "sid": "BENIGN_REMAP|heldout|academic|4|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     81,
+     109
+    ],
+    "codeword_last": 109,
+    "following": 110,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 118,
+   "sid": "BENIGN_REMAP|heldout|academic|8|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     81,
+     95,
+     107,
+     148,
+     180
+    ],
+    "codeword_last": 180,
+    "following": 181,
+    "final_prompt": 190,
+    "seq_len": 191
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 119,
+   "sid": "BENIGN_REMAP|heldout|academic|12|cloze",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     64,
+     81,
+     95,
+     107,
+     148,
+     168,
+     199,
+     213,
+     244
+    ],
+    "codeword_last": 244,
+    "following": 245,
+    "final_prompt": 254,
+    "seq_len": 255
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 120,
+   "sid": "UNRELATED_TARGET|dev|news|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     63,
+     78,
+     101
+    ],
+    "codeword_last": 101,
+    "following": 102,
+    "final_prompt": 111,
+    "seq_len": 112
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 121,
+   "sid": "UNRELATED_TARGET|dev|news|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     63,
+     78,
+     84,
+     104,
+     117,
+     133,
+     157
+    ],
+    "codeword_last": 157,
+    "following": 158,
+    "final_prompt": 167,
+    "seq_len": 168
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 122,
+   "sid": "UNRELATED_TARGET|dev|news|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     63,
+     78,
+     84,
+     104,
+     117,
+     133,
+     141,
+     161,
+     180,
+     189,
+     214
+    ],
+    "codeword_last": 214,
+    "following": 215,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 123,
+   "sid": "UNRELATED_TARGET|dev|narrative|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     71,
+     102,
+     127
+    ],
+    "codeword_last": 127,
+    "following": 128,
+    "final_prompt": 137,
+    "seq_len": 138
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 124,
+   "sid": "UNRELATED_TARGET|dev|narrative|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     71,
+     102,
+     119,
+     147,
+     172,
+     192,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 125,
+   "sid": "UNRELATED_TARGET|dev|narrative|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     71,
+     102,
+     119,
+     147,
+     172,
+     192,
+     212,
+     236,
+     250,
+     274,
+     299
+    ],
+    "codeword_last": 299,
+    "following": 300,
+    "final_prompt": 309,
+    "seq_len": 310
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 126,
+   "sid": "UNRELATED_TARGET|dev|technical|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     82,
+     105
+    ],
+    "codeword_last": 105,
+    "following": 106,
+    "final_prompt": 115,
+    "seq_len": 116
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 127,
+   "sid": "UNRELATED_TARGET|dev|technical|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     82,
+     100,
+     114,
+     158
+    ],
+    "codeword_last": 158,
+    "following": 159,
+    "final_prompt": 168,
+    "seq_len": 169
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 128,
+   "sid": "UNRELATED_TARGET|dev|technical|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     82,
+     100,
+     114,
+     141,
+     174,
+     184,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 129,
+   "sid": "UNRELATED_TARGET|dev|dialogue|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     112
+    ],
+    "codeword_last": 112,
+    "following": 113,
+    "final_prompt": 122,
+    "seq_len": 123
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 130,
+   "sid": "UNRELATED_TARGET|dev|dialogue|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     102,
+     116,
+     138,
+     172
+    ],
+    "codeword_last": 172,
+    "following": 173,
+    "final_prompt": 182,
+    "seq_len": 183
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 131,
+   "sid": "UNRELATED_TARGET|dev|dialogue|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     102,
+     116,
+     138,
+     163,
+     179,
+     190,
+     206,
+     234
+    ],
+    "codeword_last": 234,
+    "following": 235,
+    "final_prompt": 244,
+    "seq_len": 245
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 132,
+   "sid": "UNRELATED_TARGET|dev|academic|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     98,
+     121
+    ],
+    "codeword_last": 121,
+    "following": 122,
+    "final_prompt": 131,
+    "seq_len": 132
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 133,
+   "sid": "UNRELATED_TARGET|dev|academic|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     98,
+     104,
+     144,
+     199
+    ],
+    "codeword_last": 199,
+    "following": 200,
+    "final_prompt": 209,
+    "seq_len": 210
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 134,
+   "sid": "UNRELATED_TARGET|dev|academic|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     98,
+     104,
+     144,
+     205,
+     241,
+     272
+    ],
+    "codeword_last": 272,
+    "following": 273,
+    "final_prompt": 282,
+    "seq_len": 283
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 135,
+   "sid": "UNRELATED_TARGET|heldout|news|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     49,
+     67,
+     70,
+     99
+    ],
+    "codeword_last": 99,
+    "following": 100,
+    "final_prompt": 109,
+    "seq_len": 110
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 136,
+   "sid": "UNRELATED_TARGET|heldout|news|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     49,
+     67,
+     70,
+     87,
+     108,
+     125,
+     150
+    ],
+    "codeword_last": 150,
+    "following": 151,
+    "final_prompt": 160,
+    "seq_len": 161
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 137,
+   "sid": "UNRELATED_TARGET|heldout|news|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     49,
+     67,
+     70,
+     87,
+     108,
+     125,
+     139,
+     171,
+     181,
+     201
+    ],
+    "codeword_last": 201,
+    "following": 202,
+    "final_prompt": 211,
+    "seq_len": 212
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 138,
+   "sid": "UNRELATED_TARGET|heldout|narrative|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     63,
+     82,
+     100,
+     137
+    ],
+    "codeword_last": 137,
+    "following": 138,
+    "final_prompt": 147,
+    "seq_len": 148
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 139,
+   "sid": "UNRELATED_TARGET|heldout|narrative|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     63,
+     82,
+     100,
+     123,
+     146,
+     170,
+     190,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 140,
+   "sid": "UNRELATED_TARGET|heldout|narrative|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     63,
+     82,
+     100,
+     123,
+     146,
+     170,
+     190,
+     201,
+     228,
+     246,
+     266,
+     290
+    ],
+    "codeword_last": 290,
+    "following": 291,
+    "final_prompt": 300,
+    "seq_len": 301
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 141,
+   "sid": "UNRELATED_TARGET|heldout|technical|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     46,
+     75,
+     106
+    ],
+    "codeword_last": 106,
+    "following": 107,
+    "final_prompt": 116,
+    "seq_len": 117
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 142,
+   "sid": "UNRELATED_TARGET|heldout|technical|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     46,
+     75,
+     131,
+     140,
+     161
+    ],
+    "codeword_last": 161,
+    "following": 162,
+    "final_prompt": 171,
+    "seq_len": 172
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 143,
+   "sid": "UNRELATED_TARGET|heldout|technical|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     46,
+     75,
+     131,
+     140,
+     147,
+     173,
+     188,
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 228,
+    "seq_len": 229
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 144,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     53,
+     69,
+     79,
+     109
+    ],
+    "codeword_last": 109,
+    "following": 110,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 145,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     53,
+     69,
+     79,
+     101,
+     113,
+     135,
+     149,
+     170
+    ],
+    "codeword_last": 170,
+    "following": 171,
+    "final_prompt": 180,
+    "seq_len": 181
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 146,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     53,
+     69,
+     79,
+     101,
+     113,
+     135,
+     149,
+     153,
+     175,
+     192,
+     203,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 147,
+   "sid": "UNRELATED_TARGET|heldout|academic|4|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     67,
+     124
+    ],
+    "codeword_last": 124,
+    "following": 125,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 148,
+   "sid": "UNRELATED_TARGET|heldout|academic|8|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     67,
+     143,
+     193
+    ],
+    "codeword_last": 193,
+    "following": 194,
+    "final_prompt": 203,
+    "seq_len": 204
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 149,
+   "sid": "UNRELATED_TARGET|heldout|academic|12|cloze",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     67,
+     143,
+     181,
+     194,
+     263
+    ],
+    "codeword_last": 263,
+    "following": 264,
+    "final_prompt": 273,
+    "seq_len": 274
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 150,
+   "sid": "REPEATED_CODEWORD|dev|n/a|4|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     68
+    ],
+    "codeword_last": 68,
+    "following": 69,
+    "final_prompt": 78,
+    "seq_len": 79
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 151,
+   "sid": "REPEATED_CODEWORD|dev|n/a|8|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     88
+    ],
+    "codeword_last": 88,
+    "following": 89,
+    "final_prompt": 98,
+    "seq_len": 99
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 152,
+   "sid": "REPEATED_CODEWORD|dev|n/a|12|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     71,
+     72,
+     73,
+     76,
+     77,
+     78,
+     81,
+     82,
+     83,
+     86,
+     87,
+     88,
+     108
+    ],
+    "codeword_last": 108,
+    "following": 109,
+    "final_prompt": 118,
+    "seq_len": 119
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 153,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|4|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 4,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     68
+    ],
+    "codeword_last": 68,
+    "following": 69,
+    "final_prompt": 78,
+    "seq_len": 79
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 154,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|8|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 8,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     88
+    ],
+    "codeword_last": 88,
+    "following": 89,
+    "final_prompt": 98,
+    "seq_len": 99
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 155,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|12|cloze",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 12,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     71,
+     72,
+     73,
+     76,
+     77,
+     78,
+     81,
+     82,
+     83,
+     86,
+     87,
+     88,
+     108
+    ],
+    "codeword_last": 108,
+    "following": 109,
+    "final_prompt": 118,
+    "seq_len": 119
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 156,
+   "sid": "DIRECT_CONCEPT_NODEMO|dev|n/a|0|cloze",
+   "condition": "DIRECT_CONCEPT_NODEMO",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     48
+    ],
+    "codeword_last": 48,
+    "following": 49,
+    "final_prompt": 58,
+    "seq_len": 59
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 157,
+   "sid": "DIRECT_CONCEPT_NODEMO|heldout|n/a|0|cloze",
+   "condition": "DIRECT_CONCEPT_NODEMO",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "cloze",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     48
+    ],
+    "codeword_last": 48,
+    "following": 49,
+    "final_prompt": 58,
+    "seq_len": 59
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 158,
+   "sid": "NEUTRAL_CODEWORD_NODEMO|dev|n/a|0|cloze",
+   "condition": "NEUTRAL_CODEWORD_NODEMO",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     48
+    ],
+    "codeword_last": 48,
+    "following": 49,
+    "final_prompt": 58,
+    "seq_len": 59
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 159,
+   "sid": "NEUTRAL_CODEWORD_NODEMO|heldout|n/a|0|cloze",
+   "condition": "NEUTRAL_CODEWORD_NODEMO",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "cloze",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     48
+    ],
+    "codeword_last": 48,
+    "following": 49,
+    "final_prompt": 58,
+    "seq_len": 59
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  }
+ ],
+ "status": "COMPLETE"
+}

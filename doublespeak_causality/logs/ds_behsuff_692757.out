@@ -1,0 +1,7 @@
+=== behavioral sufficiency: deepseek-ai/DeepSeek-R1-Distill-Llama-8B max_bases=14 ===
+Wed Jul 29 09:09:36 AM IDT 2026
+n-801
+git=818498895d7ee9b08da30e912661bd7979ce785d
+GPU ok: NVIDIA L40S
+[sufficiency] 84 eligible conditions | out=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757
+[sufficiency] restricted to windows: ['early']

@@ -1,7 +1,46 @@
-logs/
 outputs/*.json
 __pycache__/
 *.pyc
 # Behavioral benchmark data = full attack prompts (regenerable via 16_prepare_behavioral_benchmark.py).
 # Keep local-only, like outputs/ (responsible handling, plan §5.6/§17). Aggregates live in the docs.
 data/behavioral_benchmark/
+
+# --- Artifact preservation (CAUSAL_CONTINUATION_MASTER_PLAN.md §2.2) ---
+# Commit the small, irreplaceable evidence; archive the bulk (raw.jsonl, gens.jsonl, *.npz/*.pt).
+!outputs/
+outputs/**
+!outputs/**/
+!outputs/**/summary.json
+!outputs/**/*summary*.json
+!outputs/**/RUNMETA.json
+!outputs/**/DONE.json
+# ...but NEVER commit attack suffixes or generated text.
+outputs/**/gens.jsonl
+outputs/**/*suffix*
+outputs/gcg/gcg_asr_summary_temporal_lex.json
+
+# --- SLURM logs: commit only .out files verified free of prompts, generations and
+# adversarial suffixes. .err/.log held back unreviewed; the flagged .out files below
+# need manual redaction before they can be committed (they echo suffixes or generations).
+logs/**
+!logs/*.out
+logs/ds_behrinj_710762.out
+logs/ds_behrinj_710769.out
+logs/ds_behrinj_710770.out
+logs/ds_behrinj_711224.out
+logs/ds_behscreen_688994.out
+logs/ds_behscreen_689373.out
+logs/ds_behscreen_690928.out
+logs/ds_behscreen_690985.out
+logs/ds_behscreen_691440.out
+logs/ds_behscreen_692697.out
+logs/ds_gcgopt_692793.out
+logs/ds_gcgopt_692818.out
+logs/ds_gcgopt_692819.out
+logs/ds_gcgopt_693001.out
+logs/ds_gcgopt_693114.out
+logs/ds_pairsoft_693631.out
+logs/ds_pairsoft_693633.out
+logs/ds_pairsoft_693648.out
+logs/ds_pairsoft_693652.out
+logs/ds_pairsoft_693655.out

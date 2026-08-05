@@ -1,0 +1,84 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "heads": "L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10",
+ "carry": [
+  [
+   14,
+   4
+  ],
+  [
+   14,
+   5
+  ],
+  [
+   14,
+   23
+  ],
+  [
+   15,
+   8
+  ],
+  [
+   17,
+   27
+  ],
+  [
+   18,
+   20
+  ],
+  [
+   21,
+   10
+  ]
+ ],
+ "n_rows": 464,
+ "n_heads": 32,
+ "skips": {},
+ "by_split": {
+  "dev": {
+   "n_valid": 59,
+   "mean_C1": 0.8791,
+   "mean_C_benign": 0.2663,
+   "necessity_raw_ci_C1_minus_Cbenign": [
+    0.6128,
+    0.5132,
+    0.7011
+   ],
+   "necessity_specific_ci_Crand_minus_Cbenign": [
+    0.4604,
+    0.3713,
+    0.5468
+   ],
+   "knockout_uniform_raw_ci_C1_minus_Cuniform": [
+    0.1657,
+    0.0969,
+    0.2384
+   ],
+   "selfswap_max_dev": 0.0,
+   "n_len_mismatch": 58
+  },
+  "heldout": {
+   "n_valid": 55,
+   "mean_C1": 0.869,
+   "mean_C_benign": 0.315,
+   "necessity_raw_ci_C1_minus_Cbenign": [
+    0.554,
+    0.4483,
+    0.6573
+   ],
+   "necessity_specific_ci_Crand_minus_Cbenign": [
+    0.4507,
+    0.3619,
+    0.5424
+   ],
+   "knockout_uniform_raw_ci_C1_minus_Cuniform": [
+    0.1344,
+    0.0771,
+    0.1991
+   ],
+   "selfswap_max_dev": 0.0,
+   "n_len_mismatch": 57
+  }
+ }
+}

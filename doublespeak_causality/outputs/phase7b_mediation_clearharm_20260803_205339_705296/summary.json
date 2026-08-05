@@ -1,0 +1,25 @@
+{
+ "cohort": "clearharm",
+ "carry": "L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10",
+ "write_layer": 9,
+ "by_split": {
+  "dev": {
+   "n": 44,
+   "n_L9_responsive": 13,
+   "mean_C1": 0.8844,
+   "mean_A_neutralizeL9": 0.8193,
+   "median_mediation_frac_carry": 0.751,
+   "median_mediation_frac_randctrl": -0.0,
+   "selfcheck_max_dev": 0.0
+  },
+  "heldout": {
+   "n": 42,
+   "n_L9_responsive": 9,
+   "mean_C1": 0.8583,
+   "mean_A_neutralizeL9": 0.8416,
+   "median_mediation_frac_carry": 1.459,
+   "median_mediation_frac_randctrl": -0.0,
+   "selfcheck_max_dev": 0.0
+  }
+ }
+}

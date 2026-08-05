@@ -1,0 +1,11 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_curated.json n=0 layers=0-15 ===
+Mon Aug  3 12:37:21 PM IDT 2026
+n-802
+git=723dda4b5a131807a14eea7280e80205a760f2a0
+GPU ok: NVIDIA L40S
+[headz] cohort=curated L=32 heads=32 layers=0-15 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_curated_20260803_123742_704129
+[headz] 26214 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_curated_20260803_123742_704129
+  [dev] n_valid=30 selfswap_dev=0.0 Holm-sig heads=27: [('L14H4', 0.0245, 0.0), ('L15H8', 0.0222, 0.0), ('L15H4', 0.021, 0.0001), ('L14H6', 0.0129, 0.0), ('L15H11', 0.0122, 0.0), ('L14H23', 0.009, 0.0), ('L13H22', 0.0073, 0.0), ('L13H18', 0.0062, 0.0)]
+     top10 by necessity: [('L14H4', 0.0245), ('L15H8', 0.0222), ('L15H4', 0.021), ('L14H5', 0.0188), ('L14H6', 0.0129), ('L15H11', 0.0122), ('L14H23', 0.009), ('L13H22', 0.0073), ('L14H31', 0.0064), ('L13H18', 0.0062)]
+  [heldout] n_valid=21 selfswap_dev=0.0 Holm-sig heads=21: [('L15H4', 0.1063, 0.0), ('L14H4', 0.1037, 0.0001), ('L14H6', 0.0846, 0.0001), ('L15H11', 0.073, 0.0), ('L14H5', 0.0711, 0.0), ('L15H8', 0.0521, 0.0), ('L13H13', 0.049, 0.0), ('L12H27', 0.0426, 0.0001)]
+     top10 by necessity: [('L15H4', 0.1063), ('L14H4', 0.1037), ('L14H6', 0.0846), ('L15H11', 0.073), ('L14H5', 0.0711), ('L15H8', 0.0521), ('L13H13', 0.049), ('L12H27', 0.0426), ('L14H31', 0.0376), ('L13H18', 0.0306)]

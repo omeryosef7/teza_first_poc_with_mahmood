@@ -1,0 +1,21 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 0,
+ "positions": "query",
+ "granularity": "window",
+ "skips": {
+  "dev:no_ds_query_pos": 2,
+  "heldout:no_ds_query_pos": 2
+ },
+ "by_split": {
+  "dev": {
+   "n_valid_examples": 0,
+   "windows": {}
+  },
+  "heldout": {
+   "n_valid_examples": 0,
+   "windows": {}
+  }
+ }
+}

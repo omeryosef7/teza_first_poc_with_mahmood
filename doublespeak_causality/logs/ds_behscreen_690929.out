@@ -1,0 +1,7 @@
+=== behavioral screen: Qwen/Qwen3-14B matrix=doublespeak_causality/data/behavioral_benchmark/screening_matrix_curated_v1.json ===
+Tue Jul 28 08:04:13 AM IDT 2026
+n-802
+git=5230407caee0830f6d313a8bbd7abf4e9d3eecf2
+GPU ok: NVIDIA L40S
+[screen] 240 conditions | model=Qwen/Qwen3-14B | out=doublespeak_causality/outputs/behavioral_screen_curated_qwen3_think
+  [20/240] processed

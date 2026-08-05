@@ -1,0 +1,101 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 36,
+ "n_q": 32,
+ "n_kv": 8,
+ "group": 4,
+ "head_dim": 128,
+ "carry": "L14H4_L15H8",
+ "skips": {},
+ "by_split": {
+  "dev": {
+   "n_valid": 2,
+   "selfswap_max_dev": 0.0,
+   "heads": {
+    "L14H4": {
+     "q": {
+      "necessity_ci": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       0.0
+      ]
+     },
+     "k": {
+      "necessity_ci": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       -0.0
+      ]
+     },
+     "v": {
+      "necessity_ci": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       -0.0
+      ]
+     }
+    },
+    "L15H8": {
+     "q": {
+      "necessity_ci": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       0.0
+      ]
+     },
+     "k": {
+      "necessity_ci": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       -0.0
+      ]
+     },
+     "v": {
+      "necessity_ci": [
+       -0.0,
+       -0.0,
+       -0.0
+      ],
+      "mean_patched": 1.0,
+      "necessity_specific_ci": [
+       -0.0,
+       -0.0,
+       -0.0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

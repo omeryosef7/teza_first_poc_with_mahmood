@@ -1,0 +1,111 @@
+{
+ "cohort": "clearharm",
+ "refusal_layer": 18,
+ "alphas": [
+  4.0,
+  8.0,
+  12.0
+ ],
+ "by_split": {
+  "train": {
+   "n": 44,
+   "ASR": {
+    "ds_base": 0.3864,
+    "ds_refadd4": 0.1591,
+    "ds_refadd8": 0.0909,
+    "ds_refadd12": 0.0,
+    "ds_randadd8": 0.5
+   },
+   "refusal_rate": {
+    "ds_base": 0.4773,
+    "ds_refadd4": 0.7727,
+    "ds_refadd8": 0.9091,
+    "ds_refadd12": 1.0,
+    "ds_randadd8": 0.3182
+   },
+   "empty_rate": {
+    "ds_base": 0.0,
+    "ds_refadd4": 0.0,
+    "ds_refadd8": 0.0,
+    "ds_refadd12": 0.0,
+    "ds_randadd8": 0.0
+   },
+   "vs_ds_base": {
+    "ds_refadd4": {
+     "delta_ASR": -0.2273,
+     "flip_on": 1,
+     "flip_off": 11,
+     "mcnemar_p": 0.00635
+    },
+    "ds_refadd8": {
+     "delta_ASR": -0.2955,
+     "flip_on": 0,
+     "flip_off": 13,
+     "mcnemar_p": 0.00024
+    },
+    "ds_refadd12": {
+     "delta_ASR": -0.3864,
+     "flip_on": 0,
+     "flip_off": 17,
+     "mcnemar_p": 2e-05
+    },
+    "ds_randadd8": {
+     "delta_ASR": 0.1136,
+     "flip_on": 6,
+     "flip_off": 1,
+     "mcnemar_p": 0.125
+    }
+   }
+  },
+  "test": {
+   "n": 42,
+   "ASR": {
+    "ds_base": 0.381,
+    "ds_refadd4": 0.1905,
+    "ds_refadd8": 0.0714,
+    "ds_refadd12": 0.0,
+    "ds_randadd8": 0.5
+   },
+   "refusal_rate": {
+    "ds_base": 0.4524,
+    "ds_refadd4": 0.7857,
+    "ds_refadd8": 0.9286,
+    "ds_refadd12": 1.0,
+    "ds_randadd8": 0.3095
+   },
+   "empty_rate": {
+    "ds_base": 0.0,
+    "ds_refadd4": 0.0,
+    "ds_refadd8": 0.0,
+    "ds_refadd12": 0.0,
+    "ds_randadd8": 0.0
+   },
+   "vs_ds_base": {
+    "ds_refadd4": {
+     "delta_ASR": -0.1905,
+     "flip_on": 0,
+     "flip_off": 8,
+     "mcnemar_p": 0.00781
+    },
+    "ds_refadd8": {
+     "delta_ASR": -0.3096,
+     "flip_on": 0,
+     "flip_off": 13,
+     "mcnemar_p": 0.00024
+    },
+    "ds_refadd12": {
+     "delta_ASR": -0.381,
+     "flip_on": 0,
+     "flip_off": 16,
+     "mcnemar_p": 3e-05
+    },
+    "ds_randadd8": {
+     "delta_ASR": 0.119,
+     "flip_on": 6,
+     "flip_off": 1,
+     "mcnemar_p": 0.125
+    }
+   }
+  }
+ }
+}

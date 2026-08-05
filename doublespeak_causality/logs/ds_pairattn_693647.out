@@ -1,0 +1,10 @@
+=== pair attention: mode=knockout gran=all_layers readout=cloze styles=news:narrative:technical ===
+Wed Jul 29 11:10:13 PM IDT 2026
+n-802
+git=abd52d8eb13d8c012503e11cb2952c0ce7ed4f24
+GPU ok: NVIDIA L40S
+[attn] mode=knockout gran=all_layers attn_impl=eager L=32 heads=32 rows=90 -> doublespeak_causality/outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_231029_693647
+  [attn] 200 rows
+[attn] 216 rows (boundary unlocated: 0) -> doublespeak_causality/outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_231029_693647
+=== done ===
+Wed Jul 29 11:10:44 PM IDT 2026

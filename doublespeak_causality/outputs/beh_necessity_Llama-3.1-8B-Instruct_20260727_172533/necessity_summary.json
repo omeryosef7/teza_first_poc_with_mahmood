@@ -1,0 +1,142 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "n-802",
+    "git_commit": "aab9dd1f4c28192298ec666fa346846a625e19ca",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-27T18:48:03"
+  },
+  "status": "COMPLETE",
+  "n_clean_input": 40,
+  "n_items_used": 40,
+  "n_skipped": 0,
+  "n_baseline_reproduced_malicious": 39,
+  "n_layers": 32,
+  "windows": {
+    "early": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "mid": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "late": [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "late_half_to_end": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ]
+  },
+  "results": {
+    "early": {
+      "n_base_mal": 39,
+      "n_stay_mal": 22,
+      "patched_stay_malicious_rate": 0.5641025641025641,
+      "delta_necessity": 0.4358974358974359,
+      "transitions": {
+        "MALICIOUS->MALICIOUS": 22,
+        "MALICIOUS->BENIGN": 17
+      }
+    },
+    "mid": {
+      "n_base_mal": 39,
+      "n_stay_mal": 28,
+      "patched_stay_malicious_rate": 0.717948717948718,
+      "delta_necessity": 0.28205128205128205,
+      "transitions": {
+        "MALICIOUS->BENIGN": 11,
+        "MALICIOUS->MALICIOUS": 28
+      }
+    },
+    "late": {
+      "n_base_mal": 39,
+      "n_stay_mal": 31,
+      "patched_stay_malicious_rate": 0.7948717948717948,
+      "delta_necessity": 0.20512820512820518,
+      "transitions": {
+        "MALICIOUS->BENIGN": 8,
+        "MALICIOUS->MALICIOUS": 31
+      }
+    },
+    "late_half_to_end": {
+      "n_base_mal": 39,
+      "n_stay_mal": 34,
+      "patched_stay_malicious_rate": 0.8717948717948718,
+      "delta_necessity": 0.1282051282051282,
+      "transitions": {
+        "MALICIOUS->MALICIOUS": 34,
+        "MALICIOUS->BENIGN": 5
+      }
+    }
+  },
+  "controls": {
+    "identity": {
+      "n_base_mal": 39,
+      "stay_malicious_rate": 0.9230769230769231,
+      "delta_necessity": 0.07692307692307687
+    },
+    "random": {
+      "n_base_mal": 39,
+      "stay_malicious_rate": 0.717948717948718,
+      "delta_necessity": 0.28205128205128205
+    }
+  }
+}

@@ -1,0 +1,29 @@
+=== Phase7 dt: doublespeak_causality/data/bench/bench_curated.json n=0 heads=L14H4_L14H5_L14H23_L15H4_L15H8_L17H27_L18H20_L21H10_L30H15_L31H0 ===
+Mon Aug  3 04:07:21 PM IDT 2026
+n-802
+git=d08474a7f28204c44cf1a6c3071d14b789d8ec23
+GPU ok: NVIDIA L40S
+[p7] cohort=curated heads=L14H4_L14H5_L14H23_L15H4_L15H8_L17H27_L18H20_L21H10_L30H15_L31H0 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_directtotal_curated_20260803_160846_704725
+[p7] 510 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_directtotal_curated_20260803_160846_704725
+  [dev]
+    L14H4: TOTAL=1.1906 DIRECT=-0.0094 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L14H5: TOTAL=1.3719 DIRECT=-0.0031 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L14H23: TOTAL=0.4625 DIRECT=0.0125 direct_frac=0.0 trust=True (n_frac=24) selfdev=0.0 freezedev=0.0
+    L15H4: TOTAL=0.7469 DIRECT=-0.0375 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L15H8: TOTAL=1.0969 DIRECT=-0.0125 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L17H27: TOTAL=1.0625 DIRECT=0.15 direct_frac=0.172 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L18H20: TOTAL=1.1906 DIRECT=0.0531 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L21H10: TOTAL=1.2625 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L30H15: TOTAL=1.15 DIRECT=0.7594 direct_frac=0.652 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+    L31H0: TOTAL=0.3812 DIRECT=0.275 direct_frac=0.761 trust=True (n_frac=30) selfdev=0.0 freezedev=0.0
+  [heldout]
+    L14H4: TOTAL=1.2857 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=18) selfdev=0.0 freezedev=0.0
+    L14H5: TOTAL=1.0804 DIRECT=0.0536 direct_frac=0.048 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L14H23: TOTAL=0.558 DIRECT=-0.0134 direct_frac=0.0 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L15H4: TOTAL=1.4732 DIRECT=-0.0045 direct_frac=0.0 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L15H8: TOTAL=1.067 DIRECT=0.0223 direct_frac=0.0 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L17H27: TOTAL=0.6607 DIRECT=0.1429 direct_frac=0.0 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L18H20: TOTAL=1.125 DIRECT=0.0357 direct_frac=0.036 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L21H10: TOTAL=1.1116 DIRECT=0.0134 direct_frac=0.0 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L30H15: TOTAL=0.5804 DIRECT=0.4241 direct_frac=0.571 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0
+    L31H0: TOTAL=0.3527 DIRECT=0.2366 direct_frac=0.625 trust=True (n_frac=21) selfdev=0.0 freezedev=0.0

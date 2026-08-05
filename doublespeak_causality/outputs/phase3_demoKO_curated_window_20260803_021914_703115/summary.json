@@ -1,0 +1,26 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 192,
+ "granularity": "window",
+ "windows": {
+  "early": {
+   "n": 3,
+   "ReRead_test_mean": -1.5869081835262477e-06,
+   "random_control_mean": 3.443760912584063e-06,
+   "selfswap_max_abs_dev": 0.0
+  },
+  "late": {
+   "n": 3,
+   "ReRead_test_mean": 2.619791909334405e-07,
+   "random_control_mean": 6.716375082760351e-07,
+   "selfswap_max_abs_dev": 0.0
+  },
+  "mid": {
+   "n": 3,
+   "ReRead_test_mean": -5.99963489851992e-07,
+   "random_control_mean": 2.08192947563172e-06,
+   "selfswap_max_abs_dev": 0.0
+  }
+ }
+}

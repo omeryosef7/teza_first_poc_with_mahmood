@@ -1,0 +1,58 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "n-802",
+    "git_commit": "943013c75d6efe1abce0d2f09991c34506a0590b",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-29T07:57:52"
+  },
+  "status": "COMPLETE",
+  "n_clean_input": 40,
+  "n_items_used": 40,
+  "n_skipped": 0,
+  "n_baseline_reproduced_malicious": 37,
+  "n_layers": 32,
+  "windows": {
+    "early": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "results": {
+    "early": {
+      "n_base_mal": 37,
+      "n_stay_mal": 21,
+      "delta_necessity": 0.43243243243243246,
+      "delta_identity_control": 0.027027027027026973,
+      "delta_random_control": 0.2432432432432432,
+      "necessity_above_random": 0.18918918918918926,
+      "transitions": {
+        "MALICIOUS->BENIGN": 16,
+        "MALICIOUS->MALICIOUS": 21
+      }
+    }
+  }
+}

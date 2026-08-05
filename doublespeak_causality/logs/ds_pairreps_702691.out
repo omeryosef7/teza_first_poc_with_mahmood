@@ -1,0 +1,7 @@
+=== pair rep extraction: meta-llama/Llama-3.1-8B-Instruct readout=fixed ===
+Sun Aug  2 07:41:13 PM IDT 2026
+n-801
+git=e47ccdcef062bb527a2a66a065bd06494e8a1f7d
+GPU ok: NVIDIA L40S
+[reps] model=Llama-3.1-8B-Instruct L=32 H=4096 rows=516 comps=['resid_pre', 'attn_out', 'mlp_out', 'resid_post'] pos=['codeword_last', 'following', 'final_prompt', 'first_generated']
+[reps] -> doublespeak_causality/outputs/pair_reps_Llama-3.1-8B-Instruct_20260802_194135_702691

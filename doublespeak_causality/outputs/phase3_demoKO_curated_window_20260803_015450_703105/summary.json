@@ -1,0 +1,26 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 24,
+ "granularity": "window",
+ "windows": {
+  "early": {
+   "n": 0,
+   "ReRead_test_mean": null,
+   "random_control_mean": null,
+   "selfswap_max_abs_dev": null
+  },
+  "late": {
+   "n": 0,
+   "ReRead_test_mean": null,
+   "random_control_mean": null,
+   "selfswap_max_abs_dev": null
+  },
+  "mid": {
+   "n": 0,
+   "ReRead_test_mean": null,
+   "random_control_mean": null,
+   "selfswap_max_abs_dev": null
+  }
+ }
+}

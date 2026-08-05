@@ -1,0 +1,13 @@
+=== pair rep extraction: meta-llama/Llama-3.1-8B-Instruct readout=cloze ===
+Thu Jul 30 12:24:53 AM IDT 2026
+n-802
+git=c39793c1c9d3967cc2ce98337eb084092790ec5a
+GPU ok: NVIDIA L40S
+[reps] model=Llama-3.1-8B-Instruct L=32 H=4096 rows=160 comps=['resid_pre', 'attn_out', 'mlp_out', 'resid_post'] pos=['codeword_last', 'following', 'final_prompt', 'first_generated']
+[reps] -> doublespeak_causality/outputs/pair_reps_Llama-3.1-8B-Instruct_20260730_002830_693694
+  [reps] 50/160
+  [reps] 100/160
+  [reps] 150/160
+[reps] cells=256 missing_position_cells=0 -> doublespeak_causality/outputs/pair_reps_Llama-3.1-8B-Instruct_20260730_002830_693694
+=== done ===
+Thu Jul 30 12:28:58 AM IDT 2026

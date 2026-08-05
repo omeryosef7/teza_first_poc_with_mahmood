@@ -1,0 +1,8 @@
+=== run_ds_p4ce smoke ===
+Tue Aug  4 07:08:08 AM IDT 2026
+n-803
+GPU ok: NVIDIA L40S
+[cedge] cohort=clearharm carry_layers={14: [4, 5, 23], 15: [8, 11], 17: [24, 27], 18: [20], 21: [10]} -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4c_carryedge_clearharm_20260804_070828_707708
+[cedge] 116 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4c_carryedge_clearharm_20260804_070828_707708
+  [dev] n=59 C1=0.8791 necessity(C1-KOdemo)=[0.007, 0.003, 0.012] specific=[-0.0162, -0.0453, 0.0054] POSCTRL(C1-KOall)=[0.2461, 0.1673, 0.3292]
+  [heldout] n=57 C1=0.8559 necessity(C1-KOdemo)=[0.0028, 0.0012, 0.0048] specific=[0.0021, -0.0007, 0.0056] POSCTRL(C1-KOall)=[0.2073, 0.1352, 0.2875]

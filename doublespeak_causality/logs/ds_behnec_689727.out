@@ -1,0 +1,6 @@
+=== behavioral necessity: meta-llama/Llama-3.1-8B-Instruct screen=doublespeak_causality/outputs/behavioral_screen_curated_v1 ===
+Mon Jul 27 08:22:31 PM IDT 2026
+n-805
+git=46df4f1e194bfda4fefff3bb63b300f3924c2e96
+GPU ok: NVIDIA L40S
+[necessity] 40 clean-success (DS_MALICIOUS) examples | out=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_necessity_Llama-3.1-8B-Instruct_20260727_202244

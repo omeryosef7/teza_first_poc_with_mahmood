@@ -1,0 +1,12 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_curated.json n=2 gran=window pos=query ===
+Mon Aug  3 09:37:36 AM IDT 2026
+n-803
+git=c96ace014c7e51f9e3039e768dcc0bfe71ec70b5
+GPU ok: NVIDIA L40S
+[mlpKO] cohort=curated L=32 positions=query gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_curated_query_window_20260803_094515_703460
+[mlpKO] skipped examples by reason: {'dev:no_ds_query_pos': 2, 'heldout:no_ds_query_pos': 2}
+[mlpKO] 0 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_mlpKO_curated_query_window_20260803_094515_703460
+  == split=dev (n_valid=0) ==
+  == split=heldout (n_valid=0) ==
+=== done ===
+Mon Aug  3 09:45:21 AM IDT 2026

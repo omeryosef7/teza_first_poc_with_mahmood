@@ -1,0 +1,75 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_clearharm.json n=0 gran=layer pos=demo ===
+Mon Aug  3 11:38:43 AM IDT 2026
+n-802
+git=db335e9e9b46af3f8a9b145ef1f4264e68ff94b0
+GPU ok: NVIDIA L40S
+[KO] cohort=clearharm L=32 comp=attn_out positions=demo gran=layer windows=['L0', 'L1', 'L2', 'L3']... -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_KO_clearharm_attn_out_demo_layer_20260803_113903_703670
+[KO] 22016 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_KO_clearharm_attn_out_demo_layer_20260803_113903_703670
+  == split=dev (n_valid=44) ==
+    L0: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0004, -0.0285, 0.0368] SUF_specific(S3-Srand)=[0.0059, -0.0014, 0.0199] S3=0.0635
+    L1: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.005, -0.0106, -0.0002] SUF_specific(S3-Srand)=[0.0008, -0.0, 0.0017] S3=0.0645
+    L10: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0006, -0.015, 0.0152] SUF_specific(S3-Srand)=[0.0001, -0.0006, 0.001] S3=0.0644
+    L11: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0084, 0.0009, 0.0185] SUF_specific(S3-Srand)=[-0.001, -0.0023, -0.0001] S3=0.0635
+    L12: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0043, -0.0196, 0.0055] SUF_specific(S3-Srand)=[-0.0001, -0.0004, 0.0] S3=0.0644
+    L13: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0025, -0.0011, 0.0066] SUF_specific(S3-Srand)=[-0.0003, -0.0007, -0.0] S3=0.0641
+    L14: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0, -0.0037, 0.0031] SUF_specific(S3-Srand)=[0.0004, -0.0, 0.0009] S3=0.065
+    L15: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0011, -0.001, 0.0033] SUF_specific(S3-Srand)=[-0.0001, -0.0004, 0.0002] S3=0.0644
+    L16: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0002, -0.0013, 0.0007] SUF_specific(S3-Srand)=[-0.0001, -0.0004, 0.0001] S3=0.0642
+    L17: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0017, 0.0004, 0.0031] SUF_specific(S3-Srand)=[0.0001, -0.0002, 0.0005] S3=0.0645
+    L18: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0012, 0.0, 0.0027] SUF_specific(S3-Srand)=[0.0001, -0.0002, 0.0005] S3=0.0644
+    L19: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0011, -0.0005, 0.0037] SUF_specific(S3-Srand)=[0.0002, 0.0, 0.0006] S3=0.0645
+    L2: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0032, -0.018, 0.009] SUF_specific(S3-Srand)=[0.0003, -0.0012, 0.002] S3=0.0647
+    L20: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0008, -0.002, 0.0001] SUF_specific(S3-Srand)=[0.0002, 0.0, 0.0004] S3=0.0645
+    L21: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0003, -0.0014, 0.0007] SUF_specific(S3-Srand)=[-0.0, -0.0001, 0.0] S3=0.0645
+    L22: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0003, -0.0003, 0.0012] SUF_specific(S3-Srand)=[0.0002, -0.0, 0.0004] S3=0.0646
+    L23: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0009, -0.0002, 0.0025] SUF_specific(S3-Srand)=[-0.0, -0.0001, 0.0] S3=0.0645
+    L24: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0002, -0.0016, 0.0009] SUF_specific(S3-Srand)=[-0.0002, -0.0005, 0.0001] S3=0.0643
+    L25: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0004, -0.0007, 0.0015] SUF_specific(S3-Srand)=[0.0001, 0.0, 0.0003] S3=0.0645
+    L26: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0002, -0.0006, 0.0011] SUF_specific(S3-Srand)=[0.0001, 0.0, 0.0001] S3=0.0646
+    L27: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0, -0.0009, 0.0007] SUF_specific(S3-Srand)=[0.0, -0.0, 0.0001] S3=0.0645
+    L28: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0003, 0.0, 0.0006] SUF_specific(S3-Srand)=[0.0, -0.0, 0.0] S3=0.0645
+    L29: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0001, -0.0001, 0.0004] SUF_specific(S3-Srand)=[0.0, -0.0, 0.0] S3=0.0645
+    L3: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.017, -0.0619, 0.0095] SUF_specific(S3-Srand)=[-0.0009, -0.0024, 0.0002] S3=0.0631
+    L30: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0001, -0.0003, -0.0] SUF_specific(S3-Srand)=[-0.0, -0.0, 0.0] S3=0.0645
+    L31: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0, 0.0, 0.0] SUF_specific(S3-Srand)=[0.0, 0.0, 0.0] S3=0.0645
+    L4: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0199, -0.0523, 0.0032] SUF_specific(S3-Srand)=[0.0005, -0.0012, 0.0023] S3=0.0647
+    L5: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0179, 0.0043, 0.0369] SUF_specific(S3-Srand)=[-0.0001, -0.0012, 0.001] S3=0.0641
+    L6: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0136, -0.0024, 0.0378] SUF_specific(S3-Srand)=[-0.0017, -0.0054, 0.0004] S3=0.0624
+    L7: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0092, -0.0095, 0.0266] SUF_specific(S3-Srand)=[-0.0, -0.0011, 0.0008] S3=0.064
+    L8: n=44 C1=0.8844 NEC_specific(rand-C3)=[-0.0012, -0.0099, 0.0075] SUF_specific(S3-Srand)=[-0.0001, -0.001, 0.0006] S3=0.0641
+    L9: n=44 C1=0.8844 NEC_specific(rand-C3)=[0.0112, -0.0093, 0.0355] SUF_specific(S3-Srand)=[0.0001, -0.0006, 0.0008] S3=0.0641
+  == split=heldout (n_valid=41) ==
+    L0: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0095, -0.0227, 0.0029] SUF_specific(S3-Srand)=[0.0038, 0.0003, 0.01] S3=0.0675
+    L1: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0068, -0.0159, 0.0] SUF_specific(S3-Srand)=[0.0026, -0.0002, 0.0068] S3=0.0696
+    L10: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.005, 0.0007, 0.0102] SUF_specific(S3-Srand)=[-0.0003, -0.0007, 0.0002] S3=0.0688
+    L11: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.006, 0.001, 0.0135] SUF_specific(S3-Srand)=[-0.0007, -0.002, 0.0004] S3=0.0681
+    L12: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0026, -0.0005, 0.0064] SUF_specific(S3-Srand)=[-0.0001, -0.0005, 0.0003] S3=0.0691
+    L13: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.002, 0.0003, 0.004] SUF_specific(S3-Srand)=[-0.0005, -0.0011, -0.0001] S3=0.0686
+    L14: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0007, -0.0003, 0.002] SUF_specific(S3-Srand)=[0.001, 0.0001, 0.002] S3=0.0699
+    L15: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0011, 0.0003, 0.002] SUF_specific(S3-Srand)=[-0.0002, -0.0008, 0.0003] S3=0.0692
+    L16: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0006, -0.0004, 0.0018] SUF_specific(S3-Srand)=[-0.0002, -0.0008, 0.0003] S3=0.0689
+    L17: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0015, 0.0006, 0.0027] SUF_specific(S3-Srand)=[0.0005, -0.0, 0.0012] S3=0.0695
+    L18: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0005, -0.0002, 0.0013] SUF_specific(S3-Srand)=[-0.0003, -0.0008, 0.0] S3=0.0691
+    L19: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0002, -0.0004, 0.001] SUF_specific(S3-Srand)=[0.0001, 0.0, 0.0002] S3=0.0692
+    L2: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0058, -0.0161, 0.0011] SUF_specific(S3-Srand)=[-0.0001, -0.0007, 0.0005] S3=0.0692
+    L20: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0007, -0.0017, 0.0] SUF_specific(S3-Srand)=[-0.0, -0.0004, 0.0003] S3=0.0692
+    L21: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0001, -0.0006, 0.0003] SUF_specific(S3-Srand)=[-0.0001, -0.0004, 0.0] S3=0.0692
+    L22: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0001, -0.0004, 0.0006] SUF_specific(S3-Srand)=[0.0001, -0.0001, 0.0003] S3=0.0692
+    L23: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0004, -0.0009, 0.0001] SUF_specific(S3-Srand)=[0.0001, -0.0001, 0.0003] S3=0.0691
+    L24: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0006, 0.0001, 0.0011] SUF_specific(S3-Srand)=[-0.0004, -0.0008, -0.0] S3=0.0688
+    L25: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0002, -0.0002, 0.0007] SUF_specific(S3-Srand)=[0.0002, 0.0, 0.0004] S3=0.0692
+    L26: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0002, -0.0004, 0.0] SUF_specific(S3-Srand)=[0.0001, -0.0, 0.0002] S3=0.0692
+    L27: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0001, -0.0003, 0.0005] SUF_specific(S3-Srand)=[-0.0001, -0.0003, 0.0001] S3=0.0692
+    L28: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0001, -0.0, 0.0004] SUF_specific(S3-Srand)=[0.0001, -0.0, 0.0002] S3=0.0692
+    L29: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0003, -0.0007, -0.0] SUF_specific(S3-Srand)=[0.0002, 0.0, 0.0004] S3=0.0692
+    L3: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0051, -0.0309, 0.0141] SUF_specific(S3-Srand)=[-0.002, -0.0041, -0.0002] S3=0.0675
+    L30: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0002, -0.0005, 0.0] SUF_specific(S3-Srand)=[0.0, -0.0, 0.0] S3=0.0692
+    L31: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0, 0.0, 0.0] SUF_specific(S3-Srand)=[0.0, 0.0, 0.0] S3=0.0692
+    L4: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0004, -0.0035, 0.0034] SUF_specific(S3-Srand)=[0.0009, -0.0008, 0.0033] S3=0.07
+    L5: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0021, -0.0004, 0.0053] SUF_specific(S3-Srand)=[0.0002, -0.0007, 0.0012] S3=0.0694
+    L6: n=41 C1=0.8792 NEC_specific(rand-C3)=[-0.0039, -0.0169, 0.0066] SUF_specific(S3-Srand)=[-0.0006, -0.0016, 0.0003] S3=0.0686
+    L7: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0054, 0.0007, 0.0127] SUF_specific(S3-Srand)=[0.0003, -0.0001, 0.0009] S3=0.0693
+    L8: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0017, -0.0041, 0.0085] SUF_specific(S3-Srand)=[0.0003, -0.0004, 0.0011] S3=0.0692
+    L9: n=41 C1=0.8792 NEC_specific(rand-C3)=[0.0009, -0.0093, 0.0143] SUF_specific(S3-Srand)=[-0.0, -0.0005, 0.0007] S3=0.0691
+=== done ===
+Mon Aug  3 11:49:34 AM IDT 2026

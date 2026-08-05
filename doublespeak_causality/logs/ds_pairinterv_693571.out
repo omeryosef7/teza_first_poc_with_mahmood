@@ -1,0 +1,39 @@
+=== pair intervention: mode=layer_scan readout=one_word site=codeword_last alphas=1.0,2.0 ===
+Wed Jul 29 09:58:25 PM IDT 2026
+n-803
+git=de2b055cf65081b6ab385bdaa80b017e30d85e27
+GPU ok: NVIDIA L40S
+[interv] mode=layer_scan L=32 layers=32 alphas=[1.0, 2.0] site=codeword_last crossfit=True -> doublespeak_causality/outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_215949_693571
+  [interv] 500 rows
+  [interv] 1000 rows
+  [interv] 1500 rows
+  [interv] 2000 rows
+  [interv] 2500 rows
+  [interv] 3000 rows
+  [interv] 3500 rows
+  [interv] 4000 rows
+  [interv] 4500 rows
+  [interv] 5000 rows
+  [interv] 5500 rows
+  [interv] 6000 rows
+  [interv] 6500 rows
+  [interv] 7000 rows
+  [interv] 7500 rows
+  [interv] 8000 rows
+  [interv] 8500 rows
+  [interv] 9000 rows
+  [interv] 9500 rows
+  [interv] 10000 rows
+  [interv] 10500 rows
+  [interv] 11000 rows
+  [interv] 11500 rows
+  [interv] 12000 rows
+  [interv] 12500 rows
+  [interv] 13000 rows
+  [interv] 13500 rows
+  [interv] 14000 rows
+  [interv] 14500 rows
+  [interv] 15000 rows
+[interv] 15390 rows in 543.3s -> doublespeak_causality/outputs/pair_interv_layer_scan_Llama-3.1-8B-Instruct_20260729_215949_693571
+=== done ===
+Wed Jul 29 10:08:53 PM IDT 2026

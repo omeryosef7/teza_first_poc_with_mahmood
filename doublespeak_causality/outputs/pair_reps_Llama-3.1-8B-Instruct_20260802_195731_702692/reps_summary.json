@@ -1,0 +1,9770 @@
+{
+ "model": {
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": null,
+  "dtype": "torch.bfloat16",
+  "device": "cuda:0",
+  "num_layers": 32,
+  "hidden_size": 4096,
+  "eos_token_ids": [
+   128001,
+   128008,
+   128009
+  ],
+  "hostname": "n-805",
+  "git_commit": "eec7652ec85dccf552f9b7c3169240af2be012d3",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "timestamp": "2026-08-02T19:58:08"
+ },
+ "pair": {
+  "cohort": "curated",
+  "kind": "multi_concept",
+  "n_concepts": 17,
+  "concepts": [
+   "LSD",
+   "MDMA",
+   "TNT",
+   "bomb",
+   "cannon",
+   "chlorine",
+   "cocaine",
+   "firearm",
+   "grenade",
+   "heroin",
+   "missile",
+   "mortar",
+   "pistol",
+   "revolver",
+   "rifle",
+   "shotgun",
+   "torpedo"
+  ],
+  "note": "curated single-token concepts"
+ },
+ "bench": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/bench/bench_curated.json",
+ "bench_meta": {
+  "source_split": "data/splits/clearharm_doublespeak_v1.json",
+  "cohort": "curated",
+  "dataset_revision": "clearharm@79464fb6b3c2a8ee925184f394f9636600349f88",
+  "conditions": [
+   "BENIGN_REMAP",
+   "DIRECT_CONCEPT",
+   "DOUBLESPEAK",
+   "NEUTRAL_CODEWORD",
+   "SHUFFLED_BINDING",
+   "UNRELATED_TARGET"
+  ],
+  "n_rows": 306,
+  "n_examples": 51,
+  "note": "adapter output for 32_extract_pair_reps.py --readout fixed"
+ },
+ "plan": "CAUSAL_CORE_PLAN \u00a716.5 (S3)",
+ "n_layers": 32,
+ "hidden": 4096,
+ "components": [
+  "resid_pre",
+  "attn_out",
+  "mlp_out",
+  "resid_post"
+ ],
+ "positions": [
+  "codeword_last",
+  "following",
+  "final_prompt",
+  "first_generated"
+ ],
+ "readout": "fixed",
+ "n_rows": 306,
+ "n_missing_position_cells": 0,
+ "subsample_rows": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56,
+  57,
+  58,
+  59
+ ],
+ "cell_counts": {
+  "DOUBLESPEAK|dev|resid_pre|codeword_last": 30,
+  "DOUBLESPEAK|dev|resid_pre|following": 30,
+  "DOUBLESPEAK|dev|resid_pre|final_prompt": 30,
+  "DOUBLESPEAK|dev|resid_pre|first_generated": 30,
+  "DOUBLESPEAK|dev|attn_out|codeword_last": 30,
+  "DOUBLESPEAK|dev|attn_out|following": 30,
+  "DOUBLESPEAK|dev|attn_out|final_prompt": 30,
+  "DOUBLESPEAK|dev|attn_out|first_generated": 30,
+  "DOUBLESPEAK|dev|mlp_out|codeword_last": 30,
+  "DOUBLESPEAK|dev|mlp_out|following": 30,
+  "DOUBLESPEAK|dev|mlp_out|final_prompt": 30,
+  "DOUBLESPEAK|dev|mlp_out|first_generated": 30,
+  "DOUBLESPEAK|dev|resid_post|codeword_last": 30,
+  "DOUBLESPEAK|dev|resid_post|following": 30,
+  "DOUBLESPEAK|dev|resid_post|final_prompt": 30,
+  "DOUBLESPEAK|dev|resid_post|first_generated": 30,
+  "NEUTRAL_CODEWORD|dev|resid_pre|codeword_last": 30,
+  "NEUTRAL_CODEWORD|dev|resid_pre|following": 30,
+  "NEUTRAL_CODEWORD|dev|resid_pre|final_prompt": 30,
+  "NEUTRAL_CODEWORD|dev|resid_pre|first_generated": 30,
+  "NEUTRAL_CODEWORD|dev|attn_out|codeword_last": 30,
+  "NEUTRAL_CODEWORD|dev|attn_out|following": 30,
+  "NEUTRAL_CODEWORD|dev|attn_out|final_prompt": 30,
+  "NEUTRAL_CODEWORD|dev|attn_out|first_generated": 30,
+  "NEUTRAL_CODEWORD|dev|mlp_out|codeword_last": 30,
+  "NEUTRAL_CODEWORD|dev|mlp_out|following": 30,
+  "NEUTRAL_CODEWORD|dev|mlp_out|final_prompt": 30,
+  "NEUTRAL_CODEWORD|dev|mlp_out|first_generated": 30,
+  "NEUTRAL_CODEWORD|dev|resid_post|codeword_last": 30,
+  "NEUTRAL_CODEWORD|dev|resid_post|following": 30,
+  "NEUTRAL_CODEWORD|dev|resid_post|final_prompt": 30,
+  "NEUTRAL_CODEWORD|dev|resid_post|first_generated": 30,
+  "DIRECT_CONCEPT|dev|resid_pre|codeword_last": 30,
+  "DIRECT_CONCEPT|dev|resid_pre|following": 30,
+  "DIRECT_CONCEPT|dev|resid_pre|final_prompt": 30,
+  "DIRECT_CONCEPT|dev|resid_pre|first_generated": 30,
+  "DIRECT_CONCEPT|dev|attn_out|codeword_last": 30,
+  "DIRECT_CONCEPT|dev|attn_out|following": 30,
+  "DIRECT_CONCEPT|dev|attn_out|final_prompt": 30,
+  "DIRECT_CONCEPT|dev|attn_out|first_generated": 30,
+  "DIRECT_CONCEPT|dev|mlp_out|codeword_last": 30,
+  "DIRECT_CONCEPT|dev|mlp_out|following": 30,
+  "DIRECT_CONCEPT|dev|mlp_out|final_prompt": 30,
+  "DIRECT_CONCEPT|dev|mlp_out|first_generated": 30,
+  "DIRECT_CONCEPT|dev|resid_post|codeword_last": 30,
+  "DIRECT_CONCEPT|dev|resid_post|following": 30,
+  "DIRECT_CONCEPT|dev|resid_post|final_prompt": 30,
+  "DIRECT_CONCEPT|dev|resid_post|first_generated": 30,
+  "BENIGN_REMAP|dev|resid_pre|codeword_last": 30,
+  "BENIGN_REMAP|dev|resid_pre|following": 30,
+  "BENIGN_REMAP|dev|resid_pre|final_prompt": 30,
+  "BENIGN_REMAP|dev|resid_pre|first_generated": 30,
+  "BENIGN_REMAP|dev|attn_out|codeword_last": 30,
+  "BENIGN_REMAP|dev|attn_out|following": 30,
+  "BENIGN_REMAP|dev|attn_out|final_prompt": 30,
+  "BENIGN_REMAP|dev|attn_out|first_generated": 30,
+  "BENIGN_REMAP|dev|mlp_out|codeword_last": 30,
+  "BENIGN_REMAP|dev|mlp_out|following": 30,
+  "BENIGN_REMAP|dev|mlp_out|final_prompt": 30,
+  "BENIGN_REMAP|dev|mlp_out|first_generated": 30,
+  "BENIGN_REMAP|dev|resid_post|codeword_last": 30,
+  "BENIGN_REMAP|dev|resid_post|following": 30,
+  "BENIGN_REMAP|dev|resid_post|final_prompt": 30,
+  "BENIGN_REMAP|dev|resid_post|first_generated": 30,
+  "SHUFFLED_BINDING|dev|resid_pre|codeword_last": 30,
+  "SHUFFLED_BINDING|dev|resid_pre|following": 30,
+  "SHUFFLED_BINDING|dev|resid_pre|final_prompt": 30,
+  "SHUFFLED_BINDING|dev|resid_pre|first_generated": 30,
+  "SHUFFLED_BINDING|dev|attn_out|codeword_last": 30,
+  "SHUFFLED_BINDING|dev|attn_out|following": 30,
+  "SHUFFLED_BINDING|dev|attn_out|final_prompt": 30,
+  "SHUFFLED_BINDING|dev|attn_out|first_generated": 30,
+  "SHUFFLED_BINDING|dev|mlp_out|codeword_last": 30,
+  "SHUFFLED_BINDING|dev|mlp_out|following": 30,
+  "SHUFFLED_BINDING|dev|mlp_out|final_prompt": 30,
+  "SHUFFLED_BINDING|dev|mlp_out|first_generated": 30,
+  "SHUFFLED_BINDING|dev|resid_post|codeword_last": 30,
+  "SHUFFLED_BINDING|dev|resid_post|following": 30,
+  "SHUFFLED_BINDING|dev|resid_post|final_prompt": 30,
+  "SHUFFLED_BINDING|dev|resid_post|first_generated": 30,
+  "UNRELATED_TARGET|dev|resid_pre|codeword_last": 30,
+  "UNRELATED_TARGET|dev|resid_pre|following": 30,
+  "UNRELATED_TARGET|dev|resid_pre|final_prompt": 30,
+  "UNRELATED_TARGET|dev|resid_pre|first_generated": 30,
+  "UNRELATED_TARGET|dev|attn_out|codeword_last": 30,
+  "UNRELATED_TARGET|dev|attn_out|following": 30,
+  "UNRELATED_TARGET|dev|attn_out|final_prompt": 30,
+  "UNRELATED_TARGET|dev|attn_out|first_generated": 30,
+  "UNRELATED_TARGET|dev|mlp_out|codeword_last": 30,
+  "UNRELATED_TARGET|dev|mlp_out|following": 30,
+  "UNRELATED_TARGET|dev|mlp_out|final_prompt": 30,
+  "UNRELATED_TARGET|dev|mlp_out|first_generated": 30,
+  "UNRELATED_TARGET|dev|resid_post|codeword_last": 30,
+  "UNRELATED_TARGET|dev|resid_post|following": 30,
+  "UNRELATED_TARGET|dev|resid_post|final_prompt": 30,
+  "UNRELATED_TARGET|dev|resid_post|first_generated": 30,
+  "DOUBLESPEAK|heldout|resid_pre|codeword_last": 21,
+  "DOUBLESPEAK|heldout|resid_pre|following": 21,
+  "DOUBLESPEAK|heldout|resid_pre|final_prompt": 21,
+  "DOUBLESPEAK|heldout|resid_pre|first_generated": 21,
+  "DOUBLESPEAK|heldout|attn_out|codeword_last": 21,
+  "DOUBLESPEAK|heldout|attn_out|following": 21,
+  "DOUBLESPEAK|heldout|attn_out|final_prompt": 21,
+  "DOUBLESPEAK|heldout|attn_out|first_generated": 21,
+  "DOUBLESPEAK|heldout|mlp_out|codeword_last": 21,
+  "DOUBLESPEAK|heldout|mlp_out|following": 21,
+  "DOUBLESPEAK|heldout|mlp_out|final_prompt": 21,
+  "DOUBLESPEAK|heldout|mlp_out|first_generated": 21,
+  "DOUBLESPEAK|heldout|resid_post|codeword_last": 21,
+  "DOUBLESPEAK|heldout|resid_post|following": 21,
+  "DOUBLESPEAK|heldout|resid_post|final_prompt": 21,
+  "DOUBLESPEAK|heldout|resid_post|first_generated": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|codeword_last": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|following": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|final_prompt": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|first_generated": 21,
+  "NEUTRAL_CODEWORD|heldout|attn_out|codeword_last": 21,
+  "NEUTRAL_CODEWORD|heldout|attn_out|following": 21,
+  "NEUTRAL_CODEWORD|heldout|attn_out|final_prompt": 21,
+  "NEUTRAL_CODEWORD|heldout|attn_out|first_generated": 21,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|codeword_last": 21,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|following": 21,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|final_prompt": 21,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|first_generated": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_post|codeword_last": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_post|following": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_post|final_prompt": 21,
+  "NEUTRAL_CODEWORD|heldout|resid_post|first_generated": 21,
+  "DIRECT_CONCEPT|heldout|resid_pre|codeword_last": 21,
+  "DIRECT_CONCEPT|heldout|resid_pre|following": 21,
+  "DIRECT_CONCEPT|heldout|resid_pre|final_prompt": 21,
+  "DIRECT_CONCEPT|heldout|resid_pre|first_generated": 21,
+  "DIRECT_CONCEPT|heldout|attn_out|codeword_last": 21,
+  "DIRECT_CONCEPT|heldout|attn_out|following": 21,
+  "DIRECT_CONCEPT|heldout|attn_out|final_prompt": 21,
+  "DIRECT_CONCEPT|heldout|attn_out|first_generated": 21,
+  "DIRECT_CONCEPT|heldout|mlp_out|codeword_last": 21,
+  "DIRECT_CONCEPT|heldout|mlp_out|following": 21,
+  "DIRECT_CONCEPT|heldout|mlp_out|final_prompt": 21,
+  "DIRECT_CONCEPT|heldout|mlp_out|first_generated": 21,
+  "DIRECT_CONCEPT|heldout|resid_post|codeword_last": 21,
+  "DIRECT_CONCEPT|heldout|resid_post|following": 21,
+  "DIRECT_CONCEPT|heldout|resid_post|final_prompt": 21,
+  "DIRECT_CONCEPT|heldout|resid_post|first_generated": 21,
+  "BENIGN_REMAP|heldout|resid_pre|codeword_last": 21,
+  "BENIGN_REMAP|heldout|resid_pre|following": 21,
+  "BENIGN_REMAP|heldout|resid_pre|final_prompt": 21,
+  "BENIGN_REMAP|heldout|resid_pre|first_generated": 21,
+  "BENIGN_REMAP|heldout|attn_out|codeword_last": 21,
+  "BENIGN_REMAP|heldout|attn_out|following": 21,
+  "BENIGN_REMAP|heldout|attn_out|final_prompt": 21,
+  "BENIGN_REMAP|heldout|attn_out|first_generated": 21,
+  "BENIGN_REMAP|heldout|mlp_out|codeword_last": 21,
+  "BENIGN_REMAP|heldout|mlp_out|following": 21,
+  "BENIGN_REMAP|heldout|mlp_out|final_prompt": 21,
+  "BENIGN_REMAP|heldout|mlp_out|first_generated": 21,
+  "BENIGN_REMAP|heldout|resid_post|codeword_last": 21,
+  "BENIGN_REMAP|heldout|resid_post|following": 21,
+  "BENIGN_REMAP|heldout|resid_post|final_prompt": 21,
+  "BENIGN_REMAP|heldout|resid_post|first_generated": 21,
+  "SHUFFLED_BINDING|heldout|resid_pre|codeword_last": 21,
+  "SHUFFLED_BINDING|heldout|resid_pre|following": 21,
+  "SHUFFLED_BINDING|heldout|resid_pre|final_prompt": 21,
+  "SHUFFLED_BINDING|heldout|resid_pre|first_generated": 21,
+  "SHUFFLED_BINDING|heldout|attn_out|codeword_last": 21,
+  "SHUFFLED_BINDING|heldout|attn_out|following": 21,
+  "SHUFFLED_BINDING|heldout|attn_out|final_prompt": 21,
+  "SHUFFLED_BINDING|heldout|attn_out|first_generated": 21,
+  "SHUFFLED_BINDING|heldout|mlp_out|codeword_last": 21,
+  "SHUFFLED_BINDING|heldout|mlp_out|following": 21,
+  "SHUFFLED_BINDING|heldout|mlp_out|final_prompt": 21,
+  "SHUFFLED_BINDING|heldout|mlp_out|first_generated": 21,
+  "SHUFFLED_BINDING|heldout|resid_post|codeword_last": 21,
+  "SHUFFLED_BINDING|heldout|resid_post|following": 21,
+  "SHUFFLED_BINDING|heldout|resid_post|final_prompt": 21,
+  "SHUFFLED_BINDING|heldout|resid_post|first_generated": 21,
+  "UNRELATED_TARGET|heldout|resid_pre|codeword_last": 21,
+  "UNRELATED_TARGET|heldout|resid_pre|following": 21,
+  "UNRELATED_TARGET|heldout|resid_pre|final_prompt": 21,
+  "UNRELATED_TARGET|heldout|resid_pre|first_generated": 21,
+  "UNRELATED_TARGET|heldout|attn_out|codeword_last": 21,
+  "UNRELATED_TARGET|heldout|attn_out|following": 21,
+  "UNRELATED_TARGET|heldout|attn_out|final_prompt": 21,
+  "UNRELATED_TARGET|heldout|attn_out|first_generated": 21,
+  "UNRELATED_TARGET|heldout|mlp_out|codeword_last": 21,
+  "UNRELATED_TARGET|heldout|mlp_out|following": 21,
+  "UNRELATED_TARGET|heldout|mlp_out|final_prompt": 21,
+  "UNRELATED_TARGET|heldout|mlp_out|first_generated": 21,
+  "UNRELATED_TARGET|heldout|resid_post|codeword_last": 21,
+  "UNRELATED_TARGET|heldout|resid_post|following": 21,
+  "UNRELATED_TARGET|heldout|resid_post|final_prompt": 21,
+  "UNRELATED_TARGET|heldout|resid_post|first_generated": 21
+ },
+ "rows": [
+  {
+   "row": 0,
+   "sid": "curated_0000_a565e852",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 1,
+   "sid": "curated_0000_a565e852",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 2,
+   "sid": "curated_0000_a565e852",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "LSD",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 3,
+   "sid": "curated_0000_a565e852",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     65,
+     75,
+     92,
+     118,
+     133,
+     146,
+     173,
+     192
+    ],
+    "codeword_last": 192,
+    "following": 193,
+    "final_prompt": 204,
+    "seq_len": 205
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 4,
+   "sid": "curated_0000_a565e852",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 5,
+   "sid": "curated_0000_a565e852",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 6,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 233,
+    "seq_len": 234
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 7,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 8,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "LSD",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 9,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     65,
+     75,
+     92,
+     118,
+     133,
+     146,
+     173,
+     197
+    ],
+    "codeword_last": 197,
+    "following": 198,
+    "final_prompt": 207,
+    "seq_len": 208
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 10,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 233,
+    "seq_len": 234
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 11,
+   "sid": "curated_0001_9c05d6d7",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 233,
+    "seq_len": 234
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 12,
+   "sid": "curated_0002_1721000e",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     222
+    ],
+    "codeword_last": 222,
+    "following": 223,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 13,
+   "sid": "curated_0002_1721000e",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 14,
+   "sid": "curated_0002_1721000e",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "LSD",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 15,
+   "sid": "curated_0002_1721000e",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     65,
+     75,
+     92,
+     118,
+     133,
+     146,
+     173,
+     196
+    ],
+    "codeword_last": 196,
+    "following": 197,
+    "final_prompt": 206,
+    "seq_len": 207
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 16,
+   "sid": "curated_0002_1721000e",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 17,
+   "sid": "curated_0002_1721000e",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "potato",
+   "positions": {
+    "codeword_all": [
+     222
+    ],
+    "codeword_last": 222,
+    "following": 223,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 18,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 19,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 20,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "MDMA",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 21,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     46,
+     61,
+     86,
+     104,
+     118,
+     129,
+     146,
+     159,
+     175,
+     186,
+     202
+    ],
+    "codeword_last": 202,
+    "following": 203,
+    "final_prompt": 214,
+    "seq_len": 215
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 22,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 23,
+   "sid": "curated_0003_4f6222d0",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 24,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 25,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 26,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "MDMA",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 27,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     46,
+     61,
+     86,
+     104,
+     118,
+     129,
+     146,
+     159,
+     175,
+     186,
+     207
+    ],
+    "codeword_last": 207,
+    "following": 208,
+    "final_prompt": 217,
+    "seq_len": 218
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 28,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 29,
+   "sid": "curated_0004_e597bb1e",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 30,
+   "sid": "curated_0005_da64ed50",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     70,
+     78,
+     104,
+     112,
+     130,
+     139,
+     152,
+     177,
+     189,
+     202,
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 31,
+   "sid": "curated_0005_da64ed50",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 32,
+   "sid": "curated_0005_da64ed50",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "MDMA",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 33,
+   "sid": "curated_0005_da64ed50",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     46,
+     61,
+     86,
+     104,
+     118,
+     129,
+     146,
+     159,
+     175,
+     186,
+     206
+    ],
+    "codeword_last": 206,
+    "following": 207,
+    "final_prompt": 216,
+    "seq_len": 217
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 34,
+   "sid": "curated_0005_da64ed50",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 35,
+   "sid": "curated_0005_da64ed50",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 36,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 37,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 38,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "TNT",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 39,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     32,
+     52,
+     77,
+     83,
+     106,
+     121,
+     139,
+     154,
+     175,
+     185,
+     212,
+     225,
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 253,
+    "seq_len": 254
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 40,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 41,
+   "sid": "curated_0006_bfdd2522",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 42,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 43,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 44,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "TNT",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 45,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     32,
+     52,
+     77,
+     83,
+     106,
+     121,
+     139,
+     154,
+     175,
+     185,
+     212,
+     225,
+     246
+    ],
+    "codeword_last": 246,
+    "following": 247,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 46,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 47,
+   "sid": "curated_0007_fcdac46d",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 48,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     67,
+     90,
+     108,
+     127,
+     142,
+     155,
+     170,
+     189,
+     213,
+     232,
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 49,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 50,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "TNT",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 51,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     32,
+     52,
+     77,
+     83,
+     106,
+     121,
+     139,
+     154,
+     175,
+     185,
+     212,
+     225,
+     245
+    ],
+    "codeword_last": 245,
+    "following": 246,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 52,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     197,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 53,
+   "sid": "curated_0008_549d9a5c",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mango",
+   "positions": {
+    "codeword_all": [
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 54,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     185,
+     196,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 55,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 56,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "bomb",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 57,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     59,
+     78,
+     94,
+     104,
+     130,
+     134,
+     150,
+     169,
+     186,
+     205,
+     225
+    ],
+    "codeword_last": 225,
+    "following": 226,
+    "final_prompt": 235,
+    "seq_len": 236
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 58,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     185,
+     196,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 59,
+   "sid": "curated_0009_6e99b0fd",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     222
+    ],
+    "codeword_last": 222,
+    "following": 223,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 60,
+   "sid": "curated_0010_300feb57",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     185,
+     196,
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 228,
+    "seq_len": 229
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 61,
+   "sid": "curated_0010_300feb57",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 62,
+   "sid": "curated_0010_300feb57",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "bomb",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 63,
+   "sid": "curated_0010_300feb57",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     59,
+     78,
+     94,
+     104,
+     130,
+     134,
+     150,
+     169,
+     186,
+     205,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 233,
+    "seq_len": 234
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 64,
+   "sid": "curated_0010_300feb57",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     185,
+     196,
+     218
+    ],
+    "codeword_last": 218,
+    "following": 219,
+    "final_prompt": 228,
+    "seq_len": 229
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 65,
+   "sid": "curated_0010_300feb57",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 66,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     36,
+     53,
+     63,
+     78,
+     102,
+     113,
+     133,
+     144,
+     163,
+     178,
+     185,
+     196,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 67,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 68,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "bomb",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 69,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     59,
+     78,
+     94,
+     104,
+     130,
+     134,
+     150,
+     169,
+     186,
+     205,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 234,
+    "seq_len": 235
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 70,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 71,
+   "sid": "curated_0011_bfd54a2e",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "lantern",
+   "positions": {
+    "codeword_all": [
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 72,
+   "sid": "curated_0012_bca2b384",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 73,
+   "sid": "curated_0012_bca2b384",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 74,
+   "sid": "curated_0012_bca2b384",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cannon",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 75,
+   "sid": "curated_0012_bca2b384",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     31,
+     47,
+     79,
+     83,
+     103,
+     122,
+     142,
+     161,
+     179,
+     194,
+     219,
+     232,
+     260
+    ],
+    "codeword_last": 260,
+    "following": 261,
+    "final_prompt": 270,
+    "seq_len": 271
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 76,
+   "sid": "curated_0012_bca2b384",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 77,
+   "sid": "curated_0012_bca2b384",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 78,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     275
+    ],
+    "codeword_last": 275,
+    "following": 276,
+    "final_prompt": 285,
+    "seq_len": 286
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 79,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 80,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cannon",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 81,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     31,
+     47,
+     79,
+     83,
+     103,
+     122,
+     142,
+     161,
+     179,
+     194,
+     219,
+     232,
+     258
+    ],
+    "codeword_last": 258,
+    "following": 259,
+    "final_prompt": 268,
+    "seq_len": 269
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 82,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     275
+    ],
+    "codeword_last": 275,
+    "following": 276,
+    "final_prompt": 285,
+    "seq_len": 286
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 83,
+   "sid": "curated_0013_bd3627c8",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     275
+    ],
+    "codeword_last": 275,
+    "following": 276,
+    "final_prompt": 285,
+    "seq_len": 286
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 84,
+   "sid": "curated_0014_fa704c67",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     37,
+     50,
+     82,
+     89,
+     105,
+     140,
+     150,
+     171,
+     202,
+     216,
+     231,
+     245,
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 85,
+   "sid": "curated_0014_fa704c67",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 86,
+   "sid": "curated_0014_fa704c67",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cannon",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 87,
+   "sid": "curated_0014_fa704c67",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     31,
+     47,
+     79,
+     83,
+     103,
+     122,
+     142,
+     161,
+     179,
+     194,
+     219,
+     232,
+     259
+    ],
+    "codeword_last": 259,
+    "following": 260,
+    "final_prompt": 269,
+    "seq_len": 270
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 88,
+   "sid": "curated_0014_fa704c67",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     246
+    ],
+    "codeword_last": 246,
+    "following": 247,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 89,
+   "sid": "curated_0014_fa704c67",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "kettle",
+   "positions": {
+    "codeword_all": [
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 90,
+   "sid": "curated_0015_68099217",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 91,
+   "sid": "curated_0015_68099217",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 92,
+   "sid": "curated_0015_68099217",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 93,
+   "sid": "curated_0015_68099217",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     32,
+     49,
+     61,
+     78,
+     90,
+     111,
+     126,
+     130,
+     154,
+     167,
+     185,
+     201,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 228,
+    "seq_len": 229
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 94,
+   "sid": "curated_0015_68099217",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 95,
+   "sid": "curated_0015_68099217",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 96,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 97,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 98,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 99,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     32,
+     49,
+     61,
+     78,
+     90,
+     111,
+     126,
+     130,
+     154,
+     167,
+     185,
+     201,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 100,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 101,
+   "sid": "curated_0016_4eb76e9e",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 102,
+   "sid": "curated_0017_39716573",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     33,
+     48,
+     75,
+     87,
+     99,
+     119,
+     138,
+     143,
+     164,
+     190,
+     198,
+     231,
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 103,
+   "sid": "curated_0017_39716573",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 104,
+   "sid": "curated_0017_39716573",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "chlorine",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 105,
+   "sid": "curated_0017_39716573",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     32,
+     49,
+     61,
+     78,
+     90,
+     111,
+     126,
+     130,
+     154,
+     167,
+     185,
+     201,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 106,
+   "sid": "curated_0017_39716573",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 107,
+   "sid": "curated_0017_39716573",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pillow",
+   "positions": {
+    "codeword_all": [
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 108,
+   "sid": "curated_0018_f47db148",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 109,
+   "sid": "curated_0018_f47db148",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 110,
+   "sid": "curated_0018_f47db148",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cocaine",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 111,
+   "sid": "curated_0018_f47db148",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     40,
+     63,
+     71,
+     96,
+     105,
+     128,
+     144,
+     158,
+     174,
+     198,
+     228,
+     254
+    ],
+    "codeword_last": 254,
+    "following": 255,
+    "final_prompt": 266,
+    "seq_len": 267
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 112,
+   "sid": "curated_0018_f47db148",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 113,
+   "sid": "curated_0018_f47db148",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 114,
+   "sid": "curated_0019_1f091044",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 115,
+   "sid": "curated_0019_1f091044",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 116,
+   "sid": "curated_0019_1f091044",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cocaine",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 117,
+   "sid": "curated_0019_1f091044",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     40,
+     63,
+     71,
+     96,
+     105,
+     128,
+     144,
+     158,
+     174,
+     198,
+     228,
+     259
+    ],
+    "codeword_last": 259,
+    "following": 260,
+    "final_prompt": 269,
+    "seq_len": 270
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 118,
+   "sid": "curated_0019_1f091044",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 119,
+   "sid": "curated_0019_1f091044",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 120,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     61,
+     86,
+     97,
+     114,
+     125,
+     146,
+     149,
+     176,
+     183,
+     200,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 121,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 122,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cocaine",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 123,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     40,
+     63,
+     71,
+     96,
+     105,
+     128,
+     144,
+     158,
+     174,
+     198,
+     228,
+     258
+    ],
+    "codeword_last": 258,
+    "following": 259,
+    "final_prompt": 268,
+    "seq_len": 269
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 124,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     124,
+     142,
+     162,
+     169,
+     190,
+     197,
+     222
+    ],
+    "codeword_last": 222,
+    "following": 223,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 125,
+   "sid": "curated_0020_c3d31b42",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cabbage",
+   "positions": {
+    "codeword_all": [
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 126,
+   "sid": "curated_0021_d54484d4",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     123,
+     141,
+     161,
+     168,
+     189,
+     196,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 127,
+   "sid": "curated_0021_d54484d4",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 128,
+   "sid": "curated_0021_d54484d4",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "firearm",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 129,
+   "sid": "curated_0021_d54484d4",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     47,
+     73,
+     89,
+     98,
+     113,
+     137,
+     161,
+     181,
+     196,
+     221,
+     237
+    ],
+    "codeword_last": 237,
+    "following": 238,
+    "final_prompt": 247,
+    "seq_len": 248
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 130,
+   "sid": "curated_0021_d54484d4",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     123,
+     141,
+     161,
+     168,
+     189,
+     196,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 131,
+   "sid": "curated_0021_d54484d4",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 132,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     123,
+     141,
+     161,
+     168,
+     189,
+     196,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 133,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 134,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "firearm",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 135,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     47,
+     73,
+     89,
+     98,
+     113,
+     137,
+     161,
+     181,
+     196,
+     221,
+     235
+    ],
+    "codeword_last": 235,
+    "following": 236,
+    "final_prompt": 245,
+    "seq_len": 246
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 136,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     123,
+     141,
+     161,
+     168,
+     189,
+     196,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 137,
+   "sid": "curated_0022_cbd5c8bd",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 138,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     70,
+     77,
+     97,
+     123,
+     141,
+     161,
+     168,
+     189,
+     196,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 139,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 140,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "firearm",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 141,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     47,
+     73,
+     89,
+     98,
+     113,
+     137,
+     161,
+     181,
+     196,
+     221,
+     236
+    ],
+    "codeword_last": 236,
+    "following": 237,
+    "final_prompt": 246,
+    "seq_len": 247
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 142,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 143,
+   "sid": "curated_0023_c9e25fbd",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "marble",
+   "positions": {
+    "codeword_all": [
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 144,
+   "sid": "curated_0024_c6f43834",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     278
+    ],
+    "codeword_last": 278,
+    "following": 279,
+    "final_prompt": 288,
+    "seq_len": 289
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 145,
+   "sid": "curated_0024_c6f43834",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 146,
+   "sid": "curated_0024_c6f43834",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 147,
+   "sid": "curated_0024_c6f43834",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     69,
+     84,
+     111,
+     131,
+     138,
+     152,
+     169,
+     185,
+     196,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 148,
+   "sid": "curated_0024_c6f43834",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     278
+    ],
+    "codeword_last": 278,
+    "following": 279,
+    "final_prompt": 288,
+    "seq_len": 289
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 149,
+   "sid": "curated_0024_c6f43834",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     278
+    ],
+    "codeword_last": 278,
+    "following": 279,
+    "final_prompt": 288,
+    "seq_len": 289
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 150,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 151,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 152,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 153,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     69,
+     84,
+     111,
+     131,
+     138,
+     152,
+     169,
+     185,
+     196,
+     215
+    ],
+    "codeword_last": 215,
+    "following": 216,
+    "final_prompt": 225,
+    "seq_len": 226
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 154,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 155,
+   "sid": "curated_0025_cfa7772b",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 286,
+    "seq_len": 287
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 156,
+   "sid": "curated_0026_1f70addd",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     77,
+     90,
+     117,
+     142,
+     172,
+     193,
+     221,
+     231,
+     255,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 157,
+   "sid": "curated_0026_1f70addd",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 158,
+   "sid": "curated_0026_1f70addd",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 159,
+   "sid": "curated_0026_1f70addd",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     69,
+     84,
+     111,
+     131,
+     138,
+     152,
+     169,
+     185,
+     196,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 160,
+   "sid": "curated_0026_1f70addd",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     134,
+     163,
+     178,
+     200,
+     215,
+     231,
+     246
+    ],
+    "codeword_last": 246,
+    "following": 247,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 161,
+   "sid": "curated_0026_1f70addd",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "walnut",
+   "positions": {
+    "codeword_all": [
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 287,
+    "seq_len": 288
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 162,
+   "sid": "curated_0027_60518083",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     135,
+     164,
+     179,
+     201,
+     216,
+     232,
+     244
+    ],
+    "codeword_last": 244,
+    "following": 245,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 163,
+   "sid": "curated_0027_60518083",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 164,
+   "sid": "curated_0027_60518083",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "heroin",
+   "positions": {
+    "codeword_all": [
+     39
+    ],
+    "codeword_last": 39,
+    "following": 40,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 165,
+   "sid": "curated_0027_60518083",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     38,
+     50,
+     63,
+     90,
+     95,
+     116,
+     127,
+     140,
+     159,
+     173,
+     196,
+     210,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 166,
+   "sid": "curated_0027_60518083",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     135,
+     164,
+     179,
+     201,
+     216,
+     232,
+     244
+    ],
+    "codeword_last": 244,
+    "following": 245,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 167,
+   "sid": "curated_0027_60518083",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     244
+    ],
+    "codeword_last": 244,
+    "following": 245,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 168,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     135,
+     164,
+     179,
+     201,
+     216,
+     232,
+     249
+    ],
+    "codeword_last": 249,
+    "following": 250,
+    "final_prompt": 259,
+    "seq_len": 260
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 169,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 170,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "heroin",
+   "positions": {
+    "codeword_all": [
+     44
+    ],
+    "codeword_last": 44,
+    "following": 45,
+    "final_prompt": 54,
+    "seq_len": 55
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 171,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     38,
+     50,
+     63,
+     90,
+     95,
+     116,
+     127,
+     140,
+     159,
+     173,
+     196,
+     210,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 172,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     135,
+     164,
+     179,
+     201,
+     216,
+     232,
+     249
+    ],
+    "codeword_last": 249,
+    "following": 250,
+    "final_prompt": 259,
+    "seq_len": 260
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 173,
+   "sid": "curated_0028_dfa28f69",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     249
+    ],
+    "codeword_last": 249,
+    "following": 250,
+    "final_prompt": 259,
+    "seq_len": 260
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 174,
+   "sid": "curated_0029_d029f372",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     37,
+     55,
+     73,
+     86,
+     114,
+     128,
+     135,
+     164,
+     179,
+     201,
+     216,
+     232,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 175,
+   "sid": "curated_0029_d029f372",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 176,
+   "sid": "curated_0029_d029f372",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "heroin",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 177,
+   "sid": "curated_0029_d029f372",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     38,
+     50,
+     63,
+     90,
+     95,
+     116,
+     127,
+     140,
+     159,
+     173,
+     196,
+     210,
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 178,
+   "sid": "curated_0029_d029f372",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 179,
+   "sid": "curated_0029_d029f372",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pumpkin",
+   "positions": {
+    "codeword_all": [
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 258,
+    "seq_len": 259
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 180,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 181,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 182,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "missile",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 183,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     32,
+     46,
+     68,
+     78,
+     97,
+     106,
+     126,
+     140,
+     155,
+     172,
+     181,
+     198,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 227,
+    "seq_len": 228
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 184,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 185,
+   "sid": "curated_0030_9a3ce03a",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 186,
+   "sid": "curated_0031_b0e482de",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     251
+    ],
+    "codeword_last": 251,
+    "following": 252,
+    "final_prompt": 261,
+    "seq_len": 262
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 187,
+   "sid": "curated_0031_b0e482de",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 188,
+   "sid": "curated_0031_b0e482de",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "missile",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 189,
+   "sid": "curated_0031_b0e482de",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     32,
+     46,
+     68,
+     78,
+     97,
+     106,
+     126,
+     140,
+     155,
+     172,
+     181,
+     198,
+     215
+    ],
+    "codeword_last": 215,
+    "following": 216,
+    "final_prompt": 225,
+    "seq_len": 226
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 190,
+   "sid": "curated_0031_b0e482de",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     251
+    ],
+    "codeword_last": 251,
+    "following": 252,
+    "final_prompt": 261,
+    "seq_len": 262
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 191,
+   "sid": "curated_0031_b0e482de",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     251
+    ],
+    "codeword_last": 251,
+    "following": 252,
+    "final_prompt": 261,
+    "seq_len": 262
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 192,
+   "sid": "curated_0032_8457d903",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     71,
+     88,
+     107,
+     121,
+     144,
+     158,
+     176,
+     195,
+     221,
+     231,
+     252
+    ],
+    "codeword_last": 252,
+    "following": 253,
+    "final_prompt": 262,
+    "seq_len": 263
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 193,
+   "sid": "curated_0032_8457d903",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 194,
+   "sid": "curated_0032_8457d903",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "missile",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 195,
+   "sid": "curated_0032_8457d903",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     32,
+     46,
+     68,
+     78,
+     97,
+     106,
+     126,
+     140,
+     155,
+     172,
+     181,
+     198,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 196,
+   "sid": "curated_0032_8457d903",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 197,
+   "sid": "curated_0032_8457d903",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cushion",
+   "positions": {
+    "codeword_all": [
+     252
+    ],
+    "codeword_last": 252,
+    "following": 253,
+    "final_prompt": 262,
+    "seq_len": 263
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 198,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     214
+    ],
+    "codeword_last": 214,
+    "following": 215,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 199,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 200,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mortar",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 201,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     70,
+     83,
+     107,
+     122,
+     141,
+     163,
+     170,
+     192,
+     213,
+     233,
+     255
+    ],
+    "codeword_last": 255,
+    "following": 256,
+    "final_prompt": 265,
+    "seq_len": 266
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 202,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     214
+    ],
+    "codeword_last": 214,
+    "following": 215,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 203,
+   "sid": "curated_0033_7d6a69e7",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 204,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 222,
+    "seq_len": 223
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 205,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 206,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mortar",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 207,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     70,
+     83,
+     107,
+     122,
+     141,
+     163,
+     170,
+     192,
+     213,
+     233,
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 208,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 222,
+    "seq_len": 223
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 209,
+   "sid": "curated_0034_26ae45c5",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     211
+    ],
+    "codeword_last": 211,
+    "following": 212,
+    "final_prompt": 221,
+    "seq_len": 222
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 210,
+   "sid": "curated_0035_9e44feab",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42,
+     48,
+     61,
+     78,
+     88,
+     97,
+     125,
+     139,
+     148,
+     164,
+     177,
+     195,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 211,
+   "sid": "curated_0035_9e44feab",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 212,
+   "sid": "curated_0035_9e44feab",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "mortar",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 213,
+   "sid": "curated_0035_9e44feab",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     34,
+     54,
+     70,
+     83,
+     107,
+     122,
+     141,
+     163,
+     170,
+     192,
+     213,
+     233,
+     254
+    ],
+    "codeword_last": 254,
+    "following": 255,
+    "final_prompt": 264,
+    "seq_len": 265
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 214,
+   "sid": "curated_0035_9e44feab",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     76,
+     92,
+     121,
+     136,
+     145,
+     161,
+     180,
+     194,
+     211
+    ],
+    "codeword_last": 211,
+    "following": 212,
+    "final_prompt": 221,
+    "seq_len": 222
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 215,
+   "sid": "curated_0035_9e44feab",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "trumpet",
+   "positions": {
+    "codeword_all": [
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 222,
+    "seq_len": 223
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 216,
+   "sid": "curated_0036_3d119292",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     75,
+     91,
+     119,
+     134,
+     143,
+     159,
+     178,
+     192,
+     210
+    ],
+    "codeword_last": 210,
+    "following": 211,
+    "final_prompt": 220,
+    "seq_len": 221
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 217,
+   "sid": "curated_0036_3d119292",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 218,
+   "sid": "curated_0036_3d119292",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pistol",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 219,
+   "sid": "curated_0036_3d119292",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     32,
+     51,
+     73,
+     86,
+     112,
+     123,
+     138,
+     162,
+     177,
+     193,
+     211,
+     224,
+     251
+    ],
+    "codeword_last": 251,
+    "following": 252,
+    "final_prompt": 261,
+    "seq_len": 262
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 220,
+   "sid": "curated_0036_3d119292",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     75,
+     91,
+     119,
+     134,
+     143,
+     159,
+     178,
+     192,
+     210
+    ],
+    "codeword_last": 210,
+    "following": 211,
+    "final_prompt": 220,
+    "seq_len": 221
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 221,
+   "sid": "curated_0036_3d119292",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 222,
+    "seq_len": 223
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 222,
+   "sid": "curated_0037_479eb030",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     75,
+     91,
+     119,
+     134,
+     143,
+     159,
+     178,
+     192,
+     208
+    ],
+    "codeword_last": 208,
+    "following": 209,
+    "final_prompt": 218,
+    "seq_len": 219
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 223,
+   "sid": "curated_0037_479eb030",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 224,
+   "sid": "curated_0037_479eb030",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pistol",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 225,
+   "sid": "curated_0037_479eb030",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     32,
+     51,
+     73,
+     86,
+     112,
+     123,
+     138,
+     162,
+     177,
+     193,
+     211,
+     224,
+     249
+    ],
+    "codeword_last": 249,
+    "following": 250,
+    "final_prompt": 259,
+    "seq_len": 260
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 226,
+   "sid": "curated_0037_479eb030",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     75,
+     91,
+     119,
+     134,
+     143,
+     159,
+     178,
+     192,
+     208
+    ],
+    "codeword_last": 208,
+    "following": 209,
+    "final_prompt": 218,
+    "seq_len": 219
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 227,
+   "sid": "curated_0037_479eb030",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     210
+    ],
+    "codeword_last": 210,
+    "following": 211,
+    "final_prompt": 220,
+    "seq_len": 221
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 228,
+   "sid": "curated_0038_c0879aea",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     50,
+     75,
+     91,
+     119,
+     134,
+     143,
+     159,
+     178,
+     192,
+     209
+    ],
+    "codeword_last": 209,
+    "following": 210,
+    "final_prompt": 219,
+    "seq_len": 220
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 229,
+   "sid": "curated_0038_c0879aea",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 230,
+   "sid": "curated_0038_c0879aea",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "pistol",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 231,
+   "sid": "curated_0038_c0879aea",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     32,
+     51,
+     73,
+     86,
+     112,
+     123,
+     138,
+     162,
+     177,
+     193,
+     211,
+     224,
+     250
+    ],
+    "codeword_last": 250,
+    "following": 251,
+    "final_prompt": 260,
+    "seq_len": 261
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 232,
+   "sid": "curated_0038_c0879aea",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 233,
+   "sid": "curated_0038_c0879aea",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "blanket",
+   "positions": {
+    "codeword_all": [
+     211
+    ],
+    "codeword_last": 211,
+    "following": 212,
+    "final_prompt": 221,
+    "seq_len": 222
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 234,
+   "sid": "curated_0039_47c874c6",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 235,
+   "sid": "curated_0039_47c874c6",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 236,
+   "sid": "curated_0039_47c874c6",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "revolver",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 237,
+   "sid": "curated_0039_47c874c6",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     40,
+     52,
+     69,
+     91,
+     100,
+     122,
+     134,
+     142,
+     169,
+     182,
+     195,
+     214,
+     233
+    ],
+    "codeword_last": 233,
+    "following": 234,
+    "final_prompt": 243,
+    "seq_len": 244
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 238,
+   "sid": "curated_0039_47c874c6",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 239,
+   "sid": "curated_0039_47c874c6",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 240,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     227
+    ],
+    "codeword_last": 227,
+    "following": 228,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 241,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 242,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "revolver",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 243,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     40,
+     52,
+     69,
+     91,
+     100,
+     122,
+     134,
+     142,
+     169,
+     182,
+     195,
+     214,
+     231
+    ],
+    "codeword_last": 231,
+    "following": 232,
+    "final_prompt": 241,
+    "seq_len": 242
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 244,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     227
+    ],
+    "codeword_last": 227,
+    "following": 228,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 245,
+   "sid": "curated_0040_efdbcca3",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     227
+    ],
+    "codeword_last": 227,
+    "following": 228,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 246,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     52,
+     74,
+     89,
+     102,
+     121,
+     127,
+     151,
+     154,
+     173,
+     191,
+     209,
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 247,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 248,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "revolver",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 249,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     40,
+     52,
+     69,
+     91,
+     100,
+     122,
+     134,
+     142,
+     169,
+     182,
+     195,
+     214,
+     232
+    ],
+    "codeword_last": 232,
+    "following": 233,
+    "final_prompt": 242,
+    "seq_len": 243
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 250,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     197,
+     207,
+     220,
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 251,
+    "seq_len": 252
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 251,
+   "sid": "curated_0041_d8c8bcbf",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "cider",
+   "positions": {
+    "codeword_all": [
+     228
+    ],
+    "codeword_last": 228,
+    "following": 229,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 252,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     198,
+     208,
+     221,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 253,
+    "seq_len": 254
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 253,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 254,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "rifle",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 255,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     37,
+     57,
+     89,
+     102,
+     129,
+     140,
+     154,
+     180,
+     196,
+     208,
+     221,
+     247
+    ],
+    "codeword_last": 247,
+    "following": 248,
+    "final_prompt": 257,
+    "seq_len": 258
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 256,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     198,
+     208,
+     221,
+     243
+    ],
+    "codeword_last": 243,
+    "following": 244,
+    "final_prompt": 253,
+    "seq_len": 254
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 257,
+   "sid": "curated_0042_ef5130fa",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     242
+    ],
+    "codeword_last": 242,
+    "following": 243,
+    "final_prompt": 252,
+    "seq_len": 253
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 258,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     198,
+     208,
+     221,
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 251,
+    "seq_len": 252
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 259,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 260,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "rifle",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 261,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     37,
+     57,
+     89,
+     102,
+     129,
+     140,
+     154,
+     180,
+     196,
+     208,
+     221,
+     245
+    ],
+    "codeword_last": 245,
+    "following": 246,
+    "final_prompt": 255,
+    "seq_len": 256
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 262,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     198,
+     208,
+     221,
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 251,
+    "seq_len": 252
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 263,
+   "sid": "curated_0043_41f9e4fd",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     240
+    ],
+    "codeword_last": 240,
+    "following": 241,
+    "final_prompt": 250,
+    "seq_len": 251
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 264,
+   "sid": "curated_0044_d075f695",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     35,
+     53,
+     74,
+     78,
+     104,
+     115,
+     128,
+     152,
+     198,
+     208,
+     221,
+     242
+    ],
+    "codeword_last": 242,
+    "following": 243,
+    "final_prompt": 252,
+    "seq_len": 253
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 265,
+   "sid": "curated_0044_d075f695",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 266,
+   "sid": "curated_0044_d075f695",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "rifle",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 267,
+   "sid": "curated_0044_d075f695",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     37,
+     57,
+     89,
+     102,
+     129,
+     140,
+     154,
+     180,
+     196,
+     208,
+     221,
+     246
+    ],
+    "codeword_last": 246,
+    "following": 247,
+    "final_prompt": 256,
+    "seq_len": 257
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 268,
+   "sid": "curated_0044_d075f695",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     317
+    ],
+    "codeword_last": 317,
+    "following": 318,
+    "final_prompt": 327,
+    "seq_len": 328
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 269,
+   "sid": "curated_0044_d075f695",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "violet",
+   "positions": {
+    "codeword_all": [
+     241
+    ],
+    "codeword_last": 241,
+    "following": 242,
+    "final_prompt": 251,
+    "seq_len": 252
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 270,
+   "sid": "curated_0045_f62219d8",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     318
+    ],
+    "codeword_last": 318,
+    "following": 319,
+    "final_prompt": 328,
+    "seq_len": 329
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 271,
+   "sid": "curated_0045_f62219d8",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 272,
+   "sid": "curated_0045_f62219d8",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "shotgun",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 273,
+   "sid": "curated_0045_f62219d8",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     61,
+     72,
+     86,
+     111,
+     119,
+     145,
+     171,
+     184,
+     189,
+     216
+    ],
+    "codeword_last": 216,
+    "following": 217,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 274,
+   "sid": "curated_0045_f62219d8",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     318
+    ],
+    "codeword_last": 318,
+    "following": 319,
+    "final_prompt": 328,
+    "seq_len": 329
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 275,
+   "sid": "curated_0045_f62219d8",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     318
+    ],
+    "codeword_last": 318,
+    "following": 319,
+    "final_prompt": 328,
+    "seq_len": 329
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 276,
+   "sid": "curated_0046_c567897a",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     316
+    ],
+    "codeword_last": 316,
+    "following": 317,
+    "final_prompt": 326,
+    "seq_len": 327
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 277,
+   "sid": "curated_0046_c567897a",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 278,
+   "sid": "curated_0046_c567897a",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "shotgun",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 279,
+   "sid": "curated_0046_c567897a",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     61,
+     72,
+     86,
+     111,
+     119,
+     145,
+     171,
+     184,
+     189,
+     214
+    ],
+    "codeword_last": 214,
+    "following": 215,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 280,
+   "sid": "curated_0046_c567897a",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     316
+    ],
+    "codeword_last": 316,
+    "following": 317,
+    "final_prompt": 326,
+    "seq_len": 327
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 281,
+   "sid": "curated_0046_c567897a",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     316
+    ],
+    "codeword_last": 316,
+    "following": 317,
+    "final_prompt": 326,
+    "seq_len": 327
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 282,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     54,
+     79,
+     88,
+     129,
+     145,
+     155,
+     187,
+     201,
+     218,
+     253,
+     269,
+     299,
+     317
+    ],
+    "codeword_last": 317,
+    "following": 318,
+    "final_prompt": 327,
+    "seq_len": 328
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 283,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 284,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "shotgun",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 285,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     34,
+     47,
+     61,
+     72,
+     86,
+     111,
+     119,
+     145,
+     171,
+     184,
+     189,
+     215
+    ],
+    "codeword_last": 215,
+    "following": 216,
+    "final_prompt": 225,
+    "seq_len": 226
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 286,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "SHUFFLED_BINDING",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     237
+    ],
+    "codeword_last": 237,
+    "following": 238,
+    "final_prompt": 247,
+    "seq_len": 248
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 287,
+   "sid": "curated_0047_6e67ca74",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "saddle",
+   "positions": {
+    "codeword_all": [
+     317
+    ],
+    "codeword_last": 317,
+    "following": 318,
+    "final_prompt": 327,
+    "seq_len": 328
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 288,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     238
+    ],
+    "codeword_last": 238,
+    "following": 239,
+    "final_prompt": 248,
+    "seq_len": 249
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 289,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 290,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "torpedo",
+   "positions": {
+    "codeword_all": [
+     43
+    ],
+    "codeword_last": 43,
+    "following": 44,
+    "final_prompt": 53,
+    "seq_len": 54
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 291,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     43,
+     66,
+     79,
+     91,
+     116,
+     136,
+     145,
+     168,
+     182,
+     203,
+     221,
+     233,
+     262
+    ],
+    "codeword_last": 262,
+    "following": 263,
+    "final_prompt": 272,
+    "seq_len": 273
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 292,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     238
+    ],
+    "codeword_last": 238,
+    "following": 239,
+    "final_prompt": 248,
+    "seq_len": 249
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 293,
+   "sid": "curated_0048_eaa6f68c",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     238
+    ],
+    "codeword_last": 238,
+    "following": 239,
+    "final_prompt": 248,
+    "seq_len": 249
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 294,
+   "sid": "curated_0049_ea414de3",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     236
+    ],
+    "codeword_last": 236,
+    "following": 237,
+    "final_prompt": 246,
+    "seq_len": 247
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 295,
+   "sid": "curated_0049_ea414de3",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 296,
+   "sid": "curated_0049_ea414de3",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "torpedo",
+   "positions": {
+    "codeword_all": [
+     41
+    ],
+    "codeword_last": 41,
+    "following": 42,
+    "final_prompt": 51,
+    "seq_len": 52
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 297,
+   "sid": "curated_0049_ea414de3",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     43,
+     66,
+     79,
+     91,
+     116,
+     136,
+     145,
+     168,
+     182,
+     203,
+     221,
+     233,
+     260
+    ],
+    "codeword_last": 260,
+    "following": 261,
+    "final_prompt": 270,
+    "seq_len": 271
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 298,
+   "sid": "curated_0049_ea414de3",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     236
+    ],
+    "codeword_last": 236,
+    "following": 237,
+    "final_prompt": 246,
+    "seq_len": 247
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 299,
+   "sid": "curated_0049_ea414de3",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     236
+    ],
+    "codeword_last": 236,
+    "following": 237,
+    "final_prompt": 246,
+    "seq_len": 247
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 300,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     68,
+     86,
+     98,
+     121,
+     138,
+     157,
+     164,
+     187,
+     209,
+     220,
+     237
+    ],
+    "codeword_last": 237,
+    "following": 238,
+    "final_prompt": 247,
+    "seq_len": 248
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 301,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 302,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "torpedo",
+   "positions": {
+    "codeword_all": [
+     42
+    ],
+    "codeword_last": 42,
+    "following": 43,
+    "final_prompt": 52,
+    "seq_len": 53
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 303,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     43,
+     66,
+     79,
+     91,
+     116,
+     136,
+     145,
+     168,
+     182,
+     203,
+     221,
+     233,
+     261
+    ],
+    "codeword_last": 261,
+    "following": 262,
+    "final_prompt": 271,
+    "seq_len": 272
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 304,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "SHUFFLED_BINDING",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     34,
+     48,
+     64,
+     81,
+     88,
+     110,
+     117,
+     140,
+     157,
+     166,
+     182,
+     202,
+     221
+    ],
+    "codeword_last": 221,
+    "following": 222,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 305,
+   "sid": "curated_0050_e9e5f705",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "gpt-4o-mini",
+   "n_demos": 12,
+   "readout": "fixed",
+   "probe_word": "canoe",
+   "positions": {
+    "codeword_all": [
+     237
+    ],
+    "codeword_last": 237,
+    "following": 238,
+    "final_prompt": 247,
+    "seq_len": 248
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  }
+ ],
+ "status": "COMPLETE"
+}

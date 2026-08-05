@@ -1,0 +1,33 @@
+{
+ "cohort": "curated",
+ "write_layers": [
+  8,
+  9,
+  10,
+  11
+ ],
+ "by_split": {
+  "train": {
+   "n": 30,
+   "ASR_baseline": 0.3333,
+   "ASR_write_abl": 0.2667,
+   "ASR_rand_pos_abl": 0.3,
+   "delta_necessity_write": 0.0666,
+   "delta_rand_pos_ctrl": 0.0333,
+   "empty_write_abl": 0.0,
+   "empty_rand": 0.0,
+   "mean_n_cw_pos": 12.0
+  },
+  "test": {
+   "n": 21,
+   "ASR_baseline": 0.0952,
+   "ASR_write_abl": 0.0952,
+   "ASR_rand_pos_abl": 0.0952,
+   "delta_necessity_write": 0.0,
+   "delta_rand_pos_ctrl": 0.0,
+   "empty_write_abl": 0.0,
+   "empty_rand": 0.0,
+   "mean_n_cw_pos": 12.0
+  }
+ }
+}

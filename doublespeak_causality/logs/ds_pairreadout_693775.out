@@ -1,0 +1,55 @@
+=== pair readout validation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/pair_benchmark/pair_carrot_chlorine.json ===
+Thu Jul 30 01:03:56 AM IDT 2026
+n-804
+git=0bb7a6facabae633d5f3539542133bae98d7e487
+GPU ok: NVIDIA L40S
+[readout] model=Llama-3.1-8B-Instruct layers=32 rows=800 -> doublespeak_causality/outputs/pair_readout_Llama-3.1-8B-Instruct_20260730_011131_693775
+  [readout] 100/800
+  [readout] 200/800
+  [readout] 300/800
+  [readout] 400/800
+  [readout] 500/800
+  [readout] 600/800
+  [readout] 700/800
+  [readout] 800/800
+[readout] GATE (positive DIRECT_CONCEPT / negative NEUTRAL_CODEWORD, 'reads as concept'):
+  cloze              pos=0.0 neg=0.0 -> FAIL
+  forced_choice      pos=0.0 neg=0.0 -> FAIL
+  one_word           pos=0.0 neg=0.0 -> FAIL
+  repeat_concept     pos=0.0 neg=0.0 -> FAIL
+  repeated_codeword  pos=0.0 neg=0.0 -> FAIL
+[readout] passing readouts: []
+[readout] PER-CELL gate: 0/30 (readout|demo_style) cells usable
+    EXCLUDED cloze|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED cloze|dialogue: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED cloze|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED cloze|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED cloze|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED cloze|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|dialogue: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|dialogue: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|dialogue: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|dialogue: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+[readout] -> doublespeak_causality/outputs/pair_readout_Llama-3.1-8B-Instruct_20260730_011131_693775
+=== done ===
+Thu Jul 30 01:13:29 AM IDT 2026

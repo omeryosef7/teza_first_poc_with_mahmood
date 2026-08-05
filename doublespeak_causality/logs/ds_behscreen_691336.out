@@ -1,0 +1,9 @@
+=== behavioral screen: meta-llama/Llama-3.1-8B-Instruct matrix=doublespeak_causality/data/behavioral_benchmark/screening_matrix_curated_cw4x42_len8.json ===
+Tue Jul 28 11:32:36 AM IDT 2026
+n-805
+git=48fdcbbb48ffdcf3f1b3e74337f210aa9ab35d22
+GPU ok: NVIDIA L40S
+[screen] 336 conditions | model=meta-llama/Llama-3.1-8B-Instruct | out=doublespeak_causality/outputs/behavioral_screen_curated_cw4x42
+  [20/336] processed
+  [40/336] processed
+  [60/336] processed

@@ -1,0 +1,9 @@
+=== Phase7b med: doublespeak_causality/data/bench/bench_curated.json n=0 carry=L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10 ===
+Mon Aug  3 08:37:58 PM IDT 2026
+n-803
+git=82fa401bf8ec8ee1c10ca05232ede6ffdef90f23
+GPU ok: NVIDIA L40S
+[med] cohort=curated carry=[(14, 4), (14, 5), (14, 23), (15, 8), (17, 27), (18, 20), (21, 10)] write=L9 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7b_mediation_curated_20260803_205416_705295
+[med] 51 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7b_mediation_curated_20260803_205416_705295
+  [dev] n=30 L9resp=9 C1=0.8105 A(L9 neut)=0.762 med_carry=0.764 med_randctrl=0.0 selfdev=0.0
+  [heldout] n=21 L9resp=9 C1=0.6902 A(L9 neut)=0.575 med_carry=0.828 med_randctrl=0.0 selfdev=0.0

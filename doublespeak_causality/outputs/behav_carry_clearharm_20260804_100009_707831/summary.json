@@ -1,0 +1,48 @@
+{
+ "cohort": "clearharm",
+ "carry": {
+  "14": [
+   4,
+   5,
+   23
+  ],
+  "15": [
+   8,
+   11
+  ],
+  "17": [
+   24,
+   27
+  ],
+  "18": [
+   20
+  ],
+  "21": [
+   10
+  ]
+ },
+ "by_split": {
+  "train": {
+   "n": 44,
+   "ASR_baseline": 0.3636,
+   "ASR_carry_abl": 0.2727,
+   "ASR_rand_abl": 0.3409,
+   "delta_necessity_carry": 0.0909,
+   "delta_rand_ctrl": 0.0227,
+   "refused_baseline": 0.4773,
+   "refused_carry_abl": 0.4773,
+   "empty_carry_abl": 0.0
+  },
+  "test": {
+   "n": 42,
+   "ASR_baseline": 0.3571,
+   "ASR_carry_abl": 0.2857,
+   "ASR_rand_abl": 0.3333,
+   "delta_necessity_carry": 0.0714,
+   "delta_rand_ctrl": 0.0238,
+   "refused_baseline": 0.4524,
+   "refused_carry_abl": 0.5952,
+   "empty_carry_abl": 0.0
+  }
+ }
+}

@@ -1,0 +1,53 @@
+=== pair codeword study: meta-llama/Llama-3.1-8B-Instruct readout=cloze n_demos=12 ===
+Wed Jul 29 11:43:38 PM IDT 2026
+n-802
+git=87a5ef3e50b704f70a2571bf68ab243d453982ef
+GPU ok: NVIDIA L40S
+[cw] pool 27 single-token codewords (3 skipped as multi-token: ['muffin', 'meadow', 'biscuit'])
+  [cw] potato    emb_cos=+0.0587 L2=  0.936 base=0.00000 DS_p=0.4153 DS_label=0.83
+  [cw] carrot    emb_cos=+0.0299 L2=  0.997 base=0.00000 DS_p=0.5468 DS_label=0.83
+  [cw] mango     emb_cos=+0.0349 L2=  0.991 base=0.00000 DS_p=0.5697 DS_label=0.83
+  [cw] pillow    emb_cos=+0.0426 L2=  0.976 base=0.00000 DS_p=0.1871 DS_label=0.83
+  [cw] lantern   emb_cos=+0.0485 L2=  0.990 base=0.00000 DS_p=0.3983 DS_label=0.83
+  [cw] mirror    emb_cos=+0.1078 L2=  0.832 base=0.00000 DS_p=0.3250 DS_label=0.83
+  [cw] basket    emb_cos=+0.1080 L2=  0.879 base=0.00000 DS_p=0.3061 DS_label=0.83
+  [cw] table     emb_cos=+0.0700 L2=  0.816 base=0.00000 DS_p=0.4343 DS_label=0.67
+  [cw] river     emb_cos=+0.0867 L2=  0.846 base=0.00000 DS_p=0.3661 DS_label=0.67
+  [cw] turtle    emb_cos=+0.0510 L2=  0.915 base=0.00000 DS_p=0.4329 DS_label=0.67
+  [cw] kettle    emb_cos=+0.0495 L2=  0.977 base=0.00000 DS_p=0.5152 DS_label=0.83
+  [cw] ladder    emb_cos=+0.0693 L2=  0.937 base=0.00000 DS_p=0.3033 DS_label=0.67
+  [cw] candle    emb_cos=+0.1005 L2=  0.901 base=0.00000 DS_p=0.3347 DS_label=0.83
+  [cw] blanket   emb_cos=+0.0563 L2=  0.920 base=0.00000 DS_p=0.2243 DS_label=0.83
+  [cw] window    emb_cos=+0.0579 L2=  0.841 base=0.00000 DS_p=0.4538 DS_label=0.83
+  [cw] garden    emb_cos=+0.1035 L2=  0.853 base=0.00000 DS_p=0.4691 DS_label=0.83
+  [cw] bottle    emb_cos=+0.0933 L2=  0.869 base=0.00000 DS_p=0.1908 DS_label=0.83
+  [cw] pencil    emb_cos=+0.0717 L2=  0.944 base=0.00000 DS_p=0.3881 DS_label=0.83
+  [cw] cushion   emb_cos=+0.0653 L2=  0.954 base=0.00000 DS_p=0.3590 DS_label=0.83
+  [cw] saddle    emb_cos=+0.0557 L2=  0.955 base=0.00000 DS_p=0.5287 DS_label=0.83
+  [cw] harbor    emb_cos=+0.0867 L2=  0.895 base=0.00000 DS_p=0.5564 DS_label=0.83
+  [cw] curtain   emb_cos=+0.0609 L2=  0.966 base=0.00000 DS_p=0.3200 DS_label=0.50
+  [cw] trumpet   emb_cos=+0.0333 L2=  0.994 base=0.00000 DS_p=0.4212 DS_label=0.67
+  [cw] anchor    emb_cos=+0.0942 L2=  0.871 base=0.00000 DS_p=0.3811 DS_label=0.67
+  [cw] wagon     emb_cos=+0.0835 L2=  0.939 base=0.00001 DS_p=0.5937 DS_label=0.83
+  [cw] puzzle    emb_cos=+0.0731 L2=  0.919 base=0.00001 DS_p=0.7369 DS_label=0.83
+  [cw] ribbon    emb_cos=+0.0942 L2=  0.907 base=0.00000 DS_p=0.1704 DS_label=0.67
+
+[cw] n=27 codewords; Spearman (Holm-corrected):
+  emb_cos_to_concept->ds_p_concept             rho=-0.276 p_raw=0.1594 p_holm=1.0000
+  emb_cos_to_concept->hijack_gain              rho=-0.276 p_raw=0.1594 p_holm=1.0000
+  unemb_cos_to_concept->ds_reads_as_concept    rho=+0.248 p_raw=0.2147 p_holm=1.0000
+  baseline_p_concept->ds_reads_as_concept      rho=+0.237 p_raw=0.2458 p_holm=1.0000
+  unemb_cos_to_concept->ds_p_concept           rho=-0.208 p_raw=0.2943 p_holm=1.0000
+  unemb_cos_to_concept->hijack_gain            rho=-0.208 p_raw=0.2943 p_holm=1.0000
+  emb_l2_to_concept->ds_p_concept              rho=+0.186 p_raw=0.3513 p_holm=1.0000
+  emb_l2_to_concept->hijack_gain               rho=+0.186 p_raw=0.3513 p_holm=1.0000
+  emb_norm->ds_p_concept                       rho=+0.167 p_raw=0.4030 p_holm=1.0000
+  emb_norm->hijack_gain                        rho=+0.167 p_raw=0.4030 p_holm=1.0000
+  emb_norm->ds_reads_as_concept                rho=+0.128 p_raw=0.5239 p_holm=1.0000
+  emb_l2_to_concept->ds_reads_as_concept       rho=+0.118 p_raw=0.5559 p_holm=1.0000
+  baseline_p_concept->ds_p_concept             rho=+0.115 p_raw=0.5615 p_holm=1.0000
+  baseline_p_concept->hijack_gain              rho=+0.115 p_raw=0.5615 p_holm=1.0000
+  emb_cos_to_concept->ds_reads_as_concept      rho=-0.014 p_raw=0.9493 p_holm=1.0000
+[cw] -> doublespeak_causality/outputs/pair_codeword_Llama-3.1-8B-Instruct_20260729_234354_693669
+=== done ===
+Wed Jul 29 11:44:28 PM IDT 2026

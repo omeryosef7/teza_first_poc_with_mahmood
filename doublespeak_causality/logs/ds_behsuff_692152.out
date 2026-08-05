@@ -1,0 +1,29 @@
+=== behavioral sufficiency: meta-llama/Llama-3.1-8B-Instruct max_bases=12 ===
+Tue Jul 28 05:13:52 PM IDT 2026
+n-802
+git=cabfcc81fdc91a11ac9df037480b2af9ef14e200
+GPU ok: NVIDIA L40S
+[sufficiency] 72 eligible conditions | out=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_sufficiency_Llama-3.1-8B-Instruct_20260728_171406
+[sufficiency] restricted to windows: ['early']
+  [5/72] processed
+  [10/72] processed
+  [15/72] processed
+  [20/72] processed
+  [25/72] processed
+  [30/72] processed
+  [35/72] processed
+  [40/72] processed
+  [45/72] processed
+  [50/72] processed
+  [55/72] processed
+  [60/72] processed
+  [65/72] processed
+  [70/72] processed
+
+[sufficiency] baseline-benign Neutrals: 62/72 (skipped 0)
+[sufficiency] per window: DS-inject vs Direct-inject malicious rate (predict DS > Direct):
+  early              n=62 suff_DS=0.11290322580645161 suff_Direct=0.08064516129032258 DS−Direct=0.03225806451612903
+[sufficiency] controls (late): identity_mal=0.03225806451612903 random_mal=0.08064516129032258 (both want ~0)
+[sufficiency] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_sufficiency_Llama-3.1-8B-Instruct_20260728_171406
+=== done ===
+Tue Jul 28 06:02:09 PM IDT 2026

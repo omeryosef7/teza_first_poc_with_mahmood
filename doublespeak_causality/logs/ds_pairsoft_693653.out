@@ -1,0 +1,9 @@
+=== pair soft-prompt: target=unrelated free=demos param=simplex steps=300 lr=1.0 n=8 ===
+Wed Jul 29 11:21:19 PM IDT 2026
+n-802
+git=a7a7c6be2d554f07f173aadb279100d61a6d6aae
+GPU ok: NVIDIA L40S
+[soft] target=unrelated(virus) free=demos param=simplex steps=300 lr=1.0 n=8 -> doublespeak_causality/outputs/pair_softprompt_simplex_unrelated_demos_Llama-3.1-8B-Instruct_20260729_232135_693653
+  [soft] 1/8 NEUTRAL_CODEWORD|dev|narrative|12|cloze: p_start=0.00053 -> p_best=0.97099 (step 46, 202 free tokens, peak_w=0.9934 changed=0.302)
+  [soft] 2/8 NEUTRAL_CODEWORD|dev|narrative|4|cloze: p_start=0.00065 -> p_best=1.00000 (step 231, 69 free tokens, peak_w=0.7384 changed=0.2464)
+  [soft] 3/8 NEUTRAL_CODEWORD|dev|narrative|8|cloze: p_start=0.00092 -> p_best=1.00000 (step 294, 133 free tokens, peak_w=0.7632 changed=0.2707)

@@ -1,0 +1,138 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "n-802",
+    "git_commit": "53b19bd3fe89147e45fce2c6a65b5819f6069b2b",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-27T21:19:23"
+  },
+  "status": "COMPLETE",
+  "n_clean_input": 20,
+  "n_items_used": 20,
+  "n_skipped": 0,
+  "n_baseline_reproduced_malicious": 20,
+  "n_layers": 32,
+  "windows": {
+    "early": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "mid": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "late": [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "late_half_to_end": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ]
+  },
+  "results": {
+    "early": {
+      "n_base_mal": 20,
+      "n_stay_mal": 10,
+      "delta_necessity": 0.5,
+      "delta_identity_control": 0.050000000000000044,
+      "delta_random_control": 0.25,
+      "necessity_above_random": 0.25,
+      "transitions": {
+        "MALICIOUS->BENIGN": 10,
+        "MALICIOUS->MALICIOUS": 10
+      }
+    },
+    "mid": {
+      "n_base_mal": 20,
+      "n_stay_mal": 17,
+      "delta_necessity": 0.15000000000000002,
+      "delta_identity_control": 0.050000000000000044,
+      "delta_random_control": 0.25,
+      "necessity_above_random": -0.09999999999999998,
+      "transitions": {
+        "MALICIOUS->MALICIOUS": 17,
+        "MALICIOUS->BENIGN": 3
+      }
+    },
+    "late": {
+      "n_base_mal": 20,
+      "n_stay_mal": 17,
+      "delta_necessity": 0.15000000000000002,
+      "delta_identity_control": 0.09999999999999998,
+      "delta_random_control": 0.15000000000000002,
+      "necessity_above_random": 0.0,
+      "transitions": {
+        "MALICIOUS->BENIGN": 3,
+        "MALICIOUS->MALICIOUS": 17
+      }
+    },
+    "late_half_to_end": {
+      "n_base_mal": 20,
+      "n_stay_mal": 19,
+      "delta_necessity": 0.050000000000000044,
+      "delta_identity_control": 0.050000000000000044,
+      "delta_random_control": 0.09999999999999998,
+      "necessity_above_random": -0.04999999999999993,
+      "transitions": {
+        "MALICIOUS->MALICIOUS": 19,
+        "MALICIOUS->BENIGN": 1
+      }
+    }
+  }
+}

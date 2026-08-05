@@ -1,0 +1,30 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 1032,
+ "n_valid_examples": 85,
+ "granularity": "window",
+ "windows": {
+  "early": {
+   "n_valid": 85,
+   "ReRead_test_mean": 0.11545839596691813,
+   "random_control_mean": 0.07199621702488945,
+   "selfswap_max_abs_dev": 0.0,
+   "mean_C1_p_concept": 0.8819090829089139
+  },
+  "late": {
+   "n_valid": 85,
+   "ReRead_test_mean": -0.014552931298930075,
+   "random_control_mean": 0.007789676425002721,
+   "selfswap_max_abs_dev": 0.0,
+   "mean_C1_p_concept": 0.8819090829089139
+  },
+  "mid": {
+   "n_valid": 85,
+   "ReRead_test_mean": 0.10803010753685152,
+   "random_control_mean": 0.06879091266215716,
+   "selfswap_max_abs_dev": 0.0,
+   "mean_C1_p_concept": 0.8819090829089139
+  }
+ }
+}

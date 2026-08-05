@@ -1,0 +1,31 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "pair": {
+    "concept": "bomb",
+    "codeword": "carrot",
+    "benign_source": "bicycle",
+    "unrelated_source": "virus"
+  },
+  "novel_word": "pencil",
+  "readout": "one_word",
+  "variants": {
+    "DS_orig": {
+      "n": 20,
+      "reads_as_concept_rate": 0.7,
+      "mean_p_concept": 0.20826,
+      "mean_p_query_word": 0.00067
+    },
+    "DS_novel": {
+      "n": 20,
+      "reads_as_concept_rate": 0.0,
+      "mean_p_concept": 0.0,
+      "mean_p_query_word": 7e-05
+    },
+    "NEUTRAL_novel": {
+      "n": 20,
+      "reads_as_concept_rate": 0.0,
+      "mean_p_concept": 0.0,
+      "mean_p_query_word": 0.00038
+    }
+  }
+}

@@ -1,0 +1,9 @@
+=== Phase4 edgeKO: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=8-11 (--layers 8,9,10,11) ===
+Mon Aug  3 07:42:07 AM IDT 2026
+n-801
+git=2d59bea3352cfe3be7620ea7848670463aba35e2
+GPU ok: NVIDIA L40S
+[edgeKO] cohort=clearharm L=32 Hn=32 layers=[8, 9, 10, 11] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_clearharm_20260803_074952_703334
+[edgeKO band L8-11] n=83 base_p=0.9524 raw_KO_drop=[0.0024, 0.0001, 0.0049] specific_vs_random=[0.002, -0.0004, 0.0046] all_query_edges_drop=[0.0312, 0.0118, 0.0545]
+=== done ===
+Mon Aug  3 07:50:16 AM IDT 2026

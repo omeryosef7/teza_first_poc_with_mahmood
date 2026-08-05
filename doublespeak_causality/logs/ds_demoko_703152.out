@@ -1,0 +1,41 @@
+=== Phase3 demoKO: doublespeak_causality/data/bench/bench_clearharm.json n=0 gran=layer ===
+Mon Aug  3 03:11:53 AM IDT 2026
+n-802
+git=c673552d5d416aced2d95e79361e23ee2a6aeaed
+GPU ok: NVIDIA L40S
+[demoKO] cohort=clearharm L=32 gran=layer windows=['L0', 'L1', 'L2', 'L3']... -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_clearharm_layer_20260803_031957_703152
+[demoKO] 11008 rows, 85 valid examples -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_clearharm_layer_20260803_031957_703152
+  L0: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.0030825567705600175 random=0.05894752799271252 selfswap_dev=0.0
+  L1: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.004343236407373671 random=0.05465090486272867 selfswap_dev=0.0
+  L10: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.12989289828053568 random=0.06539014322215314 selfswap_dev=0.0
+  L11: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.0505291450154184 random=0.039248513808461186 selfswap_dev=0.0
+  L12: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.00905445744584439 random=0.01124793980053497 selfswap_dev=0.0
+  L13: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.0009345696746470325 random=0.014023970762587117 selfswap_dev=0.0
+  L14: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0070505984398454465 random=0.0168169566273418 selfswap_dev=0.0
+  L15: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.001525201442555826 random=0.027242697847591146 selfswap_dev=0.0
+  L16: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0015511504416947529 random=0.02089693863515029 selfswap_dev=0.0
+  L17: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0009254631017358643 random=0.023433611155737565 selfswap_dev=0.0
+  L18: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.006141629798163245 random=0.01591075158896822 selfswap_dev=0.0
+  L19: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.009129408627072177 random=0.014969946453879683 selfswap_dev=0.0
+  L2: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.004561784328310919 random=0.05664857603595684 selfswap_dev=0.0
+  L20: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.010102445126974282 random=0.01403287065786719 selfswap_dev=0.0
+  L21: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.014887866466214676 random=0.007519515843048423 selfswap_dev=0.0
+  L22: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.009407764042632863 random=-0.0010274057931958563 selfswap_dev=0.0
+  L23: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.009428539398035205 random=-0.00679333129800845 selfswap_dev=0.0
+  L24: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0074803800984731255 random=-0.003238763194472199 selfswap_dev=0.0
+  L25: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.006924497086269085 random=0.0021411484808876915 selfswap_dev=0.0
+  L26: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.006187136689710314 random=0.016573557979221817 selfswap_dev=0.0
+  L27: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.005337459387242403 random=0.014612763090252756 selfswap_dev=0.0
+  L28: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0027915750922106702 random=-0.00023278651946638643 selfswap_dev=0.0
+  L29: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0017074822179677916 random=0.0015757033616255241 selfswap_dev=0.0
+  L3: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.005172870376321408 random=0.07494330431965136 selfswap_dev=0.0
+  L30: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0019954777168441898 random=0.001922253343872946 selfswap_dev=0.0
+  L31: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.0008714232714220135 random=0.0008541641132950016 selfswap_dev=0.0
+  L4: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=-0.004135658558172376 random=0.10612544597600201 selfswap_dev=0.0
+  L5: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.003709862370805215 random=0.07699871091069761 selfswap_dev=0.0
+  L6: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.019099849573632977 random=0.08263900291910568 selfswap_dev=0.0
+  L7: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.05485715309896688 random=0.08047725839772657 selfswap_dev=0.0
+  L8: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.10088819296619067 random=0.08399483523036305 selfswap_dev=0.0
+  L9: n_valid=85 C1_pconc=0.8819090829089138 ReRead(C1-C3)=0.10124792474889836 random=0.07547381829808206 selfswap_dev=0.0
+=== done ===
+Mon Aug  3 03:25:35 AM IDT 2026

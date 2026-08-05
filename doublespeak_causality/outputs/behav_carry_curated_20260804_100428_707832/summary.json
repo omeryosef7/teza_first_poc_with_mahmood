@@ -1,0 +1,48 @@
+{
+ "cohort": "curated",
+ "carry": {
+  "14": [
+   4,
+   5,
+   23
+  ],
+  "15": [
+   8,
+   11
+  ],
+  "17": [
+   24,
+   27
+  ],
+  "18": [
+   20
+  ],
+  "21": [
+   10
+  ]
+ },
+ "by_split": {
+  "train": {
+   "n": 30,
+   "ASR_baseline": 0.3333,
+   "ASR_carry_abl": 0.4333,
+   "ASR_rand_abl": 0.3,
+   "delta_necessity_carry": -0.1,
+   "delta_rand_ctrl": 0.0333,
+   "refused_baseline": 0.0,
+   "refused_carry_abl": 0.0,
+   "empty_carry_abl": 0.0
+  },
+  "test": {
+   "n": 21,
+   "ASR_baseline": 0.0952,
+   "ASR_carry_abl": 0.0952,
+   "ASR_rand_abl": 0.1905,
+   "delta_necessity_carry": 0.0,
+   "delta_rand_ctrl": -0.0953,
+   "refused_baseline": 0.0,
+   "refused_carry_abl": 0.0,
+   "empty_carry_abl": 0.0
+  }
+ }
+}

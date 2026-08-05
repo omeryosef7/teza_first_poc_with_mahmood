@@ -1,0 +1,12 @@
+=== Phase3 demoKO: doublespeak_causality/data/bench/bench_clearharm.json n=0 gran=window ===
+Mon Aug  3 04:40:46 AM IDT 2026
+n-802
+git=d4be0ca9aef4ce817c1f064acdf54a503f30e5f1
+GPU ok: NVIDIA L40S
+[demoKO] cohort=clearharm L=32 gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_clearharm_window_20260803_044102_703213
+[demoKO] 2064 rows, 85 valid examples -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_clearharm_window_20260803_044102_703213
+  early: n=85 C1=0.8819 NEC_specific(rand-C3)=[0.1137, 0.0677, 0.1653] SUF_specific(S3-Srand)=[-0.1315, -0.1947, -0.0683] S3=0.0489
+  late: n=85 C1=0.8819 NEC_specific(rand-C3)=[-0.016, -0.026, -0.0071] SUF_specific(S3-Srand)=[-0.028, -0.0582, -0.0072] S3=0.0639
+  mid: n=85 C1=0.8819 NEC_specific(rand-C3)=[0.106, 0.0468, 0.1679] SUF_specific(S3-Srand)=[0.0074, -0.0377, 0.0482] S3=0.1167
+=== done ===
+Mon Aug  3 04:42:23 AM IDT 2026

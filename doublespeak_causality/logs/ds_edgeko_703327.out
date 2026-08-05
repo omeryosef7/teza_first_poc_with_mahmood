@@ -1,0 +1,19 @@
+=== Phase4 edgeKO: doublespeak_causality/data/bench/bench_curated.json n=2 layers=8-11 (--layers 8,9,10,11) ===
+Mon Aug  3 07:15:25 AM IDT 2026
+n-801
+git=e03bfd9f44f74411d9b5a6712519f254e0d10cce
+GPU ok: NVIDIA L40S
+[edgeKO] cohort=curated L=32 Hn=32 layers=[8, 9, 10, 11] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_curated_20260803_072434_703327
+[edgeKO] 1024 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_curated_20260803_072434_703327; 13 sig heads
+  L10H2: specific=0.0003 CI=[0.0, 0.0009] rawdrop=0.0002 n=4 SIG
+  L8H3: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=-0.0 n=4 
+  L8H9: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=0.0 n=4 
+  L8H26: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=-0.0 n=4 
+  L9H11: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=-0.0 n=4 
+  L9H20: specific=0.0001 CI=[-0.0, 0.0003] rawdrop=0.0 n=4 
+  L10H4: specific=0.0001 CI=[-0.0, 0.0003] rawdrop=0.0 n=4 
+  L10H23: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=-0.0 n=4 
+  L10H26: specific=0.0001 CI=[0.0, 0.0001] rawdrop=0.0 n=4 SIG
+  L10H31: specific=0.0001 CI=[-0.0, 0.0002] rawdrop=0.0 n=4 
+=== done ===
+Mon Aug  3 07:25:29 AM IDT 2026

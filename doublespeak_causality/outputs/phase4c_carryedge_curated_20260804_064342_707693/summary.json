@@ -1,0 +1,44 @@
+{
+ "cohort": "curated",
+ "carry": "L14H4_L14H5_L14H23_L15H8_L15H11_L17H24_L17H27_L18H20_L21H10",
+ "by_split": {
+  "dev": {
+   "n": 5,
+   "mean_C1": 0.6098,
+   "necessity_raw_C1_minus_KOdemo": [
+    0.0021,
+    0.0,
+    0.0042
+   ],
+   "specific_KOrand_minus_KOdemo": [
+    0.0021,
+    0.0,
+    0.0042
+   ],
+   "posctrl_C1_minus_KOall": [
+    -0.0261,
+    -0.0525,
+    0.0002
+   ]
+  },
+  "heldout": {
+   "n": 5,
+   "mean_C1": 0.9962,
+   "necessity_raw_C1_minus_KOdemo": [
+    0.0012,
+    0.0,
+    0.0023
+   ],
+   "specific_KOrand_minus_KOdemo": [
+    -0.0009,
+    -0.0045,
+    0.0014
+   ],
+   "posctrl_C1_minus_KOall": [
+    0.0856,
+    -0.0011,
+    0.1723
+   ]
+  }
+ }
+}

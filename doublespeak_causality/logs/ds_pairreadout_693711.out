@@ -1,0 +1,7 @@
+=== pair readout validation: Qwen/Qwen3-14B bench=doublespeak_causality/data/pair_benchmark/pair_carrot_bomb.json ===
+Thu Jul 30 12:42:59 AM IDT 2026
+n-802
+git=e9986ac1f0c643d070abd0c97e8c65640ccc2e5d
+GPU ok: NVIDIA L40S
+[readout] model=Qwen3-14B layers=40 rows=800 -> doublespeak_causality/outputs/pair_readout_Qwen3-14B_20260730_005115_693711
+  [readout] 100/800

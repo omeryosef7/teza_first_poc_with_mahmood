@@ -1,0 +1,33 @@
+{
+ "cohort": "clearharm",
+ "write_layers": [
+  8,
+  9,
+  10,
+  11
+ ],
+ "by_split": {
+  "train": {
+   "n": 44,
+   "ASR_baseline": 0.3864,
+   "ASR_write_abl": 0.4091,
+   "ASR_rand_pos_abl": 0.4091,
+   "delta_necessity_write": -0.0227,
+   "delta_rand_pos_ctrl": -0.0227,
+   "empty_write_abl": 0.0,
+   "empty_rand": 0.0,
+   "mean_n_cw_pos": 11.98
+  },
+  "test": {
+   "n": 42,
+   "ASR_baseline": 0.3095,
+   "ASR_write_abl": 0.3095,
+   "ASR_rand_pos_abl": 0.3571,
+   "delta_necessity_write": 0.0,
+   "delta_rand_pos_ctrl": -0.0476,
+   "empty_write_abl": 0.0,
+   "empty_rand": 0.0,
+   "mean_n_cw_pos": 11.86
+  }
+ }
+}

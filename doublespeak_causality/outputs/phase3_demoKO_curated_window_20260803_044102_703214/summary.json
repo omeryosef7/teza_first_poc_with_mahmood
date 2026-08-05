@@ -1,0 +1,60 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 1224,
+ "n_valid_examples": 51,
+ "granularity": "window",
+ "windows": {
+  "early": {
+   "n_valid": 51,
+   "mean_C1_p_concept": 0.7609,
+   "necessity_specific_ci": [
+    0.2586,
+    0.1709,
+    0.3506
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    -0.1676,
+    -0.2504,
+    -0.0919
+   ],
+   "mean_S3_install_p_concept": 0.0001,
+   "suf_selfswap_max_dev": 0.0
+  },
+  "late": {
+   "n_valid": 51,
+   "mean_C1_p_concept": 0.7609,
+   "necessity_specific_ci": [
+    -0.0143,
+    -0.0311,
+    0.0016
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    -0.042,
+    -0.1008,
+    -0.0019
+   ],
+   "mean_S3_install_p_concept": 0.0002,
+   "suf_selfswap_max_dev": 0.0
+  },
+  "mid": {
+   "n_valid": 51,
+   "mean_C1_p_concept": 0.7609,
+   "necessity_specific_ci": [
+    0.233,
+    0.1631,
+    0.3103
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    -0.0637,
+    -0.1226,
+    -0.0193
+   ],
+   "mean_S3_install_p_concept": 0.0001,
+   "suf_selfswap_max_dev": 0.0
+  }
+ }
+}

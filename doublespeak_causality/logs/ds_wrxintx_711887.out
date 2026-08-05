@@ -1,0 +1,17 @@
+=== behav carry: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json maxnew=220 n=0 splits=train,test ===
+Tue Aug  4 11:16:10 PM IDT 2026
+n-804
+git=2ebf5b46f11a8f65e7d486212c8dd9e6f808e7cf
+GPU ok: NVIDIA L40S
+[intx] cohort=clearharm write_layers=[8, 9, 10, 11] refusal_rows=1..32 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/write_refusal_intx_clearharm_20260804_231656_711887
+[intx] 86 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/write_refusal_intx_clearharm_20260804_231656_711887
+  [train] n=44 p_concept CONTROL: ds=0.8844 writeabl=0.7988 drop_ci=[0.0857, 0.0421, 0.1425] (want drop>0 = ablation fired)
+     hs[17] refusal: direct=3.5668 ds=1.5722 ds_writeabl=1.5802 | Δ(writeabl-ds)=[0.008, -0.0699, 0.0783] frac_gap_restored=0.004
+     hs[31] refusal: direct=13.0484 ds=3.3131 ds_writeabl=3.1697 | Δ(writeabl-ds)=[-0.1434, -0.5809, 0.1628] frac_gap_restored=-0.015
+     hs[32] refusal: direct=65.2656 ds=29.1398 ds_writeabl=28.7945 | Δ(writeabl-ds)=[-0.3453, -1.9558, 0.8525] frac_gap_restored=-0.01
+  [test] n=42 p_concept CONTROL: ds=0.8583 writeabl=0.8174 drop_ci=[0.0408, 0.0129, 0.0851] (want drop>0 = ablation fired)
+     hs[17] refusal: direct=3.8695 ds=1.4367 ds_writeabl=1.4735 | Δ(writeabl-ds)=[0.0368, -0.0246, 0.0981] frac_gap_restored=0.015
+     hs[31] refusal: direct=13.6095 ds=2.9444 ds_writeabl=2.8144 | Δ(writeabl-ds)=[-0.1301, -0.4951, 0.2102] frac_gap_restored=-0.012
+     hs[32] refusal: direct=65.5165 ds=27.5239 ds_writeabl=27.3282 | Δ(writeabl-ds)=[-0.1957, -1.3975, 0.9881] frac_gap_restored=-0.005
+=== done ===
+Tue Aug  4 11:17:15 PM IDT 2026

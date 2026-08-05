@@ -1,0 +1,11 @@
+=== behav carry: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_curated.json maxnew=220 n=0 splits=train,test ===
+Tue Aug  4 11:01:32 AM IDT 2026
+n-802
+git=b970f0aad43238944fc1c0057883cee4cb0819f3
+GPU ok: NVIDIA L40S
+[behav-write] cohort=curated write_layers=[8, 9, 10, 11] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/behav_write_curated_L8_9_10_11_20260804_110156_707909
+[behav-write] 51 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/behav_write_curated_L8_9_10_11_20260804_110156_707909
+  [train] n=30 ASR base=0.3333 write_abl=0.2667 rand_pos=0.3 | necessity Δ=0.0666 randΔ=0.0333 empty_w=0.0 n_cw=12.0
+  [test] n=21 ASR base=0.0952 write_abl=0.0952 rand_pos=0.0952 | necessity Δ=0.0 randΔ=0.0 empty_w=0.0 n_cw=12.0
+=== done ===
+Tue Aug  4 11:22:50 AM IDT 2026

@@ -1,0 +1,24 @@
+=== Doublespeak Stage-2 ===
+Mon Jul 27 12:18:59 AM IDT 2026
+t-806
+SLURM_JOB_ID=686723
+git=e0b7e63cb4740683ad08e650932efe346d120f0b
+py 3.12.13 torch 2.7.1+cu126 tfm 5.12.1
+NVIDIA L40S, 46068 MiB, 6736 MiB
+NVIDIA L40S, 46068 MiB, 44696 MiB
+NVIDIA L40S, 46068 MiB, 3068 MiB
+NVIDIA L40S, 46068 MiB, 3664 MiB
+NVIDIA L40S, 46068 MiB, 3616 MiB
+NVIDIA L40S, 46068 MiB, 3328 MiB
+NVIDIA L40S, 46068 MiB, 24126 MiB
+NVIDIA L40S, 46068 MiB, 45458 MiB
+GPU_TYPE='NVIDIA L40S'
+GPU check passed: NVIDIA L40S
+CUDA_VISIBLE_DEVICES=7
+--- activation patching (Stage 2: necessity + sufficiency + controls) ---
+[bomb_potato] identity_ok=True baseDS_pharm=0.125 | necessity best drop +0.124@L31 | sufficiency best pharm 0.004@L30
+[bomb_carrot] identity_ok=True baseDS_pharm=0.009 | necessity best drop +0.009@L31 | sufficiency best pharm 0.004@L30
+[poison_mango] identity_ok=True baseDS_pharm=0.205 | necessity best drop +0.205@L31 | sufficiency best pharm 0.000@L31
+[stage2] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/stage2_patching_Llama-3.1-8B-Instruct_20260727_001943
+=== done ===
+Mon Jul 27 12:27:02 AM IDT 2026

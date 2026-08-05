@@ -1,0 +1,19 @@
+=== features: meta-llama/Llama-3.1-8B-Instruct ===
+Mon Jul 27 11:42:14 PM IDT 2026
+n-801
+git=2db2b2311f2bb600da9d1ecc751db305781934f3
+GPU ok: NVIDIA L40S
+  captured 40/240
+  captured 80/240
+  captured 120/240
+  captured 160/240
+  captured 200/240
+  captured 240/240
+[features] captured 240 conditions
+  early_align    DS_MALICIOUS=0.103  other=0.132
+  late_align     DS_MALICIOUS=0.217  other=0.226
+  early_to_late  DS_MALICIOUS=0.114  other=0.094
+  onset_layer    DS_MALICIOUS=3.500  other=2.443
+[features] 240 rows (46 DS_MALICIOUS) -> doublespeak_causality/outputs/features_llama8b
+=== done ===
+Mon Jul 27 11:48:26 PM IDT 2026

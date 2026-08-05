@@ -1,0 +1,25 @@
+{
+ "cohort": "curated",
+ "carry": "L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10",
+ "write_layer": 9,
+ "by_split": {
+  "dev": {
+   "n": 3,
+   "n_L9_responsive": 0,
+   "mean_C1": 1.0,
+   "mean_A_neutralizeL9": 1.0,
+   "median_mediation_frac_carry": null,
+   "median_mediation_frac_randctrl": null,
+   "selfcheck_max_dev": 0.0
+  },
+  "heldout": {
+   "n": 3,
+   "n_L9_responsive": 0,
+   "mean_C1": 0.9982,
+   "mean_A_neutralizeL9": 0.9998,
+   "median_mediation_frac_carry": null,
+   "median_mediation_frac_randctrl": null,
+   "selfcheck_max_dev": 0.0
+  }
+ }
+}

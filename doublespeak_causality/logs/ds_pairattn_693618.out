@@ -1,0 +1,43 @@
+=== pair attention: mode=knockout gran=per_layer readout=cloze styles=news:narrative:technical ===
+Wed Jul 29 10:31:54 PM IDT 2026
+n-802
+git=b00f5d6f2dff11370bfe86e94f5ff41c915701f4
+GPU ok: NVIDIA L40S
+[attn] mode=knockout gran=per_layer attn_impl=eager L=32 heads=32 rows=90 -> doublespeak_causality/outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_223210_693618
+  [attn] 200 rows
+  [attn] 400 rows
+  [attn] 600 rows
+  [attn] 800 rows
+  [attn] 1000 rows
+  [attn] 1200 rows
+  [attn] 1400 rows
+  [attn] 1600 rows
+  [attn] 1800 rows
+  [attn] 2000 rows
+  [attn] 2200 rows
+  [attn] 2400 rows
+  [attn] 2600 rows
+  [attn] 2800 rows
+  [attn] 3000 rows
+  [attn] 3200 rows
+  [attn] 3400 rows
+  [attn] 3600 rows
+  [attn] 3800 rows
+  [attn] 4000 rows
+  [attn] 4200 rows
+  [attn] 4400 rows
+  [attn] 4600 rows
+  [attn] 4800 rows
+  [attn] 5000 rows
+  [attn] 5200 rows
+  [attn] 5400 rows
+  [attn] 5600 rows
+  [attn] 5800 rows
+  [attn] 6000 rows
+  [attn] 6200 rows
+  [attn] 6400 rows
+  [attn] 6600 rows
+  [attn] 6800 rows
+[attn] 6948 rows (boundary unlocated: 216) -> doublespeak_causality/outputs/pair_attn_knockout_Llama-3.1-8B-Instruct_20260729_223210_693618
+=== done ===
+Wed Jul 29 10:36:27 PM IDT 2026

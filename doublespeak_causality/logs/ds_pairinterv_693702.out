@@ -1,0 +1,32 @@
+=== pair intervention: mode=controls readout=cloze site=codeword_all alphas=1.0 groups=windows alpha_mode=relative ===
+Thu Jul 30 12:33:16 AM IDT 2026
+n-802
+git=5e52b6d7a09832c3d1386effd51365edbceed530
+GPU ok: NVIDIA L40S
+[interv] mode=controls L=32 layers=32 alphas=[1.0] site=codeword_all crossfit=True -> doublespeak_causality/outputs/pair_interv_controls_Llama-3.1-8B-Instruct_20260730_003331_693702
+  [interv] 500 rows
+  [interv] 1000 rows
+  [interv] 1500 rows
+  [interv] 2000 rows
+  [interv] 2500 rows
+  [interv] 3000 rows
+  [interv] 3500 rows
+  [interv] 4000 rows
+  [interv] 4500 rows
+  [interv] 5000 rows
+  [interv] 5500 rows
+  [interv] 6000 rows
+  [interv] 6500 rows
+  [interv] 7000 rows
+  [interv] 7500 rows
+  [interv] 8000 rows
+  [interv] 8500 rows
+  [interv] 9000 rows
+  [interv] 9500 rows
+  [interv] 10000 rows
+  [interv] 10500 rows
+  [interv] 11000 rows
+  [interv] 11500 rows
+[interv] 11760 rows in 494.1s -> doublespeak_causality/outputs/pair_interv_controls_Llama-3.1-8B-Instruct_20260730_003331_693702
+=== done ===
+Thu Jul 30 12:41:46 AM IDT 2026

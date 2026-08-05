@@ -1,0 +1,122 @@
+{
+ "cohort": "curated",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 96,
+ "positions": "demo",
+ "granularity": "window",
+ "skips": {},
+ "by_split": {
+  "dev": {
+   "n_valid_examples": 2,
+   "windows": {
+    "early": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0001,
+      -0.0001,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "late": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "mid": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0,
+     "suf_selfswap_max_dev": 0.0
+    }
+   }
+  },
+  "heldout": {
+   "n_valid_examples": 2,
+   "windows": {
+    "early": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.9982,
+     "necessity_specific_ci": [
+      0.1029,
+      0.0991,
+      0.1067
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0003,
+      -0.0006,
+      -0.0001
+     ],
+     "mean_S3_install_p_concept": 0.0,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "late": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.9982,
+     "necessity_specific_ci": [
+      -0.0001,
+      -0.0001,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0001,
+      -0.0001,
+      -0.0001
+     ],
+     "mean_S3_install_p_concept": 0.0004,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "mid": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.9982,
+     "necessity_specific_ci": [
+      -0.0001,
+      -0.0005,
+      0.0002
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0003,
+      -0.0006,
+      -0.0001
+     ],
+     "mean_S3_install_p_concept": 0.0003,
+     "suf_selfswap_max_dev": 0.0
+    }
+   }
+  }
+ }
+}

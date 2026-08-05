@@ -1,0 +1,60 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "heads": "L14H4",
+ "carry": [
+  [
+   14,
+   4
+  ]
+ ],
+ "n_rows": 464,
+ "n_heads": 32,
+ "skips": {},
+ "by_split": {
+  "dev": {
+   "n_valid": 59,
+   "mean_C1": 0.8791,
+   "mean_C_benign": 0.7939,
+   "necessity_raw_ci_C1_minus_Cbenign": [
+    0.0852,
+    0.0397,
+    0.1413
+   ],
+   "necessity_specific_ci_Crand_minus_Cbenign": [
+    0.0706,
+    0.0341,
+    0.1143
+   ],
+   "knockout_uniform_raw_ci_C1_minus_Cuniform": [
+    0.0151,
+    -0.0024,
+    0.0356
+   ],
+   "selfswap_max_dev": 0.0,
+   "n_len_mismatch": 58
+  },
+  "heldout": {
+   "n_valid": 55,
+   "mean_C1": 0.869,
+   "mean_C_benign": 0.8059,
+   "necessity_raw_ci_C1_minus_Cbenign": [
+    0.0631,
+    0.0233,
+    0.1101
+   ],
+   "necessity_specific_ci_Crand_minus_Cbenign": [
+    0.0603,
+    0.0228,
+    0.1074
+   ],
+   "knockout_uniform_raw_ci_C1_minus_Cuniform": [
+    0.0054,
+    0.0005,
+    0.0112
+   ],
+   "selfswap_max_dev": 0.0,
+   "n_len_mismatch": 57
+  }
+ }
+}

@@ -1,0 +1,59 @@
+=== behavioral sufficiency: meta-llama/Llama-3.1-8B-Instruct max_bases=37 ===
+Wed Jul 29 01:44:54 AM IDT 2026
+n-802
+git=f269e9ee57d6de8cd0c22ee1367f8fcba7da46a9
+GPU ok: NVIDIA L40S
+[sufficiency] 222 eligible conditions | out=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_sufficiency_Llama-3.1-8B-Instruct_20260729_014456_early_692637
+[sufficiency] restricted to windows: ['early']
+  [5/222] processed
+  [10/222] processed
+  [15/222] processed
+  [20/222] processed
+  [25/222] processed
+  [30/222] processed
+  [35/222] processed
+  [40/222] processed
+  [45/222] processed
+  [50/222] processed
+  [55/222] processed
+  [60/222] processed
+  [65/222] processed
+  [70/222] processed
+  [75/222] processed
+  [80/222] processed
+  [85/222] processed
+  [90/222] processed
+  [95/222] processed
+  [100/222] processed
+  [105/222] processed
+  [110/222] processed
+  [115/222] processed
+  [120/222] processed
+  [125/222] processed
+  [130/222] processed
+  [135/222] processed
+  [140/222] processed
+  [145/222] processed
+  [150/222] processed
+  [155/222] processed
+  [160/222] processed
+  [165/222] processed
+  [170/222] processed
+  [175/222] processed
+  [180/222] processed
+  [185/222] processed
+  [190/222] processed
+  [195/222] processed
+  [200/222] processed
+  [205/222] processed
+  [210/222] processed
+  [215/222] processed
+  [220/222] processed
+
+[sufficiency] baseline-benign Neutrals: 179/222 (skipped 0)
+[sufficiency] per window: DS-inject vs Direct-inject malicious rate (predict DS > Direct):
+  early              n=179 suff_DS=0.061452513966480445 suff_Direct=0.12290502793296089 DS−Direct=-0.061452513966480445
+[sufficiency] controls (late): identity_mal=0.027932960893854747 random_mal=0.05027932960893855 (both want ~0)
+[sufficiency] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/beh_sufficiency_Llama-3.1-8B-Instruct_20260729_014456_early_692637
+=== done ===
+Wed Jul 29 03:31:33 AM IDT 2026

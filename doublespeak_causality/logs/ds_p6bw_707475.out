@@ -1,0 +1,29 @@
+=== run_ds_p6bw smoke ===
+Tue Aug  4 02:12:55 AM IDT 2026
+n-802
+GPU ok: NVIDIA L40S
+[win] cohort=clearharm L=32 comp=mlp_out widths=[2, 4, 8] n_windows=143 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6b_windows_clearharm_mlp_out_20260804_021315_707475
+[win] skipped examples by reason: {'dev:demo_cw_count_mismatch': 8, 'heldout:demo_cw_count_mismatch': 5}
+[win] 66352 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6b_windows_clearharm_mlp_out_20260804_021315_707475
+  == split=dev (n_valid=59) top-10 necessity ==
+    cumpre_L0-13: n=59 C1=0.8786 C3=0.6192 NEC_specific(rand-C3)=[0.2292, 0.1575, 0.3079] selfdev=0.0
+    cumpre_L0-14: n=59 C1=0.8786 C3=0.6216 NEC_specific(rand-C3)=[0.2269, 0.1579, 0.3046] selfdev=0.0
+    cumpre_L0-15: n=59 C1=0.8786 C3=0.6252 NEC_specific(rand-C3)=[0.2236, 0.1528, 0.3026] selfdev=0.0
+    cumpre_L0-12: n=59 C1=0.8786 C3=0.6279 NEC_specific(rand-C3)=[0.2212, 0.1513, 0.3004] selfdev=0.0
+    cumpre_L0-16: n=59 C1=0.8786 C3=0.6308 NEC_specific(rand-C3)=[0.2183, 0.1456, 0.2949] selfdev=0.0
+    cumpre_L0-17: n=59 C1=0.8786 C3=0.6336 NEC_specific(rand-C3)=[0.2163, 0.146, 0.2923] selfdev=0.0
+    cumpre_L0-18: n=59 C1=0.8786 C3=0.6334 NEC_specific(rand-C3)=[0.2161, 0.1433, 0.3007] selfdev=0.0
+    cumpre_L0-11: n=59 C1=0.8786 C3=0.6383 NEC_specific(rand-C3)=[0.2141, 0.1456, 0.2931] selfdev=0.0
+    cumpre_L0-19: n=59 C1=0.8786 C3=0.6372 NEC_specific(rand-C3)=[0.2132, 0.1406, 0.294] selfdev=0.0
+    cumpre_L0-20: n=59 C1=0.8786 C3=0.6404 NEC_specific(rand-C3)=[0.2106, 0.1388, 0.2892] selfdev=0.0
+  == split=heldout (n_valid=55) top-10 necessity ==
+    cumpre_L0-13: n=55 C1=0.8685 C3=0.6205 NEC_specific(rand-C3)=[0.25, 0.1593, 0.3476] selfdev=0.0
+    cumpre_L0-14: n=55 C1=0.8685 C3=0.6236 NEC_specific(rand-C3)=[0.2468, 0.1538, 0.3441] selfdev=0.0
+    cumpre_L0-15: n=55 C1=0.8685 C3=0.6272 NEC_specific(rand-C3)=[0.243, 0.1511, 0.342] selfdev=0.0
+    cumpre_L0-16: n=55 C1=0.8685 C3=0.6312 NEC_specific(rand-C3)=[0.2396, 0.1491, 0.3394] selfdev=0.0
+    cumpre_L0-12: n=55 C1=0.8685 C3=0.633 NEC_specific(rand-C3)=[0.2371, 0.1447, 0.3322] selfdev=0.0
+    cumpre_L0-17: n=55 C1=0.8685 C3=0.6355 NEC_specific(rand-C3)=[0.2346, 0.1448, 0.3316] selfdev=0.0
+    cumpre_L0-18: n=55 C1=0.8685 C3=0.6359 NEC_specific(rand-C3)=[0.2342, 0.142, 0.3344] selfdev=0.0
+    cumpre_L0-19: n=55 C1=0.8685 C3=0.6374 NEC_specific(rand-C3)=[0.2326, 0.1453, 0.3326] selfdev=0.0
+    cumpre_L0-11: n=55 C1=0.8685 C3=0.6419 NEC_specific(rand-C3)=[0.2304, 0.1403, 0.3244] selfdev=0.0
+    cumpre_L0-20: n=55 C1=0.8685 C3=0.642 NEC_specific(rand-C3)=[0.2282, 0.1394, 0.3292] selfdev=0.0

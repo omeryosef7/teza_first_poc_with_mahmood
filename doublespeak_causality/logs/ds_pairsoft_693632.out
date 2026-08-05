@@ -1,0 +1,19 @@
+=== pair soft-prompt: target=unrelated free=demos steps=150 lr=0.01 n=8 ===
+Wed Jul 29 10:55:34 PM IDT 2026
+n-802
+git=abd52d8eb13d8c012503e11cb2952c0ce7ed4f24
+GPU ok: NVIDIA L40S
+[soft] target=unrelated(virus) free=demos steps=150 lr=0.01 n=8 -> doublespeak_causality/outputs/pair_softprompt_unrelated_demos_Llama-3.1-8B-Instruct_20260729_225549_693632
+  [soft] 1/8 NEUTRAL_CODEWORD|dev|narrative|12|cloze: p_start=0.00065 -> p_best=0.99999 (step 145, 202 free tokens)
+  [soft] 2/8 NEUTRAL_CODEWORD|dev|narrative|4|cloze: p_start=0.00061 -> p_best=0.99996 (step 148, 69 free tokens)
+  [soft] 3/8 NEUTRAL_CODEWORD|dev|narrative|8|cloze: p_start=0.00082 -> p_best=0.99904 (step 148, 133 free tokens)
+  [soft] 4/8 NEUTRAL_CODEWORD|dev|news|12|cloze: p_start=0.00161 -> p_best=0.99996 (step 145, 158 free tokens)
+  [soft] 5/8 NEUTRAL_CODEWORD|dev|news|4|cloze: p_start=0.00115 -> p_best=0.99999 (step 146, 60 free tokens)
+  [soft] 6/8 NEUTRAL_CODEWORD|dev|news|8|cloze: p_start=0.00144 -> p_best=1.00000 (step 145, 112 free tokens)
+  [soft] 7/8 NEUTRAL_CODEWORD|dev|technical|12|cloze: p_start=0.00068 -> p_best=0.99988 (step 145, 186 free tokens)
+  [soft] 8/8 NEUTRAL_CODEWORD|dev|technical|4|cloze: p_start=0.00056 -> p_best=0.99999 (step 150, 58 free tokens)
+[soft] p_start=0.00094 -> p_best=0.99985
+[soft] improvement +0.99891 [+0.99858,+0.99921] n=8
+[soft] -> doublespeak_causality/outputs/pair_softprompt_unrelated_demos_Llama-3.1-8B-Instruct_20260729_225549_693632
+=== done ===
+Wed Jul 29 10:58:59 PM IDT 2026

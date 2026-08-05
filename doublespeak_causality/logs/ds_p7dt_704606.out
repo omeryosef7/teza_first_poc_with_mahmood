@@ -1,0 +1,23 @@
+=== Phase7 dt: doublespeak_causality/data/bench/bench_curated.json n=3 heads=L14H4_L15H4_L15H8_L17H27_L18H20_L30H15_L31H0 ===
+Mon Aug  3 03:23:50 PM IDT 2026
+n-803
+git=0e93b65ac25cf0cc6cf4106b0927dee41dfb14e6
+GPU ok: NVIDIA L40S
+[p7] cohort=curated heads=L14H4_L15H4_L15H8_L17H27_L18H20_L30H15_L31H0 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_directtotal_curated_20260803_153936_704606
+[p7] 42 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_directtotal_curated_20260803_153936_704606
+  [dev]
+    L14H4: TOTAL=1.125 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L15H4: TOTAL=1.25 DIRECT=-0.125 direct_frac=-0.1 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L15H8: TOTAL=1.625 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L17H27: TOTAL=0.75 DIRECT=0.0625 direct_frac=0.083 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L18H20: TOTAL=0.8125 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L30H15: TOTAL=0.25 DIRECT=0.25 direct_frac=1.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L31H0: TOTAL=0.5 DIRECT=0.25 direct_frac=0.5 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+  [heldout]
+    L14H4: TOTAL=1.875 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L15H4: TOTAL=1.8125 DIRECT=0.0625 direct_frac=0.034 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L15H8: TOTAL=0.75 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L17H27: TOTAL=-0.125 DIRECT=0.25 direct_frac=-2.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L18H20: TOTAL=0.3125 DIRECT=0.0 direct_frac=0.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L30H15: TOTAL=0.375 DIRECT=0.3125 direct_frac=0.833 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0
+    L31H0: TOTAL=0.125 DIRECT=0.125 direct_frac=1.0 trust=True (n_frac=3) selfdev=0.0 freezedev=0.0

@@ -1,6 +1,5 @@
 .env
 .cache/
-logs/
 __pycache__/
 *.py[cod]
 outputs/stage4/token_dynamics/*/token_level_metrics.jsonl

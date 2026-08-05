@@ -1,0 +1,9 @@
+=== Phase9 dose: doublespeak_causality/data/bench/bench_curated.json n=2 layers=9 alphas=0,0.25,0.5,0.75,1.0,1.5,2.0 ===
+Mon Aug  3 05:08:55 PM IDT 2026
+n-802
+git=dd5153112527405578beaf797f4fefd5ca14bd18
+GPU ok: NVIDIA L40S
+[dose] cohort=curated layers=[9] alphas=[0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase9_dose_curated_L9_20260803_170952_704785
+[dose] 28 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase9_dose_curated_L9_20260803_170952_704785
+  [dev] n=2 monotone=True p(alpha)={0.0: 1.0, 0.25: 1.0, 0.5: 1.0, 0.75: 1.0, 1.0: 1.0, 1.5: 1.0, 2.0: 1.0}
+  [heldout] n=2 monotone=False p(alpha)={0.0: 0.9982, 0.25: 0.9989, 0.5: 0.9996, 0.75: 0.9997, 1.0: 0.9998, 1.5: 0.9997, 2.0: 0.9994}

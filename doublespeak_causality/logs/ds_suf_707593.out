@@ -1,0 +1,9 @@
+=== Phase7c suf: doublespeak_causality/data/bench/bench_clearharm_v2.json n=0 carry=L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10 ===
+Tue Aug  4 03:42:58 AM IDT 2026
+n-802
+git=90d05d90efebae696e97562711bbb371ddfccb98
+GPU ok: NVIDIA L40S
+[suf] cohort=clearharm carry=[(14, 4), (14, 5), (14, 23), (15, 8), (17, 27), (18, 20), (21, 10)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7c_suffic_clearharm_20260804_034316_707593
+[suf] 116 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7c_suffic_clearharm_20260804_034316_707593
+  [dev] n=59 S1=0.0481 S3=0.3745 suf_raw=[0.3264, 0.2455, 0.414] suf_specific=[0.3262, 0.2455, 0.4113] selfdev=0.0
+  [heldout] n=57 S1=0.0672 S3=0.4145 suf_raw=[0.3472, 0.2608, 0.4334] suf_specific=[0.3476, 0.2605, 0.4389] selfdev=0.0

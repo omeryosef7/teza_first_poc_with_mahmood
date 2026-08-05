@@ -1,0 +1,11 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_curated.json n=2 layers=8-11 ===
+Mon Aug  3 12:09:46 PM IDT 2026
+n-802
+git=b3e86f160ad33c28fe3276dabf35d13fb26bf73b
+GPU ok: NVIDIA L40S
+[headz] cohort=curated L=32 heads=32 layers=8-11 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_curated_20260803_121058_703876
+[headz] 520 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_curated_20260803_121058_703876
+  [dev] n_valid=2 selfswap_dev=0.0 Holm-sig heads=0: []
+     top10 by necessity: [('L8H15', 0.0), ('L10H24', 0.0), ('L8H0', 0.0), ('L8H13', 0.0), ('L10H22', 0.0), ('L9H31', 0.0), ('L8H3', 0.0), ('L11H5', 0.0), ('L10H1', 0.0), ('L11H9', 0.0)]
+  [heldout] n_valid=2 selfswap_dev=0.0 Holm-sig heads=0: []
+     top10 by necessity: [('L9H29', 0.0007), ('L11H7', 0.0007), ('L10H3', 0.0005), ('L9H7', 0.0005), ('L9H4', 0.0005), ('L10H0', 0.0005), ('L8H30', 0.0005), ('L11H29', 0.0005), ('L9H18', 0.0005), ('L11H22', 0.0005)]

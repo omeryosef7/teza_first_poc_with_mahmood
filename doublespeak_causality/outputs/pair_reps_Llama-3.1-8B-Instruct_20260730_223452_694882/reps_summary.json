@@ -1,0 +1,5790 @@
+{
+ "model": {
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": null,
+  "dtype": "torch.bfloat16",
+  "device": "cuda:0",
+  "num_layers": 32,
+  "hidden_size": 4096,
+  "eos_token_ids": [
+   128001,
+   128008,
+   128009
+  ],
+  "hostname": "n-802",
+  "git_commit": "ddc291dbad9cd1331047ae20b61d97ce2dec018b",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "timestamp": "2026-07-30T22:35:32"
+ },
+ "pair": {
+  "concept": "grenade",
+  "codeword": "carrot",
+  "benign_source": "bicycle",
+  "unrelated_source": "cocaine"
+ },
+ "bench": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/pair_benchmark/pair_carrot_grenade.json",
+ "bench_meta": {
+  "hostname": "c-009",
+  "git_commit": "c39793c1c9d3967cc2ce98337eb084092790ec5a",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce GTX TITAN X",
+  "timestamp": "2026-07-30T00:15:02",
+  "plan": "CAUSAL_CORE_PLAN.md Phase A (\u00a73)",
+  "offline": false,
+  "generator": "gpt-4o-mini",
+  "openai_seed": 7,
+  "max_demos": 12,
+  "demo_counts": [
+   4,
+   8,
+   12
+  ],
+  "n_demo_styles": 5,
+  "n_readouts": 5,
+  "n_paraphrases": 60,
+  "n_semantic_prompts": 800,
+  "n_behavioral_prompts": 900,
+  "n_skipped": 0,
+  "generated_at": "2026-07-30T00:15:02",
+  "lexicons_rebuilt_2026_07_30": true
+ },
+ "plan": "CAUSAL_CORE_PLAN \u00a716.5 (S3)",
+ "n_layers": 32,
+ "hidden": 4096,
+ "components": [
+  "resid_pre",
+  "attn_out",
+  "mlp_out",
+  "resid_post"
+ ],
+ "positions": [
+  "codeword_last",
+  "following",
+  "final_prompt",
+  "first_generated"
+ ],
+ "readout": "forced_choice",
+ "n_rows": 160,
+ "n_missing_position_cells": 0,
+ "subsample_rows": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  60,
+  61,
+  62,
+  63,
+  64,
+  65,
+  66,
+  67,
+  90,
+  91,
+  92,
+  93,
+  94,
+  95,
+  96,
+  97,
+  120,
+  121,
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  150,
+  151,
+  152,
+  153,
+  154,
+  155,
+  156,
+  157,
+  158,
+  159
+ ],
+ "cell_counts": {
+  "DIRECT_CONCEPT|dev|resid_pre|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|following": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|resid_pre|first_generated": 15,
+  "DIRECT_CONCEPT|dev|attn_out|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|attn_out|following": 15,
+  "DIRECT_CONCEPT|dev|attn_out|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|attn_out|first_generated": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|following": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|mlp_out|first_generated": 15,
+  "DIRECT_CONCEPT|dev|resid_post|codeword_last": 15,
+  "DIRECT_CONCEPT|dev|resid_post|following": 15,
+  "DIRECT_CONCEPT|dev|resid_post|final_prompt": 15,
+  "DIRECT_CONCEPT|dev|resid_post|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|following": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|resid_pre|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|following": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|attn_out|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|following": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|mlp_out|first_generated": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|codeword_last": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|following": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|final_prompt": 15,
+  "DIRECT_CONCEPT|heldout|resid_post|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|following": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|resid_pre|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|following": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|attn_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|following": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|mlp_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|codeword_last": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|following": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|final_prompt": 15,
+  "NEUTRAL_CODEWORD|dev|resid_post|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|following": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_pre|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|following": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|attn_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|following": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|mlp_out|first_generated": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|codeword_last": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|following": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|final_prompt": 15,
+  "NEUTRAL_CODEWORD|heldout|resid_post|first_generated": 15,
+  "DOUBLESPEAK|dev|resid_pre|codeword_last": 15,
+  "DOUBLESPEAK|dev|resid_pre|following": 15,
+  "DOUBLESPEAK|dev|resid_pre|final_prompt": 15,
+  "DOUBLESPEAK|dev|resid_pre|first_generated": 15,
+  "DOUBLESPEAK|dev|attn_out|codeword_last": 15,
+  "DOUBLESPEAK|dev|attn_out|following": 15,
+  "DOUBLESPEAK|dev|attn_out|final_prompt": 15,
+  "DOUBLESPEAK|dev|attn_out|first_generated": 15,
+  "DOUBLESPEAK|dev|mlp_out|codeword_last": 15,
+  "DOUBLESPEAK|dev|mlp_out|following": 15,
+  "DOUBLESPEAK|dev|mlp_out|final_prompt": 15,
+  "DOUBLESPEAK|dev|mlp_out|first_generated": 15,
+  "DOUBLESPEAK|dev|resid_post|codeword_last": 15,
+  "DOUBLESPEAK|dev|resid_post|following": 15,
+  "DOUBLESPEAK|dev|resid_post|final_prompt": 15,
+  "DOUBLESPEAK|dev|resid_post|first_generated": 15,
+  "DOUBLESPEAK|heldout|resid_pre|codeword_last": 15,
+  "DOUBLESPEAK|heldout|resid_pre|following": 15,
+  "DOUBLESPEAK|heldout|resid_pre|final_prompt": 15,
+  "DOUBLESPEAK|heldout|resid_pre|first_generated": 15,
+  "DOUBLESPEAK|heldout|attn_out|codeword_last": 15,
+  "DOUBLESPEAK|heldout|attn_out|following": 15,
+  "DOUBLESPEAK|heldout|attn_out|final_prompt": 15,
+  "DOUBLESPEAK|heldout|attn_out|first_generated": 15,
+  "DOUBLESPEAK|heldout|mlp_out|codeword_last": 15,
+  "DOUBLESPEAK|heldout|mlp_out|following": 15,
+  "DOUBLESPEAK|heldout|mlp_out|final_prompt": 15,
+  "DOUBLESPEAK|heldout|mlp_out|first_generated": 15,
+  "DOUBLESPEAK|heldout|resid_post|codeword_last": 15,
+  "DOUBLESPEAK|heldout|resid_post|following": 15,
+  "DOUBLESPEAK|heldout|resid_post|final_prompt": 15,
+  "DOUBLESPEAK|heldout|resid_post|first_generated": 15,
+  "BENIGN_REMAP|dev|resid_pre|codeword_last": 15,
+  "BENIGN_REMAP|dev|resid_pre|following": 15,
+  "BENIGN_REMAP|dev|resid_pre|final_prompt": 15,
+  "BENIGN_REMAP|dev|resid_pre|first_generated": 15,
+  "BENIGN_REMAP|dev|attn_out|codeword_last": 15,
+  "BENIGN_REMAP|dev|attn_out|following": 15,
+  "BENIGN_REMAP|dev|attn_out|final_prompt": 15,
+  "BENIGN_REMAP|dev|attn_out|first_generated": 15,
+  "BENIGN_REMAP|dev|mlp_out|codeword_last": 15,
+  "BENIGN_REMAP|dev|mlp_out|following": 15,
+  "BENIGN_REMAP|dev|mlp_out|final_prompt": 15,
+  "BENIGN_REMAP|dev|mlp_out|first_generated": 15,
+  "BENIGN_REMAP|dev|resid_post|codeword_last": 15,
+  "BENIGN_REMAP|dev|resid_post|following": 15,
+  "BENIGN_REMAP|dev|resid_post|final_prompt": 15,
+  "BENIGN_REMAP|dev|resid_post|first_generated": 15,
+  "BENIGN_REMAP|heldout|resid_pre|codeword_last": 15,
+  "BENIGN_REMAP|heldout|resid_pre|following": 15,
+  "BENIGN_REMAP|heldout|resid_pre|final_prompt": 15,
+  "BENIGN_REMAP|heldout|resid_pre|first_generated": 15,
+  "BENIGN_REMAP|heldout|attn_out|codeword_last": 15,
+  "BENIGN_REMAP|heldout|attn_out|following": 15,
+  "BENIGN_REMAP|heldout|attn_out|final_prompt": 15,
+  "BENIGN_REMAP|heldout|attn_out|first_generated": 15,
+  "BENIGN_REMAP|heldout|mlp_out|codeword_last": 15,
+  "BENIGN_REMAP|heldout|mlp_out|following": 15,
+  "BENIGN_REMAP|heldout|mlp_out|final_prompt": 15,
+  "BENIGN_REMAP|heldout|mlp_out|first_generated": 15,
+  "BENIGN_REMAP|heldout|resid_post|codeword_last": 15,
+  "BENIGN_REMAP|heldout|resid_post|following": 15,
+  "BENIGN_REMAP|heldout|resid_post|final_prompt": 15,
+  "BENIGN_REMAP|heldout|resid_post|first_generated": 15,
+  "UNRELATED_TARGET|dev|resid_pre|codeword_last": 15,
+  "UNRELATED_TARGET|dev|resid_pre|following": 15,
+  "UNRELATED_TARGET|dev|resid_pre|final_prompt": 15,
+  "UNRELATED_TARGET|dev|resid_pre|first_generated": 15,
+  "UNRELATED_TARGET|dev|attn_out|codeword_last": 15,
+  "UNRELATED_TARGET|dev|attn_out|following": 15,
+  "UNRELATED_TARGET|dev|attn_out|final_prompt": 15,
+  "UNRELATED_TARGET|dev|attn_out|first_generated": 15,
+  "UNRELATED_TARGET|dev|mlp_out|codeword_last": 15,
+  "UNRELATED_TARGET|dev|mlp_out|following": 15,
+  "UNRELATED_TARGET|dev|mlp_out|final_prompt": 15,
+  "UNRELATED_TARGET|dev|mlp_out|first_generated": 15,
+  "UNRELATED_TARGET|dev|resid_post|codeword_last": 15,
+  "UNRELATED_TARGET|dev|resid_post|following": 15,
+  "UNRELATED_TARGET|dev|resid_post|final_prompt": 15,
+  "UNRELATED_TARGET|dev|resid_post|first_generated": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|following": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|resid_pre|first_generated": 15,
+  "UNRELATED_TARGET|heldout|attn_out|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|attn_out|following": 15,
+  "UNRELATED_TARGET|heldout|attn_out|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|attn_out|first_generated": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|following": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|mlp_out|first_generated": 15,
+  "UNRELATED_TARGET|heldout|resid_post|codeword_last": 15,
+  "UNRELATED_TARGET|heldout|resid_post|following": 15,
+  "UNRELATED_TARGET|heldout|resid_post|final_prompt": 15,
+  "UNRELATED_TARGET|heldout|resid_post|first_generated": 15,
+  "REPEATED_CODEWORD|dev|resid_pre|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|following": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|resid_pre|first_generated": 3,
+  "REPEATED_CODEWORD|dev|attn_out|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|attn_out|following": 3,
+  "REPEATED_CODEWORD|dev|attn_out|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|attn_out|first_generated": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|following": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|mlp_out|first_generated": 3,
+  "REPEATED_CODEWORD|dev|resid_post|codeword_last": 3,
+  "REPEATED_CODEWORD|dev|resid_post|following": 3,
+  "REPEATED_CODEWORD|dev|resid_post|final_prompt": 3,
+  "REPEATED_CODEWORD|dev|resid_post|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|following": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|resid_pre|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|following": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|attn_out|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|following": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|mlp_out|first_generated": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|codeword_last": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|following": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|final_prompt": 3,
+  "REPEATED_CODEWORD|heldout|resid_post|first_generated": 3,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_pre|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|attn_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|mlp_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|following": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|dev|resid_post|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_pre|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|attn_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|mlp_out|first_generated": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|codeword_last": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|following": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|final_prompt": 1,
+  "DIRECT_CONCEPT_NODEMO|heldout|resid_post|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_pre|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|attn_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|mlp_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|dev|resid_post|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_pre|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|attn_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|mlp_out|first_generated": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|codeword_last": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|following": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|final_prompt": 1,
+  "NEUTRAL_CODEWORD_NODEMO|heldout|resid_post|first_generated": 1
+ },
+ "rows": [
+  {
+   "row": 0,
+   "sid": "DIRECT_CONCEPT|dev|news|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     105,
+     117
+    ],
+    "codeword_last": 117,
+    "following": 118,
+    "final_prompt": 123,
+    "seq_len": 124
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 1,
+   "sid": "DIRECT_CONCEPT|dev|news|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     97,
+     107,
+     115,
+     133,
+     162,
+     174
+    ],
+    "codeword_last": 174,
+    "following": 175,
+    "final_prompt": 180,
+    "seq_len": 181
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 2,
+   "sid": "DIRECT_CONCEPT|dev|news|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     97,
+     107,
+     115,
+     133,
+     149,
+     168,
+     171,
+     186,
+     214,
+     226
+    ],
+    "codeword_last": 226,
+    "following": 227,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 3,
+   "sid": "DIRECT_CONCEPT|dev|narrative|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     130,
+     142
+    ],
+    "codeword_last": 142,
+    "following": 143,
+    "final_prompt": 148,
+    "seq_len": 149
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 4,
+   "sid": "DIRECT_CONCEPT|dev|narrative|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     116,
+     154,
+     174,
+     184,
+     219,
+     231
+    ],
+    "codeword_last": 231,
+    "following": 232,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 5,
+   "sid": "DIRECT_CONCEPT|dev|narrative|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     116,
+     154,
+     174,
+     184,
+     232,
+     245,
+     276,
+     304,
+     316
+    ],
+    "codeword_last": 316,
+    "following": 317,
+    "final_prompt": 322,
+    "seq_len": 323
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 6,
+   "sid": "DIRECT_CONCEPT|dev|technical|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     104,
+     116
+    ],
+    "codeword_last": 116,
+    "following": 117,
+    "final_prompt": 122,
+    "seq_len": 123
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 7,
+   "sid": "DIRECT_CONCEPT|dev|technical|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     85,
+     100,
+     131,
+     159,
+     171
+    ],
+    "codeword_last": 171,
+    "following": 172,
+    "final_prompt": 177,
+    "seq_len": 178
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 8,
+   "sid": "DIRECT_CONCEPT|dev|technical|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     85,
+     100,
+     131,
+     140,
+     166,
+     212,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 230,
+    "seq_len": 231
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 9,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     116,
+     128
+    ],
+    "codeword_last": 128,
+    "following": 129,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 10,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     99,
+     119,
+     137,
+     179,
+     191
+    ],
+    "codeword_last": 191,
+    "following": 192,
+    "final_prompt": 197,
+    "seq_len": 198
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 11,
+   "sid": "DIRECT_CONCEPT|dev|dialogue|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     99,
+     119,
+     137,
+     164,
+     178,
+     191,
+     212,
+     236,
+     248
+    ],
+    "codeword_last": 248,
+    "following": 249,
+    "final_prompt": 254,
+    "seq_len": 255
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 12,
+   "sid": "DIRECT_CONCEPT|dev|academic|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     126,
+     138
+    ],
+    "codeword_last": 138,
+    "following": 139,
+    "final_prompt": 144,
+    "seq_len": 145
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 13,
+   "sid": "DIRECT_CONCEPT|dev|academic|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     110,
+     125,
+     144,
+     166,
+     197,
+     209
+    ],
+    "codeword_last": 209,
+    "following": 210,
+    "final_prompt": 215,
+    "seq_len": 216
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 14,
+   "sid": "DIRECT_CONCEPT|dev|academic|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     110,
+     125,
+     144,
+     166,
+     177,
+     201,
+     216,
+     243,
+     271,
+     283
+    ],
+    "codeword_last": 283,
+    "following": 284,
+    "final_prompt": 289,
+    "seq_len": 290
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 15,
+   "sid": "DIRECT_CONCEPT|heldout|news|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     113,
+     125
+    ],
+    "codeword_last": 125,
+    "following": 126,
+    "final_prompt": 131,
+    "seq_len": 132
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 16,
+   "sid": "DIRECT_CONCEPT|heldout|news|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     97,
+     115,
+     127,
+     140,
+     167,
+     179
+    ],
+    "codeword_last": 179,
+    "following": 180,
+    "final_prompt": 185,
+    "seq_len": 186
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 17,
+   "sid": "DIRECT_CONCEPT|heldout|news|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     97,
+     115,
+     127,
+     140,
+     147,
+     173,
+     189,
+     218,
+     230
+    ],
+    "codeword_last": 230,
+    "following": 231,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 18,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     138,
+     150
+    ],
+    "codeword_last": 150,
+    "following": 151,
+    "final_prompt": 156,
+    "seq_len": 157
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 19,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     118,
+     145,
+     174,
+     180,
+     213,
+     225
+    ],
+    "codeword_last": 225,
+    "following": 226,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 20,
+   "sid": "DIRECT_CONCEPT|heldout|narrative|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     118,
+     145,
+     174,
+     180,
+     202,
+     234,
+     253,
+     284,
+     296
+    ],
+    "codeword_last": 296,
+    "following": 297,
+    "final_prompt": 302,
+    "seq_len": 303
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 21,
+   "sid": "DIRECT_CONCEPT|heldout|technical|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     109,
+     121
+    ],
+    "codeword_last": 121,
+    "following": 122,
+    "final_prompt": 127,
+    "seq_len": 128
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 22,
+   "sid": "DIRECT_CONCEPT|heldout|technical|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     90,
+     116,
+     134,
+     161,
+     173
+    ],
+    "codeword_last": 173,
+    "following": 174,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 23,
+   "sid": "DIRECT_CONCEPT|heldout|technical|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     90,
+     116,
+     134,
+     153,
+     170,
+     189,
+     213,
+     225
+    ],
+    "codeword_last": 225,
+    "following": 226,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 24,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     116,
+     128
+    ],
+    "codeword_last": 128,
+    "following": 129,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 25,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     96,
+     118,
+     128,
+     153,
+     177,
+     189
+    ],
+    "codeword_last": 189,
+    "following": 190,
+    "final_prompt": 195,
+    "seq_len": 196
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 26,
+   "sid": "DIRECT_CONCEPT|heldout|dialogue|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     96,
+     118,
+     128,
+     153,
+     159,
+     179,
+     190,
+     216,
+     245,
+     257
+    ],
+    "codeword_last": 257,
+    "following": 258,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 27,
+   "sid": "DIRECT_CONCEPT|heldout|academic|4|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     132,
+     144
+    ],
+    "codeword_last": 144,
+    "following": 145,
+    "final_prompt": 150,
+    "seq_len": 151
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 28,
+   "sid": "DIRECT_CONCEPT|heldout|academic|8|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     118,
+     130,
+     151,
+     174,
+     201,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 219,
+    "seq_len": 220
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 29,
+   "sid": "DIRECT_CONCEPT|heldout|academic|12|forced_choice",
+   "condition": "DIRECT_CONCEPT",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     118,
+     130,
+     151,
+     174,
+     185,
+     198,
+     214,
+     265,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 283,
+    "seq_len": 284
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 30,
+   "sid": "NEUTRAL_CODEWORD|dev|news|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     69,
+     85,
+     108,
+     114
+    ],
+    "codeword_last": 114,
+    "following": 115,
+    "final_prompt": 126,
+    "seq_len": 127
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 31,
+   "sid": "NEUTRAL_CODEWORD|dev|news|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     69,
+     85,
+     92,
+     100,
+     117,
+     136,
+     162,
+     168
+    ],
+    "codeword_last": 168,
+    "following": 169,
+    "final_prompt": 180,
+    "seq_len": 181
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 32,
+   "sid": "NEUTRAL_CODEWORD|dev|news|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     69,
+     85,
+     92,
+     100,
+     117,
+     136,
+     163,
+     177,
+     189,
+     217,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 235,
+    "seq_len": 236
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 33,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     53,
+     80,
+     92,
+     128,
+     134
+    ],
+    "codeword_last": 134,
+    "following": 135,
+    "final_prompt": 146,
+    "seq_len": 147
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 34,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     53,
+     80,
+     92,
+     131,
+     158,
+     174,
+     202,
+     208
+    ],
+    "codeword_last": 208,
+    "following": 209,
+    "final_prompt": 220,
+    "seq_len": 221
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 35,
+   "sid": "NEUTRAL_CODEWORD|dev|narrative|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     53,
+     80,
+     92,
+     131,
+     158,
+     174,
+     191,
+     200,
+     226,
+     244,
+     270,
+     276
+    ],
+    "codeword_last": 276,
+    "following": 277,
+    "final_prompt": 288,
+    "seq_len": 289
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 36,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     78,
+     109,
+     115
+    ],
+    "codeword_last": 115,
+    "following": 116,
+    "final_prompt": 127,
+    "seq_len": 128
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 37,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     78,
+     94,
+     108,
+     133,
+     162,
+     168
+    ],
+    "codeword_last": 168,
+    "following": 169,
+    "final_prompt": 180,
+    "seq_len": 181
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 38,
+   "sid": "NEUTRAL_CODEWORD|dev|technical|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     55,
+     78,
+     94,
+     108,
+     133,
+     160,
+     171,
+     187,
+     219,
+     225
+    ],
+    "codeword_last": 225,
+    "following": 226,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 39,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     106,
+     112
+    ],
+    "codeword_last": 112,
+    "following": 113,
+    "final_prompt": 124,
+    "seq_len": 125
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 40,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     90,
+     104,
+     125,
+     139,
+     164,
+     170
+    ],
+    "codeword_last": 170,
+    "following": 171,
+    "final_prompt": 182,
+    "seq_len": 183
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 41,
+   "sid": "NEUTRAL_CODEWORD|dev|dialogue|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     53,
+     63,
+     75,
+     90,
+     104,
+     125,
+     139,
+     147,
+     167,
+     180,
+     197,
+     221,
+     227
+    ],
+    "codeword_last": 227,
+    "following": 228,
+    "final_prompt": 239,
+    "seq_len": 240
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 42,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     138,
+     144
+    ],
+    "codeword_last": 144,
+    "following": 145,
+    "final_prompt": 156,
+    "seq_len": 157
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 43,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     160,
+     178,
+     217,
+     223
+    ],
+    "codeword_last": 223,
+    "following": 224,
+    "final_prompt": 235,
+    "seq_len": 236
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 44,
+   "sid": "NEUTRAL_CODEWORD|dev|academic|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     56,
+     96,
+     160,
+     178,
+     219,
+     262,
+     308,
+     314
+    ],
+    "codeword_last": 314,
+    "following": 315,
+    "final_prompt": 326,
+    "seq_len": 327
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 45,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     53,
+     60,
+     75,
+     102,
+     108
+    ],
+    "codeword_last": 108,
+    "following": 109,
+    "final_prompt": 120,
+    "seq_len": 121
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 46,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     53,
+     60,
+     75,
+     88,
+     94,
+     114,
+     124,
+     149,
+     155
+    ],
+    "codeword_last": 155,
+    "following": 156,
+    "final_prompt": 167,
+    "seq_len": 168
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 47,
+   "sid": "NEUTRAL_CODEWORD|heldout|news|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     53,
+     60,
+     75,
+     88,
+     94,
+     114,
+     124,
+     131,
+     156,
+     167,
+     178,
+     205,
+     211
+    ],
+    "codeword_last": 211,
+    "following": 212,
+    "final_prompt": 223,
+    "seq_len": 224
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 48,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     53,
+     79,
+     89,
+     128,
+     134
+    ],
+    "codeword_last": 134,
+    "following": 135,
+    "final_prompt": 146,
+    "seq_len": 147
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 49,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     53,
+     79,
+     89,
+     121,
+     132,
+     153,
+     179,
+     206,
+     212
+    ],
+    "codeword_last": 212,
+    "following": 213,
+    "final_prompt": 224,
+    "seq_len": 225
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 50,
+   "sid": "NEUTRAL_CODEWORD|heldout|narrative|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     53,
+     79,
+     89,
+     121,
+     132,
+     153,
+     179,
+     186,
+     213,
+     231,
+     249,
+     279,
+     285
+    ],
+    "codeword_last": 285,
+    "following": 286,
+    "final_prompt": 297,
+    "seq_len": 298
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 51,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     57,
+     76,
+     107,
+     113
+    ],
+    "codeword_last": 113,
+    "following": 114,
+    "final_prompt": 125,
+    "seq_len": 126
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 52,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     57,
+     76,
+     89,
+     100,
+     127,
+     161,
+     167
+    ],
+    "codeword_last": 167,
+    "following": 168,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 53,
+   "sid": "NEUTRAL_CODEWORD|heldout|technical|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     57,
+     76,
+     89,
+     100,
+     127,
+     143,
+     156,
+     174,
+     185,
+     220,
+     226
+    ],
+    "codeword_last": 226,
+    "following": 227,
+    "final_prompt": 238,
+    "seq_len": 239
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 54,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     87,
+     111,
+     117
+    ],
+    "codeword_last": 117,
+    "following": 118,
+    "final_prompt": 129,
+    "seq_len": 130
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 55,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     87,
+     94,
+     109,
+     123,
+     163,
+     169
+    ],
+    "codeword_last": 169,
+    "following": 170,
+    "final_prompt": 181,
+    "seq_len": 182
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 56,
+   "sid": "NEUTRAL_CODEWORD|heldout|dialogue|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     50,
+     87,
+     94,
+     109,
+     123,
+     148,
+     163,
+     174,
+     218,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 57,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|4|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     78,
+     124,
+     130
+    ],
+    "codeword_last": 130,
+    "following": 131,
+    "final_prompt": 142,
+    "seq_len": 143
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 58,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|8|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     78,
+     106,
+     148,
+     201,
+     207
+    ],
+    "codeword_last": 207,
+    "following": 208,
+    "final_prompt": 219,
+    "seq_len": 220
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 59,
+   "sid": "NEUTRAL_CODEWORD|heldout|academic|12|forced_choice",
+   "condition": "NEUTRAL_CODEWORD",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     37,
+     78,
+     106,
+     148,
+     184,
+     222,
+     276,
+     282
+    ],
+    "codeword_last": 282,
+    "following": 283,
+    "final_prompt": 294,
+    "seq_len": 295
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 60,
+   "sid": "DOUBLESPEAK|dev|news|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     105,
+     111
+    ],
+    "codeword_last": 111,
+    "following": 112,
+    "final_prompt": 123,
+    "seq_len": 124
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 61,
+   "sid": "DOUBLESPEAK|dev|news|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     97,
+     107,
+     115,
+     133,
+     162,
+     168
+    ],
+    "codeword_last": 168,
+    "following": 169,
+    "final_prompt": 180,
+    "seq_len": 181
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 62,
+   "sid": "DOUBLESPEAK|dev|news|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     60,
+     79,
+     97,
+     107,
+     115,
+     133,
+     149,
+     168,
+     171,
+     186,
+     214,
+     220
+    ],
+    "codeword_last": 220,
+    "following": 221,
+    "final_prompt": 232,
+    "seq_len": 233
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 63,
+   "sid": "DOUBLESPEAK|dev|narrative|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     130,
+     136
+    ],
+    "codeword_last": 136,
+    "following": 137,
+    "final_prompt": 148,
+    "seq_len": 149
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 64,
+   "sid": "DOUBLESPEAK|dev|narrative|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     116,
+     154,
+     174,
+     184,
+     219,
+     225
+    ],
+    "codeword_last": 225,
+    "following": 226,
+    "final_prompt": 237,
+    "seq_len": 238
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 65,
+   "sid": "DOUBLESPEAK|dev|narrative|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     39,
+     52,
+     70,
+     92,
+     116,
+     154,
+     174,
+     184,
+     232,
+     245,
+     276,
+     304,
+     310
+    ],
+    "codeword_last": 310,
+    "following": 311,
+    "final_prompt": 322,
+    "seq_len": 323
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 66,
+   "sid": "DOUBLESPEAK|dev|technical|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     104,
+     110
+    ],
+    "codeword_last": 110,
+    "following": 111,
+    "final_prompt": 122,
+    "seq_len": 123
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 67,
+   "sid": "DOUBLESPEAK|dev|technical|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     85,
+     100,
+     131,
+     159,
+     165
+    ],
+    "codeword_last": 165,
+    "following": 166,
+    "final_prompt": 177,
+    "seq_len": 178
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 68,
+   "sid": "DOUBLESPEAK|dev|technical|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     45,
+     61,
+     78,
+     85,
+     100,
+     131,
+     140,
+     166,
+     176,
+     211,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 69,
+   "sid": "DOUBLESPEAK|dev|dialogue|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     116,
+     122
+    ],
+    "codeword_last": 122,
+    "following": 123,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 70,
+   "sid": "DOUBLESPEAK|dev|dialogue|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     99,
+     119,
+     137,
+     179,
+     185
+    ],
+    "codeword_last": 185,
+    "following": 186,
+    "final_prompt": 197,
+    "seq_len": 198
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 71,
+   "sid": "DOUBLESPEAK|dev|dialogue|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     77,
+     82,
+     99,
+     119,
+     137,
+     164,
+     178,
+     191,
+     212,
+     236,
+     242
+    ],
+    "codeword_last": 242,
+    "following": 243,
+    "final_prompt": 254,
+    "seq_len": 255
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 72,
+   "sid": "DOUBLESPEAK|dev|academic|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     126,
+     132
+    ],
+    "codeword_last": 132,
+    "following": 133,
+    "final_prompt": 144,
+    "seq_len": 145
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 73,
+   "sid": "DOUBLESPEAK|dev|academic|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     110,
+     125,
+     144,
+     166,
+     197,
+     203
+    ],
+    "codeword_last": 203,
+    "following": 204,
+    "final_prompt": 215,
+    "seq_len": 216
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 74,
+   "sid": "DOUBLESPEAK|dev|academic|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     58,
+     68,
+     95,
+     110,
+     125,
+     144,
+     166,
+     177,
+     201,
+     216,
+     243,
+     271,
+     277
+    ],
+    "codeword_last": 277,
+    "following": 278,
+    "final_prompt": 289,
+    "seq_len": 290
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 75,
+   "sid": "DOUBLESPEAK|heldout|news|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     113,
+     119
+    ],
+    "codeword_last": 119,
+    "following": 120,
+    "final_prompt": 131,
+    "seq_len": 132
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 76,
+   "sid": "DOUBLESPEAK|heldout|news|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     97,
+     115,
+     127,
+     140,
+     167,
+     173
+    ],
+    "codeword_last": 173,
+    "following": 174,
+    "final_prompt": 185,
+    "seq_len": 186
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 77,
+   "sid": "DOUBLESPEAK|heldout|news|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     42,
+     64,
+     84,
+     97,
+     115,
+     127,
+     140,
+     147,
+     173,
+     189,
+     218,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 78,
+   "sid": "DOUBLESPEAK|heldout|narrative|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     138,
+     144
+    ],
+    "codeword_last": 144,
+    "following": 145,
+    "final_prompt": 156,
+    "seq_len": 157
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 79,
+   "sid": "DOUBLESPEAK|heldout|narrative|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     118,
+     145,
+     174,
+     180,
+     213,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 80,
+   "sid": "DOUBLESPEAK|heldout|narrative|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     33,
+     60,
+     88,
+     118,
+     145,
+     174,
+     180,
+     202,
+     234,
+     253,
+     284,
+     290
+    ],
+    "codeword_last": 290,
+    "following": 291,
+    "final_prompt": 302,
+    "seq_len": 303
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 81,
+   "sid": "DOUBLESPEAK|heldout|technical|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     109,
+     115
+    ],
+    "codeword_last": 115,
+    "following": 116,
+    "final_prompt": 127,
+    "seq_len": 128
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 82,
+   "sid": "DOUBLESPEAK|heldout|technical|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     90,
+     116,
+     134,
+     161,
+     167
+    ],
+    "codeword_last": 167,
+    "following": 168,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 83,
+   "sid": "DOUBLESPEAK|heldout|technical|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     49,
+     63,
+     78,
+     90,
+     116,
+     134,
+     153,
+     170,
+     189,
+     213,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 84,
+   "sid": "DOUBLESPEAK|heldout|dialogue|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     116,
+     122
+    ],
+    "codeword_last": 122,
+    "following": 123,
+    "final_prompt": 134,
+    "seq_len": 135
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 85,
+   "sid": "DOUBLESPEAK|heldout|dialogue|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     96,
+     118,
+     128,
+     153,
+     177,
+     183
+    ],
+    "codeword_last": 183,
+    "following": 184,
+    "final_prompt": 195,
+    "seq_len": 196
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 86,
+   "sid": "DOUBLESPEAK|heldout|dialogue|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     38,
+     57,
+     77,
+     87,
+     96,
+     118,
+     128,
+     153,
+     159,
+     179,
+     190,
+     216,
+     245,
+     251
+    ],
+    "codeword_last": 251,
+    "following": 252,
+    "final_prompt": 263,
+    "seq_len": 264
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 87,
+   "sid": "DOUBLESPEAK|heldout|academic|4|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     132,
+     138
+    ],
+    "codeword_last": 138,
+    "following": 139,
+    "final_prompt": 150,
+    "seq_len": 151
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 88,
+   "sid": "DOUBLESPEAK|heldout|academic|8|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     118,
+     130,
+     151,
+     174,
+     201,
+     207
+    ],
+    "codeword_last": 207,
+    "following": 208,
+    "final_prompt": 219,
+    "seq_len": 220
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 89,
+   "sid": "DOUBLESPEAK|heldout|academic|12|forced_choice",
+   "condition": "DOUBLESPEAK",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     56,
+     76,
+     95,
+     118,
+     130,
+     151,
+     174,
+     185,
+     198,
+     214,
+     265,
+     271
+    ],
+    "codeword_last": 271,
+    "following": 272,
+    "final_prompt": 283,
+    "seq_len": 284
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 90,
+   "sid": "BENIGN_REMAP|dev|news|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     101,
+     107
+    ],
+    "codeword_last": 107,
+    "following": 108,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 91,
+   "sid": "BENIGN_REMAP|dev|news|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     86,
+     100,
+     109,
+     123,
+     147,
+     153
+    ],
+    "codeword_last": 153,
+    "following": 154,
+    "final_prompt": 165,
+    "seq_len": 166
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 92,
+   "sid": "BENIGN_REMAP|dev|news|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     49,
+     58,
+     77,
+     86,
+     100,
+     109,
+     123,
+     131,
+     138,
+     154,
+     169,
+     197,
+     203
+    ],
+    "codeword_last": 203,
+    "following": 204,
+    "final_prompt": 215,
+    "seq_len": 216
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 93,
+   "sid": "BENIGN_REMAP|dev|narrative|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     126,
+     132
+    ],
+    "codeword_last": 132,
+    "following": 133,
+    "final_prompt": 144,
+    "seq_len": 145
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 94,
+   "sid": "BENIGN_REMAP|dev|narrative|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     108,
+     124,
+     140,
+     153,
+     188,
+     194
+    ],
+    "codeword_last": 194,
+    "following": 195,
+    "final_prompt": 206,
+    "seq_len": 207
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 95,
+   "sid": "BENIGN_REMAP|dev|narrative|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     70,
+     95,
+     108,
+     124,
+     140,
+     153,
+     181,
+     196,
+     201,
+     227,
+     250,
+     256
+    ],
+    "codeword_last": 256,
+    "following": 257,
+    "final_prompt": 268,
+    "seq_len": 269
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 96,
+   "sid": "BENIGN_REMAP|dev|technical|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     77,
+     107,
+     113
+    ],
+    "codeword_last": 113,
+    "following": 114,
+    "final_prompt": 125,
+    "seq_len": 126
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 97,
+   "sid": "BENIGN_REMAP|dev|technical|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     77,
+     90,
+     101,
+     121,
+     127,
+     159,
+     165
+    ],
+    "codeword_last": 165,
+    "following": 166,
+    "final_prompt": 177,
+    "seq_len": 178
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 98,
+   "sid": "BENIGN_REMAP|dev|technical|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     50,
+     62,
+     77,
+     90,
+     101,
+     121,
+     127,
+     139,
+     154,
+     171,
+     185,
+     213,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 99,
+   "sid": "BENIGN_REMAP|dev|dialogue|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     45,
+     61,
+     73,
+     99,
+     105
+    ],
+    "codeword_last": 105,
+    "following": 106,
+    "final_prompt": 117,
+    "seq_len": 118
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 100,
+   "sid": "BENIGN_REMAP|dev|dialogue|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     45,
+     61,
+     73,
+     99,
+     110,
+     150,
+     156
+    ],
+    "codeword_last": 156,
+    "following": 157,
+    "final_prompt": 168,
+    "seq_len": 169
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 101,
+   "sid": "BENIGN_REMAP|dev|dialogue|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     35,
+     45,
+     61,
+     73,
+     99,
+     110,
+     132,
+     148,
+     159,
+     172,
+     199,
+     205
+    ],
+    "codeword_last": 205,
+    "following": 206,
+    "final_prompt": 217,
+    "seq_len": 218
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 102,
+   "sid": "BENIGN_REMAP|dev|academic|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     127,
+     133
+    ],
+    "codeword_last": 133,
+    "following": 134,
+    "final_prompt": 145,
+    "seq_len": 146
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 103,
+   "sid": "BENIGN_REMAP|dev|academic|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     109,
+     127,
+     148,
+     164,
+     193,
+     199
+    ],
+    "codeword_last": 199,
+    "following": 200,
+    "final_prompt": 211,
+    "seq_len": 212
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 104,
+   "sid": "BENIGN_REMAP|dev|academic|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     54,
+     71,
+     85,
+     109,
+     127,
+     148,
+     164,
+     176,
+     188,
+     206,
+     226,
+     257,
+     263
+    ],
+    "codeword_last": 263,
+    "following": 264,
+    "final_prompt": 275,
+    "seq_len": 276
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 105,
+   "sid": "BENIGN_REMAP|heldout|news|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     56,
+     63,
+     105,
+     111
+    ],
+    "codeword_last": 111,
+    "following": 112,
+    "final_prompt": 123,
+    "seq_len": 124
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 106,
+   "sid": "BENIGN_REMAP|heldout|news|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     56,
+     63,
+     86,
+     103,
+     116,
+     124,
+     157,
+     163
+    ],
+    "codeword_last": 163,
+    "following": 164,
+    "final_prompt": 175,
+    "seq_len": 176
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 107,
+   "sid": "BENIGN_REMAP|heldout|news|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     56,
+     63,
+     86,
+     103,
+     116,
+     124,
+     142,
+     159,
+     163,
+     180,
+     207,
+     213
+    ],
+    "codeword_last": 213,
+    "following": 214,
+    "final_prompt": 225,
+    "seq_len": 226
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 108,
+   "sid": "BENIGN_REMAP|heldout|narrative|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     53,
+     77,
+     94,
+     117,
+     123
+    ],
+    "codeword_last": 123,
+    "following": 124,
+    "final_prompt": 135,
+    "seq_len": 136
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 109,
+   "sid": "BENIGN_REMAP|heldout|narrative|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     53,
+     77,
+     94,
+     97,
+     120,
+     146,
+     158,
+     187,
+     193
+    ],
+    "codeword_last": 193,
+    "following": 194,
+    "final_prompt": 205,
+    "seq_len": 206
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 110,
+   "sid": "BENIGN_REMAP|heldout|narrative|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     53,
+     77,
+     94,
+     97,
+     120,
+     146,
+     158,
+     173,
+     189,
+     204,
+     218,
+     247,
+     253
+    ],
+    "codeword_last": 253,
+    "following": 254,
+    "final_prompt": 265,
+    "seq_len": 266
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 111,
+   "sid": "BENIGN_REMAP|heldout|technical|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     60,
+     69,
+     101,
+     107
+    ],
+    "codeword_last": 107,
+    "following": 108,
+    "final_prompt": 119,
+    "seq_len": 120
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 112,
+   "sid": "BENIGN_REMAP|heldout|technical|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     60,
+     69,
+     83,
+     95,
+     109,
+     123,
+     151,
+     157
+    ],
+    "codeword_last": 157,
+    "following": 158,
+    "final_prompt": 169,
+    "seq_len": 170
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 113,
+   "sid": "BENIGN_REMAP|heldout|technical|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     32,
+     48,
+     60,
+     69,
+     83,
+     95,
+     109,
+     123,
+     134,
+     151,
+     174,
+     185,
+     208,
+     214
+    ],
+    "codeword_last": 214,
+    "following": 215,
+    "final_prompt": 226,
+    "seq_len": 227
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 114,
+   "sid": "BENIGN_REMAP|heldout|dialogue|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     67,
+     79,
+     102,
+     108
+    ],
+    "codeword_last": 108,
+    "following": 109,
+    "final_prompt": 120,
+    "seq_len": 121
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 115,
+   "sid": "BENIGN_REMAP|heldout|dialogue|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     67,
+     79,
+     87,
+     94,
+     106,
+     124,
+     148,
+     154
+    ],
+    "codeword_last": 154,
+    "following": 155,
+    "final_prompt": 166,
+    "seq_len": 167
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 116,
+   "sid": "BENIGN_REMAP|heldout|dialogue|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     67,
+     79,
+     87,
+     94,
+     106,
+     124,
+     131,
+     141,
+     157,
+     161,
+     193,
+     199
+    ],
+    "codeword_last": 199,
+    "following": 200,
+    "final_prompt": 211,
+    "seq_len": 212
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 117,
+   "sid": "BENIGN_REMAP|heldout|academic|4|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     70,
+     90,
+     127,
+     133
+    ],
+    "codeword_last": 133,
+    "following": 134,
+    "final_prompt": 145,
+    "seq_len": 146
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 118,
+   "sid": "BENIGN_REMAP|heldout|academic|8|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     70,
+     90,
+     112,
+     126,
+     149,
+     162,
+     196,
+     202
+    ],
+    "codeword_last": 202,
+    "following": 203,
+    "final_prompt": 214,
+    "seq_len": 215
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 119,
+   "sid": "BENIGN_REMAP|heldout|academic|12|forced_choice",
+   "condition": "BENIGN_REMAP",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     34,
+     56,
+     70,
+     90,
+     112,
+     126,
+     149,
+     162,
+     178,
+     198,
+     213,
+     226,
+     261,
+     267
+    ],
+    "codeword_last": 267,
+    "following": 268,
+    "final_prompt": 279,
+    "seq_len": 280
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 120,
+   "sid": "UNRELATED_TARGET|dev|news|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     56,
+     71,
+     100,
+     106
+    ],
+    "codeword_last": 106,
+    "following": 107,
+    "final_prompt": 118,
+    "seq_len": 119
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 121,
+   "sid": "UNRELATED_TARGET|dev|news|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     56,
+     71,
+     91,
+     102,
+     106,
+     125,
+     148,
+     154
+    ],
+    "codeword_last": 154,
+    "following": 155,
+    "final_prompt": 166,
+    "seq_len": 167
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 122,
+   "sid": "UNRELATED_TARGET|dev|news|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     36,
+     51,
+     56,
+     71,
+     91,
+     102,
+     106,
+     125,
+     137,
+     142,
+     162,
+     175,
+     199,
+     205
+    ],
+    "codeword_last": 205,
+    "following": 206,
+    "final_prompt": 217,
+    "seq_len": 218
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 123,
+   "sid": "UNRELATED_TARGET|dev|narrative|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     45,
+     51,
+     62,
+     85,
+     120,
+     126
+    ],
+    "codeword_last": 126,
+    "following": 127,
+    "final_prompt": 138,
+    "seq_len": 139
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 124,
+   "sid": "UNRELATED_TARGET|dev|narrative|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     45,
+     51,
+     62,
+     85,
+     102,
+     116,
+     144,
+     157,
+     195,
+     201
+    ],
+    "codeword_last": 201,
+    "following": 202,
+    "final_prompt": 213,
+    "seq_len": 214
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 125,
+   "sid": "UNRELATED_TARGET|dev|narrative|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     45,
+     51,
+     62,
+     85,
+     102,
+     116,
+     144,
+     157,
+     189,
+     203,
+     209,
+     230,
+     262,
+     268
+    ],
+    "codeword_last": 268,
+    "following": 269,
+    "final_prompt": 280,
+    "seq_len": 281
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 126,
+   "sid": "UNRELATED_TARGET|dev|technical|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     58,
+     79,
+     113,
+     119
+    ],
+    "codeword_last": 119,
+    "following": 120,
+    "final_prompt": 131,
+    "seq_len": 132
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 127,
+   "sid": "UNRELATED_TARGET|dev|technical|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     58,
+     79,
+     96,
+     106,
+     126,
+     131,
+     164,
+     170
+    ],
+    "codeword_last": 170,
+    "following": 171,
+    "final_prompt": 182,
+    "seq_len": 183
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 128,
+   "sid": "UNRELATED_TARGET|dev|technical|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     48,
+     58,
+     79,
+     96,
+     106,
+     126,
+     131,
+     144,
+     163,
+     175,
+     208,
+     236,
+     242
+    ],
+    "codeword_last": 242,
+    "following": 243,
+    "final_prompt": 254,
+    "seq_len": 255
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 129,
+   "sid": "UNRELATED_TARGET|dev|dialogue|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     54,
+     70,
+     86,
+     114,
+     120
+    ],
+    "codeword_last": 120,
+    "following": 121,
+    "final_prompt": 132,
+    "seq_len": 133
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 130,
+   "sid": "UNRELATED_TARGET|dev|dialogue|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     54,
+     70,
+     86,
+     104,
+     111,
+     123,
+     137,
+     167,
+     173
+    ],
+    "codeword_last": 173,
+    "following": 174,
+    "final_prompt": 185,
+    "seq_len": 186
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 131,
+   "sid": "UNRELATED_TARGET|dev|dialogue|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     41,
+     54,
+     70,
+     86,
+     104,
+     111,
+     123,
+     137,
+     152,
+     163,
+     176,
+     194,
+     218,
+     224
+    ],
+    "codeword_last": 224,
+    "following": 225,
+    "final_prompt": 236,
+    "seq_len": 237
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 132,
+   "sid": "UNRELATED_TARGET|dev|academic|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     64,
+     78,
+     108,
+     114
+    ],
+    "codeword_last": 114,
+    "following": 115,
+    "final_prompt": 126,
+    "seq_len": 127
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 133,
+   "sid": "UNRELATED_TARGET|dev|academic|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     64,
+     78,
+     97,
+     105,
+     125,
+     141,
+     170,
+     176
+    ],
+    "codeword_last": 176,
+    "following": 177,
+    "final_prompt": 188,
+    "seq_len": 189
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 134,
+   "sid": "UNRELATED_TARGET|dev|academic|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "dev",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     64,
+     78,
+     97,
+     105,
+     125,
+     141,
+     150,
+     168,
+     180,
+     200,
+     236,
+     242
+    ],
+    "codeword_last": 242,
+    "following": 243,
+    "final_prompt": 254,
+    "seq_len": 255
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 135,
+   "sid": "UNRELATED_TARGET|heldout|news|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     55,
+     79,
+     106,
+     112
+    ],
+    "codeword_last": 112,
+    "following": 113,
+    "final_prompt": 124,
+    "seq_len": 125
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 136,
+   "sid": "UNRELATED_TARGET|heldout|news|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     55,
+     79,
+     95,
+     100,
+     118,
+     129,
+     158,
+     164
+    ],
+    "codeword_last": 164,
+    "following": 165,
+    "final_prompt": 176,
+    "seq_len": 177
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 137,
+   "sid": "UNRELATED_TARGET|heldout|news|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "news",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     51,
+     55,
+     79,
+     95,
+     100,
+     118,
+     129,
+     138,
+     157,
+     162,
+     189,
+     213,
+     219
+    ],
+    "codeword_last": 219,
+    "following": 220,
+    "final_prompt": 231,
+    "seq_len": 232
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 138,
+   "sid": "UNRELATED_TARGET|heldout|narrative|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     51,
+     78,
+     90,
+     119,
+     125
+    ],
+    "codeword_last": 125,
+    "following": 126,
+    "final_prompt": 137,
+    "seq_len": 138
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 139,
+   "sid": "UNRELATED_TARGET|heldout|narrative|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     51,
+     78,
+     90,
+     104,
+     115,
+     141,
+     153,
+     190,
+     196
+    ],
+    "codeword_last": 196,
+    "following": 197,
+    "final_prompt": 208,
+    "seq_len": 209
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 140,
+   "sid": "UNRELATED_TARGET|heldout|narrative|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "narrative",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     51,
+     78,
+     90,
+     104,
+     115,
+     141,
+     153,
+     170,
+     199,
+     218,
+     228,
+     258,
+     264
+    ],
+    "codeword_last": 264,
+    "following": 265,
+    "final_prompt": 276,
+    "seq_len": 277
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 141,
+   "sid": "UNRELATED_TARGET|heldout|technical|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     62,
+     78,
+     112,
+     118
+    ],
+    "codeword_last": 118,
+    "following": 119,
+    "final_prompt": 130,
+    "seq_len": 131
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 142,
+   "sid": "UNRELATED_TARGET|heldout|technical|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     62,
+     78,
+     92,
+     108,
+     118,
+     137,
+     161,
+     167
+    ],
+    "codeword_last": 167,
+    "following": 168,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 143,
+   "sid": "UNRELATED_TARGET|heldout|technical|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "technical",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     49,
+     62,
+     78,
+     92,
+     108,
+     118,
+     137,
+     141,
+     172,
+     175,
+     191,
+     223,
+     229
+    ],
+    "codeword_last": 229,
+    "following": 230,
+    "final_prompt": 241,
+    "seq_len": 242
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 144,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     47,
+     66,
+     82,
+     105,
+     111
+    ],
+    "codeword_last": 111,
+    "following": 112,
+    "final_prompt": 123,
+    "seq_len": 124
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 145,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     47,
+     66,
+     82,
+     87,
+     108,
+     112,
+     138,
+     161,
+     167
+    ],
+    "codeword_last": 167,
+    "following": 168,
+    "final_prompt": 179,
+    "seq_len": 180
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 146,
+   "sid": "UNRELATED_TARGET|heldout|dialogue|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "dialogue",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     40,
+     47,
+     66,
+     82,
+     87,
+     108,
+     112,
+     138,
+     145,
+     164,
+     172,
+     181,
+     211,
+     217
+    ],
+    "codeword_last": 217,
+    "following": 218,
+    "final_prompt": 229,
+    "seq_len": 230
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 147,
+   "sid": "UNRELATED_TARGET|heldout|academic|4|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     60,
+     74,
+     110,
+     116
+    ],
+    "codeword_last": 116,
+    "following": 117,
+    "final_prompt": 128,
+    "seq_len": 129
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 148,
+   "sid": "UNRELATED_TARGET|heldout|academic|8|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     60,
+     74,
+     93,
+     115,
+     118,
+     137,
+     171,
+     177
+    ],
+    "codeword_last": 177,
+    "following": 178,
+    "final_prompt": 189,
+    "seq_len": 190
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 149,
+   "sid": "UNRELATED_TARGET|heldout|academic|12|forced_choice",
+   "condition": "UNRELATED_TARGET",
+   "split": "heldout",
+   "demo_style": "academic",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     52,
+     60,
+     74,
+     93,
+     115,
+     118,
+     137,
+     151,
+     166,
+     184,
+     200,
+     234,
+     240
+    ],
+    "codeword_last": 240,
+    "following": 241,
+    "final_prompt": 252,
+    "seq_len": 253
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 150,
+   "sid": "REPEATED_CODEWORD|dev|n/a|4|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     71,
+     77
+    ],
+    "codeword_last": 77,
+    "following": 78,
+    "final_prompt": 89,
+    "seq_len": 90
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 151,
+   "sid": "REPEATED_CODEWORD|dev|n/a|8|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     91,
+     97
+    ],
+    "codeword_last": 97,
+    "following": 98,
+    "final_prompt": 109,
+    "seq_len": 110
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 152,
+   "sid": "REPEATED_CODEWORD|dev|n/a|12|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     71,
+     72,
+     73,
+     76,
+     77,
+     78,
+     81,
+     82,
+     83,
+     86,
+     87,
+     88,
+     111,
+     117
+    ],
+    "codeword_last": 117,
+    "following": 118,
+    "final_prompt": 129,
+    "seq_len": 130
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 153,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|4|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 4,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     71,
+     77
+    ],
+    "codeword_last": 77,
+    "following": 78,
+    "final_prompt": 89,
+    "seq_len": 90
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 154,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|8|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 8,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     91,
+     97
+    ],
+    "codeword_last": 97,
+    "following": 98,
+    "final_prompt": 109,
+    "seq_len": 110
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 155,
+   "sid": "REPEATED_CODEWORD|heldout|n/a|12|forced_choice",
+   "condition": "REPEATED_CODEWORD",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 12,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     31,
+     32,
+     33,
+     36,
+     37,
+     38,
+     41,
+     42,
+     43,
+     46,
+     47,
+     48,
+     51,
+     52,
+     53,
+     56,
+     57,
+     58,
+     61,
+     62,
+     63,
+     66,
+     67,
+     68,
+     71,
+     72,
+     73,
+     76,
+     77,
+     78,
+     81,
+     82,
+     83,
+     86,
+     87,
+     88,
+     111,
+     117
+    ],
+    "codeword_last": 117,
+    "following": 118,
+    "final_prompt": 129,
+    "seq_len": 130
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 156,
+   "sid": "DIRECT_CONCEPT_NODEMO|dev|n/a|0|forced_choice",
+   "condition": "DIRECT_CONCEPT_NODEMO",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     51,
+     63
+    ],
+    "codeword_last": 63,
+    "following": 64,
+    "final_prompt": 69,
+    "seq_len": 70
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 157,
+   "sid": "DIRECT_CONCEPT_NODEMO|heldout|n/a|0|forced_choice",
+   "condition": "DIRECT_CONCEPT_NODEMO",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "forced_choice",
+   "probe_word": "grenade",
+   "positions": {
+    "codeword_all": [
+     51,
+     63
+    ],
+    "codeword_last": 63,
+    "following": 64,
+    "final_prompt": 69,
+    "seq_len": 70
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 158,
+   "sid": "NEUTRAL_CODEWORD_NODEMO|dev|n/a|0|forced_choice",
+   "condition": "NEUTRAL_CODEWORD_NODEMO",
+   "split": "dev",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     51,
+     57
+    ],
+    "codeword_last": 57,
+    "following": 58,
+    "final_prompt": 69,
+    "seq_len": 70
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  },
+  {
+   "row": 159,
+   "sid": "NEUTRAL_CODEWORD_NODEMO|heldout|n/a|0|forced_choice",
+   "condition": "NEUTRAL_CODEWORD_NODEMO",
+   "split": "heldout",
+   "demo_style": "n/a",
+   "n_demos": 0,
+   "readout": "forced_choice",
+   "probe_word": "carrot",
+   "positions": {
+    "codeword_all": [
+     51,
+     57
+    ],
+    "codeword_last": 57,
+    "following": 58,
+    "final_prompt": 69,
+    "seq_len": 70
+   },
+   "position_names": [
+    "codeword_last",
+    "following",
+    "final_prompt",
+    "first_generated"
+   ]
+  }
+ ],
+ "status": "COMPLETE"
+}

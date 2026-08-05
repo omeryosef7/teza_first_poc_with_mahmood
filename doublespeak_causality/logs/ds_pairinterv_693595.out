@@ -1,0 +1,5 @@
+=== pair intervention: mode=dose readout=cloze site=codeword_all alphas=-1.0,-0.5,0.5,1.0,2.0 groups=both alpha_mode=relative ===
+Wed Jul 29 10:11:40 PM IDT 2026
+n-803
+git=9aa7d55735600e3402e3fd3505010c1c2361e3d8
+GPU ok: NVIDIA L40S

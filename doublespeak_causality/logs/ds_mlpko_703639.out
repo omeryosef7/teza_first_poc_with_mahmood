@@ -1,0 +1,17 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_curated.json n=2 gran=window pos=demo ===
+Mon Aug  3 11:08:54 AM IDT 2026
+t-806
+git=36f233f899adf96dd7b3573c5753eb78f4d6c1be
+GPU ok: NVIDIA L40S
+[KO] cohort=curated L=32 comp=attn_out positions=demo gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_KO_curated_attn_out_demo_window_20260803_111700_703639
+[KO] 96 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_KO_curated_attn_out_demo_window_20260803_111700_703639
+  == split=dev (n_valid=2) ==
+    early: n=2 C1=1.0 NEC_specific(rand-C3)=[-0.0, -0.0, 0.0] SUF_specific(S3-Srand)=[-0.0001, -0.0001, 0.0] S3=0.0
+    late: n=2 C1=1.0 NEC_specific(rand-C3)=[-0.0, -0.0, -0.0] SUF_specific(S3-Srand)=[0.0, 0.0, 0.0] S3=0.0
+    mid: n=2 C1=1.0 NEC_specific(rand-C3)=[-0.0, -0.0, 0.0] SUF_specific(S3-Srand)=[-0.0, -0.0, -0.0] S3=0.0
+  == split=heldout (n_valid=2) ==
+    early: n=2 C1=0.9982 NEC_specific(rand-C3)=[0.1029, 0.0991, 0.1067] SUF_specific(S3-Srand)=[-0.0003, -0.0006, -0.0001] S3=0.0
+    late: n=2 C1=0.9982 NEC_specific(rand-C3)=[-0.0001, -0.0001, -0.0] SUF_specific(S3-Srand)=[-0.0001, -0.0001, -0.0001] S3=0.0004
+    mid: n=2 C1=0.9982 NEC_specific(rand-C3)=[-0.0001, -0.0005, 0.0002] SUF_specific(S3-Srand)=[-0.0003, -0.0006, -0.0001] S3=0.0003
+=== done ===
+Mon Aug  3 11:17:10 AM IDT 2026

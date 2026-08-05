@@ -1,0 +1,9 @@
+=== run_ds_p5bq smoke ===
+Tue Aug  4 01:14:08 AM IDT 2026
+n-803
+GPU ok: NVIDIA L40S
+[qkv] cohort=curated L=32 n_q=32 n_kv=8 group=4 carry=[(14, 4), (15, 8)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5b_qkv_curated_20260804_013548_707412
+[qkv] 36 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5b_qkv_curated_20260804_013548_707412
+  [dev] n_valid=2 selfswap_dev=0.0
+     L14H4: Q_nec=[0.0, 0.0, 0.0] K_nec=[0.0, 0.0, 0.0] V_nec=[0.0, 0.0, 0.0]
+     L15H8: Q_nec=[0.0, 0.0, 0.0] K_nec=[0.0, 0.0, 0.0] V_nec=[-0.0, -0.0, -0.0]

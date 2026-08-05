@@ -1,0 +1,19 @@
+=== behav carry: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_curated.json maxnew=220 n=0 splits=train,test ===
+Tue Aug  4 04:24:31 PM IDT 2026
+n-804
+git=48939619082fc0b83fdb494b3b21c1c2f00d16ff
+GPU ok: NVIDIA L40S
+[refproj] 32 per-layer refusal dirs (hs rows 1..32)
+[refproj] 51 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refproj_curated_20260804_162641_711393
+  [train] n=30 max refusal-suppression (direct-ds) at hs[32] (~L31) = [50.9403, 41.5689, 59.8515]
+     hs[9] mean direct=0.0101 ds=-0.1689 neutral=-0.0208 | d-ds=[0.179, 0.1518, 0.2059] rand=[-0.012, -0.0183, -0.0059]
+     hs[17] mean direct=3.1952 ds=0.7821 neutral=0.265 | d-ds=[2.4131, 1.7788, 3.0476] rand=[0.0426, 0.0118, 0.0722]
+     hs[32] mean direct=69.0909 ds=18.1506 neutral=18.1689 | d-ds=[50.9403, 41.5689, 59.8515] rand=[0.5916, 0.119, 1.0721]
+     hs[31] mean direct=14.1592 ds=-0.1871 neutral=-0.1652 | d-ds=[14.3463, 11.9209, 16.676] rand=[-0.0975, -0.2169, 0.0236]
+  [test] n=21 max refusal-suppression (direct-ds) at hs[32] (~L31) = [60.6465, 47.0843, 73.4679]
+     hs[9] mean direct=0.0207 ds=-0.1717 neutral=-0.0159 | d-ds=[0.1923, 0.163, 0.2228] rand=[-0.0093, -0.017, -0.0018]
+     hs[17] mean direct=3.8264 ds=0.4579 neutral=-0.1215 | d-ds=[3.3685, 2.4642, 4.2541] rand=[0.0093, -0.0305, 0.0487]
+     hs[32] mean direct=75.1457 ds=14.4992 neutral=12.7712 | d-ds=[60.6465, 47.0843, 73.4679] rand=[0.276, -0.3335, 0.9092]
+     hs[31] mean direct=15.5476 ds=-1.208 neutral=-1.6147 | d-ds=[16.7556, 13.024, 19.9851] rand=[-0.1962, -0.3176, -0.065]
+=== done ===
+Tue Aug  4 04:27:02 PM IDT 2026

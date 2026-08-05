@@ -1,0 +1,12 @@
+=== Phase3 demoKO: doublespeak_causality/data/bench/bench_curated.json n=8 gran=window ===
+Mon Aug  3 02:18:57 AM IDT 2026
+n-802
+git=1bd7563bf8f5002711e3310896ff4a87e253153e
+GPU ok: NVIDIA L40S
+[demoKO] cohort=curated L=32 R=28 gran=window windows=['early', 'mid', 'late'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_curated_window_20260803_021914_703115
+[demoKO] 192 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase3_demoKO_curated_window_20260803_021914_703115
+  early: n=3 ReRead(C1-C3)=-1.5869081835262477e-06 random=3.443760912584063e-06 selfswap_dev=0.0
+  late: n=3 ReRead(C1-C3)=2.619791909334405e-07 random=6.716375082760351e-07 selfswap_dev=0.0
+  mid: n=3 ReRead(C1-C3)=-5.99963489851992e-07 random=2.08192947563172e-06 selfswap_dev=0.0
+=== done ===
+Mon Aug  3 02:19:41 AM IDT 2026

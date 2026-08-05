@@ -1,0 +1,9 @@
+=== Phase4 edgeKO: doublespeak_causality/data/bench/bench_curated.json n=2 layers=8-11 (--layers 8,9,10,11) ===
+Mon Aug  3 06:43:07 AM IDT 2026
+n-801
+git=8cb2966e087511b0bb1fac82804f7656e8f7efc0
+GPU ok: NVIDIA L40S
+[edgeKO] cohort=curated L=32 Hn=32 layers=[8, 9, 10, 11] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_curated_20260803_065114_703282
+[edgeKO] 0 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_curated_20260803_065114_703282; 0 sig heads
+=== done ===
+Mon Aug  3 06:51:18 AM IDT 2026

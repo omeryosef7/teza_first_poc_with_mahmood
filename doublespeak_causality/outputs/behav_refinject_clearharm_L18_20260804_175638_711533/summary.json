@@ -1,0 +1,73 @@
+{
+ "cohort": "clearharm",
+ "refusal_layer": 18,
+ "alphas": [
+  12.0
+ ],
+ "by_split": {
+  "train": {
+   "n": 44,
+   "ASR": {
+    "ds_base": 0.4091,
+    "ds_refadd12": 0.0,
+    "ds_randadd12": 0.6818
+   },
+   "refusal_rate": {
+    "ds_base": 0.4773,
+    "ds_refadd12": 1.0,
+    "ds_randadd12": 0.0
+   },
+   "empty_rate": {
+    "ds_base": 0.0,
+    "ds_refadd12": 0.0,
+    "ds_randadd12": 0.0
+   },
+   "vs_ds_base": {
+    "ds_refadd12": {
+     "delta_ASR": -0.4091,
+     "flip_on": 0,
+     "flip_off": 18,
+     "mcnemar_p": 1e-05
+    },
+    "ds_randadd12": {
+     "delta_ASR": 0.2727,
+     "flip_on": 13,
+     "flip_off": 1,
+     "mcnemar_p": 0.00183
+    }
+   }
+  },
+  "test": {
+   "n": 42,
+   "ASR": {
+    "ds_base": 0.2857,
+    "ds_refadd12": 0.0,
+    "ds_randadd12": 0.619
+   },
+   "refusal_rate": {
+    "ds_base": 0.4524,
+    "ds_refadd12": 1.0,
+    "ds_randadd12": 0.0
+   },
+   "empty_rate": {
+    "ds_base": 0.0,
+    "ds_refadd12": 0.0,
+    "ds_randadd12": 0.0
+   },
+   "vs_ds_base": {
+    "ds_refadd12": {
+     "delta_ASR": -0.2857,
+     "flip_on": 0,
+     "flip_off": 12,
+     "mcnemar_p": 0.00049
+    },
+    "ds_randadd12": {
+     "delta_ASR": 0.3333,
+     "flip_on": 15,
+     "flip_off": 1,
+     "mcnemar_p": 0.00052
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,41 @@
+=== pair readout validation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/pair_benchmark/pair_carrot_chlorine.json ===
+Thu Jul 30 01:23:58 AM IDT 2026
+n-804
+git=3c001e2fee897c098b62461bce22be8836587d0f
+GPU ok: NVIDIA L40S
+[readout] model=Llama-3.1-8B-Instruct layers=32 rows=800 -> doublespeak_causality/outputs/pair_readout_Llama-3.1-8B-Instruct_20260730_012928_693786
+  [readout] 100/800
+  [readout] 200/800
+  [readout] 300/800
+  [readout] 400/800
+  [readout] 500/800
+  [readout] 600/800
+  [readout] 700/800
+  [readout] 800/800
+[readout] GATE (positive DIRECT_CONCEPT / negative NEUTRAL_CODEWORD, 'reads as concept'):
+  cloze              pos=0.9333 neg=0.0 -> PASS
+  forced_choice      pos=0.4667 neg=0.0 -> FAIL
+  one_word           pos=0.8667 neg=0.0 -> PASS
+  repeat_concept     pos=0.4 neg=0.0 -> FAIL
+  repeated_codeword  pos=0.3667 neg=0.0 -> FAIL
+[readout] passing readouts: ['cloze', 'one_word']
+[readout] PER-CELL gate: 17/30 (readout|demo_style) cells usable
+    EXCLUDED forced_choice|dialogue: positive_control=0.1667 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|narrative: positive_control=0.6667 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|news: positive_control=0.6667 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED forced_choice|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED one_word|dialogue: positive_control=0.5 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|academic: positive_control=0.6667 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|dialogue: positive_control=0.5 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeat_concept|news: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|academic: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|n/a: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|narrative: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+    EXCLUDED repeated_codeword|technical: positive_control=0.0 (< 0.8) -> DS here is uninterpretable, not 'no effect'
+[readout] DOUBLESPEAK reads-as-concept: all cells 0.4067 (n=150)  vs  gate-passing cells 0.4487 (n=78)
+[readout] GATED DS_minus_Neutral_reads_as_concept: +0.4487 [+0.3462,+0.5641] n=78 reliable=True
+[readout] GATED DS_minus_Neutral_p_concept: +0.2703 [+0.1920,+0.3556] n=78 reliable=True
+[readout] -> doublespeak_causality/outputs/pair_readout_Llama-3.1-8B-Instruct_20260730_012928_693786
+=== done ===
+Thu Jul 30 01:31:26 AM IDT 2026

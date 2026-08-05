@@ -1,0 +1,53 @@
+{
+  "model": "Qwen/Qwen3-14B",
+  "meta": {
+    "model_id": "Qwen/Qwen3-14B",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 40,
+    "hidden_size": 5120,
+    "eos_token_ids": [
+      151645,
+      151643
+    ],
+    "hostname": "n-802",
+    "git_commit": "5f1de9608cd44ee39576d3ab870288a1012d55cf",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-28T09:17:40"
+  },
+  "status": "COMPLETE",
+  "judge_stats": {
+    "n": 135,
+    "judge_fail": 0,
+    "empty": 0,
+    "fail_fraction": 0.0
+  },
+  "n_conditions": 90,
+  "n_bases": 15,
+  "n_eligible_bases": 11,
+  "n_clean_success_bases": 6,
+  "triplet_label_dist": {
+    "DS_BENIGN_MISUNDERSTANDING": 64,
+    "DS_REJECTED": 6,
+    "UNCLEAR": 4,
+    "DS_MALICIOUS": 16
+  },
+  "category_yield": {
+    "explosives": {
+      "bases": 8,
+      "eligible": 5,
+      "clean_success": 2
+    },
+    "weapons": {
+      "bases": 7,
+      "eligible": 6,
+      "clean_success": 4
+    }
+  },
+  "generated_at": "2026-07-28T09:17:40"
+}

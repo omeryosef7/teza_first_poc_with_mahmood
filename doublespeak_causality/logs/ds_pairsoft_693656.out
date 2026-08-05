@@ -1,0 +1,19 @@
+=== pair soft-prompt: target=unrelated free=demos param=simplex steps=300 lr=1.0 n=8 ===
+Wed Jul 29 11:24:50 PM IDT 2026
+n-802
+git=a0d83334e18b97979fb2be18ae4420356488e9f9
+GPU ok: NVIDIA L40S
+[soft] target=unrelated(virus) free=demos param=simplex steps=300 lr=1.0 n=8 -> doublespeak_causality/outputs/pair_softprompt_simplex_unrelated_demos_Llama-3.1-8B-Instruct_20260729_232505_693656
+  [soft] 1/8 NEUTRAL_CODEWORD|dev|narrative|12|cloze: p_start=0.00053 -> p_best=0.99857 (step 44, 202 free tokens, peak_w=0.9906 changed=0.3267 DISCRETE=0.008798)
+  [soft] 2/8 NEUTRAL_CODEWORD|dev|narrative|4|cloze: p_start=0.00065 -> p_best=1.00000 (step 231, 69 free tokens, peak_w=0.7384 changed=0.2464 DISCRETE=0.002397)
+  [soft] 3/8 NEUTRAL_CODEWORD|dev|narrative|8|cloze: p_start=0.00092 -> p_best=0.99810 (step 38, 133 free tokens, peak_w=0.98 changed=0.4511 DISCRETE=0.074793)
+  [soft] 4/8 NEUTRAL_CODEWORD|dev|news|12|cloze: p_start=0.00146 -> p_best=1.00000 (step 245, 158 free tokens, peak_w=0.8228 changed=0.2278 DISCRETE=0.000469)
+  [soft] 5/8 NEUTRAL_CODEWORD|dev|news|4|cloze: p_start=0.00102 -> p_best=0.99972 (step 31, 60 free tokens, peak_w=0.9999 changed=0.2667 DISCRETE=0.004355)
+  [soft] 6/8 NEUTRAL_CODEWORD|dev|news|8|cloze: p_start=0.00129 -> p_best=1.00000 (step 221, 112 free tokens, peak_w=0.829 changed=0.1964 DISCRETE=0.002)
+  [soft] 7/8 NEUTRAL_CODEWORD|dev|technical|12|cloze: p_start=0.00075 -> p_best=0.99969 (step 42, 186 free tokens, peak_w=0.9932 changed=0.3387 DISCRETE=0.005661)
+  [soft] 8/8 NEUTRAL_CODEWORD|dev|technical|4|cloze: p_start=0.00059 -> p_best=0.99879 (step 43, 58 free tokens, peak_w=0.9449 changed=0.3621 DISCRETE=0.000617)
+[soft] p_start=0.00090 -> p_best=0.99936 -> DISCRETIZED=0.01238625
+[soft] improvement +0.99846 [+0.99801,+0.99885] n=8
+[soft] -> doublespeak_causality/outputs/pair_softprompt_simplex_unrelated_demos_Llama-3.1-8B-Instruct_20260729_232505_693656
+=== done ===
+Wed Jul 29 11:32:00 PM IDT 2026

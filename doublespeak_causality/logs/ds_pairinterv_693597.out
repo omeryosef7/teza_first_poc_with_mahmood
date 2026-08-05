@@ -1,0 +1,14 @@
+=== pair intervention: mode=replace readout=cloze site=codeword_last alphas=1.0 groups=single alpha_mode=absolute ===
+Wed Jul 29 10:11:40 PM IDT 2026
+n-803
+git=9aa7d55735600e3402e3fd3505010c1c2361e3d8
+GPU ok: NVIDIA L40S
+[interv] mode=replace L=32 layers=8 alphas=[1.0] site=codeword_last crossfit=True -> doublespeak_causality/outputs/pair_interv_replace_Llama-3.1-8B-Instruct_20260729_221157_693597
+  [interv] 500 rows
+  [interv] 1000 rows
+  [interv] 1500 rows
+  [interv] 2000 rows
+  [interv] 2500 rows
+[interv] 2760 rows in 97.4s -> doublespeak_causality/outputs/pair_interv_replace_Llama-3.1-8B-Instruct_20260729_221157_693597
+=== done ===
+Wed Jul 29 10:13:35 PM IDT 2026

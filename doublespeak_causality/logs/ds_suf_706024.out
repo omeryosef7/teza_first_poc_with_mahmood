@@ -1,0 +1,9 @@
+=== Phase7c suf: doublespeak_causality/data/bench/bench_curated.json n=0 carry=L14H4_L14H5_L14H23_L15H8_L17H27_L18H20_L21H10 ===
+Mon Aug  3 10:08:26 PM IDT 2026
+n-805
+git=NA
+GPU ok: NVIDIA L40S
+[suf] cohort=curated carry=[(14, 4), (14, 5), (14, 23), (15, 8), (17, 27), (18, 20), (21, 10)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7c_suffic_curated_20260803_222439_706024
+[suf] 51 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7c_suffic_curated_20260803_222439_706024
+  [dev] n=30 S1=0.0001 S3=0.1617 suf_raw=[0.1615, 0.0845, 0.2577] suf_specific=[0.1615, 0.0856, 0.2538] selfdev=0.0
+  [heldout] n=21 S1=0.0006 S3=0.2395 suf_raw=[0.2389, 0.1154, 0.3721] suf_specific=[0.2388, 0.1258, 0.3704] selfdev=0.0

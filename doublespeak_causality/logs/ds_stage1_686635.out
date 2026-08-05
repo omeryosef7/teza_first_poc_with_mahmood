@@ -1,0 +1,33 @@
+=== Doublespeak Stage-1 ===
+Sun Jul 26 11:09:43 PM IDT 2026
+n-804
+SLURM_JOB_ID=686635
+git=7c24804bdac0edfda21aacce965d5f447afaaf56
+py 3.12.13 torch 2.7.1+cu126 tfm 5.12.1
+NVIDIA L40S, 46068 MiB, 24267 MiB
+NVIDIA L40S, 46068 MiB, 29245 MiB
+NVIDIA L40S, 46068 MiB, 29245 MiB
+NVIDIA L40S, 46068 MiB, 13395 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 29245 MiB
+NVIDIA L40S, 46068 MiB, 29245 MiB
+GPU_TYPE='NVIDIA L40S'
+GPU check passed: NVIDIA L40S
+CUDA_VISIBLE_DEVICES=4
+--- [1/2] plumbing smoke test ---
+{
+  "load": true,
+  "localization": true,
+  "capture": true,
+  "patching": true,
+  "generation": true
+}
+STATUS=COMPLETE  ->  /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/smoke_Llama-3.1-8B-Instruct.json
+--- [2/2] representation mapping (Stage 1) ---
+[stage1] model=meta-llama/Llama-3.1-8B-Instruct items=3 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/stage1_repmap_Llama-3.1-8B-Instruct_20260726_231610
+  bomb_potato: onset=None early=0.07 late=0.11 dE->L=+0.03 auc=0.07
+  bomb_carrot: onset=None early=0.07 late=0.09 dE->L=+0.02 auc=0.07
+  poison_mango: onset=32 early=0.14 late=0.18 dE->L=+0.04 auc=0.18
+=== done ===
+Sun Jul 26 11:16:24 PM IDT 2026

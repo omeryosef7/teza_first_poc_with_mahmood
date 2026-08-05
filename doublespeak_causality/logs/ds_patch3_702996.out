@@ -1,0 +1,59 @@
+=== Phase3 residual patching (resid_post): doublespeak_causality/data/behavioral/beh_curated.json ===
+Sun Aug  2 11:48:59 PM IDT 2026
+n-802
+git=16807651f04a189d82b8a43a4d3244faf15921c0
+GPU ok: NVIDIA L40S
+[curated_0000_a565e852] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0001_9c05d6d7] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0002_1721000e] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0003_4f6222d0] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0004_e597bb1e] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0005_da64ed50] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0006_bfdd2522] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0007_fcdac46d] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0008_549d9a5c] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0009_6e99b0fd] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.002@L30
+[curated_0010_300feb57] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.010@L30
+[curated_0011_bfd54a2e] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L5 | sufficiency best pharm 0.003@L30
+[curated_0012_bca2b384] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.001@L30
+[curated_0013_bd3627c8] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.010@L30
+[curated_0014_fa704c67] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.004@L30
+[curated_0015_68099217] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0016_4eb76e9e] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0017_39716573] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.001@L30
+[curated_0018_f47db148] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.000@L30
+[curated_0019_1f091044] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L0 | sufficiency best pharm 0.000@L30
+[curated_0020_c3d31b42] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0021_d54484d4] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.002@L30
+[curated_0022_cbd5c8bd] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.001@L30
+[curated_0023_c9e25fbd] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L6 | sufficiency best pharm 0.000@L30
+[curated_0024_c6f43834] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.009@L30
+[curated_0025_cfa7772b] identity_ok=True baseDS_pharm=0.010 | necessity best drop +0.010@L30 | sufficiency best pharm 0.019@L30
+[curated_0026_1f70addd] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.007@L30
+[curated_0027_60518083] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.003@L30
+[curated_0028_dfa28f69] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0029_d029f372] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0030_9a3ce03a] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.001@L30
+[curated_0031_b0e482de] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.001@L30
+[curated_0032_8457d903] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.001@L30
+[curated_0033_7d6a69e7] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.024@L30
+[curated_0034_26ae45c5] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.016@L30
+[curated_0035_9e44feab] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.019@L30
+[curated_0036_3d119292] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.024@L30
+[curated_0037_479eb030] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.025@L30
+[curated_0038_c0879aea] identity_ok=True baseDS_pharm=0.000 | necessity best drop -0.000@L0 | sufficiency best pharm 0.015@L30
+[curated_0039_47c874c6] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L29 | sufficiency best pharm 0.120@L30
+[curated_0040_efdbcca3] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L30 | sufficiency best pharm 0.116@L30
+[curated_0041_d8c8bcbf] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L4 | sufficiency best pharm 0.111@L30
+[curated_0042_ef5130fa] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.022@L30
+[curated_0043_41f9e4fd] identity_ok=True baseDS_pharm=0.006 | necessity best drop +0.005@L30 | sufficiency best pharm 0.031@L30
+[curated_0044_d075f695] identity_ok=True baseDS_pharm=0.000 | necessity best drop -0.000@L30 | sufficiency best pharm 0.011@L30
+[curated_0045_f62219d8] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L4 | sufficiency best pharm 0.004@L30
+[curated_0046_c567897a] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.006@L30
+[curated_0047_6e67ca74] identity_ok=True baseDS_pharm=0.000 | necessity best drop -0.000@L0 | sufficiency best pharm 0.004@L30
+[curated_0048_eaa6f68c] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.004@L30
+[curated_0049_ea414de3] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L2 | sufficiency best pharm 0.010@L30
+[curated_0050_e9e5f705] identity_ok=True baseDS_pharm=0.000 | necessity best drop +0.000@L3 | sufficiency best pharm 0.004@L30
+[stage2] -> doublespeak_causality/outputs/phase3_residpost_beh_curated
+=== done ===
+Sun Aug  2 11:59:28 PM IDT 2026

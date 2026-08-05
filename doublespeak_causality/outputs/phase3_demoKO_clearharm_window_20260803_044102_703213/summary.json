@@ -1,0 +1,60 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 2064,
+ "n_valid_examples": 85,
+ "granularity": "window",
+ "windows": {
+  "early": {
+   "n_valid": 85,
+   "mean_C1_p_concept": 0.8819,
+   "necessity_specific_ci": [
+    0.1137,
+    0.0677,
+    0.1653
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    -0.1315,
+    -0.1947,
+    -0.0683
+   ],
+   "mean_S3_install_p_concept": 0.0489,
+   "suf_selfswap_max_dev": 0.0
+  },
+  "late": {
+   "n_valid": 85,
+   "mean_C1_p_concept": 0.8819,
+   "necessity_specific_ci": [
+    -0.016,
+    -0.026,
+    -0.0071
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    -0.028,
+    -0.0582,
+    -0.0072
+   ],
+   "mean_S3_install_p_concept": 0.0639,
+   "suf_selfswap_max_dev": 0.0
+  },
+  "mid": {
+   "n_valid": 85,
+   "mean_C1_p_concept": 0.8819,
+   "necessity_specific_ci": [
+    0.106,
+    0.0468,
+    0.1679
+   ],
+   "nec_selfswap_max_dev": 0.0,
+   "sufficiency_specific_ci": [
+    0.0074,
+    -0.0377,
+    0.0482
+   ],
+   "mean_S3_install_p_concept": 0.1167,
+   "suf_selfswap_max_dev": 0.0
+  }
+ }
+}

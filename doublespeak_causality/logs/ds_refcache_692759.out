@@ -1,0 +1,134 @@
+=== refcache: manifest=doublespeak_causality/data/gcg/curated_qwen3_neutral.jsonl -> doublespeak_causality/outputs/gcg/cache_qwen3_neutral (Qwen/Qwen3-14B) ===
+Wed Jul 29 09:10:53 AM IDT 2026
+n-802
+git=818498895d7ee9b08da30e912661bd7979ce785d
+GPU ok: NVIDIA L40S
+[build_reference_cache] manifest=doublespeak_causality/data/gcg/curated_qwen3_neutral.jsonl
+[build_reference_cache] cache_dir=doublespeak_causality/outputs/gcg/cache_qwen3_neutral
+[build_reference_cache] layers=[0, 5, 10, 15, 20, 25, 30, 35]
+[build_reference_cache] enable_thinking=False
+[build_reference_cache] 38 tasks to cache
+[build_reference_cache] Loading model Qwen/Qwen3-14B...
+[qwen3_model] model_name=Qwen/Qwen3-14B
+[qwen3_model] torch.cuda.is_available=True
+[qwen3_model] torch.cuda.device_count=1
+[qwen3_model] cache_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
+[qwen3_model] hf_device_map={'first_parameter_device': 'cuda:0'}
+[qwen3_model] cpu_offload_detected={}
+[build_reference_cache] Building cache for task=curated_0001 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=b37ec669c23e805c  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0002 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=9b6054ebbf89c232  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0003 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=75ae2de8db48a93e  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0004 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=a38510c92b426b9b  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0005 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=4b3e66581b5dc8d6  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0006 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=680bc993d6188e1b  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0007 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=ed8db47af37f5cf2  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0008 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=0a2b7232966987c6  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0009 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=41da27a339800b8d  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0010 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=304a7265b8aecc0e  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0011 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=bc7f3bb0670f92e6  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0012 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=af9297660e97e079  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0013 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=cfa9710e0aad8679  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0014 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=aae7bb3d5320be5a  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0015 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=b4bcd3351643ccaa  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0016 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=e0bea8e7337a65e4  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0017 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=2013aaec61248efe  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0018 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(22, 38, None)  positions=[35, 36, 37]
+[build_reference_cache]   cache_key=2741ecbf08253152  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[35, 36, 37]
+[build_reference_cache] Building cache for task=curated_0019 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=b02b76129c86e235  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0020 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=8670d6df0c54488a  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0021 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=af40de1dc12606f0  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0022 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=cdad417a297ff067  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0023 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=680f024c20e0d8fe  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0024 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=57590f90e158edfd  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0025 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=1ba507c9d32c0732  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0026 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=cf9033d54fd8233a  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0027 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=0dd8c917998c77b6  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0028 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=55c935b7df630926  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0029 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=f361d0b6dd71c858  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0030 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=1f5f00400c1f183a  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0031 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=8f1f4806b9d6bc4b  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0032 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=f5438fffc4dbd0aa  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0034 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=cf14bc3cdd54a703  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0035 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=5c48d07c2ff78277  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0036 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=60abdefe700871b0  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0037 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=0d3f69e485cd394b  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Building cache for task=curated_0038 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(20, 36, None)  positions=[33, 34, 35]
+[build_reference_cache]   cache_key=dd9cf22fcb9708ba  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[33, 34, 35]
+[build_reference_cache] Building cache for task=curated_0039 ...
+[build_reference_cache]   suffix_length=16 suffix_slice=slice(23, 39, None)  positions=[36, 37, 38]
+[build_reference_cache]   cache_key=46ef63a0cb8dd834  layers=[0, 5, 10, 15, 20, 25, 30, 35]  positions=[36, 37, 38]
+[build_reference_cache] Done. Cache manifest at doublespeak_causality/outputs/gcg/cache_qwen3_neutral/REFERENCE_CACHE_MANIFEST.json
+=== done ===
+Wed Jul 29 09:25:02 AM IDT 2026

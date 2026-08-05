@@ -1,0 +1,16 @@
+=== pair attention: mode=component gran=per_layer readout=cloze styles=news:narrative:technical ===
+Wed Jul 29 10:20:19 PM IDT 2026
+n-804
+git=b00f5d6f2dff11370bfe86e94f5ff41c915701f4
+GPU ok: NVIDIA L40S
+[attn] mode=component gran=per_layer attn_impl=sdpa L=32 heads=32 rows=90 -> doublespeak_causality/outputs/pair_attn_component_Llama-3.1-8B-Instruct_20260729_222640_693614
+  [attn] 200 rows
+  [attn] 400 rows
+  [attn] 600 rows
+  [attn] 800 rows
+  [attn] 1000 rows
+  [attn] 1200 rows
+  [attn] 1400 rows
+[attn] 1552 rows (boundary unlocated: 0) -> doublespeak_causality/outputs/pair_attn_component_Llama-3.1-8B-Instruct_20260729_222640_693614
+=== done ===
+Wed Jul 29 10:27:41 PM IDT 2026

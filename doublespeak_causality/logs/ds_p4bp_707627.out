@@ -1,0 +1,8 @@
+=== run_ds_p4bp smoke ===
+Tue Aug  4 04:38:05 AM IDT 2026
+n-802
+GPU ok: NVIDIA L40S
+[pat] cohort=clearharm L=32 nH=32 carry=[(17, 27)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4b_pattern_clearharm_20260804_043859_707627
+[pat] 464 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4b_pattern_clearharm_20260804_043859_707627  skips={}
+  [dev] n_valid=59 C1=0.8791 C_benign=0.839 nec_raw=[0.0401, 0.0212, 0.0629] nec_specific=[0.0155, -0.0073, 0.0384] selfdev=0.0 len_mismatch=58
+  [heldout] n_valid=55 C1=0.869 C_benign=0.8508 nec_raw=[0.0182, 0.0107, 0.0276] nec_specific=[0.0236, 0.0059, 0.0481] selfdev=0.0 len_mismatch=57

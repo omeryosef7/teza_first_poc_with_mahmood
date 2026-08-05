@@ -1,0 +1,22 @@
+=== Doublespeak Stage-2 ===
+Mon Jul 27 02:45:57 AM IDT 2026
+n-803
+SLURM_JOB_ID=687520
+git=5f8b5bdcf1f055c7cfbfb4a65fad293d1684ed66
+py 3.12.13 torch 2.7.1+cu126 tfm 5.12.1
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 95 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 857 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+NVIDIA L40S, 46068 MiB, 45595 MiB
+GPU_TYPE='NVIDIA L40S'
+GPU check passed: NVIDIA L40S
+CUDA_VISIBLE_DEVICES=0
+--- Stage 2b: Patchscopes necessity+sufficiency readout (GPT-4o-mini concepts) ---
+[virus_muffin] baseline P_harm=0.098 | prev_cw=0.068 | demos_all=0.000 | rand_ctrl=0.069
+[stage4-knockout] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/stage4_knockout_Llama-3.1-8B-Instruct_20260727_024621
+=== done ===
+Mon Jul 27 02:52:12 AM IDT 2026
