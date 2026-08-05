@@ -9,6 +9,13 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 108, loop tick — GPU saturated → consolidated results TABLE (paper Table 1))** —
+  Trajectory still pending (queue 69). Built `reports/BEHAVIORAL_RESULTS_TABLE.md` — the six-level finding as
+  one paper Table 1 (claim · experiment · effect both cohorts · significance · control · verdict), numbers
+  RE-VERIFIED from raw (row 4 refproj hs31 test: clearharm 15.2/3.6/6.9, curated 15.5/-1.2/-1.6 — confirmed).
+  Consolidates numbers previously scattered across 4 reports. Paper-asset set now: contribution addendum + 3
+  figures + Table 1. Deliverable fully packaged for write-up. Not producing further redundant assets.
+
 - **2026-08-05 (iter 107, loop tick — GPU saturated → 3rd/capstone paper figure (causal decoupling))** —
   Trajectory still pending. Built `scripts/make_decoupling_figure.py` → `figures/causal_decoupling.png`
   (Panel A: write-ablation drops p_concept .86→.82 clearharm / .69→.46 curated = control fires; Panel B:
