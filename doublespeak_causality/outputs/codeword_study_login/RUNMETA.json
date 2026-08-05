@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "unknown",
   "run_id": "codeword_study_login",
@@ -31,7 +32,7 @@
         "logs/codeword_study.log"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "run_dir_written_in_log",
       "source_kind": "log"
     }
   },
@@ -56,8 +57,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:20",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

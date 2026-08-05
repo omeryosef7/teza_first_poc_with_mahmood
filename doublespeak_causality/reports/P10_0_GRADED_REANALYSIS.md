@@ -6,8 +6,18 @@
 
 ```
 python scripts/analyze_graded_reanalysis.py --out-json <path>
-# 4 run dirs, 26 s wall, seed 20260805, 10000 bootstrap resamples, 50000 sign-flip permutations
+# 4 run dirs, 37 s wall, seed 20260805, 10000 bootstrap resamples, 50000 sign-flip permutations
 ```
+
+> 📌 **Correction (2026-08-05, applied).** The `n@80 %` column of §5 was wrong in the first issue of this
+> report. `n_for_power()` bracketed its binary search with a doubling ladder guarded by `while hi <= nmax`
+> (`nmax = 4000`); once the ladder stepped 2048 → 4096 the guard failed and the function returned
+> `">4000"` **without ever evaluating any n in 2049…4000**. **12 of the 16 `">4000"` entries in Table 5
+> were false** — their true answers are ≈ 2500–4150. The search now brackets by doubling with the last
+> step clamped to the cap (so the cap itself is always probed) and the cap is raised to **20000**; all 24
+> cells now return a finite n. **No other number in this report changed**: a leaf-by-leaf diff of the full
+> result JSON before vs. after the fix shows exactly 16 differences, all of them `n80_A`/`n80_B` going
+> from `-1` to a finite value (plus one new provenance key `n80_search_cap`).
 
 > ⚠ **This is a POST-HOC re-analysis of data collected for a binary endpoint.** The headline cell also
 > **pools a pre-specified train/test split**, which was not the pre-registered analysis. Everything below
@@ -155,32 +165,36 @@ difference is which control arms were pooled and is immaterial — both are show
 | cell | split | arm | n | b | c | ΔASR | McNemar p | floor | power A | n@80 % A | power B | n@80 % B |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | CARRY/clearharm | train | `carry_abl` | 44 | 2 | 6 | +0.0909 | 0.2891 | 0.0078 | **0.135** | 270 | 0.174 | 182 |
-| CARRY/clearharm | train | `rand_abl` ⟂ | 44 | 4 | 5 | +0.0227 | 1.0000 | 0.0039 | 0.027 | >4000 | 0.026 | >4000 |
+| CARRY/clearharm | train | `rand_abl` ⟂ | 44 | 4 | 5 | +0.0227 | 1.0000 | 0.0039 | 0.027 | 3141 | 0.026 | 2796 |
 | CARRY/clearharm | test | `carry_abl` | 42 | 1 | 4 | +0.0714 | 0.3750 | **0.0625** | **0.086** | 405 | 0.097 | 290 |
-| CARRY/clearharm | test | `rand_abl` ⟂ | 42 | 4 | 5 | +0.0238 | 1.0000 | 0.0039 | 0.027 | >4000 | 0.025 | >4000 |
+| CARRY/clearharm | test | `rand_abl` ⟂ | 42 | 4 | 5 | +0.0238 | 1.0000 | 0.0039 | 0.027 | 2880 | 0.025 | 2547 |
 | **CARRY/clearharm** | **POOLED** | `carry_abl` | 86 | 3 | 10 | +0.0814 | **0.0923** | 0.0002 | 0.242 | 326 | 0.345 | 225 |
-| CARRY/clearharm | POOLED | `rand_abl` ⟂ | 86 | 8 | 10 | +0.0233 | 0.8145 | 0.0000 | 0.047 | >4000 | 0.048 | >4000 |
+| CARRY/clearharm | POOLED | `rand_abl` ⟂ | 86 | 8 | 10 | +0.0233 | 0.8145 | 0.0000 | 0.047 | 3009 | 0.048 | 2671 |
 | CARRY/curated | train | `carry_abl` | 30 | 6 | 3 | −0.1000 | 0.5078 | 0.0039 | 0.094 | 230 | 0.098 | 150 |
 | CARRY/curated | train | `rand_abl` ⟂ | 30 | 2 | 3 | +0.0333 | 1.0000 | 0.0625 | 0.022 | 1549 | 0.017 | 1313 |
 | CARRY/curated | test | `carry_abl` | 21 | 2 | 2 | +0.0000 | 1.0000 | **0.1250** | n/a | n/a | n/a | n/a |
 | CARRY/curated | test | `rand_abl` ⟂ | 21 | 2 | 0 | −0.0952 | 0.5000 | **0.5000** | 0.045 | 250 | 0.030 | 166 |
 | CARRY/curated | POOLED | `carry_abl` | 51 | 8 | 5 | −0.0588 | 0.5811 | 0.0002 | 0.081 | 564 | 0.091 | 429 |
-| CARRY/curated | POOLED | `rand_abl` ⟂ | 51 | 4 | 3 | −0.0196 | 1.0000 | 0.0156 | 0.029 | >4000 | 0.028 | >4000 |
-| WRITE/clearharm | train | `write_abl` | 44 | 3 | 2 | −0.0227 | 1.0000 | 0.0625 | 0.027 | >4000 | 0.026 | >4000 |
-| WRITE/clearharm | train | `rand_pos_abl` ⟂ | 44 | 5 | 4 | −0.0227 | 1.0000 | 0.0039 | 0.027 | >4000 | 0.026 | >4000 |
+| CARRY/curated | POOLED | `rand_abl` ⟂ | 51 | 4 | 3 | −0.0196 | 1.0000 | 0.0156 | 0.029 | 4144 | 0.028 | 3741 |
+| WRITE/clearharm | train | `write_abl` | 44 | 3 | 2 | −0.0227 | 1.0000 | 0.0625 | 0.027 | 3141 | 0.026 | 2796 |
+| WRITE/clearharm | train | `rand_pos_abl` ⟂ | 44 | 5 | 4 | −0.0227 | 1.0000 | 0.0039 | 0.027 | 3141 | 0.026 | 2796 |
 | WRITE/clearharm | test | `write_abl` | 42 | 5 | 5 | +0.0000 | 1.0000 | 0.0020 | n/a | n/a | n/a | n/a |
 | WRITE/clearharm | test | `rand_pos_abl` ⟂ | 42 | 5 | 3 | −0.0476 | 0.7266 | 0.0078 | 0.049 | 816 | 0.049 | 651 |
-| WRITE/clearharm | POOLED | `write_abl` | 86 | 8 | 7 | −0.0116 | 1.0000 | 0.0001 | 0.033 | >4000 | 0.033 | >4000 |
+| WRITE/clearharm | POOLED | `write_abl` | 86 | 8 | 7 | −0.0116 | 1.0000 | 0.0001 | 0.033 | 11214 | 0.033 | 10541 |
 | WRITE/clearharm | POOLED | `rand_pos_abl` ⟂ | 86 | 10 | 7 | −0.0349 | 0.6291 | 0.0000 | 0.070 | 1426 | 0.075 | 1201 |
 | WRITE/curated | train | `write_abl` | 30 | 2 | 4 | +0.0667 | 0.6875 | 0.0312 | 0.049 | 456 | 0.043 | 333 |
 | WRITE/curated | train | `rand_pos_abl` ⟂ | 30 | 1 | 2 | +0.0333 | 1.0000 | **0.2500** | 0.022 | 1549 | 0.017 | 1313 |
 | WRITE/curated | test | `write_abl` | 21 | 2 | 2 | +0.0000 | 1.0000 | **0.1250** | n/a | n/a | n/a | n/a |
 | WRITE/curated | test | `rand_pos_abl` ⟂ | 21 | 2 | 2 | +0.0000 | 1.0000 | **0.1250** | n/a | n/a | n/a | n/a |
 | WRITE/curated | POOLED | `write_abl` | 51 | 4 | 6 | +0.0392 | 0.7539 | 0.0020 | 0.049 | 1154 | 0.049 | 953 |
-| WRITE/curated | POOLED | `rand_pos_abl` ⟂ | 51 | 3 | 4 | +0.0196 | 1.0000 | 0.0156 | 0.029 | >4000 | 0.028 | >4000 |
+| WRITE/curated | POOLED | `rand_pos_abl` ⟂ | 51 | 3 | 4 | +0.0196 | 1.0000 | 0.0156 | 0.029 | 4144 | 0.028 | 3741 |
 
 `n/a` = observed δ is exactly 0, so "power at the observed effect" is undefined (it would be the type-I rate).
-`>4000` = 80 % power is not reached within the search cap of 4000 pairs at that (tiny) effect.
+The search cap is **20000** pairs; every non-`n/a` cell resolves well inside it, so no cell is censored.
+The four-figure n@80 % values are all **random-control or null-treatment cells whose observed δ is one or
+two flips out of 44–86** (δ ≈ 0.012–0.023). They are not power targets — they are the arithmetic statement
+that *powering a study to detect a 1-flip-in-86 "effect" would take ~3000–11000 items*, which is the
+correct way to read a control arm that did nothing.
 
 **Headline power facts.**
 - CARRY/clearharm train: power **0.135**; test: power **0.086**. A test with 9–14 % power did not, and could
@@ -267,3 +281,34 @@ isolation and is independent of evaluation order. `mcnemar_power` was validated 
 8 decimal places. All arm means, SDs, dz values and discordant counts in §3/§5 for CARRY/clearharm were
 independently recomputed from `raw.jsonl` with a separate pure-stdlib script (no numpy, no scipy), deriving
 the binary labels from the raw scores rather than the stored labels; all matched to 6 decimals.
+
+**Validation of the corrected `n@80 %` column** (see the correction note at the top):
+
+1. *Bug reproduced.* The pre-fix `n_for_power` was copied verbatim and re-run on the 18 (cell × convention)
+   settings of Table 5; it returned `">4000"` for all 16 that Table 5 originally censored. **12 of those 16
+   have a true answer ≤ 4000** (2547–3741) and were therefore false.
+2. *Fix verified against an independent implementation.* A from-scratch re-derivation of the exact-McNemar
+   power function and a plain binary search over `[1, 20000]` (no doubling, no shared code with the script)
+   reproduces the corrected value in **18 / 18** settings, exactly, including the 11214 / 10541 for
+   WRITE/clearharm POOLED `write_abl`.
+3. *Nothing else moved.* A leaf-by-leaf diff of the complete result JSON before vs. after the fix yields
+   **17 differences: 16 `n80_A`/`n80_B` values going from `-1` to finite, plus the new `n80_search_cap`
+   provenance key.** Every mean, SD, CI, p-value, dz, b/c count, ΔASR, McNemar p, floor and `power_A`/
+   `power_B` is bit-identical. The `--p0-source same-dir` sensitivity run is likewise unchanged where §6
+   quotes it (power 0.127 / 0.082, n@80 % = 301 / 453).
+4. *`_kstar` speed-up is a no-op.* The linear scan was replaced by a bisection (needed once n reaches
+   20000); the two agree for **every** m in 0…4400, which covers every discordant-count the run touches.
+5. The standalone power figures quoted in §5/§7 (δ = 0.09 → 275, δ = 0.07 → 419; at p₀ = 0.093 → 283, 431)
+   were re-derived with the independent implementation and are unchanged — they were never in the
+   truncated region.
+
+> ⚠️ **One residual discrepancy, reported rather than silently absorbed.** An external audit of this bug
+> quoted slightly different true values (e.g. 3148 vs. our 3141 for CARRY/clearharm train `rand_abl` A;
+> 2802 vs. 2796 B; 3744 vs. 3741 for CARRY/curated POOLED `rand_abl` B) — a **≤ 0.25 % offset**, consistent
+> in sign. Power in that region is extremely flat (0.79933 at n = 3135 → 0.80011 at n = 3141), so a
+> difference of ~1e-4 in the assumed p₀ moves n by several units. Our values use `p0 = 0.089416`
+> (= 49/548, the script's own pooled control anchor); they are exact for that anchor — the neighbourhood
+> n = 3120…3159 was scanned point-by-point and is smooth and strictly increasing, and the result is
+> insensitive to the pmf-truncation threshold (identical at 1e-15, 1e-20 and 0) and to computing the
+> exact-McNemar critical value in rational arithmetic instead of `scipy.stats.binom`. The offset does not
+> affect any qualitative statement: all 12 corrected cells are ~2500–4150 either way, i.e. **not `">4000"`**.

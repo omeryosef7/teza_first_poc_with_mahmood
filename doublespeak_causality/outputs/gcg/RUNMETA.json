@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "reconstructed",
   "run_id": "gcg",
@@ -37,26 +38,18 @@
       "source_kind": "dir_name"
     },
     "log_files": {
+      "value": [],
+      "source": "reconstructed",
+      "evidence": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+      "source_kind": "log"
+    },
+    "log_files_mentioning_dir": {
       "value": [
-        "logs/ds_gcgasr_692971.out",
-        "logs/ds_gcgasr_692995.out",
-        "logs/ds_gcgasr_693115.out",
-        "logs/ds_gcgopt_692793.out",
-        "logs/ds_gcgopt_692818.out",
-        "logs/ds_gcgopt_692819.out",
-        "logs/ds_gcgopt_693001.out",
-        "logs/ds_gcgopt_693114.out",
         "logs/ds_refcache_692759.out",
         "logs/ds_refcache_692760.out"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
-      "source_kind": "log"
-    },
-    "gpu": {
-      "value": "NVIDIA L40S",
-      "source": "reconstructed",
-      "evidence": "logs/ds_gcgasr_692971.out (run_dir_path_printed_in_log)",
+      "evidence": "MENTION ONLY: these logs name this dir but were not established as its producer (input/undecidable context); NO field was sourced from them",
       "source_kind": "log"
     },
     "model": {
@@ -69,10 +62,12 @@
   "unknown_fields": {
     "slurm_job_id": "dir name has no trailing job id",
     "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
-    "git_commit": "conflicting values across 10 matched logs",
-    "torch": "not printed in 10 matched log(s)",
-    "model": "conflicting values across 10 matched logs",
-    "script": "matched logs map to 3 different wrappers",
+    "git_commit": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+    "gpu": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+    "torch": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+    "model": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+    "script": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
+    "slurm_nodelist": "ambiguous: 8 logs write this dir (logs/ds_gcgasr_692971.out, logs/ds_gcgasr_692995.out, logs/ds_gcgasr_693115.out, logs/ds_gcgopt_692793.out, ...); no single producer could be established",
     "seed": "not recorded anywhere: absent from summary.json and logs",
     "argv": "not recoverable: never written to disk or logs",
     "args": "not recoverable: never written to disk or logs",
@@ -87,8 +82,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:21",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

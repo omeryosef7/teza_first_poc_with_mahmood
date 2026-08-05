@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "unknown",
   "run_id": "multiconcept_necsuff_llama8b",
@@ -26,39 +27,21 @@
       "source_kind": "dir_name"
     },
     "log_files": {
-      "value": [
-        "logs/ds_multiconcept_687942.out",
-        "logs/ds_multiconcept_689556.out"
-      ],
+      "value": [],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
       "source_kind": "log"
-    },
-    "gpu": {
-      "value": "NVIDIA L40S",
-      "source": "reconstructed",
-      "evidence": "logs/ds_multiconcept_687942.out (run_dir_path_printed_in_log)",
-      "source_kind": "log"
-    },
-    "model": {
-      "value": "meta-llama/Llama-3.1-8B-Instruct",
-      "source": "reconstructed",
-      "evidence": "logs/ds_multiconcept_687942.out (run_dir_path_printed_in_log)",
-      "source_kind": "log"
-    },
-    "slurm_wrapper": {
-      "value": "slurm/run_multiconcept.sh",
-      "source": "reconstructed",
-      "evidence": "--output=logs/ds_multiconcept_%j.out matches the run's log filename",
-      "source_kind": "slurm"
     }
   },
   "unknown_fields": {
     "slurm_job_id": "dir name has no trailing job id",
     "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
-    "git_commit": "conflicting values across 2 matched logs",
-    "torch": "not printed in 2 matched log(s)",
-    "script": "slurm/run_multiconcept.sh invokes 2 scripts: ['doublespeak_causality/07_patchscope_readout.py', 'doublespeak_causality/11_emergence_trajectory.py']",
+    "git_commit": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
+    "gpu": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
+    "torch": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
+    "model": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
+    "script": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
+    "slurm_nodelist": "ambiguous: 2 logs write this dir (logs/ds_multiconcept_687942.out, logs/ds_multiconcept_689556.out); no single producer could be established",
     "seed": "no summary.json and seed is not printed to logs",
     "argv": "not recoverable: never written to disk or logs",
     "args": "not recoverable: never written to disk or logs",
@@ -73,8 +56,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:21",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

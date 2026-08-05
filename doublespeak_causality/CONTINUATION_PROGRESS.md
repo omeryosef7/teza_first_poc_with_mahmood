@@ -210,9 +210,67 @@ Replaying the extractor from cache reproduces the v1 decomposition exactly (86 k
 unchanged.** The +60% may be used for item-level claims (per-item AUC, item-level rep→behavior) but **must
 not** be reported as strengthening LOGO or cross-concept generalization. Recovery is also category-biased.
 
+### ⭐ P2 NEW RESULT — patching ALL codeword occurrences roughly DOUBLES the L9 write necessity
+`reports/PHASE2_ALL_OCCURRENCES.md`. Zero new code — `--positions all` existed and had never been run.
+
+| cohort · split | n | demo-only L9 | **all-occurrence L9** | ratio |
+|---|---|---|---|---|
+| clearharm dev | 44 | +0.0625 [0.023, 0.113] | **+0.0889 [0.037, 0.153]** | 1.42× |
+| clearharm heldout | 41 | +0.0153 [0.006, 0.029] | **+0.0348 [0.011, 0.069]** | 2.27× |
+| curated dev | 30 | +0.0493 [0.021, 0.081] | **+0.1003 [0.033, 0.183]** | 2.03× |
+| curated heldout | 21 | +0.0970 [0.038, 0.162] | **+0.1797 [0.092, 0.277]** | 1.85× |
+
+L9 is Holm-significant and the argmax in **all four cells** under both modes; larger under `all` in all four.
+**Not an artifact of patching more positions** — the reported effect is `random_control − C3` where the
+random control is **count-matched** (`rlen = min(m, …)`, phase6_mlp_causal.py:198), so the control grows
+with the intervention. Self-swap exactly 0.0; sufficiency still ≈ 0 (necessary, not sufficient).
+
+⇒ **The concept write is not confined to the demonstration block.** The query-codeword occurrence carries an
+independent share of the same L9 write and the two contributions add. This explains the previous sprint's
+loose end (its audit found the query MLP "3–4× weaker but not absent", contradicting the report prose):
+**the demo-only measurement was understating the write by ~2×.** The circuit description should say the
+L8–L11/L9 write operates over *every codeword occurrence in context*.
+⚠ The 1.4–2.3× ratios are comparisons of two independently-estimated effects, **not** a paired test of the
+increment — a within-item paired contrast is needed before this goes in the paper. v2 (116-ex) replication
+still running (714997). Per-occurrence resolution (each demo individually) not yet done.
+
+### 🔧 Review defects fixed — all with reproduce-then-prove negative controls
+- **Validator false positives GONE.** `validate_all_outputs` hardcoded the necessity cell name `C3`, so the
+  whole phase3_demoKO family recomputed from an empty map: **462 false mismatches across 12 dirs → 0.**
+  Now schema-driven (`C3` / `C3_mlpout` / `C3_demoKV` / any `C3_*`). Re-verified by me:
+  **13,201 values recomputed across 63 recognized dirs, 0 mismatched.**
+- **Tolerance hole closed.** `close()`'s decimal-adaptive fallback silently accepted ±0.05 on a 1-decimal
+  stored value. Now a bounded half-ulp allowance (cap 5e-3). Proven with a corrupted fixture: a 0.0415
+  perturbation passed before, FAILs now.
+- **Deleted keys now caught.** A missing leaf or a whole missing split node exited 0 before; both FAIL now,
+  with 0 new false positives corpus-wide.
+- **Dead ratchets revived.** `empty_dirs` was pinned at 0 forever because the backfill wrote RUNMETA/DONE
+  into every dir; EMPTY is now "no *payload* file" and correctly reports **20** again. `--baseline` mode no
+  longer ignores FAILs that no counter measures (capacity, missing registry).
+- **34 fabricated SLURM job ids removed.** `RE_JOBID` matched the timestamp's HHMMSS field; 25 of the 34
+  contradicted the very log they cited. All reconstructed records deleted and re-written from scratch under
+  a distinct schema tag (`RUNMETA/1-reconstructed`) so they can never be confused with live records.
+  Verified by me: **0 of 369 RUNMETA now carry a job id equal to the dir's HHMMSS.** 9 dirs also had
+  consumer-log mis-attribution corrected (a dataset *input* dir had been given a GPU and a model id).
+- **Judge gate works.** The differential test exited 0 even with 13 disagreements; it now allowlists the 3
+  documented `14_behavioral_eval` divergences and fails on any NEW one (`--strict` fails on all).
+  Verified: default exit 0, `--strict` exit 1. `classify` renamed to remove a silent adoption hazard.
+- **12 of 16 printed ">4000" power values were false** (doubling ladder skipped 2049–4000). Fixed and
+  Table 5 regenerated; an automated re-parse checks all 240 table values against the JSON → 0 mismatches.
+
+**Validator scope, honestly:** of 397 output dirs only 96 have `raw.jsonl`; 63 of those have a schema the
+validator understands (all clean), 32 do not yet (phase4*/phase5b/phase7*/phase9*), and 1 is the known
+job-708038 aborted twin. Teaching it the remaining 4 families is follow-up work, not a blocker.
+
 ---
 
 ## Tick log (most recent first)
+
+### Tick 5 — 2026-08-05 — P2 result lands; all review defects fixed and independently re-verified
+Read out P2 on both v1 benches (v2 still running) → a new result: all-occurrence patching ~doubles the L9
+write necessity, against a count-matched control. Wrote `reports/PHASE2_ALL_OCCURRENCES.md`. Collected all
+4 fixers and re-verified every fix myself rather than trusting the reports: 462→0 false mismatches,
+empty_dirs 0→20, judge gate 0/1, 34→0 fabricated job ids.
 
 ### Tick 4 — 2026-08-05 — adversarial review lands; P8.0 corrected; P2 full runs launched
 6 agents returned. The review found a HIGH measurement-instability threat to P8.0 (verified by me), a

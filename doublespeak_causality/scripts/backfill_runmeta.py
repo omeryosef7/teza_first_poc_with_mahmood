@@ -7,10 +7,14 @@ ONLY what is actually sourceable, and marks every reconstructed field with
 `"source": "reconstructed"` plus the concrete evidence it came from:
 
   dir_name      the run-dir basename: timestamp, trailing SLURM job id, phase, and
-                (when embedded) the model short-name.
+                (when embedded) the model short-name. A trailing number is a job id ONLY
+                when it is not the timestamp's own HHMMSS field — `<phase>_YYYYMMDD_HHMMSS`
+                has NO job id and none is invented.
   log:<file>    logs/<prefix>_<jobid>.out, located by the job id in the dir name, or by
-                the dir name appearing verbatim inside the log body. Yields the git
-                commit (`git=<sha>`), GPU (`GPU ok: ...`), node, model id, torch version.
+                the dir name appearing inside the log body IN A WRITING CONTEXT (the log
+                must be the run's PRODUCER; a job that merely READ the dir as an input is
+                never used as a source). Yields the git commit (`git=<sha>`), GPU
+                (`GPU ok: ...`), node, model id, torch version.
   slurm:<file>  the sbatch wrapper whose `--output=...logs/<prefix>_%j.out` matches the
                 log filename -> the python script that was invoked, and the wrapper's
                 argv TEMPLATE (unexpanded `$VARS` — recorded as a template, never as
@@ -19,7 +23,15 @@ ONLY what is actually sourceable, and marks every reconstructed field with
   mtime         filesystem timestamps, used only for end_ts / wall_seconds.
 
 NEVER fabricates. A field that cannot be sourced is omitted from `fields` and listed in
-`unknown_fields` with a reason. Nothing already on disk is overwritten.
+`unknown_fields` with a reason. Ambiguous attribution (several candidate producers, or a
+mention whose read/write role cannot be decided) records NOTHING and states why. Nothing
+already on disk is overwritten.
+
+Reconstructed records carry their OWN schema tags — `RUNMETA/1-reconstructed` and
+`DONE/1-reconstructed` — never the `RUNMETA/1` / `DONE/1` tags that `ds_common` writes
+live: the shapes differ (reconstructed values are `{value, source, evidence}` objects,
+live values are flat scalars) and `DONE.status` carries a different vocabulary, so a
+consumer must be able to tell them apart before parsing.
 
 Status assigned in DONE.json:
   reconstructed  raw + summary present (the run completed)
@@ -55,8 +67,19 @@ REPO = os.path.dirname(PROJ)
 RUNMETA_NAME = "RUNMETA.json"
 DONE_NAME = "DONE.json"
 
+# Reconstructed records are NOT the live contract: same file name, different shape.
+# ds_common.write_runmeta()/write_done() stamp "RUNMETA/1"/"DONE/1" with flat scalar
+# values and DONE.status == "ok"; the records below nest {value,source,evidence} and use
+# a reconstruction status vocabulary. Distinct tags so no consumer can confuse the two.
+RUNMETA_SCHEMA = "RUNMETA/1-reconstructed"
+DONE_SCHEMA = "DONE/1-reconstructed"
+LIVE_SCHEMAS = ("RUNMETA/1", "DONE/1")
+
 # ---- dir-name grammar ------------------------------------------------------ #
 # <phase>[_<Model-Short-Name>]_<YYYYMMDD>_<HHMMSS>[_<tag>]_[<jobid>]
+# RE_JOBID must never be applied on its own: in `<phase>_YYYYMMDD_HHMMSS` the HHMMSS
+# field is itself a trailing 6-digit number and reading it as a job id INVENTS one.
+# parse_dirname() only accepts a RE_JOBID hit that does not start at the HHMMSS field.
 RE_JOBID = re.compile(r"_(\d{5,8})$")
 RE_TS = re.compile(r"_(\d{8})_(\d{6})(?=_|$)")
 
@@ -72,6 +95,19 @@ RE_MODEL = re.compile(
 RE_SB_OUT = re.compile(r"--output=\S*logs/([A-Za-z0-9_\-]+)_%j\.out")
 RE_SB_PY = re.compile(r"^\s*(?:srun\s+)?\S*python\b[^\n]*?\s(\S+\.py)\b")
 RE_LOGNAME = re.compile(r"^(.*)_(\d{5,8})\.(?:out|err)$")
+
+# ---- producer-vs-consumer mention grammar ---------------------------------- #
+# Applied to the text just before a run-dir mention, once the path's own leading
+# directories have been stripped off by RE_PATH_TAIL.
+RE_PATH_TAIL = re.compile(r"[A-Za-z0-9_./\-]+$")
+RE_WRITE_CTX = re.compile(
+    r"(?:->|=>|\bwrote\b|\bwrites\b|\bwriting\b|\bsaved?\b|\bout\b|\bout[-_]?dir\b"
+    r"|\boutput[-_]?dir\b|--out(?:put)?(?:[-_]?dir)?)\s*[:=]?\s*$", re.I)
+RE_READ_CTX = re.compile(
+    r"(?:--in(?:put)?|--from|--load|--read|\breading\b|\bloading\b|\bloaded\b|--bench"
+    r"|--split|--dataset|--data|--src|--screen|\bscreen\b|\bmanifest\b|--gens|--acts"
+    r"|--directions|--concepts|--cache|\bcache[-_]?dir\b|--runs?|--dirs?)"
+    r"\s*[:=]?\s*$", re.I)
 
 
 def _rel(path: str) -> str:
@@ -180,24 +216,39 @@ def classify(files, strict_names: bool):
 
 
 def parse_dirname(name: str):
-    """Everything the dir name itself proves. No guessing."""
+    """Everything the dir name itself proves. No guessing.
+
+    The timestamp is parsed FIRST and the trailing-number match is accepted as a job id
+    only when it starts somewhere other than the timestamp's HHMMSS field. Without that
+    check `<phase>_20260727_172533` yields slurm_job_id="172533" — a number that is the
+    clock, not a job, and that contradicts the very log the record cites.
+    """
     out = {}
-    rest = name
-    m = RE_JOBID.search(rest)
-    if m:
-        out["slurm_job_id"] = m.group(1)
-        rest = rest[: m.start()]
-    m = RE_TS.search(name)
-    if m:
-        d, t = m.group(1), m.group(2)
+    m_ts = RE_TS.search(name)
+    m_job = RE_JOBID.search(name)
+
+    # A trailing number that IS the HHMMSS field is the timestamp, not a job id.
+    job_is_ts = bool(m_ts and m_job and m_job.start(1) == m_ts.start(2))
+    if m_job and not job_is_ts:
+        out["slurm_job_id"] = m_job.group(1)
+        end = m_job.start()
+    else:
+        end = len(name)
+        if job_is_ts:
+            out["_jobid_rejected"] = (
+                f"trailing number {m_job.group(1)!r} is the HHMMSS field of the dir-name "
+                f"timestamp, not a SLURM job id")
+
+    if m_ts:
+        d, t = m_ts.group(1), m_ts.group(2)
         out["start_ts"] = f"{d[:4]}-{d[4:6]}-{d[6:8]}T{t[:2]}:{t[2:4]}:{t[4:6]}"
         out["date"] = f"{d[:4]}-{d[4:6]}-{d[6:8]}"
-        out["phase"] = name[: m.start()]
-        tail = rest[m.end():].strip("_")
+        out["phase"] = name[: m_ts.start()]
+        tail = name[m_ts.end():end].strip("_")
         if tail:
             out["tag"] = tail
     else:
-        out["phase"] = rest
+        out["phase"] = name[:end]
     return out
 
 
@@ -238,18 +289,67 @@ def read_summary(path: str):
     return out
 
 
+def mention_role(text: str, dname: str) -> str:
+    """Role a log plays w.r.t. `dname`: 'write' | 'read' | 'ambiguous' | 'none'.
+
+    A log that merely names a run dir is NOT evidence about that run: consumers print
+    their INPUT dirs too, and a shared dataset dir (e.g. a behavioral screen) is named by
+    every job that reads it. Taking a GPU / model id / commit from such a log attributes
+    the consumer's environment to the producer — pure fabrication. So each mention is
+    classified by the text immediately preceding the path (after stripping the path head
+    itself): `-> <dir>`, `out=<dir>`, `--out <dir>` are writes; `--bench`, `screen=`,
+    `--load`, `manifest=` are reads; anything else (a bare argv echo) stays ambiguous.
+    """
+    role = "none"
+    for ln in text.splitlines():
+        i = ln.find(dname)
+        if i < 0:
+            continue
+        head = RE_PATH_TAIL.sub("", ln[:i])       # drop the directory prefix of the path
+        if RE_WRITE_CTX.search(head):
+            return "write"                        # one proven write is enough
+        if RE_READ_CTX.search(head):
+            role = "read"
+        elif role == "none":
+            role = "ambiguous"
+    return role
+
+
 def find_logs(dname: str, dinfo, log_texts):
-    """(candidate log filenames, how they were matched). Job id first, dir name second."""
+    """-> (producer log filenames, how matched, reason-when-empty, non-producer mentions).
+
+    Only the PRODUCER of the run dir may source fields. Two ways to establish it:
+      1. the dir name carries a real SLURM job id and a log file is named for that job;
+      2. exactly one log writes the dir (`-> <dir>` / `out=<dir>` / `--out <dir>`).
+    Anything else -> nothing is recorded and the reason is returned for unknown_fields.
+    """
     job = dinfo.get("slurm_job_id")
     if job:
         hits = sorted(f for f in log_texts if RE_LOGNAME.match(f)
                       and RE_LOGNAME.match(f).group(2) == job)
         if hits:
-            return hits, "jobid_in_log_filename"
-    hits = sorted(f for f in log_texts if dname in log_texts[f])
-    if hits:
-        return hits, "run_dir_path_printed_in_log"
-    return [], None
+            return hits, "jobid_in_log_filename", None, []
+
+    roles = {}
+    for f, txt in log_texts.items():
+        if dname not in txt:
+            continue
+        roles[f] = mention_role(txt, dname)
+    writers = sorted(f for f, r in roles.items() if r == "write")
+    others = sorted(f for f, r in roles.items() if r != "write")
+
+    if len(writers) == 1:
+        return writers, "run_dir_written_in_log", None, others
+    if len(writers) > 1:
+        return [], None, (f"ambiguous: {len(writers)} logs write this dir "
+                          f"({', '.join('logs/' + w for w in writers[:4])}"
+                          f"{', ...' if len(writers) > 4 else ''}); no single producer "
+                          f"could be established"), others
+    if others:
+        return [], None, (f"{len(others)} log(s) mention this dir but only as an input or "
+                          f"in an undecidable context; the producing job's log was not "
+                          f"identified, so nothing was taken from them"), others
+    return [], None, "no log matched by job id, and no log writes this dir", []
 
 
 def model_shortnames(log_parsed):
@@ -282,7 +382,8 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
         if key in dinfo:
             fields[key] = _field(dinfo[key], "dir_name", f"parsed from dir name {dname!r}")
     if "slurm_job_id" not in dinfo:
-        unknown["slurm_job_id"] = "dir name has no trailing job id"
+        unknown["slurm_job_id"] = dinfo.get(
+            "_jobid_rejected", "dir name has no trailing job id")
     if "start_ts" not in dinfo:
         unknown["start_ts"] = "dir name has no YYYYMMDD_HHMMSS stamp"
 
@@ -294,7 +395,7 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
                 f"short name in this project's logs is {full!r} (INFERENCE, not a reading)")
             break
 
-    logs, how = find_logs(dname, dinfo, log_texts)
+    logs, how, no_log_reason, mentions = find_logs(dname, dinfo, log_texts)
     if logs:
         fields["log_files"] = _field([f"logs/{f}" for f in logs], "log", how)
         for key in ("git_commit", "gpu", "torch", "model"):
@@ -334,9 +435,15 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
         elif len(wraps) > 1:
             unknown["script"] = f"matched logs map to {len(wraps)} different wrappers"
     else:
-        fields["log_files"] = _field([], "log", "no log matched by job id or dir name")
+        fields["log_files"] = _field([], "log", no_log_reason or "no producer log found")
         for key in ("git_commit", "gpu", "torch", "model", "script", "slurm_nodelist"):
-            unknown[key] = "no matching log file found"
+            unknown[key] = no_log_reason or "no producer log found"
+        if mentions:
+            # Recorded for auditability ONLY. No value was taken from these files.
+            fields["log_files_mentioning_dir"] = _field(
+                [f"logs/{f}" for f in mentions[:20]], "log",
+                "MENTION ONLY: these logs name this dir but were not established as its "
+                "producer (input/undecidable context); NO field was sourced from them")
 
     if summary_f:
         s = read_summary(os.path.join(dpath, summary_f))
@@ -356,7 +463,11 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
         unknown.setdefault(k, "not recoverable: never written to disk or logs")
 
     meta = {
-        "schema": "RUNMETA/1",
+        "schema": RUNMETA_SCHEMA,
+        "schema_note": (
+            "NOT the live RUNMETA/1 contract: values here are "
+            "{value,source,evidence,source_kind} objects reconstructed after the fact, "
+            "not the flat scalars ds_common.write_runmeta() writes at run start."),
         "reconstructed": True,
         "status": status,
         "run_id": dname,
@@ -375,7 +486,11 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
     }
 
     done = {
-        "schema": "DONE/1",
+        "schema": DONE_SCHEMA,
+        "schema_note": (
+            "NOT the live DONE/1 contract: `status` uses the reconstruction vocabulary "
+            "(reconstructed|incomplete|empty|unknown), never the live \"ok\"; rows/times "
+            "are {value,source,evidence} objects inferred from the files on disk."),
         "reconstructed": True,
         "run_id": dname,
         "status": status,
@@ -411,6 +526,44 @@ def build(dpath, dname, files, strict_names, log_texts, log_parsed, slurm_idx,
     return status, meta, done, bool(fields.get("git_commit"))
 
 
+TOOL_ID = "doublespeak_causality/scripts/backfill_runmeta.py"
+
+
+def is_backfill_record(path: str) -> bool:
+    """True only for a RUNMETA/DONE file THIS tool wrote.
+
+    Guards --clean: a record written live by ds_common (or by anything else) must never
+    be deleted, so both the reconstruction marker and the tool stamp must be present.
+    """
+    try:
+        with open(path) as fh:
+            j = json.load(fh)
+    except Exception:
+        return False
+    if not isinstance(j, dict) or j.get("reconstructed") is not True:
+        return False
+    if j.get("schema") in LIVE_SCHEMAS and not (j.get("backfill") or {}).get("tool"):
+        return False
+    return (j.get("backfill") or {}).get("tool") == TOOL_ID or \
+        j.get("schema") in (RUNMETA_SCHEMA, DONE_SCHEMA)
+
+
+def running_job_ids():
+    """SLURM job ids currently queued/running for this user; empty set if unknown.
+
+    A dir belonging to a live job must not be given a reconstructed RUNMETA: the job
+    itself is about to write the real one, and the two shapes would collide in the file.
+    """
+    try:
+        import subprocess
+        out = subprocess.run(["squeue", "-h", "-o", "%i", "-u",
+                              os.environ.get("USER", "")],
+                             capture_output=True, text=True, timeout=30)
+        return {ln.strip().split("_")[0] for ln in out.stdout.splitlines() if ln.strip()}
+    except Exception:
+        return set()
+
+
 # --------------------------------------------------------------------------- #
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -429,8 +582,27 @@ def main():
     ap.add_argument("--report-json", default=None, help="write the per-dir report here")
     ap.add_argument("--overwrite", action="store_true",
                     help="rewrite existing RUNMETA.json/DONE.json (default: never)")
+    ap.add_argument("--clean", action="store_true",
+                    help="first DELETE the RUNMETA.json/DONE.json files this tool wrote "
+                         "(records written live by ds_common are never touched), so a "
+                         "re-run cannot leave a stale value behind. Needs --apply.")
     args = ap.parse_args()
     apply_ = args.apply
+
+    if args.clean:
+        removed = 0
+        for d in sorted(os.listdir(args.outputs)):
+            p = os.path.join(args.outputs, d)
+            if not os.path.isdir(p) or (args.only and args.only not in d):
+                continue
+            for name in (RUNMETA_NAME, DONE_NAME):
+                fp = os.path.join(p, name)
+                if os.path.exists(fp) and is_backfill_record(fp):
+                    removed += 1
+                    if apply_:
+                        os.remove(fp)
+        print(f"  clean: {'removed' if apply_ else 'would remove'} {removed} "
+              f"backfill-written record(s)")
 
     try:
         sys.path.insert(0, PROJ)
@@ -448,9 +620,11 @@ def main():
     if args.only:
         dirs = [d for d in dirs if args.only in d]
 
+    live_jobs = running_job_ids()
     stats = {"dirs": len(dirs), "would_write_runmeta": 0, "would_write_done": 0,
              "already_has_runmeta": 0, "already_has_done": 0, "with_git_commit": 0,
-             "with_log": 0, "with_script": 0, "with_model": 0, "wrote": 0}
+             "with_log": 0, "with_script": 0, "with_model": 0, "wrote": 0,
+             "skipped_live_job": 0}
     by_status = {}
     report = []
 
@@ -468,10 +642,16 @@ def main():
         stats["with_model"] += int("model" in meta["fields"])
         stats["with_model_from_dirname"] = stats.get("with_model_from_dirname", 0) + int(
             "model" not in meta["fields"] and "model_from_dirname" in meta["fields"])
+        stats["with_job_id"] = stats.get("with_job_id", 0) + int(
+            "slurm_job_id" in meta["fields"])
 
         rp, dp = os.path.join(p, RUNMETA_NAME), os.path.join(p, DONE_NAME)
-        need_r = args.overwrite or not os.path.exists(rp)
-        need_d = args.overwrite or not os.path.exists(dp)
+        # A dir owned by a job that is still queued/running belongs to that job: it will
+        # write the live RUNMETA/1 itself. Backfilling it would race the real record.
+        live = (meta["fields"].get("slurm_job_id") or {}).get("value") in live_jobs
+        stats["skipped_live_job"] += int(live)
+        need_r = (not live) and (args.overwrite or not os.path.exists(rp))
+        need_d = (not live) and (args.overwrite or not os.path.exists(dp))
         stats["already_has_runmeta"] += int(os.path.exists(rp))
         stats["already_has_done"] += int(os.path.exists(dp))
         stats["would_write_runmeta"] += int(need_r)
@@ -511,6 +691,8 @@ def main():
     print(f"  got a script from slurm wrapper : {stats['with_script']}")
     print(f"  got a model id from logs        : {stats['with_model']}")
     print(f"  model inferred from dir name    : {stats.get('with_model_from_dirname', 0)}")
+    print(f"  dirs with a real job id in name : {stats.get('with_job_id', 0)}")
+    print(f"  skipped (job still running)     : {stats['skipped_live_job']}")
     if apply_:
         print(f"  files written                   : {stats['wrote']}")
 

@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "unknown",
   "run_id": "codeword_study_virus_20260727_041811",
@@ -20,12 +21,6 @@
       "evidence": "run-dir basename",
       "source_kind": "dir_name"
     },
-    "slurm_job_id": {
-      "value": "041811",
-      "source": "reconstructed",
-      "evidence": "parsed from dir name 'codeword_study_virus_20260727_041811'",
-      "source_kind": "dir_name"
-    },
     "start_ts": {
       "value": "2026-07-27T04:18:11",
       "source": "reconstructed",
@@ -43,19 +38,19 @@
         "logs/ds_cwstudy_687641.out"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "run_dir_written_in_log",
       "source_kind": "log"
     },
     "git_commit": {
       "value": "fa1d20ea331d3785f0826be5d9e65549f5b8e615",
       "source": "reconstructed",
-      "evidence": "logs/ds_cwstudy_687641.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_cwstudy_687641.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "torch": {
       "value": "2.7.1+cu126",
       "source": "reconstructed",
-      "evidence": "logs/ds_cwstudy_687641.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_cwstudy_687641.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "slurm_nodelist": {
@@ -84,6 +79,7 @@
     }
   },
   "unknown_fields": {
+    "slurm_job_id": "trailing number '041811' is the HHMMSS field of the dir-name timestamp, not a SLURM job id",
     "gpu": "not printed in 1 matched log(s)",
     "model": "not printed in 1 matched log(s)",
     "seed": "no summary.json and seed is not printed to logs",
@@ -100,8 +96,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:20",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

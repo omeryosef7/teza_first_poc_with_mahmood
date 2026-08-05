@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "unknown",
   "run_id": "multiconcept_emergence_phi4",
@@ -30,25 +31,25 @@
         "logs/ds_multiconcept_688071.out"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "run_dir_written_in_log",
       "source_kind": "log"
     },
     "git_commit": {
       "value": "63b945ec826024ab35393f78e1d83d785712e9ed",
       "source": "reconstructed",
-      "evidence": "logs/ds_multiconcept_688071.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_multiconcept_688071.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "gpu": {
       "value": "NVIDIA L40S",
       "source": "reconstructed",
-      "evidence": "logs/ds_multiconcept_688071.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_multiconcept_688071.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "model": {
       "value": "microsoft/Phi-4-mini-reasoning",
       "source": "reconstructed",
-      "evidence": "logs/ds_multiconcept_688071.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_multiconcept_688071.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "slurm_nodelist": {
@@ -83,8 +84,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:21",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

@@ -10,7 +10,9 @@ provenance records, and exits non-zero on a regression. Runs on the login node
 Checks
   A. run-dir inventory ........ total run dirs; how many carry summary.json /
                                 RUNMETA.json / DONE.json / raw.jsonl
-  B. broken run dirs .......... EMPTY dirs; dirs with raw.jsonl but no summary.json
+  B. broken run dirs .......... EMPTY dirs (no *payload* file -- RUNMETA.json /
+                                DONE.json do not count, the P0.1 backfill put them
+                                in all 367 dirs); raw.jsonl but no summary.json
   C. fixed-name dirs .......... no `_YYYYMMDD_HHMMSS` stamp => clobber-on-rerun
                                 (also reports stamped-but-jobless dirs)
   D. job-id collisions ........ one SLURM job id mapping to >1 run dir
@@ -28,6 +30,13 @@ Severity & exit status
   exit 0 = no FAIL findings (and, with --baseline, nothing got worse)
   exit 1 = at least one FAIL finding, or any counter worse than the baseline
   exit 2 = usage / IO error
+
+--baseline used to consult the RATCHET_KEYS counters ONLY, so a FAIL that no
+counter measures -- free space under the hard floor, a missing
+EXPERIMENT_REGISTRY.csv / ARTEFACT_MANIFEST.json / logs dir -- exited 0 in CI.
+Now --baseline exits 1 on any FAIL; `--baseline-fail-mode unratcheted` restores
+the forgiving behaviour for FAILs the baseline actually froze a counter for,
+while keeping the uncounted ones fatal.
 
 Because the repo is *currently* in violation of §2.1, a bare run exits 1 by
 design. To use this as a ratchet, freeze today's numbers and compare:
@@ -61,6 +70,12 @@ RE_JOBID_ANY = re.compile(r"(\d{5,})")
 
 CONTRACT_FILES = ("summary.json", "RUNMETA.json", "DONE.json", "raw.jsonl")
 
+# Provenance stubs the P0.1 backfill wrote into *every* run dir, including the ones that produced
+# nothing. A dir holding only these has no results in it, so emptiness is defined on the payload --
+# `n_entries == 0` has been unreachable since the backfill, which silently pinned `empty_dirs` at 0
+# and killed its ratchet.
+PROVENANCE_FILES = {"RUNMETA.json", "DONE.json"}
+
 # counters that must never grow; compared against --baseline
 RATCHET_KEYS = [
     "empty_dirs",
@@ -82,22 +97,28 @@ class Report:
     """Collects findings; mirrors the ok/WARN/FATAL idiom of validate_data_integrity.py."""
 
     def __init__(self):
-        self.rows = []  # (severity, check, message, detail_list)
+        self.rows = []  # (severity, check, message, detail_list, ratchet_key)
 
-    def add(self, sev, check, msg, detail=None):
-        self.rows.append((sev, check, msg, list(detail or [])))
+    def add(self, sev, check, msg, detail=None, key=None):
+        # `key` names the RATCHET_KEYS counter that measures this finding, or None when nothing
+        # counts it. A FAIL with no counter can never be forgiven by --baseline, because there is
+        # no number for the baseline to freeze (capacity, "registry not found", "logs dir not found").
+        self.rows.append((sev, check, msg, list(detail or []), key))
 
-    def ok(self, check, msg, detail=None):
-        self.add("ok", check, msg, detail)
+    def ok(self, check, msg, detail=None, key=None):
+        self.add("ok", check, msg, detail, key)
 
-    def warn(self, check, msg, detail=None):
-        self.add("WARN", check, msg, detail)
+    def warn(self, check, msg, detail=None, key=None):
+        self.add("WARN", check, msg, detail, key)
 
-    def fail(self, check, msg, detail=None):
-        self.add("FAIL", check, msg, detail)
+    def fail(self, check, msg, detail=None, key=None):
+        self.add("FAIL", check, msg, detail, key)
 
     def n(self, sev):
         return sum(1 for r in self.rows if r[0] == sev)
+
+    def fails(self):
+        return [r for r in self.rows if r[0] == "FAIL"]
 
 
 def norm_token(s: str) -> str:
@@ -150,10 +171,12 @@ def scan_run_dirs(outputs_dir: str):
             entries = os.listdir(p)
         except OSError:
             entries = []
+        files = set(entries)
         runs[name] = {
             "path": p,
             "n_entries": len(entries),
-            "files": set(entries),
+            "files": files,
+            "payload": files - PROVENANCE_FILES,   # what the run actually produced
         }
     return runs
 
@@ -175,16 +198,20 @@ def check_inventory(rep, runs):
 
 
 def check_broken(rep, runs):
-    empty = sorted(k for k, v in runs.items() if v["n_entries"] == 0)
+    empty = sorted(k for k, v in runs.items() if not v["payload"])
+    bare = sum(1 for k in empty if runs[k]["n_entries"] == 0)
     raw_no_sum = sorted(
         k for k, v in runs.items()
         if "raw.jsonl" in v["files"] and "summary.json" not in v["files"]
     )
     (rep.ok if not empty else rep.fail)(
-        "B.broken", f"{len(empty)} EMPTY run dirs (no files at all)", empty)
+        "B.broken",
+        f"{len(empty)} EMPTY run dirs (no payload file; {bare} hold nothing at all, "
+        f"{len(empty) - bare} hold only {'/'.join(sorted(PROVENANCE_FILES))})",
+        empty, key="empty_dirs")
     (rep.ok if not raw_no_sum else rep.fail)(
         "B.broken", f"{len(raw_no_sum)} dirs with raw.jsonl but no summary.json (aborted runs)",
-        raw_no_sum)
+        raw_no_sum, key="raw_without_summary")
     return empty, raw_no_sum
 
 
@@ -305,7 +332,8 @@ def check_registry(rep, runs, registry_path, outputs_dir, project_dir, repo_root
 
     rep.ok("F.registry", f"{len(rows)} registry rows; {len(registered)} resolve to a run dir")
     (rep.ok if not dead else rep.fail)(
-        "F.registry", f"{len(dead)} registry rows whose output_dir does NOT exist", dead)
+        "F.registry", f"{len(dead)} registry rows whose output_dir does NOT exist", dead,
+        key="registry_rows_dead_path")
     (rep.ok if not non_run_dir else rep.warn)(
         "F.registry",
         f"{len(non_run_dir)} registry rows pointing at a file / non-run-dir path",
@@ -349,15 +377,17 @@ def check_manifest(rep, manifest_path, project_dir, repo_root, verify_hashes):
            f"{len(files)} files listed in ARTEFACT_MANIFEST.json "
            f"({human(sum(e.get('bytes', 0) or 0 for e in files))})")
     (rep.ok if not missing else rep.fail)(
-        "G.manifest", f"{len(missing)} manifest files MISSING from disk", missing)
+        "G.manifest", f"{len(missing)} manifest files MISSING from disk", missing,
+        key="manifest_missing")
     (rep.ok if not size_drift else rep.fail)(
-        "G.manifest", f"{len(size_drift)} manifest files with a SIZE mismatch", size_drift)
+        "G.manifest", f"{len(size_drift)} manifest files with a SIZE mismatch", size_drift,
+        key="manifest_size_drift")
     if verify_hashes:
         (rep.ok if not hash_drift else rep.fail)(
             "G.manifest",
             f"{len(hash_drift)} manifest files with sha256 DRIFT "
             f"({human(hashed_bytes)} hashed)",
-            hash_drift)
+            hash_drift, key="manifest_hash_drift")
     else:
         rep.warn("G.manifest",
                  "sha256 not recomputed (pass --verify-hashes); size check only")
@@ -400,7 +430,7 @@ def render_table(rep, counters, meta, max_detail):
     print(f"when    : {meta['timestamp']}   ({meta['elapsed_s']:.2f} s)")
     print("=" * w)
     cur = None
-    for sev, check, msg, detail in rep.rows:
+    for sev, check, msg, detail, _key in rep.rows:
         sec = check.split(".", 1)[0]
         if sec != cur:
             cur = sec
@@ -446,6 +476,11 @@ def main(argv=None):
                     help="JSON file of frozen counters; exit 1 only if a counter got worse")
     ap.add_argument("--write-baseline", default=None,
                     help="write the current counters to this path and exit 0")
+    ap.add_argument("--baseline-fail-mode", choices=("any", "unratcheted"), default="any",
+                    help="with --baseline: 'any' (default) exits 1 on ANY FAIL finding; "
+                         "'unratcheted' forgives FAILs whose RATCHET_KEYS counter the baseline froze "
+                         "and did not grow, but still exits 1 on FAILs no counter tracks "
+                         "(capacity floor, missing registry/manifest/logs)")
     ap.add_argument("--max-detail", type=int, default=8,
                     help="offenders printed per finding in table mode (default 8)")
     ap.add_argument("-v", "--verbose", action="store_true",
@@ -526,6 +561,15 @@ def main(argv=None):
         if not regressions:
             rep.ok("Z.baseline", f"no counter worse than baseline {args.baseline}")
 
+    # A FAIL is "ratcheted" only if some RATCHET_KEYS counter measures it AND the baseline actually
+    # froze that counter. Everything else (capacity below the hard floor, "registry not found",
+    # "logs dir not found", "manifest not found") has no number for the baseline to compare, so it
+    # used to vanish entirely in --baseline mode.
+    unratcheted_fails = [
+        f"{c}: {m}" for _s, c, m, _d, k in rep.fails()
+        if not c.startswith("Z.") and (k is None or baseline is None or k not in baseline)
+    ]
+
     meta = {
         "project_dir": project_dir,
         "outputs_dir": outputs_dir,
@@ -542,10 +586,11 @@ def main(argv=None):
         "meta": meta,
         "counters": counters,
         "findings": [
-            {"severity": s, "check": c, "message": m, "detail": d}
-            for s, c, m, d in rep.rows
+            {"severity": s, "check": c, "message": m, "detail": d, "ratchet_key": k}
+            for s, c, m, d, k in rep.rows
         ],
         "regressions": regressions,
+        "unratcheted_fails": unratcheted_fails,
         "n_ok": rep.n("ok"), "n_warn": rep.n("WARN"), "n_fail": rep.n("FAIL"),
     }
 
@@ -555,21 +600,42 @@ def main(argv=None):
         print(f"baseline written: {args.write_baseline}")
         return 0
 
+    code, why = exit_status(rep, baseline, regressions, unratcheted_fails, args.baseline_fail_mode)
+
     if args.as_json:
-        payload["exit_code"] = 1 if (rep.n("FAIL") > 0 if baseline is None else bool(regressions)) else 0
+        payload["exit_code"] = code
+        payload["exit_reason"] = why
         json.dump(payload, sys.stdout, indent=2, sort_keys=False)
         sys.stdout.write("\n")
-        return payload["exit_code"]
+        return code
 
     render_table(rep, counters, meta, -1 if args.verbose else args.max_detail)
-    if baseline is None:
-        code = 1 if rep.n("FAIL") > 0 else 0
-        print(f"EXIT     {code}  ({'FAIL findings present' if code else 'clean'}; "
-              f"use --baseline to ratchet instead)")
-    else:
-        code = 1 if regressions else 0
-        print(f"EXIT     {code}  ({'REGRESSION vs baseline' if code else 'no regression vs baseline'})")
+    print(f"EXIT     {code}  ({why})")
     return code
+
+
+def exit_status(rep, baseline, regressions, unratcheted_fails, mode):
+    """-> (exit_code, human reason).
+
+    Without a baseline: any FAIL is fatal (unchanged).
+    With a baseline the old code looked at `regressions` ONLY, so every FAIL that no RATCHET_KEYS
+    counter tracks -- free space below the hard floor, a missing EXPERIMENT_REGISTRY.csv, a missing
+    ARTEFACT_MANIFEST.json, a missing logs/ -- exited 0 in CI. Now:
+      mode 'any'         (default) any FAIL finding is fatal, baseline or not;
+      mode 'unratcheted' FAILs whose counter the baseline froze are forgiven while the counter does
+                         not grow; everything else stays fatal.
+    """
+    nfail = rep.n("FAIL")
+    if baseline is None:
+        return (1, "FAIL findings present; use --baseline to ratchet instead") if nfail else (0, "clean")
+    if regressions:
+        return 1, "REGRESSION vs baseline"
+    if mode == "any" and nfail:
+        return 1, f"{nfail} FAIL finding(s) (no regression, but --baseline-fail-mode=any)"
+    if unratcheted_fails:
+        return 1, (f"{len(unratcheted_fails)} FAIL finding(s) no baseline counter can forgive: "
+                   + "; ".join(unratcheted_fails[:3]))
+    return 0, "no regression vs baseline"
 
 
 if __name__ == "__main__":

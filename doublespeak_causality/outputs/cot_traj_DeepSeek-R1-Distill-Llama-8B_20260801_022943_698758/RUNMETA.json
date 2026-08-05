@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "reconstructed",
   "run_id": "cot_traj_DeepSeek-R1-Distill-Llama-8B_20260801_022943_698758",
@@ -47,7 +48,7 @@
     "log_files": {
       "value": [],
       "source": "reconstructed",
-      "evidence": "no log matched by job id or dir name",
+      "evidence": "no log matched by job id, and no log writes this dir",
       "source_kind": "log"
     },
     "model": {
@@ -58,12 +59,12 @@
     }
   },
   "unknown_fields": {
-    "git_commit": "no matching log file found",
-    "gpu": "no matching log file found",
-    "torch": "no matching log file found",
-    "model": "no matching log file found",
-    "script": "no matching log file found",
-    "slurm_nodelist": "no matching log file found",
+    "git_commit": "no log matched by job id, and no log writes this dir",
+    "gpu": "no log matched by job id, and no log writes this dir",
+    "torch": "no log matched by job id, and no log writes this dir",
+    "model": "no log matched by job id, and no log writes this dir",
+    "script": "no log matched by job id, and no log writes this dir",
+    "slurm_nodelist": "no log matched by job id, and no log writes this dir",
     "seed": "not recorded anywhere: absent from summary.json and logs",
     "argv": "not recoverable: never written to disk or logs",
     "args": "not recoverable: never written to disk or logs",
@@ -78,8 +79,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:20",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

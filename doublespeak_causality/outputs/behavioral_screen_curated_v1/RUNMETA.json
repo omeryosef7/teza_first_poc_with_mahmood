@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "reconstructed",
   "run_id": "behavioral_screen_curated_v1",
@@ -34,23 +35,22 @@
     },
     "log_files": {
       "value": [
-        "logs/ds_behmvp_689471.out",
-        "logs/ds_behnec_689727.out",
-        "logs/ds_behnec_689972.out",
-        "logs/ds_behnec_691756.out",
-        "logs/ds_behnec_692698.out",
-        "logs/ds_behnec_692699.out",
-        "logs/ds_behnec_692700.out",
         "logs/ds_behscreen_689373.out"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "run_dir_written_in_log",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "03ff0b8e5f26956642434ecb2d9ba29a43e214ec",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behscreen_689373.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "gpu": {
       "value": "NVIDIA L40S",
       "source": "reconstructed",
-      "evidence": "logs/ds_behmvp_689471.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_behscreen_689373.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "model": {
@@ -58,14 +58,36 @@
       "source": "reconstructed",
       "evidence": "screen_summary.json['model']",
       "source_kind": "summary"
+    },
+    "slurm_nodelist": {
+      "value": "n-803",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behscreen_689373.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_behavioral_screen.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_behscreen_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/17_validate_behavioral_triplets.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_behavioral_screen.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/17_validate_behavioral_triplets.py --matrix \"$DSMATRIX\" --model \"$DSMODEL\" --templated --enable-thinking \"$DSTHINK\" --max-new-tokens \"$DSMAXTOK\" $LIM_ARG --out-dir \"doublespeak_causality/outputs/behavioral_screen_${DSTAG}\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_behavioral_screen.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
     }
   },
   "unknown_fields": {
     "slurm_job_id": "dir name has no trailing job id",
     "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
-    "git_commit": "conflicting values across 8 matched logs",
-    "torch": "not printed in 8 matched log(s)",
-    "script": "matched logs map to 3 different wrappers",
+    "torch": "not printed in 1 matched log(s)",
     "seed": "not recorded anywhere: absent from summary.json and logs",
     "argv": "not recoverable: never written to disk or logs",
     "args": "not recoverable: never written to disk or logs",
@@ -80,8 +102,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:20",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

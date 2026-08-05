@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "unknown",
   "run_id": "ko_gen_llama8b",
@@ -26,37 +27,21 @@
       "source_kind": "dir_name"
     },
     "log_files": {
-      "value": [
-        "logs/ds_ko_gen_687994.out",
-        "logs/ds_ko_gen_688037.out",
-        "logs/ds_ko_gen_688039.out",
-        "logs/ds_ko_gen_688045.out",
-        "logs/ds_ko_gen_689610.out",
-        "logs/ds_lko_gen_688536.out"
-      ],
+      "value": [],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
-      "source_kind": "log"
-    },
-    "gpu": {
-      "value": "NVIDIA L40S",
-      "source": "reconstructed",
-      "evidence": "logs/ds_ko_gen_687994.out (run_dir_path_printed_in_log)",
-      "source_kind": "log"
-    },
-    "model": {
-      "value": "meta-llama/Llama-3.1-8B-Instruct",
-      "source": "reconstructed",
-      "evidence": "logs/ds_ko_gen_687994.out (run_dir_path_printed_in_log)",
+      "evidence": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
       "source_kind": "log"
     }
   },
   "unknown_fields": {
     "slurm_job_id": "dir name has no trailing job id",
     "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
-    "git_commit": "not printed in 6 matched log(s)",
-    "torch": "not printed in 6 matched log(s)",
-    "script": "matched logs map to 2 different wrappers",
+    "git_commit": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
+    "gpu": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
+    "torch": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
+    "model": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
+    "script": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
+    "slurm_nodelist": "ambiguous: 6 logs write this dir (logs/ds_ko_gen_687994.out, logs/ds_ko_gen_688037.out, logs/ds_ko_gen_688039.out, logs/ds_ko_gen_688045.out, ...); no single producer could be established",
     "seed": "no summary.json and seed is not printed to logs",
     "argv": "not recoverable: never written to disk or logs",
     "args": "not recoverable: never written to disk or logs",
@@ -71,8 +56,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:21",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

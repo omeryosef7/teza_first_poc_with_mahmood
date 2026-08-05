@@ -1,5 +1,6 @@
 {
-  "schema": "RUNMETA/1",
+  "schema": "RUNMETA/1-reconstructed",
+  "schema_note": "NOT the live RUNMETA/1 contract: values here are {value,source,evidence,source_kind} objects reconstructed after the fact, not the flat scalars ds_common.write_runmeta() writes at run start.",
   "reconstructed": true,
   "status": "reconstructed",
   "run_id": "beh_sufficiency_Llama-3.1-8B-Instruct_20260728_173356",
@@ -18,12 +19,6 @@
       "value": "beh_sufficiency_Llama-3.1-8B-Instruct_20260728_173356",
       "source": "reconstructed",
       "evidence": "run-dir basename",
-      "source_kind": "dir_name"
-    },
-    "slurm_job_id": {
-      "value": "173356",
-      "source": "reconstructed",
-      "evidence": "parsed from dir name 'beh_sufficiency_Llama-3.1-8B-Instruct_20260728_173356'",
       "source_kind": "dir_name"
     },
     "start_ts": {
@@ -49,19 +44,19 @@
         "logs/ds_behsuff_692153.out"
       ],
       "source": "reconstructed",
-      "evidence": "run_dir_path_printed_in_log",
+      "evidence": "run_dir_written_in_log",
       "source_kind": "log"
     },
     "git_commit": {
       "value": "cabfcc81fdc91a11ac9df037480b2af9ef14e200",
       "source": "reconstructed",
-      "evidence": "logs/ds_behsuff_692153.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_behsuff_692153.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "gpu": {
       "value": "NVIDIA L40S",
       "source": "reconstructed",
-      "evidence": "logs/ds_behsuff_692153.out (run_dir_path_printed_in_log)",
+      "evidence": "logs/ds_behsuff_692153.out (run_dir_written_in_log)",
       "source_kind": "log"
     },
     "model": {
@@ -96,6 +91,7 @@
     }
   },
   "unknown_fields": {
+    "slurm_job_id": "trailing number '173356' is the HHMMSS field of the dir-name timestamp, not a SLURM job id",
     "torch": "not printed in 1 matched log(s)",
     "seed": "not recorded anywhere: absent from summary.json and logs",
     "argv": "not recoverable: never written to disk or logs",
@@ -111,8 +107,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:19",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:47",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }

@@ -1,5 +1,6 @@
 {
-  "schema": "DONE/1",
+  "schema": "DONE/1-reconstructed",
+  "schema_note": "NOT the live DONE/1 contract: `status` uses the reconstruction vocabulary (reconstructed|incomplete|empty|unknown), never the live \"ok\"; rows/times are {value,source,evidence} objects inferred from the files on disk.",
   "reconstructed": true,
   "run_id": "cot_traj_DeepSeek-R1-Distill-Llama-8B_20260801_054347_699021",
   "status": "reconstructed",
@@ -23,8 +24,8 @@
   },
   "backfill": {
     "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
-    "generated_ts": "2026-08-05T13:47:20",
-    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "generated_ts": "2026-08-05T14:24:48",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
     "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
   }
 }
