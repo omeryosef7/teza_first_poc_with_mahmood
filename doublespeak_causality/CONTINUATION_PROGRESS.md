@@ -746,6 +746,30 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 34 — 2026-08-06 — traded P7's full sweep for the answer we actually need
+**Cancelled 718937 at 2 h 15 m and relaunched as 720175 with a targeted layer set.** This was a judgement
+call, so the reasoning is recorded.
+
+**The risk:** the full 32-layer × 2-family × 4-arm × 20-item sweep is ~5,100 generations ≈ 7 h against an
+**8 h walltime** — and this harness **writes `raw.jsonl` only at the END**. A walltime kill therefore
+returns **nothing** for 8 GPU-hours. At 2 h 15 m it had produced only `RUNMETA.json`, so there was no
+partial result to salvage either.
+
+**The trade:** the paper question is not "are all 32 directions valid" — it is *"are the specific directions
+our published claims rest on valid?"* That is **five** layers: **L9/L16/L22/L28** (the four calibrated
+depth-localization injection layers, with L9 the contested one) and **L18** (the direction every behavioral
+refusal arm uses). Five layers is ~6× cheaper — ~1 h, comfortably inside a 4 h walltime — and answers the
+question tonight instead of possibly never.
+
+**Made repeatable rather than ad-hoc:** added a `DSLAYERSET` preset to the wrapper
+(`headline` → `9,16,18,22,28`, `all` → unchanged default). This also sidesteps the `--export`
+comma-truncation bug: you pass `DSLAYERSET=headline`, never `DSLAYERS=9,16,...`. Verified with `bash -n`
+plus a direct check that `headline` expands correctly and the default is byte-unchanged.
+
+**Follow-up owed:** the full 32-layer sweep is still worth having for the appendix — it should be re-run at
+leisure with either a longer walltime or, better, **an incremental writer**, since "writes only at the end"
+is a genuine harness fragility that turns any interruption into total loss.
+
 ### Tick 33 — 2026-08-06 — P10 COMPLETE: the §0.9 defect is closed and the null holds
 Read out 718938 with the existing paired analyzer (McNemar + bootstrap + Holm), wrote
 `reports/P10_DECODE_SAFE_WRITE.md`. The concept-write behavioral null survives a genuinely decode-safe

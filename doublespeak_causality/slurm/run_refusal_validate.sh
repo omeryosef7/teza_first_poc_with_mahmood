@@ -64,6 +64,18 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 # comma-lists kept as DEFAULTS here (never via --export, which truncates them)
 : "${DSFAMILIES:=existing,clearharm}"
 LAYERS="$(seq -s, 0 31)"   # 0,1,...,31 built INSIDE the script (never via --export)
+# DSLAYERSET presets, so a comma-list can be chosen through --export WITHOUT hitting the
+# comma-truncation bug (pass DSLAYERSET=headline, not DSLAYERS=9,16,...).
+#   all      : every layer (default; ~5100 generations at DSVALN=20, ~7 h -- tight vs an 8 h walltime,
+#              and this harness writes raw.jsonl only at the END, so a walltime kill loses everything)
+#   headline : ONLY the layers our published claims depend on --
+#              L9/L16/L22/L28 are the four calibrated depth-localization injection layers and L18 is the
+#              direction every behavioral refusal arm uses. ~6x faster, and it answers the actual question.
+case "${DSLAYERSET:-all}" in
+  headline) LAYERS="9,16,18,22,28" ;;
+  all)      : ;;
+  *)        LAYERS="${DSLAYERSET}" ;;   # explicit comma list, only safe if set inside a script
+esac
 : "${DSLAYERS:=$LAYERS}"
 echo "=== refusal-direction validation: $DSMODEL bench=$DSBENCH families=$DSFAMILIES ==="
 echo "    layers=$DSLAYERS n=$DSVALN maxnew=$DSMAXNEW abl(a=$DSABLALPHA,$DSABLSCOPE) ind($DSINDSCOPE,$DSINDMODE)"
