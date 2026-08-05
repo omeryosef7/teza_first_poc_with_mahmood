@@ -715,6 +715,29 @@ layers our headlines actually depend on (L18, L22) both pass even at this n, whi
 
 ## Tick log (most recent first)
 
+### Tick 32 — 2026-08-06 — P10 nearly done; P7 is large but alive; a liveness false-alarm corrected
+**718938 (P10 decode-safe) at 78/86 rows** — minutes from completion.
+
+**718937 (P7 validation): I nearly called a hang that wasn't one.** Its `.out` had been silent for
+39 minutes after only the 6 header lines, and it is running on **n-801** — precisely the node with the
+documented pathological weight-load tail (owns 100 % of >900 s loads, worst 79 min) that I overrode at
+tick 25. That is exactly the profile the §1.3.1 hung-job rule targets, and I was one step from cancelling.
+
+**Checked before acting, and it is alive:** its run dir `refval_clearharm_20260806_003052_718937` was
+created at **00:30:52** and touched at **00:32:47**, i.e. minutes ago — so the process is past weight
+loading and writing. The silence is the harness's own design (the smoke likewise emitted its `[refval]`
+lines only at the end), not a stall.
+
+**Why it is slow is arithmetic, not pathology:** 32 layers × 2 direction families × 4 arms
+(ablate / induce / 2 random controls) × 20 items ≈ **5,100 generations**. At ~5 s each that is ~7 h against
+an 8 h walltime — feasible but tight. **If it approaches the limit it should be resubmitted with a smaller
+`DSVALN` or a layer subset rather than killed blind**, since the layers that matter for our headlines
+(L18, L22, and the contested L9) are a handful, not all 32.
+
+**The generalisable lesson:** "log silent for N minutes" is *necessary but not sufficient* evidence of a
+hang. The tick-8 job was genuinely stuck (frozen mid-progress-bar, run dir never created); this one is
+merely quiet. **Check the run-dir mtime, not just the log**, before cancelling.
+
 ### Tick 31 — 2026-08-06 — near-miss confirmed harmless; **P8 CORE LAUNCHED** at the corrected dose
 **The tick-30 bench overwrite caused no contamination — verified definitively, not assumed.** Rather than
 wait for the run to finish and count rows, I checked the *identities*: all **17/17** ids written so far by
