@@ -1,0 +1,6 @@
+=== behav refusal: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_curated.json maxnew=220 n=0 splits=train,test alpha=1.0 alphas='0,0.25,0.5,0.75,1.0,1.5,2.0' ===
+Wed Aug  5 05:12:34 PM IDT 2026
+n-803
+git=a9f04ae3af36a8d854f9840b03374a597ed60cca
+GPU ok: NVIDIA L40S
+[behav-refusal] cohort=curated refusal_L18 alphas=[0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/behav_refusal_curated_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171236_716015

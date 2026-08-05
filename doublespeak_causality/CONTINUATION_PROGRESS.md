@@ -323,7 +323,58 @@ one row is exactly 20 chars. Now strict `<20`.
 
 ---
 
+### 🧪 P10 harness — the agent correctly REFUSED to substitute a broader intervention
+This is the design decision that matters most in the whole P10 re-run, so it is recorded in full.
+
+`pc.AllPositionMLPAblate` **cannot express** the experiment we need: it rewrites the whole MLP output on
+every forward, which at prefill would zero L8–11 `mlp_out` at **every prompt position**, not just the demo
+codeword positions — a strictly broader and *different* experiment. Rather than silently swap it in, the
+agent built **`PhasedMLPZero`** (local to `phase_behav_write.py`): during **prefill** zero `mlp_out` only at
+the target codeword positions — **verified bit-identical to the historical `ComponentOutSwap(zeros)`** —
+and on **every KV-cached decode step** zero the newly generated position. Absolute positions are tracked by
+a per-layer row counter reset on `__enter__` (rule: `zero iff p in prompt_positions or p >= prompt_len`).
+`AllPositionMLPAblate` remains reachable as the opt-in `--allpos-arm`, honestly labelled a broader
+**upper bound**, never the write-locus measurement.
+
+**The confound the agent flagged, and the control that handles it.** `write_abl_decodesafe` = the old arm
+**plus** zeroing L8–11 on every generated token. The decode half is *necessarily* broad — generated
+positions are not known in advance, so it cannot be codeword-selective the way the prefill half is.
+A raw baseline-vs-decodesafe ASR drop therefore **confounds "the write is needed" with "zeroing 4 MLP
+layers on every generated token damages generation."** Mitigation built into the design: the count-matched
+random-position control runs in **both** phasings and carries the identical decode-side damage, so
+`delta_write_vs_randpos_decodesafe` isolates position specificity with damage held constant, and
+`delta_decode_damage` (baseline − rand_pos_decodesafe) measures the damage on its own. **Read those two
+keys, not the raw baseline-vs-decodesafe delta.**
+
+Both phasings run in one experiment (`write_abl_prefill` = the historical arm, `write_abl_decodesafe` = new)
+so the difference is directly measurable. `summary.json` carries a `legacy_arm_name_map` so old numbers
+stay traceable. **BEHAV-CARRY needed no ablation change** — `AllPositionZHeadAblate` was already
+decode-safe; the agent checked and correctly left it alone rather than making a gratuitous edit.
+Verification: 18/18 synthetic checks, 4/4 in-situ arm checks through a real prefill+decode loop, 5 CPU
+dry runs, suite still 205 passed.
+
+### 📋 P9 manifest — only 7 of 16 Gate-7 arms are launchable today
+Target join confirmed **86/86 (100%, all exact-tier, 0 unmatched, 0 ambiguous)**, 44 train / 42 test —
+the instruction-text join works, the id schemes genuinely share nothing. `configs/manifests/
+phase9_gcg_mac_matrix.json` has 16 arms, seeds (42,43,44), 200×64×44 = **563,200 candidate forwards per
+arm-seed**, one negative-control flag, and a per-arm blocking dependency.
+⚠ **Only 7 arms are runnable now.** The rest are gated on P6 (Jacobian objectives) or on P3–P6 validating an
+attention/carry objective. **Arm 7 — the refusal-suppression objective, which the plan names as the
+first-to-run and the only axis with demonstrated behavioral potency — is among the 7.**
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 11 — 2026-08-05 — P10 + P7 smokes launched; all 3 prep agents landed
+Launched the **P10 decode-safe smoke** (716187) and the **P7 refusal-direction validation smoke** (716188)
+alongside the two α sweeps. P7's harness validates all 32 layers for **two direction families side by
+side** — `existing` (the shipped carrot/bomb-fit files, read-only) and `clearharm` (refit on the ClearHarm
+train split) — using the *same* ablate/induce scopes the downstream harnesses actually use
+(`AllPositionProjectOutMultiLayer` @ α=1.0, byte-identical to `phase_behav_refusal.py:145`; `AllPositionAdd`
+@ layer L as in `phase_refusal_inject_calibrated.py:96`), with norm-matched random controls and a held-out
+eval split. That side-by-side is what will tell us whether the carrot/bomb-fit directions were ever
+appropriate for ClearHarm claims.
 
 ### Tick 10 — 2026-08-05 — α sweeps running; next GPU phases being wired
 **P8.1 α sweeps are RUNNING** (716014 clearharm on n-802, 716015 curated on n-803, ~25 min in). Liveness

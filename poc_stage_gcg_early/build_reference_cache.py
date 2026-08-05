@@ -50,7 +50,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Build Stage GCG-Early reference cache")
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--cache-dir", required=True)
-    parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4"])
+    parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4", "llama"])
     parser.add_argument("--model-name-or-path", default="Qwen/Qwen3-14B")
     parser.add_argument("--layers", default="0,5,10,15,20,25,30,35,40",
                         help="Comma-separated layer indices to cache (Qwen3-14B: 0..40)")
@@ -101,7 +101,10 @@ def main(argv=None):
     print(f"[build_reference_cache] {len(tasks)} tasks to cache", flush=True)
 
     print(f"[build_reference_cache] Loading model {args.model_name_or_path}...", flush=True)
-    if args.model_family == "qwen3":
+    if args.model_family in ("qwen3", "llama"):
+        # P9.0 item 3: load_qwen3_model is generic in model_name_or_path (plain
+        # AutoModelForCausalLM/AutoTokenizer.from_pretrained), and Llama uses the same
+        # model.model.embed_tokens layout as Qwen3, so it loads Llama correctly as-is.
         from poc_stage4.qwen3_model import load_qwen3_model
         wrapped = load_qwen3_model(
             args.model_name_or_path, require_cuda=True, log_device_placement=True

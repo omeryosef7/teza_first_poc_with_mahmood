@@ -255,6 +255,39 @@ def _sample_control(
 # Candidate evaluation (mini-batched forward passes)
 # ---------------------------------------------------------------------------
 
+# Loss components that are summed across train tasks by run_optimization().
+# refusal_dir_loss is only present when the refusal term entered selection.
+_SUMMED_LOSS_KEYS = (
+    "task_loss", "repr_loss", "kl_loss", "reg_loss", "total_loss", "refusal_dir_loss",
+)
+
+
+def _slice_hidden_states(
+    hidden_states: Any,
+    layers: List[int],
+    positions: List[int],
+    batch_index: int,
+) -> Dict[int, Dict[int, torch.Tensor]]:
+    """
+    Extract {layer: {pos: Tensor[d_model]}} for one batch element.
+
+    Every vector is .clone()d off the (huge) per-layer activation tensor so the caller
+    can free hidden_states immediately, and cast to float32: candidate ranking turns on
+    differences that are frequently below bf16 resolution.
+    """
+    out: Dict[int, Dict[int, torch.Tensor]] = {}
+    for layer_idx in layers:
+        if layer_idx >= len(hidden_states):
+            continue
+        lt = hidden_states[layer_idx]  # [batch, seq_len, d_model]
+        out[layer_idx] = {
+            pos: lt[batch_index, pos, :].detach().to(torch.float32).clone()
+            for pos in positions
+            if pos < lt.shape[1]
+        }
+    return out
+
+
 def _evaluate_candidates(
     model: Any,
     model_family: str,
@@ -264,15 +297,80 @@ def _evaluate_candidates(
     config: RunConfig,
     reference_hs_per_task: Optional[Dict] = None,
     reference_logits_per_task: Optional[Dict] = None,
+    repr_in_selection: bool = False,
+    reference_hs: Optional[Dict] = None,
+    repr_layers: Optional[List[int]] = None,
+    repr_positions: Optional[List[int]] = None,
+    refusal_direction: Optional[torch.Tensor] = None,
+    refusal_dir_layer: int = 25,
+    refusal_dir_positions: Optional[List[int]] = None,
+    lambda_refusal_dir: float = 0.0,
+    multilayer_rd_directions: Optional[List[Tuple[int, torch.Tensor, float]]] = None,
+    hs_sub_batch_size: int = 8,
 ) -> List[Dict]:
     """
     Evaluate all candidate suffixes and return per-candidate loss dicts.
 
-    Each result dict has keys: task_loss, repr_loss, kl_loss, reg_loss, total_loss.
+    Each result dict has keys: task_loss, repr_loss, kl_loss, reg_loss, total_loss
+    (plus refusal_dir_loss when the refusal term is active).
     Never logs only the sum — all components are returned.
+
+    repr_in_selection=False (default) is the pre-P9.0 path, kept byte-identical: one
+    plain forward per candidate mini-batch, no hidden states, composite_loss called
+    without candidate_hs/reference_hs so repr_loss is exactly tensor(0.0).
+
+    repr_in_selection=True (P9.0 fix) runs the candidate batch with
+    output_hidden_states=True, slices the configured layers/positions per candidate and
+    feeds them to composite_loss / refusal_direction_loss, so the representation term
+    actually enters CANDIDATE SELECTION instead of only the gradient. Hidden states for a
+    64-candidate batch are far too large to hold next to a 14B model, so the batch is
+    processed in sub-batches of hs_sub_batch_size and every big tensor is freed per
+    sub-batch. Candidates are independent (fixed-length inputs, all-ones attention mask),
+    so sub-batching changes no per-candidate loss.
     """
+    from poc_stage_gcg_early.objectives import refusal_direction_loss as _rd_loss_fn
+
     device = next(model.parameters()).device
     results = []
+
+    lambda_repr = config.objective.lambda_repr
+    use_repr = bool(
+        repr_in_selection
+        and lambda_repr > 0.0
+        and reference_hs
+        and repr_layers
+        and repr_positions
+    )
+    use_multilayer_rd = bool(
+        repr_in_selection and multilayer_rd_directions and refusal_dir_positions
+    )
+    use_refusal_dir = bool(
+        repr_in_selection
+        and (
+            (lambda_refusal_dir > 0.0
+             and refusal_direction is not None
+             and refusal_dir_positions)
+            or use_multilayer_rd
+        )
+    )
+    need_hidden_states = use_repr or use_refusal_dir
+
+    # Layers/positions to slice out of hidden_states (union of both objectives).
+    hs_layers: List[int] = []
+    hs_positions: List[int] = []
+    if need_hidden_states:
+        layer_set = set(repr_layers or []) if use_repr else set()
+        if use_multilayer_rd:
+            layer_set.update(lay for lay, _, _ in multilayer_rd_directions)
+        elif use_refusal_dir:
+            layer_set.add(refusal_dir_layer)
+        pos_set = set(repr_positions or []) if use_repr else set()
+        if use_refusal_dir:
+            pos_set.update(refusal_dir_positions or [])
+        hs_layers = sorted(layer_set)
+        hs_positions = sorted(pos_set)
+
+    sub_size = max(1, hs_sub_batch_size) if need_hidden_states else eval_batch_size
 
     for i in range(0, len(candidate_suffix_lists), eval_batch_size):
         batch_cands = candidate_suffix_lists[i : i + eval_batch_size]
@@ -283,27 +381,76 @@ def _evaluate_candidates(
 
         # Pad to equal length (should be equal since suffix_len is fixed)
         batch_tensor = torch.stack(batch_ids).to(device)
-        attn_mask = torch.ones_like(batch_tensor)
 
-        with torch.no_grad():
-            logits = model(
-                input_ids=batch_tensor,
-                attention_mask=attn_mask,
-            ).logits  # [batch, seq_len, vocab]
+        for s in range(0, batch_tensor.shape[0], sub_size):
+            sub_tensor = batch_tensor[s : s + sub_size]
+            sub_cands = batch_cands[s : s + sub_size]
+            attn_mask = torch.ones_like(sub_tensor)
 
-        for j, cand_ids in enumerate(batch_cands):
-            losses = composite_loss(
-                logits=logits[j],
-                ids=batch_tensor[j],
-                loss_slice=base_spans.loss_slice,
-                target_slice=base_spans.target_slice,
-                lambda_repr=config.objective.lambda_repr,
-                lambda_kl=config.objective.lambda_kl,
-                suffix_ids=torch.tensor(cand_ids),
-            )
-            results.append({k: v.item() for k, v in losses.items()})
+            cand_hs_per_example: List[Dict[int, Dict[int, torch.Tensor]]] = []
+            with torch.no_grad():
+                if need_hidden_states:
+                    output = model(
+                        input_ids=sub_tensor,
+                        attention_mask=attn_mask,
+                        output_hidden_states=True,
+                    )
+                    logits = output.logits  # [sub_batch, seq_len, vocab]
+                    cand_hs_per_example = [
+                        _slice_hidden_states(output.hidden_states, hs_layers, hs_positions, j)
+                        for j in range(sub_tensor.shape[0])
+                    ]
+                    del output
+                else:
+                    logits = model(
+                        input_ids=sub_tensor,
+                        attention_mask=attn_mask,
+                    ).logits  # [batch, seq_len, vocab]
 
-        del batch_tensor, logits
+            for j, cand_ids in enumerate(sub_cands):
+                cand_hs = cand_hs_per_example[j] if need_hidden_states else None
+                losses = composite_loss(
+                    logits=logits[j],
+                    ids=sub_tensor[j],
+                    loss_slice=base_spans.loss_slice,
+                    target_slice=base_spans.target_slice,
+                    candidate_hs=cand_hs if use_repr else None,
+                    reference_hs=reference_hs if use_repr else None,
+                    layers=repr_layers if use_repr else None,
+                    repr_positions=repr_positions if use_repr else None,
+                    lambda_repr=lambda_repr,
+                    lambda_kl=config.objective.lambda_kl,
+                    repr_metric=config.objective.repr_metric,
+                    suffix_ids=torch.tensor(cand_ids),
+                )
+                record = {k: v.item() for k, v in losses.items()}
+                if use_refusal_dir:
+                    # Multi-layer folds its per-layer lambdas into the weighted sum, so the
+                    # logged value is already the weighted total (same convention as
+                    # _token_gradients); single-layer logs the raw projection.
+                    if use_multilayer_rd:
+                        rd_val = _rd_multilayer_fn(
+                            cand_hs, multilayer_rd_directions, refusal_dir_positions,
+                        )
+                        rd_contrib = rd_val
+                    else:
+                        rd_val = _rd_loss_fn(
+                            cand_hs, refusal_direction,
+                            layer=refusal_dir_layer,
+                            positions=refusal_dir_positions,
+                        )
+                        rd_contrib = lambda_refusal_dir * rd_val
+                    record["refusal_dir_loss"] = rd_val.item()
+                    record["total_loss"] = record["total_loss"] + rd_contrib.item()
+                results.append(record)
+
+            del logits, sub_tensor, attn_mask, cand_hs_per_example
+            if need_hidden_states:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+        del batch_tensor
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -415,8 +562,9 @@ def run_optimization(
 
     reference_hs_per_task: {task_id: {layer_idx: {pos: fp16 CPU tensor}}}
       Pre-loaded from the reference cache (neutral-suffix hidden states).
-      When provided with lambda_repr > 0, repr_loss is added to the gradient and
-      logged per step. Selection is still by task_loss (repr_loss logged separately).
+      When provided with lambda_repr > 0, repr_loss is added to the gradient, logged
+      per step, AND (since P9.0, config.objective.repr_in_selection) added to the
+      candidate-selection criterion. Before P9.0 selection was by task_loss alone.
     repr_layers: layer indices that are present in reference_hs_per_task.
     """
     output_dir = Path(output_dir)
@@ -590,9 +738,52 @@ def run_optimization(
     if _rd_schedule:
         print(f"[GCG] lambda_refusal_dir SCHEDULE ENABLED: {_rd_schedule}", flush=True)
 
+    # --- P9.0: does the representation objective enter CANDIDATE SELECTION? ---
+    # Before P9.0 _evaluate_candidates never received reference_hs / the direction tensors,
+    # so composite_loss returned repr_loss == 0.0 for every candidate and selection was by
+    # task_loss alone — the objective only ever shaped the gradient. None = auto: ON iff a
+    # representation objective is actually configured, so task-only arms keep the exact
+    # (cheaper) pre-P9.0 code path and produce identical numbers.
+    repr_in_selection = config.objective.repr_in_selection
+    if repr_in_selection is None:
+        repr_in_selection = bool(
+            use_repr
+            or (refusal_direction is not None and refusal_dir_positions)
+            or multilayer_rd_directions
+        )
+    if repr_in_selection:
+        print(
+            f"[GCG] repr_in_selection ENABLED (sub_batch={config.objective.repr_selection_sub_batch}): "
+            f"repr={bool(use_repr)}, refusal_dir={refusal_direction is not None}, "
+            f"multilayer_rd={bool(multilayer_rd_directions)}",
+            flush=True,
+        )
+
+    def _selection_kwargs(task_id: str, eff_lambda_rd: float) -> Dict[str, Any]:
+        """Objective wiring for one train task, shared by candidate + acceptance eval."""
+        if not repr_in_selection:
+            return {}
+        return {
+            "repr_in_selection": True,
+            "reference_hs": (reference_hs_per_task or {}).get(task_id),
+            "repr_layers": repr_layers,
+            "repr_positions": repr_pos_per_task.get(task_id, []),
+            "refusal_direction": refusal_direction,
+            "refusal_dir_layer": config.objective.refusal_dir_layer,
+            "refusal_dir_positions": refusal_dir_positions,
+            "lambda_refusal_dir": eff_lambda_rd,
+            "multilayer_rd_directions": multilayer_rd_directions,
+            "hs_sub_batch_size": config.objective.repr_selection_sub_batch,
+        }
+
     for step in range(start_step, config.gcg.n_steps):
         t_start = time.time()
         _current_state["step"] = step
+
+        # Effective refusal-direction lambda for this step (handles annealing, 10E).
+        # Hoisted out of the per-task gradient loop so candidate selection uses the
+        # exact same value as the gradient.
+        eff_lambda_rd = _interp_lambda(step)
 
         # --- Gradient computation (averaged over tasks) ---
         model.zero_grad()
@@ -606,8 +797,6 @@ def run_optimization(
                 suffix_placement=config.gcg.suffix_placement,
             )
             ref_hs = (reference_hs_per_task or {}).get(task.task_id)
-            # Compute effective lambda (handles annealing schedule, 10E)
-            eff_lambda_rd = _interp_lambda(step)
             g = _token_gradients(
                 model, model_family,
                 spans.input_ids, spans.suffix_slice,
@@ -662,13 +851,15 @@ def run_optimization(
                 model, model_family, eval_spans, cand_lists,
                 eval_batch_size=config.gcg.batch_size,
                 config=config,
+                **_selection_kwargs(eval_task.task_id, eff_lambda_rd),
             )
             if summed_eval is None:
                 summed_eval = [dict(r) for r in t_results]
             else:
                 for i, r in enumerate(t_results):
-                    for k in ("task_loss", "repr_loss", "kl_loss", "reg_loss", "total_loss"):
-                        summed_eval[i][k] += r[k]
+                    for k in _SUMMED_LOSS_KEYS:
+                        if k in r:
+                            summed_eval[i][k] += r[k]
 
         eval_results = summed_eval  # type: ignore[assignment]
 
@@ -813,16 +1004,20 @@ def run_optimization(
                 suffix_ids_override=suffix_ids,
                 suffix_placement=config.gcg.suffix_placement,
             )
+            # Same objective wiring as the candidate evaluation above: the acceptance
+            # check compares total_loss, so both sides must include the same terms.
             t_curr = _evaluate_candidates(
                 model, model_family, eval_spans, [suffix_ids],
                 eval_batch_size=1, config=config,
+                **_selection_kwargs(eval_task.task_id, eff_lambda_rd),
             )
             per_task_task_losses[eval_task.task_id] = t_curr[0]["task_loss"]
             if current_summed is None:
                 current_summed = [dict(r) for r in t_curr]
             else:
-                for k in ("task_loss", "repr_loss", "kl_loss", "reg_loss", "total_loss"):
-                    current_summed[0][k] += t_curr[0][k]
+                for k in _SUMMED_LOSS_KEYS:
+                    if k in t_curr[0]:
+                        current_summed[0][k] += t_curr[0][k]
 
         if best_losses["total_loss"] < current_summed[0]["total_loss"]:  # type: ignore[index]
             suffix_ids = best_cand
@@ -831,7 +1026,11 @@ def run_optimization(
         _current_state["suffix_ids"] = suffix_ids
 
         # --- Post-selection repr_loss evaluation (one forward pass, no_grad) ---
-        # Selection above used task_loss only; now compute true repr_loss for logging.
+        # LOGGING ONLY — never feeds back into selection or acceptance.
+        # Reports repr_loss of the suffix that is actually current after the acceptance
+        # check, for train_tasks[0] only. With repr_in_selection ON, best_losses already
+        # carries the candidate's repr_loss summed over all train tasks; this overwrite
+        # keeps ITERATION_LOG.jsonl's long-standing "current suffix, task 0" semantics.
         if use_repr and reference_hs_per_task:
             from poc_stage_gcg_early.objectives import repr_loss as _repr_loss_fn
             ref_hs_0 = reference_hs_per_task.get(train_tasks[0].task_id)

@@ -40,6 +40,7 @@ from poc_stage_gcg_early.config import (
     ObjectiveWeights,
     RunConfig,
     make_smoke_config,
+    reference_cache_content_id,
 )
 from poc_stage_gcg_early.gcg_optimizer import run_optimization
 from poc_stage_gcg_early.reference_cache import ReferenceCache
@@ -75,10 +76,33 @@ def _collect_environment(model_name_or_path: str) -> dict:
     return env
 
 
+def _derive_objective_name(args) -> Optional[str]:
+    """
+    Auto-label the objective from the loss terms that are actually switched on.
+
+    Returns None for a pure task-loss arm, so that every pre-P9.0 task-only config keeps
+    its original config_hash (see config._HASH_BACKCOMPAT_DEFAULTS). An explicit
+    --objective-name always wins over this.
+    """
+    parts = []
+    if args.lambda_repr > 0.0:
+        parts.append(
+            f"repr_{args.repr_metric}" + ("_cotpos" if args.repr_at_cot_pos else "")
+        )
+    if args.lambda_kl > 0.0:
+        parts.append("kl")
+    if args.refusal_dir_layers:
+        parts.append("refusal_dir_L" + args.refusal_dir_layers.replace(",", "-"))
+    elif args.lambda_refusal_dir > 0.0:
+        parts.append(f"refusal_dir_L{args.refusal_dir_layer}")
+    return "+".join(parts) if parts else None
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Stage GCG-Early optimization")
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--model-family", default="qwen3", choices=["qwen3", "gemma4", "deepseek_r1"])
+    parser.add_argument("--model-family", default="qwen3",
+                        choices=["qwen3", "gemma4", "deepseek_r1", "llama"])
     parser.add_argument("--model-name-or-path", default="Qwen/Qwen3-14B")
     parser.add_argument("--model-revision", default=None)
     parser.add_argument("--manifest", required=True)
@@ -145,6 +169,26 @@ def main(argv=None):
                         help="Multi-layer RD (10D): comma-separated lambda weights, one per layer. e.g. '0.1,0.3,0.1'.")
     parser.add_argument("--lambda-refusal-dir-schedule", default=None,
                         help="Lambda annealing (10E): JSON schedule e.g. '[[0,0.7],[100,0.3],[300,0.1]]'.")
+    parser.add_argument("--repr-in-selection", dest="repr_in_selection",
+                        action="store_true", default=None,
+                        help="P9.0: evaluate candidates with output_hidden_states=True so the "
+                             "repr / refusal-direction terms enter CANDIDATE SELECTION, not just "
+                             "the gradient. Default (unset) = auto: ON iff a representation "
+                             "objective is configured (lambda_repr > 0 with a cache, or any "
+                             "refusal-direction term), OFF for task-only arms.")
+    parser.add_argument("--no-repr-in-selection", dest="repr_in_selection",
+                        action="store_false",
+                        help="Force the pre-P9.0 behaviour: select on task_loss only "
+                             "(repr_loss == 0.0 for every candidate). For ablations that "
+                             "reproduce the old runs.")
+    parser.add_argument("--repr-selection-sub-batch", type=int, default=8,
+                        help="Sub-batch size for the hidden-state candidate forward pass. "
+                             "Hidden states for 64 candidates do not fit next to a 14B model; "
+                             "lower this if selection OOMs.")
+    parser.add_argument("--objective-name", default=None,
+                        help="Human-readable objective label; written to CONFIG.json and folded "
+                             "into config_hash(). Auto-derived from the active loss terms when "
+                             "any non-task objective is configured.")
     parser.add_argument("--log-channel-token-positions", action="store_true",
                         help="Sprint 2 Track 1 diagnostic: log per-position task_loss at the target's "
                              "opening/closing CoT-marker token positions into ITERATION_LOG.jsonl. "
@@ -153,6 +197,21 @@ def main(argv=None):
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # --- Objective provenance (P9.0 item 2) ---
+    # repr_layers was a config field that nothing ever populated, and --reference-cache-dir
+    # was not a config field at all: CONFIG.json showed "repr_layers": [] and config_hash()
+    # ignored both, so two arms differing only in objective wiring shared a hash and could
+    # silently cross-resume each other's checkpoint.pt. Record both (the cache as a content
+    # hash of its manifest, so the hash tracks cache CONTENT rather than a path).
+    repr_layers_cfg = (
+        [int(x) for x in args.repr_layers.split(",") if x.strip()]
+        if args.lambda_repr > 0.0 else []
+    )
+    reference_cache_id = None
+    if args.reference_cache_dir and (args.lambda_repr > 0.0 or args.lambda_kl > 0.0):
+        reference_cache_id = reference_cache_content_id(args.reference_cache_dir)
+    objective_name = args.objective_name or _derive_objective_name(args)
 
     # --- Config ---
     config = RunConfig(
@@ -189,6 +248,11 @@ def main(argv=None):
             refusal_dir_paths=[x.strip() for x in args.refusal_dir_paths.split(",")] if args.refusal_dir_paths else [],
             lambda_refusal_dir_per_layer=[float(x) for x in args.lambda_refusal_dir_per_layer.split(",")] if args.lambda_refusal_dir_per_layer else [],
             lambda_refusal_dir_schedule=json.loads(args.lambda_refusal_dir_schedule) if args.lambda_refusal_dir_schedule else [],
+            repr_layers=repr_layers_cfg,
+            repr_in_selection=args.repr_in_selection,
+            repr_selection_sub_batch=args.repr_selection_sub_batch,
+            reference_cache_id=reference_cache_id,
+            objective_name=objective_name,
         ),
         output_dir=str(output_dir),
         enable_thinking=not args.no_thinking,
@@ -209,6 +273,12 @@ def main(argv=None):
 
     print(f"[run_optimization] run_id={args.run_id}", flush=True)
     print(f"[run_optimization] config_hash={config.config_hash()}", flush=True)
+    print(
+        f"[run_optimization] objective_name={objective_name} "
+        f"repr_layers={repr_layers_cfg} reference_cache_id={reference_cache_id} "
+        f"repr_in_selection={args.repr_in_selection if args.repr_in_selection is not None else 'auto'}",
+        flush=True,
+    )
     print(f"[run_optimization] output_dir={output_dir}", flush=True)
     print(f"[run_optimization] GPU: {env_info.get('cuda_device_name', 'none')}", flush=True)
     print(f"[run_optimization] git_revision={env_info.get('git_revision', 'unknown')}", flush=True)
@@ -259,6 +329,20 @@ def main(argv=None):
         )
         model = wrapped.model
         tokenizer = wrapped.tokenizer
+    elif args.model_family == "llama":
+        # P9.0 item 3: Llama-family (LlamaForCausalLM) support. Same standard decoder
+        # layout as Qwen3 -- model.model.embed_tokens (see model_adapter
+        # _EMBED_PATHS_BY_FAMILY['llama']) -- and load_qwen3_model is generic in
+        # model_name_or_path (plain AutoModelForCausalLM/AutoTokenizer.from_pretrained),
+        # so it loads Llama correctly as-is. Llama has no thinking channel: pass
+        # --no-thinking (apply_chat_template drops the unsupported enable_thinking kwarg
+        # via its TypeError fallback either way).
+        from poc_stage4.qwen3_model import load_qwen3_model
+        wrapped = load_qwen3_model(
+            args.model_name_or_path, require_cuda=True, log_device_placement=True,
+        )
+        model = wrapped.model
+        tokenizer = wrapped.tokenizer
     else:
         raise ValueError(f"Unknown model_family: {args.model_family}")
 
@@ -300,7 +384,7 @@ def main(argv=None):
                 f"Reference cache manifest not found: {manifest_path}. "
                 "Run build_gcg_reference_cache.slurm first."
             )
-        repr_layers_list = [int(x) for x in args.repr_layers.split(",")]
+        repr_layers_list = repr_layers_cfg  # same parse, recorded in CONFIG.json above
         manifest: dict = {}
         with open(manifest_path, encoding="utf-8") as fh:
             for line in fh:

@@ -11,7 +11,33 @@ import dataclasses
 import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+
+# ---------------------------------------------------------------------------
+# Reference-cache provenance
+# ---------------------------------------------------------------------------
+
+def reference_cache_content_id(cache_dir: Union[str, "Path"]) -> str:
+    """
+    Content hash (first 16 hex of SHA-256) of a reference cache's manifest.
+
+    The manifest (REFERENCE_CACHE_MANIFEST.json, one JSON object per line) records
+    task_id / cache_key / layers / positions for every cached entry, so its bytes
+    change whenever the cache content changes. Hashing it — rather than the cache
+    *path* — means two runs that point at byte-identical caches share a config_hash
+    and may resume each other, while two runs whose caches differ never can.
+
+    Raises FileNotFoundError if the manifest does not exist.
+    """
+    manifest_path = Path(cache_dir) / "REFERENCE_CACHE_MANIFEST.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            f"Reference cache manifest not found: {manifest_path}. "
+            "Build the cache with build_reference_cache.py first."
+        )
+    return hashlib.sha256(manifest_path.read_bytes()).hexdigest()[:16]
 
 
 @dataclass
@@ -90,6 +116,36 @@ class ObjectiveWeights:
     # Lambda annealing schedule (10E): list of (step, lambda) breakpoints; piecewise-linear interpolation.
     # Empty = constant lambda_refusal_dir throughout. Format: [[0, 0.7], [100, 0.3], [300, 0.1]]
     lambda_refusal_dir_schedule: List[List[float]] = field(default_factory=list)
+    # --- P9.0 (2026-08-05) ---------------------------------------------------
+    # repr_in_selection: run the candidate batch with output_hidden_states=True so the
+    #   representation / refusal-direction terms enter CANDIDATE SELECTION, not just the
+    #   gradient. None = auto (ON iff a representation objective is actually configured:
+    #   lambda_repr > 0 with a cache, or any refusal-direction term). False reproduces the
+    #   pre-P9.0 behaviour exactly (selection by task_loss alone, repr_loss == 0.0).
+    repr_in_selection: Optional[bool] = None
+    # Sub-batch size for the hidden-state forward pass during selection. Hidden states are
+    # [n_layers+1, batch, seq, d_model]; a batch of 64 does not fit next to a 14B model, so
+    # the candidate batch is evaluated in sub-batches and the big tensors freed each time.
+    repr_selection_sub_batch: int = 8
+    # Provenance (P9.0 item 2): content hash of the reference cache manifest actually used,
+    # and a human-readable objective label. Both land in CONFIG.json AND in config_hash(),
+    # so two arms differing only in objective wiring can never cross-resume checkpoints.
+    reference_cache_id: Optional[str] = None
+    objective_name: Optional[str] = None
+
+
+# ObjectiveWeights fields added by P9.0 that are folded into config_hash() ONLY when
+# they differ from their default. Every CONFIG.json written before 2026-08-05 leaves them
+# at the default, so those runs keep their original hash and stay resumable; any run that
+# sets them (all new objective arms) gets a distinct hash. repr_layers is deliberately NOT
+# in this list — it is an old field that was simply never populated, and populating it is
+# exactly the provenance fix, so repr arms are *meant* to change hash.
+_HASH_BACKCOMPAT_DEFAULTS: Dict[str, Any] = {
+    "repr_in_selection": None,
+    "repr_selection_sub_batch": 8,
+    "reference_cache_id": None,
+    "objective_name": None,
+}
 
 
 @dataclass
@@ -125,7 +181,19 @@ class RunConfig:
         output to a different directory, renaming the run, or pointing to a copy of
         the manifest. The hash only changes when the scientific hyperparameters change:
         model identity, suffix length, batch size, topk, seed, objectives, etc.
+
+        Objective provenance (P9.0): repr_layers, reference_cache_id and objective_name
+        are part of the objective dict and therefore part of the hash — two arms that
+        differ only in which layers / which reference cache the representation objective
+        reads can no longer share a hash and silently cross-resume each other's
+        checkpoint.pt. The fields listed in _HASH_BACKCOMPAT_DEFAULTS are omitted while
+        they hold their default value, so every pre-P9.0 CONFIG.json still hashes to
+        exactly the value stored in its checkpoint.
         """
+        objective = dataclasses.asdict(self.objective)
+        for _key, _default in _HASH_BACKCOMPAT_DEFAULTS.items():
+            if objective.get(_key, _default) == _default:
+                objective.pop(_key, None)
         d = {
             "model_family": self.model_family,
             "model_name_or_path": self.model_name_or_path,
@@ -133,7 +201,7 @@ class RunConfig:
             "enable_thinking": self.enable_thinking,
             "multi_model_family": self.multi_model_family,
             "gcg": dataclasses.asdict(self.gcg),
-            "objective": dataclasses.asdict(self.objective),
+            "objective": objective,
         }
         serialized = json.dumps(d, sort_keys=True, ensure_ascii=True)
         return hashlib.sha256(serialized.encode()).hexdigest()[:16]

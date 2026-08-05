@@ -5,10 +5,11 @@ Replaces llm_attacks.base.attack_manager.get_embedding_{layer,matrix} and
 get_embeddings, which enumerate only GPTJForCausalLM / LlamaForCausalLM /
 GPTNeoXForCausalLM and raise ValueError for Qwen3 or Gemma4.
 
-All functions accept a model_family string ("qwen3" | "gemma4") and dispatch
-accordingly. The embedding paths were verified against Stage AE model loading:
+All functions accept a model_family string ("qwen3" | "gemma4" | "llama") and
+dispatch accordingly. The embedding paths were verified against Stage AE model loading:
   Qwen3:  model.model.embed_tokens  (standard decoder)
   Gemma4: model.language_model.embed_tokens  (Gemma4Model.language_model is the text decoder)
+  Llama:  model.model.embed_tokens  (LlamaForCausalLM, same layout as Qwen3)
 """
 from __future__ import annotations
 
@@ -32,6 +33,8 @@ _EMBED_PATHS_BY_FAMILY = {
     # Gemma4ForConditionalGeneration: .model → Gemma4Model, .language_model → text decoder
     "gemma4": ["model.language_model.embed_tokens", "model.embed_tokens",
                "language_model.model.embed_tokens"],
+    # LlamaForCausalLM: standard decoder, same layout as Qwen3 (P9.0 item 3)
+    "llama": ["model.embed_tokens"],
 }
 _EMBED_PATHS_FALLBACK = [
     "model.embed_tokens",

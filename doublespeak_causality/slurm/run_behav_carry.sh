@@ -14,7 +14,12 @@
 #
 # Behavioral necessity of the L14-21 carry heads: baseline vs carry-ablated vs random-ablated
 # DS generation, StrongReject-judged. n-801 excluded (pathologically slow weight loading).
-#   sbatch --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSMAXNEW=220,DSN=0,DSSPLITS=train,test run_behav_carry.sh
+# P10 note: NO decode-safe re-write needed here — the ablation is pc.AllPositionZHeadAblate(mode=
+# "zero"), which already fires on prefill AND on every KV-cached decode step (plan §0.9 lists it as
+# one of the genuinely decode-safe primitives). Only the §2.1 RUNMETA/DONE + gens.jsonl plumbing
+# changed, hence the unchanged arms, walltime and 3 generations/item.
+#   sbatch --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSMAXNEW=220,DSN=0 slurm/run_behav_carry.sh
+#   smoke: sbatch --export=ALL,DSN=2 slurm/run_behav_carry.sh
 set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 cd "$PROJECT_DIR"
@@ -31,9 +36,12 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSN:=0}"
 : "${DSSPLITS:=train,test}"   # comma-list kept as a DEFAULT here (not via --export, which truncates)
 : "${DSSEED:=0}"
-echo "=== behav carry: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
+: "${DSSAVEGEN:=1}"           # 1 = write gens.jsonl (default); 0 = --no-save-gen
+DSFLAGS=""
+[ "$DSSAVEGEN" = "1" ] && DSFLAGS="$DSFLAGS --save-gen" || DSFLAGS="$DSFLAGS --no-save-gen"
+echo "=== behav carry: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS flags=$DSFLAGS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_behav_carry.py \
-  --bench "$DSBENCH" --model "$DSMODEL" --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
+  --bench "$DSBENCH" --model "$DSMODEL" --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED" $DSFLAGS
 echo "=== done ==="; date
