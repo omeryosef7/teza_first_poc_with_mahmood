@@ -485,7 +485,63 @@ stated — provisional, resting on the monotone Î-vs-I_max relationship — and
 
 ---
 
+### 📏 NEW METHODS RESULT — the StrongREJECT judge's irreducible noise floor, measured exactly
+Chasing an anomaly produced a genuinely useful number. On curated, `direct_refabl_a0.0` (α = 0, which
+should be an exact no-op) gave ASR 0.294 vs `direct_base` 0.314 — **1 of 51 labels and 2 of 51 scores
+differed**, max |Δscore| = 0.75. On clearharm: 0/66 labels but 3/66 scores.
+
+I traced it rather than assuming. The hook computes `h − alpha·proj·d`, which at α=0 is exactly `h` in
+IEEE arithmetic — so either the hook was wrong or the judge was. **Settled by hashing the generations
+(sha256, text never inspected): all 51 pairs are BYTE-IDENTICAL.**
+
+⇒ **α=0.0 is a true numerical no-op; the hook is correct. The divergence is 100 % StrongREJECT judge
+nondeterminism on byte-identical input.**
+
+This is the cleanest possible measurement of the judge noise floor, because the generation is held exactly
+constant — previous estimates (the 7.5 % replicate flip rate from tick 4) conflated judge noise with real
+generation differences.
+
+| quantity | measured |
+|---|---|
+| label flips on identical text | **1/51 = 2.0 %** (curated), 0/66 (clearharm) |
+| score changes on identical text | 2/51 = 3.9 % (curated), 3/66 = 4.5 % (clearharm) |
+| max \|Δscore\| on identical text | **0.75** |
+
+**Consequence for every behavioral claim: a ΔASR below ~2 pp is indistinguishable from judge noise**, even
+with the model and generation perfectly fixed. This belongs in the paper's methods section, and it sharpens
+the tick-4 caveat: of the 7.5 % replicate flip rate, ~2 pp is irreducible judge variance and the remainder
+is genuine generation difference.
+
+### 📉 P8.1 curated (COMPLETE, n=51) — no usable operating point on this cohort
+Full run-directory contract satisfied for the first time on a real run: RUNMETA + DONE + summary + raw + gens.
+
+| α | ASR(0,1) | refusal | randASR | I_max | Î |
+|---|---|---|---|---|---|
+| 0.0 | 0.294 | 0.686 | 0.314 | 0.745 | −0.020 |
+| 0.25 | 0.529 | 0.431 | 0.294 | 0.510 | −0.176 |
+| 0.5 | 0.588 | 0.333 | 0.333 | 0.451 | −0.216 |
+| 1.0 | 0.667 | 0.255 | 0.294 | 0.373 | −0.333 |
+| 2.0 | 0.627 | 0.275 | 0.235 | 0.412 | −0.196 |
+
+**No α lands in the 0.20–0.40 band except α=0 (the no-op).** ASR jumps 0.294 → 0.529 between α=0 and
+α=0.25 — the dose response is too steep on curated; it would need α ≈ 0.1. **So the α=0.25 operating point
+chosen from clearharm does NOT transfer to curated**, and a curated arm of Phase 8 would need its own
+calibration.
+Note also `DS ASR (0.275) < direct base ASR (0.314)` on curated — the attack is *net-negative* by ASR on
+this cohort, which is the known concept-dilution weirdness and makes it a poor cohort for an interaction
+test regardless of α. Its random control is also less flat than clearharm's (0.235–0.333 vs base 0.314).
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 16 — 2026-08-05 — curated α sweep COMPLETE; judge noise floor measured exactly
+Curated finished (51/51). Two results: (a) no usable sub-saturating α exists on curated — the α=0.25 point
+chosen from clearharm does not transfer, and curated is a poor interaction cohort anyway since its DS ASR
+is *below* its direct-base ASR; (b) chasing the α=0 anomaly produced a clean methods number — by hashing
+generations I showed all 51 pairs are byte-identical while 1 label still flipped, isolating the
+StrongREJECT judge's irreducible noise floor at ~2 pp with generation held exactly constant.
+clearharm sweep at 62/86, ETA ~21:00.
 
 ### Tick 15 — 2026-08-05 — attempted to sharpen the ceiling finding; the test was invalid, self-corrected
 Sweeps at 46/86 and 40/51 (~2.8 min/item; curated ETA ~19:40, clearharm ~21:00). No launches possible.
