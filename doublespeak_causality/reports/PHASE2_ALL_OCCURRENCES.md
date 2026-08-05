@@ -1,6 +1,7 @@
 # P2 — Patching ALL codeword occurrences roughly DOUBLES the L9 write necessity
 
-**Status:** clearharm-v1 and curated COMPLETE (jobs 714998 / 714999). v2 (116-ex) still running (714997).
+**Status: ✅ COMPLETE on all three benches.** clearharm-v1 + curated (jobs 714998 / 714999) and the
+**v2 116-example replication (job 718027)**. The finding holds everywhere it was tested.
 **Plan:** §5 P2, bullet B6 ("patch all codeword occurrences, not just the last").
 **Zero new code** — `phase6_mlp_causal.py` already implemented `--positions {demo,query,all}` (line 131);
 the `all` cell had **never been launched**.
@@ -53,6 +54,28 @@ unchanged from demo-only — **the write is still necessary and not sufficient.*
 
 ---
 
+## 2b. v2 replication (116-example bench, job 718027) — it holds
+
+Run on `bench_clearharm_v2.json` (86 clearharm + 30 expanded concepts), same analyzer, same Holm family:
+
+| cell | n | demo-only L9 | **all-occurrence L9** | ratio |
+|---|---|---|---|---|
+| v2 dev | 59 | +0.0798 | **+0.1101 [0.060, 0.170]** | 1.38× |
+| v2 heldout | 55 | +0.0304 | **+0.0649 [0.030, 0.108]** | **2.13×** |
+
+L9 is the **argmax and Holm-significant on both splits**. Holm-significant bands: dev **L7–L12** (plus L15,
+L20), heldout **L9, L12, L22**. Note the dev band now reaches **L7**, one layer earlier than the v1 benches
+showed — consistent with the write being distributed across a band rather than pinned to L9.
+
+**The ratio replicates across every bench tested:** 1.42× / 2.27× (clearharm v1), 2.03× / 1.85× (curated),
+1.38× / 2.13× (v2). All six cells lie in **1.38–2.27×**, on three independently-built benches and 30 novel
+concepts. The claim that the demo-only measurement understates the write by roughly a factor of two is not
+a single-bench artifact.
+
+*(Provenance note: this is the relaunch of job 714997, which was cancelled after hanging ~3 h in weight
+loading with zero output — a node-level stall, not a code fault. 718027 ran the identical configuration to
+completion.)*
+
 ## 3. Reading
 
 The concept write is **not confined to the demonstration block**. The query-codeword occurrence carries a
@@ -82,7 +105,7 @@ used in `FINAL_CAUSAL_CIRCUIT_REPORT.md` and `PHASE6_MLP.md` understates the eff
   1.4–2.3× ratios are descriptive comparisons of two independently-estimated effects, not a paired test of
   the difference. A within-item paired contrast of the two position sets would be needed to put a CI on the
   increment — cheap to add and worth doing before this goes in the paper.
-- **v2 (116-example) replication is still running** (job 714997); this report covers the v1 benches only.
+- ~~v2 replication still running~~ **DONE — see §2b. It replicates.**
 - Per-occurrence resolution (each demonstration individually, first vs second half of the demo block) is
   **not** covered here — that is the remaining part of plan §5 P2 and needs the new
   `resolve_all_occurrences` helper.

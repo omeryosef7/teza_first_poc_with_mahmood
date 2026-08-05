@@ -715,6 +715,21 @@ layers our headlines actually depend on (L18, L22) both pass even at this n, whi
 
 ## Tick log (most recent first)
 
+### Tick 29 — 2026-08-05 — 30-min rule applied; P2 report finalised with the v2 replication
+**Applied §1.3.0 at 29 min:** cancelled 718378/718379 and resubmitted as **718937** (P7 full validation,
+`DSVALN=20`) and **718938** (P10 full decode-safe). The wrappers now carry the fast config by default
+(cpus=4, mem=48G, n-801 included), so the resubmit needed no manual flags.
+
+**Finalised `reports/PHASE2_ALL_OCCURRENCES.md`** — it still said "v2 still running". Added §2b with the
+completed replication and closed the matching limitation.
+
+**The ratio replicates on every bench tested:** 1.42× / 2.27× (clearharm v1), 2.03× / 1.85× (curated),
+1.38× / 2.13× (v2). **All six cells fall in 1.38–2.27×**, across three independently-built benches
+including 30 novel concepts. So "the demo-only measurement understates the write by ~2×" is not a
+single-bench artifact — which is what makes it safe to put in the paper.
+One new detail from v2: the dev Holm band now reaches **L7**, a layer earlier than the v1 benches showed,
+consistent with the write being distributed across a band rather than pinned to L9.
+
 ### Tick 28 — 2026-08-05 — P2 complete; P7 smoke flags a risk to the depth-localization headline
 All three GPU jobs completed. **P2 replicated on v2** (2.13× on heldout) — phase closed. **P10 smoke
 validated** the decode-safe harness with the decode-damage confound visibly quantified (raw necessity 0.0
