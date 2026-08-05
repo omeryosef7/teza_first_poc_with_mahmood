@@ -185,10 +185,32 @@ p_holm 0.001, pistol 0.001.
 
 ## CAUSAL_CIRCUIT addendum (2026-08-05) — the behavioral locus: Doublespeak is refusal suppression, not concept remapping [NEW, headline]
 
+> **Abstract (drop-in draft).** In-context representation hijacking ("Doublespeak") makes a language model
+> treat a benign codeword as a harmful concept and thereby elicits harmful output. Prior work — and the first
+> half of this study — maps *how the concept is represented*: a distributed mid-band circuit
+> (demonstration-KV retrieval → an L8–11 MLP write → L14–21 answer-position carry heads → readout) that is
+> necessary and (at the carry stage) sufficient for a forced-choice readout of the hijacked concept. We then
+> ask whether that circuit *causes the jailbreak*, and find that **it does not.** Ablating the concept-write or
+> the carry heads throughout harmful generation leaves attack-success unchanged (behaviorally inert), whereas a
+> single, orthogonal **refusal direction** is behaviorally necessary *and* sufficient: projecting it out turns a
+> refusing model into a complying one (ASR +0.43–0.48, p≤.004 — a *stronger* attack than Doublespeak itself),
+> and re-injecting it into Doublespeak drives ASR to zero (dose-dependent, coherence-verified). Doublespeak
+> suppresses this refusal axis from the L8–11 write band onward, but the refusal *decision* is read mid-late
+> (~L16–22) and is fixed at the decision token, not re-engaged during generation. Crucially, the concept-remap
+> and the refusal-suppression are **causally independent pathways**: knocking out the write reduces the concept
+> readout yet leaves the refusal suppression completely unmoved — which is precisely why the concept circuit is
+> behaviorally epiphenomenal. A per-item analysis confirms the gate: a Doublespeak prompt's decision-token
+> refusal projection predicts whether it jailbreaks (AUC 0.87, out-of-sample 0.89). Doublespeak is,
+> mechanistically, an *imperfect in-context refusal-suppression technique*; the elaborate token→concept remap is
+> a causally-decoupled bystander. The actionable defense is to monitor/scrub the **refusal** axis — interventions
+> on the concept subspace leave the causal channel untouched (and empirically fail). Results are cross-cohort
+> and locked-test on Llama-3.1-8B; code-, coherence-, and numerically-audited. *(Cross-architecture
+> generalization to Qwen3 is future work.)*
+
 *ClearHarm behavioral bench, Llama-3.1-8B, two cohorts (clearharm 86 + curated 51), locked train/test,
 StrongREJECT-judged, paired McNemar, cross-cohort. Reports: `reports/PHASE_BEHAV_{CARRY,WRITE,REFUSAL}.md`,
-`PHASE_WRITE_REFUSAL_INTX.md`. All harnesses code-audited (mappings verified, no off-by-one), coherence-
-audited, numerically verified vs raw.*
+`PHASE_WRITE_REFUSAL_INTX.md`, `PHASE_REFUSAL_TRAJECTORY.md`, `REP_PREDICTS_BEHAVIOR.md`. All harnesses
+code-audited (mappings verified, no off-by-one), coherence-audited, numerically verified vs raw.*
 
 The prior sections map **how the concept is represented** (retrieval→L9 write→L14–21 carry→readout). This
 addendum tests whether that circuit **causes the jailbreak** — and finds it does not. **The behavioral driver

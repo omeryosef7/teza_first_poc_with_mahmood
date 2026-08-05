@@ -9,6 +9,15 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 112, loop tick — drop-in ABSTRACT drafted; Llama frontier complete)** —
+  Llama behavioral frontier exhausted (8 verified results) + cross-arch flagged as needing explicit go-ahead →
+  produced the highest-value remaining no-GPU deliverable: a rigorous **drop-in abstract** for the manuscript
+  (added to PAPER_CONTRIBUTION.md CAUSAL_CIRCUIT addendum) synthesizing the full finding — concept circuit
+  behaviorally inert; refusal axis necessary+sufficient (>DS; re-inject→0); suppressed from write band, decision
+  read mid-late & fixed at decision token; concept⊥refusal decoupled; AUC-0.87 item predictor; defense = scrub
+  refusal axis. Notes Qwen3 cross-arch as future work. Deliverable now fully packaged: abstract + 8-level
+  addendum + Table 1 (8 rows) + 5 figures + reports, all audited. Awaiting user direction on cross-arch vs hold.
+
 - **2026-08-05 (iter 111, loop tick — robustness AUDIT of the item-level headline result: VERIFIED)** —
   Per Omer's 'no bugs': independently audited the rep→behavior AUC-0.87 claim (now a paper headline). **Verified
   robust:** (1) not a layer cherry-pick — AUC stable 0.84–0.89 across L17–L32 (all p<1e-7; only early L13 weaker
