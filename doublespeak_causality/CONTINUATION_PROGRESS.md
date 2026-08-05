@@ -635,6 +635,19 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 24 — 2026-08-05 — GPU pipeline restarted; P2 v2 replication relaunched
+With the fast config proven, put the freed capacity to work. **717879 (P10 decode-safe) and 717880 (P7
+direction validation) running cleanly** on n-805 (7 min in, past the L40S guard, at commit `bfa7795`).
+
+**Relaunched the P2 v2 replication as 718027** using the measured fast config
+(`cpus=4 mem=48G`, all six L40S nodes). This is the run I had to cancel at tick 8 when it hung for 3 h in
+weight-loading with zero output — the one piece of P2 left incomplete. Zero new code; `--positions all`
+already exists. It completes the P2 finding on the 116-example v2 bench, where the v1 benches showed
+all-occurrence patching roughly doubles the L9 write necessity.
+
+Still in flight: the v3 expansion on the OpenAI budget (targeting n ≈ 324 for a powered interaction test),
+and the agent applying the fast config across every wrapper in `slurm/`.
+
 ### Tick 23 — 2026-08-05 — ✅ SLURM SOLVED: 3h32m → 6m32s, and both jobs are RUNNING
 **Target met.** 717879 (P10 decode-safe) and 717880 (P7 direction validation) **allocated in 6 m 32 s**
 and are running on n-805, past the L40S guard, at commit `bfa7795`.
