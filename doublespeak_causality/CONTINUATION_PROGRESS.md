@@ -266,6 +266,32 @@ job-708038 aborted twin. Teaching it the remaining 4 families is follow-up work,
 
 ## Tick log (most recent first)
 
+### Tick 6 — 2026-08-05 — P8.1 α-calibration launched; P10/P1/P1b builders out
+**Disk pressure resolved:** the volume was expanded — now 29T / 5.4T free / 82% (was 20T / 467G / 98%,
+and git actually hit "Disk quota exceeded" mid-commit last tick). Plan §2.2 item 9 (archive off-NetApp)
+is still worth doing but is no longer urgent.
+
+Launched the **P8.1 α-calibration smoke** (job 715366) on the harness prepped last tick —
+`--alphas 0,0.25,0.5,0.75,1.0,1.5,2.0`, with the norm-matched random control at *every* α and
+`--save-gen` on. This is the blocking prerequisite for the real Phase 8: at α = 1.0 the design is
+saturated (`I_max` = +0.174) and the interaction is undetectable; we need the α that lands
+refusal-alone ASR in the 0.20–0.40 band, which restores `I_max ≥ +0.33`.
+
+P2's v2 (116-example) replication still running (714997, ~58 min).
+
+Fanned out 4 builders on disjoint files:
+- **P10 blocker** — `AllPositionMLPAblate`, the decode-safe MLP ablation. The old BEHAV-WRITE null used
+  `ComponentOutSwap`, whose position guard drops every position when `seq == 1`, so it was **prefill-only**;
+  the test set includes a negative control pinning exactly that defect.
+- **P1 prerequisite** — audit the empty-generation exposure in `14_behavioral_eval.py` (no EMPTY label,
+  no `empty_rate` guard) which produced the published Phase 2.1 baseline. Verdict required:
+  SAFE / SUSPECT / MUST-RERUN.
+- **P1b** — build the actual v3 split: concept-level `intent_cluster` (v1's per-instruction hash made the
+  leakage check vacuous — 14/43 concepts and 17/21 codewords straddle), disjoint codewords per split,
+  all 6 conditions, zero straddling.
+- **Validator schema coverage** — teach it the 4 remaining families (phase4*/phase5b/phase7*/phase9*) so
+  its exit code means something over the whole tree.
+
 ### Tick 5 — 2026-08-05 — P2 result lands; all review defects fixed and independently re-verified
 Read out P2 on both v1 benches (v2 still running) → a new result: all-occurrence patching ~doubles the L9
 write necessity, against a count-matched control. Wrote `reports/PHASE2_ALL_OCCURRENCES.md`. Collected all
