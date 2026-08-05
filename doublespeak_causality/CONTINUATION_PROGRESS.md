@@ -366,6 +366,26 @@ first-to-run and the only axis with demonstrated behavioral potency — is among
 
 ## Tick log (most recent first)
 
+### Tick 12 — 2026-08-05 — α sweeps confirmed alive by direct measurement; P6 Jacobian being written
+**Liveness measured, not assumed.** The α sweeps had written no log line for 53 min, which by the tick-8
+rule is exactly the signature I now distrust. Rather than guess, I found the live run dir and measured the
+artifacts directly:
+- `RUNMETA.json` present and written **before compute** — **the §2.1 provenance contract firing on a live
+  run for the first time.** `gens.jsonl` present too, so `--save-gen` works end-to-end.
+- `gens.jsonl` = **529 lines = 23 items × 23 arms**, `raw.jsonl` = 23 rows ⇒ gens is written per
+  (item, arm), raw per item. **23 of 86 items done.**
+- Rate: 23 items in 57 min ≈ **2.5 min/item**, so a 45 s sample window has only ~30 % chance of catching a
+  write — which is why the first check showed zero growth and was *not* evidence of a hang.
+- Confirmed over a 200 s window: **23 → 24 items.** Alive. **ETA ≈ 2.5 h (~20:45).**
+
+GPU is saturated until then (the P10 and P7 smokes are PENDING behind the two sweeps on cluster priority),
+so this tick went to the last big CPU-writable piece: **P6, the Jacobian / projection-matrix readout** —
+a methods contribution with currently **zero code in the repo**. Instructed to build on the existing
+`_ActGradCapture` (48_attribution_patching.py) rather than reinvent, to keep the concept and refusal targets
+**strictly separate** (the project's cardinal rule), to stay directly comparable to the existing plain
+projection lens (`phase8_readout.py`, same layer/position conventions), and to prove correctness against a
+**closed-form derivative on a toy model** — that analytic check is what will make the readout trustworthy.
+
 ### Tick 11 — 2026-08-05 — P10 + P7 smokes launched; all 3 prep agents landed
 Launched the **P10 decode-safe smoke** (716187) and the **P7 refusal-direction validation smoke** (716188)
 alongside the two α sweeps. P7's harness validates all 32 layers for **two direction families side by
