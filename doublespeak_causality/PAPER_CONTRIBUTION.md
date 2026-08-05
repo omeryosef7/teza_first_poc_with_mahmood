@@ -216,6 +216,12 @@ is the refusal axis, causally decoupled from the concept remap.** Six mutually-r
    (positive control fires: p_concept .88→.80, curated .69→.46) but leaves DS's refusal suppression **completely
    unmoved** (`frac_of_direct_gap_restored ≈ 0`, every layer/cohort). The demos' two L8–11 effects run on
    **separate pathways** — knocking out the remap does nothing to the refusal bypass.
+7. **Item-level rep→behavior link [repr↔behav].** Joining per-item DS refusal projection with the ds_base
+   jailbreak outcome: on clearharm a DS prompt's refusal-axis projection alone predicts whether it jailbreaks at
+   **AUC 0.87 (Mann-Whitney p=3.8e-9, r=−0.58)** — the items DS jailbreaks are precisely those it most suppresses
+   on the refusal axis. Explains the partial base ASR (~0.36) and shows it has **two sources**: under-suppression
+   (clearharm — projection predicts the outcome) and concept-dilution (curated — suppression uniform, codeword
+   makes the output benign so it fails the harm judge). (`reports/REP_PREDICTS_BEHAVIOR.md`.)
 
 **Contribution.** A clean causal dissociation resolving what the representational circuit is *for*: the
 elaborate token→concept remap is a behaviorally **epiphenomenal bystander**; Doublespeak's harm is (imperfect)
