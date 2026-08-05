@@ -1,6 +1,8 @@
 # P8.0 — The Doublespeak × refusal-down interaction is significantly SUB-ADDITIVE (pilot, no GPU)
 
-**Status:** COMPLETE, verified. **Headline of plan §0.6 CONFIRMED.**
+**Status:** COMPLETE, verified, then **CORRECTED 2026-08-05 after adversarial review** (see §5.1, §5.3b,
+§5.3c). Direction of plan §0.6 CONFIRMED; the *strength* of the evidence is weaker than first written —
+the three outcomes are one measurement, not three, and the judge is unstable at 7.5% in the signal arms.
 **Script:** `scripts/analyze_interaction_2x2.py` · **Machine-readable output:** `outputs/interaction_2x2.json`
 **Run:** `python scripts/analyze_interaction_2x2.py`
 
@@ -191,13 +193,24 @@ task. Any future arm that claims to raise ASR must therefore state which of the 
 
 ## 5. Interpretation — honest reading
 
-1. **The interaction is negative and it is a real result, not a null.** Pooled clearharm
-   `Î = −0.186 [−0.349, −0.023]`, perm p = 0.045; the graded score independently gives `−0.190`, p = 0.016;
-   compliance gives `−0.198`, p = 0.012. Three outcomes × two cohorts = six pooled estimates, **all six
-   negative and all six with p < 0.05**. At split level, all 12 estimates are negative and 9 of 12 reach
-   p < 0.05 — the three exceptions are the three clearharm-**train** outcomes (p = 0.543 / 0.206 / 0.283),
-   and the clearharm-test binary p is borderline at 0.0498. Doublespeak and refusal-direction ablation are
-   **sub-additive**.
+1. **The interaction is negative.** Pooled clearharm `Î = −0.186 [−0.349, −0.023]`, perm p = 0.045; the
+   graded score gives `−0.190`, p = 0.016; compliance gives `−0.198`, p = 0.012. At split level all 12
+   estimates are negative; the three clearharm-**train** outcomes are not significant (p = 0.543 / 0.206 /
+   0.283) and the clearharm-test binary p is borderline at 0.0498.
+
+   ⚠ **These three outcomes are NOT independent evidence** (corrected 2026-08-05 after adversarial review).
+   The binary MALICIOUS label is a *deterministic threshold* of the graded score — verified across all 5
+   arms of all 137 rows in both cohorts, **0 violations** of `(label == MALICIOUS) ⟺ (score ≥ 0.25)` — and
+   compliance is derived from the same generations. Binary, graded and compliance are three views of **one
+   measurement**, not three corroborating ones. An earlier draft of this section claimed "six pooled
+   estimates, all six with p < 0.05"; that framing inflated the apparent weight of evidence and has been
+   withdrawn.
+
+   ⚠ **The curated compliance cell is algebraically degenerate.** Compliance is exactly 1.000 in *both*
+   Doublespeak arms, so `D_i = 1 − 1 − Y(0,1) + Y(0,0)` collapses to `Y(0,0) − Y(0,1)` (verified: every
+   non-zero `D_i` is −1, distribution {−1: 22, 0: 29}). That "interaction" of −0.431 is not an interaction
+   at all — it is the **main effect of refusal ablation on the direct arm** with the DS arms pinned to the
+   ceiling. It must not be counted as supporting evidence.
 2. **This is what a shared refusal bottleneck predicts.** If the demonstrations' causal work is *suppressing
    refusal*, then once the refusal direction has already been projected out there is much less left for
    Doublespeak to remove; their effects overlap rather than compose. That is consistent with the project's
@@ -209,6 +222,38 @@ task. Any future arm that claims to raise ASR must therefore state which of the 
    bottleneck and rule out strong synergy, but the ceiling means the magnitude of `Î` is not a clean
    mechanistic quantity.** The `D_i = +2` count of **0 / 137** is the more robust piece of evidence, because
    it is a statement about individual items, not about a saturated average.
+3b. ⚠ **MEASUREMENT INSTABILITY — the largest threat to this result** (added 2026-08-05 after adversarial
+   review). A technical replicate of the *same* condition exists: the preempted twin
+   `behav_refusal_clearharm_a1.0_20260804_125311_708038` (80 rows, same SLURM job 708038) against the
+   authoritative `..._133355_708038`. On the **80 overlapping items**, the two runs disagree on:
+
+   | arm | label flips | |
+   |---|---|---|
+   | `direct_randabl` | **0 / 80 (0.0%)** | ← the control arm is perfectly stable |
+   | `direct_base` | 2 / 80 (2.5%) | |
+   | `ds_base` | 2 / 80 (2.5%) | |
+   | **`direct_refabl`** | **6 / 80 (7.5%)** | ← carries the signal |
+   | **`ds_refabl`** | **6 / 80 (7.5%)** | ← carries the signal |
+
+   Restricted to those same 80 items, `Î = −0.150` (p = 0.111) in one run and `−0.100` (p = 0.277) in the
+   other — a **run-to-run swing of 0.050 on `Î`**, roughly a quarter of the headline effect and **larger
+   than the distance from the published CI upper bound (−0.023) to zero**.
+
+   Because `direct_randabl` — which is equally hooked but produces refusals — is perfectly stable, this is
+   **not** hook nondeterminism. It is **StrongREJECT judge variance on borderline completions**,
+   concentrated precisely in the arms that carry the signal. (P10.0's independently-estimated per-direction
+   noise anchor p₀ = 0.089 is the same phenomenon measured another way: 7.5% / 2 = 3.75% per direction.)
+
+   **Consequence: `p = 0.045` is fragile and must not be reported as a clean significance.** The confound-
+   immune statements are the item-level ones — `D_i = +2` never occurs in 137 items — and the direction of
+   the effect, which is stable across both replicates. Any confirmatory P8 run must measure and report the
+   judge-replication envelope (plan §P1 already requires ≥3 repeated baseline runs for exactly this reason).
+
+3c. **Statistical caveat: the sign-flip null is not exact here.** The permutation tests are correctly
+   implemented and correctly two-sided, but the sign-flip null tests "`D_i` symmetric about 0", not
+   "`E[D_i] = 0`". §2.4 establishes that 62.8% of items can only produce `D_i ≤ 0`, so the `D` distribution
+   is structurally asymmetric under *any* hypothesis. The reported p-values should be read as approximate.
+
 4. **Consequence for Phase 8 (this is the actionable part).** P8 as originally scoped — powered to detect a
    *positive* +0.10 / +0.15 interaction — is aimed in the wrong direction and, at α = 1.0, is aimed at a
    target that barely fits inside the arithmetic headroom. P8 should be re-registered as a **sub-additivity
@@ -238,7 +283,9 @@ task. Any future arm that claims to raise ASR must therefore state which of the 
 python scripts/analyze_interaction_2x2.py            # writes outputs/interaction_2x2.json + console tables
 ```
 
-Deterministic: `np.random.default_rng(20260805)`, 10 000 bootstrap resamples, 50 000 sign flips. Seed
+Deterministic **given the input data**: `np.random.default_rng(20260805)`, 10 000 bootstrap resamples,
+50 000 sign flips. NOTE this is analysis-level determinism only — the underlying *measurement* is not
+reproducible run-to-run (see §5.3b: 7.5% label flips between technical replicates in the signal arms). Seed
 sensitivity of the headline permutation p across five seeds: 0.0451 / 0.0447 / 0.0441 / 0.0436 / 0.0444.
 Independent parametric cross-checks of the same `Î`: normal-approximation z-test p = 0.029, Wilcoxon
 signed-rank p = 0.032 — both agree with the permutation test.

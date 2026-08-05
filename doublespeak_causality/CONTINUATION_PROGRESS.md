@@ -160,7 +160,69 @@ unsourceable fields go to `unknown_fields` with a reason — nothing fabricated.
 
 ---
 
+### 🔴 P8.0 CORRECTED after adversarial review — the headline is weaker than first written
+The review attacked the P8.0 result and found three things. All are now in the report; **the direction of
+the finding survives, the strength does not.**
+
+1. **Measurement instability (the biggest threat).** A technical replicate of the *same* condition exists
+   (the preempted twin of job 708038, 80 overlapping items). Label flips between the two runs:
+   `direct_randabl` **0/80**, `direct_base` 2/80, `ds_base` 2/80, **`direct_refabl` 6/80 (7.5%)**,
+   **`ds_refabl` 6/80 (7.5%)**. On those same 80 items Î is **−0.150 (p=0.111)** in one run and
+   **−0.100 (p=0.277)** in the other — a **swing of 0.050**, ~¼ of the headline and *larger than the gap
+   from the published CI upper bound (−0.023) to zero*. The control arm being perfectly stable proves this
+   is **StrongREJECT judge variance on borderline completions**, not hook nondeterminism, concentrated in
+   exactly the arms that carry the signal. ⇒ **p = 0.045 is fragile.** (Verified independently by me.)
+2. **The three outcomes are ONE measurement, not three.** The binary MALICIOUS label is a deterministic
+   threshold of the graded score — 0 violations of `label ⟺ score ≥ 0.25` across all 5 arms × 137 rows.
+   The earlier "six pooled estimates, all six p < 0.05" framing inflated the evidence and is withdrawn.
+3. **The curated compliance cell is algebraically degenerate.** Compliance = 1.000 in both DS arms, so
+   `D_i` collapses to `Y(0,0) − Y(0,1)` — that "interaction" is the main effect of refusal ablation, not an
+   interaction. Removed from the supporting evidence.
+Also: the sign-flip null assumes symmetry of `D_i`, which the ceiling structurally violates — p-values are
+approximate.
+
+**What still stands:** the direction (negative in all 12 split-level estimates, both replicates) and the
+confound-immune item-level fact that **`D_i = +2` never occurs in 137 items**.
+
+### ✅ P2 all-occurrence patching — launched (plan §5 P2, the free cell)
+`--positions all` existed in `phase6_mlp_causal.py` and had **never been run**. Smoke (714854/714855) passed
+the gate: `nec_selfswap_max_dev = 0.0`, `suf_selfswap_max_dev = 0.0`, 0 skips, 1024 rows, effects
+non-degenerate. Full runs launched on all three benches: **714997** (clearharm v2, 116 ex), **714998**
+(clearharm v1), **714999** (curated). Zero new code.
+
+### ✅ P9.0 — the GCG selection bug is FIXED (unblocks Gate 7)
+`_evaluate_candidates` now runs the candidate batch with `output_hidden_states=True`, slices the configured
+layers/positions in sub-batches, and passes them to `composite_loss` — so the representation/refusal
+objective finally enters **candidate selection**, not just the gradient. Opt-in
+(`objective.repr_in_selection`, auto-ON only when a repr objective is configured) so **task-only arms stay
+byte-identical and equally fast**. Provenance fixed too: `repr_layers`, `reference_cache_id`,
+`objective_name` now reach `CONFIG.json` **and** `config_hash()`, so arms can no longer silently cross-resume
+each other's checkpoints. `llama` model family added (3 files). Verified GPU-free with a synthetic test.
+⇒ **Every prior "mechanism-derived GCG fails" statement was made with the objective disabled in selection.**
+
+### 📈 P1b — dataset recovery is bigger than the plan estimated, with a caveat
+Replaying the extractor from cache reproduces the v1 decomposition exactly (86 kept / 62 LLM-None /
+31 multi-token / 0 not-verbatim). Lexicon fallback recovers **44/62 + 8/31 = 52 rows → 138 examples /
+45 concepts** (+60.5%, vs the plan's estimated +33). A 50/25/25 concept-level bin-pack gives
+**69/35/34, zero straddling concepts**, and survives singular/plural lemma collapse.
+⚠ **Caveat that must reach the paper:** only **2 of the 45 concepts are new** (chlorine, mortar) — the other
+50 recovered rows densify concepts v1 already had. **Concept-level effective N goes 43 → 45, essentially
+unchanged.** The +60% may be used for item-level claims (per-item AUC, item-level rep→behavior) but **must
+not** be reported as strengthening LOGO or cross-concept generalization. Recovery is also category-biased.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 4 — 2026-08-05 — adversarial review lands; P8.0 corrected; P2 full runs launched
+6 agents returned. The review found a HIGH measurement-instability threat to P8.0 (verified by me), a
+false-independence claim, and a degenerate curated cell — all now corrected in the report. P9.0's GCG
+selection bug fixed. P1b recovery quantified (+60% items but only +2 concepts). P2 smoke passed and the
+three full runs are on GPU. Launched 4 fixers for the review's HIGH/MEDIUM code defects: validator false
+positives (44/91 dirs), tolerance fallback, dead ratchets, fabricated job ids in 34 RUNMETA, the
+n_for_power truncation (12 of 16 printed ">4000" values are wrong), and two judge-adoption hazards.
+**Good news from review:** the torch stub is clean (1464 attributes raise, 6 served) and adopting
+`behav_judge` would change **no** published number (0 blank responses / 0 null scores across 1451 rows).
 
 ### Tick 3 — 2026-08-05 — all 7 agents in; 2 defects fixed; provenance applied; P2 smoke launched
 Collected the remaining 4 agents. Fixed both newly-found primitive defects and cleared the xfail markers
