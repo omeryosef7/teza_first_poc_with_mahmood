@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 111, loop tick — robustness AUDIT of the item-level headline result: VERIFIED)** —
+  Per Omer's 'no bugs': independently audited the rep→behavior AUC-0.87 claim (now a paper headline). **Verified
+  robust:** (1) not a layer cherry-pick — AUC stable 0.84–0.89 across L17–L32 (all p<1e-7; only early L13 weaker
+  0.69); (2) not in-sample optimism — **5-fold CV AUC 0.887±0.106** (out-of-sample, ≥ in-sample); (3) join
+  correct (spot-check low-proj→MALICIOUS, high→REJECTED). Added robustness section to REP_PREDICTS_BEHAVIOR.md
+  with the honest framing (the projection ≈ the model's refusal-decision variable at the decision token, so this
+  is a mechanistic localization of the gate, not a surprising external predictor). All 8 results now verified.
+
 - **2026-08-05 (iter 110, loop tick — GPU freed! TRAJECTORY done: refusal decided at the DECISION POINT, two-source partial-ASR CONFIRMED)** —
   Cluster freed; trajectory runs 711956/711957 COMPLETED. **Result ✓:** clearharm — at token 0 the jailbreak
   DS items are already suppressed (L30 −2.1) while the refused ones start near Direct (9.1 vs 13.6); trajectories

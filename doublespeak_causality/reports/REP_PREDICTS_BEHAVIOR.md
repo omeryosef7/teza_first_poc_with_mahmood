@@ -29,6 +29,17 @@ lower projection), point-biserial r, and AUC (does lower projection → jailbrea
   the *benign codeword* rather than the harmful concept (StrongREJECT scores it low even with refusal off). This
   is the concept-**dilution** side of "imperfect refusal suppression."
 
+## Robustness (audit)
+
+The clearharm effect is **not a layer cherry-pick and not in-sample optimism**: single-feature AUC is stable
+**0.84–0.89 across L17–L32** (all Mann-Whitney p<1e-7; only the early L13 is weaker at 0.69, as expected since
+refusal is weakly represented early), and **5-fold cross-validated AUC = 0.887 ± 0.106** (out-of-sample logistic
+regression on the single projection feature), matching/exceeding the in-sample value. Join verified by
+per-item spot-check (low projection→MALICIOUS, high→REJECTED). Note the projection is essentially the model's
+refusal-decision variable read at the decision token, so this is a *mechanistic localization* of the gate
+(refusal is decided on this axis at this position), not a surprising external predictor — that it lands at
+AUC~0.87 rather than 1.0 quantifies how much of the outcome the decision-token refusal axis alone determines.
+
 ## Interpretation
 
 **Partial ASR has two sources, and this pins which cohort shows which:**
