@@ -10,3 +10,21 @@ GPU ok: NVIDIA L40S
   [harmless] 20/20 forwards
 [refval] baselines: harmful refusal=1.000 benign refusal=0.333
 [refval] existing L0: sep_ho=+0.003 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.21 valid=False
+[refval] existing L1: sep_ho=+0.001 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.35 valid=False
+[refval] existing L2: sep_ho=-0.000 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.47 valid=False
+[refval] existing L3: sep_ho=-0.001 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.72 valid=False
+[refval] existing L4: sep_ho=-0.006 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.99 valid=False
+[refval] existing L5: sep_ho=-0.013 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+1.33 valid=False
+[refval] existing L6: sep_ho=-0.007 ablate=+0.000(rand +0.000) induce=+0.333(rand +0.000) a_ind=+1.73 valid=False
+[refval] existing L7: sep_ho=-0.005 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+2.06 valid=False
+[refval] existing L8: sep_ho=-0.005 ablate=+0.000(rand +0.000) induce=-0.333(rand -0.333) a_ind=+2.52 valid=False
+[refval] existing L9: sep_ho=-0.008 ablate=+0.000(rand +0.000) induce=+0.333(rand +0.000) a_ind=+2.97 valid=False
+[refval] existing L10: sep_ho=+0.024 ablate=+0.000(rand +0.000) induce=+0.667(rand -0.333) a_ind=+3.28 valid=False
+[refval] existing L11: sep_ho=+0.048 ablate=+0.000(rand +0.000) induce=+0.667(rand +0.000) a_ind=+3.47 valid=False
+[refval] existing L12: sep_ho=+0.060 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+3.56 valid=False
+[refval] existing L13: sep_ho=+0.141 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+4.61 valid=True
+[refval] existing L14: sep_ho=+0.180 ablate=+1.000(rand +0.000) induce=+0.000(rand -0.333) a_ind=+5.42 valid=False
+[refval] existing L15: sep_ho=+0.266 ablate=+1.000(rand +0.000) induce=+0.667(rand -0.333) a_ind=+6.44 valid=True
+[refval] existing L16: sep_ho=+0.354 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+8.06 valid=True
+[refval] existing L17: sep_ho=+0.379 ablate=+0.333(rand +0.000) induce=+0.667(rand +0.000) a_ind=+8.81 valid=True
+[refval] existing L18: sep_ho=+0.425 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+9.81 valid=True

@@ -633,7 +633,52 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ---
 
+### 🎯 P1b COMPLETE — v3 expanded to the POWERED size (n=324) for $0.14
+`data/splits/clearharm_doublespeak_v3.json` · `scripts/expand_concepts_v3.py` · `reports/P1B_V3_SPLIT.md`
+
+| | before | **after** |
+|---|---|---|
+| examples | 138 | **324** (target hit exactly) |
+| distinct concepts | 45 | **224** (+179) |
+| intent clusters | 40 | **215** |
+| placeholder benign demos | 59 | **0** |
+| straddling concepts / codewords / clusters | 0 | **0** |
+
+Split 162/82/80. `validate_data_integrity.py`: **12 ok / 0 warn / 0 FATAL**. Independently re-verified by
+me: zero cross-split overlap on concept **and** codeword **and** cluster across all three split pairs;
+6 conditions with 0 empty cells. **Total spend $0.14** (496 calls).
+
+**This is the fix for P8.1's uninterpretable CI.** The plan's power table needs n=324 to detect an
+interaction of 0.15 under Holm m=5; we were at 138 with CI [−0.151, +0.105].
+
+**Four findings worth carrying forward:**
+1. **The v1 drop mystery is settled — and my assumption was wrong.** Of the 62 rows where the v1 extractor
+   returned `None`, gpt-4o now yields ok=52 / multi-token=7 / model-said-none=3 and **api_error = 0**. The
+   `except Exception: return None` was **never firing**; the losses were simply gpt-4o-mini's weaker
+   extraction. The plan (and my tick-9 note) treated the swallowed-exception as the likely cause.
+2. **Recovery beats generation, by a lot.** Steps 1–2 cost **$0.026** and produced **+25 concepts** —
+   **12× the concept yield of the entire previous expansion (+2)**. Always exhaust recovery first.
+3. **Yield went 10.7 % → 35.0 %** from two fixes: don't make the model invent a single-token codeword (draw
+   from the 2,059-word pool instead), and send the **full** avoid-list — the old `sorted(used)[:40]` was a
+   real bug, and 254 of 382 rejects were still `already_used`.
+4. **Concept supply, not budget, is now the binding constraint.** Accepts per batch decayed 14→1 over 29
+   batches: common single-token harmful English nouns are near-exhausted at ~224. Reaching the plan's
+   350–450 band needs a **relaxed tokenization contract**, not more money. (52 further concepts are already
+   paid for and banked → n=376 / 276 concepts available on demand.)
+
+⚠️ **NEW STRUCTURAL FACT the analysis must respect:** the split now has **two cohorts** — `clearharm` (170)
+and `generated` (154). Both independently satisfy ≥20/≥20 at ~50/25/25. But the generated instructions are
+shorter and more templated (cross-split instruction TF-IDF rose 0.489 → 0.621, still 0 pairs above the 0.7
+threshold). **Every headline result must be reported per cohort as well as pooled** — a cohort × condition
+interaction would mean the generated arm is *not* exchangeable with real ClearHarm and cannot be pooled.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 27 — 2026-08-05 — v3 hits n=324; the dataset blocker is cleared
+P1b complete and independently verified. All three GPU jobs still running. The interaction test that P8.1
+left uninterpretable is now adequately powered on paper — pending the per-cohort exchangeability check.
 
 ### Tick 26 — 2026-08-05 — three jobs running past the preemption point; analyzer silent-skip fixed
 **All three GPU jobs RUNNING at 15 min** on n-805 (717879 P10 decode-safe, 717880 P7 direction validation,
