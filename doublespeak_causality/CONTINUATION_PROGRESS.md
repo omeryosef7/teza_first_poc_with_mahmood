@@ -535,6 +535,23 @@ test regardless of α. Its random control is also less flat than clearharm's (0.
 
 ## Tick log (most recent first)
 
+### Tick 17 — 2026-08-05 — P8.1 analyzer being written ahead of the clearharm data
+clearharm at 75/86 (~30 min out); curated done, which freed a GPU slot — but the P10 and P7 smokes are
+still PENDING on **cluster** priority, not our 6-job limit (we hold only 1 running job), so there is
+nothing to launch.
+
+Used the tick to write `analyze_alpha_calibration.py` so it is ready the moment the data lands, rather
+than writing it afterwards. Explicitly instructed to **reuse** `analyze_interaction_2x2.py`'s estimator,
+bootstrap and permutation code rather than reimplement the statistics — two independent implementations of
+the same test is how numbers drift apart.
+
+Two constraints carried into the analyzer so they cannot be forgotten at write-up time:
+1. **The judge noise floor (~2 pp) must sit next to the numbers, not in a footnote** — any ΔASR below it is
+   indistinguishable from judge nondeterminism.
+2. **Î and I_max must be reported side by side at every α**, so the ceiling relationship is visible to a
+   reader. And the headroom-vs-saturated decomposition is explicitly **forbidden as evidence** — it is
+   mechanically forced in both directions (tick 15), and the analyzer should not resurrect it.
+
 ### Tick 16 — 2026-08-05 — curated α sweep COMPLETE; judge noise floor measured exactly
 Curated finished (51/51). Two results: (a) no usable sub-saturating α exists on curated — the α=0.25 point
 chosen from clearharm does not transfer, and curated is a poor interaction cohort anyway since its DS ASR
