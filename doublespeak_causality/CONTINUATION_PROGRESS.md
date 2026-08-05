@@ -455,7 +455,46 @@ refusal_rate **0.861 at every single α**). Specificity is now demonstrated acro
 
 ---
 
+### 🛑 Tick-15 self-correction: my own "sharper test" of the ceiling was INVALID
+I tried to settle the tick-14 ceiling question by splitting items into those with *headroom* (neither
+factor alone jailbreaks) and those already *saturated*. The prediction was: if the negative Î is purely
+arithmetic, `Ihat_headroom` should be ≈ 0 at every α. Result (partial, n=46/86):
+
+| α | Î all | n_head | **Î headroom** | n_sat | Î saturated |
+|---|---|---|---|---|---|
+| 0.25 | −0.022 | 22 | **+0.273** | 24 | −0.292 |
+| 0.5 | −0.130 | 16 | **+0.500** | 30 | −0.467 |
+| 1.0 | −0.152 | 14 | **+0.643** | 32 | −0.500 |
+| 2.0 | −0.348 | 6 | **+0.833** | 40 | −0.525 |
+
+**`Ihat_headroom` is strongly POSITIVE — and it is meaningless.** In that subgroup `Y(1,0)=Y(0,1)=0` by
+construction, so `D_i = Y(1,1) − 0 − 0 + Y(0,0) = Y(1,1) + Y(0,0) ≥ 0` **mechanically**. It *cannot* be
+negative, exactly mirroring how the saturated subgroup *cannot* be positive. **Both halves are forced by
+the selection, so this decomposition cannot adjudicate the mechanism in either direction.** I nearly
+reported "+0.83 synergy among headroom items", which would have been a serious error.
+
+**What it does establish (weakly):** the aggregate Î is a mixture whose sign is driven by the saturated
+fraction, which grows 24/46 → 40/46 as α rises. Consistent with the tick-14 ceiling reading, but not
+independent evidence for it.
+
+**⇒ This is exactly why plan §5 P8.4 requires the resistant subgroup to be defined on a SEPARATE
+calibration split and pre-registered before being applied to fresh items.** Selecting it on the same data —
+which is what I just did — is invalid no matter which direction the answer comes out. The plan's own design
+requirement is vindicated; the shortcut is not available. **The tick-14 finding therefore stands exactly as
+stated — provisional, resting on the monotone Î-vs-I_max relationship — and is NOT strengthened by this.**
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 15 — 2026-08-05 — attempted to sharpen the ceiling finding; the test was invalid, self-corrected
+Sweeps at 46/86 and 40/51 (~2.8 min/item; curated ETA ~19:40, clearharm ~21:00). No launches possible.
+Tried to adjudicate the tick-14 ceiling question with a headroom-vs-saturated decomposition of Î; the
+headroom half came back strongly positive, but the subgroup algebra forces `D_i ≥ 0` there, so both halves
+are selection artifacts and the test proves nothing either way. Recorded as a self-correction rather than
+quietly dropped, since the positive number is superficially exciting and would have been easy to misreport.
+Net: tick-14's provisional finding is unchanged, and plan §5 P8.4's pre-registration requirement is
+confirmed as necessary rather than bureaucratic.
 
 ### Tick 14 — 2026-08-05 — provisional α curve read; it challenges our own P8.0 headline
 Sweeps healthy (clearharm 36/86, curated 29/51, ~2.6 min/item, ETA ~20:50). GPU saturated, so no launches.
