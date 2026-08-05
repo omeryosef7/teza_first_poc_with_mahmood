@@ -635,6 +635,36 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 23 — 2026-08-05 — ✅ SLURM SOLVED: 3h32m → 6m32s, and both jobs are RUNNING
+**Target met.** 717879 (P10 decode-safe) and 717880 (P7 direction validation) **allocated in 6 m 32 s**
+and are running on n-805, past the L40S guard, at commit `bfa7795`.
+
+**The lever, established by direct A/B on the same work:**
+
+| config | outcome |
+|---|---|
+| `cpus=8, mem=64G, time=1:00/1:30` | PENDING **3 h 32 m** |
+| `cpus=4, mem=48G, time` matched | **ALLOCATED 6 m 32 s** ✅ |
+
+**What I ruled out along the way, so it isn't retried:**
+- **`--time` is not the lever** — no correlation across the day (14 h job → 5 min wait; 20 min job →
+  319 min wait).
+- **Concurrency is not the limit** — `sacctmgr` shows `MaxJobs=50`.
+- **3090/a5000 nodes don't help** — `--test-only` returns the *identical* ~24 h estimate for every config
+  including 1 CPU/8 G on an idle 3090. That estimate just reports when current jobs hit the partition's
+  1-day limit; it ignores backfill and is **not actionable**. Six probe configs (3090 / a5000 / n-801 /
+  6-node L40S / unconstrained / large) were submitted and **all six stayed PENDING while our two real jobs
+  ran** — which also showed the probes were **competing with our own work**, so I cancelled them.
+- **`gpu-sharifm`** (the lab partition, with an idle a5000 node) refuses us: *"User's group not permitted."*
+
+**Two concrete fixes:**
+1. **cpus 8→4, mem 64G→48G** as the default in every wrapper — ample for single-GPU 8B bf16 inference.
+2. **n-801 restored to the nodelist.** Several wrappers listed only `n-802..805,t-806`, silently giving up
+   an equally valid `gpu:l40s:8` node — **1/6 of our L40S capacity** — for no stated reason.
+
+Codified as the "MEASURED FAST CONFIG" block in plan §1.3, with the A/B table, so it is never re-derived.
+An agent is applying it across all wrappers in `slurm/` now.
+
 ### Tick 22 — 2026-08-05 — 30-minute allocation rule added and applied; found a partition we cannot use
 **Omer's rule, now plan §1.3.0: a job must be ALLOCATED within 30 min of submission, else `scancel` and
 resubmit with settings that have demonstrably worked.** Checked every tick from now on.

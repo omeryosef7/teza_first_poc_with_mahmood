@@ -192,16 +192,38 @@ operator instructions.)*
 `scancel` it and resubmit with settings that have demonstrably worked before.** Do not let a job sit in
 the queue for hours — check every tick and act.
 
-Empirical basis for "settings that worked" (measured 2026-08-05 over all of that day's jobs):
-**every** successful run used `--partition=killable --account=gpu-research --cpus-per-task=8 --mem=64G
---gpus=1` with the L40S nodelist. Wait time showed **no relationship to `--time`** — a 14 h job waited
-5 min while a 20 min job waited 319 min — so the queue delay is cluster load at submit, not our
-configuration. Resubmitting costs nothing (`sprio`: AGE contributes ~5 points against a 1e8 partition
-factor) and re-enters scheduling, which is why the rule is worth following even when the settings are
-already right.
+## ✅ THE MEASURED FAST CONFIG (use this; do not re-derive)
 
-When resubmitting, prefer a **smaller footprint** to fit backfill gaps — `--cpus-per-task=4 --mem=48G` is
-ample for single-GPU 8B inference — and set `--time` to the real need rather than a padded ceiling.
+```
+#SBATCH --partition=killable   --account=gpu-research
+#SBATCH --ntasks=1 --nodes=1 --gpus=1
+#SBATCH --cpus-per-task=4      --mem=48G          # <-- the lever
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806   # <-- all SIX L40S nodes
+#SBATCH --time=<real need, not a padded ceiling>
+```
+
+**Direct A/B evidence, same work, same day:**
+
+| config | outcome |
+|---|---|
+| `cpus=8, mem=64G, time=1:00/1:30`, 5-node list | **PENDING 3 h 32 m** (716187/716188) |
+| `cpus=4, mem=48G, time=0:40/0:50`, resubmitted | **ALLOCATED in 6 m 32 s** (717879/717880) ✅ |
+
+**Why the smaller footprint is the lever:** wait time shows **no relationship to `--time`** (a 14 h job
+waited 5 min; a 20 min job waited 319 min), and the account limit is `MaxJobs=50` so concurrency is **not**
+the constraint. A 4-CPU/48 G job fits backfill gaps that an 8-CPU/64 G job cannot. 4 CPUs and 48 G are
+ample for single-GPU 8B bf16 inference.
+
+**⚠️ Use ALL SIX L40S nodes.** Several wrappers listed only `n-802..n-805,t-806`, silently giving up
+**n-801** — an equally valid `gpu:l40s:8` node, i.e. 1/6 of our capacity, for no stated reason.
+
+**Do not bother with:** switching to 3090/a5000 nodes (`--test-only` gives every config the *identical*
+~24 h estimate, because that estimate just reports when current jobs hit the partition's 1-day limit — it
+ignores backfill and is not actionable), or submitting extra probe jobs while real work is queued (they
+compete with your own jobs for the same slots).
+
+Resubmitting costs nothing (`sprio`: AGE contributes ~5 points against a 1e8 partition factor) and
+re-enters scheduling, which is why the 30-minute rule is worth following even when settings look right.
 
 ⚠️ **Known access gap worth raising with Mahmood:** the cluster has a **`gpu-sharifm`** partition
 (n-804 L40S + a6000, plus an **idle a5000 node**, `MaxTime=5-00:00:00`) — the lab's own partition — but

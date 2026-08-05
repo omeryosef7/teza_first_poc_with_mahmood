@@ -1,0 +1,5 @@
+=== behav write: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json layers=8-11 maxnew=220 n=2 splits=train,test flags= --decode-safe --no-allpos-arm --save-gen ===
+Wed Aug  5 09:33:56 PM IDT 2026
+n-805
+git=bfa7795d89494dca389ff7e28428a51988ee238d
+GPU ok: NVIDIA L40S
