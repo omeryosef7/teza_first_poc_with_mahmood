@@ -222,11 +222,16 @@ is the refusal axis, causally decoupled from the concept remap.** Six mutually-r
    on the refusal axis. Explains the partial base ASR (~0.36) and shows it has **two sources**: under-suppression
    (clearharm — projection predicts the outcome) and concept-dilution (curated — suppression uniform, codeword
    makes the output benign so it fails the harm judge). (`reports/REP_PREDICTS_BEHAVIOR.md`.)
+8. **Outcome set at the decision point [temporal].** Tracking the refusal projection along generated tokens
+   (split by outcome): the DS prompts that refuse carry a near-Direct refusal signal already at token 0
+   (L30 ≈9.1 vs Direct ≈13.6), while jailbreaks are suppressed from token 0 (≈−2.1) and stay suppressed — the
+   trajectories are separated from the first token and never cross. So refusal is decided at the decision
+   position, NOT re-engaged mid-generation. curated has 0% DS refusals yet low ASR → confirms concept-dilution
+   as the second, non-refusal limiter. (`reports/PHASE_REFUSAL_TRAJECTORY.md`.)
 
 **Contribution.** A clean causal dissociation resolving what the representational circuit is *for*: the
 elaborate token→concept remap is a behaviorally **epiphenomenal bystander**; Doublespeak's harm is (imperfect)
 in-context **refusal suppression**, via an axis orthogonal to and causally independent of the concept machinery.
 **Sharp defense implication:** monitor/scrub the **refusal** axis — concept-subspace interventions cannot stop
 Doublespeak (they leave the actual causal channel untouched), matching the NEXT7 finding that concept-ablation
-defense fails. *(Open refinement, GPU-blocked: per-token refusal-trajectory dynamics to explain the ~0.35 base
-ASR — hypothesis: refusal re-engages mid-generation for the attempts that still refuse.)*
+defense fails.

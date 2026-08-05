@@ -17,6 +17,7 @@ matched control (random head / random position / norm-matched random direction).
 | **5** | Refusal **decision read mid-late** (calibrated) | CALIB-INJECT | rescue L22 ΔASR −0.25 (p=.001); L9 ns (p=.45) | L22 −0.20 (p=.031); L9 ns | L16/22/28 sig, L9 ns, both cohorts | random-dir null all layers | **CAUSAL** |
 | **6** | Concept-remap ⊥ refusal-suppression (**decoupled**) | WRITE×REFUSAL | p_concept .88→.80 (control fires); refusal frac_restored ≈0 (|·|<.02) | p_concept .69→.46; frac_restored ≈0 (|·|<.05) | control CIs exclude 0; refusal Δ CIs include 0 | positive control (p_concept) | **INDEPENDENT** |
 | **7** | Refusal proj **predicts jailbreak** (item-level) | REP→BEHAVIOR (join REFPROJ×BEHAV-REFUSAL) | **AUC 0.87**, r=−0.58 (jailbreak proj −1.15 vs refused +3.60) | null (AUC .42) — suppression *uniform* → concept-dilution 2nd mechanism | Mann-Whitney p=3.8e-9 / p=.79 | (per-item, both directions) | **PREDICTIVE (clearharm)** |
+| **8** | Outcome set at **decision point** (not re-engaged) | REFUSAL-TRAJECTORY | @token0 L30: jailbreak −2.1 vs refuses 9.1 vs Direct 13.6 (separated from step 0) | ds_refused_rate=**0.0** (uniform) → concept-dilution confirmed | trajectories separated @token0, never cross | outcome-split | **DECISION-POINT** |
 
 **Reading it:** rows 1a/1b — the concept circuit, though representationally necessary+sufficient for the
 codeword→concept *readout*, does not causally drive the jailbreak. Rows 2–3 — one orthogonal refusal

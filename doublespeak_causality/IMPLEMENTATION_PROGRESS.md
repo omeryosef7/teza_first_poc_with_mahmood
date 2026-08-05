@@ -9,6 +9,16 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 110, loop tick — GPU freed! TRAJECTORY done: refusal decided at the DECISION POINT, two-source partial-ASR CONFIRMED)** —
+  Cluster freed; trajectory runs 711956/711957 COMPLETED. **Result ✓:** clearharm — at token 0 the jailbreak
+  DS items are already suppressed (L30 −2.1) while the refused ones start near Direct (9.1 vs 13.6); trajectories
+  SEPARATED from step 0, never cross → refusal is decided at the DECISION POINT, NOT re-engaged mid-generation
+  (my earlier re-engagement hypothesis FALSIFIED). Temporal form of the iter109 item-level predictor. curated —
+  **ds_refused_rate=0.0** (zero refusals, uniform suppression) yet ASR ~.10 → CONFIRMS the concept-dilution 2nd
+  mechanism. Partial ASR resolved into two decision-point sources. Wrote PHASE_REFUSAL_TRAJECTORY.md + figure
+  (refusal_trajectory.png); added row 8 to Table 1 + level 8 to paper addendum; closed the GPU-blocked open item.
+  **ALL queued experiments now complete.** 8-result deliverable fully assembled + audited.
+
 - **2026-08-05 (iter 109, loop tick — NEW no-GPU result: item-level rep→behavior link (refusal proj predicts jailbreak))** —
   GPU still saturated → mined EXISTING data for a genuinely new result. Joined REFPROJ (per-item DS refusal
   projection) with BEHAV-REFUSAL (per-item ds_base outcome) by id (86 clearharm / 51 curated, full overlap).
