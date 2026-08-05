@@ -31,6 +31,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="data/splits/clearharm_doublespeak_v1.json")
     ap.add_argument("--out-dir", default="data/behavioral")
+    ap.add_argument("--force", action="store_true",
+                    help="allow overwriting an existing beh_<cohort>.json (refused by default: "
+                         "v1 and v3 both have a 'clearharm' cohort, so the default out-dir "
+                         "silently clobbers the v1 bench that published results depend on)")
     args = ap.parse_args()
 
     obj = json.load(open(args.split))
@@ -64,6 +68,17 @@ def main():
                          "note": "for 14_behavioral_eval.py --templated (direct/neutral/doublespeak + StrongReject)"},
                "items": items}
         path = os.path.join(args.out_dir, f"beh_{cohort}.json")
+        # GUARD (added 2026-08-05 after a near-miss): the output name is derived from the
+        # COHORT, and v1 and v3 both contain a cohort called "clearharm". Running this on the
+        # v3 split with the default --out-dir therefore silently overwrote the v1
+        # beh_clearharm.json (86 items -> 170) that every completed behavioral result was
+        # computed against. Never clobber an existing bench without an explicit --force.
+        if os.path.exists(path) and not args.force:
+            raise SystemExit(
+                f"REFUSING to overwrite {path}\n"
+                f"  It already exists and other results may depend on it.\n"
+                f"  Write to a different --out-dir (e.g. data/behavioral_v3), or pass --force "
+                f"if you genuinely intend to replace it.")
         json.dump(out, open(path, "w"), indent=1)
         import collections
         per = collections.Counter(i["split"] for i in items)

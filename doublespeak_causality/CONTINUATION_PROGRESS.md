@@ -715,6 +715,33 @@ layers our headlines actually depend on (L18, L22) both pass even at this n, whi
 
 ## Tick log (most recent first)
 
+### Tick 30 — 2026-08-05 — 🛑 I nearly destroyed the v1 behavioral bench; caught, restored, guarded
+**My mistake, recorded in full.** Building the v3 behavioral bench for P8, I ran
+`split_to_behavioral.py --split ...v3.json` with the **default `--out-dir data/behavioral`**. The output
+filename is derived from the **cohort**, and v3 *also* has a cohort called `clearharm` — so it silently
+**overwrote `beh_clearharm.json` from 86 v1 items to 170 v3 items.** That is the file **every completed
+behavioral result was computed against**: the α sweeps, BEHAV-CARRY/WRITE/REFUSAL, P8.0, P8.1.
+
+**Caught immediately, restored from git** (`git checkout --`), verified back at **86 items**. v3 benches
+now live in a separate `data/behavioral_v3/` (170 clearharm + 154 generated); `data/behavioral/` is
+untouched at 86 + 51.
+
+**The running job was not affected** — 718938 wrote its `RUNMETA.json` at **23:30:03** and the harness
+writes RUNMETA before loading the bench, ~10 min ahead of the overwrite. It recorded
+`bench=data/behavioral/beh_clearharm.json`. I will confirm definitively when `raw.jsonl` appears:
+**86 rows = v1 (correct), 170 = v3 (contaminated).**
+
+**Guard added so it cannot recur:** `split_to_behavioral.py` now **refuses to overwrite** an existing
+`beh_<cohort>.json` unless `--force`, with an error naming the collision. Negative controls: clobber
+attempt → **exit 1** with v1 still at 86 items; fresh `--out-dir` → **exit 0** and both benches written.
+
+**The lesson worth keeping:** the file was git-tracked, which is the *only* reason a one-command recovery
+existed. Had `data/behavioral/` been gitignored like `outputs/` was before P0.1, this would have been an
+unrecoverable loss of the baseline underlying every published behavioral number.
+
+Both full runs are healthy: **718937** (P7 validation) RUNNING 15 min, **718938** (P10 decode-safe)
+RUNNING 20 min — allocated after 3 and 9 min respectively, inside the 30-minute rule.
+
 ### Tick 29 — 2026-08-05 — 30-min rule applied; P2 report finalised with the v2 replication
 **Applied §1.3.0 at 29 min:** cancelled 718378/718379 and resubmitted as **718937** (P7 full validation,
 `DSVALN=20`) and **718938** (P10 full decode-safe). The wrappers now carry the fast config by default
