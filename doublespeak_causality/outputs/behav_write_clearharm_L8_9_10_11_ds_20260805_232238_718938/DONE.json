@@ -1,0 +1,26 @@
+{
+  "schema": "DONE/1",
+  "run_id": "behav_write_clearharm_L8_9_10_11_ds_20260805_232238_718938",
+  "status": "ok",
+  "rows_written": 86,
+  "end_ts": "2026-08-06T00:41:42",
+  "end_epoch": 1785966102.5052335,
+  "wall_seconds": 4299.305,
+  "arms": [
+    "baseline",
+    "write_abl_prefill",
+    "rand_pos_abl_prefill",
+    "write_abl_decodesafe",
+    "rand_pos_abl_decodesafe"
+  ],
+  "decode_safe": true,
+  "allpos_arm": false,
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "n_items_skipped": 0,
+  "gens_written": true
+}

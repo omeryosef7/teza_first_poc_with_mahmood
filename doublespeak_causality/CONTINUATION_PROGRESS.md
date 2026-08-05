@@ -713,7 +713,43 @@ layers our headlines actually depend on (L18, L22) both pass even at this n, whi
 
 ---
 
+### ✅ P10 COMPLETE — the concept-write null SURVIVES the decode-safe re-test
+`reports/P10_DECODE_SAFE_WRITE.md` · job 718938, n=86, 1 h 23 m. **This closes the §0.9 defect.**
+
+The original "behaviorally inert" null was measured with an ablation that **silently fired during prefill
+only** (`ComponentOutSwap`'s position guard drops every position when `seq == 1`). Generation was never
+tested. Now it is — both phasings in one experiment, on the same items.
+
+| split | arm | ΔASR | 95 % CI | McNemar p | Holm |
+|---|---|---|---|---|---|
+| train | `write_abl_prefill` | −0.023 | [−0.114, +0.068] | 1.000 | 1.0 |
+| train | **`write_abl_decodesafe`** | **+0.068** | [−0.068, +0.205] | 0.508 | 1.0 |
+| test | `write_abl_prefill` | +0.095 | [−0.048, +0.238] | 0.344 | 1.0 |
+| test | **`write_abl_decodesafe`** | **−0.071** | [−0.238, +0.095] | 0.581 | 1.0 |
+
+**Every CI includes 0; every McNemar p ≥ 0.34; every Holm = 1.0; `empty_rate` = 0.0 in all 10 cells.**
+Specificity-controlled (`write − rand`, decode damage held constant): **train +0.023, test −0.072 —
+opposite signs.** The prefill arms also flip sign (−0.023 / +0.095). Sign-flipping across a pre-registered
+split is the signature of noise, not of a small real effect.
+
+**The confound was real and worth building for.** On train the random-position decode arm *alone* moves ASR
+**+0.0455** — about **two thirds** of the apparent +0.0682 "necessity". Reading the raw delta would have
+produced a reported effect that is mostly generic decode damage. This is exactly why the harness was built
+to run the count-matched control in *both* phasings.
+
+⇒ **The result is unchanged but the evidence is now real.** The dissociation is stronger than before,
+because it finally rests on a measurement that did what it claimed. Limitation unchanged: a null at n=86,
+where detecting ΔASR ≈ 0.07 needs n ≈ 275 — *"no effect detectable at this n"*, not *"no effect"*. The v3
+benches (170 + 154) are the natural power upgrade.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 33 — 2026-08-06 — P10 COMPLETE: the §0.9 defect is closed and the null holds
+Read out 718938 with the existing paired analyzer (McNemar + bootstrap + Holm), wrote
+`reports/P10_DECODE_SAFE_WRITE.md`. The concept-write behavioral null survives a genuinely decode-safe
+ablation. P7 (718937) still running at 1 h 45 m of a ~7 h workload; P8 core (719260/719261) queued.
 
 ### Tick 32 — 2026-08-06 — P10 nearly done; P7 is large but alive; a liveness false-alarm corrected
 **718938 (P10 decode-safe) at 78/86 rows** — minutes from completion.
