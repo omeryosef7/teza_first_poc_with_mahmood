@@ -1,0 +1,124 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785",
+  "output_dir": "doublespeak_causality/outputs/pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785",
+  "artifacts": {
+    "summary": "readout_summary.json",
+    "raw": "readout_raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "readout_raw.jsonl",
+      "readout_summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "693785",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-07-30T01:30:57",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "pair_readout_Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_readout_Llama-3.1-8B-Instruct_20260730_013057_693785'",
+      "source_kind": "dir_name"
+    },
+    "model_from_dirname": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "dir name contains the short name 'Llama-3.1-8B-Instruct'; the only HF id with that short name in this project's logs is 'meta-llama/Llama-3.1-8B-Instruct' (INFERENCE, not a reading)",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_pairreadout_693785.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "3c001e2fee897c098b62461bce22be8836587d0f",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairreadout_693785.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairreadout_693785.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairreadout_693785.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-803",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairreadout_693785.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_pair_readout.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_pairreadout_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/31_validate_readouts.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_pair_readout.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/31_validate_readouts.py --bench \"$DSBENCH\" --model \"$DSMODEL\" --out-root doublespeak_causality/outputs --max-new-tokens \"$DSMAXTOK\" $THINK_ARG $LIMIT_ARG $MARK_ARG",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_pair_readout.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "n_rows": {
+      "value": 800,
+      "source": "reconstructed",
+      "evidence": "readout_summary.json['n_rows']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:24",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

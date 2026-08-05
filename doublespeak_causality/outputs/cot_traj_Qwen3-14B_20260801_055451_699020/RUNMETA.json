@@ -1,0 +1,85 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "cot_traj_Qwen3-14B_20260801_055451_699020",
+  "output_dir": "doublespeak_causality/outputs/cot_traj_Qwen3-14B_20260801_055451_699020",
+  "artifacts": {
+    "summary": "traj_summary.json",
+    "raw": "traj_raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "traj_raw.jsonl",
+      "traj_summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "cot_traj_Qwen3-14B_20260801_055451_699020",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "699020",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'cot_traj_Qwen3-14B_20260801_055451_699020'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-08-01T05:54:51",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'cot_traj_Qwen3-14B_20260801_055451_699020'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "cot_traj_Qwen3-14B",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'cot_traj_Qwen3-14B_20260801_055451_699020'",
+      "source_kind": "dir_name"
+    },
+    "model_from_dirname": {
+      "value": "Qwen/Qwen3-14B",
+      "source": "reconstructed",
+      "evidence": "dir name contains the short name 'Qwen3-14B'; the only HF id with that short name in this project's logs is 'Qwen/Qwen3-14B' (INFERENCE, not a reading)",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [],
+      "source": "reconstructed",
+      "evidence": "no log matched by job id or dir name",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "Qwen/Qwen3-14B",
+      "source": "reconstructed",
+      "evidence": "traj_summary.json['model']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "git_commit": "no matching log file found",
+    "gpu": "no matching log file found",
+    "torch": "no matching log file found",
+    "model": "no matching log file found",
+    "script": "no matching log file found",
+    "slurm_nodelist": "no matching log file found",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:20",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

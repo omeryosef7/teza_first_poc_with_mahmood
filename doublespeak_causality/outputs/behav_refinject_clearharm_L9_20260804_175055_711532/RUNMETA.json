@@ -1,0 +1,118 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "behav_refinject_clearharm_L9_20260804_175055_711532",
+  "output_dir": "doublespeak_causality/outputs/behav_refinject_clearharm_L9_20260804_175055_711532",
+  "artifacts": {
+    "summary": "summary.json",
+    "raw": "raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "raw.jsonl",
+      "summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "behav_refinject_clearharm_L9_20260804_175055_711532",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "711532",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'behav_refinject_clearharm_L9_20260804_175055_711532'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-08-04T17:50:55",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'behav_refinject_clearharm_L9_20260804_175055_711532'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "behav_refinject_clearharm_L9",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'behav_refinject_clearharm_L9_20260804_175055_711532'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_behrinj_711532.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "9158f0f46a640fe525f68ad5c89b7bc839bf2091",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behrinj_711532.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behrinj_711532.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behrinj_711532.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-804",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behrinj_711532.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_behav_refinject.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_behrinj_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/scripts/phase_behav_refusal_inject.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_behav_refinject.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/scripts/phase_behav_refusal_inject.py --bench \"$DSBENCH\" --model \"$DSMODEL\" --max-new \"$DSMAXNEW\" --refusal-pt \"$DSREFPT\" --alphas \"$DSALPHAS\" ${DSSAVEGEN:+--save-gen} ${DSINJLAYER:+--inject-layer $DSINJLAYER} --n \"$DSN\" --splits \"$DSSPLITS\" --seed \"$DSSEED\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_behav_refinject.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "cohort": {
+      "value": "clearharm",
+      "source": "reconstructed",
+      "evidence": "summary.json['cohort']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:20",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

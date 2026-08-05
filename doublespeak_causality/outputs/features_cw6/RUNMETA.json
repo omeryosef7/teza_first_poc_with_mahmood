@@ -1,0 +1,102 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "unknown",
+  "run_id": "features_cw6",
+  "output_dir": "doublespeak_causality/outputs/features_cw6",
+  "artifacts": {
+    "summary": null,
+    "raw": null,
+    "n_files": 2,
+    "files": [
+      "codeword_selection.json",
+      "features.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "features_cw6",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "features_cw6",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'features_cw6'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_features_691192.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "run_dir_path_printed_in_log",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "51014a50f870cc4a767650a4f0bbe802d04a7741",
+      "source": "reconstructed",
+      "evidence": "logs/ds_features_691192.out (run_dir_path_printed_in_log)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_features_691192.out (run_dir_path_printed_in_log)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "logs/ds_features_691192.out (run_dir_path_printed_in_log)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-805",
+      "source": "reconstructed",
+      "evidence": "logs/ds_features_691192.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_features.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_features_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/21_extract_behavioral_features.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_features.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/21_extract_behavioral_features.py --matrix \"$DSMATRIX\" --screen-dir \"$DSSCREEN\" --model \"$DSMODEL\" --out-dir \"doublespeak_causality/outputs/features_${DSFEATTAG}\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_features.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    }
+  },
+  "unknown_fields": {
+    "slurm_job_id": "dir name has no trailing job id",
+    "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
+    "torch": "not printed in 1 matched log(s)",
+    "seed": "no summary.json and seed is not printed to logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:21",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

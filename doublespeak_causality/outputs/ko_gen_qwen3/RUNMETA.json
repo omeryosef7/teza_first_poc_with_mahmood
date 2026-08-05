@@ -1,0 +1,99 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "unknown",
+  "run_id": "ko_gen_qwen3",
+  "output_dir": "doublespeak_causality/outputs/ko_gen_qwen3",
+  "artifacts": {
+    "summary": null,
+    "raw": null,
+    "n_files": 1,
+    "files": [
+      "stage4_knockout_results.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "ko_gen_qwen3",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "ko_gen_qwen3",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'ko_gen_qwen3'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_ko_gen_687995.out",
+        "logs/ds_ko_gen_688038.out",
+        "logs/ds_ko_gen_688040.out",
+        "logs/ds_ko_gen_688046.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "run_dir_path_printed_in_log",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_ko_gen_687995.out (run_dir_path_printed_in_log)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "Qwen/Qwen3-14B",
+      "source": "reconstructed",
+      "evidence": "logs/ds_ko_gen_687995.out (run_dir_path_printed_in_log)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-802",
+      "source": "reconstructed",
+      "evidence": "logs/ds_ko_gen_687995.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_knockout_gen.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_ko_gen_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/09_attention_knockout.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_knockout_gen.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/09_attention_knockout.py --model \"$DSMODEL\" --data doublespeak_causality/data/multi_concept_panel.json --templated --readout-layer \"$DSREADOUT\" --only \"$DSONLY\" --out-dir \"doublespeak_causality/outputs/ko_gen_${DSTAG}\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_knockout_gen.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    }
+  },
+  "unknown_fields": {
+    "slurm_job_id": "dir name has no trailing job id",
+    "start_ts": "dir name has no YYYYMMDD_HHMMSS stamp",
+    "git_commit": "not printed in 4 matched log(s)",
+    "torch": "not printed in 4 matched log(s)",
+    "seed": "no summary.json and seed is not printed to logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:21",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

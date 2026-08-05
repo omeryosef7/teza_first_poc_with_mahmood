@@ -1,0 +1,73 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "unknown",
+  "run_id": "pair_directions_20260730_223535_694882",
+  "output_dir": "doublespeak_causality/outputs/pair_directions_20260730_223535_694882",
+  "artifacts": {
+    "summary": "directions_summary.json",
+    "raw": null,
+    "n_files": 2,
+    "files": [
+      "directions.npz",
+      "directions_summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "pair_directions_20260730_223535_694882",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "694882",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_directions_20260730_223535_694882'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-07-30T22:35:35",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_directions_20260730_223535_694882'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "pair_directions",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_directions_20260730_223535_694882'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [],
+      "source": "reconstructed",
+      "evidence": "no log matched by job id or dir name",
+      "source_kind": "log"
+    }
+  },
+  "unknown_fields": {
+    "git_commit": "no matching log file found",
+    "gpu": "no matching log file found",
+    "torch": "no matching log file found",
+    "model": "no matching log file found",
+    "script": "no matching log file found",
+    "slurm_nodelist": "no matching log file found",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:22",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

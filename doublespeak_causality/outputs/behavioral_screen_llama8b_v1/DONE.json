@@ -1,0 +1,25 @@
+{
+  "schema": "DONE/1",
+  "reconstructed": true,
+  "run_id": "behavioral_screen_llama8b_v1",
+  "status": "reconstructed",
+  "rows_written": {
+    "value": 1737,
+    "source": "reconstructed",
+    "evidence": "newline count of screen_raw.jsonl",
+    "source_kind": "raw_file"
+  },
+  "end_ts": {
+    "value": "2026-07-27T17:21:02",
+    "source": "reconstructed",
+    "evidence": "latest mtime in the run dir",
+    "source_kind": "mtime"
+  },
+  "wall_seconds": null,
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:20",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

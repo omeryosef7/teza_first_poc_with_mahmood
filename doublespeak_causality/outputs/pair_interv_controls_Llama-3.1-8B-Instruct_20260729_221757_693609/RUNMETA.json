@@ -1,0 +1,124 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609",
+  "output_dir": "doublespeak_causality/outputs/pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609",
+  "artifacts": {
+    "summary": "interv_summary.json",
+    "raw": "interv_raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "interv_raw.jsonl",
+      "interv_summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "693609",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-07-29T22:17:57",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "pair_interv_controls_Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_interv_controls_Llama-3.1-8B-Instruct_20260729_221757_693609'",
+      "source_kind": "dir_name"
+    },
+    "model_from_dirname": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "dir name contains the short name 'Llama-3.1-8B-Instruct'; the only HF id with that short name in this project's logs is 'meta-llama/Llama-3.1-8B-Instruct' (INFERENCE, not a reading)",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_pairinterv_693609.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "6ee794e1b5f33cc116e34a6f4d8f2f3f65abc869",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairinterv_693609.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairinterv_693609.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-803",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairinterv_693609.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_pair_interv.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_pairinterv_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/34_intervention_sweep.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_pair_interv.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/34_intervention_sweep.py --bench \"$DSBENCH\" --reps-dir \"$DSREPS\" --dir-dir \"$DSDIRS\" --model \"$DSMODEL\" --out-root doublespeak_causality/outputs --mode \"$DSMODE\" --readout \"$DSREADOUT\" --site \"$DSSITE\" --splits \"$SPLITS\" --alphas=\"$ALPHAS\" --n-prompts \"$DSNPROMPTS\" --crossfit \"$DSCROSSFIT\" --layer-groups \"$DSGROUPS\" --alpha-mode \"$DSALPHAMODE\" $LAYER_ARG $WIN_ARG $GEN_ARG",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_pair_interv.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "n_rows": {
+      "value": 11760,
+      "source": "reconstructed",
+      "evidence": "interv_summary.json['n_rows']",
+      "source_kind": "summary"
+    },
+    "seed": {
+      "value": 0,
+      "source": "reconstructed",
+      "evidence": "interv_summary.json['seed']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "model": "not printed in 1 matched log(s)",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:22",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

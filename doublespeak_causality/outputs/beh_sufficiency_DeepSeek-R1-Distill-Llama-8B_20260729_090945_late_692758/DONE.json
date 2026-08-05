@@ -1,0 +1,15 @@
+{
+  "schema": "DONE/1",
+  "reconstructed": true,
+  "run_id": "beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090945_late_692758",
+  "status": "empty",
+  "rows_written": null,
+  "end_ts": null,
+  "wall_seconds": null,
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:19",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

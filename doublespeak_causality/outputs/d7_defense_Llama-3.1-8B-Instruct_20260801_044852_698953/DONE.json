@@ -1,0 +1,30 @@
+{
+  "schema": "DONE/1",
+  "reconstructed": true,
+  "run_id": "d7_defense_Llama-3.1-8B-Instruct_20260801_044852_698953",
+  "status": "reconstructed",
+  "rows_written": {
+    "value": 180,
+    "source": "reconstructed",
+    "evidence": "newline count of d7_raw.jsonl",
+    "source_kind": "raw_file"
+  },
+  "end_ts": {
+    "value": "2026-08-01T04:50:33",
+    "source": "reconstructed",
+    "evidence": "latest mtime in the run dir",
+    "source_kind": "mtime"
+  },
+  "wall_seconds": {
+    "value": 101.4,
+    "source": "reconstructed",
+    "evidence": "latest mtime minus the dir-name start timestamp (upper bound: post-hoc edits to files in the dir inflate it)",
+    "source_kind": "mtime"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:20",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

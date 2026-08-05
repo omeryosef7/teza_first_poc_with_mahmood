@@ -1,0 +1,118 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "refinject_cal_curated_20260804_213213_711769",
+  "output_dir": "doublespeak_causality/outputs/refinject_cal_curated_20260804_213213_711769",
+  "artifacts": {
+    "summary": "summary.json",
+    "raw": "raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "raw.jsonl",
+      "summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "refinject_cal_curated_20260804_213213_711769",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "711769",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'refinject_cal_curated_20260804_213213_711769'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-08-04T21:32:13",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'refinject_cal_curated_20260804_213213_711769'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "refinject_cal_curated",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'refinject_cal_curated_20260804_213213_711769'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_calinj_711769.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "1187fd8bd4409c8c5b18cd9103f79a217c467ec5",
+      "source": "reconstructed",
+      "evidence": "logs/ds_calinj_711769.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_calinj_711769.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "logs/ds_calinj_711769.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-804",
+      "source": "reconstructed",
+      "evidence": "logs/ds_calinj_711769.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_refusal_calinj.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_calinj_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/scripts/phase_refusal_inject_calibrated.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_refusal_calinj.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/scripts/phase_refusal_inject_calibrated.py --bench \"$DSBENCH\" --model \"$DSMODEL\" --refusal-dir \"$DSREFDIR\" --proj-summary \"$DSPROJ\" --layers \"$DSCALLAYERS\" --max-new \"$DSMAXNEW\" --n \"$DSN\" --splits \"$DSSPLITS\" --seed \"$DSSEED\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_refusal_calinj.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "cohort": {
+      "value": "curated",
+      "source": "reconstructed",
+      "evidence": "summary.json['cohort']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:27",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

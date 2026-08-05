@@ -120,8 +120,11 @@ class ComponentCapture:
     def _grab(self, comp, li, hidden):
         if hidden.dim() == 3:
             hidden = hidden[0]
+        # dtype=long is required: torch.tensor([]) defaults to float32, which makes
+        # index_select raise for an empty position list (reachable from
+        # capture_components when every requested position resolves to None).
         idx = torch.tensor([p for p in self.positions if 0 <= p < hidden.shape[0]],
-                           device=hidden.device)
+                           device=hidden.device, dtype=torch.long)
         if idx.numel() != len(self.positions):
             raise IndexError(f"position out of range for seq_len={hidden.shape[0]}")
         self._buf[comp][li] = hidden.index_select(0, idx).float().cpu()

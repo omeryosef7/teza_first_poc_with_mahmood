@@ -1,0 +1,120 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "phase6b_windows_clearharm_mlp_out_20260804_021315_707475",
+  "output_dir": "doublespeak_causality/outputs/phase6b_windows_clearharm_mlp_out_20260804_021315_707475",
+  "artifacts": {
+    "summary": "summary.json",
+    "raw": "raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "raw.jsonl",
+      "summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "phase6b_windows_clearharm_mlp_out_20260804_021315_707475",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "707475",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase6b_windows_clearharm_mlp_out_20260804_021315_707475'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-08-04T02:13:15",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase6b_windows_clearharm_mlp_out_20260804_021315_707475'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "phase6b_windows_clearharm_mlp_out",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase6b_windows_clearharm_mlp_out_20260804_021315_707475'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_p6bw_707475.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_p6bw_707475.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-802",
+      "source": "reconstructed",
+      "evidence": "logs/ds_p6bw_707475.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_ds_p6bw.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_p6bw_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/scripts/phase6b_windows.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_ds_p6bw.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/scripts/phase6b_windows.py --bench \"${DSBENCH:-doublespeak_causality/data/bench/bench_curated.json}\" --widths 2,4,8 --n-prompts \"${DSNPROMPTS:-2}\" --splits \"${DSSPLITS:-dev,heldout}\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_ds_p6bw.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "model": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "summary.json['model']",
+      "source_kind": "summary"
+    },
+    "cohort": {
+      "value": "clearharm",
+      "source": "reconstructed",
+      "evidence": "summary.json['cohort']",
+      "source_kind": "summary"
+    },
+    "n_rows": {
+      "value": 66352,
+      "source": "reconstructed",
+      "evidence": "summary.json['n_rows']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "git_commit": "not printed in 1 matched log(s)",
+    "torch": "not printed in 1 matched log(s)",
+    "model": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:27",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

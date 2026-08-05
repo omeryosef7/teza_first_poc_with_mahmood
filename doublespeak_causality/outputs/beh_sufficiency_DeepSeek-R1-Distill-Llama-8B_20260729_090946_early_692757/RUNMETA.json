@@ -1,0 +1,121 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "empty",
+  "run_id": "beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757",
+  "output_dir": "doublespeak_causality/outputs/beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757",
+  "artifacts": {
+    "summary": null,
+    "raw": null,
+    "n_files": 0,
+    "files": []
+  },
+  "fields": {
+    "run_id": {
+      "value": "beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "692757",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-07-29T09:09:46",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "beh_sufficiency_DeepSeek-R1-Distill-Llama-8B",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757'",
+      "source_kind": "dir_name"
+    },
+    "tag": {
+      "value": "early",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'beh_sufficiency_DeepSeek-R1-Distill-Llama-8B_20260729_090946_early_692757'",
+      "source_kind": "dir_name"
+    },
+    "model_from_dirname": {
+      "value": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+      "source": "reconstructed",
+      "evidence": "dir name contains the short name 'DeepSeek-R1-Distill-Llama-8B'; the only HF id with that short name in this project's logs is 'deepseek-ai/DeepSeek-R1-Distill-Llama-8B' (INFERENCE, not a reading)",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_behsuff_692757.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "818498895d7ee9b08da30e912661bd7979ce785d",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behsuff_692757.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behsuff_692757.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "model": {
+      "value": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behsuff_692757.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-801",
+      "source": "reconstructed",
+      "evidence": "logs/ds_behsuff_692757.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_beh_sufficiency.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_behsuff_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/19_run_behavioral_sufficiency.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_beh_sufficiency.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/19_run_behavioral_sufficiency.py --screen-dir \"$DSSCREEN\" --matrix \"$DSMATRIX\" --model \"$DSMODEL\" --max-bases \"$DSMAXBASES\" $WIN_ARG --enable-thinking \"$DSTHINK\" --max-new-tokens \"$DSMAXTOK\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_beh_sufficiency.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "seed": "no summary.json and seed is not printed to logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:19",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

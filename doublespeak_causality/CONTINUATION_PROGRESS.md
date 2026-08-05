@@ -87,6 +87,36 @@ refusal bottleneck* rather than independent channels. Plan §0.6's prediction is
 - **FINDING 2 (low exposure).** `+inf` score handling drifts: `14` labels it MALICIOUS, the `phase_*` copies
   label it BENIGN/REJECTED. Only reachable if the StrongREJECT rubric returns a non-finite score.
 
+### ⚠️ P10.0 — the graded re-analysis does NOT rescue the concept circuit (corrects plan §0.5)
+`reports/P10_0_GRADED_REANALYSIS.md` · `scripts/analyze_graded_reanalysis.py`
+
+Plan §0.5 claimed the graded score "already flips the carry-head verdict to p=0.033". **The point estimate
+reproduces exactly, but the claim does not survive its own specificity control.**
+
+| quantity | value |
+|---|---|
+| CARRY/clearharm pooled (n=86), graded | d = **+0.0741** [+0.009, +0.142], Wilcoxon p 0.0343, perm p 0.0337 |
+| **random-head control, same cell** | d = **+0.0392** [−0.039, +0.119], perm p 0.359 |
+| **specificity contrast (rand − carry)** | **+0.0349 [−0.039, +0.110], perm p 0.382** ← not significant |
+
+**The targeted ablation is not demonstrably better than a size-matched random one.** The control's point
+estimate is **53% of** the carry effect. The result is equally consistent with "ablating ~9 attention heads
+slightly degrades completions". **Do not write 'the carry heads are behaviorally necessary' from this.**
+
+Further: only 22 of 86 items are non-tied; leave-one-out permutation p reaches **0.0624** (dropping *one*
+item crosses 0.05); dropping the 5 largest positive differences kills it (p = 0.466). **curated does not
+replicate** (pooled d = −0.017, p = 0.794). **BEHAV-WRITE is null on the graded endpoint too**
+(clearharm −0.004, p = 0.941). Exactly **1 of 24** graded tests has p < 0.05, and it is the pooled cell —
+neither split is significant alone (0.114 / 0.208).
+
+**Power confirmed** (p₀ = 0.0894 estimated from all random-control arms, b=25/c=24/n=274): carry
+clearharm train power **0.135**, test **0.086**. n at 80% power for Δ = 0.09 → **n ≈ 275**.
+
+⇒ **Net effect on the paper: the "behaviorally inert" conclusion stands, but for a better reason than
+before** — not "we found nothing" but "what we find is not distinguishable from a random ablation of the
+same size, and we now know the design needed n ≈ 275 to say otherwise." P10's decode-safe re-run on v3
+remains necessary; §0.5 of the plan should be read with this correction.
+
 ### 📋 Artifact audit — tick-1 baseline (`scripts/audit_artifacts.py`, 0.5 s, exit 1)
 367 run dirs · summary.json in 91 · **RUNMETA.json in 0 · DONE.json in 0** · 20 empty dirs ·
 1 raw-without-summary (the job-708038 aborted twin) · 62 fixed-name (clobber-on-rerun) dirs ·
@@ -96,7 +126,48 @@ so the cheap size-only check misses them; only `--verify-hashes` catches it.
 
 ---
 
+### ✅ Data integrity — every behavioral summary number recomputes from raw
+`scripts/validate_all_outputs.py` + extended `scripts/validate_experiment_coverage.py`.
+**4,909 summary values recomputed from raw across 29 run dirs → 0 mismatches.** Every ASR, refusal_rate,
+empty_rate, ΔASR, flip count and exact McNemar p in every behavioral `summary.json` reproduces exactly.
+Coverage: 24 behavioral dirs = 20 ok / 4 WARN / 0 FAIL; phase5/6 paths byte-identical to before.
+6/6 negative controls fired (a validator that cannot fail is worthless).
+
+Three findings:
+- **1 hard FAIL:** `behav_refusal_clearharm_a1.0_20260804_125311_708038` has no summary.json and only 36
+  test rows (vs 42 in the authoritative twin) — the §2.3 job-708038 collision, now caught automatically.
+- **§1.5 violation:** `phase6_mlpKO_curated_layer_20260803_092718_703457` reports **pooled** dev+heldout
+  (n=51 = 30+21, no `by_split` block). Any number cited from that dir is a pooled number.
+- **4 smoke runs** (n=2–3) sit in the normal namespace with no `_smoke_` marker, contra §1.3.
+
+### 🐛 Two primitive defects found by the new tests — both FIXED
+Test suite: **113 → 191 passing** (78 new tests, 0 failures, 0 xfail).
+- `pair_common.ComponentCapture._grab`: `torch.tensor([])` with no dtype → float32 → `index_select` raises
+  for an empty position list. **Fixed** (`dtype=torch.long`).
+- `ds_common.find_word_occurrences_in_text`: a stray trailing `ids = enc["input_ids"]` raised
+  `UnboundLocalError` on the slow-tokenizer path — and, when `enc` *was* bound but failed the sanity check,
+  silently mis-sliced `subtoken_ids` from a different-length id list. **Fixed** (line deleted). The second
+  failure mode is worse than the crash the test was written for and was found during review.
+Both tests kept as regression guards with the defect documented inline.
+
+### 🗃 Provenance applied
+`ds_common.write_runmeta/write_done` (torch-optional, never raises), `backfill_runmeta.py`,
+`update_registry.py`. **734 RUNMETA.json/DONE.json written across all 367 run dirs** (idempotent: second
+apply wrote 0). 181 dirs recovered a real git commit from `logs/*.out`; 195 recovered their script from the
+sbatch wrapper. Every reconstructed field carries `{"source": "reconstructed", "evidence": ...}` and
+unsourceable fields go to `unknown_fields` with a reason — nothing fabricated.
+`EXPERIMENT_REGISTRY.csv`: **45 → 395 rows** (backup at `.bak`), original rows preserved.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 3 — 2026-08-05 — all 7 agents in; 2 defects fixed; provenance applied; P2 smoke launched
+Collected the remaining 4 agents. Fixed both newly-found primitive defects and cleared the xfail markers
+(suite 191 green). Applied the provenance backfill and registry. **Corrected the P10.0 story** — the graded
+re-analysis fails its specificity control, so §0.5's "the null flips" is too strong. Launched the P2
+all-occurrence smoke (jobs 714854/714855, `DSPOS=all`, zero new code — the flag existed and was never run).
+Fanned out 3 adversarial code reviewers + P9.0 GCG bug fixes + P1b lexicon recovery + P8.1 α-sweep prep.
 
 ### Tick 2 — 2026-08-05 — P8.0 verified; judge + audit landed
 3 of 7 agents returned. Independently re-derived the P8.0 interaction from scratch before accepting it

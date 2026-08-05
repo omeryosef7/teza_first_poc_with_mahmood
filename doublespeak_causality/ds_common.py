@@ -25,7 +25,41 @@ import subprocess
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Sequence, Tuple, Any
 
-import torch
+try:
+    import torch
+    _TORCH_IMPORT_ERROR: Optional[BaseException] = None
+except Exception as _torch_exc:          # pragma: no cover - login node / no-GPU env
+    _TORCH_IMPORT_ERROR = _torch_exc
+
+    class _TorchUnavailable:
+        """Import-time stand-in for torch (plan §2.2 item 3).
+
+        `write_runmeta()` must be callable as the FIRST statement of every run and from
+        CPU-only login-node tooling (`scripts/backfill_runmeta.py`,
+        `scripts/update_registry.py`, `scripts/audit_artifacts.py`), where the system
+        python has no torch. Importing ds_common must therefore not hard-fail. Only the
+        two names that are evaluated at IMPORT time are served (`no_grad` decorators and
+        the `torch.bfloat16` default argument of `load_model`); every other attribute
+        raises loudly, so a GPU run with a broken torch still fails immediately and
+        visibly rather than silently doing the wrong thing.
+        """
+
+        _IMPORT_TIME_SAFE = ("bfloat16", "float16", "float32")
+
+        def no_grad(self):
+            def _deco(fn):
+                return fn
+            return _deco
+
+        def __getattr__(self, name):
+            if name in self._IMPORT_TIME_SAFE:
+                return f"<torch.{name} unavailable>"
+            raise RuntimeError(
+                f"torch is unavailable in this interpreter ({sys.executable}); "
+                f"ds_common.<torch.{name}> cannot be used. "
+                f"Original import error: {_TORCH_IMPORT_ERROR!r}")
+
+    torch = _TorchUnavailable()          # type: ignore[assignment]
 
 # Make the vendored official implementation importable (reuse, don't reimplement).
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -79,18 +113,220 @@ def git_commit() -> str:
         return "unknown"
 
 
+def git_dirty() -> Optional[bool]:
+    """True if the working tree has uncommitted changes (plan §2.1: git dirty flag).
+
+    None when it cannot be determined (no `git` binary on PATH in this env) — never
+    guess, an unknown dirty flag must not read as "clean".
+    """
+    try:
+        out = subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=_HERE, stderr=subprocess.DEVNULL
+        ).decode()
+        return bool(out.strip())
+    except Exception:
+        return None
+
+
 def env_metadata() -> Dict[str, Any]:
-    import transformers
+    """Environment record for the plan §15 / §2.1 provenance block.
+
+    torch/transformers are optional here: this is also called from CPU-only login-node
+    provenance tooling. A missing dependency records null rather than raising — a
+    provenance helper must never be the thing that kills a run.
+    """
+    torch_v = tf_v = None
+    cuda_avail: Optional[bool] = None
+    gpu = None
+    try:
+        torch_v = torch.__version__
+        cuda_avail = bool(torch.cuda.is_available())
+        gpu = torch.cuda.get_device_name(0) if cuda_avail else None
+    except Exception:
+        pass
+    try:
+        import transformers
+        tf_v = transformers.__version__
+    except Exception:
+        pass
     return {
         "hostname": socket.gethostname(),
         "git_commit": git_commit(),
         "python": sys.version.split()[0],
-        "torch": torch.__version__,
-        "transformers": transformers.__version__,
-        "cuda_available": torch.cuda.is_available(),
-        "gpu": (torch.cuda.get_device_name(0) if torch.cuda.is_available() else None),
+        "torch": torch_v,
+        "transformers": tf_v,
+        "cuda_available": cuda_avail,
+        "gpu": gpu,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Run-directory contract: RUNMETA.json / DONE.json (plan §2.1, §2.2 item 3)
+# --------------------------------------------------------------------------- #
+RUNMETA_NAME = "RUNMETA.json"
+DONE_NAME = "DONE.json"
+
+
+def _json_safe(obj: Any, _depth: int = 0) -> Any:
+    """Best-effort conversion of arbitrary values to JSON-serialisable ones."""
+    if _depth > 6:
+        return repr(obj)[:500]
+    if obj is None or isinstance(obj, (bool, int, float, str)):
+        return obj
+    if isinstance(obj, (list, tuple, set)):
+        return [_json_safe(v, _depth + 1) for v in obj]
+    if isinstance(obj, dict):
+        return {str(k): _json_safe(v, _depth + 1) for k, v in obj.items()}
+    return repr(obj)[:500]
+
+
+def write_runmeta(out_dir: str, args: Any = None,
+                  extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Write `out_dir/RUNMETA.json` as the FIRST action of a run. Never raises.
+
+    Plan §2.1: run_id, script path, full sys.argv, resolved args, seed, git commit +
+    dirty flag, SLURM job id / nodelist, hostname, GPU, torch/transformers versions,
+    start ts. Callers add model id / revision / tokenizer hash / dtype /
+    attn_implementation via `extra` once the model is loaded (a second call with the
+    same out_dir merges into the existing file, it does not clobber it).
+
+    Returns the record that was written ({} if even that failed) — a provenance
+    failure must never be able to kill an experiment, so EVERY path is guarded.
+    """
+    try:
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, RUNMETA_NAME)
+
+        arg_dict: Optional[Dict[str, Any]] = None
+        if args is not None:
+            try:
+                arg_dict = _json_safe(vars(args) if hasattr(args, "__dict__") else dict(args))
+            except Exception:
+                arg_dict = {"_unparsed": repr(args)[:500]}
+
+        seed = (arg_dict or {}).get("seed")
+        if seed is None and args is not None:
+            seed = getattr(args, "seed", None)
+
+        env = {}
+        try:
+            env = env_metadata()
+        except Exception as e:                       # pragma: no cover - defensive
+            env = {"_env_metadata_error": repr(e)[:300]}
+
+        rec: Dict[str, Any] = {
+            "schema": "RUNMETA/1",
+            "run_id": os.path.basename(os.path.normpath(out_dir)),
+            "output_dir": os.path.abspath(out_dir),
+            # abspath only when argv[0] is a real file: `python -c ...` would otherwise
+            # record a plausible-looking path (<cwd>/-c) that never existed.
+            "script": (os.path.abspath(sys.argv[0])
+                       if sys.argv and sys.argv[0] and os.path.isfile(sys.argv[0])
+                       else (sys.argv[0] if sys.argv else None)),
+            "argv": list(sys.argv),
+            "args": arg_dict,
+            "seed": _json_safe(seed),
+            "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
+            "slurm_nodelist": os.environ.get("SLURM_NODELIST"),
+            "hostname": env.get("hostname"),
+            "git_commit": env.get("git_commit"),
+            "git_dirty": git_dirty(),
+            "python": env.get("python"),
+            "python_executable": sys.executable,
+            "torch": env.get("torch"),
+            "transformers": env.get("transformers"),
+            "cuda_available": env.get("cuda_available"),
+            "gpu": env.get("gpu"),
+            "start_ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "start_epoch": time.time(),
+            "cwd": os.getcwd(),
+        }
+        if extra:
+            try:
+                rec.update(_json_safe(extra))
+            except Exception:
+                pass
+
+        # A second call (e.g. after the model is loaded) must ENRICH, not restart the
+        # clock or drop what the first call recorded.
+        if os.path.exists(path):
+            try:
+                with open(path) as fh:
+                    old = json.load(fh)
+                if isinstance(old, dict):
+                    for k in ("start_ts", "start_epoch"):
+                        if old.get(k) is not None:
+                            rec[k] = old[k]
+                    merged = dict(old)
+                    merged.update({k: v for k, v in rec.items() if v is not None})
+                    rec = merged
+            except Exception:
+                pass
+
+        tmp = path + ".tmp"
+        with open(tmp, "w") as fh:
+            json.dump(rec, fh, indent=2, sort_keys=False)
+            fh.write("\n")
+        os.replace(tmp, path)
+        return rec
+    except Exception as e:                           # pragma: no cover - defensive
+        try:
+            print(f"[write_runmeta] WARNING: provenance write failed: {e!r}",
+                  file=sys.stderr)
+        except Exception:
+            pass
+        return {}
+
+
+def write_done(out_dir: str, rows_written: Optional[int] = None,
+               extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Write `out_dir/DONE.json` as the LAST action of a run. Never raises.
+
+    wall_seconds is measured from the RUNMETA.json `start_epoch` when that file exists;
+    it is null (not 0, and not invented) when it does not.
+    """
+    try:
+        os.makedirs(out_dir, exist_ok=True)
+        wall = None
+        try:
+            rp = os.path.join(out_dir, RUNMETA_NAME)
+            if os.path.exists(rp):
+                with open(rp) as fh:
+                    start = json.load(fh).get("start_epoch")
+                if isinstance(start, (int, float)):
+                    wall = round(time.time() - float(start), 3)
+        except Exception:
+            wall = None
+
+        rec: Dict[str, Any] = {
+            "schema": "DONE/1",
+            "run_id": os.path.basename(os.path.normpath(out_dir)),
+            "status": "ok",
+            "rows_written": rows_written,
+            "end_ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_epoch": time.time(),
+            "wall_seconds": wall,
+        }
+        if extra:
+            try:
+                rec.update(_json_safe(extra))
+            except Exception:
+                pass
+
+        path = os.path.join(out_dir, DONE_NAME)
+        tmp = path + ".tmp"
+        with open(tmp, "w") as fh:
+            json.dump(rec, fh, indent=2, sort_keys=False)
+            fh.write("\n")
+        os.replace(tmp, path)
+        return rec
+    except Exception as e:                           # pragma: no cover - defensive
+        try:
+            print(f"[write_done] WARNING: provenance write failed: {e!r}", file=sys.stderr)
+        except Exception:
+            pass
+        return {}
 
 
 def set_seed(seed: int) -> None:
@@ -465,7 +701,11 @@ def find_word_occurrences_in_text(tokenizer, text: str, word: str,
         if prev is None or (b - a) > (prev[1] - prev[0]):
             by_last[b - 1] = (a, b)
     ordered = [by_last[k] for k in sorted(by_last)]
-    ids = enc["input_ids"]
+    # NOTE: do NOT re-read ids from `enc` here. `enc` is unbound when the tokenizer
+    # raised on return_offsets_mapping (slow tokenizers) and _offsets_by_decode then
+    # rebuilt the offsets -> UnboundLocalError. And when `enc` IS bound but failed the
+    # sanity check, enc["input_ids"] can differ in length from the `ids` these spans
+    # were computed against, silently mis-slicing subtoken_ids. `ids` is already correct.
     return WordHit(
         word=word, variant="+".join(sorted(variants)),
         subtoken_ids=list(ids[ordered[0][0]:ordered[0][1]]),

@@ -1,0 +1,20 @@
+{
+  "schema": "DONE/1",
+  "reconstructed": true,
+  "run_id": "ko_gen_llama8b_fixed",
+  "status": "unknown",
+  "rows_written": null,
+  "end_ts": {
+    "value": "2026-07-27T18:19:49",
+    "source": "reconstructed",
+    "evidence": "latest mtime in the run dir",
+    "source_kind": "mtime"
+  },
+  "wall_seconds": null,
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:21",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "phase7c_suffic_clearharm_20260804_034316_707593",
+  "output_dir": "doublespeak_causality/outputs/phase7c_suffic_clearharm_20260804_034316_707593",
+  "artifacts": {
+    "summary": "summary.json",
+    "raw": "raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "raw.jsonl",
+      "summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "phase7c_suffic_clearharm_20260804_034316_707593",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "707593",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase7c_suffic_clearharm_20260804_034316_707593'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-08-04T03:43:16",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase7c_suffic_clearharm_20260804_034316_707593'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "phase7c_suffic_clearharm",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'phase7c_suffic_clearharm_20260804_034316_707593'",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_suf_707593.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "git_commit": {
+      "value": "90d05d90efebae696e97562711bbb371ddfccb98",
+      "source": "reconstructed",
+      "evidence": "logs/ds_suf_707593.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_suf_707593.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-802",
+      "source": "reconstructed",
+      "evidence": "logs/ds_suf_707593.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_phase7c_suf.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_suf_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/scripts/phase7c_sufficiency.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_phase7c_suf.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/scripts/phase7c_sufficiency.py --bench \"$DSBENCH\" --model \"$DSMODEL\" --splits dev,heldout --carry \"$DSCARRY\" --n-prompts \"$DSNPROMPTS\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_phase7c_suf.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    },
+    "cohort": {
+      "value": "clearharm",
+      "source": "reconstructed",
+      "evidence": "summary.json['cohort']",
+      "source_kind": "summary"
+    }
+  },
+  "unknown_fields": {
+    "torch": "not printed in 1 matched log(s)",
+    "model": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:27",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

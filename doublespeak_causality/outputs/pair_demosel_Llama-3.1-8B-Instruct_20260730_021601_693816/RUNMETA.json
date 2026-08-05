@@ -1,0 +1,108 @@
+{
+  "schema": "RUNMETA/1",
+  "reconstructed": true,
+  "status": "reconstructed",
+  "run_id": "pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816",
+  "output_dir": "doublespeak_causality/outputs/pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816",
+  "artifacts": {
+    "summary": "demosel_summary.json",
+    "raw": "demosel_raw.jsonl",
+    "n_files": 2,
+    "files": [
+      "demosel_raw.jsonl",
+      "demosel_summary.json"
+    ]
+  },
+  "fields": {
+    "run_id": {
+      "value": "pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816",
+      "source": "reconstructed",
+      "evidence": "run-dir basename",
+      "source_kind": "dir_name"
+    },
+    "slurm_job_id": {
+      "value": "693816",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816'",
+      "source_kind": "dir_name"
+    },
+    "start_ts": {
+      "value": "2026-07-30T02:16:01",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816'",
+      "source_kind": "dir_name"
+    },
+    "phase": {
+      "value": "pair_demosel_Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "parsed from dir name 'pair_demosel_Llama-3.1-8B-Instruct_20260730_021601_693816'",
+      "source_kind": "dir_name"
+    },
+    "model_from_dirname": {
+      "value": "meta-llama/Llama-3.1-8B-Instruct",
+      "source": "reconstructed",
+      "evidence": "dir name contains the short name 'Llama-3.1-8B-Instruct'; the only HF id with that short name in this project's logs is 'meta-llama/Llama-3.1-8B-Instruct' (INFERENCE, not a reading)",
+      "source_kind": "dir_name"
+    },
+    "log_files": {
+      "value": [
+        "logs/ds_pairdemosel_693816.out"
+      ],
+      "source": "reconstructed",
+      "evidence": "jobid_in_log_filename",
+      "source_kind": "log"
+    },
+    "gpu": {
+      "value": "NVIDIA L40S",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairdemosel_693816.out (jobid_in_log_filename)",
+      "source_kind": "log"
+    },
+    "slurm_nodelist": {
+      "value": "n-802",
+      "source": "reconstructed",
+      "evidence": "logs/ds_pairdemosel_693816.out",
+      "source_kind": "log"
+    },
+    "slurm_wrapper": {
+      "value": "slurm/run_pair_demosel.sh",
+      "source": "reconstructed",
+      "evidence": "--output=logs/ds_pairdemosel_%j.out matches the run's log filename",
+      "source_kind": "slurm"
+    },
+    "script": {
+      "value": "doublespeak_causality/42_demo_selection.py",
+      "source": "reconstructed",
+      "evidence": "python invocation in slurm/run_pair_demosel.sh",
+      "source_kind": "slurm"
+    },
+    "argv_template": {
+      "value": "python -u doublespeak_causality/42_demo_selection.py --bench \"$DSBENCH\" --model \"$DSMODEL\" --out-root doublespeak_causality/outputs --demo-style \"$DSSTYLE\" --n-demos \"$DSNDEMOS\" --k \"$DSK\" --n-train \"$DSNTRAIN\" --n-eval \"$DSNEVAL\" --n-random \"$DSNRAND\" --n-random-search \"$DSNRANDSEARCH\" --max-new-tokens \"$DSMAXTOK\"",
+      "source": "reconstructed",
+      "evidence": "UNEXPANDED shell template from slurm/run_pair_demosel.sh; $VARS were not captured, this is NOT the real argv",
+      "source_kind": "slurm"
+    }
+  },
+  "unknown_fields": {
+    "git_commit": "not printed in 1 matched log(s)",
+    "torch": "not printed in 1 matched log(s)",
+    "model": "not printed in 1 matched log(s)",
+    "seed": "not recorded anywhere: absent from summary.json and logs",
+    "argv": "not recoverable: never written to disk or logs",
+    "args": "not recoverable: never written to disk or logs",
+    "revision": "not recoverable: never written to disk or logs",
+    "tokenizer_hash": "not recoverable: never written to disk or logs",
+    "dtype": "not recoverable: never written to disk or logs",
+    "attn_implementation": "not recoverable: never written to disk or logs",
+    "chat_template_hash": "not recoverable: never written to disk or logs",
+    "git_dirty": "not recoverable: never written to disk or logs",
+    "python": "not recoverable: never written to disk or logs",
+    "transformers": "not recoverable: never written to disk or logs"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T13:47:22",
+    "generator_git_commit": "e9c3505317208f1a4ab3e383412ef8e7d4f02318",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}
