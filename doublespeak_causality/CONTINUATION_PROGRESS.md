@@ -533,7 +533,63 @@ test regardless of α. Its random control is also less flat than clearharm's (0.
 
 ---
 
+### ⚠️ CORRECTION to tick 14 — "additive" was the wrong word
+Tick 14 reported Î = +0.000 at α=0.25 and called it **"exactly additive."** That framing is wrong, and the
+analyzer caught why: **the ~2 pp judge noise floor is measured PER ARM, but Î is a contrast of FOUR judged
+arms**, so Î's own floor is *at least* 2 pp and plausibly larger. On the near-complete clearharm data
+Î_binary at α=0.25 is **−0.013 (1.3 pp) — below that floor.**
+
+**⇒ The correct statement is "no interaction is DETECTABLE at the sub-saturating dose", not "the
+interaction is measured to be zero."** Those are different claims and only the first is supported.
+The tick-14 direction of travel survives; the certainty does not.
+
+### 🎯 P8.1 — operating point selected, and the ceiling relationship is now quantified
+`reports/PHASE8_1_ALPHA_CALIBRATION.md` · `scripts/analyze_alpha_calibration.py` ·
+`outputs/alpha_calibration.json`. Statistics are **reused** from `analyze_interaction_2x2.py` (same seed,
+same 10 000 bootstrap / 50 000 permutation), not reimplemented — verified by reproducing the tick-16
+curated numbers exactly through the reuse path.
+
+**clearharm (PROVISIONAL, n=78/86): α = 0.25** — the *sole* qualifying dose. ASR(0,1) = 0.295,
+`I_max` = **+0.487**, i.e. **2.1×** the +0.231 available at α = 1.0. Train, test and pooled each select it
+independently; the tie-break never fires. `I_max` has drifted +0.472 (n=36) → +0.487 (n=78) as rows land,
+so this is re-run when `summary.json` appears.
+**curated (COMPLETE, n=51): NO α qualifies.** The dose response *steps over* the band — 0.294 at α=0 (the
+no-op) straight to 0.529 at α=0.25 — so it would need α ≈ 0.1, which was not run. Every α>0 satisfies the
+*ceiling* criterion (min `I_max` +0.353); it is the ASR band alone that fails.
+
+**The ceiling relationship, quantified rather than eyeballed:** Spearman(`I_max`, Î) = **+0.955 curated /
++0.991 clearharm** (binary); +0.883 / +0.937 on the graded score. **The decisive detail: on curated the
+ceiling REVERSES between α=1.5 and α=2.0 (`I_max` +0.353 → +0.412) and Î reverses with it
+(−0.353 → −0.196).** I re-derived this myself: Î follows `I_max` even where `I_max` is **non-monotone in
+α**, which rules out the benign explanation that both merely trend with dose. And `I_max` is a function of
+the **marginal** cells only — it carries no information about the joint cell (1,1) — so a real mechanism
+has no reason to track it. (My independent Spearman was +0.928 vs the report's +0.955, a grid-choice
+difference; same conclusion.)
+
+**Specificity now holds across the whole dose range** — the first time this project has had the
+random-direction control at anything other than α = 1.0. At α = 0 the refusal and random arms agree to
+within the noise floor (exactly as a no-op must); at every α > 0 the gap is +0.179 to +0.641 with paired
+exact McNemar **p ≤ 0.0042 (curated) and ≤ 0.0005 (clearharm)** — 9× to 32× the floor. The random direction
+leaves refusal_rate inert (0.667–0.725 vs 0.686 baseline curated; 0.846–0.872 vs 0.846 clearharm) while the
+true direction drives it to 0.216 / 0.141.
+
+**The judge floor is slightly WORSE than tick 16 measured:** clearharm 1/78 labels (1.3 %) but **5/78
+scores (6.4 %)** and **max |Δscore| = 1.00** (vs 4.5 % / 0.75). Below-floor cells are flagged with ‡ in
+every table of the report.
+
+Verification the agent ran: 140 curated cell values cross-checked against the run's own `summary.json`
+(independent code path) — 0 mismatches; 6 from-scratch hand recounts; McNemar validated against
+`scipy.stats.binomtest` to 1e-12; truncated-file robustness tested with a deliberately corrupted record.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 18 — 2026-08-05 — P8.1 operating point selected; tick-14's "additive" corrected
+α = 0.25 selected for clearharm (I_max 2.1× the α=1.0 value); **no α qualifies for curated**. Corrected my
+own tick-14 wording: Î below the multi-arm judge floor means *not detectable*, not *zero*. Independently
+re-derived the ceiling reversal at α=1.5→2.0, which is the strongest evidence yet that the P8.0
+sub-additivity is a design artifact rather than a mechanism.
 
 ### Tick 17 — 2026-08-05 — P8.1 analyzer being written ahead of the clearharm data
 clearharm at 75/86 (~30 min out); curated done, which freed a GPU slot — but the P10 and P7 smokes are
