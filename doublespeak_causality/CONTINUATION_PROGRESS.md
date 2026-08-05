@@ -266,6 +266,37 @@ job-708038 aborted twin. Teaching it the remaining 4 families is follow-up work,
 
 ## Tick log (most recent first)
 
+### Tick 7 — 2026-08-05 — ⚠ SESSION LIMIT; P8.1 full sweep launched; P1 audit done solo
+**BLOCKER: the API session limit was hit — all 4 builders from tick 6 died with
+"You've hit your session limit · resets 5pm (Asia/Jerusalem)".** No subagent work is possible until then.
+Re-queue after 5pm: `AllPositionMLPAblate` (P10 blocker), the v3 split builder (P1b), the validator's
+remaining 4 schemas, and `scripts/audit_phase21_baseline.py`. I worked single-threaded instead.
+
+**P8.1 smoke PASSED (job 715366, 16 min)** — the α-sweep harness is correct:
+- **α = 0.0 is an exact no-op** — `direct_refabl_a0.0` ASR and refusal_rate are identical to
+  `direct_base` on both splits. This is the anchor that proves the sweep is wired right.
+- refusal_rate falls monotonically with α (train direct: 0.667 → 0.333 at α .25–.75 → 0.000 at α ≥ 1.0).
+- **the norm-matched random control is FLAT at every α** (ASR and refusal_rate constant across all 7) —
+  specificity now demonstrated across the whole grid, not just at α = 1.0 as before.
+- all 24 arms present on every row.
+⇒ **Full sweeps launched: 716014 (clearharm 86), 716015 (curated 51)**, α ∈ {0, .25, .5, .75, 1, 1.5, 2},
+random control at each α, `--save-gen` on, ~14 h budget. This unblocks the real Phase 8.
+
+**P1 empty-generation audit — VERDICT: SAFE** (`reports/P1_BASELINE_AUDIT.md`, done inline).
+The Phase 2.1 raw retains `response`, so emptiness is directly reconstructible (tested programmatically;
+no text read). **0 of 411 generations are empty or whitespace-only** in either cohort — the missing EMPTY
+branch in `14_behavioral_eval.py` was never reached and cannot have shifted any published number. All
+**6 of 6** published rates recompute exactly (clearharm .1163/.2558/.3488, curated .2549/.0392/.2353).
+The defect is still worth fixing as a latent trap for future runs with stronger interventions, but P1 is
+unblocked on these grounds.
+
+⚠ **Secondary finding (carry into P1):** truncation is heavy and cohort-asymmetric — `stop_reason=length`
+on **25% of clearharm but 72% of curated** generations at `max_new_tokens=200`. It is common-mode across
+conditions so it does not bias the DS-vs-direct contrast, but it is a plausible contributor to curated's
+"complied-but-benign" gap (P8.0 §2.1) and the concept-dilution reading: an answer cut off before its
+payload scores low regardless of refusal. **Recommend raising max_new_tokens for the corrected baseline
+(behavioral harnesses already use 220) and recording `stop_reason` in every future behavioral run.**
+
 ### Tick 6 — 2026-08-05 — P8.1 α-calibration launched; P10/P1/P1b builders out
 **Disk pressure resolved:** the volume was expanded — now 29T / 5.4T free / 82% (was 20T / 467G / 98%,
 and git actually hit "Disk quota exceeded" mid-commit last tick). Plan §2.2 item 9 (archive off-NetApp)
