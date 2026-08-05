@@ -583,7 +583,65 @@ Verification the agent ran: 140 curated cell values cross-checked against the ru
 
 ---
 
+### 🏁 P8.1 FINAL (clearharm n=86, curated n=51) — **P8.0's sub-additivity is a saturation artifact**
+This is the result the whole α sweep was for, and it overturns our own P8.0 headline.
+
+**clearharm pooled, n=86, complete:**
+
+| α | I_max | **Î (binary)** | 95 % CI | **p** | ref−rand ΔASR | McNemar p |
+|---|---|---|---|---|---|---|
+| 0.0 (no-op) | +0.651 | **+0.000** | [−0.047, +0.047] | 1.0000 | +0.000 ‡ | 1.0000 |
+| **0.25 ← operating point** | **+0.477** | **−0.023** | [−0.151, +0.105] | **0.8597** | +0.186 | 0.0001 |
+| 0.5 | +0.291 | −0.081 | [−0.244, +0.081] | 0.3838 | +0.395 | <1e-4 |
+| 0.75 | +0.186 | −0.174 | [−0.337, +0.000] | 0.0644 | +0.465 | <1e-4 |
+| **1.0 ← the dose P8.0 used** | +0.186 | **−0.209** | [−0.372, −0.047] | **0.0203** | +0.488 | <1e-4 |
+| 1.5 | +0.105 | −0.256 | [−0.419, −0.093] | 0.0054 | +0.558 | <1e-4 |
+| 2.0 | +0.023 | −0.314 | [−0.477, −0.151] | 0.0004 | +0.663 | <1e-4 |
+
+**Spearman(I_max, Î) = +0.991** (pooled binary; +0.991 on the graded score).
+
+**The verdict.** At the operating point — α = 0.25, where the design has ample headroom (I_max = +0.477) —
+**Î = −0.023 with p = 0.86: no interaction is detectable**, and |Î| sits at the judge noise floor.
+Sub-additivity only becomes significant **as headroom disappears**: p runs 0.86 → 0.38 → 0.064 → **0.020**
+→ 0.005 → 0.0004 while I_max falls +0.477 → +0.023. At α = 1.0 — the dose P8.0 used — we reproduce the
+P8.0 result exactly (Î = −0.209, p = 0.020; P8.0 reported −0.186, p = 0.045 with the same estimator).
+`D_i = +2` occurs **0 times at every α**, as before.
+
+⇒ **P8.0's "Doublespeak and refusal-ablation are sub-additive ⇒ shared refusal bottleneck" is NOT
+supported.** The sub-additivity is a property of running the ablation at a saturating dose, not of the
+mechanism. **The P8.0 report and any downstream text must be corrected.**
+
+**What this does NOT establish.** Absence of a detectable interaction is **not** evidence of independence.
+With n = 86 and a multi-arm noise floor ≥ 2 pp, an interaction of small-to-moderate size would be invisible;
+the CI at α = 0.25 spans [−0.151, +0.105]. The honest claim is: *at a dose with real headroom, no
+interaction is detectable, and the previously reported sub-additivity does not survive de-saturation.*
+
+**curated: no α qualifies** (dose response steps 0.294 → 0.529 over the band; would need α ≈ 0.1).
+Its Spearman(I_max, Î) is +0.955, the same ceiling signature.
+
+**The α = 0 anchor is perfect on the full data:** Î = +0.000 exactly, p = 1.0, ref−rand ΔASR = +0.000,
+33/86 items already saturated — the no-op behaves as a no-op in every column.
+**Specificity at the operating point:** ref−rand ΔASR = +0.186, McNemar **p = 0.0001**, ~9× the noise floor,
+with the random arm leaving refusal_rate at 0.872 vs the true arm's 0.674.
+**Judge floor on the full clearharm cohort:** 1/86 labels (1.2 %), 5/86 scores (5.8 %), max |Δscore| = 1.00.
+
+### 🐛 Analyzer CLI silently skipped on a malformed argument
+`--run` takes `cohort=path`; I passed a bare path, so `run_dir` resolved to `""`, the script printed
+`[skip] ... no raw.jsonl in ` and **still exited 0 after writing an empty report**. That is the same
+"silent-skip false-OK" pattern we deliberately fixed in the validator in tick 5. Logged for the next tick —
+a malformed `--run` spec must be a hard error, not a skip.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 19 — 2026-08-05 — P8.1 FINAL: the P8.0 headline does not survive de-saturation
+clearharm sweep completed (86/86). Ran the final calibration on both cohorts: **α = 0.25 selected**
+(I_max +0.477, 2.6× the +0.186 at α = 1.0), no α qualifies on curated. The decisive finding: at the
+de-saturated dose **Î = −0.023, p = 0.86 — no detectable interaction** — while the P8.0 dose (α = 1.0)
+reproduces P8.0's significant sub-additivity exactly. Spearman(I_max, Î) = +0.991. **P8.0's mechanistic
+reading is withdrawn as a saturation artifact**, with the limits of the negative result stated explicitly.
+Also logged an analyzer CLI defect that silently skips and exits 0.
 
 ### Tick 18 — 2026-08-05 — P8.1 operating point selected; tick-14's "additive" corrected
 α = 0.25 selected for clearharm (I_max 2.1× the α=1.0 value); **no α qualifies for curated**. Corrected my
