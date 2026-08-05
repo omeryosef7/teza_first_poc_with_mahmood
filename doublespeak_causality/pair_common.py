@@ -737,6 +737,89 @@ class AllPositionProjectOutMultiLayer:
 
 
 # --------------------------------------------------------------------------- #
+# All-position / all-timestep MLP-OUTPUT ablation (P10 §0.9 — decode-safe BEHAV-WRITE)
+# --------------------------------------------------------------------------- #
+class AllPositionMLPAblate:
+    """Ablate the MLP sub-block OUTPUT of every layer in `layer_idxs` at EVERY position and on
+    EVERY forward call (prefill AND each KV-cached decode step) — the generation-time analogue
+    of ComponentOutSwap(component="mlp_out") and the MLP counterpart of AllPositionZHeadAblate.
+
+    WHY (plan §0.9 / P10 item 1): ComponentOutSwap writes a FIXED set of positions behind the
+    guard `keep = [k for k, p in enumerate(pos) if 0 <= p < seq]` (:410). On a KV-cached decode
+    step `seq == 1`, so every prompt position is out of range and the swap contributes NOTHING
+    after prefill. The BEHAV-WRITE behavioral null was measured with it and is therefore a
+    PREFILL-ONLY (prompt-side) ablation, not the "ablate the L8-11 write throughout generation"
+    it is reported as. This class edits the WHOLE output tensor, so the ablation persists into
+    generated tokens; it is what the decode-safe re-test must use.
+
+    Modes (`alpha` sets the strength, as in `make_project_out_hook`):
+      "zero"         h <- 0                                    (decode-safe)
+      "scale"        h <- alpha * h                            (decode-safe; alpha=0 == "zero")
+      "project_out"  h <- h - alpha * (h . d_hat) d_hat        (decode-safe; needs `direction`)
+      "mean"         h <- h.mean(seq, keepdim=True)            (PREFILL-ONLY — see NOTE)
+    NOTE (same convention/caveat as AllPositionZHeadAblate): the mean is over the seq axis of
+    the CURRENT forward, so on a decode step (seq == 1) it is an identity no-op — "mean" is
+    prefill-only; use "zero"/"scale"/"project_out" for any generation-time necessity test.
+
+    `direction` lives in MLP-output space (== residual space, the MLP writes into resid) and
+    need not be unit-norm; it is normalized here. One forward hook per layer on `layer.mlp`
+    (tensor- and tuple-valued outputs both handled); all handles removed on __exit__.
+
+    Invariants (tests/test_allposmlp_synthetic.py): fires on prefill AND on seq==1 decode ·
+    only `layer_idxs` touched · project_out leaves the orthogonal complement bit-identical ·
+    cleanup on exit · ComponentOutSwap negative control is a no-op on the decode-shaped input.
+    """
+    _MODES = ("zero", "scale", "project_out", "mean")
+
+    def __init__(self, model, layer_idxs: Sequence[int], mode: str = "zero",
+                 direction: Optional[torch.Tensor] = None, alpha: float = 1.0):
+        if mode not in self._MODES:
+            raise ValueError(f"mode must be one of {list(self._MODES)}")
+        if mode == "project_out" and direction is None:
+            raise ValueError("mode='project_out' requires `direction`")
+        all_layers = dc._get_layers(model)
+        self.layer_idxs = [int(i) for i in layer_idxs]
+        bad = [i for i in self.layer_idxs if i < 0 or i >= len(all_layers)]
+        if bad:
+            raise IndexError(f"layer index out of range for {len(all_layers)} layers: {bad}")
+        self.layers = [all_layers[i] for i in self.layer_idxs]
+        self.mode = mode
+        self.alpha = float(alpha)
+        self._d = None
+        if direction is not None:
+            d = direction.detach().float().cpu().flatten()
+            self._d = d / (d.norm() + 1e-8)
+        self._handles: List[Any] = []
+
+    def _edit(self, h: torch.Tensor) -> torch.Tensor:
+        if self.mode == "zero":
+            return torch.zeros_like(h)
+        if self.mode == "scale":
+            return self.alpha * h
+        if self.mode == "mean":                       # prefill-only by construction (see NOTE)
+            return h.mean(dim=1, keepdim=True).expand_as(h).clone()
+        d = self._d.to(device=h.device, dtype=h.dtype)
+        proj = (h * d).sum(dim=-1, keepdim=True)      # [.., 1] over hidden
+        return h - self.alpha * proj * d              # broadcast over ALL positions/timesteps
+
+    def _hook(self, module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        h = self._edit(output[0] if is_tuple else output)
+        return (h,) + tuple(output[1:]) if is_tuple else h
+
+    def __enter__(self):
+        for layer in self.layers:
+            self._handles.append(layer.mlp.register_forward_hook(self._hook))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # All-position / all-timestep directional ADD (NEXT5 W5 — mechanism-derived defense)
 # --------------------------------------------------------------------------- #
 def make_add_hook(direction: torch.Tensor, alpha: float = 1.0):

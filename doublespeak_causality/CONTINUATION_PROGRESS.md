@@ -264,7 +264,72 @@ job-708038 aborted twin. Teaching it the remaining 4 families is follow-up work,
 
 ---
 
+### ✅ P10 blocker cleared — `pc.AllPositionMLPAblate` (decode-safe MLP ablation)
+`pair_common.py:742-821` (pure addition), 14 new CPU-only tests. Suite **191 → 205 passed**, 13 skipped.
+Hooks `layer.mlp` and rewrites the whole output on **every** forward, so the edit survives KV-cached decode
+steps. Modes zero / scale / project_out are decode-safe; `mean` is explicitly marked PREFILL-ONLY and locked
+in by a test (a seq-axis mean is an identity no-op at `seq==1`). Verified both primitives hook the
+**identical module**, so the P10 re-run will be apples-to-apples with the old BEHAV-WRITE measurement,
+differing only in position/timestep coverage. Also batch-safe (the old primitive was `batch_index=0` only).
+
+**🔎 A second failure mode of the old guard — checked, and BEHAV-WRITE is NOT affected.**
+The agent found that `ComponentOutSwap` is not always a clean no-op at `seq==1`: if position **0** is among
+the targets it is the one index still "in range", so it writes the row captured for *prompt position 0* onto
+**every generated token** — a misaligned ablation, not an absent one. I checked whether BEHAV-WRITE was hit:
+under the Llama chat template token 0 is always `<|begin_of_text|>` (verified: id 128000 == `bos_token_id`),
+so a codeword's `last_idx` can never be 0 and `cw_pos` never contained it. **⇒ the BEHAV-WRITE decode phase
+was a clean no-op. The null is UNTESTED for generation, not CORRUPTED** — P10 is a genuine extension, not a
+retraction. (Any *future* harness whose position set can include 0 must use the new primitive.)
+
+### ✅ P1b — ClearHarm v3 split built, and the v1 leakage is worse than the plan said
+`data/splits/clearharm_doublespeak_v3.json` · `scripts/build_split_v3.py` · `reports/P1B_V3_SPLIT.md`
+**138 examples / 45 single-token concepts / 40 concept-level clusters · train 69 / dev 35 / test 34 ·
+828 prompt rows (6 conditions) · zero OpenAI calls.** `validate_data_integrity.py`: 10 ok / 0 warn / 0 FATAL.
+
+| | v1 | **v3** |
+|---|---|---|
+| concepts straddling train/test | 14 / 43 | **0 / 45** |
+| codewords straddling | 17 / 21 | **0 / 45** |
+| rows with a straddling concept | 55 / 86 | **0 / 138** |
+| rows with a straddling codeword | **77 / 86 (90%)** | **0 / 138** |
+
+Independently re-verified by me: concept overlap is 0 across all three split pairs. Codewords now come from
+a 2,098-word dictionary∩vocabulary benign-noun pool, one per concept, each used once — so split codeword
+sets are **disjoint**, which is what an "unseen codeword" claim needs and **v1 could not support at all**.
+
+⚠ **Three documented gaps:** N = 138, not the planned 200 (the rest needs API calls); the **benign-condition
+demos are placeholders for 59 of 138 rows** — that condition is unusable for those until regenerated; and
+harm categories are unbalanced.
+⚠ **A claim in our own plan was wrong:** §5 P1b asserts "zero ClearHarm instruction pairs exceed TF-IDF
+cosine 0.5". False — max pairwise cosine is **0.690**, with 3 pairs above 0.5. The conclusion survives
+(cross-split max in the built v3 is lower), but the plan text needs correcting.
+
+### ✅ Validator schema coverage complete — and it found a real data defect
+9 previously-unknown schemas taught (p4ko band+perhead, p4b, p4c, p5b, p7, p7b, p7c, p7d, p9).
+**Tree-wide FAILs 308 → 5.** +917 recomputed values (**14,482 total**). "No raw.jsonl" is now a separate
+SKIP-legacy status so the 275 legacy dirs no longer drown out real failures; unrecognized schema stays a
+loud FAIL.
+**REAL MISMATCH FOUND (reported, data untouched):** `monotone_decreasing` in 2 of the 5 `phase9_dose` dirs
+was computed under the **pre-audit α>1-inclusive definition** and disagrees with its own rows under the
+current [0,1] definition. This is exactly what the Aug-2–5 sprint audit predicted would be stale on disk.
+Also: 2 dirs carry a committed `summary.json` over a **0-row `raw.jsonl`** (aborted runs).
+
+### ✅ P1 audit is now a re-runnable gate
+`scripts/audit_phase21_baseline.py` reproduces all 411-row numbers and **exits non-zero** both when a
+fixture has a blanked response (MUST-RERUN) and when a published rate drifts (SUSPECT). Verified no
+generation text reaches stdout or JSON by fragment-matching all 411 responses. It also fixed a bug in the
+inline draft: the near-blank predicate was `<=20`, reporting 3 rows and contradicting the published 2 —
+one row is exactly 20 chars. Now strict `<20`.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 9 — 2026-08-05 — all 4 builders landed; P10 unblocked; v3 split built
+Re-ran after the session reset; all 4 succeeded. Cleared the P10 blocker, built the v3 split, completed
+validator coverage, and turned the P1 audit into a gate. Independently verified the BEHAV-WRITE
+position-0 question (not affected) and the v3 zero-straddling claim. Suite 205 green.
+α sweeps 716014/716015 still PENDING on cluster priority.
 
 ### Tick 8 — 2026-08-05 — killed a hung GPU job; builders re-queued after the limit reset
 **Cancelled job 714997 (P2 v2 replication) — it was HUNG, not slow.** Started 14:12, still "Loading

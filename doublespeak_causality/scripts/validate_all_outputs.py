@@ -32,6 +32,18 @@ Deletion detection (why it is not just "every recomputed key must exist"):
 
 Exit code is non-zero if any dir FAILS. `--json PATH` writes the machine-readable per-dir result.
 
+Statuses (only FAIL sets the exit code):
+  ok / WARN            recomputed, agrees with `summary.json`
+  SKIP-legacy          the dir has **no `raw.jsonl` at all** -- the legacy `outputs/pair_*` /
+                       aggregate dirs that only ever wrote `<name>_summary.json`. There is nothing to
+                       reconcile against, so this is *not* a failure; it is counted separately so the
+                       exit code stays meaningful when the validator is pointed at the whole tree
+                       (it used to be 275 identical `cannot read raw.jsonl` FAILs that drowned out
+                       every real one).
+  FAIL                 raw.jsonl present but unreadable / EMPTY, `summary.json` missing,
+                       **unrecognized row schema** (deliberately loud: an un-reconciled phase is not
+                       an ok phase), any summary-vs-raw mismatch, deleted key, or manifest gap.
+
 What is recomputed, by family:
   behav (`{id, split, cohort, <arm>_label, <arm>_score}` and its non-judged numeric-arm variants):
       n, ASR/refusal_rate/empty_rate per arm (flat `ASR_<arm>` and nested `ASR: {<arm>: ..}` layouts),
@@ -41,6 +53,28 @@ What is recomputed, by family:
   phase6: n_rows, per-window n_valid, mean_C1/C3/S3 p_concept, nec/suf self-swap max dev,
       necessity/sufficiency point estimates (bootstrap CI *bounds* are RNG-dependent -> not checked).
   phase5: n_rows, per-split n_valid, selfswap_max_dev, top10_by_mean values.
+  edgeKO (`scripts/phase4_edge_knockout.py`): band mode -> band.n / mean_base_p and the raw_KO_drop /
+      specific_vs_random / all_query_edges_drop point estimates; perhead mode -> n_valid and each
+      `top_heads[i]` n / specific_mean / raw_KO_drop, plus the "top_heads is sorted by -specific_mean"
+      and "a head with <3 paired sids must not be listed" invariants of the aggregation.
+  p4b (`phase4b_pattern.py`): n_rows, per-split n_valid, mean_C1/mean_C_benign, the three
+      necessity/knockout point estimates, selfswap_max_dev, n_len_mismatch.
+  p4c (`phase4c_carryedge.py`): per-split n, mean_C1, necessity / specificity / positive-control means.
+  p5b (`phase5b_qkv.py`): n_rows, per-split n_valid + selfswap_max_dev, and per head x {q,k,v} the
+      necessity_ci / mean_patched / necessity_specific_ci point estimates.
+  p7 (`phase7_direct_total.py`): per-split per-head n, mean_TOTAL/mean_DIRECT, median_direct_frac and
+      the `trustworthy` sanity gate it is conditioned on, n_frac, selfswap / freeze-consistency devs.
+  p7b (`phase7b_mediation.py`): n, n_L9_responsive, mean_C1 / mean_A_neutralizeL9, both median
+      mediation fractions, selfcheck_max_dev.
+  p7c (`phase7c_sufficiency.py`): n, mean_S1_benign / mean_S3_carry_install, both sufficiency point
+      estimates, self_install_max_dev.
+  p7d (`phase7d_onset.py`): n, S1, S_rand, self_dev, cumulative_p_concept per group and the
+      specific-over-random point estimate in every layout the phase has used (`specific_over_rand`,
+      `_fullctrl`, `_countmatched`).
+  p9 (`phase9_dose.py`): per-split n_valid, the whole p_concept_by_alpha curve, and the
+      `monotone_decreasing` verdict recomputed from the recomputed curve (alpha<=1 only).
+Bootstrap CI *bounds* are RNG draws, not functions of the rows, so every `*_ci` block is checked at
+index [0] (the point estimate) only -- see `putci()`.
 
 Manifest format (`configs/manifests/<phase>.json`, all keys optional):
   {"phase": "behav_carry",
@@ -57,7 +91,7 @@ Runs on the LOGIN NODE (stdlib only; reads raw.jsonl, which carries no free text
 concept/codeword fields, so this is a MAIN-LOOP tool).
 """
 from __future__ import annotations
-import argparse, glob, json, math, os, re, sys
+import argparse, glob, json, math, os, re, statistics, sys
 from collections import defaultdict
 from math import comb
 
@@ -72,6 +106,8 @@ DEFAULT_TOL = 5e-4
 # working; pass `--round-cap 0` to disable the allowance entirely.
 DEFAULT_ROUND_CAP = 5e-3
 MAL = "MALICIOUS"
+# dirs with no raw.jsonl at all: counted, reported, but NOT a failure (see the status table above)
+SKIP = "SKIP-legacy"
 
 # `delta_<name>` aggregates whose definition is not derivable from the key alone.
 # value = ASR[a] - ASR[b]
@@ -166,8 +202,8 @@ class Expect(dict):
 
 def redact(v):
     """Values printed by the validator are numbers; anything else is shown as a type tag."""
-    if v is None or isinstance(v, (int, float)) and not isinstance(v, bool):
-        return v
+    if v is None or isinstance(v, bool) or isinstance(v, (int, float)):
+        return v          # numbers and verdict flags are safe to print; free text never is
     if isinstance(v, str) and len(v) <= 16 and v.replace("_", "").replace("-", "").isalnum():
         return v                      # short identifiers (cell / head names) are safe
     return f"<{type(v).__name__}>"
@@ -460,7 +496,331 @@ def expect_phase5(rows, summary, res=None):
     return exp
 
 
-EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5}
+# --------------------------------------------------------------------------- circuit phases
+# The phases below share one aggregation idiom (`bootci(v) -> [mean, lo, hi]`, or `None` when `v` is
+# empty), so they share one helper.  Their producing scripts are the single source of truth for every
+# formula here: scripts/phase4_edge_knockout.py, phase4b_pattern.py, phase4c_carryedge.py,
+# phase5b_qkv.py, phase7{,b,c,d}_*.py, phase9_dose.py.
+
+def putci(exp, node, prefix, key, vals, required=True):
+    """Expect a `bootci`-shaped leaf: `[mean, lo, hi]` when there were values, plain `None` when not.
+
+    Only index [0] is an aggregate of the rows -- [1]/[2] are percentiles of 2000 bootstrap resamples
+    drawn from `np.random.default_rng(0)`, which this stdlib-only validator cannot reproduce and which
+    are therefore deliberately left unchecked.  Which of the two shapes to expect is read off the
+    summary itself; if the summary stored `None` where the rows do support a mean (or the reverse) the
+    value comparison below is what flags it, not the shape.
+    """
+    add = exp.put if required else exp.opt
+    add(f"{prefix}.{key}[0]" if isinstance(node.get(key), list) else f"{prefix}.{key}", mean(vals))
+
+
+def _by_split(rows, summary):
+    """-> [(split, node, rows_of_split)] over the summary's split container."""
+    pref, cont = split_container(summary)
+    out = []
+    for sp, node in cont.items():
+        out.append((pref(sp), node, [r for r in rows if r.get("split") == sp]))
+    return out
+
+
+def expect_p4ko(rows, summary, res=None):
+    """`scripts/phase4_edge_knockout.py` -- band mode and per-head mode.
+
+    Both aggregate over the VALID rows only and index by sid *pooled across splits* (the phase builds
+    `{sid: p}` maps without the split in the key), so the recomputation pools too -- doing it per split
+    would not reproduce the committed number.
+    """
+    exp = Expect()
+    base = {r["sid"]: r["base_p_concept"] for r in rows}
+    cells = defaultdict(dict)
+    for r in rows:
+        if r.get("valid"):
+            cells[(r["layer"], r["head"], r["cell"])][r["sid"]] = r["p_concept"]
+
+    if summary.get("mode") == "band" or isinstance(summary.get("band"), dict):
+        def cm(cell):
+            return {sid: p for (l, h, c), d in cells.items() if c == cell for sid, p in d.items()}
+        ko, rk, aq = cm("edge_KO"), cm("rand_edge"), cm("all_query_edges")
+        sids = sorted(set(ko) & set(rk))
+        blk = summary.get("band") or {}
+        exp.put("band.n", len(sids))
+        exp.put("band.mean_base_p", mean([base[s] for s in sids]))
+        putci(exp, blk, "band", "raw_KO_drop", [base[s] - ko[s] for s in sids])
+        putci(exp, blk, "band", "specific_vs_random", [rk[s] - ko[s] for s in sids])
+        putci(exp, blk, "band", "all_query_edges_drop",
+              [base[s] - aq[s] for s in sorted(set(base) & set(aq))] if aq else [])
+        return exp
+
+    exp.put("n_valid", len({r["sid"] for r in rows if r.get("valid")}))
+    prev = None
+    for i, ent in enumerate(summary.get("top_heads") or []):
+        l, h = ent.get("layer"), ent.get("head")
+        ko = cells.get((l, h, "edge_KO"), {})
+        rk = cells.get((l, h, "rand_edge"), {})
+        sids = sorted(set(ko) & set(rk))
+        exp.put(f"top_heads[{i}].n", len(sids))
+        exp.put(f"top_heads[{i}].specific_mean", mean([rk[s] - ko[s] for s in sids]))
+        exp.put(f"top_heads[{i}].raw_KO_drop", mean([base[s] - ko[s] for s in sids]))
+        if res is not None:
+            # aggregation invariants (the two the phase's own loop enforces)
+            if len(sids) < 3:
+                res["issues"].append(f"top_heads[{i}] has {len(sids)} paired sids but the phase only "
+                                     f"lists heads with >=3")
+            sm = ent.get("specific_mean")
+            if prev is not None and isinstance(sm, (int, float)) and sm > prev + 1e-12:
+                res["issues"].append(f"top_heads not sorted by -specific_mean at index {i}")
+            prev = sm if isinstance(sm, (int, float)) else prev
+    return exp
+
+
+def expect_p4b(rows, summary, res=None):
+    """`scripts/phase4b_pattern.py` (attention-pattern knockout at the DS answer row)."""
+    exp = Expect()
+    if "n_rows" in summary:
+        exp.put("n_rows", len(rows))
+    for P, node, sr in _by_split(rows, summary):
+        def cm(cell):
+            return {r["sid"]: r["p_concept"] for r in sr if r["cell"] == cell}
+        c1 = {r["sid"]: r["C1"] for r in sr}
+        bp = {r["sid"]: r["benign_p_concept"] for r in sr}
+        cben, cuni, cran, cslf = cm("C_benign"), cm("C_uniform"), cm("C_rand"), cm("C_self")
+        valid = {s for s in c1 if bp.get(s) is not None and c1[s] > bp[s]}
+        nec = sorted(s for s in valid if s in cben and s in cran)
+        exp.put(f"{P}.n_valid", len(nec))
+        exp.put(f"{P}.mean_C1", mean([c1[s] for s in nec]))
+        exp.put(f"{P}.mean_C_benign", mean([cben[s] for s in nec]))
+        putci(exp, node, P, "necessity_raw_ci_C1_minus_Cbenign", [c1[s] - cben[s] for s in nec])
+        putci(exp, node, P, "necessity_specific_ci_Crand_minus_Cbenign", [cran[s] - cben[s] for s in nec])
+        putci(exp, node, P, "knockout_uniform_raw_ci_C1_minus_Cuniform",
+              [c1[s] - cuni[s] for s in nec if s in cuni])
+        exp.put(f"{P}.selfswap_max_dev", max([abs(c1[s] - cslf[s]) for s in cslf], default=0.0))
+        exp.put(f"{P}.n_len_mismatch",
+                sum(1 for r in sr if r["cell"] == "C_benign" and r["len_mismatch"]))
+    return exp
+
+
+def expect_p4c(rows, summary, res=None):
+    """`scripts/phase4c_carryedge.py` (carry-head answer->demo edge knockout). Unfiltered: every row
+    of the split enters, there is no validity gate."""
+    exp = Expect()
+    for P, node, sr in _by_split(rows, summary):
+        exp.put(f"{P}.n", len(sr))
+        exp.put(f"{P}.mean_C1", mean([r["C1"] for r in sr]))
+        putci(exp, node, P, "necessity_raw_C1_minus_KOdemo", [r["C1"] - r["KO_demo"] for r in sr])
+        putci(exp, node, P, "specific_KOrand_minus_KOdemo",
+              [r["KO_rand"] - r["KO_demo"] for r in sr if r["KO_rand"] is not None])
+        # The positive control post-dates the first run of the phase: those rows have no `KO_all`
+        # column and their summary has no `posctrl_*` key, so requiring it there would report a
+        # deletion that never happened. Where the column exists the key is required.
+        has_ko_all = any("KO_all" in r for r in sr)
+        putci(exp, node, P, "posctrl_C1_minus_KOall",
+              [r["C1"] - r.get("KO_all", r["C1"]) for r in sr], required=has_ko_all)
+    return exp
+
+
+def expect_p5b(rows, summary, res=None):
+    """`scripts/phase5b_qkv.py` (per-head q/k/v slice necessity)."""
+    exp = Expect()
+    if "n_rows" in summary:
+        exp.put("n_rows", len(rows))
+    for P, node, sr in _by_split(rows, summary):
+        valid = {r["sid"] for r in sr if r["cell"] in ("q", "k", "v")
+                 and r.get("benign_p_concept") is not None and r["C1"] > r["benign_p_concept"]}
+        exp.put(f"{P}.n_valid", len(valid))
+        exp.put(f"{P}.selfswap_max_dev",
+                max([abs(r["C1"] - r["p_concept"]) for r in sr if r["cell"].endswith("_self")],
+                    default=0.0))
+        c1m = {r["sid"]: r["C1"] for r in sr}
+        for hd, hblk in (node.get("heads") or {}).items():
+            m = re.fullmatch(r"L(\d+)H(\d+)", str(hd))
+            if not m:
+                continue
+            l, h = int(m.group(1)), int(m.group(2))
+            for proj, pblk in hblk.items():
+                nec = {r["sid"]: r["p_concept"] for r in sr
+                       if r["cell"] == proj and r["layer"] == l and r["head"] == h}
+                rnd = {r["sid"]: r["p_concept"] for r in sr
+                       if r["cell"] == proj + "_rand" and r["layer"] == l and r["head"] == h}
+                keep = sorted(s for s in valid if s in nec)
+                keep_r = sorted(s for s in valid if s in nec and s in rnd)
+                B = f"{P}.heads.{hd}.{proj}"
+                putci(exp, pblk, B, "necessity_ci", [c1m[s] - nec[s] for s in keep])
+                exp.put(f"{B}.mean_patched", mean([nec[s] for s in keep]))
+                putci(exp, pblk, B, "necessity_specific_ci", [rnd[s] - nec[s] for s in keep_r])
+    return exp
+
+
+def expect_p7(rows, summary, res=None):
+    """`scripts/phase7_direct_total.py` (path patching: TOTAL vs DIRECT effect per carry head).
+
+    `median_direct_frac` is conditioned on the phase's own sanity gate (`trustworthy`), so the gate is
+    recomputed too -- otherwise a summary could keep a direct_frac that its own freeze/self-swap
+    diagnostics no longer license.
+    """
+    exp = Expect()
+    TOL = 0.05
+    for P, node, sr in _by_split(rows, summary):
+        for hd, blk in node.items():
+            m = re.fullmatch(r"L(\d+)H(\d+)", str(hd))
+            if not m or not isinstance(blk, dict):
+                continue
+            l, h = int(m.group(1)), int(m.group(2))
+            hr = [r for r in sr if r["layer"] == l and r["head"] == h]
+            if not hr:
+                continue
+            tot = [r["TOTAL"] for r in hr]
+            dr = [r["DIRECT"] for r in hr]
+            selfdev = max(abs(r["TOTAL_self"]) for r in hr)
+            frz = statistics.median([abs(r["m_frozen_clean"] - r["m_clean"]) for r in hr])
+            trust = (frz <= TOL) and (selfdev <= TOL)
+            fracs = [d / t for d, t in zip(dr, tot) if abs(t) > 0.05]
+            B = f"{P}.{hd}"
+            exp.put(f"{B}.n", len(hr))
+            exp.put(f"{B}.mean_TOTAL", mean(tot))
+            exp.put(f"{B}.mean_DIRECT", mean(dr))
+            exp.put(f"{B}.median_direct_frac", statistics.median(fracs) if fracs and trust else None)
+            exp.put(f"{B}.trustworthy", trust)
+            exp.put(f"{B}.n_frac", len(fracs))
+            exp.put(f"{B}.selfswap_max_dev", selfdev)
+            exp.put(f"{B}.freeze_consistency_dev", frz)
+    return exp
+
+
+def expect_p7b(rows, summary, res=None):
+    """`scripts/phase7b_mediation.py` (does L9's effect flow through the carry heads?)."""
+    exp = Expect()
+    for P, node, sr in _by_split(rows, summary):
+        # mediation fraction is defined only where neutralizing L9 actually moved the reading
+        resp = [r for r in sr if (r["C1"] - r["A_neutralizeL9"]) > 0.02]
+        v = [(r["B_L9_freezeCarry"] - r["A_neutralizeL9"]) / (r["C1"] - r["A_neutralizeL9"]) for r in resp]
+        c = [(r["ctrl_freezeRand"] - r["A_neutralizeL9"]) / (r["C1"] - r["A_neutralizeL9"]) for r in resp]
+        exp.put(f"{P}.n", len(sr))
+        exp.put(f"{P}.n_L9_responsive", len(v))
+        exp.put(f"{P}.mean_C1", mean([r["C1"] for r in sr]))
+        exp.put(f"{P}.mean_A_neutralizeL9", mean([r["A_neutralizeL9"] for r in sr]))
+        exp.put(f"{P}.median_mediation_frac_carry", statistics.median(v) if v else None)
+        exp.put(f"{P}.median_mediation_frac_randctrl", statistics.median(c) if c else None)
+        exp.put(f"{P}.selfcheck_max_dev",
+                max((abs(r["C1"] - r["selfcheck"]) for r in sr), default=None))
+    return exp
+
+
+def expect_p7c(rows, summary, res=None):
+    """`scripts/phase7c_sufficiency.py` (install DS carry-head z into the BENIGN run)."""
+    exp = Expect()
+    for P, node, sr in _by_split(rows, summary):
+        exp.put(f"{P}.n", len(sr))
+        exp.put(f"{P}.mean_S1_benign", mean([r["S1"] for r in sr]))
+        exp.put(f"{P}.mean_S3_carry_install", mean([r["S3_carry"] for r in sr]))
+        putci(exp, node, P, "sufficiency_raw_ci_S3_minus_S1", [r["S3_carry"] - r["S1"] for r in sr])
+        putci(exp, node, P, "sufficiency_specific_ci_S3_minus_Srand",
+              [r["S3_carry"] - r["S_rand"] for r in sr])
+        exp.put(f"{P}.self_install_max_dev",
+                max((abs(r["S_self"] - r["S1"]) for r in sr), default=None))
+    return exp
+
+
+# phase7d wrote the specificity block under three names across its revisions; the control it is taken
+# against differs, so the recomputation differs too:
+#   specific_over_rand / _fullctrl   -> vs the FULL-circuit random control `S_rand`
+#   _countmatched                    -> vs the per-group count-matched control `S_rand_<group>`
+P7D_SPEC_BLOCKS = ("specific_over_rand", "specific_over_rand_fullctrl", "specific_over_rand_countmatched")
+
+
+def expect_p7d(rows, summary, res=None):
+    """`scripts/phase7d_onset.py` (cumulative install of L14, L14-15, ... L14-21)."""
+    exp = Expect()
+    for P, node, sr in _by_split(rows, summary):
+        exp.put(f"{P}.n", len(sr))
+        exp.put(f"{P}.S1", mean([r["S1"] for r in sr]))
+        # the phase writes 0.0, not None, for an empty split (`srand = ... if sr else 0.0`)
+        exp.put(f"{P}.S_rand", mean([r["S_rand"] for r in sr]) if sr else 0.0)
+        exp.put(f"{P}.self_dev", max((abs(r["S_self"] - r["S1"]) for r in sr), default=None))
+        groups = list((node.get("cumulative_p_concept") or {}))
+        for g in groups:
+            exp.put(f"{P}.cumulative_p_concept.{g}", mean([r[g] for r in sr if g in r]))
+        for blk in P7D_SPEC_BLOCKS:
+            b = node.get(blk)
+            if not isinstance(b, dict):
+                continue
+            for g in groups:
+                ctrl = (lambda r: r.get(f"S_rand_{g}", r["S_rand"])) if blk.endswith("_countmatched") \
+                    else (lambda r: r["S_rand"])
+                putci(exp, b, f"{P}.{blk}", g, [r[g] - ctrl(r) for r in sr if g in r])
+    return exp
+
+
+def expect_p9(rows, summary, res=None):
+    """`scripts/phase9_dose.py` (alpha-interpolated L9 write, dose-response)."""
+    exp = Expect()
+    for P, node, sr in _by_split(rows, summary):
+        valid = {r["sid"] for r in sr if r["alpha"] == 0.0 and r["p_concept"] > r["benign_p_concept"]}
+        exp.put(f"{P}.n_valid", len(valid))
+        curve_node = node.get("p_concept_by_alpha") or {}
+        curve = {}
+        for ak in curve_node:                      # json turned the float alpha into its repr
+            a = float(ak)
+            vals = [r["p_concept"] for r in sr if r["alpha"] == a and r["sid"] in valid]
+            curve[a] = round(mean(vals), 4) if vals else None
+            exp.put(f"{P}.p_concept_by_alpha.{ak}", curve[a])
+        if res is not None:                        # a dose level present in raw but dropped from the curve
+            for a in sorted({r["alpha"] for r in sr}):
+                if not any(float(ak) == a for ak in curve_node):
+                    res["issues"].append(f"summary p_concept_by_alpha MISSING alpha={a} "
+                                         f"(present in raw.jsonl)")
+        # the phase's own order is the --alphas order; `alphas` is stored, fall back to sorted
+        order = [float(a) for a in (summary.get("alphas") or sorted(curve))]
+        seq = [curve[a] for a in order if a in curve and a <= 1.0 and curve[a] is not None]
+        exp.put(f"{P}.monotone_decreasing",
+                all(seq[i] >= seq[i + 1] - 1e-6 for i in range(len(seq) - 1)) if len(seq) > 1 else None)
+    return exp
+
+
+EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
+          "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
+          "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
+          "p9": expect_p9}
+
+
+def detect_ext(rows):
+    """`validate_experiment_coverage.detect`, extended with the circuit phases it does not know.
+
+    `detect` stays the single source of truth for the three schemas the *coverage* validator checks
+    (behav / phase5 / phase6) -- it is tried first and always wins. The families below never had a
+    detector anywhere, so every phase4/4b/4c/5b/7*/9 dir was reported as `unrecognized row schema`
+    (a FAIL, correctly: an un-reconciled phase is not an ok phase). They are recognized here instead
+    of in the other module so that module's contract ("the schemas *it* can coverage-check") is
+    unchanged. Discrimination is by the phase's own payload columns, which are disjoint across phases.
+    """
+    typ, _ = detect(rows)
+    if typ is not None or not rows:
+        return typ
+    ks = set(rows[0])
+    cells = {r.get("cell") for r in rows}
+
+    def has(*names):
+        return all(n in ks for n in names)
+
+    if has("cell", "base_p_concept", "layer") and cells & {"edge_KO", "rand_edge", "all_query_edges"}:
+        return "p4ko"
+    if has("cell", "C1", "k_ds") and cells & {"C_benign", "C_uniform", "C_rand", "C_self"}:
+        return "p4b"
+    if has("cell", "proj", "layer", "head") and cells & {"q", "k", "v"}:
+        return "p5b"
+    if has("C1", "KO_demo", "KO_rand"):
+        return "p4c"
+    if has("TOTAL", "DIRECT", "m_clean", "layer", "head"):
+        return "p7"
+    if has("C1", "A_neutralizeL9", "B_L9_freezeCarry"):
+        return "p7b"
+    if has("S1", "S3_carry", "S_rand"):
+        return "p7c"
+    if has("S1", "S_rand", "S_self"):
+        return "p7d"
+    if has("alpha", "p_concept", "benign_p_concept"):
+        return "p9"
+    return None
 
 
 # --------------------------------------------------------------------------- manifest
@@ -520,6 +880,12 @@ def check_manifest(rows, man, typ):
 def validate_dir(d, args):
     res = {"dir": d, "status": "ok", "type": None, "issues": [], "warns": [],
            "n_checked": 0, "n_unchecked": 0, "mismatches": []}
+    if not os.path.exists(os.path.join(d, "raw.jsonl")):
+        # legacy aggregate dirs (`outputs/pair_*` and friends) only ever wrote `<name>_summary.json`;
+        # with no preserved rows there is nothing to reconcile, so this is a SKIP, not a FAIL -- see
+        # the status table in the module docstring.
+        res.update(status=SKIP, warns=["no raw.jsonl -- legacy/aggregate dir, nothing to reconcile"])
+        return res
     try:
         rows = load(d)
     except Exception as e:
@@ -530,10 +896,17 @@ def validate_dir(d, args):
         res.update(status="FAIL", issues=["summary.json MISSING (run-dir contract §2.1)"])
         return res
     summary = json.load(open(sp))
-    typ, _ = detect(rows)
+    if not rows:
+        # a committed summary whose rows are gone: nothing in it can be reconciled, and the phase
+        # cannot have produced it from data that is not there.
+        res.update(status="FAIL", issues=["raw.jsonl is EMPTY (0 rows) but summary.json exists -- "
+                                          "aborted run, no number in it is reconcilable"])
+        return res
+    typ = detect_ext(rows)
     res["type"] = typ
     if typ is None:
-        res.update(status="FAIL", issues=["unrecognized row schema"])
+        res.update(status="FAIL", issues=[f"unrecognized row schema; first-row keys="
+                                          f"{sorted(rows[0])[:8]}"])
         return res
 
     # ---- 1. split disjointness
@@ -643,6 +1016,8 @@ def main():
                          "checks from FAIL to warn")
     ap.add_argument("--json", dest="as_json", metavar="PATH", default=None)
     ap.add_argument("--quiet", action="store_true", help="print only FAIL dirs")
+    ap.add_argument("--show-skipped", action="store_true",
+                    help=f"also print the {SKIP} dirs (no raw.jsonl); they are always counted")
     args = ap.parse_args()
 
     dirs = []
@@ -650,23 +1025,31 @@ def main():
         dirs.extend(sorted(glob.glob(d)) if any(c in d for c in "*?[") else [d])
 
     out, nfail = [], 0
-    print(f"{'dir':<58} {'type':<7} {'status':<6} {'checked':>7} {'unchk':>6}  splits")
+    print(f"{'dir':<58} {'type':<7} {'status':<11} {'checked':>7} {'unchk':>6}  splits")
     for d in dirs:
         r = validate_dir(d, args)
         out.append(r)
         nfail += r["status"] == "FAIL"
+        if r["status"] == SKIP and not args.show_skipped:
+            continue
         if args.quiet and r["status"] != "FAIL":
             continue
-        print(f"{os.path.basename(os.path.normpath(d)):<58} {str(r['type']):<7} {r['status']:<6} "
+        print(f"{os.path.basename(os.path.normpath(d)):<58} {str(r['type']):<7} {r['status']:<11} "
               f"{r['n_checked']:>7} {r['n_unchecked']:>6}  {r.get('splits', {})}")
         for x in r["issues"]:
             print(f"    FAIL: {x}")
         for x in r["warns"]:
             print(f"    warn: {x}")
+    byt = defaultdict(int)
+    for r in out:
+        if r["status"] != SKIP:
+            byt[str(r["type"])] += 1
     print(f"\n{len(out)} dir(s): {sum(1 for r in out if r['status']=='ok')} ok, "
-          f"{sum(1 for r in out if r['status']=='WARN')} warn, {nfail} FAIL; "
+          f"{sum(1 for r in out if r['status']=='WARN')} warn, "
+          f"{sum(1 for r in out if r['status']==SKIP)} {SKIP} (no raw.jsonl), {nfail} FAIL; "
           f"{sum(r['n_checked'] for r in out)} summary values recomputed, "
           f"{sum(len(r['mismatches']) for r in out)} mismatched")
+    print("reconciled dirs by type: " + ", ".join(f"{k}={v}" for k, v in sorted(byt.items())))
     if args.as_json:
         with open(args.as_json, "w") as fh:
             json.dump(out, fh, indent=2)
