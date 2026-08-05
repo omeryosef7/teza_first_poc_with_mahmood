@@ -410,7 +410,15 @@ def main():
     if args.run:
         runs = {}
         for spec in args.run:
-            k, _, v = spec.partition("=")
+            k, sep, v = spec.partition("=")
+            # HARD ERROR, not a skip. A bare path (no '=') used to leave run_dir="", which
+            # printed "[skip] ... no raw.jsonl in " and STILL EXITED 0 after writing an empty
+            # report -- the same silent-skip false-OK pattern fixed in validate_all_outputs.
+            if not sep or not k or not v:
+                ap.error(f"--run must be COHORT=PATH, got {spec!r}. "
+                         f"Example: --run clearharm=outputs/behav_refusal_clearharm_asweep..._716014")
+            if not os.path.isdir(v):
+                ap.error(f"--run {k}: not a directory: {v}")
             runs[k] = v
 
     report = {"seed": I2.SEED, "n_boot": I2.N_BOOT, "n_perm": I2.N_PERM,
@@ -419,13 +427,22 @@ def main():
               "estimator_source": "analyze_interaction_2x2.py (imported, not reimplemented)",
               "cohorts": {}}
     md = []
+    skipped = []
     for cohort, run_dir in runs.items():
         if not os.path.exists(os.path.join(run_dir, "raw.jsonl")):
             print(f"[skip] {cohort}: no raw.jsonl in {run_dir}", file=sys.stderr)
+            skipped.append(cohort)
             continue
         c = run_cohort(cohort, run_dir, args.selection_split)
         report["cohorts"][cohort] = c
         md.append(fmt_md(cohort, c))
+    # A run that analysed NOTHING must not exit 0 with an empty report: that is how a
+    # malformed invocation silently masquerades as a clean result.
+    report["skipped_cohorts"] = skipped
+    if not report["cohorts"]:
+        print(f"ERROR: no cohort produced any analysis (skipped: {skipped or 'none'}). "
+              f"Refusing to write an empty report as success.", file=sys.stderr)
+        sys.exit(2)
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w") as f:

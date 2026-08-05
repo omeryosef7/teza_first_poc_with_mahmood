@@ -1,0 +1,6 @@
+=== Phase6 mlpKO: doublespeak_causality/data/bench/bench_clearharm_v2.json n=0 gran=layer pos=all ===
+Wed Aug  5 09:53:11 PM IDT 2026
+n-805
+git=d65e1c0a50bf2e513a0d27889581ccea5f9c0838
+GPU ok: NVIDIA L40S
+[KO] cohort=clearharm L=32 comp=mlp_out positions=all gran=layer windows=['L0', 'L1', 'L2', 'L3']... -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase6_KO_clearharm_mlp_out_all_layer_20260805_220938_718027

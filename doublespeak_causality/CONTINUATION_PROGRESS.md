@@ -635,6 +635,21 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 26 — 2026-08-05 — three jobs running past the preemption point; analyzer silent-skip fixed
+**All three GPU jobs RUNNING at 15 min** on n-805 (717879 P10 decode-safe, 717880 P7 direction validation,
+718027 P2 v2) — past the ~13 min mark where the previous pair was preempted. Each wrote `RUNMETA.json`
+**before** compute, per the §2.1 contract; no `raw.jsonl` yet, so they are still in model load.
+
+**Fixed the analyzer defect logged at tick 19.** `analyze_alpha_calibration.py --run` takes `COHORT=PATH`;
+a bare path left `run_dir=""`, printed `[skip] ... no raw.jsonl in `, and **still exited 0 after writing an
+empty report** — the identical silent-skip false-OK pattern we removed from `validate_all_outputs` at
+tick 5, reintroduced in a *paper-analysis* script where an empty report masquerading as success is worse.
+Two guards now: a malformed/nonexistent `--run` is an `argparse` hard error, and **a run that analyses
+zero cohorts exits 2 rather than writing an empty report as success.**
+Negative controls (exit codes captured directly, not through a pipe — my first attempt measured `tail`'s
+status and wrongly showed 0): bare path → **2**, bad dir → **2**, valid dir with no `raw.jsonl` → **2**,
+valid run → **0** with the α table intact.
+
 ### Tick 25 — 2026-08-05 — 🛑 I was wrong about "SLURM SOLVED"; the real mechanism found
 An adversarial wrapper audit falsified my tick-23 verdict **the same day**, and I verified every point.
 
