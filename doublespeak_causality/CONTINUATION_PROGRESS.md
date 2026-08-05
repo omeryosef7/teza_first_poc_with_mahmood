@@ -635,6 +635,33 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 21 — 2026-08-05 — SLURM stuck-job rule added; OpenAI budget unblocks the powered v3
+**Omer added a standing rule** (now plan §1.3.1): *if a job is stuck, kill it and resubmit with corrected
+settings and current scripts; copy settings from a run that demonstrably worked.* Written up with a
+diagnose-first ordering, because the fix differs by cause — hung-but-`R` (scancel), fixable PENDING reason
+(fix+resubmit), no-free-GPU (do **not** churn the queue; switch to CPU/API work), or semantically stale code
+(resubmit against a known commit).
+
+**Applied it to 716187/716188 — and the honest answer is that our settings are not the problem:**
+- identical to jobs 714998/716014 which ran fine today (killable / gpu-research / 8 CPU / 64 G / L40S list);
+- scripts on disk are current (the only commit touching them is the one that created them);
+- **all 48 L40S GPUs — 6 nodes × 8 — are allocated; zero idle L40S cluster-wide** (idle capacity is
+  2080/3090/A5000/V100). 64 jobs pending on `killable`, 18 running on our nodes.
+- I also corrected an overstatement I nearly made: `sprio` shows AGE contributes **5 points** against a
+  1e8 partition factor, so requeuing costs nothing — **but it also creates no GPU.**
+⇒ Requeuing identical jobs would be theater. Rule §1.3.1 case 3 applies: **switch to CPU/API work.**
+Also recorded in the rule: never relax `--nodelist`/L40S to escape a queue — the constraint exists for
+numerical comparability and the wrapper's `nvidia-smi` guard would just exit 1, burning the allocation.
+
+**Omer confirmed OpenAI budget is available**, which resolves the scoping question raised at tick 20.
+Launched the **v3 expansion toward n ≈ 324**, the size the plan's own power table requires to detect an
+interaction of 0.15 under Holm m=5. This is the direct fix for P8.1's uninterpretable CI [−0.151, +0.105].
+
+**The instruction that matters most in that job:** optimise for **distinct concepts, not rows.** The last
+expansion added +60 % rows but only **+2 concepts** (43 → 45), because recovered rows densified concepts
+that already existed — and since the split is concept-clustered, every per-concept claim is limited by
+cluster count, not row count. Also fixing the 59 placeholder benign-condition rows.
+
 ### Tick 20 — 2026-08-05 — propagated the P8.1 correction into every document that carried the claim
 No GPU work possible: both smokes (716187 P10, 716188 P7) are still PENDING on **cluster** contention with
 none of our own jobs running. Spent the tick closing the loop on tick 19 rather than starting anything new,

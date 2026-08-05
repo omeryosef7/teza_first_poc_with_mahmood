@@ -187,6 +187,33 @@ operator instructions.)*
 - Smoke test on 2 examples before every full launch. A smoke run writes to a `*_smoke_*` dir.
 - Transient `slurmstepd cgroup` failures are node infrastructure, not code — resubmit, and log that you did.
 
+### 1.3.1 Stuck-job procedure (standing rule, Omer 2026-08-05)
+**If a job is stuck or misbehaving: kill it and resubmit with the corrected settings and the current
+scripts. Do not let a bad job sit.** Copy settings from a run that demonstrably worked — check
+`sacct -j <good_job> --format=JobID,Partition,Account,Timelimit,ReqCPUS,ReqMem,NodeList,State` against the
+stuck one rather than reinventing them.
+
+**Diagnose first, in this order — the fix differs by cause:**
+1. **Is it actually running?** `squeue` showing `R` proves nothing (tick 8: a job sat in `R` for 3 h having
+   produced nothing). Check `stat -c %y logs/<job>.err` and whether the run dir's `raw.jsonl` is growing.
+   **Hung ⇒ scancel and resubmit.**
+2. **Is it PENDING for a fixable reason?** `scontrol show job <id> | grep Reason=`.
+   `Reason=BadConstraints`, a wrong partition/account, or a `--time` above the partition limit **⇒ fix and
+   resubmit.**
+3. **Is it `Reason=Priority` with no free GPU?** Check
+   `scontrol show node <n> | grep AllocTRES` across the allowed nodelist and
+   `sinfo -N -o "%N %T %G" | grep -i l40s`. **If every permitted GPU is allocated, resubmitting changes
+   nothing** — `sprio` shows AGE contributes ~5 points against a 1e8 partition factor, so requeuing neither
+   helps nor hurts. **Do not churn the queue; switch to CPU/API work instead** (dataset building, analysis,
+   report writing) and say so.
+4. **Stale code?** SLURM reads the script from disk at *run* time, not submit time, so a pending job picks
+   up later edits. That is usually desirable, but if a harness changed *semantically* since submission,
+   **scancel and resubmit** so the run matches a known commit — and record that commit in RUNMETA.
+
+**Never** relax `--nodelist`/L40S to escape a queue: the L40S constraint exists for numerical comparability
+of causal results, and the wrapper's `nvidia-smi` guard would just exit 1 on a non-L40S node, burning the
+allocation. Changing the GPU type is a decision for Omer, not a scheduling workaround.
+
 ## 1.4 Environment and numerics
 - Conda env `poc_stage2` (python 3.12, torch 2.7.1+cu126, transformers 5.12.1).
   `HF_HUB_OFFLINE=1`, `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`.
