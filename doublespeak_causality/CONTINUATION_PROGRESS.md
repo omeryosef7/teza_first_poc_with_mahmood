@@ -266,6 +266,21 @@ job-708038 aborted twin. Teaching it the remaining 4 families is follow-up work,
 
 ## Tick log (most recent first)
 
+### Tick 8 — 2026-08-05 — killed a hung GPU job; builders re-queued after the limit reset
+**Cancelled job 714997 (P2 v2 replication) — it was HUNG, not slow.** Started 14:12, still "Loading
+weights" at 54% of 291 shards after ~3 h wall clock, and its `.err` had not been written since **14:25**
+(2 h 45 m of silence) while holding a GPU with the critical-path α sweeps queued behind it. The first
+shard alone took 141 s — NFS thrash, almost certainly the 98 %-full volume plus my own heavy git traffic
+last tick. **No data lost:** P2's finding rests on the two v1 benches, which are the apples-to-apples
+comparison against demo-only; v2 was a nice-to-have replication. Resubmit when the cluster is calmer.
+
+⚠️ **Operational lesson worth keeping:** a job can sit in SLURM `R` state for hours having produced
+nothing. `squeue` says RUNNING; only the log mtime tells you it is alive. Check
+`stat -c %y logs/<job>.err` before assuming progress.
+
+Session limit reset at 17:00 → re-queued all 4 builders (P10 `AllPositionMLPAblate`, the v3 split,
+`audit_phase21_baseline.py`, validator schemas). α sweeps 716014/716015 still PENDING on cluster priority.
+
 ### Tick 7 — 2026-08-05 — ⚠ SESSION LIMIT; P8.1 full sweep launched; P1 audit done solo
 **BLOCKER: the API session limit was hit — all 4 builders from tick 6 died with
 "You've hit your session limit · resets 5pm (Asia/Jerusalem)".** No subagent work is possible until then.
