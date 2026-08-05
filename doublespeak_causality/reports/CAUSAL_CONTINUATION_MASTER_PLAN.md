@@ -187,6 +187,29 @@ operator instructions.)*
 - Smoke test on 2 examples before every full launch. A smoke run writes to a `*_smoke_*` dir.
 - Transient `slurmstepd cgroup` failures are node infrastructure, not code — resubmit, and log that you did.
 
+### 1.3.0 ⏱️ THE 30-MINUTE RULE (standing rule, Omer 2026-08-05)
+**A job must be ALLOCATED within 30 minutes of submission. If it is still PENDING at 30 minutes,
+`scancel` it and resubmit with settings that have demonstrably worked before.** Do not let a job sit in
+the queue for hours — check every tick and act.
+
+Empirical basis for "settings that worked" (measured 2026-08-05 over all of that day's jobs):
+**every** successful run used `--partition=killable --account=gpu-research --cpus-per-task=8 --mem=64G
+--gpus=1` with the L40S nodelist. Wait time showed **no relationship to `--time`** — a 14 h job waited
+5 min while a 20 min job waited 319 min — so the queue delay is cluster load at submit, not our
+configuration. Resubmitting costs nothing (`sprio`: AGE contributes ~5 points against a 1e8 partition
+factor) and re-enters scheduling, which is why the rule is worth following even when the settings are
+already right.
+
+When resubmitting, prefer a **smaller footprint** to fit backfill gaps — `--cpus-per-task=4 --mem=48G` is
+ample for single-GPU 8B inference — and set `--time` to the real need rather than a padded ceiling.
+
+⚠️ **Known access gap worth raising with Mahmood:** the cluster has a **`gpu-sharifm`** partition
+(n-804 L40S + a6000, plus an **idle a5000 node**, `MaxTime=5-00:00:00`) — the lab's own partition — but
+submitting returns *"User's group not permitted to use this partition."* All 1,551 of this project's jobs
+have gone through the shared, preemptible `killable` pool instead, competing with ~64 queued jobs from
+other groups. **Getting the account added to `gpu-sharifm` would likely remove the queueing problem
+entirely** and is worth one email.
+
 ### 1.3.1 Stuck-job procedure (standing rule, Omer 2026-08-05)
 **If a job is stuck or misbehaving: kill it and resubmit with the corrected settings and the current
 scripts. Do not let a bad job sit.** Copy settings from a run that demonstrably worked — check

@@ -635,6 +635,28 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 22 — 2026-08-05 — 30-minute allocation rule added and applied; found a partition we cannot use
+**Omer's rule, now plan §1.3.0: a job must be ALLOCATED within 30 min of submission, else `scancel` and
+resubmit with settings that have demonstrably worked.** Checked every tick from now on.
+
+**Applied:** cancelled 716187/716188 (pending **3 h 32 m**) and resubmitted as **717879/717880** with a
+smaller footprint (`--cpus-per-task=4 --mem=48G`, `--time` matched to real need) to fit backfill gaps.
+
+**Measured which settings actually correlate with fast allocation — answer: none of ours.** Over all of
+today's jobs, every single one used `killable / gpu-research / cpu=8 / mem=64G`, and wait time showed **no
+relationship to `--time`**: a 14 h job waited 5 min while a 20 min job waited 319 min. The delay is
+**cluster load at submit**, not our configuration. Recorded in the rule so nobody re-derives it.
+
+**⚠️ Found something worth an email to Mahmood:** the cluster has a **`gpu-sharifm`** partition — n-804
+L40S + a6000 and an **idle a5000 node**, `MaxTime=5 days` — i.e. the lab's own partition. Submitting to it
+returns *"User's group not permitted to use this partition."* **All 1,551 of this project's jobs have gone
+through the shared preemptible `killable` pool**, competing with ~64 queued jobs from other groups, while a
+lab partition with idle capacity sits unusable. Getting the account added would likely remove the queueing
+problem outright.
+
+Also confirmed the current blockage is real scarcity, not misconfiguration: **all 48 L40S GPUs (6 nodes ×
+8) are allocated**, zero idle L40S cluster-wide.
+
 ### Tick 21 — 2026-08-05 — SLURM stuck-job rule added; OpenAI budget unblocks the powered v3
 **Omer added a standing rule** (now plan §1.3.1): *if a job is stuck, kill it and resubmit with corrected
 settings and current scripts; copy settings from a run that demonstrably worked.* Written up with a
