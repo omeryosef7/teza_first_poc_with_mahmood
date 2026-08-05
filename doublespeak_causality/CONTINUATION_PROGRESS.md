@@ -364,7 +364,66 @@ first-to-run and the only axis with demonstrated behavioral potency — is among
 
 ---
 
+### ✅ P6 Jacobian readout built — with a closed-form correctness proof
+`scripts/phase6_jacobian_readout.py` · `slurm/run_jacobian.sh` · `tests/test_jacobian_synthetic.py`
+Suite **205 → 224 passed** (+19), 13 skipped.
+
+Computes `J[L,p] = dS/d resid[L][p]` for **two strictly separate targets**:
+- **concept:** `mean logit(concept forms) − mean logit(codeword forms)` — byte-for-byte the `logit_diff`
+  metric `48_attribution_patching.py` already uses, so Jacobian / AtP / true patching all attribute the
+  **same scalar**;
+- **refusal:** `⟨hidden_states[R][-1], unit(refusal_direction_L{R-1})⟩` — numerically the same quantity
+  `phase_refusal_projection.py` reports, so the new column is directly comparable to the existing one.
+
+Reports per layer: `‖J‖`, the projection of the activation on `unit(J)`, **plus** the plain-lens columns
+(concept / refusal / signature) and `cos(unit(J), each direction)` — three lenses in one table.
+**Fits nothing** (`fits_nothing: true` in the summary): no matrix, normalization or threshold is estimated,
+so the plan's "fit on train, freeze, then test" protocol collapses to a single leak-free pass.
+Correctness is proven against the **closed-form derivative** on a toy model to `atol 1e-9` — and getting
+that proof required a `hi_prec()` helper that promotes bf16/fp16 to fp32 but never demotes fp64, because a
+blanket `.float()` silently truncated the very comparison that establishes correctness.
+Two guards worth keeping: a **Taylor gate** (perturb by `ε·unit(J)`, report measured/predicted) so a
+non-linear readout gets reported as sensitivity-only, and an explicit **degeneracy exclusion** — if the
+refusal scalar is read at `R == L+1` the gradient *is* the refusal direction and the lens becomes a
+tautology, so that layer is excluded and recorded.
+
+### ⚠️ Double-BOS inconsistency — confirmed, scoped, and NOT an invalidation
+The P6 agent found that `ds_common.forward_hidden_states` (ds_common.py:858) tokenizes with the default
+`add_special_tokens=True`. On an already-templated Llama string that prepends a **second BOS** — verified:
+`[128000, 128000]`, 38 ids vs 37.
+
+**Affected** (all go through it): `build_refusal_direction_llama.py` → *all 32 refusal directions*;
+`phase_refusal_projection.py` → REFPROJ and the item-level AUC-0.87 result;
+`phase_write_refusal_interaction.py` → the causal-decoupling result.
+**Not affected** (use `add_special_tokens=False`): `pair_common`/`ComponentCapture`, `48_attribution_patching`,
+and hence the concept directions, the doublespeak signature, and all phase3–7 causal work.
+
+**I checked the two ways this could actually bite, and it does neither:**
+1. **Off-by-one in the readout position? No.** Both the direction builder
+   (`build_refusal_direction_llama.py:77`) and the projection reader (`phase_refusal_projection.py:69`) take
+   `hs[...][0, -1, :]` — the *last* position. An extra prepended token shifts indices but the last position
+   is still the last prompt token.
+2. **Bias in the paired deltas? No.** The extra BOS is applied identically to direct/ds/neutral, so it is
+   common-mode and cancels — the Aug-2–5 audit's original judgment was right.
+
+**What genuinely remains:** refusal vectors live in a 38-token forward and concept vectors in a 37-token
+one, so the **cross-family cosine** — i.e. the `|cos(concept, refusal)| ≤ 0.153` orthogonality claim —
+compares vectors from slightly different contexts. One extra BOS is a small perturbation and that claim has
+a wide margin, so this is a **methods-section caveat, not an invalidation**. **Folded into P7**, which is
+rebuilding the directions anyway: build under `add_special_tokens=False` and report both conventions, so
+the actual impact is *measured* rather than argued. `phase6_jacobian_readout.py` defaults to `False` (the
+house convention for anything position-indexed) and exposes `--add-special-tokens true` to reproduce the
+old forward exactly; the choice is recorded in RUNMETA.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 13 — 2026-08-05 — P6 landed; double-BOS inconsistency confirmed and scoped
+P6 Jacobian readout complete with a closed-form correctness proof (suite 205 → 224). Confirmed the
+double-BOS finding myself and scoped it: no off-by-one, no bias in paired deltas, but a real
+cross-convention wrinkle in the concept-vs-refusal cosine — folded into P7 to be measured, not argued.
+α sweeps still running (ETA ~20:45); P10/P7 smokes still PENDING behind them.
 
 ### Tick 12 — 2026-08-05 — α sweeps confirmed alive by direct measurement; P6 Jacobian being written
 **Liveness measured, not assumed.** The α sweeps had written no log line for 53 min, which by the tick-8
