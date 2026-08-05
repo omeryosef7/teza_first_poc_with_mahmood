@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 107, loop tick — GPU saturated → 3rd/capstone paper figure (causal decoupling))** —
+  Trajectory still pending. Built `scripts/make_decoupling_figure.py` → `figures/causal_decoupling.png`
+  (Panel A: write-ablation drops p_concept .86→.82 clearharm / .69→.46 curated = control fires; Panel B:
+  refusal projection L30 — DS ≈ DS-write-ablated ≪ Direct, unmoved). Completes the 3-figure paper set covering
+  all six evidence levels: dissociation (1-3), depth mechanism (4-5), decoupling (6). No GPU, committed
+  summaries, Okabe-Ito. Paper assets now: contribution addendum + 3 headline figures. Figure frontier
+  well-covered — not over-producing further.
+
 - **2026-08-05 (iter 106, loop tick — GPU still saturated → 2nd paper figure (depth mechanism))** —
   Trajectory still pending (cluster GPU-saturated). Continued paper-asset production: built
   `scripts/make_refusal_depth_figure.py` → `figures/refusal_depth_mechanism.png` (Panel A: refusal projection
