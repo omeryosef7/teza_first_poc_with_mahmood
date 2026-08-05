@@ -715,6 +715,30 @@ layers our headlines actually depend on (L18, L22) both pass even at this n, whi
 
 ## Tick log (most recent first)
 
+### Tick 31 — 2026-08-06 — near-miss confirmed harmless; **P8 CORE LAUNCHED** at the corrected dose
+**The tick-30 bench overwrite caused no contamination — verified definitively, not assumed.** Rather than
+wait for the run to finish and count rows, I checked the *identities*: all **17/17** ids written so far by
+718938 are in the **v1** bench and **0** are in v3, with **0 ids v3-only**. Job 718938 read the correct
+bench. Verdict: **CLEAN**.
+
+### ⭐ P8 core launched — the measurement the whole sprint has been building toward
+**719260** (v3 clearharm, n=170) and **719261** (v3 generated, n=154), `--alphas 0.25`, full n.
+**Zero new code** — `phase_behav_refusal.py` already produces the 2×2 (direct_base / ds_base /
+direct_refabl / ds_refabl) plus the norm-matched random control at each α.
+
+Both prerequisites are finally satisfied *together*, which has not been true before now:
+1. **The dose is right.** P8.1 showed α = 1.0 saturates the design (`I_max` = +0.186) and manufactures
+   sub-additivity; **α = 0.25 gives `I_max` = +0.477**, 2.6× the headroom.
+2. **The n is right.** P8.1's interaction CI at n = 86 was **[−0.151, +0.105]** — too wide to distinguish
+   independence from a real effect. v3 gives **n = 170 + 154**, against the power table's n ≈ 324.
+
+*(A single `DSALPHAS=0.25` has no comma, so it survives `--export` — the known comma-truncation bug does
+not bite here.)*
+
+⚠️ **Analysis requirement carried from P1b:** report **per cohort as well as pooled.** `clearharm` (170,
+real ClearHarm instructions) and `generated` (154, gpt-4o-mini) are launched as **separate jobs** precisely
+so a cohort × condition interaction is detectable; if one appears, the two cannot be pooled.
+
 ### Tick 30 — 2026-08-05 — 🛑 I nearly destroyed the v1 behavioral bench; caught, restored, guarded
 **My mistake, recorded in full.** Building the v3 behavioral bench for P8, I ran
 `split_to_behavioral.py --split ...v3.json` with the **default `--out-dir data/behavioral`**. The output

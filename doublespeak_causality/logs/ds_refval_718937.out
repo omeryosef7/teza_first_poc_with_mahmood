@@ -1,0 +1,6 @@
+=== refusal-direction validation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json families=existing,clearharm ===
+    layers=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 n=20 maxnew=64 abl(a=1.0,all_layers) ind(allpos,gap)
+Wed Aug  5 11:57:08 PM IDT 2026
+n-801
+git=7c9b33d4d726d62658d92763fcaa6fa9867f4e86
+GPU ok: NVIDIA L40S

@@ -3,3 +3,4 @@ Wed Aug  5 11:19:59 PM IDT 2026
 n-802
 git=bc6534078e6a558e9278f9c20319218c6f923ac4
 GPU ok: NVIDIA L40S
+[behav-write] cohort=clearharm write_layers=[8, 9, 10, 11] decode_safe=True arms=['baseline', 'write_abl_prefill', 'rand_pos_abl_prefill', 'write_abl_decodesafe', 'rand_pos_abl_decodesafe'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/behav_write_clearharm_L8_9_10_11_ds_20260805_232238_718938
