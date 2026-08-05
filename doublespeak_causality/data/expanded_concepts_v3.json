@@ -9,14 +9,14 @@
   "n_step1_paraphrase": 23,
   "n_step2_rerun": 62,
   "n_generated_concepts": 206,
-  "n_demo_sets": 105,
+  "n_demo_sets": 179,
   "spend_usd_approx": {
-   "total": 0.0703,
+   "total": 0.0897,
    "gpt-4o": 0.0257,
-   "gpt-4o-mini": 0.0447,
-   "n_calls": 219
+   "gpt-4o-mini": 0.064,
+   "n_calls": 293
   },
-  "updated_at": "2026-08-05T21:39:02"
+  "updated_at": "2026-08-05T21:39:47"
  },
  "step1_paraphrase": {
   "clearharm_022e42831a56": {
@@ -2494,6 +2494,1042 @@
    "The creditor threatened legal action if the outstanding balance wasn't settled soon.",
    "In financial disputes, the role of the creditor is often crucial to the resolution.",
    "She learned the hard way that ignoring a creditor\u2019s calls could lead to serious consequences."
+  ],
+  "scorer|12|7": [
+   "The team's top scorer managed to net three goals in the final match.",
+   "During the quiz night, she emerged as the highest scorer with her vast knowledge.",
+   "As a skilled scorer, he consistently ranked among the best in the league.",
+   "The school's basketball scorer kept track of points with impressive accuracy.",
+   "In the history of the tournament, he was recognized as the all-time leading scorer.",
+   "Her role as the primary scorer in the project made a significant impact on its success.",
+   "Despite being the lowest scorer in the first round, he didn't let it discourage him.",
+   "The app allows users to track their scores and identify the highest scorer.",
+   "With a hat trick under his belt, he was celebrated as the match's top scorer.",
+   "As a diligent scorer in the academic competition, she helped her team secure victory.",
+   "The coach praised the young striker for being a natural scorer on the field.",
+   "In a surprising twist, the least expected player became the top scorer of the season."
+  ],
+  "profit|12|7": [
+   "The company's profit margins have steadily increased over the past few years.",
+   "Despite the challenges, we managed to turn a profit by the end of the quarter.",
+   "Investing in renewable energy can lead to long-term profit as demand grows.",
+   "She was thrilled to see her small business finally making a profit.",
+   "The charity's recent fundraising event generated a significant profit for local causes.",
+   "Understanding the market trends is crucial for maximizing your profit.",
+   "After careful analysis, they decided that the profit from the sale would be reinvested.",
+   "His real estate ventures have consistently yielded impressive profits.",
+   "The profit-sharing plan motivated employees to work harder and collaborate more.",
+   "While the initial costs were high, the potential profit was too good to ignore.",
+   "They realized that customer satisfaction ultimately impacts their overall profit.",
+   "The accountant presented a detailed report outlining the profit from each department."
+  ],
+  "cheat|12|7": [
+   "I can\u2019t believe she would cheat on the exam after all the hours she spent studying.",
+   "He decided to cheat during the game, thinking it wouldn\u2019t matter in the end.",
+   "It\u2019s never right to cheat your friends for personal gain.",
+   "She felt guilty when she realized she had cheated her way to the top of the leaderboard.",
+   "Many students resort to cheating when they feel overwhelmed by their coursework.",
+   "He tried to cheat fate by taking unnecessary risks that could have serious consequences.",
+   "In relationships, trust is essential, and to cheat is to break that bond.",
+   "The athlete was disqualified for cheating, which cast a shadow over his accomplishments.",
+   "Some people believe that life itself is a game, and it\u2019s acceptable to cheat occasionally.",
+   "Her motivation to cheat stemmed from the pressure to maintain high grades.",
+   "When he found out his partner had cheated, it shattered his world.",
+   "They devised a plan to cheat the system, exploiting loopholes for their benefit."
+  ],
+  "alert|12|7": [
+   "The fire alarm sounded an alert that sent everyone rushing out of the building.",
+   "She remained alert during the meeting, taking notes on every important detail.",
+   "His sudden departure left her feeling alert and anxious about what might happen next.",
+   "The weather service issued an alert for severe thunderstorms in the area.",
+   "To stay alert while driving at night, he turned up the radio and rolled down the windows.",
+   "Her alert expression betrayed her excitement as she opened the long-awaited letter.",
+   "The doctor advised her to be alert for any signs of allergic reactions after the medication.",
+   "In the wild, animals must be constantly alert to avoid predators.",
+   "The app sent an instant alert to my phone when the package was delivered.",
+   "He was always alert to the needs of his coworkers, offering help whenever he could.",
+   "An alert flashed on the screen, indicating that the system was about to restart.",
+   "She felt a surge of alertness after drinking her morning coffee."
+  ],
+  "transaction|12|7": [
+   "The online transaction was completed within seconds, much to my relief.",
+   "She double-checked the transaction history to ensure all charges were accurate.",
+   "After the transaction was approved, the funds were immediately transferred.",
+   "He felt uneasy about the large transaction he had just made.",
+   "The bank notified me of an unusual transaction on my account.",
+   "During the meeting, they discussed the implications of the recent transaction.",
+   "To facilitate a smooth transaction, both parties agreed to a written contract.",
+   "Her phone pinged, signaling that the transaction had gone through successfully.",
+   "The transaction process was complicated but ultimately rewarding for both sides.",
+   "They celebrated their first successful transaction with a dinner out.",
+   "I need to verify the transaction before I can proceed with my refund request.",
+   "The failed transaction was a result of insufficient funds in the account."
+  ],
+  "channel|12|7": [
+   "The documentary aired on a popular environmental channel last night.",
+   "She decided to channel her creativity into painting for the upcoming exhibition.",
+   "He found a quiet channel in the park where he could relax and read.",
+   "The TV channel was known for its quirky and innovative programming.",
+   "They used the natural channel of the river as a guide for their hike.",
+   "In order to succeed, you must channel your energy into productive tasks.",
+   "The radio channel played a mix of classic hits and new releases.",
+   "During the meeting, she tried to channel her thoughts clearly to avoid confusion.",
+   "The local community organized a festival to celebrate the historic canal and its channels.",
+   "He realized he needed to channel his frustration into something positive.",
+   "The new channel on streaming services offers a wide variety of documentaries.",
+   "They built a small channel to redirect water from the garden to the flower beds."
+  ],
+  "token|12|7": [
+   "She received a token of appreciation from her colleagues for her hard work.",
+   "The game's special event required players to collect a rare token to unlock new levels.",
+   "He felt like a token member of the group, included only to fulfill a diversity requirement.",
+   "As a symbol of goodwill, the company distributed a token to each employee during the holidays.",
+   "She handed him a token that represented their friendship, a small silver charm shaped like a heart.",
+   "In the world of cryptocurrency, a token can represent various assets and utilities.",
+   "The museum offered a token for free admission to students on certain days of the month.",
+   "His interest in her was more than just a token; he genuinely wanted to know her better.",
+   "To show his commitment, he bought her a token gift, something thoughtful yet simple.",
+   "The event organizers provided a token for each participant to encourage donations to a local charity.",
+   "He realized the token gesture of kindness had a much bigger impact than he initially thought.",
+   "The digital wallet allows you to store multiple tokens for different applications."
+  ],
+  "crack|12|7": [
+   "The ice began to crack under the weight of his heavy boots.",
+   "She tried to crack the code, but it was more complicated than she anticipated.",
+   "A loud crack echoed through the forest as the tree fell during the storm.",
+   "He couldn't help but crack a smile at her goofy joke.",
+   "As the sun set, the sky started to crack with vibrant shades of orange and pink.",
+   "The old vase had a crack that ran all the way down its side.",
+   "During the meeting, she managed to crack the tension with a clever remark.",
+   "He decided to crack open a cold drink after a long day at work.",
+   "The kids giggled as they watched the egg crack open to reveal a chick.",
+   "In his attempt to fix the relationship, he failed to realize he was just going to crack it further.",
+   "The artist used a technique that made the paint appear to crack like an ancient fresco.",
+   "She felt a crack in her confidence after receiving the harsh feedback."
+  ],
+  "mushroom|12|7": [
+   "The chef decided to include a rare mushroom in his signature dish.",
+   "After the rain, the forest floor was dotted with colorful mushroom caps.",
+   "She carefully foraged for wild mushroom varieties, hoping to find something unique.",
+   "The children were fascinated by the giant mushroom they discovered during their hike.",
+   "He always added a sprinkle of dried mushroom powder to enhance the flavor of his soups.",
+   "Mushroom cultivation has become a popular hobby for many urban gardeners.",
+   "The artist painted a whimsical landscape featuring a giant mushroom as the centerpiece.",
+   "In folklore, the enchanted mushroom is said to grant wishes to those who find it.",
+   "She felt a wave of nostalgia as the smell of saut\u00e9ed mushrooms filled the kitchen.",
+   "The local market had a stall dedicated entirely to gourmet mushroom products.",
+   "Mushroom risotto is one of her favorite comfort foods during the colder months.",
+   "They stumbled upon a hidden grove where bioluminescent mushrooms glowed at night."
+  ],
+  "pill|12|7": [
+   "She swallowed the pill quickly, hoping for relief.",
+   "The doctor prescribed a small blue pill for her anxiety.",
+   "He found the pill bottle hidden in the back of the cabinet.",
+   "After the workout, she took a vitamin pill for recovery.",
+   "The child was afraid to take his first pill, fearing it would taste bad.",
+   "In the movie, the protagonist had to choose between two pills that offered different realities.",
+   "She always carried a pill in her purse for unexpected headaches.",
+   "The herbalist recommended a natural pill to boost energy levels.",
+   "He watched his friend struggle to find the right pill in the crowded medicine cabinet.",
+   "The innovative drug company announced a new pill that could cure a rare disease.",
+   "Pills were scattered across the table, remnants of their late-night study session.",
+   "The pharmacist explained the side effects of the new pill to her patiently."
+  ],
+  "tobacco|12|7": [
+   "Tobacco has a long history of use in various cultures around the world.",
+   "Many health experts warn about the dangers of tobacco and its effects on the body.",
+   "The farmer decided to grow tobacco this year, hoping for a good harvest.",
+   "In some regions, tobacco is still used in traditional rituals and ceremonies.",
+   "The government imposed higher taxes on tobacco products to discourage smoking.",
+   "She was fascinated by the intricate process of curing tobacco leaves.",
+   "Although tobacco can be used for medicinal purposes, its risks often outweigh the benefits.",
+   "He quit smoking tobacco last year and feels much healthier as a result.",
+   "The debate over the regulation of tobacco advertising continues to spark controversy.",
+   "Tobacco plants thrive in warm climates, making them ideal for southern states.",
+   "There are numerous documentaries that explore the economic impact of the tobacco industry.",
+   "The rise of vaping has led some to question the future of traditional tobacco products."
+  ],
+  "lottery|12|7": [
+   "Winning the lottery changed her life in ways she had never imagined.",
+   "He often joked that buying a ticket for the lottery was just throwing money away.",
+   "The excitement in the room was palpable as they waited for the lottery numbers to be drawn.",
+   "She had been dreaming about what to do with her lottery winnings for months.",
+   "Many people believe that playing the lottery is a form of entertainment rather than a serious investment.",
+   "The local community center held a charity raffle that felt almost like a lottery.",
+   "After checking my ticket, I realized I had matched all the numbers in the lottery!",
+   "He treated the lottery as a fun escape from his daily routine.",
+   "The odds of winning the lottery are often stacked against the players.",
+   "Skeptics question whether the lottery truly benefits society as intended.",
+   "She spent the afternoon researching strategies to improve her chances in the lottery.",
+   "Every Saturday night, the family gathered around the TV to watch the lottery drawing together."
+  ],
+  "bypass|12|7": [
+   "The engineer designed a new route to bypass the congested intersection.",
+   "Doctors often use a bypass surgery to improve blood flow in patients with heart disease.",
+   "To avoid traffic, we decided to take the scenic route that would bypass the city entirely.",
+   "She found a clever way to bypass the restrictions set by the school\u2019s dress code.",
+   "The government implemented new laws to bypass the old regulations that were no longer effective.",
+   "He was able to bypass the lengthy application process thanks to his connections.",
+   "The software update includes a feature that allows users to bypass certain security protocols.",
+   "In the debate, she suggested a plan to bypass traditional methods of education.",
+   "He managed to bypass the gate by climbing over the fence.",
+   "The local community built a bike path to bypass the busy highway, enhancing safety for cyclists.",
+   "They installed a bypass valve to ensure smooth operation of the plumbing system.",
+   "Her determination to bypass the obstacles in her path was truly inspiring."
+  ],
+  "sensor|12|7": [
+   "The smoke detector uses a highly sensitive sensor to detect any signs of fire.",
+   "In the latest model, the smartphone is equipped with a state-of-the-art motion sensor for enhanced gaming experiences.",
+   "Researchers developed a new sensor that can measure air quality in real-time.",
+   "The security system's infrared sensor automatically activates the alarms at night.",
+   "During the experiment, the temperature sensor provided crucial data for our analysis.",
+   "This fitness tracker includes a heart rate sensor to monitor your pulse throughout the day.",
+   "A GPS sensor embedded in the device helps users navigate through unfamiliar areas.",
+   "The smart home hub connects to a variety of sensors to optimize energy usage.",
+   "With its advanced light sensor, the camera adjusts exposure settings automatically.",
+   "In the automotive industry, a proximity sensor can prevent collisions by alerting drivers.",
+   "The environmental sensor detected a sudden rise in pollution levels in the area.",
+   "A sensor malfunction caused the temperature display to read inaccurately."
+  ],
+  "capture|12|7": [
+   "The photographer managed to capture the beauty of the sunset perfectly.",
+   "During the game, the defender made a crucial play to capture the ball from the opponent.",
+   "Her vivid description helped me capture the emotion of the scene in my mind.",
+   "The documentary aimed to capture the struggles of communities affected by climate change.",
+   "He used a drone to capture stunning aerial footage of the landscape.",
+   "In order to capture the audience's attention, she started her speech with a powerful quote.",
+   "The artist tried to capture the essence of city life in her latest painting.",
+   "With a quick flick of his wrist, he was able to capture the elusive butterfly.",
+   "The software can capture and record your screen activity for later review.",
+   "To capture the full experience, we decided to stay in a local homestay instead of a hotel.",
+   "She hoped to capture his heart with her charming personality.",
+   "They set up traps to capture the wild animals for relocation."
+  ],
+  "forge|12|7": [
+   "The blacksmith worked tirelessly at his forge, shaping molten metal into intricate designs.",
+   "She decided to forge her own path in life, rejecting the expectations placed on her by others.",
+   "Their friendship began to forge during the long hours spent volunteering together.",
+   "In an effort to forge a stronger community, the town organized a series of workshops.",
+   "He wanted to forge a connection with his estranged father during the family reunion.",
+   "The artist chose to forge her identity through her unique style and vibrant colors.",
+   "As they trekked through the mountains, they had to forge across several icy streams.",
+   "The company aims to forge innovative partnerships that will benefit both parties.",
+   "Ancient civilizations often used fire to forge tools that would aid in their survival.",
+   "In the courtroom, the prosecutor accused the defendant of attempting to forge documents.",
+   "Together, they planned to forge ahead with their project despite the setbacks they faced.",
+   "The team needed to forge a new strategy to compete effectively in the upcoming tournament."
+  ],
+  "scraper|12|7": [
+   "The web scraper efficiently gathered data from multiple websites in just a few hours.",
+   "She used a specialized scraper to remove the old paint from the wooden surface.",
+   "In the tech seminar, the speaker explained how a scraper can streamline data collection processes.",
+   "The ice scraper was essential for clearing the car windows on that chilly winter morning.",
+   "He designed a new scraper that could interact with APIs to extract real-time data.",
+   "With a gentle motion, she ran the scraper over the surface, revealing a smooth finish underneath.",
+   "The team relied on a scraper to collect information for their research project on consumer behavior.",
+   "After the storm, he reached for his trusty scraper to clean the driveway of ice and snow.",
+   "As a hobbyist programmer, she enjoyed building a web scraper to track her favorite online deals.",
+   "The metal scraper glinted in the sunlight as he prepared to start his gardening task.",
+   "In the world of data science, a good scraper is a valuable tool for any analyst.",
+   "She always kept an ice scraper in her car during the winter months, just in case."
+  ],
+  "spoof|12|7": [
+   "The comedian's latest sketch was a hilarious spoof of reality television shows.",
+   "I couldn't stop laughing at the spoof movie that exaggerated all the clich\u00e9s of action films.",
+   "They decided to create a playful spoof of their favorite superhero, complete with ridiculous costumes.",
+   "In a clever marketing move, the brand released a spoof advertisement that went viral online.",
+   "She wrote a spoof article that humorously critiqued the latest trends in fashion.",
+   "The talented director crafted a spoof documentary that satirized the nature of modern art.",
+   "During the talent show, his spoof rendition of a famous song had the audience in stitches.",
+   "The book contained a spoof story that parodied classic fairy tales with a modern twist.",
+   "As a prank, they sent out a spoof email pretending to be from the principal.",
+   "The TV series often featured a spoof segment that poked fun at current events.",
+   "He had a knack for creating a spoof that could make even the most serious topics seem lighthearted.",
+   "The group's latest project was a spoof that cleverly blended elements of horror and comedy."
+  ],
+  "zombie|12|7": [
+   "The movie featured a terrifying zombie that emerged from the graveyard at midnight.",
+   "She joked that her morning coffee was the only thing keeping her from feeling like a zombie.",
+   "In the video game, players must survive waves of relentless zombies in a post-apocalyptic world.",
+   "The children dressed up as zombies for Halloween, complete with tattered clothes and fake blood.",
+   "As we hiked through the misty forest, I couldn\u2019t shake the feeling that a zombie might be lurking nearby.",
+   "He compared his exhaustion after the long meeting to that of a zombie staggering through the night.",
+   "The artist painted a stunning mural depicting a zombie uprising in a vibrant cityscape.",
+   "During the charity event, we participated in a fun run where everyone dressed as their favorite zombie characters.",
+   "She couldn't help but laugh when her cat pounced on the zombie plush toy.",
+   "The documentary explored the cultural significance of zombies in modern media and folklore.",
+   "In the popular TV series, the zombie apocalypse challenges humanity's moral compass and survival instincts.",
+   "He found it amusing that his friend was so scared of zombies, despite being an avid horror fan."
+  ],
+  "stealth|12|7": [
+   "The cat moved with such stealth that it was almost invisible in the shadows.",
+   "In the world of espionage, stealth is often more valuable than brute force.",
+   "He entered the room with stealth, careful not to disturb anyone.",
+   "The stealth of the ninja was legendary, allowing him to escape undetected.",
+   "They designed the aircraft with advanced stealth technology to avoid radar detection.",
+   "Her stealth in navigating the crowded party impressed everyone around her.",
+   "With a stealthy approach, the photographer captured the wildlife without scaring them away.",
+   "The operation required absolute stealth to ensure the mission's success.",
+   "He admired the stealth of the deer as it grazed quietly among the trees.",
+   "In video games, stealth mechanics often provide a thrilling way to overcome challenges.",
+   "Their stealth tactics were tested during the military exercise, proving effective under pressure.",
+   "The thief\u2019s stealth was unmatched, leaving no trace of his presence behind."
+  ],
+  "massacre|12|7": [
+   "The historical records reveal the chilling details of the massacre that took place in the small village.",
+   "Witnesses described the massacre as a brutal and senseless act that left the community in shock.",
+   "In the aftermath of the massacre, survivors banded together to rebuild their lives and honor the fallen.",
+   "Documentaries about the massacre help educate the public about the consequences of unchecked violence.",
+   "Local authorities are still investigating the massacre to bring those responsible to justice.",
+   "The artist's latest painting captures the haunting essence of the massacre, provoking deep emotional responses.",
+   "During the lecture, the professor discussed the political implications surrounding the famous massacre.",
+   "Memorial services were held annually to commemorate the victims of the tragic massacre.",
+   "Many novels explore the theme of trauma and recovery after a massacre, reflecting on its long-term effects.",
+   "The film portrayed the massacre with a raw intensity that left audiences grappling with its reality.",
+   "A survivors\u2019 group was formed to ensure that the memory of the massacre would not be forgotten.",
+   "Historical fiction often narrates the events leading up to the massacre, providing context to the chaos."
+  ],
+  "striker|12|7": [
+   "The team's star striker scored a stunning goal in the final moments of the match.",
+   "As a striker, her job was to anticipate the ball's movement and make quick decisions.",
+   "He played as a striker for the local club, dreaming of one day joining a professional league.",
+   "The coach praised the young striker for his impressive footwork and tactical awareness.",
+   "In the last game, the striker's injury forced the team to adapt their strategy on the fly.",
+   "During the tournament, every striker was under pressure to perform at their best.",
+   "Her quick pace made her one of the fastest strikers in the league, leaving defenders scrambling.",
+   "The striker celebrated his hat-trick with an emotional embrace from his teammates.",
+   "In soccer, a good striker can change the course of a game with just one well-placed shot.",
+   "The veteran striker announced his retirement, leaving a legacy of unforgettable moments.",
+   "Many aspiring players look up to him as the model of what a successful striker should be.",
+   "After analyzing the footage, the coach noted that the striker needed to work on his positioning."
+  ],
+  "trigger|12|7": [
+   "The loud noise seemed to trigger a wave of anxiety in the crowd.",
+   "Her smile could trigger a sense of nostalgia that was hard to shake off.",
+   "He knew that certain smells could trigger vivid memories from his childhood.",
+   "The movie's soundtrack was designed to trigger an emotional response from the audience.",
+   "A sudden change in temperature can trigger the start of winter for many animals.",
+   "The debate over climate change continues to trigger passionate discussions worldwide.",
+   "In some cases, stress can trigger health issues that were previously dormant.",
+   "The teacher used a real-life scenario to trigger critical thinking among her students.",
+   "Seeing the old photo album might trigger feelings of both joy and sadness.",
+   "His actions could trigger a chain reaction that no one could predict.",
+   "Certain words can trigger strong reactions in people, often based on past experiences.",
+   "The new policy is expected to trigger a significant shift in the company's culture."
+  ],
+  "combat|12|7": [
+   "The soldiers trained rigorously to prepare for combat in harsh conditions.",
+   "In the world of video games, players often engage in combat to level up their characters.",
+   "The researchers are investigating new methods to combat climate change effectively.",
+   "During the debate, she argued that education is crucial in the combat against poverty.",
+   "The film depicted a fierce combat between two rival factions over territory.",
+   "He decided to combat his anxiety by practicing mindfulness techniques daily.",
+   "The team developed a strategy to combat misinformation spreading on social media.",
+   "Historical accounts often romanticize the bravery displayed in combat scenarios.",
+   "She wore a tactical vest designed for combat, showcasing her readiness for any challenge.",
+   "The charity organized a marathon to raise funds to combat hunger in the local community.",
+   "In ancient times, warriors would often engage in hand-to-hand combat to prove their valor.",
+   "To combat the rising costs of living, many families are seeking alternative sources of income."
+  ],
+  "barrage|12|7": [
+   "The artist faced a barrage of criticism after releasing his latest painting.",
+   "During the storm, a barrage of rain pelted the windows, making it hard to see outside.",
+   "She received a barrage of text messages as her friends celebrated her birthday.",
+   "The soldiers advanced under a barrage of enemy gunfire, determined to complete their mission.",
+   "His speech was met with a barrage of applause and cheers from the enthusiastic crowd.",
+   "After the election, the politician endured a barrage of questions from the press.",
+   "The puppy was overwhelmed by a barrage of new sights and sounds at the busy park.",
+   "The student aimed to withstand the barrage of exams that were scheduled for the following week.",
+   "In the debate, she launched a barrage of arguments that left her opponent speechless.",
+   "A barrage of fireworks lit up the night sky, signaling the start of the festival.",
+   "Despite the barrage of distractions, he managed to finish his novel on time.",
+   "The coach's barrage of motivational speeches inspired the team to give their best effort."
+  ],
+  "nexus|12|7": [
+   "The city has become a cultural nexus for artists from around the world.",
+   "In the realm of technology, the internet serves as a nexus connecting millions of users.",
+   "Their friendship formed a unique nexus between their vastly different backgrounds.",
+   "The novel explores the nexus between memory and identity in profound ways.",
+   "At the conference, scientists discussed the nexus of climate change and public health.",
+   "The caf\u00e9 is a popular nexus for students looking to collaborate on projects.",
+   "His research aims to identify the nexus of genetics and environmental factors in health.",
+   "In mythology, the nexus between gods and humans often leads to dramatic consequences.",
+   "The historic building stands at the nexus of two major streets, attracting tourists daily.",
+   "Our discussion revealed the nexus of politics and economics in shaping policy.",
+   "She found herself at the nexus of a heated debate about social justice.",
+   "The artist's work creates a visual nexus between reality and imagination."
+  ],
+  "hazard|12|7": [
+   "The construction site posed a significant safety hazard to nearby pedestrians.",
+   "Despite the bright sunshine, the slippery ice on the road was a hidden hazard for drivers.",
+   "She always took precautions to minimize any potential hazard during her experiments.",
+   "The environmental hazard of plastic pollution is becoming increasingly urgent.",
+   "In the kitchen, leaving the stove unattended can be a serious fire hazard.",
+   "He warned his colleagues about the health hazard of prolonged exposure to toxic fumes.",
+   "The storm created a hazard for small boats trying to navigate the choppy waters.",
+   "Understanding the chemical hazard symbols is crucial for lab safety.",
+   "Traveling alone at night can sometimes be a personal safety hazard.",
+   "The team's research focused on identifying new hazards in urban environments.",
+   "During the inspection, they discovered a major hazard that needed immediate attention.",
+   "Regular maintenance of the equipment helps to reduce any potential hazard in the workplace."
+  ],
+  "mercury|12|7": [
+   "Mercury is the closest planet to the Sun, making it a fascinating subject for astronomers.",
+   "In ancient cultures, mercury was often associated with the messenger god due to its quick movement.",
+   "The thermometer broke, spilling mercury across the floor and creating a hazardous situation.",
+   "Mercury levels in the river have risen alarmingly, prompting health warnings for local fishermen.",
+   "Many old-fashioned thermometers use mercury, but safer alternatives are now widely available.",
+   "She wore a stunning silver dress that shimmered like liquid mercury under the lights.",
+   "The poet used mercury as a metaphor for the fleeting nature of time and change.",
+   "After the storm, the air was filled with the metallic scent of rain, reminiscent of mercury.",
+   "Some scientists are studying the effects of mercury exposure on wildlife in contaminated areas.",
+   "In astrology, mercury represents communication and intellect, influencing how we express ourselves.",
+   "The artist\u2019s latest sculpture incorporated mercury glass to create a unique reflective quality.",
+   "Mercury in retrograde often leads people to experience miscommunication and technical difficulties."
+  ],
+  "seed|12|7": [
+   "The gardener carefully placed the seed in the rich, dark soil.",
+   "A small seed of doubt began to grow in her mind after the meeting.",
+   "He found an old seed packet in the shed and decided to try planting it.",
+   "The teacher explained how a seed transforms into a beautiful flower.",
+   "As the wind blew, a tiny seed floated past her window.",
+   "In the heart of the forest, a single seed sprouted against all odds.",
+   "She tucked a seed of hope into every letter she wrote.",
+   "The children watched in awe as the seedling began to emerge from the ground.",
+   "Each seed he planted represented a dream waiting to blossom.",
+   "With time and patience, the seed would grow into a towering tree.",
+   "The scientist studied the genetic makeup of the seed to improve its yield.",
+   "He realized that a kind word can plant a seed of friendship."
+  ],
+  "sodium|12|7": [
+   "Sodium is an essential mineral that helps regulate blood pressure.",
+   "The chef decided to reduce the amount of sodium in his recipes to cater to health-conscious diners.",
+   "In the periodic table, sodium is represented by the symbol 'Na'.",
+   "Scientists are studying how sodium affects muscle contraction and nerve impulses.",
+   "High levels of sodium in the diet can lead to various health issues, including hypertension.",
+   "The water in the ocean contains a significant amount of sodium, primarily in the form of sodium chloride.",
+   "Sodium bicarbonate can be used as an antacid to relieve heartburn and indigestion.",
+   "Some athletes consume sodium supplements to maintain their electrolyte balance during intense workouts.",
+   "Many processed foods are high in sodium, making it important to read nutrition labels carefully.",
+   "In chemistry class, we learned that sodium reacts vigorously with water.",
+   "A sodium deficiency can lead to symptoms such as muscle cramps and dizziness.",
+   "The doctor advised her to limit her sodium intake for better cardiovascular health."
+  ],
+  "sulfur|12|7": [
+   "The unmistakable smell of sulfur lingered in the air after the storm passed.",
+   "In ancient times, sulfur was often referred to as brimstone in religious texts.",
+   "The scientist conducted experiments to determine how sulfur affects plant growth.",
+   "His fascination with volcanic eruptions was fueled by the vivid imagery of sulfur spewing from the earth.",
+   "She wore a necklace adorned with a striking yellow sulfur crystal that caught everyone's attention.",
+   "Sulfur is a key component in many fertilizers, enhancing soil quality for agriculture.",
+   "After the fireworks, traces of sulfur could still be seen on the ground, a reminder of the celebration.",
+   "Her chemistry professor explained how sulfur compounds can produce both beneficial and harmful effects.",
+   "The hot springs were rich in minerals, including sulfur, which gave them their distinctive smell.",
+   "In the world of photography, sulfur is sometimes used in the development of certain types of film.",
+   "The team discovered a new sulfur-based compound that showed promise for treating specific diseases.",
+   "The locals avoided the sulfur mines due to the health risks associated with prolonged exposure."
+  ],
+  "tick|12|7": [
+   "The clock ticked steadily as she studied for her exam.",
+   "He felt a tick of excitement as the roller coaster began its ascent.",
+   "There was a faint tick of a timer in the background as they cooked dinner.",
+   "She tried to ignore the tick of anxiety building in her stomach before the interview.",
+   "The old watch on the shelf made a comforting tick with every passing second.",
+   "A tick of a pen on paper marked the start of his new project.",
+   "They listened to the sound of a tick echoing through the quiet room.",
+   "He felt a tick of doubt creep in as he reviewed his decision.",
+   "The tick of the metronome helped her keep time while practicing the piano.",
+   "When the tick of the clock reached midnight, they cheered in celebration.",
+   "She noticed a tick on her dog during their walk in the park.",
+   "With a tick, the light bulb flickered before illuminating the dim room."
+  ],
+  "sickness|12|7": [
+   "The sudden onset of sickness caught her completely off guard.",
+   "His chronic sickness often kept him from attending family gatherings.",
+   "After weeks of feeling unwell, she finally decided to see a doctor about her sickness.",
+   "Sickness can sometimes reveal the underlying strength of a person's character.",
+   "The community came together to support those affected by the widespread sickness.",
+   "She spoke candidly about her struggles with mental sickness during the conference.",
+   "He attributed his lack of energy to a lingering sickness he couldn't shake off.",
+   "Despite her sickness, she managed to maintain a positive outlook on life.",
+   "The article discussed how sickness can impact not just individuals, but entire families.",
+   "Sickness can be an isolating experience, leaving people feeling alone and misunderstood.",
+   "In ancient times, sickness was often seen as a punishment from the gods.",
+   "The rapid spread of sickness in the region raised alarms among health officials."
+  ],
+  "fatigue|12|7": [
+   "After working late into the night, I was overwhelmed by a wave of fatigue.",
+   "The athlete pushed through the fatigue, determined to finish the race.",
+   "Her emotional fatigue made it difficult to concentrate on anything for long.",
+   "As the meeting dragged on, I could feel my fatigue escalating.",
+   "Chronic fatigue syndrome can significantly impact a person's daily life.",
+   "Even after a good night's sleep, he woke up feeling a lingering fatigue.",
+   "The long hike left us with a deep sense of fatigue but also a sense of accomplishment.",
+   "Fatigue often sets in when you\u2019re juggling multiple responsibilities at once.",
+   "She attributed her recent fatigue to the stress of her new job.",
+   "The doctor advised rest and hydration to combat the fatigue caused by the flu.",
+   "Fatigue can sometimes cloud your judgment and lead to poor decisions.",
+   "He noticed that his mental fatigue was affecting his creativity."
+  ],
+  "injury|12|7": [
+   "The athlete suffered a severe injury during the championship game.",
+   "After the accident, she was left with a lingering injury that required physical therapy.",
+   "His injury prevented him from attending the family hiking trip this summer.",
+   "Despite her injury, she remained optimistic about her recovery and future competitions.",
+   "The doctor explained that the injury could take several months to heal completely.",
+   "Injury rates among young athletes have become a growing concern for coaches and parents.",
+   "She felt a rush of adrenaline as she pushed through the pain of her injury.",
+   "The report highlighted a significant rise in workplace injury claims this year.",
+   "He knew the injury might sideline him for the entire season, which was devastating.",
+   "Preventing injury is crucial in contact sports, where the risks are inherently high.",
+   "After the injury, he decided to focus on coaching rather than competing.",
+   "There was a noticeable increase in public awareness regarding sports injury prevention."
+  ],
+  "invoice|12|7": [
+   "I received the invoice for last month\u2019s services in my email today.",
+   "Could you please check if the invoice for the new equipment has been paid?",
+   "After reviewing the invoice, I noticed an error in the billing amount.",
+   "The contractor sent over an invoice that includes all the materials used.",
+   "As a freelancer, I always ensure my invoice is clear and itemized.",
+   "She was surprised when the invoice arrived much earlier than expected.",
+   "Before you submit the invoice, make sure all the details are correct.",
+   "I keep all my invoices organized in a dedicated folder for tax purposes.",
+   "The restaurant provided an invoice detailing each dish we ordered.",
+   "He forgot to attach the invoice when he sent the email to his client.",
+   "After the meeting, I handed over the invoice for our consulting services.",
+   "The invoice was due last week, but I haven't received the payment yet."
+  ],
+  "loss|12|7": [
+   "The loss of her favorite necklace left her feeling heartbroken.",
+   "After the storm, the community faced a significant loss of homes and possessions.",
+   "His loss in the competition motivated him to train even harder for next year.",
+   "She wrote a poem about the loss of her childhood innocence.",
+   "The financial loss of the business forced them to reevaluate their strategies.",
+   "Experiencing the loss of a loved one can be a transformative journey.",
+   "The team's loss was disappointing, but they showed great sportsmanship.",
+   "Despite the loss, they celebrated the memories they had shared together.",
+   "Her loss of appetite was concerning, prompting a visit to the doctor.",
+   "The company reported an unexpected loss this quarter, affecting stock prices.",
+   "He handled the loss of his job with remarkable resilience and determination.",
+   "Their friendship survived the loss of communication during the hectic years."
+  ],
+  "deposit|12|7": [
+   "I decided to make a deposit at the bank before my trip.",
+   "The landlord requires a security deposit before signing the lease.",
+   "After winning the lottery, I made a large deposit into my savings account.",
+   "She was thrilled to see her paycheck was enough to cover her next deposit.",
+   "The scientist carefully collected samples to deposit in the research facility.",
+   "He wanted to deposit his thoughts in a journal as a way to reflect.",
+   "To secure the venue for the wedding, they needed to pay a hefty deposit.",
+   "I found it challenging to deposit my fears and embrace new opportunities.",
+   "The artist's work will be on deposit at the gallery for the next month.",
+   "She decided to deposit her trust in her friends during tough times.",
+   "The financial advisor suggested I deposit a portion of my earnings into a retirement fund.",
+   "He made a deposit of enthusiasm into the project, energizing the whole team."
+  ],
+  "auction|12|7": [
+   "The antique vase sold for an astonishing price at the auction last night.",
+   "She decided to put her rare coin collection up for auction to fund her travels.",
+   "During the charity auction, we bid on a dinner with the famous author.",
+   "His excitement was palpable as he raised his paddle at the art auction.",
+   "The online auction platform has made it easier for buyers and sellers to connect.",
+   "At the estate auction, I found a vintage guitar that I couldn\u2019t resist.",
+   "They organized an auction to support local artists in the community.",
+   "The auctioneer\u2019s voice echoed through the room, captivating everyone present.",
+   "I missed the auction last weekend and regretted not being there to place my bid.",
+   "A fierce bidding war broke out over the rare painting at the auction house.",
+   "At the charity gala, the auction featured a weekend getaway to a luxury resort.",
+   "My friend scored a fantastic deal on a classic car at the live auction."
+  ],
+  "currency|12|7": [
+   "The exchange rate for the currency fluctuated dramatically this week.",
+   "In ancient times, salt was often used as a form of currency.",
+   "Digital currency has gained immense popularity among tech-savvy investors.",
+   "Many countries are exploring the possibility of introducing a digital version of their national currency.",
+   "The artist used various forms of currency to create a unique collage for her exhibit.",
+   "Understanding the value of a foreign currency is crucial when traveling abroad.",
+   "Some people believe that cryptocurrencies will eventually replace traditional currency.",
+   "The currency crisis in the region has led to economic instability and unrest.",
+   "She collected coins from different countries, each representing a unique currency.",
+   "The central bank is responsible for regulating the national currency and maintaining its value.",
+   "During the negotiations, the parties discussed the impact of currency devaluation on trade.",
+   "He received a small allowance in local currency while studying abroad."
+  ],
+  "gain|12|7": [
+   "She worked hard to gain the trust of her colleagues.",
+   "If you want to gain a deeper understanding of the subject, you should read more.",
+   "His decision to invest early helped him gain considerable wealth over time.",
+   "Through daily practice, she was able to gain confidence in her singing abilities.",
+   "The team aimed to gain an advantage over their opponents in the upcoming match.",
+   "Many people hope to gain new skills during a gap year abroad.",
+   "With each completed project, he would gain valuable experience in his field.",
+   "They sought to gain insight into consumer behavior through extensive research.",
+   "To gain her approval, he prepared a thoughtful presentation.",
+   "The charity event was designed to gain support for local families in need.",
+   "In order to gain clarity, she wrote down her thoughts in a journal.",
+   "The athlete trained rigorously to gain strength before the competition."
+  ],
+  "trust|12|7": [
+   "Building trust takes time and consistent effort in any relationship.",
+   "She placed her trust in him, believing he would keep her secrets safe.",
+   "The community had to trust the new mayor to address their concerns effectively.",
+   "Trust is the foundation of any successful partnership, whether personal or professional.",
+   "He learned the hard way that trust can easily be broken with a single lie.",
+   "In times of uncertainty, it\u2019s important to trust your instincts and make the right choices.",
+   "They built a strong bond based on mutual trust and understanding over the years.",
+   "Her ability to trust others was significantly impacted by her past experiences.",
+   "Trusting someone means giving them the power to hurt you, but it can also lead to great joy.",
+   "The company worked hard to regain customer trust after the data breach.",
+   "He realized that trust is a two-way street that requires effort from both sides.",
+   "In a world full of deceit, finding someone worthy of your trust is rare."
+  ],
+  "payment|12|7": [
+   "The payment for the new car was due at the end of the month.",
+   "After reviewing the invoice, she realized there was an error in the payment amount.",
+   "He decided to make an early payment on his loan to reduce the interest.",
+   "The payment process was streamlined to ensure a quicker checkout experience.",
+   "She was relieved when the payment finally went through after several attempts.",
+   "Many people prefer digital payment methods for their convenience.",
+   "He received a notification that his payment had been successfully processed.",
+   "The landlord requested the payment to be made via bank transfer this time.",
+   "Payment should be made in full before the start of the service.",
+   "She was frustrated by the delayed payment from her client for the freelance work.",
+   "In the event of a cancellation, the payment is non-refundable according to the policy.",
+   "They offered a discount for early payment to encourage customers to settle their bills."
+  ],
+  "victim|12|7": [
+   "The victim of the accident was rushed to the hospital for immediate care.",
+   "In the courtroom, the victim's family shared their heart-wrenching story with the jury.",
+   "She felt like a victim of circumstances beyond her control.",
+   "The documentary highlighted the struggles faced by each victim of the natural disaster.",
+   "He spoke passionately about the rights of the victim during the community meeting.",
+   "As a victim of bullying, she found solace in speaking out and raising awareness.",
+   "The charity event aimed to support victims of domestic violence in the area.",
+   "He realized that labeling himself as a victim only held him back from healing.",
+   "Her compassion for the victim was evident in her voice as she recounted the tale.",
+   "Many victims of identity theft struggle to regain their financial stability.",
+   "The victim's testimony was crucial in unraveling the mystery of the crime.",
+   "In the aftermath, the community came together to support the victim and their family."
+  ],
+  "privacy|12|7": [
+   "In the digital age, maintaining privacy has become increasingly challenging.",
+   "She valued her privacy above all else, rarely sharing personal details with anyone.",
+   "The new law aims to enhance privacy protections for consumers online.",
+   "He installed heavy curtains to ensure his privacy in the small apartment.",
+   "Many people are concerned that social media platforms compromise their privacy.",
+   "Her diary was a sacred space where she could express her thoughts without fear of privacy invasion.",
+   "The company implemented strict policies to safeguard customer privacy.",
+   "During the meeting, they discussed the importance of respecting each other's privacy.",
+   "She hesitated to join the group chat, wary of how it might affect her privacy.",
+   "He felt that his right to privacy was violated when his phone was searched.",
+   "In the age of surveillance, the concept of privacy is constantly evolving.",
+   "They decided to have a quiet dinner at home, cherishing their privacy away from the crowds."
+  ],
+  "account|12|7": [
+   "She forgot to check her bank account before making the purchase.",
+   "His account of the events was so engaging that everyone listened intently.",
+   "I need to create an account to access the online course materials.",
+   "The accountant explained the discrepancies in her financial account.",
+   "When she heard his account of the trip, she immediately wanted to visit the same place.",
+   "Please provide your email address to set up a new account.",
+   "Her social media account has grown significantly over the past year.",
+   "In his account, he mentioned several key moments that changed his perspective.",
+   "The company offers a savings account with a competitive interest rate.",
+   "Her detailed account of the project helped the team stay on track.",
+   "We should account for all expenses before finalizing the budget.",
+   "He failed to account for the time difference when scheduling the meeting."
+  ],
+  "document|12|7": [
+   "The historical document revealed new insights into the ancient civilization.",
+   "She spent hours organizing the document to ensure all the information was accurate.",
+   "Could you please send me the document we discussed in yesterday's meeting?",
+   "He printed the document and handed it to his boss for approval.",
+   "The lawyer reviewed the document carefully before submitting it to the court.",
+   "In a digital age, a handwritten document can feel remarkably personal.",
+   "They found an old document tucked away in the attic that detailed their family history.",
+   "The project requires a comprehensive document outlining all the necessary steps.",
+   "She hesitated before signing the document, unsure of the implications.",
+   "The document was formatted incorrectly, causing delays in the publication process.",
+   "As a researcher, I often rely on primary document sources for my studies.",
+   "The teacher asked us to document our progress over the semester."
+  ],
+  "warrants|12|7": [
+   "The police officer explained that the situation warrants immediate action.",
+   "In her opinion, the evidence warrants a deeper investigation into the matter.",
+   "His behavior at the meeting warrants concern among his colleagues.",
+   "The judge issued several warrants for the suspect's arrest.",
+   "When the weather forecast predicts severe storms, it warrants a change in plans.",
+   "Her consistent performance at work warrants a promotion, in my view.",
+   "The urgency of the project warrants extra resources from the management.",
+   "New regulations may be needed, which warrants a discussion among stakeholders.",
+   "The historical evidence warrants a reevaluation of the event's significance.",
+   "In light of recent events, the committee warrants a full investigation.",
+   "The level of public interest in the case warrants extensive media coverage.",
+   "Such a breach of trust certainly warrants a serious conversation."
+  ],
+  "cellphone|12|7": [
+   "I forgot my cellphone at home and felt completely lost without it.",
+   "She checked her cellphone for messages while waiting for the bus.",
+   "The teacher reminded the students to silence their cellphones before the exam.",
+   "During the hike, I realized my cellphone had no signal at all.",
+   "He always takes stunning photos with his cellphone at family gatherings.",
+   "My cellphone battery died right when I needed to make an important call.",
+   "She uses her cellphone to track her fitness goals and daily steps.",
+   "Can you believe how much technology has changed since the first cellphone was invented?",
+   "He's developing an app that helps people manage their cellphone usage effectively.",
+   "The cellphone rang loudly in the quiet library, causing everyone to turn and look.",
+   "After searching for hours, I finally found my lost cellphone under the couch.",
+   "Her cellphone case is adorned with vibrant colors and intricate designs."
+  ],
+  "social|12|7": [
+   "Social interactions can greatly enhance our overall well-being.",
+   "The social media campaign was a huge success, reaching millions of viewers.",
+   "He has a natural talent for making social connections wherever he goes.",
+   "Attending social events is essential for networking in her profession.",
+   "The documentary explored the impact of social inequality in urban areas.",
+   "She volunteers at a shelter, believing in the importance of social responsibility.",
+   "Their social circle has expanded significantly since moving to the city.",
+   "Many people find social gatherings to be exhausting rather than enjoyable.",
+   "The book delves into the rise of social movements throughout history.",
+   "He prefers engaging in one-on-one conversations over large social gatherings.",
+   "Social skills are crucial for effective teamwork in any organization.",
+   "The professor conducted research on the effects of social isolation on mental health."
+  ],
+  "alcohol|12|7": [
+   "The doctor advised him to limit his alcohol intake for better health.",
+   "During the festival, there was a wide selection of alcohol available for the attendees.",
+   "She was surprised to learn that alcohol can affect memory retention.",
+   "Many cultures have unique traditions surrounding the consumption of alcohol.",
+   "He decided to try a new cocktail that contained flavored alcohol.",
+   "Alcohol can have a significant impact on one's mood and behavior.",
+   "For some people, abstaining from alcohol is a vital part of their recovery journey.",
+   "The chef marinated the chicken in alcohol to enhance its flavor.",
+   "In some countries, the legal drinking age for alcohol is 18.",
+   "The party had such a lively atmosphere, fueled by music and alcohol.",
+   "Her research focused on the effects of alcohol on sleep patterns.",
+   "At the reunion, they reminisced about old times over a glass of alcohol."
+  ],
+  "nicotine|12|7": [
+   "Nicotine is known for its addictive properties, making it a challenge for many to quit smoking.",
+   "In recent studies, researchers have explored the effects of nicotine on cognitive function and memory.",
+   "She found that even a small amount of nicotine could trigger cravings for cigarettes.",
+   "The nicotine patch has become a popular method for those trying to reduce their tobacco intake.",
+   "Many vaping products contain nicotine, leading some to question their safety compared to traditional cigarettes.",
+   "He was surprised to learn that nicotine can also be found in certain plants, not just tobacco.",
+   "Nicotine withdrawal symptoms can be difficult to manage, often including irritability and anxiety.",
+   "Some studies suggest that nicotine might have potential therapeutic benefits for certain neurological disorders.",
+   "Her decision to quit smoking was heavily influenced by the harmful effects of nicotine on her health.",
+   "The caf\u00e9 had a no smoking policy, but the smell of nicotine lingered from the patrons outside.",
+   "Nicotine gum was a helpful tool for him during his journey to become smoke-free.",
+   "The debate continues over the regulation of nicotine in e-cigarettes and its impact on public health."
+  ],
+  "mush|12|7": [
+   "The children giggled as they stepped into the mushy mud after the rain.",
+   "She carefully stirred the mush in the pot, hoping it would thicken soon.",
+   "After hours of hiking, all we wanted was a warm bowl of mush to fill our bellies.",
+   "The artist used a blend of colors that transformed into a beautiful mush on the canvas.",
+   "His ideas were so jumbled that they came out as a mush of thoughts in the meeting.",
+   "I can't believe how quickly the snow turned into mush under the warm sun.",
+   "Her heart felt like mush after watching the emotional movie with her friends.",
+   "The chef added spices to the mush, transforming it from bland to delicious.",
+   "We couldn\u2019t recognize the landscape, as it was all mush after the heavy flooding.",
+   "The puppy bounded through the yard, leaving little paw prints in the mushy grass.",
+   "In the backyard, the kids built a fort out of mushy leaves and sticks.",
+   "Grandma's famous corn mush was the highlight of every family gathering."
+  ],
+  "straw|12|7": [
+   "The farmer gathered a bundle of straw to use as bedding for the animals.",
+   "She sipped her lemonade through a colorful straw while lounging by the pool.",
+   "In the art class, we learned how to weave baskets using dried straw.",
+   "His straw hat shielded him from the harsh afternoon sun during the picnic.",
+   "The children played with a straw, trying to blow the paper boats across the puddle.",
+   "They decided to use straw as a natural mulch for their vegetable garden.",
+   "As the wind picked up, the old straw barn creaked ominously in the distance.",
+   "He reached for a straw and realized it had been left in his bag for too long.",
+   "The scarecrow was dressed in old clothes and topped with a straw-filled head.",
+   "She marveled at how the straw hat floated on the water like a tiny boat.",
+   "The artist used straw to create a textured background for her painting.",
+   "He placed a straw in the glass before handing it to her with a smile."
+  ],
+  "pipe|12|7": [
+   "The gardener used a pipe to direct water to the new flower beds.",
+   "As she played her favorite tune, the sound of the pipe echoed through the valley.",
+   "The old house had a mysterious pipe in the basement that no one could identify.",
+   "He took a long drag from his pipe, contemplating the meaning of life.",
+   "The plumber arrived promptly to fix the leaking pipe under the sink.",
+   "A thick pipe ran along the wall, transporting steam to the heating system.",
+   "In the quiet library, she lost herself in a book while sipping tea from a pipe mug.",
+   "The children giggled as they chased each other, pretending to be steam escaping from a pipe.",
+   "He carefully crafted a pipe from cherry wood, admiring its smooth finish.",
+   "The artist painted a vibrant mural, incorporating a giant pipe that twisted through the scene.",
+   "During the festival, they unveiled a massive pipe organ that filled the hall with music.",
+   "The ancient ruins featured a stone pipe that once carried water to the city."
+  ],
+  "spice|12|7": [
+   "The chef decided to add a unique spice to his signature dish to enhance the flavor.",
+   "She always carries a little jar of her favorite spice mix to liven up bland meals.",
+   "In the garden, we found a patch of oregano that added a wonderful spice to our homemade pizza.",
+   "His stories always had a hint of spice, making them captivating and memorable.",
+   "The spice market in Marrakech was a feast for the senses, with vibrant colors and intoxicating aromas.",
+   "Adding just a pinch of spice can transform a simple recipe into something extraordinary.",
+   "They say laughter is the spice of life, and she knew how to keep her friends entertained.",
+   "The novel was an adventure filled with intrigue and spice, leaving readers eager for more.",
+   "She chose a bold spice to complement the sweetness of the dessert, balancing the flavors perfectly.",
+   "Traveling to new countries always adds a little spice to his otherwise routine life.",
+   "The spice of competition motivated the athletes to push their limits in the final race.",
+   "Her vibrant personality was the spice that enlivened every gathering she attended."
+  ],
+  "coke|12|7": [
+   "I always keep a can of Coke in the fridge for a refreshing drink.",
+   "She offered me a Coke while we sat on the porch, enjoying the summer evening.",
+   "After a long hike, all I wanted was a cold Coke to quench my thirst.",
+   "He prefers his burgers with a side of fries and a Coke.",
+   "During the movie, I couldn't resist sneaking in a bottle of Coke.",
+   "Coke is my go-to beverage whenever I visit fast-food restaurants.",
+   "The party was filled with laughter, music, and plenty of ice-cold Coke.",
+   "As a child, I thought Coke was the best treat on special occasions.",
+   "She mixed the rum with Coke for a classic cocktail.",
+   "In the heat of the summer, nothing beats an ice-cold Coke.",
+   "The vending machine only had Coke left, so I grabbed one without thinking.",
+   "He reminisced about road trips where Coke was always part of the adventure."
+  ],
+  "tabs|12|7": [
+   "I forgot to pay my credit card bill, so now I have to keep tabs on my spending.",
+   "The restaurant was busy, but the waiter managed to keep track of all the tabs without any issues.",
+   "She opened several tabs on her browser to compare prices for the new laptop.",
+   "He always keeps tabs on the latest trends in technology to stay ahead in his field.",
+   "After the meeting, she was relieved to find that she had all the tabs organized in her notebook.",
+   "They decided to split the bill evenly, so everyone kept tabs on their own orders.",
+   "The teacher used a chart to keep tabs on the students' progress throughout the semester.",
+   "He prefers to read physical books rather than keep tabs on e-books on a screen.",
+   "In the latest update, the app introduced tabs to streamline navigation for users.",
+   "The accountant had to keep tabs on multiple accounts, ensuring everything balanced out correctly.",
+   "During the road trip, they made sure to keep tabs on the gas mileage to stay on budget.",
+   "She was careful to keep tabs on her workout progress to achieve her fitness goals."
+  ],
+  "flood|12|7": [
+   "The flood last summer caused extensive damage to the town's infrastructure.",
+   "After the heavy rains, a flood of emotions overwhelmed her as she recalled her childhood.",
+   "The researchers studied the impact of the flood on local wildlife and plant species.",
+   "His inbox was flooded with messages after he announced the new project.",
+   "The floodwaters rose quickly, forcing residents to evacuate their homes.",
+   "She felt a flood of relief wash over her when she heard the good news.",
+   "The documentary highlighted the devastating effects of the flood on agriculture.",
+   "In the wake of the flood, volunteers came from all over to help with recovery efforts.",
+   "A flood of memories flooded back as she walked through her old neighborhood.",
+   "The city implemented new drainage systems to prevent future flood disasters.",
+   "During the meeting, a flood of ideas emerged on how to improve community safety.",
+   "The floodplain was carefully monitored to predict potential risks to the surrounding areas."
+  ],
+  "injector|12|7": [
+   "The mechanic replaced the faulty fuel injector to improve the car's performance.",
+   "During the experiment, the scientist used a precise injector to deliver the serum into the culture.",
+   "She carefully cleaned the injector before administering the medication to her patient.",
+   "His role as an injector in the manufacturing process ensured that each product met quality standards.",
+   "The chef used a flavor injector to add a burst of garlic into the meat.",
+   "An old-fashioned syringe served as an injector for the dye in her art project.",
+   "The engineer designed a new type of injector that could increase fuel efficiency significantly.",
+   "As the technician explained, the injector's design plays a crucial role in engine operation.",
+   "He was fascinated by how the injector worked in the medical device, delivering doses with accuracy.",
+   "In the world of gaming, the character was equipped with a magical injector that granted temporary powers.",
+   "The environmentalist advocated for a cleaner injector design to reduce emissions from trucks.",
+   "At the conference, they unveiled a revolutionary injector technology that could change agriculture."
+  ],
+  "brute|12|7": [
+   "The brute force of the storm rattled the windows throughout the night.",
+   "In the animal kingdom, the lion is often viewed as the archetypal brute.",
+   "Despite his gentle demeanor, he had a brute strength that surprised everyone.",
+   "The brute honesty of her words caught him off guard during their discussion.",
+   "They admired the brute efficiency with which the team completed the project.",
+   "His brute indifference to her feelings only deepened the chasm between them.",
+   "The film portrayed the villain as a brute, devoid of any redeeming qualities.",
+   "With a brute swing of the hammer, he drove the nail deep into the wood.",
+   "The athlete\u2019s brute determination pushed him to break records at the competition.",
+   "In literature, the contrast between the refined and the brute highlights societal issues.",
+   "The brute nature of the creature made it a formidable opponent in the wild.",
+   "She wondered if his aggressive demeanor was just a mask for his inner brute."
+  ],
+  "vaccine|12|7": [
+   "The new vaccine showed promising results in the initial clinical trials.",
+   "Despite the controversy, many scientists advocate for the vaccine's benefits.",
+   "She felt a sense of relief after receiving her first dose of the vaccine.",
+   "Access to the vaccine remains a challenge in several underdeveloped countries.",
+   "Parents are often concerned about the safety of childhood vaccines.",
+   "The government launched a campaign to educate the public about the importance of the vaccine.",
+   "After years of research, the breakthrough vaccine was finally approved for distribution.",
+   "Healthcare workers were prioritized in the rollout of the COVID-19 vaccine.",
+   "He experienced mild side effects after getting the vaccine, which subsided quickly.",
+   "The vaccine development process typically takes several years, but the pandemic accelerated it.",
+   "Many people were hesitant about the vaccine until they spoke with medical professionals.",
+   "The effectiveness of the vaccine against new variants is still being studied."
+  ],
+  "field|12|7": [
+   "The children ran freely in the open field, laughing and playing tag.",
+   "She decided to major in environmental science after spending time in the research field.",
+   "Their farm extended beyond the horizon, with a vast field of golden wheat swaying in the breeze.",
+   "In the world of sports, he excelled in every field he tried, but soccer was his true passion.",
+   "The artist found inspiration in the vibrant colors of the wildflowers in the field.",
+   "He stood at the edge of the field, watching the sunset paint the sky in shades of orange and pink.",
+   "Her experience in the medical field gave her a unique perspective on health and wellness.",
+   "The old field behind the school was a forgotten treasure, filled with memories of childhood adventures.",
+   "In the field of education, innovative teaching methods are becoming increasingly important.",
+   "They set up a picnic in the field, surrounded by the sounds of nature and the scent of fresh grass.",
+   "The scientist conducted experiments in the field, gathering data to support her theory.",
+   "As a child, he dreamed of becoming a professional athlete, envisioning himself on the field."
+  ],
+  "terror|12|7": [
+   "The sudden explosion filled the air with terror, leaving everyone frozen in place.",
+   "In the dark of night, the feeling of terror crept over her as she heard strange noises outside.",
+   "His stories about haunted houses often sent shivers of terror down the spines of his friends.",
+   "The documentary explored the psychological effects of terror on individuals and communities alike.",
+   "Even in the face of terror, she stood strong and refused to let fear dictate her actions.",
+   "The horror movie was designed to provoke terror, and it certainly delivered on that promise.",
+   "Children often imagine monsters under their beds, but for some, the terror feels all too real.",
+   "With every tick of the clock, the sense of impending terror grew thicker in the room.",
+   "Terror can sometimes lead to unexpected bravery, as people respond to crises in remarkable ways.",
+   "Historically, regimes have used terror as a tool to suppress dissent and control populations.",
+   "He was haunted by the terror of that night, replaying every moment in his mind.",
+   "The haunting melody of the song evoked a sense of terror that lingered long after it ended."
+  ],
+  "infect|12|7": [
+   "The doctor warned us that the flu could easily infect anyone who wasn't vaccinated.",
+   "She was careful not to let her emotions infect her judgment during the meeting.",
+   "A rumor can spread quickly and infect even the most rational minds.",
+   "The artist's passion seemed to infect everyone in the room, igniting creativity.",
+   "It's crucial to wash your hands frequently to prevent germs from infecting you.",
+   "The virus was able to infect the computer system before the IT team could respond.",
+   "His enthusiasm for the project managed to infect the entire team, boosting morale.",
+   "Certain plants can infect their neighbors through underground networks, harming the ecosystem.",
+   "You must isolate the affected plants to prevent the disease from infecting the whole garden.",
+   "Her laughter was so contagious that it seemed to infect the whole crowd.",
+   "The news of the scandal could potentially infect the reputation of the entire organization.",
+   "He was determined to not let negativity infect his outlook on life."
+  ],
+  "doping|12|7": [
+   "The controversy surrounding doping in professional sports continues to escalate.",
+   "After extensive testing, the athlete was found guilty of doping and faced a lengthy suspension.",
+   "Doping not only tarnishes an athlete's reputation but also undermines the integrity of their sport.",
+   "Many organizations are now implementing stricter regulations to combat doping in competitions.",
+   "The documentary shed light on the dark world of doping in cycling and its long-term effects.",
+   "Coaches must educate their athletes about the dangers and consequences of doping.",
+   "Despite the risks, some still resort to doping to enhance their performance during critical events.",
+   "Doping scandals can have far-reaching implications, affecting not just athletes but entire teams.",
+   "The runner's career was nearly ruined by false accusations of doping that later proved untrue.",
+   "Efforts to eliminate doping from sports have led to significant advancements in testing technology.",
+   "In a shocking turn of events, the team's star player admitted to doping during the championship season.",
+   "Public opinion on doping in sports varies widely, with some calling for harsher penalties."
+  ],
+  "infection|12|7": [
+   "The doctor explained that the infection could spread rapidly if left untreated.",
+   "Despite her best efforts, she caught a stomach infection during her travels abroad.",
+   "His persistent cough was finally diagnosed as a respiratory infection.",
+   "She was relieved to learn that her skin infection was not severe and would respond to antibiotics.",
+   "Infection rates in the community have increased due to poor sanitation practices.",
+   "After the surgery, the team monitored her closely for any signs of infection.",
+   "The outbreak of the infection prompted health officials to issue a warning.",
+   "He felt fatigued and achy, symptoms that suggested he might have a viral infection.",
+   "Preventing infection is crucial in hospitals to ensure patient safety.",
+   "The researchers conducted a study on how diet can affect the body's response to infection.",
+   "She was anxious after hearing about the infection spreading in the neighboring country.",
+   "Vaccination has been proven effective in reducing the risk of viral infections."
+  ],
+  "mold|12|7": [
+   "The baker decided to use a unique mold to create intricate designs on the pastries.",
+   "After the heavy rain, I discovered mold growing on the walls of my basement.",
+   "She carefully poured the mixture into the mold, hoping for a perfect shape.",
+   "His creative use of mold in the art project surprised everyone at the gallery.",
+   "The old bread was covered in a thick layer of green mold, making it inedible.",
+   "In biology class, we learned that some types of mold can be beneficial for making antibiotics.",
+   "The sculptor worked tirelessly, shaping the clay into a mold for his next masterpiece.",
+   "As a child, I was fascinated by how quickly mold could develop on forgotten fruit.",
+   "They used a silicone mold to cast the decorative pieces for the wedding cake.",
+   "The musty smell in the attic hinted at hidden mold that needed to be addressed.",
+   "Mold can be a serious health hazard if not removed from your living space.",
+   "He noticed a distinct pattern in the mold that resembled intricate lace."
+  ],
+  "cash|12|7": [
+   "She always keeps some cash hidden in her sock drawer for emergencies.",
+   "The cashier informed me that they only accept cash for small purchases.",
+   "He decided to pay in cash to avoid any interest charges on his credit card.",
+   "After selling her old bike, she had a nice amount of cash to spend on a new one.",
+   "They were surprised to find cash left over from last year's event budget.",
+   "With cash in hand, she felt more confident negotiating the price of the car.",
+   "He counted the cash carefully before handing it to the landlord for the rent.",
+   "She prefers using cash because it helps her stick to her budget more effectively.",
+   "The restaurant had a cash-only policy, which caught us off guard.",
+   "In times of crisis, cash can be more valuable than credit.",
+   "They decided to pool their cash together for a group vacation fund.",
+   "He was reluctant to carry cash, fearing it could be lost or stolen."
+  ],
+  "deed|12|7": [
+   "The hero's brave deed saved countless lives that day.",
+   "She reflected on her past deeds with a sense of pride and regret.",
+   "A simple act of kindness can often have a greater impact than a grand deed.",
+   "He promised to honor his father's memory by continuing his good deeds.",
+   "In the eyes of the law, the deed was considered a crime, despite his good intentions.",
+   "Her generous deed did not go unnoticed by the community, earning her accolades.",
+   "They sealed the land transfer with a formal deed signed by both parties.",
+   "He felt a surge of guilt after realizing the unintended consequences of his deed.",
+   "Her deed of charity was celebrated at the annual fundraising gala.",
+   "The ancient scroll contained a record of every significant deed performed by the king.",
+   "With each good deed, she believed she could change the world, one person at a time.",
+   "Despite his missteps, his good deed redeemed him in the eyes of those who mattered."
+  ],
+  "donation|12|7": [
+   "The charity received a generous donation that will help fund their summer programs.",
+   "After months of planning, the school organized a donation drive for local families in need.",
+   "Her heartfelt donation to the animal shelter made a significant impact on their operations.",
+   "During the gala, attendees were encouraged to make a donation to support the new community center.",
+   "A donation of books from the library helped enrich the reading program at the local school.",
+   "He felt a deep sense of fulfillment after making a donation to the environmental organization.",
+   "The online crowdfunding campaign surpassed its goal, thanks to numerous small donations from supporters.",
+   "She decided to make a donation in honor of her late grandmother, who loved volunteering.",
+   "Every little donation counts, no matter how small, in the fight against hunger.",
+   "The foundation acknowledged each donation with a personalized thank-you letter.",
+   "Their generous donation allowed the hospital to purchase much-needed medical equipment.",
+   "Many people were inspired to contribute a donation after hearing the survivor's story."
+  ],
+  "user|12|7": [
+   "The software update improved the user experience significantly.",
+   "As a regular user of the app, I often provide feedback for improvements.",
+   "Each user must create a unique password for account security.",
+   "The forum encourages every user to share their insights and questions.",
+   "She noticed that the user interface was more intuitive after the redesign.",
+   "In the meeting, we discussed how to better engage the user community.",
+   "The user manual offers a comprehensive guide to troubleshooting issues.",
+   "He became a power user, utilizing all the advanced features available.",
+   "To ensure safety, the user should log out after each session.",
+   "The survey revealed that the majority of users are satisfied with the service.",
+   "A new user tutorial was introduced to help newcomers navigate the platform.",
+   "The tech team is analyzing user data to enhance performance."
+  ],
+  "wire|12|7": [
+   "The electrician carefully stripped the wire to ensure a clean connection.",
+   "She used a thin wire to create intricate designs for her art project.",
+   "As the storm approached, he secured the loose wire hanging from the fence.",
+   "They decided to run a wire through the garden for the new lighting system.",
+   "The old radio crackled to life as the wire was adjusted just right.",
+   "He found a tangled mess of wire in the garage while searching for tools.",
+   "The artist incorporated copper wire into her sculpture for added texture.",
+   "With a flick of her wrist, she sent the wire flying across the room.",
+   "He knew the wire would conduct electricity but was still cautious.",
+   "The technician replaced the broken wire to restore the internet connection.",
+   "Sitting quietly, she listened to the sound of wire bending under pressure.",
+   "The children marveled at how the kite danced on the wire above them."
+  ],
+  "gift|12|7": [
+   "The handmade scarf was a thoughtful gift for her birthday.",
+   "He received a surprise gift from his colleagues on his last day at work.",
+   "A gift from the heart is always more valuable than something expensive.",
+   "She carefully wrapped the gift in colorful paper and tied it with a ribbon.",
+   "The best gift of all was the time they spent together on that sunny afternoon.",
+   "He struggled to find the perfect gift for his girlfriend's anniversary.",
+   "Receiving a gift unexpectedly can brighten anyone's day.",
+   "Her laughter was the greatest gift she could give to her friends.",
+   "The charity event raised enough money to provide gifts for underprivileged children.",
+   "The key to happiness is often found in the gift of giving.",
+   "He cherished the gift of music, finding solace in playing the piano.",
+   "They exchanged gifts during the holiday party, creating a warm atmosphere."
   ]
  },
  "codeword_assignment": {},
@@ -5736,6 +6772,450 @@
    "tag": "step3_generate",
    "in": 1358,
    "out": 579
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
+  },
+  {
+   "model": "gpt-4o-mini",
+   "tag": "concept-demos",
+   "in": 60,
+   "out": 420
   },
   {
    "model": "gpt-4o-mini",

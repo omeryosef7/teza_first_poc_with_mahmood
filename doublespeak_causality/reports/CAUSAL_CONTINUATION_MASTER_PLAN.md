@@ -202,20 +202,35 @@ the queue for hours — check every tick and act.
 #SBATCH --time=<real need, not a padded ceiling>
 ```
 
-**Direct A/B evidence, same work, same day:**
+**The real reason `--mem=48G` matters — a hard scheduling mechanism, not an anecdote.**
+L40S nodes have `RealMemory=515600 MB` and 8 GPUs ⇒ **64450 MB per GPU-share**. At `--mem=64G`
+(65536 MB) only `floor(515600/65536) = 7 of 8` GPUs are memory-feasible — **the 8th GPU on every L40S node
+was permanently unreachable to us**, i.e. we were locked out of **6 L40S GPUs (12.5 % of the pool)** by one
+flag. At 48 G all 8 are reachable. *This* is the justification; verified against `scontrol show node`.
 
-| config | outcome |
-|---|---|
-| `cpus=8, mem=64G, time=1:00/1:30`, 5-node list | **PENDING 3 h 32 m** (716187/716188) |
-| `cpus=4, mem=48G, time=0:40/0:50`, resubmitted | **ALLOCATED in 6 m 32 s** (717879/717880) ✅ |
+⚠️ **The `cpus 8→4` change has NO such mechanism** — 128 CPUs / 8 GPUs = 16 per GPU-share, so 8 was never
+binding. It is harmless, not the fix. Do not cite it as one.
 
-**Why the smaller footprint is the lever:** wait time shows **no relationship to `--time`** (a 14 h job
-waited 5 min; a 20 min job waited 319 min), and the account limit is `MaxJobs=50` so concurrency is **not**
-the constraint. A 4-CPU/48 G job fits backfill gaps that an 8-CPU/64 G job cannot. 4 CPUs and 48 G are
-ample for single-GPU 8B bf16 inference.
+⚠️ **An earlier version of this section claimed a 3 h 32 m → 6 m 32 s A/B "proved" the smaller footprint.
+That claim is WITHDRAWN**: it was n=2 vs n=2, fully confounded with 3.5 h of cluster churn (all ~1,500
+historical jobs used cpu=8/mem=64G, so there was no variance to test against) — **and the two jobs it cited
+were PREEMPTED off the node ~13 min after starting and returned to PENDING at the same 4cpu/48G footprint.**
 
-**⚠️ Use ALL SIX L40S nodes.** Several wrappers listed only `n-802..n-805,t-806`, silently giving up
-**n-801** — an equally valid `gpu:l40s:8` node, i.e. 1/6 of our capacity, for no stated reason.
+### ⛔ `killable` is PREEMPTIBLE — allocation is not completion
+The metric that matters is **time-to-completion, not time-to-first-allocation.** A job can allocate in
+6 minutes and be preempted 13 minutes later (observed, 717879/717880). Long runs *do* often survive (the
+2.5–3 h α sweeps completed), but preemption is a standing risk, so:
+- prefer **resumable / checkpointing** harnesses for anything over ~1 h;
+- treat a PENDING job that previously ran as **normal**, not as a new failure;
+- **the actual fix is partition access, not `#SBATCH` tuning** — see the `gpu-sharifm` note below.
+
+**Use all six L40S nodes — with a caveat that was NOT arbitrary.** `n-801` had been excluded deliberately:
+`IMPLEMENTATION_PROGRESS.md:694` records smoke 704416 spending **1 h 09 m** loading weights there. Measured
+across 232 job logs: n-801's *median* load (389 s) is unremarkable, **but it owns 100 % of the catastrophic
+tail** — every load > 900 s in the entire corpus, worst **4741 s (79 min)** — while no other L40S node ever
+exceeded 811 s; roughly 9 % of n-801 runs stall. It is now **included** (the capacity is real and ~1.5 % of
+all jobs stalling is a tolerable trade), but **pass `--exclude=n-801` for any short smoke** (`--time` under
+~1 h), where a 79-minute load would burn the entire allocation.
 
 **Do not bother with:** switching to 3090/a5000 nodes (`--test-only` gives every config the *identical*
 ~24 h estimate, because that estimate just reports when current jobs hit the partition's 1-day limit — it

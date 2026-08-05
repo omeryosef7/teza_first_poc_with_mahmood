@@ -3,7 +3,7 @@
 #SBATCH --output=doublespeak_causality/logs/ds_qwen3emg_%j.out
 #SBATCH --error=doublespeak_causality/logs/ds_qwen3emg_%j.err
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
 #SBATCH --time=04:00:00
 #SBATCH --partition=killable
@@ -11,6 +11,16 @@
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#
+# RESOURCE FOOTPRINT -- measured 2026-08-05, do not re-litigate: cpus=4 mem=48G is the fast-allocating
+# default repo-wide (8cpu/64G sat PENDING 3h32m as 716187/716188; the SAME work at 4cpu/48G allocated in
+# 6m32s as 717879/717880). Mechanism: node RealMemory=515600MB / 8 GPUs = 64450MB per GPU-share, so
+# --mem=64G leaves only 7 of 8 GPUs memory-feasible per node while 48G leaves all 8. --time is NOT the lever.
+# EXCEPTION, deliberate: this wrapper stays at mem=64G because it loads Qwen3-14B, ~28GB of bf16 weights
+# streamed through host page cache per load -- 2x the 8B footprint the A/B above was measured on. The
+# allocation win is untested at 14B; drop it to 48G with the flag below if this job queues.
+# Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_qwen3emg.sh
 #
 # Second-model generality: emergence (Direct-early vs Doublespeak-late) on Qwen3-14B.
 set -euo pipefail

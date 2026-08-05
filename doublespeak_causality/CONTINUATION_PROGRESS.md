@@ -635,6 +635,39 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 25 — 2026-08-05 — 🛑 I was wrong about "SLURM SOLVED"; the real mechanism found
+An adversarial wrapper audit falsified my tick-23 verdict **the same day**, and I verified every point.
+
+**1. "SLURM SOLVED" is WITHDRAWN.** 717879/717880 — the exact pair I cited as proof — were **PREEMPTED off
+n-805 ~13 min after starting** and are back to PENDING at the same 4cpu/48G footprint. Confirmed by
+`squeue`. **`killable` is preemptible, so time-to-first-allocation is not the metric; time-to-completion
+is.** I measured the wrong thing and declared victory on it.
+
+**2. My A/B was worthless as evidence** — n=2 vs n=2, confounded with 3.5 h of cluster churn. All ~1,500
+historical jobs used cpu=8/mem=64G, so there was no variance to test the claim against.
+
+**3. But `--mem=48G` IS right, for a reason I hadn't found.** L40S nodes have `RealMemory=515600 MB` and
+8 GPUs ⇒ **64450 MB per GPU-share**. At `--mem=64G` (65536 MB) only **7 of 8 GPUs are memory-feasible** —
+**the 8th GPU on every L40S node was structurally unreachable**, i.e. we were locked out of **6 L40S GPUs,
+12.5 % of the pool**, by one flag. Verified against `scontrol show node`. That is a hard scheduling
+mechanism and it is the real justification.
+⚠️ Conversely **`cpus 8→4` has no mechanism** (128 CPUs / 8 GPUs = 16 per share; 8 was never binding).
+Harmless, but not the fix — and I had presented it as one.
+
+**4. I was wrong that n-801 was excluded "for no stated reason."** It was a documented, measured decision:
+`IMPLEMENTATION_PROGRESS.md:694` records smoke 704416 spending **1 h 09 m** loading weights there. Across
+232 parsed job logs, n-801's median load (389 s) is unremarkable **but it owns 100 % of the catastrophic
+tail** — every load > 900 s in the corpus, worst **4741 s (79 min)** — while no other L40S node exceeded
+811 s; ~9 % of n-801 runs stall. Restored anyway (capacity is real), **with the caveat preserved in every
+wrapper header and `--exclude=n-801` recommended for short smokes**, where a 79-min load burns the whole
+allocation. I should have read the exclusion note before calling it unjustified.
+
+**5. The actual fix remains partition access, not `#SBATCH` tuning** — `gpu-sharifm` (lab partition, 5-day
+limit, non-preemptible, currently an idle a5000) rejects this account. Worth one email to Mahmood.
+
+**Wrappers:** all 54 pass `bash -n`; 50 at `mem=48G`, 4 at 64G (the Qwen3-14B GCG harnesses, justified);
+54/54 keep the L40S guard, `HF_HUB_OFFLINE`, `set -euo pipefail` and conda activate; n-801 in all 54.
+
 ### Tick 24 — 2026-08-05 — GPU pipeline restarted; P2 v2 replication relaunched
 With the fast config proven, put the freed capacity to work. **717879 (P10 decode-safe) and 717880 (P7
 direction validation) running cleanly** on n-805 (7 min in, past the L40S guard, at commit `bfa7795`).
@@ -648,7 +681,7 @@ all-occurrence patching roughly doubles the L9 write necessity.
 Still in flight: the v3 expansion on the OpenAI budget (targeting n ≈ 324 for a powered interaction test),
 and the agent applying the fast config across every wrapper in `slurm/`.
 
-### Tick 23 — 2026-08-05 — ✅ SLURM SOLVED: 3h32m → 6m32s, and both jobs are RUNNING
+### Tick 23 — 2026-08-05 — ⚠️ "SLURM SOLVED" — **THIS CLAIM WAS WRONG, see tick 25**
 **Target met.** 717879 (P10 decode-safe) and 717880 (P7 direction validation) **allocated in 6 m 32 s**
 and are running on n-805, past the L40S guard, at commit `bfa7795`.
 

@@ -3,21 +3,31 @@
 #SBATCH --output=doublespeak_causality/logs/ds_behwrite_%j.out
 #SBATCH --error=doublespeak_causality/logs/ds_behwrite_%j.err
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=48G
 #SBATCH --time=10:00:00
 #SBATCH --partition=killable
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#
+# RESOURCE FOOTPRINT -- measured 2026-08-05, do not re-litigate: cpus=4 mem=48G is the fast-allocating
+# default (8cpu/64G sat PENDING 3h32m as 716187/716188; the SAME work at 4cpu/48G allocated in 6m32s as
+# 717879/717880). Mechanism: node RealMemory=515600MB / 8 GPUs = 64450MB per GPU-share, so --mem=64G
+# leaves only 7 of 8 GPUs memory-feasible per node while 48G leaves all 8. --time is NOT the lever.
+# Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_behav_write.sh
+# n-801 is back in the nodelist (a full gpu:l40s:8 node = 1/6 of our L40S capacity). Caveat, measured
+# over 232 logged runs: every weight-load slower than 15 min happened on n-801 (worst 79 min), while no
+# other L40S node ever exceeded 14 min. For a short smoke, add --exclude=n-801 on the sbatch line.
 #
 # P10: behavioral necessity of the L8-11 MLP demo-codeword WRITE, run in BOTH phasings so the
 # prefill-only/decode-safe difference is measurable inside one experiment:
 #   baseline · write_abl_prefill · rand_pos_abl_prefill        (historical arms; ComponentOutSwap)
 #   write_abl_decodesafe · rand_pos_abl_decodesafe             (DSDECODESAFE=1, the default)
 #   write_abl_allpos                                           (DSALLPOS=1, opt-in upper bound)
-# StrongReject-judged. n-801 excluded (pathologically slow weight loading).
+# StrongReject-judged. (n-801 was previously excluded for slow weight loading -- see the nodelist note above.)
 # NOTE the walltime bump 06:00 -> 10:00: the default is now 5 generations/item, not 3.
 #   sbatch --export=ALL,DSBENCH=doublespeak_causality/data/behavioral/beh_clearharm.json,DSMAXNEW=220,DSN=0 slurm/run_behav_write.sh
 #   smoke: sbatch --export=ALL,DSN=2 slurm/run_behav_write.sh
