@@ -746,6 +746,25 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 36 — 2026-08-06 — corrected a false claim I made about the P7 harness; no code change needed
+Went to add incremental writing to `validate_refusal_directions.py` — the fragility I asserted at tick 34 —
+and **found it already had it.** `scripts/validate_refusal_directions.py:440` calls `fh.flush()` after every
+(family, layer) block, so partial results survive an interruption. **My tick-34 statement that the harness
+"writes `raw.jsonl` only at the END" was false**, and it was one of three reasons I gave for killing the
+full sweep. Tick 34 is corrected in place and the "needs an incremental writer" follow-up is withdrawn.
+
+The retarget decision itself still stands on its remaining grounds: ~7 h of work against an 8 h walltime is
+genuinely tight, and the five headline layers answer the actual question ~6× faster. But it is worth being
+clear that I acted partly on something I had not verified — and that **checking before writing the fix is
+what caught it**, at the cost of nothing but a grep.
+
+**Why the dir really was empty at 2 h 15 m:** the job had not finished *setup* — base-condition generation
+plus the `clearharm` family refit — so it had never reached the per-layer loop where the flush lives.
+
+**SLURM:** 720175 had been pending 58 min, so per §1.3.0 it was cancelled and resubmitted as **720463**.
+P8's 720320/720321 are at 28 min, inside the window, and were left alone. Cluster still saturated
+(85 pending on `killable`, all 48 L40S allocated).
+
 ### Tick 35 — 2026-08-06 — 30-min rule applied to P8; v3 benches pre-flighted; an n caveat found
 **Cluster is worse, not better:** all 48 L40S allocated and the `killable` queue has grown **66 → 89**
 pending. P8's jobs had sat **119 min**, so per §1.3.0 they were cancelled and resubmitted as **720320**
@@ -777,9 +796,15 @@ analysis is frozen) or to state the residual width honestly.
 call, so the reasoning is recorded.
 
 **The risk:** the full 32-layer × 2-family × 4-arm × 20-item sweep is ~5,100 generations ≈ 7 h against an
-**8 h walltime** — and this harness **writes `raw.jsonl` only at the END**. A walltime kill therefore
-returns **nothing** for 8 GPU-hours. At 2 h 15 m it had produced only `RUNMETA.json`, so there was no
-partial result to salvage either.
+**8 h walltime**. At 2 h 15 m it had produced only `RUNMETA.json`, so there was no partial result to
+salvage.
+⚠️ **CORRECTED at tick 36:** I also justified the kill by claiming the harness "writes `raw.jsonl` only at
+the END". **That was wrong** — `validate_refusal_directions.py:440` calls `fh.flush()` after every
+(family, layer) block, so results *do* persist incrementally. The reason nothing was on disk at 2 h 15 m is
+that the job had not finished **setup** (base-condition generation plus the `clearharm` family refit) and
+so had not yet reached the per-layer loop at all. The decision to retarget still stands on its other
+grounds — ~7 h against an 8 h limit is genuinely tight, and 5 layers answer the actual question ~6× faster
+— but one of the three reasons I gave was false.
 
 **The trade:** the paper question is not "are all 32 directions valid" — it is *"are the specific directions
 our published claims rest on valid?"* That is **five** layers: **L9/L16/L22/L28** (the four calibrated
@@ -792,9 +817,9 @@ question tonight instead of possibly never.
 comma-truncation bug: you pass `DSLAYERSET=headline`, never `DSLAYERS=9,16,...`. Verified with `bash -n`
 plus a direct check that `headline` expands correctly and the default is byte-unchanged.
 
-**Follow-up owed:** the full 32-layer sweep is still worth having for the appendix — it should be re-run at
-leisure with either a longer walltime or, better, **an incremental writer**, since "writes only at the end"
-is a genuine harness fragility that turns any interruption into total loss.
+**Follow-up owed:** the full 32-layer sweep is still worth having for the appendix — re-run it at leisure
+with a longer walltime. (The "needs an incremental writer" follow-up I recorded here is **withdrawn**: it
+already has one.)
 
 ### Tick 33 — 2026-08-06 — P10 COMPLETE: the §0.9 defect is closed and the null holds
 Read out 718938 with the existing paired analyzer (McNemar + bootstrap + Holm), wrote
