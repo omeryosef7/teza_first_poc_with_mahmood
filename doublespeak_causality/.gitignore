@@ -12,6 +12,11 @@ outputs/**
 !outputs/**/
 !outputs/**/summary.json
 !outputs/**/*summary*.json
+# derived analysis results (loose top-level JSONs) are paper artifacts - keep them
+!outputs/*.json
+# ...but these two embed prompt text
+outputs/RESULT1_transplant_example_prompts.json
+outputs/next3_fc_patchscope_bomb.json
 !outputs/**/RUNMETA.json
 !outputs/**/DONE.json
 # ...but NEVER commit attack suffixes or generated text.

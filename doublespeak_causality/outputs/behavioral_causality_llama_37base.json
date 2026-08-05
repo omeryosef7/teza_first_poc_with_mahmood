@@ -1,0 +1,122 @@
+{
+  "sufficiency": {
+    "early": {
+      "n_base_benign": 179,
+      "suff_DS_rate": {
+        "mean": 0.061,
+        "lo": 0.028,
+        "hi": 0.101,
+        "n": 179,
+        "ci_reliable": true
+      },
+      "suff_Direct_rate": {
+        "mean": 0.123,
+        "lo": 0.078,
+        "hi": 0.173,
+        "n": 179,
+        "ci_reliable": true
+      },
+      "DS_minus_Direct": {
+        "mean": -0.061,
+        "lo": -0.123,
+        "hi": 0.0,
+        "n": 179,
+        "ci_reliable": true
+      }
+    },
+    "mid": {
+      "n_base_benign": 183,
+      "suff_DS_rate": {
+        "mean": 0.098,
+        "lo": 0.06,
+        "hi": 0.142,
+        "n": 183,
+        "ci_reliable": true
+      },
+      "suff_Direct_rate": {
+        "mean": 0.492,
+        "lo": 0.421,
+        "hi": 0.563,
+        "n": 183,
+        "ci_reliable": true
+      },
+      "DS_minus_Direct": {
+        "mean": -0.393,
+        "lo": -0.47,
+        "hi": -0.311,
+        "n": 183,
+        "ci_reliable": true
+      }
+    },
+    "late": {
+      "n_base_benign": 173,
+      "suff_DS_rate": {
+        "mean": 0.029,
+        "lo": 0.006,
+        "hi": 0.058,
+        "n": 173,
+        "ci_reliable": true
+      },
+      "suff_Direct_rate": {
+        "mean": 0.092,
+        "lo": 0.052,
+        "hi": 0.139,
+        "n": 173,
+        "ci_reliable": true
+      },
+      "DS_minus_Direct": {
+        "mean": -0.064,
+        "lo": -0.116,
+        "hi": -0.012,
+        "n": 173,
+        "ci_reliable": true
+      }
+    }
+  },
+  "timing": {
+    "per_window_refusal": {
+      "early": {
+        "mean": 0.866,
+        "lo": 0.816,
+        "hi": 0.911,
+        "n": 179,
+        "ci_reliable": true
+      },
+      "mid": {
+        "mean": 0.246,
+        "lo": 0.186,
+        "hi": 0.306,
+        "n": 183,
+        "ci_reliable": true
+      },
+      "late": {
+        "mean": 0.017,
+        "lo": 0.0,
+        "hi": 0.04,
+        "n": 173,
+        "ci_reliable": true
+      }
+    },
+    "early_minus_late_refusal": {
+      "mean": 0.846,
+      "lo": 0.787,
+      "hi": 0.899,
+      "n": 169,
+      "ci_reliable": true
+    },
+    "early_minus_mid_refusal": {
+      "mean": 0.631,
+      "lo": 0.562,
+      "hi": 0.699,
+      "n": 176,
+      "ci_reliable": true
+    },
+    "mid_minus_late_refusal": {
+      "mean": 0.214,
+      "lo": 0.156,
+      "hi": 0.277,
+      "n": 173,
+      "ci_reliable": true
+    }
+  }
+}

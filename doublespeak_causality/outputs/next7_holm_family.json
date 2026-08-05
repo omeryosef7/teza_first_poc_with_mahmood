@@ -1,0 +1,11 @@
+{
+  "cocaine": {
+    "p_raw": 0.001,
+    "p_holm": 0.001
+  },
+  "pistol": {
+    "p_raw": 0.0005,
+    "p_holm": 0.001
+  },
+  "all_survive": true
+}

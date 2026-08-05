@@ -1,0 +1,29 @@
+{
+  "family": [
+    {
+      "claim": "D1_grenade_mid_late",
+      "p_raw": 0.0073,
+      "p_holm": 0.014599,
+      "survives": true
+    },
+    {
+      "claim": "D1_pooled_mid_late",
+      "p_raw": 0.011649,
+      "p_holm": 0.014599,
+      "survives": true
+    },
+    {
+      "claim": "D2_Qwen3_DS_minus_BENIGN",
+      "p_raw": 5e-05,
+      "p_holm": 0.0002,
+      "survives": true
+    },
+    {
+      "claim": "D2_Qwen3_DS_minus_UNRELATED",
+      "p_raw": 5e-05,
+      "p_holm": 0.0002,
+      "survives": true
+    }
+  ],
+  "all_survive": true
+}

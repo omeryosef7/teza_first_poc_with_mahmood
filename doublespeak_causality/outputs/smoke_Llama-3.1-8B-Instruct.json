@@ -1,0 +1,72 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "checks": {
+    "load": {
+      "ok": true,
+      "num_layers": 32,
+      "hidden": 4096,
+      "eos_token_ids": [
+        128001,
+        128008,
+        128009
+      ],
+      "n_eos": 3,
+      "device": "cuda:0"
+    },
+    "localization": {
+      "ok": true,
+      "n_codeword_occurrences": 5,
+      "codeword_last": 100,
+      "following": 101,
+      "seq_len": 110
+    },
+    "capture": {
+      "ok": true,
+      "positions_captured": [
+        "codeword_last",
+        "following"
+      ],
+      "rep_shape": [
+        33,
+        4096
+      ],
+      "has_following": true
+    },
+    "patching": {
+      "ok": true,
+      "alpha0_add_is_identity": true,
+      "replace_changes_logits": true,
+      "max_logit_delta_after_replace": 6.3125,
+      "patched_layer": 16,
+      "patched_pos": 43
+    },
+    "generation": {
+      "ok": true,
+      "n_new_tokens": 23,
+      "stop_reason": "eos",
+      "completion_len_chars": 98
+    }
+  },
+  "meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "n-804",
+    "git_commit": "7c24804bdac0edfda21aacce965d5f447afaaf56",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-07-26T23:15:50"
+  },
+  "status": "COMPLETE"
+}

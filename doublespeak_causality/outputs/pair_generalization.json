@@ -1,0 +1,277 @@
+{
+ "plan": "CAUSAL_CORE_PLAN \u00a7F + \u00a716.18 (S16)",
+ "n_pairs": 5,
+ "criterion_install": "max_window(add_d_Direct) >= 0.05",
+ "criterion_inert": "all windows |add_d_DS| < 0.05",
+ "n_pairs_where_d_Direct_installs": 4,
+ "n_pairs_where_d_DS_inert": 5,
+ "dissociation_holds_in_all_pairs": false,
+ "pairs": [
+  {
+   "pair": "carrot->bomb",
+   "analysis": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/pair_causal_controls_693609.json",
+   "windows": {
+    "add_d_Direct|early": {
+     "effect": 0.16708,
+     "lo": 0.105,
+     "hi": 0.23168,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|mid": {
+     "effect": 0.53332,
+     "lo": 0.45297,
+     "hi": 0.61297,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|late": {
+     "effect": 0.97107,
+     "lo": 0.95467,
+     "hi": 0.98411,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|early": {
+     "effect": 1e-05,
+     "lo": 0.0,
+     "hi": 3e-05,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|mid": {
+     "effect": 0.0,
+     "lo": 0.0,
+     "hi": 0.0,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|late": {
+     "effect": 0.0,
+     "lo": 0.0,
+     "hi": 0.0,
+     "n": 20,
+     "significant_corrected": true
+    }
+   },
+   "arms_exceeding_all_controls": {
+    "add_d_Direct": [
+     "None|1.0|adjacent",
+     "None|1.0|codeword_all"
+    ]
+   }
+  },
+  {
+   "pair": "carrot->grenade",
+   "analysis": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/pair_causal_controls_693699.json",
+   "windows": {
+    "add_d_Direct|early": {
+     "effect": 0.00344,
+     "lo": 0.00084,
+     "hi": 0.00716,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|mid": {
+     "effect": 0.21098,
+     "lo": 0.11571,
+     "hi": 0.31776,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|late": {
+     "effect": 0.30188,
+     "lo": 0.23274,
+     "hi": 0.36868,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|early": {
+     "effect": 0.00197,
+     "lo": 0.00086,
+     "hi": 0.00325,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|mid": {
+     "effect": 0.00068,
+     "lo": 0.00026,
+     "hi": 0.00122,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|late": {
+     "effect": 0.0,
+     "lo": 0.0,
+     "hi": 1e-05,
+     "n": 20,
+     "significant_corrected": true
+    }
+   },
+   "arms_exceeding_all_controls": {
+    "add_d_Direct": [
+     "None|1.0|codeword_all"
+    ]
+   }
+  },
+  {
+   "pair": "carrot->chlorine",
+   "analysis": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/pair_causal_controls_693702.json",
+   "windows": {
+    "add_d_Direct|early": {
+     "effect": 0.00268,
+     "lo": 0.00013,
+     "hi": 0.00749,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|mid": {
+     "effect": 0.0481,
+     "lo": 0.02488,
+     "hi": 0.0744,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|late": {
+     "effect": 0.05822,
+     "lo": 0.03098,
+     "hi": 0.08998,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|early": {
+     "effect": 0.00039,
+     "lo": 7e-05,
+     "hi": 0.00086,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|mid": {
+     "effect": 5e-05,
+     "lo": 0.0,
+     "hi": 0.00013,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|late": {
+     "effect": 0.0,
+     "lo": 0.0,
+     "hi": 0.0,
+     "n": 20,
+     "significant_corrected": true
+    }
+   },
+   "arms_exceeding_all_controls": {
+    "add_d_Direct": [
+     "None|1.0|codeword_all"
+    ]
+   }
+  },
+  {
+   "pair": "carrot->pistol",
+   "analysis": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/pair_causal_controls_693704.json",
+   "windows": {
+    "add_d_Direct|early": {
+     "effect": 0.16854,
+     "lo": 0.06206,
+     "hi": 0.2956,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|mid": {
+     "effect": 0.90857,
+     "lo": 0.85512,
+     "hi": 0.9551,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|late": {
+     "effect": 0.77057,
+     "lo": 0.66859,
+     "hi": 0.85977,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|early": {
+     "effect": 0.00752,
+     "lo": 0.00011,
+     "hi": 0.01881,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|mid": {
+     "effect": 0.00535,
+     "lo": 0.0003,
+     "hi": 0.01487,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|late": {
+     "effect": 1e-05,
+     "lo": 1e-05,
+     "hi": 2e-05,
+     "n": 20,
+     "significant_corrected": true
+    }
+   },
+   "arms_exceeding_all_controls": {
+    "add_d_Direct": [
+     "None|1.0|adjacent",
+     "None|1.0|codeword_all",
+     "None|1.0|random_token"
+    ]
+   }
+  },
+  {
+   "pair": "carrot->cocaine",
+   "analysis": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/pair_causal_controls_693705.json",
+   "windows": {
+    "add_d_Direct|early": {
+     "effect": 0.01152,
+     "lo": 0.00264,
+     "hi": 0.0242,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|mid": {
+     "effect": 0.00436,
+     "lo": 0.00262,
+     "hi": 0.00623,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_Direct|late": {
+     "effect": 0.01109,
+     "lo": 0.0058,
+     "hi": 0.01731,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|early": {
+     "effect": 0.00079,
+     "lo": 0.00031,
+     "hi": 0.00136,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|mid": {
+     "effect": 0.0002,
+     "lo": 8e-05,
+     "hi": 0.00035,
+     "n": 20,
+     "significant_corrected": true
+    },
+    "add_d_DS|late": {
+     "effect": 1e-05,
+     "lo": 0.0,
+     "hi": 2e-05,
+     "n": 20,
+     "significant_corrected": false
+    }
+   },
+   "arms_exceeding_all_controls": {}
+  }
+ ],
+ "reporting_note": "Per-pair effects are reported side by side and NOT pooled: a pooled mean would let one strong pair carry several null ones, which is exactly the one-pair->general-mechanism conversion plan \u00a715 forbids.",
+ "status": "COMPLETE"
+}

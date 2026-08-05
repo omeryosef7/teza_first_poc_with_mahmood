@@ -1,0 +1,121 @@
+{
+  "overall": {
+    "n_items": 36,
+    "n_hijackers": 11,
+    "hijack_rate": 0.3055555555555556,
+    "mean_ds_peak_layer": 30.272727272727273,
+    "mean_direct_peak_layer": 0.0,
+    "peak_layer_diff_ci": {
+      "mean_diff": 30.272727272727273,
+      "lo": 29.181818181818183,
+      "hi": 31.0
+    },
+    "mean_necessity_frac": 0.9872422397188355,
+    "mean_suff_ds": 0.057518868474289775,
+    "mean_suff_direct": 0.002158518665964948,
+    "suff_diff_ci": {
+      "mean_diff": 0.05536034980832483,
+      "lo": 0.03942923957583844,
+      "hi": 0.07149349544406502
+    },
+    "n_necsuff": 8
+  },
+  "per_concept": {
+    "bomb": {
+      "n_items": 6,
+      "n_hijackers": 0,
+      "hijack_rate": 0.0,
+      "mean_ds_peak_layer": null,
+      "mean_direct_peak_layer": null,
+      "peak_layer_diff_ci": null,
+      "mean_necessity_frac": null,
+      "mean_suff_ds": null,
+      "mean_suff_direct": null,
+      "suff_diff_ci": null,
+      "n_necsuff": 0
+    },
+    "drug": {
+      "n_items": 6,
+      "n_hijackers": 0,
+      "hijack_rate": 0.0,
+      "mean_ds_peak_layer": null,
+      "mean_direct_peak_layer": null,
+      "peak_layer_diff_ci": null,
+      "mean_necessity_frac": null,
+      "mean_suff_ds": null,
+      "mean_suff_direct": null,
+      "suff_diff_ci": null,
+      "n_necsuff": 0
+    },
+    "gun": {
+      "n_items": 6,
+      "n_hijackers": 1,
+      "hijack_rate": 0.16666666666666666,
+      "mean_ds_peak_layer": 31.0,
+      "mean_direct_peak_layer": 0.0,
+      "peak_layer_diff_ci": null,
+      "mean_necessity_frac": 0.9884250872578345,
+      "mean_suff_ds": 0.07813847810029984,
+      "mean_suff_direct": 0.0008606274495832622,
+      "suff_diff_ci": null,
+      "n_necsuff": 1
+    },
+    "knife": {
+      "n_items": 6,
+      "n_hijackers": 3,
+      "hijack_rate": 0.5,
+      "mean_ds_peak_layer": 29.0,
+      "mean_direct_peak_layer": 0.0,
+      "peak_layer_diff_ci": {
+        "mean_diff": 29.0,
+        "lo": 25.0,
+        "hi": 31.0
+      },
+      "mean_necessity_frac": 0.9879454737170876,
+      "mean_suff_ds": 0.050517975042263664,
+      "mean_suff_direct": 0.003982372581958771,
+      "suff_diff_ci": {
+        "mean_diff": 0.046535602460304894,
+        "lo": 0.03346567368134856,
+        "hi": 0.0716935929376632
+      },
+      "n_necsuff": 3
+    },
+    "poison": {
+      "n_items": 6,
+      "n_hijackers": 1,
+      "hijack_rate": 0.16666666666666666,
+      "mean_ds_peak_layer": 31.0,
+      "mean_direct_peak_layer": 0.0,
+      "peak_layer_diff_ci": null,
+      "mean_necessity_frac": null,
+      "mean_suff_ds": null,
+      "mean_suff_direct": null,
+      "suff_diff_ci": null,
+      "n_necsuff": 0
+    },
+    "virus": {
+      "n_items": 6,
+      "n_hijackers": 6,
+      "hijack_rate": 1.0,
+      "mean_ds_peak_layer": 30.666666666666668,
+      "mean_direct_peak_layer": 0.0,
+      "peak_layer_diff_ci": {
+        "mean_diff": 30.666666666666668,
+        "lo": 30.0,
+        "hi": 31.0
+      },
+      "mean_necessity_frac": 0.9864191023353966,
+      "mean_suff_ds": 0.05761463614180684,
+      "mean_suff_direct": 0.0011151010330650024,
+      "suff_diff_ci": {
+        "mean_diff": 0.05649953510874184,
+        "lo": 0.0322485724609578,
+        "hi": 0.08075049775652587
+      },
+      "n_necsuff": 4
+    }
+  },
+  "n_items": 36,
+  "n_hijackers": 11
+}

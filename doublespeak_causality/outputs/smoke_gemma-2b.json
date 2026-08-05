@@ -1,0 +1,67 @@
+{
+  "model": "google/gemma-2b",
+  "checks": {
+    "load": {
+      "ok": true,
+      "num_layers": 18,
+      "hidden": 2048,
+      "eos_token_ids": [
+        1
+      ],
+      "n_eos": 1,
+      "device": "cuda:0"
+    },
+    "localization": {
+      "ok": false,
+      "n_codeword_occurrences": 1,
+      "codeword_last": 0,
+      "following": null,
+      "seq_len": 1
+    },
+    "capture": {
+      "ok": true,
+      "positions_captured": [
+        "codeword_last"
+      ],
+      "rep_shape": [
+        19,
+        2048
+      ],
+      "has_following": false
+    },
+    "patching": {
+      "ok": false,
+      "alpha0_add_is_identity": true,
+      "replace_changes_logits": false,
+      "max_logit_delta_after_replace": 0.0,
+      "patched_layer": 9,
+      "patched_pos": 0
+    },
+    "generation": {
+      "ok": true,
+      "n_new_tokens": 30,
+      "stop_reason": "length",
+      "completion_len_chars": 0
+    }
+  },
+  "meta": {
+    "model_id": "google/gemma-2b",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 18,
+    "hidden_size": 2048,
+    "eos_token_ids": [
+      1
+    ],
+    "hostname": "c-003",
+    "git_commit": "f646dd4121dd59f2bf67a688c00b91a9fe7fc211",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA TITAN Xp",
+    "timestamp": "2026-07-26T21:55:11"
+  },
+  "status": "PARTIAL"
+}

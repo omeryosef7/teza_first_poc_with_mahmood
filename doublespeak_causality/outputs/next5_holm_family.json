@@ -1,0 +1,27 @@
+{
+  "family": [
+    {
+      "claim": "W1_pooled_mid_late_interaction",
+      "p_raw": 0.013549,
+      "p_holm": 0.013549,
+      "survives": true
+    },
+    {
+      "claim": "W3b_DS_minus_BENIGN_concept",
+      "p_raw": 0.0007,
+      "p_holm": 0.0021,
+      "survives": true
+    },
+    {
+      "claim": "W3b_DS_minus_UNRELATED_concept",
+      "p_raw": 0.00365,
+      "p_holm": 0.0073,
+      "survives": true
+    }
+  ],
+  "all_survive": true,
+  "w1_n": 80,
+  "w1_mean": 0.1375,
+  "w3b_ds_minus_benign": 0.55464,
+  "w3b_ds_minus_unrelated": 0.45897
+}
