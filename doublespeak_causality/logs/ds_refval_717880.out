@@ -28,3 +28,53 @@ GPU ok: NVIDIA L40S
 [refval] existing L16: sep_ho=+0.354 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+8.06 valid=True
 [refval] existing L17: sep_ho=+0.379 ablate=+0.333(rand +0.000) induce=+0.667(rand +0.000) a_ind=+8.81 valid=True
 [refval] existing L18: sep_ho=+0.425 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+9.81 valid=True
+[refval] existing L19: sep_ho=+0.464 ablate=+0.333(rand +0.000) induce=+0.667(rand -0.333) a_ind=+10.75 valid=True
+[refval] existing L20: sep_ho=+0.483 ablate=+0.333(rand +0.000) induce=+0.667(rand +0.000) a_ind=+12.09 valid=True
+[refval] existing L21: sep_ho=+0.477 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+13.36 valid=True
+[refval] existing L22: sep_ho=+0.505 ablate=+0.667(rand +0.000) induce=+0.667(rand +0.000) a_ind=+15.29 valid=True
+[refval] existing L23: sep_ho=+0.510 ablate=+0.333(rand +0.000) induce=+0.333(rand +0.000) a_ind=+16.43 valid=True
+[refval] existing L24: sep_ho=+0.511 ablate=+0.333(rand +0.000) induce=+0.333(rand +0.000) a_ind=+17.03 valid=True
+[refval] existing L25: sep_ho=+0.493 ablate=+0.333(rand +0.000) induce=+0.333(rand +0.000) a_ind=+18.58 valid=True
+[refval] existing L26: sep_ho=+0.479 ablate=+0.333(rand +0.000) induce=+0.000(rand +0.000) a_ind=+21.13 valid=False
+[refval] existing L27: sep_ho=+0.467 ablate=+0.333(rand +0.000) induce=+0.000(rand +0.000) a_ind=+22.86 valid=False
+[refval] existing L28: sep_ho=+0.433 ablate=+0.333(rand +0.000) induce=+0.333(rand +0.000) a_ind=+24.22 valid=True
+[refval] existing L29: sep_ho=+0.419 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+27.23 valid=True
+[refval] existing L30: sep_ho=+0.423 ablate=+0.667(rand +0.000) induce=+0.000(rand +0.000) a_ind=+30.56 valid=False
+[refval] existing L31: sep_ho=+0.434 ablate=+0.333(rand +0.000) induce=+0.667(rand -0.333) a_ind=+110.63 valid=True
+[refval] clearharm L0: sep_ho=+0.003 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.21 valid=False
+[refval] clearharm L1: sep_ho=+0.002 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.36 valid=False
+[refval] clearharm L2: sep_ho=+0.001 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.49 valid=False
+[refval] clearharm L3: sep_ho=+0.001 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+0.78 valid=False
+[refval] clearharm L4: sep_ho=-0.003 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+1.10 valid=False
+[refval] clearharm L5: sep_ho=-0.010 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+1.49 valid=False
+[refval] clearharm L6: sep_ho=-0.002 ablate=+0.000(rand +0.000) induce=+0.333(rand +0.000) a_ind=+1.91 valid=False
+[refval] clearharm L7: sep_ho=-0.001 ablate=+0.000(rand +0.000) induce=+0.000(rand -0.333) a_ind=+2.26 valid=False
+[refval] clearharm L8: sep_ho=-0.005 ablate=+0.000(rand +0.000) induce=-0.333(rand -0.333) a_ind=+2.79 valid=False
+[refval] clearharm L9: sep_ho=-0.003 ablate=+0.000(rand +0.000) induce=+0.333(rand -0.333) a_ind=+3.34 valid=False
+[refval] clearharm L10: sep_ho=+0.014 ablate=+0.000(rand +0.000) induce=+0.000(rand +0.000) a_ind=+3.69 valid=False
+[refval] clearharm L11: sep_ho=+0.032 ablate=+0.000(rand +0.000) induce=-0.333(rand +0.000) a_ind=+3.83 valid=False
+[refval] clearharm L12: sep_ho=+0.028 ablate=+0.000(rand +0.000) induce=+0.000(rand -0.333) a_ind=+3.94 valid=False
+[refval] clearharm L13: sep_ho=+0.095 ablate=+0.333(rand +0.000) induce=+0.000(rand -0.333) a_ind=+5.03 valid=False
+[refval] clearharm L14: sep_ho=+0.126 ablate=+0.333(rand +0.000) induce=-0.333(rand +0.000) a_ind=+5.88 valid=False
+[refval] clearharm L15: sep_ho=+0.193 ablate=+1.000(rand +0.000) induce=+0.333(rand -0.333) a_ind=+6.92 valid=True
+[refval] clearharm L16: sep_ho=+0.278 ablate=+0.667(rand +0.000) induce=+0.333(rand -0.333) a_ind=+8.58 valid=True
+[refval] clearharm L17: sep_ho=+0.293 ablate=+1.000(rand +0.000) induce=+0.667(rand +0.000) a_ind=+9.37 valid=True
+[refval] clearharm L18: sep_ho=+0.335 ablate=+1.000(rand +0.000) induce=+0.333(rand +0.000) a_ind=+10.41 valid=True
+[refval] clearharm L19: sep_ho=+0.377 ablate=+1.000(rand +0.000) induce=+0.667(rand +0.000) a_ind=+11.37 valid=True
+[refval] clearharm L20: sep_ho=+0.395 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+12.81 valid=True
+[refval] clearharm L21: sep_ho=+0.387 ablate=+0.667(rand +0.000) induce=+0.667(rand -0.333) a_ind=+14.17 valid=True
+[refval] clearharm L22: sep_ho=+0.413 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+16.21 valid=True
+[refval] clearharm L23: sep_ho=+0.415 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+17.45 valid=True
+[refval] clearharm L24: sep_ho=+0.418 ablate=+0.667(rand +0.000) induce=-0.333(rand +0.000) a_ind=+18.18 valid=False
+[refval] clearharm L25: sep_ho=+0.400 ablate=+0.667(rand +0.000) induce=+0.000(rand +0.000) a_ind=+19.80 valid=False
+[refval] clearharm L26: sep_ho=+0.392 ablate=+0.667(rand +0.000) induce=+0.000(rand +0.000) a_ind=+22.55 valid=False
+[refval] clearharm L27: sep_ho=+0.383 ablate=+0.667(rand +0.000) induce=+0.000(rand +0.000) a_ind=+24.47 valid=False
+[refval] clearharm L28: sep_ho=+0.350 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+26.13 valid=True
+[refval] clearharm L29: sep_ho=+0.338 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+29.27 valid=True
+[refval] clearharm L30: sep_ho=+0.336 ablate=+0.667(rand +0.000) induce=+0.333(rand +0.000) a_ind=+32.94 valid=True
+[refval] clearharm L31: sep_ho=+0.345 ablate=+0.333(rand +0.000) induce=+0.333(rand -0.333) a_ind=+119.59 valid=True
+[refval] 64 rows (774 raw) -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refval_clearharm_20260805_215332_717880
+  [existing] valid 15/32 best=L15 score=1.6667 invalid=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 26, 27, 30]
+  [clearharm] valid 13/32 best=L17 score=1.6667 invalid=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 24, 25, 26, 27]
+=== done ===
+Wed Aug  5 10:23:14 PM IDT 2026

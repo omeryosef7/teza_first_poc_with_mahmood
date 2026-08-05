@@ -674,7 +674,53 @@ interaction would mean the generated arm is *not* exchangeable with real ClearHa
 
 ---
 
+### ✅ P2 COMPLETE — v2 replicates the all-occurrence doubling
+`outputs/phase6_KO_clearharm_mlp_out_all_layer_20260805_220938_718027` (the relaunch of the job that hung
+at tick 8). Wilcoxon + Holm over 32 layers:
+
+| cell | demo-only L9 | **all-occurrence L9** | ratio |
+|---|---|---|---|
+| v2 dev (n=59) | +0.0798 | **+0.1101 [0.060, 0.170]** | 1.38× |
+| v2 heldout (n=55) | +0.0304 | **+0.0649 [0.030, 0.108]** | **2.13×** |
+
+L9 is the argmax and Holm-significant on **both** splits; Holm band dev L7–L12 (+L15, L20), heldout
+L9/L12/L22. The 1.38–2.13× range sits inside the v1 range (1.42–2.27×), so **the finding now replicates on
+all three benches.** P2 is done.
+
+### ⚠️ P7 SMOKE — the refusal directions are NOT all valid, and L9 may undercut a headline
+`outputs/refval_clearharm_20260805_215332_717880` — **smoke only, `DSVALN=3`.** The harness works: 64 rows
+over 32 layers × 2 direction families, random controls **0.000 throughout**, per-layer validity computed
+for both the shipped carrot/bomb-fit directions (`existing`) and a ClearHarm refit (`clearharm`).
+
+**Preliminary validity: `existing` 15/32, `clearharm` refit 13/32.** Invalid layers are essentially all of
+**L0–L14**, plus a mid-late band L24–L27.
+
+| layer | why it matters | smoke verdict |
+|---|---|---|
+| **L18** | the direction used by *every* behavioral refusal arm | **VALID** (ablate +1.000, rand +0.000) ✓ |
+| **L22** | the calibrated depth-localization headline layer | **VALID** (sep +0.413) ✓ |
+| **L9** | one of the four calibrated injection layers | **INVALID** ⚠️ |
+
+**The risk this creates.** The calibrated depth result concluded *"the refusal decision is read mid-late
+(L22 significant) and NOT early (L9 ns)."* If the **L9 direction is not a valid refusal direction**, then
+"L9 ns" is **uninformative** — injecting a direction that doesn't control refusal should produce no effect
+regardless of depth. That would not overturn the L22 finding, but it would **remove the contrast that gives
+the depth claim its force.**
+
+🛑 **Do not act on this yet: `DSVALN=3` means every ablate/induce gain is a ±0.333 single-item flip**, so
+each validity flag is a one-item decision. The full run (`DSVALN=20`) is launched as **718378**. The two
+layers our headlines actually depend on (L18, L22) both pass even at this n, which is mildly reassuring.
+
+---
+
 ## Tick log (most recent first)
+
+### Tick 28 — 2026-08-05 — P2 complete; P7 smoke flags a risk to the depth-localization headline
+All three GPU jobs completed. **P2 replicated on v2** (2.13× on heldout) — phase closed. **P10 smoke
+validated** the decode-safe harness with the decode-damage confound visibly quantified (raw necessity 0.0
+while the random control moved 0.5 — exactly why the count-matched control is read instead). **P7 smoke**
+shows only ~15/32 refusal directions validate, including an invalid **L9** that may undercut the
+depth-localization contrast; full runs launched as **718378** (P7, DSVALN=20) and **718379** (P10, full n).
 
 ### Tick 27 — 2026-08-05 — v3 hits n=324; the dataset blocker is cleared
 P1b complete and independently verified. All three GPU jobs still running. The interaction test that P8.1
