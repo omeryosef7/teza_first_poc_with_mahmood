@@ -1,0 +1,31 @@
+{
+  "schema": "DONE/1-reconstructed",
+  "schema_note": "NOT the live DONE/1 contract: `status` uses the reconstruction vocabulary (reconstructed|incomplete|empty|unknown), never the live \"ok\"; rows/times are {value,source,evidence} objects inferred from the files on disk.",
+  "reconstructed": true,
+  "run_id": "phase6_KO_clearharm_mlp_out_all_layer_20260805_135853_714854",
+  "status": "reconstructed",
+  "rows_written": {
+    "value": 1024,
+    "source": "reconstructed",
+    "evidence": "newline count of raw.jsonl",
+    "source_kind": "raw_file"
+  },
+  "end_ts": {
+    "value": "2026-08-05T14:01:26",
+    "source": "reconstructed",
+    "evidence": "latest mtime in the run dir",
+    "source_kind": "mtime"
+  },
+  "wall_seconds": {
+    "value": 153.4,
+    "source": "reconstructed",
+    "evidence": "latest mtime minus the dir-name start timestamp (upper bound: post-hoc edits to files in the dir inflate it)",
+    "source_kind": "mtime"
+  },
+  "backfill": {
+    "tool": "doublespeak_causality/scripts/backfill_runmeta.py",
+    "generated_ts": "2026-08-05T14:24:49",
+    "generator_git_commit": "fff646e0d16b8396160be90a5c60e789d688b429",
+    "warning": "Reconstructed after the fact. Every value carries its source. Absent fields were NOT knowable and were not invented."
+  }
+}

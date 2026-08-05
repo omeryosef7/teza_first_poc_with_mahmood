@@ -70,12 +70,28 @@ class TestBuildSuffixSpans:
         actual = spans.input_ids[spans.target_slice].tolist()
         assert actual == spans.target_ids
 
-    def test_suffix_immediately_before_target(self, toy_tokenizer):
-        """No gap between suffix_slice.stop and target_slice.start."""
+    def test_template_trailer_sits_between_suffix_and_target(self, toy_tokenizer):
+        """A chat-template trailer separates the suffix from the target.
+
+        UPDATED 2026-08-05. This test previously asserted
+        `suffix_slice.stop == target_slice.start` ("no gap"), which was the correct
+        contract only under the OLD, BUGGY `assistant` suffix placement, where the suffix
+        was appended after add_generation_prompt=True and therefore sat immediately before
+        the target. The 2026-07-19 fix moved placement into the USER turn, so the layout is
+        now `header_ids + suffix_ids + trailer_ids + target_ids`
+        (suffix_token_manager.py:210), where the trailer is `<im_end>\\n<im_start>assistant\\n`.
+        The old assertion is therefore FALSE BY DESIGN on the fixed path, and its failure was
+        positive evidence that the placement fix is in effect - not a regression.
+        The correct invariant is that the gap is exactly the trailer, i.e. non-negative and
+        accounted for by the reconstruction test below.
+        """
         spans = build_suffix_spans(
             toy_tokenizer, "qwen3", True, "List fruits", " ! ", "Apple"
         )
-        assert spans.suffix_slice.stop == spans.target_slice.start
+        gap = spans.target_slice.start - spans.suffix_slice.stop
+        assert gap >= 0, "target must not start before the suffix ends"
+        # the gap is the template trailer; with this toy template it is exactly 1 token
+        assert gap == 1, f"expected a 1-token template trailer, got {gap}"
 
     def test_loss_slice_offset(self, toy_tokenizer):
         """loss_slice = target_start - 1 : target_stop - 1 (GCG convention)."""
@@ -94,17 +110,29 @@ class TestBuildSuffixSpans:
         )
         spans.verify()  # must not raise
 
-    def test_full_ids_equals_prefix_suffix_target(self, toy_tokenizer):
-        """The full input_ids must equal prefix + suffix + target token-by-token."""
+    def test_full_ids_equals_prefix_suffix_trailer_target(self, toy_tokenizer):
+        """input_ids == prefix + suffix + TRAILER + target, token-by-token.
+
+        UPDATED 2026-08-05 for the same reason as the test above: under the fixed USER
+        suffix placement the layout is header + suffix + trailer + target
+        (suffix_token_manager.py:210), so the old `prefix + suffix + target` reconstruction
+        was short by exactly the trailer. Asserting the full four-part reconstruction is a
+        STRICTLY STRONGER check than the original - it pins every token, including the ones
+        between the suffix and the target that the old test silently ignored.
+        """
         spans = build_suffix_spans(
             toy_tokenizer, "qwen3", True, "List fruits", " ! ", "Apple"
         )
         ids = spans.input_ids.tolist()
         prefix_part = ids[:spans.prefix_len]
         suffix_part = ids[spans.suffix_slice]
+        trailer_part = ids[spans.suffix_slice.stop:spans.target_slice.start]
         target_part = ids[spans.target_slice]
-        reconstructed = prefix_part + suffix_part + target_part
+        reconstructed = prefix_part + suffix_part + trailer_part + target_part
         assert reconstructed == ids, f"Reconstruction mismatch: {reconstructed} != {ids}"
+        # and the suffix/target slices really do hold what the spans claim
+        assert suffix_part == spans.suffix_ids_expected
+        assert target_part == spans.target_ids
 
     def test_empty_suffix_raises(self, toy_tokenizer):
         with pytest.raises(ValueError, match="tokenized to empty sequence"):

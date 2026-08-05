@@ -1,0 +1,1108 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "n_rows": 1024,
+ "positions": "all",
+ "granularity": "layer",
+ "skips": {},
+ "by_split": {
+  "dev": {
+   "n_valid_examples": 2,
+   "windows": {
+    "L0": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0355,
+      -0.071,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4575,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L1": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0213,
+      -0.0427,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.455,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L10": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0106,
+      0.0,
+      0.0211
+     ],
+     "mean_S3_install_p_concept": 0.4404,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L11": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0228,
+      -0.0456,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.437,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L12": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0054,
+      -0.0108,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4496,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L13": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0204,
+      -0.0408,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.437,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L14": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0001
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0092,
+      0.0,
+      0.0183
+     ],
+     "mean_S3_install_p_concept": 0.4496,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L15": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0103,
+      -0.0205,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4496,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L16": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0075,
+      -0.015,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4523,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L17": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0083,
+      -0.0166,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L18": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0068,
+      -0.0135,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4575,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L19": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0042,
+      -0.0083,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4621,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L2": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0204,
+      -0.0408,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4496,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L20": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0064,
+      -0.0128,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L21": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0049,
+      -0.0097,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.455,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L22": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L23": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0049,
+      -0.0,
+      0.0097
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L24": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4575,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L25": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0022,
+      -0.0045,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L26": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0024,
+      -0.0,
+      0.0047
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L27": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0025,
+      0.0,
+      0.005
+     ],
+     "mean_S3_install_p_concept": 0.4575,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L28": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0049,
+      -0.0,
+      0.0097
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L29": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L3": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0296,
+      -0.0593,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4467,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L30": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0022,
+      -0.0045,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L31": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4598,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L4": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0587,
+      -0.1174,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4298,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L5": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0478,
+      -0.0957,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4298,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L6": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0079,
+      -0.0158,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.4496,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L7": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0259,
+      0.0,
+      0.0517
+     ],
+     "mean_S3_install_p_concept": 0.4436,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L8": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0128,
+      -0.0255,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.4621,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L9": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 1.0,
+     "necessity_specific_ci": [
+      0.0001,
+      0.0,
+      0.0002
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0188,
+      0.0,
+      0.0376
+     ],
+     "mean_S3_install_p_concept": 0.4523,
+     "suf_selfswap_max_dev": 0.0
+    }
+   }
+  },
+  "heldout": {
+   "n_valid_examples": 2,
+   "windows": {
+    "L0": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.4342,
+      -0.0,
+      0.8683
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0932,
+      -0.1864,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0028,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L1": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0378,
+      -0.0756,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.007,
+      -0.014,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0031,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L10": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0843,
+      -0.0,
+      0.1686
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0017,
+      -0.0034,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0042,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L11": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.3222,
+      0.0,
+      0.6443
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      -0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0049,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L12": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.1586,
+      0.0,
+      0.3172
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0009,
+      0.0,
+      0.0019
+     ],
+     "mean_S3_install_p_concept": 0.0043,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L13": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.072,
+      0.0,
+      0.144
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0012,
+      -0.0024,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0026,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L14": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0028,
+      -0.0055,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0013,
+      -0.0025,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0025,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L15": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0182,
+      -0.0364,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0012,
+      -0.0024,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0026,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L16": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0061,
+      0.0,
+      0.0121
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0043,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L17": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0145,
+      -0.0291,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0002,
+      0.0,
+      0.0005
+     ],
+     "mean_S3_install_p_concept": 0.0039,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L18": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0146,
+      0.0,
+      0.0293
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0001,
+      0.0,
+      0.0002
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L19": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0033,
+      -0.0,
+      0.0067
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0002,
+      0.0,
+      0.0005
+     ],
+     "mean_S3_install_p_concept": 0.004,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L2": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0165,
+      -0.0329,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0181,
+      -0.0361,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0043,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L20": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0039,
+      0.0,
+      0.0079
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0002,
+      0.0,
+      0.0005
+     ],
+     "mean_S3_install_p_concept": 0.004,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L21": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0112,
+      -0.0225,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0002,
+      -0.0005,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0036,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L22": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0019,
+      -0.0,
+      0.0038
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0002,
+      0.0,
+      0.0005
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L23": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0,
+      -0.0,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L24": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0042,
+      -0.0,
+      0.0083
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0002,
+      -0.0005,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0036,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L25": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0037,
+      -0.0,
+      0.0075
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L26": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0019,
+      -0.0,
+      0.0038
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0,
+      -0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L27": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0018,
+      -0.0036,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0001,
+      -0.0,
+      0.0002
+     ],
+     "mean_S3_install_p_concept": 0.0037,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L28": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.002,
+      -0.0,
+      0.004
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0001,
+      -0.0,
+      0.0002
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L29": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0019,
+      -0.0038,
+      -0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0001,
+      0.0,
+      0.0002
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L3": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0179,
+      0.0,
+      0.0358
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.002,
+      -0.004,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0033,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L30": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      -0.0019,
+      -0.0038,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0002,
+      -0.0004,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0035,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L31": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L4": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0426,
+      -0.0,
+      0.0852
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.013,
+      -0.0261,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0025,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L5": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.057,
+      -0.0,
+      0.114
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      -0.0021,
+      -0.0043,
+      -0.0
+     ],
+     "mean_S3_install_p_concept": 0.0033,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L6": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.039,
+      -0.0,
+      0.0779
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0001,
+      -0.0,
+      0.0002
+     ],
+     "mean_S3_install_p_concept": 0.003,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L7": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0958,
+      -0.0,
+      0.1916
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0003,
+      -0.0,
+      0.0007
+     ],
+     "mean_S3_install_p_concept": 0.0038,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L8": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0215,
+      -0.0,
+      0.043
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.0027,
+      0.0,
+      0.0053
+     ],
+     "mean_S3_install_p_concept": 0.0062,
+     "suf_selfswap_max_dev": 0.0
+    },
+    "L9": {
+     "n_valid": 2,
+     "mean_C1_p_concept": 0.5338,
+     "necessity_specific_ci": [
+      0.0885,
+      0.0,
+      0.1771
+     ],
+     "nec_selfswap_max_dev": 0.0,
+     "sufficiency_specific_ci": [
+      0.002,
+      0.0,
+      0.0041
+     ],
+     "mean_S3_install_p_concept": 0.0066,
+     "suf_selfswap_max_dev": 0.0
+    }
+   }
+  }
+ }
+}
