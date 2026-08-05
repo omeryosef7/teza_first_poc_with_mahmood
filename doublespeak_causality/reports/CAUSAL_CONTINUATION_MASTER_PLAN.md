@@ -404,8 +404,13 @@ clear the ≥ 20-per-cell mandate — which is exactly what killed Phase 5 curat
   chars. Enforce **one codeword per concept**, and **disjoint codeword sets per split** if we want the
   "unseen codeword" claim.
 - **Real intent clustering:** `intent_cluster = normalized target concept`, not a per-instruction hash.
-  Concept identity is the *only* real leakage channel — zero ClearHarm instruction pairs exceed TF-IDF
-  cosine 0.5. Estimated true cluster count: ~45–60.
+  Concept identity is the dominant leakage channel.
+  ⚠ **CORRECTED 2026-08-05 (this section originally claimed "zero ClearHarm instruction pairs exceed TF-IDF
+  cosine 0.5" — that is FALSE).** Recomputed over all 179 instructions: **max pairwise cosine 0.690, with 3
+  pairs above 0.5.** The recommendation stands, because the *built* v3 split's maximum **cross-split**
+  cosine is below that and no concept straddles — but paraphrase leakage is not identically zero, so the
+  post-split near-duplicate audit is **required**, not optional. Estimated true cluster count: ~45–60
+  (v3 achieved 40 concept-level clusters over 45 concepts after plural collapse).
 - **Complete the conditions** for the 30 expanded rows (they lack SHUFFLED_BINDING and UNRELATED_TARGET):
   **zero API cost**, pure reverse-substitution — verified that all 360 stored demos contain their codeword and
   none leak the original concept.

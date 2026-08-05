@@ -325,6 +325,30 @@ one row is exactly 20 chars. Now strict `<20`.
 
 ## Tick log (most recent first)
 
+### Tick 10 — 2026-08-05 — α sweeps running; next GPU phases being wired
+**P8.1 α sweeps are RUNNING** (716014 clearharm on n-802, 716015 curated on n-803, ~25 min in). Liveness
+checked properly this time: their `.err` ends with a *completed* post-model-load tokenizer warning, i.e.
+they are inside the (silent by design) generation loop — unlike the hung 714997, whose last `.err` line was
+a *partial* weight-loading progress bar frozen at 54%. That distinction is the tick-8 lesson applied.
+
+**Corrected a false claim in our own plan** (§5 P1b): it asserted "zero ClearHarm instruction pairs exceed
+TF-IDF cosine 0.5". Recomputed: **max pairwise cosine 0.690, 3 pairs above 0.5.** The recommendation still
+stands (the built v3's cross-split max is lower and no concept straddles), but paraphrase leakage is not
+identically zero, so the **post-split near-duplicate audit is now marked REQUIRED, not optional.**
+
+Fanned out 3 builders for the next GPU phases (code only, no launches):
+- **P10** — wire the decode-safe re-run into `phase_behav_write.py`, keeping the old prefill-only arm
+  alongside the new one so the difference is measurable in a single experiment. Explicitly warned the agent
+  not to silently substitute a broader intervention: zeroing the whole MLP output at every position is
+  **not** the same experiment as zeroing the write at the demo-codeword positions.
+- **P7** — re-validate all 32 per-layer refusal directions. This is a real blocker: none of the 32 carries
+  a `validation` key, only 5 layers were ever generation-validated, and **L12 FAILED** (induce_gain −0.333).
+  Every per-layer refusal claim — including the calibrated depth-localization headline — currently rests on
+  unvalidated directions.
+- **P9** — build the Llama+ClearHarm GCG manifest and the 16-arm cell manifest. The split has no
+  affirmative-target field, so targets must be joined from `data/manifests/clearharm_*.csv` on instruction
+  text (id schemes don't match: 0/86 exact overlap).
+
 ### Tick 9 — 2026-08-05 — all 4 builders landed; P10 unblocked; v3 split built
 Re-ran after the session reset; all 4 succeeded. Cleared the P10 blocker, built the v3 split, completed
 validator coverage, and turned the P1 audit into a gate. Independently verified the BEHAV-WRITE
