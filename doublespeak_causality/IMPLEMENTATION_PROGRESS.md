@@ -9,6 +9,14 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 106, loop tick — GPU still saturated → 2nd paper figure (depth mechanism))** —
+  Trajectory still pending (cluster GPU-saturated). Continued paper-asset production: built
+  `scripts/make_refusal_depth_figure.py` → `figures/refusal_depth_mechanism.png` (Panel A: refusal projection
+  vs depth — DS at/below benign level all depths, onset at L8-11 write band; Panel B: calibrated
+  depth-localization — rescue sig mid-late L16/22/28, ns L9, random control ~0). Reads committed summaries,
+  no GPU, Okabe-Ito. Complements the iter105 headline figure (behavioral_dissociation.png). Two publication
+  figures now cover levels 1-3 (dissociation) and 4-5 (depth mechanism).
+
 - **2026-08-05 (iter 105, loop tick — GPU still saturated → PAPER CONTRIBUTION drafted (the stated research goal))** —
   Trajectory still pending (cluster 100% GPU-saturated, queue grown to 70; no long poller re-armed — 30m tick
   suffices). Since "more Llama" experiments are hard-blocked and the goal is "add to the paper," added the
