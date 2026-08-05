@@ -103,9 +103,18 @@ ds_refabl). The difference-in-differences estimator gives:
 | test (42) | +0.286 | +0.476 | +0.476 | −0.286 [−0.538, −0.033] | 0.049 |
 | **pooled (86)** | +0.267 | +0.454 | +0.535 | **−0.186 [−0.353, −0.019]** | **0.043** |
 
-`D_i = +2` **never occurs** while `D_i = −2` does. Doublespeak and refusal-down are **sub-additive** — exactly
-what a *shared refusal bottleneck* predicts. **Planning Phase 8 to detect a positive +0.10/+0.15 interaction is
-aimed in the wrong direction.** Re-aim it as a pre-registered sub-additivity test.
+`D_i = +2` **never occurs** while `D_i = −2` does.
+
+> 🛑 **SUPERSEDED 2026-08-05 by P8.1 (`reports/PHASE8_1_ALPHA_CALIBRATION.md`, clearharm n=86).**
+> This section originally read the negative Î as evidence of a *shared refusal bottleneck* and told Phase 8
+> to re-aim as a **pre-registered sub-additivity test**. **Both conclusions are withdrawn.** The α sweep
+> re-ran this estimator on these items across seven doses: Î tracks the ceiling with
+> **Spearman(I_max, Î) = +0.991**, and at the de-saturated dose α = 0.25 (I_max = +0.477)
+> **Î = −0.023, p = 0.86 — no interaction detectable**, with |Î| at the judge noise floor. The α = 1.0 row
+> reproduces the number above (−0.209). **The sub-additivity is an artifact of the saturating dose.**
+> ⇒ Phase 8 must be run at **α = 0.25** (see §5 P8.1), and must **NOT** pre-register a sub-additivity
+> prediction. Note also that "no detectable interaction" is *not* evidence of independence: at n = 86 with
+> a ≥2 pp multi-arm noise floor the α = 0.25 CI spans [−0.151, +0.105].
 
 ### 0.7 🟠 The ceiling makes a positive interaction arithmetically undetectable at α = 1.0
 `I_max = 1 − ASR(1,0) − ASR(0,1) + ASR(0,0)` = **+0.182 (train) / +0.167 (test)**. A +0.15 target consumes
@@ -858,9 +867,18 @@ Before any locked-test data is touched, commit `reports/PREREGISTRATION.md` cont
    (5) the concept effect within the pre-defined refusal-resistant subgroup.
    Everything else is **exploratory**, reported with CIs and explicitly labelled non-confirmatory.
 2. Primary outcome = **graded StrongREJECT score**; binary McNemar as pre-registered secondary.
-3. The **direction** of each hypothesis — including the **sub-additivity** prediction for the interaction
-   (§0.6), not a positive-synergy prediction.
-4. The α chosen in P8.1 and the rule that chose it.
+3. The **direction** of each hypothesis. ⚠️ **UPDATED 2026-08-05:** this clause previously required
+   pre-registering a **sub-additivity** prediction on the strength of §0.6. **That is withdrawn** — P8.1
+   showed the sub-additivity was a saturation artifact and that at the de-saturated dose no interaction is
+   detectable (Î = −0.023, p = 0.86). **Pre-register the interaction as two-sided with no directional
+   prediction**, and pre-register the *ceiling diagnostic* alongside it: report `I_max` beside Î at every
+   dose, since Spearman(I_max, Î) = +0.991 is what exposed the artifact and is the check that would catch a
+   recurrence.
+4. The α chosen in P8.1 and the rule that chose it. **Settled: α = 0.25 on clearharm** (ASR(0,1) = 0.291,
+   I_max = +0.477, sole qualifier, selected independently on train/test/pooled). **No α qualifies on
+   curated** — a curated arm needs its own calibration around α ≈ 0.1, or curated is excluded from the
+   interaction test (its DS ASR is *below* its direct-base ASR, making it a poor interaction cohort
+   regardless).
 5. The subgroup definition rule and the calibration split it is derived from.
 6. Power for each primary arm at the achieved n.
 7. The Gate-7 decision rule and its negative controls.
@@ -935,10 +953,16 @@ Before any locked-test data is touched, commit `reports/PREREGISTRATION.md` cont
 
 # §10 Expected high-value outcomes
 
-1. If **DS + refusal-down is sub-additive** (the pilot says Î = −0.186, p = 0.043), Doublespeak's behavioral
-   effect is **entirely refusal-axis mediated** — a clean, strong paper result.
-2. If it is **synergistic** after the ceiling is removed by a sub-saturating α, then the context attack and
-   refusal suppression are **separate channels** — an equally strong, opposite result. Either way P8 delivers.
+1. ~~If **DS + refusal-down is sub-additive** (the pilot says Î = −0.186, p = 0.043), Doublespeak's
+   behavioral effect is **entirely refusal-axis mediated**.~~ **RESOLVED AND WITHDRAWN 2026-08-05:** the
+   pilot's sub-additivity was a saturation artifact (P8.1). This outcome is off the table.
+2. If it is **synergistic** at the de-saturated α = 0.25, the context attack and refusal suppression are
+   **separate channels** — still a strong result, and now the live hypothesis. ⚠️ P8.1 already looked at
+   α = 0.25 on n = 86 and found **no detectable interaction** (Î = −0.023, p = 0.86, CI [−0.151, +0.105]),
+   so P8 is powering to *distinguish* a small true interaction from zero, not to confirm a large one.
+   **This is the single strongest argument for the v3 dataset**: at n = 86 the CI is ±0.13, far too wide to
+   call independence, and the plan's own power table (§5 P8.5) says an interaction of 0.15 under Holm m=5
+   needs **n = 324**.
 3. If **concept-up adds nothing** once refusal is suppressed, the concept remap is **behaviorally
    epiphenomenal** — and P10 will have established this *with power*, which the current data does not.
 4. If **P10 flips the null** (graded score, decode-safe), the paper becomes "the concept circuit contributes

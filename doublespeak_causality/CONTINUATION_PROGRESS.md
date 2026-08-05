@@ -635,6 +635,32 @@ a malformed `--run` spec must be a hard error, not a skip.
 
 ## Tick log (most recent first)
 
+### Tick 20 — 2026-08-05 — propagated the P8.1 correction into every document that carried the claim
+No GPU work possible: both smokes (716187 P10, 716188 P7) are still PENDING on **cluster** contention with
+none of our own jobs running. Spent the tick closing the loop on tick 19 rather than starting anything new,
+because a withdrawn claim left sitting in a plan is worse than one never made.
+
+Corrected **4 locations across 2 documents**:
+- `reports/PHASE8_0_PILOT_INTERACTION.md` — a SUPERSEDED banner at the top with the α table and the
+  Spearman = +0.991 evidence, plus an inline withdrawal notice on §5.1/§5.2. Kept explicit about what
+  survives (the arm tables, the ceiling analysis in §2.4 — which turned out to be the whole story — the
+  judge-instability caveat, and `D_i = +2` never occurring) and what is *not* established (independence).
+- `reports/CAUSAL_CONTINUATION_MASTER_PLAN.md` §0.6 — superseded banner; the instruction to "re-aim Phase 8
+  as a pre-registered sub-additivity test" is withdrawn.
+- **§6 pre-registration clause 3 — the dangerous one.** It required pre-registering a *sub-additivity*
+  prediction, which would have **baked the artifact into Phase 8's confirmatory design**. Now: register the
+  interaction **two-sided with no directional prediction**, and register the **ceiling diagnostic**
+  (report `I_max` beside Î at every dose) as a standing check, since that correlation is exactly what
+  exposed the artifact and is what would catch a recurrence.
+- §6 clause 4 and §10 outcome 1 — α = 0.25 settled for clearharm, no α for curated, and the sub-additivity
+  outcome struck.
+
+**A consequence worth stating plainly:** with the sub-additivity gone, the live hypothesis is the *opposite*
+one (separate channels), and P8.1 already tested it at α = 0.25 on n = 86 — finding no detectable
+interaction with **CI [−0.151, +0.105]**. That interval is far too wide to claim independence. **This is now
+the strongest single argument for the v3 dataset**: the plan's own power table says detecting an interaction
+of 0.15 under Holm m=5 needs **n = 324**, and v3 currently stands at 138.
+
 ### Tick 19 — 2026-08-05 — P8.1 FINAL: the P8.0 headline does not survive de-saturation
 clearharm sweep completed (86/86). Ran the final calibration on both cohorts: **α = 0.25 selected**
 (I_max +0.477, 2.6× the +0.186 at α = 1.0), no α qualifies on curated. The decisive finding: at the

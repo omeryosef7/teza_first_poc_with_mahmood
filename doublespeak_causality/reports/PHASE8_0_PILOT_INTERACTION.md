@@ -1,8 +1,34 @@
-# P8.0 — The Doublespeak × refusal-down interaction is significantly SUB-ADDITIVE (pilot, no GPU)
+# P8.0 — Doublespeak × refusal-down interaction (pilot, no GPU) — ⚠️ MECHANISTIC READING WITHDRAWN
 
-**Status:** COMPLETE, verified, then **CORRECTED 2026-08-05 after adversarial review** (see §5.1, §5.3b,
-§5.3c). Direction of plan §0.6 CONFIRMED; the *strength* of the evidence is weaker than first written —
-the three outcomes are one measurement, not three, and the judge is unstable at 7.5% in the signal arms.
+> # 🛑 SUPERSEDED BY P8.1 — DO NOT CITE THE SUB-ADDITIVITY AS A MECHANISM
+>
+> **`reports/PHASE8_1_ALPHA_CALIBRATION.md` (2026-08-05, clearharm n=86) shows the sub-additivity reported
+> here is a SATURATION ARTIFACT of running the ablation at α = 1.0, not a property of the mechanism.**
+>
+> The α sweep re-ran this exact estimator on these exact items across seven doses:
+>
+> | α | I_max (headroom) | Î | p |
+> |---|---|---|---|
+> | 0.25 (de-saturated) | **+0.477** | **−0.023** | **0.86** |
+> | **1.0 (the dose used below)** | +0.186 | −0.209 | 0.020 |
+> | 2.0 | +0.023 | −0.314 | 0.0004 |
+>
+> **Spearman(I_max, Î) = +0.991.** Î is most negative exactly where the design has least room to express a
+> positive interaction. At α = 0.25, where headroom is ample, **no interaction is detectable** and |Î| sits
+> at the judge noise floor. The α = 1.0 row reproduces this report's headline (−0.209 vs −0.186 here), so
+> the finding below is real *as a measurement at that dose* — it simply does not mean what §5 claims.
+>
+> **What is withdrawn:** "sub-additive ⇒ shared refusal bottleneck" (§5.1, §5.2).
+> **What still stands:** the arm tables (§2.1), the ceiling analysis (§2.4) — which turned out to be the
+> whole story — the judge-instability caveat (§5.3b), and `D_i = +2` never occurring (0/137 here, and
+> 0 at every α in P8.1).
+> **What is NOT established:** that the channels are independent. Absence of a detectable interaction at
+> n = 86 with a ≥2 pp multi-arm noise floor is not evidence of absence; the α = 0.25 CI spans
+> [−0.151, +0.105].
+
+**Status:** COMPLETE and verified as a measurement at α = 1.0; **mechanistic interpretation withdrawn
+2026-08-05 (see banner).** Previously corrected after adversarial review (see §5.1, §5.3b, §5.3c): the
+three outcomes are one measurement, not three, and the judge is unstable at 7.5 % in the signal arms.
 **Script:** `scripts/analyze_interaction_2x2.py` · **Machine-readable output:** `outputs/interaction_2x2.json`
 **Run:** `python scripts/analyze_interaction_2x2.py`
 
@@ -192,6 +218,12 @@ task. Any future arm that claims to raise ASR must therefore state which of the 
 ---
 
 ## 5. Interpretation — honest reading
+
+> ⚠️ **§5.1 and §5.2 below are WITHDRAWN** — see the banner at the top of this file. They read a
+> saturation artifact as a mechanism. P8.1 shows the effect vanishes (Î = −0.023, p = 0.86) once the dose
+> is de-saturated, while §2.4's own ceiling analysis — written here as a caveat — turned out to be the
+> entire explanation. §5.3b (judge instability) and §5.3c (the sign-flip symmetry violation) stand, and
+> both pointed in this direction already.
 
 1. **The interaction is negative.** Pooled clearharm `Î = −0.186 [−0.349, −0.023]`, perm p = 0.045; the
    graded score gives `−0.190`, p = 0.016; compliance gives `−0.198`, p = 0.012. At split level all 12
