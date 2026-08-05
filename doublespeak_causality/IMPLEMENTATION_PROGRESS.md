@@ -9,6 +9,17 @@ Model: Llama-3.1-8B-Instruct (bf16 for causal claims). Branch: `behavioral-causa
 
 ## Live status (most recent first)
 
+- **2026-08-05 (iter 109, loop tick — NEW no-GPU result: item-level rep→behavior link (refusal proj predicts jailbreak))** —
+  GPU still saturated → mined EXISTING data for a genuinely new result. Joined REFPROJ (per-item DS refusal
+  projection) with BEHAV-REFUSAL (per-item ds_base outcome) by id (86 clearharm / 51 curated, full overlap).
+  **clearharm: a DS prompt's refusal-axis projection predicts its jailbreak at AUC=0.87, Mann-Whitney p=3.8e-9,
+  r=-0.58** — the items DS jailbreaks are precisely those it most suppresses on the refusal axis (median proj
+  jailbreak -1.15 vs refused +3.60). Directly explains partial base ASR (~.36): DS under-suppresses some items,
+  which then refuse. **curated: null (p=0.79)** — suppression is UNIFORM (spread std 1.84 vs 3.51), so a SECOND
+  mechanism (concept-dilution: codeword→benign output) limits ASR there. → partial ASR has two sources, pinned
+  per cohort. `reports/REP_PREDICTS_BEHAVIOR.md` + `scripts/analyze_rep_predicts_behavior.py` +
+  `figures/rep_predicts_behavior.png`. Strengthens the refusal-locus story at the ITEM level.
+
 - **2026-08-05 (iter 108, loop tick — GPU saturated → consolidated results TABLE (paper Table 1))** —
   Trajectory still pending (queue 69). Built `reports/BEHAVIORAL_RESULTS_TABLE.md` — the six-level finding as
   one paper Table 1 (claim · experiment · effect both cohorts · significance · control · verdict), numbers
