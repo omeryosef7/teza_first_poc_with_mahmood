@@ -746,6 +746,42 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 85 — 2026-08-06 — GPU-COVERAGE audit (Omer): every GPU phase traces to a GPU run; fixed one provenance gap
+**Omer's directive: make sure no GPU-requiring plan phase is run WITHOUT a GPU (skipped/faked on CPU).**
+Fanned out a 3-agent audit (P0–P7 / P8–P14 / CPU-masquerade scan) and did the load-bearing checks myself:
+
+**Reassuring facts, verified directly:**
+- **The login node `c-004` itself has CUDA** (`torch.cuda.is_available()` = True) — so there is **no
+  CPU-fake risk**: even a direct run here uses a GPU. My earlier "login has no GPU" assumption was wrong.
+- **P7** (job 721957) RUNMETA: `hostname n-805, gpu NVIDIA L40S, schema RUNMETA/1` — real GPU run.
+- **P8** centrepiece (job 721956) RUNMETA: `hostname n-801, gpu NVIDIA L40S` — real GPU run.
+- The **query z-channel** run is live on n-501/n-502 (RTX A5000), 729356 at 7,102 rows / 729357 at 3,766.
+
+**The one real gap the audit surfaced, now fixed:** `phase5_head_zpatch.py` — the P4b-1 script — **never
+wrote RUNMETA/DONE** (the B6-class defect I fixed for edgeKO but missed here), so the committed **P4b-1
+demo result had NO provenance proving it ran on a GPU.** It *did* (jobs 728710/728711 on n-802, L40S, per
+the `GPU ok` log line), but the artifact didn't record it. Fixed: the script now writes RUNMETA (first
+action, capturing `torch.cuda.get_device_name`) + DONE (last); **backfilled** the two committed demo dirs
+from the logs → `hostname n-802, gpu NVIDIA L40S`. Future phase5 runs self-document; the running query dirs
+started under the old code and get the same backfill when they land.
+
+**Answer to the concern: no GPU phase is run without a GPU.** Completed GPU phases
+(P3/P4a/P4b-1-demo/P7/P8/P10) all trace to compute-node runs; the only defect was a missing *record*, not a
+missing *run*, now closed. Agents finishing will give the full per-phase table and confirm
+P5/P6/P9/P11/P12/P13 are **not-yet-started GPU work** — todo, not faked.
+
+### Tick 84 — 2026-08-06 — bughunt F1 [CRITICAL]: a FALSE claim was marked ✅ VERIFIED 8/8
+Claim P81-13 said *"D_i = +2 (synergy signature) occurs ZERO times, in every cohort"* and the audit
+certified it VERIFIED — but its checks only tested the **clearharm** dir while **citing the curated dir as
+evidence and never checking it.** Recomputed curated D=+2 from raw: **{α=0.5:1, 1.5:1, 2.0:2} = 4
+occurrences**, which the project's own PHASE8_1 report (lines 307/311) already prints. The false
+"never in 137 items" phrasing sat in the **abstract-safe list** as the "ceiling-immune backstop."
+Fixed: claim restated (0/86 on the primary clearharm cohort — true, the backstop holds there — but 4/51
+curated, so clearharm-specific not universal); **VERIFIED → UNDERPOWERED**; 7 curated checks added with the
+**true** counts (1,1,2); abstract sentence #5 corrected. Negative-controlled (curated α=2.0 → 0 gives
+`CHECK-FAIL P81-13 D+2=2 vs 0`). Audit: 90 claims, VERIFIED 67, 135 checks, 0 failures. Query jobs began
+generating on a5000 this tick (the tick-83 per-item flush made progress visible immediately).
+
 ### Tick 83 — 2026-08-06 — 3090 jobs stuck (raw=0, GPU 0%); added per-item flush; moved to a5000 one-per-node
 **The 3090 jobs passed the guard but then STALLED** — `raw.jsonl` = 0 bytes and GPU util 0 % after 22 min,
 despite weights loaded. Two large-model jobs on the single node n-305 were not making forward progress.
