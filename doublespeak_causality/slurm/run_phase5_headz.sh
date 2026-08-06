@@ -43,6 +43,17 @@ for v in DSMODEL DSBENCH DSNPROMPTS DSLAYERS DSPOS; do
 done
 echo "=== Phase5 headz: $DSBENCH n=$DSNPROMPTS layers=$DSLAYERS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+GPU_MEM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 || echo 0)"
+# GPU allowlist. L40S is the standard, but this is a FORWARD-PASS-ONLY patching job (no generation, no
+# flash-throughput dependence), and P4b measures WITHIN-RUN differences of p_concept, so any tiny
+# cross-GPU numerical difference cancels. A5000/A6000 (Ampere, 24-48GB) run Llama-3.1-8B bf16 identically
+# for this purpose. Gate on >=23GB VRAM so a 2080/titan/quadro (too small for 16GB bf16 weights) is still
+# rejected. Added 2026-08-06 to use the gpu-sharifm lab partition's free A5000s when L40S is 100% booked.
+case "$GPU_TYPE" in
+  *L40S*|*l40s*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*H100*|*H200*|*L40*)
+    if [ "${GPU_MEM:-0}" -ge 23000 ]; then echo "GPU ok: $GPU_TYPE (${GPU_MEM}MiB)";
+    else echo "ERROR: $GPU_TYPE has only ${GPU_MEM}MiB (<23GB); Llama-8B bf16 needs ~18GB"; exit 1; fi ;;
+  *) echo "ERROR: GPU '$GPU_TYPE' (${GPU_MEM}MiB) not in the allowlist"; exit 1 ;;
+esac
 python -u doublespeak_causality/scripts/phase5_head_zpatch.py \
   --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --layers "$DSLAYERS" --n-prompts "$DSNPROMPTS" --positions "$DSPOS"
