@@ -746,6 +746,76 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 40 — 2026-08-06 — P14 lands and immediately pays for itself: the P8.0 withdrawal had no artifact
+**P14 `reports/CLAIM_AUDIT_TABLE.md` is DONE** (commit `97da0bd2`) — 86 claims, each traced to its run dir,
+producing script and recompute command, with 118 numeric checks that re-derive the headline numbers from
+committed artifacts and a non-zero exit on any failure. 37 run dirs cited, 0 missing.
+
+| status | n | |
+|---|---|---|
+| VERIFIED | 59 | recomputed from raw this sprint |
+| WITHDRAWN | 8 | actively retracted |
+| SUPERSEDED | 4 | replaced by a better measurement |
+| UNDERPOWERED | 4 | number right, design can't support the inference |
+| UNVERIFIED | 4 | asserted in a report, never recomputed |
+| PENDING | 7 | run still in flight |
+
+**Only 19 of 86 are abstract-eligible.** All five mandated corrections are carried explicitly.
+
+**THE FIND, and it is the reason this deliverable was worth doing: the evidence that WITHDRAWS P8.0's
+sub-additivity claim existed only as prose in this progress file.** `outputs/alpha_calibration.json` held
+the **curated cohort only** — no clearharm block at all — and `reports/PHASE8_1_ALPHA_CALIBRATION.md` on
+disk was still the **n=78 PROVISIONAL** version carrying its own "do not cite" banner. I had been citing
+α=0.25 numbers that no committed artifact contained.
+
+I verified this myself before acting, rather than taking the auditor's word, and the cause turned out to be
+benign: **job 716014 had in fact completed** (86/86 rows, 86 distinct ids, `DONE.json` + `summary.json`) —
+a stale-artifact problem, not missing data. Re-ran the analyzer over both cohorts. **Every prose number
+reproduces exactly:**
+
+| quantity | prose claim | regenerated (n=86) |
+|---|---|---|
+| Î at α=0.25 | −0.023 | **−0.023256** |
+| 95 % CI | [−0.151, +0.105] | **[−0.15116, +0.10465]** |
+| sign-flip permutation p | 0.8597 | **0.859743** |
+| Spearman(I_max, Î) | +0.991 | **+0.991031** |
+
+`D_i` is symmetric — −2:1, −1:14, **0:57**, +1:14, +2:0 — a textbook null, not a suppressed effect.
+**The n=78→86 refresh did move `I_max`** (α=0.25: +0.487→**+0.4767**; α=1.0: +0.231→**+0.1860**), but
+α=0.25 stayed the *sole* qualifying dose at every n, so no conclusion ever rested on the partial file.
+
+**A mistake I made and caught: `--md` emits tables only**, so my first regeneration clobbered the report's
+interpretive prose (444→195 lines). Recovered from `HEAD`, spliced the FINAL tables in, then fixed the six
+stale n=78 passages by hand.
+
+**Two bugs in the audit's own check harness, fixed before trusting its green result** — a checker that
+can't fail is worse than none:
+- `_dig` split paths on `.`, so the literal alpha key `"0.25"` walked to `["0"]["25"]`. List paths now
+  supported; otherwise my new checks would have failed for a bogus reason.
+- a boolean `expect` went through `float()`, where `float(False) == float(0)`, so `provisional: 0` would
+  have passed a check asserting literal `false`. Booleans now compare by identity.
+Both confirmed by negative control: perturbing either expected value produces `CHECK-FAIL`.
+
+**Still untraceable to a run dir (4 UNVERIFIED, down from 5):** BR-12 (concept⊥refusal cosine — never
+measured, *and* a cross-convention comparison, since refusal vectors use a double-BOS forward and concept
+vectors do not), RP-03 (`REP_PREDICTS_BEHAVIOR.md`'s L17–L32 AUC sweep and 5-fold CV — the shipped script
+emits only the single L21 result), FIN-03, META-03.
+
+**Three other findings worth acting on:**
+- `P10_DECODE_SAFE_WRITE.md` §5 mis-cites its own power source: n≈275 is for ΔASR=0.09, not 0.07 (that is
+  **n≈419**).
+- The **trajectory** result reads at **L30**, which the P7 smoke also flags INVALID — so **two** headline
+  readouts sit on directions the smoke rejects, not one. (RP-01's L21 and BR-08's L22 do pass.)
+- `validate_all_outputs.py` does not recognise the P7 `refval` row schema, so **no P7 number can be called
+  VERIFIED until that reconciler is taught the schema** — a prerequisite, not a nicety.
+
+**GPU: all three jobs healthy and now past setup into real work.**
+- **720463 (P7)** — all five ClearHarm refit directions written 04:45 (`L9/16/18/22/28.pt`); `raw.jsonl`
+  created 04:46. The refit stage is done and generation has started.
+- **720725 (P8 generated)** — `gens.jsonl` at 5 lines = the first item's 5 arms complete, so the first raw
+  row is imminent. That also confirms the 5-arm/item structure, ≈24 s/item ⇒ ~46 min for 115 items.
+- **720724 (P8 clearharm)** — RUNMETA 04:31, still in setup on n-803.
+
 ### Tick 39 — 2026-08-06 — all three GPU jobs healthy and in setup; started P14 (claim audit)
 **No SLURM problem this tick — nothing to cancel or resubmit.** All three jobs are `R`, all three cleared
 their pre-flight gates, and each is in weight-load/setup:
