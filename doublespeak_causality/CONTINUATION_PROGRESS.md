@@ -746,6 +746,58 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 65 — 2026-08-06 — all 5 agents in: the P3 design is UNFALSIFIABLE as built; audit pointed at an empty dir
+All five agents returned. Two findings change what we can claim, and both are verified by me rather than
+taken on trust.
+
+**B4 — the `Δrefusal − Δrandom` design cannot falsify a specificity claim.** I had already downgraded it
+in §3c as a "floor". It is worse than that. The random axis is **not** inert — it is inert only for
+*mild* interventions:
+
+| cell | \|Δrandom\| |
+|---|---|
+| `edge_KO` (mild) | **0.00001** |
+| `all_query_edges` (maximal generic damage) | **0.16626** — 4 000× larger, **opposite in sign** |
+
+Because it moves the *other way* under maximal damage, subtracting it **inflates** the number:
++1.0755 − (−0.1663) = **+1.2417**. So the cell designed as the *maximal-generic-damage control* scores as
+the **largest and most "specific" effect in the table**. A design where the generic-damage control wins
+the specificity contest cannot falsify specificity, so **no "CI excludes 0 ⇒ specific" conclusion may be
+drawn from that column at all.** §3c now says so.
+This is a second, independent reason the `rand_edge − edge_KO` contrast is the right quantity — it never
+subtracts across axes, so it cannot be inflated this way. `all_query_edges` keeps exactly one valid
+job: showing the hook fires. **Its "specificity" cell should be ignored.**
+
+**O3 — the claim audit pointed the flagship n=242 result at an EMPTY run dir, and still called it
+PENDING.** `p8_v3_ch` mapped to `…035033_720724`, which contains **only a RUNMETA** — that job stalled on
+n-801 and the cohort was re-run as **721956** (127 rows). The pointer was never updated. Worse, the
+audit *green-lit* it: a dir with no `raw.jsonl` is reported "SKIP-legacy", which is not a failure state,
+so the check designed to catch exactly this looked clean. Meanwhile `P8_INTERACTION_V3.md` declares the
+same result COMPLETE — **the two governance documents contradicted each other on the project's headline
+negative.**
+
+Fixed all three ways: repointed to 721956, promoted **P1b-06 PENDING → VERIFIED** with the stale note
+rewritten, and **closed the loophole** — a cited dir containing *nothing but* `RUNMETA.json` is now a
+hard MISSING-DIR failure.
+**I had to tighten that check twice.** My first version tested for `raw.jsonl`/`summary.json` by name and
+false-positived on three legitimate artifact dirs (`unified_directions` ships `.npz`;
+`behavioral_split_*` ships `behavioral_raw.jsonl`). A check that cries wolf on valid dirs trains the
+reader to ignore it, so it now tests precisely for "RUNMETA and nothing else". Negative-controlled:
+repointing at the empty dir reproduces `MISSING DIR P1b-06`, and nothing else fires.
+
+**O5 — the −0.89 cross-axis constant was still on disk.** The buggy smoke's `summary.json` (726211) is
+uncommitted but still readable, and its numbers cannot be recomputed correctly because
+`base_proj_random` was never stored. Marked with an `_INVALID` field explaining exactly why, and the
+validator already FAILs it by design.
+
+Audit now: **89 claims — VERIFIED 67, WITHDRAWN 8, SUPERSEDED 4, UNDERPOWERED 5, UNVERIFIED 3,
+PENDING 2**; 128 checks, 0 failures.
+
+**Still to triage from the hunt:** O1 (phase9_dose ships a `monotone_decreasing` verdict opposite to its
+own curve), O2 (PHASE8_1 §2's 14 clearharm cells are stale n=78 and one flips a stated conclusion),
+O4 (PHASE_WRITE_REFUSAL_INTX's four ranges wrong, one sign wrong), plus B5/B7–B12 and the two
+max-scope plans.
+
 ### Tick 64 — 2026-08-06 — the bug hunt hit a published number: my P3 "specificity" answered the wrong question
 **`BUGHUNT_P3_CODE.md` returned 13 findings — 1 CRITICAL, 2 HIGH — and one of them lands directly on a
 number I published last tick.** This is the value of the hunt, so I am stating it plainly rather than

@@ -109,7 +109,11 @@ D = {
     "p7_smoke":       "outputs/refval_clearharm_20260805_215332_717880",
     "p7_full":        "outputs/refval_clearharm_20260806_033340_720463",
     # P8 core on v3 (in flight)
-    "p8_v3_ch":       "outputs/behav_refusal_clearharm_asweep0.25_20260806_035033_720724",
+    # O3 (bughunt HIGH): this pointed at ..._035033_720724, which holds ONLY a RUNMETA -- job 720724
+    # stalled on n-801 and produced no data; the cohort was re-run as 721956. The audit was
+    # green-lighting an empty directory for the project's flagship n=242 result, because a dir with
+    # no raw.jsonl is "SKIP-legacy", not a failure. Repointed to the completed run.
+    "p8_v3_ch":       "outputs/behav_refusal_clearharm_asweep0.25_20260806_051610_721956",
     "p8_v3_gen":      "outputs/behav_refusal_generated_asweep0.25_20260806_035601_720725",
 }
 
@@ -726,11 +730,13 @@ CLAIMS = [
          recompute="python scripts/build_split_v3.py",
          note="FALSE: max pairwise cosine is 0.690 with 3 pairs above 0.5. The conclusion survives (the built v3's cross-split max is lower and no concept straddles), "
               "but the post-split near-duplicate audit is therefore REQUIRED, not optional."),
-    dict(id="P1b-06", phase="P1b", status="PENDING",
+    dict(id="P1b-06", phase="P1b", status="VERIFIED",
          claim="The P8 core factorial on v3 runs at alpha=0.25 with n = 242 (clearharm 127 + generated 115), not the 324 the power table targets, because dev is reserved for selection by design.",
          source="CONTINUATION_PROGRESS.md tick 35", dirs=[D["p8_v3_ch"], D["p8_v3_gen"]],
          script="scripts/phase_behav_refusal.py --alphas 0.25", recompute="python scripts/analyze_interaction_2x2.py",
-         note="Jobs 720724 / 720725 RUNNING at the time of this audit. 242 is still 2.8x the n=86 that made P8.1's CI uninterpretable. The write-up must quote n=242.")
+         note="RESOLVED: both cohorts completed -- clearharm 721956 (127 rows) and generated 720725 (115), n=242 total, and reports/P8_INTERACTION_V3.md is COMPLETE. "
+              "The PENDING status and the 720724 pointer were both stale: 720724 stalled on n-801 with no data and the cohort was re-run as 721956. "
+              "242 is still 2.8x the n=86 that made P8.1's CI uninterpretable. The write-up must quote n=242.")
 
     ,
     # ============================== BEHAV-REFUSAL — the positive locus =========================
@@ -1121,7 +1127,25 @@ def evaluate(claims, do_validate=True):
         c["_check_verdict"] = "n/a" if not n_run else ("CHECK-FAIL" if n_bad else f"{n_run}/{n_run} ok")
         c["_check_detail"] = [d for ok, d in results if ok is False]
         # dirs
+        # O3 (bughunt HIGH): "exists" was too weak a contract. A run dir that stalled before writing
+        # any data still EXISTS (it has a RUNMETA), so it passed this check and was then reported as
+        # "SKIP-legacy" by the validator -- which is not a failure state. The flagship n=242 result was
+        # therefore pointing at an empty directory and nobody noticed. A cited dir must contain DATA.
         missing = [d for d in c.get("dirs", []) if not dir_info[d]["exists"]]
+        # Precisely: a dir holding NOTHING BUT RUNMETA.json is a run that died before writing data.
+        # Do not test for raw.jsonl/summary.json by name -- legitimate artifact dirs use other names
+        # (outputs/unified_directions ships .npz; behavioral_split_* ships behavioral_raw.jsonl), and
+        # flagging those would be a false positive that trains the reader to ignore this check.
+        def _is_empty_run(d):
+            full = os.path.join(DC, d)
+            try:
+                files = [f for f in os.listdir(full) if not f.startswith(".")]
+            except OSError:
+                return False
+            return files == ["RUNMETA.json"]
+        empty = [d for d in c.get("dirs", []) if dir_info[d]["exists"] and _is_empty_run(d)]
+        c["_empty_dirs"] = empty
+        missing = missing + [d + " (EMPTY: no raw.jsonl and no summary.json)" for d in empty]
         c["_missing_dirs"] = missing
         c["_traceable"] = bool(c.get("dirs")) and not missing
         vs = [verdicts.get(os.path.basename(d), {}).get("status") for d in c.get("dirs", []) if d in dir_info]

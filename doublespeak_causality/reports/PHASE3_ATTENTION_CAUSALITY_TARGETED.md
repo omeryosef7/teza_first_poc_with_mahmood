@@ -120,6 +120,25 @@ resamples, seed 0):**
 token → demo-codeword edges is indistinguishable from knocking out a count-matched random set of
 positions, in both bands.
 
+**And the random-axis design is not merely weak — it is unfalsifiable.** The random axis is *not* inert;
+it is inert only for *mild* interventions. Measured on the L14–21 run:
+
+| cell | \|Δrandom\| |
+|---|---|
+| `edge_KO` (mild) | **0.00001** |
+| `all_query_edges` (maximal damage) | **0.16626** — 4 000× larger, and **opposite in sign** to Δrefusal |
+
+Because the random axis moves the *other way* under maximal damage, subtracting it **inflates** the
+number: +1.0755 − (−0.1663) = **+1.2417**. So the cell designed to be the *maximal generic damage*
+control scores as the **largest and most "specific" effect in the table**. A design in which the
+generic-damage control wins the specificity contest cannot falsify a specificity claim, so **no
+"CI excludes 0 ⇒ specific" conclusion may be drawn from the `Δrefusal − Δrandom` column at all.**
+
+This is a second, independent reason the §3c contrast (`rand_edge − edge_KO`, a matched **edge** control
+on a single axis) is the right quantity: it never subtracts across axes, so it cannot be inflated this
+way. **`all_query_edges` remains valid for the one job §3 uses it for — demonstrating the hook fires and
+the readout is movable — and for nothing else.** Its "specificity" cell should be ignored.
+
 **What §3/§3b are still good for:** the `all_query_edges` row. That is a firing control, not a
 specificity, and it does its job — the harness moves this readout by −0.62 / +1.24, so the nulls above are
 informative absences rather than dead hooks.
