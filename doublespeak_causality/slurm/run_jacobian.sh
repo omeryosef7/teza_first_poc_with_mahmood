@@ -82,7 +82,16 @@ echo "=== P6 jacobian readout: $DSMODEL bench=$DSBENCH kind=$DSKIND cohort=$DSCO
 echo "    splits=$DSSPLITS conds=$DSCONDS targets=$DSTARGETS pos=$DSPOS refrow=$DSREFROW grad=$DSGRADMODE"
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+GPU_MEM_ALL="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || true)"
+GPU_MEM="${GPU_MEM_ALL%%$'\n'*}"; GPU_MEM="$(printf '%s' "$GPU_MEM" | grep -oE '[0-9]+' | head -1 || true)"; GPU_MEM="${GPU_MEM:-0}"
+# VRAM-gated allowlist (>=23GB, bf16-capable Ampere+/Ada): use free a5000/3090 when L40S is booked.
+# GPU_TYPE via ${VAR%%...} (no head pipe) is already SIGPIPE-safe; GPU_MEM sanitized from a variable.
+case "$GPU_TYPE" in
+  *L40S*|*l40s*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*A40*|*H100*|*H200*|*L40*|*3090*|*4090*)
+    if [ "${GPU_MEM:-0}" -ge 23000 ]; then echo "GPU ok: $GPU_TYPE (${GPU_MEM}MiB)";
+    else echo "ERROR: $GPU_TYPE has only ${GPU_MEM}MiB (<23GB)"; exit 1; fi ;;
+  *) echo "ERROR: GPU '$GPU_TYPE' (${GPU_MEM}MiB) not in the >=23GB allowlist"; exit 1 ;;
+esac
 python -u doublespeak_causality/scripts/phase6_jacobian_readout.py \
   --bench "$DSBENCH" --bench-kind "$DSKIND" --cohort "$DSCOHORT" \
   --model "$DSMODEL" --dtype "$DSDTYPE" \
