@@ -29,6 +29,9 @@ DC = os.path.dirname(HERE)
 sys.path.insert(0, DC)
 import ds_common as dc
 import pair_common as pc
+import importlib.util as _ilu
+_pp = _ilu.spec_from_file_location("pp50", os.path.join(DC, "50_path_patching.py"))
+_pp50 = _ilu.module_from_spec(_pp); _pp.loader.exec_module(_pp50)
 
 
 def _single_id(tok, word):
@@ -59,6 +62,12 @@ def main():
     ap.add_argument("--out-root", default=os.path.join(DC, "outputs"))
     ap.add_argument("--splits", default="dev,heldout")
     ap.add_argument("--layers", default="0-31", help="dash-range or comma list (dodge --export comma)")
+    ap.add_argument("--positions", default="answer",
+                    choices=["answer", "demo", "query", "all"],
+                    help="WHERE to patch head z (plan P4b-1). answer = FC last token (historical TOTAL "
+                         "effect). demo/query/all = the codeword occurrences where the L8-11 retrieval "
+                         "heads ACT, patched with occurrence-order trailing-aligned BENIGN donors via "
+                         "50_path_patching.ZHeadPatchMulti. answer reproduces the old runs exactly.")
     ap.add_argument("--n-prompts", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -83,16 +92,33 @@ def main():
 
     ts = time.strftime("%Y%m%d_%H%M%S")
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
-    out_dir = os.path.join(args.out_root, f"phase5_headz_{cohort}_{ts}_{uniq}")
+    out_dir = os.path.join(args.out_root, f"phase5_headz_{cohort}_{args.positions}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     print(f"[headz] cohort={cohort} L={L} heads={n_heads} layers={layers[0]}-{layers[-1]} -> {out_dir}")
 
-    def build_fc(raw_prompt, codeword, concept):
+    def build_fc(raw_prompt, codeword, concept, want_templated=False):
         fc_raw = demo_block_of(raw_prompt) + "\n\n" + fc_question(codeword, concept)
         templated = dc.apply_template(lm.tokenizer, fc_raw)
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
-        return tok
+        return (tok, templated) if want_templated else tok
+
+    def codeword_positions(templated, codeword):
+        """demo vs query codeword token positions -- the same resolver as phase6_mlp_causal.py:127-131,
+        which fixed the char-offset-vs-token-index bug. Returns (demo_pos, query_pos), trailing-ordered."""
+        q_char = templated.rfind(FC_PREFIX)
+        q_tok = len(lm.tokenizer(templated[:q_char], add_special_tokens=False)["input_ids"])
+        hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, codeword)
+        demo_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] < q_tok]
+        query_pos = [li for span, li in zip(hit.spans, hit.last_idx) if span[0] >= q_tok]
+        return demo_pos, query_pos
+
+    def capture_z_at(tok, positions):
+        """{L: {pos: Tensor[n_heads, head_dim]}} of per-head z at each requested position."""
+        with pc.ZHeadCapture(lm.model, layers) as cap:
+            lm.model(**tok, return_dict=True)
+        return {l: {pp: cap.acts[l][0, pp].view(n_heads, head_dim).float().cpu() for pp in positions}
+                for l in layers}
 
     @torch.no_grad()
     def readout(tok, cid, kid, ctx=()):
@@ -126,30 +152,71 @@ def main():
             if brow is None:
                 skips[f"{split}:no_benign"] += 1
                 continue
-            ds_tok = build_fc(r["prompt"], codeword, concept)
-            b_tok = build_fc(brow["prompt"], codeword, concept)
+            ds_tok, ds_templ = build_fc(r["prompt"], codeword, concept, want_templated=True)
+            b_tok, b_templ = build_fc(brow["prompt"], codeword, concept, want_templated=True)
             benign_p = readout(b_tok, cid, kid)
             c1 = readout(ds_tok, cid, kid)
-            z_ds, ds_last = capture_z_last(ds_tok)
-            z_b, _ = capture_z_last(b_tok)
             base = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
-                    "codeword": codeword, "benign_p_concept": benign_p, "C1": c1}
-            # a couple of self-swap / random sanity checks per example (layers[0], head 0)
+                    "codeword": codeword, "benign_p_concept": benign_p, "C1": c1,
+                    "positions": args.positions}
+
+            if args.positions == "answer":
+                # HISTORICAL PATH -- unchanged. Single last-token donor via pc.ZHeadPatch.
+                z_ds, ds_last = capture_z_last(ds_tok)
+                z_b, _ = capture_z_last(b_tok)
+                patch_pos = [ds_last]
+                def _donor_ctx(l, h):
+                    return pc.ZHeadPatch(lm.model, l, h, [ds_last], z_b[l][h].to(dev))
+                self_layer_z = z_ds
+            else:
+                # P4b-1 PATH: patch at the codeword occurrences where the retrieval heads act.
+                ds_demo, ds_query = codeword_positions(ds_templ, codeword)
+                b_demo, b_query = codeword_positions(b_templ, codeword)
+                sel = {"demo": (ds_demo, b_demo), "query": (ds_query, b_query),
+                       "all": (ds_demo + ds_query, b_demo + b_query)}[args.positions]
+                ds_pos, b_pos = sel
+                # occurrence-order TRAILING alignment: DS and benign can have different occurrence
+                # counts; align from the end and use the last k of each (plan P4b-1).
+                k = min(len(ds_pos), len(b_pos))
+                if k == 0:
+                    skips[f"{split}:no_{args.positions}_pos"] += 1
+                    continue
+                ds_pos, b_pos = ds_pos[-k:], b_pos[-k:]
+                base["n_patch_pos"] = k
+                z_ds = capture_z_at(ds_tok, ds_pos)
+                z_b = capture_z_at(b_tok, b_pos)
+                patch_pos = ds_pos
+                def _donor_ctx(l, h):
+                    vecs = [z_b[l][bp][h].to(dev) for bp in b_pos]   # benign donor per aligned position
+                    return _pp50.ZHeadPatchMulti(lm.model, l, h, ds_pos, vecs)
+                self_layer_z = None   # self-swap uses DS's OWN z at the same positions (built below)
+
             for l in layers:
                 for h in range(n_heads):
-                    donor = z_b[l][h].to(dev)
-                    p_patched = readout(ds_tok, cid, kid,
-                                        [pc.ZHeadPatch(lm.model, l, h, [ds_last], donor)])
+                    p_patched = readout(ds_tok, cid, kid, [_donor_ctx(l, h)])
                     fh.write(json.dumps({**base, "layer": l, "head": h, "cell": "benign",
                                          "p_concept": p_patched}) + "\n")
                     n_written += 1
-            # controls at one probe (layer, head) = (layers[len//2], 0): self-swap + norm-random
+            # controls at one probe (layer, head) = (layers[len//2], 0): self-swap + norm-random.
+            # self-swap MUST be an exact no-op: patch DS's own z at the SAME positions being tested.
             lp = layers[len(layers) // 2]
-            self_v = z_ds[lp][0].to(dev)
-            p_self = readout(ds_tok, cid, kid, [pc.ZHeadPatch(lm.model, lp, 0, [ds_last], self_v)])
+            if args.positions == "answer":
+                self_vecs = [z_ds[lp][0].to(dev)]
+                p_self = readout(ds_tok, cid, kid, [pc.ZHeadPatch(lm.model, lp, 0, patch_pos, self_vecs[0])])
+                ref_norm = self_vecs[0].norm().item()
+            else:
+                self_vecs = [z_ds[lp][pp][0].to(dev) for pp in patch_pos]
+                p_self = readout(ds_tok, cid, kid,
+                                 [_pp50.ZHeadPatchMulti(lm.model, lp, 0, patch_pos, self_vecs)])
+                ref_norm = self_vecs[0].norm().item()
             rand_v = torch.tensor(rng.standard_normal(head_dim), dtype=torch.float32)
-            rand_v = rand_v / (rand_v.norm() + 1e-8) * self_v.norm().item()
-            p_rand = readout(ds_tok, cid, kid, [pc.ZHeadPatch(lm.model, lp, 0, [ds_last], rand_v.to(dev))])
+            rand_v = rand_v / (rand_v.norm() + 1e-8) * ref_norm
+            if args.positions == "answer":
+                p_rand = readout(ds_tok, cid, kid, [pc.ZHeadPatch(lm.model, lp, 0, patch_pos, rand_v.to(dev))])
+            else:
+                p_rand = readout(ds_tok, cid, kid,
+                                 [_pp50.ZHeadPatchMulti(lm.model, lp, 0, patch_pos,
+                                                        [rand_v.to(dev)] * len(patch_pos))])
             fh.write(json.dumps({**base, "layer": lp, "head": 0, "cell": "selfswap", "p_concept": p_self}) + "\n")
             fh.write(json.dumps({**base, "layer": lp, "head": 0, "cell": "normrand", "p_concept": p_rand}) + "\n")
             n_written += 2

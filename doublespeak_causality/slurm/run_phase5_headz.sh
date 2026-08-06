@@ -37,11 +37,12 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSBENCH:?set DSBENCH to a data/bench/bench_<cohort>.json}"
 : "${DSNPROMPTS:=0}"
 : "${DSLAYERS:=0-31}"
-for v in DSMODEL DSBENCH DSNPROMPTS DSLAYERS; do
+: "${DSPOS:=answer}"   # P4b-1: answer|demo|query|all (single value, no comma)
+for v in DSMODEL DSBENCH DSNPROMPTS DSLAYERS DSPOS; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
 done
 echo "=== Phase5 headz: $DSBENCH n=$DSNPROMPTS layers=$DSLAYERS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase5_head_zpatch.py \
-  --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --layers "$DSLAYERS" --n-prompts "$DSNPROMPTS"
+  --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --layers "$DSLAYERS" --n-prompts "$DSNPROMPTS" --positions "$DSPOS"

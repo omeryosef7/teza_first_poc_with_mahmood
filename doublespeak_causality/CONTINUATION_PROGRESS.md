@@ -746,6 +746,43 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 71 — 2026-08-06 — P4b-1 IMPLEMENTED (patch z where the heads act) + pre-registration; smoke launched
+**The decisive P4b gap, closed with reuse rather than new machinery.** `phase5_head_zpatch.py` only ever
+patched head z at the **FC answer position** — `PHASE5_HEADS.md:74` conceded *"a head writing at an
+EARLIER position the answer reads is not captured"*, so the L8–11 retrieval heads were never patched where
+they act. Added `--positions {answer,demo,query,all}`:
+- **`answer` is the historical path, byte-for-byte** — same `pc.ZHeadPatch` at the last token. No published
+  number moves unless a flag is passed.
+- `demo`/`query`/`all` patch at the codeword occurrences, using **`50_path_patching.ZHeadPatchMulti`**
+  (per-position donors — the plan's promised zero-new-primitive path) and the **exact** demo/query
+  resolver from `phase6_mlp_causal.py:127-131` (the one that fixed the char-offset-vs-token-index bug).
+- Benign donors are **occurrence-order trailing-aligned** (DS and benign codeword counts differ; align
+  from the last occurrence, use the last *k* of each).
+
+**Self-reviewed the two things most likely to be wrong:**
+1. **Closures.** `_donor_ctx(l,h)` is defined per item and called immediately inside the `l×h` loop, so it
+   captures the right per-item `z_b`/`b_pos` — no late-binding bug.
+2. **Self-swap must stay an exact no-op in BOTH paths.** In the new path it patches DS's *own* z at the
+   *same* positions via `ZHeadPatchMulti` — so the pre-registered "self-swap = 0.0" control still holds.
+   The norm-matched random donor is broadcast to every patched position.
+The output dir now encodes `positions` so a demo run cannot overwrite an answer run.
+
+**Smoke launched (728619)**: 2 prompts, L8–11, `DSPOS=demo` — the decisive cell, at minimum size, before
+any full sweep. Per the tick-58 rule: never run the full cell on code that has never executed.
+
+**P4b-0.3 pre-registration written** (`reports/P4B_PREREGISTRATION.md`), and its load-bearing claim
+verified from the model config: **`num_attention_heads` = 32, `num_key_value_heads` = 8** — so per-head
+K/V patching *is* ill-posed under GQA, and the plan's group-level repair is the right object. The
+pre-reg fixes, before any result is seen: **one Holm family per (channel × position-set) of 1 024 cells**,
+never one 12 800-cell family (which would set the threshold at 3.9 × 10⁻⁶ and **guarantee a null** against
+the observed 0.0325 effect size — a test rigged to return null); confirmation = Holm-significant on **both**
+dev and heldout in the same cell; and every reported cell must pass the tick-69 firing check.
+
+**P4b prerequisites now stand at:** 0.1 firing test ☑ (tick 69), 0.2/0.3 manifest+pre-reg ☑ (this tick,
+pre-reg written; the mechanical 12 800-cell manifest is the one remaining GPU-free item), P4a
+identification ☑ (tick 70), and the P4b-1 **code** ☑ pending its smoke. The decisive experiment can launch
+full once 728619 is clean.
+
 ### Tick 70 — 2026-08-06 — P4a COMPLETE: token-identity retrieval on ClearHarm is 2.0×, not the 3.5× the pair showed
 **Both P4a jobs "died" with `KeyError: 'codeword'` — but the crash is cosmetic and the result is real.**
 The error is on a **log line** (`next7_attention_retrieval.py:92`) that assumed a single carrot/bomb pair
