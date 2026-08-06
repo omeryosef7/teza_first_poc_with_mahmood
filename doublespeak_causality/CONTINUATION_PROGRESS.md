@@ -746,6 +746,52 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 67 — 2026-08-06 — α=0.05 is a perfect null but an INERT dose; built a report-vs-JSON checker (and hit its limit)
+**α = 0.05 landed at full n = 127 (job 728310), and it is exactly what tick 59 predicted.**
+
+| | value |
+|---|---|
+| `Î` | **0.0000 exactly**, CI [−0.063, +0.063], **p = 1.0000** |
+| `I_max` | +0.7008 |
+| specificity ΔASR ref−rand | **+0.0315, McNemar p = 0.125 — NOT significant** |
+| cells | (0,0) 0.158 · (1,0) 0.276 · (0,1) **0.181** · (1,1) 0.299 |
+
+**The cells are almost exactly additive**: 0.158 + 0.118 + 0.024 = 0.300 against an observed 0.299. And
+that is the point — **refusal-ablation adds only +2.4 pp at this dose and does not beat its own random
+control**, so there is nothing for Doublespeak to interact *with*. A perfect null from an inert
+treatment. This is the concrete demonstration that the pre-registered tie-break selects a dose where the
+experiment cannot fail. α = 0.20 (728311, 120/127) is the informative half of the pair.
+
+**Fixed O1** — the two `phase9_dose` summaries ship `monotone_decreasing: false` while their own stored
+curve is strictly decreasing (.6902 .6448 .6191 .5880 .5750). The curve and every ASR are correct; only
+the derived boolean is wrong. Annotated both with `_STALE_VERDICT` explaining that and pointing at the
+curve, since re-running a 3-day-old GPU job to fix a boolean is not warranted and the validator already
+flags it as the corpus's only `summary!=raw` mismatch.
+
+**Built `scripts/check_report_vs_json.py`** for the gap I named last tick: nothing checked *report prose*
+against the JSON it quotes. **It immediately found a real defect** — `REP_PREDICTS_BEHAVIOR.md` still
+carried **two claims I had already withdrawn**:
+1. *"Both beat the historical L21 value of 0.874"* — withdrawn in tick 59 (ΔAUC = +0.0139, CI
+   [−0.0148, +0.0446], straddles zero).
+2. *"L21 validates in only one direction family"* — withdrawn in tick 57 (on the out-of-sample `benign`
+   population L21 validates in **both**).
+Both corrections had been applied to the claim audit and **never propagated to the report.** That is the
+same failure as O2, and it is now fixed in place with the reasoning spelled out.
+
+**But I have to report that the tool does NOT fully close the gap it was built for, because I tested it
+against the defect that motivated it and it failed.** O2's signature is a report holding the correct
+value in one place *and* a stale copy in another; a presence check passes that. I added a
+`--contradictions` mode that does catch it — and it fires **11 times on a clean corpus, 10 of them
+false**, because numeric proximity cannot distinguish "a stale copy of X" from "the correct value of a
+different quantity Y sitting nearby" (curated's −0.2157 is 0.0064 from clearharm's −0.2093, while O2's
+real defect was a 0.0103 gap — **narrowing the window kills the true positive before the false ones**).
+
+So rather than ship a noisy checker and claim the gap is closed:
+- the **default** mode is precise and low-noise, and it earned its keep by finding the withdrawn claims;
+- `--contradictions` is **opt-in**, documented as a review aid with a high false-positive rate;
+- and the docstring states plainly that **the real fix is prevention, not detection** — generate tables
+  from JSON instead of transcribing them, which is why O2 cannot recur in PHASE8_1 specifically.
+
 ### Tick 66 — 2026-08-06 — O2 fixed: 13 of 14 stale cells in the report that WITHDREW P8.0, one flipping a claim
 **O2 [HIGH] is the most embarrassing find of the audit, because I thought I had already fixed this file.**
 In tick 40 I refreshed `PHASE8_1_ALPHA_CALIBRATION.md` from n=78 to n=86 — but only the header note and

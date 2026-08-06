@@ -50,10 +50,24 @@ Holm-significant here:**
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | AUC | 0.773 | 0.819 | 0.876 | **0.888** | 0.884 | **0.882** | 0.881 | 0.879 | 0.857 | 0.856 | 0.850 |
 
-**Recommendation: re-anchor the readout at L16 (AUC 0.888) or L18 (0.882).** Both *beat* the historical
-L21 value of **0.874**, and both validate in **both** direction families where **L21 validates in only
-one** (the ClearHarm refit fails induce at L21 outright). This turns a caveat into a strictly better
-result — L18 is additionally the direction every behavioral refusal arm in the project ablates.
+**Recommendation: re-anchor the readout at L16 (AUC 0.888) or L18 (0.882).**
+
+⚠️ **This paragraph previously made two claims that have since been WITHDRAWN. Both are corrected here.**
+
+1. ~~"Both *beat* the historical L21 value of 0.874."~~ **Withdrawn.** 0.888 is the **argmax over 11
+   correlated layers** compared against a fixed one, and a paired **item**-bootstrap that recomputes both
+   AUCs on each resample gives **ΔAUC(L16 − L21) = +0.0139, 95 % CI [−0.0148, +0.0446] — straddling
+   zero** (`outputs/rep_predicts_behavior_sweep.json → cohorts.clearharm.delta_auc_best_vs_reference`).
+   The supportable statement is **"at least as good as L21"**, not "better".
+2. ~~"L21 validates in only one direction family."~~ **Withdrawn.** That verdict came from the `harmless`
+   induce population, where the `existing` family was scored **in-sample** (defect D1). On the v3
+   `benign` population — out-of-sample for *both* families — **L21 validates in BOTH**
+   (P7 report, "RESOLVED" section, job 724931).
+
+**What still stands, and it is enough:** all **11** layers P7 validated in both families are
+Holm-significant here (AUC 0.773 → 0.888), so the result does **not** depend on any single layer, and
+L16/L18 are equally good anchors with the additional property that L18 is the direction every behavioral
+refusal arm in the project ablates.
 
 **⚠️ The cross-validation figure does NOT reproduce.** The previously quoted *"5-fold CV AUC =
 0.887 ± 0.106"* is not recoverable: the original fold assignment was never recorded. A deterministic

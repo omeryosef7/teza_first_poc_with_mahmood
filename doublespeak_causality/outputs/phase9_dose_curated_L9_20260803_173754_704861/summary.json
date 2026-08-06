@@ -39,5 +39,6 @@
    },
    "monotone_decreasing": false
   }
- }
+ },
+ "_STALE_VERDICT": "audit O1: by_split.<split>.monotone_decreasing is the OPPOSITE of this file's own curve. Recomputed from the stored dose curve the verdict is TRUE for heldout; the stored value is false (heldout=False). The curve itself and every ASR in this file are CORRECT -- only the derived boolean is wrong, and validate_all_outputs.py flags it as the sole summary!=raw mismatch in the corpus. Do not cite the boolean; recompute from the curve."
 }
