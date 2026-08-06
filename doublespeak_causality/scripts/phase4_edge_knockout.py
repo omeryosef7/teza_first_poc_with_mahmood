@@ -72,19 +72,14 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
-    # NOT-YET-WIRED GUARD. --prompt-form decision and --readout refusal_proj are declared above (they are
-    # the genuinely new P3 cell: the first-generated-token decision point, which has no concept/codeword
-    # label and therefore needs the refusal projection as its readout). They are NOT implemented yet.
-    # Failing loudly beats accepting the flag and silently running the forced-choice cell instead --
-    # that would produce a plausible-looking number for an experiment that never ran, which is the exact
-    # failure class this project has already had to retract twice (prefill-only ablations, silent no-ops).
-    if args.prompt_form != "fc" or args.readout != "fc":
-        raise SystemExit(
-            f"--prompt-form {args.prompt_form} / --readout {args.readout} are NOT IMPLEMENTED yet.\n"
-            f"  Currently supported: --prompt-form fc --readout fc (with --destinations selection).\n"
-            f"  The decision-point cell needs (a) a bare add_generation_prompt build and (b) a\n"
-            f"  refusal-projection readout at a P7-validated layer. Refusing rather than silently\n"
-            f"  running the forced-choice cell under a decision-point label.")
+    # --prompt-form decision needs the refusal readout: at the first-generated-token position there is
+    # no concept/codeword label to score, so the forced-choice p_concept is undefined there.
+    if args.prompt_form == "decision" and args.readout != "refusal_proj":
+        raise SystemExit("--prompt-form decision requires --readout refusal_proj: the decision token has "
+                         "no concept/codeword label, so the forced-choice readout is undefined there.")
+    if args.readout == "refusal_proj" and args.prompt_form != "decision":
+        raise SystemExit("--readout refusal_proj is only defined for --prompt-form decision (it reads the "
+                         "LAST token of a generation-prompted sequence).")
 
     dc.set_seed(args.seed)
     rng = random.Random(args.seed)
@@ -119,6 +114,23 @@ def main():
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     print(f"[edgeKO] cohort={cohort} L={L} Hn={Hn} layers={layers[:6]}{'...' if len(layers)>6 else ''} -> {out_dir}")
 
+    # ---- refusal readout setup (only for --readout refusal_proj) ----------------------
+    refdir = refrand = None
+    if args.readout == "refusal_proj":
+        hs_row = args.proj_layer                      # hidden_states row; decoder layer = hs_row - 1
+        pt = os.path.join(args.refusal_dir, f"refusal_direction_llama_L{hs_row - 1}.pt")
+        if not os.path.exists(pt):
+            raise SystemExit(f"--readout refusal_proj: missing {pt}")
+        v = torch.load(pt, map_location="cpu").float()
+        refdir = (v / (v.norm() + 1e-8))
+        # §0.10 REQUIRES a norm-matched random control for any refusal-direction readout: these
+        # directions are only generation-validated at some layers (P7 §4c), so an effect on the true
+        # axis means nothing unless a random axis of the same norm shows none.
+        refrand = pc.norm_matched_random(refdir, 1, args.seed)[0]
+        refrand = refrand / (refrand.norm() + 1e-8)
+        print(f"[edgeko] refusal readout: hs{hs_row} (decoder L{hs_row - 1}) from {os.path.basename(pt)}; "
+              f"norm-matched random control armed", flush=True)
+
     REQ_MARKER = "Do not reason, just "
     def build_fc(raw_prompt, cw, concept):
         # KEEP the full DS prompt (demos + request-line QUERY codeword) and append the FC question,
@@ -138,6 +150,43 @@ def main():
         tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
         seqlen = tok["input_ids"].shape[1]
         return tok, demo_pos, query_pos, seqlen
+
+    def build_decision(raw_prompt, cw):
+        """The bare DS prompt with the generation prompt appended: its LAST token IS the
+        first-generated-token decision point (plan §5 P3's missing destination). No FC question."""
+        templated = dc.apply_template(lm.tokenizer, raw_prompt, add_generation_prompt=True)
+        req_off = templated.rfind(REQ_MARKER)
+        req_tok = (len(lm.tokenizer(templated[:req_off], add_special_tokens=False)["input_ids"])
+                   if req_off >= 0 else 0)
+        hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, cw)
+        demo_pos = [li for li in hit.last_idx if li < req_tok]
+        query_pos = [li for li in hit.last_idx if li >= req_tok]
+        tok = lm.tokenizer(templated, return_tensors="pt", add_special_tokens=False).to(dev)
+        return tok, demo_pos, query_pos, tok["input_ids"].shape[1]
+
+    @torch.no_grad()
+    def readout_proj(tok, ctx=(), direction=None):
+        """Last-token residual projected on a refusal direction. Mirrors
+        phase_write_refusal_interaction.py:65-71, which is the readout the project already uses."""
+        from contextlib import ExitStack
+        with ExitStack() as st:
+            for c in ctx:
+                st.enter_context(c)
+            out = lm.model(**tok, output_hidden_states=True, return_dict=True)
+        h = out.hidden_states[args.proj_layer][0, -1, :].float().cpu()
+        return float(torch.dot(h, direction))
+
+    def emit(base_row, cell, tok, cid, kid, ctx, layer=-1, head=-1):
+        """One emitter for EVERY cell, so a cell cannot silently keep the forced-choice readout under
+        --prompt-form decision. Under `decision` it writes the refusal projection AND the norm-matched
+        random projection; otherwise the historical p_concept. Returns the row dict."""
+        row = {**base_row, "layer": layer, "head": head, "cell": cell}
+        if args.prompt_form == "decision":
+            row["proj_refusal"] = readout_proj(tok, ctx, refdir)
+            row["proj_random"] = readout_proj(tok, ctx, refrand)
+        else:
+            row["p_concept"] = readout(tok, cid, kid, ctx)
+        return row
 
     @torch.no_grad()
     def readout(tok, cid, kid, ctx=()):
@@ -159,7 +208,10 @@ def main():
             concept, cw = r["target_concept"], r["codeword"]
             cid = lm.tokenizer.encode(" " + concept, add_special_tokens=False)[0]
             kid = lm.tokenizer.encode(" " + cw, add_special_tokens=False)[0]
-            tok, demo_pos, query_pos, seqlen = build_fc(r["prompt"], cw, concept)
+            if args.prompt_form == "decision":
+                tok, demo_pos, query_pos, seqlen = build_decision(r["prompt"], cw)
+            else:
+                tok, demo_pos, query_pos, seqlen = build_fc(r["prompt"], cw, concept)
             if not demo_pos or not query_pos:
                 continue
             # DESTINATION SELECTION (plan §5 P3). Historically this was the FUSED set
@@ -176,11 +228,17 @@ def main():
             if not qdest:
                 continue
             # validity: DS must read concept; benign must not
-            brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
-            btok, _, _, _ = build_fc(brow["prompt"], cw, concept) if brow else (None, None, None, None)
-            benign_pc = readout(btok, cid, kid) if btok is not None else None
-            base_pc = readout(tok, cid, kid)
-            valid = benign_pc is not None and base_pc > benign_pc
+            if args.prompt_form == "decision":
+                # No forced-choice label exists here, so the DS-reads-concept validity filter cannot be
+                # applied. Every item is carried and `valid` is None -- NOT True, so a downstream
+                # aggregator cannot silently treat these as having passed a filter that never ran.
+                benign_pc, base_pc, valid = None, readout_proj(tok, (), refdir), None
+            else:
+                brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
+                btok, _, _, _ = build_fc(brow["prompt"], cw, concept) if brow else (None, None, None, None)
+                benign_pc = readout(btok, cid, kid) if btok is not None else None
+                base_pc = readout(tok, cid, kid)
+                valid = benign_pc is not None and base_pc > benign_pc
 
             # count-matched random source keys (non-demo, causal, before the first destination)
             first_dest = min(qdest)
@@ -200,18 +258,16 @@ def main():
                 # Single-head KO is negligible (distributed); this tests the pathway's necessity without
                 # the global degradation of masking all attention (which made N7-M degenerate).
                 ko = pc.AttentionKnockout(lm.model, layers, qdest, demo_pos, heads=None)
-                fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "edge_KO",
-                                     "p_concept": readout(tok, cid, kid, [ko])}) + "\n"); n_rows += 1
+                fh.write(json.dumps(emit(brow_row, "edge_KO", tok, cid, kid, [ko])) + "\n"); n_rows += 1
                 if rand_src:
                     rk = pc.AttentionKnockout(lm.model, layers, qdest, rand_src, heads=None)
-                    fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "rand_edge",
-                                         "p_concept": readout(tok, cid, kid, [rk])}) + "\n"); n_rows += 1
+                    fh.write(json.dumps(emit(brow_row, "rand_edge", tok, cid, kid, [rk])) + "\n"); n_rows += 1
                 # broad-degradation control: knock out ALL outgoing query edges (query->everything causal)
                 allsrc = list(range(min(qdest)))
                 if allsrc:
                     ak = pc.AttentionKnockout(lm.model, layers, qdest, allsrc, heads=None)
-                    fh.write(json.dumps({**brow_row, "layer": -1, "head": -1, "cell": "all_query_edges",
-                                         "p_concept": readout(tok, cid, kid, [ak])}) + "\n"); n_rows += 1
+                    fh.write(json.dumps(emit(brow_row, "all_query_edges", tok, cid, kid, [ak])) + "\n")
+                    n_rows += 1
                 continue
 
             for lyr in layers:
@@ -227,8 +283,47 @@ def main():
                                              "cell": "rand_edge", "p_concept": p_rk}) + "\n"); n_rows += 1
     fh.close()
 
-    # aggregate: per (layer, head) specific effect = mean over valid examples of (rand_edge - edge_KO)
     all_rows = [json.loads(x) for x in open(os.path.join(out_dir, "raw.jsonl"))]
+
+    # ---- DECISION-FORM aggregation -------------------------------------------------------------
+    # The forced-choice aggregator below keys on r["valid"] and r["p_concept"], neither of which
+    # exists here (there is no concept label at the decision token). Running it would silently produce
+    # an EMPTY summary rather than an error -- so decision form gets its own branch and returns.
+    if args.prompt_form == "decision":
+        import stats as st
+        by_cell = defaultdict(dict)
+        for r in all_rows:
+            by_cell[r["cell"]][r["sid"]] = (r.get("proj_refusal"), r.get("proj_random"))
+        base_ref = {r["sid"]: r["base_p_concept"] for r in all_rows if r.get("base_p_concept") is not None}
+        out = {"cohort": cohort, "model": args.model, "mode": args.mode,
+               "prompt_form": args.prompt_form, "readout": args.readout,
+               "proj_layer_hs": args.proj_layer, "proj_layer_decoder": args.proj_layer - 1,
+               "destinations": args.destinations, "layers": layers,
+               "attn_implementation": _impl, "n_items": len(base_ref), "cells": {}}
+        for cell, d in by_cell.items():
+            sids = [x for x in d if x in base_ref]
+            if not sids:
+                continue
+            dref = np.array([d[x][0] - base_ref[x] for x in sids], dtype=float)
+            drnd = np.array([d[x][1] - base_ref[x] for x in sids], dtype=float)
+            # SPECIFICITY is the reported quantity: the knockout's shift on the refusal axis MINUS its
+            # shift on a norm-matched random axis. A raw shift confounds "the edge carries refusal"
+            # with "masking attention perturbs the residual stream at all".
+            ci = st.paired_bootstrap_ci(dref, drnd, n_boot=10000, seed=0)
+            out["cells"][cell] = {
+                "n": len(sids),
+                "mean_delta_refusal": round(float(dref.mean()), 5),
+                "mean_delta_random": round(float(drnd.mean()), 5),
+                "specificity": round(float(dref.mean() - drnd.mean()), 5),
+                "specificity_ci95": [round(float(ci["lo"]), 5), round(float(ci["hi"]), 5)],
+                "ci_reliable": bool(ci.get("ci_reliable", True)),
+            }
+        json.dump(out, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
+        print(json.dumps(out["cells"], indent=1))
+        print(f"[edgeko] decision-form summary -> {out_dir}")
+        return
+
+    # aggregate: per (layer, head) specific effect = mean over valid examples of (rand_edge - edge_KO)
     rng2 = np.random.default_rng(0)
     base = {r["sid"]: r["base_p_concept"] for r in all_rows}
     cells = defaultdict(dict)   # (layer,head,cell) -> {sid: p}

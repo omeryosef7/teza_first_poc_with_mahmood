@@ -746,6 +746,55 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 54 — 2026-08-06 — P3's decision-token cell IMPLEMENTED (the genuinely new destination)
+The three scope decisions from tick 53 are **still open — no answer has come back, and I am not treating my
+own recommendation as approval.** So this tick went to the one piece of P3 that needs no scope decision:
+the cell I deliberately left raising NOT-IMPLEMENTED last tick.
+
+**What the plan actually asked for.** §5 P3's missing destination is the **first-generated-token decision
+point**. In the forced-choice form that position does not exist — "final prompt token" there is just the FC
+answer index — so it needs a second prompt build *and* a different readout, because **there is no
+concept/codeword label at the decision token** and `p_concept` is undefined.
+
+Implemented, reusing what already existed rather than writing new machinery:
+- **`build_decision`** — `apply_template(..., add_generation_prompt=True)` on the bare DS prompt; its last
+  token *is* the decision point.
+- **`readout_proj`** — the 6-line last-token residual projection, mirroring
+  `phase_write_refusal_interaction.py:65-71`, which is the readout this project already uses.
+- **The norm-matched random axis is computed for every cell**, not just the true one. §0.10 requires it:
+  a knockout effect on the refusal axis means nothing unless a random axis of the same norm is unmoved.
+  The reported quantity is the **specificity** `Δrefusal − Δrandom`, never the raw shift — a raw shift
+  confounds *"this edge carries refusal"* with *"masking attention perturbs the residual stream at all"*.
+
+**Three bugs I found in my own implementation while wiring it, each caught before it could run:**
+1. **Two cells would have kept the forced-choice readout.** `rand_edge` and `all_query_edges` still called
+   `readout(tok, cid, kid, …)`; under `--prompt-form decision` that scores a concept label that does not
+   exist at that position. Fixed by routing **every** cell through one `emit()` helper, so a cell
+   physically cannot be left on the wrong readout.
+2. **The aggregator would have produced a silently EMPTY summary.** It keys on `r["valid"]` and
+   `r["p_concept"]`; under decision form `valid` is `None` and `p_concept` is absent, so
+   `if r["valid"]` filters everything out and writes an empty result with no error. Gave decision form
+   its own aggregation branch that returns before reaching it.
+3. **`valid` is set to `None`, not `True`.** The DS-reads-concept validity filter cannot be applied
+   without a concept label, so marking these rows `True` would claim they passed a filter that never ran.
+
+**Verified, not assumed:** both form/readout mismatch guards fire with explicit messages; the default
+`--proj-layer hs18` maps to **decoder L17**, confirmed inside P7's cross-validated set, and its `.pt`
+exists; and the specificity contrast was unit-tested on synthetic data — it returns `−0.981` CI
+`[−1.198, −0.766]` (excludes 0) for a real refusal-axis effect and `−0.008` CI `[−0.029, +0.013]`
+(includes 0) when both axes move together, which is exactly the generic-damage case the control exists to
+reject.
+
+Wrapper flags added with a dash→comma expansion and a character-class reject (`bad!val` → REJECTED).
+
+**Not launched yet, deliberately:** four jobs are already queued/running and three are on n-805, which is
+plausibly why their weight loads are slow (three processes each streaming ~16 GB of shards). Adding a
+fifth would make that worse for jobs I care about more. The smoke is staged for when the queue drains.
+
+**Job state:** 724931 (26 min), 725172 (26 min), 725173 (17 min) all running on n-805 with **empty**
+`.err` — note that is *not* the n-801 stall signature (`0/291`); the loader has not begun emitting.
+725178 (P4a) still pending.
+
 ### Tick 53 — 2026-08-06 — resized a calibration that could not finish; launched P4a; ⚠ THREE SCOPE DECISIONS FOR OMER
 **Caught a run that was going to die at walltime with nothing usable.** 724551 had 11 rows after 70 min of
 *generation* — **6.41 min/item**, because the low-α grid is 6 alphas = **20 arms/item** at 220 new tokens,

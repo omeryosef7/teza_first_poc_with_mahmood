@@ -44,6 +44,21 @@ else A="${DSLAYERS%-*}"; B="${DSLAYERS#*-}"; LAYER_ARG="--layers $(seq -s, "$A" 
 echo "=== Phase4 edgeKO: $DSBENCH n=$DSNPROMPTS layers=$DSLAYERS ($LAYER_ARG) ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+# P3 destination coverage. DSDEST is a comma list ONLY when built inside this script -- never pass a
+# comma through --export (it truncates). DSFORM=decision selects the first-generated-token decision
+# point with the refusal-projection readout; DSPROJ is a hidden_states row (decoder layer = row-1) and
+# MUST be one P7 validated in both families (decoder 13-20,24,28,29 => hs 14-21,25,29,30).
+: "${DSDEST:=query_cw-answer}"
+: "${DSFORM:=fc}"
+: "${DSREADOUT:=fc}"
+: "${DSPROJ:=18}"
+DEST="$(echo "$DSDEST" | tr '-' ',')"
+case "$DEST" in *[!a-z_,]*) echo "ERROR: DSDEST='$DSDEST' -> '$DEST' is not a comma list of names"; exit 1 ;; esac
+for v in DSFORM DSREADOUT DSPROJ; do
+  case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
+done
+echo "[wrapper] destinations='$DEST' form=$DSFORM readout=$DSREADOUT proj_hs=$DSPROJ (decoder L$((DSPROJ-1)))"
 python -u doublespeak_causality/scripts/phase4_edge_knockout.py \
-  --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --n-prompts "$DSNPROMPTS" --mode "$DSMODE" $LAYER_ARG
+  --bench "$DSBENCH" --model "$DSMODEL" --splits dev,heldout --n-prompts "$DSNPROMPTS" --mode "$DSMODE" $LAYER_ARG \
+  --destinations "$DEST" --prompt-form "$DSFORM" --readout "$DSREADOUT" --proj-layer "$DSPROJ"
 echo "=== done ==="; date
