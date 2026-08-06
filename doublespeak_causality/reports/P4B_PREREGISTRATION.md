@@ -33,18 +33,45 @@ significant **in the same (C, P) cell on both dev and heldout** (the split is th
 
 ## 2. The estimand and its sign
 
-Per cell, the reported quantity is **necessity, specificity-controlled**:
+> **⚠️ CORRECTED 2026-08-06, before any P4b-1 result was interpreted.** The first version of this section
+> defined the estimand as a per-cell *difference* against a random-donor arm
+> (`… − mean_i[same with a RANDOM donor]`). **That is not the established Phase-5 estimand, the analyzer
+> does not compute it, and — decisively — the run does not emit a per-(l,h) random arm to subtract**
+> (`normrand` is measured at a single probe head, as a sanity control, not per cell). I wrote a control
+> the data cannot support. The corrected estimand below matches `PHASE5_HEADS.md` and
+> `scripts/phase5_analyze.py:5,88` exactly. This changes no conclusion — it removes a phantom subtraction
+> that was never computed — and the direction favours no outcome. The running demo-position jobs
+> (728710/728711) emit precisely what the corrected estimand needs, so they are **not** affected.
+
+Per cell, the reported quantity is **paired necessity**:
 
 ```
-necessity_specific(l,h,P) = mean_i [ p_concept(DS)             # C1, the intact DS readout
-                                     − p_concept(DS with head (l,h)'s z at P ← BENIGN donor) ]
-                            − mean_i [ same, with a count-matched RANDOM donor ]
+necessity(l,h,P) = mean_i [ p_concept(DS)                              # C1, the intact DS readout
+                            − p_concept(DS with head (l,h)'s z at P ← BENIGN donor) ]
 ```
 
-A **positive** value means: replacing this head's output at position-set P with the benign counterpart
-*reduces* the concept readout more than a random perturbation does — i.e. the head is **necessary** for the
-concept being read. The benign donor is **occurrence-order trailing-aligned** (DS and benign codeword-
-occurrence counts differ; align from the last occurrence backward, use the last *k* of each).
+over the **valid** items (those where DS reads the concept above the benign floor,
+`C1 > benign_p_concept`), tested with **Wilcoxon signed-rank** (robust to the right-skew of the diffs) and
+**Holm-corrected across the 1 024-cell family, per split**.
+
+A **positive** value means: replacing this head's output at position-set P with the **benign counterpart's
+own z at the matched position** *reduces* the concept readout — i.e. the head is **necessary** for the
+concept being read at those positions. The benign donor is **occurrence-order trailing-aligned** (DS and
+benign codeword-occurrence counts differ; align from the last occurrence backward, use the last *k* of
+each). **The benign donor IS the controlled counterfactual** — it is the same prompt with the concept
+removed — which is what makes this a specificity measurement without a per-cell random subtraction.
+
+**Controls (emitted, not subtracted per cell):**
+- **self-swap** — DS's own z at the patched positions; must be **exactly 0.0** (locality; a non-zero value
+  voids the run). This is the primary specificity guarantee.
+- **norm-matched random donor** at one probe head — shows a same-norm *random* vector is not equivalent to
+  the benign donor. Probe-level sanity, not a per-cell baseline.
+
+**Honest limitation of this estimand (stated in advance).** A *per-(l,h)* norm-matched random arm — asking
+whether a random vector of matched norm at **each** head reduces `p_concept` as much as that head's benign
+donor — would be a strictly stronger specificity control. This run does **not** emit it (it would double
+the 1 024-cell sweep). It is a defensible upgrade for a follow-up; the self-swap = 0 locality control plus
+the matched-counterfactual benign donor is the same control structure every prior Phase-5 result used.
 
 ## 3. Position-set coverage per channel (the corrections the max-scope audit made)
 
@@ -75,7 +102,7 @@ occurrence counts differ; align from the last occurrence backward, use the last 
 | control | expected | why |
 |---|---|---|
 | **self-swap** (DS's own z at the patched positions) | **exactly 0.0** | proves locality — the patch changes nothing when the donor equals the target |
-| **norm-matched random donor** | small, and *subtracted* to form the specific effect | isolates position specificity from generic perturbation damage |
+| **norm-matched random donor** (probe head only) | different from the benign-donor effect | shows a same-norm random vector is not equivalent to the matched benign counterfactual (probe-level sanity, **not** subtracted per cell — see §2) |
 | **zero-donor firing control** (on the probe grid) | non-zero delta | proves the hook fired (§4) |
 
 A self-swap that is **not** exactly 0.0 means the patch machinery is broken and the whole run is void.
@@ -83,7 +110,7 @@ A self-swap that is **not** exactly 0.0 means the patch machinery is broken and 
 ## 6. What is fixed and cannot change after seeing results
 
 1. Family structure = one Holm family per (channel × position-set) of 1 024 cells (§1).
-2. Estimand = specificity-controlled necessity, sign as in §2.
+2. Estimand = paired necessity `mean_i[C1 − benign-patched]`, Wilcoxon/Holm per split, sign as in §2 (no per-cell random subtraction — that was a corrected error).
 3. Confirmation = Holm-significant on **both** dev and heldout in the same cell (§4).
 4. K/V is group-level at source positions; per-head K/V is not reported (§3).
 5. Every reported cell passed its firing check (§4).
