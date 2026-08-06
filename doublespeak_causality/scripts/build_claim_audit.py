@@ -898,12 +898,37 @@ CLAIMS = [
          claim="curated shows NO item-level link (AUC 0.42, p = 0.79) because its DS refusal suppression is uniform -- which isolates concept-DILUTION as the second source of partial ASR.",
          source="REP_PREDICTS_BEHAVIOR.md §'Result'", dirs=[D["refproj_cu"], D["br_cu"]],
          script="scripts/analyze_rep_predicts_behavior.py", recompute="python scripts/analyze_rep_predicts_behavior.py"),
-    dict(id="RP-03", phase="REP->BEHAV", status="UNVERIFIED",
-         claim="The AUC is not a layer cherry-pick and not in-sample optimism: single-feature AUC is stable 0.84-0.89 across L17-L32, and 5-fold cross-validated AUC = 0.887 +- 0.106.",
-         source="REP_PREDICTS_BEHAVIOR.md §'Robustness (audit)'", dirs=[D["refproj_ch"], D["br_ch"]],
-         script="scripts/analyze_rep_predicts_behavior.py", recompute="(no committed code path -- the shipped script emits only the single-layer result)",
-         note="DANGEROUS: `analyze_rep_predicts_behavior.py` computes and prints ONLY the L21/hs22 numbers. The layer sweep and the cross-validated AUC exist in no "
-              "committed script and no committed JSON. They must be re-derived and committed before either goes in the paper."),
+    dict(id="RP-03", phase="REP->BEHAV", status="VERIFIED",
+         claim="The AUC is not a layer cherry-pick: single-feature AUC is stable 0.844-0.884 across decoder L17-L31, and Holm-significant at 20 of 32 layers -- "
+               "including ALL 11 layers P7 validated in both direction families.",
+         source="REP_PREDICTS_BEHAVIOR.md §'Robustness (audit)'; recomputed into outputs/rep_predicts_behavior_sweep.json",
+         dirs=[D["refproj_ch"], D["br_ch"]],
+         script="scripts/analyze_rep_predicts_behavior.py --sweep",
+         recompute="python scripts/analyze_rep_predicts_behavior.py --sweep",
+         note="WAS UNVERIFIED (the shipped script emitted only the single-layer result). CLOSED 2026-08-06 by adding --sweep, which recomputes every layer from the "
+               "COMMITTED refproj rows -- no GPU, no new data. The stability half reproduces exactly: L17-L31 span 0.844-0.884, inside the quoted 0.84-0.89. "
+               "INDEXING: refproj keys are hidden_states rows 1..32 and hs h == decoder layer h-1, so the historical 'L21' readout is hs22. "
+               "THE CV HALF DOES NOT REPRODUCE: the quoted '5-fold CV AUC = 0.887 +- 0.106' is not recoverable because the original fold assignment was never "
+               "recorded. A deterministic stratified 5-fold (seed 0) gives 0.869 +- 0.055 at L21. Cite that, not the original. Note also that CV is near-meaningless "
+               "here -- the 'classifier' is one raw feature with no fitted parameters, so CV measures subsample stability, not generalization.",
+         checks=[dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
+                      path=["cohorts", "clearharm", "n_holm_sig_p7_valid"], expect=11),
+                 dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
+                      path=["cohorts", "clearharm", "best_layer_p7_valid", "auc"], expect=0.8883),
+                 dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
+                      path=["cohorts", "curated", "n_holm_sig"], expect=0)]),
+    dict(id="RP-04", phase="REP->BEHAV", status="VERIFIED",
+         claim="The rep->behavior readout can be re-anchored on a CROSS-VALIDATED axis at no cost: decoder L16 gives AUC 0.888 (Holm p=3.3e-8), HIGHER than the "
+               "historical L21 readout's 0.874, and L16 validates bidirectionally in BOTH direction families where L21 validates in only one.",
+         source="outputs/rep_predicts_behavior_sweep.json + P7 §4c", dirs=[D["refproj_ch"], D["br_ch"]],
+         script="scripts/analyze_rep_predicts_behavior.py --sweep",
+         recompute="python scripts/analyze_rep_predicts_behavior.py --sweep",
+         note="This RESOLVES the caveat on RP-01 rather than merely flagging it. All 11 P7-cross-validated layers are Holm-significant on clearharm "
+              "(L13 0.773 -> L16 0.888 -> L29 0.850), so the result does not depend on the one layer whose axis is family-specific. L18 -- the strongest-validated "
+              "direction in the project and the one every behavioral arm ablates -- gives 0.882. Recommend re-anchoring the paper's readout at L16 or L18. "
+              "curated remains a uniform null (0/32 Holm-significant, AUC 0.364-0.605), unchanged.",
+         checks=[dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
+                      path=["cohorts", "clearharm", "best_layer_p7_valid", "decoder_layer"], expect=16)]),
     dict(id="TR-01", phase="TRAJECTORY", status="UNDERPOWERED",
          abstract_block="Read at L30, which validates in the ClearHarm refit ONLY (+0.350/+0.100 = a single induce item); the shipped `existing` family fails induce at L30 outright.",
          claim="The refusal outcome is set at the DECISION POINT: DS-refused and DS-jailbreak trajectories are separated at generated token 0 (projection 9.1 vs -2.1 at L30) and never cross, falsifying mid-generation re-engagement.",

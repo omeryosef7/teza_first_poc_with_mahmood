@@ -29,6 +29,40 @@ lower projection), point-biserial r, and AUC (does lower projection → jailbrea
   the *benign codeword* rather than the harmful concept (StrongREJECT scores it low even with refusal off). This
   is the concept-**dilution** side of "imperfect refusal suppression."
 
+## Robustness — RECOMPUTED 2026-08-06, and the readout should move to L16
+
+The numbers in the section below were previously quoted but emitted by **no committed code path**
+(claim `RP-03`, UNVERIFIED). `scripts/analyze_rep_predicts_behavior.py --sweep` now recomputes them from
+the **committed** `refproj` rows — no GPU, no new data — into `outputs/rep_predicts_behavior_sweep.json`.
+
+**Indexing, because it is easy to get wrong:** `refproj` keys are `hidden_states` rows **1..32**, and
+`hidden_states[k+1]` is post-block-`k`, so **hs `h` = decoder layer `h−1`**. The historical "L21" readout
+is hs22.
+
+**Layer stability — reproduces.** Decoder L17–L31 span **AUC 0.844–0.884**, inside the quoted 0.84–0.89.
+**20 of 32** layers are Holm-significant over the 32-layer family.
+
+**The important part — the result does not depend on the one layer whose axis is family-specific.**
+P7 §4c validated 11 layers bidirectionally in **both** direction families. **All 11 are
+Holm-significant here:**
+
+| decoder layer | 13 | 14 | 15 | **16** | 17 | **18** | 19 | 20 | 24 | 28 | 29 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| AUC | 0.773 | 0.819 | 0.876 | **0.888** | 0.884 | **0.882** | 0.881 | 0.879 | 0.857 | 0.856 | 0.850 |
+
+**Recommendation: re-anchor the readout at L16 (AUC 0.888) or L18 (0.882).** Both *beat* the historical
+L21 value of **0.874**, and both validate in **both** direction families where **L21 validates in only
+one** (the ClearHarm refit fails induce at L21 outright). This turns a caveat into a strictly better
+result — L18 is additionally the direction every behavioral refusal arm in the project ablates.
+
+**⚠️ The cross-validation figure does NOT reproduce.** The previously quoted *"5-fold CV AUC =
+0.887 ± 0.106"* is not recoverable: the original fold assignment was never recorded. A deterministic
+stratified 5-fold (seed 0) gives **0.869 ± 0.055** at L21 (folds 0.896 / 0.779 / 0.864 / 0.924 / 0.883).
+**Cite that number, not the original.** Note also that CV is close to meaningless here — the "classifier"
+is a single raw feature with no fitted parameters, so CV measures subsample stability, not generalization.
+
+**curated is unchanged and remains a uniform null:** 0/32 Holm-significant, AUC 0.364–0.605.
+
 ## Robustness (audit)
 
 The clearharm effect is **not a layer cherry-pick and not in-sample optimism**: single-feature AUC is stable

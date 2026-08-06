@@ -746,6 +746,47 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 48 — 2026-08-06 — SLURM back; low-α submitted; RP-01's caveat RESOLVED (and it got stronger)
+**SLURM controller is back** (26 nodes up in `killable`). Submitted the staged v3-native low-α
+re-calibration immediately: **724551** (clearharm) and **724552** (generated), `DSALPHASET=low` →
+grid `0,0.05,0.1,0.15,0.2,0.25`. Both queued.
+
+**Then closed two audit items with zero GPU, because the data was already committed.** The `refproj`
+rows carry **all 32 layers** per condition, so the layer sweep RP-03 needed was computable from disk.
+Added `--sweep` to `analyze_rep_predicts_behavior.py`.
+
+**Indexing, verified before trusting anything:** `refproj` keys are `hidden_states` rows **1..32** and
+`hidden_states[k+1]` is post-block-`k`, so **hs h = decoder layer h−1** (hs22 = the historical "L21").
+Getting this backwards would have silently mismapped every P7 comparison, so I checked it against
+`phase_refusal_projection.py:44` rather than assuming.
+
+**RP-03 UNVERIFIED → VERIFIED (the stability half).** Decoder L17–L31 span **AUC 0.844–0.884**, inside
+the quoted 0.84–0.89. **20/32** layers Holm-significant over the 32-layer family.
+
+**RP-01's caveat is now RESOLVED, not merely flagged — and the result improved.** Tick 47 had to record
+that L21, the published readout, validates in only one direction family. But **all 11 P7-cross-validated
+layers are Holm-significant here**, and the best of them beats L21:
+
+| decoder layer | 13 | 14 | 15 | **16** | 17 | **18** | 19 | 20 | 24 | 28 | 29 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| AUC | 0.773 | 0.819 | 0.876 | **0.888** | 0.884 | **0.882** | 0.881 | 0.879 | 0.857 | 0.856 | 0.850 |
+
+**L16 gives AUC 0.888 vs L21's 0.874 — higher, and validated in BOTH families.** L18 (0.882) is the
+direction every behavioral arm in the project ablates. Recommended re-anchoring the paper's readout to
+L16 or L18; logged as new claim **RP-04**. The finding does not depend on the one family-specific layer.
+
+**⚠️ But the CV half does NOT reproduce, and I am not papering over it.** The quoted *"5-fold CV AUC =
+0.887 ± 0.106"* is unrecoverable — the original fold assignment was never recorded. A deterministic
+stratified 5-fold (seed 0) gives **0.869 ± 0.055** at L21. That is the number to cite. I also noted in
+both the report and the audit that CV is near-meaningless here: the "classifier" is a single raw feature
+with no fitted parameters, so CV measures subsample stability, not generalization. Quoting it as evidence
+against "in-sample optimism" was never quite right.
+
+**curated unchanged** — uniform null, 0/32 Holm-significant, AUC 0.364–0.605.
+
+Audit: **88 claims — VERIFIED 63, WITHDRAWN 8, SUPERSEDED 4, UNDERPOWERED 7, UNVERIFIED 3, PENDING 3**;
+125 checks, 0 failures. Negative-controlled again (`CHECK-FAIL RP-04` on a perturbed expectation).
+
 ### Tick 47 — 2026-08-06 — propagated the 32-layer verdict into the claim audit; ⚠ SLURM still down
 **SLURM controller still unreachable** (checked at 07:39 and again at end of tick; `sinfo` and `squeue`
 both fail). Queue empty, nothing to cancel. The low-α re-calibration stays staged and ready. CPU tick.
