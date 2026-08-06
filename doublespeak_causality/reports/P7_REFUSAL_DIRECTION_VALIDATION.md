@@ -1,10 +1,15 @@
 # P7 — Generation-validating the per-layer refusal directions
 
-**Status: ✅ COMPLETE for the headline layers** (job `720463`, 840 rows, `DONE.json` present).
-**Verdict: L9 is NOT a refusal axis — under either of two independently-fit directions. L16/L18/L22/L28
-all validate. L18, the direction every downstream behavioral arm uses, is the strongest.**
+**Status: ✅ COMPLETE for the headline layers.** Two runs:
+`720463` (840 rows) = the ablate arm, and **`721957` (630 rows) = the corrected bidirectional re-run**.
 
-Run dir: `outputs/refval_clearharm_20260806_033340_720463`.
+**Verdict: L9 is NOT a refusal axis. It fails BOTH arms under BOTH independently-fit direction families —
+ablating it does not reduce refusal, and adding it to benign prompts induces zero refusal against a full
++1.000 of headroom. L16 and L18 validate strongly and unambiguously in both families; L18, the direction
+every downstream behavioral arm uses, is the strongest. L22 validates in only one family (see §4b).**
+
+Run dirs: `outputs/refval_clearharm_20260806_033340_720463` (ablate; its induce arm is defective, §5) and
+`outputs/refval_clearharm_20260806_051728_721957` (**corrected — cite this one**).
 
 ---
 
@@ -78,7 +83,57 @@ Secondary but load-bearing: **L18 validates strongly in both families (+0.600 / 
 behavioral refusal arm in this project ablates the L18 direction, so the artifact those results depend on
 is now generation-validated rather than assumed.
 
-## 5. ⚠️ The induce arm of THIS run is not interpretable — read the ablate arm only
+## 4b. The corrected induce arm (job `721957`) — L9 fails BOTH directions, in BOTH families
+
+The induce arm of 720463 was uninterpretable (§5). Job **`721957`** re-ran the same 10 cells with
+`--induce-eval harmless`. The fix is visible in the log:
+
+```
+harmless set: 20 total -> fit/alpha n=10, induce-eval n=10, disjoint=True
+baselines: harmful refusal=0.950  induce-base (harmless) refusal=0.000  [headroom for induce_gain = 1.000]
+```
+
+**The induce base went from 0.750 to 0.000** — a real test instead of a 0.25-capped one. n_harmful = 20,
+n_benign = 10 (so one induce item = 0.10).
+
+| family | layer | `ablate_spec` | `induce_spec` | valid (both arms) |
+|---|---|---|---|---|
+| `existing` | **9** | −0.050 | **+0.000** | **✗ FAILS BOTH** |
+| `existing` | 16 | +0.450 | **+1.000** | ✅ |
+| `existing` | 18 | +0.600 | **+1.000** | ✅ |
+| `existing` | 22 | +0.250 | **+0.000** | ✗ (ablate only) |
+| `existing` | 28 | +0.250 | +0.100 | ✅ |
+| `clearharm` | **9** | −0.100 | **+0.000** | **✗ FAILS BOTH** |
+| `clearharm` | 16 | +0.300 | +0.900 | ✅ |
+| `clearharm` | 18 | +0.900 | +0.800 | ✅ |
+| `clearharm` | 22 | +0.350 | +0.100 | ✅ |
+| `clearharm` | 28 | +0.300 | +0.400 | ✅ |
+
+**Why the `clearharm` ablate numbers differ slightly from §3.** The `existing` column is **byte-identical
+across the two runs** (−0.050 / +0.450 / +0.600 / +0.250 / +0.250), as it must be — those vectors are
+loaded, not fitted. The `clearharm` column moved a little (L16 +0.350→+0.300, L22 +0.450→+0.350, L9/L18/L28
+unchanged) because `--harmless-holdout` halves that family's negative class from 20 to 10 so the induce arm
+is not scored on its own fit set. That is the intended cost of the holdout: a slightly weaker refit in
+exchange for an induce arm that means something. **No cell changes sign or validity status.**
+
+**Controls are clean:** `induce_gain_rand` = 0.000 in **all ten** cells, `ablate_gain_rand` ∈ {0.00, 0.05},
+`empty_induced` = 0.0 everywhere. The random directions do nothing, so the specificity contrasts are not
+being carried by generic perturbation damage.
+
+**L9 is the only layer invalid in both families, and it now fails on both arms.** With a full +1.000 of
+headroom available, adding the L9 direction to benign prompts induces **zero** refusal — while the same
+operation at L16/L18 flips 8–10 of 10 benign prompts into refusals. This is much stronger than the ablate
+arm alone: L9 is not merely *unnecessary* for refusal, it is *insufficient* to produce it.
+
+**A caveat that must travel with the depth claim.** Under the strict bidirectional criterion the two
+families disagree at **L22**: `existing` L22 passes ablate (+0.250) but induces **nothing** (+0.000), so it
+is **not** a validated refusal axis; the ClearHarm refit at L22 passes both but only weakly (+0.100 induce
+= 1 of 10 items). Since the published depth-localization result leans on *"L22 significant"*, that claim
+rests on a direction which is validated in only one of two families. **L16 and L18 are the only layers
+that validate strongly and unambiguously in both.** Any depth statement should be anchored there and
+should state the L22 asymmetry rather than average over it.
+
+## 5. ⚠️ The induce arm of run `720463` is not interpretable — read its ablate arm only
 
 The induce arm was evaluated on `neutral`, and **`neutral` is not benign**: it is the harmful request with
 the harmful word swapped for the codeword (`ds_common.build_conditions:797`), i.e. a *disguised harmful*

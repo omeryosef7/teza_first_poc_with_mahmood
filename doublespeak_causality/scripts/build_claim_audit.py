@@ -796,12 +796,19 @@ CLAIMS = [
               "that gives the depth claim its force. It would not overturn the L22 result. Job 720463 (DSVALN=20) decides this.",
          checks=[dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.9.delta_ASR", expect=-0.0682),
                  dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.9.mcnemar_p", expect=0.45312, tol=1e-4)]),
-    dict(id="BR-10", phase="P7", status="PENDING",
-         claim="Only 15 of 32 shipped per-layer refusal directions validate (13/32 for a ClearHarm refit); L18 and L22 PASS, L9 and essentially all of L0-L14 FAIL.",
-         source="CONTINUATION_PROGRESS.md 'P7 SMOKE'", dirs=[D["p7_smoke"], D["p7_full"]],
+    dict(id="BR-10", phase="P7", status="VERIFIED",
+         claim="At DSVALN=20 on the headline layers, L9 FAILS BOTH validation arms in BOTH direction families "
+               "(ablate_spec -0.050/-0.100; induce_spec +0.000/+0.000 against a full +1.000 headroom), while L16 and "
+               "L18 validate strongly in both (induce_spec +1.000/+1.000 and +0.900/+0.800). L22 validates in the "
+               "ClearHarm refit only: the shipped `existing` L22 direction passes ablate (+0.250) but induces NOTHING.",
+         source="reports/P7_REFUSAL_DIRECTION_VALIDATION.md §4b (job 721957)", dirs=[D["p7_smoke"], D["p7_full"]],
          script="scripts/validate_refusal_directions.py", recompute="python scripts/validate_refusal_directions.py --run-dir " + D["p7_full"],
-         note="SMOKE ONLY (DSVALN=3): every ablate/induce gain is a +-0.333 single-item flip, so each validity flag is a one-item decision. Job 720463 (DSVALN=20, "
-              "headline layer set 9/16/18/22/28) is RUNNING. EVERY per-layer refusal claim in the paper is gated on this run. "
+         note="RESOLVED 2026-08-06 by jobs 720463 (ablate, 840 rows) and 721957 (corrected bidirectional, 630 rows). The old SMOKE (DSVALN=3) made every validity "
+              "flag a one-item decision and is superseded. L9 is the ONLY layer invalid in both families and it fails BOTH arms -- not merely unnecessary for refusal "
+              "but insufficient to produce it. CAVEAT THAT MUST TRAVEL WITH THE DEPTH CLAIM: `existing` L22 induces +0.000, so the published \'L22 significant\' result "
+              "rests on a direction validated in only one of two families; anchor depth statements on L16/L18. NOTE the induce arm of 720463 is DEFECTIVE (it ran on "
+              "`neutral`, a disguised-harmful population refusing at 0.750, capping induce_gain at +0.25); cite 721957. NOT YET COVERED: L21 (RP-01) and L30 (TR-01) "
+              "are not in the headline set; job 722611 runs the full 32 layers. "
               "SECOND GAP: `validate_all_outputs.py` does NOT recognize the `refval` row schema, so this dir FAILs reconciliation and its summary has never been "
               "recomputed from its rows by the standard validator (the two counts above are checked directly by this script instead). Teaching the validator that "
               "schema is a prerequisite for calling any P7 number VERIFIED.",

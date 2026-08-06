@@ -746,6 +746,50 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 43 — 2026-08-06 — the corrected induce arm lands: L9 fails BOTH arms in BOTH families
+**Job 721957 finished in ~20 min (630 rows) and the fix is confirmed in its own log:**
+```
+harmless set: 20 total -> fit/alpha n=10, induce-eval n=10, disjoint=True
+baselines: harmful refusal=0.950  induce-base (harmless) refusal=0.000  [headroom = 1.000]
+```
+**The induce base went 0.750 → 0.000.** The arm is now a real test instead of one capped at +0.25.
+
+| family | L9 | L16 | L18 | L22 | L28 |
+|---|---|---|---|---|---|
+| `existing` ablate / **induce** | −0.050 / **+0.000** ✗✗ | +0.450 / **+1.000** | +0.600 / **+1.000** | +0.250 / **+0.000** ✗ | +0.250 / +0.100 |
+| `clearharm` ablate / **induce** | −0.100 / **+0.000** ✗✗ | +0.300 / +0.900 | +0.900 / +0.800 | +0.350 / +0.100 | +0.300 / +0.400 |
+
+**L9 is the only layer invalid in both families, and it now fails on BOTH arms.** With a full +1.000 of
+headroom, adding the L9 direction to benign prompts induces **zero** refusal, while the same operation at
+L16/L18 flips 8–10 of 10 benign prompts into refusals. That is strictly stronger than the ablate result
+alone: L9 is not merely *unnecessary* for refusal, it is *insufficient* to produce it.
+
+**Controls are clean** — `induce_gain_rand` = 0.000 in **all ten** cells, `ablate_gain_rand` ∈ {0.00, 0.05},
+`empty_induced` = 0.0 everywhere. Nothing here is generic perturbation damage.
+
+**A caveat I am flagging rather than averaging away.** The two families **disagree at L22**: the shipped
+`existing` L22 direction passes ablate (+0.250) but induces **nothing** (+0.000), so it is not a validated
+refusal axis; the ClearHarm refit passes both but weakly (+0.100 = 1 of 10). **The published depth result
+leans on "L22 significant", so that claim rests on a direction validated in only one of two families.**
+L16 and L18 are the only layers that validate strongly and unambiguously in both — depth statements should
+be anchored there and should state the L22 asymmetry.
+
+**Cross-run consistency checked, not assumed.** The `existing` ablate column is byte-identical across
+720463 and 721957 (as it must be — those vectors are loaded, not fitted). Only `clearharm` L16
+(+0.350→+0.300) and L22 (+0.450→+0.350) moved, because `--harmless-holdout` halves that family's negative
+class from 20 to 10. **No cell changes sign or validity status** — the intended cost of the holdout.
+
+**Gap this exposed, now being closed.** The headline layer set (9/16/18/22/28) **omits L21 and L30**, which
+are exactly the layers carrying the rep→behavior AUC result (L21) and the trajectory result (L30). Both
+still rest on unvalidated directions. Launched **job 722611**, the full 32-layer sweep — it covers L21/L30
+and is also the appendix deliverable.
+
+**Claim audit updated:** BR-10 goes PENDING → **VERIFIED** with the real numbers and both caveats (the L22
+asymmetry, and that 720463's induce arm is defective so 721957 is the one to cite). 86 claims:
+VERIFIED 60, WITHDRAWN 8, SUPERSEDED 4, UNDERPOWERED 4, UNVERIFIED 4, PENDING 6. 118 checks, 0 failures.
+
+**Other jobs:** 720725 (P8 generated) at 111/115 — nearly done. 721956 (P8 clearharm v3) running, 23 rows.
+
 ### Tick 42 — 2026-08-06 — P7 COMPLETE and written up; a stalled node killed+resubmitted; --exclude trap fixed
 **P7 finished** (job 720463, 840 rows, `DONE.json`). Full ablate table, all 10 cells, every value
 re-derived from `raw.jsonl` before writing it down — base_harmful refusal 0.950, n=20/cell:
