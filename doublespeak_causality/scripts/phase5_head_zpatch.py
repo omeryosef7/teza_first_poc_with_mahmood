@@ -219,6 +219,7 @@ def main():
                                                         [rand_v.to(dev)] * len(patch_pos))])
             fh.write(json.dumps({**base, "layer": lp, "head": 0, "cell": "selfswap", "p_concept": p_self}) + "\n")
             fh.write(json.dumps({**base, "layer": lp, "head": 0, "cell": "normrand", "p_concept": p_rand}) + "\n")
+            fh.flush()   # per-item flush: progress is visible on disk and a kill loses <=1 item
             n_written += 2
     fh.close()
 
