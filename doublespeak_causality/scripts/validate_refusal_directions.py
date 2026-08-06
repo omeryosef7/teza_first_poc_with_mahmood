@@ -33,6 +33,21 @@ WHAT IS MEASURED, per (family, layer L):
       historical L12 induce failure is NOT a scope artifact. `--induce-scope prompt` keeps the
       LayerPatch code path available for exact byte-level replication.
 
+      *** WHICH PROMPTS (--induce-eval, default `harmless`; CHANGED 2026-08-06) ***
+      Until job 720463 this arm ran on `neutral`, which is NOT benign: it is the harmful request
+      with the harmful word swapped for the codeword (ds_common.build_conditions:797), i.e.
+      DISGUISED HARMFUL. Measured on 720463 it refuses at 0.750, which capped induce_gain at
+      +0.25 and mismatched the dose (alpha_induce is calibrated against HARMLESS_INSTRUCTIONS but
+      was applied to this elevated population). The default is now `harmless`, which evaluates on
+      brd.HARMLESS_INSTRUCTIONS -- the same negative class as the fit AND the alpha calibration --
+      so all three finally share one convention. `--induce-eval neutral` reproduces the old runs.
+      The ABLATE arm was never affected: it runs on `direct` (base refusal 0.950) throughout.
+      Because HARMLESS_INSTRUCTIONS is ALSO the clearharm refit's negative class and the gap
+      alpha's benign reference, --harmless-holdout (default on) splits it into disjoint halves:
+      the fit/alpha see the first 10, the induce arm is evaluated on the last 10. Without that
+      split the refit direction would be scored on its own fit set and would "induce refusal"
+      by construction.
+
   RANDOM CONTROLS. Both arms are repeated with `pc.norm_matched_random(v_L, 1, seed')` at the SAME
   alpha and the same scope (independent draw per family and per layer, matching the per-layer-seed
   convention audited in phase_refusal_projection.py). `*_specificity = gain - gain_rand`. A direction
@@ -255,6 +270,16 @@ def main():
                          "standard and phase_behav_refusal's historical default)")
     ap.add_argument("--ablate-scope", default="all_layers", choices=["all_layers", "single_layer"])
     ap.add_argument("--induce-scope", default="allpos", choices=["allpos", "prompt"])
+    ap.add_argument("--induce-eval", default="harmless", choices=["harmless", "neutral"],
+                    help="population the INDUCE arm is evaluated on. 'harmless' = "
+                         "build_refusal_direction_llama.HARMLESS_INSTRUCTIONS, the same negative class "
+                         "used for the fit and for the alpha calibration (CORRECT DEFAULT). 'neutral' = "
+                         "the codeword-substituted request, which is DISGUISED HARMFUL and already "
+                         "refuses at ~0.75 -- kept only to reproduce runs made before 2026-08-06.")
+    ap.add_argument("--harmless-holdout", type=int, default=1,
+                    help="with --induce-eval harmless, hold out half of HARMLESS_INSTRUCTIONS from the "
+                         "clearharm refit and the gap alpha so the induce arm is not evaluated on its "
+                         "own fit set. 0 = contaminated all-20 behaviour (replication only).")
     ap.add_argument("--induce-alpha-mode", default="gap", choices=["gap", "projsummary", "fixed"])
     ap.add_argument("--induce-alpha", type=float, default=8.0,
                     help="alpha for --induce-alpha-mode fixed (brd's historical default)")
@@ -354,7 +379,22 @@ def main():
     # ---- representations (one forward pass set, reused by every family) ---- #
     H_fit_harmful = (stack_last_hs(lm, [d for _, d, _ in fit_conds], layers, "fit-harmful")
                      if "clearharm" in fams else None)
-    H_harmless = stack_last_hs(lm, brd.HARMLESS_INSTRUCTIONS, layers, "harmless")
+    # HOLD OUT half the harmless set when the induce arm evaluates on it. brd.HARMLESS_INSTRUCTIONS
+    # is the clearharm refit's NEGATIVE CLASS (line ~389) and the gap-alpha's benign reference
+    # (line ~413). Evaluating induce on the same 20 prompts would be a straight fit-set evaluation:
+    # the refit direction is optimised to separate exactly those, so it would "induce refusal" on
+    # them by construction. Disjoint halves cost n=10 per side but keep the arm honest.
+    # --harmless-holdout 0 restores the contaminated all-20 behaviour for replication only.
+    _HL = list(brd.HARMLESS_INSTRUCTIONS)
+    if args.induce_eval == "harmless" and args.harmless_holdout:
+        _cut = len(_HL) // 2
+        HARMLESS_FIT, HARMLESS_EVAL = _HL[:_cut], _HL[_cut:]
+    else:
+        HARMLESS_FIT, HARMLESS_EVAL = _HL, _HL
+    print(f"[refval] harmless set: {len(_HL)} total -> fit/alpha n={len(HARMLESS_FIT)}, "
+          f"induce-eval n={len(HARMLESS_EVAL)}, disjoint="
+          f"{not (set(HARMLESS_FIT) & set(HARMLESS_EVAL))}", flush=True)
+    H_harmless = stack_last_hs(lm, HARMLESS_FIT, layers, "harmless")
     H_eval_direct = stack_last_hs(lm, [d for _, d, _ in eval_conds], layers, "eval-direct")
     H_eval_neutral = stack_last_hs(lm, [n for _, _, n in eval_conds], layers, "eval-neutral")
 
@@ -400,13 +440,44 @@ def main():
     # ---- baselines (identical across families/layers -> generated ONCE) ---- #
     gen = make_generator(lm, args.max_new)
     tmpl_direct = [dc.apply_template(lm.tokenizer, d) for _, d, _ in eval_conds]
-    tmpl_neutral = [dc.apply_template(lm.tokenizer, n) for _, _, n in eval_conds]
-    inlen_neutral = [lm.tokenizer(t, add_special_tokens=False,
-                                  return_tensors="pt")["input_ids"].shape[1] for t in tmpl_neutral]
+    # --- WHICH PROMPTS THE INDUCE ARM RUNS ON. Read this before changing it. -------------------
+    # The induce arm asks "does ADDING the axis create refusal where there was none?", so its base
+    # population must actually refuse rarely. `neutral` does NOT qualify: it is the harmful request
+    # with the harmful word swapped for the codeword (ds_common.build_conditions:797), i.e. a
+    # DISGUISED HARMFUL prompt. Measured on job 720463 it refuses at 0.750, which
+    #   (a) caps induce_gain at +0.25, so a real direction can look weak purely from the ceiling, and
+    #   (b) mismatches the dose: alpha_induce is calibrated as
+    #       mean_proj(direct) - mean_proj(brd.HARMLESS_INSTRUCTIONS), i.e. against the HARMLESS
+    #       population, then applied to a population whose projection is already elevated.
+    # `harmless` uses brd.HARMLESS_INSTRUCTIONS -- the SAME negative class as the fit and the alpha
+    # calibration -- so fit, dose and eval finally share one convention. That is the correct default.
+    # `neutral` is kept only to reproduce runs made before 2026-08-06 (e.g. 720463).
+    if args.induce_eval == "harmless":
+        # DISTINCT prompts only -- never cycle to pad the arm out to len(eval_conds). Under greedy
+        # decoding a repeated prompt yields a byte-identical generation, so padding would inflate n
+        # with duplicate rows and shrink every CI / McNemar on a sample that never grew.
+        src = HARMLESS_EVAL[:len(eval_conds)]
+        induce_ids = [f"harmless_{i}" for i in range(len(src))]
+        tmpl_induce = [dc.apply_template(lm.tokenizer, p) for p in src]
+    else:
+        induce_ids = [c[0] for c in eval_conds]
+        tmpl_induce = [dc.apply_template(lm.tokenizer, n) for _, _, n in eval_conds]
+    # The induce arm may legitimately be SHORTER than the ablate arm (fewer held-out harmless
+    # prompts than bench items). Every induce-side list must still agree, or the paired McNemar
+    # below would silently pair unrelated rows.
+    assert len(tmpl_induce) == len(induce_ids) > 0, (len(tmpl_induce), len(induce_ids))
+    inlen_induce = [lm.tokenizer(t, add_special_tokens=False,
+                                 return_tensors="pt")["input_ids"].shape[1] for t in tmpl_induce]
     base_harm = [score(gen(t)) for t in tmpl_direct]
-    base_ben = [score(gen(t)) for t in tmpl_neutral]
+    base_ben = [score(gen(t)) for t in tmpl_induce]
+    rr_base_ind = arm_rates(base_ben)
     print(f"[refval] baselines: harmful refusal={arm_rates(base_harm):.3f} "
-          f"benign refusal={arm_rates(base_ben):.3f}", flush=True)
+          f"induce-base ({args.induce_eval}) refusal={rr_base_ind:.3f} "
+          f"[headroom for induce_gain = {1.0 - rr_base_ind:.3f}]", flush=True)
+    if rr_base_ind > 0.25:
+        print(f"[refval] WARNING: the induce base population already refuses at {rr_base_ind:.3f}, so "
+              f"induce_gain cannot exceed {1.0 - rr_base_ind:.3f}. A direction can FAIL the induce "
+              f"criterion from this ceiling alone. Prefer --induce-eval harmless.", flush=True)
 
     # ---- per (family, layer) ---------------------------------------------- #
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
@@ -415,8 +486,11 @@ def main():
         fh.write(json.dumps({"family": None, "layer": None, "arm": "base_harmful",
                              "item": eval_conds[i][0], **rec}) + "\n"); n_raw += 1
     for i, rec in enumerate(base_ben):
+        # id comes from induce_ids: with --induce-eval harmless these rows are HARMLESS prompts,
+        # not bench items, so eval_conds[i][0] would mislabel them (and mis-pair any future
+        # item-level analysis of induce vs base).
         fh.write(json.dumps({"family": None, "layer": None, "arm": "base_benign",
-                             "item": eval_conds[i][0], **rec}) + "\n"); n_raw += 1
+                             "item": induce_ids[i], **rec}) + "\n"); n_raw += 1
 
     for fam in fams:
         for L in layers:
@@ -428,14 +502,16 @@ def main():
             ablr = [score(gen(t, [ablate_ctx(lm, r, a_abl, args.ablate_scope, L)]))
                     for t in tmpl_direct]
             ind = [score(gen(t, [induce_ctx(lm, v, a_ind, args.induce_scope, L, n)]))
-                   for t, n in zip(tmpl_neutral, inlen_neutral)]
+                   for t, n in zip(tmpl_induce, inlen_induce)]
             indr = [score(gen(t, [induce_ctx(lm, r, a_ind, args.induce_scope, L, n)]))
-                    for t, n in zip(tmpl_neutral, inlen_neutral)]
-            for arm, recs in (("ablate", abl), ("ablate_rand", ablr),
-                              ("induce", ind), ("induce_rand", indr)):
+                    for t, n in zip(tmpl_induce, inlen_induce)]
+            for arm, recs, ids in (("ablate", abl, [c[0] for c in eval_conds]),
+                                   ("ablate_rand", ablr, [c[0] for c in eval_conds]),
+                                   ("induce", ind, induce_ids),
+                                   ("induce_rand", indr, induce_ids)):
                 for i, rc in enumerate(recs):
                     fh.write(json.dumps({"family": fam, "layer": L, "arm": arm,
-                                         "item": eval_conds[i][0], **rc}) + "\n"); n_raw += 1
+                                         "item": ids[i], **rc}) + "\n"); n_raw += 1
             fh.flush()
 
             rr_bh, rr_ab, rr_abr = arm_rates(base_harm), arm_rates(abl), arm_rates(ablr)
@@ -466,7 +542,12 @@ def main():
                                                  [x["refused"] for x in abl])["p"],
                 "empty_ablated": round(arm_rates(abl, "empty"), 4),
                 "alpha_induce": round(a_ind, 4), "induce_scope": args.induce_scope,
+                # which population the induce arm ran on, and the ceiling that implies. Without
+                # these two fields an induce_gain cannot be interpreted: on 'neutral' the base
+                # already refuses at ~0.75, so induce_gain is capped near +0.25.
+                "induce_eval": args.induce_eval,
                 "refusal_base_benign": round(rr_bb, 4),
+                "induce_gain_ceiling": round(1.0 - rr_bb, 4),
                 "refusal_induced": round(rr_in, 4), "refusal_rand_induced": round(rr_inr, 4),
                 "induce_gain": round(in_gain, 4), "induce_gain_rand": round(in_rand, 4),
                 "induce_specificity": round(in_gain - in_rand, 4),

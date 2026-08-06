@@ -746,6 +746,76 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 41 — 2026-08-06 — P7 ANSWERS THE HEADLINE QUESTION: L9 is not a refusal axis, by either fit
+**The tick-28 risk has resolved, and it resolved in a way that HELPS the paper rather than hurting it.**
+
+`ablate_specific = (base − ablate) − (base − ablate_rand)`, n=20/cell, base_harmful refusal = 0.950:
+
+| family | L9 | L16 | L18 | L22 | L28 |
+|---|---|---|---|---|---|
+| `existing` (carrot/bomb fit) | **−0.050** ✗ | +0.450 | **+0.600** | +0.250 | +0.250 |
+| `clearharm` (native refit) | **−0.100** ✗ | +0.350 | *(running)* | *(running)* | *(running)* |
+
+**L9 fails ablation in BOTH families.** Removing the L9 "refusal direction" does not reduce refusal at
+all — refusal goes to 1.00, i.e. at or above baseline — while at L16/L18/L22/L28 the same operation
+moves 5–12 of 20 items against a norm-matched random control that moves ~0. L18, the direction every
+behavioral refusal arm downstream uses, is the strongest at **+0.600**. That validates the load-bearing
+artifact.
+
+**Why this strengthens rather than weakens the depth claim.** The worry at tick 28 was that if L9's
+direction is invalid, then "L9 ns" is uninformative and the depth-localization contrast loses its force.
+But L9 now fails under **two independently-fit directions** — the original carrot/bomb fit *and* a
+ClearHarm-native refit built here from scratch. Two independent fits failing at the same layer is not a
+measurement accident; it is evidence that **no linearly-decodable refusal axis exists at L9**. That
+converts an uninformative null ("we injected something at L9 and nothing happened") into a positive
+claim ("refusal is not linearly represented at L9, and is at L16–L28"). The honest framing for the paper
+is the latter, and it should be stated that way rather than as "L9 ns".
+
+**Caveat, stated plainly:** n=20 per cell, so one item = 0.05. L9's −0.050/−0.100 are 1–2 items and are
+*not* distinguishable from zero on their own. The claim rests on the **contrast** with L16–L28 (9–12
+items), which is large, and on its replication across two fits — not on the L9 point estimate.
+
+---
+
+**A REAL DEFECT I FOUND IN THE P7 HARNESS'S INDUCE ARM — the ablate numbers above are unaffected.**
+
+The induce arm was evaluated on `neutral`, and `neutral` **is not benign**: it is the harmful request with
+the harmful word swapped for the codeword (`ds_common.build_conditions:797`), i.e. a *disguised harmful*
+prompt. Measured on this very run it refuses at **0.750**. Two consequences:
+1. **Ceiling.** `induce_gain` cannot exceed +0.25, so a perfectly good direction can fail the induce
+   criterion from the ceiling alone. (L9 existing scored +0.200 of that +0.250 — it looks *strong* on
+   induce, which is precisely why the arm cannot be read as-is.)
+2. **Dose/population mismatch.** `alpha_induce` is calibrated as
+   `mean_proj(direct) − mean_proj(HARMLESS_INSTRUCTIONS)`, then applied to a population whose projection
+   is already elevated.
+
+The **ablate arm always ran on `direct`** (base refusal 0.950, full headroom to drop), so **everything in
+the table above stands.** I did **not** cancel job 720463 — it is 1.6 h in and its ablate arm is the
+direct test.
+
+**Fix implemented** in `scripts/validate_refusal_directions.py` for the follow-up run:
+- `--induce-eval {harmless,neutral}`, **default `harmless`** — evaluates on `brd.HARMLESS_INSTRUCTIONS`,
+  the same negative class used for the fit *and* the alpha calibration, so all three finally share one
+  convention. `neutral` is kept solely to reproduce 720463 and earlier.
+- **`--harmless-holdout` (default on)** — I caught a contamination hazard *in my own fix*:
+  `HARMLESS_INSTRUCTIONS` is also the clearharm refit's negative class and the gap-alpha reference, so
+  evaluating induce on it would score the refit direction on its own fit set, where it would induce
+  refusal by construction. The set is now split into disjoint halves (fit/alpha = first 10, induce-eval =
+  last 10); verified disjoint by unit test.
+- **No cycling to pad the arm.** My first version repeated prompts to reach n=20; under greedy decoding a
+  repeated prompt gives a byte-identical generation, so that would have inflated n with duplicate rows and
+  shrunk every CI/McNemar on a sample that never grew. The induce arm now uses distinct prompts only and
+  may legitimately be shorter than the ablate arm.
+- Row ids, `inlen`, and all paired McNemar inputs rewired to the induce population (`harmless_<i>`), since
+  those rows are no longer bench items; an assert guards the lengths.
+- `induce_eval`, `refusal_base_benign` and `induce_gain_ceiling` now recorded in `summary.json`, so an
+  `induce_gain` can never again be read without its ceiling.
+Compile-clean; dry-run green; dry-run dirs cleaned up.
+
+**Other jobs:** 720725 (P8 generated) is generating, raw=21. 720724 (P8 clearharm) still at raw=0 after
+1 h 11 m on n-803 — that is now well past n-803's documented 14-min worst load, so it is the one to watch
+next tick.
+
 ### Tick 40 — 2026-08-06 — P14 lands and immediately pays for itself: the P8.0 withdrawal had no artifact
 **P14 `reports/CLAIM_AUDIT_TABLE.md` is DONE** (commit `97da0bd2`) — 86 claims, each traced to its run dir,
 producing script and recompute command, with 118 numeric checks that re-derive the headline numbers from
