@@ -746,6 +746,41 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 58 — 2026-08-06 — smoke-testing the P3 code I wrote but never ran; desk-checked its failure modes
+One slot free under the 2-per-node policy, and the right thing to put in it is a **smoke of the P3
+decision-token cell** — I wrote a substantial new code path in tick 54 and **it has never executed on a
+GPU**. Running the full cell first is how a large job gets wasted on a typo.
+
+**Submitted 726211**: `DSNPROMPTS=2, DSLAYERS=8-11, DSMODE=band, DSFORM=decision,
+DSREADOUT=refusal_proj, DSDEST=answer, DSPROJ=18`, 45-min walltime, on the five nodes *not* running
+725172 (tick 55's spread-don't-concentrate policy).
+
+**Desk-checked the failure modes I could check without a GPU, rather than waiting to find out:**
+- **The `.pt` contract.** `readout_proj` calls `torch.load(...).float()` and dots it directly, which
+  breaks if the artifact is a state-dict. Verified: it is a bare `torch.float32` tensor of shape
+  `(4096,)` with **norm exactly 1.0**. So `.float()` is safe, and my `v / (v.norm()+1e-8)` is a
+  harmless no-op rather than a bug.
+- **Prefill-only is correct here.** `pc.AttentionKnockout`'s position guard is prefill-only — the trap
+  that has bitten this project twice. It is *safe* for P3 specifically because this cell never decodes:
+  `readout_proj` does a single `lm.model(**tok, output_hidden_states=True)` forward and reads the last
+  prompt position. No `generate()`, so there is no timestep the hook can silently skip.
+- **Destination arithmetic under the decision form.** With `DSDEST=answer`, `qdest = [seqlen-1]`, so
+  `first_dest`, the random-source `pool` and the `all_query_edges` control all span everything before the
+  decision token — which is what those controls are supposed to cover.
+
+**A naming wrinkle recorded so nobody misreads a row later:** under `--prompt-form decision` the
+destination named `answer` **is** the decision token (last position). That is only unambiguous because
+`prompt_form` is written into every row alongside `destination` — the pair `(decision, answer)` is
+well-defined, the word `answer` alone is not.
+
+**Also caught a false alarm in my own checking.** My first `.pt` verification reported *file not found*
+and looked like a real defect; it was my shell sitting in the repo root while the path is relative to
+`doublespeak_causality/`. The script itself builds that path from `DC` and is unaffected. Re-ran from the
+right directory before concluding anything — worth noting because a cwd artifact that looks like a
+missing artifact is exactly the kind of thing that gets written up as a bug.
+
+**725172** (clearharm low-α) at 39/50 items, ~30 min from done. **726211** still `PD (Resources)`.
+
 ### Tick 57 — 2026-08-06 — D1 RESOLVED BY MEASUREMENT: the three one-family caveats were artifacts
 **Job 724931 finished (1000 rows, reconciles at 256 values / 0 mismatched).** It answers the question
 tick 50's self-review raised, and the answer is clean:
