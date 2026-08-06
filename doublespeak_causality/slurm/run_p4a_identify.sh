@@ -38,15 +38,6 @@ export HF_HOME="$PROJECT_DIR/.cache/huggingface"; export HF_HUB_CACHE="$PROJECT_
 export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
 : "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
-: "${DSBENCH:?set DSBENCH}"; : "${DSNPROMPTS:=0}"; : "${DSLAYERS:=all}"; : "${DSMODE:=perhead}"
-for v in DSMODEL DSBENCH DSNPROMPTS DSLAYERS DSMODE; do
-  case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates."; exit 1;; esac
-done
-if [ "$DSLAYERS" = "all" ]; then LAYER_ARG="";
-else A="${DSLAYERS%-*}"; B="${DSLAYERS#*-}"; LAYER_ARG="--layers $(seq -s, "$A" "$B")"; fi
-echo "=== Phase4 edgeKO: $DSBENCH n=$DSNPROMPTS layers=$DSLAYERS ($LAYER_ARG) ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
-GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 : "${DSBENCH:=doublespeak_causality/data/bench/bench_clearharm.json}"
 : "${DSREADOUT:=fixed}"
 : "${DSSPLIT:=dev}"

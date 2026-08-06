@@ -746,6 +746,43 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 69 — 2026-08-06 — started P4b prerequisites: the hook-firing test (retraction-prevention gate)
+Queue empty, so I began the **P4b/P5 max-scope program** the agents costed
+(`P4B_P5_MAXSCOPE.md`: P4b ≈15.7 GPU-h, P5 ≈4.9 GPU-h — far below the 440 GPU-h the first estimate
+feared; GQA verified from the config, K/V collapsed to group-level). Started with the **GPU-free
+prerequisites that gate the GPU work**, per the plan's own ordering, rather than burning GPU on an
+un-gated run.
+
+**P4b-0.1 — the hook-firing assertion test (`tests/test_hook_firing_synthetic.py`).** The readiness
+flagged that *"there is no activation-delta assertion anywhere in this repo"*, and that is the exact gap
+behind the `phase5b_qkv.py` retraction: a patch whose hook silently did **not** fire produced a clean
+null that got read as a scientific negative. The new test asserts, on the ToyModel harness (reused, not
+duplicated): the hook fires once per forward **and moves the output**; a non-self donor moves the readout
+while a self donor is an exact no-op; a zero donor (ablation) still moves a non-zero slice; and an
+out-of-range position is a no-op *for the right reason* (paired with an in-range edit that does apply).
+
+**Self-review caught a weak test and I fixed it.** My first `test_..._fires_once_per_forward` counted
+forwards through `o_proj` with its *own* observer hook — so it passed even with a **dead** ZHeadPatch,
+because the observer fires regardless. I verified this by monkeypatching ZHeadPatch to a no-op: 3 of 4
+tests caught the dead hook, that one did not. Added an output-delta assertion; **now 4 of 4 catch a dead
+hook**, confirmed by the same control. A firing test that can't detect a dead hook is exactly the trap
+this file exists to close, so it had to actually fail.
+
+**Fixed a real bug in my own P4a wrapper.** P4a (induction-head identification, zero new analysis code)
+was cancelled in tick 55 for concurrency and never re-run. Relaunching it, **both jobs died at line 41**:
+`DSBENCH: set DSBENCH`. When I built `run_p4a_identify.sh` in tick 53 by copying the edgeKO wrapper's
+header, I left its `: "${DSBENCH:?set DSBENCH}"` block in place — and it fires *before* my P4a-specific
+`: "${DSBENCH:=…default}"` line further down. So the wrapper had **never once run successfully**; the
+tick-53 "launched P4a" was a submission that errored in seconds. Removed the entire leftover edgeKO block
+(the `:?`, its comma-guard, the `LAYER_ARG` logic, the duplicate GPU check), `bash -n` clean, resubmitted
+as **728475 / 728476** (dev + heldout). This is why a wrapper must be watched to first-row, not just to
+"submitted".
+
+**Remaining P4b-0 prerequisites** (next ticks, all GPU-free): 0.2 the `configs/manifests/p4b.json`
+enumerating the 12 800 cells, 0.3 the Holm family pre-registration (one family per channel×position-set,
+**not** one family of 12 800 — which would annihilate a real effect of the observed 0.0325 size), and 0.4
+the v3 bench split for the leakage-clean replication.
+
 ### Tick 68 — 2026-08-06 — "DO BOTH" pays off: P8 is null at BOTH doses, and the strong dose is where it counts
 **Both α doses now done at full n = 127, and the "run both instead of choosing" call from tick 63
 converts the whole dose-rule dispute into a robustness result:**
