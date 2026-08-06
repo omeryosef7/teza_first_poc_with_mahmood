@@ -232,7 +232,14 @@ def main():
                 # No forced-choice label exists here, so the DS-reads-concept validity filter cannot be
                 # applied. Every item is carried and `valid` is None -- NOT True, so a downstream
                 # aggregator cannot silently treat these as having passed a filter that never ran.
-                benign_pc, base_pc, valid = None, readout_proj(tok, (), refdir), None
+                # BOTH baselines are needed. A delta must be taken against the SAME axis: comparing
+                # proj_random(KO) to the REFUSAL baseline measures the constant offset between two
+                # different directions, not an effect. (The tick-58 smoke caught exactly that: it
+                # reported dRand ~= -0.89 in every cell -- a fixed axis offset masquerading as a
+                # control effect -- because this second baseline had been dropped in a refactor.)
+                benign_pc, valid = None, None
+                base_pc = readout_proj(tok, (), refdir)
+                base_rand_pc = readout_proj(tok, (), refrand)
             else:
                 brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
                 btok, _, _, _ = build_fc(brow["prompt"], cw, concept) if brow else (None, None, None, None)
@@ -250,6 +257,7 @@ def main():
             brow_row = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                         "codeword": cw, "valid": valid, "base_p_concept": base_pc,
                         "benign_p_concept": benign_pc, "n_demo_edges": k,
+                        "base_proj_random": (base_rand_pc if args.prompt_form == "decision" else None),
                         "destination": dest_tag, "prompt_form": args.prompt_form,
                         "readout": args.readout, "n_dest_positions": len(qdest)}
 
@@ -295,6 +303,11 @@ def main():
         for r in all_rows:
             by_cell[r["cell"]][r["sid"]] = (r.get("proj_refusal"), r.get("proj_random"))
         base_ref = {r["sid"]: r["base_p_concept"] for r in all_rows if r.get("base_p_concept") is not None}
+        base_rnd = {r["sid"]: r["base_proj_random"] for r in all_rows if r.get("base_proj_random") is not None}
+        missing = set(base_ref) - set(base_rnd)
+        if missing:
+            raise SystemExit(f"{len(missing)} items have no base_proj_random; refusing to compute a "
+                             f"cross-axis delta. Re-run with the current script.")
         out = {"cohort": cohort, "model": args.model, "mode": args.mode,
                "prompt_form": args.prompt_form, "readout": args.readout,
                "proj_layer_hs": args.proj_layer, "proj_layer_decoder": args.proj_layer - 1,
@@ -305,7 +318,7 @@ def main():
             if not sids:
                 continue
             dref = np.array([d[x][0] - base_ref[x] for x in sids], dtype=float)
-            drnd = np.array([d[x][1] - base_ref[x] for x in sids], dtype=float)
+            drnd = np.array([d[x][1] - base_rnd[x] for x in sids], dtype=float)   # SAME-axis delta
             # SPECIFICITY is the reported quantity: the knockout's shift on the refusal axis MINUS its
             # shift on a norm-matched random axis. A raw shift confounds "the edge carries refusal"
             # with "masking attention perturbs the residual stream at all".

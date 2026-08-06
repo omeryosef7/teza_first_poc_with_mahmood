@@ -746,6 +746,66 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 59 — 2026-08-06 — the smoke earned its keep (found a real bug); and the α-selection RULE is broken
+**The P3 smoke did exactly what a smoke is for: it found a bug in code that looked fine.** 726211 ran to
+completion and produced a well-formed decision-form summary — `attn_implementation: eager` recorded,
+`proj_layer_hs 18 → decoder L17`, `valid: None`, both projection fields present. But the numbers were
+impossible:
+
+```
+edge_KO          dRef=+0.0008   dRand=-0.8893   spec=+0.8901
+rand_edge        dRef=+0.0194   dRand=-0.8983   spec=+0.9177
+all_query_edges  dRef=+0.0488   dRand=-0.9363   spec=+0.9852
+```
+
+**A norm-matched random direction moving −0.89 in every cell, identically, is not a control effect — it is
+a constant.** Cause: I computed `drnd = proj_random(KO) − base_ref`, where `base_ref` is the baseline on
+the **refusal** axis. Subtracting one axis's baseline from another axis's projection measures the fixed
+offset between two directions, not an intervention. I had computed `base_proj_random` in the first draft
+and **dropped it when I refactored the cells through `emit()`** — a refactor that preserved every visible
+field and silently broke the arithmetic.
+
+Fixed: both baselines are now stored per item, `drnd` is a **same-axis** delta, and the aggregator
+**refuses to run** if any item lacks `base_proj_random` rather than silently computing a cross-axis
+difference. Re-smoke launched (726616).
+
+---
+
+### ⚠️ THE α-SELECTION RULE IS BROKEN — a decision for Omer
+
+725172 finished (50/50). The v3-native low-α calibration works, and it exposes a flaw in the
+**pre-registered** operating-point rule that could not show up before, because until now only one dose
+ever qualified.
+
+| α | `I_max` | ΔASR ref−rand | McNemar p | |
+|---|---|---|---|---|
+| 0.0 (no-op) | +0.780 | +0.020 | 1.000 | |
+| **0.05** | +0.740 | **+0.040** | **0.500** | ← **the rule selects this** |
+| 0.10 | +0.680 | +0.100 | 0.0625 | |
+| 0.15 | +0.620 | +0.140 | 0.0391 | |
+| 0.20 | +0.620 | +0.180 | 0.0117 | |
+| 0.25 | +0.560 | +0.220 | **0.0010** | |
+
+**Five doses satisfy the rule, and its tie-break — "larger `I_max` wins" — picks the weakest one.** That
+is not bad luck, it is structural: `I_max = 1 − ASR(1,0) − ASR(0,1) + ASR(0,0)` is *maximised when the
+marginals are smallest*, so "prefer more headroom" is equivalent to "prefer a weaker intervention". At the
+selected α = 0.05 the refusal ablation is **statistically indistinguishable from a random direction**
+(ΔASR +0.040, p = 0.50). **The rule selects a dose at which the treatment does not exist.**
+
+**What I propose, and why I am not just doing it:** add a third clause — *the manipulation must be
+specific*, i.e. refusal-ablation must beat its count-matched random control — then take the largest
+`I_max` among the doses that pass. That yields **α = 0.20** (`I_max` +0.620, ΔASR +0.180, p = 0.0117;
+α = 0.15 ties on `I_max` but has weaker specificity). This is **a post-hoc change to a pre-registered
+rule**, and that is precisely the kind of thing that must be declared rather than quietly applied — so it
+is Omer's call. The interaction estimate itself is unaffected; only the dose choice is.
+
+**A validation worth recording:** at α = 0.25 this n = 50 subsample gives `ASR(0,1)` = **0.400** against
+**0.402** from the full-n run. That is a 0.002 agreement, and it retroactively justifies the tick-53
+decision to calibrate on a subsample instead of letting the job die at walltime.
+
+**Still owed:** the generated-cohort low-α calibration (cancelled in tick 55 to cap concurrency) has not
+been re-run.
+
 ### Tick 58 — 2026-08-06 — smoke-testing the P3 code I wrote but never ran; desk-checked its failure modes
 One slot free under the 2-per-node policy, and the right thing to put in it is a **smoke of the P3
 decision-token cell** — I wrote a substantial new code path in tick 54 and **it has never executed on a
