@@ -746,6 +746,41 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 51 — 2026-08-06 — D1 RESOLVED by design, not by caveat: a benign population out-of-sample for both
+D1 (the protocol asymmetry) blocked four claims, so it was the right thing to fix rather than merely
+document. The reviewer's proposed fix was to refit `existing` on `HARMLESS_FIT` — a whole extra family and
+a GPU refit. **There is a cheaper and strictly better fix, and the data was already on disk.**
+
+`HARMLESS_INSTRUCTIONS` can never be clean for both families: it is `existing`'s fit set. But the v3 split
+carries a **`benign` condition on all 324 examples** — *"demos use `codeword` in its ordinary benign
+meaning; codeword query, no harmful binding"* (`DATASET_AND_SPLIT_CONTRACT.md:44`). **That population is in
+NEITHER fit** — `existing` was fit on carrot/bomb + harmless, `clearharm` on ClearHarm-direct + harmless.
+So it makes both families out-of-sample *simultaneously*, and at the eval split's full n rather than 10.
+
+Implemented as `--induce-eval benign`:
+- `split_to_behavioral.py` now emits `benign_prompt`; regenerated into **`data/behavioral_v3b/`** (a NEW
+  directory — the existing overwrite guard would have refused, and clobbering v1 is a mistake I have
+  already made once in this sprint).
+- `conditions_for` returns a 4-tuple; every unpack site updated and compile-checked.
+- Dry-run confirms the metadata now reads **`induce_eval: benign`,
+  `existing_family_induce_is_in_sample: False`** — the asymmetry is gone by construction, and
+  `n_harmless_fit` is back to the full 20 because the refit no longer has to give up half its negatives.
+
+**Launched job 724778** on exactly the layers whose family-split verdicts D1 confounded:
+**L9** (the headline), **L16/L18** (validated in both), **L21** (RP-01), **L22** (BR-08), **L30** (TR-01).
+This is the run that decides whether those three qualifications were real or an artifact of my own
+holdout.
+
+**A mistake I made and caught before it burned a job.** I first submitted with
+`DSLAYERSET=9-16-18-21-22-30`, but the wrapper treats an unrecognised value as a literal comma list, so
+`--layers` would have received `"9-16-18-21-22-30"` and died in `int()`. Cancelled 724775, added a
+dash→comma expansion *inside* the script (dashes are required because `--export` truncates comma values),
+plus a `*[!0-9,]*` reject for anything that is not a list of integers. Tested all five branches:
+`9-16-18-21-22-30` → `9,16,18,21,22,30`, `headline` and `all` unchanged, a bare comma list still accepted,
+and `bogus5x` **rejected** rather than silently passed through.
+
+**Low-α jobs healthy:** 724551 (51 min), 724552 (36 min), both still in generation.
+
 ### Tick 50 — 2026-08-06 — the self-review found 4 HIGH defects in MY OWN work; three claims corrected
 All 5 agents returned. The adversarial self-review earned its cost: **4 HIGH defects, three of them in
 claims I wrote in the last two ticks.** Every one verified myself before acting.

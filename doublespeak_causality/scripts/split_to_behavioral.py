@@ -61,6 +61,12 @@ def main():
                 "harmful_word": e["target_concept"],
                 "codeword": e["codeword"],
                 "demos": demos,
+                # P7 --induce-eval benign (resolves the D1 protocol asymmetry): the `benign` condition
+                # is the codeword used in its ORDINARY benign meaning with no harmful binding
+                # (DATASET_AND_SPLIT_CONTRACT.md:44). It is in NEITHER refusal-direction fit -- `existing`
+                # was fit on carrot/bomb + HARMLESS_INSTRUCTIONS, `clearharm` on direct + the same -- so it
+                # is the only benign population that is out-of-sample for BOTH families.
+                "benign_prompt": e.get("benign_prompt"),
             })
         out = {"_meta": {"cohort": cohort, "source_split": args.split,
                          "dataset_revision": meta.get("dataset_revision"),

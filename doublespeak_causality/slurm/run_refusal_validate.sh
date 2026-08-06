@@ -63,6 +63,11 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSPROJ:=}"            # phase_refusal_projection summary.json; only used when DSINDMODE=projsummary
 : "${DSPROJSPLIT:=train}"
 : "${DSSEED:=0}"
+# --induce-eval population. `benign` resolves the D1 protocol asymmetry: `harmless` is out-of-sample for
+# the clearharm refit but IN-SAMPLE for `existing` (fit on the full 20-item HARMLESS_INSTRUCTIONS), so the
+# two families were not comparable. The bench `benign` condition is in NEITHER fit. Requires a bench built
+# by the current split_to_behavioral.py (data/behavioral_v3b/), which emits benign_prompt.
+: "${DSINDEVAL:=harmless}"
 : "${DSDRYRUN:=0}"
 : "${DSOUTDIR:=}"          # empty => the script mints outputs/refval_<cohort>_<ts>_<jobid>
 # comma-lists kept as DEFAULTS here (never via --export, which truncates them)
@@ -78,7 +83,17 @@ LAYERS="$(seq -s, 0 31)"   # 0,1,...,31 built INSIDE the script (never via --exp
 case "${DSLAYERSET:-all}" in
   headline) LAYERS="9,16,18,22,28" ;;
   all)      : ;;
-  *)        LAYERS="${DSLAYERSET}" ;;   # explicit comma list, only safe if set inside a script
+  *)        # DASH-SEPARATED list, e.g. DSLAYERSET=9-16-18-21-22-30. Dashes are used because sbatch
+            # --export TRUNCATES a comma-list at the first comma (feedback_sbatch_export_comma), so a
+            # comma value can never be passed in from outside. Translated to commas here, inside the
+            # script, which is safe. A bare comma value is still accepted for scripts that set it inline.
+            case "$DSLAYERSET" in
+              *,*) LAYERS="${DSLAYERSET}" ;;
+              *)   LAYERS="$(echo "$DSLAYERSET" | tr '-' ',')" ;;
+            esac
+            case "$LAYERS" in
+              *[!0-9,]*) echo "ERROR: DSLAYERSET='$DSLAYERSET' -> LAYERS='$LAYERS' is not a list of integers"; exit 1 ;;
+            esac ;;
 esac
 : "${DSLAYERS:=$LAYERS}"
 echo "=== refusal-direction validation: $DSMODEL bench=$DSBENCH families=$DSFAMILIES ==="
@@ -98,5 +113,6 @@ python -u doublespeak_causality/scripts/validate_refusal_directions.py \
   --fit-split "$DSFITSPLIT" --eval-split "$DSEVALSPLIT" --val-n-items "$DSVALN" \
   --max-new "$DSMAXNEW" --ablate-alpha "$DSABLALPHA" --ablate-scope "$DSABLSCOPE" \
   --induce-scope "$DSINDSCOPE" --induce-alpha-mode "$DSINDMODE" --induce-alpha "$DSINDALPHA" \
+  --induce-eval "$DSINDEVAL" \
   --seed "$DSSEED" $EXTRA
 echo "=== done ==="; date
