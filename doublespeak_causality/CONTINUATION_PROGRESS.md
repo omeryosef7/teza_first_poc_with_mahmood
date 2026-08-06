@@ -746,6 +746,36 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 86 — 2026-08-06 — GPU audit COMPLETE (no fakes); prepped P6 to launch on free a5000
+**All 3 audit agents returned. The answer to Omer's concern is unambiguous: NO GPU result is faked on
+CPU.** The masquerade scan is definitive — across 395 run dirs, **251 result files embed
+`device: cuda:0`, ZERO embed `device: cpu`**; every trace a CPU run would leave is absent.
+
+**Per-phase GPU coverage:**
+| verdict | phases |
+|---|---|
+| ran on GPU, provenance verified | P2, P3, P4a, P4b-1-demo, P7, **P8 (all 6 cohort JSONs → L40S compute nodes)**, P10 |
+| CPU by design (correct) | P0, P1b, P14 |
+| **GPU work NOT YET STARTED** (todo, honestly labelled — *not* faked) | **P1** (small), P5, P6, P9, P11, P12, P13 |
+
+The audit confirmed my tick-85 RUNMETA backfill (P4b-1-demo now n-802/L40S), and flagged the P8
+precursor 720724 (empty, RUNMETA-only) is **not cited** by any p8 JSON — it was correctly superseded by
+721956, so the centrepiece has clean provenance.
+
+**The distinction that matters for the directive:** the "gaps" are phases that *need launching*, not
+phases *faked on CPU*. So the honest response is to run them. **Prepped P6 (Jacobian)** — its harness and
+RUNMETA already exist (built earlier, CPU toy-proof passing); only the real-Llama GPU pass was never
+launched. Relaxed its L40S-only guard to the ≥23 GB VRAM allowlist and **dry-ran it against a faked 8-GPU
+a5000 under `set -euo pipefail`** (GPU ok, exit-clean) *before* submitting — applying the four-iteration
+guard lesson so P6 doesn't repeat it. Its guard already used SIGPIPE-safe parameter expansion, so only
+the allowlist+VRAM needed adding.
+
+**Not launched this tick — deliberately.** The query jobs occupy n-501/n-502 (~12k/44k rows, ~40 min
+left); adding a contending job repeats the stall mistake. P6 fires the moment the a5000 slot frees. Also
+worth noting the genuine todo list for GPU: **P1** (baseline+drift envelope, small) is the one "small GPU
+phase never actually run" the audit found — worth doing before any sub-0.10-ASR claim is quoted, since it
+defines the interpretability envelope.
+
 ### Tick 85 — 2026-08-06 — GPU-COVERAGE audit (Omer): every GPU phase traces to a GPU run; fixed one provenance gap
 **Omer's directive: make sure no GPU-requiring plan phase is run WITHOUT a GPU (skipped/faked on CPU).**
 Fanned out a 3-agent audit (P0–P7 / P8–P14 / CPU-masquerade scan) and did the load-bearing checks myself:
