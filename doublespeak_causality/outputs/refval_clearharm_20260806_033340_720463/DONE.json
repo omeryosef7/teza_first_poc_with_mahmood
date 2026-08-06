@@ -1,0 +1,42 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refval_clearharm_20260806_033340_720463",
+  "status": "ok",
+  "rows_written": 10,
+  "end_ts": "2026-08-06T04:56:28",
+  "end_epoch": 1785981388.2596433,
+  "wall_seconds": 2875.593,
+  "raw_rows": 840,
+  "by_family": {
+    "existing": {
+      "n_layers": 5,
+      "n_valid": 4,
+      "valid_layers": [
+        16,
+        18,
+        22,
+        28
+      ],
+      "invalid_layers": [
+        9
+      ],
+      "best_layer": 18,
+      "best_score": 0.8
+    },
+    "clearharm": {
+      "n_layers": 5,
+      "n_valid": 3,
+      "valid_layers": [
+        16,
+        22,
+        28
+      ],
+      "invalid_layers": [
+        9,
+        18
+      ],
+      "best_layer": 18,
+      "best_score": 0.9
+    }
+  }
+}
