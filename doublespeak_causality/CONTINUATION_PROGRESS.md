@@ -746,6 +746,45 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 56 — 2026-08-06 — the 2-per-node policy works; D1 run half-done and L9 survives out-of-sample
+**The scheduling fix is confirmed.** Both jobs loaded promptly on n-802 and are generating — 724931 at
+**280→360 rows in 28 min**, 725172 at 3 items. Two model-loading jobs on one node is fine; three is what
+broke it (tick 55). No `s/it` blow-up this time.
+
+**724931 (the D1 resolution) is half complete, and the first thing it shows is a measurement about the
+population itself, which I am reporting rather than glossing:**
+
+| induce population | base refusal | headroom for `induce_gain` | out-of-sample for BOTH families? |
+|---|---|---|---|
+| `neutral` (job 720463) | 0.750 | 0.25 | n/a — it is disguised-harmful, not benign |
+| `harmless` (721957/722611) | **0.000** | **1.000** | ✗ — in-sample for `existing` (D1) |
+| **`benign` v3 (this run)** | **0.450** | **0.550** | **✓ — the point of the fix** |
+
+So the v3 `benign` condition is **not** a clean-floor population: the model refuses **45 %** of it. That
+is worse headroom than I expected when I chose it last tick. It is still the right choice — it is the only
+population that is out-of-sample for *both* families, and 0.55 of headroom is more than double what
+`neutral` allowed — but **`benign`-based induce gains are not directly comparable to the `harmless`-based
+ones**, and I will label them accordingly rather than pooling the two.
+
+**Cells finished so far (out-of-sample induce, `base_harm` 0.85 / `base_benign` 0.45):**
+
+| family | L9 | L16 | L18 | L21 |
+|---|---|---|---|---|
+| `existing` abl / ind | **+0.000 / −0.050** ✗ | +0.250 / +0.600 | +0.600 / +0.800 | **+0.200 / +0.800** ✓ |
+
+**The L9 headline survives the correction.** D1's worry was that `existing`'s induce arm had been scored
+in-sample, making it look artificially good. On a population it was *never* fit against, L9 still induces
+**nothing** (−0.050) and still ablates to **+0.000**. A direction that fails both arms in-sample *and*
+out-of-sample is not a refusal direction — this is now the third independent way L9 has failed.
+
+`existing` L21 also still validates (+0.200/+0.800). **The decisive cell is `clearharm` L21**, which has
+not run yet: if it now passes, the "one family only" caveat on RP-01 dissolves and was an artifact of my
+own holdout; if it still fails, the caveat was real. Same question for L22/L30 (BR-08, TR-01). I will not
+call those until the clearharm half lands.
+
+**725172** (clearharm low-α calibration) is generating at ~5 min/item → ≈4.2 h for 50 items, inside its
+8 h window.
+
 ### Tick 55 — 2026-08-06 — MEASURED the node-contention cost: 3 jobs/node = 16× slower weight loading
 Last tick I *suspected* the three n-805 jobs were contending. This tick the `.err` bar proved it, and the
 number is much worse than I guessed:
