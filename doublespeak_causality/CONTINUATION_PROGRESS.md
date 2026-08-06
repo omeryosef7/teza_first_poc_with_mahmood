@@ -746,6 +746,43 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 47 — 2026-08-06 — propagated the 32-layer verdict into the claim audit; ⚠ SLURM still down
+**SLURM controller still unreachable** (checked at 07:39 and again at end of tick; `sinfo` and `squeue`
+both fail). Queue empty, nothing to cancel. The low-α re-calibration stays staged and ready. CPU tick.
+
+**Propagated §4c's consequences into `CLAIM_AUDIT_TABLE.md`** — the point of that table is that a finding
+which qualifies a published claim actually *reaches* the claim, so this was the work worth doing:
+
+| claim | layer | was | now |
+|---|---|---|---|
+| **BR-08** depth-localization | L22 | PENDING | **UNDERPOWERED** — validates in the ClearHarm refit only; the shipped `existing` L22 induces **+0.000**. Blocked from the abstract unless the family is named (or L16 quoted, which is valid in both). |
+| **RP-01** rep→behavior AUC 0.874 | L21 | VERIFIED, blocked on a smoke | **still VERIFIED, block rewritten** — validates in `existing` only; the ClearHarm refit at L21 fails induce outright. The AUC is real; the *axis* is not cross-validated. |
+| **TR-01** trajectory / decision point | L30 | PENDING | **UNDERPOWERED** — ClearHarm-only, and by exactly **one induce item**. |
+| **BR-11** refusal-suppression signature | hs9 (~L8) | PENDING | **UNDERPOWERED** — see below. |
+
+**BR-11 is the one that actually changes a story, and it is worth stating plainly.** The claim places the
+onset of refusal suppression at **hs9 (~L8)**. But **L0–L12 have no valid refusal axis in *either*
+family** — those directions neither ablate nor induce refusal. **A projection onto a direction that does
+neither is not a refusal measurement**, so the *onset* half of that claim is not supportable as written.
+The *depth-growth* half (L13 upward) is unaffected and stands. This is not a numerical error in the
+original run — the projections are what they are — it is that the quantity was named "refusal" at layers
+where nothing licenses that name.
+
+**Added claim `P7-32`** recording the sweep itself (11/32 valid in both; L0–L12 fail in both without
+exception; per-family 12/32 and 15/32), with three machine checks against the committed summary and the
+induce-n=10 caveat attached so a `+0.100` is never read as more than the single item it is.
+
+Audit now: **87 claims — VERIFIED 61, WITHDRAWN 8, SUPERSEDED 4, UNDERPOWERED 7, UNVERIFIED 4, PENDING 3**;
+121 numeric checks, 0 failures, 38 dirs cited, 0 missing. **22 of 87 are abstract-eligible.** PENDING fell
+6→3 and UNDERPOWERED rose 4→7 — that migration *is* the tick's output: three published claims moved from
+"unknown" to "known and qualified". Negative-controlled again (perturbing `n_valid` to 99 produces
+`CHECK-FAIL P7-32`, then restored).
+
+**A process note on my own error:** I first ran the edits behind `cd doublespeak_causality && python3 …`
+from a shell already in that directory. The `cd` failed, `&&` short-circuited, and **only the trailing
+`py_compile` ran — which printed `COMPILE OK` on the unmodified file.** I nearly took that as success.
+Verified by grepping for the new text before re-running, which is the check that caught it.
+
 ### Tick 46 — 2026-08-06 — P7 COMPLETE at all 32 layers; ⚠ SLURM CONTROLLER IS DOWN (cluster-wide)
 **Job 722611 finished: 3870 rows, all 32 layers × 2 families.** Reconciled by the validator I taught the
 schema last tick — **1348 values recomputed, 0 mismatched**, 64 cells, 0 dups, `empty_max` 0.0. Written up

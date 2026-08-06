@@ -778,7 +778,8 @@ CLAIMS = [
          note="This headroom is why ds_refabl exceeds either factor alone, and it is the mechanism-level reason Doublespeak's base ASR is only ~0.36.",
          checks=[dict(kind="rate", dir=D["br_ch"], where={"split": "train"}, field="ds_base_label", eq="REJECTED", expect=0.4773),
                  dict(kind="rate", dir=D["br_ch"], where={"split": "train"}, field="direct_base_label", eq="REJECTED", expect=0.8409)]),
-    dict(id="BR-08", phase="BEHAV-REFUSAL", status="PENDING", effect=-0.25,
+    dict(id="BR-08", phase="BEHAV-REFUSAL", status="UNDERPOWERED", effect=-0.25,
+         abstract_block="The L22 anchor validates in only ONE of two direction families (ClearHarm refit yes, shipped `existing` no -- its induce arm is +0.000). Quote L16, valid in both, or name the family.",
          claim="Calibrated depth-localization: injecting each layer's own refusal direction at alpha = its measured direct-ds projection gap rescues the model at L22 (dASR -0.250, p=0.001 train; -0.167, p=0.039 test) and at L16/L28, with the random control null at every layer.",
          source="PHASE_BEHAV_REFUSAL.md §'Calibrated localization'", dirs=[D["cal_ch"], D["cal_cu"], D["p7_full"]],
          script="scripts/phase_refusal_inject_calibrated.py", recompute=BCA.format(d=D["cal_ch"]),
@@ -815,7 +816,22 @@ CLAIMS = [
               "conflating the two produced 4 spurious summary!=raw FAILs on 720463 before it was fixed. A fit_split==eval_split guard was added at the same time.",
          checks=[dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.existing.n_valid", expect=15),
                  dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.clearharm.n_valid", expect=13)]),
-    dict(id="BR-11", phase="BEHAV-REFUSAL", status="PENDING",
+    dict(id="P7-32", phase="P7", status="VERIFIED",
+         claim="Across all 32 layers, only 11 refusal directions validate bidirectionally in BOTH families (L13-L20, L24, L28, L29). "
+               "L0-L12 FAIL in both without exception; L13-L20 PASS in both without exception. Per family: existing 12/32, clearharm 15/32.",
+         source="reports/P7_REFUSAL_DIRECTION_VALIDATION.md §4c", dirs=["outputs/refval_clearharm_20260806_054117_722611"],
+         script="scripts/validate_refusal_directions.py",
+         recompute="python scripts/validate_all_outputs.py outputs/refval_clearharm_20260806_054117_722611",
+         note="The contiguity is what makes this credible: two independently-built direction families draw the SAME boundary at L13. "
+              "Machine-reconciled: 1348 summary values recomputed from raw.jsonl, 0 mismatched, 64 cells, 0 dups, empty_max 0.0. "
+              "CONSEQUENCE: of the layers carrying published claims, only L18 is in the cross-validated set -- L21 (RP-01), L22 (BR-08) and L30 (TR-01) each validate "
+              "in exactly one family, and L8/L9 (BR-11's onset) validate in neither. CAVEAT: induce n=10 (the held-out harmless half), so a +0.100 induce specificity "
+              "is a SINGLE item; L22 and L30 clear the bar on clearharm by exactly that margin and must not be called strongly validated.",
+         checks=[dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path="by_family.existing.n_valid", expect=12),
+                 dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path="by_family.clearharm.n_valid", expect=15),
+                 dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path="by_family.clearharm.best_layer", expect=18)]),
+    dict(id="BR-11", phase="BEHAV-REFUSAL", status="UNDERPOWERED",
+         abstract_block="The ONSET half of this claim is not supportable: it places refusal suppression at hs9 (~L8), but L0-L12 have NO valid refusal axis in EITHER family. A projection onto a direction that neither ablates nor induces refusal is not a refusal measurement. The depth-growth half (L13+) stands.",
          claim="Representational signature: Doublespeak's refusal-axis projection at the decision token sits far below direct-harmful and at/below the benign level, with suppression onsetting at hs9 (~L8, the concept-write band) and growing monotonically through depth; the norm-matched random direction shows zero condition gap.",
          source="PHASE_BEHAV_REFUSAL.md §'Representational signature'", dirs=[D["refproj_ch"], D["refproj_cu"], D["p7_full"]],
          script="scripts/phase_refusal_projection.py", recompute="python scripts/phase_refusal_projection.py --run-dir " + D["refproj_ch"],
@@ -872,7 +888,7 @@ CLAIMS = [
               "carries real weight in the paper's argument."),
 
     # ============================== item-level rep -> behavior =================================
-    dict(id="RP-01", abstract_block='The readout is a PER-LAYER refusal direction (decoder L21 / hs22). L21 passes the P7 smoke, but the smoke is DSVALN=3 -- one item per flag. Hold until job 720463 lands.', phase="REP->BEHAV", status="VERIFIED", effect=None,
+    dict(id="RP-01", abstract_block='The L21 readout validates in the `existing` family ONLY (+0.300/+0.100); the ClearHarm refit at L21 fails the induce arm outright (+0.000). The AUC is real but the axis it is read on is not cross-validated -- name the family, or re-read inside L13-L20 where both families agree.', phase="REP->BEHAV", status="VERIFIED", effect=None,
          claim="Item level: a Doublespeak prompt's refusal-axis projection at the decision token classifies its jailbreak outcome at AUC 0.874 on clearharm (n=86, 32 malicious), Mann-Whitney p = 3.8e-9, point-biserial r = -0.584.",
          source="REP_PREDICTS_BEHAVIOR.md §'Result'", dirs=[D["refproj_ch"], D["br_ch"], D["p7_full"]],
          script="scripts/analyze_rep_predicts_behavior.py", recompute="python scripts/analyze_rep_predicts_behavior.py",
@@ -888,7 +904,8 @@ CLAIMS = [
          script="scripts/analyze_rep_predicts_behavior.py", recompute="(no committed code path -- the shipped script emits only the single-layer result)",
          note="DANGEROUS: `analyze_rep_predicts_behavior.py` computes and prints ONLY the L21/hs22 numbers. The layer sweep and the cross-validated AUC exist in no "
               "committed script and no committed JSON. They must be re-derived and committed before either goes in the paper."),
-    dict(id="TR-01", phase="TRAJECTORY", status="PENDING",
+    dict(id="TR-01", phase="TRAJECTORY", status="UNDERPOWERED",
+         abstract_block="Read at L30, which validates in the ClearHarm refit ONLY (+0.350/+0.100 = a single induce item); the shipped `existing` family fails induce at L30 outright.",
          claim="The refusal outcome is set at the DECISION POINT: DS-refused and DS-jailbreak trajectories are separated at generated token 0 (projection 9.1 vs -2.1 at L30) and never cross, falsifying mid-generation re-engagement.",
          source="PHASE_REFUSAL_TRAJECTORY.md §'Result'", dirs=[D["p7_full"]], script="scripts/phase_refusal_trajectory.py",
          recompute="python scripts/phase_refusal_trajectory.py",
