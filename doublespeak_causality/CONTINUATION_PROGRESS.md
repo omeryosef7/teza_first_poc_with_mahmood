@@ -746,6 +746,39 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 55 — 2026-08-06 — MEASURED the node-contention cost: 3 jobs/node = 16× slower weight loading
+Last tick I *suspected* the three n-805 jobs were contending. This tick the `.err` bar proved it, and the
+number is much worse than I guessed:
+
+```
+724931 (n-805, 3 jobs on the node):  Loading weights: 2%|▏ | 5/291 [07:32<5:13:42, 65s/it]
+724551 (n-805, 1 job  on the node):  Loading weights: 79%|███▉| 230/291 [22:04<05:30, 5.42s/it]
+```
+
+**65 s/it against 5.4 s/it — a ~16× slowdown, projecting 5 h 13 m to load weights alone.** Same node,
+same model, same code. `squeue` shows `R` for both; only the `.err` bar distinguishes them, and the
+distinguishing feature is the **`s/it` rate**, not just whether the bar moves.
+
+**This changes the scheduling policy, and it reverses a decision I made two ticks ago.** I had narrowed
+`--nodelist` to four nodes to dodge the intermittent n-801/n-803 stalls. That narrowing is what
+*concentrated* three jobs onto n-805 and caused this. Weighed properly:
+- stall risk: intermittent, and **detectable in minutes** from `.err`;
+- contention risk: **certain** once >2 jobs share a node, and costs 16×.
+
+So the right policy is **spread across all six L40S nodes and cap concurrency at ~2 model-loading jobs**,
+not restrict the nodelist. Recorded as a memory so it does not get re-litigated.
+
+**Also: 725172 and 725173 were PREEMPTED** (`slurmstepd: … CANCELLED`) and requeued — `killable` is
+preemptible and does preempt. That is not a bug to fix, but it compounds the contention problem: a job
+that needs 5 h to *load* will almost certainly be preempted before it produces anything.
+
+**Action taken:** cancelled **725173** (generated calibration) and **725178** (P4a) to bring concurrency
+down to **two** — keeping the two highest-value runs: **724931** (the D1 resolution, which unblocks four
+claims) and **725172** (clearharm low-α calibration). The two cancelled jobs are cheap to re-launch and
+will go back in once these land.
+
+**Nothing was lost:** both cancelled jobs had `raw=0` and had not begun generating.
+
 ### Tick 54 — 2026-08-06 — P3's decision-token cell IMPLEMENTED (the genuinely new destination)
 The three scope decisions from tick 53 are **still open — no answer has come back, and I am not treating my
 own recommendation as approval.** So this tick went to the one piece of P3 that needs no scope decision:
