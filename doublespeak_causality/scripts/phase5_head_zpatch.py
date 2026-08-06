@@ -94,6 +94,17 @@ def main():
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(args.out_root, f"phase5_headz_{cohort}_{args.positions}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
+    # Provenance (plan §2.1; the same B6-class gap fixed for phase4_edge_knockout): record that this ran
+    # on a GPU node -- gpu name, hostname, slurm id, git, argv -- so a P4b-1 result can be TRACED to a
+    # real GPU run and not mistaken for a login-node/CPU fake. write_runmeta/write_done never raise.
+    try:
+        import torch as _t
+        _gpu = _t.cuda.get_device_name(0) if _t.cuda.is_available() else "NO-CUDA"
+    except Exception:
+        _gpu = "unknown"
+    dc.write_runmeta(out_dir, args, extra={"model": args.model, "cohort": cohort,
+                                           "positions": args.positions, "gpu": _gpu,
+                                           "layers": f"{layers[0]}-{layers[-1]}"})
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     print(f"[headz] cohort={cohort} L={L} heads={n_heads} layers={layers[0]}-{layers[-1]} -> {out_dir}")
 
@@ -273,7 +284,8 @@ def main():
     json.dump({"cohort": cohort, "model": args.model, "n_rows": n_written, "n_heads": n_heads,
                "layers": layers, "skips": dict(skips), "by_split": summ},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
-    print(f"[headz] {n_written} rows -> {out_dir}")
+    dc.write_done(out_dir, rows_written=n_written, extra={"positions": args.positions, "gpu": _gpu})
+    print(f"[headz] {n_written} rows -> {out_dir} (gpu={_gpu})")
     for split, s in summ.items():
         print(f"  [{split}] n_valid={s['n_valid']} selfswap_dev={s['selfswap_max_dev']} "
               f"Holm-sig heads={s['n_holm_sig_heads']}: {s['holm_sig_heads'][:8]}")

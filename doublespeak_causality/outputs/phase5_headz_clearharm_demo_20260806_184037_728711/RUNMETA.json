@@ -1,0 +1,11 @@
+{
+ "schema": "RUNMETA/1-reconstructed",
+ "reconstructed": true,
+ "slurm_job_id": "728711",
+ "hostname": "n-802",
+ "gpu": "NVIDIA L40S",
+ "note": "backfilled 2026-08-06 from logs/ds_headz_728711.out; phase5_head_zpatch.py did not write RUNMETA at run time (fixed now). This dir ran on a GPU compute node, confirmed by the GPU-ok log line.",
+ "script": "scripts/phase5_head_zpatch.py",
+ "positions": "demo",
+ "slurm_nodelist": "n-802"
+}
