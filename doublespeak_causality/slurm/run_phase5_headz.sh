@@ -47,7 +47,13 @@ GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head
 # "24576 MiB", and a trailing token makes `[ "$GPU_MEM" -ge 23000 ]` raise "integer expression expected"
 # -> the test errors -> the ERROR branch fires even on a 24GB card. (BUGFIX 2026-08-06: this rejected the
 # 3090 whose 24576 MiB clears the 23000 floor.) grep the first integer to guarantee a clean number.
-GPU_MEM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 | grep -oE '[0-9]+' | head -1)"
+# ROOT CAUSE of the tick-80 silent death: on a multi-GPU node `nvidia-smi | head -1` sends SIGPIPE to
+# nvidia-smi (exit 141); under `set -o pipefail` that fails the pipeline, and with no `|| true` `set -e`
+# kills the script with NO output -- exactly what GPU_TYPE avoids with its trailing `|| true`. So: query
+# raw (|| true swallows SIGPIPE), THEN sanitize to digits from a VARIABLE (no pipe to nvidia-smi, so no
+# SIGPIPE; `|| true` swallows a no-match). Never leave an nvidia-smi pipe unguarded under pipefail.
+GPU_MEM_RAW="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 || true)"
+GPU_MEM="$(printf '%s' "$GPU_MEM_RAW" | grep -oE '[0-9]+' | head -1 || true)"
 GPU_MEM="${GPU_MEM:-0}"
 # GPU allowlist. L40S is the standard, but this is a FORWARD-PASS-ONLY patching job (no generation, no
 # flash-throughput dependence), and P4b measures WITHIN-RUN differences of p_concept, so any tiny
