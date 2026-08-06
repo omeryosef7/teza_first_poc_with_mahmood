@@ -746,6 +746,40 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 60 — 2026-08-06 — cross-axis bug CONFIRMED fixed; real P3 run launched
+**The re-smoke (726616) confirms the tick-59 fix**, and the before/after is unambiguous:
+
+| cell | `dRand` BEFORE (buggy) | `dRand` AFTER (same-axis) |
+|---|---|---|
+| `edge_KO` | −0.8893 | **+0.0012** |
+| `rand_edge` | −0.8983 | **−0.0078** |
+| `all_query_edges` | −0.9363 | **−0.0459** |
+
+`dRef` is unchanged in every cell, which is the right signature: that side was always computed correctly,
+and only the random-control arm was being differenced against the wrong baseline. The two baselines are
+**−0.6079** (refusal axis) and **+0.2238** (random axis) — a gap of ~0.83, which is precisely the constant
+that was showing up as a fake control effect.
+
+**Everything else in the summary checks out:** `attn_implementation: eager` (the assertion I added in
+tick 49 is recorded in the artifact, not just asserted at runtime), `hs18 → decoder L17`, both baseline
+fields present per row.
+
+**Launched the real runs** (queue was empty, so two jobs, spread across all six nodes per tick 55):
+- **727983** — P3 decision-token cell, full bench, L8–11 band. This is the destination the plan says was
+  never covered.
+- **727984** — the generated-cohort low-α calibration owed since tick 55.
+
+**One preliminary observation I am explicitly NOT treating as a result:** in the smoke, `edge_KO`
+specificity is ≈ 0 (−0.0004), which would be consistent with the existing B1 negative extending to the
+decision point. **n = 4.** That is a sanity signal that the pipeline produces plausible magnitudes, not
+evidence of anything; 727983 is the run that can actually answer it.
+
+**Still open and unanswered — both need Omer:**
+1. The **α-selection rule** picks a dose where the treatment is indistinguishable from its control
+   (tick 59). My proposed third clause gives α = 0.20, but it is a post-hoc change to a pre-registered
+   rule, so I have not applied it.
+2. The **three scope decisions** on P4b / P5 / P9 (tick 53).
+
 ### Tick 59 — 2026-08-06 — the smoke earned its keep (found a real bug); and the α-selection RULE is broken
 **The P3 smoke did exactly what a smoke is for: it found a bug in code that looked fine.** 726211 ran to
 completion and produced a well-formed decision-form summary — `attn_implementation: eager` recorded,
