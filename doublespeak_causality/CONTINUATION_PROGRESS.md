@@ -746,6 +746,58 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 45 — 2026-08-06 — P8 COMPLETE (n=242). No interaction — and the pre-registered split just saved us
+**Job 721956 finished (127 rows).** Both v3 cohorts are in, so P8 is done: clearharm n=127 + generated
+n=115 = **n = 242**, at the de-saturated α = 0.25. Report: **`reports/P8_INTERACTION_V3.md`**.
+Combined ids verified disjoint before pooling (242 rows / 242 distinct ids; splits 162/80, matching the
+v3 design). Every number in the report re-verified against the JSONs, including the `I_max` identity.
+
+| split | n | `I_max` | **`Î`** | 95 % CI | perm p |
+|---|---|---|---|---|---|
+| train | 162 | +0.463 | **−0.124** | [−0.210, **−0.037**] | **0.0098** |
+| **test (held out)** | 80 | +0.588 | **+0.088** | [−0.025, +0.212] | 0.214 |
+| **pooled** | **242** | +0.504 | **−0.054** | [−0.124, +0.017] | **0.172** |
+
+**THE NEAR-MISS, and I want this on the record.** Had I looked only at the train split — n=162, CI
+excluding zero, **p = 0.0098** — the write-up would have read *"Doublespeak and refusal-ablation combine
+sub-additively, consistent with a shared refusal bottleneck."* **That is verbatim the claim P8.0 made and
+P8.1 withdrew.** The held-out test split does not merely fail to confirm it, it **reverses the sign**. The
+pre-registration is the only thing that stopped this project making the same error twice, and §3 of the
+report says so explicitly rather than quietly reporting the pooled null.
+
+**And the disagreement is explained, not hand-waved.** The split with the lower ceiling has the more
+negative `Î`, in **both** cohorts independently:
+
+| dataset | split | `I_max` | sat. by one factor | `Î` |
+|---|---|---|---|---|
+| clearharm v3 | train / test | +0.447 / +0.619 | 57.6 % / 50.0 % | **−0.118 / +0.095** |
+| generated v3 | train / test | +0.481 / +0.553 | 72.7 % / 65.8 % | **−0.130 / +0.079** |
+
+Across the 4 independent cells the **train/test separation is perfect** — both low-ceiling cells negative,
+both high-ceiling cells positive. Spearman(`I_max`, `Î`) = **+0.800**, short of +1.000 only because the two
+*train* cells swap rank between themselves. **This is P8.1's saturation signature on a third independent
+axis:** `Î` tracks `I_max` across α (ρ=+0.991), across cohorts, and now across the split. `I_max` depends
+only on the marginal cells, so a real mechanism has no reason to track it.
+
+**The null has teeth.** Refusal-ablation beats its count-matched random control by **ΔASR +0.194**
+(McNemar 48/1, p < 10⁻¹²) — ~10× the judge noise floor. Both factors move behaviour; they just **add**.
+
+**Directly answering the "stack interventions to raise ASR" question — the cohorts answer oppositely:**
+- clearharm: DS net-**positive** (+9.5 pp); both = 0.449 is the best cell, +4.7 pp over ablation alone.
+- generated: DS net-**negative** (−9.6 pp); ablation *alone* (0.591) beats the combination (0.435) by
+  **15.6 pp**.
+So **"refusal-dir down + Doublespeak" does not reliably stack.** With a zero interaction term the
+combination buys the *sum* at best, never a synergy — and where Doublespeak dilutes the concept it buys
+*less* than the single best lever.
+
+**Limitation recorded, not buried:** α = 0.25 qualifies on **neither** v3 cohort
+(`ASR(0,1)` = 0.402 vs the [0.20, 0.40] band — outside by 0.002 — and 0.591). The dose came from clearharm
+**v1** and does not transfer. `I_max` ≈ +0.50 on both, so the interaction estimate is not ceiling-limited
+and stands, but those ASR levels must not be quoted as a chosen operating point; a v3-native low-α
+calibration is the clean follow-up.
+
+**Still running:** 722611, the full 32-layer refusal validation, at 3450 rows.
+
 ### Tick 44 — 2026-08-06 — closed the P7 reconciliation gap; 1702 values recomputed, 0 mismatched
 Both GPU jobs healthy (721956 at 111/127; 722611 at 1950 rows), so this tick went to the **stated
 prerequisite** the claim audit flagged: *"`validate_all_outputs.py` does not recognise the `refval` row
