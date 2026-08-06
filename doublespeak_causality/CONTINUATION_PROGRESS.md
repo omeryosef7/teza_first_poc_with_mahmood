@@ -746,6 +746,36 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 63 — 2026-08-06 — Omer's ruling: DO BOTH / take the more detailed option. Decisions resolved.
+**Omer's instruction: "in every consideration you have — choose to do both things or the more detailed
+decision", plus an explicit ask to hunt code bugs AND output bugs.** That resolves everything that was
+blocked, and it resolves it in the direction of *more* work, not less.
+
+**Decision 1 — the α-selection rule (tick 59). RESOLVED: run BOTH doses.**
+Rather than pick between the rule-as-written (α = 0.05, where the treatment is indistinguishable from its
+control) and my proposed specificity-corrected rule (α = 0.20), the confirmatory 2×2 now runs at **both**,
+full n, on clearharm v3: **728310 (α=0.05)** and **728311 (α=0.20)**.
+This is strictly better than choosing, and not just diplomatically — **it converts a contested
+methodological choice into a robustness check.** If `Î` is null at both doses, the interaction conclusion
+provably does not depend on the dose rule, and the whole dispute becomes a footnote instead of a
+threat to the result. If the two disagree, that is itself the finding and we will have measured it rather
+than argued it.
+
+**Decision 2 — P4b / P5 / P9 scope (tick 53). RESOLVED: maximum feasible scope, nothing deferred.**
+In particular **P9 is no longer deferred** — I had recommended dropping it, and that recommendation is
+overridden. Agents are producing the concrete unblocking plans now.
+
+**Fanned out 5 agents on disjoint files**, three of them adversarial bug hunts as asked:
+| agent | scope |
+|---|---|
+| `code-p3` | the newest, least-exercised code — the P3 decision-token path (~2 GPU runs of exercise). Specifically: `build_decision`'s `rfind` fallback, whether `--mode perhead` is silently broken under `--prompt-form decision`, whether the aggregator's early `return` skips DONE/RUNMETA, hs-row indexing, and whether the random direction is re-drawn per item or once per run |
+| `output-bugs` | **wrong numbers in committed artifacts**, not wrong code: impossible rates, CIs that exclude their own point estimate, constants masquerading as effects (we already had one at −0.89), non-monotone α sweeps, and any number that differs between a report and its JSON |
+| `code-analysis` | the scripts that turn rows into published numbers — the 2×2 estimator's cell↔arm binding, whether items missing an arm are dropped or zero-filled (one changes n, the other biases `Î` toward 0), and whether `paired_bootstrap_ci` resamples **pairs** or the two samples independently |
+| `p9-unblock` | exact change list for the 4 P9 blockers, plus verifying the two known GCG hazards (`--no-filter-cand`, `suffix_placement=user`) are handled in current code |
+| `p4b-p5-scope` | verify the GQA claim from the model config myself rather than trusting it; then max-feasible job tables. Includes whether a **group-level** K/V patch is a valid substitute for the impossible per-head one |
+
+**727984** (generated low-α calibration) at 37/50.
+
 ### Tick 62 — 2026-08-06 — **P3 COMPLETE: the null REPLICATES on the carry band, and `rand_edge` is settled noise**
 **Job 728189 (L14–21) finished**, so P3 now has both bands the circuit story implicates.
 
