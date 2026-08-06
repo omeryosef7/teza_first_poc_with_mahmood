@@ -746,6 +746,28 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 37 — 2026-08-06 — right-sized P8's walltime; could NOT show it helps allocation
+**Applied §1.3.0** to 720320/720321 (pending 59 min) → resubmitted as **720598 / 720599**.
+
+**Right-sized the walltime from 10 h to 3 h**, from a measured estimate rather than a guess: the α-sweep
+reference was 24 arms × 86 items ≈ 3.5 h, so 5 arms × 127 items ≈ **1.1 h** plus ~0.5 h model load. A 10 h
+request for a ~1.6 h job is bad hygiene regardless of scheduling, and the plan already asks for `--time` to
+match real need.
+
+⚠️ **But I could not demonstrate that it improves allocation, and I should not imply otherwise.** My
+reasoning was that on a fully-saturated cluster backfill is the only way in and backfill favours short jobs.
+Testing it: `--test-only` returns the **identical** start estimate for `--time=03:00:00` and
+`--time=10:00:00` (both `2026-08-06T22:09`). That is consistent with tick 22's finding that wait time has
+**no relationship to `--time`**. So the change is defensible as hygiene, **not** as a fix — the plausible
+mechanism remains unmeasured, and I have one piece of evidence against it.
+
+**The cluster is genuinely jammed**, which is the real story: the scheduler's reservation estimate is
+**~19 h out**, 85 jobs pending on `killable`, all 48 L40S allocated. Per §1.3.0 case 3 this is the
+"switch to CPU work and say so" situation, and repeated resubmission is following the letter of the
+30-minute rule without being able to change the outcome.
+
+**Nothing new landed this tick.** Queue: 720463 (P7 headline layers), 720598/720599 (P8 core).
+
 ### Tick 36 — 2026-08-06 — corrected a false claim I made about the P7 harness; no code change needed
 Went to add incremental writing to `validate_refusal_directions.py` — the fragility I asserted at tick 34 —
 and **found it already had it.** `scripts/validate_refusal_directions.py:440` calls `fh.flush()` after every
