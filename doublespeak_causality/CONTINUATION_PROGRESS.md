@@ -746,6 +746,50 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 49 — 2026-08-06 — P3 started: destination coverage + the eager assertion the plan demanded
+**Both low-α jobs running** (724551 clearharm on n-805, 724552 generated on n-801). **Grid verified to have
+arrived intact** — the log shows `alphas='0,0.05,0.1,0.15,0.2,0.25'`, so the `DSALPHASET` preset defeats the
+`--export` comma-truncation bug as designed. That is worth checking rather than assuming: a silently
+truncated grid would have burned 6 GPU-hours producing a single-α run mislabelled as a sweep.
+
+**Loop note:** cron `86decf2e` is still live with this exact prompt, so I did **not** create a second one.
+
+**Fanned out 5 agents** (disjoint files) on the four phases the plan still has unstarted — P3, P4, P5, P9 —
+plus an adversarial review of this session's own code. P3 returned first.
+
+**P3 is ~85 % already built**, and the assessment found one thing that matters more than the missing
+feature: **the plan requires "eager attention, asserted" and the assertion was ABSENT from the knockout
+path.** `phase4_edge_knockout.py` *passes* `attn_implementation="eager"` but never verified it stuck.
+Under SDPA/flash the softmax@V product is fused, `AttentionKnockout` silently no-ops, and the run would
+report a clean null that means nothing. **Now asserted at load** (same check `phase4b_pattern.py:92` already
+used) and the resolved implementation is printed.
+
+**Implemented the destination selector.** The destination set was hard-coded as the *fused*
+`query_pos + [seqlen-1]`, so a query-codeword effect and an answer-position effect could not be told apart.
+`--destinations` now selects them and `destination` is emitted per row so the aggregator can group on it.
+**Unit-tested that the default is byte-identical to the historical set** (`[41,42,96]` both ways) — every
+previously-published edge-knockout number is unchanged unless a flag is passed. Unknown values are rejected
+rather than silently ignored.
+
+**One correction to the assessment, worth recording:** it proposed a `final_prompt` destination, but in the
+forced-choice form that is *the same index* as `answer`. I did not add it — offering an alias as a separate
+cell would have produced a duplicate arm masquerading as new coverage.
+
+**⚠️ The genuinely new P3 cell is NOT done, and I made it fail loudly rather than pretend.**
+`--prompt-form decision` / `--readout refusal_proj` are declared but not wired, so they now **exit with a
+NOT-IMPLEMENTED error**. Accepting the flag and silently running the forced-choice cell would produce a
+plausible number for an experiment that never ran — the exact failure class this project has already
+retracted twice (prefill-only ablations; silent hook no-ops). Verified the guard fires.
+
+**A cross-phase constraint I am carrying into that cell:** at the decision token there is no
+concept/codeword label, so the readout must be the refusal projection — and **P7 §4c just established that
+only decoder layers 13–20, 24, 28, 29 carry a validated refusal axis** (hs row h = decoder layer h−1). The
+`--proj-layer` default is set to **hs18 = decoder L17**, inside that set, and the help text says explicitly
+not to point it at an unvalidated layer. Projecting on a direction that neither ablates nor induces refusal
+is not a refusal measurement — that is the same error BR-11 was just downgraded for.
+
+**Still pending:** P4/P5/P9 readiness and the self-review (4 agents in flight).
+
 ### Tick 48 — 2026-08-06 — SLURM back; low-α submitted; RP-01's caveat RESOLVED (and it got stronger)
 **SLURM controller is back** (26 nodes up in `killable`). Submitted the staged v3-native low-α
 re-calibration immediately: **724551** (clearharm) and **724552** (generated), `DSALPHASET=low` →

@@ -45,14 +45,59 @@ def main():
     ap.add_argument("--layers", default="", help="comma list; empty = all layers")
     ap.add_argument("--mode", default="perhead", choices=["perhead", "band"],
                     help="perhead = scan each (layer,head); band = all heads across all --layers jointly")
+    # P3 (plan §5 P3) DESTINATION COVERAGE. Defaults reproduce the historical fused destination set
+    # exactly, so every previously-published edge-knockout number is unchanged unless a flag is passed.
+    ap.add_argument("--destinations", default="query_cw,answer",
+                    help="comma list of destination sets: query_cw (codeword in the request line), "
+                         "answer (final FC position). NOTE 'final_prompt' is an ALIAS of 'answer' in the "
+                         "forced-choice form -- they are the same index -- so it is deliberately NOT offered "
+                         "here; use --prompt-form decision for the genuinely different decision point.")
+    ap.add_argument("--prompt-form", default="fc", choices=["fc", "decision"],
+                    help="fc = forced-choice question (historical). decision = the bare templated prompt with "
+                         "add_generation_prompt, whose final position IS the first-generated-token decision "
+                         "point -- the destination plan §5 P3 says was never covered.")
+    ap.add_argument("--readout", default="fc", choices=["fc", "refusal_proj"],
+                    help="fc = forced-choice p_concept (needs the FC question). refusal_proj = last-token "
+                         "residual projected on the per-layer refusal direction; REQUIRED for --prompt-form "
+                         "decision, where no concept/codeword label exists at that position.")
+    ap.add_argument("--proj-layer", type=int, default=18,
+                    help="hidden_states row for --readout refusal_proj. Default 18. P7 "
+                         "(reports/P7_REFUSAL_DIRECTION_VALIDATION.md §4c) generation-validated the per-layer "
+                         "refusal directions: only DECODER layers 13-20,24,28,29 validate in BOTH direction "
+                         "families, and hs row h == decoder layer h-1. hs18 = decoder L17, inside that set. "
+                         "Do NOT point this at an unvalidated layer -- projecting on a direction that neither "
+                         "ablates nor induces refusal is not a refusal measurement.")
+    ap.add_argument("--refusal-dir", default=os.path.join(DC, "outputs", "refusal_alllayers"))
     ap.add_argument("--n-prompts", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
+
+    # NOT-YET-WIRED GUARD. --prompt-form decision and --readout refusal_proj are declared above (they are
+    # the genuinely new P3 cell: the first-generated-token decision point, which has no concept/codeword
+    # label and therefore needs the refusal projection as its readout). They are NOT implemented yet.
+    # Failing loudly beats accepting the flag and silently running the forced-choice cell instead --
+    # that would produce a plausible-looking number for an experiment that never ran, which is the exact
+    # failure class this project has already had to retract twice (prefill-only ablations, silent no-ops).
+    if args.prompt_form != "fc" or args.readout != "fc":
+        raise SystemExit(
+            f"--prompt-form {args.prompt_form} / --readout {args.readout} are NOT IMPLEMENTED yet.\n"
+            f"  Currently supported: --prompt-form fc --readout fc (with --destinations selection).\n"
+            f"  The decision-point cell needs (a) a bare add_generation_prompt build and (b) a\n"
+            f"  refusal-projection readout at a P7-validated layer. Refusing rather than silently\n"
+            f"  running the forced-choice cell under a decision-point label.")
 
     dc.set_seed(args.seed)
     rng = random.Random(args.seed)
     bench = json.load(open(args.bench))
     lm = dc.load_model(args.model, attn_implementation="eager")   # REQUIRED for AttentionKnockout
+    # Plan §5 P3 says "Eager attention, asserted". The caller PASSES eager but nothing verified it stuck;
+    # under SDPA/flash the softmax@V product is fused, the knockout hook silently no-ops, and the run
+    # would report a clean null that means nothing. Same assertion phase4b_pattern.py:92 already uses.
+    _impl = getattr(lm.model.config, "_attn_implementation", None)
+    if _impl != "eager":
+        raise RuntimeError(f"AttentionKnockout needs attn_implementation='eager', got {_impl!r}. "
+                           f"SDPA/flash fuse softmax@V and the knockout silently no-ops.")
+    print(f"[edgeko] attn_implementation={_impl!r} (asserted)", flush=True)
     L = lm.num_layers
     Hn = int(lm.model.config.num_attention_heads)
     dev = lm.model.device
@@ -117,8 +162,19 @@ def main():
             tok, demo_pos, query_pos, seqlen = build_fc(r["prompt"], cw, concept)
             if not demo_pos or not query_pos:
                 continue
-            # destinations = codeword mentions in the question + the final (answer) position
-            qdest = sorted(set(query_pos + [seqlen - 1]))
+            # DESTINATION SELECTION (plan §5 P3). Historically this was the FUSED set
+            # query_pos + [seqlen-1], so a query-codeword effect and an answer-position effect could
+            # not be told apart. --destinations now selects them, and `destination` is emitted as a row
+            # field so the aggregator can group on it. Default reproduces the fused set byte-for-byte.
+            _dsets = {"query_cw": list(query_pos), "answer": [seqlen - 1]}
+            _want = [d.strip() for d in args.destinations.split(",") if d.strip()]
+            _unknown = [d for d in _want if d not in _dsets]
+            if _unknown:
+                raise SystemExit(f"--destinations: unknown {_unknown}; want a subset of {sorted(_dsets)}")
+            qdest = sorted({p for d in _want for p in _dsets[d]})
+            dest_tag = ",".join(_want)
+            if not qdest:
+                continue
             # validity: DS must read concept; benign must not
             brow = by_key.get(("BENIGN_REMAP", split, r["sid"]))
             btok, _, _, _ = build_fc(brow["prompt"], cw, concept) if brow else (None, None, None, None)
@@ -135,7 +191,9 @@ def main():
 
             brow_row = {"sid": r["sid"], "split": split, "cohort": cohort, "concept": concept,
                         "codeword": cw, "valid": valid, "base_p_concept": base_pc,
-                        "benign_p_concept": benign_pc, "n_demo_edges": k}
+                        "benign_p_concept": benign_pc, "n_demo_edges": k,
+                        "destination": dest_tag, "prompt_form": args.prompt_form,
+                        "readout": args.readout, "n_dest_positions": len(qdest)}
 
             if args.mode == "band":
                 # ALL heads across ALL specified layers, query->demo edges only (the retrieval PATHWAY).
