@@ -746,6 +746,37 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 66 — 2026-08-06 — O2 fixed: 13 of 14 stale cells in the report that WITHDREW P8.0, one flipping a claim
+**O2 [HIGH] is the most embarrassing find of the audit, because I thought I had already fixed this file.**
+In tick 40 I refreshed `PHASE8_1_ALPHA_CALIBRATION.md` from n=78 to n=86 — but only the header note and
+the auto-generated tables. The **hand-written §2 side-by-side table was left stale**, and it is the one a
+reader hits first. 13 of its 14 clearharm cells were wrong, while the generated tables further down
+showed the correct values. **The document contradicted itself.**
+
+**And one stale cell flipped a stated conclusion.** The bullet above the table read: *"clearharm α = 0.25
+gives `Î_binary` = −0.013 (1.3 pp) — **below the floor**"*. The committed value is **−0.0233 (2.3 pp)**,
+which is **above** the ~2 pp judge floor. The conclusion — "no interaction detectable" — survives, but it
+was resting on the wrong argument. It now rests on the right one: that cell's **sign-flip permutation
+p = 0.86** and its CI [−0.151, +0.105] straddles zero. *Not detectable because the test says so, not
+because it hides under the noise floor.*
+
+**Fixed structurally, not by hand.** The table is now **regenerated directly from
+`outputs/alpha_calibration.json`** at 4 dp, so it cannot drift from its own source again. Hand-copying a
+table out of a JSON is what created this, and doing it a second time would just reset the clock.
+
+**Then I swept the whole file for other survivors of the same drift** rather than assuming one fix was
+enough. Five occurrences of the stale figures remained; four are legitimate historical narrative
+("+0.487→+0.4767" explaining the refresh) and one was a **genuine stale assertion** — §"Consequences"
+item 3 still declared *"`I_max` = +0.487 is the arithmetic ceiling"*. Corrected to **+0.4767**.
+
+**The general lesson, recorded because it will recur:** every number hand-copied from a JSON into a report
+is a future inconsistency. The claim audit checks *JSON against raw*, and the validator checks
+*summary against raw* — but **nothing checks report prose against JSON**, which is precisely the gap O2
+lived in. A report-vs-JSON consistency checker is the right follow-up.
+
+**Jobs:** 727984 (generated low-α) **finished, 50/50**. 728310 (α=0.05) at 83/127 and 728311 (α=0.20) at
+49/127 — the "do both doses" runs from tick 63.
+
 ### Tick 65 — 2026-08-06 — all 5 agents in: the P3 design is UNFALSIFIABLE as built; audit pointed at an empty dir
 All five agents returned. Two findings change what we can claim, and both are verified by me rather than
 taken on trust.

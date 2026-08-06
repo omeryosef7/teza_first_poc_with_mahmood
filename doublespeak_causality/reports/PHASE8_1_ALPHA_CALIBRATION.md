@@ -72,8 +72,12 @@ Three consequences that are easy to miss, so they are stated here and not in a f
 - **The floor is measured per arm. `Î` is a contrast of four judged arms**, so `Î`'s own noise floor is at
   least 2 pp and plausibly larger (errors partially cancel, but do not vanish).
 - Therefore the near-zero `Î` values are **"no interaction detectable"**, not "interaction measured to be
-  zero". Specifically **clearharm α = 0.25 gives `Î_binary` = −0.013 (1.3 pp) — below the floor**, and
-  curated α = 0.0 gives −0.020 (2.0 pp) — exactly at it.
+  zero". **CORRECTED 2026-08-06 (audit O2):** clearharm α = 0.25 gives `Î_binary` = **−0.0233 (2.3 pp),
+  which is just ABOVE the ~2 pp floor** — this bullet previously said −0.013, "below the floor", which
+  was the stale n = 78 value. The conclusion is unchanged but now rests on the right footing: that cell
+  is "no interaction detectable" because its **sign-flip permutation p = 0.86** and its CI
+  [−0.151, +0.105] straddles zero, **not** because it hides under the noise floor. Curated α = 0.0
+  gives −0.020 (2.0 pp) — exactly at the floor.
 - Byte-identity was verified by hashing on the curated 51 and on the clearharm rows present at the time of
   that check. For the clearharm rows added since, byte-identity is *inferred* from the α = 0 arithmetic
   rather than re-hashed. The score-change rate on clearharm (6.4 %) and the max |Δscore| (1.00) are both
@@ -98,13 +102,18 @@ Side by side, pooled:
 
 | α | curated `I_max` | curated `Î_bin` | clearharm `I_max` | clearharm `Î_bin` |
 |---|---|---|---|---|
-| 0.0 | +0.745 | −0.020 ‡ | +0.654 | +0.000 ‡ |
-| 0.25 | +0.510 | −0.176 | +0.487 | −0.013 ‡ |
-| 0.5 | +0.451 | −0.216 | +0.282 | −0.103 |
-| 0.75 | +0.373 | −0.294 | +0.231 | −0.128 |
-| 1.0 | +0.373 | −0.333 | +0.231 | −0.154 |
-| 1.5 | +0.353 | −0.353 | +0.141 | −0.205 |
-| 2.0 | **+0.412 ↑** | **−0.196 ↑** | +0.051 | −0.269 |
+| 0.0 | +0.7451 | -0.0196 ‡ | +0.6512 | +0.0000 ‡ |
+| 0.25 | +0.5098 | -0.1765  | +0.4767 | -0.0233  |
+| 0.5 | +0.4510 | -0.2157  | +0.2907 | -0.0814  |
+| 0.75 | +0.3725 | -0.2941  | +0.1860 | -0.1744  |
+| 1.0 | +0.3725 | -0.3333  | +0.1860 | -0.2093  |
+| 1.5 | +0.3529 | -0.3529  | +0.1047 | -0.2558  |
+| 2.0 | +0.4118 | -0.1961  | +0.0233 | -0.3140  |
+
+**Regenerated 2026-08-06 directly from `outputs/alpha_calibration.json` at 4 decimal places.**
+The hand-written version of this table carried **13 of 14 clearharm cells stale at n = 78** while the
+auto-generated tables further down already showed the n = 86 values — the document contradicted itself,
+and the stale table is the one a reader hits first. Found by adversarial output audit (O2).
 
 (‡ in this table marks an `Î` whose magnitude is at or below the ~2 pp judge noise floor. In the generated
 tables further down, ‡ marks the *specificity* ΔASR instead — same meaning, different column.)
@@ -117,9 +126,12 @@ quantities that both happen to be monotone in α" — `Î` follows the ceiling's
 every α where the design is saturated, `Î` is confounded with the available headroom, so the *magnitude* —
 and, at high α, the *sign* — of `Î` is not interpretable as mechanism. The only doses where `Î` is worth
 reading are the ones with a large `I_max`; and at exactly those doses (curated α = 0, clearharm α = 0.25)
-`Î` is **at or below the judge noise floor**, i.e. additive/undetectable rather than sub-additive. This
-points against the P8.0 headline ("sub-additive ⇒ shared refusal bottleneck") and towards the ceiling
-explaining it, but at n = 51/86 it settles nothing on its own.
+`Î` is **not statistically distinguishable from zero** (curated −0.020 at the floor; clearharm −0.0233
+with permutation p = 0.86 and a CI straddling zero). *(Wording corrected 2026-08-06: this sentence
+previously said both were "at or below the judge noise floor". Clearharm α = 0.25 is 2.3 pp, just
+above it — the case rests on the permutation test, not on the floor.)* This points against the P8.0
+headline ("sub-additive ⇒ shared refusal bottleneck") and towards the ceiling explaining it, but at
+n = 51/86 it settles nothing on its own.
 
 **Deliberately absent: the headroom-vs-saturated decomposition of `Î`.** Splitting items into those where
 neither factor alone jailbreaks and those already saturated *looks* like it would adjudicate this. It
@@ -385,7 +397,7 @@ Full binary D_i distribution per alpha:
    dose at every n, so the selection never depended on the partial-file estimate.
 2. Do **not** run a curated arm at a borrowed α. Either calibrate curated separately on a finer low-α grid,
    or drop it from the interaction test and keep it as a secondary cohort.
-3. `I_max` = +0.487 is the *arithmetic* ceiling, not the achievable effect. Plan §P8.5 puts a properly
+3. `I_max` = **+0.4767** is the *arithmetic* ceiling, not the achievable effect. *(was +0.487, the stale n = 78 value — audit O2)*. Plan §P8.5 puts a properly
    powered interaction test at n = 324 for I = 0.15; at n = 86 clearharm is under-powered for anything
    smaller, and the confidence intervals in the tables above make that concrete — at α = 0.25 the binary
    CI is roughly ±0.13 wide on each side of zero.
