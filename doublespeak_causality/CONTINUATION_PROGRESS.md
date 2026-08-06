@@ -746,6 +746,38 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 39 — 2026-08-06 — all three GPU jobs healthy and in setup; started P14 (claim audit)
+**No SLURM problem this tick — nothing to cancel or resubmit.** All three jobs are `R`, all three cleared
+their pre-flight gates, and each is in weight-load/setup:
+
+| job | phase | node | elapsed | time left | state |
+|---|---|---|---|---|---|
+| 720463 | P7 refusal-direction validation (L9/16/18/22/28) | n-801 | 58 m | 3 h 02 m | RUNMETA written 04:10 — progressing |
+| 720724 | P8 2×2 interaction, clearharm v3 | n-803 | 30 m | 2 h 30 m | run dir minted 03:50, still loading |
+| 720725 | P8 2×2 interaction, generated v3 | n-801 | 27 m | 2 h 33 m | run dir minted 03:56, still loading |
+
+**The gates I actually checked, rather than assuming:**
+- 720724/720725 both logged `[ok] DSALPHAS='0.25' from --export: single value, no comma, safe` — the guard
+  fix from tick 38 works, and the de-saturated dose really did arrive (this is the exact thing that failed
+  last tick, so it is worth verifying rather than trusting).
+- Both P8 jobs are reading `data/behavioral_v3/beh_{clearharm,generated}.json` — the v3 benches, **not** the
+  v1 file I clobbered and restored. Confirmed from the log's `bench=` line.
+- All three: `GPU ok: NVIDIA L40S`.
+
+**Why `raw.jsonl` is still empty is expected, not a hang.** Two of the three are on **n-801**, the node
+documented (over 232 logged runs) as owning every weight load slower than 15 min, worst 79 min. 720463's
+dir was minted 03:33 and its RUNMETA landed 04:10 — a 37-min gap that is *progress*, not a stall, so a
+22-min empty dir on the younger P8 jobs sits inside the same envelope. I am not cancelling healthy jobs
+to chase a faster node; the 30-min rule governs time-to-**allocation**, and all three allocated.
+
+**Started P14 — `reports/CLAIM_AUDIT_TABLE.md` (a required plan deliverable, still unstarted at tick 38).**
+Pure CPU, so it costs nothing against the running jobs. The auditor traces every quantitative claim in the
+paper-facing reports to its run dir, producing script, and a recomputation command, and is explicitly
+required to carry this sprint's retractions rather than quietly drop them: P8.0's sub-additivity
+(WITHDRAWN), P10.0's graded carry effect (fails its specificity control), the concept-write null
+(UNDERPOWERED, n=86 vs n≈275 needed), and every per-layer refusal claim (PENDING on 720463). It must also
+flag every row whose effect sits under the measured ~2 pp judge noise floor.
+
 ### Tick 38 — 2026-08-06 — P8 failed on a false-positive guard (my error); fixed; P7 RUNNING
 **P7 (720463) is RUNNING** on n-801 — the headline-layer validation is finally underway.
 
