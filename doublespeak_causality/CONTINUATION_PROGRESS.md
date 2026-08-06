@@ -746,6 +746,32 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 81 — 2026-08-06 — ROOT-CAUSED the guard's silent death (SIGPIPE under pipefail); dry-ran the fix
+**The tick-80 fix didn't hold — jobs died SILENTLY after the header, no `GPU ok`, no `ERROR`.** I stopped
+guessing and read the actual failure: the log ends at the git line, right before the GPU guard, with zero
+output. That signature — `set -euo pipefail` + silent exit — pointed at a pipeline failing without a
+guard.
+
+**Root cause:** on the 8-GPU n-305, `nvidia-smi | head -1` sends **SIGPIPE** to nvidia-smi (exit 141) when
+`head` closes after one line; under `pipefail` the pipeline returns non-zero, and my `GPU_MEM` line — unlike
+`GPU_TYPE`, which ends in `|| true` — had **no guard**, so `set -e` killed the script with no message.
+**My tick-80 `grep` addition reintroduced exactly the failure `GPU_TYPE`'s `|| true` exists to prevent.**
+
+**Fix:** query the memory raw with `|| true` (swallows SIGPIPE), then sanitize to digits **from a variable**
+(`printf | grep` — no pipe to nvidia-smi, so no SIGPIPE; `|| true` swallows a no-match). **This time I
+dry-ran the entire guard block locally** under `set -euo pipefail` with a simulated 8-line 3090
+`nvidia-smi` — result `GPU ok (24576MiB)`, exit-clean — *before* resubmitting, instead of testing on the
+cluster and burning another placement.
+
+**The honest tally: four guard iterations** (missing 3090 → string parse → and now the SIGPIPE that the
+string-parse change caused). Every one cost seconds, not GPU-hours, but the lesson is sharp: **a shell
+guard under `pipefail` must be dry-run against a realistic multi-GPU `nvidia-smi` locally**, which I can do
+on the login node with a shell function, and should have from the first change. I have now done that.
+
+Resubmitted **729249/729250** to n-305; Monitor covers `GPU ok` / `ERROR` / OOM / `Traceback` / `done` and
+the first raw rows. The query z-channel result and its pooled `--expect-cells 1024` analysis follow the
+moment they complete.
+
 ### Tick 80 — 2026-08-06 — THIRD GPU-guard bug fixed; the guard cost 3 iterations, all self-inflicted
 **Being honest: I have now iterated on the GPU guard three times, each a bug I introduced.**
 1. Tick 78 — relaxed L40S-only → a name allowlist, but **omitted the 3090**, so backfill placed jobs on
