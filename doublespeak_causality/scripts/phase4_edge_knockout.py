@@ -74,6 +74,13 @@ def main():
 
     # --prompt-form decision needs the refusal readout: at the first-generated-token position there is
     # no concept/codeword label to score, so the forced-choice p_concept is undefined there.
+    # B1 (bughunt CRITICAL): the decision-form aggregator collapses every (layer,head) into one entry
+    # per sid, so it is structurally BAND-ONLY. --mode perhead is the DEFAULT, so a user who forgets
+    # --mode band would run a full GPU scan and then get silently-wrong aggregation. Refuse up front.
+    if args.prompt_form == "decision" and args.mode != "band":
+        raise SystemExit("--prompt-form decision currently supports --mode band only: the decision-form "
+                         "aggregator keys cells by name and would collapse every (layer,head) into one "
+                         "entry per item. Pass --mode band.")
     if args.prompt_form == "decision" and args.readout != "refusal_proj":
         raise SystemExit("--prompt-form decision requires --readout refusal_proj: the decision token has "
                          "no concept/codeword label, so the forced-choice readout is undefined there.")
@@ -111,6 +118,13 @@ def main():
     uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(args.out_root, f"phase4_edgeKO_{cohort}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
+    # B6 (bughunt): plan §2.1 requires RUNMETA.json as the FIRST action and DONE.json as the LAST.
+    # Neither existed in this script, in EITHER path, so every edgeKO run so far violates the artifact
+    # contract and cannot be provenance-audited. write_runmeta/write_done never raise.
+    dc.write_runmeta(out_dir, args, extra={"model": args.model, "cohort": cohort,
+                                           "prompt_form": args.prompt_form, "readout": args.readout,
+                                           "destinations": args.destinations, "mode": args.mode,
+                                           "attn_implementation": _impl})
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     print(f"[edgeKO] cohort={cohort} L={L} Hn={Hn} layers={layers[:6]}{'...' if len(layers)>6 else ''} -> {out_dir}")
 
@@ -331,8 +345,33 @@ def main():
                 "specificity_ci95": [round(float(ci["lo"]), 5), round(float(ci["hi"]), 5)],
                 "ci_reliable": bool(ci.get("ci_reliable", True)),
             }
+        # B3 (bughunt HIGH): the per-cell `specificity` above contrasts the REFUSAL axis against a
+        # RANDOM AXIS, i.e. "is the shift on the refusal direction?" P3 asks a different question --
+        # "is it the DEMO edges?" -- whose control is the count-matched random EDGE set, paired per
+        # item, on the refusal axis. That is what the forced-choice path reports, and it was being
+        # computed (rand_edge rows exist) and then never used. Emit it explicitly.
+        ko = by_cell.get("edge_KO", {}); rk = by_cell.get("rand_edge", {})
+        sids = sorted(set(ko) & set(rk) & set(base_ref))
+        if sids:
+            a = np.array([rk[x][0] for x in sids], dtype=float)   # refusal axis under random edges
+            b = np.array([ko[x][0] for x in sids], dtype=float)   # refusal axis under demo edges
+            ci2 = st.paired_bootstrap_ci(a, b, n_boot=10000, seed=0)
+            out["demo_edge_contrast"] = {
+                "definition": "rand_edge - edge_KO on the refusal axis, paired per item; the "
+                              "count-matched-random-EDGE control. THIS is the P3 question.",
+                "n": len(sids), "mean_diff": round(float(ci2["mean_diff"]), 5),
+                "ci95": [round(float(ci2["lo"]), 5), round(float(ci2["hi"]), 5)],
+                "excludes_zero": bool(not (ci2["lo"] <= 0 <= ci2["hi"])),
+            }
+        # B4: record how much the random AXIS actually moved. If it is ~0 the per-cell `specificity`
+        # is numerically the raw shift, and must not be described as a specificity.
+        ek = out["cells"].get("edge_KO")
+        if ek is not None:
+            out["random_axis_is_a_floor"] = bool(abs(ek["mean_delta_random"]) < 1e-3)
         json.dump(out, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
         print(json.dumps(out["cells"], indent=1))
+        dc.write_done(out_dir, rows_written=len(all_rows),
+                      extra={"prompt_form": "decision", "cells": sorted(out["cells"])})
         print(f"[edgeko] decision-form summary -> {out_dir}")
         return
 
@@ -362,6 +401,7 @@ def main():
         print(f"[edgeKO band L{layers[0]}-{layers[-1]}] n={band['n']} base_p={band['mean_base_p']} "
               f"raw_KO_drop={band['raw_KO_drop']} specific_vs_random={band['specific_vs_random']} "
               f"all_query_edges_drop={band['all_query_edges_drop']}")
+        dc.write_done(out_dir, rows_written=len(all_rows), extra={"mode": "band"})
         return
 
     results = []
@@ -386,6 +426,8 @@ def main():
                "layers": layers, "n_heads": Hn, "top_heads": results[:30],
                "n_sig_heads": sum(1 for r in results if r["sig"])},
               open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
+    dc.write_done(out_dir, rows_written=n_rows,
+                  extra={"mode": "perhead", "n_sig_heads": sum(1 for r in results if r["sig"])})
     print(f"[edgeKO] {n_rows} rows -> {out_dir}; {sum(1 for r in results if r['sig'])} sig heads")
     for r in results[:10]:
         print(f"  L{r['layer']}H{r['head']}: specific={r['specific_mean']} CI={r['specific_ci']} "

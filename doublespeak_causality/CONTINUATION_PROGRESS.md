@@ -746,6 +746,56 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 64 — 2026-08-06 — the bug hunt hit a published number: my P3 "specificity" answered the wrong question
+**`BUGHUNT_P3_CODE.md` returned 13 findings — 1 CRITICAL, 2 HIGH — and one of them lands directly on a
+number I published last tick.** This is the value of the hunt, so I am stating it plainly rather than
+softening it.
+
+**B3 [HIGH] — the reported contrast does not answer P3's question.**
+- The forced-choice harness reports **`rand_edge − edge_KO`, paired per item**: control = a count-matched
+  random **edge set** → *"is it the **demo** edges?"* — which is P3's question.
+- The decision-form aggregator I wrote reports **`Δrefusal − Δrandom` within a cell**: control = a random
+  **axis** → *"is the shift on the **refusal direction**?"* — a different question.
+- I computed the `rand_edge` rows (86 of them, both bands) and then **never used them in a contrast.**
+
+**B4 [MEDIUM] compounds it:** the random-*axis* control is a **floor** — `Δrandom` = +0.0002 and −0.0000.
+A control that never moves cannot discriminate, so the number I printed as "specificity" is numerically
+just the raw shift on the refusal axis.
+
+**Recomputed the correct contrast from the same committed `raw.jsonl`** (paired item bootstrap, 10 000
+resamples, seed 0):
+
+| band | `rand_edge − edge_KO` (refusal axis) | 95 % CI | excludes 0? |
+|---|---|---|---|
+| L8–11 | −0.0539 | [−0.1258, **+0.0035**] | **no** |
+| L14–21 | +0.1245 | [−0.0175, **+0.2722**] | **no** |
+
+**The P3 conclusion is UNCHANGED and now correctly controlled** — both null, sign flipping between bands,
+the same noise signature that settled `rand_edge` in §3b. But the *quantity* was wrong, so
+`PHASE3_ATTENTION_CAUSALITY_TARGETED.md` now carries a **§3c CORRECTION** and a pointer to it from the
+verdict line at the top. The `all_query_edges` firing control stands unaffected — it was never a
+specificity, and it is what makes these nulls informative absences rather than dead hooks.
+
+**Fixed in the script so no future run repeats it:**
+- **B1 [CRITICAL]** — `--mode perhead` is the **default**, and the decision-form aggregator keys cells by
+  name only, so it structurally collapses every `(layer,head)` into one entry per item. A user who forgot
+  `--mode band` would have burned a full GPU scan and got silently-wrong aggregation. Now **refused up
+  front** with an explicit message (verified it fires).
+- **B3** — `demo_edge_contrast` is now computed and written into `summary.json` with its definition
+  spelled out, so the right quantity is emitted rather than left implicit in the rows.
+- **B4** — `random_axis_is_a_floor` is now recorded, so nobody can read the per-cell number as a
+  specificity when the control did not move.
+- **B6** — **neither** path wrote `RUNMETA.json` or `DONE.json`; every edgeKO run to date violates the
+  plan §2.1 artifact contract and cannot be provenance-audited. RUNMETA is now the first action and DONE
+  the last, on **all three** exit paths (decision, band, perhead).
+
+**Still to triage from this hunt:** B7 (`all_query_edges` is not "all previous keys" when `len(qdest)>1`
+— affects an already-published FC number), B8 (the random-source pool includes BOS/attention-sink,
+empirically 47× the impact of demo edges — which likely *explains* the `rand_edge` anomaly), B5, B9–B12.
+Four more agents still running.
+
+**Jobs:** 727984 (42/50), 728310 (α=0.05) and 728311 (α=0.20) both generating on n-802.
+
 ### Tick 63 — 2026-08-06 — Omer's ruling: DO BOTH / take the more detailed option. Decisions resolved.
 **Omer's instruction: "in every consideration you have — choose to do both things or the more detailed
 decision", plus an explicit ask to hunt code bugs AND output bugs.** That resolves everything that was

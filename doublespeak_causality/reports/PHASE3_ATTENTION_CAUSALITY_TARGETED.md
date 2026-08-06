@@ -3,7 +3,9 @@
 **Status: COMPLETE — both bands** (jobs `727983` L8–11 and `728189` L14–21, n = 86 each,
 `attn_implementation: eager` asserted and recorded; both reconcile at 0 mismatches).
 
-**Verdict: no query→demo-codeword edge bottleneck at the decision point.** Knocking out those edges leaves
+**Verdict: no query→demo-codeword edge bottleneck at the decision point.** ⚠️ **Read §3c first — the
+contrast reported in §3/§3b answers a different question and is corrected there; the conclusion is
+unchanged.** Knocking out those edges leaves
 the refusal state at the first-generated-token position statistically unchanged — while the *same
 machinery*, applied to all incoming edges, moves it by **−0.62**. This is an informative null, not a dead
 hook.
@@ -88,6 +90,39 @@ demo-codeword edges move it by ~0.003.
 bound −0.0007) and declined to call it real. On the carry band it is **+0.117 with a CI that includes
 zero** — and it has **changed sign**. A quantity that reverses sign between bands and straddles zero in
 one of them is not an effect. That caution was correct and the claim stays withdrawn.
+
+## 3c. ⚠️ CORRECTION — the contrast reported in §3/§3b answers a different question
+
+**Found by adversarial self-review (`BUGHUNT_P3_CODE.md`, B3/B4) after §3 was written. The conclusion is
+unchanged; the reported *quantity* was not the right one and is corrected here.**
+
+The forced-choice harness reports **`rand_edge − edge_KO`, paired per item** — its control is a
+count-matched random **edge set**, so it answers *"is it the **demo** edges?"* The decision-form
+aggregator I wrote instead reports **`Δrefusal − Δrandom` within a cell** — its control is a random
+**axis**, which answers *"is the shift on the **refusal direction** specifically?"* Those are different
+questions, and only the first is the one P3 asks.
+
+Worse, the random-axis control turns out to be a **floor**: `Δrandom` is +0.0002 (L8–11) and −0.0000
+(L14–21). A control that never moves cannot discriminate, so the number printed as "specificity" in §3
+and §3b is, to three decimals, just the **raw shift on the refusal axis**. It is a real quantity and the
+firing control still validates the harness — but it is not a demo-edge specificity.
+
+**The correct contrast, recomputed from the same committed `raw.jsonl` (paired item bootstrap, 10 000
+resamples, seed 0):**
+
+| band | `rand_edge − edge_KO` on the refusal axis | 95 % CI | excludes 0? |
+|---|---|---|---|
+| L8–11 | **−0.0539** | [−0.1258, **+0.0035**] | **no** |
+| L14–21 | **+0.1245** | [−0.0175, **+0.2722**] | **no** |
+
+**Both null, and the sign flips between bands** — the same signature that settled `rand_edge` as noise in
+§3b. So the P3 conclusion is **unchanged and now correctly controlled**: knocking out the decision
+token → demo-codeword edges is indistinguishable from knocking out a count-matched random set of
+positions, in both bands.
+
+**What §3/§3b are still good for:** the `all_query_edges` row. That is a firing control, not a
+specificity, and it does its job — the harness moves this readout by −0.62 / +1.24, so the nulls above are
+informative absences rather than dead hooks.
 
 ## 4. Reading
 
