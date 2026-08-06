@@ -343,6 +343,20 @@
      0.9242,
      0.8833
     ]
+   },
+   "delta_auc_best_vs_reference": {
+    "layer_a_decoder": 16,
+    "layer_b_decoder": 21,
+    "auc_a": 0.8883,
+    "auc_b": 0.8744,
+    "delta": 0.0139,
+    "ci95": [
+     -0.0148,
+     0.0446
+    ],
+    "n_boot": 10000,
+    "straddles_zero": true,
+    "note": "layer_a is the ARGMAX over the P7-validated set, so its point estimate is selection-inflated; the CI is the honest quantity."
    }
   },
   "curated": {
@@ -674,6 +688,20 @@
      0.375,
      0.1875
     ]
+   },
+   "delta_auc_best_vs_reference": {
+    "layer_a_decoder": 14,
+    "layer_b_decoder": 21,
+    "auc_a": 0.4727,
+    "auc_b": 0.4205,
+    "delta": 0.0523,
+    "ci95": [
+     -0.127,
+     0.2341
+    ],
+    "n_boot": 10000,
+    "straddles_zero": true,
+    "note": "layer_a is the ARGMAX over the P7-validated set, so its point estimate is selection-inflated; the CI is the honest quantity."
    }
   }
  }
