@@ -50,7 +50,7 @@ GPU_MEM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/
 # for this purpose. Gate on >=23GB VRAM so a 2080/titan/quadro (too small for 16GB bf16 weights) is still
 # rejected. Added 2026-08-06 to use the gpu-sharifm lab partition's free A5000s when L40S is 100% booked.
 case "$GPU_TYPE" in
-  *L40S*|*l40s*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*H100*|*H200*|*L40*)
+  *L40S*|*l40s*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*A40*|*H100*|*H200*|*L40*|*3090*|*4090*)
     if [ "${GPU_MEM:-0}" -ge 23000 ]; then echo "GPU ok: $GPU_TYPE (${GPU_MEM}MiB)";
     else echo "ERROR: $GPU_TYPE has only ${GPU_MEM}MiB (<23GB); Llama-8B bf16 needs ~18GB"; exit 1; fi ;;
   *) echo "ERROR: GPU '$GPU_TYPE' (${GPU_MEM}MiB) not in the allowlist"; exit 1 ;;
