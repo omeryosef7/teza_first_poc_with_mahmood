@@ -17,7 +17,7 @@
 # 717879/717880). Mechanism: node RealMemory=515600MB / 8 GPUs = 64450MB per GPU-share, so --mem=64G
 # leaves only 7 of 8 GPUs memory-feasible per node while 48G leaves all 8. --time is NOT the lever.
 # Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
-#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_stage2b_llama8b.sh
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/run_stage2b_llama8b.sh
 #
 # Doublespeak Stage-2: plumbing smoke test + representation mapping on
 # Llama-3.1-8B-Instruct. Follows slurm_scripts/submit_qwen_ae.sh conventions

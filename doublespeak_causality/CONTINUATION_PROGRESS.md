@@ -746,6 +746,40 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 42 — 2026-08-06 — P7 COMPLETE and written up; a stalled node killed+resubmitted; --exclude trap fixed
+**P7 finished** (job 720463, 840 rows, `DONE.json`). Full ablate table, all 10 cells, every value
+re-derived from `raw.jsonl` before writing it down — base_harmful refusal 0.950, n=20/cell:
+
+| family | L9 | L16 | L18 | L22 | L28 |
+|---|---|---|---|---|---|
+| `existing` (carrot/bomb fit) | **−0.050** ✗ | +0.450 | **+0.600** | +0.250 | +0.250 |
+| `clearharm` (native refit) | **−0.100** ✗ | +0.350 | **+0.900** | +0.450 | +0.300 |
+
+**L9 is the only failing cell, and it fails in both families.** At L18/clearharm ablation drops refusal
+from 0.95 to **0.05** while the norm-matched random control does nothing. Written up as
+**`reports/P7_REFUSAL_DIRECTION_VALIDATION.md`**, including the §4 recommendation that the prose **"L9
+ns" be replaced everywhere** with the positive claim it now supports: *no linearly-decodable refusal axis
+exists at L9; refusal becomes linearly available at L16 and peaks at L18.* Limitations stated: n=20 means
+L9's estimate is 1–2 items and is not distinguishable from zero alone — the claim rests on the contrast
+with L16–L28 (5 to 18 items of 20) and on replication across two independent fits.
+
+**720724 was hung, not slow — killed and resubmitted.** Its stderr showed
+`Loading weights: 0%| | 0/291` frozen for **1 h 26 m**, while its sibling 720725 (same script, same
+settings) was 47 items in. On teardown n-803 emitted `_cgroup_procs_check: failed on path
+(null)/cgroup.procs` — a broken cgroup on that node, which is why the load never progressed. That is the
+diagnosis, not a guess: a slow node prints progress, a broken one prints nothing.
+
+**A trap I walked into, and then removed from all 54 wrappers.** My first two resubmissions
+(721954/721955) used `--exclude=n-803` — advice the wrapper headers themselves gave. Both landed on
+**n-306 with an RTX 3090** and died in ~10 s. **Passing `--exclude` on the sbatch line NULLIFIES the
+script's `#SBATCH --nodelist`**, so the job becomes eligible for the whole partition. Only the wrappers'
+`ERROR need L40S` guard caught it — worth noting that the guard did its job and cost us seconds, not
+GPU-hours. Fixed by passing an explicit reduced nodelist instead, and by rewriting the advice in **all 54
+wrappers** (10 advice lines + 54 example commands) so nobody repeats it. All 54 re-checked with `bash -n`.
+
+**Resubmitted and queued:** `721956` (P8 clearharm v3, α=0.25) and `721957` (P7 headline re-run with the
+corrected `--induce-eval harmless` default). `720725` still running, 47/115 items.
+
 ### Tick 41 — 2026-08-06 — P7 ANSWERS THE HEADLINE QUESTION: L9 is not a refusal axis, by either fit
 **The tick-28 risk has resolved, and it resolved in a way that HELPS the paper rather than hurting it.**
 

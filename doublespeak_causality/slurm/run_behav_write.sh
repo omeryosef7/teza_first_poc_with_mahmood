@@ -17,10 +17,14 @@
 # 717879/717880). Mechanism: node RealMemory=515600MB / 8 GPUs = 64450MB per GPU-share, so --mem=64G
 # leaves only 7 of 8 GPUs memory-feasible per node while 48G leaves all 8. --time is NOT the lever.
 # Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
-#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_behav_write.sh
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/run_behav_write.sh
 # n-801 is back in the nodelist (a full gpu:l40s:8 node = 1/6 of our L40S capacity). Caveat, measured
 # over 232 logged runs: every weight-load slower than 15 min happened on n-801 (worst 79 min), while no
-# other L40S node ever exceeded 14 min. For a short smoke, add --exclude=n-801 on the sbatch line.
+# other L40S node ever exceeded 14 min. To avoid a node, DO NOT use --exclude: passing --exclude on the
+# sbatch line NULLIFIES this #SBATCH --nodelist and the job then lands anywhere in the partition. That
+# happened on 2026-08-06 (jobs 721954/721955 -> n-306, an RTX 3090); only the GPU guard below caught it.
+# Pass an explicit REDUCED NODELIST instead, e.g. to skip n-801:
+#   sbatch --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/<wrapper>.sh
 #
 # P10: behavioral necessity of the L8-11 MLP demo-codeword WRITE, run in BOTH phasings so the
 # prefill-only/decode-safe difference is measurable inside one experiment:

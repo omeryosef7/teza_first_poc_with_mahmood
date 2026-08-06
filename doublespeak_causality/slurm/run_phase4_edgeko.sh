@@ -17,7 +17,7 @@
 # 717879/717880). Mechanism: node RealMemory=515600MB / 8 GPUs = 64450MB per GPU-share, so --mem=64G
 # leaves only 7 of 8 GPUs memory-feasible per node while 48G leaves all 8. --time is NOT the lever.
 # Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
-#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_phase4_edgeko.sh
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/run_phase4_edgeko.sh
 #
 # CAUSAL_CIRCUIT_MASTER_PLAN Phase 4.2: surgical per-head query->demo attention-edge knockout (eager).
 # DSLAYERS = "all" or an inclusive dash-range "A-B" (expanded to a comma list INSIDE this script so the

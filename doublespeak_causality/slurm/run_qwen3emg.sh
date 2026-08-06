@@ -20,7 +20,7 @@
 # streamed through host page cache per load -- 2x the 8B footprint the A/B above was measured on. The
 # allocation win is untested at 14B; drop it to 48G with the flag below if this job queues.
 # Every #SBATCH line below is a DEFAULT: the matching sbatch flag overrides it with no file edit, e.g.
-#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --exclude=n-801 slurm/run_qwen3emg.sh
+#   sbatch --cpus-per-task=2 --mem=32G --time=00:40:00 --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/run_qwen3emg.sh
 #
 # Second-model generality: emergence (Direct-early vs Doublespeak-late) on Qwen3-14B.
 set -euo pipefail
