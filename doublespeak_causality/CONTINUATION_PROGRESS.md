@@ -746,6 +746,45 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 44 — 2026-08-06 — closed the P7 reconciliation gap; 1702 values recomputed, 0 mismatched
+Both GPU jobs healthy (721956 at 111/127; 722611 at 1950 rows), so this tick went to the **stated
+prerequisite** the claim audit flagged: *"`validate_all_outputs.py` does not recognise the `refval` row
+schema, so no P7 number has ever been machine-recomputed from its rows — teaching it that schema is a
+prerequisite for calling any P7 number VERIFIED."* That is now done.
+
+**`validate_experiment_coverage.py`** — added `check_refval` + a detector keyed on `arm`+`refused`+`item`
+(`family`/`layer` are `None` on baseline rows so they cannot discriminate). It checks arm completeness per
+(family, layer), duplicate `(family,layer,arm,item)`, non-bool `refused`, and **pairs each arm only against
+its own baseline** — because the induce arm may legitimately be *shorter* than the ablate arm under
+`--induce-eval harmless`. Both P7 dirs now report `ok`, and the detail line makes the design visible:
+720463 `base_b=20` (neutral) vs 721957 `base_b=10` (harmless holdout).
+
+**`validate_all_outputs.py`** — added `expect_refval`, recomputing every rate, gain, specificity, ceiling,
+empty-rate and `by_family` roll-up from `raw.jsonl`. Also special-cased the split-disjointness step:
+refval rows carry no `split` column (fit/eval separation is enforced upstream and recorded in
+`summary['plan']`), so the generic check would have compared `None` against `None` and emitted a
+meaningless "only 0 split(s)" warning. Replaced with a **`fit_split == eval_split` guard**, which is the
+failure that would actually matter — it would mean the ClearHarm refit was evaluated on its own fit items.
+
+**Result: all completed refval dirs reconcile — 1702 summary values recomputed, 0 mismatched**, including
+the 32-layer smoke (1284 values). The only FAIL in the sweep is 722611, which has no `summary.json` yet
+because it is still running.
+
+**A bug in my own recomputer, caught by not trusting the first red result.** My first pass reported 4
+`summary!=raw` FAILs on 720463 and I nearly wrote them up as a defect in the run. They were mine: the
+harness distinguishes two verdicts that I had conflated —
+`both_gains_positive` = raw gains > 0, whereas `valid` = raw gains > 0 **and** both specificities > 0
+(`validate_refusal_directions.py:560-562`). The two coincide only when the random controls are exactly
+0.000, which is true in 721957 and **not** in 720463 — which is precisely why 721957 passed and 720463
+"failed". Fixed, and the distinction is now commented at the site so it does not get re-conflated.
+
+**Negative-controlled, because a validator that cannot fail is worse than none.** Corrupting a rate,
+corrupting a roll-up, and flipping a verdict are each caught individually; forcing
+`eval_split = fit_split` fires the new guard. Verified, then the scratch copy was deleted.
+
+Claim audit regenerated: BR-10's "SECOND GAP" note now records the closure. 86 claims, 118 checks, 0
+failures.
+
 ### Tick 43b — 2026-08-06 — P8 CORE result, generated v3 cohort: no interaction, and the combination HURTS
 **Job 720725 finished (115 rows, DONE).** Analysed with `analyze_alpha_calibration.py` (which rebinds the
 2×2 cells onto the α-suffixed arm names; `analyze_interaction_2x2.py` has its run dirs hardcoded and no

@@ -809,9 +809,10 @@ CLAIMS = [
               "rests on a direction validated in only one of two families; anchor depth statements on L16/L18. NOTE the induce arm of 720463 is DEFECTIVE (it ran on "
               "`neutral`, a disguised-harmful population refusing at 0.750, capping induce_gain at +0.25); cite 721957. NOT YET COVERED: L21 (RP-01) and L30 (TR-01) "
               "are not in the headline set; job 722611 runs the full 32 layers. "
-              "SECOND GAP: `validate_all_outputs.py` does NOT recognize the `refval` row schema, so this dir FAILs reconciliation and its summary has never been "
-              "recomputed from its rows by the standard validator (the two counts above are checked directly by this script instead). Teaching the validator that "
-              "schema is a prerequisite for calling any P7 number VERIFIED.",
+              "SECOND GAP -- CLOSED 2026-08-06: both `validate_all_outputs.py` and `validate_experiment_coverage.py` now recognize the `refval` schema. Every completed "
+              "refval dir reconciles: 1702 summary values recomputed from raw.jsonl, 0 mismatched. Negative-controlled (a corrupted rate, a corrupted roll-up and a "
+              "flipped verdict are each caught), and the recomputer distinguishes `both_gains_positive` (raw gains only) from `valid` (gains AND specificities); "
+              "conflating the two produced 4 spurious summary!=raw FAILs on 720463 before it was fixed. A fit_split==eval_split guard was added at the same time.",
          checks=[dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.existing.n_valid", expect=15),
                  dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.clearharm.n_valid", expect=13)]),
     dict(id="BR-11", phase="BEHAV-REFUSAL", status="PENDING",

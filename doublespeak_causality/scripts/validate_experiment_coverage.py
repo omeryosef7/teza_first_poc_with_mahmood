@@ -240,6 +240,81 @@ def check_behavioral(rows):
                            "empty_rate": empty, "labelled_arms": labelled, "numeric_arms": numeric}
 
 
+REFVAL_ARMS = ("base_harmful", "base_benign", "ablate", "ablate_rand", "induce", "induce_rand")
+
+
+def check_refval(rows):
+    """P7 refusal-direction validation (scripts/validate_refusal_directions.py).
+
+    Row schema: family, layer, arm, item, refused, empty, len. The two BASELINE arms
+    (base_harmful / base_benign) are generated ONCE and carry family=None, layer=None; every other
+    arm is per (family, layer). Note the induce arms may legitimately have FEWER rows than the
+    ablate arms: with --induce-eval harmless the induce population is the held-out half of
+    HARMLESS_INSTRUCTIONS, which is smaller than the bench eval split. That is not an error, so this
+    checker compares induce against base_benign and ablate against base_harmful -- never across.
+    """
+    issues, warns = [], []
+    arms = {r.get("arm") for r in rows}
+    unknown = arms - set(REFVAL_ARMS)
+    if unknown:
+        issues.append(f"unknown arm(s): {sorted(unknown)}")
+    for a in ("base_harmful", "base_benign", "ablate", "ablate_rand", "induce", "induce_rand"):
+        if a not in arms:
+            issues.append(f"missing arm {a!r}")
+
+    base = [r for r in rows if r.get("family") is None]
+    cell = [r for r in rows if r.get("family") is not None]
+    if any(r.get("arm") not in ("base_harmful", "base_benign") for r in base):
+        issues.append("family=None rows contain a non-baseline arm")
+    if any(r.get("layer") is None for r in cell):
+        issues.append("per-cell rows missing 'layer'")
+
+    # duplicates: a (family, layer, arm, item) must be unique
+    dups = sum(c - 1 for c in Counter(
+        (r.get("family"), r.get("layer"), r.get("arm"), r.get("item")) for r in rows).values() if c > 1)
+    if dups:
+        issues.append(f"{dups} duplicate (family,layer,arm,item) rows")
+
+    # `refused` must be a real boolean -- a None would be silently summed as 0 by the recomputer
+    nbad = sum(1 for r in rows if not isinstance(r.get("refused"), bool))
+    if nbad:
+        issues.append(f"{nbad} rows whose 'refused' is not a bool")
+
+    # every (family, layer) must carry all four intervention arms, at equal n within each PAIR
+    per = defaultdict(lambda: defaultdict(int))
+    for r in cell:
+        per[(r["family"], r["layer"])][r["arm"]] += 1
+    n_ab_base = sum(1 for r in base if r["arm"] == "base_harmful")
+    n_in_base = sum(1 for r in base if r["arm"] == "base_benign")
+    for k, c in sorted(per.items(), key=str):
+        for a in ("ablate", "ablate_rand", "induce", "induce_rand"):
+            if not c.get(a):
+                issues.append(f"{k[0]}/L{k[1]}: missing arm {a!r}")
+        if c.get("ablate") != c.get("ablate_rand"):
+            issues.append(f"{k[0]}/L{k[1]}: ablate n={c.get('ablate')} != ablate_rand n={c.get('ablate_rand')}")
+        if c.get("induce") != c.get("induce_rand"):
+            issues.append(f"{k[0]}/L{k[1]}: induce n={c.get('induce')} != induce_rand n={c.get('induce_rand')}")
+        # the paired McNemar in the summary pairs each arm against ITS OWN baseline
+        if n_ab_base and c.get("ablate") not in (None, n_ab_base):
+            issues.append(f"{k[0]}/L{k[1]}: ablate n={c.get('ablate')} != base_harmful n={n_ab_base}")
+        if n_in_base and c.get("induce") not in (None, n_in_base):
+            issues.append(f"{k[0]}/L{k[1]}: induce n={c.get('induce')} != base_benign n={n_in_base}")
+
+    emax = 0.0
+    for k, _ in per.items():
+        for a in ("ablate", "induce"):
+            v = [r for r in cell if (r["family"], r["layer"]) == k and r["arm"] == a]
+            if v:
+                emax = max(emax, sum(1 for r in v if r.get("empty")) / len(v))
+    if emax > 0.5:
+        warns.append(f"empty_rate up to {emax:.2f} in an intervention arm (decoder damage?)")
+
+    info = {"n_valid": len(rows), "n_cells": len(per), "families": sorted({str(k[0]) for k in per}),
+            "n_base_harmful": n_ab_base, "n_base_benign": n_in_base,
+            "empty_rate_max": round(emax, 4), "dup_rows": dups}
+    return issues, warns, info
+
+
 def detect(rows):
     """-> ('phase5'|'phase6'|'behav', checker) or (None, None) if the schema is unparseable."""
     if not rows:
@@ -253,6 +328,10 @@ def detect(rows):
         return None, None
     if all(("id" in r and "split" in r) for r in rows):
         return "behav", check_behavioral
+    # P7 refusal-direction validation. Keyed on 'arm' + 'refused', which no other phase emits;
+    # 'family'/'layer' are None on the baseline rows so they cannot be part of the discriminator.
+    if all(("arm" in r and "refused" in r and "item" in r) for r in rows):
+        return "refval", check_refval
     return None, None
 
 
@@ -297,6 +376,10 @@ def main():
         any_fail = any_fail or bool(issues)
         if typ == "behav":
             detail = (f"n={info['n_valid']} arms={info['arms']} "
+                      f"empty_max={info['empty_rate_max']} dups={info['dup_rows']}")
+        elif typ == "refval":
+            detail = (f"rows={info['n_valid']} cells={info['n_cells']} fam={','.join(info['families'])} "
+                      f"base_h={info['n_base_harmful']} base_b={info['n_base_benign']} "
                       f"empty_max={info['empty_rate_max']} dups={info['dup_rows']}")
         else:
             detail = f"n_valid={info['n_valid']} ssdev={info['selfswap_dev']} dups={info['dup_rows']}"

@@ -777,10 +777,108 @@ def expect_p9(rows, summary, res=None):
     return exp
 
 
+def expect_refval(rows, summary, res):
+    """P7 refusal-direction validation (scripts/validate_refusal_directions.py).
+
+    Recomputes, per (family, layer), every rate/gain/specificity in `summary['rows']` straight from
+    `raw.jsonl`, plus the `by_family` roll-ups (n_valid / valid_layers / best_layer).
+
+    TWO THINGS THAT ARE NOT ERRORS AND MUST NOT BE FLAGGED AS SUCH:
+      * the baseline arms carry family=None, layer=None -- they are generated once and shared by
+        every cell, so they are keyed separately;
+      * the induce arms may have FEWER rows than the ablate arms. Under `--induce-eval harmless` the
+        induce population is the held-out half of HARMLESS_INSTRUCTIONS while ablate runs on the
+        bench eval split. Each arm is therefore compared ONLY against its own baseline.
+    """
+    exp = Expect()
+
+    def rate(sel, field="refused"):
+        v = [bool(r.get(field)) for r in rows if sel(r)]
+        return (sum(v) / len(v)) if v else None
+
+    base_h = rate(lambda r: r.get("family") is None and r.get("arm") == "base_harmful")
+    base_b = rate(lambda r: r.get("family") is None and r.get("arm") == "base_benign")
+
+    per = {}
+    for r in rows:
+        if r.get("family") is None:
+            continue
+        per.setdefault((r["family"], r["layer"]), True)
+
+    srows = summary.get("rows")
+    if not isinstance(srows, list):
+        res["warns"].append("summary has no 'rows' list; only by_family roll-ups reconciled")
+        srows = []
+
+    recomputed = {}
+    for i, sr in enumerate(srows):
+        fam, L = sr.get("family"), sr.get("layer")
+        sel = lambda a, f=fam, l=L: (lambda r: r.get("family") == f and r.get("layer") == l
+                                     and r.get("arm") == a)
+        ab, abr = rate(sel("ablate")), rate(sel("ablate_rand"))
+        ind, indr = rate(sel("induce")), rate(sel("induce_rand"))
+        if None in (ab, abr, ind, indr) or base_h is None or base_b is None:
+            res["warns"].append(f"rows[{i}] {fam}/L{L}: an arm has no rows; skipped")
+            continue
+        ab_gain, ab_rand = base_h - ab, base_h - abr
+        in_gain, in_rand = ind - base_b, indr - base_b
+        vals = {
+            "refusal_base_harmful": base_h, "refusal_base_benign": base_b,
+            "refusal_ablated": ab, "refusal_rand_ablated": abr,
+            "refusal_induced": ind, "refusal_rand_induced": indr,
+            "ablate_gain": ab_gain, "ablate_gain_rand": ab_rand,
+            "ablate_specificity": ab_gain - ab_rand,
+            "induce_gain": in_gain, "induce_gain_rand": in_rand,
+            "induce_specificity": in_gain - in_rand,
+            "induce_gain_ceiling": 1.0 - base_b,
+            "n_harmful": sum(1 for r in rows if sel("ablate")(r)),
+            "n_benign": sum(1 for r in rows if sel("induce")(r)),
+            "empty_ablated": rate(sel("ablate"), "empty"),
+            "empty_induced": rate(sel("induce"), "empty"),
+        }
+        for k, v in vals.items():
+            if k in sr:
+                exp.put(f"rows[{i}].{k}", v)
+        # TWO DISTINCT VERDICTS -- do not conflate them (validate_refusal_directions.py:560-562):
+        #   both_gains_positive = raw gains > 0                (no control involved)
+        #   valid               = raw gains > 0 AND both specificities > 0
+        # They coincide only when the random controls are exactly 0, which is true in some runs and
+        # not others; using the wrong one produced 4 spurious "summary!=raw" FAILs on job 720463.
+        vals["both_gains_positive"] = bool(vals["ablate_gain"] > 0 and vals["induce_gain"] > 0)
+        vals["valid"] = bool(vals["ablate_gain"] > 0 and vals["induce_gain"] > 0
+                             and vals["ablate_specificity"] > 0 and vals["induce_specificity"] > 0)
+        vals["score"] = vals["ablate_gain"] + vals["induce_gain"]
+        for k in ("both_gains_positive", "valid", "score"):
+            if k in sr:
+                exp.put(f"rows[{i}].{k}", vals[k])
+        recomputed[(fam, L)] = vals
+
+    # by_family roll-ups, derived from the per-cell verdicts we just recomputed
+    bf = summary.get("by_family")
+    if isinstance(bf, dict):
+        for fam, node in bf.items():
+            cells = {L: v for (f, L), v in recomputed.items() if f == fam}
+            if not cells:
+                continue
+            valid = sorted(L for L, v in cells.items() if v["valid"])
+            if "n_layers" in node:
+                exp.put(f"by_family.{fam}.n_layers", len(cells))
+            if "n_valid" in node:
+                exp.put(f"by_family.{fam}.n_valid", len(valid))
+            if "valid_layers" in node:
+                for j, L in enumerate(valid):
+                    exp.put(f"by_family.{fam}.valid_layers[{j}]", L)
+            if "invalid_layers" in node:
+                inv = sorted(L for L in cells if L not in valid)
+                for j, L in enumerate(inv):
+                    exp.put(f"by_family.{fam}.invalid_layers[{j}]", L)
+    return exp
+
+
 EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
           "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
           "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
-          "p9": expect_p9}
+          "p9": expect_p9, "refval": expect_refval}
 
 
 def detect_ext(rows):
@@ -910,9 +1008,19 @@ def validate_dir(d, args):
         return res
 
     # ---- 1. split disjointness
+    # refval rows carry no split column at all: the fit/eval separation is enforced upstream by
+    # --fit-split/--eval-split and recorded in summary['plan'], not per row. Running the id-overlap
+    # check here would compare None against None and emit a meaningless "only 0 split(s)" warning.
+    if typ == "refval":
+        plan = summary.get("plan", {})
+        f, e = plan.get("fit_split"), plan.get("eval_split")
+        if f is not None and e is not None and f == e:
+            res["issues"].append(f"fit_split == eval_split == {f!r}: the clearharm refit would be "
+                                 f"evaluated on its own fit items")
+        res["splits"] = {"fit": f, "eval": e}
     key = "id" if typ == "behav" else "sid"
     ids = defaultdict(set)
-    for r in rows:
+    for r in ([] if typ == "refval" else rows):
         ids[r.get("split")].add(r.get(key))
     sps = sorted(x for x in ids if x is not None)
     for i in range(len(sps)):
@@ -920,9 +1028,10 @@ def validate_dir(d, args):
             sh = ids[sps[i]] & ids[sps[j]]
             if sh:
                 res["issues"].append(f"{len(sh)} {key}s shared between splits {sps[i]}/{sps[j]}")
-    if len(sps) < 2:
+    if len(sps) < 2 and typ != "refval":
         res["warns"].append(f"only {len(sps)} split(s) present: {sps}")
-    res["splits"] = {s: len(ids[s]) for s in sps}
+    if typ != "refval":
+        res["splits"] = {s: len(ids[s]) for s in sps}
 
     # ---- 2. recompute summary from raw
     exp = EXPECT[typ](rows, summary, res)
