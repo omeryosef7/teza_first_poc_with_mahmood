@@ -746,6 +746,33 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 72 — 2026-08-06 — P4b-1 smoke VERIFIED clean; decisive full run launched (demo positions)
+**The P4b-1 smoke (728619) ran end-to-end and I verified the three things that had to be true before
+trusting the new code path:**
+1. **Self-swap is EXACTLY 0.0** on every item (`|p_concept − C1|` = 0.00e+00). The pre-registered locality
+   control holds — patching DS's own z at the demo positions changes nothing, so the `ZHeadPatchMulti`
+   wiring is correct.
+2. **The hook fires — 43 % of the 512 benign-donor cells moved the readout** off C1. Not 0 %, so this is
+   not the silent-no-op failure the tick-69 firing test exists to catch; the 57 % that don't move are
+   heads that genuinely have no effect at n = 2.
+3. **12 demo positions patched per item** (`n_patch_pos = 12`), and the top necessity cell is **L8H11** —
+   inside the L8–11 concept-write band the retrieval story predicts. (n = 2, so this is a plausibility
+   check on the pipeline, not a result.)
+
+**Launched the full decisive run** — `DSPOS=demo`, full bench (44 dev + 42 heldout), layer-sharded
+**728710 (L0–15) / 728711 (L16–31)**, 2 concurrent per the node-contention policy.
+
+**⚠️ Post-processing note I am recording now so it is not forgotten:** the two shards each write a
+`summary.json` that Holm-corrects only *their* 512 cells. **The pre-registration (§1) specifies the family
+is 32×32 = 1 024 cells**, so the shard summaries must NOT be read directly — the two `raw.jsonl` must be
+**pooled and re-analysed over the full 1 024-cell family** (`phase5_analyze.py`). Reading a per-shard Holm
+result would use the wrong correction and is exactly the kind of silent methodology error the pre-reg
+exists to prevent. I will pool when they land.
+
+**This is the first patch of the L8–11 retrieval heads at the positions where they act** — the gap
+`PHASE5_HEADS.md:74` flagged and the plan's P4b-1 headline. `query` and `all` position-sets, and the
+Q/K-V/pattern channels, follow in subsequent ticks per `P4B_PREREGISTRATION.md` §3.
+
 ### Tick 71 — 2026-08-06 — P4b-1 IMPLEMENTED (patch z where the heads act) + pre-registration; smoke launched
 **The decisive P4b gap, closed with reuse rather than new machinery.** `phase5_head_zpatch.py` only ever
 patched head z at the **FC answer position** — `PHASE5_HEADS.md:74` conceded *"a head writing at an
