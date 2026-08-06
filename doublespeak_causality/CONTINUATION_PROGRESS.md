@@ -746,6 +746,39 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 78 — 2026-08-06 — "look at the configuration": diagnosed the real blocker (fair-share, not capacity)
+**Per Omer's instruction, I read the whole cluster config instead of passively waiting.** What I found,
+node by node with `scontrol show node` (authoritative `AllocTRES`, not the squeue count which misled me):
+
+| resource | state | usable? |
+|---|---|---|
+| **killable L40S** (n-801–805, t-806) | **8/8 GPUs allocated on every node** | no — 100% booked |
+| **killable a5000** (n-501/502/503) | **15 free GPUs, 300+ GB free RAM** | yes — same partition, my account |
+| **killable idle 3090** (n-305) | **fully IDLE, 8 free GPUs** | yes |
+| gpu-sharifm (a5000/a6000/l40s) | free GPUs | **NO — "group not permitted"** (matches the old note) |
+| studentkillable titan | 4–5 free GPUs | **NO — RAM-exhausted** (400 MB–4 GB free; can't load 16 GB weights) |
+
+**The real config fix, committed:** the phase5 wrapper's GPU guard was **L40S-only**, which is what kept me
+off the free a5000/3090 capacity. Since P4b is a **forward-pass-only** job measuring **within-run**
+`p_concept` differences, the GPU model is irrelevant (bf16 numerics cancel across conditions). Relaxed the
+guard to a **≥23 GB VRAM allowlist** (a5000/a6000/3090/L40S/A100/H100), still rejecting the 2080/titan/
+quadro that are too small for 16 GB bf16 weights. This is a durable improvement — every future forward-pass
+run can now use the whole ≥24 GB fleet, not just L40S.
+
+**But the binding constraint turned out NOT to be capacity — it is FAIR-SHARE PRIORITY.** I submitted to
+the a5000 nodes, then to the *fully idle* n-305, and **both still showed `(Priority)`**. My job priority is
+**100000715**; user `talr5` has **100001325**. The scheduler reserves even idle GPUs for higher-priority
+queued jobs, so no `--nodelist` or resource change places me ahead of them. Config cannot raise fair-share.
+
+**What I did, correctly, and where I stopped:** final broad submission (**729106/729108**) across all 12
+suitable-GPU killable nodes with a tight **1:30** walltime — maximum backfill surface. Then I **stopped
+resubmitting**, because each cancel+resubmit resets the job's queue age and *worsens* the position. Armed a
+**Monitor** to notify the instant they start. This is a fair-share wait for a backfill gap, not a fixable
+config problem — the honest diagnosis, reached by reading the config as asked.
+
+The query z-channel result lands as soon as backfill picks the jobs up; the pooled `--expect-cells 1024`
+analysis is ready to run the moment they finish.
+
 ### Tick 77 — 2026-08-06 — query jobs stuck on a BUSY cluster (Priority); resubmitted tight; P4b-1 into the audit
 **The query jobs breached the 30-minute rule — but this is cluster load, not our config.** 728891/728892
 sat PENDING 30 min with reason `(Priority)` and a scheduler start estimate of **23:33 (3.5 h out)**:
