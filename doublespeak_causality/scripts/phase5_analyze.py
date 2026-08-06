@@ -58,10 +58,25 @@ def holm(pv, alpha=0.05):
 
 
 def main():
-    dirs = sys.argv[1:]
-    if not dirs:
-        print("usage: phase5_analyze.py <dir1> [<dir2> ...]")
-        sys.exit(1)
+    import argparse
+    ap = argparse.ArgumentParser(description="pool run dirs and Holm-correct over the (layer,head) family")
+    ap.add_argument("dirs", nargs="+")
+    # F2 (VERIFY_P4B1_ANALYSIS): m = len(pv) is data-dependent, so pointing this at ONE shard silently
+    # Holm-corrects over <1024 cells and UNDER-corrects with no error. --expect-cells makes the
+    # pre-registered family size a HARD gate: pass 1024 for a full sharded P4b run. Default 0 = off
+    # (back-compat for the historical single-dir answer-position runs).
+    ap.add_argument("--expect-cells", type=int, default=0,
+                    help="assert n_cells == this per split (P4b pooled run: 1024). 0 = no check.")
+    ap.add_argument("--only-sids-file", default=None,
+                    help="JSON with {'clean_sids':[...]}; restrict to those sids (clean-subset sensitivity)")
+    args = ap.parse_args()
+    dirs = args.dirs
+    _fail = []
+    _keep_sids = None
+    if args.only_sids_file:
+        _keep_sids = set(json.load(open(args.only_sids_file))["clean_sids"])
+        print(f"### RESTRICTED to {len(_keep_sids)} clean sids from {args.only_sids_file}")
+    _holm_by_split = {}
     rows = []
     cohorts = set()
     for d in dirs:
@@ -71,6 +86,8 @@ def main():
         cohorts.add(s.get("cohort", "?"))
     cohort = "+".join(sorted(cohorts))
     print(f"### merged {len(dirs)} dir(s), cohort={cohort}, {len(rows)} rows")
+    if _keep_sids is not None:
+        rows = [r for r in rows if r.get("sid") in _keep_sids]
     for split in sorted({r["split"] for r in rows}):
         sr = [r for r in rows if r["split"] == split]
         valid = {r["sid"] for r in sr if r["cell"] == "benign"
@@ -107,6 +124,23 @@ def main():
               f"selfswap_dev={selfdev:.2e} underpowered={underpowered} (pfloor={pfloor:.1e} vs a/m={0.05/m:.1e})")
         print(f"     Holm-sig positive-necessity heads ({len(holm_sig)}): {holm_sig[:15]}")
         print(f"     top12 by necessity: {[(k, round(v,4)) for k,v in top]}")
+        _holm_by_split[split] = {name for (name, _m, _p, _ci) in holm_sig}
+        if args.expect_cells and len(pv) != args.expect_cells:
+            _fail.append(f"[{split}] n_cells={len(pv)} != expected {args.expect_cells} -- Holm family is "
+                         f"the WRONG SIZE (missing shard? truncated raw?). Numbers above are UNDER/OVER-"
+                         f"corrected and must not be quoted.")
+    if {"dev", "heldout"} <= set(_holm_by_split):
+        confirmed = sorted(_holm_by_split["dev"] & _holm_by_split["heldout"])
+        print(f"\n### CONFIRMED (Holm-sig positive-necessity on BOTH dev AND heldout, pre-reg section 4): "
+              f"{len(confirmed)} heads")
+        print(f"    {confirmed}")
+        print(f"    dev-only: {len(_holm_by_split['dev'] - _holm_by_split['heldout'])}  "
+              f"heldout-only: {len(_holm_by_split['heldout'] - _holm_by_split['dev'])}")
+    if _fail:
+        print("\nERROR: pre-registered family-size check FAILED:", file=sys.stderr)
+        for _f in _fail:
+            print("  " + _f, file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

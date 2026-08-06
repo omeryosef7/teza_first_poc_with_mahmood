@@ -746,6 +746,75 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 75 — 2026-08-06 — P4b-1 RESULT: no single head bottlenecks concept-reading; robust pair L13H18/L14H13
+**All three verifiers returned BUG-FOUND-BUT-RUN-OK (high confidence).** The patch agent confirmed the
+four things that had to be right — occurrence order monotone, demo/query split correct, **self-swap exactly
+0.0 and hooks fire**, `ZHeadPatchMulti` wiring correct — and rated the trailing-alignment LOW-MEDIUM
+(5/86 items, donors always valid benign z, aggregate unaffected). So the run stands.
+
+**Implemented the two pre-registered gaps the agents flagged, then ran the real analysis:**
+- **F2** — `--expect-cells` hard gate on the 1 024-cell family (silent under-correction was possible when
+  pointed at one shard). Negative-controlled.
+- **F3** — the **dev∩heldout "both splits" confirmation gate** the pre-reg requires but neither script
+  computed. Now printed automatically.
+- **clean-subset filter** (`--only-sids-file`) for the trailing-alignment sensitivity check.
+
+**P4b-1 RESULT (z channel, demo positions, pooled 1 024 cells, self-swap 0.0, not underpowered):**
+
+| analysis | n | confirmed on BOTH splits |
+|---|---|---|
+| full | 44/41 | L4H16, L10H2, **L13H18, L14H13** |
+| clean subset (exact-count) | 37/36 | L8H11, **L13H18, L14H13** |
+| **robust (both analyses)** | — | **L13H18, L14H13** |
+
+**No single head is a concept-reading bottleneck at the demo positions.** Effects are small (≤ 0.014, the
+robust pair ≈ 0.002–0.003) — Holm-significant because *consistent* across items, not large. The two robust
+heads sit in the **L13–L14 carry band**, not the L8–11 write band. **This is the head-level analogue of
+P3's distributed-retrieval finding** — no single attention *edge* and no single head *z-output* at the demo
+positions bottlenecks the concept read. Written up as `reports/PHASE4B_HEAD_Z_NECESSITY_DEMO.md`, with the
+small-effect and trailing-alignment limitations stated plainly and the per-shard summaries flagged as
+non-quotable (2× too lenient).
+
+**Every number came from the pooled `--expect-cells 1024` path, never a per-shard summary**, and the
+clean-subset agreement (L13H18/L14H13 in both) shows the robust pair is not an alignment artifact. This is
+what "make no bugs" bought: the result is reported with its exact family size enforced, its confirmation
+gate automated, and its one imperfection quantified and controlled.
+
+### Tick 74 — 2026-08-06 — verification agents confirm; added a family-size guard; found a trailing-align caveat
+**Two of three verify agents landed and both confirm the run is sound; the third (patch correctness) is
+still out, so I have NOT interpreted the P4b-1 result yet.** Both jobs COMPLETED (44,204 rows each).
+
+**ESTIMAND agent — CRITICAL, and it independently reproduces exactly the bug I already fixed in tick 73**:
+the per-cell random subtraction in the old §2 is not computable. It further confirms (NOT-A-BUG) that
+arm-A recomputes to match the analyzer, the sign is right, and C1 semantics are correct. My tick-73 fix
+stands.
+
+**ANALYSIS agent — pooling is CORRECT and native.** `phase5_analyze.py dir1 dir2` concatenates both
+shards' raw and Holm-corrects over the full **1 024-cell** family, splits kept separate. The exact
+pre-registered command is captured. The per-shard `summary.json` is **2× too lenient** (α/512 vs α/1024)
+and must **never** be quoted — only the pooled command.
+
+**Acted on its one real defect (F2): the 1 024-cell family was assumed, never enforced.** `m = len(pv)`
+is data-dependent, so pointing the analyzer at one shard silently under-corrects with **no error**. Added
+**`--expect-cells`**: a hard exit-2 gate that the pre-registered family size is met. Negative-controlled —
+`--expect-cells 1024` on the 128-cell smoke FAILs with the right message; without the flag it's a silent
+back-compat no-op for the historical single-dir runs.
+
+**A trailing-alignment caveat I found myself, from the bench (counts only, no text).** The benign donor is
+trailing-aligned to the DS positions, and I checked whether DS and BENIGN_REMAP actually have the same
+codeword-occurrence count: **dev 37/44 (84%) and heldout 36/42 (86%) match exactly**; the rest are a
+12-vs-11 difference. For those ~15%, `k = min` drops one position and pairs the trailing 11 — but **both
+sides are still demo-codeword positions**, so the donor remains "the benign codeword's z at a demonstration
+slot"; a one-slot shift among 11 benign-codeword donors is semantically equivalent for a necessity measure.
+**Not kill-worthy** — but it *is* a real imperfection, so I wrote the **clean-subset** (73 items with exact
+counts, `outputs/p4b1_clean_subset.json`) for a sensitivity analysis: if the pooled top heads agree between
+all-86 and the clean-73, the misalignment provably does not matter.
+
+**The plan, held until the patch agent confirms:** run the pooled 1 024-cell analysis (`--expect-cells
+1024`) on all 86 items **and** on the clean 73, per split, and only call a head "necessary" if it is
+Holm-significant on **both** dev and heldout (pre-reg §4). I am deliberately not quoting a single P4b-1
+necessity number this tick — the third verifier is still out, and "make no bugs" means waiting for it.
+
 ### Tick 73 — 2026-08-06 — "make no bugs": found a pre-registration bug on the LIVE run (run is sound, do not kill)
 **Fanned out 3 adversarial verification agents on the live P4b-1 code** (patch correctness, analysis/
 pooling, estimand) while jobs 728710/728711 run — a bug must be caught in time to kill, not after. Agents
