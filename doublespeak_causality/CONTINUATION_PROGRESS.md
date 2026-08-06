@@ -746,6 +746,27 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 76 — 2026-08-06 — launched the z-channel QUERY position-set (zero new code); its alignment is clean
+Queue empty and the P4b-1 demo result is done, so per `P4B_PREREGISTRATION.md` §3 the next z-channel cell
+is the **query** position-set. **Zero new code** — the `--positions query` path was built and verified in
+tick 72–75. Launched sharded **728891 (L0–15) / 728892 (L16–31)**, 2 concurrent, `DSPOS=query`.
+
+**Pre-checked its alignment before it runs, and it is CLEANER than demo.** The demo cell needed a
+clean-subset caveat because 5/86 DS/benign pairs had unequal demo-codeword counts. The query codeword
+lives in the FC question, which `build_fc` appends **identically** to the DS and benign prompts — so the
+request-line codeword counts match **86/86**. `--positions query` therefore has **no trailing-alignment
+imperfection**; the full n = 86 is the clean set. Confirmed from the bench (counts only, no text).
+
+This means the query result can be interpreted on all 86 items directly, with the same pooled
+`--expect-cells 1024` + dev∩heldout gate the demo cell used — no sensitivity subset required.
+
+**Interpretation contrast set up in advance:** demo patches the retrieval SOURCE (where the concept is
+written into context); query patches the DESTINATION codeword occurrence in the question. The prior audit
+noted the query-position MLP is "3–4× weaker than demo but not absent" — P4b-1-query tests whether that
+holds at the head-z level. Result next tick after the pooled analysis.
+
+`all` (demo+query jointly) follows once query lands, keeping to 2 concurrent.
+
 ### Tick 75 — 2026-08-06 — P4b-1 RESULT: no single head bottlenecks concept-reading; robust pair L13H18/L14H13
 **All three verifiers returned BUG-FOUND-BUT-RUN-OK (high confidence).** The patch agent confirmed the
 four things that had to be right — occurrence order monotone, demo/query split correct, **self-swap exactly
