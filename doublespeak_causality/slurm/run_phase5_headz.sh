@@ -43,7 +43,12 @@ for v in DSMODEL DSBENCH DSNPROMPTS DSLAYERS DSPOS; do
 done
 echo "=== Phase5 headz: $DSBENCH n=$DSNPROMPTS layers=$DSLAYERS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-GPU_MEM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 || echo 0)"
+# memory.total in MiB. Sanitize to DIGITS ONLY: some nvidia-smi builds ignore `nounits` and return
+# "24576 MiB", and a trailing token makes `[ "$GPU_MEM" -ge 23000 ]` raise "integer expression expected"
+# -> the test errors -> the ERROR branch fires even on a 24GB card. (BUGFIX 2026-08-06: this rejected the
+# 3090 whose 24576 MiB clears the 23000 floor.) grep the first integer to guarantee a clean number.
+GPU_MEM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 | grep -oE '[0-9]+' | head -1)"
+GPU_MEM="${GPU_MEM:-0}"
 # GPU allowlist. L40S is the standard, but this is a FORWARD-PASS-ONLY patching job (no generation, no
 # flash-throughput dependence), and P4b measures WITHIN-RUN differences of p_concept, so any tiny
 # cross-GPU numerical difference cancels. A5000/A6000 (Ampere, 24-48GB) run Llama-3.1-8B bf16 identically
