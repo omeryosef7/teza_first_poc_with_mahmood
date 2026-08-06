@@ -746,6 +746,46 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 43b — 2026-08-06 — P8 CORE result, generated v3 cohort: no interaction, and the combination HURTS
+**Job 720725 finished (115 rows, DONE).** Analysed with `analyze_alpha_calibration.py` (which rebinds the
+2×2 cells onto the α-suffixed arm names; `analyze_interaction_2x2.py` has its run dirs hardcoded and no
+`--run` flag, so it is the wrong tool here).
+
+| cell | arm | ASR |
+|---|---|---|
+| (0,0) | direct | 0.452 |
+| (1,0) | doublespeak alone | **0.357** |
+| (0,1) | refusal-ablation alone | **0.591** |
+| (1,1) | both | 0.435 |
+
+**Î = −0.061, 95 % CI [−0.165, +0.043], sign-flip p = 0.338**; graded score Î = −0.053, CI
+[−0.147, +0.038], p = 0.273. `I_max` = **+0.504**, so this is **not** ceiling-limited — a genuine null,
+not a saturation artifact. `D_i` = {−2: 1, −1: 20, **0: 79**, +1: 15, +2: 0}.
+
+**This corroborates P8.1 on a second, independent cohort.** clearharm gave Î = −0.023 (p = 0.860) at
+n=86; generated v3 gives Î = −0.061 (p = 0.338) at n=115. Two cohorts, both null, both de-saturated.
+The "shared refusal bottleneck" reading stays withdrawn.
+
+**The manipulation is real, so this is a null with teeth.** Refusal-ablation beats its own
+count-matched random control by **ΔASR = +0.139, McNemar p = 0.0000**. The intervention demonstrably
+works; it just does not interact with Doublespeak.
+
+**Two findings that bear directly on Omer's "combine interventions to raise ASR" question:**
+1. **Doublespeak alone is net-NEGATIVE on this cohort** — 0.357 vs 0.452 for the plain direct request.
+   That is the known concept-dilution effect, now measured on v3.
+2. **Combining is WORSE than refusal-ablation alone** — (1,1) = 0.435 < (0,1) = **0.591**. On this
+   cohort the best single lever is refusal-ablation by itself, and adding Doublespeak *costs* 15.6 pp.
+   So "refusal-dir down + doublespeak" does **not** stack; it is an evaluated negative for raising ASR.
+
+**A dose caveat, recorded not buried.** `ASR(direct_refabl)` = 0.591 is **outside** the pre-registered
+[0.20, 0.40] band, so α = 0.25 does **not** qualify as the operating point for *this* cohort — the dose
+was calibrated on clearharm and does not transfer (the same failure curated showed). The interaction
+estimate is still readable because `I_max` = +0.504 is far from the ceiling, but the cohort would need its
+own lower-α calibration before its ASR levels are quoted as a chosen operating point.
+
+Written to `outputs/p8_generated_v3.json`. The full P8 report waits on 721956 (clearharm v3) so both
+cohorts land together.
+
 ### Tick 43 — 2026-08-06 — the corrected induce arm lands: L9 fails BOTH arms in BOTH families
 **Job 721957 finished in ~20 min (630 rows) and the fix is confirmed in its own log:**
 ```

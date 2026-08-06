@@ -1,0 +1,21 @@
+{
+  "schema": "DONE/1",
+  "run_id": "behav_refusal_generated_asweep0.25_20260806_035601_720725",
+  "status": "ok",
+  "rows_written": 115,
+  "end_ts": "2026-08-06T05:39:42",
+  "end_epoch": 1785983982.156856,
+  "wall_seconds": 4939.667,
+  "arms": [
+    "direct_base",
+    "direct_refabl_a0.25",
+    "direct_randabl_a0.25",
+    "ds_base",
+    "ds_refabl_a0.25"
+  ],
+  "alphas": [
+    0.25
+  ],
+  "alpha_sweep": true,
+  "gens_written": true
+}
