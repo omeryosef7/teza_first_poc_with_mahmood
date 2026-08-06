@@ -746,6 +746,36 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 79 — 2026-08-06 — fixed O4 (write×refusal report ranges wrong, one sign flipped) while query backfills
+**Query jobs (729131/729132) are queued on the idle n-305 with the 3090 fix in; the Monitor will fire when
+they pass the guard and start.** No polling — CPU work this tick.
+
+**Fixed O4 [HIGH] from the output-bug hunt.** `PHASE_WRITE_REFUSAL_INTX.md`'s main table reported four
+`frac_of_direct_gap_restored` ranges that were **arbitrary interior layers, not the min/max**, and
+**curated-train's interval had the wrong sign** (reported entirely negative, −0.048…−0.016, when it
+straddles zero). I recomputed all four from the committed `summary.json` and my numbers match the
+auditor's exactly:
+
+| cell | was | corrected (true min…max) |
+|---|---|---|
+| clearharm train | −0.017…+0.004 | **−0.023 (hs28) … +0.015 (hs12)** |
+| clearharm test | −0.013…+0.015 | **−0.017 (hs30) … +0.025 (hs16)** |
+| curated train | −0.048…**−0.016** | **−0.050 (hs18) … +0.011 (hs12)** ← sign fixed |
+| curated test | −0.010…+0.004 | **−0.010 (hs32) … +0.019 (hs15)** |
+
+Also relaxed the claim *"|value| **<** 0.05 at every layer"* to **≤ 0.05** — curated-train hs18 is
+**exactly −0.050**, so the strict inequality was false at that one layer. **The qualitative conclusion is
+unchanged** (write-ablation leaves the refusal-axis projection essentially untouched; all |values| ≤ 0.05),
+but the spread was understated by ~47 % and one sign was wrong — a "reported range" must be the actual
+range, not a tuned-looking interior pair. Corrected in place with an audit banner and each argmax layer
+named. The report's positive-control values and worked example already reconciled to the digit and were
+left as-is.
+
+**Bug-hunt triage status:** O1 (tick 67), O2 (tick 66), O3 + O5 (tick 65), and now **O4** are all closed;
+the P4b-1 code findings (B1/B3/B4/B6) were fixed in tick 64. Remaining low-priority items: B5/B7–B12
+(defensive hardening of the edgeKO script, no published number affected) and the `code-analysis` agent's
+findings, which I'll fold in as I touch those scripts.
+
 ### Tick 78 — 2026-08-06 — "look at the configuration": diagnosed the real blocker (fair-share, not capacity)
 **Per Omer's instruction, I read the whole cluster config instead of passively waiting.** What I found,
 node by node with `scontrol show node` (authoritative `AllocTRES`, not the squeue count which misled me):

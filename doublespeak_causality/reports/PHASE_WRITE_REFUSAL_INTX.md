@@ -24,14 +24,22 @@ degrades the concept representation (strongly on curated).
 
 **Main readout — refusal suppression is UNMOVED by write-ablation:**
 
+> **Ranges corrected 2026-08-06 (audit O4):** the four range endpoints previously shown were arbitrary
+> interior layers, not the min/max, and curated-train was misstated as entirely negative when it
+> straddles zero. Every range below is now the true min…max recomputed from `summary.json`
+> (`by_split.<split>.per_layer.<L>.frac_of_direct_gap_restored`), with the argmax layer named. The
+> qualitative conclusion — all |values| ≤ 0.05 — is unchanged; the spread is ~47 % wider than first
+> reported.
+
 | cohort·split | p_concept ds→wabl | refusal `frac_of_direct_gap_restored` (range over layers) |
 |---|---|---|
-| clearharm train | .884→.799 | −0.017 … +0.004 (≈ 0) |
-| clearharm test  | .858→.817 | −0.013 … +0.015 (≈ 0) |
-| curated train   | .811→.751 | −0.048 … −0.016 (≈ 0) |
-| curated test    | .690→.457 | −0.010 … +0.004 (≈ 0) |
+| clearharm train | .884→.799 | **−0.023 (hs28) … +0.015 (hs12)** (≈ 0) |
+| clearharm test  | .858→.817 | **−0.017 (hs30) … +0.025 (hs16)** (≈ 0) |
+| curated train   | .811→.751 | **−0.050 (hs18) … +0.011 (hs12)** (≈ 0) |
+| curated test    | .690→.457 | **−0.010 (hs32) … +0.019 (hs15)** (≈ 0) |
 
-At **every layer in every cell**, `frac_restored ≈ 0` (|value| < 0.05) — the refusal-axis projection under
+At **every layer in every cell**, `frac_restored ≈ 0` (|value| ≤ 0.05, max |.| = 0.050 at curated-train
+hs18) — the refusal-axis projection under
 DS+write-ablation is statistically identical to DS alone (`Δ(writeabl−ds)` CIs include 0 throughout), and
 stays far below direct-harmful. E.g. clearharm test hs32: direct 65.5, ds 27.5, ds_writeabl 27.3.
 
