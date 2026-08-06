@@ -746,6 +746,31 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 83 — 2026-08-06 — 3090 jobs stuck (raw=0, GPU 0%); added per-item flush; moved to a5000 one-per-node
+**The 3090 jobs passed the guard but then STALLED** — `raw.jsonl` = 0 bytes and GPU util 0 % after 22 min,
+despite weights loaded. Two large-model jobs on the single node n-305 were not making forward progress.
+
+**Diagnosis exposed a real gap: the script never flushed.** `phase5_head_zpatch.py` wrote rows to an 8 KB
+buffer with **no `fh.flush()`**, so `raw.jsonl` showed 0 on disk even if forwards were happening — which
+made "stuck vs slow vs buffered" impossible to tell apart. **Added a per-item `fh.flush()`** so progress is
+observable on disk and a preempt/walltime kill loses **≤ 1 item** instead of everything buffered. Genuine
+improvement independent of this stall; committed.
+
+**Cancelled the stuck 3090 pair and moved to the a5000 nodes, ONE shard per node** (n-501, n-502) instead
+of two on one node — applying the node-contention lesson (tick 55): don't co-locate two model-loading jobs.
+The a5000s are faster than the 3090 and have far more free RAM (n-502 was fully idle). Queued as
+729356/729357.
+
+**Noise I correctly did not act on:** the old monitor fired "FAILURE signature in ds_headz_729250.err" —
+but that is the `slurmstepd: … CANCELLED` line from *my own* `scancel`, confirmed by reading it, not a new
+fault. A cancel matches a failure-grep, so I verified the source before treating it as a problem.
+
+**Honest status:** this makes ~6 ticks spent getting the query z-channel run to actually execute — first
+fair-share/capacity, then four guard bugs, now a node-contention stall. The demo z-channel result (the
+scientific headline: distributed necessity, robust pair L13H18/L14H13) is **done and committed**; query is
+the confirmatory second position-set. The code is correct and pre-verified; the entire remaining cost is
+cluster scheduling. New monitor watches 729356/729357 to first-rows / done / failure.
+
 ### Tick 82 — 2026-08-06 — query jobs RUNNING on the 3090 (guard passed); banked the SLURM lessons to memory
 **`GPU ok: NVIDIA GeForce RTX 3090 (24576MiB)` on both shards — the guard finally passes.** 729249/729250
 are `R` on the idle n-305, loading weights. The fair-share fight is won by backfilling onto a free
