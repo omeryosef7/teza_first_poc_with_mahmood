@@ -36,6 +36,46 @@ Pooled cells: `(0,0)` = 0.306, `(1,0)` = 0.310, `(0,1)` = 0.492, `(1,1)` = 0.442
 not merely fail to reach significance — **it reverses sign.** Pooled, the CI includes zero. There is no
 interaction.
 
+## 2b. DOSE ROBUSTNESS — the conclusion does not depend on the contested α rule
+
+The pre-registered operating-point rule turned out to be broken: five doses qualified on v3, and its
+tie-break ("larger `I_max` wins") **structurally prefers the weakest intervention**, because `I_max` is
+maximised when the marginals are smallest. It selected α = 0.05, where refusal-ablation is
+indistinguishable from a random direction. Rather than argue the rule, **both doses were run at full
+n = 127** — the rule-as-written and the specificity-corrected choice.
+
+| | α = 0.05 (rule-as-written) | **α = 0.20 (specificity-corrected)** |
+|---|---|---|
+| `I_max` | +0.7008 | +0.5984 |
+| **`Î`** | **0.0000** | **0.0000** |
+| 95 % CI | [−0.063, +0.063] | [−0.087, +0.087] |
+| permutation p | **1.0000** | **1.0000** |
+| cells (0,0)/(1,0)/(0,1)/(1,1) | 0.157 / 0.276 / 0.181 / 0.299 | 0.165 / 0.268 / **0.299** / 0.402 |
+| **does the manipulation work?** | ΔASR ref−rand **+0.032, p = 0.125 — NO** | ΔASR ref−rand **+0.142, p = 1.2 × 10⁻⁴ — YES** |
+
+**This is the decisive row.** At α = 0.05 the refusal ablation moves ASR by only +2.4 pp and does not
+beat its own random control — a null there is uninformative, because there is nothing for Doublespeak to
+interact *with*. At α = 0.20 the ablation is unambiguously working (ΔASR +0.142, p ≈ 10⁻⁴, ~7× the judge
+noise floor) — **and the interaction is still exactly zero.**
+
+**Both are exactly additive.** At α = 0.20: 0.165 + 0.103 + 0.134 = **0.402**, observed **0.402**.
+
+**The exact zeros were verified from raw labels, because two independent exact zeros invite suspicion.**
+They are genuine cancellations, not a stuck value or a dropped arm:
+
+| dose | `D_i` distribution | non-zero items |
+|---|---|---|
+| α = 0.05 | −1: 8, 0: 111, +1: 8 | 16 |
+| α = 0.20 | −2: 1, −1: 13, 0: 98, **+1: 15** | **29** |
+
+At α = 0.20, 29 of 127 items have a non-zero within-item interaction and they cancel to a mean of exactly
+zero. That is a well-populated null, not a degenerate one.
+
+**Consequence for the paper.** The methodological dispute about the dose rule is now a **footnote rather
+than a threat**: `Î` = 0.000, p = 1.000 at both the weakest and the strongest defensible dose, and the
+stronger dose is the one where the treatment provably fires. **No interaction, and the conclusion is
+robust to the choice we could not settle on principle.**
+
 ## 3. ⚠️ The near-miss, stated plainly
 
 Had we looked only at the train split — n = 162, `Î` = −0.124, CI excluding zero, **p = 0.0098** — we would

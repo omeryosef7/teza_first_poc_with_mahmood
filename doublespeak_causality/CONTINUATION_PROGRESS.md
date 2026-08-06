@@ -746,6 +746,38 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 68 — 2026-08-06 — "DO BOTH" pays off: P8 is null at BOTH doses, and the strong dose is where it counts
+**Both α doses now done at full n = 127, and the "run both instead of choosing" call from tick 63
+converts the whole dose-rule dispute into a robustness result:**
+
+| | α = 0.05 (rule-as-written) | **α = 0.20 (specificity-corrected)** |
+|---|---|---|
+| `Î` | **0.0000**, p = 1.0000 | **0.0000**, p = 1.0000 |
+| CI | [−0.063, +0.063] | [−0.087, +0.087] |
+| manipulation works? | ΔASR +0.032, p = 0.125 — **NO** | ΔASR +0.142, p = 1.2 × 10⁻⁴ — **YES** |
+
+**This is the strongest form of the P8 null.** At α = 0.05 the ablation barely moves ASR and doesn't beat
+its random control — a null there could be dismissed as "nothing was happening". At α = 0.20 the ablation
+**unambiguously fires** (ΔASR +0.142, ~7× the judge floor) and the interaction is *still* exactly zero.
+Both cells are exactly additive — I checked the arithmetic: α=0.20 additive-predicted (1,1) = (1,0)+(0,1)−(0,0)
+= 0.402, observed **0.402**, diff 0.0000.
+
+**Two independent exact zeros invited suspicion, so I verified them from raw labels** rather than trust
+the analyzer. Genuine cancellations, not stuck values: α=0.20 has **29 of 127 items** with a non-zero
+`D_i` (−2:1, −1:13, +1:15) averaging to exactly zero. A well-populated null.
+
+**The methodological threat is now a footnote.** Whatever one thinks of the pre-registered dose rule,
+`Î` = 0.000 at both the weakest and the strongest defensible dose. Written up as **§2b** of
+`P8_INTERACTION_V3.md`. The report-vs-JSON checker passes it clean (0 near-misses).
+
+**On the user's re-issued directive** ("implement the plan, reuse code, don't skip stages, fan out
+subagents, commit often"): this is the standing loop instruction. The 30-min cron `86decf2e` is still
+live, so I did **not** create a duplicate. Continuing the plan's phase order.
+
+**What remains open, unchanged:** the max-scope plans for P4b / P5 / P9 (agents wrote
+`P9_UNBLOCK_PLAN.md` and `P4B_P5_MAXSCOPE.md` — not yet acted on), and the remaining bug-hunt items
+(B5, B7, B8, O4, and the `code-analysis` findings). Next tick triages those.
+
 ### Tick 67 — 2026-08-06 — α=0.05 is a perfect null but an INERT dose; built a report-vs-JSON checker (and hit its limit)
 **α = 0.05 landed at full n = 127 (job 728310), and it is exactly what tick 59 predicted.**
 
