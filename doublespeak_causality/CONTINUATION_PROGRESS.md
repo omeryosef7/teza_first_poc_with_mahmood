@@ -746,6 +746,33 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 73 — 2026-08-06 — "make no bugs": found a pre-registration bug on the LIVE run (run is sound, do not kill)
+**Fanned out 3 adversarial verification agents on the live P4b-1 code** (patch correctness, analysis/
+pooling, estimand) while jobs 728710/728711 run — a bug must be caught in time to kill, not after. Agents
+still in flight; I chased the highest-risk one (the estimand) myself and found a real defect.
+
+**The bug is in my pre-registration, not the run.** `phase5_analyze.py:5,88` computes
+`Necessity(l,h) = C1 − benign-patched` (Wilcoxon, Holm over 1 024 cells, per split) — **no per-(l,h)
+random subtraction** — and the run emits `normrand` at only *one* probe head. But `P4B_PREREGISTRATION.md`
+§2 defined the estimand *with* a per-cell random subtraction. **I pre-registered a control the emitted
+data cannot support.**
+
+**Verified against precedent before concluding:** `PHASE5_HEADS.md` (the established answer-position
+result) uses exactly `C1 − patched`, self-swap = exact no-op, no per-cell random. And the smoke confirms
+every benign row carries `C1` + `benign_p_concept`, so the established estimand **is** computable from what
+the run emits.
+
+**Verdict: the RUN IS SOUND — do NOT kill it.** Corrected §2 to the established, computable estimand, with
+a banner recording that the change was made *before any result was interpreted*, changes no conclusion,
+and favours no outcome. Added the honest limitation that a per-(l,h) random arm would be a strictly
+stronger specificity control this run omits (it would double the sweep) — a defensible follow-up, but the
+self-swap = 0 locality control plus the matched-benign-counterfactual donor is the identical control
+structure every prior Phase-5 result used. Fixed §5's table and §6's summary for consistency.
+
+**This is exactly why the review runs against LIVE code:** a phantom estimand in a pre-registration, if it
+had reached the write-up, would have been a claim the data could not back. Caught before a single number
+was quoted. Committed `de70b6fa`. Agent findings (patch/pooling) acted on next tick.
+
 ### Tick 72 — 2026-08-06 — P4b-1 smoke VERIFIED clean; decisive full run launched (demo positions)
 **The P4b-1 smoke (728619) ran end-to-end and I verified the three things that had to be true before
 trusting the new code path:**
