@@ -1,15 +1,20 @@
 # P7 — Generation-validating the per-layer refusal directions
 
-**Status: ✅ COMPLETE for the headline layers.** Two runs:
-`720463` (840 rows) = the ablate arm, and **`721957` (630 rows) = the corrected bidirectional re-run**.
+**Status: ✅ COMPLETE, all 32 layers.** Three runs: `720463` (840 rows) = the ablate arm;
+**`721957` (630 rows) = the corrected bidirectional re-run** of the headline layers; and
+**`722611` (3870 rows) = the full 32-layer sweep** (§4c), which reconciles at 1348 values / 0 mismatched.
 
 **Verdict: L9 is NOT a refusal axis. It fails BOTH arms under BOTH independently-fit direction families —
 ablating it does not reduce refusal, and adding it to benign prompts induces zero refusal against a full
 +1.000 of headroom. L16 and L18 validate strongly and unambiguously in both families; L18, the direction
-every downstream behavioral arm uses, is the strongest. L22 validates in only one family (see §4b).**
+every downstream behavioral arm uses, is the strongest. Across all 32 layers, only **11 validate in both
+families (L13-L20, L24, L28, L29)**; L0-L12 fail in both without exception. Of the layers carrying
+published claims, **only L18 is in that cross-validated set** - L21, L22 and L30 each validate in exactly
+one family (§4c).**
 
-Run dirs: `outputs/refval_clearharm_20260806_033340_720463` (ablate; its induce arm is defective, §5) and
-`outputs/refval_clearharm_20260806_051728_721957` (**corrected — cite this one**).
+Run dirs: `outputs/refval_clearharm_20260806_033340_720463` (ablate; its induce arm is defective, §5),
+`outputs/refval_clearharm_20260806_051728_721957` (**corrected headline layers - cite this one**), and
+`outputs/refval_clearharm_20260806_054117_722611` (**full 32-layer sweep**).
 
 ---
 
@@ -73,8 +78,12 @@ the same layer, while both succeed at L16–L28, is not a measurement accident.
 
 So the defensible claim is **not** "we injected at L9 and nothing happened" (uninformative) but:
 
-> **No linearly-decodable refusal axis exists at L9.** Refusal becomes linearly available at L16 and is
-> strongest at L18, remaining available through L28.
+> **No linearly-decodable refusal axis exists at L9.** Refusal becomes linearly available at **L13** and
+> is strongest around L15-L18, remaining available through L20.
+
+*(This sentence originally read "becomes linearly available at L16", which was an artifact of the headline
+layer set containing no layer between 9 and 16. The full 32-layer sweep, §4c, puts the boundary at
+**L13** and shows L0-L12 failing in both families without exception.)*
 
 That is a positive claim about depth, and it is the framing the paper should use. **The prose "L9 ns"
 should be replaced wherever it appears.**
@@ -133,6 +142,83 @@ rests on a direction which is validated in only one of two families. **L16 and L
 that validate strongly and unambiguously in both.** Any depth statement should be anchored there and
 should state the L22 asymmetry rather than average over it.
 
+## 4c. The full 32-layer sweep (job `722611`, 3870 rows) — the appendix result
+
+Same design, `--induce-eval harmless`, every layer. **Reconciled by the standard validator: 1348 summary
+values recomputed from `raw.jsonl`, 0 mismatched**, 64 cells, 0 duplicate rows, `empty_max` = 0.0.
+
+**Validity counts:** `existing` **12/32**, `clearharm` **15/32**. Best layer: `existing` L15 (score 1.9),
+`clearharm` L18 (1.7).
+
+| set | layers |
+|---|---|
+| **valid in BOTH families** | **13, 14, 15, 16, 17, 18, 19, 20, 24, 28, 29** (n=11) |
+| `existing` only | 21 |
+| `clearharm` only | 22, 23, 27, 30 |
+| **invalid in BOTH** | **0-12**, 25, 26, 31 (n=16) |
+
+**The depth story is a contiguous block, which is what makes it credible.** Layers **0-12 fail in both
+families without exception**, and **13-20 pass in both without exception**. A linearly-decodable refusal
+axis does not exist in the first thirteen layers; it appears abruptly at L13 and holds through L20. That is
+not a threshold artifact of one fit - two independently-built direction families draw the same boundary in
+the same place.
+
+### WARNING - consequence for three published claims
+
+Of the layers our headline results are read at, **only L18 is in the cross-validated set**:
+
+| layer | carries | `existing` | `clearharm` | status |
+|---|---|---|---|---|
+| **L18** | every behavioral refusal-ablation arm | PASS (+0.600/+1.000) | PASS (+0.900/+0.800) | **safe** |
+| L21 | the rep->behavior AUC result | PASS (+0.300/+0.100) | FAIL (induce **+0.000**) | **one family only** |
+| L22 | the depth-localization claim | FAIL (induce **+0.000**) | PASS (+0.350/+0.100) | **one family only** |
+| L30 | the trajectory result | FAIL (induce **+0.000**) | PASS (+0.350/+0.100) | **one family only** |
+| L9 | the "refusal not read early" contrast | FAIL (-0.050/+0.000) | FAIL (-0.100/+0.000) | **invalid in both - as claimed** |
+
+L21, L22 and L30 each fail the induce arm in exactly one family, and in each case it is a *hard* zero, not
+a near miss. **Each of those three results should be reported with the family it validates in named**, or
+re-read at a layer inside 13-20. The L9 claim is unaffected - L9 failing in both families IS the finding.
+
+### Per-layer detail
+
+| L | existing abl / ind | ok | clearharm abl / ind | ok | both |
+|---|---|---|---|---|---|
+| 0 | +0.050 / +0.000 | · | +0.000 / +0.000 | · |  |
+| 1 | +0.000 / +0.000 | · | +0.000 / +0.000 | · |  |
+| 2 | +0.050 / +0.000 | · | +0.050 / +0.000 | · |  |
+| 3 | +0.050 / +0.000 | · | +0.000 / +0.000 | · |  |
+| 4 | -0.050 / +0.000 | · | -0.050 / +0.000 | · |  |
+| 5 | -0.100 / +0.000 | · | -0.050 / +0.000 | · |  |
+| 6 | -0.050 / +0.000 | · | -0.050 / +0.000 | · |  |
+| 7 | -0.050 / +0.000 | · | -0.050 / +0.000 | · |  |
+| 8 | +0.000 / +0.000 | · | -0.050 / +0.000 | · |  |
+| 9 | -0.050 / +0.000 | · | -0.100 / +0.000 | · |  |
+| 10 | -0.050 / +0.300 | · | -0.050 / +0.400 | · |  |
+| 11 | -0.100 / +0.300 | · | -0.050 / +0.600 | · |  |
+| 12 | -0.100 / +0.000 | · | -0.050 / +0.300 | · |  |
+| 13 | +0.350 / +1.000 | ✓ | +0.250 / +1.000 | ✓ | **✔** |
+| 14 | +0.350 / +1.000 | ✓ | +0.250 / +0.400 | ✓ | **✔** |
+| 15 | +0.850 / +1.000 | ✓ | +0.700 / +0.900 | ✓ | **✔** |
+| 16 | +0.450 / +1.000 | ✓ | +0.300 / +0.900 | ✓ | **✔** |
+| 17 | +0.250 / +1.000 | ✓ | +0.650 / +0.700 | ✓ | **✔** |
+| 18 | +0.600 / +1.000 | ✓ | +0.900 / +0.800 | ✓ | **✔** |
+| 19 | +0.200 / +0.800 | ✓ | +0.600 / +0.700 | ✓ | **✔** |
+| 20 | +0.300 / +0.800 | ✓ | +0.550 / +0.300 | ✓ | **✔** |
+| 21 | +0.300 / +0.100 | ✓ | +0.350 / +0.000 | · |  |
+| 22 | +0.250 / +0.000 | · | +0.350 / +0.100 | ✓ |  |
+| 23 | +0.200 / +0.000 | · | +0.300 / +0.200 | ✓ |  |
+| 24 | +0.150 / +0.100 | ✓ | +0.300 / +0.200 | ✓ | **✔** |
+| 25 | +0.200 / +0.000 | · | +0.350 / +0.000 | · |  |
+| 26 | +0.200 / +0.000 | · | +0.250 / +0.000 | · |  |
+| 27 | +0.200 / +0.000 | · | +0.350 / +0.100 | ✓ |  |
+| 28 | +0.250 / +0.100 | ✓ | +0.300 / +0.400 | ✓ | **✔** |
+| 29 | +0.300 / +0.200 | ✓ | +0.350 / +0.300 | ✓ | **✔** |
+| 30 | +0.250 / +0.000 | · | +0.350 / +0.100 | ✓ |  |
+| 31 | +0.150 / +0.000 | · | +0.300 / +0.000 | · |  |
+
+*(`abl`/`ind` are the specificity contrasts against norm-matched random directions; `valid` requires both
+raw gains AND both specificities strictly positive.)*
+
 ## 5. ⚠️ The induce arm of run `720463` is not interpretable — read its ablate arm only
 
 The induce arm was evaluated on `neutral`, and **`neutral` is not benign**: it is the harmful request with
@@ -156,13 +242,19 @@ everything in §3 stands. The fix (`--induce-eval harmless`, default as of 2026-
   distinguishable from zero on their own.** The claim rests on the **contrast** with L16–L28 (whose
   specificity spans **5 to 18 items** of 20) and on its replication across two independent fits — not on
   the L9 point estimate.
-- **Only 5 layers were run** (L9/16/18/22/28 — the layers our published claims depend on). The full
-  32-layer sweep for the appendix has not been done; a DSVALN=3 smoke suggested only ~15/32 validate.
+- ~~**Only 5 layers were run.**~~ **DONE — §4c, job `722611`, all 32 layers.** The DSVALN=3 smoke's
+  "~15/32 validate" guess turned out close for `clearharm` (15/32) but optimistic for `existing` (12/32);
+  more importantly the smoke could not have identified the *cross-family* set, which is the number that
+  actually matters (11/32).
 - No per-cell significance test is reported here. The reported quantity is a specificity difference of
   two rates at n=20; a paired test across items is the natural upgrade before publication.
-- `validate_all_outputs.py` does **not yet recognise the `refval` row schema**, so these numbers have not
-  been machine-reconciled against `summary.json` by the standard validator. Teaching it the schema is a
-  prerequisite before any P7 number is marked VERIFIED in `CLAIM_AUDIT_TABLE.md`.
+- ~~`validate_all_outputs.py` does not recognise the `refval` row schema.~~ **FIXED 2026-08-06.** Both
+  validators now know the schema; every completed refval dir reconciles (1702 + 1348 values recomputed,
+  **0 mismatched**), and the reconciler is negative-controlled.
+- **Induce n is 10, not 20** (the held-out half of `HARMLESS_INSTRUCTIONS`), so one induce item = 0.10 and
+  a `+0.100` induce specificity is a **single item**. L22 and L30 clear the bar on `clearharm` by exactly
+  that margin — they are *technically* valid but should not be described as strongly validated. A larger
+  benign eval set is the cheapest way to firm this up.
 
 ## 7. Reproduce
 

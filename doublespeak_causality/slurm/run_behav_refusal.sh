@@ -56,6 +56,18 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 # Cost: 2 + 3*len(grid) generations per item (7 alphas = 23 arms; ~4.9 s/gen measured on job 708038,
 # so 86 items ~= 2.7 h, inside the 6 h limit).
 DSALPHAS_DEFAULT="0,0.25,0.5,0.75,1.0,1.5,2.0"
+# DSALPHASET presets, so a grid can be chosen through --export WITHOUT hitting the comma-truncation
+# bug (pass DSALPHASET=low, never DSALPHAS=0,0.05,...). Same idiom as DSLAYERSET in run_refusal_validate.sh.
+#   wide : the P8.1 grid above (default)
+#   low  : v3-native re-calibration. P8 showed alpha=0.25 qualifies on NEITHER v3 cohort --
+#          ASR(direct_refabl) was 0.402 (clearharm) and 0.591 (generated) against the [0.20,0.40]
+#          band -- because the dose was calibrated on clearharm v1. The operating point must be
+#          BELOW 0.25 on v3, so this grid resolves that region.
+case "${DSALPHASET:-wide}" in
+  wide) : ;;
+  low)  DSALPHAS_DEFAULT="0,0.05,0.1,0.15,0.2,0.25" ;;
+  *)    echo "ERROR: unknown DSALPHASET='$DSALPHASET' (want: wide|low)"; exit 1 ;;
+esac
 if [ -n "${DSALPHAS+x}" ]; then
   # The hazard is specifically the COMMA: sbatch --export truncates a comma-list at the first
   # comma, so DSALPHAS=0,0.25,0.5 silently arrives as "0". A SINGLE alpha (no comma) is passed

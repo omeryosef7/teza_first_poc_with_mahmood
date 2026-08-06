@@ -746,6 +746,53 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 46 — 2026-08-06 — P7 COMPLETE at all 32 layers; ⚠ SLURM CONTROLLER IS DOWN (cluster-wide)
+**Job 722611 finished: 3870 rows, all 32 layers × 2 families.** Reconciled by the validator I taught the
+schema last tick — **1348 values recomputed, 0 mismatched**, 64 cells, 0 dups, `empty_max` 0.0. Written up
+as **§4c** of `reports/P7_REFUSAL_DIRECTION_VALIDATION.md`.
+
+| set | layers |
+|---|---|
+| **valid in BOTH families** | **13–20, 24, 28, 29** (n=11) |
+| `existing` only | 21 |
+| `clearharm` only | 22, 23, 27, 30 |
+| **invalid in BOTH** | **0–12**, 25, 26, 31 (n=16) |
+
+**The depth story is a contiguous block, which is what makes it credible.** L0–L12 fail in **both**
+families without exception; L13–L20 pass in **both** without exception. Two independently-built direction
+families draw the same boundary in the same place, so this is not a threshold artifact of one fit.
+
+**⚠️ This forced two corrections to my own earlier write-up:**
+1. §4 said *"refusal becomes linearly available at **L16**"*. That was an artifact of the headline layer
+   set containing **no layer between 9 and 16**. The true boundary is **L13**. Corrected in place, with a
+   note explaining why the earlier number was wrong.
+2. Of the layers carrying published claims, **only L18 is in the cross-validated set.** L21 (rep→behavior
+   AUC), L22 (depth), L30 (trajectory) each validate in **exactly one family**, and in each case the
+   failing side is a *hard* induce zero, not a near miss. Each of those three results must name the family
+   it validates in, or be re-read at a layer inside 13–20.
+
+**A limitation I added rather than let pass:** induce n is **10**, not 20 (the held-out harmless half), so
+one induce item = 0.10 — and L22/L30 clear the bar on `clearharm` by exactly **+0.100, i.e. a single item**.
+They are *technically* valid but must not be described as strongly validated. A larger benign eval set is
+the cheap fix.
+
+**⚠️ SLURM CONTROLLER UNREACHABLE — cluster-wide, not our configuration.** `sbatch` and `sinfo` both fail
+with `Unable to contact slurm controller (connect failure)`. The queue is empty (everything we had
+finished). There is nothing to cancel and nothing to re-tune, so the 30-minute rule does not apply here —
+it governs jobs that sit PENDING, not a controller that is down. **Retry next tick.**
+
+**Prepared and ready to submit the moment the controller returns:** the v3-native low-α re-calibration that
+P8 §7 named as the clean follow-up (α = 0.25 qualifies on *neither* v3 cohort). Added a **`DSALPHASET`
+preset** to `run_behav_refusal.sh` — same idiom as `DSLAYERSET` — because the grid is a comma-list and
+therefore can never come through `--export`. `DSALPHASET=low` → `0,0.05,0.1,0.15,0.2,0.25`. Verified: the
+preset resolves correctly, an unknown value exits 1, and the ordering still lets an explicit single
+`DSALPHAS` override it. `bash -n` clean.
+
+**A repeat of my own tcsh mistake, caught and fixed.** I built §4c with an *unquoted* heredoc, so the shell
+ate every backticked token (`722611` → empty). Restored the file from `HEAD` and redid it with a quoted
+`<<'PYEOF'`. This is the second time backticks have bitten in this session; the memory rule I wrote covers
+`git commit -m` but I had not applied it to heredocs.
+
 ### Tick 45 — 2026-08-06 — P8 COMPLETE (n=242). No interaction — and the pre-registered split just saved us
 **Job 721956 finished (127 rows).** Both v3 cohorts are in, so P8 is done: clearharm n=127 + generated
 n=115 = **n = 242**, at the de-saturated α = 0.25. Report: **`reports/P8_INTERACTION_V3.md`**.
