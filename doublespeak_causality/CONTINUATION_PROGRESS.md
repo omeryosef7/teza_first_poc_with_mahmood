@@ -746,6 +746,42 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 70 — 2026-08-06 — P4a COMPLETE: token-identity retrieval on ClearHarm is 2.0×, not the 3.5× the pair showed
+**Both P4a jobs "died" with `KeyError: 'codeword'` — but the crash is cosmetic and the result is real.**
+The error is on a **log line** (`next7_attention_retrieval.py:92`) that assumed a single carrot/bomb pair
+bench (`pair['codeword']`); the multi-concept ClearHarm `pair` block has no such key. The crash fires
+*after* `json.dump` wrote `attn_retrieval.json`, so the numbers are complete — re-read directly from the
+committed files. This is the second time this tick a "failed" job actually finished; **`.err` said
+KeyError, the run dir said HAS_JSON.** Checking the artifact, not just the exit code, is what caught it.
+
+**P4a RESULT — query codeword → demo-codeword attention, band L7–14, count-normalised per key:**
+
+| split | n | `prev_codewords` | `demos_all` | `random_matched` | **ratio** |
+|---|---|---|---|---|---|
+| dev | 44 | 0.007379 | 0.003717 | 0.003502 | **2.107×** |
+| heldout | 42 | 0.007036 | 0.003646 | 0.003451 | **2.039×** |
+
+**The signal is specific to the codeword, not to demonstrations generally:** attention to the demo
+*codeword* positions (0.0074) is ≈2× attention to *all* demo tokens (0.0037) and to random matched
+positions (0.0035) — and those two are nearly equal, so a generic "attend back to the demos" effect is not
+what drives it. Token-identity retrieval, replicated across the split.
+
+**Honest downward revision, stated in the report.** The retrieval signal the circuit story depends on
+**is present on ClearHarm** — but at **≈2.0–2.1×, not the 3.508×** the old n = 12 carrot/bomb pair showed.
+The single pair **overstated it by ~1.7×**. Expected direction (a hand-built pair is chosen partly because
+it works cleanly). Conclusion unchanged, now on a real n = 44/42 sample; the magnitude used downstream
+should be the ClearHarm one. Written up as `reports/PHASE4A_INDUCTION_IDENTIFICATION.md`, with per-head
+resolution flagged as the remaining part of P4a (this is the band mean) and "attention mass is
+correlational" stated plainly — P4a says *where* to look, P4b's z-patch tests whether the read is causal.
+
+**Fixed the crashing log line** (`.get()` instead of `pair['codeword']`) and made the result JSON record
+`split`/`readout`/`n_used`/`bench`, so future runs exit 0 and are self-describing. Backfilled `split`/`n`
+for the two existing dirs from the launch parameters rather than burn GPU re-running a completed
+computation.
+
+This delivers the identification input **P4b-5** needs (train-frozen induction candidates), so the P4b
+prerequisites now have their descriptive half done alongside the tick-69 hook-firing gate.
+
 ### Tick 69 — 2026-08-06 — started P4b prerequisites: the hook-firing test (retraction-prevention gate)
 Queue empty, so I began the **P4b/P5 max-scope program** the agents costed
 (`P4B_P5_MAXSCOPE.md`: P4b ≈15.7 GPU-h, P5 ≈4.9 GPU-h — far below the 440 GPU-h the first estimate

@@ -88,9 +88,16 @@ def main():
     tag = args.model.split("/")[-1]; uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(args.out_root, f"attn_retrieval_{tag}_{time.strftime('%Y%m%d_%H%M%S')}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
+    res["split"] = args.split; res["readout"] = args.readout; res["n_used"] = n_used
+    res["bench"] = os.path.abspath(args.bench)
     json.dump(res, open(os.path.join(out_dir, "attn_retrieval.json"), "w"), indent=2)
-    print(f"[attn_retrieval] {pair['codeword']}->{pair['concept']} band L{args.band_lo}-{args.band_hi} "
-          f"n={n_used}")
+    # A single carrot/bomb pair bench carries pair['codeword']/pair['concept']; a multi-concept
+    # ClearHarm bench (pair.kind == 'multi_concept') does not. Use .get so this LOG line cannot crash
+    # a run whose json.dump (line above) has already succeeded. (Fixed 2026-08-06: it was a hard
+    # KeyError that failed P4a jobs 728475/728476 AFTER the result was written.)
+    _cw = pair.get('codeword') or f"{pair.get('n_concepts', '?')} concepts ({pair.get('kind','?')})"
+    _cc = pair.get('concept') or args.readout
+    print(f"[attn_retrieval] {_cw} band L{args.band_lo}-{args.band_hi} n={n_used}")
     for k in KEY_SETS:
         print(f"  {k:16s} mean_attn_per_key={res['per_keyset'][k]['mean_attn_per_key']}")
     print(f"  demo_codeword / random_matched = {res['demo_codeword_over_random']}x")

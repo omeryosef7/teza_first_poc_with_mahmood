@@ -1,0 +1,78 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "pair": {
+    "cohort": "clearharm",
+    "kind": "multi_concept",
+    "n_concepts": 43,
+    "concepts": [
+      "agent",
+      "agents",
+      "ammunition",
+      "attack",
+      "attacks",
+      "bacteria",
+      "bomb",
+      "card",
+      "casualties",
+      "casualty",
+      "chemical",
+      "device",
+      "dose",
+      "exploit",
+      "explosion",
+      "explosive",
+      "explosives",
+      "extensions",
+      "fallout",
+      "fireworks",
+      "firmware",
+      "fraudulent",
+      "fuel",
+      "launcher",
+      "malware",
+      "material",
+      "password",
+      "pathogens",
+      "phishing",
+      "projectile",
+      "signature",
+      "steal",
+      "suffering",
+      "theft",
+      "toxin",
+      "toxins",
+      "trap",
+      "virus",
+      "viruses",
+      "vulnerabilities",
+      "weapon",
+      "weapons",
+      "worm"
+    ],
+    "note": "ClearHarm-native single-token concepts"
+  },
+  "band": [
+    7,
+    14
+  ],
+  "n_prompts": 42,
+  "per_keyset": {
+    "prev_codewords": {
+      "mean_attn_per_key": 0.007036,
+      "n": 42
+    },
+    "demos_all": {
+      "mean_attn_per_key": 0.003646,
+      "n": 42
+    },
+    "random_matched": {
+      "mean_attn_per_key": 0.003451,
+      "n": 42
+    }
+  },
+  "demo_codeword_over_random": 2.039,
+  "split": "heldout",
+  "readout": "fixed",
+  "n_used": 42,
+  "_note": "split/readout/n backfilled from the launch (DSSPLIT); the run crashed on a cosmetic log line AFTER this file was written, so the numbers are complete and correct. Log line fixed in next7_attention_retrieval.py so future runs exit 0."
+}
