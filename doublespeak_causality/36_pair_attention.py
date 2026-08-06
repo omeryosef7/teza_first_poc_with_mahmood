@@ -53,7 +53,18 @@ SOURCE_SETS = ("prev_codewords", "demos_all", "demos_first", "demos_last",
 def source_positions(lm, templated, probe, name, rng, raw_prompt=None):
     """Key positions to block, per source-set name. Returns [] when not applicable."""
     ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
-    hit = dc.find_word_occurrences(lm.tokenizer, ids, probe)
+    try:
+        hit = dc.find_word_occurrences(lm.tokenizer, ids, probe)
+    except ValueError:
+        # Same fallback pair_common.resolve_positions:70-82 already uses, applied here because this
+        # function was only ever exercised on the carrot/bomb pair. Strict id-matching misses a word
+        # whose in-context tokenization differs from its standalone variants (e.g. 'pumpkin' in some
+        # ClearHarm prompts); on a ClearHarm bench that raises and kills the whole run mid-sweep.
+        # The offset-based finder reads token spans off character offsets; add_special_tokens=False
+        # keeps indices aligned with `ids`. This branch runs ONLY where the strict finder already
+        # raised, so no caller that resolves strictly changes behaviour.
+        hit = dc.find_word_occurrences_in_text(lm.tokenizer, templated, probe,
+                                               add_special_tokens=False)
     cw_last = hit.last_idx[-1]
     prev = hit.last_idx[:-1]
     # Demo/request boundary. The BEHAVIORAL prompts are built by ds_common.build_conditions

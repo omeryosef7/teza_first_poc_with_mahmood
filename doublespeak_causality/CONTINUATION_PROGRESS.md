@@ -746,6 +746,51 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 53 — 2026-08-06 — resized a calibration that could not finish; launched P4a; ⚠ THREE SCOPE DECISIONS FOR OMER
+**Caught a run that was going to die at walltime with nothing usable.** 724551 had 11 rows after 70 min of
+*generation* — **6.41 min/item**, because the low-α grid is 6 alphas = **20 arms/item** at 220 new tokens,
+4× the α=0.25 run. Projected **13.6 h against 4.2 h remaining**; 724930 was on the same trajectory. Neither
+would have produced a complete calibration, and a walltime kill leaves no `summary.json` — exactly the
+PROVISIONAL mess that already cost a tick with job 716014.
+
+**Resized rather than extended.** `--n` truncates **per split** (`phase_behav_refusal.py:169`), so
+`DSN=25` gives a balanced 25 train + 25 test = **50 items** → ≈5.3 h inside an 8 h window. Resubmitted as
+**725172 / 725173**. This is defensible because **calibration is dose SELECTION, not the confirmatory
+experiment**: at n=50 the SE of a proportion near 0.3 is 0.065, and the doses we must separate were 0.402
+and 0.591 against a [0.20, 0.40] band — far outside that noise. The confirmatory run at the chosen α uses
+full n, as P8 already did. I did **not** cut `DSMAXNEW` below 220, which would have been the cheaper lever
+but would have broken comparability with the α=0.25 result.
+
+**P4a LAUNCHED with zero new analysis code (job 725178).** The readiness agent found that
+`next7_attention_retrieval.py` already computes exactly the per-head query→demo attention mass P4a needs —
+it had simply never been pointed at a ClearHarm bench. **The project's only induction-head evidence is a
+band-mean 3.508× ratio on n = 12 of the old carrot/bomb pair**; this replaces it with **n = 44 ClearHarm**.
+Two things were needed first:
+- **A latent crash fixed.** `36_pair_attention.source_positions:56` called `dc.find_word_occurrences`
+  (strict id matching) with **no `try/except`**, so any ClearHarm codeword whose in-context tokenization
+  differs from its standalone form would raise and kill the whole sweep mid-run. Applied the *same*
+  fallback `pair_common.resolve_positions:70-82` already uses. It runs only where the strict finder
+  already raised, so no existing caller changes behaviour.
+- A wrapper (`slurm/run_p4a_identify.sh`), since GPU work goes through sbatch. All six flags verified
+  against the script's own `--help` before submitting.
+
+---
+
+### ⚠️ THREE SCOPE DECISIONS I need from Omer — I am not deciding these unilaterally
+
+The readiness agents found that **P4b, P5 and P9 cannot be run as the plan literally specifies.** Per the
+plan's "never skip a stage without telling Omer", here they are:
+
+| phase | finding | what I'd propose |
+|---|---|---|
+| **P4b** — full head sweep | **≈440 GPU-h** as specified, *and* contains a **structural impossibility**: the K/V cells cannot be patched per-head as written under **GQA** (Llama-3.1 shares K/V across query-head groups). | Drop the K/V-per-head cells as ill-posed and say so in the paper; run z/pattern/head-result only, at the corrected positions. Needs your call because it narrows a pre-registered design. |
+| **P5** — head→MLP path matrix | **34–77 GPU-h per metric** for exact patching. The plan already anticipates this and says AtP may rank but **never substitutes for exact patching in a claim**. | AtP-rank everything (explicitly *not* a claim), exact-patch the top-k (the claim). I need your k. |
+| **P9** — GCG Gate 7 | **0 of 16 arms launchable**, though 7 have their inputs on disk. The wrapper cannot express a refusal-direction objective, cannot vary the seed, the evaluator hardcodes 3 Qwen arms — and **arm 7's frozen direction is one P7 just failed**. | Fix the wrapper/evaluator (small), drop arm 7 or re-freeze it on a P7-validated layer. |
+
+**My recommendation if you want one answer:** do P5's decomposition (it yields the novel circuit figure),
+take the narrowed P4b, and defer P9 — its arm 7 is now known to rest on an invalid direction, and GCG has
+been a repeatedly-negative line in this project.
+
 ### Tick 52 — 2026-08-06 — two n-801 stalls killed and resubmitted; the early-stall diagnostic, written down
 **All three jobs looked identical from `squeue` and from stdout** — every one sat at `GPU ok` with
 `raw.jsonl` empty. Three hypotheses fit that: slow load, hung load, or slow generation. `raw.jsonl` cannot
