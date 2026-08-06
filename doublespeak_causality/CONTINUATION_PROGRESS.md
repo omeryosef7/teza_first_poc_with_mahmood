@@ -746,6 +746,32 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 80 — 2026-08-06 — THIRD GPU-guard bug fixed; the guard cost 3 iterations, all self-inflicted
+**Being honest: I have now iterated on the GPU guard three times, each a bug I introduced.**
+1. Tick 78 — relaxed L40S-only → a name allowlist, but **omitted the 3090**, so backfill placed jobs on
+   the idle n-305 and the guard rejected the 24 GB card it was *meant* to enable.
+2. Tick 78-followup — added `3090` to the allowlist.
+3. **This tick** — the VRAM check `[ "$GPU_MEM" -ge 23000 ]` **raised "integer expression expected"**
+   because this `nvidia-smi` build **ignores `--format nounits`** and returns `"24576 MiB"`; the trailing
+   token broke the arithmetic test, so the ERROR branch fired on a card that clears the floor.
+
+**Fixed by `grep -oE '[0-9]+'` on the memory string**, unit-tested against `"24576 MiB"`, `"24576"`,
+`" 24576 "`, `"49140 MiB"` — all now parse to a clean integer and pass. **The through-line of all three:
+a guard must be tested against the *actual* hardware and the *actual* tool output, not the documented
+behaviour.** The demo run never hit this because it ran on L40S nodes where the name matched and the
+`nounits`/allowlist path happened to work; the 3090 exposed both gaps at once.
+
+**Cost accounting, honestly:** each failure cost only seconds (the guard rejects before model load), so
+no GPU-hours were burned — but it cost three backfill placements and this many ticks. The upside is a
+guard that now correctly admits the whole ≥ 24 GB fleet, which is the durable capacity win from the
+config search.
+
+**Resubmitted 729148/729149 to n-305 with the fully-fixed guard**; Monitor armed with coverage for
+`GPU ok` / `ERROR` / OOM / `Traceback` / `done`. 24 GB is enough at runtime: Llama-3.1-8B bf16 ≈ 16 GB
+weights + ~2 GB forward activations ≈ 18 GB peak, well inside 24 GB with `expandable_segments` on.
+
+The pooled `--expect-cells 1024` query analysis is ready to run the instant the jobs finish.
+
 ### Tick 79 — 2026-08-06 — fixed O4 (write×refusal report ranges wrong, one sign flipped) while query backfills
 **Query jobs (729131/729132) are queued on the idle n-305 with the 3090 fix in; the Monitor will fire when
 they pass the guard and start.** No polling — CPU work this tick.
