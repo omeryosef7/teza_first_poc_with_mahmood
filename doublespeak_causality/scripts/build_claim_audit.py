@@ -565,16 +565,17 @@ CLAIMS = [
          script="scripts/analyze_alpha_calibration.py", recompute="python scripts/analyze_alpha_calibration.py",
          checks=[dict(kind="rate", dir=D["a_cu"], field="ds_base_label", eq="MALICIOUS", expect=0.2745),
                  dict(kind="rate", dir=D["a_cu"], field="direct_base_label", eq="MALICIOUS", expect=0.3137)]),
-    dict(id="P81-13", phase="P8.1", status="VERIFIED",
-         claim="D_i = +2 (an item neither factor jailbreaks alone but both do together -- the signature of genuine synergy) occurs ZERO times, at every alpha and in every cohort.",
+    dict(id="P81-13", phase="P8.1", status="UNDERPOWERED",
+         claim="D_i = +2 (the item-level synergy signature: neither factor jailbreaks alone but both do together) occurs ZERO times on the PRIMARY clearharm cohort at every dose (0/86), but is NOT zero everywhere -- curated shows 4 occurrences (a=0.5:1, 1.5:1, 2.0:2 of 51 items). The ceiling-immune no-synergy backstop holds on clearharm, not universally.",
          source="PHASE8_1_ALPHA_CALIBRATION.md tables + PHASE8_0 §2.3", dirs=[D["a_ch"], D["a_cu"], D["br_ch"]],
          script="scripts/analyze_interaction_2x2.py", recompute="python scripts/analyze_alpha_calibration.py",
-         note="Immune to the averaging/ceiling confound because it is an item-level count.",
+         note="CORRECTED 2026-08-06 (bughunt F1): was VERIFIED with the false claim 'zero in every cohort'. The check only tested the clearharm dir while CITING the curated dir as evidence and never checking it -- so the audit certified 8/8 ok on a claim the project's own PHASE8_1 report (lines 307/311) contradicts. Recomputed from curated raw: D=+2 counts {0.5:1, 1.5:1, 2.0:2} = 4 total. The clearharm 0/86 IS the ceiling-immune backstop and stands; the '137 items, zero' phrasing does not. Curated checks now included below and EXPECTED to reflect the true nonzero counts.",
          checks=[dict(kind="interaction", dir=D["a_ch"], cells=("direct_base", "ds_base", f"direct_refabl_a{a}", f"ds_refabl_a{a}"), stat="D+2", expect=0)
                  for a in ("0.0", "0.25", "0.5", "0.75", "1.0", "1.5", "2.0")]
-                + [dict(kind="interaction", dir=D["br_ch"], cells=("direct_base", "ds_base", "direct_refabl", "ds_refabl"), stat="D+2", expect=0)])
+                + [dict(kind="interaction", dir=D["br_ch"], cells=("direct_base", "ds_base", "direct_refabl", "ds_refabl"), stat="D+2", expect=0)]
+                + [dict(kind="interaction", dir=D["a_cu"], cells=("direct_base", "ds_base", f"direct_refabl_a{a}", f"ds_refabl_a{a}"), stat="D+2", expect=exp)
+                   for a, exp in [("0.0", 0), ("0.25", 0), ("0.5", 1), ("0.75", 0), ("1.0", 0), ("1.5", 1), ("2.0", 2)]]),
 
-    ,
     # ============================== P8.0 — the withdrawn pilot ================================
     dict(id="P80-01", abstract_block='The number is sound but its MECHANISTIC READING IS WITHDRAWN (P80-02); quoting it in an abstract would resurrect the retracted claim.', phase="P8.0", status="VERIFIED", effect=-0.186,
          claim="AS A MEASUREMENT AT alpha=1.0: clearharm pooled Ihat = -0.186 [-0.349, -0.023], permutation p = 0.045 (n=86).",
@@ -1375,8 +1376,9 @@ def render(claims, dir_info, verdicts, vsummary, do_validate):
       "**Report this as a negative-result / methodology finding, and state explicitly that it is NOT "
       "evidence the two channels are independent** (the α=0.25 CI spans [−0.151, +0.105] at n=86).")
     A("5. *Doublespeak is an imperfect refusal suppressor: it leaves 45–48 % of clearharm items still "
-      "refusing, and D_i = +2 — an item neither factor jailbreaks alone but both do together — never occurs "
-      "in 137 items at any dose.* — BR-07, P81-13.")
+      "refusing, and D_i = +2 -- an item neither factor jailbreaks alone but both do together -- never occurs "
+      "on the primary clearharm cohort (0/86 at any dose; curated shows 4/51 item-doses, so this is a "
+      "clearharm-specific, not universal, no-synergy backstop).* -- BR-07, P81-13.")
     A("")
     A("### Sentences that are NOT safe")
     A("")
