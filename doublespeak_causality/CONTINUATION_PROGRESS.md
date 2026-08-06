@@ -746,6 +746,27 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 82 — 2026-08-06 — query jobs RUNNING on the 3090 (guard passed); banked the SLURM lessons to memory
+**`GPU ok: NVIDIA GeForce RTX 3090 (24576MiB)` on both shards — the guard finally passes.** 729249/729250
+are `R` on the idle n-305, loading weights. The fair-share fight is won by backfilling onto a free
+non-L40S node, and the four-iteration guard is finally correct (dry-run-verified). Monitor re-armed
+robustly (watches generation progress ≥2000 rows, OOM, Traceback, slurmstepd error, or queue-exit).
+
+**Banked the durable cluster knowledge from this config search into two memories**, so the next session
+doesn't repeat the four-tick detour:
+- `feedback-slurm-capacity-and-fairshare` — L40S is periodically 100% booked; a5000 (n-501/502/503) and
+  the idle 3090 (n-305) are free in the *same* killable partition and valid for forward-pass jobs; the
+  real blocker is fair-share priority (even idle nodes get reserved), beaten only by backfill with a tight
+  `--time`; `gpu-sharifm` is group-denied despite the assoc.
+- `feedback-slurm-gpu-guard-testing` — the exact login-node dry-run that catches all three guard bugs
+  (name allowlist, `nounits`-returns-units, SIGPIPE-under-pipefail-silent-death) before submitting.
+
+**CPU work is done; the science is now gated purely on the 3090 finishing.** The 3090 is slower per
+forward than the L40S, so the query run will take longer than the demo's 27 min — but it is running and
+correct. When it lands: pool both shards with `--expect-cells 1024`, run the clean-full agreement (query
+needs no clean subset — its 86/86 alignment was pre-verified in tick 76), apply the dev∩heldout gate, and
+report the query z-channel necessity against the demo result.
+
 ### Tick 81 — 2026-08-06 — ROOT-CAUSED the guard's silent death (SIGPIPE under pipefail); dry-ran the fix
 **The tick-80 fix didn't hold — jobs died SILENTLY after the header, no `GPU ok`, no `ERROR`.** I stopped
 guessing and read the actual failure: the log ends at the git line, right before the GPU guard, with zero
