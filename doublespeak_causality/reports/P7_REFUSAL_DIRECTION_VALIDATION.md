@@ -163,6 +163,33 @@ axis does not exist in the first thirteen layers; it appears abruptly at L13 and
 not a threshold artifact of one fit - two independently-built direction families draw the same boundary in
 the same place.
 
+### WARNING WARNING - PROTOCOL ASYMMETRY, read before comparing the two families
+
+**The two families are NOT measured under the same induce protocol.** Found by adversarial self-review
+*after* this section was first written.
+
+`--harmless-holdout` splits `HARMLESS_INSTRUCTIONS` so the **ClearHarm refit** is never scored on its own
+fit set. It does **nothing** for the `existing` family: those directions shipped from
+`outputs/refusal_alllayers/`, and every one of their `.json` files records **`n_harmless: 20`**
+(`build_refusal_direction_llama.py` iterates the whole list). **So `HARMLESS_EVAL` is a SUBSET of the
+`existing` fit set, item for item.**
+
+Concretely: `existing` is induce-tested on 10 benign prompts its own diff-of-means was optimised to push
+to the low end of `v`; `clearharm` is induce-tested on 10 it has never seen. **Adding alpha*v to an
+in-sample negative is the easiest possible induce test.** Therefore:
+
+- **Do not compare the two `n_valid` counts (12 vs 15) as if they were commensurable.** They are not.
+- **Every one-family-only verdict below is confounded with this asymmetry**, including the L21 / L22 / L30
+  splits that qualify RP-01, BR-08 and TR-01. Those qualifications stand as *"not established in both
+  families"*, but they are **not** evidence that the direction is worse in the failing family.
+- **The L9 result is the one conclusion this makes STRONGER.** `existing` had the *easier* in-sample
+  induce test at L9 and still induced **+0.000**. A direction that cannot raise refusal even on the very
+  prompts it was fit against is not a refusal direction.
+- The clean fix is a third family: refit `existing` on `HARMLESS_FIT` only and validate that. Not yet run.
+
+The `clearharm` refit is additionally handicapped by the holdout (negative class 10 rather than 20) --
+the intended cost of an honest induce arm, but a second reason the counts are not directly comparable.
+
 ### WARNING - consequence for three published claims
 
 Of the layers our headline results are read at, **only L18 is in the cross-validated set**:

@@ -918,17 +918,25 @@ CLAIMS = [
                  dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
                       path=["cohorts", "curated", "n_holm_sig"], expect=0)]),
     dict(id="RP-04", phase="REP->BEHAV", status="VERIFIED",
-         claim="The rep->behavior readout can be re-anchored on a CROSS-VALIDATED axis at no cost: decoder L16 gives AUC 0.888 (Holm p=3.3e-8), HIGHER than the "
-               "historical L21 readout's 0.874, and L16 validates bidirectionally in BOTH direction families where L21 validates in only one.",
+         claim="The rep->behavior readout does NOT depend on the one layer whose axis is family-specific: all 11 P7-both-families layers are "
+               "Holm-significant on clearharm (AUC 0.773 at L13 to 0.888 at L16), so the readout can be re-anchored on a both-families axis "
+               "(L16 or L18) at no measurable cost.",
          source="outputs/rep_predicts_behavior_sweep.json + P7 §4c", dirs=[D["refproj_ch"], D["br_ch"]],
          script="scripts/analyze_rep_predicts_behavior.py --sweep",
          recompute="python scripts/analyze_rep_predicts_behavior.py --sweep",
-         note="This RESOLVES the caveat on RP-01 rather than merely flagging it. All 11 P7-cross-validated layers are Holm-significant on clearharm "
-              "(L13 0.773 -> L16 0.888 -> L29 0.850), so the result does not depend on the one layer whose axis is family-specific. L18 -- the strongest-validated "
-              "direction in the project and the one every behavioral arm ablates -- gives 0.882. Recommend re-anchoring the paper's readout at L16 or L18. "
-              "curated remains a uniform null (0/32 Holm-significant, AUC 0.364-0.605), unchanged.",
+         note="CORRECTED 2026-08-06 after self-review. The FIRST version of this row claimed L16's 0.888 was 'HIGHER' than L21's 0.874 and that the result "
+              "'got stronger'. That was wrong on three counts and is withdrawn: (1) SELECTION -- 0.888 is the argmax over 11 correlated layers, and under H0 "
+              "the expected max of 11 correlated estimates exceeds any fixed one, so 'higher' is what selection manufactures; (2) NO PAIRED TEST -- the two AUCs "
+              "come from the SAME 86 items on adjacent, strongly correlated residual layers; (3) the gap is inside the script's own measured noise (4 adjacent "
+              "layers span 0.007; the 5-fold sd at L21 is 0.055). Now measured properly with a paired ITEM-bootstrap that recomputes BOTH AUCs on each resample "
+              "(AUC is not a mean, so stats.paired_bootstrap_ci does not apply): dAUC(L16-L21) = +0.0139, 95% CI [-0.0148, +0.0446], STRADDLES ZERO. "
+              "The supportable claim is 'at least as good as, and validated in both families' -- which is still exactly what is needed to retire RP-01's caveat. "
+              "TERMINOLOGY: 'cross-validated' was being used for two different things; in this project it means VALIDATED IN BOTH DIRECTION FAMILIES, not k-fold CV. "
+              "There is no cross-validated 0.888 -- the 5-fold runs at one layer only.",
          checks=[dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
-                      path=["cohorts", "clearharm", "best_layer_p7_valid", "decoder_layer"], expect=16)]),
+                      path=["cohorts", "clearharm", "best_layer_p7_valid", "decoder_layer"], expect=16),
+                 dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
+                      path=["cohorts", "clearharm", "delta_auc_best_vs_reference", "straddles_zero"], expect=True)]),
     dict(id="TR-01", phase="TRAJECTORY", status="UNDERPOWERED",
          abstract_block="Read at L30, which validates in the ClearHarm refit ONLY (+0.350/+0.100 = a single induce item); the shipped `existing` family fails induce at L30 outright.",
          claim="The refusal outcome is set at the DECISION POINT: DS-refused and DS-jailbreak trajectories are separated at generated token 0 (projection 9.1 vs -2.1 at L30) and never cross, falsifying mid-generation re-engagement.",

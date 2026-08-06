@@ -89,17 +89,51 @@ def sweep(args):
             cv_auc = dict(layer_decoder=hl_dec, n_folds=len(aucs),
                           mean=round(float(np.mean(aucs)), 4), sd=round(float(np.std(aucs, ddof=1)), 4),
                           folds=[round(float(a), 4) for a in aucs])
-        cv = [x for x in rows if x["p7_valid_both"]]
+        # NB named p7both, NOT `cv`: this means "validated in BOTH direction families" and has
+        # nothing to do with cross-validation. The old name `cv` collided with the 5-fold CV
+        # computed twenty lines above and made "cross-validated 0.888" readable as a CV result,
+        # which it never was (the 5-fold runs at ONE layer only).
+        p7both = [x for x in rows if x["p7_valid_both"]]
         best = max(rows, key=lambda x: x["auc"])
-        best_cv = max(cv, key=lambda x: x["auc"]) if cv else None
+        best_p7 = max(p7both, key=lambda x: x["auc"]) if p7both else None
+        # D14: AUC(best P7-valid layer) vs AUC(reference layer) is a difference of two CORRELATED AUCs
+        # measured on the SAME items, and `best` is a max over 11 correlated layers. Quoting "higher"
+        # off the point estimates is exactly what selection manufactures. Resample ITEMS (not the
+        # paired differences -- AUC is not a mean, so stats.paired_bootstrap_ci does not apply) and
+        # recompute BOTH AUCs on each resample, so the correlation is preserved.
+        delta = None
+        if best_p7 is not None:
+            ha, hb = str(best_p7["hs"]), str(args.cv_layer + 1)
+            a = np.array([proj[i]["doublespeak"][ha] for i in ids])
+            b = np.array([proj[i]["doublespeak"][hb] for i in ids])
+            rng2 = np.random.default_rng(20260806)
+            n, ds_ = len(ids), []
+            for _ in range(10000):
+                k = rng2.integers(0, n, n)
+                m2 = mal[k]
+                if m2.all() or not m2.any():
+                    continue                       # AUC undefined on a single-class resample
+                ds_.append(stats_at(a[k], m2)[0] - stats_at(b[k], m2)[0])
+            ds_ = np.sort(np.array(ds_))
+            delta = dict(layer_a_decoder=best_p7["decoder_layer"], layer_b_decoder=args.cv_layer,
+                         auc_a=round(float(stats_at(a, mal)[0]), 4),
+                         auc_b=round(float(stats_at(b, mal)[0]), 4),
+                         delta=round(float(stats_at(a, mal)[0] - stats_at(b, mal)[0]), 4),
+                         ci95=[round(float(np.percentile(ds_, 2.5)), 4),
+                               round(float(np.percentile(ds_, 97.5)), 4)],
+                         n_boot=len(ds_),
+                         straddles_zero=bool(np.percentile(ds_, 2.5) <= 0 <= np.percentile(ds_, 97.5)),
+                         note="layer_a is the ARGMAX over the P7-validated set, so its point estimate is "
+                              "selection-inflated; the CI is the honest quantity.")
         report["cohorts"][tag] = {
             "n": len(ids), "n_malicious": int(mal.sum()), "layers": rows,
             "auc_range_all": [round(min(x["auc"] for x in rows), 4), round(max(x["auc"] for x in rows), 4)],
             "best_layer_any": best,
-            "best_layer_p7_valid": best_cv,
+            "best_layer_p7_valid": best_p7,
             "n_holm_sig": sum(1 for x in rows if x["mw_p_holm"] < 0.05),
-            "n_holm_sig_p7_valid": sum(1 for x in cv if x["mw_p_holm"] < 0.05),
+            "n_holm_sig_p7_valid": sum(1 for x in p7both if x["mw_p_holm"] < 0.05),
             "cv_auc_at_headline_layer": cv_auc,
+            "delta_auc_best_vs_reference": delta,
         }
     dst = os.path.join(DC, "outputs", "rep_predicts_behavior_sweep.json")
     json.dump(report, open(dst, "w"), indent=1)
@@ -111,6 +145,9 @@ def sweep(args):
         b = c["best_layer_any"]; print(f"   best any     : decoder L{b['decoder_layer']} AUC={b['auc']:.3f} holm={b['mw_p_holm']:.2e}")
         b = c["best_layer_p7_valid"]
         if b: print(f"   best P7-valid: decoder L{b['decoder_layer']} AUC={b['auc']:.3f} holm={b['mw_p_holm']:.2e}")
+        d = c.get("delta_auc_best_vs_reference")
+        if d: print(f"   dAUC L{d['layer_a_decoder']} - L{d['layer_b_decoder']} = {d['delta']:+.4f} "
+                    f"CI[{d['ci95'][0]:+.4f},{d['ci95'][1]:+.4f}] straddles0={d['straddles_zero']}")
         v = c["cv_auc_at_headline_layer"]
         print(f"   5-fold CV AUC @L{v['layer_decoder']}: {v['mean']:.3f} +/- {v['sd']:.3f}  folds={v['folds']}")
     return report

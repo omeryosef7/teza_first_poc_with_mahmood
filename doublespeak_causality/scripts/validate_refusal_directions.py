@@ -47,6 +47,13 @@ WHAT IS MEASURED, per (family, layer L):
       the fit/alpha see the first 10, the induce arm is evaluated on the last 10. Without that
       split the refit direction would be scored on its own fit set and would "induce refusal"
       by construction.
+      *** THE HOLDOUT DOES NOT PROTECT THE `existing` FAMILY. *** Those directions shipped from
+      outputs/refusal_alllayers/ and every one of their .json files records n_harmless: 20 -- they were
+      fit on the WHOLE list -- so HARMLESS_EVAL is a SUBSET of their fit set. `existing` is therefore
+      induce-tested IN-SAMPLE while `clearharm` is tested out-of-sample, and adding alpha*v to an
+      in-sample negative is the easiest possible induce test. DO NOT compare the two families' n_valid
+      counts as if commensurable; see "PROTOCOL ASYMMETRY" in reports/P7_REFUSAL_DIRECTION_VALIDATION.md.
+      The clean fix is a third family: refit `existing` on HARMLESS_FIT only. Not yet run.
 
   RANDOM CONTROLS. Both arms are repeated with `pc.norm_matched_random(v_L, 1, seed')` at the SAME
   alpha and the same scope (independent draw per family and per layer, matching the per-layer-seed
@@ -339,7 +346,23 @@ def main():
             "layers_source": ("--layers all (provisional 32; re-resolved from lm.num_layers)"
                               if all_layers else "--layers explicit"),
             "n_fit_items": len(fit_conds), "n_eval_items": len(eval_conds),
-            "n_harmless_fit": len(brd.HARMLESS_INSTRUCTIONS),
+            # Record what the run ACTUALLY does, not the size of the source list. Under
+            # --induce-eval harmless with --harmless-holdout the set is split in half, so reporting
+            # len(HARMLESS_INSTRUCTIONS) here misdescribes the fit (it said 20 when the fit saw 10) and
+            # made the committed metadata inconsistent with the rows. The split is deterministic from
+            # args, so it can be computed here, before the model loads.
+            "n_harmless_total": len(brd.HARMLESS_INSTRUCTIONS),
+            "n_harmless_fit": (len(brd.HARMLESS_INSTRUCTIONS) // 2
+                               if (args.induce_eval == "harmless" and args.harmless_holdout)
+                               else len(brd.HARMLESS_INSTRUCTIONS)),
+            "n_harmless_induce_eval": (len(brd.HARMLESS_INSTRUCTIONS) - len(brd.HARMLESS_INSTRUCTIONS) // 2
+                                       if (args.induce_eval == "harmless" and args.harmless_holdout)
+                                       else None),
+            "induce_eval": args.induce_eval, "harmless_holdout": bool(args.harmless_holdout),
+            # The `existing` family's shipped directions were fit on the FULL 20-item harmless set
+            # (every refusal_alllayers/*.json records n_harmless: 20), so the holdout does NOT protect
+            # them -- their induce arm is in-sample. See P7 report, "PROTOCOL ASYMMETRY".
+            "existing_family_induce_is_in_sample": ("existing" in fams and args.induce_eval == "harmless"),
             "fit_split": args.fit_split, "eval_split": args.eval_split,
             "ablate": {"scope": args.ablate_scope, "alpha": args.ablate_alpha},
             "induce": {"scope": args.induce_scope, "alpha_mode": args.induce_alpha_mode,

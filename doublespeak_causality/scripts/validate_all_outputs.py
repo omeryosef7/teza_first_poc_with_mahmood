@@ -1012,12 +1012,53 @@ def validate_dir(d, args):
     # --fit-split/--eval-split and recorded in summary['plan'], not per row. Running the id-overlap
     # check here would compare None against None and emit a meaningless "only 0 split(s)" warning.
     if typ == "refval":
+        res.setdefault("splits", {})
         plan = summary.get("plan", {})
         f, e = plan.get("fit_split"), plan.get("eval_split")
         if f is not None and e is not None and f == e:
             res["issues"].append(f"fit_split == eval_split == {f!r}: the clearharm refit would be "
                                  f"evaluated on its own fit items")
-        res["splits"] = {"fit": f, "eval": e}
+        # The fit/eval-split check above compares two ARGPARSE STRINGS and touches no data, so on its own
+        # it is near-vacuous -- it is structurally blind to the contamination this harness can actually
+        # suffer, which is on the HARMLESS side, not the bench side. Check that too, from the rows.
+        srows = summary.get("rows") or []
+        ie = {r.get("induce_eval") for r in srows if isinstance(r, dict) and "induce_eval" in r}
+        nb = {r.get("n_benign") for r in srows if isinstance(r, dict) and "n_benign" in r}
+        nhf = plan.get("n_harmless_fit")
+        if ie:
+            res["splits"]["induce_eval"] = sorted(x for x in ie if x is not None)
+            if ie == {"neutral"}:
+                res["warns"].append(
+                    "induce_eval='neutral': the induce arm ran on the codeword-substituted request, which "
+                    "is DISGUISED HARMFUL (measured refusal ~0.75), not benign. induce_gain is capped near "
+                    "+0.25 and must not be compared against runs using --induce-eval harmless.")
+            ntot = plan.get("n_harmless_total")
+            nev = plan.get("n_harmless_induce_eval")
+            if "harmless" in ie and nhf is not None and ntot is not None and nev is not None:
+                # Post-2026-08-06 metadata: the plan records the ACTUAL post-holdout sizes, so this is a
+                # real disjointness check -- fit half + eval half must fit inside the source list.
+                if nhf + nev > ntot:
+                    res["issues"].append(
+                        f"harmless fit ({nhf}) + induce eval ({nev}) > total ({ntot}): the halves OVERLAP, "
+                        f"so the ClearHarm refit is being induce-tested on its own fit set "
+                        f"(--harmless-holdout defeated).")
+            elif "harmless" in ie and nhf is not None:
+                # LEGACY metadata (pre-2026-08-06): `n_harmless_fit` recorded len(HARMLESS_INSTRUCTIONS)
+                # rather than the post-holdout fit size, so it cannot support a disjointness check. Warn --
+                # do NOT raise an issue, or every historical run FAILs for a metadata gap rather than a
+                # data defect.
+                res["warns"].append(
+                    f"legacy plan metadata: n_harmless_fit={nhf} is the SOURCE list size, not the "
+                    f"post-holdout fit size, so harmless-set disjointness cannot be checked from this "
+                    f"summary. Re-run to get n_harmless_total / n_harmless_induce_eval.")
+            if "harmless" in ie and plan.get("existing_family_induce_is_in_sample"):
+                res["warns"].append(
+                    "PROTOCOL ASYMMETRY: the `existing` directions were fit on the FULL harmless set, so "
+                    "--harmless-holdout does not protect them and their induce arm is IN-SAMPLE while "
+                    "clearharm's is out-of-sample. Do not compare the two families' n_valid counts.")
+        if len(ie) > 1:
+            res["issues"].append(f"rows mix induce_eval populations {sorted(ie)}; gains are not comparable")
+        res["splits"] = {**res.get("splits", {}), "fit": f, "eval": e}
     key = "id" if typ == "behav" else "sid"
     ids = defaultdict(set)
     for r in ([] if typ == "refval" else rows):

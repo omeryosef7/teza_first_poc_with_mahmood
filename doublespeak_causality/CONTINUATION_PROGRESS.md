@@ -746,6 +746,56 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 50 — 2026-08-06 — the self-review found 4 HIGH defects in MY OWN work; three claims corrected
+All 5 agents returned. The adversarial self-review earned its cost: **4 HIGH defects, three of them in
+claims I wrote in the last two ticks.** Every one verified myself before acting.
+
+**D1 [HIGH] — the protocol asymmetry, and the most consequential finding.** My `--harmless-holdout` fix
+protects the `clearharm` refit from being scored on its own fit set. **It does nothing for `existing`.**
+Those directions shipped from `outputs/refusal_alllayers/`, and I confirmed **every one of their 32 `.json`
+files records `n_harmless: 20`** with `build_refusal_direction_llama.py` iterating the whole list — so
+**`HARMLESS_EVAL` ⊂ the `existing` fit set, item for item.** `existing` is induce-tested **in-sample**;
+`clearharm` is tested **out-of-sample**. Adding `α·v` to an in-sample negative is the easiest possible
+induce test.
+- **The 12/32 vs 15/32 counts are NOT commensurable** and must not be compared as though they were.
+- **Every one-family-only verdict is confounded** — including the L21/L22/L30 splits I used in tick 47–48
+  to qualify RP-01, BR-08 and TR-01. Those stand as *"not established in both families"* but are **not**
+  evidence the direction is worse in the failing family.
+- **The L9 headline gets STRONGER, not weaker.** `existing` had the *easier* in-sample test at L9 and still
+  induced **+0.000**. A direction that cannot raise refusal on the very prompts it was fit against is not a
+  refusal direction.
+Documented as a prominent "PROTOCOL ASYMMETRY" block in the P7 report and in the harness docstring. The
+clean fix — a third family, `existing` refit on `HARMLESS_FIT` only — is **not yet run**.
+
+**D14 [HIGH] — RP-04 was wrong and I have withdrawn the superlative.** I claimed L16's AUC 0.888 was
+"HIGHER" than L21's 0.874 and that "the result got stronger". That was selection: 0.888 is the **argmax
+over 11 correlated layers** compared against a fixed one, with no paired test, and the 0.014 gap sits
+inside the script's own measured noise (4 adjacent layers span 0.007; the 5-fold sd at L21 is 0.055).
+**Measured it properly** with a paired **item**-bootstrap that recomputes *both* AUCs on each resample
+(AUC is not a mean, so `stats.paired_bootstrap_ci` does not apply): **ΔAUC = +0.0139, 95 % CI
+[−0.0148, +0.0446] — straddles zero.** The supportable claim is *"L16 is at least as good as L21 and is
+validated in both families"* — which is still exactly what retires RP-01's caveat.
+
+**D15 [HIGH] — terminology collision.** I was using "cross-validated" for two different things twenty lines
+apart: *validated in both direction families* and *k-fold CV*. **There is no cross-validated 0.888** — the
+5-fold runs at one layer only. Renamed the variable `cv` → `p7both` with a comment, and the audit note now
+states the distinction.
+
+**D12 [HIGH] — my own validator guard was near-vacuous.** The refval branch compared two argparse strings
+and touched no data, so it was structurally blind to the contamination *I* had just introduced on the
+harmless side. It now checks fit/eval-half disjointness from the recorded sizes, warns on
+`induce_eval='neutral'`, refuses runs that mix induce populations, and surfaces the D1 asymmetry.
+Negative-controlled both ways: a defeated holdout **FAILs**, proper disjoint halves **pass**.
+
+**A real bug the new guard immediately caught (D3):** `plan.n_harmless_fit` recorded
+`len(HARMLESS_INSTRUCTIONS)` = 20 even when the holdout meant the fit actually saw **10** — the committed
+metadata misdescribed the run. Fixed to record `n_harmless_total` / `n_harmless_fit` /
+`n_harmless_induce_eval` / `induce_eval` / `harmless_holdout`. Historical runs are treated as **legacy
+metadata → warn**, not FAIL, so a metadata gap is never reported as a data defect.
+
+Audit: **88 claims, 126 checks, 0 failures.** All refval dirs still reconcile (3050 values, 0 mismatched).
+**Jobs healthy:** 724551 (32 min), 724552 (17 min).
+
 ### Tick 49 — 2026-08-06 — P3 started: destination coverage + the eager assertion the plan demanded
 **Both low-α jobs running** (724551 clearharm on n-805, 724552 generated on n-801). **Grid verified to have
 arrived intact** — the log shows `alphas='0,0.05,0.1,0.15,0.2,0.25'`, so the `DSALPHASET` preset defeats the
