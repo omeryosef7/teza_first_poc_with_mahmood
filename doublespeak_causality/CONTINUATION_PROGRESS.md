@@ -746,6 +746,47 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 57 — 2026-08-06 — D1 RESOLVED BY MEASUREMENT: the three one-family caveats were artifacts
+**Job 724931 finished (1000 rows, reconciles at 256 values / 0 mismatched).** It answers the question
+tick 50's self-review raised, and the answer is clean:
+
+| layer | `harmless` pop (`existing` IN-SAMPLE) | **`benign` pop (both out-of-sample)** |
+|---|---|---|
+| **9** | NEITHER | **NEITHER** |
+| 16 / 18 | BOTH | **BOTH** |
+| **21** | *existing only* | **BOTH** |
+| **22** | *clearharm only* | **BOTH** |
+| **30** | *clearharm only* | **BOTH** |
+
+**The one-family-only verdicts do not survive a fair population**, so the qualifications they forced onto
+**RP-01, BR-08 and TR-01 in tick 47 are withdrawn.** Two independent reasons to call them artifact:
+1. they vanish the moment the induce population stops being `existing`'s own fit set — exactly what
+   defect D1 predicted; and
+2. on the confounded population the splits ran in **opposite directions** (L21 existing-only, L22 and L30
+   clearharm-only). A genuine family difference would be **directional**; a coin-flip pattern is not.
+
+**What is robust across all three populations tested** (`neutral`, `harmless`, `benign`): **L9 fails in
+both families every time; L16/L18 pass in both families every time.** The headline never depended on the
+population choice — which is the thing I most wanted to know after tick 50.
+
+**Caveat I am attaching everywhere this is quoted:** the v3 `benign` condition is **not a clean floor** —
+the model refuses **45 %** of it, so induce headroom is **0.55**, not the 1.000 `harmless` gave.
+`benign`-based induce gains are **not comparable** to `harmless`-based ones and must never be pooled.
+n = 20 per cell, so one induce item = 0.05.
+
+**Bookkeeping done properly rather than leaving two contradictory sections in one report:** the old
+"consequence for three published claims" section is now explicitly **SUPERSEDED**, retained only as the
+record of what the `harmless` run showed, with the L9 row flagged as the one line that still stands.
+
+Audit: **89 claims — VERIFIED 66, WITHDRAWN 8, SUPERSEDED 4, UNDERPOWERED 5, UNVERIFIED 3, PENDING 3**;
+128 checks, 0 failures. UNDERPOWERED fell 7→5 as BR-08 and TR-01 returned to VERIFIED.
+
+**A mistake I repeated:** I used an *unquoted* heredoc again (to interpolate the run dir) and the shell ate
+every backticked token. The script's own assertion caught it and **nothing was written** — atomic failure,
+which is why those asserts are there. Redone with a quoted heredoc passing the path via an env var.
+
+**725172** (clearharm low-α) at 20/50 items, on track.
+
 ### Tick 56 — 2026-08-06 — the 2-per-node policy works; D1 run half-done and L9 survives out-of-sample
 **The scheduling fix is confirmed.** Both jobs loaded promptly on n-802 and are generating — 724931 at
 **280→360 rows in 28 min**, 725172 at 3 items. Two model-loading jobs on one node is fine; three is what

@@ -163,7 +163,7 @@ axis does not exist in the first thirteen layers; it appears abruptly at L13 and
 not a threshold artifact of one fit - two independently-built direction families draw the same boundary in
 the same place.
 
-### WARNING WARNING - PROTOCOL ASYMMETRY, read before comparing the two families
+### WARNING WARNING - PROTOCOL ASYMMETRY (resolved below by job 724931 - read both)
 
 **The two families are NOT measured under the same induce protocol.** Found by adversarial self-review
 *after* this section was first written.
@@ -190,7 +190,46 @@ in-sample negative is the easiest possible induce test.** Therefore:
 The `clearharm` refit is additionally handicapped by the holdout (negative class 10 rather than 20) --
 the intended cost of an honest induce arm, but a second reason the counts are not directly comparable.
 
-### WARNING - consequence for three published claims
+### RESOLVED - the one-family verdicts were an artifact (job 724931)
+
+The PROTOCOL ASYMMETRY above said the two families were not comparable because `harmless` is
+`existing`'s own fit set. **That is now fixed by measurement, not by caveat.** Job `724931` re-ran
+L9/L16/L18/L21/L22/L30 with `--induce-eval benign` -- the v3 `benign` condition, which is in **neither**
+family's fit, so both are out-of-sample simultaneously.
+
+| layer | `harmless` population (`existing` IN-SAMPLE) | **`benign` population (both out-of-sample)** |
+|---|---|---|
+| **9** | NEITHER | **NEITHER** |
+| 16 | BOTH | **BOTH** |
+| 18 | BOTH | **BOTH** |
+| **21** | *existing only* | **BOTH** |
+| **22** | *clearharm only* | **BOTH** |
+| **30** | *clearharm only* | **BOTH** |
+
+**The one-family-only verdicts at L21, L22 and L30 do not survive**, so the qualifications they forced
+onto RP-01, BR-08 and TR-01 are **withdrawn**. Two independent reasons to treat them as artifact:
+1. they disappear the moment the induce population stops being `existing`'s fit set, which is exactly
+   what D1 predicted; and
+2. on the confounded population the splits ran in **opposite directions** (L21 existing-only, L22 and L30
+   clearharm-only). A genuine family difference would be *directional*; a coin-flip pattern is not.
+
+**What is robust across all three populations tested** (`neutral`, `harmless`, `benign`): **L9 fails in
+both families every time, and L16/L18 pass in both families every time.** The headline does not depend on
+the population choice.
+
+**Caveat that must travel with this table.** The v3 `benign` condition is **not a clean floor** -- the
+model refuses **45 %** of it, so induce headroom is **0.55**, not the 1.000 the harmless set offered.
+`benign`-based induce gains are therefore **not comparable** to `harmless`-based ones and must never be
+pooled with them. n = 20 per cell throughout, so one induce item = 0.05.
+
+### ~~WARNING - consequence for three published claims~~ (SUPERSEDED - see the RESOLVED section above)
+
+**The table below is retained as the record of what the `harmless`-population run showed, and is NO
+LONGER the operative verdict.** Its three one-family-only rows (L21, L22, L30) were artifacts of scoring
+`existing` on its own fit set; on the out-of-sample `benign` population all three validate in BOTH
+families. Only the L9 row below still stands, and it stands on all three populations.
+
+
 
 Of the layers our headline results are read at, **only L18 is in the cross-validated set**:
 

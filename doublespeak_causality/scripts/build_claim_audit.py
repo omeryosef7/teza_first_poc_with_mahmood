@@ -778,8 +778,7 @@ CLAIMS = [
          note="This headroom is why ds_refabl exceeds either factor alone, and it is the mechanism-level reason Doublespeak's base ASR is only ~0.36.",
          checks=[dict(kind="rate", dir=D["br_ch"], where={"split": "train"}, field="ds_base_label", eq="REJECTED", expect=0.4773),
                  dict(kind="rate", dir=D["br_ch"], where={"split": "train"}, field="direct_base_label", eq="REJECTED", expect=0.8409)]),
-    dict(id="BR-08", phase="BEHAV-REFUSAL", status="UNDERPOWERED", effect=-0.25,
-         abstract_block="The L22 anchor validates in only ONE of two direction families (ClearHarm refit yes, shipped `existing` no -- its induce arm is +0.000). Quote L16, valid in both, or name the family.",
+    dict(id="BR-08", phase="BEHAV-REFUSAL", status="VERIFIED", effect=-0.25,
          claim="Calibrated depth-localization: injecting each layer's own refusal direction at alpha = its measured direct-ds projection gap rescues the model at L22 (dASR -0.250, p=0.001 train; -0.167, p=0.039 test) and at L16/L28, with the random control null at every layer.",
          source="PHASE_BEHAV_REFUSAL.md §'Calibrated localization'", dirs=[D["cal_ch"], D["cal_cu"], D["p7_full"]],
          script="scripts/phase_refusal_inject_calibrated.py", recompute=BCA.format(d=D["cal_ch"]),
@@ -816,6 +815,19 @@ CLAIMS = [
               "conflating the two produced 4 spurious summary!=raw FAILs on 720463 before it was fixed. A fit_split==eval_split guard was added at the same time.",
          checks=[dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.existing.n_valid", expect=15),
                  dict(kind="json_path", file=os.path.join(D["p7_smoke"], "summary.json"), path="by_family.clearharm.n_valid", expect=13)]),
+    dict(id="P7-D1", phase="P7", status="VERIFIED",
+         claim="The per-layer refusal-direction verdicts are POPULATION-DEPENDENT: on the only induce population out-of-sample for BOTH direction "
+               "families (the v3 benign condition), L16/L18/L21/L22/L30 ALL validate in BOTH families while L9 fails in both. The earlier "
+               "one-family-only verdicts at L21/L22/L30 were artifacts of scoring `existing` on its own fit set.",
+         source="reports/P7_REFUSAL_DIRECTION_VALIDATION.md (D1 resolution)", dirs=['outputs/refval_clearharm_20260806_111105_724931'],
+         script="scripts/validate_refusal_directions.py --induce-eval benign",
+         recompute="python scripts/validate_all_outputs.py outputs/refval_clearharm_20260806_111105_724931",
+         note="RESOLVED 2026-08-06 by job 724931 (--induce-eval benign, the v3 benign condition, which is out-of-sample for BOTH direction families and so is the only fair comparison). On that population L21, L22 and L30 ALL validate in BOTH families; the earlier one-family verdicts came from the harmless population, where `existing` was scored IN-SAMPLE (defect D1). The splits there also went in OPPOSITE directions (L21 existing-only, L22/L30 clearharm-only), the signature of an artifact rather than a systematic family difference. L9 remains invalid in BOTH families on BOTH populations. CAVEAT: the v3 benign population is NOT a clean floor -- it refuses at 0.450, so induce headroom is 0.550, not the 1.000 "
+              "the harmless set gave; benign-based induce gains are NOT comparable to harmless-based ones and must not be pooled. n=20 per cell, so one "
+              "induce item = 0.05. What is robust is the CONTRAST: L9 fails on all three populations tested (neutral, harmless, benign) while L16/L18 "
+              "pass on all of them.",
+         checks=[dict(kind="json_path", file=os.path.join('outputs/refval_clearharm_20260806_111105_724931', "summary.json"), path=["by_family","existing","n_valid"], expect=5),
+                 dict(kind="json_path", file=os.path.join('outputs/refval_clearharm_20260806_111105_724931', "summary.json"), path=["by_family","clearharm","n_valid"], expect=5)]),
     dict(id="P7-32", phase="P7", status="VERIFIED",
          claim="Across all 32 layers, only 11 refusal directions validate bidirectionally in BOTH families (L13-L20, L24, L28, L29). "
                "L0-L12 FAIL in both without exception; L13-L20 PASS in both without exception. Per family: existing 12/32, clearharm 15/32.",
@@ -888,7 +900,7 @@ CLAIMS = [
               "carries real weight in the paper's argument."),
 
     # ============================== item-level rep -> behavior =================================
-    dict(id="RP-01", abstract_block='The L21 readout validates in the `existing` family ONLY (+0.300/+0.100); the ClearHarm refit at L21 fails the induce arm outright (+0.000). The AUC is real but the axis it is read on is not cross-validated -- name the family, or re-read inside L13-L20 where both families agree.', phase="REP->BEHAV", status="VERIFIED", effect=None,
+    dict(id="RP-01", abstract_block='RESOLVED -- L21 validates in BOTH families on the out-of-sample benign population (job 724931). Kept blocked only because an abstract should still name the readout layer explicitly.', phase="REP->BEHAV", status="VERIFIED", effect=None,
          claim="Item level: a Doublespeak prompt's refusal-axis projection at the decision token classifies its jailbreak outcome at AUC 0.874 on clearharm (n=86, 32 malicious), Mann-Whitney p = 3.8e-9, point-biserial r = -0.584.",
          source="REP_PREDICTS_BEHAVIOR.md §'Result'", dirs=[D["refproj_ch"], D["br_ch"], D["p7_full"]],
          script="scripts/analyze_rep_predicts_behavior.py", recompute="python scripts/analyze_rep_predicts_behavior.py",
@@ -937,8 +949,7 @@ CLAIMS = [
                       path=["cohorts", "clearharm", "best_layer_p7_valid", "decoder_layer"], expect=16),
                  dict(kind="json_path", file="outputs/rep_predicts_behavior_sweep.json",
                       path=["cohorts", "clearharm", "delta_auc_best_vs_reference", "straddles_zero"], expect=True)]),
-    dict(id="TR-01", phase="TRAJECTORY", status="UNDERPOWERED",
-         abstract_block="Read at L30, which validates in the ClearHarm refit ONLY (+0.350/+0.100 = a single induce item); the shipped `existing` family fails induce at L30 outright.",
+    dict(id="TR-01", phase="TRAJECTORY", status="VERIFIED",
          claim="The refusal outcome is set at the DECISION POINT: DS-refused and DS-jailbreak trajectories are separated at generated token 0 (projection 9.1 vs -2.1 at L30) and never cross, falsifying mid-generation re-engagement.",
          source="PHASE_REFUSAL_TRAJECTORY.md §'Result'", dirs=[D["p7_full"]], script="scripts/phase_refusal_trajectory.py",
          recompute="python scripts/phase_refusal_trajectory.py",
