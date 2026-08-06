@@ -746,6 +746,30 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 77 — 2026-08-06 — query jobs stuck on a BUSY cluster (Priority); resubmitted tight; P4b-1 into the audit
+**The query jobs breached the 30-minute rule — but this is cluster load, not our config.** 728891/728892
+sat PENDING 30 min with reason `(Priority)` and a scheduler start estimate of **23:33 (3.5 h out)**:
+higher-priority *other-user* jobs are ahead in `killable`. Resubmitting our own jobs cannot jump their
+priority, and 4cpu/48G/1GPU is already the minimal footprint — there is nothing to trim.
+
+**What I did do:** cancelled and resubmitted (**728993/728994**) with a **tight `--time=01:15:00`** instead
+of 3 h. The demo run took **27 m 31 s**, so 1:15 is a safe 2.7× margin *and* short enough for the scheduler
+to **backfill** into gaps between the big jobs ahead of us — the one lever that actually helps a
+Priority-blocked queue. Still `(Priority)` as of this tick; the loop will pick them up when a slot opens.
+I am **not** thrashing the queue with repeated resubmits, which would only reset our own age.
+
+**CPU work while they wait — added the P4b-1 result to the claim audit** (`P4B-1`, VERIFIED): the
+distributed-necessity finding with its robust pair {L13H18, L14H13}, both shard dirs cited (and validated
+by the empty-dir guard), the pooled `--expect-cells 1024` recompute command, and the trailing-alignment
+limitation recorded in the note. Audit now **90 claims — VERIFIED 68**, WITHDRAWN 8, SUPERSEDED 4,
+UNDERPOWERED 5, UNVERIFIED 3, PENDING 2; 128 checks, 0 failures, 41 dirs cited, 0 missing.
+
+**A bug I caught in my own audit edit:** my first insertion used a malformed heredoc string-continuation
+and Python raised `SyntaxError` — so the entry was **not added** (claim count stayed 89). I noticed the
+count didn't move, rewrote the entry with `%r` escaping from a real Python process, and confirmed 89→90.
+A silent no-op edit that *looks* applied is exactly the class of thing to check by the count, not the
+exit message.
+
 ### Tick 76 — 2026-08-06 — launched the z-channel QUERY position-set (zero new code); its alignment is clean
 Queue empty and the P4b-1 demo result is done, so per `P4B_PREREGISTRATION.md` §3 the next z-channel cell
 is the **query** position-set. **Zero new code** — the `--positions query` path was built and verified in

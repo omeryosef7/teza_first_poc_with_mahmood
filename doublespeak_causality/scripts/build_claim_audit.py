@@ -834,6 +834,12 @@ CLAIMS = [
               "pass on all of them.",
          checks=[dict(kind="json_path", file=os.path.join('outputs/refval_clearharm_20260806_111105_724931', "summary.json"), path=["by_family","existing","n_valid"], expect=5),
                  dict(kind="json_path", file=os.path.join('outputs/refval_clearharm_20260806_111105_724931', "summary.json"), path=["by_family","clearharm","n_valid"], expect=5)]),
+    dict(id="P4B-1", phase="P4b", status="VERIFIED",
+         claim="Per-head z-necessity at the DEMO positions is distributed and small (all confirmed effects <=0.014): no single head bottlenecks concept-reading. Only L13H18 and L14H13 (L13-14 carry band) are Holm-significant positive-necessity on BOTH dev and heldout AND robust to the clean-subset sensitivity check; head-level analogue of P3's distributed retrieval.",
+         source="reports/PHASE4B_HEAD_Z_NECESSITY_DEMO.md", dirs=['outputs/phase5_headz_clearharm_demo_20260806_184037_728710', 'outputs/phase5_headz_clearharm_demo_20260806_184037_728711'],
+         script="scripts/phase5_head_zpatch.py --positions demo",
+         recompute="python scripts/phase5_analyze.py outputs/phase5_headz_clearharm_demo_20260806_184037_728710 outputs/phase5_headz_clearharm_demo_20260806_184037_728711 --expect-cells 1024",
+         note='Pooled 1024-cell Holm family (--expect-cells 1024 enforced), Wilcoxon per split, self-swap=0.00e+00 (locality), not underpowered. Full n=44/41 confirms {L4H16,L10H2,L13H18,L14H13}; clean-subset n=37/36 confirms {L8H11,L13H18,L14H13}; robust intersection = {L13H18,L14H13}. Effects Holm-sig because CONSISTENT across items, not large. LIMITATION: trailing-align imperfection on 5/86 demo-count-mismatched items (LOW-MEDIUM, verified), controlled by the clean subset. Per-shard summary.json is 2x too lenient (512-cell) and must NOT be quoted -- only the pooled path.'),
     dict(id="P7-32", phase="P7", status="VERIFIED",
          claim="Across all 32 layers, only 11 refusal directions validate bidirectionally in BOTH families (L13-L20, L24, L28, L29). "
                "L0-L12 FAIL in both without exception; L13-L20 PASS in both without exception. Per family: existing 12/32, clearharm 15/32.",
