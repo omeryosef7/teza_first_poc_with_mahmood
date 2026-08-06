@@ -4,12 +4,18 @@
 **Analyzer:** `scripts/analyze_alpha_calibration.py` (this report is its output plus framing).
 **Machine-readable output:** `outputs/alpha_calibration.json`.
 **Model:** `meta-llama/Llama-3.1-8B-Instruct`; refusal direction `outputs/stage_gcg_full/refusal_direction_llama_L18.pt` (L18).
-**Snapshot:** 2026-08-05 ~20:15 IDT.
+**Snapshot:** 2026-08-06 ~04:30 IDT — **both cohorts FINAL.** (The 2026-08-05 20:15 version of this file
+was PROVISIONAL: clearharm was still writing rows, so it carried n=78 numbers and a "do not cite" banner,
+and `outputs/alpha_calibration.json` contained the curated cohort *only*. Job 716014 has since completed —
+86/86 rows, `DONE.json` + `summary.json` present — and the analyzer has been re-run over both cohorts, so
+every clearharm number below is now regenerated at n=86 and backed by the committed JSON. The n=78→86
+refresh moved the numbers: `I_max` at α=0.25 went +0.487→**+0.4767** and at α=1.0 +0.231→**+0.1860**. The
+*conclusions* are unchanged.)
 
 | cohort | run dir | SLURM | status | n |
 |---|---|---|---|---|
 | curated | `behav_refusal_curated_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171236_716015` | 716015 | **COMPLETE** (RUNMETA + DONE + summary + raw + gens) | 51/51 |
-| clearharm | `behav_refusal_clearharm_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171237_716014` | 716014 | **PROVISIONAL — still running** (no `summary.json`, no `DONE.json`) | 78/86 |
+| clearharm | `behav_refusal_clearharm_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171237_716014` | 716014 | **COMPLETE** (RUNMETA + DONE + summary + raw + gens) | 86/86 |
 
 Reproduce:
 
@@ -56,10 +62,10 @@ Recomputed by this analyzer on the current snapshots (α = 0 vs `direct_base`, p
 | cohort | n | label flips | score changes | max \|Δscore\| | ΔASR |
 |---|---|---|---|---|---|
 | curated | 51 | **1 (2.0 %)** | 2 (3.9 %) | 0.75 | −0.020 |
-| clearharm (partial) | 78 | **1 (1.3 %)** | 5 (6.4 %) | **1.00** | +0.013 |
+| clearharm | 86 | **1 (1.2 %)** | 5 (5.8 %) | **1.00** | +0.012 |
 
 ⇒ **A |ΔASR| below ≈ 2 pp is indistinguishable from judge nondeterminism.** On n = 51 that is one item;
-on n = 78 it is 1.6 items. Cells at or under the floor are marked **‡** in the tables.
+on n = 86 it is 1.7 items. Cells at or under the floor are marked **‡** in the tables.
 
 Three consequences that are easy to miss, so they are stated here and not in a footnote:
 
@@ -86,7 +92,7 @@ Pooled, across the 7-point α grid:
 | cohort | Spearman(`I_max`, `Î_binary`) | Pearson | Spearman(`I_max`, `Î_score`) | Pearson |
 |---|---|---|---|---|
 | curated (n=51) | **+0.955** | +0.943 | +0.883 | +0.935 |
-| clearharm (n=78, provisional) | **+0.991** | +0.957 | +0.937 | +0.918 |
+| clearharm (n=86, FINAL) | **+0.991** | +0.951 | +0.991 | +0.927 |
 
 Side by side, pooled:
 
@@ -113,7 +119,7 @@ and, at high α, the *sign* — of `Î` is not interpretable as mechanism. The o
 reading are the ones with a large `I_max`; and at exactly those doses (curated α = 0, clearharm α = 0.25)
 `Î` is **at or below the judge noise floor**, i.e. additive/undetectable rather than sub-additive. This
 points against the P8.0 headline ("sub-additive ⇒ shared refusal bottleneck") and towards the ceiling
-explaining it, but at n = 51/78 it settles nothing on its own.
+explaining it, but at n = 51/86 it settles nothing on its own.
 
 **Deliberately absent: the headroom-vs-saturated decomposition of `Î`.** Splitting items into those where
 neither factor alone jailbreaks and those already saturated *looks* like it would adjudicate this. It
@@ -137,10 +143,14 @@ pooled. Independently of α, curated is a poor cohort for an interaction test: `
 concept-dilution effect), and its random control is the less flat of the two (ASR 0.235–0.333 against a
 0.314 baseline).
 
-**clearharm (PROVISIONAL, n = 78/86): α = 0.25 is the operating point** — `ASR(0,1)` = 0.295 (band
-0.20–0.40 ✓) and `I_max` = +0.487 (≥ +0.33 ✓, and 2.1× the +0.231 available at α = 1.0). It is the *only*
-qualifying dose, so the tie-break never fires, and train, test and pooled all select it. **This cohort is
-still running; re-run the analyzer when `summary.json` appears before citing any clearharm number.**
+**clearharm (FINAL, n = 86/86): α = 0.25 is the operating point** — `ASR(0,1)` = 0.291 (band
+0.20–0.40 ✓) and `I_max` = +0.477 (≥ +0.33 ✓, and 2.6× the +0.186 available at α = 1.0). It is the *only*
+qualifying dose, so the tie-break never fires, and train, test and pooled all select it.
+
+**At that operating point the interaction is a clean null:** `Î` = **−0.0233**, 95 % CI
+**[−0.151, +0.105]**, sign-flip permutation **p = 0.860**, with a symmetric `D_i` distribution
+(−2: 1, −1: 14, **0: 57**, +1: 14, +2: 0). This is the number that **withdraws the P8.0 sub-additivity
+claim**: once the ceiling is removed, the apparent sub-additivity goes with it.
 
 **Specificity holds across the whole dose range on both cohorts** — this is the first time the project has
 had the random-direction control at anything other than α = 1.0. At α = 0 the refusal- and random-ablation
@@ -159,6 +169,105 @@ Generated verbatim by `scripts/analyze_alpha_calibration.py`. Column key: `d+ref
 `ds+refabl` = `ds_refabl_a<α>` = cell (1,1). `Ihat bin` / `Ihat score` are the same estimator on the
 binary MALICIOUS label and on the graded 0–1 StrongREJECT score. `sat. by 1 factor` counts items already
 jailbroken by Doublespeak alone **or** ablation alone — the items with no headroom left.
+
+### clearharm — FINAL  (n=86)
+run_dir: `behav_refusal_clearharm_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171237_716014`
+
+**Judge noise floor (measured on THIS cohort, alpha=0 no-op, byte-identical generations): 1/86 labels flipped (1.2%), 5/86 scores changed (5.8%), max |dscore| = 1.00, dASR = +0.0116. Any |dASR| below ~2 pp is indistinguishable from judge nondeterminism.**
+
+#### clearharm / train (n=44)
+
+| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.0 | 0.136 | 0.841 | 0.159 | 0.841 | 0.364 | 0.477 | **+0.659** | **+0.023** | [+0.000,+0.068] | 1.0000 | **+0.020** | [-0.017,+0.071] | 0.5948 | 0 | 0 | 17/44 | -0.023 | 1.0000 |
+| 0.25 | 0.341 | 0.636 | 0.136 | 0.864 | 0.523 | 0.250 | **+0.455** | **-0.023** | [-0.205,+0.136] | 1.0000 | **-0.054** | [-0.199,+0.091] | 0.5014 | 0 | 0 | 22/44 | +0.205 | 0.0039 |
+| 0.5 | 0.545 | 0.364 | 0.091 | 0.864 | 0.636 | 0.091 | **+0.250** | **-0.114** | [-0.341,+0.114] | 0.4441 | **-0.122** | [-0.330,+0.080] | 0.2649 | 0 | 2 | 28/44 | +0.455 | 0.0000 |
+| 0.75 | 0.568 | 0.227 | 0.136 | 0.864 | 0.682 | 0.045 | **+0.227** | **-0.091** | [-0.364,+0.159] | 0.6107 | **-0.060** | [-0.284,+0.162] | 0.6199 | 0 | 3 | 28/44 | +0.432 | 0.0001 |
+| 1.0 | 0.614 | 0.273 | 0.114 | 0.864 | 0.682 | 0.045 | **+0.182** | **-0.136** | [-0.364,+0.091] | 0.3481 | **-0.148** | [-0.341,+0.045] | 0.1518 | 0 | 1 | 30/44 | +0.500 | 0.0000 |
+| 1.5 | 0.705 | 0.182 | 0.114 | 0.864 | 0.795 | 0.023 | **+0.091** | **-0.114** | [-0.318,+0.091] | 0.4086 | **-0.125** | [-0.290,+0.037] | 0.1520 | 0 | 1 | 35/44 | +0.591 | 0.0000 |
+| 2.0 | 0.841 | 0.091 | 0.114 | 0.864 | 0.727 | 0.023 | **-0.045** | **-0.318** | [-0.523,-0.091] | 0.0122 | **-0.375** | [-0.543,-0.199] | 0.0002 | 0 | 1 | 38/44 | +0.727 | 0.0000 |
+
+‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
+Shared baselines (alpha-independent): direct_base ASR = 0.136, ds_base ASR = 0.341.
+
+Full binary D_i distribution per alpha:
+  - alpha=0.0: {'-2': 0, '-1': 0, '0': 43, '1': 1, '2': 0}  (score D: {'neg': 3, 'zero': 38, 'pos': 3})
+  - alpha=0.25: {'-2': 0, '-1': 8, '0': 29, '1': 7, '2': 0}  (score D: {'neg': 14, 'zero': 22, 'pos': 8})
+  - alpha=0.5: {'-2': 2, '-1': 10, '0': 23, '1': 9, '2': 0}  (score D: {'neg': 18, 'zero': 13, 'pos': 13})
+  - alpha=0.75: {'-2': 3, '-1': 10, '0': 19, '1': 12, '2': 0}  (score D: {'neg': 19, 'zero': 7, 'pos': 18})
+  - alpha=1.0: {'-2': 1, '-1': 14, '0': 19, '1': 10, '2': 0}  (score D: {'neg': 22, 'zero': 10, 'pos': 12})
+  - alpha=1.5: {'-2': 1, '-1': 11, '0': 24, '1': 8, '2': 0}  (score D: {'neg': 21, 'zero': 8, 'pos': 15})
+  - alpha=2.0: {'-2': 1, '-1': 18, '0': 19, '1': 6, '2': 0}  (score D: {'neg': 29, 'zero': 6, 'pos': 9})
+
+**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.883 (Pearson +0.900); Spearman(I_max, Ihat_score) = +0.929 (Pearson +0.846). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
+
+#### clearharm / test (n=42)
+
+| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.0 | 0.095 | 0.881 | 0.071 | 0.881 | 0.333 | 0.452 | **+0.643** | **-0.024** | [-0.095,+0.048] | 1.0000 | **-0.024** | [-0.101,+0.054] | 0.6492 | 0 | 0 | 16/42 | +0.024 | 1.0000 |
+| 0.25 | 0.238 | 0.714 | 0.071 | 0.881 | 0.476 | 0.310 | **+0.500** | **-0.024** | [-0.214,+0.167] | 1.0000 | **-0.027** | [-0.232,+0.161] | 0.8200 | 0 | 1 | 19/42 | +0.167 | 0.0391 |
+| 0.5 | 0.405 | 0.452 | 0.071 | 0.881 | 0.619 | 0.095 | **+0.333** | **-0.048** | [-0.262,+0.167] | 0.8253 | **-0.054** | [-0.238,+0.134] | 0.6074 | 0 | 0 | 22/42 | +0.333 | 0.0001 |
+| 0.75 | 0.595 | 0.286 | 0.095 | 0.857 | 0.595 | 0.095 | **+0.143** | **-0.262** | [-0.476,-0.048] | 0.0347 | **-0.238** | [-0.408,-0.062] | 0.0113 | 0 | 0 | 28/42 | +0.500 | 0.0000 |
+| 1.0 | 0.548 | 0.262 | 0.071 | 0.881 | 0.524 | 0.095 | **+0.190** | **-0.286** | [-0.524,-0.071] | 0.0268 | **-0.232** | [-0.429,-0.042] | 0.0251 | 0 | 2 | 27/42 | +0.476 | 0.0000 |
+| 1.5 | 0.619 | 0.310 | 0.095 | 0.881 | 0.476 | 0.095 | **+0.119** | **-0.405** | [-0.643,-0.143] | 0.0052 | **-0.369** | [-0.589,-0.149] | 0.0025 | 0 | 3 | 28/42 | +0.524 | 0.0000 |
+| 2.0 | 0.643 | 0.190 | 0.048 | 0.905 | 0.595 | 0.024 | **+0.095** | **-0.310** | [-0.548,-0.071] | 0.0234 | **-0.327** | [-0.536,-0.128] | 0.0031 | 0 | 2 | 31/42 | +0.595 | 0.0000 |
+
+‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
+Shared baselines (alpha-independent): direct_base ASR = 0.071, ds_base ASR = 0.333.
+
+Full binary D_i distribution per alpha:
+  - alpha=0.0: {'-2': 0, '-1': 2, '0': 39, '1': 1, '2': 0}  (score D: {'neg': 6, 'zero': 34, 'pos': 2})
+  - alpha=0.25: {'-2': 1, '-1': 6, '0': 28, '1': 7, '2': 0}  (score D: {'neg': 10, 'zero': 22, 'pos': 10})
+  - alpha=0.5: {'-2': 0, '-1': 11, '0': 22, '1': 9, '2': 0}  (score D: {'neg': 15, 'zero': 16, 'pos': 11})
+  - alpha=0.75: {'-2': 0, '-1': 17, '0': 19, '1': 6, '2': 0}  (score D: {'neg': 19, 'zero': 13, 'pos': 10})
+  - alpha=1.0: {'-2': 2, '-1': 13, '0': 22, '1': 5, '2': 0}  (score D: {'neg': 18, 'zero': 16, 'pos': 8})
+  - alpha=1.5: {'-2': 3, '-1': 17, '0': 16, '1': 6, '2': 0}  (score D: {'neg': 23, 'zero': 10, 'pos': 9})
+  - alpha=2.0: {'-2': 2, '-1': 15, '0': 19, '1': 6, '2': 0}  (score D: {'neg': 23, 'zero': 10, 'pos': 9})
+
+**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.919 (Pearson +0.894); Spearman(I_max, Ihat_score) = +0.964 (Pearson +0.905). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
+
+#### clearharm / pooled (n=86)
+
+| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.0 | 0.116 | 0.860 | 0.116 | 0.860 | 0.349 | 0.465 | **+0.651** | **+0.000** | [-0.047,+0.047] | 1.0000 | **-0.001** | [-0.045,+0.045] | 1.0000 | 0 | 0 | 33/86 | +0.000 ‡ | 1.0000 |
+| 0.25 | 0.291 | 0.674 | 0.105 | 0.872 | 0.500 | 0.279 | **+0.477** | **-0.023** | [-0.151,+0.105] | 0.8597 | **-0.041** | [-0.167,+0.081] | 0.5372 | 0 | 1 | 41/86 | +0.186 | 0.0001 |
+| 0.5 | 0.477 | 0.407 | 0.081 | 0.872 | 0.628 | 0.093 | **+0.291** | **-0.081** | [-0.244,+0.081] | 0.3838 | **-0.089** | [-0.231,+0.057] | 0.2282 | 0 | 2 | 50/86 | +0.395 | 0.0000 |
+| 0.75 | 0.581 | 0.256 | 0.116 | 0.860 | 0.640 | 0.070 | **+0.186** | **-0.174** | [-0.337,+0.000] | 0.0644 | **-0.147** | [-0.289,-0.003] | 0.0512 | 0 | 3 | 56/86 | +0.465 | 0.0000 |
+| 1.0 | 0.581 | 0.267 | 0.093 | 0.872 | 0.605 | 0.070 | **+0.186** | **-0.209** | [-0.372,-0.047] | 0.0203 | **-0.189** | [-0.326,-0.051] | 0.0089 | 0 | 3 | 57/86 | +0.488 | 0.0000 |
+| 1.5 | 0.663 | 0.244 | 0.105 | 0.872 | 0.640 | 0.058 | **+0.105** | **-0.256** | [-0.419,-0.093] | 0.0054 | **-0.244** | [-0.384,-0.106] | 0.0011 | 0 | 4 | 63/86 | +0.558 | 0.0000 |
+| 2.0 | 0.744 | 0.140 | 0.081 | 0.884 | 0.663 | 0.023 | **+0.023** | **-0.314** | [-0.477,-0.151] | 0.0004 | **-0.352** | [-0.484,-0.217] | 0.0000 | 0 | 3 | 69/86 | +0.663 | 0.0000 |
+
+‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
+Shared baselines (alpha-independent): direct_base ASR = 0.105, ds_base ASR = 0.337.
+
+Full binary D_i distribution per alpha:
+  - alpha=0.0: {'-2': 0, '-1': 2, '0': 82, '1': 2, '2': 0}  (score D: {'neg': 9, 'zero': 72, 'pos': 5})
+  - alpha=0.25: {'-2': 1, '-1': 14, '0': 57, '1': 14, '2': 0}  (score D: {'neg': 24, 'zero': 44, 'pos': 18})
+  - alpha=0.5: {'-2': 2, '-1': 21, '0': 45, '1': 18, '2': 0}  (score D: {'neg': 33, 'zero': 29, 'pos': 24})
+  - alpha=0.75: {'-2': 3, '-1': 27, '0': 38, '1': 18, '2': 0}  (score D: {'neg': 38, 'zero': 20, 'pos': 28})
+  - alpha=1.0: {'-2': 3, '-1': 27, '0': 41, '1': 15, '2': 0}  (score D: {'neg': 40, 'zero': 26, 'pos': 20})
+  - alpha=1.5: {'-2': 4, '-1': 28, '0': 40, '1': 14, '2': 0}  (score D: {'neg': 44, 'zero': 18, 'pos': 24})
+  - alpha=2.0: {'-2': 3, '-1': 33, '0': 38, '1': 12, '2': 0}  (score D: {'neg': 52, 'zero': 16, 'pos': 18})
+
+**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.991 (Pearson +0.951); Spearman(I_max, Ihat_score) = +0.991 (Pearson +0.927). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
+
+#### Operating point — clearharm (rule: ASR(direct_refabl) in [0.20,0.40] AND I_max >= +0.33, larger I_max wins ties; selection split = pooled)
+
+| alpha | ASR direct_refabl | in band | I_max | ceiling ok | no-op | qualifies |
+|---|---|---|---|---|---|---|
+| 0.0 | 0.116 | no | +0.651 | yes | YES | no |
+| 0.25 | 0.291 | yes | +0.477 | yes | - | **YES** |
+| 0.5 | 0.477 | no | +0.291 | no | - | no |
+| 0.75 | 0.581 | no | +0.186 | no | - | no |
+| 1.0 | 0.581 | no | +0.186 | no | - | no |
+| 1.5 | 0.663 | no | +0.105 | no | - | no |
+| 2.0 | 0.744 | no | +0.023 | no | - | no |
+
+**Selected operating point: alpha = 0.25** (ASR(direct_refabl) = 0.291, I_max = +0.477; sole qualifying alpha)
+
+---
 
 ### curated — FINAL  (n=51)
 run_dir: `behav_refusal_curated_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171236_716015`
@@ -257,107 +366,6 @@ Full binary D_i distribution per alpha:
 
 **NO alpha qualifies on curated.** No dose satisfies both criteria simultaneously (excluding the alpha=0 no-op).
 
----
-
-### clearharm — PROVISIONAL  (n=78)
-run_dir: `behav_refusal_clearharm_asweep0.0-0.25-0.5-0.75-1.0-1.5-2.0_20260805_171237_716014`
-> **PROVISIONAL — summary.json absent, the run is still writing `raw.jsonl`. 78 complete rows read. Do not cite.**
-
-**Judge noise floor (measured on THIS cohort, alpha=0 no-op, byte-identical generations): 1/78 labels flipped (1.3%), 5/78 scores changed (6.4%), max |dscore| = 1.00, dASR = +0.0128. Any |dASR| below ~2 pp is indistinguishable from judge nondeterminism.**
-
-#### clearharm / train (n=44)
-
-| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.0 | 0.136 | 0.841 | 0.159 | 0.841 | 0.364 | 0.477 | **+0.659** | **+0.023** | [+0.000,+0.068] | 1.0000 | **+0.020** | [-0.017,+0.071] | 0.5948 | 0 | 0 | 17/44 | -0.023 | 1.0000 |
-| 0.25 | 0.341 | 0.636 | 0.136 | 0.864 | 0.523 | 0.250 | **+0.455** | **-0.023** | [-0.205,+0.136] | 1.0000 | **-0.054** | [-0.199,+0.091] | 0.5014 | 0 | 0 | 22/44 | +0.205 | 0.0039 |
-| 0.5 | 0.545 | 0.364 | 0.091 | 0.864 | 0.636 | 0.091 | **+0.250** | **-0.114** | [-0.341,+0.114] | 0.4441 | **-0.122** | [-0.330,+0.080] | 0.2649 | 0 | 2 | 28/44 | +0.455 | 0.0000 |
-| 0.75 | 0.568 | 0.227 | 0.136 | 0.864 | 0.682 | 0.045 | **+0.227** | **-0.091** | [-0.364,+0.159] | 0.6107 | **-0.060** | [-0.284,+0.162] | 0.6199 | 0 | 3 | 28/44 | +0.432 | 0.0001 |
-| 1.0 | 0.614 | 0.273 | 0.114 | 0.864 | 0.682 | 0.045 | **+0.182** | **-0.136** | [-0.364,+0.091] | 0.3481 | **-0.148** | [-0.341,+0.045] | 0.1518 | 0 | 1 | 30/44 | +0.500 | 0.0000 |
-| 1.5 | 0.705 | 0.182 | 0.114 | 0.864 | 0.795 | 0.023 | **+0.091** | **-0.114** | [-0.318,+0.091] | 0.4086 | **-0.125** | [-0.290,+0.037] | 0.1520 | 0 | 1 | 35/44 | +0.591 | 0.0000 |
-| 2.0 | 0.841 | 0.091 | 0.114 | 0.864 | 0.727 | 0.023 | **-0.045** | **-0.318** | [-0.523,-0.091] | 0.0122 | **-0.375** | [-0.543,-0.199] | 0.0002 | 0 | 1 | 38/44 | +0.727 | 0.0000 |
-
-‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
-Shared baselines (alpha-independent): direct_base ASR = 0.136, ds_base ASR = 0.341.
-
-Full binary D_i distribution per alpha:
-  - alpha=0.0: {'-2': 0, '-1': 0, '0': 43, '1': 1, '2': 0}  (score D: {'neg': 3, 'zero': 38, 'pos': 3})
-  - alpha=0.25: {'-2': 0, '-1': 8, '0': 29, '1': 7, '2': 0}  (score D: {'neg': 14, 'zero': 22, 'pos': 8})
-  - alpha=0.5: {'-2': 2, '-1': 10, '0': 23, '1': 9, '2': 0}  (score D: {'neg': 18, 'zero': 13, 'pos': 13})
-  - alpha=0.75: {'-2': 3, '-1': 10, '0': 19, '1': 12, '2': 0}  (score D: {'neg': 19, 'zero': 7, 'pos': 18})
-  - alpha=1.0: {'-2': 1, '-1': 14, '0': 19, '1': 10, '2': 0}  (score D: {'neg': 22, 'zero': 10, 'pos': 12})
-  - alpha=1.5: {'-2': 1, '-1': 11, '0': 24, '1': 8, '2': 0}  (score D: {'neg': 21, 'zero': 8, 'pos': 15})
-  - alpha=2.0: {'-2': 1, '-1': 18, '0': 19, '1': 6, '2': 0}  (score D: {'neg': 29, 'zero': 6, 'pos': 9})
-
-**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.883 (Pearson +0.900); Spearman(I_max, Ihat_score) = +0.929 (Pearson +0.846). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
-
-#### clearharm / test (n=34)
-
-| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.0 | 0.118 | 0.853 | 0.088 | 0.853 | 0.324 | 0.441 | **+0.647** | **-0.029** | [-0.118,+0.059] | 1.0000 | **-0.026** | [-0.121,+0.066] | 0.7351 | 0 | 0 | 13/34 | +0.029 | 1.0000 |
-| 0.25 | 0.235 | 0.706 | 0.088 | 0.853 | 0.471 | 0.324 | **+0.529** | **+0.000** | [-0.206,+0.206] | 1.0000 | **-0.004** | [-0.232,+0.210] | 1.0000 | 0 | 1 | 15/34 | +0.147 | 0.1250 |
-| 0.5 | 0.441 | 0.441 | 0.088 | 0.853 | 0.588 | 0.118 | **+0.324** | **-0.088** | [-0.324,+0.147] | 0.6272 | **-0.099** | [-0.309,+0.110] | 0.3787 | 0 | 0 | 18/34 | +0.353 | 0.0005 |
-| 0.75 | 0.529 | 0.324 | 0.118 | 0.824 | 0.588 | 0.118 | **+0.235** | **-0.176** | [-0.412,+0.059] | 0.2075 | **-0.158** | [-0.349,+0.026] | 0.1201 | 0 | 0 | 21/34 | +0.412 | 0.0001 |
-| 1.0 | 0.471 | 0.294 | 0.088 | 0.853 | 0.529 | 0.118 | **+0.294** | **-0.176** | [-0.412,+0.029] | 0.2119 | **-0.132** | [-0.327,+0.055] | 0.1979 | 0 | 1 | 20/34 | +0.382 | 0.0002 |
-| 1.5 | 0.559 | 0.353 | 0.118 | 0.853 | 0.471 | 0.118 | **+0.206** | **-0.324** | [-0.588,-0.059] | 0.0409 | **-0.298** | [-0.537,-0.070] | 0.0206 | 0 | 2 | 21/34 | +0.441 | 0.0001 |
-| 2.0 | 0.588 | 0.206 | 0.059 | 0.882 | 0.618 | 0.029 | **+0.176** | **-0.206** | [-0.441,+0.029] | 0.1688 | **-0.232** | [-0.449,-0.029] | 0.0411 | 0 | 1 | 24/34 | +0.529 | 0.0000 |
-
-‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
-Shared baselines (alpha-independent): direct_base ASR = 0.088, ds_base ASR = 0.324.
-
-Full binary D_i distribution per alpha:
-  - alpha=0.0: {'-2': 0, '-1': 2, '0': 31, '1': 1, '2': 0}  (score D: {'neg': 5, 'zero': 27, 'pos': 2})
-  - alpha=0.25: {'-2': 1, '-1': 4, '0': 23, '1': 6, '2': 0}  (score D: {'neg': 8, 'zero': 17, 'pos': 9})
-  - alpha=0.5: {'-2': 0, '-1': 10, '0': 17, '1': 7, '2': 0}  (score D: {'neg': 14, 'zero': 12, 'pos': 8})
-  - alpha=0.75: {'-2': 0, '-1': 11, '0': 18, '1': 5, '2': 0}  (score D: {'neg': 13, 'zero': 12, 'pos': 9})
-  - alpha=1.0: {'-2': 1, '-1': 8, '0': 21, '1': 4, '2': 0}  (score D: {'neg': 12, 'zero': 15, 'pos': 7})
-  - alpha=1.5: {'-2': 2, '-1': 12, '0': 15, '1': 5, '2': 0}  (score D: {'neg': 17, 'zero': 10, 'pos': 7})
-  - alpha=2.0: {'-2': 1, '-1': 10, '0': 18, '1': 5, '2': 0}  (score D: {'neg': 17, 'zero': 9, 'pos': 8})
-
-**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.919 (Pearson +0.846); Spearman(I_max, Ihat_score) = +0.929 (Pearson +0.872). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
-
-#### clearharm / pooled (n=78)
-
-| alpha | ASR d+refabl | refusal d+refabl | ASR d+randabl | refusal d+randabl | ASR ds+refabl | refusal ds+refabl | **I_max** | **Ihat bin** | CI95 bin | p bin | **Ihat score** | CI95 score | p score | D=+2 | D=-2 | sat. by 1 factor | dASR ref-rand | McNemar p |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.0 | 0.128 | 0.846 | 0.128 | 0.846 | 0.346 | 0.462 | **+0.654** | **+0.000** | [-0.051,+0.051] | 1.0000 | **+0.000** | [-0.048,+0.048] | 1.0000 | 0 | 0 | 30/78 | +0.000 ‡ | 1.0000 |
-| 0.25 | 0.295 | 0.667 | 0.115 | 0.859 | 0.500 | 0.282 | **+0.487** | **-0.013** | [-0.141,+0.128] | 1.0000 | **-0.032** | [-0.159,+0.095] | 0.6402 | 0 | 1 | 37/78 | +0.179 | 0.0005 |
-| 0.5 | 0.500 | 0.397 | 0.090 | 0.859 | 0.615 | 0.103 | **+0.282** | **-0.103** | [-0.269,+0.064] | 0.2912 | **-0.112** | [-0.256,+0.034] | 0.1457 | 0 | 2 | 46/78 | +0.410 | 0.0000 |
-| 0.75 | 0.551 | 0.269 | 0.128 | 0.846 | 0.641 | 0.077 | **+0.231** | **-0.128** | [-0.308,+0.038] | 0.2040 | **-0.103** | [-0.248,+0.045] | 0.1920 | 0 | 3 | 49/78 | +0.423 | 0.0000 |
-| 1.0 | 0.551 | 0.282 | 0.103 | 0.859 | 0.615 | 0.077 | **+0.231** | **-0.154** | [-0.321,+0.013] | 0.0954 | **-0.141** | [-0.274,-0.003] | 0.0503 | 0 | 2 | 50/78 | +0.449 | 0.0000 |
-| 1.5 | 0.641 | 0.256 | 0.115 | 0.859 | 0.654 | 0.064 | **+0.141** | **-0.205** | [-0.372,-0.038] | 0.0288 | **-0.200** | [-0.340,-0.061] | 0.0065 | 0 | 3 | 56/78 | +0.526 | 0.0000 |
-| 2.0 | 0.731 | 0.141 | 0.090 | 0.872 | 0.679 | 0.026 | **+0.051** | **-0.269** | [-0.423,-0.103] | 0.0028 | **-0.312** | [-0.444,-0.178] | 0.0000 | 0 | 2 | 62/78 | +0.641 | 0.0000 |
-
-‡ = |dASR| below the ~2 pp judge noise floor, i.e. not distinguishable from judge nondeterminism.
-Shared baselines (alpha-independent): direct_base ASR = 0.115, ds_base ASR = 0.333.
-
-Full binary D_i distribution per alpha:
-  - alpha=0.0: {'-2': 0, '-1': 2, '0': 74, '1': 2, '2': 0}  (score D: {'neg': 8, 'zero': 65, 'pos': 5})
-  - alpha=0.25: {'-2': 1, '-1': 12, '0': 52, '1': 13, '2': 0}  (score D: {'neg': 22, 'zero': 39, 'pos': 17})
-  - alpha=0.5: {'-2': 2, '-1': 20, '0': 40, '1': 16, '2': 0}  (score D: {'neg': 32, 'zero': 25, 'pos': 21})
-  - alpha=0.75: {'-2': 3, '-1': 21, '0': 37, '1': 17, '2': 0}  (score D: {'neg': 32, 'zero': 19, 'pos': 27})
-  - alpha=1.0: {'-2': 2, '-1': 22, '0': 40, '1': 14, '2': 0}  (score D: {'neg': 34, 'zero': 25, 'pos': 19})
-  - alpha=1.5: {'-2': 3, '-1': 23, '0': 39, '1': 13, '2': 0}  (score D: {'neg': 38, 'zero': 18, 'pos': 22})
-  - alpha=2.0: {'-2': 2, '-1': 28, '0': 37, '1': 11, '2': 0}  (score D: {'neg': 46, 'zero': 15, 'pos': 17})
-
-**Ihat tracks the ceiling across the 7-point alpha grid: Spearman(I_max, Ihat_binary) = +0.991 (Pearson +0.957); Spearman(I_max, Ihat_score) = +0.937 (Pearson +0.918). Ihat is most negative exactly where the design has least headroom — a ceiling signature, not a mechanism.**
-
-#### Operating point — clearharm (rule: ASR(direct_refabl) in [0.20,0.40] AND I_max >= +0.33, larger I_max wins ties; selection split = pooled)
-
-| alpha | ASR direct_refabl | in band | I_max | ceiling ok | no-op | qualifies |
-|---|---|---|---|---|---|---|
-| 0.0 | 0.128 | no | +0.654 | yes | YES | no |
-| 0.25 | 0.295 | yes | +0.487 | yes | - | **YES** |
-| 0.5 | 0.500 | no | +0.282 | no | - | no |
-| 0.75 | 0.551 | no | +0.231 | no | - | no |
-| 1.0 | 0.551 | no | +0.231 | no | - | no |
-| 1.5 | 0.641 | no | +0.141 | no | - | no |
-| 2.0 | 0.731 | no | +0.051 | no | - | no |
-
-**Selected operating point: alpha = 0.25** (ASR(direct_refabl) = 0.295, I_max = +0.487; sole qualifying alpha)
----
-
 ## Decision and what carries into P8
 
 | question | answer |
@@ -366,14 +374,15 @@ Full binary D_i distribution per alpha:
 | α = 0 treated how? | **Excluded from candidacy.** It is an exact numerical no-op (byte-identical generations), so it can satisfy the arithmetic while applying no intervention. Reported and flagged, never selected. |
 | Selection split | pooled by default; `--selection-split train` reproduces the same answer on both cohorts |
 | **curated** | **no α qualifies.** Needs its own finer grid near α ≈ 0.1 if this cohort is to be used at all — and it should probably not be, since its DS arm is net-negative by ASR |
-| **clearharm** | **α = 0.25** (PROVISIONAL, n = 78/86) — sole qualifying dose, unanimous across train/test/pooled |
+| **clearharm** | **α = 0.25** (FINAL, n = 86/86) — sole qualifying dose, unanimous across train/test/pooled |
 | Does clearharm's α transfer to curated? | **No.** At α = 0.25 curated's `ASR(0,1)` is 0.529, far outside the band. A curated arm of Phase 8 would need separate calibration. |
 
 **Consequences for the Phase 8 factorial.**
 
-1. Run the primary interaction estimate on **clearharm at α = 0.25**, and re-confirm the choice once the
-   sweep completes — 8 of 86 items are still missing and the α = 0.25 `I_max` has already moved from
-   +0.472 (n = 36) to +0.481 (n = 77) to +0.487 (n = 78) as rows landed.
+1. Run the primary interaction estimate on **clearharm at α = 0.25**. ✅ **Choice re-confirmed on the
+   completed sweep.** The `I_max` at α = 0.25 drifted while rows landed — +0.472 (n = 36) → +0.481
+   (n = 77) → +0.487 (n = 78) → **+0.4767 (n = 86, final)** — but α = 0.25 remained the *sole* qualifying
+   dose at every n, so the selection never depended on the partial-file estimate.
 2. Do **not** run a curated arm at a borrowed α. Either calibrate curated separately on a finer low-α grid,
    or drop it from the interaction test and keep it as a secondary cohort.
 3. `I_max` = +0.487 is the *arithmetic* ceiling, not the achievable effect. Plan §P8.5 puts a properly
@@ -394,15 +403,19 @@ Full binary D_i distribution per alpha:
   explanation of the pattern, and shifts the burden onto any mechanistic reading. Settling it needs the
   completed clearharm sweep at the sub-saturating dose, at n large enough to matter.
 - It does not use the headroom-vs-saturated decomposition, for the reason given above.
-- clearharm numbers are **PROVISIONAL** until `summary.json` exists in that run dir.
+- ~~clearharm numbers are **PROVISIONAL** until `summary.json` exists in that run dir.~~ **Resolved
+  2026-08-06:** job 716014 completed (86/86 rows, `DONE.json` + `summary.json`), the analyzer was re-run
+  over both cohorts, and every clearharm number here is FINAL and present in `outputs/alpha_calibration.json`.
 
 ## Verification log
 
 Everything below was run, not asserted.
 
 1. **Completeness.** curated: 51 rows in `raw.jsonl`, 51 usable, 0 dropped, 0 truncated lines,
-   `summary.json` present ⇒ labelled FINAL. clearharm: 78 rows read live, 78 usable, 0 dropped,
-   no `summary.json` ⇒ labelled **PROVISIONAL** with a "do not cite" banner on the output.
+   `summary.json` present ⇒ labelled FINAL. clearharm: **86 rows, 86 usable, 0 dropped, 0 truncated,
+   86 distinct item ids, `summary.json` + `DONE.json` present ⇒ labelled FINAL** (at the 2026-08-05
+   snapshot this cohort was 78 rows with no `summary.json`, and was correctly labelled **PROVISIONAL**
+   with a "do not cite" banner — the provisional-labelling path is exercised and works).
 2. **Partial-file robustness.** A synthetic run dir was built from the first 40 curated rows plus a
    deliberately truncated 41st record. The analyzer reported
    `PROVISIONAL — ... 40 complete rows read, 1 truncated line(s) skipped` and produced a full table
