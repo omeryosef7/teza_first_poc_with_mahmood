@@ -746,6 +746,40 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 62 — 2026-08-06 — **P3 COMPLETE: the null REPLICATES on the carry band, and `rand_edge` is settled noise**
+**Job 728189 (L14–21) finished**, so P3 now has both bands the circuit story implicates.
+
+| cell | L8–11 specificity | **L14–21 specificity** |
+|---|---|---|
+| `edge_KO` (→ demo codewords) | −0.0034 [−0.0078, **+0.0010**] | **−0.0026 [−0.0056, +0.0003]** |
+| `rand_edge` | −0.0613 [−0.1379, −0.0007] | **+0.1169 [−0.0262, +0.2630]** |
+| `all_query_edges` (firing control) | **−0.6161** [−0.77, −0.46] | **+1.2417** [+0.92, +1.55] |
+
+**The null replicates.** `edge_KO` is −0.0026 against −0.0034 — essentially identical, both CIs including
+zero. No query→demo edge bottleneck at the decision point, in either the concept-write band or the carry
+band.
+
+**The firing control fires in both bands and flips sign** (−0.62 → +1.24). Both are far from zero, so the
+hook works in each; and the flip is interpretable rather than alarming — severing *all* context at the
+carry band drives the residual **toward** refusal (a decision token with nothing to condition on defaults
+to refusing), while at the write band it drives away. The point that matters: the machinery moves this
+readout by 0.6–1.2 while the targeted demo-codeword edges move it by ~0.003.
+
+**`rand_edge` is settled, and my tick-61 caution was right.** I flagged it then as barely excluding zero
+(−0.061, upper bound −0.0007) and declined to call it real. On the carry band it **includes zero AND
+changes sign** (+0.117, [−0.026, +0.263]). A quantity that reverses sign between bands and straddles zero
+in one of them is not an effect. Had I reported it as a finding last tick, this tick would have been a
+retraction.
+
+**Both bands re-derived from `raw.jsonl` before writing** (all cells match to 1e-4) and both reconcile
+through the validator at **0 mismatches**.
+
+`reports/PHASE3_ATTENTION_CAUSALITY_TARGETED.md` updated: status now COMPLETE for both bands, §3b added,
+the "L8–11 only" limitation struck and replaced with the honest residual one — two bands, not all 32
+layers.
+
+**727984** (generated low-α calibration) at 25/50, on track.
+
 ### Tick 61 — 2026-08-06 — **P3 RESULT: no query→demo edge bottleneck at the decision point** (n=86)
 **Job 727983 finished.** This is the destination §5 P3 says was never covered, and it produces a clean,
 publishable negative — written up as **`reports/PHASE3_ATTENTION_CAUSALITY_TARGETED.md`**.

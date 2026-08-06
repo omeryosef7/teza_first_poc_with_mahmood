@@ -1,7 +1,7 @@
 # P3 — Attention causality at the DECISION POINT
 
-**Status: L8–11 band COMPLETE** (job `727983`, n = 86, `attn_implementation: eager` asserted and recorded).
-L14–21 band running (`728189`).
+**Status: COMPLETE — both bands** (jobs `727983` L8–11 and `728189` L14–21, n = 86 each,
+`attn_implementation: eager` asserted and recorded; both reconcile at 0 mismatches).
 
 **Verdict: no query→demo-codeword edge bottleneck at the decision point.** Knocking out those edges leaves
 the refusal state at the first-generated-token position statistically unchanged — while the *same
@@ -65,6 +65,30 @@ retrieval edges were special, they would move the readout *more* than arbitrary 
 n = 86, three uncorrected cells, and a bound that close to zero, **I would not claim `rand_edge` is a real
 effect** — but it certainly does not rescue a demo-codeword story.
 
+## 3b. Replication on the L14–21 carry band (job `728189`, n = 86)
+
+| cell | Δ refusal axis | Δ random axis | **specificity** | 95 % CI |
+|---|---|---|---|---|
+| `edge_KO` | −0.0026 | −0.0000 | **−0.0026** | **[−0.0056, +0.0003]** |
+| `rand_edge` | +0.1219 | +0.0050 | +0.1169 | [−0.0262, +0.2630] |
+| **`all_query_edges`** | **+1.0755** | −0.1663 | **+1.2417** | **[+0.9248, +1.5547]** |
+
+**The null replicates.** `edge_KO` is −0.0026 with a CI including zero, essentially identical to the
+−0.0034 of the write band. So the absence of a query→demo edge bottleneck at the decision point holds
+across **both** the concept-write band (L8–11) and the carry band (L14–21).
+
+**The firing control fires in both bands — and flips sign.** L8–11 gives **−0.62**, L14–21 gives
+**+1.24**. Both are far from zero, so the hook demonstrably works in each band; the sign difference is
+itself interpretable: severing *all* context at the carry band drives the residual **toward** refusal
+(a decision token with no context to condition on defaults to refusing), whereas at the write band it
+drives away from it. Either way, the machinery moves this readout by ~0.6–1.2 while the targeted
+demo-codeword edges move it by ~0.003.
+
+**`rand_edge` is noise — now settled.** §3 flagged it as barely excluding zero at L8–11 (−0.061, upper
+bound −0.0007) and declined to call it real. On the carry band it is **+0.117 with a CI that includes
+zero** — and it has **changed sign**. A quantity that reverses sign between bands and straddles zero in
+one of them is not an effect. That caution was correct and the claim stays withdrawn.
+
 ## 4. Reading
 
 The plan's exit condition was: *"either a causal edge appears at the decision token (new result), or the
@@ -78,8 +102,9 @@ made rather than only at a forced-choice probe.
 
 ## 5. Honest limitations
 
-- **L8–11 only so far.** The L14–21 carry band is running as `728189`; until it lands, "no bottleneck" is
-  established for the concept-write band, not for the whole network.
+- ~~L8–11 only.~~ **Both bands now done (§3b) and the null replicates.** Still only two bands, not all 32
+  layers — "no bottleneck" is established for the write and carry bands, which are the two the circuit
+  story implicates, not for every layer.
 - **One readout layer.** hs18 / decoder L17. It is inside P7's both-families validated set, but a single
   layer. A direction that is valid does not guarantee the *readout* is sensitive to every mechanism.
 - **Destination = the decision token only.** The `query_cw` destination under the decision form has not
@@ -99,7 +124,8 @@ sbatch --time=02:00:00 --nodelist=n-801,n-802,n-804,n-805,t-806 \
 DSLAYERS=8-11,DSMODE=band,DSFORM=decision,DSREADOUT=refusal_proj,DSDEST=answer,DSPROJ=18 \
   doublespeak_causality/slurm/run_phase4_edgeko.sh
 ```
-Run dir: `outputs/phase4_edgeKO_clearharm_20260806_135051_727983`.
+Run dirs: `outputs/phase4_edgeKO_clearharm_20260806_135051_727983` (L8–11) and
+`outputs/phase4_edgeKO_clearharm_20260806_141548_728189` (L14–21, `DSLAYERS=14-21`).
 
 **Note on a bug fixed before this run.** The first smoke (726211) reported a random-axis shift of −0.89 in
 *every* cell — a constant, not an effect. `Δrandom` was being differenced against the **refusal** axis's

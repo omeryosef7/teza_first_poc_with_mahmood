@@ -1,0 +1,57 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "mode": "band",
+ "prompt_form": "decision",
+ "readout": "refusal_proj",
+ "proj_layer_hs": 18,
+ "proj_layer_decoder": 17,
+ "destinations": "answer",
+ "layers": [
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "attn_implementation": "eager",
+ "n_items": 86,
+ "cells": {
+  "edge_KO": {
+   "n": 86,
+   "mean_delta_refusal": -0.00262,
+   "mean_delta_random": -1e-05,
+   "specificity": -0.00261,
+   "specificity_ci95": [
+    -0.00558,
+    0.00027
+   ],
+   "ci_reliable": true
+  },
+  "rand_edge": {
+   "n": 86,
+   "mean_delta_refusal": 0.12187,
+   "mean_delta_random": 0.00496,
+   "specificity": 0.11691,
+   "specificity_ci95": [
+    -0.02625,
+    0.26295
+   ],
+   "ci_reliable": true
+  },
+  "all_query_edges": {
+   "n": 86,
+   "mean_delta_refusal": 1.07545,
+   "mean_delta_random": -0.16626,
+   "specificity": 1.24172,
+   "specificity_ci95": [
+    0.92482,
+    1.5547
+   ],
+   "ci_reliable": true
+  }
+ }
+}
