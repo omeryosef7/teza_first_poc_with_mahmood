@@ -746,6 +746,38 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 52 — 2026-08-06 — two n-801 stalls killed and resubmitted; the early-stall diagnostic, written down
+**All three jobs looked identical from `squeue` and from stdout** — every one sat at `GPU ok` with
+`raw.jsonl` empty. Three hypotheses fit that: slow load, hung load, or slow generation. `raw.jsonl` cannot
+distinguish them, because the α-sweep writes a row only after **all 20 arms** of an item finish.
+
+**The signal that does distinguish them is the HuggingFace weight-loading progress bar, which goes to
+`.err`, not `.out`:**
+
+| job | node | `.err` tail | verdict |
+|---|---|---|---|
+| 724551 | n-805 | `Loading weights: 79%\|███▉ \| 230/291 [22:04<05:30, 5.42s/it]` | **slow but PROGRESSING** — left alone |
+| 724552 | n-801 | `Loading weights: 0%\| \| 0/291 [00:00<?, ?it/s]` after **1 h 04 m** | **HUNG** |
+| 724778 | n-801 | no progress bar emitted at all in 24 min | **HUNG** |
+
+**This is the diagnostic to use every time from now on**, and it is worth stating plainly because I have now
+had to make this call three times: `tail -c 300 logs/*_<jobid>.err | tr '\\r' '\\n'`. A **slow** node prints
+a moving bar with a per-shard rate; a **stalled** node prints `0/291` and stays there, or prints nothing.
+`squeue` shows `R` in both cases and stdout is identical in both cases — neither can tell you anything.
+
+**Cancelled 724552 and 724778, resubmitted off n-801** as 724930 / 724931 with
+`--nodelist=n-802,n-804,n-805,t-806` (n-803 also excluded — it stalled on job 720724 earlier today with
+`_cgroup_procs_check` failures on teardown). Empty run dirs removed.
+
+**Honest note on n-801: it is intermittent, not simply bad.** Earlier today 720463 and 720725 both ran to
+completion on it. So the fix is not to blacklist it permanently — it is 1/6 of our L40S capacity — but to
+**detect the stall in minutes instead of hours** using the `.err` bar. I lost roughly an hour of 724552's
+wall clock to not checking that file first.
+
+**724551 (clearharm low-α) is fine on n-805** and was deliberately NOT cancelled: at 230/291 shards it was
+demonstrably making progress, and killing a healthy 80-minute-old job to chase a faster node would have
+cost more than it saved.
+
 ### Tick 51 — 2026-08-06 — D1 RESOLVED by design, not by caveat: a benign population out-of-sample for both
 D1 (the protocol asymmetry) blocked four claims, so it was the right thing to fix rather than merely
 document. The reviewer's proposed fix was to refit `existing` on `HARMLESS_FIT` — a whole extra family and
