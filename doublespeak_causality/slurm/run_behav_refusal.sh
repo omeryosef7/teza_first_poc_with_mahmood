@@ -53,7 +53,21 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 # so 86 items ~= 2.7 h, inside the 6 h limit).
 DSALPHAS_DEFAULT="0,0.25,0.5,0.75,1.0,1.5,2.0"
 if [ -n "${DSALPHAS+x}" ]; then
-  echo "ERROR: DSALPHAS='$DSALPHAS' came from the environment/--export; sbatch --export SILENTLY TRUNCATES comma-lists. Edit DSALPHAS_DEFAULT in this wrapper instead."; exit 1
+  # The hazard is specifically the COMMA: sbatch --export truncates a comma-list at the first
+  # comma, so DSALPHAS=0,0.25,0.5 silently arrives as "0". A SINGLE alpha (no comma) is passed
+  # through intact and is safe -- and is exactly what P8 needs (--alphas 0.25). Refusing it
+  # unconditionally, as this guard originally did, blocked a legitimate use and failed two P8
+  # jobs at 03:27/03:31 on 2026-08-06. Refuse only when a comma is actually present.
+  case "$DSALPHAS" in
+    *,*)
+      echo "ERROR: DSALPHAS='$DSALPHAS' contains a comma and came from the environment/--export;"
+      echo "       sbatch --export SILENTLY TRUNCATES comma-lists at the first comma."
+      echo "       Edit DSALPHAS_DEFAULT in this wrapper instead, or pass a single alpha."
+      exit 1 ;;
+    *)
+      echo "[ok] DSALPHAS='$DSALPHAS' from --export: single value, no comma, safe to pass through."
+      DSALPHAS_DEFAULT="$DSALPHAS" ;;
+  esac
 fi
 DSALPHAS="$DSALPHAS_DEFAULT"
 # scalar vars must not contain a comma (same truncation bug); DSSPLITS/DSALPHAS are lists by design.

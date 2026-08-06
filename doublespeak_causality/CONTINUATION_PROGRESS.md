@@ -746,6 +746,32 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 38 — 2026-08-06 — P8 failed on a false-positive guard (my error); fixed; P7 RUNNING
+**P7 (720463) is RUNNING** on n-801 — the headline-layer validation is finally underway.
+
+**P8's two jobs FAILED, and the cause was my own reasoning error.** They allocated quickly (submitted
+03:08, started **03:27** — 19 min) and then died in ~3 min on the wrapper's own guard:
+
+> `ERROR: DSALPHAS='0.25' came from the environment/--export; sbatch --export SILENTLY TRUNCATES comma-lists.`
+
+At tick 31 I reasoned *"a single `DSALPHAS=0.25` has no comma, so it survives `--export`"*. That was correct
+about **truncation** and wrong about **the guard**, which refused `DSALPHAS` from the environment
+**unconditionally** — comma or not. I asserted safety from the hazard's mechanism without checking the
+check.
+
+**Fixed precisely rather than by weakening it:** the guard now refuses only when a comma is *actually*
+present, and accepts a single value with an explicit `[ok]` line. Verified both branches — comma → REFUSED,
+single → ACCEPTED — plus `bash -n`. Relaunched as **720724 / 720725**.
+
+**Cost:** ~6 minutes of GPU and one tick. **Cheap, because the guard failed FAST and LOUD** — it printed
+the exact variable, the exact mechanism, and the exact remedy, and exited before loading the model. That is
+the failure mode you want: a silent pass-through would have run the whole 1.6 h job on a truncated α and
+produced plausible-looking numbers at the wrong dose.
+
+**One genuinely useful datum:** these jobs went from submit to start in **19 minutes**, the first sub-30-min
+allocation since the cluster jammed. So the queue *is* moving, and tick 37's pessimism about ~19 h
+reservation estimates was — as suspected — an artifact of `--test-only` ignoring backfill.
+
 ### Tick 37 — 2026-08-06 — right-sized P8's walltime; could NOT show it helps allocation
 **Applied §1.3.0** to 720320/720321 (pending 59 min) → resubmitted as **720598 / 720599**.
 
