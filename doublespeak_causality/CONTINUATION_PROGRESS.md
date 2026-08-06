@@ -746,6 +746,48 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 61 — 2026-08-06 — **P3 RESULT: no query→demo edge bottleneck at the decision point** (n=86)
+**Job 727983 finished.** This is the destination §5 P3 says was never covered, and it produces a clean,
+publishable negative — written up as **`reports/PHASE3_ATTENTION_CAUSALITY_TARGETED.md`**.
+
+| cell | Δ refusal axis | Δ random axis | **specificity** | 95 % CI |
+|---|---|---|---|---|
+| `edge_KO` (→ demo codewords) | −0.0032 | +0.0002 | **−0.0034** | **[−0.0078, +0.0010]** |
+| `rand_edge` (count-matched random) | −0.0570 | +0.0042 | −0.0613 | [−0.1379, −0.0007] |
+| **`all_query_edges`** (firing control) | **−0.6664** | −0.0503 | **−0.6161** | **[−0.7705, −0.4643]** |
+
+**The firing control is what makes this an informative null.** Blocking every incoming edge to the
+decision token moves the refusal projection by **−0.62**, CI nowhere near zero. The machinery works, the
+readout is movable, the hook fires — so `edge_KO`'s −0.0034 with a CI including zero is a real absence,
+not the silent no-op this project has twice had to retract.
+
+**Something I am reporting rather than burying:** `rand_edge` (−0.061) is *larger* than `edge_KO`
+(−0.003), with a CI whose upper bound is −0.0007 — barely excluding zero across three uncorrected cells at
+n=86. I would **not** claim it is a real effect. But it points the wrong way for a demo-codeword story: if
+the retrieval edges were special they would move the readout *more* than arbitrary positions, not ~20×
+less.
+
+**Plan exit condition met** (the second branch): with the decision point now covered, the paper can state
+that **retrieval is distributed/redundant with no single query→demo edge bottleneck** — and can say so at
+the position where the refusal decision is actually made, not only at a forced-choice probe.
+
+**Every reported number re-derived from `raw.jsonl` before writing it down** — all three cells match to
+1e-4. The two baselines differ sharply (refusal +1.756 vs random +0.113), which is exactly the offset that
+caused the tick-59 bug.
+
+**Taught the validator the decision-form schema.** `expect_p4ko` was reporting every key MISSING because
+the decision-form summary has a `cells` map instead of the `band.*` layout — a schema mismatch dressed up
+as a data defect, the same shape as the refval gap. Now reconciles: **14 values, 0 mismatched**; 131
+values across all 7 edgeKO dirs with **0 mismatches** and no regression on the forced-choice ones.
+Negative-controlled (a corrupted specificity → `CHECK-FAIL`).
+
+**The new guard immediately paid for itself:** it retroactively flags the buggy first smoke **726211** —
+*"base_p_concept and base_proj_random cover different sids; a specificity would mix axes"* — which is
+precisely the cross-axis defect of tick 59. The validator can now catch that class of bug on its own.
+
+**Launched 728189** (L14–21 carry band) to complete the destination coverage; **727984** (generated
+low-α calibration) at 8/50.
+
 ### Tick 60 — 2026-08-06 — cross-axis bug CONFIRMED fixed; real P3 run launched
 **The re-smoke (726616) confirms the tick-59 fix**, and the before/after is unambiguous:
 

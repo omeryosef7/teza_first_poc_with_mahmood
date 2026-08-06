@@ -532,6 +532,35 @@ def expect_p4ko(rows, summary, res=None):
     would not reproduce the committed number.
     """
     exp = Expect()
+    # DECISION-FORM variant (--prompt-form decision --readout refusal_proj). Its summary has a `cells`
+    # map of projection deltas, not the band/per-head p_concept layout below, and its rows carry
+    # proj_refusal / proj_random / base_proj_random instead of p_concept. Reconciling it against the
+    # forced-choice contract would report every key as MISSING -- a schema mismatch dressed up as a
+    # data defect, which is exactly what the refval gap looked like before it was taught.
+    if summary.get("prompt_form") == "decision":
+        base_r = {r["sid"]: r["base_p_concept"] for r in rows if r.get("base_p_concept") is not None}
+        base_n = {r["sid"]: r["base_proj_random"] for r in rows if r.get("base_proj_random") is not None}
+        if res is not None and set(base_r) != set(base_n):
+            res["issues"].append("decision-form rows: base_p_concept and base_proj_random cover "
+                                 "different sids; a specificity would mix axes")
+        cells = defaultdict(dict)
+        for r in rows:
+            if r.get("proj_refusal") is not None:
+                cells[r["cell"]][r["sid"]] = (r["proj_refusal"], r["proj_random"])
+        for cell, d in cells.items():
+            sids = [x for x in d if x in base_r and x in base_n]
+            if not sids:
+                continue
+            dref = mean([d[x][0] - base_r[x] for x in sids])
+            drnd = mean([d[x][1] - base_n[x] for x in sids])
+            exp.put(f"cells.{cell}.n", len(sids))
+            exp.put(f"cells.{cell}.mean_delta_refusal", dref)
+            exp.put(f"cells.{cell}.mean_delta_random", drnd)
+            exp.put(f"cells.{cell}.specificity", dref - drnd)
+        exp.opt("n_items", len(base_r))
+        exp.opt("proj_layer_decoder", summary.get("proj_layer_hs", 0) - 1)
+        return exp
+
     base = {r["sid"]: r["base_p_concept"] for r in rows}
     cells = defaultdict(dict)
     for r in rows:
