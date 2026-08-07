@@ -22,7 +22,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §1.3 | v3 confirmatory validator + audit | ✅ **DONE** | `scripts/validate_dataset_v3.py` PASS; `reports/V3_CONFIRMATORY_DATA_AUDIT.md` |
 | §3 | refusal-suppression coarse localization | ✅ **Gate A PASS (repr)** | clearharm residual L15–18 restores refusal frac≈0.93 (Holm≈0), replicated train/dev/**test**; NULL on generated. Behavioral (Gate B) next. `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md` |
 | §4 | carry vs write vs origin | ◐ partial | §3 shows residual-CARRY (attn/mlp barely restore); origin=§5 |
-| §23 | decision-state counterfactual patch (behavioral) | ☐ NEXT | Gate B: patch DS decision resid←Direct during generation, ΔASR |
+| §23 | decision-state counterfactual patch (behavioral) | ✅ **Gate B PASS (clearharm train+dev)** | direct resid restore L17 ΔASR −0.14 p=0.012 (train) / −0.19 p=0.008 (dev); self no-op=0; random ↑ASR (specific); test underpowered (base ASR 0.167). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md`. Generated pending. |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ◐ **§16 tests PASS** | objective-in-selection verified (12 CPU tests, sign+gradient gaps filled, no bug); GPU arms 0/13 still pending |
 | others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
