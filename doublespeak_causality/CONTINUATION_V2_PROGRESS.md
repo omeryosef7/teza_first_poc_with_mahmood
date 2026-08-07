@@ -18,7 +18,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | plan | phase | status | evidence / next |
 |---|---|---|---|
 | §1.1 | refusal-validation BR-09/WR-02 + depth fig | ✅ **DONE** | audit regen (VERIFIED=72, UNVERIFIED=0, PENDING=0, 145 checks 0-fail); `figures/fig_depth_validated.png` |
-| §1.2 | GPU baseline / drift envelope | ◐ **RUNNING (732432)** | harness done; launched parallel to Gate B (gen-determinism + K-rejudge label-flip floor) |
+| §1.2 | GPU baseline / drift envelope | ✅ **DONE** | gen-determinism=1.0; judge label-flip ~1–2% (≤7% any) → 2pp floor; Gate B effects 7–10× floor. `reports/P1_2_BASELINE_DRIFT_ENVELOPE.md` |
 | §1.3 | v3 confirmatory validator + audit | ✅ **DONE** | `scripts/validate_dataset_v3.py` PASS; `reports/V3_CONFIRMATORY_DATA_AUDIT.md` |
 | §3 | refusal-suppression coarse localization | ✅ **Gate A PASS (repr)** | clearharm residual L15–18 restores refusal frac≈0.93 (Holm≈0), replicated train/dev/**test**; NULL on generated. Behavioral (Gate B) next. `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md` |
 | §4 | carry vs write vs origin | ◐ partial | §3 shows residual-CARRY (attn/mlp barely restore); origin=§5 |

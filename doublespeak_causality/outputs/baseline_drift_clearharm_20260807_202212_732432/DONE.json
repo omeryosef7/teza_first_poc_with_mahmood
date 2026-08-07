@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "baseline_drift_clearharm_20260807_202212_732432",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-07T22:00:59",
+  "end_epoch": 1786129259.7129796,
+  "wall_seconds": 5925.838
+}
