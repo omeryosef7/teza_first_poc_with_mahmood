@@ -37,11 +37,13 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSMAXNEW:=200}"
 : "${DSN:=0}"
 : "${DSSEED:=0}"
+: "${DSBIDIR:=0}"                 # 1 => add --bidirectional (reverse arm: DS resid -> Direct prompt)
+BIDIR_FLAG=""; [ "$DSBIDIR" = "1" ] && BIDIR_FLAG="--bidirectional"
 echo "=== refusal decision-patch behav (§23/Gate B): $DSMODEL bench=$DSBENCH band=$DSBAND head=$DSHEAD maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_refusal_decision_patch_behav.py \
   --bench "$DSBENCH" --model "$DSMODEL" --band "$DSBAND" --head-layer "$DSHEAD" \
-  --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
+  --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED" $BIDIR_FLAG
 echo "=== done ==="; date

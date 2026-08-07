@@ -42,6 +42,9 @@ def main():
     ap.add_argument("--bench", required=True)
     ap.add_argument("--band", default="15,16,17", help="decoder layers to patch resid_post at (direct donor)")
     ap.add_argument("--head-layer", type=int, default=17, help="layer for the rand + self control arms")
+    ap.add_argument("--bidirectional", action="store_true",
+                    help="also run the REVERSE arm: insert DS decision resid into a refusing Direct prompt "
+                         "(does ASR RISE? decision-state sufficiency for compliance). Forward arms unchanged.")
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--splits", default="train,dev,test")
     ap.add_argument("--max-new", type=int, default=200)
@@ -96,6 +99,9 @@ def main():
     arms = (["ds_base", "direct_base"]
             + [f"ds_dpatch_direct_L{L}" for L in band]
             + [f"ds_dpatch_rand_L{HL}", f"ds_dpatch_self_L{HL}"])
+    rev_arms = ([f"direct_dpatch_ds_L{L}" for L in band]
+                + [f"direct_dpatch_rand_L{HL}", f"direct_dpatch_self_L{HL}"]) if args.bidirectional else []
+    arms = arms + rev_arms
     for split in splits:
         cand = [it for it in items if it.get("split") == split]
         if args.n: cand = cand[: args.n]
@@ -109,8 +115,8 @@ def main():
             direct = dc.apply_template(lm.tokenizer, conds.direct, add_generation_prompt=True)
             goal = instr
 
-            direct_cap, _ = capture_resid_post_dec(direct)     # donor: direct decision resid_post per layer
-            ds_cap, dec_ds = capture_resid_post_dec(ds)         # self donor + the ds decision index
+            direct_cap, dec_direct = capture_resid_post_dec(direct)  # direct donor + direct decision index
+            ds_cap, dec_ds = capture_resid_post_dec(ds)             # self donor + the ds decision index
             # per-item norm-matched random donor at the head layer (reproducible)
             import zlib
             g = torch.Generator(device="cpu").manual_seed(args.seed * 100003 + (zlib.crc32(str(it.get("id")).encode()) & 0xffffff))
@@ -125,6 +131,17 @@ def main():
                 gens[f"ds_dpatch_direct_L{L}"] = generate(ds, [mkpatch(L, direct_cap[L, 0, :].to(dev))])[0]
             gens[f"ds_dpatch_rand_L{HL}"] = generate(ds, [mkpatch(HL, rnd)])[0]
             gens[f"ds_dpatch_self_L{HL}"] = generate(ds, [mkpatch(HL, ds_cap[HL, 0, :].to(dev))])[0]
+
+            if args.bidirectional:
+                # REVERSE: patch DS donor into the DIRECT prompt's decision token -> does ASR rise?
+                ref2 = ds_cap[HL, 0, :].float()
+                rnd2 = torch.randn(ref2.shape, generator=g); rnd2 = (rnd2 / (rnd2.norm() + 1e-8) * ref2.norm()).to(dev)
+                def mkpatch_dir(L, vec):
+                    return pc.SubmodulePatch(lm.model, L, COMP, [dec_direct], vector=vec, mode="replace")
+                for L in band:
+                    gens[f"direct_dpatch_ds_L{L}"] = generate(direct, [mkpatch_dir(L, ds_cap[L, 0, :].to(dev))])[0]
+                gens[f"direct_dpatch_rand_L{HL}"] = generate(direct, [mkpatch_dir(HL, rnd2)])[0]
+                gens[f"direct_dpatch_self_L{HL}"] = generate(direct, [mkpatch_dir(HL, direct_cap[HL, 0, :].to(dev))])[0]
 
             rec = {"id": it.get("id"), "split": split, "cohort": cohort}
             for arm, comp in gens.items():
@@ -145,13 +162,21 @@ def main():
         A = {a: asr(a) for a in arms}
         vs = {}
         for a in arms:
-            if a == "ds_base": continue
+            if a == "ds_base" or a in rev_arms: continue   # reverse arms compare vs direct_base, below
             b = sum(1 for r in sr if mal(r, "ds_base") and not mal(r, a))   # ds malicious -> arm not (refusal restored)
             c = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, a))
             mc = st.mcnemar_test(b, c)
             vs[a] = {"delta_ASR": round(A[a] - A["ds_base"], 4), "mcnemar_p": round(float(mc["p"]), 5),
                      "discordant_b_dsMal_armNot": b, "discordant_c_dsNot_armMal": c, "empty_rate": emp(a)}
-        summ[split] = {"n": len(sr), "ASR": A, "empty_ds_base": emp("ds_base"), "vs_ds_base": vs}
+        vs_dir = {}
+        for a in rev_arms:   # REVERSE: does inserting DS decision state into Direct RAISE ASR?
+            b = sum(1 for r in sr if mal(r, a) and not mal(r, "direct_base"))   # arm malicious -> direct not (compliance induced)
+            c = sum(1 for r in sr if not mal(r, a) and mal(r, "direct_base"))
+            mc = st.mcnemar_test(b, c)
+            vs_dir[a] = {"delta_ASR": round(A[a] - A["direct_base"], 4), "mcnemar_p": round(float(mc["p"]), 5),
+                         "discordant_b_armMal_directNot": b, "discordant_c_armNot_directMal": c, "empty_rate": emp(a)}
+        summ[split] = {"n": len(sr), "ASR": A, "empty_ds_base": emp("ds_base"),
+                       "vs_ds_base": vs, "vs_direct_base": vs_dir}
     out = {"cohort": cohort, "band": band, "head_layer": HL, "component": COMP, "arms": arms, "by_split": summ}
     json.dump(out, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
     try:
@@ -163,7 +188,9 @@ def main():
     for sp, s in summ.items():
         print(f"  [{sp}] n={s['n']} ds_base ASR={s['ASR']['ds_base']} direct_base ASR={s['ASR']['direct_base']} (empty ds_base={s['empty_ds_base']})", flush=True)
         for a, v in s["vs_ds_base"].items():
-            print(f"     {a:>24} ASR={s['ASR'][a]}  ΔASR={v['delta_ASR']:+.4f}  McNemar p={v['mcnemar_p']}  (b={v['discordant_b_dsMal_armNot']} c={v['discordant_c_dsNot_armMal']}) empty={v['empty_rate']}", flush=True)
+            print(f"     {a:>26} ASR={s['ASR'][a]}  ΔASR={v['delta_ASR']:+.4f}  McNemar p={v['mcnemar_p']}  (b={v['discordant_b_dsMal_armNot']} c={v['discordant_c_dsNot_armMal']}) empty={v['empty_rate']}", flush=True)
+        for a, v in s.get("vs_direct_base", {}).items():
+            print(f"   R {a:>26} ASR={s['ASR'][a]}  ΔASR(vs direct)={v['delta_ASR']:+.4f}  McNemar p={v['mcnemar_p']}  (b={v['discordant_b_armMal_directNot']} c={v['discordant_c_armNot_directMal']}) empty={v['empty_rate']}", flush=True)
 
 
 if __name__ == "__main__":
