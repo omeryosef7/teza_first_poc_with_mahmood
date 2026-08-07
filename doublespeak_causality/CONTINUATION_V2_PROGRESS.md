@@ -105,6 +105,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   correctly shows 0 hits.
 - Report: `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md`.
 
+### 2026-08-07 — loop ticks +2/+3: Gate B harness + validator §36
+- Built + committed Gate B harness (`phase_refusal_decision_patch_behav.py` + wrapper); smoke 732264 queued
+  (PENDING on fair-share — GPU is priority-bound not capacity-bound; not launching more to avoid diluting).
+- **§36 validators extended** (subagent, verified): refsuploc + refdecpatch schemas added to
+  `validate_experiment_coverage.py` + `validate_all_outputs.py`; refsuploc recompute **3079 values, 0 mismatch**
+  (independent provenance check of the §3 Gate A summary); regression sweep over 457 dirs, no prior schema broke.
+- **Backlog surfaced:** `configs/manifests/` still empty (§36 expected-cell manifests) — every phase warns
+  "no manifest"; needed to distinguish "cell ran and produced null" from "cell never launched". Schedule.
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
