@@ -1,8 +1,15 @@
 # Gate B / §23 — Behavioral Causality of the Decision-Token Refusal State
 
 **Status:** Gate B **PASS (behavioral)** on clearharm train + dev; **underpowered on the frozen test** (low
-base ASR); generated cohort pending (`732389`). This is the arm that converts §3's representational Gate A
-into a behavioral-causality claim.
+base ASR); **generated cohort DONE = NULL** (`732389`, self-explaining, below); **bidirectional §23 arm
+RUNNING** (`732560`, will strengthen to Gate B STRONG if the reverse swap raises ASR). This is the arm that
+converts §3's representational Gate A into a behavioral-causality claim.
+
+**Judge-noise note:** `ds_base` ASR here (0.271 train, single judge) differs ~3.5pp from the §1.2 drift run's
+DS ASR (0.306, majority-of-3) — this is entirely StrongREJECT between-run stochasticity (generation is
+deterministic; §1.2 between-run floor ≈6pp), so do not quote the two baselines interchangeably. All ΔASR below
+are **within-run paired** (same job/judge pass), and the significant effects have **asymmetric** McNemar
+discordance (train L17 b=16/c=4) that symmetric judge noise cannot produce — the paired tests are robust.
 
 **Run:** `refdecpatch_clearharm_...732388` (170r, v3 train85/dev43/test42) · commit `76acb44a` ·
 harness `scripts/phase_refusal_decision_patch_behav.py` · validated (`validate_all_outputs.py`: 117 values
@@ -50,8 +57,8 @@ where the attack actually works (clearharm), and is absent where DS does not sup
 ## Caveats
 - The direct donor carries the **whole** decision-token residual, so this shows decision-**state** sufficiency;
   the refusal-**subspace-only** version is the calibrated-inject depth Panel B (also ↓ASR) — report both.
-- Bidirectional §23 (insert DS residual into a refusing Direct prompt → does ASR **rise**?) not yet run.
-- Generated cohort pending (`732389`); cohorts non-exchangeable → report per-cohort.
+- Bidirectional §23 (insert DS residual into a refusing Direct prompt → does ASR **rise**?) **RUNNING** (`732560`).
+- Generated cohort **DONE = NULL** (`732389`, see above); cohorts non-exchangeable → reported per-cohort.
 
 ## Verdict & next
 - **Gate B: PASS (behavioral, clearharm train+dev); NULL on generated (DS net-negative there); test cell underpowered (low base ASR).**
