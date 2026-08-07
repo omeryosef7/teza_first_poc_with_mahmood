@@ -4,7 +4,9 @@ Dedicated, append-only tracker for executing `CONTINUATION_MASTER_PLAN_V2.md`. T
 `CONTINUATION_PROGRESS.md` (ticks 1–87) remain the historical log; this file tracks the V2 sprint only so
 progress is easy to follow across `/loop` iterations. Corrections/deviations go to `BUG_AND_DEVIATION_LOG.md`.
 
-**Rules in force:** every test train/test(+dev) split + ≥20/cell (§0.6); representational ≠ behavioral
+**Rules in force:** **SLURM job PENDING >30 min → scancel + resubmit with a different config (widen nodelist;
+measure via SUBMIT_TIME not %M; generation stays strict-L40S; never kill a progressing RUNNING job)** —
+enforce every loop tick; every test train/test(+dev) split + ≥20/cell (§0.6); representational ≠ behavioral
 (§0.2); positive+specificity controls (§0.4); v3 = confirmatory (§0.5); engineering Appendix A
 (≤6–7 parallel, ≤2 model-load/node, --nodelist not --exclude, GPU guard, RUNMETA-first/DONE-last,
 judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED·SUPERSEDED·WITHDRAWN·PENDING·UNVERIFIED}.
