@@ -541,8 +541,11 @@ genuinely have no output dirs (todo, not faked). *(That masquerade tally is [R] 
    (65→28), independently corroborating refusal suppression. Two caveats remain open: (a) ‖J‖ peaks at similar
    mid layers for *both* targets (cos with semantic dirs ≤0.03), so it is a partly-generic sensitivity profile —
    the target-specific dissociation lives in the projection curves; (b) **the decisive behavioral-prediction
-   arm is NOT yet run** — does the refusal Jacobian predict which items jailbreak while the concept Jacobian is
-   inert? That join with the ASR outcomes is the P6 follow-on.
+   arm is now DONE (clearharm):** the refusal Jacobian sensitivity ‖J‖@L12 predicts jailbreak at **AUC 0.807
+   [0.696,0.901], 0.815 on the locked test**, while the concept Jacobian is inert (AUC 0.58, CI includes 0.5;
+   refusal−concept difference +0.225, CI [0.055,0.361]) — the sprint headline restated with a gradient measure
+   (`scripts/analyze_jacobian_predicts_behavior.py`, `outputs/p6_predicts_behavior_clearharm.json`). Only the
+   curated join (expected weak by construction) and a formal peak-layer inferential test remain.
 2. **P9 / Gate 7 — GCG / MAC / TROPT attack-objective evaluation.** **0 of 13 (up to 21) arms ever run.** The
    P9.0 optimizer-selection bug is fixed (the repr/refusal objective now enters candidate selection, not just
    the gradient; `llama` family added; GPU-free synthetic test only) — but **no arm has executed on GPU.**

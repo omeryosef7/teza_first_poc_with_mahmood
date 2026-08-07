@@ -1,8 +1,13 @@
 # P6 — Jacobian / projection-matrix readout (concept vs refusal)
 
-**Status: ✅ COMPLETE, both cohorts** — clearharm (job `732004`, n = 44/42) and curated (job `732011`,
-n = 30/21), both targets, all three conditions, `final_prompt` + `probe_last` positions. This is the phase
-the master plan (§5 P6, granularity B7) had prepped but never executed until 2026-08-07.
+**Status: ✅ COMPLETE, both cohorts + decisive behavioral-prediction arm** — clearharm (job `732004`,
+n = 44/42) and curated (job `732011`, n = 30/21), both targets, all three conditions, `final_prompt` +
+`probe_last` positions; plus the per-item Jacobian→ASR dissociation (§2.5). This is the phase the master plan
+(§5 P6, granularity B7) had prepped but never executed until 2026-08-07.
+
+**Bottom line:** the refusal Jacobian sensitivity predicts which items jailbreak (AUC 0.807, 0.815 locked
+test) while the concept Jacobian is behaviorally inert (AUC 0.58, CI includes chance; difference +0.225,
+CI [0.055, 0.361]) — the sprint's headline dissociation restated with a gradient measure.
 
 **Cross-cohort replication is exact on the localization and stronger on the suppression.** Curated
 reproduces the concept ‖J‖ peak at **L16** (5 of 6 cells) and the refusal ‖J‖ peak at **L12** (all 6 cells,
@@ -67,9 +72,35 @@ summary) reported, now recovered from a completely separate code path.
 |---|---|
 | concept Jacobian peaks at the causal band (L9 / L14–21) | **MET (approx):** ‖J‖ peaks L12–L17, straddling the write and early-carry bands |
 | refusal Jacobian peaks L16–22 | **PARTIAL:** the projected Jacobian `jac_proj` peaks **L22–L26** (as predicted), but the raw ‖J‖ peaks earlier at **L12** — see the caveat below |
-| concept Jacobian behaviorally inert; refusal Jacobian predicts held-out ASR | **NOT YET TESTED** — this is a join of the per-item Jacobian with the ASR outcomes (analogous to the item-level `REP_PREDICTS_BEHAVIOR` analysis) and is the P6 follow-on |
+| concept Jacobian behaviorally inert; refusal Jacobian predicts held-out ASR | **✅ MET** — see §2.5: refusal ‖J‖@L12 predicts jailbreak at AUC 0.807 (0.815 on locked test); concept ‖J‖@L16 is inert (AUC 0.583, CI includes 0.5); difference significant |
 
 ---
+
+## 2.5 The decisive arm — the refusal Jacobian predicts jailbreak, the concept Jacobian does not
+
+Per-item join of the Doublespeak `final_prompt` Jacobian with the `behav_refusal` `ds_base` StrongREJECT
+label (`item_key == id`, exact, 86/86), `scripts/analyze_jacobian_predicts_behavior.py` →
+`outputs/p6_predicts_behavior_clearharm.json`. AUC oriented ≥0.5, seeded 5 000-resample percentile bootstrap.
+
+| per-item feature | AUC pooled | 95% CI | train | test (locked) | reads |
+|---|---|---|---|---|---|
+| **refusal ‖J‖ @ L12** (Jacobian sensitivity) | **0.807** | **[0.696, 0.901]** | 0.800 | **0.815** | lower refusal-sensitivity → jailbreak |
+| refusal scalar (L31 projection) | 0.845 | [0.758, 0.916] | 0.845 | 0.847 | lower refusal → jailbreak |
+| refusal projection @ decision L21 | 0.867 | — | 0.863 | 0.891 | reproduces `REP_PREDICTS_BEHAVIOR` (0.874) |
+| **concept ‖J‖ @ L16** | **0.583** | **[0.454, 0.709]** | 0.575 | 0.593 | **inert — CI includes 0.5** |
+| concept scalar (logit-diff) | 0.508 | [0.373, 0.636] | 0.597 | 0.422 | **inert — chance** |
+| concept jac_proj @ L16 | 0.501 | — | 0.481 | 0.528 | **inert — chance** |
+
+**Paired difference: refusal ‖J‖ − concept ‖J‖ AUC = +0.225, 95% CI [0.055, 0.361] — excludes 0.**
+
+⇒ **The pre-registered dissociation holds on an entirely new axis.** Not only is the refusal *projection*
+predictive of which items jailbreak (already known), but the refusal *causal sensitivity* — how much the
+refusal scalar would move if you perturbed the mid-band residual — is itself predictive at **AUC 0.81, and
+0.815 on the locked test**, with the CI clear of chance. Meanwhile **nothing about the concept target
+predicts behavior**: neither its value (AUC 0.51) nor its Jacobian sensitivity (0.58, CI includes 0.5) nor
+its projected Jacobian (0.50). This is the Jacobian-based restatement of the sprint's headline — the concept
+circuit is a behaviorally epiphenomenal bystander, the refusal channel is the causal lever — now shown for a
+gradient/sensitivity measure, not only for the static readout.
 
 ## 3. Honest caveats
 
@@ -84,9 +115,9 @@ summary) reported, now recovered from a completely separate code path.
   the per-layer `grad_norm` carries a bootstrap `[lo,hi]` but a formal "peak is in the mid-band" test
   (e.g. bootstrap the argmax, or a mid-vs-late contrast) is not yet run.
 - **Both cohorts done; single model** (Llama-3.1-8B-Instruct). No cross-architecture check.
-- The behavioral-prediction arm (does the refusal Jacobian predict which items jailbreak while the concept
-  Jacobian does not?) is the decisive dissociation test and has **not** been run — it needs a join with the
-  `behav_refusal` ASR outcomes.
+- The behavioral-prediction arm (§2.5) is done on **clearharm** only; a curated join is expected to be
+  weaker-by-construction (curated suppresses refusal *uniformly*, so its refusal projection was already
+  non-predictive at AUC 0.42 in `REP_PREDICTS_BEHAVIOR` — concept-dilution, not under-suppression).
 
 ---
 

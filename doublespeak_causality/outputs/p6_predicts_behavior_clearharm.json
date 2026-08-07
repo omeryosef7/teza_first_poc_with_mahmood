@@ -1,0 +1,194 @@
+{
+  "n": 86,
+  "concept_peak_layer": 16,
+  "refusal_peak_layer": 12,
+  "features": {
+    "refusal_scalar": {
+      "pooled": {
+        "auc": 0.8449,
+        "ci95": [
+          0.7576,
+          0.916
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.8453,
+        "ci95": [
+          0.7109,
+          0.9509
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.8469,
+        "ci95": [
+          0.7002,
+          0.9543
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "lower_scalar_more_jailbreak"
+    },
+    "refusal_gradnorm_peak": {
+      "pooled": {
+        "auc": 0.8073,
+        "ci95": [
+          0.6964,
+          0.9008
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.7996,
+        "ci95": [
+          0.6432,
+          0.9292
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.8148,
+        "ci95": [
+          0.6505,
+          0.9495
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "lower_scalar_more_jailbreak"
+    },
+    "refusal_jacproj_peak": {
+      "pooled": {
+        "auc": 0.6522,
+        "ci95": [
+          0.5317,
+          0.7667
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.6253,
+        "ci95": [
+          0.4552,
+          0.7885
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.6716,
+        "ci95": [
+          0.4917,
+          0.8302
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "lower_scalar_more_jailbreak"
+    },
+    "concept_scalar": {
+      "pooled": {
+        "auc": 0.5075,
+        "ci95": [
+          0.3727,
+          0.6364
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.5969,
+        "ci95": [
+          0.4024,
+          0.7723
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.4222,
+        "ci95": [
+          0.225,
+          0.6272
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "higher_more_jailbreak"
+    },
+    "concept_gradnorm_peak": {
+      "pooled": {
+        "auc": 0.5828,
+        "ci95": [
+          0.4536,
+          0.7089
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.5752,
+        "ci95": [
+          0.3862,
+          0.7572
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.5926,
+        "ci95": [
+          0.4159,
+          0.7625
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "higher_more_jailbreak"
+    },
+    "concept_jacproj_peak": {
+      "pooled": {
+        "auc": 0.5012,
+        "ci95": [
+          0.3744,
+          0.6324
+        ],
+        "n": 86,
+        "n_mal": 32
+      },
+      "train": {
+        "auc": 0.4815,
+        "ci95": [
+          0.3024,
+          0.6667
+        ],
+        "n": 44,
+        "n_mal": 17
+      },
+      "test": {
+        "auc": 0.5284,
+        "ci95": [
+          0.3472,
+          0.7097
+        ],
+        "n": 42,
+        "n_mal": 15
+      },
+      "orientation": "lower_scalar_more_jailbreak"
+    }
+  },
+  "refusal_minus_concept_gradnorm_auc_diff": {
+    "point": 0.2245,
+    "ci95": [
+      0.0549,
+      0.3607
+    ]
+  }
+}
