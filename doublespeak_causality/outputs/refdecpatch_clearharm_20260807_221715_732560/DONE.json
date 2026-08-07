@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refdecpatch_clearharm_20260807_221715_732560",
+  "status": "ok",
+  "rows_written": 170,
+  "end_ts": "2026-08-08T00:38:57",
+  "end_epoch": 1786138737.9904149,
+  "wall_seconds": 8501.224
+}

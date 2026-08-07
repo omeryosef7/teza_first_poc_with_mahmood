@@ -54,6 +54,32 @@ direct patch gives only small non-significant ΔASR (train L17 −0.052 p=0.52; 
 no-op ≈0 (locality holds). **Gate B NULL on generated is expected and coherent: the mechanism appears exactly
 where the attack actually works (clearharm), and is absent where DS does not suppress refusal (generated).**
 
+## Bidirectional §23 (`732560`, clearharm) — forward REPLICATES; reverse is a NULL (honest, not STRONG)
+An independent run with the reverse arm added. **Forward reproduces Gate B**: `ds_dpatch_direct_L17` ΔASR
+−0.153 (p=0.011) here vs −0.141 (p=0.012) in 732388 — reproducible within the judge floor; self≈0; rand +0.141.
+
+**Reverse (insert DS decision resid into a *refusing Direct* prompt → does ASR rise?):**
+| reverse arm | train ΔASR vs direct (p) | dev | test |
+|---|---|---|---|
+| `direct_dpatch_ds_L15/16/17` | +0.01 / +0.01 / +0.05 (all **ns**, p≥0.34) | +0.09 ns | ~0 ns |
+| `direct_dpatch_rand_L17` | **+0.341 (p<1e-3, b=30/c=1)** | +0.256 (p=0.001) | +0.095 ns |
+| `direct_dpatch_self_L17` | +0.012 (no-op ✓) | +0.047 | −0.024 |
+
+**Two findings, both honest:**
+1. **The DS decision state is NOT sufficient to induce compliance** — inserting it into a refusing Direct
+   prompt barely moves ASR (≈ self no-op level). So the bidirectional swap is **not clean**: Gate B stays
+   **PASS (forward), not STRONG.** Compliance is *not* carried by a specific "DS decision vector."
+2. **Decision-state fragility:** a norm-matched *random* perturbation at the decision token **massively raises
+   ASR in BOTH directions** (reverse +0.34 p<1e-3; forward rand also +0.14) with empty_rate=0 (coherent, not
+   garbled). Refusal at the decision token is not robust to norm-matched noise — an adversarial fragility
+   result. *Caveat:* the random vector is norm-matched to the (larger) DS residual, so part of this is a
+   large in-magnitude OOD perturbation; the specific-vs-random asymmetry still holds (structured DS/self are
+   inert, random is not).
+
+**Synthesis:** refusal decision-state **restoration is specific and causal** (forward), but **breaking
+refusal is generic** (any sufficient decision-state disruption complies). The mechanism is "an intact refusal
+decision state is required to refuse," not "a DS compliance signal overrides it."
+
 ## Caveats
 - The direct donor carries the **whole** decision-token residual, so this shows decision-**state** sufficiency;
   the refusal-**subspace-only** version is the calibrated-inject depth Panel B (also ↓ASR) — report both.

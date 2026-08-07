@@ -22,7 +22,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §1.3 | v3 confirmatory validator + audit | ✅ **DONE** | `scripts/validate_dataset_v3.py` PASS; `reports/V3_CONFIRMATORY_DATA_AUDIT.md` |
 | §3 | refusal-suppression coarse localization | ✅ **Gate A PASS (repr)** | clearharm residual L15–18 restores refusal frac≈0.93 (Holm≈0), replicated train/dev/**test**; NULL on generated. Behavioral (Gate B) next. `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md` |
 | §4 | carry vs write vs origin | ◐ partial | §3 shows residual-CARRY (attn/mlp barely restore); origin=§5 |
-| §23 | decision-state counterfactual patch (behavioral) | ✅ **Gate B PASS (clearharm train+dev)** | direct resid restore L17 ΔASR −0.14 p=0.012 (train) / −0.19 p=0.008 (dev); self no-op=0; random ↑ASR (specific); test underpowered (base ASR 0.167). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md`. Generated pending. |
+| §23 | decision-state patch (fwd + bidirectional) | ✅ **Gate B PASS fwd (reproduced); reverse NULL** | direct resid restore L17 ΔASR −0.14 p=0.012 (train) / −0.19 p=0.008 (dev); self no-op=0; random ↑ASR (specific); test underpowered (base ASR 0.167). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md`. Generated pending. |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ◐ **§16 tests PASS** | objective-in-selection verified (12 CPU tests, sign+gradient gaps filled, no bug); GPU arms 0/13 still pending |
 | others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
@@ -148,6 +148,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   self=0), generated NULL (self-explaining: DS net-negative there). **Claim D earned.**
 - **§23 bidirectional launched (732560)**: reverse arm (DS resid → refusing Direct → ASR rise?) added behind
   --bidirectional (forward byte-unchanged); smoke passed (reverse self no-op=0). Full clearharm ~2h, waiter armed.
+
+### 2026-08-08 — bidirectional §23 landed (732560): forward reproduces, reverse NULL, fragility finding
+- Forward REPRODUCES Gate B (direct L17 ΔASR -0.153 p=0.011 vs -0.141 p=0.012 in 732388) => reproducible.
+- **Reverse (DS resid -> refusing Direct): NULL** — DS decision state NOT sufficient to induce compliance
+  (ns, ~self level). Bidirectional swap NOT clean => Gate B stays PASS, not STRONG (honest).
+- **Fragility:** norm-matched RANDOM decision-token perturbation ↑ASR massively both directions (reverse
+  +0.34 p<1e-3; empty=0, coherent). Mechanism = 'intact refusal state required to refuse', not a DS compliance vector.
+- Validated (132 vals, 0 mismatch). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md` updated.
 
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
