@@ -75,3 +75,31 @@ sbatch --time=00:40:00 --export=ALL,DSBENCH=doublespeak_causality/data/behaviora
 Runs: clearharm `write_refusal_intx_clearharm_20260804_231656_711887`, curated `..._711888`.
 Harness `scripts/phase_write_refusal_interaction.py` (ComponentOutSwap write-zero + per-layer refusal
 projection + FC p_concept firing control).
+
+---
+
+## Resolution of WR-02 against the landed P7 refusal-direction validation (2026-08-07)
+
+WR-02 ("concept-write ⊥ refusal-suppression: `frac_of_direct_gap_restored` ≈ 0, |·| < 0.05 at every layer")
+was previously **PENDING** on the per-layer refusal directions being validated, because the readout is the
+per-layer refusal projection and an independence result measured on a *non-refusal* axis would be vacuous.
+P7 (`P7_REFUSAL_DIRECTION_VALIDATION.md`, jobs 720463 / 721957 / 722611 / 724931) has now landed: the
+refusal axis is linearly decodable only from **L13 onward**, and the layers validating **in both direction
+families** are **{L13–L20, L24, L28, L29}**.
+
+**Re-reading `frac_of_direct_gap_restored` restricted to those validated layers confirms — and strengthens —
+the independence:**
+
+| cohort · split | n | max \|frac_restored\| over validated layers | L16 | L18 | L22 |
+|---|---|---|---|---|---|
+| clearharm train | 44 | **0.021** | +0.004 | +0.010 | −0.004 |
+| clearharm test | 42 | **0.025** | +0.015 | +0.012 | +0.002 |
+| curated train | 30 | **0.050** | −0.047 | −0.049 | −0.037 |
+| curated test | 21 | **0.019** | −0.002 | +0.007 | +0.002 |
+
+At **every** validated refusal layer — including the exact L16/L18/L22 anchors the behavioral rescue uses —
+ablating the L8–11 concept write moves DS's refusal suppression by **≤ 5% of the direct gap** (≤ 2.5% on
+clearharm). The independence is therefore **not an artifact of projecting onto an unvalidated axis**: it holds
+precisely where the refusal axis is real. **WR-02 is CONFIRMED.** (The positive control still fires: the same
+write ablation drops the FC `p_concept` readout by 0.06–0.23 per cell — the hook is live, it simply does
+nothing to the refusal channel.)

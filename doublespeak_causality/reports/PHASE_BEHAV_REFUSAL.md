@@ -169,6 +169,19 @@ refusal early, but the behavioral refusal DECISION is read mid-late (~L16–22)*
 is not enough; it must be restored where the decision is made. (Rescue is partial, not →0, because the
 calibrated α is a *minimal* restore-to-refused push — the larger fixed α=12 at L18 drove ASR fully to 0.)
 
+> **⚠ BR-09 reframe after the P7 refusal-direction validation landed (2026-08-07).** The landed validation
+> (`P7_REFUSAL_DIRECTION_VALIDATION.md`, jobs 720463/721957/722611/724931) shows **L9 is NOT a linearly-
+> decodable refusal axis** — it fails both the ablate and induce arms under both direction families, and in
+> the out-of-sample benign re-run its induce gain is even negative. **The refusal axis first validates at
+> L13**, and only {L13–L20, L24, L28, L29} validate in both families. **Consequence:** "L9 ns" cannot be read
+> as *"restoring refusal early is not enough"* — injecting a direction that does not control refusal should do
+> nothing at any depth, so the L9 cell is **uninformative, not evidence of late-reading**. The defensible
+> statement is the *positive* one: the rescue is significant at **L22 in both cohorts** (train −0.250 p=0.001;
+> curated −0.20 p=0.031), and the refusal axis is decodable only from L13 — **both** independently place the
+> behavioral refusal decision mid-late. Anchor every depth claim on the validated layers **L16 / L18 / L22**,
+> never on the L9 null. (This does not touch the sufficiency/necessity headlines, which all use the strongly-
+> validated L18 direction.)
+
 ## Interpretation — the mechanistic account completes
 
 Combining all three behavioral experiments:

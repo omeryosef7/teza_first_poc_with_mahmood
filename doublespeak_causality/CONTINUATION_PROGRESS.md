@@ -746,6 +746,30 @@ benches (170 + 154) are the natural power upgrade.
 
 ## Tick log (most recent first)
 
+### Tick 87 — 2026-08-07 — P4b-1 QUERY closed; BR-09/WR-02 resolved off the landed refval; P6 launched
+Picked the plan back up after the comprehensive since-2.8 write-up. Cluster was idle (queue empty), the
+query GPU slot the tick-86 note was waiting on had freed, and the two P4b-1 query shards had finished.
+
+- **P4b-1 QUERY position-set — ✅ COMPLETE.** Pooled jobs `729356`(L0–15)/`729357`(L16–31) → 88 408 rows,
+  `phase5_analyze.py --expect-cells 1024`, `selfswap_dev`=0.0, not underpowered. Confirmed heads (Holm-sig
+  positive necessity on BOTH dev+heldout) = **{L11H4, L16H28, L21H10}**, largest 0.0118 dev / 0.0030 heldout.
+  Even smaller than the demo set and a different (earlier) cluster ⇒ **no single head bottlenecks
+  concept-reading at the query codeword either** — the distributed/no-bottleneck signature holds at BOTH
+  position-sets. Wrote `PHASE4B_HEAD_Z_NECESSITY_DEMO.md §7`; backfilled RUNMETA/DONE on all 4 query dirs.
+- **BR-09 — RESOLVED (reframed).** The refval that gated it has landed (720463/721957/722611/**724931**
+  benign re-run). **L9 is invalid as a refusal axis in every run, both families, incl. the out-of-sample
+  benign population** (induce even negative there). So "L9 ns" in the depth-localization is **uninformative,
+  not evidence of late-reading** — reframed in `PHASE_BEHAV_REFUSAL.md`. The positive claim stands and is
+  anchored on validated layers: rescue significant at **L22 both cohorts**, refusal decodable only from L13.
+- **WR-02 — RESOLVED (CONFIRMED + strengthened).** Recomputed `frac_of_direct_gap_restored` restricted to
+  the P7-validated refusal layers {L13–20,24,28,29}: max|·| = **0.021/0.025 clearharm, 0.050/0.019 curated**
+  (L16/L18/L22 ∈ [−0.049,+0.015]). The concept-write ⊥ refusal-suppression independence is **not** an
+  artifact of measuring on unvalidated axes — it holds where the refusal axis is real. Wrote
+  `PHASE_WRITE_REFUSAL_INTX.md §Resolution`.
+- **P6 Jacobian — LAUNCHED.** The tick-86 harness (`phase6_jacobian_readout.py`, `run_jacobian.sh`) fired.
+  Smoke `731948` briefly started on n-802 (L40S) then I moved it to idle 3090 backfill (`731950`, 40-min
+  walltime) since L40S was Priority-contended. Full run follows once the smoke's α=0/no-op anchors pass.
+
 ### Tick 86 — 2026-08-06 — GPU audit COMPLETE (no fakes); prepped P6 to launch on free a5000
 **All 3 audit agents returned. The answer to Omer's concern is unambiguous: NO GPU result is faked on
 CPU.** The masquerade scan is definitive — across 395 run dirs, **251 result files embed
