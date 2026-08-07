@@ -46,13 +46,18 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSREFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${DSPROJ:=doublespeak_causality/outputs/refproj_clearharm_20260804_162641_711392/summary.json}"
 : "${DSLAYERS:=16,18,20}"     # validated defense layers (§0.5); comma-list = DEFAULT (never --export)
+# Dose sweep (plan §21 minimal effective intervention): multipliers on the calibrated per-layer alpha.
+# COMMA-LIST -> set it here as a DEFAULT (edit this line, or `export DSDOSESCALES=... ; sbatch ...`),
+# NEVER via `sbatch --export=ALL,DSDOSESCALES=0.25,0.5,...` -- --export truncates at the first comma.
+# Default "1.0" reproduces the fixed-dose run byte-for-byte (arms stay un-suffixed).
+: "${DSDOSESCALES:=1.0}"
 : "${DSPROJSPLIT:=train}"
 : "${DSMAXNEW:=200}"
 : "${DSSEED:=0}"
-echo "=== defense-util: $DSMODEL bench=$DSBENCH layers=$DSLAYERS maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
+echo "=== defense-util: $DSMODEL bench=$DSBENCH layers=$DSLAYERS dose=$DSDOSESCALES maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_defense_utility.py \
   --bench "$DSBENCH" --model "$DSMODEL" --refusal-dir "$DSREFDIR" --proj-summary "$DSPROJ" \
-  --layers "$DSLAYERS" --proj-split "$DSPROJSPLIT" --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
+  --layers "$DSLAYERS" --dose-scales "$DSDOSESCALES" --proj-split "$DSPROJSPLIT" --max-new "$DSMAXNEW" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
 echo "=== done ==="; date

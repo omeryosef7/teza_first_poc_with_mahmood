@@ -66,6 +66,12 @@ def main():
     ap.add_argument("--proj-summary", required=True, help="phase_refusal_projection summary.json (per-layer gaps)")
     ap.add_argument("--proj-split", default="train", help="which split's gaps to use as calibration")
     ap.add_argument("--layers", default="16,18,20", help="validated decoder layers to defend at")
+    ap.add_argument("--dose-scales", default="1.0",
+                    help="comma list of dose multipliers applied to the calibrated per-layer alpha "
+                         "(plan §21 minimal effective intervention). Effective add = alpha[L]*s. "
+                         "Default '1.0' reproduces the fixed-dose run byte-for-byte (arms stay "
+                         "un-suffixed). Any multi-scale list, or a single scale != 1.0, switches ALL "
+                         "swept arms to the '_d{scale}' suffix, e.g. ds_def_L18_d0.5.")
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--splits", default="train,test")
     ap.add_argument("--max-new", type=int, default=200)
@@ -76,13 +82,25 @@ def main():
     args = ap.parse_args()
 
     layers = [int(x) for x in args.layers.split(",") if x.strip()]
+    dose_scales = [float(x) for x in args.dose_scales.split(",") if x.strip()]
+    # Byte-compat rule (plan §21 step 3): the '_d{s}' suffix is used ONLY when the run is actually a
+    # sweep -- more than one scale, or a single scale that is not exactly 1.0. A plain single-scale-1.0
+    # run keeps the original un-suffixed arm names / int by_layer keys / summary bytes.
+    swept = len(dose_scales) > 1 or any(abs(s - 1.0) > 1e-9 for s in dose_scales)
+    def dose_label(s):                       # 1.0 -> "1.0", 0.5 -> "0.5", 0.25 -> "0.25", 0.75 -> "0.75"
+        t = f"{s:.4f}".rstrip("0")
+        return t + "0" if t.endswith(".") else t
+    def suf(L, s):                           # arm/key suffix: "L18" (default) or "L18_d0.5" (swept)
+        return f"L{L}_d{dose_label(s)}" if swept else f"L{L}"
+    combos = [(L, s) for L in layers for s in dose_scales]   # (layer, scale) grid
     data = json.load(open(args.bench)); items = data["items"] if isinstance(data, dict) else data
     cohort = (data.get("_meta", {}) if isinstance(data, dict) else {}).get("cohort", os.path.basename(args.bench))
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
     ts = time.strftime("%Y%m%d_%H%M%S"); uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     out_dir = os.path.join(DC, "outputs", f"defense_util_{cohort}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
-    write_runmeta(out_dir, args, extra={"phase": "defense_utility", "cohort": cohort, "layers": layers})
+    write_runmeta(out_dir, args, extra={"phase": "defense_utility", "cohort": cohort, "layers": layers,
+                                        "dose_scales": dose_scales, "swept": swept})
 
     from strongreject_scoring import load_strongreject_evaluate
     evaluate = load_strongreject_evaluate()
@@ -104,7 +122,8 @@ def main():
 
     fh = open(os.path.join(out_dir, "raw.jsonl"), "w")
     gfh = open(os.path.join(out_dir, "gens.jsonl"), "w") if args.save_gen else None
-    print(f"[defense-util] cohort={cohort} layers={layers} alpha={ {L: round(alpha[L],3) for L in layers} } -> {out_dir}", flush=True)
+    print(f"[defense-util] cohort={cohort} layers={layers} dose_scales={dose_scales} swept={swept} "
+          f"alpha={ {L: round(alpha[L],3) for L in layers} } -> {out_dir}", flush=True)
 
     @torch.no_grad()
     def generate(text, layer=None, vec=None, a=0.0):
@@ -132,8 +151,8 @@ def main():
 
     # ATTACK arms use the Doublespeak prompt + harmful goal; UTILITY arms use the benign_prompt and are
     # never scored against a harmful goal (there is none) — refusal-only classification.
-    ATTACK_ARMS = ["ds_base"] + [f"ds_def_L{L}" for L in layers] + [f"ds_defrand_L{L}" for L in layers]
-    BENIGN_ARMS = ["benign_base"] + [f"benign_def_L{L}" for L in layers] + [f"benign_defrand_L{L}" for L in layers]
+    ATTACK_ARMS = ["ds_base"] + [f"ds_def_{suf(L,s)}" for (L, s) in combos] + [f"ds_defrand_{suf(L,s)}" for (L, s) in combos]
+    BENIGN_ARMS = ["benign_base"] + [f"benign_def_{suf(L,s)}" for (L, s) in combos] + [f"benign_defrand_{suf(L,s)}" for (L, s) in combos]
 
     for split in splits:
         cand = [it for it in items if it.get("split") == split]
@@ -151,9 +170,9 @@ def main():
 
             # ---- ATTACK side ----
             aspec = {"ds_base": (ds, None, None, None)}
-            for L in layers:
-                aspec[f"ds_def_L{L}"]     = (ds, L, dirs[L], alpha[L])
-                aspec[f"ds_defrand_L{L}"] = (ds, L, randdir[L], alpha[L])
+            for (L, s) in combos:
+                aspec[f"ds_def_{suf(L,s)}"]     = (ds, L, dirs[L], alpha[L] * s)
+                aspec[f"ds_defrand_{suf(L,s)}"] = (ds, L, randdir[L], alpha[L] * s)
             rec = {"id": it.get("id"), "split": split, "cohort": cohort, "harmful_word": hw}
             for arm in ATTACK_ARMS:
                 text, lyr, vec, a = aspec[arm]
@@ -166,9 +185,9 @@ def main():
             # ---- UTILITY side ----
             if bprompt is not None:
                 bspec = {"benign_base": (bprompt, None, None, None)}
-                for L in layers:
-                    bspec[f"benign_def_L{L}"]     = (bprompt, L, dirs[L], alpha[L])
-                    bspec[f"benign_defrand_L{L}"] = (bprompt, L, randdir[L], alpha[L])
+                for (L, s) in combos:
+                    bspec[f"benign_def_{suf(L,s)}"]     = (bprompt, L, dirs[L], alpha[L] * s)
+                    bspec[f"benign_defrand_{suf(L,s)}"] = (bprompt, L, randdir[L], alpha[L] * s)
                 for arm in BENIGN_ARMS:
                     text, lyr, vec, a = bspec[arm]
                     comp, stop = generate(text, lyr, vec, a)
@@ -199,43 +218,49 @@ def main():
         benign_ref = {a: rt(sr, a, "REJECTED") for a in BENIGN_ARMS} if has_benign else {}
         benign_empty = {a: rt(sr, a, "EMPTY") for a in BENIGN_ARMS} if has_benign else {}
         by_layer = {}
-        for L in layers:
-            da = f"ds_def_L{L}"
+        for (L, s) in combos:
+            da = f"ds_def_{suf(L,s)}"
             b = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, da))   # base malicious -> def not (fixes)
             c = sum(1 for r in sr if mal(r, "ds_base") and not mal(r, da))
             mc = st.mcnemar_test(c, b)   # discordant counts; direction is symmetric for p
-            entry = {"alpha": round(alpha[L], 3),
+            entry = {"alpha": round(alpha[L] * s, 3),
                      "delta_ASR": round((attack_ASR[da] or 0) - (attack_ASR["ds_base"] or 0), 4),
-                     "rand_delta_ASR": round((attack_ASR[f"ds_defrand_L{L}"] or 0) - (attack_ASR["ds_base"] or 0), 4),
+                     "rand_delta_ASR": round((attack_ASR[f"ds_defrand_{suf(L,s)}"] or 0) - (attack_ASR["ds_base"] or 0), 4),
                      "flip_defended": c, "flip_broken": b, "mcnemar_p": round(mc["p"], 5)}
+            if swept:                     # provenance for the sweep; omitted on the default path (byte-compat)
+                entry["layer"] = L; entry["scale"] = s
             if has_benign:
-                bd = f"benign_def_L{L}"
+                bd = f"benign_def_{suf(L,s)}"
                 entry["benign_over_refusal"] = round((benign_ref[bd] or 0) - (benign_ref["benign_base"] or 0), 4)
-                entry["benign_rand_over_refusal"] = round((benign_ref[f"benign_defrand_L{L}"] or 0) - (benign_ref["benign_base"] or 0), 4)
-            by_layer[L] = entry
+                entry["benign_rand_over_refusal"] = round((benign_ref[f"benign_defrand_{suf(L,s)}"] or 0) - (benign_ref["benign_base"] or 0), 4)
+            # Default: int key L (byte-compat). Swept: string key == arm suffix (e.g. "L18_d0.5").
+            by_layer[L if not swept else suf(L, s)] = entry
         summ[split] = {"n": len(sr), "has_benign": has_benign,
                        "attack_ASR": attack_ASR, "attack_empty": attack_empty, "attack_len_rate": attack_len,
                        "benign_refusal_rate": benign_ref, "benign_empty": benign_empty,
                        "by_layer": by_layer}
     out = {"cohort": cohort, "layers": layers,
            "alpha": {str(L): round(alpha[L], 4) for L in layers}, "by_split": summ}
+    if swept:                              # sweep provenance; absent on default path to keep bytes stable
+        out["dose_scales"] = dose_scales
     json.dump(out, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
 
     print(f"[defense-util] {len(allr)} rows -> {out_dir}", flush=True)
     for sp, s in summ.items():
         print(f"  [{sp}] n={s['n']} ds_base ASR={s['attack_ASR']['ds_base']}"
               + (f" benign_base refusal={s['benign_refusal_rate'].get('benign_base')}" if s["has_benign"] else " (no benign)"), flush=True)
-        for L in layers:
-            v = s["by_layer"][L]
-            line = (f"     L{L} (α={v['alpha']}): ΔASR={v['delta_ASR']} p={v['mcnemar_p']} "
+        for (L, sc) in combos:
+            v = s["by_layer"][L if not swept else suf(L, sc)]
+            da = f"ds_def_{suf(L,sc)}"
+            line = (f"     {suf(L,sc)} (α={v['alpha']}): ΔASR={v['delta_ASR']} p={v['mcnemar_p']} "
                     f"| rand ΔASR={v['rand_delta_ASR']} "
-                    f"def empty={s['attack_empty']['ds_def_L'+str(L)]} len={s['attack_len_rate']['ds_def_L'+str(L)]}")
+                    f"def empty={s['attack_empty'][da]} len={s['attack_len_rate'][da]}")
             if s["has_benign"]:
                 line += f" | benign over-refusal={v['benign_over_refusal']} (rand {v['benign_rand_over_refusal']})"
             print(line, flush=True)
     write_done(out_dir, rows_written=len(allr),
                extra={"attack_arms": ATTACK_ARMS, "benign_arms": BENIGN_ARMS, "layers": layers,
-                      "gens_written": bool(args.save_gen)})
+                      "dose_scales": dose_scales, "swept": swept, "gens_written": bool(args.save_gen)})
 
 
 if __name__ == "__main__":

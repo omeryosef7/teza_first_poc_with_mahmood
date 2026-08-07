@@ -1079,8 +1079,18 @@ def expect_defense_util(rows, summary, res=None):
             for Lk, blk in bl.items():
                 if not isinstance(blk, dict):
                     continue
-                L = int(Lk)
-                da, dr = f"ds_def_L{L}", f"ds_defrand_L{L}"
+                # by_layer key is either the fixed-dose int layer ("18" -> arms ds_def_L18) or a
+                # dose-swept suffix ("L18_d0.5" -> arms ds_def_L18_d0.5); the arm suffix IS the key in
+                # the swept case (see phase_defense_utility.suf). Parse L from either form.
+                Lks = str(Lk)
+                if re.fullmatch(r"\d+", Lks):
+                    L, suf = int(Lks), f"L{int(Lks)}"
+                else:
+                    m = re.match(r"L(\d+)(?:_d[0-9.]+)?$", Lks)
+                    if not m:
+                        continue
+                    L, suf = int(m.group(1)), Lks
+                da, dr = f"ds_def_{suf}", f"ds_defrand_{suf}"
                 if da in asr and "ds_base" in asr:
                     exp.put(f"{P}.by_layer.{Lk}.delta_ASR", asr[da] - asr["ds_base"])
                     b = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, da))  # def newly MAL (broke)
@@ -1093,7 +1103,7 @@ def expect_defense_util(rows, summary, res=None):
                         exp.put(f"{P}.by_layer.{Lk}.mcnemar_p", round(mcnemar_p_stats(c, b), 5))
                 if dr in asr and "ds_base" in asr:
                     exp.put(f"{P}.by_layer.{Lk}.rand_delta_ASR", asr[dr] - asr["ds_base"])
-                bd, brd = f"benign_def_L{L}", f"benign_defrand_L{L}"
+                bd, brd = f"benign_def_{suf}", f"benign_defrand_{suf}"
                 if "benign_over_refusal" in blk and bd in rej and "benign_base" in rej:
                     exp.put(f"{P}.by_layer.{Lk}.benign_over_refusal", rej[bd] - rej["benign_base"])
                 if "benign_rand_over_refusal" in blk and brd in rej and "benign_base" in rej:

@@ -526,9 +526,10 @@ def detect(rows):
     if any(k.startswith("ds_dpatch_direct_L") and k.endswith("_label") for r in rows for k in r):
         return "refdecpatch", check_refdecpatch
     # defense_util (§36) also carries id+split+<arm>_label, so it MUST precede the generic behav
-    # branch. Its discriminator is the per-layer calibrated-restoration defense arm `ds_def_L<N>_label`
+    # branch. Its discriminator is the per-layer calibrated-restoration defense arm `ds_def_L<N>_label`,
+    # optionally dose-suffixed `ds_def_L<N>_d<scale>_label` (plan §21 dose sweep, e.g. ds_def_L18_d0.5)
     # (distinct from refdecpatch's `ds_dpatch_direct_L*` and from every behav arm).
-    if any(re.fullmatch(r"ds_def_L\d+_label", k) for r in rows for k in r):
+    if any(re.fullmatch(r"ds_def_L\d+(?:_d[0-9.]+)?_label", k) for r in rows for k in r):
         return "defense_util", check_defense_util
     if all(("id" in r and "split" in r) for r in rows):
         return "behav", check_behavioral
