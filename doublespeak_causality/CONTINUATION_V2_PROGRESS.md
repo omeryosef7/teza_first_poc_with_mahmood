@@ -116,6 +116,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **Backlog surfaced:** `configs/manifests/` still empty (§36 expected-cell manifests) — every phase warns
   "no manifest"; needed to distinguish "cell ran and produced null" from "cell never launched". Schedule.
 
+### 2026-08-07 — loop tick +4: §36 manifests done; §1.2 harness ready; 30m rule live
+- **§36 manifests committed** (subagent + my verify): `configs/manifests/{refsuploc,refdecpatch,refval,behav_carry}.json`.
+  Note: the "no manifest" warning is CWD-sensitive (`--manifest-dir` default is CWD-relative `configs/manifests`) —
+  validator must run from `doublespeak_causality/`; from there refsuploc → **ok, 0 warn**. Never-launched-cell
+  detection intact (2-row smoke correctly FAILs).
+- **§1.2 drift harness ready** (`phase_baseline_drift.py`+wrapper), held from submit (fair-share).
+- **30m-pending rule live** and applied (732264→732295).
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
