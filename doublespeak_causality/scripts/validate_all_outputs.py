@@ -904,10 +904,129 @@ def expect_refval(rows, summary, res):
     return exp
 
 
+def mcnemar_p_stats(b, c):
+    """Mirror `stats.mcnemar_test(b, c)['p']` EXACTLY: exact two-sided binomial for n<=25, else the
+    chi-square statistic with continuity correction against chi-square(1). The refdecpatch phase uses
+    that function, so `mcnemar_exact` (exact in ALL branches) would falsely diverge for n>25."""
+    n = b + c
+    if n == 0:
+        return 1.0
+    if n <= 25:
+        return mcnemar_exact(b, c)
+    stat = (abs(b - c) - 1.0) ** 2 / float(n)
+    return math.erfc(math.sqrt(stat / 2.0))
+
+
+def expect_refsuploc(rows, summary, res=None):
+    """`scripts/phase_refusal_suppression_localize.py` (§3 decision-token suppression localization).
+
+    Every summary aggregate is read at the ANCHOR readout row (`readout_anchor + 1`, the hidden-state
+    row) exactly as the phase computes it. `restore` for a cell = proj(patched) - proj(ds_base);
+    `frac` = restore / (proj(direct) - proj(ds_base)) over items with a non-degenerate gap.
+    `selfswap_max_abs_restore` is the max |restore| over every donor='self' cell (anchor row, all
+    splits). CI *bounds* are RNG bootstrap draws -> only restore_ci[0] (the mean) is checked (putci).
+    """
+    exp = Expect()
+    anchor = summary.get("readout_anchor")
+    ar = str(anchor + 1) if isinstance(anchor, int) else None
+
+    # selfswap_max_abs_restore: max |patched(self) - ds_base| at the anchor row, pooled over all rows
+    if ar is not None and "selfswap_max_abs_restore" in summary:
+        ss = 0.0
+        for r in rows:
+            ds = (r.get("base") or {}).get("ds_base") or {}
+            if ar not in ds:
+                continue
+            for key, cell in (r.get("patched") or {}).items():
+                if key.split("|")[1:2] == ["self"] and ar in cell:
+                    ss = max(ss, abs(cell[ar] - ds[ar]))
+        exp.put("selfswap_max_abs_restore", round(ss, 6))
+
+    pref, cont = split_container(summary)
+    for sp, node in cont.items():
+        sr = [r for r in rows if r.get("split") == sp]
+        if not sr or ar is None:
+            continue
+        P = pref(sp)
+        if "n" in node:
+            exp.put(f"{P}.n", len(sr))
+        if "direct_minus_ds_gap_mean" in node:
+            gap = [r["base"]["direct"][ar] - r["base"]["ds_base"][ar] for r in sr
+                   if ar in r["base"]["direct"] and ar in r["base"]["ds_base"]]
+            exp.put(f"{P}.direct_minus_ds_gap_mean", mean(gap))
+        cells = node.get("cells")
+        if not isinstance(cells, dict):
+            continue
+        for key, blk in cells.items():
+            if not isinstance(blk, dict):
+                continue
+            usable = [r for r in sr if key in (r.get("patched") or {})
+                      and ar in r["patched"][key] and ar in r["base"]["ds_base"]]
+            rest = [r["patched"][key][ar] - r["base"]["ds_base"][ar] for r in usable]
+            putci(exp, blk, f"{P}.cells.{key}", "restore_ci", rest)
+            if "frac_mean" in blk:
+                frac = [(r["patched"][key][ar] - r["base"]["ds_base"][ar]) /
+                        (r["base"]["direct"][ar] - r["base"]["ds_base"][ar])
+                        for r in usable
+                        if abs(r["base"]["direct"][ar] - r["base"]["ds_base"][ar]) > 1e-6]
+                exp.put(f"{P}.cells.{key}.frac_mean",
+                        round(float(mean(frac)), 4) if frac else None)
+    return exp
+
+
+def expect_refdecpatch(rows, summary, res=None):
+    """`scripts/phase_refusal_decision_patch_behav.py` (§23 / Gate B behavioral decision patch).
+
+    Recomputes, per split, per arm: ASR (fraction MALICIOUS), empty rate, and the paired McNemar block
+    vs the ds_base arm -- delta_ASR, the two discordant counts (b = ds MALICIOUS & arm not; c = ds not
+    & arm MALICIOUS -- the phase's own orientation), and the exact/chi-square p (mcnemar_p_stats). This
+    is a bespoke recompute (NOT expect_behav): the phase names its discordant counts
+    discordant_b_dsMal_armNot / discordant_c_dsNot_armMal with the ds->arm orientation, the reverse of
+    the flip_on/flip_off convention expect_behav's `mcn` assumes.
+    """
+    exp = Expect()
+    arms = summary.get("arms") or sorted({k[:-6] for r in rows for k in r if k.endswith("_label")})
+    pref, cont = split_container(summary)
+    for sp, node in cont.items():
+        sr = [r for r in rows if r.get("split") == sp]
+        if not sr:
+            continue
+        P = pref(sp)
+
+        def mal(r, a):
+            return r.get(f"{a}_label") == MAL
+
+        def emp(a):
+            return mean([r.get(f"{a}_label") == "EMPTY" for r in sr])
+        asr = {a: mean([mal(r, a) for r in sr]) for a in arms}
+        if "n" in node:
+            exp.put(f"{P}.n", len(sr))
+        if isinstance(node.get("ASR"), dict):
+            for a in arms:
+                exp.put(f"{P}.ASR.{a}", asr[a])
+        if "empty_ds_base" in node:
+            exp.put(f"{P}.empty_ds_base", emp("ds_base"))
+        vs = node.get("vs_ds_base")
+        if isinstance(vs, dict) and "ds_base" in arms:
+            for a, blk in vs.items():
+                if a not in arms or not isinstance(blk, dict):
+                    continue
+                b = sum(1 for r in sr if mal(r, "ds_base") and not mal(r, a))
+                c = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, a))
+                B = f"{P}.vs_ds_base.{a}"
+                exp.put(f"{B}.delta_ASR", asr[a] - asr["ds_base"])
+                exp.put(f"{B}.discordant_b_dsMal_armNot", b)
+                exp.put(f"{B}.discordant_c_dsNot_armMal", c)
+                exp.put(f"{B}.mcnemar_p", mcnemar_p_stats(b, c))
+                exp.put(f"{B}.empty_rate", emp(a))
+    return exp
+
+
 EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
           "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
           "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
-          "p9": expect_p9, "refval": expect_refval}
+          "p9": expect_p9, "refval": expect_refval,
+          "refsuploc": expect_refsuploc, "refdecpatch": expect_refdecpatch}
 
 
 def detect_ext(rows):
@@ -974,13 +1093,13 @@ def check_manifest(rows, man, typ):
         warns.append(f"manifest: unexpected split '{s}'")
     minn = man.get("min_n_per_split")
     if minn:
-        key = "id" if typ == "behav" else "sid"
+        key = "id" if typ in ("behav", "refdecpatch", "refsuploc") else "sid"
         for s in sorted(got_splits):
             n = len({r.get(key) for r in rows if r.get("split") == s})
             if n < minn:
                 issues.append(f"manifest: split '{s}' has n={n} < min_n_per_split={minn}")
     if man.get("expected_arms"):
-        labelled, numeric = behav_arms(rows) if typ == "behav" else ([], [])
+        labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch") else ([], [])
         got = set(labelled) | set(numeric)
         for a in man["expected_arms"]:
             if a not in got:
@@ -1088,7 +1207,7 @@ def validate_dir(d, args):
         if len(ie) > 1:
             res["issues"].append(f"rows mix induce_eval populations {sorted(ie)}; gains are not comparable")
         res["splits"] = {**res.get("splits", {}), "fit": f, "eval": e}
-    key = "id" if typ == "behav" else "sid"
+    key = "id" if typ in ("behav", "refdecpatch", "refsuploc") else "sid"
     ids = defaultdict(set)
     for r in ([] if typ == "refval" else rows):
         ids[r.get("split")].add(r.get(key))

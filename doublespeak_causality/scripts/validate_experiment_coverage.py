@@ -315,8 +315,110 @@ def check_refval(rows):
     return issues, warns, info
 
 
+def check_refsuploc(rows):
+    """§3 refusal-suppression localization (scripts/phase_refusal_suppression_localize.py).
+
+    Row schema: {id, split, cohort, base:{direct,ds_base,neutral -> {readout_row: proj}},
+    patched:{"COMP|donor|Lp" -> {readout_row: proj}}}. NOT the behavioral `<arm>_label` schema, so it
+    would otherwise be swallowed by check_behavioral (both carry id+split) -- detect() routes it here
+    first on the `base`/`patched` payload dicts. Checks:
+      - no duplicate `id` within a split                                        FAIL
+      - base carries all three conditions (direct / ds_base / neutral)          FAIL
+      - identical `patched` cell key-set on every row                           FAIL
+      - no null / NaN projection leaf                                           FAIL
+      - self-swap donor cell is a no-op: |patched(self) - ds_base| ~ 0          FAIL (>1e-4)
+      - ids disjoint across splits                                             FAIL
+      - n per split >= MIN (--strict-n promotes to FAIL)                        warn
+    """
+    issues, warns = [], []
+    keys = Counter((r.get("split"), r.get("id")) for r in rows)
+    dups = sum(c - 1 for c in keys.values() if c > 1)
+    if dups:
+        issues.append(f"{dups} duplicate (split,id) rows")
+    if any(r.get("id") is None for r in rows):
+        issues.append("rows missing 'id'")
+    if any(r.get("split") is None for r in rows):
+        issues.append("rows missing 'split'")
+
+    miss_base = Counter()
+    for r in rows:
+        b = r.get("base") or {}
+        for cond in ("direct", "ds_base", "neutral"):
+            if cond not in b:
+                miss_base[cond] += 1
+    if miss_base:
+        issues.append("incomplete base conds: " + ", ".join(f"{k}(missing {v})" for k, v in sorted(miss_base.items())))
+
+    cellsets = [frozenset((r.get("patched") or {}).keys()) for r in rows]
+    ncells = len(cellsets[0]) if cellsets else 0
+    if cellsets and any(cs != cellsets[0] for cs in cellsets):
+        issues.append("patched cell key-set differs across rows")
+
+    nbad = 0
+    for r in rows:
+        for d in (r.get("base") or {}).values():
+            for v in (d or {}).values():
+                if v is None or (isinstance(v, float) and not math.isfinite(v)):
+                    nbad += 1
+        for d in (r.get("patched") or {}).values():
+            for v in (d or {}).values():
+                if v is None or (isinstance(v, float) and not math.isfinite(v)):
+                    nbad += 1
+    if nbad:
+        issues.append(f"{nbad} null/NaN projection leaves")
+
+    # self-swap locality no-op: donor 'self' patch must reproduce ds_base at every readout row
+    ssdev, have_self = 0.0, False
+    for r in rows:
+        ds = (r.get("base") or {}).get("ds_base") or {}
+        for key, d in (r.get("patched") or {}).items():
+            if key.split("|")[1:2] == ["self"]:
+                have_self = True
+                for row, v in (d or {}).items():
+                    if row in ds and ds[row] is not None and v is not None:
+                        ssdev = max(ssdev, abs(v - ds[row]))
+    if have_self and ssdev > 1e-4:
+        issues.append(f"self-swap dev={ssdev:.2e} > 1e-4 (patch not a no-op)")
+
+    by_split = defaultdict(set)
+    for r in rows:
+        by_split[r.get("split")].add(r.get("id"))
+    ns = {sp: len(v) for sp, v in sorted(by_split.items())}
+    for sp, n in ns.items():
+        if n < MIN:
+            (issues if STRICT_N else warns).append(f"{sp}: n={n} < {MIN}")
+    if len(by_split) < 2:
+        warns.append(f"only {len(by_split)} split(s) present: {sorted(by_split)}")
+    sps = sorted(by_split)
+    for i in range(len(sps)):
+        for j in range(i + 1, len(sps)):
+            sh = by_split[sps[i]] & by_split[sps[j]]
+            if sh:
+                issues.append(f"{len(sh)} ids shared between {sps[i]} and {sps[j]}")
+    return issues, warns, {"n_valid": ns, "selfswap_dev": (round(ssdev, 6) if have_self else None),
+                           "dup_rows": dups, "n_cells": ncells}
+
+
+def check_refdecpatch(rows):
+    """§23 / Gate B behavioral decision-patch (scripts/phase_refusal_decision_patch_behav.py).
+
+    Row schema IS the behavioral `{id, split, cohort, <arm>_label, <arm>_score}` schema, but its arm
+    set is fixed and unique (ds_base, direct_base, ds_dpatch_direct_L*, ds_dpatch_rand_L*,
+    ds_dpatch_self_L*). All the generic behavioral integrity checks apply verbatim, so it reuses
+    check_behavioral and only adds the phase-specific arm-completeness contract on top.
+    """
+    issues, warns, info = check_behavioral(rows)
+    labelled, _ = behav_arms(rows)
+    for req in ("ds_base", "direct_base"):
+        if req not in labelled:
+            issues.append(f"missing required arm {req!r}")
+    if not any(a.startswith("ds_dpatch_direct_L") for a in labelled):
+        issues.append("no ds_dpatch_direct_L* necessity arm present")
+    return issues, warns, info
+
+
 def detect(rows):
-    """-> ('phase5'|'phase6'|'behav', checker) or (None, None) if the schema is unparseable."""
+    """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval', checker) or (None, None)."""
     if not rows:
         return None, None
     if all("cell" in r for r in rows):
@@ -326,6 +428,13 @@ def detect(rows):
         if "C1" in cells:
             return "phase6", check_phase6
         return None, None
+    # refsuploc + refdecpatch both carry id+split, so they MUST be discriminated before the generic
+    # behavioral branch below. refsuploc is keyed on its projection payload dicts (base/patched);
+    # refdecpatch is keyed on its unique decision-patch arm columns (ds_dpatch_direct_L*).
+    if all(("base" in r and "patched" in r and "id" in r) for r in rows):
+        return "refsuploc", check_refsuploc
+    if any(k.startswith("ds_dpatch_direct_L") and k.endswith("_label") for r in rows for k in r):
+        return "refdecpatch", check_refdecpatch
     if all(("id" in r and "split" in r) for r in rows):
         return "behav", check_behavioral
     # P7 refusal-direction validation. Keyed on 'arm' + 'refused', which no other phase emits;
@@ -374,9 +483,12 @@ def main():
         issues, warns, info = checker(rows)
         status = "FAIL" if issues else ("WARN" if warns else "ok")
         any_fail = any_fail or bool(issues)
-        if typ == "behav":
+        if typ in ("behav", "refdecpatch"):
             detail = (f"n={info['n_valid']} arms={info['arms']} "
                       f"empty_max={info['empty_rate_max']} dups={info['dup_rows']}")
+        elif typ == "refsuploc":
+            detail = (f"n={info['n_valid']} cells={info['n_cells']} "
+                      f"ssdev={info['selfswap_dev']} dups={info['dup_rows']}")
         elif typ == "refval":
             detail = (f"rows={info['n_valid']} cells={info['n_cells']} fam={','.join(info['families'])} "
                       f"base_h={info['n_base_harmful']} base_b={info['n_base_benign']} "
