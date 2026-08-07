@@ -533,8 +533,8 @@ genuinely have no output dirs (todo, not faked). *(That masquerade tally is [R] 
 ## 11. What is NOT done (the blunt backlog)
 
 **Capstone phases never run:**
-1. **P6 — Jacobian / projection-matrix readout. ✅ RUN 2026-08-07 (clearharm; curated in flight).** Job
-   `732004`, `reports/P6_JACOBIAN_READOUT.md`. Harness self-checks passed (hs-index maxabs 0.0; Taylor gate
+1. **P6 — Jacobian / projection-matrix readout. ✅ RUN 2026-08-07, both cohorts** (clearharm `732004`,
+   curated `732011` — localization replicates exactly). `reports/P6_JACOBIAN_READOUT.md`. Harness self-checks passed (hs-index maxabs 0.0; Taylor gate
    ratio 0.941). **Result:** the concept causal Jacobian ‖J‖ peaks mid-band **L12–L17** while the concept
    *readout* peaks **L30** — the Phase-8 "readout ≠ mechanism" dissociation reproduced by an independent
    gradient method; the refusal Jacobian peaks at **L12** (write band) and the refusal scalar drops under DS

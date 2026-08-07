@@ -1,0 +1,13 @@
+{
+  "schema": "DONE/1",
+  "run_id": "jacobian_curated_20260807_132644_732011",
+  "status": "ok",
+  "rows_written": 306,
+  "end_ts": "2026-08-07T13:28:00",
+  "end_epoch": 1786098480.4411738,
+  "wall_seconds": 47.75,
+  "phase": "P6_jacobian_readout",
+  "cohort": "curated",
+  "hs_index_check_maxabs": 0.0,
+  "taylor_median_ratio": 0.957153
+}

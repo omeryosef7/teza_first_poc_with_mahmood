@@ -1,9 +1,15 @@
 # P6 — Jacobian / projection-matrix readout (concept vs refusal)
 
-**Status: ✅ COMPLETE for clearharm** (job `732004`, n = 44 train / 42 test, both targets, all three
-conditions, `final_prompt` + `probe_last` positions). Curated cohort (`732011`) running for cross-cohort
-replication. This is the phase the master plan (§5 P6, granularity B7) had prepped but never executed until
-2026-08-07.
+**Status: ✅ COMPLETE, both cohorts** — clearharm (job `732004`, n = 44/42) and curated (job `732011`,
+n = 30/21), both targets, all three conditions, `final_prompt` + `probe_last` positions. This is the phase
+the master plan (§5 P6, granularity B7) had prepped but never executed until 2026-08-07.
+
+**Cross-cohort replication is exact on the localization and stronger on the suppression.** Curated
+reproduces the concept ‖J‖ peak at **L16** (5 of 6 cells) and the refusal ‖J‖ peak at **L12** (all 6 cells,
+identical to clearharm), Taylor ratio 0.957. The refusal-scalar drop under Doublespeak is even larger on
+curated — **direct 66–70 → DS 9–11** (near-total suppression) vs clearharm's 65 → 28 — consistent with the
+established cohort difference (curated suppresses refusal *uniformly/totally* → concept-dilution, `ds_refused
+_rate = 0.000`; clearharm suppresses *unevenly* → the under-suppressed items still refuse).
 
 **What it measures.** For each layer L, the local linear map (Jacobian) from a residual-stream perturbation
 at L to a target scalar, computed by autograd rooted at `inputs_embeds` (no `[n_params]` grad buffer). Two
@@ -77,7 +83,7 @@ summary) reported, now recovered from a completely separate code path.
 - **No inferential test on the peak layer yet.** The peaks are argmax of point estimates over 32 layers;
   the per-layer `grad_norm` carries a bootstrap `[lo,hi]` but a formal "peak is in the mid-band" test
   (e.g. bootstrap the argmax, or a mid-vs-late contrast) is not yet run.
-- **clearharm only so far;** curated replication (`732011`) pending. Single model (Llama-3.1-8B-Instruct).
+- **Both cohorts done; single model** (Llama-3.1-8B-Instruct). No cross-architecture check.
 - The behavioral-prediction arm (does the refusal Jacobian predict which items jailbreak while the concept
   Jacobian does not?) is the decisive dissociation test and has **not** been run — it needs a join with the
   `behav_refusal` ASR outcomes.
