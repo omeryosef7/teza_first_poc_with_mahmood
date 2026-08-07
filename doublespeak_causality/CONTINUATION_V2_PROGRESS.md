@@ -124,6 +124,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **§1.2 drift harness ready** (`phase_baseline_drift.py`+wrapper), held from submit (fair-share).
 - **30m-pending rule live** and applied (732264→732295).
 
+### 2026-08-07 — loop tick +6: Gate B smoke backfill timed out → fixed
+- Gate B smoke 732295 (pending 34m) → resubmitted 732336 with backfill `--time=30m`. **732336 TIMED OUT**:
+  spent ~25 min just loading (n-802 model-load contention with calinj) and hit the 30m wall before generating.
+  Lesson recorded in memory: backfill `--time` must exceed weight-load(~6–25m)+compute+judge; use ≥90m for
+  generation+judge jobs and avoid co-locating with a running model-load job.
+- Resubmitted as **732377** (`--time=90m`, exclude n-802, small footprint). Waiter re-armed.
+- calinj 732204 at 74/86 (86%), ~15–20 min from done.
+- **Gate-7 §16 tests committed** (12 CPU pass; objective-in-selection verified, sign+gradient gaps filled, no bug).
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
