@@ -1,0 +1,31 @@
+{
+  "phase": "refsuploc",
+  "title": "Refusal-suppression localization (patch-in projection restore) - clearharm, Llama-3.1-8B-Instruct",
+  "plan": "plan Appendix A / P0: one machine-readable expected-cell manifest per phase",
+  "source_script": "scripts/phase_refusal_suppression_localize.py",
+  "validator_type": "refsuploc (detect() routes on base/patched payload dicts; checked by check_refsuploc)",
+  "created": "2026-08-07",
+  "spec_version": 1,
+  "_what_this_is": "Expected-cell manifest so scripts/validate_all_outputs.py can distinguish a cell that ran and produced null from a cell that never launched. Machine-checked keys below are the only ones scripts/validate_all_outputs.py:check_manifest reads for this phase; the full patched-cell grid is documentation (check_manifest has no flat 'cell' column to test against here - see notes).",
+  "_notes": [
+    "Run-dir naming: refsuploc_<cohort>_<ts>_<uniq>; find_manifest resolves this file by the successively-shorter-prefix rule.",
+    "expected_cells (the generic check_manifest key) is deliberately ABSENT: refsuploc rows carry NO flat 'cell' column. Each row's patched cells live as nested keys 'COMP|donor|Lp' inside r['patched']; check_refsuploc already asserts an identical patched key-set across every row and no null/NaN leaf, which is the real never-launched-vs-null guard for this phase. Putting the 512-cell grid into expected_cells would report all 512 MISSING.",
+    "The 4x4x32 = 512 patched cells below are derived from the run's own summary.json (components x donors x layers), which the phase script writes; naming is '<component>|<donor>|L<layer>'.",
+    "base carries three reference conditions per row: direct, ds_base, neutral (check_refsuploc enforces).",
+    "donor 'self' is the locality no-op control: patched(self) must reproduce ds_base within 1e-4."
+  ],
+
+  "expected_splits": ["train", "dev", "test"],
+  "min_n_per_split": 20,
+
+  "grid": {
+    "keyed_by": ["component", "donor", "layer"],
+    "cell_name_format": "<component>|<donor>|L<layer>",
+    "components": ["resid_pre", "attn_out", "mlp_out", "resid_post"],
+    "donors": ["direct", "neutral", "rand", "self"],
+    "layers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    "n_expected_patched_cells": 512,
+    "base_conditions": ["direct", "ds_base", "neutral"],
+    "self_donor_is_locality_noop": true
+  }
+}

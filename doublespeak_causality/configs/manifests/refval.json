@@ -1,0 +1,27 @@
+{
+  "phase": "refval",
+  "title": "P7 refusal-direction bidirectional validation (ablate/induce + random controls) - Llama-3.1-8B-Instruct",
+  "plan": "plan Appendix A / P0",
+  "source_script": "scripts/validate_refusal_directions.py",
+  "validator_type": "refval (arm/family/layer schema; checked by check_refval)",
+  "created": "2026-08-07",
+  "spec_version": 1,
+  "_what_this_is": "Expected-cell manifest for the refusal-direction validation phase. NONE of the generic check_manifest keys apply to refval (rows carry no 'split'/'cell'/'window' column and no 'sid'/'id', and expected_arms would misfire because behav_arms() only parses behavioural arm columns). Coverage is enforced by check_refval, which requires every (family,layer) to carry all four intervention arms at paired-equal n against its baseline. The grid below documents the frozen expected (family x layer x arm) cells so a never-launched cell is distinguishable from a ran-and-null one.",
+  "_notes": [
+    "Run-dir naming: refval_<cohort>_<ts>_<uniq>; resolved by the shorter-prefix rule; presence of this file alone clears the 'no manifest' warning.",
+    "expected_splits / min_n_per_split / expected_arms / expected_cells / expected_windows are ALL deliberately ABSENT: including any of them would make check_manifest raise a spurious MISSING (refval has no split/cell/window column, no sid/id, and its arm names are not behav-detectable). This mirrors the phase9 manifest's rationale for omitting expected_arms on a non-behavioural type.",
+    "layers and families are run-parameterized (--layers, --families). Values below are the canonical continuation set (--layers 9,16,18,21,22,30 --families existing,clearharm). Baseline arms base_harmful/base_benign are generated once with family=None,layer=None.",
+    "'existing' family is induce-tested in-sample (its directions were fit on the whole harmless list); 'clearharm' is out-of-sample. See script header. A refit 'existing_fit' family is planned, not yet run."
+  ],
+
+  "grid": {
+    "keyed_by": ["family", "layer", "arm"],
+    "families": ["existing", "clearharm"],
+    "layers": [9, 16, 18, 21, 22, 30],
+    "per_cell_arms": ["ablate", "ablate_rand", "induce", "induce_rand"],
+    "baseline_arms": ["base_harmful", "base_benign"],
+    "baseline_family": null,
+    "n_expected_intervention_cells": 12,
+    "pairing_contract": "ablate n == ablate_rand n == base_harmful n; induce n == induce_rand n == base_benign n (check_refval enforces)"
+  }
+}

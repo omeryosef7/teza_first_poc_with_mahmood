@@ -1,0 +1,42 @@
+{
+  "phase": "refdecpatch",
+  "title": "Behavioral refusal decision-patch (Gate B) - clearharm, Llama-3.1-8B-Instruct",
+  "plan": "plan Appendix A / P0; phase docstring 'Gate B'",
+  "source_script": "scripts/phase_refusal_decision_patch_behav.py",
+  "validator_type": "refdecpatch (behavioral schema; checked by check_refdecpatch -> check_behavioral)",
+  "created": "2026-08-07",
+  "spec_version": 1,
+  "_what_this_is": "Expected-arm manifest for the decision-patch behavioral run. expected_arms below reflects the SCRIPT DEFAULTS (--band 15,16,17 --head-layer 17); check_manifest detects these via behav_arms() and reports any arm MISSING (never launched) vs present.",
+  "_notes": [
+    "Run-dir naming: refdecpatch_<cohort>_<ts>_<uniq>; resolved by the shorter-prefix rule.",
+    "Arms are parameterized by --band (necessity: ds_dpatch_direct_L{band}) and --head-layer (rand/self controls at L{HL}). Values here are the script defaults band=[15,16,17], HL=17, component resid_post. Re-issue this manifest if a run overrides --band/--head-layer.",
+    "check_refdecpatch additionally requires ds_base + direct_base and at least one ds_dpatch_direct_L* necessity arm; those are covered by expected_arms.",
+    "expected_splits = script default --splits train,dev,test; bench data/behavioral_v3/beh_clearharm.json carries train/dev/test = 85/43/42."
+  ],
+
+  "expected_splits": ["train", "dev", "test"],
+  "min_n_per_split": 20,
+  "expected_arms": [
+    "ds_base",
+    "direct_base",
+    "ds_dpatch_direct_L15",
+    "ds_dpatch_direct_L16",
+    "ds_dpatch_direct_L17",
+    "ds_dpatch_rand_L17",
+    "ds_dpatch_self_L17"
+  ],
+
+  "grid": {
+    "keyed_by": ["arm"],
+    "component_patched": "resid_post",
+    "necessity_band": [15, 16, 17],
+    "control_head_layer": 17,
+    "arm_roles": {
+      "ds_base": "jailbreak reference (high ASR)",
+      "direct_base": "refusing reference",
+      "ds_dpatch_direct_L*": "NECESSITY: resid_post <- Direct donor; does refusal return?",
+      "ds_dpatch_rand_L17": "SPECIFICITY: norm-matched random donor",
+      "ds_dpatch_self_L17": "LOCALITY no-op: DS own value, must ~= ds_base"
+    }
+  }
+}

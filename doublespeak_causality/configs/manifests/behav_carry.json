@@ -1,0 +1,28 @@
+{
+  "phase": "behav_carry",
+  "title": "Behavioral carry-path ablation (necessity) - clearharm, Llama-3.1-8B-Instruct",
+  "plan": "plan Appendix A / P0; CAUSAL_CIRCUIT_MASTER_PLAN carry study",
+  "source_script": "scripts/phase_behav_carry*.py (behavioural carry-ablation runner)",
+  "validator_type": "behav (behavioural schema; checked by check_behavioral)",
+  "created": "2026-08-07",
+  "spec_version": 1,
+  "_what_this_is": "Expected-arm manifest for the carry-path behavioural run. expected_arms is machine-checked by check_manifest via behav_arms(); a never-launched arm is reported MISSING, distinct from an arm that ran and produced an EMPTY/null generation.",
+  "_notes": [
+    "Run-dir naming: behav_carry_<cohort|curated>_<ts>_<uniq>; this file is resolved by the shorter-prefix rule for every behav_carry* dir (matched full runs: behav_carry_clearharm_20260804_100009 = train44/test42, behav_carry_curated_20260804_100428 = train30/test21).",
+    "Scope: behav_carry ONLY. Other behav_* sub-phases (behav_refinject_*, behav_refusal_*, behav_write_*) carry DIFFERENT and often alpha-sweep-parameterized arm sets; each needs its own manifest at its own prefix. A catch-all behav.json is intentionally NOT created because expected_arms would misfire across sub-phases.",
+    "Splits: the full carry runs emit train+test (no dev). min_n_per_split=20 is a floor (full run 44/42, curated 30/21 both pass); the 2-row smoke dir behav_carry_clearharm_20260804_095820 will correctly report train n<20 and test split MISSING - that is the never-launched signal, working as intended."
+  ],
+
+  "expected_splits": ["train", "test"],
+  "min_n_per_split": 20,
+  "expected_arms": ["baseline", "carry_abl", "rand_abl"],
+
+  "grid": {
+    "keyed_by": ["arm"],
+    "arm_roles": {
+      "baseline": "unpatched generation",
+      "carry_abl": "NECESSITY: ablate the carry-path activation",
+      "rand_abl": "SPECIFICITY: norm-matched random-position ablation control"
+    }
+  }
+}
