@@ -126,18 +126,30 @@ def main():
 
             base = {"direct": proj_last(direct_t), "ds_base": proj_last(ds_t), "neutral": proj_last(neutral_t)}
             donor_cap = {}
-            if "direct" in donors: donor_cap["direct"], _ = capture_dec(direct_t)
+            # "rand" (norm-matched random donor, §0.4 specificity) is derived from the direct donor's
+            # per-(component,layer) activation NORM, so it requires the direct capture even if direct
+            # is not itself a requested restore donor.
+            need_direct = ("direct" in donors) or ("rand" in donors)
+            if need_direct: donor_cap["direct"], _ = capture_dec(direct_t)
             if "neutral" in donors: donor_cap["neutral"], _ = capture_dec(neutral_t)
             ds_cap, ds_plen = capture_dec(ds_t)
             if "self" in donors: donor_cap["self"] = ds_cap
             dec_ds = ds_plen - 1
+            # deterministic per-item RNG for the norm-matched random donor (reproducible across
+            # processes: crc32 of the item id, NOT builtin hash() which is PYTHONHASHSEED-salted)
+            import zlib
+            rrng = torch.Generator(device="cpu").manual_seed(args.seed * 100003 + (zlib.crc32(str(it.get("id")).encode()) & 0xffffff))
 
             rec = {"id": it.get("id"), "split": split, "cohort": cohort, "base": base, "patched": {}}
             for C in comps:
                 for donor in donors:
-                    cap = donor_cap[donor]  # {comp: [n_layers,1,H]}
                     for Lp in layers:
-                        vec = cap[C][Lp, 0, :].to(dev)
+                        if donor == "rand":
+                            ref = donor_cap["direct"][C][Lp, 0, :]
+                            r = torch.randn(ref.shape, generator=rrng, dtype=torch.float32)
+                            vec = (r / (r.norm() + 1e-8) * ref.float().norm()).to(dev)
+                        else:
+                            vec = donor_cap[donor][C][Lp, 0, :].to(dev)
                         patch = pc.SubmodulePatch(lm.model, Lp, C, [dec_ds], vector=vec, mode="replace")
                         pr = proj_last(ds_t, patch)
                         rec["patched"][f"{C}|{donor}|L{Lp}"] = {str(h): round(pr[h], 5) for h in read_rows}
@@ -171,8 +183,25 @@ def main():
                     cell[key] = {"restore_ci": ci(rest), "frac_mean": round(float(np.mean(frac)), 4) if frac else None}
                     if donor == "self":
                         selfswap_max = max(selfswap_max, max(abs(x) for x in rest) if rest else 0.0)
+        # Gate A specificity: for each (component,layer) rank by DIRECT frac, then report the matched
+        # norm-random ("rand") and neutral fracs at the SAME cell. A localized necessity claim needs a
+        # cell where direct restores a large fraction while rand (same magnitude) does NOT.
+        spec = []
+        for C in comps:
+            for Lp in layers:
+                dk = f"{C}|direct|L{Lp}"
+                if dk not in cell or cell[dk]["frac_mean"] is None: continue
+                entry = {"cell": f"{C}|L{Lp}", "direct_frac": cell[dk]["frac_mean"],
+                         "direct_restore_ci": cell[dk]["restore_ci"]}
+                for alt in ("rand", "neutral", "self"):
+                    ak = f"{C}|{alt}|L{Lp}"
+                    if ak in cell:
+                        entry[f"{alt}_frac"] = cell[ak]["frac_mean"]
+                        entry[f"{alt}_restore_ci"] = cell[ak]["restore_ci"]
+                spec.append(entry)
+        spec.sort(key=lambda e: -(e["direct_frac"] if e["direct_frac"] is not None else -9))
         summ[split] = {"n": len(sr), "anchor_row": anchor_row, "direct_minus_ds_gap_mean": round(float(np.mean(gap)), 4),
-                       "cells": cell}
+                       "specificity_top": spec[:12], "cells": cell}
     out = {"cohort": cohort, "components": comps, "donors": donors, "layers": layers,
            "readout_anchor": args.readout_anchor, "validated_readout_rows": read_rows,
            "selfswap_max_abs_restore": round(selfswap_max, 6), "by_split": summ}
@@ -187,11 +216,11 @@ def main():
     for sp, s in summ.items():
         gap = s["direct_minus_ds_gap_mean"]
         print(f"  [{sp}] n={s['n']} (direct-ds) refusal gap at L{args.readout_anchor} = {gap:+.3f}", flush=True)
-        # firing control + top restoring cells (direct donor)
-        direct_cells = {k: v for k, v in s["cells"].items() if "|direct|" in k and v["frac_mean"] is not None}
-        top = sorted(direct_cells.items(), key=lambda kv: -kv[1]["frac_mean"])[:6]
-        for k, v in top:
-            print(f"     {k:>22}  restore={v['restore_ci']}  frac_of_gap={v['frac_mean']}", flush=True)
+        # top restoring cells with the Gate-A specificity comparison (direct vs norm-random vs neutral)
+        for e in s.get("specificity_top", [])[:6]:
+            rf = e.get("rand_frac"); nf = e.get("neutral_frac")
+            print(f"     {e['cell']:>16}  direct_frac={e['direct_frac']}  rand_frac={rf}  neutral_frac={nf}"
+                  f"  (direct restore CI={e['direct_restore_ci']})", flush=True)
 
 
 if __name__ == "__main__":

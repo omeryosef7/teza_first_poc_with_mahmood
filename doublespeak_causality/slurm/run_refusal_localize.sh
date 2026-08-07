@@ -26,26 +26,21 @@
 # Pass an explicit REDUCED NODELIST instead, e.g. to skip n-801:
 #   sbatch --nodelist=n-802,n-803,n-804,n-805,t-806 slurm/<wrapper>.sh
 #
-# P6 — Jacobian / projection-matrix readout (plan §5 P6).  Per (layer, position) local linear map
-# from a residual perturbation to a target scalar, for TWO SEPARATE targets:
-#   concept = logit(concept) - logit(codeword)   |   refusal = <hs[R][-1], unit(refusal dir L{R-1})>
-# reported next to the PLAIN concept/refusal/signature projections so the lenses share one table.
-# Fits nothing (a gradient needs no training), so train and test are computed in one pass.
-# (n-801 was previously excluded for slow weight loading -- see the nodelist note above.)
+# §3 (Master Plan V2) — Refusal-suppression causal localization at the DECISION TOKEN.
+# For each (layer L, component C in {resid_pre,attn_out,mlp_out,resid_post}) replace the DS prompt's
+# decision-token activation with the matched donor's decision-token activation and read the change in
+# the VALIDATED refusal-direction projection (P7 set {L13-20,24,28,29}; anchor L18; NEVER L9).
+#   donors: direct/neutral = necessity; rand = norm-matched-random specificity control (§0.4);
+#           self = locality/no-op gate (must reproduce ds_base, max|restore|~0).
+# Endpoint here is REPRESENTATIONAL; behavioral confirmation of a passing cell is a separate arm.
 #
-#   SMOKE first (2 items/split, ~2 min):
-#     sbatch --export=ALL,DSN=2 doublespeak_causality/slurm/run_jacobian.sh
-#   FULL:
-#     sbatch doublespeak_causality/slurm/run_jacobian.sh
-#   Fixed-pair bench instead of the behavioral one:
-#     sbatch --export=ALL,DSKIND=pair,DSBENCH=doublespeak_causality/data/pair_benchmark/pair_carrot_bomb.json \
-#            doublespeak_causality/slurm/run_jacobian.sh
-#   (comma-list values live in the DEFAULTS below, never via --export, which truncates them)
-# DSGRADMODE=inputs_embeds roots the autograd graph at the embeddings so the frozen weights never
-# allocate a [n_params] gradient buffer (~16GB saved on 8B bf16). If a transformers version ever
-# refuses the inputs_embeds path, fall back to 48_attribution_patching's proven route:
-#     sbatch --export=ALL,DSGRADMODE=params doublespeak_causality/slurm/run_jacobian.sh
-# (identical numbers, higher memory).
+#   SMOKE first (2 items/split, verifies the new rand/neutral donor paths):
+#     sbatch --export=ALL,DSN=2 doublespeak_causality/slurm/run_refusal_localize.sh
+#   FULL v3 clearharm cohort (default bench):
+#     sbatch doublespeak_causality/slurm/run_refusal_localize.sh
+#   FULL v3 generated cohort (scalar values only via --export; comma-lists stay in DEFAULTS):
+#     sbatch --export=ALL,DSBENCH=doublespeak_causality/data/behavioral_v3/beh_generated.json,DSCOHORT=generated \
+#            doublespeak_causality/slurm/run_refusal_localize.sh
 set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 cd "$PROJECT_DIR"
@@ -56,7 +51,7 @@ mkdir -p doublespeak_causality/logs doublespeak_causality/outputs "$PROJECT_DIR/
 export HF_HOME="$PROJECT_DIR/.cache/huggingface"; export HF_HUB_CACHE="$PROJECT_DIR/.cache/huggingface/hub"
 export HF_HUB_OFFLINE=1; export TORCH_HOME="$PROJECT_DIR/.cache/torch"; export TRITON_CACHE_DIR="$PROJECT_DIR/.cache/triton"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"; export PYTHONUNBUFFERED=1
-: "${DSBENCH:=doublespeak_causality/data/behavioral/beh_clearharm.json}"
+: "${DSBENCH:=doublespeak_causality/data/behavioral_v3/beh_clearharm.json}"   # v3 = leakage-free confirmatory (§0.5); generated cohort via --export=ALL,DSBENCH=...beh_generated.json,DSCOHORT=generated
 : "${DSKIND:=behavioral}"
 : "${DSCOHORT:=clearharm}"
 : "${DSMODEL:=meta-llama/Llama-3.1-8B-Instruct}"
@@ -64,7 +59,7 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSREFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${DSDIRS:=doublespeak_causality/outputs/unified_directions}"
 : "${DSDIRSCOHORT:=}"                                  # default: same as DSCOHORT
-: "${DSSPLITS:=train,test}"                            # comma-list kept as a DEFAULT (pair bench: dev,heldout)
+: "${DSSPLITS:=train,dev,test}"                        # comma-list kept as a DEFAULT (v3 has train/dev/test; discovery=train,dev / test=frozen full-sweep confirm)
 : "${DSCONDS:=direct,neutral,doublespeak}"             # comma-list kept as a DEFAULT
 : "${DSTARGETS:=concept,refusal}"                      # comma-list kept as a DEFAULT (never merged)
 : "${DSPOS:=final_prompt,probe_last}"                  # comma-list kept as a DEFAULT
@@ -80,7 +75,7 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSSEED:=0}"
 : "${DSANCHOR:=18}"                                   # validated readout layer to headline
 : "${DSCOMPONENTS:=resid_pre,attn_out,mlp_out,resid_post}"
-: "${DSDONORS:=direct,self}"                          # self = locality gate
+: "${DSDONORS:=direct,neutral,rand,self}"             # necessity=direct/neutral; specificity=rand (norm-matched); locality gate=self
 echo "=== refusal-suppression localize (§3): $DSMODEL bench=$DSBENCH n=$DSN ==="
 echo "    splits=$DSSPLITS components=$DSCOMPONENTS donors=$DSDONORS anchor=L$DSANCHOR layers=${DSLAYERS:-all}"
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
