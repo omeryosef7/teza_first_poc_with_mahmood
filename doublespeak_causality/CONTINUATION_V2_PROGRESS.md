@@ -25,7 +25,8 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §23 | decision-state patch (fwd + bidirectional) | ✅ **Gate B PASS fwd (reproduced); reverse NULL** | direct resid restore L17 ΔASR −0.14 p=0.012 (train) / −0.19 p=0.008 (dev); self no-op=0; random ↑ASR (specific); test underpowered (base ASR 0.167). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md`. Generated pending. |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ◐ **§16 tests PASS** | objective-in-selection verified (12 CPU tests, sign+gradient gaps filled, no bug); GPU arms 0/13 still pending |
-| others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
+| §19–21 | causal defense + utility (Gate F) | ✅ **DONE (Gate F FAIL, honest)** | defends (L18 ΔASR −0.22 p=2e-5, refusal-axis-specific) but over-refuses benign +0.28–0.40 → not selective at this dose. `reports/P_DEFENSE_UTILITY.md` |
+| others | §4–§11, §22–§29 | ☐ NOT DONE | scheduled by priority |
 
 ---
 
@@ -156,6 +157,13 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **Fragility:** norm-matched RANDOM decision-token perturbation ↑ASR massively both directions (reverse
   +0.34 p<1e-3; empty=0, coherent). Mechanism = 'intact refusal state required to refuse', not a DS compliance vector.
 - Validated (132 vals, 0 mismatch). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md` updated.
+
+### 2026-08-08 — §19-21 causal defense (Gate F) landed
+- Calibrated refusal restoration DEFENDS (train L18 ΔASR -0.224 p=2e-5, L16/L20 sig; refusal-axis-specific,
+  random control inert) BUT over-refuses benign +0.28-0.40 (also axis-specific) => **Gate F FAIL at this dose**
+  (§20 anti-pattern). Caveat: benign is attack-structured (baseline refusal 0.38-0.45); unrelated-normal untested.
+- Next: §21 minimal-dose sweep (lower α), §19.3 mechanism-triggered gating, §20 add unrelated-normal.
+- Validator: defense_util mis-detected as behav -> §36 schema being added (subagent). `reports/P_DEFENSE_UTILITY.md`.
 
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING

@@ -1,0 +1,33 @@
+{
+  "schema": "DONE/1",
+  "run_id": "defense_util_clearharm_20260808_010203_732688",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T02:33:57",
+  "end_epoch": 1786145637.228019,
+  "wall_seconds": 5507.031,
+  "attack_arms": [
+    "ds_base",
+    "ds_def_L16",
+    "ds_def_L18",
+    "ds_def_L20",
+    "ds_defrand_L16",
+    "ds_defrand_L18",
+    "ds_defrand_L20"
+  ],
+  "benign_arms": [
+    "benign_base",
+    "benign_def_L16",
+    "benign_def_L18",
+    "benign_def_L20",
+    "benign_defrand_L16",
+    "benign_defrand_L18",
+    "benign_defrand_L20"
+  ],
+  "layers": [
+    16,
+    18,
+    20
+  ],
+  "gens_written": true
+}
