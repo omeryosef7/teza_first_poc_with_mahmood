@@ -133,6 +133,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - calinj 732204 at 74/86 (86%), ~15–20 min from done.
 - **Gate-7 §16 tests committed** (12 CPU pass; objective-in-selection verified, sign+gradient gaps filled, no bug).
 
+### 2026-08-07 — loop tick +6b: Gate B smoke PASS → full launched; calinj done
+- **Gate B smoke 732377 PASS** (end-to-end): self-swap no-op ΔASR=0.0 all splits (locality ✓); on the 2
+  informative test items, direct-donor patch reduced ASR 1.0→0.5 while random did NOT (correct sign; n=2 nsig).
+  Generation-under-SubmodulePatch path validated (decode-step guard works, no crash).
+- **Full Gate B LAUNCHED:** 732388 clearharm (85/43/42), 732389 generated (77/39/38), --time=8h, off n-802.
+- **calinj 732204 DONE** (86 rows, clean): validated-layer calibrated rescue ΔASR available (e.g. L29 cal
+  ΔASR=-0.095) → depth Panel B can now be rebuilt WITH L18.
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
