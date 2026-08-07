@@ -141,6 +141,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **calinj 732204 DONE** (86 rows, clean): validated-layer calibrated rescue ΔASR available (e.g. L29 cal
   ΔASR=-0.095) → depth Panel B can now be rebuilt WITH L18.
 
+### 2026-08-07 — loop tick +11: PRIORITY-A closed; Gate B done; bidirectional launched
+- **§1.2 DONE** (drift envelope): gen-determinism=1.0, judge label-flip ~1–2% → Gate B effects 7–10× floor.
+  **All of PRIORITY-A now closed** (§1.1 ✅ / §1.2 ✅ / §1.3 ✅).
+- **Gate B DONE** both cohorts: clearharm PASS (L17 ΔASR −0.14 p=0.012 train / −0.19 p=0.008 dev, specific,
+  self=0), generated NULL (self-explaining: DS net-negative there). **Claim D earned.**
+- **§23 bidirectional launched (732560)**: reverse arm (DS resid → refusing Direct → ASR rise?) added behind
+  --bidirectional (forward byte-unchanged); smoke passed (reverse self no-op=0). Full clearharm ~2h, waiter armed.
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
