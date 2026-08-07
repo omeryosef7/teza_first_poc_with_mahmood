@@ -39,6 +39,14 @@ test) and the depth Panel B calibrated-rescue (restoring the **refusal direction
 L18 p=0.021), this establishes: **the decision-token refusal state at L15–18 is behaviorally causal for
 refuse/comply** (plan claim **D**) — restoring it specifically collapses the Doublespeak jailbreak.
 
+## Result — generated cohort (NULL, and self-explaining)
+`refdecpatch_generated_...732389` (154r, validated 117 vals/0 mismatch). Here **`direct_base` ASR > `ds_base`
+ASR** (train 0.49 vs 0.40; dev 0.44 vs 0.36; test 0.39 vs 0.37) — i.e. Doublespeak is **net-negative** on the
+generated cohort (the pre-registered non-exchangeability), so there is no refusal-suppression to restore. The
+direct patch gives only small non-significant ΔASR (train L17 −0.052 p=0.52; test L15 −0.132 p=0.18); `self`
+no-op ≈0 (locality holds). **Gate B NULL on generated is expected and coherent: the mechanism appears exactly
+where the attack actually works (clearharm), and is absent where DS does not suppress refusal (generated).**
+
 ## Caveats
 - The direct donor carries the **whole** decision-token residual, so this shows decision-**state** sufficiency;
   the refusal-**subspace-only** version is the calibrated-inject depth Panel B (also ↓ASR) — report both.
@@ -46,6 +54,6 @@ refuse/comply** (plan claim **D**) — restoring it specifically collapses the D
 - Generated cohort pending (`732389`); cohorts non-exchangeable → report per-cohort.
 
 ## Verdict & next
-- **Gate B: PASS (behavioral, clearharm train+dev); test underpowered (low base ASR).**
-- Next: append generated cohort; §1.2 noise floor to bound the test cell; optionally the bidirectional
+- **Gate B: PASS (behavioral, clearharm train+dev); NULL on generated (DS net-negative there); test cell underpowered (low base ASR).**
+- Next: §1.2 noise floor to bound the test cell; optionally the bidirectional
   Direct←DS insertion arm; feeds Figure 2 (behavior-confirmed node) + Figure 4 (decision-point causality).

@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refdecpatch_generated_20260807_194717_732389",
+  "status": "ok",
+  "rows_written": 154,
+  "end_ts": "2026-08-07T21:20:40",
+  "end_epoch": 1786126840.7327967,
+  "wall_seconds": 5601.692
+}
