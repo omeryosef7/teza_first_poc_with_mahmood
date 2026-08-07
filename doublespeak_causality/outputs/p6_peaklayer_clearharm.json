@@ -1,0 +1,83 @@
+{
+  "jac_dir": "outputs/jacobian_clearharm_20260807_132150_732004",
+  "condition": "doublespeak",
+  "position": "final_prompt",
+  "seed": 0,
+  "nboot": 5000,
+  "targets": {
+    "concept": {
+      "n_items": 86,
+      "n_layers": 31,
+      "point_peak_layer": 15,
+      "boot_peak": {
+        "modal_peak_layer": 16,
+        "modal_fraction": 0.352,
+        "ci95_layer": [
+          0,
+          16
+        ],
+        "frac_peaks_in_mid_band_L12_17": 0.9694
+      },
+      "mid_vs_late": {
+        "mid_band": [
+          12,
+          17
+        ],
+        "late_band": [
+          28,
+          30
+        ],
+        "mean_mid": 8.726,
+        "mean_late": 3.8655,
+        "point_diff_mid_minus_late": 4.8605,
+        "ci95_paired_bootstrap": [
+          4.3084,
+          5.4306
+        ],
+        "sign_test": {
+          "n_mid_gt_late": 86,
+          "n_late_gt_mid": 0,
+          "n_eff": 86,
+          "two_sided_p": 0.0
+        }
+      }
+    },
+    "refusal": {
+      "n_items": 86,
+      "n_layers": 31,
+      "point_peak_layer": 12,
+      "boot_peak": {
+        "modal_peak_layer": 12,
+        "modal_fraction": 1.0,
+        "ci95_layer": [
+          12,
+          12
+        ],
+        "frac_peaks_in_mid_band_L12_17": 1.0
+      },
+      "mid_vs_late": {
+        "mid_band": [
+          12,
+          17
+        ],
+        "late_band": [
+          28,
+          30
+        ],
+        "mean_mid": 33.7337,
+        "mean_late": 6.4943,
+        "point_diff_mid_minus_late": 27.2394,
+        "ci95_paired_bootstrap": [
+          24.611,
+          29.8652
+        ],
+        "sign_test": {
+          "n_mid_gt_late": 86,
+          "n_late_gt_mid": 0,
+          "n_eff": 86,
+          "two_sided_p": 0.0
+        }
+      }
+    }
+  }
+}

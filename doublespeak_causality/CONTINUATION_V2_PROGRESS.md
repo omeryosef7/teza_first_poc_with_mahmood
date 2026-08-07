@@ -19,7 +19,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §1.2 | GPU baseline / drift envelope | ☐ NOT DONE | queued |
 | §1.3 | v3 confirmatory validator + audit | ✅ **DONE** | `scripts/validate_dataset_v3.py` PASS; `reports/V3_CONFIRMATORY_DATA_AUDIT.md` |
 | §3 | refusal-suppression coarse localization | ◐ **IN FLIGHT** | harness+controls done; smoke 732151; full v3 next |
-| §12 | Jacobian readout | ✅ DONE (both cohorts+decisive) | remaining: curated join + peak-layer test |
+| §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ☐ NOT DONE (0/13 arms) | unit tests first (§16) |
 | others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
 
@@ -72,6 +72,18 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **Note for analysis:** the harness `frac_mean` = mean of per-item ratios is unstable at small |gap|;
   headline frac downstream should be ratio-of-means (mean restore / mean gap). restore_ci already robust.
 
+### 2026-08-07 — §12 closed (subagent, verified)
+- **Peak-layer inferential test — VERIFIED both cohorts/targets** (`scripts/analyze_jacobian_peaklayer.py`,
+  `reports/P6_PEAKLAYER_AND_CURATED_JOIN.md`): bootstrapped argmax concept modal **L16** (96.9% in mid band
+  L12-17), refusal modal **L12** (CI [L12,L12]); MID(L12-17)−LATE(L28-30) contrast all four positive, CI
+  clear of 0, sign test p≈0. Readout |proj| peaks late (L30/L25) → mid-causal/late-readout dissociation now
+  inferential, not point-estimate. Feeds Figure 3.
+- **Curated behavioral join — NULL/UNDERPOWERED** (honest): n=51, 11 MALICIOUS; refusal−concept paired AUC
+  diff −0.05 [−0.24,0.16] includes 0; floor effect (curated uniformly suppresses refusal). Not a
+  contradiction of the clearharm headline (AUC 0.807, reproduced exactly by the subagent before extending).
+
 ### Pending PRIORITY-A / next
-- §1.2 GPU baseline / judge-noise drift envelope (queue after §3 full launches).
+- §1.2 GPU baseline / judge-noise drift envelope (queue when a generation L40S slot is free).
 - Calibrated-inject rescue over validated layers {13–20,24,28,29} (closes depth Panel B at L18).
+- On §3 full landing (732161/732162): analyze coarse band (ratio-of-means frac, Wilcoxon+Holm over the
+  full 32-layer family per §0.6), then refine + behavioral confirmation of any passing (L,C) cell.
