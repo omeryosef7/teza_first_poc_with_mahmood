@@ -533,11 +533,16 @@ genuinely have no output dirs (todo, not faked). *(That masquerade tally is [R] 
 ## 11. What is NOT done (the blunt backlog)
 
 **Capstone phases never run:**
-1. **P6 — Jacobian / projection-matrix readout.** Harness `scripts/phase6_jacobian_readout.py` exists and is
-   **dry-run-verified with a passing CPU toy proof, but the real-Llama GPU pass was NEVER launched — no jacobian
-   output dir exists.** Prepped at tick 86 to fire when an a5000 slot frees. Its pre-registered predictions
-   (concept Jacobian peaks L9/L14–21 & behaviorally inert; refusal Jacobian peaks L16–22 & predicts held-out
-   ASR) are **unmeasured**.
+1. **P6 — Jacobian / projection-matrix readout. ✅ RUN 2026-08-07 (clearharm; curated in flight).** Job
+   `732004`, `reports/P6_JACOBIAN_READOUT.md`. Harness self-checks passed (hs-index maxabs 0.0; Taylor gate
+   ratio 0.941). **Result:** the concept causal Jacobian ‖J‖ peaks mid-band **L12–L17** while the concept
+   *readout* peaks **L30** — the Phase-8 "readout ≠ mechanism" dissociation reproduced by an independent
+   gradient method; the refusal Jacobian peaks at **L12** (write band) and the refusal scalar drops under DS
+   (65→28), independently corroborating refusal suppression. Two caveats remain open: (a) ‖J‖ peaks at similar
+   mid layers for *both* targets (cos with semantic dirs ≤0.03), so it is a partly-generic sensitivity profile —
+   the target-specific dissociation lives in the projection curves; (b) **the decisive behavioral-prediction
+   arm is NOT yet run** — does the refusal Jacobian predict which items jailbreak while the concept Jacobian is
+   inert? That join with the ASR outcomes is the P6 follow-on.
 2. **P9 / Gate 7 — GCG / MAC / TROPT attack-objective evaluation.** **0 of 13 (up to 21) arms ever run.** The
    P9.0 optimizer-selection bug is fixed (the repr/refusal objective now enters candidate selection, not just
    the gradient; `llama` family added; GPU-free synthetic test only) — but **no arm has executed on GPU.**

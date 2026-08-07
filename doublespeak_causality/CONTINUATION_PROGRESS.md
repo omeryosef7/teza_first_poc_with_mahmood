@@ -766,9 +766,14 @@ query GPU slot the tick-86 note was waiting on had freed, and the two P4b-1 quer
   (L16/L18/L22 ∈ [−0.049,+0.015]). The concept-write ⊥ refusal-suppression independence is **not** an
   artifact of measuring on unvalidated axes — it holds where the refusal axis is real. Wrote
   `PHASE_WRITE_REFUSAL_INTX.md §Resolution`.
-- **P6 Jacobian — LAUNCHED.** The tick-86 harness (`phase6_jacobian_readout.py`, `run_jacobian.sh`) fired.
-  Smoke `731948` briefly started on n-802 (L40S) then I moved it to idle 3090 backfill (`731950`, 40-min
-  walltime) since L40S was Priority-contended. Full run follows once the smoke's α=0/no-op anchors pass.
+- **P6 Jacobian — ✅ COMPLETE (clearharm); curated in flight.** After a walltime lesson (the first smoke
+  `731950` died loading weights on a cold-cache 3090 in 40 min — NFS thrash, first shard 6:46), the smoke
+  re-ran on L40S with 2h walltime (`731982`): both anchors passed (hs-index maxabs 0.0; Taylor ratio 0.941).
+  Full run `732004` (n=44/42) landed: **concept causal Jacobian ‖J‖ peaks L12–L17, concept readout peaks L30**
+  — the Phase-8 readout≠mechanism dissociation via a gradient method; refusal ‖J‖ peaks L12 (write band) and
+  refusal scalar drops 65→28 under DS. `reports/P6_JACOBIAN_READOUT.md`. Curated replication `732011` running.
+  Two open threads: ‖J‖ is a partly-generic mid-layer profile (target signal is in `jac_proj`/projection), and
+  the decisive behavioral-prediction arm (refusal-Jacobian predicts ASR, concept-Jacobian inert) is not yet run.
 
 ### Tick 86 — 2026-08-06 — GPU audit COMPLETE (no fakes); prepped P6 to launch on free a5000
 **All 3 audit agents returned. The answer to Omer's concern is unambiguous: NO GPU result is faked on

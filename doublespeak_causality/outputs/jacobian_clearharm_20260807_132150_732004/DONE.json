@@ -1,0 +1,13 @@
+{
+  "schema": "DONE/1",
+  "run_id": "jacobian_clearharm_20260807_132150_732004",
+  "status": "ok",
+  "rows_written": 516,
+  "end_ts": "2026-08-07T13:23:57",
+  "end_epoch": 1786098237.8620605,
+  "wall_seconds": 77.339,
+  "phase": "P6_jacobian_readout",
+  "cohort": "clearharm",
+  "hs_index_check_maxabs": 0.0,
+  "taylor_median_ratio": 0.94135
+}
