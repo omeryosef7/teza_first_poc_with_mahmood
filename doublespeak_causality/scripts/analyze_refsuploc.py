@@ -102,6 +102,8 @@ def analyze_dir(run_dir, anchor, frac_thr, comps, donors, seed=0):
                     dci = st.paired_bootstrap_ci(dr[:m], ra[:m], n_boot=2000, seed=seed)
                     cells[dk][f"minus_{alt}_ci"] = [round(dci["lo"], 4), round(dci["hi"], 4)]
                     cells[dk][f"minus_{alt}_excludes0"] = bool((dci["lo"] > 0 or dci["hi"] < 0) and dci["ci_reliable"])
+                    # specificity requires the DONOR restore MORE than the control (lo>0), not merely differ
+                    cells[dk][f"minus_{alt}_donor_higher"] = bool(dci["lo"] > 0 and dci["ci_reliable"])
 
         # Holm over the direct-donor per-component family + pooled grid
         holm = {}
@@ -127,7 +129,7 @@ def analyze_dir(run_dir, anchor, frac_thr, comps, donors, seed=0):
                 dk = f"{C}|direct|L{Lp}"
                 e = cells.get(dk, {})
                 sig = (e.get("holm_p_percomp") is not None and e["holm_p_percomp"] < 0.05)
-                spec = e.get("minus_rand_excludes0", False)
+                spec = e.get("minus_rand_donor_higher", False)  # direct must restore MORE than norm-random
                 fr = e.get("frac_ratio_of_means")
                 if sig and spec and fr is not None and fr >= frac_thr:
                     hits.append({"cell": f"{C}|L{Lp}", "frac": fr, "restore_ci": e["restore_ci"],

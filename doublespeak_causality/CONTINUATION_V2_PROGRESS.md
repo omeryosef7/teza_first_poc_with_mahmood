@@ -18,7 +18,9 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §1.1 | refusal-validation BR-09/WR-02 + depth fig | ✅ **DONE** | audit regen (VERIFIED=72, UNVERIFIED=0, PENDING=0, 145 checks 0-fail); `figures/fig_depth_validated.png` |
 | §1.2 | GPU baseline / drift envelope | ☐ NOT DONE | queued |
 | §1.3 | v3 confirmatory validator + audit | ✅ **DONE** | `scripts/validate_dataset_v3.py` PASS; `reports/V3_CONFIRMATORY_DATA_AUDIT.md` |
-| §3 | refusal-suppression coarse localization | ◐ **IN FLIGHT** | harness+controls done; smoke 732151; full v3 next |
+| §3 | refusal-suppression coarse localization | ✅ **Gate A PASS (repr)** | clearharm residual L15–18 restores refusal frac≈0.93 (Holm≈0), replicated train/dev/**test**; NULL on generated. Behavioral (Gate B) next. `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md` |
+| §4 | carry vs write vs origin | ◐ partial | §3 shows residual-CARRY (attn/mlp barely restore); origin=§5 |
+| §23 | decision-state counterfactual patch (behavioral) | ☐ NEXT | Gate B: patch DS decision resid←Direct during generation, ΔASR |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ☐ NOT DONE (0/13 arms) | unit tests first (§16) |
 | others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
@@ -90,9 +92,23 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **Calinj closure launched (732204):** re-ran the proven calibrated-inject rescue over the FULL P7-validated
   layer set {13–20,24,28,29} (was {9,16,22,28}) on beh_clearharm — closes depth Panel B at L18 (feeds Fig 2/4).
 
+### 2026-08-07 — loop tick +2: §3 LANDED, Gate A PASS (clearharm)
+- Both §3 runs completed clean (170/154 rows, DONE.json). Ran `analyze_refsuploc.py`.
+- **clearharm: Gate A PASS, replicated train/dev/TEST** — residual overwrite (Direct→DS) at L15–18 restores
+  the refusal projection frac≈0.93 at L18 (Holm-p≈0 train/dev, 0.005 test), specific vs norm-random,
+  self-swap≤5e-6; robust at anchor L24 (frac 0.83 patching L20, 6 layers upstream). **attn_out/mlp_out barely
+  restore (0.04–0.25) → residual CARRY, not sub-block write.** Onset ~L13 (matches P7).
+- **generated: NULL** — no cell beats the norm-random control in any split (non-exchangeable, expected).
+- **Self code-review caught a real bug in my analyzer:** the specificity gate accepted "CI excludes 0" in
+  EITHER direction, so a generated-cohort cell where random restored MORE than direct was wrongly flagged a
+  hit. Fixed to require direct−rand lower bound > 0 (donor restores MORE than control). Re-ran → generated
+  correctly shows 0 hits.
+- Report: `reports/P_REFUSAL_SUPPRESSION_LOCALIZATION.md`.
+
 ### Pending PRIORITY-A / next
-- §1.2 GPU baseline / judge-noise drift envelope (build harness carefully next; reuse dc.load_model+behav_judge).
-- On §3 landing: run analyze_refsuploc.py on both cohorts → coarse band → refine + behavioral confirmation.
-- Rebuild depth Panel B with the new calinj layers once 732204 lands.
+- **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
+  generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
+- §1.2 GPU baseline / judge-noise drift envelope (reuse dc.load_model+behav_judge; drift = re-judge K×).
+- Rebuild depth Panel B with the new calinj validated layers once 732204 lands.
 - On §3 full landing (732161/732162): analyze coarse band (ratio-of-means frac, Wilcoxon+Holm over the
   full 32-layer family per §0.6), then refine + behavioral confirmation of any passing (L,C) cell.
