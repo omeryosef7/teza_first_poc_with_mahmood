@@ -30,7 +30,7 @@ and exits nonzero if any dir FAILS a hard check.
 Usage: python scripts/validate_experiment_coverage.py <dir> [<dir> ...] [--min 20]
 """
 from __future__ import annotations
-import argparse, json, math, os, sys
+import argparse, json, math, os, re, sys
 from collections import Counter, defaultdict
 
 MIN_DEFAULT = 20
@@ -417,8 +417,98 @@ def check_refdecpatch(rows):
     return issues, warns, info
 
 
+def check_defense_util(rows):
+    """§36 calibrated refusal restoration as a DEFENSE + its UTILITY cost
+    (scripts/phase_defense_utility.py).
+
+    Row schema IS the behavioral `{id, split, cohort, <arm>_label, <arm>_score, <arm>_stop}` schema,
+    but with a UNIQUE two-sided arm layout:
+      ATTACK arms  ds_base / ds_def_L* / ds_defrand_L*        StrongREJECT-judged (ASR = frac MALICIOUS)
+      BENIGN arms  benign_base / benign_def_L* / benign_defrand_L*  refusal-only, score ALWAYS None
+    Because the benign/utility arms carry a null score by design, the generic check_behavioral
+    null-score gate would false-FAIL on every one of them; hence a bespoke checker. Checks:
+      - no duplicate `id` within a split                                            FAIL
+      - ds_base + at least one ds_def_L* defense arm present                        FAIL
+      - attack-arm completeness on every row; benign-arm completeness on the rows
+        that carry the benign (utility) side                                        FAIL
+      - label vocabulary per side (attack 4-way, benign 3-way, no MALICIOUS)        FAIL
+      - benign/utility arm score is None (refusal-only contract)                    FAIL
+      - ids disjoint across splits                                                  FAIL
+      - n per split >= MIN (--strict-n promotes to FAIL)                            warn
+    """
+    issues, warns = [], []
+    labelled, _ = behav_arms(rows)
+    attack = [a for a in labelled
+              if a == "ds_base" or a.startswith("ds_def_L") or a.startswith("ds_defrand_L")]
+    benign = [a for a in labelled if a.startswith("benign_")]
+    if "ds_base" not in labelled:
+        issues.append("missing required arm 'ds_base'")
+    if not any(a.startswith("ds_def_L") for a in labelled):
+        issues.append("no ds_def_L* defense arm present")
+
+    keys = Counter((r.get("split"), r.get("id")) for r in rows)
+    dups = sum(c - 1 for c in keys.values() if c > 1)
+    if dups:
+        issues.append(f"{dups} duplicate (split,id) rows")
+    if any(r.get("id") is None for r in rows):
+        issues.append("rows missing 'id'")
+    if any(r.get("split") is None for r in rows):
+        issues.append("rows missing 'split'")
+
+    # attack side present on every row; benign side present only on the rows that ran the utility arms
+    miss = Counter()
+    for r in rows:
+        for a in attack:
+            if f"{a}_label" not in r:
+                miss[f"{a}_label"] += 1
+        if "benign_base_label" in r:
+            for a in benign:
+                if f"{a}_label" not in r:
+                    miss[f"{a}_label"] += 1
+    if miss:
+        issues.append("incomplete arms: " + ", ".join(f"{k}(missing {v})" for k, v in sorted(miss.items())[:6]))
+
+    ATTACK_LABELS = {"MALICIOUS", "REJECTED", "BENIGN", "EMPTY"}
+    BENIGN_LABELS = {"REJECTED", "BENIGN", "EMPTY"}          # utility side is never scored -> never MAL
+    nbadlab, nbadscore = 0, 0
+    for r in rows:
+        for a in attack:
+            if f"{a}_label" in r and r[f"{a}_label"] not in ATTACK_LABELS:
+                nbadlab += 1
+        for a in benign:
+            if f"{a}_label" in r:
+                if r[f"{a}_label"] not in BENIGN_LABELS:
+                    nbadlab += 1
+                if r.get(f"{a}_score") is not None:
+                    nbadscore += 1
+    if nbadlab:
+        issues.append(f"{nbadlab} arm labels outside the allowed vocabulary")
+    if nbadscore:
+        issues.append(f"{nbadscore} benign/utility arm cells carry a non-null score (refusal-only contract)")
+
+    by_split = defaultdict(set)
+    for r in rows:
+        by_split[r.get("split")].add(r.get("id"))
+    ns = {sp: len(v) for sp, v in sorted(by_split.items())}
+    for sp, n in ns.items():
+        if n < MIN:
+            (issues if STRICT_N else warns).append(f"{sp}: n={n} < {MIN}")
+    if len(by_split) < 2:
+        warns.append(f"only {len(by_split)} split(s) present: {sorted(by_split)}")
+    sps = sorted(by_split)
+    for i in range(len(sps)):
+        for j in range(i + 1, len(sps)):
+            sh = by_split[sps[i]] & by_split[sps[j]]
+            if sh:
+                issues.append(f"{len(sh)} ids shared between {sps[i]} and {sps[j]}")
+
+    return issues, warns, {"n_valid": ns, "selfswap_dev": None, "dup_rows": dups,
+                           "n_attack": len(attack), "n_benign": len(benign)}
+
+
 def detect(rows):
-    """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval', checker) or (None, None)."""
+    """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval'|'defense_util', checker)
+    or (None, None)."""
     if not rows:
         return None, None
     if all("cell" in r for r in rows):
@@ -435,6 +525,11 @@ def detect(rows):
         return "refsuploc", check_refsuploc
     if any(k.startswith("ds_dpatch_direct_L") and k.endswith("_label") for r in rows for k in r):
         return "refdecpatch", check_refdecpatch
+    # defense_util (§36) also carries id+split+<arm>_label, so it MUST precede the generic behav
+    # branch. Its discriminator is the per-layer calibrated-restoration defense arm `ds_def_L<N>_label`
+    # (distinct from refdecpatch's `ds_dpatch_direct_L*` and from every behav arm).
+    if any(re.fullmatch(r"ds_def_L\d+_label", k) for r in rows for k in r):
+        return "defense_util", check_defense_util
     if all(("id" in r and "split" in r) for r in rows):
         return "behav", check_behavioral
     # P7 refusal-direction validation. Keyed on 'arm' + 'refused', which no other phase emits;

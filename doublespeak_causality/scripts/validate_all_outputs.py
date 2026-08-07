@@ -1022,11 +1022,91 @@ def expect_refdecpatch(rows, summary, res=None):
     return exp
 
 
+def expect_defense_util(rows, summary, res=None):
+    """`scripts/phase_defense_utility.py` (§36: calibrated refusal restoration as a defense, with its
+    benign utility cost).
+
+    Two-sided arm layout that expect_behav cannot reconcile: expect_behav writes a single ASR table
+    over ALL arms, but this phase reports ASR only for the ATTACK arms (`attack_ASR`, frac MALICIOUS)
+    and a refusal_rate only for the BENIGN/utility arms (`benign_refusal_rate`, frac REJECTED); routing
+    it through expect_behav flagged every benign ASR key as a deleted number. Recomputed per split:
+      attack_ASR / attack_empty / attack_len_rate per attack arm,
+      benign_refusal_rate / benign_empty per benign arm (only when the utility side ran),
+      and per validated layer L the by_layer block -- delta_ASR (ds_def_L vs ds_base), rand_delta_ASR,
+      the phase's own discordant counts (flip_defended = base MAL & def not; flip_broken = base not &
+      def MAL) and mcnemar_p (stats.mcnemar_test, mirrored by mcnemar_p_stats), plus benign_over_refusal
+      / benign_rand_over_refusal (benign_def_L vs benign_base). `alpha` is imported from the projection
+      summary, not derivable from raw.jsonl, so it is left unchecked.
+    """
+    exp = Expect()
+    pref, cont = split_container(summary)
+    for sp, node in cont.items():
+        sr = [r for r in rows if r.get("split") == sp]
+        if not sr or not isinstance(node, dict):
+            continue
+        P = pref(sp)
+
+        def mal(r, a):
+            return r.get(f"{a}_label") == MAL
+
+        def frac(arm, lab):
+            return mean([r.get(f"{arm}_label") == lab for r in sr])
+
+        if "n" in node:
+            exp.put(f"{P}.n", len(sr))
+        if "has_benign" in node:
+            exp.put(f"{P}.has_benign", any("benign_base_label" in r for r in sr))
+
+        attack_arms = list((node.get("attack_ASR") or {}).keys())
+        benign_arms = list((node.get("benign_refusal_rate") or {}).keys())
+        for a in attack_arms:
+            if isinstance(node.get("attack_ASR"), dict):
+                exp.put(f"{P}.attack_ASR.{a}", frac(a, MAL))
+            if isinstance(node.get("attack_empty"), dict):
+                exp.put(f"{P}.attack_empty.{a}", frac(a, "EMPTY"))
+            if isinstance(node.get("attack_len_rate"), dict):
+                exp.put(f"{P}.attack_len_rate.{a}", mean([r.get(f"{a}_stop") == "len" for r in sr]))
+        for a in benign_arms:
+            if isinstance(node.get("benign_refusal_rate"), dict):
+                exp.put(f"{P}.benign_refusal_rate.{a}", frac(a, "REJECTED"))
+            if isinstance(node.get("benign_empty"), dict):
+                exp.put(f"{P}.benign_empty.{a}", frac(a, "EMPTY"))
+
+        asr = {a: frac(a, MAL) for a in attack_arms}
+        rej = {a: frac(a, "REJECTED") for a in benign_arms}
+        bl = node.get("by_layer")
+        if isinstance(bl, dict):
+            for Lk, blk in bl.items():
+                if not isinstance(blk, dict):
+                    continue
+                L = int(Lk)
+                da, dr = f"ds_def_L{L}", f"ds_defrand_L{L}"
+                if da in asr and "ds_base" in asr:
+                    exp.put(f"{P}.by_layer.{Lk}.delta_ASR", asr[da] - asr["ds_base"])
+                    b = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, da))  # def newly MAL (broke)
+                    c = sum(1 for r in sr if mal(r, "ds_base") and not mal(r, da))  # base MAL, def not (fixed)
+                    if "flip_defended" in blk:
+                        exp.put(f"{P}.by_layer.{Lk}.flip_defended", c)
+                    if "flip_broken" in blk:
+                        exp.put(f"{P}.by_layer.{Lk}.flip_broken", b)
+                    if "mcnemar_p" in blk:
+                        exp.put(f"{P}.by_layer.{Lk}.mcnemar_p", round(mcnemar_p_stats(c, b), 5))
+                if dr in asr and "ds_base" in asr:
+                    exp.put(f"{P}.by_layer.{Lk}.rand_delta_ASR", asr[dr] - asr["ds_base"])
+                bd, brd = f"benign_def_L{L}", f"benign_defrand_L{L}"
+                if "benign_over_refusal" in blk and bd in rej and "benign_base" in rej:
+                    exp.put(f"{P}.by_layer.{Lk}.benign_over_refusal", rej[bd] - rej["benign_base"])
+                if "benign_rand_over_refusal" in blk and brd in rej and "benign_base" in rej:
+                    exp.put(f"{P}.by_layer.{Lk}.benign_rand_over_refusal", rej[brd] - rej["benign_base"])
+    return exp
+
+
 EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
           "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
           "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
           "p9": expect_p9, "refval": expect_refval,
-          "refsuploc": expect_refsuploc, "refdecpatch": expect_refdecpatch}
+          "refsuploc": expect_refsuploc, "refdecpatch": expect_refdecpatch,
+          "defense_util": expect_defense_util}
 
 
 def detect_ext(rows):
@@ -1093,13 +1173,13 @@ def check_manifest(rows, man, typ):
         warns.append(f"manifest: unexpected split '{s}'")
     minn = man.get("min_n_per_split")
     if minn:
-        key = "id" if typ in ("behav", "refdecpatch", "refsuploc") else "sid"
+        key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util") else "sid"
         for s in sorted(got_splits):
             n = len({r.get(key) for r in rows if r.get("split") == s})
             if n < minn:
                 issues.append(f"manifest: split '{s}' has n={n} < min_n_per_split={minn}")
     if man.get("expected_arms"):
-        labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch") else ([], [])
+        labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch", "defense_util") else ([], [])
         got = set(labelled) | set(numeric)
         for a in man["expected_arms"]:
             if a not in got:
@@ -1207,7 +1287,7 @@ def validate_dir(d, args):
         if len(ie) > 1:
             res["issues"].append(f"rows mix induce_eval populations {sorted(ie)}; gains are not comparable")
         res["splits"] = {**res.get("splits", {}), "fit": f, "eval": e}
-    key = "id" if typ in ("behav", "refdecpatch", "refsuploc") else "sid"
+    key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util") else "sid"
     ids = defaultdict(set)
     for r in ([] if typ == "refval" else rows):
         ids[r.get("split")].add(r.get(key))
