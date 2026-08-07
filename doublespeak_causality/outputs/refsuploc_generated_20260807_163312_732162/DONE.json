@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refsuploc_generated_20260807_163312_732162",
+  "status": "ok",
+  "rows_written": 154,
+  "end_ts": "2026-08-07T17:22:08",
+  "end_epoch": 1786112528.5329294,
+  "wall_seconds": 2931.595
+}
