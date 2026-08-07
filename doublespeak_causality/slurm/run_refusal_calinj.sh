@@ -45,7 +45,7 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSSPLITS:=train,test}"   # comma-list kept as a DEFAULT here (not via --export, which truncates)
 : "${DSREFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${DSPROJ:=doublespeak_causality/outputs/refproj_clearharm_20260804_162641_711392/summary.json}"
-: "${DSCALLAYERS:=9,16,22,28}"
+: "${DSCALLAYERS:=13,14,15,16,17,18,19,20,24,28,29}"   # P7 both-family VALIDATED set (§0.5); original run used 9,16,22,28 -> extended to close depth Panel B at L18. comma-list = DEFAULT (never --export)
 : "${DSMAXNEW:=180}"
 : "${DSSEED:=0}"
 echo "=== cal-inject: $DSMODEL bench=$DSBENCH layers=$DSCALLAYERS maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"

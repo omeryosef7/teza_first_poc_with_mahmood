@@ -82,8 +82,17 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   diff −0.05 [−0.24,0.16] includes 0; floor effect (curated uniformly suppresses refusal). Not a
   contradiction of the clearharm headline (AUC 0.807, reproduced exactly by the subagent before extending).
 
+### 2026-08-07 — loop tick +1 (§3 running; analyzer prepped; calinj closure launched)
+- §3 full 732161(clearharm)/732162(generated) RUNNING on n-802, weights loaded clean (~6min), ~compute phase, ~4h.
+- **§3 analyzer ready** (`scripts/analyze_refsuploc.py`): ratio-of-means frac, one-sided Wilcoxon (§0.6, not
+  permutation), Holm per-component+pooled, Gate-A hit = Holm-sig ∧ direct−rand CI excludes 0 (reliability-gated)
+  ∧ frac≥thr. Tested on smoke → correctly 0 hits at n=2. The loop applies it the moment 732161/732162 land.
+- **Calinj closure launched (732204):** re-ran the proven calibrated-inject rescue over the FULL P7-validated
+  layer set {13–20,24,28,29} (was {9,16,22,28}) on beh_clearharm — closes depth Panel B at L18 (feeds Fig 2/4).
+
 ### Pending PRIORITY-A / next
-- §1.2 GPU baseline / judge-noise drift envelope (queue when a generation L40S slot is free).
-- Calibrated-inject rescue over validated layers {13–20,24,28,29} (closes depth Panel B at L18).
+- §1.2 GPU baseline / judge-noise drift envelope (build harness carefully next; reuse dc.load_model+behav_judge).
+- On §3 landing: run analyze_refsuploc.py on both cohorts → coarse band → refine + behavioral confirmation.
+- Rebuild depth Panel B with the new calinj layers once 732204 lands.
 - On §3 full landing (732161/732162): analyze coarse band (ratio-of-means frac, Wilcoxon+Holm over the
   full 32-layer family per §0.6), then refine + behavioral confirmation of any passing (L,C) cell.
