@@ -81,8 +81,10 @@ is a single raw feature with no fitted parameters, so CV measures subsample stab
 
 The clearharm effect is **not a layer cherry-pick and not in-sample optimism**: single-feature AUC is stable
 **0.84–0.89 across L17–L32** (all Mann-Whitney p<1e-7; only the early L13 is weaker at 0.69, as expected since
-refusal is weakly represented early), and **5-fold cross-validated AUC = 0.887 ± 0.106** (out-of-sample logistic
-regression on the single projection feature), matching/exceeding the in-sample value. Join verified by
+refusal is weakly represented early). The originally quoted *"5-fold CV AUC = 0.887 ± 0.106"* is **WITHDRAWN
+and does not reproduce** (original fold assignment never recorded; see the cross-validation note above); a
+deterministic stratified 5-fold (seed 0) gives **0.869 ± 0.055** at L21, and CV is near-meaningless here anyway
+(a single raw feature has no fitted parameters, so CV measures subsample stability, not generalization). Join verified by
 per-item spot-check (low projection→MALICIOUS, high→REJECTED). Note the projection is essentially the model's
 refusal-decision variable read at the decision token, so this is a *mechanistic localization* of the gate
 (refusal is decided on this axis at this position), not a surprising external predictor — that it lands at

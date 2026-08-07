@@ -794,15 +794,22 @@ CLAIMS = [
          checks=[dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.22.delta_ASR", expect=-0.25),
                  dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.16.delta_ASR", expect=-0.2046),
                  dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.28.delta_ASR", expect=-0.2273)]),
-    dict(id="BR-09", phase="BEHAV-REFUSAL", status="PENDING", effect=-0.0682,
-         claim="'The refusal DECISION is read MID-LATE (~L16-22), NOT early: L9 is ns (dASR -0.068, p=0.45) on both splits and both cohorts.'",
-         source="PHASE_BEHAV_REFUSAL.md §'Calibrated localization'", dirs=[D["cal_ch"], D["cal_cu"], D["p7_full"]],
-         script="scripts/phase_refusal_inject_calibrated.py", recompute=BCA.format(d=D["cal_ch"]),
-         note="AT RISK. The P7 smoke flags the **L9 refusal direction as INVALID** (as are essentially all of L0-L14). If L9 is not a valid refusal direction then "
-              "'L9 ns' is UNINFORMATIVE -- injecting a direction that does not control refusal should do nothing regardless of depth -- which removes the contrast "
-              "that gives the depth claim its force. It would not overturn the L22 result. Job 720463 (DSVALN=20) decides this.",
-         checks=[dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.9.delta_ASR", expect=-0.0682),
-                 dict(kind="summary", dir=D["cal_ch"], path="by_split.train.by_layer_vs_ds_base.9.mcnemar_p", expect=0.45312, tol=1e-4)]),
+    dict(id="BR-09", phase="P7", status="VERIFIED", effect=None,
+         claim="The behaviorally meaningful refusal representation first becomes CAUSALLY MANIPULABLE at ~L13: L9 / all of L0-L12 carry NO validated linear refusal axis in EITHER direction family (incl. the out-of-sample benign re-run); the axis first validates at L13, and only {L13-L20, L24, L28, L29} validate in both families. The L22 rescue is significant in both cohorts.",
+         source="reports/P7_REFUSAL_DIRECTION_VALIDATION.md §4c (jobs 720463/721957/722611/724931)",
+         dirs=["outputs/refval_clearharm_20260806_054117_722611", D["p7_full"], "outputs/refval_clearharm_20260806_111105_724931"],
+         script="scripts/validate_refusal_directions.py",
+         recompute="python scripts/validate_all_outputs.py outputs/refval_clearharm_20260806_054117_722611",
+         note="REFRAMED + RESOLVED 2026-08-06. The OLD phrasing ('L9 is ns, so the decision is read mid-late') was UNINFORMATIVE: L0-L12 carry no valid refusal axis "
+              "in either family (existing.invalid_layers and clearharm.invalid_layers both include 0-11), so 'L9 ns' was injecting a direction that does not control "
+              "refusal -- it should do nothing regardless of depth. The supportable, positive statement is the ONSET of causal manipulability at L13, drawn identically "
+              "by two independently-built direction families. Evidence: full-32 validation 722611 (existing valid_layers start at 13, n_valid 12; clearharm valid_layers "
+              "start at 13, n_valid 15), the ablate/bidirectional runs 720463/721957, and the out-of-sample benign re-run 724931 (L9 invalid in both families on the "
+              "benign population too). CAVEAT that must travel: L22 validates in the clearharm refit only under the harmless population; anchor depth statements on "
+              "L16/L18, which validate in both families on all three populations tested.",
+         checks=[dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path=["by_family","existing","n_valid"], expect=12),
+                 dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path=["by_family","clearharm","n_valid"], expect=15),
+                 dict(kind="json_path", file=os.path.join("outputs/refval_clearharm_20260806_054117_722611", "summary.json"), path=["by_family","existing","best_layer"], expect=15)]),
     dict(id="BR-10", phase="P7", status="VERIFIED",
          claim="At DSVALN=20 on the headline layers, L9 FAILS BOTH validation arms in BOTH direction families "
                "(ablate_spec -0.050/-0.100; induce_spec +0.000/+0.000 against a full +1.000 headroom), while L16 and "
@@ -863,14 +870,18 @@ CLAIMS = [
          note="PENDING on the same per-layer direction validation. Separately: this harness tokenizes with add_special_tokens=True on an already-templated string, so "
               "it runs a DOUBLE-BOS 38-token forward. Checked and it does not bite -- the readout is at the LAST position either way, and the extra BOS is common-mode "
               "across direct/ds/neutral so it cancels in the paired delta."),
-    dict(id="BR-12", phase="PHASE2_DIRECTIONS", status="UNVERIFIED",
+    dict(id="BR-12", phase="PHASE2_DIRECTIONS", status="VERIFIED",
          claim="The concept axis is orthogonal to the refusal axis: mean cos(concept, refusal) = 0.012 / 0.061 and max |cos| <= 0.153 over all 32 layers, both cohorts.",
          source="PHASE2_DIRECTIONS.md; FINAL_CAUSAL_CIRCUIT_REPORT.md Q9(a)", dirs=["outputs/unified_directions"],
          script="scripts/build_unified_directions.py", recompute="python scripts/build_unified_directions.py",
-         note="CROSS-CONVENTION COMPARISON. The refusal vectors were built through `ds_common.forward_hidden_states` (double BOS, 38 tokens) while the concept vectors "
-              "come from `pair_common` / `48_attribution_patching` (single BOS, 37 tokens), so the cosine compares vectors from slightly different contexts. One extra "
-              "BOS is a small perturbation and the claim has a wide margin, so this is a methods caveat, not an invalidation -- but it has never been MEASURED both ways. "
-              "P7 rebuilds the directions under add_special_tokens=False and must report both conventions.")
+         note="RECOMPUTED 2026-08-06 from the committed outputs/unified_directions/{clearharm,curated}.json per-layer cosines: clearharm mean 0.012, max|cos| 0.078; "
+              "curated mean 0.061, max|cos| 0.153 -- both match the shipped summary exactly and satisfy the claim. CAVEAT (cross-convention, unchanged): the refusal "
+              "vectors were built through `ds_common.forward_hidden_states` (double BOS, 38 tokens) while the concept vectors come from `pair_common` / "
+              "`48_attribution_patching` (single BOS, 37 tokens), so the cosine compares vectors from slightly different contexts. One extra BOS is a small perturbation "
+              "and the claim has a wide margin, so this is a methods caveat, not an invalidation -- but it has never been MEASURED both ways.",
+         checks=[dict(kind="json_path", file="outputs/unified_directions/clearharm.json", path=["summary","mean_cos_concept_refusal"], expect=0.012),
+                 dict(kind="json_path", file="outputs/unified_directions/clearharm.json", path=["summary","max_abs_cos_concept_refusal"], expect=0.0777),
+                 dict(kind="json_path", file="outputs/unified_directions/curated.json", path=["summary","max_abs_cos_concept_refusal"], expect=0.1527)])
 
     ,
     # ============================== BEHAV-CARRY / BEHAV-WRITE (prior sprint) ===================
@@ -904,13 +915,18 @@ CLAIMS = [
          checks=[dict(kind="summary", dir=D["wrx_ch"], path="by_split.train.pconcept_control.ds", expect=0.8844),
                  dict(kind="summary", dir=D["wrx_ch"], path="by_split.train.pconcept_control.writeabl", expect=0.7988),
                  dict(kind="summary", dir=D["wrx_cu"], path="by_split.test.pconcept_control.writeabl", expect=0.457, tol=1e-3)]),
-    dict(id="WR-02", phase="WRITE x REFUSAL", status="PENDING",
-         claim="The concept-write and the refusal-suppression are CAUSALLY INDEPENDENT: frac_of_direct_gap_restored ~ 0 (|.|<0.05) at every layer in every cell, i.e. write-ablation leaves DS's refusal suppression completely unmoved.",
+    dict(id="WR-02", phase="WRITE x REFUSAL", status="VERIFIED",
+         claim="The concept-write and the refusal-suppression are CAUSALLY INDEPENDENT: restricted to the P7-validated layers {L13-L20,24,28,29}, frac_of_direct_gap_restored is <=|0.05| in every cell (<=|0.025| on clearharm), i.e. write-ablation leaves DS's refusal suppression unmoved WHERE THE REFUSAL AXIS IS REAL.",
          source="PHASE_WRITE_REFUSAL_INTX.md §'Result'", dirs=[D["wrx_ch"], D["wrx_cu"], D["p7_full"]], script="scripts/phase_write_refusal_interaction.py",
          recompute="python scripts/validate_all_outputs.py " + D["wrx_ch"],
-         note="PENDING on per-layer refusal-direction validation (720463) -- the readout is the per-layer refusal projection. This harness uses SINGLE-BOS tokenization "
-              "(cleaner than the original projection harness). It is the mechanistic reason offered for why the concept circuit is behaviorally epiphenomenal, so it "
-              "carries real weight in the paper's argument."),
+         note="RESOLVED + STRENGTHENED 2026-08-06. The original 'every layer' framing was blocked because L0-L12 carry no valid refusal axis (P7); restricting the readout "
+              "to the P7-validated layers makes the independence claim rest only on layers where the projection is a real refusal measurement -- and it holds there with "
+              "room to spare. Recomputed from committed rows (328 summary values, 0 mismatched): max|frac_of_direct_gap_restored| over validated layers = 0.023/0.025 "
+              "(clearharm train/test) and 0.050/0.019 (curated train/test). This harness uses SINGLE-BOS tokenization (cleaner than the original projection harness). "
+              "It is the mechanistic reason offered for why the concept circuit is behaviorally epiphenomenal, so it carries real weight in the paper's argument.",
+         checks=[dict(kind="summary", dir=D["wrx_ch"], path="by_split.train.per_layer.18.frac_of_direct_gap_restored", expect=0.007),
+                 dict(kind="summary", dir=D["wrx_ch"], path="by_split.test.per_layer.16.frac_of_direct_gap_restored", expect=0.025),
+                 dict(kind="summary", dir=D["wrx_cu"], path="by_split.train.per_layer.18.frac_of_direct_gap_restored", expect=-0.05)]),
 
     # ============================== item-level rep -> behavior =================================
     dict(id="RP-01", abstract_block='RESOLVED -- L21 validates in BOTH families on the out-of-sample benign population (job 724931). Kept blocked only because an abstract should still name the readout layer explicitly.', phase="REP->BEHAV", status="VERIFIED", effect=None,
@@ -989,12 +1005,18 @@ CLAIMS = [
          script="scripts/phase6_mlp_causal.py", recompute=P6A.format(d=D["p2_ch_all"]),
          note="The DEMO-ONLY framing is superseded by P2: the write operates over EVERY codeword occurrence in context, and the demo-only measurement understates it. "
               "The layer structure itself is unchanged. FINAL_CAUSAL_CIRCUIT_REPORT.md and PHASE6_MLP.md both still carry the narrow framing and need editing."),
-    dict(id="FIN-03", phase="Phase 7c", status="UNVERIFIED", effect=None,
+    dict(id="FIN-03", phase="Phase 7c", status="VERIFIED", effect=None,
          claim="The L14-21 carry HEAD-SET is partially sufficient for the concept readout: installing the DS carry-head z into a benign prompt raises p_concept to 0.16-0.47 (20-53% of the full DS reading), significant and specific in all 4 cells.",
-         source="FINAL_CAUSAL_CIRCUIT_REPORT.md Q4; PHASE7_PATH.md", dirs=[D["p7c_ch"]],
-         script="scripts/phase7c_sufficiency.py", recompute="python scripts/validate_all_outputs.py " + D["p7c_ch"],
-         note="PHASE7_PATH.md cites NO run dir; the dir above was traced by the harness's naming convention, not by the report. Representational only -- its BEHAVIORAL "
-              "sufficiency is untested (prior state-injection was <=0.16)."),
+         source="FINAL_CAUSAL_CIRCUIT_REPORT.md Q4; PHASE7_PATH.md", dirs=[D["p7c_ch"], "outputs/phase7c_suffic_curated_20260803_222439_706024"],
+         script="scripts/phase7c_sufficiency.py", recompute="python scripts/validate_all_outputs.py " + D["p7c_ch"] + " outputs/phase7c_suffic_curated_20260803_222439_706024",
+         note="RECOMPUTED 2026-08-06 from both traced dirs (clearharm 706025, curated 706024; 24 summary values, 0 mismatched). mean_S3_carry_install spans all 4 cells: "
+              "clearharm 0.434/0.467 (dev/heldout), curated 0.162/0.240 -- i.e. 0.16-0.47, matching the claim. Every cell's sufficiency_raw_ci (S3-S1) and "
+              "sufficiency_specific_ci (S3-Srand) excludes 0, so significant AND specific in all 4 cells; self_install_max_dev = 0.0 (locality). PHASE7_PATH.md cites "
+              "NO run dir; both dirs were traced by the harness's naming convention. Representational only -- its BEHAVIORAL sufficiency is untested (prior "
+              "state-injection was <=0.16).",
+         checks=[dict(kind="summary", dir=D["p7c_ch"], path="by_split.heldout.mean_S3_carry_install", expect=0.4674),
+                 dict(kind="summary", dir="outputs/phase7c_suffic_curated_20260803_222439_706024", path="by_split.dev.mean_S3_carry_install", expect=0.1617),
+                 dict(kind="summary", dir="outputs/phase7c_suffic_curated_20260803_222439_706024", path="by_split.heldout.mean_S3_carry_install", expect=0.2395)]),
     dict(id="FIN-04", phase="Phase 5b", status="WITHDRAWN",
          claim="'The Q/K/V decomposition of the carry heads is a null -- K/V contribute ~0.'",
          source="FINAL_CAUSAL_CIRCUIT_REPORT.md §'Scale-up validation' (Phase 5b)", dirs=["outputs/phase5b_qkv_curated_20260804_013548_707412"],
@@ -1028,11 +1050,12 @@ CLAIMS = [
          source="CONTINUATION_PROGRESS.md 'Validator scope'", dirs=[],
          script="scripts/validate_all_outputs.py", recompute="python scripts/validate_all_outputs.py outputs/*",
          note="A 'VERIFIED' status is only as strong as the raw rows being on disk. Legacy dirs cannot be re-derived at all."),
-    dict(id="META-03", phase="P0", status="UNVERIFIED",
-         claim="Phase 9's `monotone_decreasing` dose-response flag.",
+    dict(id="META-03", phase="P0", status="VERIFIED", abstract_block='A per-dir data defect (the sole summary!=raw mismatch in the corpus). Methods/limitations.',
+         claim="Phase 9's `monotone_decreasing` dose-response flag is STALE ON DISK: in 2 of the 5 phase9_dose dirs the committed summary flag disagrees with its own rows under the current [0,1] alpha definition (summary=False, recomputed=True); it is the only summary!=raw mismatch anywhere in the cited corpus.",
          source="CONTINUATION_PROGRESS.md 'Validator schema coverage'; PHASE9_DOSE.md", dirs=[D["p9_ch"], D["p9_cu"]],
          script="scripts/phase9_dose.py", recompute="python scripts/validate_all_outputs.py outputs/phase9_dose_*",
-         note="REAL MISMATCH ON DISK, and this audit reproduces it live: `validate_all_outputs.py` reports "
+         note="CONFIRMED as a data defect (status VERIFIED like META-04/META-05: the DEFECT is what is verified, reproduced live this audit). "
+              "`validate_all_outputs.py` reports "
               "`FAIL: summary!=raw at by_split.heldout.monotone_decreasing: summary=False recomputed=True` on "
               "`phase9_dose_curated_L9_20260803_173754_704861`. The flag was computed under the PRE-AUDIT alpha>1-inclusive definition and disagrees with its own "
               "rows under the current [0,1] definition, in 2 of the 5 `phase9_dose` dirs. **This is the only `summary!=raw` mismatch anywhere in the cited corpus.** "
@@ -1249,11 +1272,13 @@ def render(claims, dir_info, verdicts, vsummary, do_validate):
     A("3. **The concept-write behavioral null SURVIVES the decode-safe re-test (P10) but is UNDERPOWERED** "
       "(P10-07). n = 86; 80 % power needs **n ≈ 275** at ΔASR = 0.09 (**n ≈ 419** at 0.07). Write "
       "*\"no effect detectable at this n\"*, never *\"no effect\"*.")
-    A("4. **Every per-layer refusal claim is gated on a validation run that has not landed** (BR-08…BR-11, "
-      "TR-01, WR-02, RP-01). Job **720463** is RUNNING; the DSVALN=3 smoke suggests only **15/32** "
-      "directions validate and that **L9 is INVALID** — which would make \"L9 ns\" uninformative and remove "
-      "the contrast that gives the depth-localization claim its force. **L30**, the trajectory readout "
-      "layer, is also flagged invalid in that smoke.")
+    A("4. **The per-layer refusal-direction validation has LANDED and reframes the depth claim** (BR-08…BR-11, "
+      "TR-01, WR-02, RP-01). Jobs **720463 / 721957 / 722611 / 724931** completed: **L0-L12 (incl. L9) carry NO "
+      "valid refusal axis in either family**, the axis first validates at **L13**, and only "
+      "**{L13-L20, L24, L28, L29}** validate in both families. So \"L9 ns\" is uninformative and is replaced by "
+      "the positive onset-at-L13 statement (BR-09, now VERIFIED); WR-02's independence claim is re-stated on the "
+      "validated layers only (also VERIFIED). **L30** (the trajectory readout, TR-01) validates in only one "
+      "family — re-read depth/trajectory statements at L16/L18.")
     A("5. **The judge has a measured ~2 pp label-flip floor on BYTE-IDENTICAL text** (P81-01), so any "
       "|ΔASR| below ~2 pp is uninterpretable. Every row below is flagged against it.")
     A("")
@@ -1274,9 +1299,13 @@ def render(claims, dir_info, verdicts, vsummary, do_validate):
       "remained the sole qualifying dose at every n, so no conclusion depended on the partial file.")
     A("- **`P10_DECODE_SAFE_WRITE.md` §5 mis-cites its own power source** (P10-07): it attributes n ≈ 275 to "
       "ΔASR ≈ 0.07, but P10.0 §5 gives 275 for 0.09 and **419** for 0.07.")
-    A("- **`REP_PREDICTS_BEHAVIOR.md`'s robustness paragraph is not reproducible** (RP-03): the shipped "
+    A("- ~~**`REP_PREDICTS_BEHAVIOR.md`'s robustness paragraph is not reproducible** (RP-03): the shipped "
       "script emits only the single-layer result, so the L17–L32 AUC sweep and the 5-fold CV AUC "
-      "0.887 ± 0.106 exist in no committed code path or JSON.")
+      "0.887 ± 0.106 exist in no committed code path or JSON.~~ **RESOLVED 2026-08-06.** `--sweep` now "
+      "recomputes every layer from the committed refproj rows (stability half reproduces: L17–L31 span "
+      "0.844–0.884). The withdrawn CV AUC 0.887 ± 0.106 is not recoverable (original folds unrecorded) and "
+      "has been struck from REP_PREDICTS_BEHAVIOR.md; a deterministic 5-fold (seed 0) gives 0.869 ± 0.055 "
+      "at L21 — cite that, though CV is near-meaningless for a single unfitted feature.")
     A("- **Four paper-facing reports name no run directory at all** — PHASE5_HEADS, PHASE7_PATH, "
       "PHASE9_DOSE, CAUSAL_OBJECTIVE (and PHASE_WRITE_REFUSAL_INTX). Their dirs were recovered here through "
       "harness naming conventions, not through the reports.")
@@ -1392,8 +1421,10 @@ def render(claims, dir_info, verdicts, vsummary, do_validate):
       "contrast is needed first.")
     A("- ❌ *A mechanism-derived GCG objective fails.* — SUPERSEDED (FIN-05): the objective was never in "
       "candidate selection.")
-    A("- ❌ Anything about **per-layer refusal depth** (\"the decision is read mid-late, not early\") until "
-      "job 720463 lands — BR-08, BR-09, BR-10, BR-11, TR-01.")
+    A("- ⚠️ The OLD framing **\"the refusal decision is read mid-late, not early\"** — RETIRED. The validation "
+      "(720463/721957/722611/724931) landed: L0-L12 carry no valid refusal axis, so \"L9 ns\" was "
+      "uninformative. Cite the positive replacement instead — **the refusal axis first becomes causally "
+      "manipulable at L13** (BR-09), anchored on L16/L18 which validate in both families.")
     A("")
     A("---")
     A("")
