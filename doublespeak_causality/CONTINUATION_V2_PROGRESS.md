@@ -24,7 +24,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §4 | carry vs write vs origin | ◐ partial | §3 shows residual-CARRY (attn/mlp barely restore); origin=§5 |
 | §23 | decision-state counterfactual patch (behavioral) | ☐ NEXT | Gate B: patch DS decision resid←Direct during generation, ΔASR |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
-| §14–18 | Gate-7 attack objective | ☐ NOT DONE (0/13 arms) | unit tests first (§16) |
+| §14–18 | Gate-7 attack objective | ◐ **§16 tests PASS** | objective-in-selection verified (12 CPU tests, sign+gradient gaps filled, no bug); GPU arms 0/13 still pending |
 | others | §4–§11, §19–§29 | ☐ NOT DONE | scheduled by priority |
 
 ---
