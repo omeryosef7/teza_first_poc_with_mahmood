@@ -76,3 +76,23 @@ parallel, ≤2/node, `--nodelist` not `--exclude`; smoke (DSN=2, self-swap=0 gat
 Implement the harness `scripts/phase_refusal_suppression_localize.py` + wrapper
 `slurm/run_refusal_localize.sh`, unit-test the hook (self-swap=0, firing control moves), smoke it, then launch
 the coarse W×C×P grid on v3-clearharm train+dev.
+
+---
+## Addendum (2026-08-07, before any run) — decision-token scoping of the activation-patching arm
+Implementing §3 surfaced a design fact that refines (does not reverse) the estimand, recorded here per §0.1
+so it is not a silent post-hoc change:
+
+- **Activation-patching needs a *matched* donor.** The decision token (position −1) is shared by the DS and
+  Direct/Neutral prompts (both end with the same query + generation prompt), so a Direct-donor swap there is a
+  clean matched counterfactual. **Demo-region positions (B/C/D) exist only in the DS prompt — there is no
+  matched activation donor** for them, so patching them with an arbitrary donor would be uninterpretable.
+- **Therefore the activation-patching arm localizes the decision-token READOUT/CARRY of the suppression
+  (§4B/§4C):** for each (layer L, component C) it asks *at which layer/component can overwriting the DS
+  decision state with the Direct one restore the downstream refusal readout?* The **demo-ORIGIN** question
+  (§4A) is answered by **§5 (demo-content manipulation)**, which keeps intent/format matched while changing the
+  suppression — that is the correct tool for a source with no activation counterfactual.
+- Harness: `scripts/phase_refusal_suppression_localize.py`. Endpoint = refusal projection at the anchor
+  validated readout row (default L18) at the decision token; sweep L0–31 × {resid_pre, attn_out, mlp_out,
+  resid_post} × donor {direct, self}. Self-swap (donor=self) is the locality gate (max|restore|→0); a
+  late-layer resid_post Direct patch is the firing/movability control. This arm also directly instantiates
+  §23 (counterfactual decision-state patch) and feeds §22 (timing).
