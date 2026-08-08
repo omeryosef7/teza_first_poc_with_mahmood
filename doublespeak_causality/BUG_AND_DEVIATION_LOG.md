@@ -78,3 +78,18 @@ Chronological. Each entry: what, evidence, impact, resolution.
 **Fix.** Added `TAG="${SLURM_JOB_ID:-}"` and filtered every capture: `ls -dt outputs/pair_X_*${TAG} | head -1`. Concurrent runs are now isolated. Re-ran the 3 pairs. (Same racy pattern exists in ds_kv_mediation/ds_additive_control/ds_stage4_toctou but those were only ever run one-at-a-time; fix before any concurrent use.)
 
 **Lesson.** Single-pair bomb results (694691, run alone) are UNAFFECTED. Only the concurrent S5 batch was hit.
+
+## 2026-08-08 — Gate-7 (§14-18) pre-registration deviation (user-approved)
+The frozen manifest `configs/manifests/phase9_gcg_mac_matrix.json` runs the decisive refusal arm (arm07) at
+**L22 with an UN-validated `refusal_alllayers` vector on the v1 (leaky) GCG split**. P7 validation (postdating
+the freeze) shows L22 validates in only one direction family; the plan §15 mandates anchoring on validated
+L16/L18 (never L9), and §0.5 mandates v3 for confirmatory claims. This is a genuine conflict between the frozen
+pre-registration and the plan's later mandatory rules.
+**Decision (user, 2026-08-08): run BOTH directions.** (a) frozen arm07 at L22 with the unvalidated vector
+(honors the original pre-reg), AND (b) corrected arm07 at **validated L18** (`refval_clearharm_20260806_051728_721957/
+refusal_direction_clearharm_L18.pt`). This converts the deviation into a measured comparison: does the
+layer/validation choice change the Gate-7 conclusion?
+**Split caveat:** no v3 GCG manifest exists (`data/gcg/clearharm_llama` is v1 only); building one is out of
+first-cut scope. Both direction arms therefore run on the SAME v1 `clearharm_llama_doublespeak.jsonl`, so the
+comparison is purely the L18-vs-L22 direction axis (split held at v1). v3-GCG is logged as a future build.
+Scale (user): MINIMAL first-cut only (~6-8 GPU-h) to prove the pipeline before any full matrix.
