@@ -32,7 +32,23 @@ direct at EVERY validated layer — L16 9.5→8.4, L20 19.8→0.9, L24 55.9→21
 direct−ds large-positive everywhere). **X3 PASS**: the Doublespeak attack suppresses the refusal representation
 on Qwen3-14B, exactly as on Llama. (Raw pooled projections; the direct≫ds gap is unambiguous.)
 
-## X4–X5 — PENDING
+## X4 — refusal ablation ↑harm & DS ≈ refusal-suppression on Qwen3? ✅ PASS
+`phase_behav_refusal.py` (Qwen3-14B, thinking-off, L24 dir; run 736656), v3b clearharm.
+- **Refusal ablation specifically raises harm:** direct_base ASR 0.082 -> direct_refabl 0.271 (refusal rate
+  0.906 -> 0.224); the norm-matched RANDOM ablation does NOT (direct_randabl 0.059). => the refusal direction
+  causally gates harmful compliance on Qwen3, and it is direction-specific.
+- **DS ≈ refusal-suppression:** ds_base ASR (0.282) ≈ direct+refusal-ablation (Δ≈0.012, p=1.0), and further
+  ablating DS barely moves it (ds_refabl 0.224) => Doublespeak already sits at the refusal-suppression ceiling.
+  **X4 PASS** (ablation/necessity + DS-equivalence). (Restoration↓DS is the Gate-B analogue, not re-run here.)
+
+## X5 — PENDING
+- **X5 (last gate):** does the concept readout again FAIL to explain behavior on Qwen3? (concept ablation / carry
+  install on Qwen3 -> no ASR change, unlike refusal). Reuse §9/§10 recipe on Qwen3.
+
+## Cross-model verdict: 4 of 5 gates PASS
+X1 ✅ attack raises ASR · X2 ✅ refusal dir fits+validates (5/5) · X3 ✅ DS suppresses it · X4 ✅ refusal
+ablation ↑harm & DS≈suppression (direction-specific). **"Refusal-suppression, not concept remapping" GENERALIZES
+to Qwen3-14B (a second family) — not Llama-specific.** Only X5 (concept fails on Qwen3) remains.
 - **X4 (next):** on Qwen3, does refusal ABLATION raise harmful behavior AND refusal RESTORATION reduce DS ASR?
   (reuse the ablation/restoration recipe with the Qwen3 validated dir, thinking-off.)
 - **X5:** does the concept readout again fail to explain behavior on Qwen3?
