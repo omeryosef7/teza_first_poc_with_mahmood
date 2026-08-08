@@ -25,7 +25,7 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 | §23 | decision-state patch (fwd + bidirectional) | ✅ **Gate B PASS fwd (reproduced); reverse NULL** | direct resid restore L17 ΔASR −0.14 p=0.012 (train) / −0.19 p=0.008 (dev); self no-op=0; random ↑ASR (specific); test underpowered (base ASR 0.167). `reports/P_GATE_B_DECISION_STATE_BEHAVIORAL.md`. Generated pending. |
 | §12 | Jacobian readout | ✅ **DONE + closed** | peak-layer test VERIFIED (concept L16/refusal L12 mid-peak, MID−LATE p≈0); curated join NULL/UNDERPOWERED (n=51, 11 mal) |
 | §14–18 | Gate-7 attack objective | ◐ **§16 tests PASS** | objective-in-selection verified (12 CPU tests, sign+gradient gaps filled, no bug); GPU arms 0/13 still pending |
-| §19–21 | causal defense + utility (Gate F) | ✅ **DONE (Gate F FAIL, honest)** | defends (L18 ΔASR −0.22 p=2e-5, refusal-axis-specific) but over-refuses benign +0.28–0.40 → not selective at this dose. `reports/P_DEFENSE_UTILITY.md` |
+| §19–21 | causal defense + utility + dose sweep (Gate F) | ✅ **DONE (Gate F FAIL, structural)** | defends (L18 ΔASR −0.19 to −0.22, refusal-axis-specific) but over-refuses benign; **§21 dose sweep: NO selective dose** (attack/over-refusal ratio ~const 0.5) → selective defense needs intent-conditioning (§19.3). `reports/P_DEFENSE_UTILITY.md` |
 | others | §4–§11, §22–§29 | ☐ NOT DONE | scheduled by priority |
 
 ---
@@ -164,6 +164,12 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   (§20 anti-pattern). Caveat: benign is attack-structured (baseline refusal 0.38-0.45); unrelated-normal untested.
 - Next: §21 minimal-dose sweep (lower α), §19.3 mechanism-triggered gating, §20 add unrelated-normal.
 - Validator: defense_util mis-detected as behav -> §36 schema being added (subagent). `reports/P_DEFENSE_UTILITY.md`.
+
+### 2026-08-08 — §21 minimal-dose sweep (732750): no selective dose (structural Gate F FAIL)
+- L18 α-scale {0.25,0.5,0.75,1.0}: attack ΔASR and benign over-refusal rise TOGETHER (ratio ~const 0.5).
+  Smallest dose with sig attack effect (0.75) already over-refuses +0.28. Refusal axis shared attack/benign =>
+  scalar dose can't separate them => selective defense requires intent-conditioning (§19.3), not global steering.
+- Validated 150 vals/0 mismatch (lone FAIL = fixed-dose manifest vs sweep arms, coverage-spec only).
 
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING

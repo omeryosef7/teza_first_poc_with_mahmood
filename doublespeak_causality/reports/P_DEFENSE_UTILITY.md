@@ -38,6 +38,25 @@ over-refusal +0.10–0.12; truncation ~0.19.
    baseline refusal is already high (0.38–0.45); over-refusal on truly *unrelated-normal* prompts (§20's fifth
    condition) was **not** tested and is likely lower. Truncation ~0.16–0.19 under defense (empty=0, coherent).
 
+## §21 minimal-dose sweep (L18, `732750`) — NO selective dose exists
+Swept the calibrated-α scale ∈ {0.25,0.5,0.75,1.0} at L18 (validated 150 vals, 0 mismatch; the lone
+validator FAIL is the fixed-dose manifest not listing dose-suffixed arms — a coverage-spec mismatch, not data).
+
+| dose | α | attack ΔASR (p) | benign over-refusal | attack/over-refusal |
+|---|---|---|---|---|
+| 0.25 | 0.71 | −0.024 (ns) | +0.153 | ~0.15 |
+| 0.50 | 1.41 | −0.094 (p=0.057) | +0.200 | ~0.47 |
+| 0.75 | 2.12 | −0.106 (p=0.049) | +0.282 | ~0.38 |
+| 1.00 | 2.83 | −0.188 (p=1e-4) | +0.376 | ~0.50 |
+
+**Both curves rise together; the attack-defense / benign-over-refusal ratio is ≈constant (~0.5) across doses.**
+There is **no dose that defends meaningfully while sparing benign prompts** — the smallest dose with a
+significant attack effect (0.75) already over-refuses +0.28. This is a **stronger Gate F FAIL than the
+fixed-dose run**: the failure is not a bad α choice, it is **structural** — the refusal axis is *shared*
+between attack and benign, so globally restoring it refuses everything roughly proportionally. Selective
+defense therefore cannot come from a scalar dose on the refusal axis; it must **condition on harmful intent**
+(§19.3 mechanism-triggered gating) rather than steer refusal unconditionally.
+
 ## Verdict & next
 - **Gate F (this dose): FAIL** — effective, specific attack defense but unacceptable benign over-refusal.
 - **§21 minimal-dose:** sweep α downward per layer to find the point that defends with tolerable over-refusal

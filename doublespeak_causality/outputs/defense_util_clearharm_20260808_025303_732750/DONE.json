@@ -1,0 +1,42 @@
+{
+  "schema": "DONE/1",
+  "run_id": "defense_util_clearharm_20260808_025303_732750",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T05:04:31",
+  "end_epoch": 1786154671.7486799,
+  "wall_seconds": 7857.369,
+  "attack_arms": [
+    "ds_base",
+    "ds_def_L18_d0.25",
+    "ds_def_L18_d0.5",
+    "ds_def_L18_d0.75",
+    "ds_def_L18_d1.0",
+    "ds_defrand_L18_d0.25",
+    "ds_defrand_L18_d0.5",
+    "ds_defrand_L18_d0.75",
+    "ds_defrand_L18_d1.0"
+  ],
+  "benign_arms": [
+    "benign_base",
+    "benign_def_L18_d0.25",
+    "benign_def_L18_d0.5",
+    "benign_def_L18_d0.75",
+    "benign_def_L18_d1.0",
+    "benign_defrand_L18_d0.25",
+    "benign_defrand_L18_d0.5",
+    "benign_defrand_L18_d0.75",
+    "benign_defrand_L18_d1.0"
+  ],
+  "layers": [
+    18
+  ],
+  "dose_scales": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "swept": true,
+  "gens_written": true
+}
