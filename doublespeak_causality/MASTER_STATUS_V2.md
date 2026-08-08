@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=14 / PARTIAL=11 / NOT_DONE=3** (§4/§6/§25 closed; §8 partial [8.2 done]; §28/§29 fulls running).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=15 / PARTIAL=11 / NOT_DONE=2** (§29 closed; §28 running; §14-18 first-cut committed).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -33,7 +33,7 @@ authoritative remaining-work roadmap.
 | §26 | E | PARTIAL | Y | Within-Llama generalization (unseen concepts/cod | No dedicated §26 harness/report. VARIABLE DEMO-COUNT and ALTERNATE-BENIGN-CODEWORD axes have no committed evidence. The existence/causal/prediction/attack-optim |
 | §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
 | §28 | E | NOT_DONE | Y | Framework robustness — reproduce ≥1 headline int | Re-run ≥1 headline intervention (refusal ablation / restoration / decision-state patch) under a second implementation (TransformerLens or nnsight, or a minimal  |
-| §29 | E | NOT_DONE | Y | Quantization / deployment robustness of refusal  | Add a quantization_config path to load_model; run the corrected baseline + refusal ablation/restoration under 8-bit and 4-bit (optionally AWQ/GPTQ); test whethe |
+| §29 | E | DONE | Y | Quantization / deployment robustness of refusal  | — (P29: refusal ablation raises harm at bf16/8bit/4bit [+0.26/+0.29/+0.52, McNemar sig], random ablation ns at all -> mechanism survives quantization; runs 737624/625/626, test n=42) |
 | §33 | F | PARTIAL | Y | Target figures F1–F8 | Build F5 (dose vs demo-count from PHASE9_DOSE data — CPU plot), F6 (blocked on Gate-7 §14–18 GCG arms, GPU), assemble a combined F4 (add the Gate-B counterfactu |
 
 ## Execution order (remaining, by plan §31 priority)
