@@ -1,0 +1,27 @@
+# §27 — Cross-Model Replication (staged X1–X5 gate)
+
+**Central question:** is "refusal suppression, not concept remapping" general, or Llama-specific?
+2nd model = **Qwen3-14B** (different family; the only viable non-Llama cached model with weights + repo infra;
+Mistral/Gemma-4 are un-downloaded stubs). Thinking DISABLED for a clean behavioral readout (thinking-on
+truncated CoT → confounded ASR; fixed via `--enable-thinking false`).
+
+## X1 — does DS measurably alter ASR? ✅ PASS (modest)
+`baseline_drift_...736516` (Qwen3-14B, v3b clearharm test n=42, thinking-off):
+| condition | ASR | ntok | trunc |
+|---|---|---|---|
+| direct | 0.095 | 81 | 0.02 |
+| **doublespeak** | **0.143** | 155 | 0.12 |
+| neutral | 0.024 | 69 | 0.05 |
+| benign(codeword) | 0.214 | 149 | 0.14 |
+
+**DS ASR (0.143) > direct (0.095) > neutral (0.024)** → the Doublespeak attack raises harmful compliance on
+Qwen3-14B (ΔASR vs direct ≈ +0.048). Qwen3-14B is more robust than Llama-3.1-8B (lower absolute ASR), but the
+attack's behavioral signature replicates. gen-determinism=1.0; empty=0. **X1 PASS** (caveat: n=42, small
+absolute effect — a fuller train/dev run would tighten the McNemar/CI).
+
+## X2–X5 — PENDING
+- **X2:** independently fit + validate a refusal direction on Qwen3-14B (40 layers) — reuse
+  `build_refusal_direction_llama.py` / `validate_refusal_directions.py`, generalized to the model's layer count.
+- **X3:** does DS suppress that validated direction? **X4:** refusal ablation ↑harm AND restoration ↓DS.
+- **X5:** concept readout again fails to explain behavior.
+Only spend compute as each gate passes.
