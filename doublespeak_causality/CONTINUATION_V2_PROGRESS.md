@@ -241,3 +241,16 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   IndepProjectOut head-to-head (byte-identical gens => same edit) + guarded nnsight forward cross-check
   (nnsight 0.7.0 installed); smoke 737512 queued.
 - Three GPU smokes in flight (737496/737500/737512), all fair-share PENDING; waiters armed. On pass → full runs.
+
+### 2026-08-08 (later) — §4 mediation harness authored; 30m-rule resubmit of §8
+- **§4 refusal carry-vs-readout mediation** authored (phase4_refusal_mediation.py + run_phase4_mediation.sh):
+  direct-vs-total decomposition of each §7 refusal-carry head's effect on the decision-token refusal
+  projection (clean=DS/suppressed, donor=DIRECT decision-token z — aligned last token, no demo-align needed).
+  Reuses VALIDATED pp50.capture_clean_all/FreezeAllHeadsExcept/FreezeMLP + pc.ZHeadPatch/ZHeadCapture and
+  copies phase7_direct_total's freeze-consistency + self-swap sanity gates. Scoped to B(carry)-vs-C(readout);
+  A(demo-origin) is position-alignment-confounded → left to §5. Forward/patching → ≥23GB allowlist.
+- **30m-pending rule fired on §8 smoke 737496** (PENDING 31m, fair-share): scancel + resubmit as 737571 with a
+  DIFFERENT config — wide ≥23GB nodelist (3090 n-301..350 + a5000 n-501..503 + a6000 n-602 + L40S), since §8 is
+  a patching job that runs on any Ampere+ ≥23GB GPU. §4 smoke 737572 launched on the same wide nodelist.
+- Queue: §28 737512 (gen/L40S), §29 737500 (gen/L40S), §8 737571 + §4 737572 (patching/wide). Waiters armed.
+- NOT_DONE now: §4 (smoke running), §8 (smoke running), §25 (full mediation — next), §28 (smoke), §29 (smoke).
