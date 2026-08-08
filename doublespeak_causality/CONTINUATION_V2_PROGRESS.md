@@ -180,6 +180,16 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   defense needs an independent harmful-intent signal. `reports/P_DEFENSE_UTILITY.md`.
 - Validated: reviewed harness; defense_gated validator schema being added (§36).
 
+### 2026-08-08 — CONSOLIDATION phase (all experiments done + validated)
+- **Claim audit integrated**: +5 VERIFIED (RS-01 Gate A, GB-01 Gate B, GB-02 bidir-reverse NULL, DEF-01 defense
+  non-selective, NF-01 noise floor) => 95 claims, VERIFIED=77, 173 checks, 0 CHECK-FAIL. No report-vs-summary mismatch.
+- **Synthesis** updated with full bidirectional + defense arc (neither-circuit result).
+- **Figures**: F2 (localization), depth Panel B (validated + L18), **F7 (defense tradeoff / non-selectivity)** done.
+- All output dirs validate 0-mismatch; validator schemas cover refsuploc/refdecpatch/defense_util/defense_gated (§36).
+- **Remaining fronts (not blocking the core story):** F3 (three-notions, P6 ready); §14-18 Gate-7 GPU arms
+  (objective validated by §16 tests — the major unfinished capstone, needs careful GCG harness setup); §10 powered
+  concept-ablation; §5 position decomposition; §27 cross-model. Core plan arc (refusal circuit causal + defense) DONE.
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
