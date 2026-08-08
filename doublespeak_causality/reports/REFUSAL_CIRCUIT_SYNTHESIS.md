@@ -117,11 +117,13 @@ shown on both a static-readout axis and an independent gradient/sensitivity axis
    together bracket the claim, but neither alone isolates "only the refusal subspace, nothing else."
 4. **Single model.** Everything is Llama-3.1-8B-Instruct, bf16, single hooking framework. No
    cross-architecture check (§27) and no framework-robustness check (§28) yet.
-5. **Bidirectional arm is PENDING.** The reverse swap (insert DS decision residual into a *refusing* Direct
-   prompt → does ASR **rise**?) is launched as **job 732560** (forward arm byte-unchanged; reverse-self
-   no-op=0 in smoke) but has **not landed**. If the reverse swap raises ASR, Gate B upgrades from PASS to
-   **STRONG** (§32 Gate B STRONG criterion). Until then the causal claim rests on the necessity direction
-   (restore→refuse) plus specificity/locality controls, which is already a PASS.
+5. **Bidirectional arm is DONE — reverse is a NULL (Gate B stays PASS, not STRONG).** Forward *reproduced*
+   (732560: direct L17 ΔASR −0.153 p=0.011 vs −0.141 in 732388). But inserting the DS decision residual into a
+   *refusing* Direct prompt does **not** induce compliance (≈ self no-op) → the swap is **not clean**, so Gate B
+   is **PASS (necessity + specificity + locality), not STRONG**, reported honestly. Bonus finding: a
+   norm-matched *random* decision-state perturbation raises ASR massively (+0.34, p<1e-3, coherent) both
+   directions → decision-state **fragility** (an intact refusal state is required to refuse; breaking it is
+   generic, restoring it is specific). See `P_GATE_B_DECISION_STATE_BEHAVIORAL.md`.
 6. **Jacobian ‖J‖ is a partly-generic mid-layer profile** (cos with semantic directions ≤0.03); the
    target-specific signal lives in `jac_proj`/projection, so the load-bearing P6 result is the mid-causal /
    late-readout dissociation and the behavioral-prediction AUC, not the bare ‖J‖ peak (P6 §3).
@@ -135,11 +137,15 @@ shown on both a static-readout axis and an independent gradient/sensitivity axis
 
 ## 5. What remains open
 
-- **§23 bidirectional counterfactual (PENDING, job 732560).** The strongest possible causal demonstration; a
-  clean reverse swap would move Gate B to STRONG.
-- **§19–21 causal defense + utility (OPEN).** Whether refusal-axis restoration to the *normal* Direct-harmful
-  distribution (not extreme α=12) is a *selective* defense that reverses Doublespeak while preserving benign
-  behavior (over-refusal, task quality). Claim G is unearned until the utility arm runs.
+- **§23 bidirectional counterfactual — RESOLVED (reverse NULL).** Forward reproduced; reverse (DS→Direct) does
+  not induce compliance → Gate B PASS not STRONG; plus a decision-state fragility finding (see caveat 5).
+- **§19–21 causal defense + utility — RESOLVED (Claim G FAILS: no selective mechanism-derived defense).**
+  Refusal restoration is an effective, refusal-axis-*specific* attack defense (L18 ΔASR −0.19 to −0.22) but
+  over-refuses benign at **every dose** (§21: attack/over-refusal ratio ≈const 0.5) and even under **intent-
+  gating** (§19.3: the gate fires on benign ≥ attacks because DS suppresses refusal to a benign-indistinguishable
+  level). **Deep result:** the concept circuit *encodes intent but is behaviorally epiphenomenal* while the
+  refusal circuit *drives behavior but is not intent-selective* → **neither alone yields a selective defense**;
+  a practical defense needs an independent harmful-intent signal. See `P_DEFENSE_UTILITY.md`.
 - **§27 cross-model replication (OPEN, gated).** Is "refusal suppression, not concept remapping" general or
   Llama-specific? Requires the staged X1–X5 gate on ≥1 further instruction-tuned model. Claim H open.
 - **§14–18 Gate-7 attack objective (OPEN).** Whether a refusal-derived objective *improves* adversarial
@@ -156,8 +162,11 @@ shown on both a static-readout axis and an independent gradient/sensitivity axis
 refusal axis onsets ~L13, Doublespeak suppresses it, and specifically restoring the L15–18 decision state —
 by whole-residual overwrite (Gate B, ΔASR −0.14/−0.19) or by refusal-subspace injection (depth Panel B, L18
 −0.18) — collapses the jailbreak (Gate A/B PASS, 7–10× the noise floor), while the concept remap is
-behaviorally inert; still open are the bidirectional swap (running, 732560), a utility-preserving defense,
-Gate-7 optimization, and cross-model generalization.**
+behaviorally inert; the reverse swap is a NULL (Gate B PASS not STRONG) and a mechanism-derived defense is
+effective but fundamentally non-selective (no dose or intent-gate separates attack from benign, because the DS
+attack suppresses refusal indistinguishably from an attack-structured benign request — so the intent-encoding
+circuit is inert and the behavior-driving circuit is intent-blind); still open are Gate-7 optimization, powered
+concept-ablation, and cross-model generalization.**
 
 ---
 
