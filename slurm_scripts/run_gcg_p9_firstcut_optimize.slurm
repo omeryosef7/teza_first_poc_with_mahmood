@@ -63,7 +63,7 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 
 MODEL_FAMILY="llama"
 MODEL_PATH="meta-llama/Llama-3.1-8B-Instruct"
-MANIFEST="${PROJECT_DIR}/doublespeak_causality/data/gcg/clearharm_llama/clearharm_llama_doublespeak.jsonl"
+MANIFEST="${MANIFEST:-${PROJECT_DIR}/doublespeak_causality/data/gcg/clearharm_llama/clearharm_llama_doublespeak.jsonl}"  # overridable (single path, --export-safe)
 
 # Shared hyperparameters (first-cut)
 SUFFIX_LEN="${SUFFIX_LEN:-16}"
