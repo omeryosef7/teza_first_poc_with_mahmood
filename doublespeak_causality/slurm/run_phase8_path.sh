@@ -57,6 +57,8 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSRECON:=0}"               # 1 -> add --recon-full (also computes head-edges for the recon gate)
 : "${DSENABLE:=default}"        # Qwen3 thinking: default|true|false
 : "${DSSENDERHEADS:=}"          # optional explicit "L:h" -- kept EMPTY by default (no comma via --export)
+: "${DSITEMIDXS:=}"             # §8.2 >=20/cell: aggregate over MANY items. Use RANGE form 'A-B' (no
+                                # comma, safe via --export); overrides DSITEMIDX. e.g. DSITEMIDXS=0-24
 
 # comma guard: every --export-passed value must be a SINGLE scalar (--export truncates comma-lists)
 for v in DSFAMILY DSBENCH DSFROMHEADATTR DSMODEL DSLO DSHI DSTOPN DSMLPLO DSMLPHI DSMETRIC DSSPLIT \
@@ -85,6 +87,11 @@ EXTRA=()
 [ "$DSRECON" = "1" ] && EXTRA+=(--recon-full)
 [ -n "$DSSPLIT" ] && EXTRA+=(--split "$DSSPLIT")
 [ -n "$DSSENDERHEADS" ] && EXTRA+=(--sender-heads "$DSSENDERHEADS")
+# DSITEMIDXS range form 'A-B' has no comma; a comma-list would be truncated by --export -> refuse it.
+if [ -n "$DSITEMIDXS" ]; then
+  case "$DSITEMIDXS" in *,*) echo "ERROR: DSITEMIDXS='$DSITEMIDXS' has a comma; use RANGE form A-B."; exit 1;; esac
+  EXTRA+=(--item-idxs "$DSITEMIDXS")
+fi
 
 python -u doublespeak_causality/scripts/phase8_head_mlp_path.py \
   --family "$DSFAMILY" --bench "$DSBENCH" --model "$DSMODEL" \

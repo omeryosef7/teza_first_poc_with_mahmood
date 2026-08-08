@@ -482,6 +482,78 @@ def run(lm, bench, args):
     }
 
 
+def parse_item_idxs(spec):
+    spec = spec.strip()
+    if not spec:
+        return None
+    if "-" in spec and "," not in spec:
+        a, b = spec.split("-", 1)
+        return list(range(int(a), int(b) + 1))
+    return [int(x) for x in spec.split(",") if x.strip()]
+
+
+def aggregate_runs(results, args):
+    """Pool per-item phase8 results (>=20/cell) and re-apply the specificity/sparsity verdict on the
+    POOLED medians. Each edge's stability across items is reported (median, IQR, sign-consistency)."""
+    n = len(results)
+    # pool candidate mlp-edges by (L_S,h_S,L_R)
+    edge_vals = {}
+    for r in results:
+        for e in r["mlp_edges"]:
+            edge_vals.setdefault((e["L_S"], e["h_S"], e["L_R"]), []).append(e["edge"])
+    pooled_edges = []
+    for (ls, hs, lr), vals in edge_vals.items():
+        a = np.array(vals, float)
+        pooled_edges.append({"L_S": ls, "h_S": hs, "L_R": lr, "n": len(vals),
+                             "median_edge": round(float(np.median(a)), 5),
+                             "mean_edge": round(float(a.mean()), 5),
+                             "iqr": [round(float(np.percentile(a, 25)), 5), round(float(np.percentile(a, 75)), 5)],
+                             "sign_consistency": round(float(np.mean(np.sign(a) == np.sign(np.median(a)))), 3)})
+    # pooled control edges (all controls, all items)
+    ctrl_abs = []
+    for r in results:
+        c = r["controls"]
+        for e in c["rand_sender_edges"] + c["rand_receiver_edges"] + c["matched_path_edges"]:
+            ctrl_abs.append(abs(e["edge"]))
+    self_max = max((r["self_donor_max_abs"] for r in results), default=0.0)
+    cand_abs = [abs(v) for vals in edge_vals.values() for v in vals]
+    cand_med = float(np.median(cand_abs)) if cand_abs else None
+    ctrl_med = float(np.median(ctrl_abs)) if ctrl_abs else None
+    top_fracs = [r["median_top_edge_frac"] for r in results if r.get("median_top_edge_frac") is not None]
+    med_top_frac = float(np.median(top_fracs)) if top_fracs else None
+    specific = bool(cand_med is not None and (ctrl_med is None or cand_med >= 2.0 * (ctrl_med + 1e-9))
+                    and cand_med >= 5.0 * (self_max + 1e-9))
+    sparse = bool(specific and med_top_frac is not None and med_top_frac >= 0.6)
+    verdict = ("NO-PATH (pooled candidate edges do not clear controls/self-null)" if not specific
+               else "SPARSE-GRAPH (few receivers carry each sender; pooled edges clear controls)" if sparse
+               else "DISTRIBUTED-PATH-MATRIX (pooled edges specific but spread across receivers)")
+    pooled_edges.sort(key=lambda e: abs(e["median_edge"]), reverse=True)
+    # pooled TOTAL/DIRECT per sender (mediation of the head->readout effect)
+    per_sender_pool = {}
+    for r in results:
+        for ps in r["per_sender"]:
+            per_sender_pool.setdefault((ps["L"], ps["h"]), {"total": [], "direct": []})
+            per_sender_pool[(ps["L"], ps["h"])]["total"].append(ps["total"])
+            per_sender_pool[(ps["L"], ps["h"])]["direct"].append(ps["direct"])
+    per_sender_med = [{"L": L, "h": h, "n": len(d["total"]),
+                       "median_total": round(float(np.median(d["total"])), 5),
+                       "median_direct": round(float(np.median(d["direct"])), 5)}
+                      for (L, h), d in sorted(per_sender_pool.items())]
+    return {
+        "aggregated": True, "n_items": n,
+        "item_ids": [r["endpoint"].get("item_id") for r in results],
+        "per_item_verdict": [{"item_id": r["endpoint"].get("item_id"), "verdict": r["verdict"],
+                              "cand_med_abs": r["candidate_median_abs_edge"]} for r in results],
+        "pooled_mlp_edges": pooled_edges, "per_sender_median": per_sender_med,
+        "candidate_median_abs_edge": (round(cand_med, 5) if cand_med is not None else None),
+        "control_median_abs_edge": (round(ctrl_med, 5) if ctrl_med is not None else None),
+        "self_donor_max_abs": round(self_max, 6),
+        "median_top_edge_frac": (round(med_top_frac, 4) if med_top_frac is not None else None),
+        "specific": specific, "sparse": sparse,
+        "strongest_edge": (pooled_edges[0] if pooled_edges else None), "verdict": verdict,
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--family", required=True, choices=["concept", "refusal"])
@@ -497,6 +569,9 @@ def main():
     ap.add_argument("--refusal-layer", type=int, default=18, help="decision-token refusal readout layer")
     ap.add_argument("--corrupt-cond", default="neutral", choices=["neutral", "direct"])
     ap.add_argument("--item-idx", type=int, default=0, help="refusal: which behavioral item (within split)")
+    ap.add_argument("--item-idxs", default="", help="refusal: aggregate over MANY items (>=20/cell rule). "
+                    "Range 'A-B' (inclusive) or comma list '0,1,2'. Overrides --item-idx; one model load, "
+                    "edges pooled across items and the verdict re-applied on the pooled medians.")
     # senders
     ap.add_argument("--sender-heads", default="", help='explicit "L:h,L:h"; else --from-head-attr')
     ap.add_argument("--from-head-attr", default="")
@@ -534,6 +609,45 @@ def main():
                          "family": args.family, "model": args.model})
     except Exception:
         pass
+
+    idxs = parse_item_idxs(args.item_idxs) if args.family == "refusal" else None
+    if idxs:                                             # >=20/cell aggregated refusal run
+        base_seed = args.seed
+        per_item, skipped = [], []
+        for idx in idxs:
+            args.item_idx = idx
+            args.seed = base_seed + idx                  # diversify control sampling across items
+            try:
+                r = run(lm, bench, args)
+                per_item.append(r)
+            except Exception as e:
+                skipped.append({"item_idx": idx, "error": repr(e)[:200]})
+                print(f"[phase8-hmpath] item {idx} skipped: {e!r}", flush=True)
+        args.seed = base_seed
+        if not per_item:
+            raise SystemExit("all items failed; nothing to aggregate")
+        agg = aggregate_runs(per_item, args)
+        agg.update({"model": args.model, "family": args.family, "split": args.split,
+                    "endpoint_kind": per_item[0]["endpoint"]["kind"], "skipped": skipped,
+                    "senders": per_item[0]["senders"], "receiver_mlps": per_item[0]["receiver_mlps"]})
+        json.dump({"aggregate": agg, "per_item": per_item},
+                  open(os.path.join(out_dir, "phase8_head_mlp_path.json"), "w"), indent=2)
+        print(f"[phase8-hmpath:{args.family}] AGGREGATED n_items={agg['n_items']} "
+              f"(skipped {len(skipped)}) senders={len(agg['senders'])} receivers={len(agg['receiver_mlps'])}")
+        print(f"  cand_med_abs_edge={agg['candidate_median_abs_edge']} "
+              f"ctrl_med_abs_edge={agg['control_median_abs_edge']} self_null_max={agg['self_donor_max_abs']}")
+        print(f"  specific={agg['specific']} sparse={agg['sparse']} "
+              f"median_top_edge_frac={agg['median_top_edge_frac']}")
+        if agg["strongest_edge"]:
+            e = agg["strongest_edge"]
+            print(f"  strongest pooled edge L{e['L_S']}h{e['h_S']} -> MLP L{e['L_R']} = median {e['median_edge']} "
+                  f"(sign_consistency {e['sign_consistency']}, n={e['n']})")
+        print(f"  verdict: {agg['verdict']}")
+        try:
+            dc.write_done(out_dir, rows_written=agg["n_items"], extra={"aggregated": True})
+        except Exception:
+            pass
+        return
 
     res = run(lm, bench, args)
     res["model"] = args.model
