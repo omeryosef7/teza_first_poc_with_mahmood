@@ -57,6 +57,32 @@ between attack and benign, so globally restoring it refuses everything roughly p
 defense therefore cannot come from a scalar dose on the refusal axis; it must **condition on harmful intent**
 (§19.3 mechanism-triggered gating) rather than steer refusal unconditionally.
 
+## §19.3 mechanism-triggered (gated) defense (`732795`) — gating does NOT rescue selectivity
+Fire the refusal restoration only when the decision-token refusal projection < T (T=train Direct-harmful mean,
+fit train-only, frozen for test). Harness `scripts/phase_defense_gated.py` (two-pass measure→fit→generate;
+gated arm derived exactly from base/uncond via fire-flags). Provenance: reviewed harness; a `defense_gated`
+validator schema is being added (§36) — currently mis-detects as behav.
+
+| split | T | fire-rate ds | fire-rate benign | proj_ds | proj_benign | proj_direct | gated ΔASR | gated over-refusal |
+|---|---|---|---|---|---|---|---|---|
+| train n=85 | 4.50 | 0.81 | **0.87** | 1.94 | 1.45 | 4.50 | −0.188 (p=1e-4) | +0.376 (p≈0) |
+| test n=42 | 4.32 | 0.71 | **0.90** | 2.76 | 1.34 | 4.32 | −0.024 (ns) | +0.119 |
+
+**The gate fires on benign prompts as much as (or more than) on attacks** (benign fire-rate ≥ ds fire-rate),
+because the attack-structured benign prompts carry refusal projections (1.3–1.5) at or below the DS-attack
+prompts (1.9–2.8) — both far below the refusing Direct reference (4.3–4.5). Consequently **gated ≡ unconditional**
+on both axes (identical ΔASR and identical benign over-refusal). **Intent-gating on the refusal projection
+cannot separate attack from benign → selectivity is not recovered.**
+
+### Why this is the deep result (ties the whole paper together)
+Selective defense would require triggering on *harmful intent*. But this project's two circuits are mismatched
+for that purpose: the **concept/intent representation is behaviorally epiphenomenal** (moving it barely changes
+ASR — claims A/C), while the **refusal representation controls behavior but is not intent-selective** (the DS
+attack suppresses it to a level indistinguishable from a benign attack-structured request). So **neither
+circuit alone yields a selective mechanism-derived defense**: the one that encodes intent doesn't drive
+behavior, and the one that drives behavior doesn't encode intent. A practical defense needs an *independent*
+harmful-intent signal, not a scalar or a gate on the refusal axis.
+
 ## Verdict & next
 - **Gate F (this dose): FAIL** — effective, specific attack defense but unacceptable benign over-refusal.
 - **§21 minimal-dose:** sweep α downward per layer to find the point that defends with tolerable over-refusal

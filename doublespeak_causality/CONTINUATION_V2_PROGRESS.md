@@ -171,6 +171,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   scalar dose can't separate them => selective defense requires intent-conditioning (§19.3), not global steering.
 - Validated 150 vals/0 mismatch (lone FAIL = fixed-dose manifest vs sweep arms, coverage-spec only).
 
+### 2026-08-08 — §19.3 gated defense (732795): intent-gating does NOT rescue selectivity (deep result)
+- Gate fires on benign as much as attacks (train fire-rate ds=0.81, benign=0.87): attack-structured benign
+  prompts carry refusal projection (1.3-1.5) <= DS-attack (1.9-2.8), both << Direct (4.3-4.5). => gated ≡ uncond
+  (ΔASR -0.188, over-refusal +0.376 identical). Gating on the refusal axis can't separate attack from benign.
+- **Deep synthesis:** concept circuit ENCODES intent but is behaviorally epiphenomenal; refusal circuit DRIVES
+  behavior but isn't intent-selective => NEITHER alone yields a selective mechanism-derived defense. Practical
+  defense needs an independent harmful-intent signal. `reports/P_DEFENSE_UTILITY.md`.
+- Validated: reviewed harness; defense_gated validator schema being added (§36).
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.

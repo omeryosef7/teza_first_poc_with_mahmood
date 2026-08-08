@@ -1,0 +1,23 @@
+{
+  "schema": "DONE/1",
+  "run_id": "defense_gated_clearharm_20260808_053211_732795",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T05:57:18",
+  "end_epoch": 1786157838.9100528,
+  "wall_seconds": 1500.562,
+  "attack_arms": [
+    "ds_base",
+    "ds_gated_def",
+    "ds_uncond_def"
+  ],
+  "benign_arms": [
+    "benign_base",
+    "benign_gated_def",
+    "benign_uncond_def"
+  ],
+  "layer": 18,
+  "threshold": 4.501242823529412,
+  "threshold_fit": "train_direct_mean",
+  "gens_written": true
+}
