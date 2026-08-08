@@ -41,7 +41,28 @@ on Qwen3-14B, exactly as on Llama. (Raw pooled projections; the direct≫ds gap 
   ablating DS barely moves it (ds_refabl 0.224) => Doublespeak already sits at the refusal-suppression ceiling.
   **X4 PASS** (ablation/necessity + DS-equivalence). (Restoration↓DS is the Gate-B analogue, not re-run here.)
 
-## X5 — PENDING
+## X5 — does concept fail to explain behavior on Qwen3 (while refusal succeeds)? ◐ PARTIAL
+`phase_x5_concept_qwen3.py` (`...736899`, n=127 joined to Qwen3 X4 labels). Per-layer AUC for predicting the
+Qwen3 jailbreak, concept-direction vs refusal-direction projection:
+| layer | concept AUC | refusal AUC | refusal−concept |
+|---|---|---|---|
+| L16 | 0.57 | 0.75 | +0.18 |
+| L20 | 0.73 | 0.83 | +0.10 |
+| L24 | 0.80 | 0.89 | +0.09 |
+| L28 | 0.56 | 0.91 | +0.35 |
+| L32 | 0.65 | 0.90 | +0.25 |
+**Refusal projection predicts jailbreak substantially better than concept at EVERY layer** → Claim E (refusal
+is the superior predictor) GENERALIZES to Qwen3. BUT concept is not at chance (L24 AUC 0.80), so the strong
+Llama form ("concept readout fails") holds only PARTIALLY on Qwen3, and this is PREDICTIVE — the causal
+concept-inertness test (§10 ablation analogue) was not run on Qwen3. X5 = PARTIAL (refusal-superiority ✅,
+concept-full-failure ✗).
+
+## Cross-model verdict: X1–X4 ✅ (4/5), X5 partial
+**"Refusal-suppression, not concept remapping" generalizes to Qwen3-14B:** the attack raises ASR (X1), a
+refusal direction fits+validates (X2), DS suppresses it (X3), refusal ablation causally raises harm &
+DS≈suppression (X4), and refusal predicts jailbreak far better than concept (X5). The one gap vs Llama: on
+Qwen3 the concept readout retains some predictive signal (not fully inert), and its causal inertness on Qwen3
+is untested. Net: the mechanism is NOT Llama-specific.
 - **X5 (last gate):** does the concept readout again FAIL to explain behavior on Qwen3? (concept ablation / carry
   install on Qwen3 -> no ASR change, unlike refusal). Reuse §9/§10 recipe on Qwen3.
 
