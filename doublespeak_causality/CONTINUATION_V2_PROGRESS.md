@@ -254,3 +254,18 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   a patching job that runs on any Ampere+ ≥23GB GPU. §4 smoke 737572 launched on the same wide nodelist.
 - Queue: §28 737512 (gen/L40S), §29 737500 (gen/L40S), §8 737571 + §4 737572 (patching/wide). Waiters armed.
 - NOT_DONE now: §4 (smoke running), §8 (smoke running), §25 (full mediation — next), §28 (smoke), §29 (smoke).
+
+### 2026-08-08 (night) — §4 DONE; §8 multi-item fix; §28/§29 on Ampere; 30m-rule x3
+- **Both patching smokes PASSED on A5000** (wide nodelist worked): §4 sanity gates byte-perfect (selfdev=0,
+  freezedev=0), §8 harness end-to-end OK.
+- **§4 FULL DONE** (P4_REFUSAL_MEDIATION, run 737608, test n=42): §7 refusal-carry heads are 72-88% MEDIATED
+  (carry) with a clean DEPTH GRADIENT — L13 heads ~0.88 → L16H10 ~0.51 (readout-proximal). Refusal analogue of
+  the concept ~75-83% mediation. All trust=True.
+- **§8 output-bug caught + fixed**: phase8 was single-item (item_idx=0); the first "full" run used ONE item.
+  Added --item-idxs (range form) multi-item aggregation (one model load, pooled edges + verdict on pooled
+  medians + per-edge sign-consistency). Relaunched §8.2 as 737616 with DSITEMIDXS=0-24 (25 items, >=20/cell).
+- **§28/§29 unblocked onto Ampere**: added backward-compat DSGPUALLOW=23gb guard (§29 fits all precisions on
+  24GB; §28 needs DSNNITEMS=0 for single model). Both smokes running on A5000.
+- **30m-pending rule fired x3** (§8 737496, §29 737500, §28 737512 all >30m on fair-share) → cancel + resubmit
+  on wide ≥23GB nodelist (genuine config change; patching/small-model jobs run on Ampere).
+- **Status: DONE=14 / NOT_DONE=4** (§8 25-item running, §25 next, §28/§29 smokes running).

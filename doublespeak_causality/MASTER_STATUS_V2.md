@@ -2,7 +2,7 @@
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
 section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-08 (late):
-DONE=13 / PARTIAL=9 / NOT_DONE=5** (audit-2 verdict corrections applied to §7/§10/§27; §6 report written).
+DONE=14 / PARTIAL=9 / NOT_DONE=4** (audit-2 corrections; §4 & §6 closed; §8/§25/§28/§29 remain).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
