@@ -349,3 +349,9 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - Session tally of NOT_DONE closed this run: §4, §6, §8.2, §25, §28, §29 (+F5 figure); 2 code bugs fixed
   (phase8 single-item, §28 np.bool_) + 2 methodological issues caught (§8.2 single-item false-positive,
   §25 neutral confound) + §28 bf16-equivalence proven.
+
+### 2026-08-09 (01:45) — §4 mediation figure (§33); Gate-7 seed-43 running
+- Generated fig_refusal_mediation.png (§4): Panel A TOTAL≫DIRECT per head; Panel B carry→readout depth gradient
+  (L13 ~0.88 mediated → L16H10 0.51). Advances §33. (F5 dose + this = 2 new figures this session.)
+- Gate-7 seed-43 (737692) running ~22min of ~6-8h (4 arms sequential on n-804 L40S); waiter armed. Only §14-18
+  remains (NOT_DONE=1); on completion → held-out eval → finalize the multi-seed confirmation of the NEGATIVE.
