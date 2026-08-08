@@ -17,7 +17,7 @@ authoritative remaining-work roadmap.
 | §5 | B | PARTIAL | Y | Position causality — which part of the 9 matched | P5_POSITION committed; no clean single-position dissociation (all positions contribute) — descriptive only. |
 | §6 | B | DONE | Y | Demonstration-count dose response (n_demo in {0, | — (P6_DOSE_RESPONSE: refusal suppression is a STEP at n=1, concept flat, ASR weakly coupled; run 735299) |
 | §7 | C | DONE | Y | Targeted refusal head/edge analysis in the activ | — (P7_HEAD_EDGE, audit-2 corrected: head-distributed but LAYER-concentrated at L13; run 736900) |
-| §8 | C | NOT_DONE | Y | Full head->MLP path patching, concept + refusal  | Smoke 737496 running (refusal path w/ §7 head-attr); then full 8.1 concept + 8.2 refusal. |
+| §8 | C | PARTIAL | Y | Full head->MLP path patching, concept + refusal  | §8.2 refusal DONE (P8_HEAD_MLP_PATH: NO-PATH at n=25; single-item false-positive corrected by aggregation); §8.1 concept RUNNING (737623). |
 | §9 | B | DONE | Y | Behavioral sufficiency of carry heads during gen | — (P9_CARRY_SUFFICIENCY: NULL — installing carry state does not raise ASR) |
 | §10 | B | DONE | Y | REPOWERED behavioral inertness (powered leakage- | — (P10, audit-2 corrected: concept-epiphenomenal via SPECIFICITY [rand>concept]; pooled equivalence framing withdrawn) |
 | §11 | C | DONE | Y | Joint 2x2 ablation: concept-circuit {intact/abla | — (P11_JOINT_2x2: refusal restoration collapses ASR regardless of concept; additive, no interaction; run 736657) |
