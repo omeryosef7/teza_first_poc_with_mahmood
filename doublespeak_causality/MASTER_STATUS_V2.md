@@ -13,7 +13,7 @@ authoritative remaining-work roadmap.
 | §1.3 | A | DONE | n | Repair v3 as the confirmatory dataset (validator | — |
 | §2 | B | PARTIAL | Y | Main scientific pivot — map the refusal-suppress | §2's actual OPEN causal question — the causal ORIGIN/source of suppression — is §4 (still NOT_DONE). |
 | §3 | B | DONE | Y | Refusal causal localization — layer × position × | — |
-| §4 | B | NOT_DONE | Y | Distinguish suppression origin from carry/readou | Build/run the refusal analogue: patch a candidate suppression component, freeze downstream refusal-carry states to clean-DS, measure disappearance. |
+| §4 | B | DONE | Y | Distinguish suppression origin from carry/readou | — (P4_REFUSAL_MEDIATION: §7 refusal heads 72-88% MEDIATED/carry w/ depth gradient; sanity gates byte-perfect; run 737608, test n=42) |
 | §5 | B | PARTIAL | Y | Position causality — which part of the 9 matched | P5_POSITION committed; no clean single-position dissociation (all positions contribute) — descriptive only. |
 | §6 | B | DONE | Y | Demonstration-count dose response (n_demo in {0, | — (P6_DOSE_RESPONSE: refusal suppression is a STEP at n=1, concept flat, ASR weakly coupled; run 735299) |
 | §7 | C | DONE | Y | Targeted refusal head/edge analysis in the activ | — (P7_HEAD_EDGE, audit-2 corrected: head-distributed but LAYER-concentrated at L13; run 736900) |
