@@ -285,3 +285,18 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   (737624/625/626) on Ampere via DSGPUALLOW=23gb.
 - **Status: DONE=15 (+§4), §8 PARTIAL (8.2 done), NOT_DONE=§25/§28/§29 (all with smokes/fulls in flight).**
 - 6 jobs in flight (at parallel cap); waiter armed. 30m-rule active.
+
+### 2026-08-09 (00:15) — §25 DONE (decision-state mediation); §28 full launched; two bugs caught
+- **§25 DONE** (P25_FULL_MEDIATION): DS attack is ~100% MEDIATED by the decision-token refusal representation —
+  restoring the DS decision-state ← Direct removes the whole ASR advantage (mediated frac 1.07 train / 1.00 dev,
+  McNemar sig; rand raises ASR, self exact no-op), from committed §23 data (n=85/43, ≥20/cell). ∘ §6 upstream =
+  full demo→refusal→behavior chain. The naive behavioral demo-removal arm is CONFOUNDED (conds.neutral swaps the
+  codeword; harmful frame survives → neutral ASR = ds ASR at n=3, no rescue) — documented, harness committed,
+  decision-state mediation used instead.
+- **§28 implementation robustness CONFIRMED** (smoke n=4): from-scratch IndepProjectOut vs house code →
+  gen-match 1.0 (byte-identical), mal-label-agree 1.0. Full run (n=42, +nnsight framework check) launched 737653.
+- **§8.1 concept BUG**: all head→MLP edges = 0.0 (alignment n_demo_codeword_paired=0 → clean==corrupt, patch is
+  a no-op). Config/data issue with the offline pair, NOT a real null. §8.2 (refusal, n=25 NO-PATH) is the
+  load-bearing §8 result; concept mediation already covered by phase7_direct_total (~75-83%). Noted in P8 report.
+- **§29 4bit smoke** already showed the refusal mechanism SURVIVES quantization; full bf16/8bit/4bit running.
+- **Status recount: DONE=14 / PARTIAL=11 / NOT_DONE=3** (§14-18 Gate-7 first-cut, §28 running, §29 running).
