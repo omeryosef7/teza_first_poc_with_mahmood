@@ -21,6 +21,13 @@ ZHeadPatch (§5 head-z) + pc.AttentionKnockout (§4 edge) + proj_last refusal re
   separators edges are small. (Edge magnitudes are noisier than the head z-patch; the head distributed-necessity
   is the load-bearing §7 result.)
 
+## AUDIT CORRECTION (2026-08-08)
+The `distributed=True` verdict was computed from the best single HEAD only; the audit (wf_383ca171) showed a
+single LAYER carries much of the ceiling: **per-layer L13 restores ~0.53 of the gap = ~66% of the band ceiling
+(0.81)**. So the refusal-carry is **distributed across HEADS (no single-head bottleneck) but CONCENTRATED at the
+LAYER level (L13-heavy)** — not fully distributed. The head-level distributed-necessity claim stands; the
+layer-level claim is corrected to "L13-concentrated." (Harness `distributed` verdict fixed to also gate on max_layer.)
+
 ## Verdict
-Refusal-carry is **distributed** across the L13–20 band (no bottleneck head); demo-answer edges are the most
+Refusal-carry is **head-distributed but layer-concentrated (L13)** across the L13–20 band (no bottleneck head); demo-answer edges are the most
 implicated source group. Consistent with the residual-carry picture (§3) and the distributed concept circuit (P4b).

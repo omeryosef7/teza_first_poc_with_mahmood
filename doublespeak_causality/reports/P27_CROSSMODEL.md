@@ -39,7 +39,7 @@ on Qwen3-14B, exactly as on Llama. (Raw pooled projections; the direct≫ds gap 
   causally gates harmful compliance on Qwen3, and it is direction-specific.
 - **DS ≈ refusal-suppression:** ds_base ASR (0.282) ≈ direct+refusal-ablation (Δ≈0.012, p=1.0), and further
   ablating DS barely moves it (ds_refabl 0.224) => Doublespeak already sits at the refusal-suppression ceiling.
-  **X4 PASS** (ablation/necessity + DS-equivalence). (Restoration↓DS is the Gate-B analogue, not re-run here.)
+  **X4 PASS** (ablation/necessity + DS-equivalence). *Audit caveat (wf_383ca171): the DS≈refusal-ablation equivalence is TRAIN-only — on held-out test (n=42) ds_base ASR falls to 0.167 vs refabl 0.262, so that specific equivalence does not replicate out-of-sample; the refusal-ablation-raises-harm and null-random-control findings DO generalize directionally.* (Restoration↓DS is the Gate-B analogue, not re-run here.)
 
 ## X5 — does concept fail to explain behavior on Qwen3 (while refusal succeeds)? ◐ PARTIAL
 `phase_x5_concept_qwen3.py` (`...736899`, n=127 joined to Qwen3 X4 labels). Per-layer AUC for predicting the
@@ -54,8 +54,14 @@ Qwen3 jailbreak, concept-direction vs refusal-direction projection:
 **Refusal projection predicts jailbreak substantially better than concept at EVERY layer** → Claim E (refusal
 is the superior predictor) GENERALIZES to Qwen3. BUT concept is not at chance (L24 AUC 0.80), so the strong
 Llama form ("concept readout fails") holds only PARTIALLY on Qwen3, and this is PREDICTIVE — the causal
-concept-inertness test (§10 ablation analogue) was not run on Qwen3. X5 = PARTIAL (refusal-superiority ✅,
-concept-full-failure ✗).
+concept-inertness test (§10 ablation analogue) was not run on Qwen3. X5 = PARTIAL (refusal-superiority ✅, concept-full-failure ✗).
+**Audit correction (wf_383ca171): the reported concept AUCs are UPWARD-BIASED** — the analyzer chose AUC
+orientation from the data (max(AUC,1−AUC)), which inflates any null axis to ≥0.5 (a true-chance concept axis
+would still report ~0.57). So the true concept predictiveness is ≤ the reported 0.56–0.80, which if anything
+**strengthens** "refusal ≫ concept." But on the held-out TEST split the refusal−concept gap is small at some
+layers (L16 +0.05, L24 +0.04) with heavily overlapping CIs, so "refusal >> concept at EVERY layer" is softened
+to "refusal ≥ concept at every layer, clearly so at L28/L32, marginally at L16/L24 on test." (Harness orientation
+fixed to an a-priori sign.)
 
 ## Cross-model verdict: X1–X4 ✅ (4/5), X5 partial
 **"Refusal-suppression, not concept remapping" generalizes to Qwen3-14B:** the attack raises ASR (X1), a

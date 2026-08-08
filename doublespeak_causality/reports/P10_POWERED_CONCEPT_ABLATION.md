@@ -16,7 +16,7 @@ binary McNemar; secondary = graded Wilcoxon.
 |---|---|---|---|---|---|
 | write ablation | +0.059 | [0.004, 0.113] | 0.048 | 0.079 | small/sig but < random |
 | carry ablation | +0.031 | [−0.014, 0.075] | 0.22 | 0.064 | informative-null |
-| **write+carry (full concept circuit)** | **+0.046** | [−0.011, 0.104] | 0.14 | **0.083** | **INFORMATIVE-NULL** (MDE ≤ 0.09) |
+| **write+carry (full concept circuit)** | **+0.046** | [−0.011, 0.104] | 0.14 | **0.083** | inconclusive-for-equivalence (see audit note) |
 | **rand ablation (control)** | **+0.161** | [0.110, 0.211] | ~0 | 0.076 | (largest effect) |
 
 Per cohort: **clearharm (the real-attack cohort, n=170): write+carry ΔASR = 0.000 (b=22/c=22, p=1.0)** — an exact
@@ -43,3 +43,15 @@ for the **epiphenomenality** conclusion this only strengthens the point (concept
 ## Verdict
 **Gate C: concept circuit is behaviorally negligible at power (informative-null), and specifically less
 effective than random ablation → Claim A (concept-remap epiphenomenal) is confirmed, not merely underpowered.**
+
+
+## AUDIT CORRECTION (2026-08-08)
+The "informative-null (MDE≤0.09)" label was an **overclaim** (found by the wf_383ca171 audit; a bug in the
+harness's `approx_mde`, which used the observed post-hoc discordance as a point estimate). The write+carry 95%
+CI is [−0.011, **+0.104**], whose upper bound **exceeds** the 0.09 minimum-meaningful margin, so the data do
+**not** formally exclude a meaningful effect (this needs a TOST/equivalence test, not an MDE). **The valid,
+un-retracted basis for concept-epiphenomenality is SPECIFICITY**: a count-matched RANDOM ablation reduces ASR
+**more** than the concept-circuit ablation (+0.161 vs +0.046 pooled; +0.124 vs exact 0.000 on clearharm) — the
+concept circuit is not a behavioral lever. Also: write-ablation alone is nominally p=0.048 but uncorrected and
+driven entirely by the generated cohort (clearharm write_abl = exact 0.000). Conclusion stands via specificity;
+the equivalence framing is withdrawn.
