@@ -19,7 +19,17 @@ Qwen3-14B (ΔASR vs direct ≈ +0.048). Qwen3-14B is more robust than Llama-3.1-
 attack's behavioral signature replicates. gen-determinism=1.0; empty=0. **X1 PASS** (caveat: n=42, small
 absolute effect — a fuller train/dev run would tighten the McNemar/CI).
 
-## X2–X5 — PENDING
+## X2 — can a refusal direction be independently fit + validated on Qwen3? ✅ PASS
+`build_refusal_direction_llama.py` (diff-of-means, thinking-off) fit Qwen3-14B refusal dirs at L16,20,24,28,32
+(-> outputs/refusal_qwen3/); `validate_refusal_directions.py` (`refval_clearharm_...736569`, eval n=20) gives
+**valid 5/5, best L32 (score 1.3), invalid=[]** — the ablation+induction gate passes at EVERY swept layer.
+So the refusal representation exists and is causally manipulable on Qwen3-14B, just as on Llama (broad validated
+band L16-32 vs Llama's L13-20/24/28/29). **X2 PASS** => the mechanism, not just the attack, is present cross-family.
+
+## X3–X5 — PENDING
+- **X3 (next):** does DS suppress the validated Qwen3 refusal projection (vs direct)? Reuse the projection
+  readout with the Qwen3 dir (e.g. L24/L32) + Qwen3 model, thinking-off.
+- **X4:** refusal ablation ↑harm AND restoration ↓DS on Qwen3. **X5:** concept readout fails to explain behavior.
 - **X2:** independently fit + validate a refusal direction on Qwen3-14B (40 layers) — reuse
   `build_refusal_direction_llama.py` / `validate_refusal_directions.py`, generalized to the model's layer count.
 - **X3:** does DS suppress that validated direction? **X4:** refusal ablation ↑harm AND restoration ↓DS.
