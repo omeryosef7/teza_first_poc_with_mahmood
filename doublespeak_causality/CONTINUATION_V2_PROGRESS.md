@@ -224,3 +224,20 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - Rebuild depth Panel B with the new calinj validated layers once 732204 lands.
 - On §3 full landing (732161/732162): analyze coarse band (ratio-of-means frac, Wilcoxon+Holm over the
   full 32-layer family per §0.6), then refine + behavioral confirmation of any passing (L,C) cell.
+
+### 2026-08-08 (late) — audit-2 fixes committed + §6/§28/§29 advanced; honest status refresh
+- **Applied+committed audit-2 code fixes** (ee91ab2d): phase7 distributed-verdict now gates on best-single-LAYER
+  (both splits flip to distributed=False → head-distributed but **L13-concentrated**); phase10 informative-null
+  now requires 95% CI upper < 0.09 margin (pooled write+carry → inconclusive; FROZEN_test/clearharm → genuine
+  informative-null); phase_x5 a-priori AUC sign (concept/refusal AUCs UNCHANGED — only the random CONTROL was
+  inflated, 0.63→0.33 null). Reports P7/P10/P27 re-derived to match.
+- **§6 dose-response report written** (P6_DOSE_RESPONSE, run 735299) → DONE: refusal suppression is a STEP at
+  n_demo=1 (saturates), concept readout flat across demos, ASR weakly refusal-coupled (dRefusal_vs_dASR≈−0.29).
+- **MASTER_STATUS refreshed honestly**: DONE=13 / PARTIAL=9 / NOT_DONE=5. NOT_DONE now only §4, §8, §25, §28, §29.
+- **§8 head→MLP:** built head_attribution.json from §7 test-split restore-fracs; refusal smoke 737496 queued.
+- **§29 quantization:** load_model(quantize=8bit|4bit) + --quantize wired (bnb 0.50.0 installed); DSQUANT env +
+  DSALPHASET=single in run_behav_refusal.sh; 4bit smoke 737500 queued.
+- **§28 framework robustness:** new phase28 runs house AllPositionProjectOutMultiLayer vs a from-scratch
+  IndepProjectOut head-to-head (byte-identical gens => same edit) + guarded nnsight forward cross-check
+  (nnsight 0.7.0 installed); smoke 737512 queued.
+- Three GPU smokes in flight (737496/737500/737512), all fair-share PENDING; waiters armed. On pass → full runs.
