@@ -26,7 +26,21 @@ absolute effect — a fuller train/dev run would tighten the McNemar/CI).
 So the refusal representation exists and is causally manipulable on Qwen3-14B, just as on Llama (broad validated
 band L16-32 vs Llama's L13-20/24/28/29). **X2 PASS** => the mechanism, not just the attack, is present cross-family.
 
-## X3–X5 — PENDING
+## X3 — does DS suppress the validated Qwen3 refusal projection? ✅ PASS (strong)
+`refproj_clearharm_...736629` (Qwen3-14B, thinking-off, test n=42): DS collapses the refusal projection vs
+direct at EVERY validated layer — L16 9.5→8.4, L20 19.8→0.9, L24 55.9→21.9, L28 137→64, L32 214→55 (gap
+direct−ds large-positive everywhere). **X3 PASS**: the Doublespeak attack suppresses the refusal representation
+on Qwen3-14B, exactly as on Llama. (Raw pooled projections; the direct≫ds gap is unambiguous.)
+
+## X4–X5 — PENDING
+- **X4 (next):** on Qwen3, does refusal ABLATION raise harmful behavior AND refusal RESTORATION reduce DS ASR?
+  (reuse the ablation/restoration recipe with the Qwen3 validated dir, thinking-off.)
+- **X5:** does the concept readout again fail to explain behavior on Qwen3?
+
+## Cross-model verdict so far
+X1 ✅ (attack raises ASR) · X2 ✅ (refusal dir fits+validates, 5/5) · X3 ✅ (DS suppresses it). Three of five
+gates PASS → "refusal-suppression, not concept remapping" is **generalizing to a second family (Qwen3), not
+Llama-specific.** X4 (causal ablation/restoration) + X5 (concept fails) remain.
 - **X3 (next):** does DS suppress the validated Qwen3 refusal projection (vs direct)? Reuse the projection
   readout with the Qwen3 dir (e.g. L24/L32) + Qwen3 model, thinking-off.
 - **X4:** refusal ablation ↑harm AND restoration ↓DS on Qwen3. **X5:** concept readout fails to explain behavior.
