@@ -300,3 +300,16 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   load-bearing §8 result; concept mediation already covered by phase7_direct_total (~75-83%). Noted in P8 report.
 - **§29 4bit smoke** already showed the refusal mechanism SURVIVES quantization; full bf16/8bit/4bit running.
 - **Status recount: DONE=14 / PARTIAL=11 / NOT_DONE=3** (§14-18 Gate-7 first-cut, §28 running, §29 running).
+
+### 2026-08-09 (00:45) — §29 bf16+4bit done (mechanism survives quant); F5 figure; §28 full resubmitted
+- **§29 quantization (bf16 + 4bit COMPLETE, 8bit running)**: refusal ablation RAISES direct ASR at every
+  precision (bf16 0.214→0.476; 4bit 0.214→0.738) while random ablation stays low (0.167/0.190) → the refusal
+  mechanism is SPECIFIC and SURVIVES quantization (4bit ablation even stronger; refusal_rate direct 0.76→0.07).
+- **F5 figure** (fig5_dose_response.png) from committed §6 data: step-at-n=1 refusal suppression, flat
+  p_concept, noisy ASR (train+test, bootstrap CI). Advances §33.
+- **§28 full**: implementation robustness confirmed at smoke (house vs from-scratch IndepProjectOut byte-identical,
+  gen-match 1.0). 30m-rule fired on the nnsight full (737653, 29m pending, L40S-only) → resubmitted nnitems=0 on
+  the wide nodelist (737682); the byte-identical impl comparison is the load-bearing §28 result (nnsight forward
+  check already validated at smoke).
+- Waiter armed for §28 full (737682) + §29 8bit (737625). NOT_DONE now effectively §14-18 (first-cut done),
+  §28 (running), §29 (8bit running) — reports to write on completion.
