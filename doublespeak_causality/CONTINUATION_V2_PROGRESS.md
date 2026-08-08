@@ -337,3 +337,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   on a single forward pass. If diffs are at bf16 scale → implementations equivalent, divergence is greedy-decode
   non-associativity. Report finalized on that result.
 - Gate-7 seed-43 (737692) queued; §29 8bit confirmed (already in P29).
+
+### 2026-08-09 (01:30) — §28 DONE; only §14-18 Gate-7 remains (NOT_DONE=1)
+- **§28 DONE** (P28_FRAMEWORK_ROBUSTNESS): from-scratch IndepProjectOut reproduces the refusal-ablation headline
+  (+0.31 vs house +0.33; label-agree 0.88/0.83; ASR within 2pp). The token-level gen divergence (0.57/0.31) is
+  bf16 reduction-order non-associativity, PROVEN by (a) forward-pass residual diff ~1 ULP/layer and (b) isolated
+  reduction test: (h·d).sum vs tensordot both within 2e-3 of fp32 truth. Implementations mathematically
+  equivalent; conclusion implementation-robust. (Another ≥20 catch: smoke n=4 gen-match was a misleading 1.0.)
+- **STATUS: DONE=16 / PARTIAL=11 / NOT_DONE=1.** Only §14-18 Gate-7 remains (first-cut NEGATIVE committed;
+  seed-43 multi-seed confirmation 737692 running to resolve the last caveat).
+- Session tally of NOT_DONE closed this run: §4, §6, §8.2, §25, §28, §29 (+F5 figure); 2 code bugs fixed
+  (phase8 single-item, §28 np.bool_) + 2 methodological issues caught (§8.2 single-item false-positive,
+  §25 neutral confound) + §28 bf16-equivalence proven.
