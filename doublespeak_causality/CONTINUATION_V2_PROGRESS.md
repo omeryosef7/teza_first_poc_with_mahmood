@@ -355,3 +355,13 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   (L13 ~0.88 mediated → L16H10 0.51). Advances §33. (F5 dose + this = 2 new figures this session.)
 - Gate-7 seed-43 (737692) running ~22min of ~6-8h (4 arms sequential on n-804 L40S); waiter armed. Only §14-18
   remains (NOT_DONE=1); on completion → held-out eval → finalize the multi-seed confirmation of the NEGATIVE.
+
+### 2026-08-09 (02:45) — synthesis E6-E10 added; Gate-7 seed-43 N_STEPS bug caught + fixed
+- **REFUSAL_CIRCUIT_SYNTHESIS.md**: added evidence lines E6 (§4 mediation), E7 (§8.2 no-path), E8 (§25 attack
+  ~100% mediated), E9 (§28 impl-robust), E10 (§29 quant-robust) + reading note. Paper-facing consolidation.
+- **Gate-7 seed-43 self-review CATCH**: seed-42 first-cut used **N_STEPS=50**, but I launched seed-43 with the
+  slurm default **100** → (a) NOT comparable to seed-42 and (b) would time out at 8h (measured ~1.9 min/step on
+  n-804 → 100 steps × 4 arms ≈ 15-20h). Cancelled 737692, removed the partial 100-step dirs, resubmitted as
+  **737744 with N_STEPS=50** (matches seed-42 exactly). Waiter armed.
+- Also generated fig_refusal_mediation.png (§4) earlier this window.
+- Status unchanged: DONE=16 / PARTIAL=11 / NOT_DONE=1 (§14-18 Gate-7, seed-43 confirmation re-running clean).
