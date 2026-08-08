@@ -206,6 +206,17 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - Remaining NOT_DONE grinding via loop: §4,§5,§7,§8,§9,§11,§24,§25 (causal), §13,§20-completion,§24 (D),
   §26 within-Llama, §27 CROSS-MODEL, §28 framework, §29 quant, figures F5/F6.
 
+### 2026-08-08 — Gate-7 first-cut RESULT (3/4) + §22/§6 done + §27 cross-model started
+- **Gate-7 (§14-18) first-cut held-out ASR (test n=42, seed42, 50 steps, 20-item train):** vanilla GCG 0.262 /
+  refusal-L18 0.405 / rand-L18 0.476. Adding ANY repr term raises ASR, but **RANDOM beats refusal => NOT
+  mechanism-specific** (Gate E first-cut NEGATIVE for specificity; consistent with §23 fragility). L22 arm pending.
+  CAVEAT: n=42, 1 seed, reduced steps -> DIRECTIONAL first-cut, needs multi-seed/full-step confirmation.
+- **§22 timing done (732981):** anchor replace arm reproduces Gate B (-0.106); additive timing arms weak. FLAG:
+  self_noop != ds_base at n=85 -> additive-timing plumbing needs a fix before trusting B/C/D/E (anchor arm ok).
+- **§6 dose-response done (735299):** full-data marginal corr weak (dRefusal_vs_dASR ~ -0.16). Analyze.
+- **§27 CROSS-MODEL started:** Mistral/Gemma = stubs (no offline weights); viable 2nd models = Qwen3-14B (+Phi-4).
+  X1 gate on Qwen3-14B running (736504, thinking model, mem=64G, max_new=512).
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
