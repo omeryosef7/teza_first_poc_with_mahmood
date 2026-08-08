@@ -30,7 +30,7 @@ authoritative remaining-work roadmap.
 | §22 | B | PARTIAL | Y | Token-timing of refusal restoration (prefill / d | Run the remaining timing arms at comparable integrated magnitude — prefill-only, first-generated-token, first-k, and all-decode-steps restoration — and compare  |
 | §23 | B | DONE | n | Decision-state counterfactual patch (bidirection | — |
 | §24 | C | DONE | Y | Orthogonalization experiment (concept ⟂ refusal) | — (P24_ORTHOGONALIZATION: refusal component controls ASR −0.21 p=1e-4; concept-orthogonalized arm inert) |
-| §25 | B | PARTIAL | Y | Full mediation: demo-feature → refusal-suppressi | Run the integrated behavioral mediation chain: remove/patch a demo feature → observe refusal RESTORATION → then FREEZE the downstream refusal state back to the  |
+| §25 | B | DONE | Y | Full mediation: demo-feature → refusal-suppressi | — (P25_FULL_MEDIATION: DS attack ~100% mediated by decision-state refusal repr [frac 1.00-1.07, train/dev, rand/self null]; ∘ §6 upstream; naive demo-removal confounded/documented) |
 | §26 | E | PARTIAL | Y | Within-Llama generalization (unseen concepts/cod | No dedicated §26 harness/report. VARIABLE DEMO-COUNT and ALTERNATE-BENIGN-CODEWORD axes have no committed evidence. The existence/causal/prediction/attack-optim |
 | §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
 | §28 | E | NOT_DONE | Y | Framework robustness — reproduce ≥1 headline int | Re-run ≥1 headline intervention (refusal ablation / restoration / decision-state patch) under a second implementation (TransformerLens or nnsight, or a minimal  |
