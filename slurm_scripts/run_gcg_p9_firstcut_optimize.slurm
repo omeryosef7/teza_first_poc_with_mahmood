@@ -154,7 +154,11 @@ run_arm () {
         "$@"
     # Harness provenance: CONFIG.json/ENVIRONMENT.json written by run_optimization above;
     # audit_run writes AUDIT_REPORT.md + DONE (the GCG harness's run-metadata/provenance step).
-    python -m poc_stage_gcg_early.audit_run --run-dir "$out_dir"
+    # NON-FATAL (|| true): audit_run exits non-zero on any issue (e.g. "no snapshots" when
+    # n_steps<snapshot-every); under `set -euo pipefail` that would abort the whole multi-arm
+    # run after the first arm (caught in smoke 732862 — only arm04 ran). The audit is diagnostic
+    # provenance, not a gate, so a single arm's warning must not kill the remaining arms.
+    python -m poc_stage_gcg_early.audit_run --run-dir "$out_dir" || echo "[audit] non-fatal issues for $out_dir (see AUDIT_REPORT.md)"
 }
 
 # --- arm04 — vanilla GCG baseline (task-only) ---
