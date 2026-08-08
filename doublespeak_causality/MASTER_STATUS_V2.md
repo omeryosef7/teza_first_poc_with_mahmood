@@ -1,8 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-08 (late):
-DONE=14 / PARTIAL=9 / NOT_DONE=4** (audit-2 corrections; §4 & §6 closed; §8/§25/§28/§29 remain).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=14 / PARTIAL=11 / NOT_DONE=3** (§4/§6/§25 closed; §8 partial [8.2 done]; §28/§29 fulls running).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
