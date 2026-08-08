@@ -1230,12 +1230,66 @@ def expect_defense_gated(rows, summary, res=None):
     return exp
 
 
+def expect_baseline_drift(rows, summary, res=None):
+    """`scripts/phase_baseline_drift.py` (§1.2: corrected GPU baseline / judge-noise DRIFT ENVELOPE).
+
+    Condition-keyed schema (direct / doublespeak / neutral / benign) with a majority LABEL but no
+    per-cond score, so expect_behav's ASR-table contract does not apply. Recomputed per split, per
+    condition, from raw:
+      n, ASR_majority (frac majority-label == MALICIOUS), empty_rate (frac EMPTY),
+      gen_determinism_rate (frac <cond>_gen_identical -- greedy must reproduce byte-identical text),
+      judge_flip_rate_mean (mean <cond>_judge_flip), judge_any_flip_rate (frac judge_flip > 0),
+      trunc_len_rate (frac <cond>_stop == 'len'), mean_ntok (mean <cond>_ntok).
+    Everything here is a direct aggregate of raw.jsonl; nothing is imported/unchecked.
+    """
+    exp = Expect()
+    pref, cont = split_container(summary)
+    for sp, node in cont.items():
+        sr = [r for r in rows if r.get("split") == sp]
+        if not sr or not isinstance(node, dict):
+            continue
+        P = pref(sp)
+        if "n" in node:
+            exp.put(f"{P}.n", len(sr))
+        conds = node.get("conditions")
+        if not isinstance(conds, dict):
+            continue
+        # the phase stores every rate rounded to 4 decimals and mean_ntok to 1 (phase_baseline_drift.py);
+        # match that precision or the O(100) mean_ntok trips close()'s 5e-3 round-cap ceiling.
+        def rnd(xs, nd):
+            m = mean(xs)
+            return round(m, nd) if m is not None else None
+        for c, cv in conds.items():
+            crows = [r for r in sr if f"{c}_label" in r]
+            if not crows:
+                continue
+            B = f"{P}.conditions.{c}"
+            if "n" in cv:
+                exp.put(f"{B}.n", len(crows))
+            if "ASR_majority" in cv:
+                exp.put(f"{B}.ASR_majority", rnd([r.get(f"{c}_label") == MAL for r in crows], 4))
+            if "empty_rate" in cv:
+                exp.put(f"{B}.empty_rate", rnd([r.get(f"{c}_label") == "EMPTY" for r in crows], 4))
+            if "gen_determinism_rate" in cv:
+                exp.put(f"{B}.gen_determinism_rate", rnd([r.get(f"{c}_gen_identical") for r in crows], 4))
+            if "judge_flip_rate_mean" in cv:
+                exp.put(f"{B}.judge_flip_rate_mean", rnd([r.get(f"{c}_judge_flip") for r in crows], 4))
+            if "judge_any_flip_rate" in cv:
+                exp.put(f"{B}.judge_any_flip_rate", rnd([(r.get(f"{c}_judge_flip") or 0) > 0 for r in crows], 4))
+            if "trunc_len_rate" in cv:
+                exp.put(f"{B}.trunc_len_rate", rnd([r.get(f"{c}_stop") == "len" for r in crows], 4))
+            if "mean_ntok" in cv:
+                exp.put(f"{B}.mean_ntok", rnd([r.get(f"{c}_ntok") for r in crows], 1))
+    return exp
+
+
 EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
           "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
           "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
           "p9": expect_p9, "refval": expect_refval,
           "refsuploc": expect_refsuploc, "refdecpatch": expect_refdecpatch,
-          "defense_util": expect_defense_util, "defense_gated": expect_defense_gated}
+          "defense_util": expect_defense_util, "defense_gated": expect_defense_gated,
+          "baseline_drift": expect_baseline_drift}
 
 
 def detect_ext(rows):
@@ -1292,7 +1346,7 @@ def find_manifest(d, mdir, forced):
     return None, None
 
 
-def check_manifest(rows, man, typ):
+def check_manifest(rows, man, typ, summary=None):
     issues, warns = [], []
     got_splits = {r.get("split") for r in rows}
     exp_splits = set(man.get("expected_splits") or [])
@@ -1302,22 +1356,56 @@ def check_manifest(rows, man, typ):
         warns.append(f"manifest: unexpected split '{s}'")
     minn = man.get("min_n_per_split")
     if minn:
-        key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated") else "sid"
+        key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated", "baseline_drift") else "sid"
         for s in sorted(got_splits):
             n = len({r.get(key) for r in rows if r.get("split") == s})
             if n < minn:
                 issues.append(f"manifest: split '{s}' has n={n} < min_n_per_split={minn}")
-    if man.get("expected_arms"):
+    # baseline_drift is condition-keyed, not arm-keyed: check the `conditions` list against the labelled
+    # <cond>_label columns only (behav_arms' numeric side would flood warns with per-cond telemetry).
+    if typ == "baseline_drift" and man.get("conditions"):
+        labelled, _ = behav_arms(rows)
+        got = set(labelled)
+        for c in man["conditions"]:
+            if c not in got:
+                issues.append(f"manifest: condition '{c}' MISSING")
+        for c in sorted(got - set(man["conditions"])):
+            warns.append(f"manifest: unexpected condition '{c}'")
+    elif man.get("expected_arms"):
         labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch", "defense_util", "defense_gated") else ([], [])
         got = set(labelled) | set(numeric)
-        for a in man["expected_arms"]:
+        # A defense_util DOSE-SWEEP run (summary carries `dose_scales`; plan §21) sweeps ONE (or a few)
+        # layer(s) x several dose scales, naming its arms <arm>_L<layer>_d<scale>; the fixed-dose
+        # manifest's bare <arm>_L<layer> names would all read MISSING. Re-derive the expected arm set as
+        # {layer-arm prefixes} x {run's swept layers} x {dose_scales}: a layer the sweep did NOT run is
+        # simply not expected (its fixed arm is dropped, not kept-and-MISSING), while a genuinely missing
+        # dose cell IS still caught (absent from `got`). Non-layer arms (ds_base, benign_base) stay. The
+        # fixed-dose path (dose_scales None/absent) is left completely untouched.
+        exp_arms = list(man["expected_arms"])
+        dose = (summary or {}).get("dose_scales")
+        if typ == "defense_util" and dose:
+            layers = [str(L) for L in ((summary or {}).get("layers") or [])]
+            prefixes, keep = [], []
+            for a in exp_arms:
+                m = re.match(r"(.+)_L(\d+)$", a)
+                if m:
+                    prefixes.append(m.group(1))          # e.g. ds_def, ds_defrand, benign_def, ...
+                else:
+                    keep.append(a)                       # ds_base, benign_base, ...
+            expanded = list(keep)
+            for pfx in dict.fromkeys(prefixes):          # dedup, preserve order
+                for L in layers:
+                    for d in dose:
+                        expanded.append(f"{pfx}_L{L}_d{d}")
+            exp_arms = sorted(set(expanded))
+        for a in exp_arms:
             if a not in got:
                 issues.append(f"manifest: arm '{a}' MISSING")
             else:
                 miss = sum(1 for r in rows if f"{a}_label" not in r and a not in r)
                 if miss:
                     issues.append(f"manifest: arm '{a}' MISSING on {miss} rows")
-        for a in sorted(got - set(man["expected_arms"])):
+        for a in sorted(got - set(exp_arms)):
             warns.append(f"manifest: unexpected arm '{a}'")
     for field, col in (("expected_cells", "cell"), ("expected_windows", "window")):
         if man.get(field):
@@ -1416,7 +1504,7 @@ def validate_dir(d, args):
         if len(ie) > 1:
             res["issues"].append(f"rows mix induce_eval populations {sorted(ie)}; gains are not comparable")
         res["splits"] = {**res.get("splits", {}), "fit": f, "eval": e}
-    key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated") else "sid"
+    key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated", "baseline_drift") else "sid"
     ids = defaultdict(set)
     for r in ([] if typ == "refval" else rows):
         ids[r.get("split")].add(r.get(key))
@@ -1495,7 +1583,7 @@ def validate_dir(d, args):
         if args.require_manifest:
             res["issues"].append("manifest REQUIRED but not found")
     else:
-        mi, mw = check_manifest(rows, man, typ)
+        mi, mw = check_manifest(rows, man, typ, summary)
         res["issues"] += mi
         res["warns"] += mw
 

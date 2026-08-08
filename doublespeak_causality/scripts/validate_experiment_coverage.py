@@ -623,9 +623,97 @@ def check_defense_gated(rows):
                            "n_attack": len(attack), "n_benign": len(benign)}
 
 
+def check_baseline_drift(rows):
+    """§1.2 corrected GPU baseline / judge-noise DRIFT ENVELOPE
+    (scripts/phase_baseline_drift.py).
+
+    Row schema is a CONDITION-keyed variant of the behavioral schema:
+    `{id, split, cohort, <cond>_label, <cond>_labels_k, <cond>_judge_flip, <cond>_gen_identical,
+    <cond>_ntok, <cond>_stop}` over conds direct / doublespeak / neutral / benign. There is NO
+    `<cond>_score` column (StrongREJECT emits only the majority LABEL here), so the generic
+    check_behavioral null-score gate would false-FAIL every row -- hence a bespoke checker keyed on
+    the `<cond>_gen_identical` determinism column no other phase emits. Checks:
+      - no duplicate `id` within a split                                            FAIL
+      - rows carry id + split                                                       FAIL
+      - the three core conds (direct / doublespeak / neutral) present on every row  FAIL
+        (benign is present only on items that carried a benign_prompt; checked only
+         on rows that have it)
+      - label vocabulary per cond (MALICIOUS / REJECTED / BENIGN / EMPTY)           FAIL
+      - <cond>_gen_identical is a real bool; <cond>_judge_flip finite in [0,1];
+        <cond>_stop in {eos, len}                                                   FAIL
+      - ids disjoint across splits                                                  FAIL
+      - n per split >= MIN (--strict-n promotes to FAIL)                            warn
+    """
+    issues, warns = [], []
+    CORE = ("direct", "doublespeak", "neutral")
+    CONDS = CORE + ("benign",)
+
+    keys = Counter((r.get("split"), r.get("id")) for r in rows)
+    dups = sum(c - 1 for c in keys.values() if c > 1)
+    if dups:
+        issues.append(f"{dups} duplicate (split,id) rows")
+    if any(r.get("id") is None for r in rows):
+        issues.append("rows missing 'id'")
+    if any(r.get("split") is None for r in rows):
+        issues.append("rows missing 'split'")
+
+    miss = Counter()
+    for r in rows:
+        for c in CORE:
+            if f"{c}_label" not in r:
+                miss[f"{c}_label"] += 1
+    if miss:
+        issues.append("incomplete conds: " + ", ".join(f"{k}(missing {v})" for k, v in sorted(miss.items())))
+
+    LABELS = {"MALICIOUS", "REJECTED", "BENIGN", "EMPTY"}
+    nbadlab, nbadgen, nbadflip, nbadstop = 0, 0, 0, 0
+    for r in rows:
+        for c in CONDS:
+            if f"{c}_label" not in r:
+                continue
+            if r[f"{c}_label"] not in LABELS:
+                nbadlab += 1
+            if not isinstance(r.get(f"{c}_gen_identical"), bool):
+                nbadgen += 1
+            fl = r.get(f"{c}_judge_flip")
+            if not (isinstance(fl, (int, float)) and not isinstance(fl, bool)
+                    and math.isfinite(fl) and 0.0 <= fl <= 1.0):
+                nbadflip += 1
+            if r.get(f"{c}_stop") not in ("eos", "len"):
+                nbadstop += 1
+    if nbadlab:
+        issues.append(f"{nbadlab} cond labels outside the allowed vocabulary")
+    if nbadgen:
+        issues.append(f"{nbadgen} cond cells with a non-bool gen_identical")
+    if nbadflip:
+        issues.append(f"{nbadflip} cond cells with judge_flip not finite in [0,1]")
+    if nbadstop:
+        issues.append(f"{nbadstop} cond cells with stop not in {{eos,len}}")
+
+    by_split = defaultdict(set)
+    for r in rows:
+        by_split[r.get("split")].add(r.get("id"))
+    ns = {sp: len(v) for sp, v in sorted(by_split.items())}
+    for sp, n in ns.items():
+        if n < MIN:
+            (issues if STRICT_N else warns).append(f"{sp}: n={n} < {MIN}")
+    if len(by_split) < 2:
+        warns.append(f"only {len(by_split)} split(s) present: {sorted(by_split)}")
+    sps = sorted(by_split)
+    for i in range(len(sps)):
+        for j in range(i + 1, len(sps)):
+            sh = by_split[sps[i]] & by_split[sps[j]]
+            if sh:
+                issues.append(f"{len(sh)} ids shared between {sps[i]} and {sps[j]}")
+
+    n_benign = sum(1 for r in rows if "benign_label" in r)
+    return issues, warns, {"n_valid": ns, "selfswap_dev": None, "dup_rows": dups,
+                           "n_conds": len(CONDS), "n_benign": n_benign}
+
+
 def detect(rows):
     """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval'|'defense_util'
-    |'defense_gated', checker) or (None, None)."""
+    |'defense_gated'|'baseline_drift', checker) or (None, None)."""
     if not rows:
         return None, None
     if all("cell" in r for r in rows):
@@ -655,6 +743,13 @@ def detect(rows):
     # (distinct from refdecpatch's `ds_dpatch_direct_L*` and from every behav arm).
     if any(re.fullmatch(r"ds_def_L\d+(?:_d[0-9.]+)?_label", k) for r in rows for k in r):
         return "defense_util", check_defense_util
+    # baseline_drift (§1.2) also carries id+split+<name>_label, so it MUST precede the generic behav
+    # branch. Its discriminator is the per-condition greedy-determinism flag `doublespeak_gen_identical`
+    # (a `<cond>_gen_identical` column) that no other phase emits; behav/defense_* have no *_gen_identical
+    # anywhere, and it has no `<cond>_score`, so routing it through check_behavioral would false-FAIL on
+    # every null score.
+    if any("doublespeak_gen_identical" in r for r in rows):
+        return "baseline_drift", check_baseline_drift
     if all(("id" in r and "split" in r) for r in rows):
         return "behav", check_behavioral
     # P7 refusal-direction validation. Keyed on 'arm' + 'refused', which no other phase emits;
