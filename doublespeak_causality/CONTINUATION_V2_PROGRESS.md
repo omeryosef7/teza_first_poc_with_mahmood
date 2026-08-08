@@ -190,6 +190,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   (objective validated by §16 tests — the major unfinished capstone, needs careful GCG harness setup); §10 powered
   concept-ablation; §5 position decomposition; §27 cross-model. Core plan arc (refusal circuit causal + defense) DONE.
 
+### 2026-08-08 — 12-agent adversarial claims+code AUDIT (reports/CLAIMS_AUDIT_2026-08-08.md)
+- Every headline NUMBER reproduces exactly from RAW; all stat methods sound; **0 claims REFUTED** (1 CONFIRMED,
+  6 CONFIRMED-with-caveat). Fixed: 1 real overclaim (DEF-01 'ratio ~const 0.5' -> real 0.15/0.47/0.38/0.50);
+  2 LATENT code bugs (defense_gated --threshold ordering; analyze_refsuploc positional pairing) -- NEITHER
+  affected any committed result (verified identical on re-run). Tightened GB-01/GB-02/NF-01 wording caveats.
+- Remaining: baseline_drift + dose-sweep validator schemas (§36, subagent running) -> validate_all_outputs 0 FAIL.
+### 2026-08-08 — Gate-7 (§14-18) first-cut RUNNING (732918): 4 arms (vanilla/refusal-L18/refusal-L22/rand), 20 items x 50 steps, ~4-5h; eval prepped (26_eval_p9_gcg_heldout_asr.py).
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
