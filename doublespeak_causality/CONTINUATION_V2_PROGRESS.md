@@ -269,3 +269,19 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **30m-pending rule fired x3** (§8 737496, §29 737500, §28 737512 all >30m on fair-share) → cancel + resubmit
   on wide ≥23GB nodelist (genuine config change; patching/small-model jobs run on Ampere).
 - **Status: DONE=14 / NOT_DONE=4** (§8 25-item running, §25 next, §28/§29 smokes running).
+
+### 2026-08-08 (late night) — §8.2 DONE (false-positive caught); §25 authored; §28 fixed; §29 full launched
+- **§8.2 refusal head→MLP DONE (n=25)**: NO-PATH — candidate edges 0.031 vs control 0.021 (1.44×, needs 2×);
+  strongest edge L15h7→MLP16 sign-consistency only 0.64; 17/25 items NO-PATH. **The single-item run had
+  spuriously shown SPARSE-GRAPH (item 0 is 1 of 6 sparse items) — the ≥20/cell rule caught a real false
+  positive.** Reinforces §4 (refusal 72-88% mediated) + §7 (head-distributed). (P8_HEAD_MLP_PATH; run 737616)
+- **§8 multi-item aggregation** added to phase8 (`--item-idxs`) + committed; §8.1 concept launched (737623).
+- **§25 full mediation authored** (phase25_full_mediation): ds_base→neutral_base(demos removed→refusal
+  restored)→neutral_dpatch_ds(re-clamp decision-state→attack returns?); mediated_frac; reuses §23 primitives.
+  Documents the codeword-comprehension confound (conservative). Smoke 737620 launched.
+- **§28 fixed** (np.bool_ JSON crash in summary) + smoke relaunched (737621, nnitems=0 wide).
+- **§29 4bit smoke PASSED + informative** (n=6): direct_refabl ASR 0.5 vs direct_base 0.167, randabl 0.167 →
+  the refusal mechanism SURVIVES 4-bit quantization. Full 3-precision (bf16/8bit/4bit, test n=42) launched
+  (737624/625/626) on Ampere via DSGPUALLOW=23gb.
+- **Status: DONE=15 (+§4), §8 PARTIAL (8.2 done), NOT_DONE=§25/§28/§29 (all with smokes/fulls in flight).**
+- 6 jobs in flight (at parallel cap); waiter armed. 30m-rule active.
