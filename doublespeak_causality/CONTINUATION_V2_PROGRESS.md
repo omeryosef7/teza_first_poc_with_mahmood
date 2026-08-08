@@ -313,3 +313,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   check already validated at smoke).
 - Waiter armed for §28 full (737682) + §29 8bit (737625). NOT_DONE now effectively §14-18 (first-cut done),
   §28 (running), §29 (8bit running) — reports to write on completion.
+
+### 2026-08-09 (01:15) — §29 DONE (report); §28 full running; §14-18 Gate-7 multi-seed confirmation launched
+- **§29 DONE** (P29_QUANTIZATION_ROBUSTNESS): refusal ablation raises direct ASR at bf16/8bit/4bit
+  (+0.26 p=.007 / +0.29 p=.004 / +0.52 p<.001), random ablation ns at all → mechanism SURVIVES quantization
+  (4bit strongest, refusal_rate 0.76→0.07). Not a full-precision artifact. runs 737624/625/626, test n=42.
+- **Status: DONE=15 / PARTIAL=11 / NOT_DONE=2** (§14-18 Gate-7, §28 running).
+- **§28 full** RUNNING (737682, n=42, byte-identical impl comparison; nnitems=0 wide). Waiter armed.
+- **§14-18 Gate-7 multi-seed confirmation**: first-cut (seed42) was a clean NEGATIVE (random ≥ refusal → Claim F
+  not supported / mechanism-derived GCG objective non-specific). Launched **seed-43** optimize (737692, 4 arms:
+  arm04 vanilla / arm07-L18 refusal / arm07-L22 / arm07-rand-L18) to test the negative's stability across seeds
+  — directly resolves the first-cut's stated multi-seed caveat. ~6-8 GPU-h, L40S/64G; cron loop monitors.
+  If seed-43 also shows random ≥ refusal, the Gate-7 negative is confirmed and §14-18 → DONE.
