@@ -198,6 +198,14 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - Remaining: baseline_drift + dose-sweep validator schemas (§36, subagent running) -> validate_all_outputs 0 FAIL.
 ### 2026-08-08 — Gate-7 (§14-18) first-cut RUNNING (732918): 4 arms (vanilla/refusal-L18/refusal-L22/rand), 20 items x 50 steps, ~4-5h; eval prepped (26_eval_p9_gcg_heldout_asr.py).
 
+### 2026-08-08 — 'do everything' push: honest gap audit + causal batch launched
+- MASTER_STATUS_V2.md: evidence audit of all 28 sections (DONE=6/PARTIAL=10/NOT_DONE=12) — authoritative roadmap.
+- Built+committed 3 reuse-heavy causal harnesses; smokes PASSED (§10 5-arm+provenance ok; §22 10 timing arms +
+  self_noop==ds_base plumbing ok). Launched FULL: §10 powered concept-ablation (732980, pooled v3 n~324),
+  §22 timing (732981), + §6 dose-response smoke (732982). Gate-7 first-cut 732918 at 2/4 arms.
+- Remaining NOT_DONE grinding via loop: §4,§5,§7,§8,§9,§11,§24,§25 (causal), §13,§20-completion,§24 (D),
+  §26 within-Llama, §27 CROSS-MODEL, §28 framework, §29 quant, figures F5/F6.
+
 ### Pending PRIORITY-A / next
 - **§23 / Gate B (decisive):** patch DS decision-token residual←Direct at L18 (+L15–17 band) DURING
   generation, measure ΔASR vs rand/self controls → converts the repr localization to behavioral causality.
