@@ -181,17 +181,21 @@ def main():
     # ---- fit the gate threshold T ON TRAIN ONLY (refusing reference = Direct-harmful projection) ----
     train_rows = per.get("train", [])
     train_direct = [r["proj_direct"] for r in train_rows]
-    if not train_direct:
-        # No train split available (e.g. --splits test): fall back to the calibrated direct mean from
-        # the proj-summary train gaps so T is still a TRAIN-fit quantity, never fit on test.
-        T = float(proj[row]["mean"]["direct"]); fit_desc = "proj_summary_train_direct_mean"
-    elif args.threshold is not None:
+    # NOTE (audit fix 2026-08-08): an EXPLICIT --threshold is a user-frozen value valid on ANY split, so
+    # it must win BEFORE the empty-train fallback. The prior order checked `if not train_direct` first,
+    # which on a test-only run silently discarded an explicit --threshold (never triggered by any run so
+    # far: all runs used --splits train,test so train was present and T=train_direct_mean was correct).
+    if args.threshold is not None:
         T = float(args.threshold); fit_desc = "explicit"
-    elif args.threshold_percentile is not None:
+    elif args.threshold_percentile is not None and train_direct:
         T = float(np.percentile(train_direct, args.threshold_percentile))
         fit_desc = f"train_direct_p{args.threshold_percentile}"
-    else:
+    elif train_direct:
         T = float(np.mean(train_direct)); fit_desc = "train_direct_mean"
+    else:
+        # No train split and no explicit T: fall back to the calibrated direct mean from the proj-summary
+        # train gaps so T is still a TRAIN-fit quantity, never fit on test.
+        T = float(proj[row]["mean"]["direct"]); fit_desc = "proj_summary_train_direct_mean"
     print(f"[defense-gated] gate threshold T={T:.4f} (fit={fit_desc}; TRAIN-only, frozen for test)\n"
           f"[defense-gated] PASS 2: generate base + uncond arms; gated arm derived from fire flags", flush=True)
 

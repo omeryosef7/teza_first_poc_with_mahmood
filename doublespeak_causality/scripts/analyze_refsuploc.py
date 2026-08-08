@@ -63,6 +63,18 @@ def analyze_dir(run_dir, anchor, frac_thr, comps, donors, seed=0):
             key = f"{C}|{donor}|L{Lp}"
             return np.array([r["patched"][key][ar] - r["base"]["ds_base"][ar] for r in sr if key in r["patched"]], float)
 
+        def restore_pair(C, d1, d2, Lp):
+            """ITEM-ALIGNED paired restorations for two donors (audit fix 2026-08-08): only items where BOTH
+            donor keys exist, aligned by item — NOT positional dr[:m]/ra[:m], which mispairs on ragged
+            donor coverage and corrupts the paired specificity CI."""
+            k1, k2 = f"{C}|{d1}|L{Lp}", f"{C}|{d2}|L{Lp}"
+            a1, a2 = [], []
+            for r in sr:
+                if k1 in r["patched"] and k2 in r["patched"]:
+                    b = r["base"]["ds_base"][ar]
+                    a1.append(r["patched"][k1][ar] - b); a2.append(r["patched"][k2][ar] - b)
+            return np.array(a1, float), np.array(a2, float)
+
         cells = {}
         selfswap_max = 0.0
         # collect direct-donor p-values per component for Holm
@@ -90,16 +102,14 @@ def analyze_dir(run_dir, anchor, frac_thr, comps, donors, seed=0):
                 dk = f"{C}|direct|L{Lp}"
                 if dk not in cells:
                     continue
-                dr = restore_arr(C, "direct", Lp)
                 for alt in ("rand", "neutral"):
                     ak = f"{C}|{alt}|L{Lp}"
                     if ak not in cells:
                         continue
-                    ra = restore_arr(C, alt, Lp)
-                    m = min(len(dr), len(ra))
-                    if m < 2:
+                    dr, ra = restore_pair(C, "direct", alt, Lp)   # item-aligned, not positional
+                    if len(dr) < 2:
                         continue
-                    dci = st.paired_bootstrap_ci(dr[:m], ra[:m], n_boot=2000, seed=seed)
+                    dci = st.paired_bootstrap_ci(dr, ra, n_boot=2000, seed=seed)
                     cells[dk][f"minus_{alt}_ci"] = [round(dci["lo"], 4), round(dci["hi"], 4)]
                     cells[dk][f"minus_{alt}_excludes0"] = bool((dci["lo"] > 0 or dci["hi"] < 0) and dci["ci_reliable"])
                     # specificity requires the DONOR restore MORE than the control (lo>0), not merely differ

@@ -49,7 +49,11 @@ validator FAIL is the fixed-dose manifest not listing dose-suffixed arms — a c
 | 0.75 | 2.12 | −0.106 (p=0.049) | +0.282 | ~0.38 |
 | 1.00 | 2.83 | −0.188 (p=1e-4) | +0.376 | ~0.50 |
 
-**Both curves rise together; the attack-defense / benign-over-refusal ratio is ≈constant (~0.5) across doses.**
+**Both curves rise monotonically with dose, and benign over-refusal EXCEEDS the attack reduction at every dose**
+(over-refusal / |ΔASR| ratio ≈ 0.15 → 0.47 → 0.38 → 0.50; i.e. |ΔASR| is only 15–50% of the benign cost, worst
+at the low dose). *(Correction 2026-08-08, audit: an earlier draft called this ratio "≈constant ~0.5"; the table
+shows it is not constant — it rises from ~0.15 at α-scale 0.25. The non-selectivity conclusion is unchanged and
+if anything strengthened: at no dose does the attack benefit come close to the benign cost.)*
 There is **no dose that defends meaningfully while sparing benign prompts** — the smallest dose with a
 significant attack effect (0.75) already over-refuses +0.28. This is a **stronger Gate F FAIL than the
 fixed-dose run**: the failure is not a bad α choice, it is **structural** — the refusal axis is *shared*

@@ -43,8 +43,12 @@ paired exact McNemar.
 ## Interpretation
 Combined with §3 Gate A (the same residual overwrite restores the **refusal projection**, frac≈0.93, replicated
 test) and the depth Panel B calibrated-rescue (restoring the **refusal direction** alone lowers ASR at L15–29,
-L18 p=0.021), this establishes: **the decision-token refusal state at L15–18 is behaviorally causal for
-refuse/comply** (plan claim **D**) — restoring it specifically collapses the Doublespeak jailbreak.
+L18 p=0.021), this establishes: **restoring the decision-token refusal state at L15–18 is causally sufficient to
+re-engage refusal** — a specific, replicated, within-run-paired NECESSITY+specificity+locality result (plan
+claim **D**, *refuse direction*). Scope (audit 2026-08-08): this is the forward direction only; the *comply*
+direction — that the DS/suppressed decision state is sufficient to force compliance — is a documented **NULL**
+(the reverse arm, below), so this is not bidirectional control. Effect size is a reduction to ≈`direct_base`
+level (ASR 0.27→0.13 train), i.e. the jailbreak is removed to the refusing-baseline rate, not to zero.
 
 ## Result — generated cohort (NULL, and self-explaining)
 `refdecpatch_generated_...732389` (154r, validated 117 vals/0 mismatch). Here **`direct_base` ASR > `ds_base`
@@ -69,9 +73,13 @@ An independent run with the reverse arm added. **Forward reproduces Gate B**: `d
 1. **The DS decision state is NOT sufficient to induce compliance** — inserting it into a refusing Direct
    prompt barely moves ASR (≈ self no-op level). So the bidirectional swap is **not clean**: Gate B stays
    **PASS (forward), not STRONG.** Compliance is *not* carried by a specific "DS decision vector."
-2. **Decision-state fragility:** a norm-matched *random* perturbation at the decision token **massively raises
-   ASR in BOTH directions** (reverse +0.34 p<1e-3; forward rand also +0.14) with empty_rate=0 (coherent, not
-   garbled). Refusal at the decision token is not robust to norm-matched noise — an adversarial fragility
+2. **Decision-state fragility:** a norm-matched *random* perturbation at the decision token **raises ASR on
+   train in BOTH directions** (reverse +0.341 p<1e-3 b=30/c=1; forward rand +0.14) with empty_rate=0 (coherent,
+   not garbled). *Caveat (audit 2026-08-08): the reverse-random effect is TRAIN-only — it is +0.095, p=0.39
+   (ns) on the frozen test split (underpowered / low base). The train effect is large and highly significant;
+   the fragility claim rests on train + the specific-vs-random asymmetry (structured DS/self donors, norm-
+   identical to rand, are inert), not on the frozen test.* Refusal at the decision token is not robust to
+   norm-matched noise — an adversarial fragility
    result. *Caveat:* the random vector is norm-matched to the (larger) DS residual, so part of this is a
    large in-magnitude OOD perturbation; the specific-vs-random asymmetry still holds (structured DS/self are
    inert, random is not).
