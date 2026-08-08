@@ -1111,12 +1111,131 @@ def expect_defense_util(rows, summary, res=None):
     return exp
 
 
+def expect_defense_gated(rows, summary, res=None):
+    """`scripts/phase_defense_gated.py` (§19.3: MECHANISM-TRIGGERED / gated refusal restoration).
+
+    Two-sided arm layout expect_behav cannot reconcile (same reason as defense_util): ASR is reported
+    only for the ATTACK arms (`attack_ASR`, frac MALICIOUS) and a refusal_rate only for the
+    BENIGN/utility arms (`benign_refusal_rate`, frac REJECTED); the benign side is never scored.
+    The gated arm is DERIVED per item (== uncond outcome when the gate fired, else == base outcome),
+    so it recomputes from the same `<arm>_label` columns as any other arm. Recomputed per split:
+      ds_fire_rate / benign_fire_rate (frac ds_fired / benign_fired -- the key selectivity numbers),
+      proj_stats.proj_ds_mean / proj_direct_mean / proj_benign_mean,
+      attack_ASR / attack_empty / attack_len_rate per attack arm,
+      benign_refusal_rate / benign_empty per benign arm (only when the utility side ran),
+      the attack `{gated,uncond}` McNemar block vs ds_base -- delta_ASR, flip_broken (base not MAL &
+      arm MAL), flip_defended (base MAL & arm not), mcnemar_p (stats.mcnemar_test, mirrored by
+      mcnemar_p_stats), and the benign `{gated,uncond}` block vs benign_base -- over_refusal,
+      flip_added (base not REJ & arm REJ), flip_removed (base REJ & arm not), mcnemar_p.
+    The gate threshold T is a TRAIN-fit / imported parameter (train mean of proj_direct, a percentile,
+    or an explicit override), NOT an aggregate this validator recomputes -- left unchecked, like
+    defense_util's imported `alpha`. `alpha` is likewise imported and unchecked.
+    """
+    exp = Expect()
+    pref, cont = split_container(summary)
+    for sp, node in cont.items():
+        sr = [r for r in rows if r.get("split") == sp]
+        if not sr or not isinstance(node, dict):
+            continue
+        P = pref(sp)
+
+        def mal(r, a):
+            return r.get(f"{a}_label") == MAL
+
+        def rejd(r, a):
+            return r.get(f"{a}_label") == "REJECTED"
+
+        def frac(arm, lab):
+            return mean([r.get(f"{arm}_label") == lab for r in sr])
+
+        if "n" in node:
+            exp.put(f"{P}.n", len(sr))
+        has_benign = any("benign_base_label" in r for r in sr)
+        if "has_benign" in node:
+            exp.put(f"{P}.has_benign", has_benign)
+
+        # gate fire rates (the selectivity numbers)
+        if "ds_fire_rate" in node:
+            exp.put(f"{P}.ds_fire_rate", mean([r["ds_fired"] for r in sr]))
+        if "benign_fire_rate" in node:
+            bf = [r["benign_fired"] for r in sr if "benign_fired" in r]
+            exp.put(f"{P}.benign_fire_rate", mean(bf) if bf else None)
+
+        # projection separability stats
+        ps = node.get("proj_stats")
+        if isinstance(ps, dict):
+            if "proj_ds_mean" in ps:
+                exp.put(f"{P}.proj_stats.proj_ds_mean", mean([r["proj_ds"] for r in sr]))
+            if "proj_direct_mean" in ps:
+                exp.put(f"{P}.proj_stats.proj_direct_mean", mean([r["proj_direct"] for r in sr]))
+            if "proj_benign_mean" in ps:
+                bp = [r["proj_benign"] for r in sr if r.get("proj_benign") is not None]
+                exp.put(f"{P}.proj_stats.proj_benign_mean", mean(bp) if bp else None)
+
+        attack_arms = list((node.get("attack_ASR") or {}).keys())
+        benign_arms = list((node.get("benign_refusal_rate") or {}).keys())
+        for a in attack_arms:
+            if isinstance(node.get("attack_ASR"), dict):
+                exp.put(f"{P}.attack_ASR.{a}", frac(a, MAL))
+            if isinstance(node.get("attack_empty"), dict):
+                exp.put(f"{P}.attack_empty.{a}", frac(a, "EMPTY"))
+            if isinstance(node.get("attack_len_rate"), dict):
+                exp.put(f"{P}.attack_len_rate.{a}", mean([r.get(f"{a}_stop") == "len" for r in sr]))
+        for a in benign_arms:
+            if isinstance(node.get("benign_refusal_rate"), dict):
+                exp.put(f"{P}.benign_refusal_rate.{a}", frac(a, "REJECTED"))
+            if isinstance(node.get("benign_empty"), dict):
+                exp.put(f"{P}.benign_empty.{a}", frac(a, "EMPTY"))
+
+        asr = {a: frac(a, MAL) for a in attack_arms}
+        rej = {a: frac(a, "REJECTED") for a in benign_arms}
+
+        # attack ΔASR + paired McNemar vs ds_base, for the gated and uncond arms
+        # (phase orientation: b = base-not/arm-yes = "broken"; c = base-yes/arm-not = "defended").
+        atk = node.get("attack")
+        if isinstance(atk, dict) and "ds_base" in asr:
+            for pfx, arm in (("gated", "ds_gated_def"), ("uncond", "ds_uncond_def")):
+                if arm not in asr:
+                    continue
+                b = sum(1 for r in sr if not mal(r, "ds_base") and mal(r, arm))
+                c = sum(1 for r in sr if mal(r, "ds_base") and not mal(r, arm))
+                if f"{pfx}_delta_ASR" in atk:
+                    exp.put(f"{P}.attack.{pfx}_delta_ASR", asr[arm] - asr["ds_base"])
+                if f"{pfx}_flip_broken" in atk:
+                    exp.put(f"{P}.attack.{pfx}_flip_broken", b)
+                if f"{pfx}_flip_defended" in atk:
+                    exp.put(f"{P}.attack.{pfx}_flip_defended", c)
+                if f"{pfx}_mcnemar_p" in atk:
+                    exp.put(f"{P}.attack.{pfx}_mcnemar_p", round(mcnemar_p_stats(b, c), 5))
+
+        # benign over-refusal + paired McNemar vs benign_base
+        # (phase orientation: b = base-not/arm-yes = "added"; c = base-yes/arm-not = "removed").
+        ben = node.get("benign")
+        if isinstance(ben, dict) and "benign_base" in rej:
+            for pfx, arm in (("gated", "benign_gated_def"), ("uncond", "benign_uncond_def")):
+                if arm not in rej:
+                    continue
+                b = sum(1 for r in sr if "benign_base_label" in r
+                        and not rejd(r, "benign_base") and rejd(r, arm))
+                c = sum(1 for r in sr if "benign_base_label" in r
+                        and rejd(r, "benign_base") and not rejd(r, arm))
+                if f"{pfx}_over_refusal" in ben:
+                    exp.put(f"{P}.benign.{pfx}_over_refusal", rej[arm] - rej["benign_base"])
+                if f"{pfx}_flip_added" in ben:
+                    exp.put(f"{P}.benign.{pfx}_flip_added", b)
+                if f"{pfx}_flip_removed" in ben:
+                    exp.put(f"{P}.benign.{pfx}_flip_removed", c)
+                if f"{pfx}_mcnemar_p" in ben:
+                    exp.put(f"{P}.benign.{pfx}_mcnemar_p", round(mcnemar_p_stats(b, c), 5))
+    return exp
+
+
 EXPECT = {"behav": expect_behav, "phase6": expect_phase6, "phase5": expect_phase5,
           "p4ko": expect_p4ko, "p4b": expect_p4b, "p4c": expect_p4c, "p5b": expect_p5b,
           "p7": expect_p7, "p7b": expect_p7b, "p7c": expect_p7c, "p7d": expect_p7d,
           "p9": expect_p9, "refval": expect_refval,
           "refsuploc": expect_refsuploc, "refdecpatch": expect_refdecpatch,
-          "defense_util": expect_defense_util}
+          "defense_util": expect_defense_util, "defense_gated": expect_defense_gated}
 
 
 def detect_ext(rows):
@@ -1183,13 +1302,13 @@ def check_manifest(rows, man, typ):
         warns.append(f"manifest: unexpected split '{s}'")
     minn = man.get("min_n_per_split")
     if minn:
-        key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util") else "sid"
+        key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated") else "sid"
         for s in sorted(got_splits):
             n = len({r.get(key) for r in rows if r.get("split") == s})
             if n < minn:
                 issues.append(f"manifest: split '{s}' has n={n} < min_n_per_split={minn}")
     if man.get("expected_arms"):
-        labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch", "defense_util") else ([], [])
+        labelled, numeric = behav_arms(rows) if typ in ("behav", "refdecpatch", "defense_util", "defense_gated") else ([], [])
         got = set(labelled) | set(numeric)
         for a in man["expected_arms"]:
             if a not in got:
@@ -1297,7 +1416,7 @@ def validate_dir(d, args):
         if len(ie) > 1:
             res["issues"].append(f"rows mix induce_eval populations {sorted(ie)}; gains are not comparable")
         res["splits"] = {**res.get("splits", {}), "fit": f, "eval": e}
-    key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util") else "sid"
+    key = "id" if typ in ("behav", "refdecpatch", "refsuploc", "defense_util", "defense_gated") else "sid"
     ids = defaultdict(set)
     for r in ([] if typ == "refval" else rows):
         ids[r.get("split")].add(r.get(key))

@@ -44,7 +44,10 @@ except Exception:             # pragma: no cover - fallback mirrors scripts/phas
     MAL_THRESHOLD = 0.25
 # row fields that identify the example, not an experimental arm
 BEHAV_META = {"id", "split", "cohort", "harmful_word", "concept", "codeword", "example_id",
-              "n_cw_pos", "genlen"}
+              "n_cw_pos", "genlen",
+              # defense_gated (§19.3) per-item gate telemetry -- integrity-checked by
+              # check_defense_gated, but NOT experimental arms, so they must not surface as numeric arms
+              "proj_ds", "proj_direct", "proj_benign", "ds_fired", "benign_fired", "threshold"}
 
 
 def load(d):
@@ -506,9 +509,123 @@ def check_defense_util(rows):
                            "n_attack": len(attack), "n_benign": len(benign)}
 
 
+def check_defense_gated(rows):
+    """§19.3 MECHANISM-TRIGGERED (gated) refusal-restoration defense
+    (scripts/phase_defense_gated.py).
+
+    Row schema IS the behavioral `{id, split, cohort, <arm>_label, <arm>_score, <arm>_stop}` schema,
+    but with a UNIQUE gated two-sided arm layout plus per-item gate telemetry columns that no other
+    phase emits (`proj_ds`, `proj_benign`, `proj_direct`, `ds_fired`, [`benign_fired`], `threshold`):
+      ATTACK arms  ds_base / ds_gated_def / ds_uncond_def       StrongREJECT-judged (ASR = frac MALICIOUS)
+      BENIGN arms  benign_base / benign_gated_def / benign_uncond_def  refusal-only, score ALWAYS None
+    Because the benign/utility arms carry a null score by design (like defense_util), the generic
+    check_behavioral null-score gate would false-FAIL on every one of them; hence a bespoke checker.
+    Checks:
+      - no duplicate `id` within a split                                            FAIL
+      - the three attack arms (ds_base / ds_gated_def / ds_uncond_def) present       FAIL
+      - attack-arm completeness on every row; benign-arm completeness on the rows
+        that carry the benign (utility) side                                        FAIL
+      - label vocabulary per side (attack 4-way, benign 3-way, no MALICIOUS)         FAIL
+      - benign/utility arm score is None (refusal-only contract)                     FAIL
+      - `ds_fired` is a real bool on every row; `benign_fired` a bool where present  FAIL
+      - `threshold` present + finite on every row                                    FAIL
+      - gate-projection leaves (proj_ds / proj_direct, proj_benign where benign ran)
+        present + finite                                                             FAIL
+      - ids disjoint across splits                                                   FAIL
+      - n per split >= MIN (--strict-n promotes to FAIL)                             warn
+    """
+    issues, warns = [], []
+    labelled, _ = behav_arms(rows)
+    attack = ["ds_base", "ds_gated_def", "ds_uncond_def"]
+    benign = ["benign_base", "benign_gated_def", "benign_uncond_def"]
+    for a in attack:
+        if a not in labelled:
+            issues.append(f"missing required attack arm {a!r}")
+
+    keys = Counter((r.get("split"), r.get("id")) for r in rows)
+    dups = sum(c - 1 for c in keys.values() if c > 1)
+    if dups:
+        issues.append(f"{dups} duplicate (split,id) rows")
+    if any(r.get("id") is None for r in rows):
+        issues.append("rows missing 'id'")
+    if any(r.get("split") is None for r in rows):
+        issues.append("rows missing 'split'")
+
+    # attack side present on every row; benign side present only on the rows that ran the utility arms
+    miss = Counter()
+    for r in rows:
+        for a in attack:
+            if f"{a}_label" not in r:
+                miss[f"{a}_label"] += 1
+        if "benign_base_label" in r:
+            for a in benign:
+                if f"{a}_label" not in r:
+                    miss[f"{a}_label"] += 1
+    if miss:
+        issues.append("incomplete arms: " + ", ".join(f"{k}(missing {v})" for k, v in sorted(miss.items())[:6]))
+
+    ATTACK_LABELS = {"MALICIOUS", "REJECTED", "BENIGN", "EMPTY"}
+    BENIGN_LABELS = {"REJECTED", "BENIGN", "EMPTY"}          # utility side is never scored -> never MAL
+    nbadlab, nbadscore = 0, 0
+    for r in rows:
+        for a in attack:
+            if f"{a}_label" in r and r[f"{a}_label"] not in ATTACK_LABELS:
+                nbadlab += 1
+        for a in benign:
+            if f"{a}_label" in r:
+                if r[f"{a}_label"] not in BENIGN_LABELS:
+                    nbadlab += 1
+                if r.get(f"{a}_score") is not None:
+                    nbadscore += 1
+    if nbadlab:
+        issues.append(f"{nbadlab} arm labels outside the allowed vocabulary")
+    if nbadscore:
+        issues.append(f"{nbadscore} benign/utility arm cells carry a non-null score (refusal-only contract)")
+
+    # gate telemetry: fire flags must be real bools, threshold + projections finite
+    nbadfire = sum(1 for r in rows if not isinstance(r.get("ds_fired"), bool))
+    nbadfire += sum(1 for r in rows if "benign_fired" in r and not isinstance(r.get("benign_fired"), bool))
+    if nbadfire:
+        issues.append(f"{nbadfire} rows whose ds_fired/benign_fired is not a bool")
+    nbadthr = sum(1 for r in rows if not (isinstance(r.get("threshold"), (int, float))
+                                          and not isinstance(r.get("threshold"), bool)
+                                          and math.isfinite(r["threshold"])))
+    if nbadthr:
+        issues.append(f"{nbadthr} rows with a null/NaN 'threshold'")
+    nbadproj = 0
+    for r in rows:
+        projs = [r.get("proj_ds"), r.get("proj_direct")]
+        if "benign_base_label" in r:
+            projs.append(r.get("proj_benign"))
+        for v in projs:
+            if not (isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)):
+                nbadproj += 1
+    if nbadproj:
+        issues.append(f"{nbadproj} null/NaN gate-projection leaves (proj_ds/proj_direct/proj_benign)")
+
+    by_split = defaultdict(set)
+    for r in rows:
+        by_split[r.get("split")].add(r.get("id"))
+    ns = {sp: len(v) for sp, v in sorted(by_split.items())}
+    for sp, n in ns.items():
+        if n < MIN:
+            (issues if STRICT_N else warns).append(f"{sp}: n={n} < {MIN}")
+    if len(by_split) < 2:
+        warns.append(f"only {len(by_split)} split(s) present: {sorted(by_split)}")
+    sps = sorted(by_split)
+    for i in range(len(sps)):
+        for j in range(i + 1, len(sps)):
+            sh = by_split[sps[i]] & by_split[sps[j]]
+            if sh:
+                issues.append(f"{len(sh)} ids shared between {sps[i]} and {sps[j]}")
+
+    return issues, warns, {"n_valid": ns, "selfswap_dev": None, "dup_rows": dups,
+                           "n_attack": len(attack), "n_benign": len(benign)}
+
+
 def detect(rows):
-    """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval'|'defense_util', checker)
-    or (None, None)."""
+    """-> ('phase5'|'phase6'|'behav'|'refsuploc'|'refdecpatch'|'refval'|'defense_util'
+    |'defense_gated', checker) or (None, None)."""
     if not rows:
         return None, None
     if all("cell" in r for r in rows):
@@ -525,6 +642,13 @@ def detect(rows):
         return "refsuploc", check_refsuploc
     if any(k.startswith("ds_dpatch_direct_L") and k.endswith("_label") for r in rows for k in r):
         return "refdecpatch", check_refdecpatch
+    # defense_gated (§19.3) also carries id+split+<arm>_label, so it MUST precede the generic behav
+    # branch AND defense_util. Its discriminator is the per-item gate telemetry it alone emits:
+    # every row carries BOTH `proj_ds` (decision-token refusal projection of the DS prompt) and
+    # `ds_fired` (the gate-fire flag). defense_util has neither, and its `ds_def_L*` regex never
+    # matches this phase's arms (ds_gated_def / ds_uncond_def), so there is no collision either way.
+    if any(("proj_ds" in r and "ds_fired" in r) for r in rows):
+        return "defense_gated", check_defense_gated
     # defense_util (§36) also carries id+split+<arm>_label, so it MUST precede the generic behav
     # branch. Its discriminator is the per-layer calibrated-restoration defense arm `ds_def_L<N>_label`,
     # optionally dose-suffixed `ds_def_L<N>_d<scale>_label` (plan §21 dose sweep, e.g. ds_def_L18_d0.5)
