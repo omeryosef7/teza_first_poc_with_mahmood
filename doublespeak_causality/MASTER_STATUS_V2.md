@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=15 / PARTIAL=11 / NOT_DONE=2** (§29 closed; §28 running; §14-18 first-cut committed).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=16 / PARTIAL=11 / NOT_DONE=1** (§28/§29 closed; only §14-18 Gate-7 remains [first-cut committed; seed-43 confirmation running]).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -32,7 +32,7 @@ authoritative remaining-work roadmap.
 | §25 | B | DONE | Y | Full mediation: demo-feature → refusal-suppressi | — (P25_FULL_MEDIATION: DS attack ~100% mediated by decision-state refusal repr [frac 1.00-1.07, train/dev, rand/self null]; ∘ §6 upstream; naive demo-removal confounded/documented) |
 | §26 | E | PARTIAL | Y | Within-Llama generalization (unseen concepts/cod | No dedicated §26 harness/report. VARIABLE DEMO-COUNT and ALTERNATE-BENIGN-CODEWORD axes have no committed evidence. The existence/causal/prediction/attack-optim |
 | §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
-| §28 | E | NOT_DONE | Y | Framework robustness — reproduce ≥1 headline int | Re-run ≥1 headline intervention (refusal ablation / restoration / decision-state patch) under a second implementation (TransformerLens or nnsight, or a minimal  |
+| §28 | E | DONE | Y | Framework robustness — reproduce ≥1 headline int | — (P28: from-scratch IndepProjectOut reproduces refusal-ablation headline [+0.31 vs +0.33], label-agree 0.88/0.83, proven numerically equivalent; token divergence = bf16 reduction-order only; run 737682) |
 | §29 | E | DONE | Y | Quantization / deployment robustness of refusal  | — (P29: refusal ablation raises harm at bf16/8bit/4bit [+0.26/+0.29/+0.52, McNemar sig], random ablation ns at all -> mechanism survives quantization; runs 737624/625/626, test n=42) |
 | §33 | F | PARTIAL | Y | Target figures F1–F8 | Build F5 (dose vs demo-count from PHASE9_DOSE data — CPU plot), F6 (blocked on Gate-7 §14–18 GCG arms, GPU), assemble a combined F4 (add the Gate-B counterfactu |
 
