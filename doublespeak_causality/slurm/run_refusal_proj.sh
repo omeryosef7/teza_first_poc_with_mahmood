@@ -47,9 +47,10 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSREFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${DSALPHAS:=4,8,12}"
 : "${DSSEED:=0}"
+: "${DSENABLETHINK:=default}"   # thinking-model control (Qwen3)
 echo "=== behav carry: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_refusal_projection.py \
-  --bench "$DSBENCH" --model "$DSMODEL" --refusal-dir "$DSREFDIR" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
+  --bench "$DSBENCH" --model "$DSMODEL" --refusal-dir "$DSREFDIR" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED" --enable-thinking "$DSENABLETHINK"
 echo "=== done ==="; date

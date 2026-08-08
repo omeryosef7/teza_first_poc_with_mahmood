@@ -37,7 +37,9 @@ def main():
     ap.add_argument("--splits", default="train,test")
     ap.add_argument("--n", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--enable-thinking", default="default", help="thinking-model control (Qwen3): default|true|false")
     args = ap.parse_args()
+    et = dc.parse_enable_thinking(args.enable_thinking)
 
     dc.set_seed(args.seed); rng = np.random.default_rng(args.seed)
     lm = dc.load_model(args.model); dev = lm.model.device; L = lm.num_layers
@@ -82,7 +84,7 @@ def main():
             conds = dc.build_conditions(instr, hw, cw, demos)
             rec = {"id": it.get("id"), "split": split, "cohort": cohort}
             for name, raw in [("direct", conds.direct), ("neutral", conds.neutral), ("doublespeak", conds.doublespeak)]:
-                t = dc.apply_template(lm.tokenizer, raw, add_generation_prompt=True)
+                t = dc.apply_template(lm.tokenizer, raw, add_generation_prompt=True, enable_thinking=et)
                 pr, rn = proj_last(t)
                 rec[name] = pr; rec[f"{name}_rand"] = rn
             fh.write(json.dumps(rec) + "\n"); fh.flush()
