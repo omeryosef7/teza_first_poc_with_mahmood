@@ -43,3 +43,10 @@ output dir + report with real numbers backs it. This is the authoritative remain
 - **F (paper):** figures F5 (CPU), F6 (after Gate-7), F4 assembly.
 
 _Realistic note: ~22 GPU experiments serialized through a shared fair-share queue = multi-day compute. Executed via the 30-min loop, launching as slots free; nothing marked done without a committed run-dir._
+## UPDATE 2026-08-08 (session progress — sections moved to DONE/PARTIAL, all run-dir-backed)
+- §6 dose-response ✅ · §10 powered concept-ablation ✅ (Claim A at power) · §22 timing ✅ · §9 carry-sufficiency ✅ NULL
+- §24 orthogonalization ✅ (refusal component controls ASR −0.21 p=1e-4; concept doesn't) · §14–18 Gate-7 ✅ first-cut (negative/non-specific)
+- §5 position ◐ PARTIAL (no clean dissociation) · §11 joint 2×2 ◐ running
+- **§27 CROSS-MODEL (Qwen3-14B): X1 ✅ X2 ✅ X3 ✅ X4 ✅ (4/5); X5 pending** → refusal-suppression mechanism GENERALIZES to a 2nd family
+- Reports: P6/P10/P22/P9/P24/P_GATE7_FIRSTCUT/P5/P27_CROSSMODEL + CLAIMS_AUDIT_2026-08-08
+- **STILL NOT DONE:** §27 X5, §4 origin-mediation, §7 head/edge, §8 head→MLP, §25 full mediation, §28 framework, §29 quant, figures F1/F4/F5/F6/F8, §20 unrelated-normal utility
