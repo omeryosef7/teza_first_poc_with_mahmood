@@ -23,8 +23,9 @@ Per cohort: **clearharm (the real-attack cohort, n=170): write+carry ΔASR = 0.0
 null — while rand = +0.124 (p<1e-3). generated (n=154): write+carry +0.097 (p=0.04) but rand +0.201 (bigger).
 
 ## Interpretation
-1. **Ablating the full concept circuit does NOT meaningfully reduce jailbreak ASR** — informative-null at
-   n=324 (MDE 0.083 ≤ the 0.09 minimum meaningful effect; point estimate +0.046, CI includes 0), and an
+1. **Ablating the full concept circuit does NOT reduce jailbreak ASR more than random damage** — point estimate
+   +0.046 (CI [−0.011,+0.104], p=0.14; the CI upper bound exceeds 0.09 so this is NOT a formal equivalence — see
+   AUDIT CORRECTION), and an
    *exact* null on clearharm. This converts the old underpowered nulls into a powered one (Gate C).
 2. **The decisive specificity fact:** a **count-matched RANDOM ablation reduces ASR ~3× MORE** than the
    concept-circuit ablation (+0.161 vs +0.046 pooled; +0.124 vs 0.000 clearharm). If the concept circuit were
@@ -41,8 +42,10 @@ rather than genuine refusal re-engagement — ablating MLPs/heads breaks fluent 
 for the **epiphenomenality** conclusion this only strengthens the point (concept ablation < random damage).
 
 ## Verdict
-**Gate C: concept circuit is behaviorally negligible at power (informative-null), and specifically less
-effective than random ablation → Claim A (concept-remap epiphenomenal) is confirmed, not merely underpowered.**
+**Gate C: the concept circuit is behaviorally negligible via SPECIFICITY — a count-matched random ablation
+reduces ASR more than the concept-circuit ablation (concept is not a lever), and concept ablation is an exact
+null on the real-attack clearharm cohort → Claim A (concept-remap epiphenomenal) supported.** (The equivalence/
+"informative-null" framing is withdrawn — the CI does not exclude 0.09; see AUDIT CORRECTION.)
 
 
 ## AUDIT CORRECTION (2026-08-08)
