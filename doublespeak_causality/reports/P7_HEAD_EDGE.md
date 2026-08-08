@@ -1,7 +1,8 @@
 # §7 — Targeted Refusal Head/Edge Analysis (active band L13–20)
 
-**Status:** ✅ DONE. The refusal-carry evidence is **DISTRIBUTED across L13–20 heads — no single-head
-bottleneck** (parallel to P4b's distributed concept-reading). Endpoint = decision-token refusal projection
+**Status:** ✅ DONE. The refusal-carry evidence is **head-DISTRIBUTED (no single-head bottleneck) but
+LAYER-CONCENTRATED at L13** (see AUDIT CORRECTION — the harness `distributed` verdict now also gates on the
+best single layer, and both splits flip to distributed=False). Endpoint = decision-token refusal projection
 (validated L18); Direct→DS head-z patch restoration.
 
 **Run:** `phase7_refusal_head_edge.py` (`...736900`), v3 clearharm, band L13–20. Reuses pc.ZHeadCapture/

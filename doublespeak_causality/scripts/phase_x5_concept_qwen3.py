@@ -61,21 +61,23 @@ def _auc(x, y):
 
 
 def _boot(x, y, n=5000, seed=0, orient=None):
+    """FIXED a-priori orientation: `x` is the SCORE already oriented so that HIGHER => more
+    jailbreak (callers pass score = -projection, hypothesis: lower projection => more jailbreak).
+    Reports the RAW AUC of that fixed-orientation score (may be < 0.5 for a null/anti-predictive
+    axis); no data-driven max(AUC, 1-AUC) flip. `orient` retained for signature compat (unused)."""
     x = np.asarray(x, float); y = np.asarray(y, int)
     a0 = _auc(x, y)
-    if orient is None:
-        orient = a0 >= 0.5
     rng = np.random.default_rng(seed)
     idx = np.arange(len(y)); out = []
     for _ in range(n):
         s = rng.choice(idx, len(idx), replace=True)
         if y[s].sum() in (0, len(s)):
             continue
-        a = _auc(x[s], y[s]); out.append(a if orient else 1 - a)
+        out.append(_auc(x[s], y[s]))
     if not out:
-        return (a0 if orient else 1 - a0), float("nan"), float("nan"), bool(orient)
+        return a0, float("nan"), float("nan"), False
     lo, hi = np.percentile(out, [2.5, 97.5])
-    return (a0 if orient else 1 - a0), float(lo), float(hi), bool(orient)
+    return a0, float(lo), float(hi), False
 
 
 # --------------------------------------------------------------------------- #
@@ -286,14 +288,15 @@ def main():
                         Lk = str(L)
                         rows = [r for r in proj if Lk in r[axis]]
                         cell = {}
-                        orient = None
                         for sp in ["pooled"] + eval_splits:
                             ks = [r for r in rows if sp == "pooled" or lab[r["id"]][0] == sp]
-                            x = [r[axis][Lk] for r in ks]; y = [lab[r["id"]][1] for r in ks]
-                            a, lo, hi, orient = _boot(x, y, seed=args.seed, orient=orient)
+                            # FIXED a-priori orientation: lower projection => more jailbreak,
+                            # so score = -projection (both concept and refusal axes). Raw AUC.
+                            x = [-r[axis][Lk] for r in ks]; y = [lab[r["id"]][1] for r in ks]
+                            a, lo, hi, _ = _boot(x, y, seed=args.seed, orient=False)
                             cell[sp] = {"auc": round(a, 4), "ci95": [round(lo, 4), round(hi, 4)],
                                         "n": len(ks), "n_mal": int(sum(y))}
-                        cell["orientation"] = "higher_proj_more_jailbreak" if orient else "lower_proj_more_jailbreak"
+                        cell["orientation"] = "lower_proj_more_jailbreak"  # fixed a-priori (score=-proj)
                         auc[axis][Lk] = cell
             summary["auc"] = auc
             # headline print

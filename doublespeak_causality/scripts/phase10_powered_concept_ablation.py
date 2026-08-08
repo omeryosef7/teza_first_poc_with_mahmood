@@ -173,13 +173,16 @@ def verdict_for(a_base, a_arm):
     c = int(np.sum((a_base == 0) & (a_arm == 1)))
     p = mcnemar_exact(b, c)
     dbar, lo, hi, se = paired_dasr_ci(a_base, a_arm)
-    mde = approx_mde(a_base, a_arm)
+    mde = approx_mde(a_base, a_arm)  # kept as a DIAGNOSTIC only (post-hoc, discordance-driven)
+    # TOST-style equivalence: an "informative-null" requires the 95% CI on ΔASR to EXCLUDE the
+    # target margin (upper bound < 0.09), i.e. we can actually rule out an effect >= target -- NOT
+    # merely that the post-hoc MDE point estimate is small (which low-discordance cells fake).
     if math.isfinite(p) and p < 0.05:
         v = "significant"
-    elif math.isfinite(mde) and mde <= TARGET_DASR:
+    elif math.isfinite(hi) and hi < TARGET_DASR:
         v = "informative-null"
     else:
-        v = "underpowered"
+        v = "inconclusive"
     return {"n_paired": int(n), "asr_baseline": round(float(a_base.mean()), 4) if n else None,
             "asr_arm": round(float(a_arm.mean()), 4) if n else None,
             "delta_asr": dbar, "ci95_delta_asr": [lo, hi], "se_delta_asr": se,

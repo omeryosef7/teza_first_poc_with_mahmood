@@ -55,13 +55,16 @@ Qwen3 jailbreak, concept-direction vs refusal-direction projection:
 is the superior predictor) GENERALIZES to Qwen3. BUT concept is not at chance (L24 AUC 0.80), so the strong
 Llama form ("concept readout fails") holds only PARTIALLY on Qwen3, and this is PREDICTIVE — the causal
 concept-inertness test (§10 ablation analogue) was not run on Qwen3. X5 = PARTIAL (refusal-superiority ✅, concept-full-failure ✗).
-**Audit correction (wf_383ca171): the reported concept AUCs are UPWARD-BIASED** — the analyzer chose AUC
-orientation from the data (max(AUC,1−AUC)), which inflates any null axis to ≥0.5 (a true-chance concept axis
-would still report ~0.57). So the true concept predictiveness is ≤ the reported 0.56–0.80, which if anything
-**strengthens** "refusal ≫ concept." But on the held-out TEST split the refusal−concept gap is small at some
-layers (L16 +0.05, L24 +0.04) with heavily overlapping CIs, so "refusal >> concept at EVERY layer" is softened
-to "refusal ≥ concept at every layer, clearly so at L28/L32, marginally at L16/L24 on test." (Harness orientation
-fixed to an a-priori sign.)
+**Audit correction (wf_383ca171, re-derived 2026-08-08):** the analyzer chose AUC orientation from the data
+(`max(AUC,1−AUC)`), which inflates any null axis to ≥0.5. Re-running with an **a-priori fixed sign**
+(score = −projection for all axes) leaves the **concept AND refusal AUCs UNCHANGED** — every concept/refusal
+cell was already labeled `lower_proj_more_jailbreak`, so the max-flip never touched them (concept 0.57–0.80,
+refusal 0.75–0.91 all stand). The bug ONLY inflated the **RANDOM control**: L16 rand 0.675→**0.325**, L32 rand
+0.629→**0.371** — i.e. the random axis is correctly null/anti-predictive once fixed, which *strengthens* the
+concept-vs-refusal contrast against a proper baseline. Remaining softening is out-of-sample, not orientation:
+on the held-out TEST split the refusal−concept gap is small at some layers (L16 +0.05, L24 +0.04) with heavily
+overlapping CIs, so "refusal >> concept at EVERY layer" is softened to "refusal ≥ concept at every layer,
+clearly so at L28/L32, marginally at L16/L24 on test." (Harness orientation fixed to an a-priori sign.)
 
 ## Cross-model verdict: X1–X4 ✅ (4/5), X5 partial
 **"Refusal-suppression, not concept remapping" generalizes to Qwen3-14B:** the attack raises ASR (X1), a

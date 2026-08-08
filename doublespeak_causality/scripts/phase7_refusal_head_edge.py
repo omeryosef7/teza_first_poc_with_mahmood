@@ -403,6 +403,8 @@ def main():
                 return round(float(np.mean(vals)), 4) if vals else None
             band_all_frac = cell_frac("band_all")
             per_layer_frac = {f"L{l}": cell_frac("layer_all", "layer", l) for l in band}
+            _layer_vals = [v for v in per_layer_frac.values() if v is not None]
+            _max_layer_frac = max(_layer_vals) if _layer_vals else None
             # controls
             def ctl_dev(cell):
                 devs = []
@@ -422,8 +424,14 @@ def main():
                 "max_single_head_restore_frac": round(max_single, 4) if max_single is not None else None,
                 "band_all_restore_frac": band_all_frac,      # CEILING: all band heads jointly Direct->DS
                 "per_layer_all_restore_frac": per_layer_frac,
+                "max_layer_all_restore_frac": _max_layer_frac,
+                # "no single head OR LAYER near ceiling": require BOTH the best single head AND the
+                # best single LAYER to sit below half the joint band ceiling (docstring §, line ~29-31).
                 "distributed": bool(band_all_frac is not None and max_single is not None
-                                    and band_all_frac > 0.2 and max_single < 0.5 * band_all_frac),
+                                    and _max_layer_frac is not None
+                                    and band_all_frac > 0.2
+                                    and max_single < 0.5 * band_all_frac
+                                    and _max_layer_frac < 0.5 * band_all_frac),
             }
 
         # ---------- edge part ----------
