@@ -325,3 +325,15 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   arm04 vanilla / arm07-L18 refusal / arm07-L22 / arm07-rand-L18) to test the negative's stability across seeds
   — directly resolves the first-cut's stated multi-seed caveat. ~6-8 GPU-h, L40S/64G; cron loop monitors.
   If seed-43 also shows random ≥ refusal, the Gate-7 negative is confirmed and §14-18 → DONE.
+
+### 2026-08-09 (01:20) — §28 full done (headline reproduces across independent impls); forward-equiv launched
+- **§28 full (n=42, 737682)**: the from-scratch IndepProjectOut reproduces the headline — direct_refabl ASR
+  INDEP 0.500 vs direct_base 0.190 (+0.31), HOUSE 0.524; mal-label agreement 0.881 (direct) / 0.833 (ds);
+  headline_reproduced=True. BUT exact-generation match dropped to 0.571/0.310 (vs 1.0 at smoke n=4) — another
+  case where ≥20 mattered (smoke was misleadingly clean).
+- **Diagnosed**: the token divergence is bf16 reduction-order (my tensordot vs house (h*d).sum), not a logic
+  bug — same math, different float accumulation, amplified by greedy decoding. Launched a DETERMINISTIC
+  forward-pass equivalence check (phase28_forward_equiv, 737698): compares house-vs-indep last-token residuals
+  on a single forward pass. If diffs are at bf16 scale → implementations equivalent, divergence is greedy-decode
+  non-associativity. Report finalized on that result.
+- Gate-7 seed-43 (737692) queued; §29 8bit confirmed (already in P29).
