@@ -46,12 +46,23 @@ where it does not (generated cohort, net-negative), which is itself corroboratin
 | E4c | Jacobian dissociation (paired) | clearharm | 86 | refusal − concept ‖J‖ AUC = **+0.225** | 95% CI **[0.055, 0.361]** (excludes 0) | concept scalar AUC 0.51 (chance) | **VERIFIED** | `jacobian_clearharm_…732004` |
 | E4d | same behavioral join, curated cohort | curated | 51 (11 malicious) | refusal−concept AUC diff −0.05 | CI [−0.239, 0.157] incl. 0 | — | **NULL / UNDERPOWERED** (2 test positives) | `jacobian_curated_…732011` |
 | E5 | **Noise floor** — greedy determinism + judge label-flip on byte-identical text | clearharm train / test | 85 / 42 | gen determinism **1.000**; judge flip mean **~1–2%** (≤~7% any) | — | empty_rate 0 everywhere | **VERIFIED** | `baseline_drift_clearharm_…732432` |
+| E6 | **Carry-vs-readout mediation** — direct-vs-total decomposition of each refusal head's effect on the decision-token refusal projection | clearharm test | 42 | refusal heads **72–88% MEDIATED** (carry), depth gradient L13 0.88 → L16H10 0.51 | freeze-consistency & self-swap dev **= 0.0** (all heads) | self-swap no-op; DIRECT=skip-path | **VERIFIED** (§4) | `refusal_mediation_…737608` |
+| E7 | **No sparse head→MLP write path for refusal** — aggregated head→MLP path patching | clearharm test | 25 | **NO-PATH**: candidate edges 0.031 vs control 0.021 (1.4×, needs 2×); 17/25 items NO-PATH | self-donor null = 0.0; strongest edge sign-consistency 0.64 | rand-sender/receiver/matched-head | **VERIFIED (NULL)** (§8.2) | `phase8_hmpath_refusal_…737616` |
+| E8 | **DS attack ~100% mediated by the decision-state** — restore DS decision-state ← Direct, mediated fraction of the ASR gap | clearharm train / dev | 85 / 43 | mediated fraction **1.07 / 1.00** (whole DS→Direct ASR gap removed) | McNemar **p = 0.0013 / 0.0039** | rand raises ASR; self exact no-op | **VERIFIED** (§25) | `refdecpatch_…732560` |
+| E9 | **Implementation robustness** — from-scratch IndepProjectOut vs house ablation reproduce the refusal-ablation headline | clearharm test | 42 | headline reproduced (direct_refabl +0.31 INDEP / +0.33 house); label-agree **0.88 / 0.83** | numerically equivalent (both within 2e-3 of fp32; token divergence = bf16 reduction order) | independent code path | **VERIFIED** (§28) | `framework_robust_…737682` |
+| E10 | **Quantization robustness** — refusal ablation under bf16 / 8-bit / 4-bit | clearharm test | 42 | refusal ablation raises ASR **+0.26 / +0.29 / +0.52** at bf16/8bit/4bit | McNemar **p .007 / .004 / <.001** | norm-matched random ablation **ns at every precision** | **VERIFIED** (§29) | `behav_refusal_…{737624,625,626}` |
 
 **Reading the table.** E1 establishes the *representational* locus and E3 converts it to *behavior* using the
 identical intervention primitive; E2 confirms the same effect with a **refusal-subspace-only** donor (not the
 whole residual); E4 shows the refusal channel is the item-level *predictor* of success while the concept
 channel is not; E5 certifies the E2/E3 effect sizes (−0.14 to −0.19) are **7–10× the ~2 pp judge-noise
-floor** — robustly real, not judge jitter.
+floor** — robustly real, not judge jitter. **E6–E10 (Aug-9 sprint) extend the picture:** the refusal evidence
+is *carried and re-derived* across the L13–20 band rather than read out or written by any sparse component
+(E6 72–88% mediated with a carry→readout depth gradient; E7 no sparse head→MLP path — both consistent with the
+head-distributed §7 result); the DS attack's *entire* behavioral advantage is mediated by the decision-state
+refusal representation (E8 mediated fraction ≈1.0); and the whole mechanism is not an artifact of one code path
+(E9 an independent from-scratch implementation reproduces it) nor of full precision (E10 it survives 8-bit and
+4-bit quantization with intact specificity).
 
 ### Supporting representational facts (same channel, VERIFIED elsewhere in the audit)
 - Ablating the validated **L18 refusal direction** through generation raises ASR by **+0.43/+0.48**
