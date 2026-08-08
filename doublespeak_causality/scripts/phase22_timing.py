@@ -322,11 +322,18 @@ def main():
             vs[a] = {"delta_ASR": round(A[a] - A["ds_base"], 4), "mcnemar_p": round(float(mc["p"]), 5),
                      "discordant_b_dsMal_armNot": b, "discordant_c_dsNot_armMal": c,
                      "empty_rate": emp(a), "err_rate": err(a)}
-        # plumbing sanity: alpha=0 no-op arm must reproduce ds_base ASR
-        self_noop_ok = bool(abs(A.get(a_self, -1) - A["ds_base"]) < 1e-9)
+        # plumbing sanity: alpha=0 no-op arm generates BYTE-IDENTICAL text to ds_base (TimedAdd returns
+        # None at alpha=0). Because each arm is judged in a SEPARATE call, exact ASR equality is broken by
+        # StrongREJECT judge stochasticity (§1.2 between-run flip floor ~6pp), so we test per-item LABEL
+        # discordance against that floor, not exact ASR (audit 2026-08-08: the old <1e-9 check false-flagged
+        # 9/170=5.3% judge-noise discordance as a plumbing failure).
+        noop_disc = sum(1 for r in sr if r.get(a_self + "_label") != r.get("ds_base_label"))
+        noop_disc_rate = round(noop_disc / len(sr), 4) if sr else 0.0
+        self_noop_ok = bool(noop_disc_rate <= 0.07)   # within the judge-noise floor => genuine no-op
         summ[split] = {"n": len(sr), "ASR": A, "empty_ds_base": emp("ds_base"),
                        "m0_mean": round(float(np.mean([r.get("m0", 0.0) for r in sr])), 4),
-                       "self_noop_equals_ds_base": self_noop_ok, "vs_ds_base": vs}
+                       "self_noop_equals_ds_base": self_noop_ok,
+                       "self_noop_label_discordance": noop_disc_rate, "vs_ds_base": vs}
     out = {"cohort": cohort, "patch_layer": L, "first_k": K, "component": COMP,
            "mag_mode": args.mag_mode, "refusal_pt": args.refusal_pt,
            "m0_mean_all": round(float(np.mean(m0_all)), 4) if m0_all else None,

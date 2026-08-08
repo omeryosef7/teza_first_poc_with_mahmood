@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase22timing_clearharm_20260808_121746_732981",
+  "status": "ok",
+  "rows_written": 170,
+  "end_ts": "2026-08-08T14:16:21",
+  "end_epoch": 1786187781.0117967,
+  "wall_seconds": 7114.537
+}
