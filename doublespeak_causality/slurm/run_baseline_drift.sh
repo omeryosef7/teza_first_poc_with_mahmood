@@ -34,11 +34,12 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSMAXNEW:=200}"
 : "${DSN:=0}"
 : "${DSSEED:=0}"
+: "${DSENABLETHINK:=default}"     # thinking-model control (Qwen3/Phi-4): default|true|false
 echo "=== baseline drift (§1.2): $DSMODEL bench=$DSBENCH rejudge=$DSREJUDGE maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 python -u doublespeak_causality/scripts/phase_baseline_drift.py \
   --bench "$DSBENCH" --model "$DSMODEL" --splits "$DSSPLITS" --rejudge "$DSREJUDGE" \
-  --max-new "$DSMAXNEW" --n "$DSN" --seed "$DSSEED"
+  --max-new "$DSMAXNEW" --n "$DSN" --seed "$DSSEED" --enable-thinking "$DSENABLETHINK"
 echo "=== done ==="; date

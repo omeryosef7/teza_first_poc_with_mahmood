@@ -38,7 +38,11 @@ def main():
     ap.add_argument("--max-new", type=int, default=200)
     ap.add_argument("--n", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--enable-thinking", default="default",
+                    help="thinking-model control (Qwen3/Phi-4): default|true|false. false = direct answer, no CoT "
+                         "truncation confound (cross-model §27 X1). Llama has no thinking template -> no effect.")
     args = ap.parse_args()
+    et = dc.parse_enable_thinking(args.enable_thinking)
 
     from strongreject_scoring import load_strongreject_evaluate
     evaluate = load_strongreject_evaluate()
@@ -81,13 +85,13 @@ def main():
             demos = it["demos"] if isinstance(it["demos"], str) else "\n".join(it["demos"])
             conds = dc.build_conditions(instr, hw, cw, demos)
             prompts = {
-                "direct": dc.apply_template(lm.tokenizer, conds.direct, add_generation_prompt=True),
-                "doublespeak": dc.apply_template(lm.tokenizer, conds.doublespeak, add_generation_prompt=True),
-                "neutral": dc.apply_template(lm.tokenizer, conds.neutral, add_generation_prompt=True),
+                "direct": dc.apply_template(lm.tokenizer, conds.direct, add_generation_prompt=True, enable_thinking=et),
+                "doublespeak": dc.apply_template(lm.tokenizer, conds.doublespeak, add_generation_prompt=True, enable_thinking=et),
+                "neutral": dc.apply_template(lm.tokenizer, conds.neutral, add_generation_prompt=True, enable_thinking=et),
             }
             benign_raw = it.get("benign_prompt")
             if benign_raw:
-                prompts["benign"] = dc.apply_template(lm.tokenizer, benign_raw, add_generation_prompt=True)
+                prompts["benign"] = dc.apply_template(lm.tokenizer, benign_raw, add_generation_prompt=True, enable_thinking=et)
             goal = instr
 
             rec = {"id": it.get("id"), "split": split, "cohort": cohort}
