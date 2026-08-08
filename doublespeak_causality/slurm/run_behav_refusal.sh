@@ -95,7 +95,21 @@ done
 case "$DSQUANT" in ""|8bit|4bit) : ;; *) echo "ERROR: DSQUANT='$DSQUANT' (want: ''|8bit|4bit)"; exit 1;; esac
 echo "=== behav refusal: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS alpha=$DSALPHA alphas='$DSALPHAS' ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+# GPU guard. DEFAULT: strict L40S (generation comparability). DSGPUALLOW=23gb relaxes to the >=23GB
+# Ampere+ allowlist -- used by §29 quantization (all precisions fit 24GB; Ampere is MORE deployment-
+# representative for a quant-robustness study) and any run that explicitly opts in.
+if [ "${DSGPUALLOW:-}" = "23gb" ]; then
+  GPU_MEM_RAW="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 || true)"
+  GPU_MEM="$(printf '%s' "$GPU_MEM_RAW" | grep -oE '[0-9]+' | head -1 || true)"; GPU_MEM="${GPU_MEM:-0}"
+  case "$GPU_TYPE" in
+    *L40S*|*l40s*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*A40*|*H100*|*H200*|*L40*|*3090*|*4090*)
+      if [ "${GPU_MEM:-0}" -ge 23000 ]; then echo "GPU ok (23gb allowlist): $GPU_TYPE (${GPU_MEM}MiB)";
+      else echo "ERROR: $GPU_TYPE has only ${GPU_MEM}MiB (<23GB)"; exit 1; fi ;;
+    *) echo "ERROR: GPU '$GPU_TYPE' (${GPU_MEM}MiB) not in the 23GB allowlist"; exit 1 ;;
+  esac
+else
+  case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+fi
 # --save-gen is ON by default in the harness (gens.jsonl, gitignored); DSNOSAVEGEN=1 turns it off.
 python -u doublespeak_causality/scripts/phase_behav_refusal.py \
   --bench "$DSBENCH" --model "$DSMODEL" --max-new "$DSMAXNEW" --refusal-pt "$DSREFPT" --alpha "$DSALPHA" ${DSALPHAS:+--alphas "$DSALPHAS"} ${DSQUANT:+--quantize "$DSQUANT"} ${DSNOSAVEGEN:+--no-save-gen} --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
