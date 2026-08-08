@@ -168,11 +168,11 @@ def conditions_for(items, split, n):
 # Representations
 # --------------------------------------------------------------------------- #
 @torch.no_grad()
-def stack_last_hs(lm, prompts, layers, tag=""):
+def stack_last_hs(lm, prompts, layers, tag="", enable_thinking=None):
     """{L: [n, H] float CPU} last-input-token residual, via brd.last_token_hs (hs[L+1])."""
     acc = {L: [] for L in layers}
     for i, p in enumerate(prompts):
-        for L, h in brd.last_token_hs(lm, p, layers).items():
+        for L, h in brd.last_token_hs(lm, p, layers, enable_thinking=enable_thinking).items():
             acc[L].append(h)
         if tag and (i + 1) % 20 == 0:
             print(f"  [{tag}] {i+1}/{len(prompts)} forwards", flush=True)
@@ -293,6 +293,12 @@ def main():
     ap.add_argument("--proj-summary", default=None,
                     help="phase_refusal_projection summary.json for --induce-alpha-mode projsummary")
     ap.add_argument("--proj-split", default="train")
+    ap.add_argument("--enable-thinking", default=None,
+                    help="default/true/false (dc.parse_enable_thinking). Llama: leave 'default' "
+                         "(byte-identical). Qwen3 is a thinking model: pass 'false' so every "
+                         "generation arm and every last-token readout renders an empty "
+                         "<think></think> instead of a live <think> block -- otherwise CoT "
+                         "truncation at --max-new confounds the refusal judge.")
     ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16"])
     ap.add_argument("--n-boot", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=0)
@@ -310,6 +316,7 @@ def main():
         ap.error("--induce-alpha-mode projsummary requires --proj-summary")
 
     dc.set_seed(args.seed)
+    enable_thinking = dc.parse_enable_thinking(args.enable_thinking)
     items, cohort = load_items(args.bench)
     fit_conds = conditions_for(items, args.fit_split, args.fit_n_items)
     eval_conds = conditions_for(items, args.eval_split, args.val_n_items)
@@ -363,6 +370,7 @@ def main():
             # (every refusal_alllayers/*.json records n_harmless: 20), so the holdout does NOT protect
             # them -- their induce arm is in-sample. See P7 report, "PROTOCOL ASYMMETRY".
             "existing_family_induce_is_in_sample": ("existing" in fams and args.induce_eval == "harmless"),
+            "enable_thinking": enable_thinking,
             "fit_split": args.fit_split, "eval_split": args.eval_split,
             "ablate": {"scope": args.ablate_scope, "alpha": args.ablate_alpha},
             "induce": {"scope": args.induce_scope, "alpha_mode": args.induce_alpha_mode,
@@ -400,7 +408,8 @@ def main():
           f"fit_n={len(fit_conds)} eval_n={len(eval_conds)} -> {out_dir}", flush=True)
 
     # ---- representations (one forward pass set, reused by every family) ---- #
-    H_fit_harmful = (stack_last_hs(lm, [d for _, d, _, _ in fit_conds], layers, "fit-harmful")
+    H_fit_harmful = (stack_last_hs(lm, [d for _, d, _, _ in fit_conds], layers, "fit-harmful",
+                                   enable_thinking=enable_thinking)
                      if "clearharm" in fams else None)
     # HOLD OUT half the harmless set when the induce arm evaluates on it. brd.HARMLESS_INSTRUCTIONS
     # is the clearharm refit's NEGATIVE CLASS (line ~389) and the gap-alpha's benign reference
@@ -417,9 +426,12 @@ def main():
     print(f"[refval] harmless set: {len(_HL)} total -> fit/alpha n={len(HARMLESS_FIT)}, "
           f"induce-eval n={len(HARMLESS_EVAL)}, disjoint="
           f"{not (set(HARMLESS_FIT) & set(HARMLESS_EVAL))}", flush=True)
-    H_harmless = stack_last_hs(lm, HARMLESS_FIT, layers, "harmless")
-    H_eval_direct = stack_last_hs(lm, [d for _, d, _, _ in eval_conds], layers, "eval-direct")
-    H_eval_neutral = stack_last_hs(lm, [n for _, _, n, _ in eval_conds], layers, "eval-neutral")
+    H_harmless = stack_last_hs(lm, HARMLESS_FIT, layers, "harmless",
+                               enable_thinking=enable_thinking)
+    H_eval_direct = stack_last_hs(lm, [d for _, d, _, _ in eval_conds], layers, "eval-direct",
+                                  enable_thinking=enable_thinking)
+    H_eval_neutral = stack_last_hs(lm, [n for _, _, n, _ in eval_conds], layers, "eval-neutral",
+                                   enable_thinking=enable_thinking)
 
     # ---- directions per family -------------------------------------------- #
     dirs, sep_fit = {}, {}
@@ -462,7 +474,8 @@ def main():
 
     # ---- baselines (identical across families/layers -> generated ONCE) ---- #
     gen = make_generator(lm, args.max_new)
-    tmpl_direct = [dc.apply_template(lm.tokenizer, d) for _, d, _, _ in eval_conds]
+    tmpl_direct = [dc.apply_template(lm.tokenizer, d, enable_thinking=enable_thinking)
+                   for _, d, _, _ in eval_conds]
     # --- WHICH PROMPTS THE INDUCE ARM RUNS ON. Read this before changing it. -------------------
     # The induce arm asks "does ADDING the axis create refusal where there was none?", so its base
     # population must actually refuse rarely. `neutral` does NOT qualify: it is the harmful request
@@ -488,17 +501,20 @@ def main():
                              "with scripts/split_to_behavioral.py (it now emits that field), e.g. into "
                              "data/behavioral_v3b/.")
         induce_ids = [f"benign_{c[0]}" for c in eval_conds if c[3]]
-        tmpl_induce = [dc.apply_template(lm.tokenizer, b) for b in src]
+        tmpl_induce = [dc.apply_template(lm.tokenizer, b, enable_thinking=enable_thinking)
+                       for b in src]
     elif args.induce_eval == "harmless":
         # DISTINCT prompts only -- never cycle to pad the arm out to len(eval_conds). Under greedy
         # decoding a repeated prompt yields a byte-identical generation, so padding would inflate n
         # with duplicate rows and shrink every CI / McNemar on a sample that never grew.
         src = HARMLESS_EVAL[:len(eval_conds)]
         induce_ids = [f"harmless_{i}" for i in range(len(src))]
-        tmpl_induce = [dc.apply_template(lm.tokenizer, p) for p in src]
+        tmpl_induce = [dc.apply_template(lm.tokenizer, p, enable_thinking=enable_thinking)
+                       for p in src]
     else:
         induce_ids = [c[0] for c in eval_conds]
-        tmpl_induce = [dc.apply_template(lm.tokenizer, n) for _, _, n, _ in eval_conds]
+        tmpl_induce = [dc.apply_template(lm.tokenizer, n, enable_thinking=enable_thinking)
+                       for _, _, n, _ in eval_conds]
     # The induce arm may legitimately be SHORTER than the ablate arm (fewer held-out harmless
     # prompts than bench items). Every induce-side list must still agree, or the paired McNemar
     # below would silently pair unrelated rows.

@@ -70,9 +70,14 @@ HARMLESS_INSTRUCTIONS = [
 
 
 @torch.no_grad()
-def last_token_hs(lm, prompt, layers):
-    """{L: hidden_states[L+1][0,-1,:] (float CPU)} for the templated prompt's last token."""
-    fwd = dc.forward_hidden_states(lm, dc.apply_template(lm.tokenizer, prompt))
+def last_token_hs(lm, prompt, layers, enable_thinking=None):
+    """{L: hidden_states[L+1][0,-1,:] (float CPU)} for the templated prompt's last token.
+
+    enable_thinking (Phase 7 / thinking sprint): None -> model default (Llama path byte-identical);
+    False -> pass explicitly so a thinking model (Qwen3) renders an empty <think></think> instead of
+    a live <think> control token before the readout, keeping the last-token residual consistent."""
+    fwd = dc.forward_hidden_states(
+        lm, dc.apply_template(lm.tokenizer, prompt, enable_thinking=enable_thinking))
     hs = fwd["hidden_states"]
     return {L: hs[L + 1][0, -1, :].float().cpu() for L in layers}
 
@@ -134,7 +139,7 @@ def _gen_completion(lm, templated_text, ctx_managers, max_new_tokens):
 
 
 def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
-                   induce_alpha, max_new_tokens):
+                   induce_alpha, max_new_tokens, enable_thinking=None):
     """Sign-correctness of v_refusal[L] by GENERATION (scalars only; no completions kept).
 
       ABLATE arm (harmful `direct`): project v out at EVERY position/timestep on EVERY
@@ -154,7 +159,7 @@ def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
 
     b_h = a_h = 0
     for p in harmful_prompts:
-        t = dc.apply_template(lm.tokenizer, p)
+        t = dc.apply_template(lm.tokenizer, p, enable_thinking=enable_thinking)
         base = _gen_completion(lm, t, [], max_new_tokens)
         abl = _gen_completion(
             lm, t, [pc.AllPositionProjectOutMultiLayer(lm.model, all_layers, vv, 1.0)],
@@ -169,7 +174,7 @@ def validate_layer(lm, pc, kw_refusal, L, v, harmful_prompts, neutral_prompts,
     add_vec = induce_alpha * vv
     b_n = i_n = 0
     for p in neutral_prompts:
-        t = dc.apply_template(lm.tokenizer, p)
+        t = dc.apply_template(lm.tokenizer, p, enable_thinking=enable_thinking)
         in_len = lm.tokenizer(t, add_special_tokens=False,
                               return_tensors="pt")["input_ids"].shape[1]
         base = _gen_completion(lm, t, [], max_new_tokens)
@@ -209,9 +214,11 @@ def run_validation(args, lm, layers, vecs, metas):
     print(f"[validate] harmful={len(harmful)} neutral={len(neutral)} "
           f"alpha={args.induce_alpha} max_new_tokens={args.val_max_new_tokens}", flush=True)
 
+    enable_thinking = dc.parse_enable_thinking(getattr(args, "enable_thinking", None))
     for L in layers:
         val = validate_layer(lm, pc, kw_refusal, L, vecs[L], harmful, neutral,
-                             args.induce_alpha, args.val_max_new_tokens)
+                             args.induce_alpha, args.val_max_new_tokens,
+                             enable_thinking=enable_thinking)
         metas[L][0]["validation"] = val
         print(f"[validate] L{L}: ablate_gain={val['ablate_gain']:+.3f} "
               f"induce_gain={val['induce_gain']:+.3f} score={val['score']:+.3f} "
@@ -264,9 +271,14 @@ def main():
                     help="generation length during validation (small = fast)")
     ap.add_argument("--induce-alpha", type=float, default=8.0,
                     help="dose for the +alpha*v_refusal induce arm (v is unit-norm)")
+    ap.add_argument("--enable-thinking", default=None,
+                    help="default/true/false (dc.parse_enable_thinking). Llama: leave 'default' "
+                         "(byte-identical). Qwen3: pass 'false' so the fit/validation last-token "
+                         "readout is not preceded by a live <think> control token.")
     args = ap.parse_args()
 
     dc.set_seed(args.seed)
+    enable_thinking = dc.parse_enable_thinking(args.enable_thinking)
     layers = [int(x) for x in args.layers.split(",") if x.strip()]
     harmful = pooled_harmful_prompts(args.bench)
     os.makedirs(args.out, exist_ok=True)
@@ -280,12 +292,12 @@ def main():
     harmful_hs = {L: [] for L in layers}
     harmless_hs = {L: [] for L in layers}
     for i, p in enumerate(harmful):
-        for L, h in last_token_hs(lm, p, layers).items():
+        for L, h in last_token_hs(lm, p, layers, enable_thinking=enable_thinking).items():
             harmful_hs[L].append(h)
         if (i + 1) % 25 == 0:
             print(f"  harmful {i+1}/{len(harmful)}", flush=True)
     for i, p in enumerate(HARMLESS_INSTRUCTIONS):
-        for L, h in last_token_hs(lm, p, layers).items():
+        for L, h in last_token_hs(lm, p, layers, enable_thinking=enable_thinking).items():
             harmless_hs[L].append(h)
 
     vecs, metas = {}, {}                       # {L: v}, {L: (meta, pt_path)}
@@ -307,7 +319,7 @@ def main():
             "n_harmful": len(harmful_hs[L]), "n_harmless": len(harmless_hs[L]),
             "bench_paths": [os.path.abspath(b) for b in args.bench],
             "proj_harmful_mean": float(ph.mean()), "proj_harmless_mean": float(pl.mean()),
-            "separation": sep, "env": dc.env_metadata(),
+            "separation": sep, "enable_thinking": enable_thinking, "env": dc.env_metadata(),
         }
         vecs[L], metas[L] = v, (meta, pt_path)
         print(f"[refusal] L{L}: separation={sep:+.4f} -> {pt_path}", flush=True)
