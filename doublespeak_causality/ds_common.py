@@ -371,23 +371,41 @@ def load_model(
     device_map: str = "auto",
     revision: Optional[str] = None,
     attn_implementation: str = "sdpa",
+    quantize: Optional[str] = None,
 ) -> LoadedModel:
     """Load a chat model with the house-standard config and preserve native EOS.
 
     Deviations from the reference doublespeak code are deliberate (see
     PAPER_REPRODUCTION_NOTES D1-D3): bfloat16+SDPA instead of fp16, and we never
     overwrite the model's native (possibly list-valued) eos_token_id.
+
+    quantize: None (full bf16, default) | "8bit" | "4bit" (bitsandbytes NF4). Used
+    by the §29 quantization-robustness experiment; the compute dtype for de-quant
+    matmuls stays `dtype` (bf16) so hidden states are directly comparable to the
+    full-precision run. device_map is forced to a single device under quantization
+    (bnb requires the weights on one GPU).
     """
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        revision=revision,
-        torch_dtype=dtype,
-        device_map=device_map,
-        attn_implementation=attn_implementation,
-    )
+    kwargs = dict(revision=revision, attn_implementation=attn_implementation)
+    if quantize in ("8bit", "4bit"):
+        from transformers import BitsAndBytesConfig
+        if quantize == "8bit":
+            qcfg = BitsAndBytesConfig(load_in_8bit=True)
+        else:
+            qcfg = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=dtype,
+            )
+        kwargs.update(quantization_config=qcfg, device_map=device_map)
+    elif quantize in (None, "", "none", "bf16"):
+        kwargs.update(torch_dtype=dtype, device_map=device_map)
+    else:
+        raise ValueError(f"unknown quantize={quantize!r}; use None|8bit|4bit")
+    model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
     model.eval()
 
     # Preserve native EOS; only add a pad token if genuinely missing.

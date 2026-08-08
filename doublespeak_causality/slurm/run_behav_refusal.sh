@@ -49,6 +49,7 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSREFPT:=doublespeak_causality/outputs/stage_gcg_full/refusal_direction_llama_L18.pt}"
 : "${DSALPHA:=1.0}"
 : "${DSSEED:=0}"
+: "${DSQUANT:=}"              # §29: ""=full bf16 | 8bit | 4bit (bnb). Scalar, safe via --export.
 # --- P8.1 alpha calibration grid (plan §5 P8.1: 0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0; a=0 is also the
 # no-op positive control, §1.6). This is a comma-list, so it MUST be a DEFAULT here and can NEVER
 # come through sbatch --export (which silently truncates at the first comma: "0.25,0.5" -> "0.25").
@@ -66,7 +67,8 @@ DSALPHAS_DEFAULT="0,0.25,0.5,0.75,1.0,1.5,2.0"
 case "${DSALPHASET:-wide}" in
   wide) : ;;
   low)  DSALPHAS_DEFAULT="0,0.05,0.1,0.15,0.2,0.25" ;;
-  *)    echo "ERROR: unknown DSALPHASET='$DSALPHASET' (want: wide|low)"; exit 1 ;;
+  single) DSALPHAS_DEFAULT="" ;;   # §29: no sweep -> single --alpha (5 arms), keeps 3-precision cost low
+  *)    echo "ERROR: unknown DSALPHASET='$DSALPHASET' (want: wide|low|single)"; exit 1 ;;
 esac
 if [ -n "${DSALPHAS+x}" ]; then
   # The hazard is specifically the COMMA: sbatch --export truncates a comma-list at the first
@@ -87,13 +89,14 @@ if [ -n "${DSALPHAS+x}" ]; then
 fi
 DSALPHAS="$DSALPHAS_DEFAULT"
 # scalar vars must not contain a comma (same truncation bug); DSSPLITS/DSALPHAS are lists by design.
-for v in DSBENCH DSMODEL DSMAXNEW DSN DSREFPT DSALPHA DSSEED; do
+for v in DSBENCH DSMODEL DSMAXNEW DSN DSREFPT DSALPHA DSSEED DSQUANT; do
   case "${!v}" in *,*) echo "ERROR: $v='${!v}' has a comma; --export truncates comma-lists."; exit 1;; esac
 done
+case "$DSQUANT" in ""|8bit|4bit) : ;; *) echo "ERROR: DSQUANT='$DSQUANT' (want: ''|8bit|4bit)"; exit 1;; esac
 echo "=== behav refusal: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS alpha=$DSALPHA alphas='$DSALPHAS' ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
 case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
 # --save-gen is ON by default in the harness (gens.jsonl, gitignored); DSNOSAVEGEN=1 turns it off.
 python -u doublespeak_causality/scripts/phase_behav_refusal.py \
-  --bench "$DSBENCH" --model "$DSMODEL" --max-new "$DSMAXNEW" --refusal-pt "$DSREFPT" --alpha "$DSALPHA" ${DSALPHAS:+--alphas "$DSALPHAS"} ${DSNOSAVEGEN:+--no-save-gen} --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
+  --bench "$DSBENCH" --model "$DSMODEL" --max-new "$DSMAXNEW" --refusal-pt "$DSREFPT" --alpha "$DSALPHA" ${DSALPHAS:+--alphas "$DSALPHAS"} ${DSQUANT:+--quantize "$DSQUANT"} ${DSNOSAVEGEN:+--no-save-gen} --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED"
 echo "=== done ==="; date

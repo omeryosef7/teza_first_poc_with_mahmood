@@ -98,6 +98,10 @@ def main():
     ap.add_argument("--save-gen", action=argparse.BooleanOptionalAction, default=True,
                     help="write the generated text to gens.jsonl in the run dir (plan §2.1: archived, "
                          "gitignored, never in raw.jsonl / summary.json). --no-save-gen disables.")
+    ap.add_argument("--quantize", default=None, choices=[None, "8bit", "4bit"],
+                    help="§29 quantization-robustness: load the model under bnb 8-bit or NF4 4-bit "
+                         "(default None = full bf16). The run-dir/atag records the precision so the "
+                         "three precisions land in distinct output dirs for the ASR comparison.")
     args = ap.parse_args()
     et = dc.parse_enable_thinking(args.enable_thinking)
 
@@ -122,6 +126,7 @@ def main():
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
     ts = time.strftime("%Y%m%d_%H%M%S"); uniq = os.environ.get("SLURM_JOB_ID") or str(os.getpid())
     atag = ("asweep" + "-".join(str(a) for a in alphas)) if sweep else f"a{args.alpha}"
+    if args.quantize: atag = f"{atag}_{args.quantize}"   # §29: keep precisions in distinct dirs
     out_dir = os.path.join(DC, "outputs", f"behav_refusal_{cohort}_{atag}_{ts}_{uniq}")
     os.makedirs(out_dir, exist_ok=True)
     write_runmeta(out_dir, args, extra={"phase": "behav_refusal", "cohort": cohort,
@@ -131,7 +136,7 @@ def main():
     from strongreject_scoring import load_strongreject_evaluate
     evaluate = load_strongreject_evaluate()
     dc.set_seed(args.seed)
-    lm = dc.load_model(args.model); dev = lm.model.device
+    lm = dc.load_model(args.model, quantize=args.quantize); dev = lm.model.device
     pad_id = lm.tokenizer.pad_token_id if lm.tokenizer.pad_token_id is not None else lm.eos_token_ids[0]
     v_ref = torch.load(args.refusal_pt).float().flatten()
     rlayer = json.load(open(args.refusal_pt.replace(".pt", ".json"))).get("layer", "?")
