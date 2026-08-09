@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-602,n-801,n-802,n-803,n-804,n-805,t-806
 
 # =====================================================================================
 # NEXT sprint Phase-4 — ONE GCG optimization arm on the v3 leakage-0 split.
@@ -66,8 +66,10 @@ echo "ARM=$ARM SEED=$SEED N_STEPS=$N_STEPS LAMBDA_R=$LAMBDA_R LAMBDA_C=$LAMBDA_C
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
-if [[ "$GPU_NAME" != *"L40S"* ]]; then echo "ERROR: expected L40S, got '$GPU_NAME'"; exit 1; fi
-echo "[guard] L40S confirmed"
+# 48GB-class guard: GCG (8B + batch64 + output_hidden_states) needs ~48GB. L40S(46GB) or A6000(48GB).
+# Deviation (2026-08-09): L40S ~1-day fair-share queue -> A6000 accepted as bf16/48GB-parity fallback.
+case "$GPU_NAME" in *L40S*|*A6000*|*a6000*|*RTX*A6000*) echo "[guard] 48GB GPU OK: $GPU_NAME";;
+  *) echo "ERROR: need L40S/A6000 (48GB), got '$GPU_NAME'"; exit 1;; esac
 
 # Common flags (array to preserve quoting)
 COMMON=(--model-family "$MODEL_FAMILY" --model-name-or-path "$MODEL_PATH"

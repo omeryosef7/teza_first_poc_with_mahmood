@@ -38,7 +38,10 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 echo "=== baseline drift (§1.2): $DSMODEL bench=$DSBENCH rejudge=$DSREJUDGE maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+# ALLOW_ANY_GPU=1 bypass (2026-08-09): small models (Phi-4-mini 3.8B) fit any >=16GB GPU; use idle
+# 3090/a5000 when L40S is fair-share-throttled. Default (unset) keeps the strict L40S guard for Llama.
+if [ "${ALLOW_ANY_GPU:-0}" = 1 ]; then echo "GPU guard BYPASSED (ALLOW_ANY_GPU=1): $GPU_TYPE";
+else case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac; fi
 python -u doublespeak_causality/scripts/phase_baseline_drift.py \
   --bench "$DSBENCH" --model "$DSMODEL" --splits "$DSSPLITS" --rejudge "$DSREJUDGE" \
   --max-new "$DSMAXNEW" --n "$DSN" --seed "$DSSEED" --enable-thinking "$DSENABLETHINK"

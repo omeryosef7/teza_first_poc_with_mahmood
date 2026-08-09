@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-602,n-801,n-802,n-803,n-804,n-805,t-806
 
 # =====================================================================================
 # NEXT sprint Phase-1 SMOKE — validate the CORRECTED GCG pipeline end-to-end on v3.
@@ -47,8 +47,8 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
-if [[ "$GPU_NAME" != *"L40S"* ]]; then echo "ERROR: expected L40S, got '$GPU_NAME'"; exit 1; fi
-echo "[guard] L40S confirmed"
+case "$GPU_NAME" in *L40S*|*A6000*|*a6000*) echo "[guard] 48GB GPU OK: $GPU_NAME";;
+  *) echo "ERROR: need L40S/A6000, got '$GPU_NAME'"; exit 1;; esac
 
 run_arm () {
     local run_id="$1"; shift
