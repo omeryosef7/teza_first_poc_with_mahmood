@@ -46,3 +46,114 @@ never read harmful text.
 3. Gate-7 first-cut reconstruction + 16-arm reconciliation.
 
 (Results appended below as they return.)
+
+### Audit result — Jacobian (P6) [agent 2]
+- Refusal target scalar `S_refusal = <hidden[R][-1], u_ref>` (R=32 → L31 dir) is **first-order
+  differentiable**; refusal projection @ L22 (arm07) is the same family. Code
+  `scripts/phase6_jacobian_readout.py`.
+- Peak layers: refusal ‖J‖ **L12** (100% bootstrap), concept ‖J‖ **L16**; linear readout peaks
+  late **L30**. → "mechanism mid-band / readout late" dissociation.
+- AUCs (clearharm, locked test): refusal ‖J‖@L12 **0.807** [.696,.901]; refusal scalar(L31) 0.845;
+  refusal proj@L21 0.867; concept ‖J‖@L16 **0.583**; concept scalar 0.508. Paired refusal−concept
+  ‖J‖ diff **+0.225** [.055,.361].
+- **KEY**: bare ‖J‖ is partly *target-generic* (both peak L12–L16, cos(J,dir)≈0.02); the
+  target-specific signal is in `jac_proj`/projection, not ‖J‖. Refusal *scalar* (0.845) predicts
+  better than ‖J‖ (0.807).
+- **Feasibility for GCG loss**: (A) first-order refusal-scalar/projection loss = cheap, immediate,
+  already the strongest signal. (B) true ‖J‖² loss = second-order double-backward (needs
+  create_graph=True; prohibitive VRAM through 8B; and target-generic/weaker). **No existing
+  optimizer uses the Jacobian.**
+- **DESIGN DECISION (Q2)**: operationalize the "Jacobian-refusal objective" (arm10) as a
+  first-order refusal-projection loss **at the Jacobian sensitivity-peak layer L12**, vs arm07's
+  projection at the readout/decision layer **L22/L18**. This is a clean, cheap, compute-matched
+  test of "does targeting the max-sensitivity layer beat targeting the readout layer?" The
+  second-order ‖J‖² arm is documented as out-of-scope (target-generic, weaker, prohibitive cost —
+  cite P6). Will confirm exact loss wiring after infra audit.
+
+### Audit result — Gate-7 first-cut [agent 3]
+- Runner: `python -m poc_stage_gcg_early.run_optimization`; eval: `26_eval_p9_gcg_heldout_asr.py`.
+- First-cut ran **arm04** (vanilla), **arm07-L18** (validated), **arm07-L22** (frozen/unvalidated),
+  **arm07-rand-L18** (norm-matched random). **50 steps** (not 200), seeds **42+43** (not 44),
+  λ_refusal_dir=**0.25**, suffix_len 16, bs 64, topk 256, --no-filter-cand, --suffix-placement user,
+  --selection-mode weighted, --no-thinking. Train n=44, test n=42, v1 split.
+- Held-out mean ASR: arm04 **0.357**; arm07-L18 **0.465**; arm07-L22 0.357; arm07-rand-L18 **0.464**
+  → validated refusal ≈ random (dead heat) = well-controlled NEGATIVE (Claim F not supported).
+- Random dir: `scripts/build_random_dir_L18.py`, Gaussian rescaled to exact L18 refusal norm, same
+  layer/λ/wiring. Output `outputs/gate7_firstcut/refusal_rand_L18_normmatched_seed20260808.pt`.
+- Validated refusal dir: `outputs/refval_clearharm_20260806_051728_721957/refusal_direction_clearharm_L18.pt`.
+- **Frozen decisions** (do NOT reselect on test): refusal layer **L18** (validated, P7 721957/722611);
+  λ=0.25 is a *first-cut proxy* from P8.1 α-calibration — **must be train/dev-swept (3-point)** for
+  the real run (no exact α→λ map); suffix_len 16; 200 steps (spec); bs 64; topk 256.
+- **NEXT per plan**: 200 steps, seed 44, larger pool, add arm06 (concept), arm08 (combined),
+  §17 mechanistic-validity check (does optimizing refusal actually lower held-out L18 projection?).
+- **OPEN split decision**: matrix is FROZEN on v1 (44/42) but **v1 has known leakage** per P1B_V3;
+  v3 is the leakage-0 confirmatory split (has dev). First-cut used v1. → decide before scaling
+  (see Gate-A note). arm05 (harmful-target-logits) is bit-identical to arm04 → likely DROP.
+  arm14 (attention/carry) gated on a carry path that is causally NULL → DROP / neg-control only.
+- Success criteria (frozen, verbatim): (1) beat vanilla GCG (arm3/4) AND no-suffix DS (arm2) by
+  >P1 drift envelope; (2) refusal_rate falls w/o empty_rate rising; (3) survives ≥3 seeds;
+  (4) transfers to locked test; (5) mechanism metric moves in intended dir; (6) norm-matched random
+  does NOT match it; (7) content redacted. Primary metric = StrongREJECT held-out test ASR.
+
+### Audit result — GCG/TROPT infra [agent 1]
+- All optimizer code under project-root `poc_stage_gcg_early/`. Entry: `run_optimization.py`
+  (`python -m poc_stage_gcg_early.run_optimization`). Loss terms in `objectives.py`; loop in
+  `gcg_optimizer.py`; config/hash in `config.py`.
+- **refusal-projection loss is layer-configurable via CLI**: `--lambda-refusal-dir`,
+  `--refusal-dir-layer`, `--refusal-dir-path`, `--objective-name`, `--repr-in-selection`,
+  `--repr-selection-sub-batch`. Sign: term added to a minimized loss → drives projection DOWN
+  (suppress refusal). Position = last suffix token. → **arm07 (L18/L22) AND arm10 (Jacobian=proj@L12)
+  need NO new code** — just different layer/path. Also supports multi-layer + λ schedule.
+- Universal suffix by default (grad averaged / loss summed over train tasks). Per-behavior =
+  `run_batched_perbehavior.py` or a 1-task manifest.
+- Random control: `scripts/build_random_dir_L18.py` (Gaussian, exact norm-match, same wiring).
+  Generalize to any layer for arm10's L12 random control.
+- Resume: `checkpoint.pt` (step+suffix+RNG+config_hash), atomic, SIGTERM handler; resumes only if
+  config_hash matches. Output dir `phase9_gcg_mac_matrix_arm<NN>_<slug>_seed<SEED>` under
+  `outputs/stage_gcg_full/`. Final suffix in `FINAL_CANDIDATES.jsonl` row[0].
+- Eval: `26_eval_p9_gcg_heldout_asr.py` (StrongREJECT + kw_refusal; emits asr, mean_sr,
+  refusal_rate, empty_rate, judge_fail_frac, n_scored; resume-safe; needs OPENAI_API_KEY).
+  **Emits point ASR only → must add CI/McNemar across seeds ourselves.**
+- **TROPT/MAC (arms 11-13): NOT implemented** — need a new `Loss` subclass under `TROPT/tropt/loss/`
+  + separate venv + tokenization re-verification. Deferred to a stretch goal.
+- **Concept objective (arm06/08): NO code** — needs `build_reference_cache.py` on the direct
+  manifest + a new "concept readout up" loss term (+ degeneration penalty for combined). To implement.
+- **DROP arm05** (bit-identical to arm04, single target) and **arm14** (carry path causally NULL).
+
+### ⚠️ CRITICAL CORRECTNESS RISK to verify before ANY GCG run (Gate A)
+Layer-index convention mismatch (agent 1): direction builders store the vector from
+`hidden_states[L+1]` (post-block-L) and name it `L`; but `gcg_optimizer.py` indexes
+`output.hidden_states[refusal_dir_layer]` **directly**. If true, an "L18" direction (built at
+hs-row 19) is read by GCG at hs-row 18 → a **1-layer shift**. Must verify and, if real, fix
+(pass layer=L+1 or correct the index) BEFORE the confirmatory matrix. The first-cut may have
+optimized against a 1-layer-shifted readout (likely within the broad L13-20 valid band, so probably
+not fatal to the dead-heat conclusion — but the confirmatory run must be exact). **Verifying now.**
+
+### Off-by-one — CONFIRMED (Gate A fix)
+Verified in code: `poc_stage_gcg_early/gcg_optimizer.py:173` reads `output.hidden_states[layer_idx]`
+directly; `objectives.py:refusal_direction_loss` uses `candidate_hs.get(layer)`; `run_optimization.py:245`
+passes `refusal_dir_layer=args.refusal_dir_layer` with **no +1**. Direction builder
+(`build_refusal_direction_llama.py:82`) captures `hs[L+1]` and names it `L`. → an `L{k}` direction is
+read by GCG one block early. **FIX**: our confirmatory wrapper passes `--refusal-dir-layer $((FIT+1))`
+so GCG reads the exact `hidden_states[FIT+1]` row the direction was fitted on; `--objective-name`
+keeps the fit-layer label. Will confirm with a smoke projection-match test. First-cut dead-heat
+UNAFFECTED (refusal & random shared the identical shift within the broad L13-20 valid band).
+
+---
+
+## 2026-08-09 — DECISIONS (user consult)
+1. **Split = v3 (leakage-0), subsampled train pool.** v1 has 90% train/test leakage (77/86 rows:
+   14/43 concepts + 17/21 codewords straddle; P1B_V3_SPLIT §1) → v1 cannot support a clean transfer
+   claim. v3.1: N=324, 224 concepts, 215 clusters, **0 straddling**. Plan: freeze a ~40-item
+   cluster-diverse **train-only optimization pool** from v3 train (≥20 unique, balanced), evaluate the
+   universal suffix on the **full v3 leakage-0 test**. Keeps compute ≈ first-cut (n_train≈40) while
+   giving a leakage-free held-out test. Reconciles (does not silently replace) the v1-frozen manifest:
+   a new `configs/manifests/phase9b_gcg_v3.json` will document the deviation + rationale.
+2. **Scope = the ENTIRE plan.** User: "Do all the plan!!! I don't care if it takes time." → drive
+   toward: full attack matrix (all objective arms + matched randoms incl. GCG *and* MAC/TROPT +
+   2nd-order ‖J‖ arm) at 200(+) steps × 3–5 seeds + mechanistic-validity check; Phi-4-mini-reasoning
+   X0–X5 (3rd family, native reasoning); quantization extension; all 6 deliverable docs. Only hard
+   constraints: ≤6 concurrent L40S jobs, gate discipline, train-only selection, keep all nulls.
+   Parallelize independent work via subagents (scalar/code only) and GPU batches.
+
+
