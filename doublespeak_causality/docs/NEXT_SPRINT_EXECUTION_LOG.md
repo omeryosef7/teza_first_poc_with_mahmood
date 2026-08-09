@@ -252,3 +252,10 @@ checkpoint config_hash mismatch (it refuses to resume a differently-configured r
 the stale run dirs (no FINAL_CANDIDATES = safe) before relaunch. N_STEPS now frozen at 200 → no
 recurrence. Seed-42 clean relaunch: 741205 refusal_rand_L18(run), 741206 refusal_L12,
 741211 vanilla, 741212 refusal_L18, 741213 refusal_rand_L12; + Phi 740944 = 6 concurrent.
+
+### 2026-08-10 02:13 progress check
+- GCG seed42 arms healthy: vanilla 33 / refusal_L18 24 / refusal_rand_L18 19 steps in ~32min
+  (~1–1.7 min/step → 200 steps ~4–6h, comfortable in 16h). 741283/741284 pending (GPU free wait).
+- Phi X1 740944 ALIVE (raw.jsonl 21 items, writing live; ~7.6 min/item reasoning@2048; ~1h to 30).
+  NOTE: hit sbatch --export comma bug on DSSPLITS=train,test → only TRAIN ran. Will run test split
+  separately with DSSPLITS=test (comma-free) to complete X1. (Fix rule: never put comma-lists in --export.)
