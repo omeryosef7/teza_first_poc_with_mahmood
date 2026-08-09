@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=24 / PARTIAL=3 / NOT_DONE=1** (§8 closed; remaining 3 PARTIAL = §13/§20/§27-X5 all with GPU runs in flight; §14-18 eval pending).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=25 / PARTIAL=2 / NOT_DONE=1** (§20 closed; remaining PARTIAL={§13 running, §27-X5 preempted-requeued}; §14-18 eval preempted-requeued).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -24,7 +24,7 @@ authoritative remaining-work roadmap.
 | §14–18 | D | NOT_DONE | Y | Gate-7 attack objective (mechanism-derived GCG,  | The decisive comparison is entirely unrun: no held-out StrongREJECT ASR for ANY arm. run_gcg_p9_firstcut_eval.slurm is authored but NOT launched (needs 732918 t |
 | §18 | D | DONE | Y | Continuous-objective sanity gate before discrete | — (every candidate direction has a committed continuous gate: refusal PASSES [§23/§6/§21]; carry-head+combined FAIL [P9 736570]; concept FAILS [P10/P24]; Jacobian-arm10 = refusal axis [P6 732004]. No ungated direction remains.) |
 | §19 | D | DONE | n | Causal refusal-restoration defense (incl. §19.3  | — |
-| §20 | D | PARTIAL | Y | Defense evaluation with utility (benign over-ref | The report itself flags the §20 utility panel as incomplete: the 5th condition — truly UNRELATED-NORMAL prompts (not attack-structured benign) — was NOT tested. |
+| §20 | D | DONE | Y | Defense evaluation with utility (benign over-ref | — (P_DEFENSE_UTILITY §20: ZERO over-refusal on 40 unrelated-normal prompts at L16/18/20 [restoration fired: 39/40 gens changed], vs over-refusal on attack-structured benign [§21] → utility cost confined to attack-adjacent inputs; run 738410) |
 | §21 | D | DONE | Y | Minimal effective intervention (dose curve / α50 | — (P_DEFENSE_UTILITY §21: α50≈2.12 @L18 [ΔASR −0.106 p=.049] but +0.282 over-refusal; over-refusal>|ΔASR| at every layer [732688] → NO selective minimal dose exists; honest finding) |
 | §22 | B | DONE | Y | Token-timing of refusal restoration (prefill / d | — (P22_TIMING, run 732981: all 5 timing arms + anchor + rand/noop committed; timing that matters = decision state not decode-persistence; additive magnitude-sweep noted as optional caveat) |
 | §23 | B | DONE | n | Decision-state counterfactual patch (bidirection | — |

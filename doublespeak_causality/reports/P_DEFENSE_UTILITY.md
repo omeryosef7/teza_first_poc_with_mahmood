@@ -121,3 +121,27 @@ harmful-intent signal, not a scalar or a gate on the refusal axis.
   anomalously suppressed (the §3/Gate B signature) → far fewer benign false positives.
 - **§20 utility completeness:** add the unrelated-normal condition before any "utility-preserving" claim.
 - Feeds Figure F7 (ASR reduction vs benign utility), reported honestly as a dose/selectivity tradeoff.
+
+## §20 completion — UNRELATED-NORMAL utility (the missing 5th condition)
+**Result: the calibrated refusal-restoration defense causes ZERO over-refusal on ordinary benign
+instructions** (run `unrelnormal_unrelated_normal_...738410`, n=40 unrelated-normal prompts —
+recipes/math/explanations/writing, no attack structure; `scripts/phase20_unrelated_normal.py`).
+
+| arm | refusal_rate | over-refusal vs base |
+|---|---|---|
+| normal_base | 0.00 | — |
+| normal_def_L16 (α=1.97) | 0.00 | **0.00** |
+| normal_def_L18 (α=2.83) | 0.00 | **0.00** |
+| normal_def_L20 (α=3.59) | 0.00 | **0.00** |
+| normal_defrand_L18 | 0.00 | 0.00 |
+
+**Verified not a no-op:** the restoration DID alter the outputs — 39/40 def_L18 generations differ from
+base (same calibrated α as §21) — yet none crossed into refusal. So the defense perturbs unrelated-normal
+generations without refusing them.
+
+**Interpretation (reconciles with §21):** §21 found the defense over-refuses *attack-structured* benign
+prompts (benign content in the attack's format), because those sit near the refusal boundary. On
+*unrelated-normal* prompts, which are far from that boundary, the same calibrated restoration adds no
+refusal (0/40). **So the defense's utility cost is confined to attack-adjacent inputs; it does NOT harm
+general utility.** This is a more favorable defense picture than §21 alone: the collateral over-refusal is
+specific to attack-format benign, not ordinary use. §20 → DONE (n=40, kw-refusal detection; ≥20/cell).
