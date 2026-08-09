@@ -459,3 +459,17 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - §14-18 DONE: multi-seed Gate-7 (seeds 42+43) held-out ASR — refusal-L18 mean 0.465 ≈ random-L18 mean 0.464
   → Claim F NOT supported, multi-seed confirmed. Fixed F6 (ARM_ROOT misrooted) → 2-seed grouped chart.
 - **STATUS: DONE=27 / PARTIAL=1 / NOT_DONE=0.** Only §27-X5 (Qwen3 concept-ablation, 738332 running) left.
+
+### 2026-08-09 (17:15) — ✅ COMPLETE: ALL 28 SECTIONS DONE (DONE=28 / PARTIAL=0 / NOT_DONE=0)
+- **§27 X5 CAUSAL DONE**: Qwen3 concept-direction ablation is causally INERT — direct ASR +0.035 train /
+  −0.02 test (≈ random 0.059/0.095), vs X4 refusal ablation +0.19/+0.17. Concept fails to causally explain
+  behavior on Qwen3 while refusal is the lever → the concept-vs-refusal dissociation GENERALIZES to a 2nd
+  family. X1–X5 all pass on Qwen3-14B. (run 738332 vs X4 736656; P27_CROSSMODEL cleaned of stale staging notes.)
+- **EVERY CONTINUATION_MASTER_PLAN_V2 section is now closed with a committed run-dir + report.** Honest-negative
+  closures (results, not gaps): §5 (no position dissociation), §21 (no selective minimal dose), §14-18 Gate-7
+  (mechanism-derived GCG objective non-specific, multi-seed), §8.2/§8.1 (no sparse head→MLP path; concept
+  distributed), §27-X5 (concept causally inert). Positive headlines: §3/§4/§23/§24/§25 refusal decision-state
+  is the causal locus (~100% mediated), §13 prospective predictor (test AUC 0.97), §28 impl-robust, §29
+  quant-robust, §27 cross-model generalization.
+- Full evidence table: REFUSAL_CIRCUIT_SYNTHESIS.md (E1–E10). Figures: F5 dose, F6 attack-objective (2-seed),
+  fig_refusal_mediation. Status roadmap: MASTER_STATUS_V2.md (28/28).
