@@ -436,3 +436,10 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - **STATUS: DONE=24 / PARTIAL=3 / NOT_DONE=1.** The remaining 4 sections ALL have GPU runs in flight:
   §13 (738191), §20 (738410), §27-X5 (738332), §14-18 eval (738129) — all fair-share PENDING on L40S.
 - Nothing left un-run. Full completion is now gated ONLY on the shared fair-share queue draining.
+
+### 2026-08-09 (13:43) — 3 finalization jobs RUNNING; §13 Ampere cgroup-failed → back to L40S
+- Fair-share freed: Gate-7 eval (738129), §27-X5 qwen3 concept-ablation (738332), §20 unrelated-normal (738410)
+  all RUNNING on n-804. §13 refproj tried Ampere (738561) but cgroup-failed again (Ampere nodes have a live
+  cgroup fault) → reverted to L40S (738603, pending; will run as a slot frees).
+- On completion: §20 over-refusal table, §27-X5 concept-ablation ΔASR (≈random? → concept inert on Qwen3),
+  Gate-7 seed-42+43 held-out ASR comparison, §13 refproj→AUC join. Then finalize reports → 28/28.
