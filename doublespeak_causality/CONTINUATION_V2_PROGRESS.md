@@ -453,3 +453,9 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   732560), freezes train threshold, evals held-out test AUC → ready to run the instant refproj lands.
 - Remaining: §13 (refproj 738761 → CPU join), §27-X5 (738332 preempted/requeued), §14-18 Gate-7 eval (738129
   preempted/requeued, waiting Resources). All fair-share/preemption-bound on L40S; Ampere still cgroup-broken.
+
+### 2026-08-09 (16:50) — §13 + §14-18 DONE; only §27-X5 remains (DONE=27/28)
+- §13 DONE: prospective frozen-threshold predictor → test AUC 0.97, acc 0.857, fn=0 (leakage-free v3). P13.
+- §14-18 DONE: multi-seed Gate-7 (seeds 42+43) held-out ASR — refusal-L18 mean 0.465 ≈ random-L18 mean 0.464
+  → Claim F NOT supported, multi-seed confirmed. Fixed F6 (ARM_ROOT misrooted) → 2-seed grouped chart.
+- **STATUS: DONE=27 / PARTIAL=1 / NOT_DONE=0.** Only §27-X5 (Qwen3 concept-ablation, 738332 running) left.
