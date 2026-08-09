@@ -443,3 +443,13 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   cgroup fault) → reverted to L40S (738603, pending; will run as a slot frees).
 - On completion: §20 over-refusal table, §27-X5 concept-ablation ΔASR (≈random? → concept inert on Qwen3),
   Gate-7 seed-42+43 held-out ASR comparison, §13 refproj→AUC join. Then finalize reports → 28/28.
+
+### 2026-08-09 (14:45) — §20 DONE (DONE=25); §13 predictor coded+ready; caught DSSPLITS comma bug
+- §20 DONE (see P_DEFENSE_UTILITY): 0/40 over-refusal on unrelated-normal (restoration fired, 39/40 gens
+  changed) → defense utility cost confined to attack-adjacent inputs. STATUS: DONE=25 / PARTIAL=2 / NOT_DONE=1.
+- §13: refproj v3 first attempt (738603) ran TRAIN-ONLY — DSSPLITS=train,test truncated by sbatch --export at
+  the comma (the documented memory bug; I slipped). Resubmitted comma-safe (738761, wrapper default splits).
+  phase13_prospective_predictor.py written + committed: joins DS projection × ds_base labels (refdecpatch
+  732560), freezes train threshold, evals held-out test AUC → ready to run the instant refproj lands.
+- Remaining: §13 (refproj 738761 → CPU join), §27-X5 (738332 preempted/requeued), §14-18 Gate-7 eval (738129
+  preempted/requeued, waiting Resources). All fair-share/preemption-bound on L40S; Ampere still cgroup-broken.
