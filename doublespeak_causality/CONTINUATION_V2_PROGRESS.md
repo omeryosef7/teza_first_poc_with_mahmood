@@ -375,3 +375,12 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - Decisive seed-43 comparison pending = arm07-L18 (refusal, done) vs arm07-rand-L18 (random, pending resume).
   Confirms whether the first-cut NEGATIVE (random ≥ refusal) is stable across seeds 42+43.
 - Plan otherwise COMPLETE: DONE=16 / PARTIAL=11 / NOT_DONE=1 (only §14-18, in flight).
+
+### 2026-08-09 (08:43) — Gate-7 seed-43 PREEMPTED at 3/4 arms; SLURM auto-requeued
+- 737744 was PREEMPTED (killable) at 5h54m with **3/4 arms DONE** (arm04, arm07-L18 refusal, arm07-L22 all
+  50/50 + FINAL_CANDIDATES). Only the decisive control **arm07-rand-L18 incomplete (6/50)**.
+- SLURM **auto-requeued** it (PD BeginTime 08:44). Refusal arms ran ~1.4h each (faster than feared). On restart
+  the optimizer detects checkpoint.pt / FINAL_CANDIDATES and skips the 3 done arms, then runs rand-L18 (~1.4h)
+  → expected complete ~10:10. Env exports (SEED=43, N_STEPS=50) preserved across requeue.
+- Waiter armed on rand-L18 FINAL_CANDIDATES. On completion → `sbatch --export=ALL,SEED=43
+  run_gcg_p9_firstcut_eval.slurm` → compare seed-42+43 (does random ≥ refusal hold?) → finalize §14-18.
