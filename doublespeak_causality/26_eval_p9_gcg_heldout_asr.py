@@ -71,7 +71,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-dir", required=True, help="Arm run-dir with FINAL_CANDIDATES.jsonl + CONFIG.json")
     ap.add_argument("--manifest", required=True)
-    ap.add_argument("--split", default="test", choices=["test", "train", "all"])
+    ap.add_argument("--split", default="test", choices=["test", "train", "dev", "all"])
     ap.add_argument("--model-family", default="llama")
     ap.add_argument("--model-name-or-path", default="meta-llama/Llama-3.1-8B-Instruct")
     ap.add_argument("--seed", type=int, default=42)
