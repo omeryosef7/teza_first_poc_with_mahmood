@@ -420,3 +420,10 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
 - All 4 fair-share PENDING (the sole bottleneck). §8.1 (concept head→MLP alignment/config bug) is the only
   item without a run — secondary (§8.2 refusal is the load-bearing §8 result, DONE).
 - **Effective status once these land: 27/28 sections DONE (only §8.1 config fix outstanding).**
+
+### 2026-08-09 (12:14) — §20 cgroup node-failures → moved to L40S-only; all 4 finalization jobs healthy-pending
+- §20-normal died TWICE with a SLURM cgroup error (path null/cgroup.procs) on the wide Ampere nodes
+  (n-602 a6000 etc. have a broken cgroup config right now) — infrastructure, not code. Resubmitted 738410 on
+  the healthy L40S-only nodelist; now pends cleanly.
+- 4 finalization jobs fair-share PENDING on L40S: Gate-7 eval 738129 (§14-18), refproj-v3 738191 (§13),
+  qwen3 concept-ablation 738332 (§27-X5), unrelated-normal 738410 (§20). Waiter armed.
