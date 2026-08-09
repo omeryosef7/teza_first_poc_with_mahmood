@@ -212,4 +212,22 @@ DROP arm05 (=arm04). arm14 (carry) causally null → optional negative-control o
   740901 (vanilla_direct), seed42, 200 steps, pool40. Next: on sign-test pass, launch refusal_L18 /
   refusal_L12(Jac) / concept_L9 / combined + matched randoms (batch 2, ≤6 jobs).
 
+## 2026-08-10 — GPU obstacles resolved + GATE B PASS
+- **a6000 (n-602) GPU FAULTY** ("Unable to determine device handle … Unknown Error", exit 127) —
+  killed 3 GCG jobs; n-601 a6000 down. L40S fair-share-throttled (~23h est start).
+- **Resolution**: run GCG on idle **3090 (24GB)** at **BATCH=32 × N_STEPS=400** = exactly
+  compute-matched to batch64×200 (same candidate-forwards), fits 24GB. Phi-4 (small) on 3090 too.
+  Guards → min-VRAM (≥20GB); broken node excluded; nodes spread ≤2/arm-per-node (weight-load
+  contention). Documented deviation (primary claims still bf16; GPU type held constant within matrix).
+- **GATE B PASS (sign test, batch-32 3090 smoke 740960, COMPLETED, no OOM)**:
+  - real L18 refusal dir: refusal_dir_loss **+0.038 → −0.04** over 8 steps (projection actively
+    suppressed by the optimizer).
+  - norm-matched random dir: **flat ~0** (0.003→0.0002, no systematic movement).
+  → the refusal-projection GCG loss moves its intended internal scalar; random does not. Off-by-one
+  fix confirmed working (reads hs[19] for the L18 dir). Cleared to launch multi-arm optimization.
+- **Batch 2 launched** (seed42, BATCH=32, N_STEPS=400, 3090 n-303/304/306): 741053 vanilla,
+  741054 refusal_L18, 741055 refusal_rand_L18, 741056 refusal_L12(Jac-peak), 741057 refusal_rand_L12.
+  Held concept_L9 (wave 2) to respect ≤6 (5 GCG + Phi X1 740944). Each arm ~6h (batch32×400 on 3090).
+  Wave 2 (as slots free): concept_L9/rand, combined/rand, vanilla_direct. Then seeds 43,44(,45,46).
+
 
