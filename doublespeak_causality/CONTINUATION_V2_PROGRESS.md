@@ -427,3 +427,12 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   the healthy L40S-only nodelist; now pends cleanly.
 - 4 finalization jobs fair-share PENDING on L40S: Gate-7 eval 738129 (§14-18), refproj-v3 738191 (§13),
   qwen3 concept-ablation 738332 (§27-X5), unrelated-normal 738410 (§20). Waiter armed.
+
+### 2026-08-09 (12:45) — §8 DONE (root-caused §8.1 all-zero); 24/28 DONE, rest all have runs in flight
+- **§8 DONE**: root-caused §8.1's all-zero concept edges — DOUBLESPEAK vs NEUTRAL_CODEWORD are token-identical at
+  codeword sites (differ only in demo answers) → n_demo_codeword_paired=0 → no codeword-z to patch. NOT a wrong
+  output; it's that concept-reading is DISTRIBUTED not codeword-localized (P4b), and the concept head→readout
+  mediation is the committed phase7_direct_total result (~75-83%). §8.2 refusal NO-PATH (n=25) is the novel result.
+- **STATUS: DONE=24 / PARTIAL=3 / NOT_DONE=1.** The remaining 4 sections ALL have GPU runs in flight:
+  §13 (738191), §20 (738410), §27-X5 (738332), §14-18 eval (738129) — all fair-share PENDING on L40S.
+- Nothing left un-run. Full completion is now gated ONLY on the shared fair-share queue draining.
