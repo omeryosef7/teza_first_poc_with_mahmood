@@ -156,4 +156,43 @@ UNAFFECTED (refusal & random shared the identical shift within the broad L13-20 
    constraints: ≤6 concurrent L40S jobs, gate discipline, train-only selection, keep all nulls.
    Parallelize independent work via subagents (scalar/code only) and GPU batches.
 
+## 2026-08-09 — Phase 1 build (v3 corrected setup)
+- Built v3 GCG manifests `data/gcg/clearharm_llama_v3/` (148 items: train74/dev37/test37, leakage-0,
+  join 148/170). Froze cluster-diverse pool-40 (fallback); **primary uses full 74 train** (power).
+- OPENAI_API_KEY present in `.env` (len 164) → StrongREJECT eval works via SLURM `.env` sourcing.
+- Built norm-matched random dirs L12/18/22 (`outputs/gate7_v3_randdirs/`); concept ±L9/L16 unit +
+  randoms (`outputs/gate7_v3_conceptdirs/`). All unit-norm.
+- Paired-stats aggregator `scripts/analyze_gate7_matrix.py` (Wilson CI + paired bootstrap dASR +
+  exact McNemar + cross-seed). **Validated on first-cut**: reproduces arm07-L18 0.464 ≈ rand 0.464,
+  McNemar p=0.45/0.55 both seeds → confirmed non-specific dead heat (now with paired stats).
+- Submitted smokes: **740707** (GCG v3 corrected pipeline, off-by-one fix) + **740710** (Phi-4 X0).
+
+### CONCEPT-ARM DESIGN (reconciles manifest arm06/08) [concept subagent]
+- The manifest's repr-cache route for arm06 has a **silent cross-condition position-alignment bug**:
+  `repr_loss` matches by absolute token index, but direct vs doublespeak prompts differ in length →
+  repr_loss collapses to 0. **Rejected.**
+- **Adopted: direction-projection route** (reuse `refusal_direction_loss`), so ALL objective arms
+  share ONE mechanism (projection at last suffix/decision token) — the cleanest concept-vs-refusal
+  comparison. No new optimizer code.
+  - concept-UP = minimize projection onto **negated** unit concept dir (positive λ). Artifact
+    `concept_neg_L9_unit.pt` (from unified_directions concept[9], resid_post block9 = hs[10]).
+  - off-by-one fix applies identically: pass `--refusal-dir-layer = fit+1` (concept L9 → 10,
+    refusal L18 → 19, Jacobian-peak L12 → 13).
+  - combined (arm08) = **multilayer** refusal_dir: `[(hs10, -concept, λc), (hs19, refusal, λr)]`
+    via `--refusal-dir-layers/--refusal-dir-paths/--lambda-refusal-dir-per-layer`. task_loss stays
+    as de-facto anti-degeneration (no dedicated degeneration penalty exists; documented).
+
+### FROZEN v3 confirmatory arm set (all GCG, off-by-one-corrected)
+Baselines: arm01 nosuffix-direct (eval), arm02 nosuffix-DS (eval), arm15 random-suffix-DS (eval),
+arm04 vanilla-GCG-DS (task_loss), arm03 vanilla-GCG-direct (task_loss, optional).
+Mechanism (each with a norm-matched RANDOM-direction control at the same layer/λ/seeds):
+- REFUSAL@L18 (readout) : dir refusal_alllayers L18 @hs19 ; rand refusal_rand_L18
+- REFUSAL@L12 (Jacobian peak; "Jacobian-refusal" first-order) : L12 @hs13 ; rand refusal_rand_L12
+- CONCEPT@L9 (validated write) : -concept[9] @hs10 ; rand concept_rand_L9
+- COMBINED (concept@L9 + refusal@L18) : multilayer ; rand = both randoms
+λ: 3-point dev sweep {0.1,0.25,0.5} on REFUSAL@L18 (seed42) → freeze, reuse across direction arms
+(same unit norm → shared λ defensible). Screen seed42/200steps → finalists seeds 43,44(,45,46).
+DROP arm05 (=arm04). arm14 (carry) causally null → optional negative-control only. MAC arms 11-13
++ 2nd-order ‖J‖² = later (new stack/code). Mechanistic-validity + Phi X1-X5 + quant in parallel.
+
 
