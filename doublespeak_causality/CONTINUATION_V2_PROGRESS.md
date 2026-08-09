@@ -407,3 +407,16 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   §13 (refproj v3 running 738191 → CPU prospective-AUC join), §20 (unrelated-normal utility, needs benign
   bench + GPU), §27 (X5 Qwen3 concept ablation, needs qwen3 harness + GPU).
 - NOT_DONE=1: §14-18 (Gate-7 held-out eval 738129 fair-share PENDING; all 4 seed-43 arms optimized).
+
+### 2026-08-09 (11:50) — every remaining section now has a GPU run in flight
+- After closing 7 PARTIALs from committed data (DONE=23), launched the 3 remaining GPU refinements + finalized
+  the harnesses so NOTHING is left un-run except the §8.1 config bug:
+  - §13 refproj v3 (738191) → CPU prospective-AUC join → §13 DONE
+  - §20 unrelated-normal utility (738344; first attempt 738222 died on a cgroup NODE failure, resubmitted) →
+    over-refusal on 40 ordinary benign prompts vs base+random → §20 DONE
+  - §27-X5 CAUSAL (738332): concept-direction ablation on Qwen3-14B (reuses run_x4_qwen3_ablate.sh with
+    DSREFPT=concept_direction_qwen3_L24.pt, thinking-OFF) → if ≈random/null, concept causally inert on Qwen3 → X5 DONE
+  - §14-18 Gate-7 held-out eval (738129) → cross-seed 42+43 comparison → §14-18 DONE
+- All 4 fair-share PENDING (the sole bottleneck). §8.1 (concept head→MLP alignment/config bug) is the only
+  item without a run — secondary (§8.2 refusal is the load-bearing §8 result, DONE).
+- **Effective status once these land: 27/28 sections DONE (only §8.1 config fix outstanding).**
