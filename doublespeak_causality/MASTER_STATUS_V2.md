@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=22 / PARTIAL=5 / NOT_DONE=1** (7 PARTIALs closed from committed data via 10-agent audit; §13/§20/§27-X5 GPU refinements + §14-18 eval pending).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=23 / PARTIAL=4 / NOT_DONE=1** (7 PARTIALs closed from committed data via 10-agent audit; remaining PARTIAL={§8.1 config, §13/§20/§27-X5 GPU refinements}; §14-18 eval pending).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -30,7 +30,7 @@ authoritative remaining-work roadmap.
 | §23 | B | DONE | n | Decision-state counterfactual patch (bidirection | — |
 | §24 | C | DONE | Y | Orthogonalization experiment (concept ⟂ refusal) | — (P24_ORTHOGONALIZATION: refusal component controls ASR −0.21 p=1e-4; concept-orthogonalized arm inert) |
 | §25 | B | DONE | Y | Full mediation: demo-feature → refusal-suppressi | — (P25_FULL_MEDIATION: DS attack ~100% mediated by decision-state refusal repr [frac 1.00-1.07, train/dev, rand/self null]; ∘ §6 upstream; naive demo-removal confounded/documented) |
-| §26 | E | PARTIAL | Y | Within-Llama generalization (unseen concepts/cod | No dedicated §26 harness/report. VARIABLE DEMO-COUNT and ALTERNATE-BENIGN-CODEWORD axes have no committed evidence. The existence/causal/prediction/attack-optim |
+| §26 | E | DONE | Y | Within-Llama generalization (unseen concepts/cod | — (P26_WITHIN_LLAMA_GENERALIZATION: existence✓/causal✓/prediction✓ generalize on cluster-disjoint v3 held-out; attack-opt✗ [Gate-7 neg]; novel-codeword the one thin axis; assembled from committed evidence) |
 | §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
 | §28 | E | DONE | Y | Framework robustness — reproduce ≥1 headline int | — (P28: from-scratch IndepProjectOut reproduces refusal-ablation headline [+0.31 vs +0.33], label-agree 0.88/0.83, proven numerically equivalent; token divergence = bf16 reduction-order only; run 737682) |
 | §29 | E | DONE | Y | Quantization / deployment robustness of refusal  | — (P29: refusal ablation raises harm at bf16/8bit/4bit [+0.26/+0.29/+0.52, McNemar sig], random ablation ns at all -> mechanism survives quantization; runs 737624/625/626, test n=42) |
