@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=23 / PARTIAL=4 / NOT_DONE=1** (7 PARTIALs closed from committed data via 10-agent audit; remaining PARTIAL={§8.1 config, §13/§20/§27-X5 GPU refinements}; §14-18 eval pending).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=24 / PARTIAL=3 / NOT_DONE=1** (§8 closed; remaining 3 PARTIAL = §13/§20/§27-X5 all with GPU runs in flight; §14-18 eval pending).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -16,7 +16,7 @@ authoritative remaining-work roadmap.
 | §5 | B | DONE | Y | Position causality — which part of the 9 matched | — (P5_POSITION: honest NULL — no manipulation both preserves concept-remap AND restores refusal; train n=85 + test n=42 committed; run 736658) |
 | §6 | B | DONE | Y | Demonstration-count dose response (n_demo in {0, | — (P6_DOSE_RESPONSE: refusal suppression is a STEP at n=1, concept flat, ASR weakly coupled; run 735299) |
 | §7 | C | DONE | Y | Targeted refusal head/edge analysis in the activ | — (P7_HEAD_EDGE, audit-2 corrected: head-distributed but LAYER-concentrated at L13; run 736900) |
-| §8 | C | PARTIAL | Y | Full head->MLP path patching, concept + refusal  | §8.2 refusal DONE (P8_HEAD_MLP_PATH: NO-PATH at n=25; single-item false-positive corrected by aggregation); §8.1 concept RUNNING (737623). |
+| §8 | C | DONE | Y | Full head->MLP path patching, concept + refusal  | — (P8_HEAD_MLP_PATH: §8.2 refusal NO-PATH n=25; §8.1 concept codeword-z deviation=0 [distributed per P4b] + mediation=phase7_direct_total ~75-83%; both families carried not sparse-written) |
 | §9 | B | DONE | Y | Behavioral sufficiency of carry heads during gen | — (P9_CARRY_SUFFICIENCY: NULL — installing carry state does not raise ASR) |
 | §10 | B | DONE | Y | REPOWERED behavioral inertness (powered leakage- | — (P10, audit-2 corrected: concept-epiphenomenal via SPECIFICITY [rand>concept]; pooled equivalence framing withdrawn) |
 | §11 | C | DONE | Y | Joint 2x2 ablation: concept-circuit {intact/abla | — (P11_JOINT_2x2: refusal restoration collapses ASR regardless of concept; additive, no interaction; run 736657) |

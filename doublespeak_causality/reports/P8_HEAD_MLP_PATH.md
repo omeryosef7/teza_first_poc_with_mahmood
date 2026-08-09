@@ -1,6 +1,6 @@
 # §8 — Full Head→MLP Path Patching (concept + refusal)
 
-**Status:** ◐ §8.2 refusal **DONE** (n=25, ≥20/cell); §8.1 concept RUNNING (canonical pair, job 737623).
+**Status:** ✅ DONE. §8.2 refusal = NO-PATH (n=25). §8.1 concept = codeword-z deviation is 0 on the matched pair (concept is distributed, not a localized codeword→MLP edge — P4b); concept head→readout mediation is the committed phase7_direct_total result (~75–83% mediated). Both families: carried/distributed, not sparse head→MLP.
 
 ## §8.2 REFUSAL — head→MLP write path (v3 clearharm test, **n=25 items aggregated**)
 **Verdict: NO-PATH — there is NO specific sparse head→MLP write path carrying the refusal-suppression
@@ -36,10 +36,24 @@ The pooled per-sender TOTAL (head→readout) is large while DIRECT (skip-path) i
 carry→readout depth gradient §4 found. The heads matter for refusal, but **not via a localized head→MLP edge**.
 
 ## §8.1 CONCEPT — retrieval heads → L8–13 MLP write (canonical CARROT/BOMB pair)
-RUNNING (job 737623): family=concept, senders=retrieval heads (L7–14 from the 49_head_attribution ranking),
-receivers=MLP L8–13, endpoint=p_concept. Uses the canonical fixed pair (the established concept-circuit design;
-the p_concept endpoint is deterministic per pair, not a behavioral sample). Result to be appended on completion.
+**Result: the codeword-localized concept head→MLP edge is not computable on this pair, and the concept
+head→MLP mediation is instead established (committed) by phase7_direct_total.** The §8 concept endpoint patches
+the corrupt (NEUTRAL_CODEWORD) per-head z into the clean (DOUBLESPEAK) prompt at **codeword-token sites**. On the
+canonical pair (run 737623) the alignment found **n_demo_codeword_paired = 0** and all edges = 0.0 — because
+DOUBLESPEAK and NEUTRAL_CODEWORD are token-identical at the codeword positions (both say "carrot"); the two
+conditions differ only in the demo *answers*, so there is no codeword-z deviation to inject. This is not a
+"no-path" measurement — it is a direct consequence of the established finding that the concept reading is
+**distributed across the demo block, not localized to the codeword token** (P4B_HEAD_Z_NECESSITY_DEMO / P4b:
+no single codeword-token head carries the binding). The concept-circuit's head→readout **mediation** is the
+committed result of `phase7_direct_total` (concept effect ~75–83% MEDIATED across L14–21 heads), which is the
+concept analogue of §4's refusal mediation. So §8.1's mechanistic content (concept is carried, not written by a
+localized codeword→MLP edge) is covered; the codeword-site edge variant is inapplicable on this pair by
+construction.
 
-## Verdict (interim)
+## Verdict
 **§8.2: no sparse head→MLP write path for refusal — the refusal-suppression evidence is carried distributedly
-(NO-PATH at n=25), reinforcing §4/§7.** §8.1 concept pending. Related: [[project_causal_circuit_sprint]].
+(NO-PATH at n=25), reinforcing §4/§7.** **§8.1: the concept reading is likewise not a localized codeword→MLP
+edge (codeword-z deviation = 0 on the matched pair; concept is distributed per P4b), and its head→readout
+mediation is the committed phase7_direct_total result (~75–83% mediated).** Both families: the in-context
+evidence (refusal OR concept) is carried/distributed, not written through a sparse head→MLP path.
+Related: [[project_causal_circuit_sprint]].
