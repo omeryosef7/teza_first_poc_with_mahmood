@@ -38,8 +38,10 @@ N_STEPS="${N_STEPS:-200}"; LAMBDA_R="${LAMBDA_R:-0.25}"; LAMBDA_C="${LAMBDA_C:-0
 SUFFIX_LEN=16; BATCH=64; TOPK=256; SUBB=8
 
 MODEL_FAMILY="llama"; MODEL_PATH="meta-llama/Llama-3.1-8B-Instruct"
-DS_MAN="${DC}/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl"
-DIR_MAN="${DC}/data/gcg/clearharm_llama_v3/clearharm_llama_direct.jsonl"
+# OPTIMIZATION pool = frozen cluster-diverse 40-item v3 train (keeps 200-step arms < 8h;
+# full 74-train would exceed the wall limit). HELD-OUT EVAL uses the FULL v3 test (37 items).
+DS_MAN="${DC}/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak_trainpool40.jsonl"
+DIR_MAN="${DC}/data/gcg/clearharm_llama_v3/clearharm_llama_direct_trainpool40.jsonl"
 R_L18="${DC}/outputs/refusal_alllayers/refusal_direction_llama_L18.pt"
 R_L12="${DC}/outputs/refusal_alllayers/refusal_direction_llama_L12.pt"
 R_RAND_L18="${DC}/outputs/gate7_v3_randdirs/refusal_rand_L18_normmatched_seed20260809.pt"

@@ -195,4 +195,21 @@ Mechanism (each with a norm-matched RANDOM-direction control at the same layer/�
 DROP arm05 (=arm04). arm14 (carry) causally null → optional negative-control only. MAC arms 11-13
 + 2nd-order ‖J‖² = later (new stack/code). Mechanistic-validity + Phi X1-X5 + quant in parallel.
 
+## 2026-08-09 — Smoke results + revised compute plan
+- **Phi-4 X0 (740769) PASSED**: num_layers=32, bf16, chat_template present, eos=199999,
+  codeword localization **3/3** (13 occ/item), generation works, reasoning tokens present
+  (`think_open=True`) but VERBOSE — item1/2 hit gen_len=512 without closing `</think>` → **X1 needs a
+  larger gen budget** (e.g. 1024-2048) to capture the full reasoning+answer. Third-family plumbing OK.
+- **GCG v3 smoke (740768) TIMEOUT** (20-min limit too tight): weight load alone took **6:38**
+  (node-contention slowdown, cf. feedback_slurm_node_contention), leaving no time to log steps.
+  BUT the log CONFIRMS the **off-by-one fix is live**: "refusal_direction_loss ENABLED: lambda=0.25,
+  **layer=19**, position=[233], path=…refusal_direction_llama_**L18**.pt". v3 manifest loaded (3 tasks).
+- **COMPUTE REVISION**: 200 steps × **74** train would exceed 8h (first-cut = 50 steps×44 ≈ 1.3 GPU-h/arm;
+  scaling → vanilla ~5.4h, refusal(repr-in-sel) ~10.8h ✗). **Reverted optimization pool to the frozen
+  cluster-diverse POOL-40** (the originally-approved subsample): vanilla ~2.9h, refusal ~5.8h < 8h ✓.
+  Eval still on FULL v3 test (37). Launcher `run_gcg_v3_arm.slurm` now uses `*_trainpool40.jsonl`.
+- **Batch 1 launched**: 740899 (smoke, 45min, sign test refusal vs random) + 740900 (vanilla) +
+  740901 (vanilla_direct), seed42, 200 steps, pool40. Next: on sign-test pass, launch refusal_L18 /
+  refusal_L12(Jac) / concept_L9 / combined + matched randoms (batch 2, ≤6 jobs).
+
 
