@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-302,n-304,n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-304,n-306,n-307,n-801,n-802,n-803,n-804,n-805,t-806
 
 # =====================================================================================
 # NEXT sprint Phase-4 — ONE GCG optimization arm on the v3 leakage-0 split.
