@@ -43,7 +43,7 @@ CONDA_ENV="${CONDA_ENV:-poc_stage2}"
 ARM_ROOT="${PROJECT_DIR}/outputs/stage_gcg_full"
 MANIFEST="${PROJECT_DIR}/doublespeak_causality/data/gcg/clearharm_llama/clearharm_llama_doublespeak.jsonl"
 SPLIT="test"
-SEED=42
+SEED="${SEED:-42}"
 MODEL_FAMILY="llama"
 MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
 MAX_NEW_TOKENS=2048
@@ -150,11 +150,12 @@ echo ""
 echo "========================================================"
 echo "  COMBINED SUMMARY"
 echo "========================================================"
-python - "$ARM_ROOT" <<'PYEOF' || true
+python - "$ARM_ROOT" "$SEED" <<'PYEOF' || true
 import sys, json, glob, os
 root = sys.argv[1]
+seed = sys.argv[2] if len(sys.argv) > 2 else "42"
 rows = []
-for p in sorted(glob.glob(os.path.join(root, "phase9_gcg_mac_matrix_arm*seed42", "p9_heldout_asr_summary.json"))):
+for p in sorted(glob.glob(os.path.join(root, f"phase9_gcg_mac_matrix_arm*seed{seed}", "p9_heldout_asr_summary.json"))):
     try:
         rows.append(json.load(open(p)))
     except Exception as e:
