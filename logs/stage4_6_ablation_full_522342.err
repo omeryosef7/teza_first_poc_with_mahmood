@@ -1,81 +1,0 @@
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:03,  2.09it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.11it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:02,  2.14it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:02,  1.98it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:02<00:01,  1.91it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:03<00:01,  1.90it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:03<00:00,  1.90it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:03<00:00,  2.28it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:03<00:00,  2.08it/s]
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:23:41 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:23:43 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:35:56 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:36:01 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:37:42 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:37:51 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:41:16 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:41:22 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:42:39 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:42:44 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m23:56:04 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m23:56:22 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:02:04 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:02:13 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:03:59 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:04:13 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:06:34 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:06:49 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:20:08 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:20:10 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:21:29 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:21:30 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:24:02 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:24:04 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:26:15 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:26:18 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:30:40 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:30:42 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:32:12 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:32:14 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:45:33 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:45:36 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:51:46 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:51:47 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m00:59:35 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m00:59:37 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m01:03:52 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m01:03:55 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m01:05:35 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m01:05:36 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler

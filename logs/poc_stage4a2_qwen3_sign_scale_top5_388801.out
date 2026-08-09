@@ -1,6 +1,0 @@
-Wrote intervention candidate scores to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5_signscale/intervention_candidate_scores.json
-Wrote intervention metrics to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5_signscale/intervention_selection_metrics.json
-Wrote exploratory sign/scale diagnostics to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_top5_signscale/sign_scale_diagnostics.json
-Selection status: intervention_selection_failed_no_survivors
-No candidates survived Stage 4A2 filters.
-direction.pt and selected_direction.json were left unchanged and must not be treated as validated.

@@ -1,7 +1,0 @@
-tset: terminal attributes: No such device or address
-
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
-  warnings.warn(
-slurmstepd: error: *** JOB 414969 ON n-301 CANCELLED AT 2026-05-29T19:22:52 ***
-slurmstepd: error: *** JOB 414969 STEPD TERMINATED ON n-301 AT 2026-05-29T19:25:52 DUE TO JOB NOT ENDING WITH SIGNALS ***
-slurmstepd: error: Container 205364 in cgroup plugin has 1 processes, giving up after 191 sec

@@ -1,8 +1,0 @@
-=== Upstream-Native Qwen3 5-Example Smoke Started ===
-Sun May 24 10:25:10 PM IDT 2026
-n-301
-/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/Chain_of_Thought_Hijacking/refusal_direction
-No upstream candidate survived selection filters.
-Wrote no-survivor summary to /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_native_qwen3_5examples/Qwen3-14B/select_direction/no_survivor_summary.json
-=== Upstream-Native Qwen3 5-Example Smoke Finished ===
-Sun May 24 10:46:37 PM IDT 2026

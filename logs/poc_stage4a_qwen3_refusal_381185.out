@@ -1,4 +1,0 @@
-Wrote Stage 4A1 artifacts to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
-Saved direction.pt is provisional; downstream loaders reject it unless `allow_provisional_direction=True` / `--allow-provisional-direction` is used.
-Selected provisional position: -3
-Selected provisional layer: 22

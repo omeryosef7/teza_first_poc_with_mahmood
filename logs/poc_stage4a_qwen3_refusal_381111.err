@@ -1,7 +1,0 @@
-Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files:  12%|█▎        | 1/8 [08:02<56:18, 482.69s/it]Fetching 8 files: 100%|██████████| 8/8 [08:02<00:00, 60.34s/it] 
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:43<05:04, 43.54s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:32<04:38, 46.45s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [01:52<02:53, 34.78s/it]Loading checkpoint shards:  50%|█████     | 4/8 [01:54<01:27, 21.77s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [01:56<00:43, 14.45s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [01:57<00:20, 10.03s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [01:59<00:07,  7.30s/it]Loading checkpoint shards: 100%|██████████| 8/8 [01:59<00:00,  5.08s/it]Loading checkpoint shards: 100%|██████████| 8/8 [01:59<00:00, 14.96s/it]
-Some parameters are on the meta device because they were offloaded to the cpu.
-name 'torch' is not defined
-slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
-slurmstepd: error: Cannot write to cgroup.procs for (null)
-slurmstepd: error: Unable to move pid 1153481 to init root cgroup (null)

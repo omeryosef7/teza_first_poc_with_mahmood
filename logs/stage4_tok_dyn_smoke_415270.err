@@ -1,24 +1,0 @@
-[2026-05-29T19:59:38.735246+00:00] [stage4_token_dyn] Loading model model=Qwen/Qwen3-14B
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:06,  1.02it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:01<00:05,  1.04it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:02<00:04,  1.06it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:03<00:03,  1.08it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:04<00:02,  1.09it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:05<00:01,  1.03it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:06<00:00,  1.04it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:07<00:00,  1.26it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:07<00:00,  1.13it/s]
-[2026-05-29T19:59:50.151573+00:00] [stage4_token_dyn] Loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction
-[2026-05-29T19:59:50.552347+00:00] [stage4_token_dyn] Resolving layers
-[2026-05-29T19:59:50.552469+00:00] [stage4_token_dyn] Selected 40 layers layers=[0, 1, 2, 3, 4]
-[2026-05-29T19:59:50.912166+00:00] [stage4_token_dyn] Collecting Stage 6 trace files path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_redacted
-[2026-05-29T19:59:50.915714+00:00] [stage4_token_dyn] Found 42 trace files
-[2026-05-29T19:59:50.915782+00:00] [stage4_token_dyn] Limited to 5 examples by --max-examples
-[2026-05-29T19:59:51.122059+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini
-[2026-05-29T19:59:59.198230+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=1|target_model=gpt-o4-mini elapsed=8.14 analyzed_tokens=128
-[2026-05-29T19:59:59.282582+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini
-[2026-05-29T20:00:05.135542+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=2|target_model=gpt-o4-mini elapsed=5.908 analyzed_tokens=128
-[2026-05-29T20:00:05.225167+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini
-[2026-05-29T20:00:17.760764+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=3|target_model=gpt-o4-mini elapsed=12.588 analyzed_tokens=128
-[2026-05-29T20:00:17.828015+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini
-[2026-05-29T20:00:23.615639+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=4|target_model=gpt-o4-mini elapsed=5.824 analyzed_tokens=128
-[2026-05-29T20:00:23.702977+00:00] [stage4_token_dyn] Processing prompt_id=goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini
-[2026-05-29T20:00:29.181822+00:00] [stage4_token_dyn] Completed prompt_id=goal_index=0|attack_iteration=1|conversation_id=5|target_model=gpt-o4-mini elapsed=5.543 analyzed_tokens=128
-[2026-05-29T20:00:29.213346+00:00] [stage4_token_dyn] Generating plots
-[2026-05-29T20:00:35.145584+00:00] [stage4_token_dyn] Done completed=5 failed=0 skipped=0 output_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/token_dynamics/smoke_20260529_225921
-Traceback (most recent call last):
-  File "<stdin>", line 6, in <module>
-  File "<frozen os>", line 714, in __getitem__
-KeyError: 'OUTPUT_DIR'

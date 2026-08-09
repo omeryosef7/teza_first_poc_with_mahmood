@@ -1,48 +1,0 @@
-[2026-05-22T08:10:42.139961+00:00] [stage6] loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt
-[2026-05-22T08:10:51.694673+00:00] [stage6] loading model and tokenizer model=Qwen/Qwen3-14B
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:174: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
-  return torch._C._cuda_getDeviceCount() > 0
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:00,  9.63it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:00,  7.29it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:00,  6.78it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00,  6.58it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:00<00:00,  6.48it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:00<00:00,  6.43it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:01<00:00,  6.39it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:01<00:00,  7.46it/s]
-[2026-05-22T08:16:09.566597+00:00] [stage6] processed examples processed=1 total=42 rows_written=5 failed_examples=0
-[2026-05-22T08:16:56.380482+00:00] [stage6] processed examples processed=2 total=42 rows_written=10 failed_examples=0
-[2026-05-22T08:17:43.613949+00:00] [stage6] processed examples processed=3 total=42 rows_written=15 failed_examples=0
-[2026-05-22T08:18:31.421940+00:00] [stage6] processed examples processed=4 total=42 rows_written=20 failed_examples=0
-[2026-05-22T08:19:20.533470+00:00] [stage6] processed examples processed=5 total=42 rows_written=25 failed_examples=0
-[2026-05-22T08:20:08.176962+00:00] [stage6] processed examples processed=6 total=42 rows_written=30 failed_examples=0
-[2026-05-22T08:20:56.300801+00:00] [stage6] processed examples processed=7 total=42 rows_written=35 failed_examples=0
-[2026-05-22T08:21:43.687190+00:00] [stage6] processed examples processed=8 total=42 rows_written=40 failed_examples=0
-[2026-05-22T08:22:31.529943+00:00] [stage6] processed examples processed=9 total=42 rows_written=45 failed_examples=0
-[2026-05-22T08:23:19.032869+00:00] [stage6] processed examples processed=10 total=42 rows_written=50 failed_examples=0
-[2026-05-22T08:24:08.838773+00:00] [stage6] processed examples processed=11 total=42 rows_written=55 failed_examples=0
-[2026-05-22T08:24:54.777573+00:00] [stage6] processed examples processed=12 total=42 rows_written=60 failed_examples=0
-[2026-05-22T08:25:39.705842+00:00] [stage6] processed examples processed=13 total=42 rows_written=65 failed_examples=0
-[2026-05-22T08:26:24.699629+00:00] [stage6] processed examples processed=14 total=42 rows_written=70 failed_examples=0
-[2026-05-22T08:27:12.171494+00:00] [stage6] processed examples processed=15 total=42 rows_written=75 failed_examples=0
-[2026-05-22T08:28:04.285381+00:00] [stage6] processed examples processed=16 total=42 rows_written=80 failed_examples=0
-[2026-05-22T08:28:53.790931+00:00] [stage6] processed examples processed=17 total=42 rows_written=85 failed_examples=0
-[2026-05-22T08:29:41.052825+00:00] [stage6] processed examples processed=18 total=42 rows_written=90 failed_examples=0
-[2026-05-22T08:30:28.797942+00:00] [stage6] processed examples processed=19 total=42 rows_written=95 failed_examples=0
-[2026-05-22T08:31:16.151371+00:00] [stage6] processed examples processed=20 total=42 rows_written=100 failed_examples=0
-[2026-05-22T08:32:04.207983+00:00] [stage6] processed examples processed=21 total=42 rows_written=105 failed_examples=0
-[2026-05-22T08:32:51.143944+00:00] [stage6] processed examples processed=22 total=42 rows_written=110 failed_examples=0
-[2026-05-22T08:33:42.354379+00:00] [stage6] processed examples processed=23 total=42 rows_written=115 failed_examples=0
-[2026-05-22T08:34:29.556738+00:00] [stage6] processed examples processed=24 total=42 rows_written=120 failed_examples=0
-[2026-05-22T08:35:16.349743+00:00] [stage6] processed examples processed=25 total=42 rows_written=125 failed_examples=0
-[2026-05-22T08:36:01.718457+00:00] [stage6] processed examples processed=26 total=42 rows_written=130 failed_examples=0
-[2026-05-22T08:36:47.395535+00:00] [stage6] processed examples processed=27 total=42 rows_written=135 failed_examples=0
-[2026-05-22T08:37:36.190266+00:00] [stage6] processed examples processed=28 total=42 rows_written=140 failed_examples=0
-[2026-05-22T08:38:23.021172+00:00] [stage6] processed examples processed=29 total=42 rows_written=145 failed_examples=0
-[2026-05-22T08:39:10.763940+00:00] [stage6] processed examples processed=30 total=42 rows_written=150 failed_examples=0
-[2026-05-22T08:39:59.470483+00:00] [stage6] processed examples processed=31 total=42 rows_written=155 failed_examples=0
-[2026-05-22T08:40:47.359650+00:00] [stage6] processed examples processed=32 total=42 rows_written=160 failed_examples=0
-[2026-05-22T08:41:34.863152+00:00] [stage6] processed examples processed=33 total=42 rows_written=165 failed_examples=0
-[2026-05-22T08:42:22.501169+00:00] [stage6] processed examples processed=34 total=42 rows_written=170 failed_examples=0
-[2026-05-22T08:43:11.166460+00:00] [stage6] processed examples processed=35 total=42 rows_written=175 failed_examples=0
-[2026-05-22T08:43:57.137666+00:00] [stage6] processed examples processed=36 total=42 rows_written=180 failed_examples=0
-[2026-05-22T08:44:45.817659+00:00] [stage6] processed examples processed=37 total=42 rows_written=185 failed_examples=0
-[2026-05-22T08:45:33.898766+00:00] [stage6] processed examples processed=38 total=42 rows_written=190 failed_examples=0
-[2026-05-22T08:46:20.308091+00:00] [stage6] processed examples processed=39 total=42 rows_written=195 failed_examples=0
-[2026-05-22T08:47:08.552550+00:00] [stage6] processed examples processed=40 total=42 rows_written=200 failed_examples=0
-[2026-05-22T08:47:55.461867+00:00] [stage6] processed examples processed=41 total=42 rows_written=205 failed_examples=0
-[2026-05-22T08:48:42.228999+00:00] [stage6] processed examples processed=42 total=42 rows_written=210 failed_examples=0
-[2026-05-22T08:48:42.265459+00:00] [stage6] completed Stage 6 token delay processed_examples=42 failed_examples=0 rows_written=210 output_jsonl=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay.jsonl summary_json=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/qwen3-14b/maxall_token_delay/token_delay_summary.json

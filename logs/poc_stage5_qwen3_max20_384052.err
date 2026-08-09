@@ -1,26 +1,0 @@
-[2026-05-22T06:19:47.410990+00:00] [stage5] loading refusal direction path=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/direction.pt
-[2026-05-22T06:20:03.583103+00:00] [stage5] loading model and tokenizer model=Qwen/Qwen3-14B
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:174: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
-  return torch._C._cuda_getDeviceCount() > 0
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:00,  7.97it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  5.46it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:00,  5.12it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00,  5.07it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:00<00:00,  4.91it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  4.80it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:01<00:00,  4.85it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:01<00:00,  5.67it/s]
-[2026-05-22T06:25:01.719742+00:00] [stage5] processed examples processed=1 total=20 rows_written=3 failed_examples=0
-[2026-05-22T06:25:22.399547+00:00] [stage5] processed examples processed=2 total=20 rows_written=6 failed_examples=0
-[2026-05-22T06:25:42.678641+00:00] [stage5] processed examples processed=3 total=20 rows_written=9 failed_examples=0
-[2026-05-22T06:26:02.705335+00:00] [stage5] processed examples processed=4 total=20 rows_written=12 failed_examples=0
-[2026-05-22T06:26:23.574573+00:00] [stage5] processed examples processed=5 total=20 rows_written=15 failed_examples=0
-[2026-05-22T06:26:44.137265+00:00] [stage5] processed examples processed=6 total=20 rows_written=18 failed_examples=0
-[2026-05-22T06:27:04.636439+00:00] [stage5] processed examples processed=7 total=20 rows_written=21 failed_examples=0
-[2026-05-22T06:27:25.233630+00:00] [stage5] processed examples processed=8 total=20 rows_written=24 failed_examples=0
-[2026-05-22T06:27:45.442061+00:00] [stage5] processed examples processed=9 total=20 rows_written=27 failed_examples=0
-[2026-05-22T06:28:06.545675+00:00] [stage5] processed examples processed=10 total=20 rows_written=30 failed_examples=0
-[2026-05-22T06:28:26.100826+00:00] [stage5] processed examples processed=11 total=20 rows_written=33 failed_examples=0
-[2026-05-22T06:28:46.279596+00:00] [stage5] processed examples processed=12 total=20 rows_written=36 failed_examples=0
-[2026-05-22T06:29:06.110303+00:00] [stage5] processed examples processed=13 total=20 rows_written=39 failed_examples=0
-[2026-05-22T06:29:26.428498+00:00] [stage5] processed examples processed=14 total=20 rows_written=42 failed_examples=0
-[2026-05-22T06:29:46.996050+00:00] [stage5] processed examples processed=15 total=20 rows_written=45 failed_examples=0
-[2026-05-22T06:30:06.993005+00:00] [stage5] processed examples processed=16 total=20 rows_written=48 failed_examples=0
-[2026-05-22T06:30:27.465686+00:00] [stage5] processed examples processed=17 total=20 rows_written=51 failed_examples=0
-[2026-05-22T06:30:47.652497+00:00] [stage5] processed examples processed=18 total=20 rows_written=54 failed_examples=0
-[2026-05-22T06:31:08.160227+00:00] [stage5] processed examples processed=19 total=20 rows_written=57 failed_examples=0
-[2026-05-22T06:31:28.147988+00:00] [stage5] processed examples processed=20 total=20 rows_written=60 failed_examples=0
-[2026-05-22T06:31:28.154555+00:00] [stage5] completed Stage 5 projection dynamics processed_examples=20 failed_examples=0 rows_written=60 output_jsonl=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max20_final/per_example_layer_region_projections.jsonl summary_json=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage5/qwen3-14b/max20_final/projection_summary.json

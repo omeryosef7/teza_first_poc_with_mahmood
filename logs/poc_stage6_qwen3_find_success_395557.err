@@ -1,7 +1,0 @@
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:41<04:53, 41.99s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:23<04:10, 41.68s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [02:13<03:48, 45.65s/it]Loading checkpoint shards:  50%|█████     | 4/8 [03:09<03:17, 49.48s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [04:17<02:49, 56.34s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [04:34<01:25, 42.80s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [04:35<00:29, 29.24s/it]Loading checkpoint shards: 100%|██████████| 8/8 [04:35<00:00, 34.45s/it]
-Some parameters are on the meta device because they were offloaded to the cpu.
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.

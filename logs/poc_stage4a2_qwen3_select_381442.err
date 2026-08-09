@@ -1,6 +1,0 @@
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:42<04:58, 42.65s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:22<04:07, 41.22s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [01:40<02:32, 30.41s/it]Loading checkpoint shards:  50%|█████     | 4/8 [01:40<01:13, 18.50s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [01:40<00:35, 11.91s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [01:41<00:15,  7.96s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [01:41<00:05,  5.45s/it]Loading checkpoint shards: 100%|██████████| 8/8 [01:41<00:00, 12.69s/it]
-Some parameters are on the meta device because they were offloaded to the cpu.
-slurmstepd: error: *** JOB 381442 ON s-003 CANCELLED AT 2026-05-21T10:47:26 DUE TO TIME LIMIT ***
-slurmstepd: error: _cgroup_procs_check: failed on path (null)/cgroup.procs: No such file or directory
-slurmstepd: error: Cannot write to cgroup.procs for (null)
-slurmstepd: error: Unable to move pid 1160583 to init root cgroup (null)

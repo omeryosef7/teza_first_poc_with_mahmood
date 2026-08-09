@@ -1,8 +1,0 @@
-INPUT_JSONL=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/hijacking_baseline_gpt-o4-mini_small_strongreject.jsonl
-OUT_DIR=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage6/all_traces_redacted_99999
-MODEL_NAME=Qwen/Qwen3-14B
-MAX_ATTEMPTS=<all>
-HF_HOME=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface
-HF_HUB_CACHE=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
-HUGGINGFACE_HUB_CACHE=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub
-TRANSFORMERS_CACHE=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/.cache/huggingface/hub

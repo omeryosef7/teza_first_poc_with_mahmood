@@ -1,8 +1,0 @@
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:55<06:30, 55.75s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [01:48<05:23, 53.94s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [02:42<04:29, 53.93s/it]Loading checkpoint shards:  50%|█████     | 4/8 [03:36<03:35, 53.86s/it]Loading checkpoint shards:  62%|██████▎   | 5/8 [04:29<02:41, 53.75s/it]Loading checkpoint shards:  75%|███████▌  | 6/8 [05:25<01:49, 54.54s/it]Loading checkpoint shards:  88%|████████▊ | 7/8 [06:21<00:54, 54.92s/it]Loading checkpoint shards: 100%|██████████| 8/8 [06:49<00:00, 46.47s/it]Loading checkpoint shards: 100%|██████████| 8/8 [06:49<00:00, 51.23s/it]
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m21:11:50 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini
-[92m21:11:54 - LiteLLM:INFO[0m: utils.py:1239 - Wrapper: Completed Call, calling success_handler
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-[92m21:15:19 - LiteLLM:INFO[0m: utils.py:3230 - 
-LiteLLM completion() model= gemini-2.5-pro; provider = gemini

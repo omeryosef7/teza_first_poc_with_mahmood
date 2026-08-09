@@ -1,4 +1,0 @@
-Wrote per-example rows to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_dampening_debug/per_example_refusal_components.jsonl
-Wrote summary to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_dampening_debug/refusal_dampening_summary.json
-Measured goals: 2
-Reminder: negative delta means refusal-direction dampening.

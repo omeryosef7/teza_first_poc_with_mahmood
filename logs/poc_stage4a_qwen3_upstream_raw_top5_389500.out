@@ -1,8 +1,0 @@
-=== Stage 4A Upstream Fallback Raw Top-5 Smoke Test Started ===
-Sat May 23 09:10:44 PM IDT 2026
-n-301
-/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
-Wrote upstream direction validation to: /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/stage4/qwen3-14b/refusal_direction/upstream_direction_validation_raw_top5/upstream_direction_validation.json
-Validated: False
-=== Stage 4A Upstream Fallback Raw Top-5 Smoke Test Finished ===
-Sat May 23 09:58:56 PM IDT 2026

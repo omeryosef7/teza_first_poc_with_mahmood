@@ -1,6 +1,0 @@
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:789: UserWarning: Can't initialize NVML
-  warnings.warn("Can't initialize NVML")
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:991: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
-  r = torch._C._cuda_getDeviceCount() if nvml_count < 0 else nvml_count
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 83.10it/s]
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 148.48it/s]

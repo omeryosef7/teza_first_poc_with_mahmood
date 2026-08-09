@@ -1,6 +1,0 @@
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:789: UserWarning: Can't initialize NVML
-  warnings.warn("Can't initialize NVML")
-/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/lib/python3.12/site-packages/torch/cuda/__init__.py:991: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
-  r = torch._C._cuda_getDeviceCount() if nvml_count < 0 else nvml_count
-Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:03,  2.30it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.14it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:02,  1.73it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:02<00:02,  1.66it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:02<00:01,  1.72it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:03<00:01,  1.57it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:04<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:04<00:00,  1.75it/s]
-slurmstepd: error: *** JOB 388000 ON n-301 CANCELLED AT 2026-05-23T17:19:35 ***
