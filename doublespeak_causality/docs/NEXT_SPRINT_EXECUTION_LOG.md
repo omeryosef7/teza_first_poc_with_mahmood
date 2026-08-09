@@ -245,3 +245,10 @@ DROP arm05 (=arm04). arm14 (carry) causally null → optional negative-control o
   Wave 2 (concept_L9/rand, combined/rand, vanilla_direct) as slots free.
 
 
+
+### Gotcha: config_hash + resume (2026-08-10)
+Changing N_STEPS (400→200) with the SAME run-id/output-dir made run_optimization ABORT on a
+checkpoint config_hash mismatch (it refuses to resume a differently-configured run). Fix: `rm -rf`
+the stale run dirs (no FINAL_CANDIDATES = safe) before relaunch. N_STEPS now frozen at 200 → no
+recurrence. Seed-42 clean relaunch: 741205 refusal_rand_L18(run), 741206 refusal_L12,
+741211 vanilla, 741212 refusal_L18, 741213 refusal_rand_L12; + Phi 740944 = 6 concurrent.
