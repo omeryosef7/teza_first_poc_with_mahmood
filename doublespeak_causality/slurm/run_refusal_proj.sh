@@ -50,7 +50,11 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 : "${DSENABLETHINK:=default}"   # thinking-model control (Qwen3)
 echo "=== behav carry: $DSMODEL bench=$DSBENCH maxnew=$DSMAXNEW n=$DSN splits=$DSSPLITS ==="; date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null||echo NA)"
 GPU_ALL="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || true)"; GPU_TYPE="${GPU_ALL%%$'\n'*}"
-case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac
+# refproj is FORWARD-ONLY (no generation) -> DSGPUALLOW=23gb relaxes to the >=23GB Ampere+ allowlist.
+if [ "${DSGPUALLOW:-}" = "23gb" ]; then
+  GM="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null|head -1|grep -oE '[0-9]+'|head -1)"; GM="${GM:-0}"
+  case "$GPU_TYPE" in *L40S*|*A5000*|*a5000*|*A6000*|*a6000*|*A100*|*A40*|*H100*|*H200*|*L40*|*3090*|*4090*) [ "$GM" -ge 23000 ] && echo "GPU ok (23gb): $GPU_TYPE ${GM}MiB" || { echo "ERR <23GB"; exit 1; };; *) echo "ERR gpu $GPU_TYPE"; exit 1;; esac
+else case "$GPU_TYPE" in *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";; *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;; esac; fi
 python -u doublespeak_causality/scripts/phase_refusal_projection.py \
   --bench "$DSBENCH" --model "$DSMODEL" --refusal-dir "$DSREFDIR" --n "$DSN" --splits "$DSSPLITS" --seed "$DSSEED" --enable-thinking "$DSENABLETHINK"
 echo "=== done ==="; date
