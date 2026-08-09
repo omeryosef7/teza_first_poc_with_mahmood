@@ -391,3 +391,19 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   OPENAI_API_KEY present. Seed-42 eval summaries (4 arms) already committed → cross-seed comparison turnkey.
 - On eval completion: compare seed-42 + seed-43 held-out ASR — does the first-cut NEGATIVE (random ≥ refusal,
   i.e. mechanism-derived GCG objective NOT refusal-specific) hold across both seeds? → finalize §14-18 report.
+
+### 2026-08-09 (11:30) — COMPLETION PUSH: 10-agent audit → 7 PARTIALs closed from committed data
+- Ran a 10-agent Workflow (wf_855bf10c-637) auditing every PARTIAL for closeability. Result: 7 closeable
+  WITHOUT new GPU runs. Closed all 7 (subagents drafted reports from scalar summaries; I flipped status):
+  - §2 DONE (origin=§4; circuit map = synthesis E1-E10)
+  - §5 DONE (honest NULL — no clean position dissociation; train n=85 + test n=42, run 736658)
+  - §18 DONE (every candidate objective direction already has a committed continuous gate)
+  - §21 DONE (finding: no selective minimal dose; α50=2.12 but over-refusal > |ΔASR| at every layer)
+  - §22 DONE (all 5 timing arms committed 732981; stale "what remains" corrected)
+  - §26 DONE (P26 axis×property matrix: existence/causal/prediction ✓, attack-opt ✗; cluster-disjoint v3)
+  - §33 DONE (F5 dose + F6 attack-objective + fig_refusal_mediation; F6 auto-upgrades to 2-seed on eval)
+- **STATUS: DONE=23 / PARTIAL=4 / NOT_DONE=1.** Went 16→23 DONE this turn.
+- Remaining PARTIAL=4: §8 (8.1 concept path all-zero = alignment/config bug, secondary; §8.2 refusal DONE),
+  §13 (refproj v3 running 738191 → CPU prospective-AUC join), §20 (unrelated-normal utility, needs benign
+  bench + GPU), §27 (X5 Qwen3 concept ablation, needs qwen3 harness + GPU).
+- NOT_DONE=1: §14-18 (Gate-7 held-out eval 738129 fair-share PENDING; all 4 seed-43 arms optimized).
