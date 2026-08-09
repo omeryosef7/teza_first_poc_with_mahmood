@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=25 / PARTIAL=2 / NOT_DONE=1** (§20 closed; remaining PARTIAL={§13 running, §27-X5 preempted-requeued}; §14-18 eval preempted-requeued).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=26 / PARTIAL=1 / NOT_DONE=1** (§13 closed; remaining §27-X5 [738332 running] + §14-18 eval [738129 running]).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -20,7 +20,7 @@ authoritative remaining-work roadmap.
 | §9 | B | DONE | Y | Behavioral sufficiency of carry heads during gen | — (P9_CARRY_SUFFICIENCY: NULL — installing carry state does not raise ASR) |
 | §10 | B | DONE | Y | REPOWERED behavioral inertness (powered leakage- | — (P10, audit-2 corrected: concept-epiphenomenal via SPECIFICITY [rand>concept]; pooled equivalence framing withdrawn) |
 | §11 | C | DONE | Y | Joint 2x2 ablation: concept-circuit {intact/abla | — (P11_JOINT_2x2: refusal restoration collapses ASR regardless of concept; additive, no interaction; run 736657) |
-| §13 | D | PARTIAL | Y | PROSPECTIVE frozen-predictor attack-success pred | Build the FROZEN prospective version on v3 (not n=86 clearharm): calibrate layer/direction/threshold/scalar-calibration on TRAIN only, freeze, evaluate untouche |
+| §13 | D | DONE | Y | PROSPECTIVE frozen-predictor attack-success pred | — (P13_PROSPECTIVE_PREDICTOR: train-frozen threshold → test AUC 0.97, acc 0.857, fn=0; leakage-free v3; runs 738761+732560) |
 | §14–18 | D | NOT_DONE | Y | Gate-7 attack objective (mechanism-derived GCG,  | The decisive comparison is entirely unrun: no held-out StrongREJECT ASR for ANY arm. run_gcg_p9_firstcut_eval.slurm is authored but NOT launched (needs 732918 t |
 | §18 | D | DONE | Y | Continuous-objective sanity gate before discrete | — (every candidate direction has a committed continuous gate: refusal PASSES [§23/§6/§21]; carry-head+combined FAIL [P9 736570]; concept FAILS [P10/P24]; Jacobian-arm10 = refusal axis [P6 732004]. No ungated direction remains.) |
 | §19 | D | DONE | n | Causal refusal-restoration defense (incl. §19.3  | — |
