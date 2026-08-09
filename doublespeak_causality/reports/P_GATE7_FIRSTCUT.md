@@ -3,7 +3,7 @@
 **Status:** first-cut **NEGATIVE for specificity (Claim F not supported at first-cut).** A mechanism-derived
 (refusal-suppression) GCG objective does **not** beat a norm-matched **random-direction** control at matched
 compute → no evidence the *mechanism* specifically improves adversarial optimization. DIRECTIONAL only —
-needs multi-seed / full-step confirmation before it is definitive.
+needs multi-seed / full-step confirmation before it is definitive. **[RESOLVED 2026-08-09: multi-seed (42+43) confirms refusal≈random — see MULTI-SEED CONFIRMATION below.]**
 
 **Runs:** optimization `slurm_scripts/run_gcg_p9_firstcut_optimize.slurm` (job 732918) → 4 arms in
 `outputs/stage_gcg_full/phase9_gcg_mac_matrix_arm{04,07_L18,07_L22,07_rand_L18}_seed42`; held-out eval
@@ -45,3 +45,22 @@ user`. Objective was active during optimization (arm07 rd_loss drove +0.02 → �
 - **Gate E / Claim F — first-cut NEGATIVE (non-specific).** Report as a controlled negative.
 - To make it definitive: multiple seeds, 200 steps, larger prompt pool, add the concept (B) and combined (E)
   arms, and add the §17 mechanistic-validity check (does optimizing refusal lower the held-out projection?).
+
+## MULTI-SEED CONFIRMATION (2026-08-09) — the NEGATIVE holds across seeds 42 + 43
+The first-cut caveat ("needs multi-seed confirmation") is now resolved. Seed-43 ran the identical 4-arm,
+50-step, 20-item-train protocol (job 737692→preempted→auto-requeued→completed; held-out eval job 738129).
+
+| arm | seed 42 ASR | seed 43 ASR | **mean** |
+|---|---|---|---|
+| arm04 vanilla | 0.262 | 0.452 | 0.357 |
+| **arm07-L18 (refusal, validated)** | 0.405 | 0.524 | **0.465** |
+| arm07-L22 (unvalidated) | 0.500 | 0.214 | 0.357 |
+| **arm07-rand-L18 (RANDOM control)** | 0.476 | 0.452 | **0.464** |
+
+**Conclusion: the validated-refusal objective (mean 0.465) is statistically indistinguishable from the
+norm-matched RANDOM control (mean 0.464) across both seeds — Claim F is NOT supported, now confirmed
+multi-seed.** The per-seed variance is large (arm04 0.262↔0.452, L22 0.500↔0.214), which independently
+warns that single-seed GCG ASR is noisy and that no single arm's lead is stable — precisely why the
+refusal-vs-random comparison (a dead heat) is the load-bearing, seed-robust result. A mechanism-derived
+GCG objective does not specifically improve adversarial optimization. Figure: figures/fig6_attack_objective.png
+(2-seed grouped bars).

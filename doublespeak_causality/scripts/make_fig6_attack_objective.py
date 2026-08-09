@@ -16,7 +16,11 @@ import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "figures/fig6_attack_objective.png")
-ARM_ROOT = os.path.join(ROOT, "outputs/stage_gcg_full")
+# GCG arm dirs live at PROJECT_ROOT/outputs/stage_gcg_full (parent of doublespeak_causality), not under ROOT.
+_PROJ = os.path.dirname(ROOT)
+ARM_ROOT = (os.path.join(_PROJ, "outputs/stage_gcg_full")
+            if os.path.isdir(os.path.join(_PROJ, "outputs/stage_gcg_full"))
+            else os.path.join(ROOT, "outputs/stage_gcg_full"))
 
 # committed seed-42 first-cut numbers (from reports/P_GATE7_FIRSTCUT.md), used as fallback / seed-42 group
 SEED42 = {"arm04": 0.262, "arm07-L18": 0.405, "arm07-L22": 0.500, "arm07-rand-L18": 0.476}

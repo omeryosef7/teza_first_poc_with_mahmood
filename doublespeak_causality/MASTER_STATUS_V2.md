@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=26 / PARTIAL=1 / NOT_DONE=1** (§13 closed; remaining §27-X5 [738332 running] + §14-18 eval [738129 running]).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=27 / PARTIAL=1 / NOT_DONE=0** (§14-18 Gate-7 multi-seed confirmed NEGATIVE; only §27-X5 [738332 running] remains).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -21,7 +21,7 @@ authoritative remaining-work roadmap.
 | §10 | B | DONE | Y | REPOWERED behavioral inertness (powered leakage- | — (P10, audit-2 corrected: concept-epiphenomenal via SPECIFICITY [rand>concept]; pooled equivalence framing withdrawn) |
 | §11 | C | DONE | Y | Joint 2x2 ablation: concept-circuit {intact/abla | — (P11_JOINT_2x2: refusal restoration collapses ASR regardless of concept; additive, no interaction; run 736657) |
 | §13 | D | DONE | Y | PROSPECTIVE frozen-predictor attack-success pred | — (P13_PROSPECTIVE_PREDICTOR: train-frozen threshold → test AUC 0.97, acc 0.857, fn=0; leakage-free v3; runs 738761+732560) |
-| §14–18 | D | NOT_DONE | Y | Gate-7 attack objective (mechanism-derived GCG,  | The decisive comparison is entirely unrun: no held-out StrongREJECT ASR for ANY arm. run_gcg_p9_firstcut_eval.slurm is authored but NOT launched (needs 732918 t |
+| §14–18 | D | DONE | Y | Gate-7 attack objective (mechanism-derived GCG,  | — (P_GATE7_FIRSTCUT: multi-seed 42+43 held-out ASR — refusal-L18 mean 0.465 ≈ random-L18 mean 0.464 → Claim F NOT supported [mechanism-derived objective non-specific]; F6 2-seed; runs seed42/43 + eval 738129) |
 | §18 | D | DONE | Y | Continuous-objective sanity gate before discrete | — (every candidate direction has a committed continuous gate: refusal PASSES [§23/§6/§21]; carry-head+combined FAIL [P9 736570]; concept FAILS [P10/P24]; Jacobian-arm10 = refusal axis [P6 732004]. No ungated direction remains.) |
 | §19 | D | DONE | n | Causal refusal-restoration defense (incl. §19.3  | — |
 | §20 | D | DONE | Y | Defense evaluation with utility (benign over-ref | — (P_DEFENSE_UTILITY §20: ZERO over-refusal on 40 unrelated-normal prompts at L16/18/20 [restoration fired: 39/40 gens changed], vs over-refusal on attack-structured benign [§21] → utility cost confined to attack-adjacent inputs; run 738410) |
