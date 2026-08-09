@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-602,n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-302,n-304,n-801,n-802,n-803,n-804,n-805,t-806
 
 # =====================================================================================
 # NEXT sprint Phase-4 — ONE GCG optimization arm on the v3 leakage-0 split.
@@ -35,7 +35,9 @@ DC="${PROJECT_DIR}/doublespeak_causality"
 
 ARM="${ARM:?must set ARM}"; SEED="${SEED:-42}"
 N_STEPS="${N_STEPS:-200}"; LAMBDA_R="${LAMBDA_R:-0.25}"; LAMBDA_C="${LAMBDA_C:-0.25}"
-SUFFIX_LEN=16; BATCH=64; TOPK=256; SUBB=8
+# BATCH/N_STEPS compute-matched: batch64*200steps == batch32*400steps (same candidate-forwards).
+# 24GB 3090 fits BATCH=32; 46GB L40S fits BATCH=64. Keep steps*batch CONSTANT across the matrix.
+SUFFIX_LEN=16; BATCH="${BATCH:-64}"; TOPK=256; SUBB="${SUBB:-8}"
 
 MODEL_FAMILY="llama"; MODEL_PATH="meta-llama/Llama-3.1-8B-Instruct"
 # OPTIMIZATION pool = frozen cluster-diverse 40-item v3 train (keeps 200-step arms < 8h;
@@ -65,11 +67,12 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 echo "ARM=$ARM SEED=$SEED N_STEPS=$N_STEPS LAMBDA_R=$LAMBDA_R LAMBDA_C=$LAMBDA_C"
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
-GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
-# 48GB-class guard: GCG (8B + batch64 + output_hidden_states) needs ~48GB. L40S(46GB) or A6000(48GB).
-# Deviation (2026-08-09): L40S ~1-day fair-share queue -> A6000 accepted as bf16/48GB-parity fallback.
-case "$GPU_NAME" in *L40S*|*A6000*|*a6000*|*RTX*A6000*) echo "[guard] 48GB GPU OK: $GPU_NAME";;
-  *) echo "ERROR: need L40S/A6000 (48GB), got '$GPU_NAME'"; exit 1;; esac
+GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | awk 'NR==1{print;exit}')
+VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk 'NR==1{print;exit}')
+# Min-VRAM guard (replaces strict L40S): GCG needs >=20GB. Use BATCH=64 on 46GB+ (L40S), BATCH=32 on 24GB (3090).
+if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
+    echo "ERROR: GPU unusable or <20GB (name='$GPU_NAME' vram='${VRAM_MB}MB')"; exit 1; fi
+echo "[guard] GPU OK: $GPU_NAME ${VRAM_MB}MB (BATCH=$BATCH)"
 
 # Common flags (array to preserve quoting)
 COMMON=(--model-family "$MODEL_FAMILY" --model-name-or-path "$MODEL_PATH"

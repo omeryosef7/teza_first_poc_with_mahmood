@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-602,n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-302,n-304,n-801,n-802,n-803,n-804,n-805,t-806
 
 # =====================================================================================
 # NEXT sprint Phase-1 SMOKE — validate the CORRECTED GCG pipeline end-to-end on v3.
@@ -46,9 +46,12 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
-GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
-case "$GPU_NAME" in *L40S*|*A6000*|*a6000*) echo "[guard] 48GB GPU OK: $GPU_NAME";;
-  *) echo "ERROR: need L40S/A6000, got '$GPU_NAME'"; exit 1;; esac
+GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | awk 'NR==1{print;exit}')
+VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk 'NR==1{print;exit}')
+if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
+    echo "ERROR: GPU unusable or <20GB (name='$GPU_NAME' vram='${VRAM_MB}MB')"; exit 1; fi
+BATCH="${BATCH:-32}"
+echo "[guard] GPU OK: $GPU_NAME ${VRAM_MB}MB (BATCH=$BATCH)"
 
 run_arm () {
     local run_id="$1"; shift
@@ -57,7 +60,7 @@ run_arm () {
     python -m poc_stage_gcg_early.run_optimization \
         --run-id "$run_id" --model-family "$MODEL_FAMILY" --model-name-or-path "$MODEL_PATH" \
         --manifest "$MANIFEST" --output-dir "$out_dir" \
-        --suffix-length 16 --n-steps 8 --batch-size 64 --topk 256 --seed 42 \
+        --suffix-length 16 --n-steps 8 --batch-size "$BATCH" --topk 256 --seed 42 \
         --split train --no-filter-cand --suffix-placement user --selection-mode weighted --no-thinking \
         --checkpoint-every 4 --snapshot-every 100 "$@"
 }

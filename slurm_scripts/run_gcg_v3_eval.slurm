@@ -10,7 +10,7 @@
 #SBATCH --account=gpu-research
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --nodelist=n-602,n-801,n-802,n-803,n-804,n-805,t-806
+#SBATCH --nodelist=n-302,n-304,n-801,n-802,n-803,n-804,n-805,t-806
 
 # Evaluate one or more optimized-arm suffixes on a v3 split (StrongREJECT held-out ASR).
 # Pass a space-separated list of run-dir basenames via RUN_IDS and the SPLIT via env:
