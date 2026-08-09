@@ -71,30 +71,11 @@ clearly so at L28/L32, marginally at L16/L24 on test." (Harness orientation fixe
 refusal direction fits+validates (X2), DS suppresses it (X3), refusal ablation causally raises harm &
 DS≈suppression (X4), and refusal predicts jailbreak far better than concept (X5). The one gap vs Llama: on
 Qwen3 the concept readout retains some predictive signal (not fully inert), and its causal inertness on Qwen3
-is untested. Net: the mechanism is NOT Llama-specific.
-- **X5 (last gate):** does the concept readout again FAIL to explain behavior on Qwen3? (concept ablation / carry
-  install on Qwen3 -> no ASR change, unlike refusal). Reuse §9/§10 recipe on Qwen3.
+is now closed by the X5 CAUSAL test below (concept ablation causally inert on Qwen3). Net: the mechanism is
+NOT Llama-specific — all five gates pass on a second family.
 
-## Cross-model verdict: 4 of 5 gates PASS
-X1 ✅ attack raises ASR · X2 ✅ refusal dir fits+validates (5/5) · X3 ✅ DS suppresses it · X4 ✅ refusal
-ablation ↑harm & DS≈suppression (direction-specific). **"Refusal-suppression, not concept remapping" GENERALIZES
-to Qwen3-14B (a second family) — not Llama-specific.** Only X5 (concept fails on Qwen3) remains.
-- **X4 (next):** on Qwen3, does refusal ABLATION raise harmful behavior AND refusal RESTORATION reduce DS ASR?
-  (reuse the ablation/restoration recipe with the Qwen3 validated dir, thinking-off.)
-- **X5:** does the concept readout again fail to explain behavior on Qwen3?
-
-## Cross-model verdict so far
-X1 ✅ (attack raises ASR) · X2 ✅ (refusal dir fits+validates, 5/5) · X3 ✅ (DS suppresses it). Three of five
-gates PASS → "refusal-suppression, not concept remapping" is **generalizing to a second family (Qwen3), not
-Llama-specific.** X4 (causal ablation/restoration) + X5 (concept fails) remain.
-- **X3 (next):** does DS suppress the validated Qwen3 refusal projection (vs direct)? Reuse the projection
-  readout with the Qwen3 dir (e.g. L24/L32) + Qwen3 model, thinking-off.
-- **X4:** refusal ablation ↑harm AND restoration ↓DS on Qwen3. **X5:** concept readout fails to explain behavior.
-- **X2:** independently fit + validate a refusal direction on Qwen3-14B (40 layers) — reuse
-  `build_refusal_direction_llama.py` / `validate_refusal_directions.py`, generalized to the model's layer count.
-- **X3:** does DS suppress that validated direction? **X4:** refusal ablation ↑harm AND restoration ↓DS.
-- **X5:** concept readout again fails to explain behavior.
-Only spend compute as each gate passes.
+_(Earlier staging notes for X2–X5 removed on completion; the X5 CAUSAL result below supersedes the interim
+"X5 = PARTIAL" framing above.)_
 
 ## X5 CAUSAL (2026-08-09) — concept ablation on Qwen3 is causally INERT (completes X5)
 The X5 predictive result (above) left concept "not fully inert" on Qwen3 (AUC 0.80). The decisive CAUSAL test
