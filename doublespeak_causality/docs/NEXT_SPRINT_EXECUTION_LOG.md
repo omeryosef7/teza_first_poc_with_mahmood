@@ -230,4 +230,18 @@ DROP arm05 (=arm04). arm14 (carry) causally null → optional negative-control o
   Held concept_L9 (wave 2) to respect ≤6 (5 GCG + Phi X1 740944). Each arm ~6h (batch32×400 on 3090).
   Wave 2 (as slots free): concept_L9/rand, combined/rand, vanilla_direct. Then seeds 43,44(,45,46).
 
+## 2026-08-10 — Timing right-sizing + node failures
+- 3090 timing: **~1.6–2.2 min/step** (batch32, repr-in-selection). → 400 steps ≈ 12–15h, and a
+  timed-out 400-step run writes NO FINAL_CANDIDATES (only at completion) = no usable suffix.
+- **DECISION: confirmatory matrix at N_STEPS=200** (meets plan's ≥200 confirmatory bar; all arms
+  equal; batch32×200 = 6400 candidate-forwards/item, 4× the first-cut's 50-step budget; completes
+  ~7.5h < --time=10h on 3090). **Extend only ambiguous finalists** (refusal vs random) to more steps
+  later per plan (screen → finalists). All arms use identical steps → comparison stays fair.
+- Node failures this session: n-602 (a6000, device-handle error) and **n-303** (3090, "GPU: none /
+  CUDA not available" — nvidia-smi sees GPU but torch can't) → both EXCLUDED. Healthy 3090s: n-304,
+  n-306, n-307; Phi on n-302.
+- **Seed-42 matrix relaunched @200 steps / 10h** (741203 vanilla, 741204 refusal_L18,
+  741205 refusal_rand_L18, 741206 refusal_L12, 741207 refusal_rand_L12) + Phi X1 740944 = 6.
+  Wave 2 (concept_L9/rand, combined/rand, vanilla_direct) as slots free.
+
 
