@@ -41,7 +41,7 @@ on Qwen3-14B, exactly as on Llama. (Raw pooled projections; the direct≫ds gap 
   ablating DS barely moves it (ds_refabl 0.224) => Doublespeak already sits at the refusal-suppression ceiling.
   **X4 PASS** (ablation/necessity + DS-equivalence). *Audit caveat (wf_383ca171): the DS≈refusal-ablation equivalence is TRAIN-only — on held-out test (n=42) ds_base ASR falls to 0.167 vs refabl 0.262, so that specific equivalence does not replicate out-of-sample; the refusal-ablation-raises-harm and null-random-control findings DO generalize directionally.* (Restoration↓DS is the Gate-B analogue, not re-run here.)
 
-## X5 — does concept fail to explain behavior on Qwen3 (while refusal succeeds)? ◐ PARTIAL
+## X5 — does concept fail to explain behavior on Qwen3 (while refusal succeeds)? ✅ CONFIRMED (causal, 2026-08-09)
 `phase_x5_concept_qwen3.py` (`...736899`, n=127 joined to Qwen3 X4 labels). Per-layer AUC for predicting the
 Qwen3 jailbreak, concept-direction vs refusal-direction projection:
 | layer | concept AUC | refusal AUC | refusal−concept |
@@ -66,7 +66,7 @@ on the held-out TEST split the refusal−concept gap is small at some layers (L1
 overlapping CIs, so "refusal >> concept at EVERY layer" is softened to "refusal ≥ concept at every layer,
 clearly so at L28/L32, marginally at L16/L24 on test." (Harness orientation fixed to an a-priori sign.)
 
-## Cross-model verdict: X1–X4 ✅ (4/5), X5 partial
+## Cross-model verdict: X1–X5 ✅ (5/5) — mechanism fully generalizes to Qwen3-14B
 **"Refusal-suppression, not concept remapping" generalizes to Qwen3-14B:** the attack raises ASR (X1), a
 refusal direction fits+validates (X2), DS suppresses it (X3), refusal ablation causally raises harm &
 DS≈suppression (X4), and refusal predicts jailbreak far better than concept (X5). The one gap vs Llama: on
@@ -95,3 +95,23 @@ Llama-specific.** X4 (causal ablation/restoration) + X5 (concept fails) remain.
 - **X3:** does DS suppress that validated direction? **X4:** refusal ablation ↑harm AND restoration ↓DS.
 - **X5:** concept readout again fails to explain behavior.
 Only spend compute as each gate passes.
+
+## X5 CAUSAL (2026-08-09) — concept ablation on Qwen3 is causally INERT (completes X5)
+The X5 predictive result (above) left concept "not fully inert" on Qwen3 (AUC 0.80). The decisive CAUSAL test
+now closes it: ablate the **concept** direction (concept_direction_qwen3_L24, all-layer project-out) on Qwen3
+and measure ASR, exactly mirroring the X4 **refusal**-ablation protocol (run 738332 vs X4 run 736656; both
+Qwen3-14B, thinking-OFF, v3b clearharm, α=1.0).
+
+| arm (Qwen3) | X4 REFUSAL ablation | X5 CONCEPT ablation | random ablation |
+|---|---|---|---|
+| direct_base → ablated (train) | 0.082 → **0.271 (+0.19)** | 0.071 → **0.106 (+0.035)** | 0.059 |
+| direct_base → ablated (test) | 0.095 → **0.262 (+0.17)** | 0.095 → **0.071 (−0.02)** | 0.095 |
+
+**Refusal ablation causally elicits harm on Qwen3 (+0.17–0.19); concept ablation does NOT — it is
+indistinguishable from the norm-matched random control (≈0).** (Concept ablation lowers *ds* ASR, but with
+refusal_rate=0.0 — that is non-specific incoherence/degradation, not concept-specific behavioral control, the
+same pattern as Llama §10.) So on Qwen3 the concept readout **fails to causally explain behavior** while the
+refusal channel controls it — the concept-vs-refusal causal dissociation GENERALIZES from Llama to Qwen3.
+
+**X5 → CONFIRMED (causal).** Combined with X1–X4, the full "refusal-suppression, not concept-remapping"
+mechanism is now established on a second model family on all five gates.

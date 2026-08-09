@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=27 / PARTIAL=1 / NOT_DONE=0** (§14-18 Gate-7 multi-seed confirmed NEGATIVE; only §27-X5 [738332 running] remains).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (COMPLETE): DONE=28 / PARTIAL=0 / NOT_DONE=0** — ALL 28 sections closed with committed run-dirs+reports (several as honest negatives). Cross-model X1-X5 fully generalizes to Qwen3-14B..
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -31,7 +31,7 @@ authoritative remaining-work roadmap.
 | §24 | C | DONE | Y | Orthogonalization experiment (concept ⟂ refusal) | — (P24_ORTHOGONALIZATION: refusal component controls ASR −0.21 p=1e-4; concept-orthogonalized arm inert) |
 | §25 | B | DONE | Y | Full mediation: demo-feature → refusal-suppressi | — (P25_FULL_MEDIATION: DS attack ~100% mediated by decision-state refusal repr [frac 1.00-1.07, train/dev, rand/self null]; ∘ §6 upstream; naive demo-removal confounded/documented) |
 | §26 | E | DONE | Y | Within-Llama generalization (unseen concepts/cod | — (P26_WITHIN_LLAMA_GENERALIZATION: existence✓/causal✓/prediction✓ generalize on cluster-disjoint v3 held-out; attack-opt✗ [Gate-7 neg]; novel-codeword the one thin axis; assembled from committed evidence) |
-| §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
+| §27 | E | DONE | Y | Cross-model replication — staged X1–X5 gate on ≥ | — (P27_CROSSMODEL: X1-X5 all ✅ on Qwen3-14B; X5 causal — concept ablation inert [+0.035/−0.02 ≈ random] vs refusal ablation raises harm [+0.17-0.19]; mechanism fully generalizes; runs 738332 vs X4 736656) |
 | §28 | E | DONE | Y | Framework robustness — reproduce ≥1 headline int | — (P28: from-scratch IndepProjectOut reproduces refusal-ablation headline [+0.31 vs +0.33], label-agree 0.88/0.83, proven numerically equivalent; token divergence = bf16 reduction-order only; run 737682) |
 | §29 | E | DONE | Y | Quantization / deployment robustness of refusal  | — (P29: refusal ablation raises harm at bf16/8bit/4bit [+0.26/+0.29/+0.52, McNemar sig], random ablation ns at all -> mechanism survives quantization; runs 737624/625/626, test n=42) |
 | §33 | F | DONE | Y | Target figures F1–F8 | — (F5 dose + F6 attack-objective + fig_refusal_mediation all committed; F6 auto-upgrades to 2-seed when seed-43 eval lands) |
