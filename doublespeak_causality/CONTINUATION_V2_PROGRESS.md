@@ -384,3 +384,10 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   → expected complete ~10:10. Env exports (SEED=43, N_STEPS=50) preserved across requeue.
 - Waiter armed on rand-L18 FINAL_CANDIDATES. On completion → `sbatch --export=ALL,SEED=43
   run_gcg_p9_firstcut_eval.slurm` → compare seed-42+43 (does random ≥ refusal hold?) → finalize §14-18.
+
+### 2026-08-09 (11:13) — Gate-7 seed-43 ALL 4 ARMS DONE; held-out eval launched
+- Requeued job completed rand-L18 on n-802; all 4 seed-43 arms (arm04, refusal-L18, L22, rand-L18) have
+  FINAL_CANDIDATES. Launched held-out StrongREJECT eval **738129** (`--export=ALL,SEED=43`, seed-parameterized).
+  OPENAI_API_KEY present. Seed-42 eval summaries (4 arms) already committed → cross-seed comparison turnkey.
+- On eval completion: compare seed-42 + seed-43 held-out ASR — does the first-cut NEGATIVE (random ≥ refusal,
+  i.e. mechanism-derived GCG objective NOT refusal-specific) hold across both seeds? → finalize §14-18 report.
