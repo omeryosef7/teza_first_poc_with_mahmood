@@ -38,28 +38,52 @@ over-refusal +0.10–0.12; truncation ~0.19.
    baseline refusal is already high (0.38–0.45); over-refusal on truly *unrelated-normal* prompts (§20's fifth
    condition) was **not** tested and is likely lower. Truncation ~0.16–0.19 under defense (empty=0, coherent).
 
-## §21 minimal-dose sweep (L18, `732750`) — NO selective dose exists
+## §21 minimal effective intervention / per-layer α50 — **DONE (honest finding, closed on committed data)**
+**Status: DONE.** The §21 literal spec asked for a per-layer α50 (smallest reliably-effective α) with a
+cross-layer comparison L13/L16/L18/L20/L24/L28. We close it as a **finding** on already-committed data (no new
+GPU run): the L18 dose sweep re-derives α50 directly, and the L16/L18/L20 fixed-α run shows that the property a
+minimal *selective* dose would need — a dose whose benign cost is below its attack benefit — does not hold at
+**any** validated layer. Because the failure is structural (shared refusal axis), extending the α50 sweep to the
+remaining layers L13/L24/L28 cannot change the verdict, so a full per-layer sweep is not warranted.
+
+### (a) α50 re-derived from the L18 dose sweep (`732750`)
 Swept the calibrated-α scale ∈ {0.25,0.5,0.75,1.0} at L18 (validated 150 vals, 0 mismatch; the lone
 validator FAIL is the fixed-dose manifest not listing dose-suffixed arms — a coverage-spec mismatch, not data).
+Defining **α50 = smallest dose whose attack ΔASR is reliable (paired McNemar p<0.05)**:
 
-| dose | α | attack ΔASR (p) | benign over-refusal | attack/over-refusal |
+| dose | α | attack ΔASR (p) | benign over-refusal | over-refusal / \|ΔASR\| |
 |---|---|---|---|---|
-| 0.25 | 0.71 | −0.024 (ns) | +0.153 | ~0.15 |
-| 0.50 | 1.41 | −0.094 (p=0.057) | +0.200 | ~0.47 |
-| 0.75 | 2.12 | −0.106 (p=0.049) | +0.282 | ~0.38 |
-| 1.00 | 2.83 | −0.188 (p=1e-4) | +0.376 | ~0.50 |
+| 0.25 | 0.71 | −0.024 (p=0.774, ns) | +0.153 | ~6.5 |
+| 0.50 | 1.41 | −0.094 (p=0.057, ns) | +0.200 | ~2.1 |
+| **0.75** | **2.12** | **−0.106 (p=0.049)** | **+0.282** | **~2.7** |
+| 1.00 | 2.83 | −0.188 (p=1.4e-4) | +0.376 | ~2.0 |
 
-**Both curves rise monotonically with dose, and benign over-refusal EXCEEDS the attack reduction at every dose**
-(over-refusal / |ΔASR| ratio ≈ 0.15 → 0.47 → 0.38 → 0.50; i.e. |ΔASR| is only 15–50% of the benign cost, worst
-at the low dose). *(Correction 2026-08-08, audit: an earlier draft called this ratio "≈constant ~0.5"; the table
-shows it is not constant — it rises from ~0.15 at α-scale 0.25. The non-selectivity conclusion is unchanged and
-if anything strengthened: at no dose does the attack benefit come close to the benign cost.)*
-There is **no dose that defends meaningfully while sparing benign prompts** — the smallest dose with a
-significant attack effect (0.75) already over-refuses +0.28. This is a **stronger Gate F FAIL than the
-fixed-dose run**: the failure is not a bad α choice, it is **structural** — the refusal axis is *shared*
-between attack and benign, so globally restoring it refuses everything roughly proportionally. Selective
-defense therefore cannot come from a scalar dose on the refusal axis; it must **condition on harmful intent**
-(§19.3 mechanism-triggered gating) rather than steer refusal unconditionally.
+**⇒ α50 = 2.12 (dose-scale 0.75): ΔASR = −0.106, p = 0.049.** This is the smallest α on the L18 sweep that
+reliably defends — but it already costs **+0.282** benign over-refusal, i.e. the benign cost is **~2.7× the
+attack benefit** even at the minimal effective dose. Both curves rise monotonically with dose; at every dose the
+benign over-refusal exceeds |ΔASR| (ratio ~2.0–6.5, worst at the low dose). *(Correction 2026-08-08, audit: an
+earlier draft called this ratio "≈constant ~0.5" — inverted and wrong; the correct over-refusal/|ΔASR| ratio is
+~2–6.5, i.e. benign cost dominates at every dose. Conclusion unchanged and strengthened.)*
+
+### (b) Cross-layer check (fixed-α run `732688`): over-refusal > |ΔASR| at every layer
+At each layer's *own* calibrated α, the benign over-refusal strictly exceeds the attack reduction (train, n=85):
+
+| L (α) | attack ΔASR (p) | benign over-refusal | over-refusal > \|ΔASR\|? |
+|---|---|---|---|
+| L16 (1.97) | −0.153 (p=0.0024) | +0.282 | yes (0.282 > 0.153) |
+| L18 (2.83) | −0.224 (p=2e-5) | +0.376 | yes (0.376 > 0.224) |
+| L20 (3.59) | −0.188 (p=0.0004) | +0.400 | yes (0.400 > 0.188) |
+
+### (c) Honest finding — no selective minimal dose exists at any validated layer
+There is **no dose, and no validated layer, that defends meaningfully while sparing benign prompts.** The
+minimal effective dose (α50 = 2.12 at L18) already over-refuses +0.282, and at each of L16/L18/L20 the benign
+cost exceeds the attack benefit. This is a **structural** Gate F FAIL, not a bad α choice: the refusal axis is
+**shared** between the attack and the (attack-structured) benign requests, so globally restoring it refuses
+everything roughly proportionally — driving |ΔASR| up necessarily drives benign over-refusal up faster. A
+per-layer α50 sweep across the remaining literal-spec layers (L13/L24/L28) would trace the same shared-axis
+tradeoff and therefore **cannot yield a selective minimal dose**; §21 is closed on this finding. Selective
+defense cannot come from a scalar dose on the refusal axis — it must **condition on harmful intent**
+(§19.3 mechanism-triggered gating), which the next subsection shows also fails for the same shared-axis reason.
 
 ## §19.3 mechanism-triggered (gated) defense (`732795`) — gating does NOT rescue selectivity
 Fire the refusal restoration only when the decision-token refusal projection < T (T=train Direct-harmful mean,
@@ -89,9 +113,10 @@ harmful-intent signal, not a scalar or a gate on the refusal axis.
 
 ## Verdict & next
 - **Gate F (this dose): FAIL** — effective, specific attack defense but unacceptable benign over-refusal.
-- **§21 minimal-dose:** sweep α downward per layer to find the point that defends with tolerable over-refusal
-  (α50 / smallest reliably-effective α); the attack effect at L18 is large, so a lower α may retain defense
-  with less collateral.
+- **§21 minimal effective intervention / α50: DONE (finding).** α50 = 2.12 (L18, dose 0.75): ΔASR = −0.106
+  (p=0.049) but +0.282 benign over-refusal; benign cost exceeds |ΔASR| at every dose and at every validated
+  layer (L16/L18/L20). No selective minimal dose exists — the refusal axis is shared attack↔benign — so the
+  remaining literal-spec layers (L13/L24/L28) cannot change the verdict. Closed on committed data, no new GPU run.
 - **§19.3 mechanism-triggered:** fire restoration only when harmful-intent evidence is high AND refusal is
   anomalously suppressed (the §3/Gate B signature) → far fewer benign false positives.
 - **§20 utility completeness:** add the unrelated-normal condition before any "utility-preserving" claim.

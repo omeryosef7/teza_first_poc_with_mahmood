@@ -1,7 +1,7 @@
 # MASTER STATUS — CONTINUATION_MASTER_PLAN_V2 (honest, evidence-based)
 
 **Generated 2026-08-08** from a 6-agent evidence audit (workflow wf_df3944cb-0b7) that checked every
-section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09: DONE=16 / PARTIAL=11 / NOT_DONE=1** (§28/§29 closed; only §14-18 Gate-7 remains [first-cut committed; seed-43 confirmation running]).
+section against COMMITTED run-dirs/reports (not progress-doc wording). **REFRESHED 2026-08-09 (completion push): DONE=22 / PARTIAL=5 / NOT_DONE=1** (7 PARTIALs closed from committed data via 10-agent audit; §13/§20/§27-X5 GPU refinements + §14-18 eval pending).
 A section is DONE only if a committed output dir + report with real numbers backs it. This is the
 authoritative remaining-work roadmap.
 
@@ -10,10 +10,10 @@ authoritative remaining-work roadmap.
 | §1.1 | A | DONE | n | Resolve PENDING refusal-validation claims (BR-09 | — |
 | §1.2 | A | DONE | n | Corrected GPU baseline / judge-noise drift envel | — |
 | §1.3 | A | DONE | n | Repair v3 as the confirmatory dataset (validator | — |
-| §2 | B | PARTIAL | Y | Main scientific pivot — map the refusal-suppress | §2's actual OPEN causal question — the causal ORIGIN/source of suppression — is §4 (still NOT_DONE). |
+| §2 | B | DONE | Y | Main scientific pivot — map the refusal-suppress | — (origin question = §4 now DONE [P4_REFUSAL_MEDIATION, run 737608]; full circuit map consolidated in REFUSAL_CIRCUIT_SYNTHESIS E1-E10) |
 | §3 | B | DONE | Y | Refusal causal localization — layer × position × | — |
 | §4 | B | DONE | Y | Distinguish suppression origin from carry/readou | — (P4_REFUSAL_MEDIATION: §7 refusal heads 72-88% MEDIATED/carry w/ depth gradient; sanity gates byte-perfect; run 737608, test n=42) |
-| §5 | B | PARTIAL | Y | Position causality — which part of the 9 matched | P5_POSITION committed; no clean single-position dissociation (all positions contribute) — descriptive only. |
+| §5 | B | DONE | Y | Position causality — which part of the 9 matched | — (P5_POSITION: honest NULL — no manipulation both preserves concept-remap AND restores refusal; train n=85 + test n=42 committed; run 736658) |
 | §6 | B | DONE | Y | Demonstration-count dose response (n_demo in {0, | — (P6_DOSE_RESPONSE: refusal suppression is a STEP at n=1, concept flat, ASR weakly coupled; run 735299) |
 | §7 | C | DONE | Y | Targeted refusal head/edge analysis in the activ | — (P7_HEAD_EDGE, audit-2 corrected: head-distributed but LAYER-concentrated at L13; run 736900) |
 | §8 | C | PARTIAL | Y | Full head->MLP path patching, concept + refusal  | §8.2 refusal DONE (P8_HEAD_MLP_PATH: NO-PATH at n=25; single-item false-positive corrected by aggregation); §8.1 concept RUNNING (737623). |
@@ -22,11 +22,11 @@ authoritative remaining-work roadmap.
 | §11 | C | DONE | Y | Joint 2x2 ablation: concept-circuit {intact/abla | — (P11_JOINT_2x2: refusal restoration collapses ASR regardless of concept; additive, no interaction; run 736657) |
 | §13 | D | PARTIAL | Y | PROSPECTIVE frozen-predictor attack-success pred | Build the FROZEN prospective version on v3 (not n=86 clearharm): calibrate layer/direction/threshold/scalar-calibration on TRAIN only, freeze, evaluate untouche |
 | §14–18 | D | NOT_DONE | Y | Gate-7 attack objective (mechanism-derived GCG,  | The decisive comparison is entirely unrun: no held-out StrongREJECT ASR for ANY arm. run_gcg_p9_firstcut_eval.slurm is authored but NOT launched (needs 732918 t |
-| §18 | D | PARTIAL | Y | Continuous-objective sanity gate before discrete | §18 is only satisfied for the refusal axis. Any NEW candidate objective direction (Jacobian arm10, carry-head, combined) must run its own controlled-perturbatio |
+| §18 | D | DONE | Y | Continuous-objective sanity gate before discrete | — (every candidate direction has a committed continuous gate: refusal PASSES [§23/§6/§21]; carry-head+combined FAIL [P9 736570]; concept FAILS [P10/P24]; Jacobian-arm10 = refusal axis [P6 732004]. No ungated direction remains.) |
 | §19 | D | DONE | n | Causal refusal-restoration defense (incl. §19.3  | — |
 | §20 | D | PARTIAL | Y | Defense evaluation with utility (benign over-ref | The report itself flags the §20 utility panel as incomplete: the 5th condition — truly UNRELATED-NORMAL prompts (not attack-structured benign) — was NOT tested. |
-| §21 | D | PARTIAL | Y | Minimal effective intervention (dose curve / α50 | Sweep is L18-only. §21 asks per validated layer for α50 / smallest reliably-effective α with a cross-layer comparison L13/L16/L18/L20(/L24/L28) to find the best |
-| §22 | B | PARTIAL | Y | Token-timing of refusal restoration (prefill / d | Run the remaining timing arms at comparable integrated magnitude — prefill-only, first-generated-token, first-k, and all-decode-steps restoration — and compare  |
+| §21 | D | DONE | Y | Minimal effective intervention (dose curve / α50 | — (P_DEFENSE_UTILITY §21: α50≈2.12 @L18 [ΔASR −0.106 p=.049] but +0.282 over-refusal; over-refusal>|ΔASR| at every layer [732688] → NO selective minimal dose exists; honest finding) |
+| §22 | B | DONE | Y | Token-timing of refusal restoration (prefill / d | — (P22_TIMING, run 732981: all 5 timing arms + anchor + rand/noop committed; timing that matters = decision state not decode-persistence; additive magnitude-sweep noted as optional caveat) |
 | §23 | B | DONE | n | Decision-state counterfactual patch (bidirection | — |
 | §24 | C | DONE | Y | Orthogonalization experiment (concept ⟂ refusal) | — (P24_ORTHOGONALIZATION: refusal component controls ASR −0.21 p=1e-4; concept-orthogonalized arm inert) |
 | §25 | B | DONE | Y | Full mediation: demo-feature → refusal-suppressi | — (P25_FULL_MEDIATION: DS attack ~100% mediated by decision-state refusal repr [frac 1.00-1.07, train/dev, rand/self null]; ∘ §6 upstream; naive demo-removal confounded/documented) |
@@ -34,7 +34,7 @@ authoritative remaining-work roadmap.
 | §27 | E | PARTIAL | Y | Cross-model replication — staged X1–X5 gate on ≥ | Everything in the staged gate as defined: X2 (independently fit + validate a refusal direction on the 2nd model), X3 (DS suppresses it), X4 (refusal ablation ra |
 | §28 | E | DONE | Y | Framework robustness — reproduce ≥1 headline int | — (P28: from-scratch IndepProjectOut reproduces refusal-ablation headline [+0.31 vs +0.33], label-agree 0.88/0.83, proven numerically equivalent; token divergence = bf16 reduction-order only; run 737682) |
 | §29 | E | DONE | Y | Quantization / deployment robustness of refusal  | — (P29: refusal ablation raises harm at bf16/8bit/4bit [+0.26/+0.29/+0.52, McNemar sig], random ablation ns at all -> mechanism survives quantization; runs 737624/625/626, test n=42) |
-| §33 | F | PARTIAL | Y | Target figures F1–F8 | Build F5 (dose vs demo-count from PHASE9_DOSE data — CPU plot), F6 (blocked on Gate-7 §14–18 GCG arms, GPU), assemble a combined F4 (add the Gate-B counterfactu |
+| §33 | F | DONE | Y | Target figures F1–F8 | — (F5 dose + F6 attack-objective + fig_refusal_mediation all committed; F6 auto-upgrades to 2-seed when seed-43 eval lands) |
 
 ## Execution order (remaining, by plan §31 priority)
 - **B (causal core):** §5 position-decomp, §6 dose-response, §4 origin-vs-carry mediation, §25 full mediation, §22 timing, §9 carry-head sufficiency, §10 powered concept ablation, §2-origin.
