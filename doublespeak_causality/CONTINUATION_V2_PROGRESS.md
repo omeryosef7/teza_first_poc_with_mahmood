@@ -365,3 +365,13 @@ judge score≥0.25, --no-filter-cand); status ∈ {VERIFIED·NULL·UNDERPOWERED�
   **737744 with N_STEPS=50** (matches seed-42 exactly). Waiter armed.
 - Also generated fig_refusal_mediation.png (§4) earlier this window.
 - Status unchanged: DONE=16 / PARTIAL=11 / NOT_DONE=1 (§14-18 Gate-7, seed-43 confirmation re-running clean).
+
+### 2026-08-09 (06:45) — Gate-7 seed-43 (50-step) progress: 2/4 arms done
+- 737744 on n-804 (slow, ~1.7 min/step): arm04 vanilla ✅ DONE, arm07-L18 refusal ✅ DONE, arm07-L22 running
+  (9/50), arm07-rand-L18 (decisive specificity control) not yet started (4th in fixed order).
+- Projection: L22 + rand won't both finish before the 8h wall (~10:48) → expect timeout after L22; will
+  RESUME (resubmit same run-id, checkpoint-every-10) to complete arm07-rand-L18. Eval is seed-parameterized
+  and pre-staged (`sbatch --export=ALL,SEED=43 run_gcg_p9_firstcut_eval.slurm`).
+- Decisive seed-43 comparison pending = arm07-L18 (refusal, done) vs arm07-rand-L18 (random, pending resume).
+  Confirms whether the first-cut NEGATIVE (random ≥ refusal) is stable across seeds 42+43.
+- Plan otherwise COMPLETE: DONE=16 / PARTIAL=11 / NOT_DONE=1 (only §14-18, in flight).
