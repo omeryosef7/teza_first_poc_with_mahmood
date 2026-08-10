@@ -4,23 +4,23 @@
   "arms": {
     "phase9b_v3_arm03_vanilla_direct": {
       "n_seeds": 1,
-      "mean_asr": NaN,
+      "mean_asr": 0.32432432432432434,
       "per_seed": [
         {
           "dir": "phase9b_v3_arm03_vanilla_direct_seed42",
           "seed": 42,
-          "n": 0,
-          "k": 0,
-          "asr": NaN,
+          "n": 37,
+          "k": 12,
+          "asr": 0.32432432432432434,
           "wilson95": [
-            NaN,
-            NaN
+            0.1963307782081548,
+            0.48536631495176064
           ],
-          "refusal_rate": null,
-          "empty_rate": null
+          "refusal_rate": 0.5946,
+          "empty_rate": 0.0
         }
       ],
-      "asr_spread": NaN
+      "asr_spread": 0.0
     },
     "phase9b_v3_arm04_vanilla_ds": {
       "n_seeds": 1,
@@ -64,23 +64,23 @@
     },
     "phase9b_v3_arm06r_concept_rand_L9": {
       "n_seeds": 1,
-      "mean_asr": NaN,
+      "mean_asr": 0.1891891891891892,
       "per_seed": [
         {
           "dir": "phase9b_v3_arm06r_concept_rand_L9_seed42",
           "seed": 42,
-          "n": 0,
-          "k": 0,
-          "asr": NaN,
+          "n": 37,
+          "k": 7,
+          "asr": 0.1891891891891892,
           "wilson95": [
-            NaN,
-            NaN
+            0.09479858757337126,
+            0.342050115709556
           ],
-          "refusal_rate": null,
-          "empty_rate": null
+          "refusal_rate": 0.7027,
+          "empty_rate": 0.0
         }
       ],
-      "asr_spread": NaN
+      "asr_spread": 0.0
     },
     "phase9b_v3_arm07_refusal_down_L18": {
       "n_seeds": 1,
@@ -124,43 +124,43 @@
     },
     "phase9b_v3_arm08_combined": {
       "n_seeds": 1,
-      "mean_asr": NaN,
+      "mean_asr": 0.21621621621621623,
       "per_seed": [
         {
           "dir": "phase9b_v3_arm08_combined_seed42",
           "seed": 42,
-          "n": 0,
-          "k": 0,
-          "asr": NaN,
+          "n": 37,
+          "k": 8,
+          "asr": 0.21621621621621623,
           "wilson95": [
-            NaN,
-            NaN
+            0.11386376851955585,
+            0.37195461273876906
           ],
-          "refusal_rate": null,
-          "empty_rate": null
+          "refusal_rate": 0.5135,
+          "empty_rate": 0.0
         }
       ],
-      "asr_spread": NaN
+      "asr_spread": 0.0
     },
     "phase9b_v3_arm08r_combined_rand": {
       "n_seeds": 1,
-      "mean_asr": NaN,
+      "mean_asr": 0.1891891891891892,
       "per_seed": [
         {
           "dir": "phase9b_v3_arm08r_combined_rand_seed42",
           "seed": 42,
-          "n": 0,
-          "k": 0,
-          "asr": NaN,
+          "n": 37,
+          "k": 7,
+          "asr": 0.1891891891891892,
           "wilson95": [
-            NaN,
-            NaN
+            0.09479858757337126,
+            0.342050115709556
           ],
-          "refusal_rate": null,
-          "empty_rate": null
+          "refusal_rate": 0.1351,
+          "empty_rate": 0.0
         }
       ],
-      "asr_spread": NaN
+      "asr_spread": 0.0
     },
     "phase9b_v3_arm10_refusal_down_L12": {
       "n_seeds": 1,
@@ -213,15 +213,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.13513513513513514,
           "boot95": [
-            NaN,
-            NaN
+            -0.02702702702702703,
+            0.2972972972972973
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 7,
+          "mcnemar_c": 2,
+          "mcnemar_p": 0.1796875
         }
       ]
     },
@@ -234,14 +234,14 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": -0.02702702702702703,
           "boot95": [
-            NaN,
-            NaN
+            -0.21621621621621623,
+            0.16216216216216217
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
+          "mcnemar_b": 6,
+          "mcnemar_c": 7,
           "mcnemar_p": 1.0
         }
       ]
@@ -255,15 +255,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.13513513513513514,
           "boot95": [
-            NaN,
-            NaN
+            -0.02702702702702703,
+            0.2972972972972973
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 7,
+          "mcnemar_c": 2,
+          "mcnemar_p": 0.1796875
         }
       ]
     },
@@ -276,15 +276,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.21621621621621623,
           "boot95": [
-            NaN,
-            NaN
+            0.08108108108108109,
+            0.3783783783783784
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 9,
+          "mcnemar_c": 1,
+          "mcnemar_p": 0.021484375
         }
       ]
     },
@@ -297,15 +297,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.05405405405405406,
           "boot95": [
-            NaN,
-            NaN
+            -0.05405405405405406,
+            0.16216216216216217
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 3,
+          "mcnemar_c": 1,
+          "mcnemar_p": 0.625
         }
       ]
     },
@@ -339,15 +339,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.05405405405405406,
           "boot95": [
-            NaN,
-            NaN
+            -0.08108108108108109,
+            0.21621621621621623
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 5,
+          "mcnemar_c": 3,
+          "mcnemar_p": 0.7265625
         }
       ]
     },
@@ -381,15 +381,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.05405405405405406,
           "boot95": [
-            NaN,
-            NaN
+            0.0,
+            0.13513513513513514
           ],
-          "mcnemar_b": 0,
+          "mcnemar_b": 2,
           "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_p": 0.5
         }
       ]
     },
@@ -423,14 +423,14 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.02702702702702703,
           "boot95": [
-            NaN,
-            NaN
+            -0.10810810810810811,
+            0.16216216216216217
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
+          "mcnemar_b": 4,
+          "mcnemar_c": 3,
           "mcnemar_p": 1.0
         }
       ]
@@ -444,15 +444,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": -0.13513513513513514,
           "boot95": [
-            NaN,
-            NaN
+            -0.2972972972972973,
+            0.02702702702702703
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 3,
+          "mcnemar_c": 8,
+          "mcnemar_p": 0.2265625
         }
       ]
     },
@@ -465,14 +465,14 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.02702702702702703,
           "boot95": [
-            NaN,
-            NaN
+            -0.10810810810810811,
+            0.16216216216216217
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
+          "mcnemar_b": 4,
+          "mcnemar_c": 3,
           "mcnemar_p": 1.0
         }
       ]
@@ -486,15 +486,15 @@
       "per_seed": [
         {
           "seed": 42,
-          "n_paired": 0,
-          "delta_asr": NaN,
+          "n_paired": 37,
+          "delta_asr": 0.10810810810810811,
           "boot95": [
-            NaN,
-            NaN
+            -0.02702702702702703,
+            0.24324324324324326
           ],
-          "mcnemar_b": 0,
-          "mcnemar_c": 0,
-          "mcnemar_p": 1.0
+          "mcnemar_b": 6,
+          "mcnemar_c": 2,
+          "mcnemar_p": 0.2890625
         }
       ]
     },

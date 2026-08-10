@@ -20,7 +20,7 @@ objective", operationalized first-order), **concept@L9** (validated concept-writ
 causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-scope: ‖J‖ is target-generic
 & weaker per P6; MAC needs a new TROPT Loss subclass).
 
-## SEED 42 (v3 test n=37) — 8/10 evaled (combined pair pending)
+## SEED 42 (v3 test n=37) — 10/10 COMPLETE
 | arm | ASR | refusal_rate | vs vanilla ΔASR | vs its random ΔASR (McNemar p) |
 |---|---|---|---|---|
 | vanilla GCG (arm04) | 0.243 | 0.568 | — | — |
@@ -31,8 +31,8 @@ causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-sco
 | refusal_rand@L12 (arm10r) | 0.108 | — | −0.135 | (control) |
 | **concept@L9 (arm06)** | **0.243** | — | **+0.000 (inert)** | +0.054 vs rand 0.189 (ns) |
 | concept_rand@L9 (arm06r) | 0.189 | — | −0.054 | (control) |
-| combined (arm08) | _pending_ | | | |
-| combined_rand (arm08r) | _pending_ | | | |
+| combined (arm08) | 0.216 | — | −0.027 | +0.027 vs rand 0.189 (p=1.000) |
+| combined_rand (arm08r) | 0.189 | — | −0.054 | (control) |
 
 ### Seed-42 reads (answers Q1–Q4)
 - **Q1/Q3 — the headline NEGATIVE:** the validated refusal-suppression objective (@L18, the only axis
@@ -43,6 +43,9 @@ causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-sco
 - **Q2 — Jacobian:** targeting the Jacobian sensitivity-peak layer (L12) gives **no advantage**
   (0.216 < vanilla 0.243; below the readout-layer L18). refusal@L12 edges its own random (+0.108) but
   ns (p=0.125) and both are below vanilla → not a useful attack lever.
+- **Q4b — combined:** concept+refusal (0.216) is WORSE than refusal@L18 alone (0.324) and ≈ its
+  random (0.189, ΔASR +0.027, McNemar p=1.000) — adding the concept term does not help and degrades
+  the mix. **Every mechanism arm is ≈ its norm-matched random control.**
 - **Q4 — concept:** the concept objective is **inert** — concept@L9 ASR (0.243) is *identical* to
   vanilla (0.243); it only "beats" its random because a random concept direction is a slightly worse
   optimization signal. Consistent with the concept circuit being behaviourally epiphenomenal.
