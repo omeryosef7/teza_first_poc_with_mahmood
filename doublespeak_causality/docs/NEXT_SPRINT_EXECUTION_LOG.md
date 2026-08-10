@@ -280,3 +280,20 @@ Job 740944 COMPLETED (3.5h). baseline_drift_clearharm_..._740944/summary.json (t
   refusal *dissociation* can still be probed (X2 geometry, X3 ablation), but the behavioral attack
   axis is weak on Phi. Proceed X2-X4; report headroom limitation honestly.
 - Launching Phi X1 TEST split next (DSSPLITS=test, comma-free) to complete X1.
+
+## 2026-08-10 — Phi-4 X1 TEST split (n=30) + X1 verdict
+Job 741427 COMPLETED. baseline_drift_..._741427/summary.json (test):
+| cond | ASR_majority | trunc_len_rate | mean_ntok |
+|---|---|---|---|
+| direct | 0.700 | 0.233 | 1334.1 |
+| doublespeak | **0.800** | 0.367 | 1624.6 |
+| neutral | 0.767 | 0.333 | 1443.7 |
+| benign | 0.567 | 0.333 | 1434.1 |
+**X1 VERDICT (Phi-4-mini-reasoning, native reasoning, train+test n=30 each):**
+- DS **does** raise ASR over direct on BOTH splits: train 0.633 vs 0.567 (+0.066), test 0.800 vs 0.700
+  (+0.100). So the Doublespeak attack reproduces on a 3rd architecture family — modestly.
+- BUT Phi is WEAKLY ALIGNED (direct ASR 0.567/0.700, ~6-7x Llama/Qwen3), so DS has limited headroom
+  and neutral≈DS. The attack works but the model barely refuses to begin with.
+- Truncation 23-37% even at 2048 tokens (verbose reasoning); benign ASR 0.57-0.60 is a StrongREJECT-
+  on-benign artifact. X1 = DONE (Q6 behavioral repro: POSITIVE-but-limited-headroom on Phi).
+- Next Phi: X2 (concept+refusal direction geometry) then X3 (concept-vs-refusal ablation dissociation).
