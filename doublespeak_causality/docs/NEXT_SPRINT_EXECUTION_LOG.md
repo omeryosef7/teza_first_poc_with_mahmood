@@ -309,3 +309,11 @@ Eval 742022 (StrongREJECT, v3 test):
   random @ same layer) — if random also ≈0.32, non-specific (first-cut pattern); if refusal>random,
   SPECIFIC POSITIVE (new). refusal_rand_L18 finalizing (200 steps); eval pending. Also refusal_L12
   (Jacobian-peak) FINAL, evaling now. Pairs populate in analyze_gate7_matrix once both members evaled.
+
+### 2026-08-10 — I/O contention root cause (weight-load)
+Two eval jobs loading Llama-8B simultaneously on n-302 crawled at ~2.5min/shard (291 shards) →
+~12h projected model load (0 generations in 1h). Cause: concurrent model-loads on one node saturate
+disk I/O (cf. feedback_slurm_node_contention: multi-load = 16x+ slowdown). Also explains arms
+~1.9min/step (4 arms on n-301). FIX: stagger new-job launches so weight-loads don't overlap; prefer
+1 model-load at a time per node. Cancelled the 2 stuck evals; resubmitted as ONE combined eval 742254
+(refusal_L12 + refusal_rand_L18). Not launching more jobs until it loads.
