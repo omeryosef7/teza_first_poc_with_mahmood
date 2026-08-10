@@ -297,3 +297,15 @@ Job 741427 COMPLETED. baseline_drift_..._741427/summary.json (test):
 - Truncation 23-37% even at 2048 tokens (verbose reasoning); benign ASR 0.57-0.60 is a StrongREJECT-
   on-benign artifact. X1 = DONE (Q6 behavioral repro: POSITIVE-but-limited-headroom on Phi).
 - Next Phi: X2 (concept+refusal direction geometry) then X3 (concept-vs-refusal ablation dissociation).
+
+## 2026-08-10 — FIRST v3 attack-objective ASR (seed42, leakage-0 test n=37)
+Eval 742022 (StrongREJECT, v3 test):
+| arm | ASR | refusal_rate |
+|---|---|---|
+| arm04 vanilla GCG (doublespeak) | **0.243** | 0.568 |
+| arm07 refusal_down_L18 | **0.324** | 0.513 |
+- refusal@L18 (0.324) beats vanilla GCG (0.243) by +0.081, with lower refusal rate — the refusal
+  objective DOES something over vanilla. BUT the decisive control is refusal_rand_L18 (norm-matched
+  random @ same layer) — if random also ≈0.32, non-specific (first-cut pattern); if refusal>random,
+  SPECIFIC POSITIVE (new). refusal_rand_L18 finalizing (200 steps); eval pending. Also refusal_L12
+  (Jacobian-peak) FINAL, evaling now. Pairs populate in analyze_gate7_matrix once both members evaled.
