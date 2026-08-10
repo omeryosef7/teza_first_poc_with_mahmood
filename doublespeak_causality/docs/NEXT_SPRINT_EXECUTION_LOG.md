@@ -335,3 +335,23 @@ NEGATIVE on the corrected leakage-0 v3 split, 200 steps (4× first-cut budget), 
   as the validated mechanism → the ASR gains are a generic optimization effect, NOT mechanism-specific.
 - STATUS: strong NON-SPECIFIC NEGATIVE at seed42; needs seeds 43,44 (Gate D: don't call confirmed
   from 1 seed). concept_L9/rand + combined arms still optimizing (Q4). Mechanistic-validity (Q5) next.
+
+## 2026-08-10 — seed42 matrix ASR (8/10 evaled; v3 leakage-0 test n=37)
+| arm | ASR |
+|---|---|
+| vanilla GCG (arm04) | 0.243 |
+| vanilla direct (arm03) | pending |
+| refusal_down_L18 (arm07) | 0.324 |
+| refusal_rand_L18 (arm07r) | 0.351 |
+| refusal_down_L12 Jac-peak (arm10) | 0.216 |
+| refusal_rand_L12 (arm10r) | 0.108 |
+| concept_up_L9 (arm06) | **0.243** |
+| concept_rand_L9 (arm06r) | pending |
+| combined (arm08) | optimizing |
+| combined_rand (arm08r) | optimizing |
+PAIRED (seed42): refusal_L18 vs refusal_rand_L18 ΔASR **−0.027, McNemar p=1.000** (headline NEGATIVE);
+refusal_L12 vs refusal_rand_L12 ΔASR +0.135 boot95[0.000,0.270] McNemar b=6/c=1 **p=0.125 (ns)** —
+a hint of L12 specificity but underpowered AND both L12 arms are BELOW vanilla (not a useful attack).
+**Q4: concept_up_L9 (0.243) == vanilla (0.243) EXACTLY — the concept objective is inert** (does not
+even beat vanilla), consistent with the concept circuit being epiphenomenal. (n-302 slow-disk avoided;
+evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
