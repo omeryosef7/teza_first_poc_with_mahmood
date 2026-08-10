@@ -38,9 +38,12 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name --format=csv,noheader
-GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk 'NR==1{print;exit}')
-case "$GPU_NAME" in *L40S*|*A6000*|*a6000*) echo "[guard] 48GB GPU OK: $GPU_NAME";;
-  *) echo "ERROR: need L40S/A6000, got '$GPU_NAME'"; exit 1;; esac
+GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | awk 'NR==1{print;exit}')
+VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk 'NR==1{print;exit}')
+# eval = generation only (single sequence) -> fits any >=20GB GPU (3090/L40S/A6000)
+if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
+    echo "ERROR: GPU unusable or <20GB (name='$GPU_NAME' vram='${VRAM_MB}MB')"; exit 1; fi
+echo "[guard] GPU OK: $GPU_NAME ${VRAM_MB}MB"
 if [ -z "${OPENAI_API_KEY:-}" ]; then echo "WARN: OPENAI_API_KEY unset -> StrongREJECT null"; fi
 
 for rid in $RUN_IDS; do
