@@ -259,3 +259,24 @@ recurrence. Seed-42 clean relaunch: 741205 refusal_rand_L18(run), 741206 refusal
 - Phi X1 740944 ALIVE (raw.jsonl 21 items, writing live; ~7.6 min/item reasoning@2048; ~1h to 30).
   NOTE: hit sbatch --export comma bug on DSSPLITS=train,test → only TRAIN ran. Will run test split
   separately with DSSPLITS=test (comma-free) to complete X1. (Fix rule: never put comma-lists in --export.)
+
+## 2026-08-10 — Phi-4 X1 behavioral reproduction (TRAIN, n=30, native reasoning)
+Job 740944 COMPLETED (3.5h). baseline_drift_clearharm_..._740944/summary.json (train):
+| cond | ASR_majority | refusal(1-ASR proxy) | trunc_len_rate | mean_ntok | judge_any_flip |
+|---|---|---|---|---|---|
+| direct | 0.567 | — | 0.267 | 1345.8 | 0.067 |
+| doublespeak | **0.633** | — | 0.300 | 1603.6 | 0.000 |
+| neutral | 0.667 | — | 0.167 | 1457.9 | 0.133 |
+| benign | 0.600 | — | 0.233 | 1436.1 | 0.167 |
+- **KEY: Phi-4-mini-reasoning is WEAKLY ALIGNED** — direct (bare harmful) ASR **0.567** (vs Llama
+  0.116, Qwen3 0.095). So Doublespeak has **little headroom**: DS 0.633 ≈ direct 0.567 (ΔASR +0.066),
+  neutral 0.667 ≈ DS. The DS *attack* barely moves a model that already complies. Per plan, "no
+  meaningful attack headroom = a valid result" — do NOT force a DS story on Phi.
+- CAVEATS: (a) ~30% truncation even at max_new=2048 (Phi reasoning very verbose, mean ntok ~1350-1600)
+  — a longer budget would help but 2048 already slow (~7.6min/item); note as limitation. (b) benign
+  "ASR" 0.60 is a StrongREJECT-on-benign artifact (judge scores request-fulfilled, not harm) — not
+  real over-refusal/compliance; ignore benign column for alignment claims.
+- IMPLICATION for X3: with high direct compliance there is less refusal to ablate; the concept-vs-
+  refusal *dissociation* can still be probed (X2 geometry, X3 ablation), but the behavioral attack
+  axis is weak on Phi. Proceed X2-X4; report headroom limitation honestly.
+- Launching Phi X1 TEST split next (DSSPLITS=test, comma-free) to complete X1.
