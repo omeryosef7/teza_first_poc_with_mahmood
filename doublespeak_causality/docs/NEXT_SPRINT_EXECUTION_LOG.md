@@ -317,3 +317,21 @@ disk I/O (cf. feedback_slurm_node_contention: multi-load = 16x+ slowdown). Also 
 ~1.9min/step (4 arms on n-301). FIX: stagger new-job launches so weight-loads don't overlap; prefer
 1 model-load at a time per node. Cancelled the 2 stuck evals; resubmitted as ONE combined eval 742254
 (refusal_L12 + refusal_rand_L18). Not launching more jobs until it loads.
+
+## 2026-08-10 — KEY RESULT: v3 attack-objective matrix (seed42, leakage-0 test n=37)
+| arm | ASR | refusal_rate |
+|---|---|---|
+| arm04 vanilla GCG | 0.243 | 0.568 |
+| arm07 refusal_down_L18 | 0.324 | 0.513 |
+| arm07r refusal_rand_L18 (norm-matched control) | **0.351** | 0.432 |
+| arm10 refusal_down_L12 (Jacobian-peak) | 0.216 | 0.595 |
+**DECISIVE (Q3): refusal_L18 vs refusal_rand_L18 → ΔASR −0.027, boot95 [−0.189,+0.135],
+McNemar b=4/c=5 p=1.000 → NOT DIFFERENT.** The validated refusal-suppression GCG objective is
+statistically indistinguishable from a norm-matched RANDOM direction — **CONFIRMS the first-cut
+NEGATIVE on the corrected leakage-0 v3 split, 200 steps (4× first-cut budget), proper paired stats.**
+- (Q2) Jacobian-peak layer L12 (0.216) does NOT beat readout-layer L18 (0.324); if anything worse
+  (and below vanilla) → no "target the sensitivity peak" advantage.
+- refusal_rand_L18 (0.351) even edges vanilla (0.243) — a random direction is as good a GCG signal
+  as the validated mechanism → the ASR gains are a generic optimization effect, NOT mechanism-specific.
+- STATUS: strong NON-SPECIFIC NEGATIVE at seed42; needs seeds 43,44 (Gate D: don't call confirmed
+  from 1 seed). concept_L9/rand + combined arms still optimizing (Q4). Mechanistic-validity (Q5) next.
