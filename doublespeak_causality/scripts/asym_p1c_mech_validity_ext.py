@@ -70,6 +70,10 @@ def main():
     ap.add_argument("--concept-fit-layers", default="9,16")
     ap.add_argument("--enable-thinking", default="false")
     ap.add_argument("--n-max", type=int, default=0, help="0 = all")
+    ap.add_argument("--n-random-suffix", type=int, default=0,
+                    help="unoptimized random-token suffixes (the decisive H4 control)")
+    ap.add_argument("--n-suffix-tokens", type=int, default=16)
+    ap.add_argument("--random-suffix-seed", type=int, default=42)
     ap.add_argument("--out-dir", required=True)
     args = ap.parse_args()
 
@@ -99,7 +103,40 @@ def main():
     for a in args.arm:
         label, rd = a.split("=", 1)
         conds[label] = final_suffix(rd)
-    print(f"[conds] {list(conds)}", flush=True)
+
+    # UNOPTIMIZED controls (the decisive H4 test). The optimized "random-direction" arm is
+    # still a GCG-optimized suffix; if suppression is generic, a suffix that was never
+    # optimized at all should reproduce the same profile. Two flavours:
+    #   `init`        the GCG initialization suffix (' !' x n), i.e. optimization step 0
+    #   `randtokNNN`  n_suffix uniformly-sampled ordinary vocabulary tokens
+    if args.n_suffix_tokens > 0:
+        init_ids = lm.tokenizer(" !" * args.n_suffix_tokens,
+                                add_special_tokens=False)["input_ids"]
+        conds["init"] = lm.tokenizer.decode(init_ids)
+        if args.n_random_suffix > 0:
+            rng = np.random.default_rng(args.random_suffix_seed)
+            special = set(int(x) for x in (lm.tokenizer.all_special_ids or []))
+            pool = []
+            for tid in range(int(lm.tokenizer.vocab_size)):
+                if tid in special:
+                    continue
+                s = lm.tokenizer.convert_ids_to_tokens(tid)
+                if not s:
+                    continue
+                t = s.replace("Ġ", " ").replace("Ċ", "\n")
+                if not t.strip():
+                    continue
+                try:
+                    t.encode("ascii")
+                except UnicodeEncodeError:
+                    continue
+                pool.append(tid)
+            for i in range(args.n_random_suffix):
+                ids = rng.choice(pool, size=args.n_suffix_tokens, replace=False)
+                conds[f"randtok{i:03d}"] = lm.tokenizer.decode([int(x) for x in ids])
+    print(f"[conds] n={len(conds)}: "
+          f"{[c for c in conds if not c.startswith('randtok')]} + "
+          f"{sum(c.startswith('randtok') for c in conds)} randtok", flush=True)
 
     keys = [("refusal", r) for r in sorted(refusal)] + [("concept", r) for r in sorted(concept)]
 
@@ -171,6 +208,9 @@ def main():
     meta = {"phase": "P1c_mech_validity_ext", "model": args.model,
             "manifests": args.manifest, "arms": args.arm,
             "conditions": list(conds), "n_rows": len(rows),
+            "n_random_suffix": args.n_random_suffix,
+            "n_suffix_tokens": args.n_suffix_tokens,
+            "random_suffix_seed": args.random_suffix_seed,
             "refusal_fit_layers": sorted(r - 1 for r in refusal),
             "concept_fit_layers": sorted(r - 1 for r in concept),
             "hidden_states_rows_refusal": sorted(refusal),

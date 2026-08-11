@@ -33,6 +33,7 @@ export PYTHONUNBUFFERED=1
 
 : "${ASYM_SMOKE:=0}"
 : "${ASYM_NMAX:=0}"
+: "${ASYM_NRANDSUF:=0}"
 G="outputs/stage_gcg_full"
 EVAL_MANIFEST="doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl"
 TRAIN_MANIFEST="doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak_trainpool40.jsonl"
@@ -70,5 +71,5 @@ python -u doublespeak_causality/scripts/asym_p1c_mech_validity_ext.py \
   --manifest "${EVAL_MANIFEST}:test" \
   --manifest "${TRAIN_MANIFEST}:train" \
   --refusal-fit-layers "$REFUSAL_LAYERS" --concept-fit-layers "$CONCEPT_LAYERS" \
-  $ARMS --out-dir "$OUT" $EXTRA
+  $ARMS --n-random-suffix "$ASYM_NRANDSUF" --out-dir "$OUT" $EXTRA
 echo "=== done ==="; date
