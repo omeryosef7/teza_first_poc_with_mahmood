@@ -1453,3 +1453,45 @@ the covariance-matched number as *"vs the single dominant residual direction"* r
 a 100-draw null.
 
 ---
+## 2026-08-12 01:36 — LOOP: the degeneracy fix VERIFIED; cross-family + corrected-control runs launched
+
+**Queue:** 5 running/queued, 0 pending >30 min. n-501: 3 · n-502: 2.
+
+### The `--actcov-drop-top 1` fix is verified, not just asserted
+Job 751408 prints the new diagnostic directly:
+
+```
+[actcov] hs19: drop_top=1  top1_var_frac=0.9703  mean|pairwise cos| among the 100 draws = 0.0945
+[actcov] hs10: drop_top=1  top1_var_frac=0.9921  mean|pairwise cos| among the 100 draws = 0.0894
+```
+
+Against the analytic ~0.970 / ~0.992 for `drop_top=0`. **Removing a single eigendirection
+turns the covariance-matched family from one direction repeated 100 times into a genuinely
+diverse control** (mean |cos| ≈ 0.09). The diagnosis was exactly right and the fix is
+minimal. Gate C will be re-reported against this corrected control on both splits
+(751408 train, 751414 test).
+
+### Phase 3 arms are moving their target — early, do not over-read
+Logged `rd_loss` (the normalized refusal projection the objective minimizes, on `train_tasks[0]`):
+
+| arm | step 0 | latest |
+|---|---|---|
+| **751396 mechanism** (`refusal_L18_poscorr`) | −0.0070 | **−0.1104** @ step 10 |
+| 751393 matched random (`refusal_rand_L18_poscorr`) | +0.0061 | −0.0022 @ step 20 |
+
+For reference the handoff records the *legacy* refusal arm moving this quantity from ≈+0.02
+to ≈−0.06 over **200** steps. The position-corrected arm is at −0.11 by step **10**.
+
+**This is a logging diagnostic on one task at unequal step counts, not a result.** It is
+consistent with the position correction making the objective actually act on its intended
+coordinate — which is precisely the mechanism half of what Phase 3 tests. **Whether it
+converts to held-out ASR is the whole question, and Gate B predicts it will not.** Recording
+the early signal now so that neither outcome can be presented as expected after the fact.
+
+### Launched
+* **751413** — full Phi-4-mini-reasoning reachability (train n=40, template spans, refusal
+  L14 → hs[15], concept disabled, `drop_top=1`). Cross-family test of Gates B and C, i.e. of
+  the sprint's headline mechanism.
+* **751414** — Llama **test** split with the corrected control, companion to 751408.
+
+---
