@@ -1108,3 +1108,35 @@ only, numbers are not results* — and then made exactly that mistake an hour la
 numbers looked publishable. The guard is now mechanical.
 
 ---
+## 2026-08-12 00:37 — LOOP: Phase 3 arms added + smoke submitted
+
+**Queue:** 5 running + Phase-3 smoke = 6. 0 pending, nothing meets the >30 min rule.
+Node spread n-501: 3 · n-502: 3. Concept arms in flight: grenade 53/60, pistol 42/60,
+chlorine 37/60. P2 seed-43 pair (751376 refusal / 751377 random, budget 0.10, a5000) running.
+
+### Phase 3 arms added to `slurm_scripts/run_gcg_v3_arm.slurm`
+`refusal_L18_poscorr` and `refusal_rand_L18_poscorr` — **identical to the published
+`refusal_L18` / `refusal_rand_L18` arms in every respect except the position mode**:
+`--refusal-dir-position-mode per_task_decision` reads the refusal projection at the **last
+prompt token, recomputed per task**, instead of one absolute index taken from
+`train_tasks[0]` (correct for 1 of 40 prompts) that also sat 5 template tokens before the
+position where the axis was fitted and causally validated.
+
+Same λ, layer index (19), direction files, suffix length, steps, batch, topk, manifest,
+seeds and evaluation. Distinct run-ids (`asym_p3_arm07p*`) so nothing collides with or is
+mistaken for the published matrix.
+
+**Why this is a test and not a fishing trip — the two hypotheses make opposite predictions:**
+* **Gate B / H2′ predicts it STILL FAILS.** The first-order surrogate is invalid at one-token
+  step size (r = 0.84 → −0.002/−0.324 from ε=0.1 to ε=1.0) *regardless of which position it
+  reads*, so fixing the position should not rescue a gradient that carries no information.
+* **"Gate D was just an implementation bug" predicts it SUCCEEDS.**
+
+Whichever way it lands is informative, which is the §18 bar for spending GPU.
+
+Smoke first (job 751380, N_STEPS=3, BATCH=16) per plan §3.1 — no scaled run until a tiny one
+loads the model, locates the suffix, computes the objective, takes a step and checkpoints.
+The smoke also verifies that `legacy_fixed` still prints its loud out-of-range warning and
+that the corrected mode raises rather than silently dropping a bad position.
+
+---

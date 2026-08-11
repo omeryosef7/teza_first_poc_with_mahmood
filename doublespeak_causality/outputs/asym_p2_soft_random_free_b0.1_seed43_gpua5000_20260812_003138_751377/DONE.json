@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p2_soft_random_free_b0.1_seed43_gpua5000_20260812_003138_751377",
+  "status": "ok",
+  "rows_written": 37,
+  "end_ts": "2026-08-12T00:38:09",
+  "end_epoch": 1786484289.9040108,
+  "wall_seconds": 0.003
+}

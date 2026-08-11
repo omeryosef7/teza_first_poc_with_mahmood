@@ -18,6 +18,7 @@
 # comma-bearing multilayer flags live INSIDE this script per the sbatch --export comma bug).
 #
 # ARM in: vanilla | vanilla_direct | refusal_L18 | refusal_rand_L18 | refusal_L12 |
+#         refusal_L18_poscorr | refusal_rand_L18_poscorr  (asymmetry sprint Phase 3) |
 #         refusal_rand_L12 | concept_L9 | concept_rand_L9 | combined | combined_rand
 #
 # OFF-BY-ONE FIX (Gate A): direction files named L{k} are fitted at hidden_states[k+1];
@@ -86,6 +87,16 @@ case "$ARM" in
   refusal_L18)      MAN="$DS_MAN"; RID="phase9b_v3_arm07_refusal_down_L18";  OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 19 --refusal-dir-path "$R_L18"   --objective-name refusal_down_L18 --repr-in-selection --repr-selection-sub-batch "$SUBB");;
   refusal_rand_L18) MAN="$DS_MAN"; RID="phase9b_v3_arm07r_refusal_rand_L18"; OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 19 --refusal-dir-path "$R_RAND_L18" --objective-name refusal_rand_L18 --repr-in-selection --repr-selection-sub-batch "$SUBB");;
   refusal_L12)      MAN="$DS_MAN"; RID="phase9b_v3_arm10_refusal_down_L12";  OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 13 --refusal-dir-path "$R_L12"   --objective-name refusal_down_L12_jacpeak --repr-in-selection --repr-selection-sub-batch "$SUBB");;
+  # --- ASYMMETRY SPRINT Phase 3: position-corrected objective (defects D1+D2) --------------
+  # Identical to refusal_L18 / refusal_rand_L18 in every respect EXCEPT that the refusal
+  # projection is read at the LAST PROMPT TOKEN, recomputed PER TASK, instead of at one
+  # absolute index taken from train_tasks[0] (correct for 1 of 40 prompts) that also sat 5
+  # template tokens before the position where the axis was fitted and causally validated.
+  # See doublespeak_causality/docs/ASYMMETRY_SPRINT_EXECUTION_LOG.md E0.3.
+  # Gate B PREDICTS these still fail: the first-order surrogate is invalid at one-token step
+  # size regardless of which position it reads. "Gate D was just a bug" predicts they succeed.
+  refusal_L18_poscorr)      MAN="$DS_MAN"; RID="asym_p3_arm07p_refusal_down_L18_poscorr";  OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 19 --refusal-dir-path "$R_L18"      --refusal-dir-position-mode per_task_decision --objective-name refusal_down_L18_poscorr --repr-in-selection --repr-selection-sub-batch "$SUBB");;
+  refusal_rand_L18_poscorr) MAN="$DS_MAN"; RID="asym_p3_arm07pr_refusal_rand_L18_poscorr"; OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 19 --refusal-dir-path "$R_RAND_L18" --refusal-dir-position-mode per_task_decision --objective-name refusal_rand_L18_poscorr --repr-in-selection --repr-selection-sub-batch "$SUBB");;
   refusal_rand_L12) MAN="$DS_MAN"; RID="phase9b_v3_arm10r_refusal_rand_L12"; OBJ=(--lambda-refusal-dir "$LAMBDA_R" --refusal-dir-layer 13 --refusal-dir-path "$R_RAND_L12" --objective-name refusal_rand_L12 --repr-in-selection --repr-selection-sub-batch "$SUBB");;
   concept_L9)       MAN="$DS_MAN"; RID="phase9b_v3_arm06_concept_up_L9";     OBJ=(--lambda-refusal-dir "$LAMBDA_C" --refusal-dir-layer 10 --refusal-dir-path "$C_NEG_L9" --objective-name concept_up_L9 --repr-in-selection --repr-selection-sub-batch "$SUBB");;
   concept_rand_L9)  MAN="$DS_MAN"; RID="phase9b_v3_arm06r_concept_rand_L9";  OBJ=(--lambda-refusal-dir "$LAMBDA_C" --refusal-dir-layer 10 --refusal-dir-path "$C_RAND_L9" --objective-name concept_rand_L9 --repr-in-selection --repr-selection-sub-batch "$SUBB");;
