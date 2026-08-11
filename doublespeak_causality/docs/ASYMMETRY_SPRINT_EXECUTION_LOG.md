@@ -1015,3 +1015,53 @@ concept claim rather than silently counted as supporting nulls.
 concept arms as they are needed. Node spread n-501: 2 · n-502: 3.
 
 ---
+## 2026-08-12 00:40 — PHASE 4: ALL 5 REFUSAL ARMS DONE — GATE F = **PARTIAL**
+
+Full write-up: `docs/MULTICONCEPT_CAUSAL_GENERALIZATION.md`. Aggregate:
+`reports/ASYM_P4_MULTICONCEPT.json`.
+
+| pair | n | refusal-specific ΔASR | p | concept-specific ΔASR | p | ds_base |
+|---|---|---|---|---|---|---|
+| grenade | 40 | **+0.525** | 9.5e-07 | +0.048 | 1.0 | **0.350** |
+| cocaine | 38 | **+0.500** | 3.8e-06 | −0.026 | 1.0 | 0.053 |
+| pistol | 29 | **+0.414** | 0.00049 | *(running)* | — | 0.000 |
+| bomb | 26 | **+0.385** | 0.00195 | +0.062 | 1.0 | 0.115 |
+| chlorine | 27 | +0.185 | 0.18 ns | *(running)* | — | 0.000 |
+
+**Refusal half GENERALIZES:** 5/5 positive, sign-consistent, median **+0.414**, 4/5
+significant after Holm — on the frozen concept-agnostic L18 axis, four of the five concepts
+never having been used to localize anything.
+
+**Concept half is UNDERPOWERED across the family:** null wherever tested (3/3, p=1.0) but only
+**grenade** had enough attack headroom for the null to mean anything.
+
+### I overrode the aggregator's first verdict, and why
+The tool initially returned **"PASS — dissociation in every pair with data" (3/3)**. That is
+what its literal criterion said and it is **misleading**: *pairs with data* ≠ *pairs with
+power*. Concept ablation can only LOWER ASR, so a null from a pair whose attack scores 0.000
+is not evidence of epiphenomenality.
+
+I encoded the power constraint (pre-registered in the 00:24 entry) **in code** rather than
+applying it by hand: `--min-ds-base 0.15` grades every pair informative / marginal /
+floor-limited, and the Gate-F tally now runs over informative pairs only. New verdict:
+
+> **PARTIAL — the dissociation holds in all 1 testable pair, but only 1 of 5 pairs had attack
+> headroom. The refusal half generalizes; the concept half is underpowered across the family.
+> Do NOT claim "general across concepts."**
+
+On grenade — the one pair where both halves are powered — the dissociation is clean:
+refusal-specific **+0.525 (p=9.5e-07)** vs concept-specific **+0.048 (p=1.0)** on the same 40
+held-out items, the concept effect's sign *positive*.
+
+The two outstanding concept arms (pistol, chlorine) both have `ds_base = 0.000` and will be
+floor-limited, so they cannot change this verdict — they will be reported and excluded.
+
+### Heterogeneity recorded (plan §8.4 forbids hiding it)
+`ds_base` spans **0.000 → 0.350**: two of five concepts are effectively immune to the attack
+as this bench renders it. Attack strength and refusal-lever strength are **different axes**
+(cocaine: weakest attack 0.053, second-largest lever +0.500). The matched-random ablation
+control is **not inert in every pair** (grenade 0.225 vs 0.150 base; pistol 0.483 vs 0.414) —
+"random ablation is flat" is pair-dependent, which is exactly why the specific
+ablation-minus-random contrast is the reported quantity. `pooled_usable=False` for both halves.
+
+---

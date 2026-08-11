@@ -1,0 +1,29 @@
+{
+  "schema": "DONE/1",
+  "run_id": "behav_refusal_pair_pistol_asweep0.0-0.5-1.0_20260811_223153_750879",
+  "status": "ok",
+  "rows_written": 60,
+  "end_ts": "2026-08-12T00:26:46",
+  "end_epoch": 1786483606.142611,
+  "wall_seconds": 6880.662,
+  "arms": [
+    "direct_base",
+    "direct_refabl_a0.0",
+    "direct_refabl_a0.5",
+    "direct_refabl_a1.0",
+    "direct_randabl_a0.0",
+    "direct_randabl_a0.5",
+    "direct_randabl_a1.0",
+    "ds_base",
+    "ds_refabl_a0.0",
+    "ds_refabl_a0.5",
+    "ds_refabl_a1.0"
+  ],
+  "alphas": [
+    0.0,
+    0.5,
+    1.0
+  ],
+  "alpha_sweep": true,
+  "gens_written": true
+}
