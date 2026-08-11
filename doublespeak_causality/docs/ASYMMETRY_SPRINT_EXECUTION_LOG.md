@@ -865,3 +865,36 @@ are needed and will be queued as the refusal jobs free slots — with node sprea
 [[feedback-slurm-node-contention]].
 
 ---
+## 2026-08-11 23:44 — PHASE 4: FIRST PAIR COMPLETE (cocaine, job 750849)
+
+Held-out test **n=38** (the frozen `heldout` split of `pair_carrot_cocaine`, converted and
+round-trip-verified). Pooled frozen refusal axis L18 — **not** reselected for this pair.
+
+| arm | α=0.0 | α=0.5 | α=1.0 |
+|---|---|---|---|
+| **refusal ablation** | 0.000 | **0.184** | **0.500** |
+| **matched random ablation** | 0.000 | 0.000 | **0.000** |
+| direct baseline | 0.000 (refusal_rate **1.000**) | | |
+
+* **refusal-specific ΔASR = +0.500** (refusal 0.500 − matched random 0.000)
+* vs the direct baseline: McNemar **p = 0.0**, 19 flips to harmful, **0 against**
+* refusal_rate collapses **1.000 → 0.342** under refusal ablation only
+* **dose-dependent** and monotone (0.000 → 0.184 → 0.500)
+* **matched random is perfectly flat at every dose** — the cleanest possible specificity control
+* **threshold-robust**: identical at StrongREJECT 0.25 and 0.5 for every arm above
+
+This replicates the program's central causal claim on a **new concept pair** (cocaine, not the
+CARROT↔BOMB pair everything was previously localized on), using the frozen concept-agnostic
+refusal axis. It directly addresses the handoff's "single concept pair per family" limitation.
+
+**Not yet Gate F.** Gate F requires the *dissociation* — refusal-specific effect present AND
+concept-specific effect absent — across all five pairs. Only the refusal half of one pair is
+in. The concept-side arm for cocaine is now running (job 751354,
+`phase10_powered_concept_ablation.py`); four pairs and four concept arms remain.
+
+Side observation, not a claim: `ds_base` ASR for cocaine is only **0.053**, i.e. the
+Doublespeak attack itself barely works on this pair, while refusal ablation still drives ASR
+to 0.500. Whether that is concept-specific attack weakness or a property of the converted
+bench needs the other four pairs before it means anything.
+
+---
