@@ -973,3 +973,45 @@ effect replicates on two concepts the circuit was never localized on.
 Node spread 3/3 (n-501: 751354, 751358, +751362 queued · n-502: 750879, 750880, 751357).
 
 ---
+## 2026-08-12 00:24 — PHASE 4: FIRST CONCEPT ARM (cocaine, job 751354) + a limit on Gate F
+
+`phase10_powered_concept_ablation.py`, whole concept circuit (write L8–11 + carry heads
+stacked) vs a count-matched random control, on the converted cocaine bench.
+
+* **n-floor risk did NOT materialize:** `60 items (skipped 0)` — the ≥2-codeword-occurrence
+  filter dropped nothing. Frozen test n=38, well above the ≥20 floor.
+* **`write_carry_abl` vs baseline, FROZEN test (n=38): ΔASR = +0.0263, McNemar p = 1.0,
+  CI [−0.025, +0.078], MDE 0.074 → the script's verdict is `informative-null`.**
+* Against the refusal arm on the same pair and split (**+0.500**), that is the
+  **representation ≠ behaviour dissociation, replicated on a new concept pair.**
+
+### ⚠ A limit on how far the concept half of Gate F can go — recorded now
+The concept-necessity test asks *"does destroying the concept circuit REDUCE the attack's
+success?"* An ablation can only lower ASR, so the test **has no headroom when the attack
+barely succeeds**. Measured `ds_base` on the frozen test split:
+
+| pair | test n | `ds_base` ASR | concept-necessity testable? |
+|---|---|---|---|
+| grenade | 40 | **0.425** | **yes** — real headroom |
+| bomb | 26 | 0.154 | marginal |
+| cocaine | 38 | 0.053 | **no** — at floor |
+| chlorine | 27 | **0.000** | **no** — attack completely dead |
+| pistol | — | pending | — |
+
+So cocaine's `informative-null` label is **partly a floor artifact**: with baseline ASR 0.026
+on test there is essentially nothing for an ablation to remove, and the script's TOST-style
+MDE criterion cannot distinguish "the circuit is epiphenomenal" from "the attack never
+worked here". **This must not be reported as 5/5 evidence of epiphenomenality.**
+
+**Consequence for Gate F, stated before the remaining arms land:** the *refusal* half is
+testable on all five pairs (it raises ASR from a low baseline, so it has headroom by
+construction). The *concept* half is only genuinely testable where the Doublespeak attack
+works — currently **grenade (0.425)** and marginally **bomb (0.154)**. Gate F will therefore
+be reported as: refusal-specific effect across 5 pairs, concept-necessity null across
+however many pairs had headroom, with the floor-limited pairs named and excluded from the
+concept claim rather than silently counted as supporting nulls.
+
+**Queue:** 5 running, 0 pending; slot from 751354 to be refilled with the pistol/chlorine
+concept arms as they are needed. Node spread n-501: 2 · n-502: 3.
+
+---

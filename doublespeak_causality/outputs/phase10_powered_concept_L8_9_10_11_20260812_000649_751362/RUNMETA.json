@@ -1,0 +1,94 @@
+{
+  "schema": "RUNMETA/1",
+  "run_id": "phase10_powered_concept_L8_9_10_11_20260812_000649_751362",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase10_powered_concept_L8_9_10_11_20260812_000649_751362",
+  "script": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/phase10_powered_concept_ablation.py",
+  "argv": [
+    "doublespeak_causality/scripts/phase10_powered_concept_ablation.py",
+    "--benches",
+    "doublespeak_causality/data/behavioral_pairs/beh_pair_pistol.json",
+    "--model",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "--layers",
+    "8-11",
+    "--splits",
+    "train,test",
+    "--max-new",
+    "220",
+    "--n",
+    "0",
+    "--seed",
+    "0",
+    "--save-gen"
+  ],
+  "args": {
+    "benches": "doublespeak_causality/data/behavioral_pairs/beh_pair_pistol.json",
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "layers": "8-11",
+    "splits": "train,test",
+    "max_new": 220,
+    "n": 0,
+    "seed": 0,
+    "save_gen": true
+  },
+  "seed": 0,
+  "slurm_job_id": "751362",
+  "slurm_nodelist": "n-501",
+  "hostname": "n-501",
+  "git_commit": "049188b33513651e092aa54c5f46b832973baf6a",
+  "git_dirty": null,
+  "python": "3.12.13",
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA RTX A5000",
+  "start_ts": "2026-08-12T00:07:27",
+  "start_epoch": 1786482447.9245667,
+  "cwd": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood",
+  "phase": "phase10_powered_concept_ablation",
+  "benches": [
+    "doublespeak_causality/data/behavioral_pairs/beh_pair_pistol.json"
+  ],
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "carry": {
+    "14": [
+      4,
+      5,
+      23
+    ],
+    "15": [
+      8,
+      11
+    ],
+    "17": [
+      24,
+      27
+    ],
+    "18": [
+      20
+    ],
+    "21": [
+      10
+    ]
+  },
+  "arms": [
+    "baseline",
+    "write_abl",
+    "carry_abl",
+    "write_carry_abl",
+    "rand_abl"
+  ],
+  "target_dasr": 0.09,
+  "primary_endpoint": "paired McNemar ASR baseline vs write_carry_abl",
+  "ablations": {
+    "write": "PhasedMLPZero (decode-safe, demo cw + generated)",
+    "carry": "AllPositionZHeadAblate(CARRY,'zero') decode-safe",
+    "rand": "count-matched random positions + random heads"
+  }
+}
