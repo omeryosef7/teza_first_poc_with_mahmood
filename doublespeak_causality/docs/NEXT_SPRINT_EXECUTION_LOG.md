@@ -388,3 +388,12 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
   concept<vanilla AND concept<its-random -> concept inert holds; refusal>random +0.162 (seed-dependent).
 - seed44: arm07_refusal_L18 at step 193/200 (near FINAL); 07r@101, 06@147, 06r@118. Phi X1/X3 (744801) 30m in.
 - Held free slot for the imminent seed44 eval rather than pre-launching quant.
+
+## 2026-08-11 (tick 4) — seed44 arm07 FINAL+eval; Phase6 quant-8bit launched
+- seed44 arm07_refusal_L18 FINAL -> eval submitted 745066 (pinned n-304..). Other seed44: 07r step110,
+  06 step160, 06r step130 (FINAL within ~1h).
+- Phi X1/X3 (744801) healthy on 3090; run dir = outputs/behav_refusal_clearharm_asweep0.0-0.5-1.0_20260811_083438_744801
+  (this is the --beh for X5). Generating.
+- PHASE 6 (Q7) STARTED: run_llama_quant_behav.slurm QUANT=8bit -> job 745089. phase_behav_refusal on
+  Llama-3.1-8B, refusal-pt L18, alphas 0/0.5/1.0, test split, bnb 8-bit. Tests whether the refusal-
+  ablation dose-response survives quantization vs bf16. 4bit + geometry-under-quant to follow.
