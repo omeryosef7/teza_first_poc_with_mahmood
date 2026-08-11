@@ -266,20 +266,30 @@ def candidate_token_pool(tokenizer, n, seed):
 
 
 @torch.no_grad()
-def activation_covariance(model, prompt_ids, rows, device, hidden_size):
-    """Empirical residual second moment (about the mean) at each row, pooled over prompts
-    and over the two target positions. -> {row: (evals ascending, evecs)}."""
+def activation_covariance(model, prompt_ids, rows, device, hidden_size, pos_stride=4):
+    """Empirical residual covariance at each row -> {row: (evals ascending, evecs)}.
+
+    Pooled over prompts AND over EVERY pos_stride-th token position, not just the two target
+    positions. With only the 2 target positions the estimate has rank <= 2*n_prompts (79 for
+    a 40-prompt run) in a 4096-dim space, so sampling from it would confine the control to a
+    tiny subspace and make the null artificially strong. Striding over all positions gives
+    thousands of samples and a well-conditioned estimate of the residual stream's actual
+    anisotropy -- which is what "a direction that looks like a real activation direction"
+    should mean.
+    """
     S = {r: torch.zeros(hidden_size, hidden_size, dtype=torch.float64, device=device)
          for r in rows}
     mu = {r: torch.zeros(hidden_size, dtype=torch.float64, device=device) for r in rows}
     n = 0
     for ids, pos in prompt_ids:
         o = model(input_ids=ids.unsqueeze(0).to(device), output_hidden_states=True)
+        idx = sorted(set(list(range(0, ids.numel(), pos_stride)) + list(pos.values())))
+        sel = torch.tensor(idx, device=device)
         for r in rows:
-            H = torch.stack([o.hidden_states[r][0, p, :] for p in pos.values()]).double()
+            H = o.hidden_states[r][0].index_select(0, sel).double()
             S[r] += H.T @ H
             mu[r] += H.sum(0)
-        n += len(pos)
+        n += len(idx)
         del o
     out = {}
     for r in rows:
@@ -287,6 +297,8 @@ def activation_covariance(model, prompt_ids, rows, device, hidden_size):
         C = S[r] / n - torch.outer(m, m)
         ev, evec = torch.linalg.eigh(C)
         out[r] = (ev.clamp(min=0).float().cpu(), evec.float().cpu())
+        print(f"[actcov] hs{r}: n_samples={n} rank_eff="
+              f"{float((ev.sum() ** 2) / (ev ** 2).sum()):.1f}", flush=True)
     return out
 
 
