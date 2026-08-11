@@ -211,3 +211,116 @@ per-item scores, strengthening A1.
 compared. `asym_relabel_asr.py` is the single place the threshold is applied.
 
 ---
+## 2026-08-11 — PHASE 1c RESULT (plan §19.1 a–d, §19.2) — job 750363
+
+`scripts/asym_p1c_mech_validity_ext.py` → `outputs/asym_p1c_mechval_20260811_212142_750363`
+(43,197 per-prompt projections; 17 suffix conditions × 15 refusal fit layers × 2 concept
+layers × 2 positions × (37 held-out + 40 train-pool) prompts; 12 min, forward passes only).
+Analysis: `scripts/asym_p1c_analyze.py` → `ANALYSIS_P1C.json`.
+
+### Reproduction check first
+Seed 42, held-out, `decision` position, fit layer L18 → `hs[19]`:
+no-suffix baseline **3.4023** (handoff: 3.40); refusal-suffix drop **−1.664** vs
+random-suffix **−2.045** (handoff Q5: **−1.66 vs −2.04**). **Exact reproduction** — the
+instrument agrees with the shipped Q5 artifact before it is extended.
+
+### §19.1(a) — THE Q5 CONCLUSION DOES NOT REPLICATE ACROSS SEEDS
+Held-out test (n=37), refusal-optimized suffix vs its own norm-matched random suffix,
+paired over prompts (10,000-resample bootstrap + sign-flip permutation):
+
+| seed | mean proj (refusal) | mean proj (random) | diff | boot95 | p | prompts where refusal is lower | reading |
+|---|---|---|---|---|---|---|---|
+| 42 | 1.738 | 1.358 | **+0.381** | [+0.224, +0.545] | 1e-4 | 8/37 (0.22) | refusal suppresses **LESS** — the published Q5 reading |
+| 43 | 0.800 | 2.264 | **−1.464** | [−1.748, −1.192] | 1e-4 | **37/37 (1.00)** | refusal suppresses **MORE** |
+| 44 | 1.630 | 2.975 | **−1.345** | [−1.638, −1.049] | 1e-4 | 35/37 (0.95) | refusal suppresses **MORE** |
+
+Drops from the no-suffix baseline (3.4023), by arm across the three seeds:
+
+| arm | per-seed drop | mean | sd |
+|---|---|---|---|
+| refusal-optimized | −1.664 / −2.602 / −1.773 | **−2.013** | 0.513 |
+| refusal-random | −2.045 / −1.138 / −0.428 | **−1.204** | **0.810** |
+| vanilla doublespeak | −1.125 / −1.255 / −2.299 | −1.560 | 0.644 |
+| concept-optimized | −1.067 / −0.849 / −0.694 | −0.870 | 0.188 |
+| concept-random | −1.677 / −2.327 / −2.317 | −2.107 | 0.372 |
+
+**Mean over seeds, refusal minus random = −0.810 in favour of the mechanism** (refusal
+suppresses its own target *more*), and the sign flips in **2 of 3** seeds relative to the
+published claim. The random arm's spread (sd 0.810) is larger than the mechanism arm's
+(0.513): seed 42 happened to draw an unusually *effective* random direction.
+
+**Verdict.** The handoff's Q5 statement — *"adversarial suffixes suppress the refusal signal
+generically; the mechanism objective adds no specificity even at the internal-target level"* —
+is **UNDERPOWERED, not established**: it rests on **one seed with one random draw**, exactly
+the single-control weakness plan §3.8 warns about. Restated honestly:
+
+> At the internal-target level the refusal-optimized suffix lowers the held-out refusal
+> projection **more** than its matched random counterpart in 2/3 seeds and on average
+> (−2.013 vs −1.204), but a single random draw per seed makes this contrast unstable.
+> **What does NOT change: this internal-target control does not convert into ASR** (handoff
+> 3-seed mean ASR 0.297 refusal vs 0.279 random, no seed significant).
+
+That is a *sharper* dissociation than the one previously reported: the token objective **can**
+move its intended internal coordinate, and the behaviour still does not follow. Gate D's
+clause (ii) ("does not move its intended internal target more than random") is **WITHDRAWN as
+unsupported**; clause (i) (no ASR advantage) **stands**.
+
+### §19.1(c) — NO train→held-out overfitting of the suppression
+Drop vs each pool's own no-suffix baseline, train pool (n=40) vs held-out (n=37):
+
+| arm | train | test | transfer ratio |
+|---|---|---|---|
+| refusal s42/43/44 | −1.269 / −2.063 / −1.176 | −1.664 / −2.602 / −1.773 | 1.31 / 1.26 / 1.51 |
+| refusal-random | −1.591 / −0.793 / −0.214 | −2.045 / −1.138 / −0.428 | 1.29 / 1.44 / 2.00 |
+| vanilla DS | −0.718 / −1.076 / −1.780 | −1.125 / −1.255 / −2.299 | 1.57 / 1.17 / 1.29 |
+
+**Transfer ratio > 1 in all 9 cells.** The universal suffix's refusal suppression is *stronger*
+on held-out prompts than on the prompts it was optimized on. So the "universal suffix overfits
+its refusal suppression to the train pool" hypothesis (a candidate H3/H5 mechanism) is
+**REJECTED** — the suppression generalizes fully.
+
+### §19.2 — LAYER SWEEP: the suppression is generic and NOT localized at the target (H4)
+Held-out drop vs no-suffix across refusal fit layers L10–L24, seed 42:
+
+```
+  L    refusal    random  vanillaDS   ref-rand
+ 10     +0.031    +0.048     +0.023     -0.017
+ 12     +0.014    +0.022     -0.024     -0.008
+ 14     -0.214    -0.217     -0.199     +0.004
+ 16     -0.955    -0.868     -0.604     -0.087
+ 18     -1.664    -2.045     -1.125     +0.381   <- the objective's target layer
+ 20     -2.170    -2.600     -1.574     +0.429
+ 22     -2.825    -3.557     -2.093     +0.733
+ 24     -3.051    -4.055     -2.389     +1.003
+```
+
+Three facts: (1) suppression is **nil before ~L14** and grows **monotonically with depth**;
+(2) the deepest suppression is at **L24**, the edge of the sweep — **not** at the L18 target
+the objective optimized; (3) the layer profile of the refusal suffix and of the random suffix
+are **near-identical in shape**, Pearson **r = 0.9965** (refusal vs vanilla doublespeak
+r = 0.9968).
+
+**Verdict — strong support for H4 (GENERIC ADVERSARIAL SUPPRESSION).** Any adversarial suffix,
+mechanism-derived or not, produces the *same broad late-layer refusal-suppression profile*;
+targeting L18 does not carve a dip at L18. The suffixes differ in the **magnitude** of a
+shared profile, not in **where** they act.
+
+### D2 — the fit/use position mismatch is material
+Refusal-minus-random difference at the two positions (held-out):
+
+| seed | at `decision` (where the axis was fitted/validated) | at `last_suffix` (what the GCG objective read) |
+|---|---|---|
+| 42 | +0.381 (p=1e-4) | −0.067 (p=0.003) |
+| 43 | −1.464 (p=1e-4) | −0.063 (p=0.108) |
+| 44 | −1.345 (p=1e-4) | −1.013 (p=1e-4) |
+
+At the position the optimizer actually read, refusal and random are nearly indistinguishable
+in 2/3 seeds (|diff| ≈ 0.06, ~20× smaller than at the decision position). The absolute
+projections differ in regime too (`last_suffix` ≈ −2.1 vs `decision` ≈ +1.7). Consistent with
+defects D1/D2: **the objective barely steered the coordinate it was pointed at**, while the
+coordinate that matters behaviourally moved a lot — generically.
+
+**Sanity checks passed:** the `neutral` (single-space) condition has drop exactly 0.0000 vs
+no-suffix; template tail measured at 5 tokens, matching the manual token layout in E0.3.
+
+---
