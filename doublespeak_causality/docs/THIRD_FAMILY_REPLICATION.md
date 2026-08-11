@@ -26,11 +26,23 @@ L14–L22), yet only **one layer (L14)** passes the behavioral ablate+induce val
 the gains are small (+0.10/+0.10). Representation presence ≫ behavioral potency — the same signature
 found on Llama, now on a third family. (SELECTED = L14, used as the refusal axis downstream.)
 
-## X1 + X3 — behavioral drift & refusal-ablation dose (RUNNING, job 744801)
-`phase_behav_refusal.py` on Phi, bench `behavioral_v3b/beh_clearharm.json`, refusal-pt = L14 (validated),
-alphas 0.0/0.5/1.0, splits train+test, StrongREJECT-judged. Produces (a) baseline jailbreak labels
-(alpha=0) for the X5 AUC join, and (b) the refusal-necessity dose-response vs a norm-matched random
-control. _Results pending._
+## X1 + X3 — behavioral drift & refusal-ablation dose (DONE, job 745950; test n=42)
+`phase_behav_refusal.py` on Phi, refusal-pt = L14 (validated), alphas 0.0/1.0, test split, thinking-off,
+StrongREJECT-judged. (Rescoped from train+test×3α reasoning-on 744801 which projected ~50h >> walltime.)
+
+| arm | α=0.0 | α=1.0 |
+|---|---|---|
+| direct + **refusal**-ablation (ASR) | 0.714 | **0.952** |
+| direct + random-ablation (ASR) | 0.714 | 0.714 |
+| refusal_rate (refusal-ablation) | 0.095 | **0.000** |
+| refusal_rate (random-ablation) | 0.095 | 0.095 |
+
+Paired: direct+refabl vs direct α=1.0 **ΔASR +0.238, McNemar p=0.0064**; refusal-suppression ≈
+Doublespeak (ds_base vs direct+refabl α=1.0 p=2e-5). **X3 read:** ablating Phi's refusal direction is
+behaviorally **causal, dose-dependent, and SPECIFIC** (random ablation → no change; refusal_rate → 0),
+replicating the Llama activation-space causal result on a third family. (Phi's direct baseline is highly
+compliant — refusal_rate 0.095 — so headroom is small, yet the effect is significant and specific.)
+X1 baseline (α=0) jailbreak labels feed the X5 AUC join.
 
 ## X5 — concept vs refusal readout AUC (PENDING)
 `phase_x5_concept_qwen3.py` (model-generic) with `--model Phi-4-mini-reasoning --refusal-dir

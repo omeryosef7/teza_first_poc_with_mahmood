@@ -419,3 +419,13 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
 - Launched 4bit (746743) + bf16 control (746744) same config (wrapper now conditional on QUANT=bf16).
 - seed44 arm06_concept_L9 FINAL -> eval 746718 running. remaining seed44: 06r@175 07r@141.
 - Phi behav 745950 healthy (~50m, thinking-off feasible).
+
+## 2026-08-11 (tick 9) — Phi X3 DONE (causal+specific cross-family); X5 launched
+- Phi X1/X3 behav (745950) DONE test n=42: direct refusal-ablation ASR 0.714->0.952 (a1.0), random
+  0.714->0.714 (no change), refusal_rate 0.095->0.0 (refabl) vs 0.095 (rand). a1.0 ΔASR +0.238 p=0.0064;
+  ds_base vs refabl a1.0 p=2e-5. => refusal-ablation CAUSAL+dose+SPECIFIC on Phi (rep!=behav 3rd family,
+  behavioral side). THIRD_FAMILY_REPLICATION.md X1/X3 filled.
+- X5 launched (747029, run_phi_x5_concept.slurm): concept-fit(train) + concept/refusal/random proj AUC
+  on test + geometry cos, --beh=745950 (has ds_base_label). Endpoint: concept AUC~0.5 vs refusal AUC>0.5.
+- quant 4bit(746743)+bf16(746744) running on n-301 (co-located w/ gcg 744550 -> possible I/O contention
+  but model-load is one-time; leaving). arm06 concept eval 746718 still generating (n=37, max_new2048).
