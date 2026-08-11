@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_test_droptop1_gpua5000_20260812_013639_751414",
+  "status": "ok",
+  "rows_written": 30340,
+  "end_ts": "2026-08-12T02:04:52",
+  "end_epoch": 1786489492.215273,
+  "wall_seconds": 0.01
+}

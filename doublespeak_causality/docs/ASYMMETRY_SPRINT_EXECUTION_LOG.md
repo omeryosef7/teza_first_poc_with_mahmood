@@ -1575,3 +1575,21 @@ row **A1** cites 4.71× with the degeneracy history, plus the Phi replication. R
 amended to **VERIFIED on Llama / CROSS-FAMILY PARTIAL NEGATIVE**.
 
 ---
+## 2026-08-12 01:57 — GATE C corrected control replicates on HELD-OUT TEST (job 751414)
+
+Llama held-out test n=37, `--actcov-drop-top 1`. `‖Jᵀ v_refusal‖ = 19.79`.
+
+| control | ratio | pct | paired-diff 95 % CI | (train n=40) |
+|---|---|---|---|---|
+| isotropic random | **14.92×** | **1.000** | [+16.05, +20.77] | 14.12× |
+| **covariance-matched (corrected)** | **4.91×** | **0.990** | [+13.43, +17.98] | 4.71× |
+| other-layer refusal | 3.39× | 1.000 | [+11.81, +15.97] | 3.43× |
+
+Train and held-out agree to within 6 % on every control family. **Gate C is fully
+re-verified on both splits against the corrected, non-degenerate control.** Nothing about the
+verdict changed; the control it is measured against is now sound.
+
+Phi **held-out** reachability launched (job on n-501) to complete the cross-family picture on
+a locked split.
+
+---
