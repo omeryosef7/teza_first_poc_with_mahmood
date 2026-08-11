@@ -20,7 +20,7 @@
 set -euo pipefail
 PROJECT_DIR="/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood"
 CONDA_ENV="${CONDA_ENV:-poc_stage2}"; DC="${PROJECT_DIR}/doublespeak_causality"
-QUANT="${QUANT:?set QUANT=8bit or 4bit}"
+QUANT="${QUANT:?set QUANT=bf16|8bit|4bit}"   # bf16 => no --quantize (full-precision control)
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
 conda activate "$CONDA_ENV"
@@ -34,11 +34,12 @@ if [ -z "${OPENAI_API_KEY:-}" ]; then echo "WARN OPENAI_API_KEY unset -> StrongR
 echo "[quant $QUANT] GPU ${VRAM_MB}MB $(nvidia-smi --query-gpu=name --format=csv,noheader|head -1)"
 
 REFPT="${DC}/outputs/stage_gcg_full/refusal_direction_llama_L18.pt"
+QFLAG=(); if [ "$QUANT" != "bf16" ] && [ "$QUANT" != "none" ]; then QFLAG=(--quantize "$QUANT"); fi
 python doublespeak_causality/scripts/phase_behav_refusal.py \
   --bench "${DC}/data/behavioral_v3b/beh_clearharm.json" \
   --model meta-llama/Llama-3.1-8B-Instruct \
   --refusal-pt "$REFPT" \
-  --quantize "$QUANT" \
+  "${QFLAG[@]}" \
   --alphas 0.0,0.5,1.0 \
   --splits test \
   --max-new 220 \

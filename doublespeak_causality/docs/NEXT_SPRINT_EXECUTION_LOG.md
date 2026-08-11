@@ -409,3 +409,13 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
   X5 must use --eval-splits test.
 - Judge parse-fail warnings negligible (1). Quant-8bit 745089 (Llama, test-only, non-reasoning) feasible
   within 10h -> kept running. bench splits: dev43/train85/test42.
+
+## 2026-08-11 (tick 8) — quant-8bit DONE (causal+specific+robust); 4bit+bf16 launched; arm06 eval
+- PHASE 6 quant-8bit (745089) DONE. test n=42: refusal-ablation ASR 0.262/0.429/0.524 (a=0/0.5/1.0),
+  refusal_rate 0.738/0.405/0.238; random-ablation ASR 0.262/0.143/0.143 (opposite). a1.0 ΔASR +0.262
+  McNemar p=0.0074. => refusal-direction ablation is CAUSAL, DOSE-DEPENDENT, SPECIFIC vs random, and
+  SURVIVES 8-bit. "refusal-suppression ≈ Doublespeak" holds. docs/QUANTIZATION_EXTENSION.md written.
+  (This is the activation-space ablation POSITIVE; complements the token-space GCG Gate-D negative.)
+- Launched 4bit (746743) + bf16 control (746744) same config (wrapper now conditional on QUANT=bf16).
+- seed44 arm06_concept_L9 FINAL -> eval 746718 running. remaining seed44: 06r@175 07r@141.
+- Phi behav 745950 healthy (~50m, thinking-off feasible).
