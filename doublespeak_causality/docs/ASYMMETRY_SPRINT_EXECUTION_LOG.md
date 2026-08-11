@@ -122,3 +122,54 @@ becomes a *scientifically justified* Phase 3 candidate (it tests a hypothesis th
 could not test).
 
 ---
+## 2026-08-11 — PHASE 0 COMPLETE
+
+### E0.4 Twelve-agent code/artifact audit (6 topics x audit+adversarial-verify)
+Topics: direction fitting · GCG optimizer · mech-validity + activation intervention · data/splits ·
+SLURM/TROPT infrastructure · handoff-number traceability. Every audit report was independently
+re-checked by a second agent. Headline results:
+
+- **A1 traceability: 0 numeric mismatches.** All 20 GCG arm ASRs, `GATE7_V3_MATRIX_STATS.json`,
+  `GATE7_V3_MECH_VALIDITY_seed42.json` and the 3 quantization summaries reproduce the handoff exactly.
+- **A2 / plan §19.3 direction identity: PASS.** `outputs/stage_gcg_full/refusal_direction_llama_L{12,14,16,18,20}.pt`
+  are **md5-identical** to `outputs/refusal_alllayers/refusal_direction_llama_L{same}.pt` (cosine 1.0).
+  No silent cross-code-path vector mismatch. The concept vector used by GCG
+  (`concept_neg_L9_unit.pt`) is confirmed cos=1.000000 with `unified_directions/clearharm.npz["concept"][9]`
+  (fit layer 9 → `hs[10]`), and only 0.56 with the `curated` cohort — so the clearharm cohort is the source.
+- **A6 NEW LIMITATION.** The L18 refusal axis was fit on `pair_benchmark/pair_carrot_bomb.json` with
+  **n_harmful=60 / n_harmless=20** (harmless = 20 hardcoded generic instructions, not the matched
+  `neutral` prompts), then applied to ClearHarm-v3 doublespeak prompts. Cross-distribution transfer;
+  never previously flagged. Belongs in the paper's limitations.
+- **A7 NEW CONTEXT FOR Q2.** `refusal_direction_llama_SELECTED.json` records per-layer ablate+induce
+  validation: L14 0.40, L16 0.80, **L18 1.133 (selected)**, L20 0.60, and **L12 = −0.333, `valid=false`**.
+  L12 is the ONLY layer that failed validation — and Q2's "Jacobian-peak" arm targeted L12. Its negative
+  is therefore weak evidence about token-space reachability.
+- Infrastructure: conda env `poc_stage2` (py3.12 / torch 2.7.1 / transformers 5.12.1) is the project env;
+  **TROPT is importable only from `$ROOT/TROPT/.venv/bin/python`** (py3.13 / torch 2.11 / transformers 5.8.1)
+  and that venv has **no StrongREJECT checkout**, so any behavioral reranking under TROPT needs a
+  two-process split. MAC (`MAC__wang2024`) and SoftPrompt (`SoftPrompt__schwinn2024`) recipes exist, and
+  `$ROOT/scripts/phase3_tropt_optimize.py` is an existing MAC driver.
+- Reusable prior art found for Phase 2: `$DC/37_soft_prompt_objective.py` implements the **simplex
+  (softmax-over-vocabulary) relaxation** whose optimum upper-bounds any token sequence, plus
+  discretization-retention and peak-weight diagnostics — exactly the instrument plan §19.4 asks for.
+  `phase6_jacobian_readout.py` does **not** help Phase 1: it creates an `inputs_embeds` leaf only to avoid
+  a param-grad buffer and **never reads `embeds.grad`**, so no input-embedding Jacobian exists in the repo.
+
+### E0.5 Deliverables written
+- `docs/ASYMMETRY_GAP_MATRIX.md` — full classification + §E pre-registration (target position, rows,
+  selection split, controls, subspace-honesty rule, Figure A quantities, D3 scope-matched arm).
+- Instruments: `scripts/asym_p1_reachability.py`, `scripts/asym_p1_analyze.py`,
+  `scripts/asym_p1c_mech_validity_ext.py`, `scripts/asym_p2_softprompt.py`;
+  runners `slurm/run_asym_p1_reach.sh`, `slurm/run_asym_p2_soft.sh`.
+
+### GATE A VERDICT: **CONDITIONAL PASS** — GPU work authorised.
+Numbers reproduce (A1) and the direction is one object (A2), so nothing is withdrawn. The position
+defects D1/D2 change the *interpretation* of the token-space arm, and A6/A7 are limitations to carry.
+
+### E0.6 Smoke tests submitted
+- job **750338** `asym_p1_reachability.py --smoke` (2 prompts, 4 random dirs, 3 sub-tokens), split=train.
+- jobs **750350 / 750351** `asym_p2_softprompt.py --smoke`, param=free (budget_rel 1.0) and param=simplex.
+Per plan §3.1 no scale run is submitted until a smoke run loads the model, locates the suffix span,
+computes the objective, takes an optimizer step and writes the intended scalars.
+
+---
