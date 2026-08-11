@@ -438,3 +438,11 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
   concept not privileged. THIRD_FAMILY_REPLICATION.md X5 + Phase-5 verdict written. TASK#6 COMPLETE.
 - seed44 arm06_concept EVALED = 0.243 (== s42 concept, inert holds). remaining 07r@155 06r@193(~FINAL).
 - quant 4bit(746743)+bf16(746744) still running (~48m).
+
+## 2026-08-11 (tick 11) — PHASE 6 COMPLETE (quant robust); seed44 arm06r evaling
+- quant bf16(746744)+4bit(746743) DONE. Dose-response (test n=42, direct refusal-ablation):
+  bf16 .191/.476/.476 (a1 dASR+0.286 p=0.0005); 8bit .262/.429/.524 (+0.262 p=0.007);
+  4bit .167/.643/.762 (+0.571 p<1e-4). random-ablation FLAT at all precisions; refusal_rate collapses
+  under refabl only. => refusal-ablation causal+dose+SPECIFIC and QUANTIZATION-ROBUST (strongest at 4bit).
+  QUANTIZATION_EXTENSION.md comparison + Q7 verdict written. TASK#7 COMPLETE.
+- seed44 arm06r_concept_rand FINAL -> eval 747246 submitted. Only 07r left optimizing (@162).
