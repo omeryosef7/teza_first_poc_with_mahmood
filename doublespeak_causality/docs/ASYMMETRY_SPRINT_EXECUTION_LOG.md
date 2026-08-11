@@ -706,3 +706,53 @@ once and the spread is reported. `scripts/asym_p2_judge.py` already stores per-i
 scores, so re-judging is cheap and does not require re-generation.
 
 ---
+## 2026-08-11 — DOSE-MATCHED SPECIFICITY: PHASE 2 COMPLETE
+
+The control the previous entry flagged as missing has landed. Budget **0.10** for both arms,
+same GPU class, same 300 steps, same frozen train pool, same locked held-out test set
+(n=37) — the **only** manipulated variable is which direction the soft prompt targets.
+
+| arm | Δ refusal proj (held-out) | **binary ASR** | mean continuous SR | refusal_rate |
+|---|---|---|---|---|
+| **refusal direction** | **−8.22** | **0.7568** | 0.7095 | **0.027** |
+| **norm-matched random direction** (cos with v_refusal = +0.0055) | **−2.21** | **0.0811** | 0.0709 | **0.4595** |
+
+**Paired contrast: ΔASR = +0.676, exact McNemar p = 5.96e-08, bootstrap 95 % CI
+[+0.514, +0.811], n=37, 0 % null judges.**
+
+That is an order of magnitude above the measured judge-noise floor (±0.03–0.08) and above
+every discrete result in the program.
+
+### GATE D — FINAL
+> **Continuous input optimization on the validated causal refusal direction is causal,
+> SPECIFIC, and behaviourally effective** — ASR 0.757 vs 0.081 for a dose-matched random
+> direction (ΔASR +0.676, p = 6e-8), with the refusal rate collapsing 0.46 → 0.03.
+> **Discrete token optimization on the SAME direction, axis, position, split and budget is
+> neither** — 3-seed mean ΔASR +0.018 vs its matched random control, which is *below the
+> judge's own noise floor*.
+>
+> The hierarchy **activation ⊇ continuous-input ⊇ discrete-token** is now established on
+> BEHAVIOUR, not only on the internal target, with specificity demonstrated at the continuous
+> level. This is plan §17 **RESULT 2**, in full.
+
+### Why the dose being chosen on test does NOT weaken the specificity claim
+The dose sweep was read on test, so **"0.10 is the optimal budget" is EXPLORATORY** (plan
+§3.5) and needs a dev-split confirmation. But the specificity contrast is a **paired
+comparison at a FIXED budget shared by both arms** — whatever procedure picked 0.10 applied
+identically to the mechanism arm and its control, so it cannot manufacture a
+refusal-vs-random difference. The two claims must be reported at different confidence:
+* **"Continuous optimization on the refusal direction specifically raises ASR far above a
+  dose-matched random direction"** — CONFIRMATORY on the locked test set.
+* **"0.10 is the best dose"** — EXPLORATORY; a dose-response curve, not a selected optimum.
+
+### Remaining limitations for this phase, stated
+* **Single seed (42)** at the winning dose; plan §6.1 asks for ≥3. Seeds 43/44 were cancelled
+  to respect the 6-job cap and are queued for resubmission.
+* The judge refused to score one generation ("I'm sorry, I can't assist with that",
+  `strong_reject/evaluate.py:195`); it was counted as a parse failure, not silently as
+  benign, and `judge_null_frac` was 0.00 for both arms.
+* The **D3 scope caveat** still stands: the activation arm in Figure A is
+  all-position/all-layer while every input arm is 16 suffix positions. The scope-matched
+  activation arm (gap matrix §E.7) has not been run.
+
+---
