@@ -50,9 +50,22 @@ causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-sco
   vanilla (0.243); it only "beats" its random because a random concept direction is a slightly worse
   optimization signal. Consistent with the concept circuit being behaviourally epiphenomenal.
 
-## SEEDS 43, 44 (confirmation, in progress)
-_Populated as arms complete. Cross-seed mean±spread + per-seed McNemar for the finalists
-(vanilla, refusal@L18, refusal_rand@L18, concept@L9, concept_rand@L9)._
+## SEEDS 43, 44 (confirmation)
+### Seed 43 (v3 test n=37) — finalists
+| arm | ASR |
+|---|---|
+| vanilla | 0.351 |
+| refusal@L18 | **0.405** |
+| refusal_rand@L18 | **0.243** |
+| concept@L9 | 0.270 |
+| concept_rand@L9 | _pending_ |
+**IMPORTANT — cross-seed sign flip / high variance:** refusal@L18 vs its random flips between seeds:
+seed42 ΔASR −0.027 (rand≥refusal) vs seed43 **+0.162** (refusal>rand). Mean(42,43)=+0.068 but the
+between-seed swing (~0.19) dwarfs it — consistent with the plan's ~6pp between-run floor being far
+exceeded here → the refusal-vs-random comparison is **UNDERPOWERED / seed-dependent**, NOT a clean
+positive. Seed 44 (running) needed; report all seeds, do not cherry-pick. Concept still ≤ vanilla
+both seeds (0.243==vanilla s42; 0.270<0.351 vanilla s43) → concept inert holds.
+_(Seed 44 all 5 finalists running; per-seed McNemar + 3-seed mean±spread to be filled on completion.)_
 
 ## Mechanistic-validity (Q5) — pending
 `phase_gate7_mech_validity.py`: for each optimized suffix, does the intended internal projection move
