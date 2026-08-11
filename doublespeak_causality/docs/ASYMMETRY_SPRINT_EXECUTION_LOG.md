@@ -756,3 +756,35 @@ refusal-vs-random difference. The two claims must be reported at different confi
   activation arm (gap matrix §E.7) has not been run.
 
 ---
+## 2026-08-11 — PHASE 5 SMOKE (job 750838) + an early warning sign
+
+`scripts/asym_p5_defense_2signal.py` runs end-to-end on a5000: all 5 conditions, both
+pre-generation features in one forward, thresholds fit on TRAIN before any generation, and
+all 7 arms derived from just 2 generations per (item, condition). n=3, `--gen-splits train`,
+`--max-new 64`, 525 s — diagnostic only, not a result.
+
+Two things the smoke tells us:
+
+1. **The features are near-orthogonal as expected:** `cos(refusal, concept) = −0.0108` at
+   L18, so the concept axis does carry information independent of the refusal axis. That is
+   the precondition for a two-signal gate to be able to do anything at all.
+
+2. **⚠ An early warning that the concept signal may point the WRONG WAY.** The fit line reads
+   `ds_concept mean = 1.761` vs `benign_attack_concept mean = 1.972` — the attack-structured
+   **benign** prompts score *higher* on the concept axis than the **doublespeak attacks** do.
+   If that survives at n=85, a `concept > T` gate will fire *more* on benign prompts than on
+   attacks — exactly the failure mode that sank the prior refusal-only gate (benign fire-rate
+   0.90 vs attack 0.71).
+
+   **This is n=3 and must not be treated as a result.** It is recorded here *before* the full
+   run so that the eventual outcome cannot be presented as a surprise either way. If it
+   holds, Phase 5 is plan §17 **RESULT 8** ("two-signal defense also fails → refusal control
+   remains non-selective even with concept information"), which the plan explicitly counts as
+   publishable. The full run is worth its ~3 h regardless, because a *quantified* negative
+   with all six arms and five utility conditions is what the paper needs — the prior Gate-F
+   negative had neither the concept feature nor the direct/neutral/unrelated conditions.
+
+Full run launched: job **751316** (all splits, max_new 200, α = 2.5893 from the v3b-train-fit
+projection summary, StrongREJECT ≥ 0.5).
+
+---
