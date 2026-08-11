@@ -446,3 +446,22 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
   under refabl only. => refusal-ablation causal+dose+SPECIFIC and QUANTIZATION-ROBUST (strongest at 4bit).
   QUANTIZATION_EXTENSION.md comparison + Q7 verdict written. TASK#7 COMPLETE.
 - seed44 arm06r_concept_rand FINAL -> eval 747246 submitted. Only 07r left optimizing (@162).
+
+## 2026-08-11 (tick 19) — SPRINT COMPLETE (all 7 phases)
+- seed44 arm07r_refusal_rand EVALED = 0.243 => seed44 COMPLETE (vanilla .324 refusal .162 refusal_rand
+  .243 concept .243 concept_rand .270). analyze_gate7_matrix.py -> reports/GATE7_V3_MATRIX_STATS.json.
+- 3-SEED headline (refusal@L18 vs its random): ΔASR −0.027/+0.162/−0.081 (p=1.00/0.11/0.51), sign flips,
+  none significant, mean +0.018, swing ~0.24 >> mean => DEFINITIVE NON-SPECIFIC NEGATIVE (Gate D).
+  concept ≤ vanilla all 3 seeds (inert). ATTACK_OBJECTIVE_FULL_MATRIX.md 3-seed summary written.
+- PHASE 4 DONE (task#5). ALL PHASES 0-7 DONE.
+- FINAL_SYNTHESIS.md written: 7 Qs answered. Deliverables complete: FINAL_SYNTHESIS, PAPER_CLAIM_TABLE,
+  PAPER_OUTLINE_V1, THIRD_FAMILY_REPLICATION, QUANTIZATION_EXTENSION, ATTACK_OBJECTIVE_FULL_MATRIX.
+
+## SLACK SUMMARY
+NEXT_SPRINT (Doublespeak causal mechanism) — DONE. Headline: refusal direction is CAUSAL when ablated in
+activation space (ASR ↑ dose-dependent, specific vs random, quantization-robust bf16/8bit/4bit, replicates
+on Phi as 3rd family) but is NOT a token-space GCG lever (indistinguishable from a random direction across
+3 seeds; doesn't even move its own internal target more than random). Concept circuit behaviorally inert.
+=> representation ≠ behavior, across 3 model families + 3 precisions. 6 deliverable docs in
+doublespeak_causality/docs/ (FINAL_SYNTHESIS.md is the entry point). All negatives reported across all
+seeds, no cherry-picking. Ready to fold into the paper (outline V1 + claim table ready).

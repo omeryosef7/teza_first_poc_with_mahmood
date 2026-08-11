@@ -61,13 +61,33 @@ causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-sco
 | concept_rand@L9 | 0.297 |
 _Seed-43 COMPLETE (all 5 arms). concept@L9 (0.270) < vanilla (0.351) and < its random (0.297) →
 concept inert/below-random holds. refusal@L18 (0.405) > its random (0.243), ΔASR +0.162._
-**IMPORTANT — cross-seed sign flip / high variance:** refusal@L18 vs its random flips between seeds:
-seed42 ΔASR −0.027 (rand≥refusal) vs seed43 **+0.162** (refusal>rand). Mean(42,43)=+0.068 but the
-between-seed swing (~0.19) dwarfs it — consistent with the plan's ~6pp between-run floor being far
-exceeded here → the refusal-vs-random comparison is **UNDERPOWERED / seed-dependent**, NOT a clean
-positive. Seed 44 (running) needed; report all seeds, do not cherry-pick. Concept still ≤ vanilla
-both seeds (0.243==vanilla s42; 0.270<0.351 vanilla s43) → concept inert holds.
-_(Seed 44 all 5 finalists running; per-seed McNemar + 3-seed mean±spread to be filled on completion.)_
+### Seed 44 (v3 test n=37) — COMPLETE (all 5 arms)
+| arm | ASR |
+|---|---|
+| vanilla | 0.324 |
+| refusal@L18 | 0.162 |
+| refusal_rand@L18 | 0.243 |
+| concept@L9 | 0.243 |
+| concept_rand@L9 | 0.270 |
+
+## 3-SEED SUMMARY — the definitive Gate-D read (reports/GATE7_V3_MATRIX_STATS.json)
+**refusal@L18 vs its norm-matched random@L18** (the headline mechanism-vs-random test), per seed:
+| seed | refusal@L18 | refusal_rand@L18 | ΔASR (refusal−rand) | McNemar p | boot95 |
+|---|---|---|---|---|---|
+| 42 | 0.324 | 0.351 | **−0.027** | 1.000 | [−0.189,+0.135] |
+| 43 | 0.405 | 0.243 | **+0.162** | 0.109 | [0.000,+0.324] |
+| 44 | 0.162 | 0.243 | **−0.081** | 0.508 | [−0.243,+0.081] |
+| **mean** | 0.297 | 0.279 | **+0.018** | — | swing −0.081…+0.162 (~0.24) ≫ mean |
+
+**The sign flips across seeds (−0.027 / +0.162 / −0.081); NO seed is significant (all p ≥ 0.11, every
+CI includes 0); the 3-seed mean ΔASR is +0.018 with a between-seed swing (~0.24) an order of magnitude
+larger.** The validated refusal-suppression objective is **statistically indistinguishable from a
+norm-matched random direction** as a GCG signal on the corrected leakage-0 split at 200 steps with paired
+stats across 3 seeds → **UNDERPOWERED / SEED-DEPENDENT, a NON-SPECIFIC NEGATIVE**, not a positive.
+
+**concept@L9 vs vanilla (inert, all 3 seeds):** s42 0.243=0.324? no — 0.243 vs vanilla 0.243 (=, s42
+vanilla was 0.243); s43 0.270<0.351; s44 0.243<0.324 → concept ≤ vanilla every seed. **concept@L9 vs
+its random:** s42 +0.054 (p=0.50), s43 −0.027 (p=1.0), s44 −0.027 (p=1.0) → all ns. Concept is inert.
 
 ## Mechanistic-validity (Q5) — pending
 `phase_gate7_mech_validity.py`: for each optimized suffix, does the intended internal projection move
