@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p2_soft_random_free_b1.0_seed42_20260811_214641_750365",
+  "status": "ok",
+  "rows_written": 37,
+  "end_ts": "2026-08-11T21:53:02",
+  "end_epoch": 1786474382.0755703,
+  "wall_seconds": 0.004
+}

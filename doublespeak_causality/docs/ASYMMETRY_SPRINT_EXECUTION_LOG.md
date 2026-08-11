@@ -411,3 +411,86 @@ budget at which the continuous intervention lands the projection in the *natural
 dose-matched comparison can populate Figure A honestly.
 
 ---
+## 2026-08-11 — GATE B RESOLVED — AND IT ANSWERS THE SPRINT'S CENTRAL QUESTION
+
+The ε-scan (plan §5.3, added after the smoke run) walks continuously along the *same*
+direction a real token swap moves in: `e(ε) = e_old + ε·(e_new − e_old)`, so ε=1 reproduces
+the real substitution exactly. Pearson r between the first-order prediction `ε·⟨g_j, Δe⟩` and
+the measured `Δ⟨h,v⟩`, at the `decision` position, `hs[19]`, mechanism = refusal_L18:
+
+**TRAIN pool (n=40, job 750361)** — 120 probes per ε
+```
+ eps      0.01    0.05    0.10    0.25    0.50    1.00
+   r    0.2047  0.5558  0.8395  0.6319  0.0531 -0.0015
+ slope  1.6420  1.0986  1.2787  0.6904  0.1154 -0.0019
+ sign   0.467   0.583   0.658   0.742   0.600   0.575
+```
+**HELD-OUT test (n=37, job 750362)** — r: 0.480 (ε=.05) → **0.810 (ε=.10)** → 0.692 (ε=.25)
+→ −0.131 (ε=.50) → **−0.324 (ε=1.00)**.
+
+### GATE B VERDICT: **PASS on the implementation.**
+The Jacobian is correct — at ε=0.10 the linear model predicts the measured change with
+**r = 0.84 (train) / 0.81 (test) and slope ≈ 1**. The failure at real-token scale is not a
+bug; it is a property of the model.
+
+### The finding: the linear surrogate dies *before* the discrete step size
+The first-order model is accurate for perturbations up to ~ε=0.25 and has **collapsed to
+r ≈ 0 by ε=0.5**, i.e. **long before ε=1.0, which is the smallest move a discrete optimizer
+can make** (a single token substitution; mean ‖Δh‖ ≈ 2.03).
+
+This breakdown is **general, not refusal-specific** — every direction family peaks at ε≈0.1
+and collapses. But the *ranking at ε=1.0* is the point:
+
+| direction kind | r at ε=0.10 | **r at ε=1.00 (a real token swap)** |
+|---|---|---|
+| **refusal_L18 (mechanism)** | 0.840 / 0.810 | **−0.002 / −0.324** |
+| refusal @ other layers | 0.752 / 0.650 | +0.147 / −0.162 |
+| isotropic random | 0.477 / 0.495 | +0.041 / +0.129 |
+| **covariance-matched random (strict null)** | 0.683 / 0.498 | **+0.204 / +0.334** |
+
+*(train / held-out)*
+
+### THE ANSWER TO THE SPRINT'S CENTRAL QUESTION
+Putting Gate C and Gate B together:
+
+> **The refusal direction is the MOST reachable direction in the linear regime and among the
+> LEAST predictable at the step size a discrete optimizer actually takes.**
+>
+> Gate C: `‖Jᵀ v_refusal‖` is **6.7×/7.1×** the covariance-matched null (train/test),
+> percentile 0.998/0.979 — it is *unusually easy* to move with infinitesimal suffix
+> perturbations. H1 (input-reachability failure) is **rejected**.
+>
+> Gate B: that sensitivity is **entirely washed out by nonlinearity at one-token step size**
+> — r goes from 0.84 to ≈ 0 (train) / −0.32 (test), while a covariance-matched random
+> direction still retains r ≈ 0.20/0.33.
+
+GCG's whole mechanism is: take a first-order gradient, use it to rank vocabulary
+substitutions, keep the best. **If the first-order model carries no information about the
+effect of a real substitution on this coordinate, the gradient cannot tell the optimizer
+which token to pick** — no matter how causal, or how locally reachable, the direction is.
+
+This is a *new* explanation, adjacent to but sharper than the plan's H2. H2 says
+"discretization destroys specificity". The measurement says something more specific and more
+falsifiable:
+
+> **H2′ — LINEAR-SURROGATE INVALIDITY AT DISCRETE STEP SIZE.** The direction is
+> continuously reachable and locally highly sensitive, but the first-order surrogate that
+> discrete search depends on is invalid at the granularity of a single token — and it is
+> *more* invalid for the refusal direction than for a typical activation-like direction.
+
+It also explains the Phase-2 CASE D result without contradiction: the *continuous* optimizer
+does not rely on a linear surrogate (it re-linearizes every step), so it reaches the direction
+easily — indeed so easily that at budget 1.0 it overshoots into an off-manifold regime where
+the projection no longer indexes behaviour at all.
+
+**Status of §5.3/§5.4 claims:** Gate B passes on the implementation, so `R(v)` and the
+finite-difference numbers are no longer provisional. But every one of them is a
+**linear-regime** statement and must be labelled as such — the ε-scan proves that
+extrapolating them to real token moves is exactly the error we are diagnosing.
+
+### Held-out replication of Gate C (job 750362, n=37)
+`‖Jᵀ v_refusal‖ = 19.82` vs isotropic random 1.494 (**15.0×**, pct 1.000), covariance-matched
+3.412 (**7.07×**, pct 0.979), other-layer refusal 7.501 (**3.41×**, pct 1.000). Replicates the
+train result on the locked held-out split with no selection.
+
+---

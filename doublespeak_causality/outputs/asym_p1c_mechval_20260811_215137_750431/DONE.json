@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1c_mechval_20260811_215137_750431",
+  "status": "ok",
+  "rows_written": 98175,
+  "end_ts": "2026-08-11T21:53:46",
+  "end_epoch": 1786474426.2560782,
+  "wall_seconds": 0.005
+}
