@@ -550,3 +550,64 @@ lands the projection in its natural range *and* raises ASR — which would make 
 CASE A (discrete bottleneck) — or whether behaviour never follows at any dose.
 
 ---
+## 2026-08-11 — §19.4 ROUNDING PROBE (job 750366) — THE DISCRETE BOTTLENECK, MEASURED
+
+The **simplex** parameterization optimizes logits over the vocabulary and uses the
+softmax-weighted convex combination of embedding rows. Every real token sequence is a
+**vertex** of that simplex, so its optimum **upper-bounds what any discrete suffix can do**.
+Plan §19.4 then asks: project the solution to its per-position argmax token and re-measure.
+
+Held-out test (n=37), refusal projection @ `decision`, `hs[19]`, baseline **+4.418**:
+
+| state | mean projection | Δ vs baseline | per-prompt sd |
+|---|---|---|---|
+| baseline (init suffix) | +4.418 | — | 2.498 |
+| **relaxed simplex optimum** | **−4.277** | **−8.694** | **0.178** |
+| **rounded to nearest tokens** | **+3.922** | **−0.496** | 2.386 |
+
+> ### RETENTION AFTER DISCRETIZATION = **5.7 %**
+
+Optimizer-validity diagnostics (all pass, so this is not an optimizer artifact):
+`budget_sufficient = True` (logit budget 150 ≫ the 2×init_scale = 20 gap, so the argmax
+*could* move), `frac_positions_changed = 0.44`, `mean_peak_weight = 0.755`,
+`min_peak_weight = 0.070`, **6 of 16 positions blended** (peak < 0.9).
+
+**Reading.** The relaxed solution buys its −8.69 almost entirely with **off-manifold
+blending** — convex combinations of tokens that no real prompt can contain. Forced onto
+actual vocabulary, **94 % of the effect evaporates**, landing at −0.496 — which is *inside*
+the range of the 20 **unoptimized** random-token suffixes (−0.177 … −1.046, mean −0.663).
+The sd signature tells the same story: 2.498 → 0.178 (relaxed, overwriting) → 2.386
+(rounded, back to natural prompt-to-prompt variation).
+
+### GATE D — DECISION
+Two independent mechanisms, measured separately, both point the same way:
+
+1. **Gate B / H2′ — the linear surrogate is invalid at discrete step size.** The gradient
+   GCG uses to rank candidate tokens correlates r = 0.84/0.81 with the true effect at
+   ε = 0.10 but r = −0.002/−0.324 at ε = 1.0 (one real token substitution), *worse* than a
+   covariance-matched random direction (+0.204/+0.334). The optimizer's search signal is
+   uninformative for this coordinate.
+2. **§19.4 — even a perfect continuous solution does not survive rounding.** The
+   token-simplex upper bound retains **5.7 %** of its effect on discretization.
+
+Together with Gate C (the direction is *unusually easy* to reach, 6.7×/7.1× the strict null,
+so H1 is rejected) and E1.5 (continuous optimization **is** specific: −20.09 vs −1.56):
+
+> **GATE D VERDICT: CASE A/B — DISCRETE-TOKEN BOTTLENECK, with a mechanism.**
+> The causal refusal direction is continuously input-reachable and *specifically* so. It is
+> not discretely reachable, for two measured reasons: the first-order surrogate discrete
+> search relies on is invalid at one-token granularity, and the continuous optimum's
+> advantage is carried by off-manifold blending that discretization destroys.
+>
+> **Caveat carried forward (CASE D, unresolved):** at the budget tested, the specific
+> continuous suppression yields **ASR = 0** — the projection is driven far outside its
+> natural range and behaviour does not follow. Until the dose sweep finds a budget where
+> continuous suppression *both* stays in-range *and* raises ASR, the hierarchy is established
+> **on the internal target**, not on behaviour. Do not state the behavioural half without it.
+
+**Known gap, stated:** the rounding probe measured retention of the *projection*, not of ASR
+— no generation was run with the rounded token suffix. Given the rounded projection lands
+inside the unoptimized-suffix range, an ASR measurement there is expected to be
+uninformative, but it was not run and is not claimed.
+
+---
