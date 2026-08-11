@@ -69,10 +69,21 @@ def load_unit(path):
     return v / (v.norm() + 1e-8)
 
 
-def build_directions(args, hidden_size, device):
+def build_directions(args, hidden_size, device, act_cov=None):
     """-> {hs_row: {'names': [...], 'kinds': [...], 'V': Tensor[n_dirs, d] (unit norm)}}
 
     All directions are UNIT norm so ||J^T v|| is directly comparable (plan §3.8).
+
+    FOUR control families, in increasing strictness (the smoke run showed why the first
+    alone is not enough -- ANY direction derived from real activations beats an isotropic
+    random one, because real activations occupy a strongly anisotropic subspace):
+      random     isotropic norm-matched random          (the plan's §3.8 control)
+      actrandom  random in the empirical residual COVARIANCE at that row -- i.e. a
+                 direction that "looks like" a real activation direction but carries no
+                 mechanism. This is the null that actually tests specificity.
+      foreign    a real mechanism direction from the OTHER row (concept at the refusal row
+                 and vice versa)
+      otherlayer the SAME mechanism fitted at other layers, evaluated at this row
     """
     acc = {}
 
@@ -97,11 +108,34 @@ def build_directions(args, hidden_size, device):
             assert v.numel() == hidden_size, f"concept L{k} dim {v.numel()} != {hidden_size}"
             add(k + 1, f"concept_L{k}", "mechanism", v / (v.norm() + 1e-8))
 
+    # --- other-layer refusal directions: real, activation-derived, but not THE target ---
+    if args.otherlayer_fit_layers:
+        target_rows = sorted(acc.keys())
+        for k in [int(x) for x in args.otherlayer_fit_layers.split(",") if x != ""]:
+            p = os.path.join(args.refusal_dir, f"refusal_direction_llama_L{k}.pt")
+            if not os.path.exists(p) or (k + 1) in target_rows:
+                continue
+            v = load_unit(p)
+            for row in target_rows:
+                add(row, f"otherlayer::refusal_L{k}", "otherlayer", v)
+
     unit = torch.ones(hidden_size) / float(hidden_size) ** 0.5
     for row in list(acc.keys()):
         R = pc.norm_matched_random(unit, args.n_random, seed=args.random_seed + row)
         for i in range(args.n_random):
             add(row, f"random{i:03d}", "random", R[i])
+        # covariance-matched randoms: v = unit(S^{1/2} g), g ~ N(0, I), where S is the
+        # empirical residual covariance at this row. These are the STRICT null -- they have
+        # the anisotropy of real activations but carry no mechanism.
+        if act_cov is not None and row in act_cov:
+            evals, evecs = act_cov[row]                       # (d,), (d, d) ascending
+            sq = torch.sqrt(evals.clamp(min=0))
+            g = torch.Generator().manual_seed(args.random_seed + 7000 + row)
+            Z = torch.randn(args.n_random, hidden_size, generator=g)
+            A = (Z * sq.unsqueeze(0)) @ evecs.T               # [n, d]
+            A = A / (A.norm(dim=1, keepdim=True) + 1e-8)
+            for i in range(args.n_random):
+                add(row, f"actrandom{i:03d}", "actrandom", A[i])
 
     if args.cross_mechanism:
         base_rows = sorted(acc.keys())
@@ -232,6 +266,75 @@ def candidate_token_pool(tokenizer, n, seed):
 
 
 @torch.no_grad()
+def activation_covariance(model, prompt_ids, rows, device, hidden_size):
+    """Empirical residual second moment (about the mean) at each row, pooled over prompts
+    and over the two target positions. -> {row: (evals ascending, evecs)}."""
+    S = {r: torch.zeros(hidden_size, hidden_size, dtype=torch.float64, device=device)
+         for r in rows}
+    mu = {r: torch.zeros(hidden_size, dtype=torch.float64, device=device) for r in rows}
+    n = 0
+    for ids, pos in prompt_ids:
+        o = model(input_ids=ids.unsqueeze(0).to(device), output_hidden_states=True)
+        for r in rows:
+            H = torch.stack([o.hidden_states[r][0, p, :] for p in pos.values()]).double()
+            S[r] += H.T @ H
+            mu[r] += H.sum(0)
+        n += len(pos)
+        del o
+    out = {}
+    for r in rows:
+        m = mu[r] / n
+        C = S[r] / n - torch.outer(m, m)
+        ev, evec = torch.linalg.eigh(C)
+        out[r] = (ev.clamp(min=0).float().cpu(), evec.float().cpu())
+    return out
+
+
+@torch.no_grad()
+def epsilon_scan(model, embed_w, ids, suffix_slice, positions, rows, dirs, J,
+                 probes, scales, device):
+    """GATE-B DIAGNOSTIC: is the first-order model valid at all, and where does it break?
+
+    For a real token substitution the perturbation is de = e_new - e_old, which is NOT
+    small. Here we walk CONTINUOUSLY along that same direction, e_old + eps*de, and compare
+    the measured D<h,v> against the linear prediction eps*<g_j, de>. eps=1 reproduces the
+    real token swap exactly. If the ratio is ~1 at small eps and collapses by eps=1, the
+    Jacobian is CORRECT and real token moves simply leave the linear regime -- which is
+    itself a result about why gradient-guided token search is hard. If it is wrong even at
+    small eps, the implementation is broken.
+    """
+    ids = ids.to(device)
+    with torch.no_grad():
+        base_emb = embed_w[ids].unsqueeze(0).clone()
+    o0 = model(inputs_embeds=base_emb, output_hidden_states=True)
+    base = {(pn, r): o0.hidden_states[r][0, p, :].float().clone()
+            for pn, p in positions.items() for r in rows}
+    del o0
+    recs = []
+    for j, t_new in probes:
+        t_old = int(ids[suffix_slice.start + j])
+        if t_new == t_old:
+            continue
+        de = (embed_w[t_new].float() - embed_w[t_old].float())
+        for eps in scales:
+            emb = base_emb.clone()
+            emb[0, suffix_slice.start + j, :] = (embed_w[t_old].float()
+                                                 + eps * de).to(emb.dtype)
+            o = model(inputs_embeds=emb, output_hidden_states=True)
+            for pn, p in positions.items():
+                for r in rows:
+                    dh = o.hidden_states[r][0, p, :].float() - base[(pn, r)]
+                    V = dirs[r]["V"]
+                    actual = (V @ dh).cpu().numpy()
+                    pred = (eps * (J[(pn, r)]["g"][:, j, :].to(de.device) @ de)).cpu().numpy()
+                    recs.append({"pos": pn, "hs_row": r, "j": int(j), "eps": float(eps),
+                                 "tok_new": int(t_new), "pred": pred, "actual": actual,
+                                 "dh_norm": float(dh.norm())})
+            del o
+    return recs
+
+
+@torch.no_grad()
 def substitution_pass(model, ids, suffix_slice, positions, rows, sub_positions,
                       cand_tokens, device, batch_size=16):
     """Yield (j, tok_old, tok_new, {(pos,row): dh_gpu[d]}) for every real substitution."""
@@ -278,6 +381,18 @@ def main():
     ap.add_argument("--concept-fit-layers", default="9")
     ap.add_argument("--n-random", type=int, default=100, help="plan §3.8: >=50, prefer 100")
     ap.add_argument("--random-seed", type=int, default=42)
+    ap.add_argument("--otherlayer-fit-layers", default="10,14,22",
+                    help="refusal fit layers used as REAL non-target control directions")
+    ap.add_argument("--act-cov", action="store_true", default=True,
+                    help="add covariance-matched random controls (the strict null)")
+    ap.add_argument("--no-act-cov", dest="act_cov", action="store_false")
+    ap.add_argument("--eps-scan", action="store_true", default=True,
+                    help="Gate-B linearity diagnostic (plan §5.3)")
+    ap.add_argument("--no-eps-scan", dest="eps_scan", action="store_false")
+    ap.add_argument("--eps-prompts", type=int, default=10)
+    ap.add_argument("--eps-positions", type=int, default=4)
+    ap.add_argument("--eps-tokens", type=int, default=3)
+    ap.add_argument("--eps-scales", default="0.01,0.05,0.1,0.25,0.5,1.0")
     ap.add_argument("--cross-mechanism", action="store_true", default=True)
     ap.add_argument("--no-cross-mechanism", dest="cross_mechanism", action="store_false")
     ap.add_argument("--quantize", default=None)
@@ -317,13 +432,6 @@ def main():
     print(f"[cfg] fit_layers refusal={fit_ref} concept={fit_con} -> "
           f"hidden_states_index rows={rows}  (+1 off-by-one applied HERE)", flush=True)
 
-    dirs = build_directions(args, d_model, device)
-    for r in rows:
-        assert r in dirs, f"no directions for hs row {r}"
-        kinds = dirs[r]["kinds"]
-        print(f"[dirs] hs_row={r} n={len(kinds)} "
-              f"{ {k: kinds.count(k) for k in sorted(set(kinds))} }", flush=True)
-
     suffix_str, suffix_ids = make_init_suffix(args.suffix_length, tokenizer)
     assert len(suffix_ids) == args.suffix_length, \
         f"init suffix produced {len(suffix_ids)} tokens, want {args.suffix_length}"
@@ -341,7 +449,28 @@ def main():
         f"plan §3.4 requires >=20 unique examples, got {len(items)}"
     print(f"[data] split={args.split} n_unique={len(items)}", flush=True)
 
+    bases = [make_base(tokenizer, it, suffix_str, suffix_ids, args.suffix_placement,
+                       args.model_family, enable_thinking) for it in items]
+
+    act_cov = None
+    if args.act_cov:
+        act_cov = activation_covariance(
+            model, [(b[0], b[2]) for b in bases], rows, device, d_model)
+        for r in rows:
+            ev = act_cov[r][0]
+            print(f"[actcov] hs{r} top-1 eig frac={float(ev[-1] / ev.sum()):.4f} "
+                  f"top-16 frac={float(ev[-16:].sum() / ev.sum()):.4f}", flush=True)
+
+    dirs = build_directions(args, d_model, device, act_cov=act_cov)
+    for r in rows:
+        assert r in dirs, f"no directions for hs row {r}"
+        kinds = dirs[r]["kinds"]
+        print(f"[dirs] hs_row={r} n={len(kinds)} "
+              f"{ {k: kinds.count(k) for k in sorted(set(kinds))} }", flush=True)
+
     cand_tokens = candidate_token_pool(tokenizer, args.n_sub_tokens, args.random_seed)
+    eps_scales = [float(x) for x in args.eps_scales.split(",") if x != ""]
+    eps_rows = []
     cells = [(pn, r) for pn in ("decision", "last_suffix") for r in rows]
 
     # second-moment accumulators for the empirical token-reachable subspace (§5.4)
@@ -353,8 +482,10 @@ def main():
     fd_keep = {}
     for r in rows:
         kinds = dirs[r]["kinds"]
-        keep = [i for i, k in enumerate(kinds) if k in ("mechanism", "foreign")]
+        keep = [i for i, k in enumerate(kinds)
+                if k in ("mechanism", "foreign", "otherlayer")]
         keep += [i for i, k in enumerate(kinds) if k == "random"][:: args.fd_random_stride]
+        keep += [i for i, k in enumerate(kinds) if k == "actrandom"][:: args.fd_random_stride]
         fd_keep[r] = sorted(set(keep))
     fd = {c: {"pred": [], "actual": [], "j": [], "prompt": []} for c in cells}
 
@@ -362,9 +493,7 @@ def main():
     grad_store = {}
 
     for i, it in enumerate(items):
-        ids, sl, positions = make_base(tokenizer, it, suffix_str, suffix_ids,
-                                       args.suffix_placement, args.model_family,
-                                       enable_thinking)
+        ids, sl, positions = bases[i]
         if i == 0:
             print(f"[base] seq_len={ids.numel()} suffix_slice=({sl.start},{sl.stop}) "
                   f"positions={positions}", flush=True)
@@ -384,11 +513,26 @@ def main():
                     "pos_profile": [float(x) for x in d["pos_norm"][k]],
                 })
             if args.save_grads:
-                keep = [k for k, kd in enumerate(kinds) if kd in ("mechanism", "foreign")]
+                keep = [k for k, kd in enumerate(kinds)
+                        if kd in ("mechanism", "foreign", "otherlayer")]
                 keep += [k for k, kd in enumerate(kinds) if kd == "random"][: args.n_grad_random]
                 grad_store[f"G|{it['task_id']}|{pos_name}|hs{row}"] = \
                     d["g"][keep].numpy().astype(np.float16)
                 grad_store[f"N|{pos_name}|hs{row}"] = np.array([names[k] for k in keep])
+
+        if args.eps_scan and i < args.eps_prompts:
+            probes = [(j, t) for j in range(0, args.suffix_length,
+                                            max(1, args.suffix_length // args.eps_positions))
+                      for t in cand_tokens[: args.eps_tokens]]
+            for rec in epsilon_scan(model, embed_w, ids, sl, positions, rows, dirs, J,
+                                    probes, eps_scales, device):
+                keep = fd_keep[rec["hs_row"]]
+                eps_rows.append({
+                    "task_id": it["task_id"], "pos": rec["pos"], "hs_row": rec["hs_row"],
+                    "j": rec["j"], "eps": rec["eps"], "dh_norm": rec["dh_norm"],
+                    "pred": [float(rec["pred"][k]) for k in keep],
+                    "actual": [float(rec["actual"][k]) for k in keep],
+                })
 
         if args.do_subs:
             blocks = {c: [] for c in cells}
@@ -478,6 +622,14 @@ def main():
         "positions": {
             "decision": "last token of templated prompt (refusal fit + readout position)",
             "last_suffix": "last suffix token (the position the GCG objective reads)"},
+        "eps_scales": eps_scales, "eps_prompts": args.eps_prompts,
+        "eps_rows": len(eps_rows),
+        "fd_kept_direction_names": {f"hs{r}": [dirs[r]["names"][k] for k in fd_keep[r]]
+                                    for r in rows},
+        "fd_kept_direction_kinds": {f"hs{r}": [dirs[r]["kinds"][k] for k in fd_keep[r]]
+                                    for r in rows},
+        "otherlayer_fit_layers": args.otherlayer_fit_layers,
+        "act_cov": bool(args.act_cov),
         "quantize": args.quantize, "elapsed_s": time.time() - t0,
     }
     meta.update(lm.meta())
@@ -487,6 +639,9 @@ def main():
         for r in jac_rows:
             fh.write(json.dumps(r) + "\n")
     json.dump(subspace, open(os.path.join(args.out_dir, "subspace.json"), "w"), indent=2)
+    with open(os.path.join(args.out_dir, "eps_scan.jsonl"), "w") as fh:
+        for r in eps_rows:
+            fh.write(json.dumps(r) + "\n")
 
     fd_out = {}
     for c in cells:

@@ -173,3 +173,41 @@ Per plan §3.1 no scale run is submitted until a smoke run loads the model, loca
 computes the objective, takes an optimizer step and writes the intended scalars.
 
 ---
+## 2026-08-11 — GATE A ADDENDUM
+
+### E0.7 The program reports TWO different binary "ASR"s under one name — quantified, benign
+Found while scoping Phase 4. The two halves of the handoff use different StrongREJECT
+binary thresholds:
+
+| Pipeline | Threshold | Source |
+|---|---|---|
+| GCG held-out eval (Q1–Q4 table) | **≥ 0.5** | `26_eval_p9_gcg_heldout_asr.py:163` counts `strongreject_is_success` |
+| Every behavioural harness (Q6 Phi X1/X3, Q7 quantization) | **0.25** | `MAL_THRESHOLD = 0.25` — `scripts/phase_behav_refusal.py:58`, `phase_behav_carry.py:52`, `14_behavioral_eval.py:33`, `scripts/behav_judge.py:85` |
+
+`docs/RESEARCH_HANDOFF.md` §2.3/§3.6 and the sprint plan §3.6 both state 0.5. So the
+behavioural ASRs were produced at 0.25 while being described as 0.5.
+
+**Cost to fix: zero GPU.** `raw.jsonl` stores the continuous per-item `{arm}_score`, so the
+binary label is recomputable on CPU. New tool: `scripts/asym_relabel_asr.py`
+→ `reports/ASYM_ASR_THRESHOLD_AUDIT.json`.
+
+**Result — the discrepancy is real but changes nothing.** Over all three quantization runs
+(test n=42 each), **27 paired contrasts**: **0 sign flips, 0 significance flips, max shift in
+ΔASR = 0.0714.** The Q7 headline numbers at both thresholds:
+
+| Precision | handoff ΔASR α=1 | recomputed @0.25 | recomputed @0.5 | McNemar p @0.5 |
+|---|---|---|---|---|
+| bf16 | +0.286 | **+0.2857** | **+0.2857** | 0.000488 |
+| 8-bit | +0.262 | **+0.2619** | **+0.2619** | 0.007385 |
+| 4-bit | +0.571 | **+0.5714** | **+0.5476** | ~0 |
+
+The random-ablation control stays flat at both thresholds (|Δ| ≤ 0.0476, all p ≥ 0.5) in
+every precision. **Q7's dose-dependent, specific, quantization-robust conclusion is
+threshold-robust.** This also independently re-reproduces the handoff's Q7 numbers from raw
+per-item scores, strengthening A1.
+
+**Standing decision for this sprint:** every new behavioural number is reported at
+**≥ 0.5** (plan §3.6), with the 0.25 value alongside wherever a prior number is being
+compared. `asym_relabel_asr.py` is the single place the threshold is applied.
+
+---

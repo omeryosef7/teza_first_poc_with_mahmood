@@ -437,8 +437,11 @@ def main():
                 full = torch.cat([embed_w[p.head].unsqueeze(0),
                                   emb.unsqueeze(0).to(embed_w.dtype),
                                   embed_w[p.tail].unsqueeze(0)], dim=1)
-                out = model.generate(inputs_embeds=full, max_new_tokens=args.max_new,
-                                     do_sample=False,
+                # pad_token_id == eos here, so transformers cannot infer the mask and warns;
+                # every position is real (no padding), so pass an explicit all-ones mask.
+                attn = torch.ones(full.shape[:2], dtype=torch.long, device=full.device)
+                out = model.generate(inputs_embeds=full, attention_mask=attn,
+                                     max_new_tokens=args.max_new, do_sample=False,
                                      pad_token_id=tokenizer.pad_token_id)
                 txt = tokenizer.decode(out[0], skip_special_tokens=True)
                 fh.write(json.dumps({"task_id": p.task_id, "split": args.test_split,
