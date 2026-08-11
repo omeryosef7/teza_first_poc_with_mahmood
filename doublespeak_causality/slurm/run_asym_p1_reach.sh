@@ -46,6 +46,7 @@ export PYTHONUNBUFFERED=1
 : "${ASYM_SMOKE:=0}"
 : "${ASYM_TAG:=}"
 : "${ASYM_OTHERLAYERS:=10,14,22}"
+: "${ASYM_DROPTOP:=0}"
 : "${ASYM_SPANS:=gcg}"      # template = model-agnostic, for cross-family replication
 : "${ASYM_REFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
 : "${ASYM_CONCEPT_NPZ:=doublespeak_causality/outputs/unified_directions/clearharm.npz}"
@@ -77,7 +78,7 @@ python -u doublespeak_causality/scripts/asym_p1_reachability.py \
   --n-max "$ASYM_NMAX" --n-random "$ASYM_NRANDOM" --random-seed "$ASYM_SEED" \
   --refusal-fit-layers "$REFUSAL_FIT_LAYERS" --concept-fit-layers "$CONCEPT_FIT_LAYERS" \
   --span-builder "$ASYM_SPANS" --refusal-dir "$ASYM_REFDIR" --concept-npz "$ASYM_CONCEPT_NPZ" \
-  --otherlayer-fit-layers "$ASYM_OTHERLAYERS" \
+  --otherlayer-fit-layers "$ASYM_OTHERLAYERS" --actcov-drop-top "$ASYM_DROPTOP" \
   --n-sub-tokens "$ASYM_NSUBTOK" --sub-batch "$ASYM_SUBBATCH" \
   --out-dir "$OUT" $EXTRA
 echo "=== done ==="; date

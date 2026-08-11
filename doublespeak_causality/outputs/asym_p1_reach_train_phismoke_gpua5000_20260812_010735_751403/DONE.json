@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_train_phismoke_gpua5000_20260812_010735_751403",
+  "status": "ok",
+  "rows_written": 40,
+  "end_ts": "2026-08-12T01:18:53",
+  "end_epoch": 1786486733.6047037,
+  "wall_seconds": 0.003
+}

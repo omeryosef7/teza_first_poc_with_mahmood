@@ -128,12 +128,33 @@ def build_directions(args, hidden_size, device, act_cov=None):
         # empirical residual covariance at this row. These are the STRICT null -- they have
         # the anisotropy of real activations but carry no mechanism.
         if act_cov is not None and row in act_cov:
-            evals, evecs = act_cov[row]                       # (d,), (d, d) ascending
-            sq = torch.sqrt(evals.clamp(min=0))
+            evals, evecs = act_cov[row]                       # (d,), (d, d) ASCENDING
+            ev = evals.clone()
+            # DEGENERACY GUARD. The residual-stream covariance of these models is dominated
+            # by one "massive activation" direction: top-1 holds 97% (Llama hs19), 99%
+            # (Llama hs10), 99.8% (Phi hs15) of the variance. Sampling v = unit(S^1/2 g)
+            # from such a S makes every draw ~97-99% parallel to that single direction, so
+            # "100 covariance-matched randoms" is really ONE direction repeated 100 times.
+            # Dropping the top-k components samples the TYPICAL anisotropic structure
+            # instead of the one massive axis, which is the control we actually want.
+            if args.actcov_drop_top > 0:
+                ev[-args.actcov_drop_top:] = 0.0
+            sq = torch.sqrt(ev.clamp(min=0))
             g = torch.Generator().manual_seed(args.random_seed + 7000 + row)
             Z = torch.randn(args.n_random, hidden_size, generator=g)
             A = (Z * sq.unsqueeze(0)) @ evecs.T               # [n, d]
             A = A / (A.norm(dim=1, keepdim=True) + 1e-8)
+            # measure and PRINT the family's own diversity so degeneracy can never be
+            # silently reported as a 100-direction control again
+            C_ = A @ A.T
+            iu = torch.triu_indices(A.shape[0], A.shape[0], offset=1)
+            mc = float(C_[iu[0], iu[1]].abs().mean())
+            tot = float(evals.sum()) or 1.0
+            print(f"[actcov] hs{row}: drop_top={args.actcov_drop_top} "
+                  f"top1_var_frac={float(evals[-1])/tot:.4f} "
+                  f"mean|pairwise cos| among the {args.n_random} draws = {mc:.4f}"
+                  + ("   <-- DEGENERATE: these are ~1 direction, not "
+                     f"{args.n_random}" if mc > 0.5 else ""), flush=True)
             for i in range(args.n_random):
                 add(row, f"actrandom{i:03d}", "actrandom", A[i])
 
@@ -433,6 +454,11 @@ def main():
     ap.add_argument("--act-cov", action="store_true", default=True,
                     help="add covariance-matched random controls (the strict null)")
     ap.add_argument("--no-act-cov", dest="act_cov", action="store_false")
+    ap.add_argument("--actcov-drop-top", type=int, default=0,
+                    help="zero the top-k residual-covariance eigendirections before sampling "
+                         "the covariance-matched control; 0 reproduces the runs already "
+                         "reported, 1+ removes the massive-activation axis that makes the "
+                         "family degenerate")
     ap.add_argument("--eps-scan", action="store_true", default=True,
                     help="Gate-B linearity diagnostic (plan §5.3)")
     ap.add_argument("--no-eps-scan", dest="eps_scan", action="store_false")

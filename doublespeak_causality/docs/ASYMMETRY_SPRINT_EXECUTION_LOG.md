@@ -1360,3 +1360,61 @@ dimension assert. Cancelled and resubmitted as **751403** with the correct confi
 would have caught it regardless — that is why it is there.
 
 ---
+## 2026-08-12 01:25 — ⚠ CORRECTION: the "covariance-matched" control is DEGENERATE — it is ~1 direction, not 100
+
+The Phi smoke printed `[actcov] hs15: rank_eff=1.0, top-1 eig frac=0.9977`, which sent me back
+to the Llama logs. Both models' residual-stream covariance is dominated by a single
+"massive activation" axis:
+
+| model | row | top-1 eigenvalue share | effective rank |
+|---|---|---|---|
+| Llama | hs19 | **0.9703** | 1.1 |
+| Llama | hs10 | 0.9921 | 1.0 |
+| Phi | hs15 | 0.9977 | 1.0 |
+
+The `actrandom` control samples `v = unit(Σ^{1/2} g)`. For such a Σ, `E[cos²(v, e₁)] = λ₁/Σλ`
+exactly, so:
+
+| | E&#124;cos(v, e₁)&#124; | E[pairwise cos between two draws] |
+|---|---|---|
+| Llama hs19 | 0.985 | **0.970** |
+| Llama hs10 | 0.996 | 0.992 |
+| Phi hs15 | 0.999 | 0.998 |
+
+> **The 100 "covariance-matched random" directions are ~97–99 % mutually parallel. They are
+> ONE direction repeated 100 times, not 100 independent draws.**
+
+### What this does and does not change
+**It does NOT change the Gate C conclusion.** Gate C rests on three control families:
+
+| control | Llama train ratio | status |
+|---|---|---|
+| 100 **isotropic** random | **14.31×**, pct 1.000 | **unaffected — genuinely 100 diverse directions** |
+| 3 **other-layer** refusal | **3.40×**, pct 0.983 | **unaffected — real, distinct directions** |
+| 100 **covariance-matched** | 6.74×, pct 0.998 | **must be re-described** |
+
+The refusal direction is still unusually reachable against two sound, independent control
+families. **H1 remains rejected.**
+
+**It DOES change what the third number means.** "6.74× the covariance-matched null" must be
+read as **"6.74× the single dominant residual-covariance direction"** — a real and arguably
+*harder* comparison, but not the 100-draw diverse control I described it as in
+`TOKEN_REACHABILITY_ANALYSIS.md` §2.1 and the claim table (row A1). That description was wrong
+and is corrected.
+
+### Fixes
+1. **Diagnostic, so this can never be silent again:** the script now measures and prints the
+   `mean |pairwise cos|` among the covariance-matched draws and appends
+   `<-- DEGENERATE: these are ~1 direction, not N` when it exceeds 0.5.
+2. **`--actcov-drop-top k`** zeroes the top-k covariance eigendirections before sampling, so
+   the control samples the *typical* anisotropic structure rather than the one massive axis.
+   Default **0** reproduces the runs already reported; job **751408** re-runs the Llama train
+   split with `--actcov-drop-top 1` to get the control I actually intended.
+3. Docs updated to state the degeneracy rather than the intended description.
+
+**How it was caught:** by porting the instrument to a second model and reading a diagnostic I
+had added for a different reason. The Llama logs had been printing `rank_eff=1.1` since the
+first full run; I had not looked at it. Cross-family replication paid for itself before
+producing a single scientific number.
+
+---
