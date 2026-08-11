@@ -368,3 +368,16 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
 - NOTE: build_refusal_direction_llama.py reads bench["behavioral"][i]["direct"/"neutral"]; the
   behavioral_v3b/beh_clearharm.json uses items/harmful_instruction (WRONG shape for this builder) —
   pair_benchmark files are the correct direct/neutral source. Documented to avoid re-tripping.
+
+## 2026-08-11 (tick 2) — Phi X2 refusal DONE; X1/X3 launched; seed43 concept_rand eval
+- Phi X2 refusal build (744772) SUCCEEDED. Separations 0.34–0.58 (L14–22 all ~0.5+), but induced-
+  refusal validation passes ONLY at L14 (score +0.20); L16/L18 ablate-only +0.10; L12/L20/L22 <=0.
+  => representation strongly separable, behavioral potency weak (1/6 layers) = rep!=behavior on a
+  3rd family. SELECTED=L14. Details in docs/THIRD_FAMILY_REPLICATION.md.
+- Phi X1+X3 behavioral run LAUNCHED (744801, run_phi_x13_behav.slurm): phase_behav_refusal on Phi,
+  refusal-pt=L14, alphas 0.0/0.5/1.0, train+test, StrongREJECT. Gives baseline jailbreak labels (for
+  X5 AUC) + refusal-ablation dose-response vs random. Long pole (reasoning gen, max_new 512).
+- Seed-43 concept_rand@L9 FINAL -> eval submitted (744793, pinned n-304). Last missing seed-43 arm.
+- Found concept builder path: phase_x5_concept_qwen3.py is model-generic (diff-of-means concept fit +
+  concept/refusal/random proj AUC) -> reuse for Phi X5 once X1 labels land. build_unified_directions
+  needs a pair_directions npz (heavier) -> X5 script is the lighter, sufficient route.
