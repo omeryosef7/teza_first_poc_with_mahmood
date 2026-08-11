@@ -1,6 +1,6 @@
 # MULTI-CONCEPT CAUSAL GENERALIZATION — GATE F
 
-*Asymmetry sprint deliverable (plan §15.5). Aggregate: `reports/ASYM_P4_MULTICONCEPT.json`,
+*Asymmetry sprint deliverable (plan §15.5). **COMPLETE** — all 10 arms (5 refusal + 5 concept) finished. Aggregate: `reports/ASYM_P4_MULTICONCEPT.json`,
 produced by `scripts/asym_p4_aggregate.py`. Held-out (`heldout`) split only, StrongREJECT ≥ 0.5
 recomputed from continuous per-item scores.*
 
@@ -22,14 +22,16 @@ mechanism.
 |---|---|---|---|---|---|---|---|
 | **grenade** | 40 | **+0.525** | [+0.38, +0.68] | **9.5e-07** | **+0.050** [−0.12,+0.23] | 0.774 | **0.350** |
 | **cocaine** | 38 | **+0.500** | [+0.34, +0.66] | **3.8e-06** | −0.026 | 1.0 | 0.053 |
-| **pistol** | 29 | **+0.414** | [+0.24, +0.59] | **0.00049** | *(running)* | — | 0.000 |
+| **pistol** | 29 | **+0.414** | [+0.24, +0.59] | **0.00049** | **+0.000** [0.00,0.00] | 1.0 | 0.000 |
 | **bomb** | 26 | **+0.385** | [+0.19, +0.58] | **0.00195** | **+0.000** [−0.12,+0.12] | 1.0 | 0.115 |
-| **chlorine** | 27 | +0.185 | [−0.04, +0.41] | 0.18 (ns) | *(running)* | — | 0.000 |
+| **chlorine** | 27 | +0.185 | [−0.04, +0.41] | 0.18 (ns) | **+0.000** [0.00,0.00] | 1.0 | 0.000 |
 
 **Refusal half:** 5/5 positive, **sign-consistent**, median **+0.414**, range
 [+0.185, +0.525], **4/5 significant after Holm-Bonferroni**.
-**Concept half:** null in every pair tested (3/3, p = 1.0 / 1.0 / 0.774), sign-**inconsistent**
-(−0.026 … +0.050), 0/3 significant after Holm.
+**Concept half:** null in **all 5 pairs**, sign-**inconsistent** (−0.026 … +0.050), **0/5**
+significant after Holm. Note that the two floor-limited pairs return *exactly* +0.000 with a
+degenerate [0.00, 0.00] CI — the concept ablation changed **not one item** — which is what a
+zero-headroom test looks like, not evidence of epiphenomenality.
 
 *(Provenance note: an earlier draft of this table carried +0.062 for bomb and +0.048 for
 grenade, read from jobs that were still writing. The aggregator now refuses any run dir
@@ -52,8 +54,8 @@ threshold 0.15):
 | grenade | 0.350 | **INFORMATIVE** |
 | bomb | 0.115 | marginal |
 | cocaine | 0.053 | marginal |
-| pistol | 0.000 | **floor-limited — the attack does not work on this pair** |
-| chlorine | 0.000 | **floor-limited — the attack does not work on this pair** |
+| pistol | 0.000 | **floor-limited** — concept-specific ΔASR is *exactly* 0.000, CI [0,0] |
+| chlorine | 0.000 | **floor-limited** — concept-specific ΔASR is *exactly* 0.000, CI [0,0] |
 
 This constraint was written into the execution log **before** the remaining arms landed, and
 is enforced in code (`--min-ds-base`) rather than applied by hand afterwards.
@@ -113,7 +115,9 @@ concept circuit did not reduce the attack at all).
   strongly the concept nulls can be read.
 * `phase10`'s random control is count-matched but **not layer-band-matched** (its head pool
   spans all layers, while the carry heads live in L14–21).
-* Two pairs contribute nothing to the concept half. A concept-generality claim needs pairs
-  where the attack works — i.e. a bench-construction problem, not more GPU.
+* Two pairs contribute nothing to the concept half — their degenerate [0.00, 0.00] CIs make
+  this explicit in the output rather than hiding it behind a p-value of 1.0. A concept-
+  generality claim needs pairs where the attack works: a bench-construction problem, not
+  more GPU.
 * Per-pair test n is 26–40; the refusal effects are large enough to clear this, the concept
   nulls are not.

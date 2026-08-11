@@ -1224,3 +1224,37 @@ mechanism-vs-random contrast is internally matched.
 > the token-space negative or merely *reframes* it.
 
 ---
+## 2026-08-12 01:20 — PHASE 4 COMPLETE (all 10 arms) — GATE F = **PARTIAL**, final
+
+| pair | n | refusal-specific ΔASR | p | concept-specific ΔASR | p | power |
+|---|---|---|---|---|---|---|
+| grenade | 40 | **+0.525** | 9.5e-07 | +0.050 [−0.12,+0.23] | 0.774 | **INFORMATIVE** |
+| cocaine | 38 | **+0.500** | 3.8e-06 | −0.026 | 1.0 | marginal |
+| pistol | 29 | **+0.414** | 0.00049 | **+0.000** [0.00,0.00] | 1.0 | floor-limited |
+| bomb | 26 | **+0.385** | 0.00195 | +0.000 [−0.12,+0.12] | 1.0 | marginal |
+| chlorine | 27 | +0.185 | 0.18 ns | **+0.000** [0.00,0.00] | 1.0 | floor-limited |
+
+**Refusal half:** 5/5 positive, sign-consistent, median **+0.414**, 4/5 significant after Holm.
+**Concept half:** null in all 5, sign-inconsistent, **0/5** significant.
+
+**The floor-limited pairs make the power problem visible rather than hiding it.** Pistol and
+chlorine return concept-specific ΔASR of **exactly +0.000 with a degenerate [0.00, 0.00] CI** —
+the ablation changed *not a single item*. That is the signature of a test with no headroom, not
+evidence of epiphenomenality, and it is precisely why the `--min-ds-base` power filter excludes
+them from the Gate-F tally instead of counting them as 2 more supporting nulls. A naive reading
+would have reported "concept ablation is null in 5/5 pairs" as strong generalization; it is
+null in 5/5 pairs of which only **1** could have detected anything.
+
+> **GATE F = PARTIAL (final).** The refusal half **generalizes** across all five concept pairs
+> on the frozen concept-agnostic axis — four of them never used to localize anything. The
+> concept half is **underpowered across the family**: the dissociation is properly demonstrated
+> on **1 of 5** pairs (grenade: +0.525 p=9.5e-07 vs +0.050 p=0.774 on the same 40 items),
+> consistent on 2 marginal ones, and untestable on 2. **"General across concepts" is NOT
+> established.**
+
+`docs/MULTICONCEPT_CAUSAL_GENERALIZATION.md` finalized with all 10 arms.
+
+**Queue:** 5 running (2 Phase-3 GCG arms ~7 h, Phase-7 4-bit reachability, seed-44 pair),
+1 free slot. n-501: 1 · n-502: 1 · rest pending-free.
+
+---

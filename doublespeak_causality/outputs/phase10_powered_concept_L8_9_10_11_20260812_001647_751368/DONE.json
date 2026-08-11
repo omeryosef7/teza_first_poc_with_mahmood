@@ -1,0 +1,28 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase10_powered_concept_L8_9_10_11_20260812_001647_751368",
+  "status": "ok",
+  "rows_written": 60,
+  "end_ts": "2026-08-12T00:50:38",
+  "end_epoch": 1786485038.0916069,
+  "wall_seconds": 2021.633,
+  "arms": [
+    "baseline",
+    "write_abl",
+    "carry_abl",
+    "write_carry_abl",
+    "rand_abl"
+  ],
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "n_items_skipped": 0,
+  "benches": [
+    "doublespeak_causality/data/behavioral_pairs/beh_pair_chlorine.json"
+  ],
+  "gens_written": true,
+  "primary_verdict_pooled": "informative-null"
+}
