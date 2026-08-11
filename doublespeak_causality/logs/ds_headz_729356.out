@@ -1,0 +1,11 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=0-15 ===
+Thu Aug  6 09:45:44 PM IDT 2026
+n-501
+git=66e344e5b9508ce3dc1f56e349f65be29d28073d
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[headz] cohort=clearharm L=32 heads=32 layers=0-15 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_clearharm_query_20260806_220942_729356
+[headz] 44204 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_clearharm_query_20260806_220942_729356
+  [dev] n_valid=44 selfswap_dev=0.0 Holm-sig heads=3: [('L11H4', 0.0118, 0.0), ('L11H13', 0.0105, 1e-05), ('L11H12', 0.0064, 0.0)]
+     top10 by necessity: [('L11H4', 0.0118), ('L11H13', 0.0105), ('L9H19', 0.0099), ('L7H23', 0.0082), ('L11H12', 0.0064), ('L10H3', 0.0057), ('L10H29', 0.0053), ('L4H16', 0.005), ('L5H9', 0.0047), ('L10H13', 0.0047)]
+  [heldout] n_valid=41 selfswap_dev=0.0 Holm-sig heads=5: [('L11H4', 0.003, 0.0), ('L10H30', 0.0012, 1e-05), ('L6H13', 0.0009, 9e-05), ('L10H28', 0.0007, 7e-05), ('L15H10', 0.0007, 9e-05)]
+     top10 by necessity: [('L4H16', 0.0035), ('L10H2', 0.0031), ('L11H4', 0.003), ('L0H21', 0.0029), ('L7H23', 0.0029), ('L11H6', 0.0028), ('L9H19', 0.0027), ('L5H11', 0.0025), ('L5H19', 0.0025), ('L1H30', 0.0025)]

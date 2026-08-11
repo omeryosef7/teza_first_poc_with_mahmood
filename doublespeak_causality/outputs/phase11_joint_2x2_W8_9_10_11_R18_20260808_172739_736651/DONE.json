@@ -1,0 +1,32 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase11_joint_2x2_W8_9_10_11_R18_20260808_172739_736651",
+  "status": "ok",
+  "rows_written": 12,
+  "end_ts": "2026-08-08T17:32:57",
+  "end_epoch": 1786199577.2153006,
+  "wall_seconds": 290.901,
+  "arms": [
+    "ds_base",
+    "concept_abl",
+    "refusal_restored",
+    "both"
+  ],
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "refusal_layers": [
+    18
+  ],
+  "n_items_skipped": 0,
+  "benches": [
+    "doublespeak_causality/data/behavioral_v3/beh_clearharm.json",
+    "doublespeak_causality/data/behavioral_v3/beh_generated.json"
+  ],
+  "gens_written": true,
+  "probe": true,
+  "primary_Ihat_pooled": 0.0
+}

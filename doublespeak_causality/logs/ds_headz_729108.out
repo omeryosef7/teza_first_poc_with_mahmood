@@ -1,0 +1,6 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=16-31 ===
+Thu Aug  6 08:35:37 PM IDT 2026
+n-305
+git=31d6243a7b73354b0dec852254a4eb7cfcfe155d
+ERROR: GPU 'NVIDIA GeForce RTX 3090' (24576
+0MiB) not in the allowlist

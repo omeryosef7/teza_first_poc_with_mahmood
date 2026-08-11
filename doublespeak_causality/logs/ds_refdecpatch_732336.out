@@ -1,0 +1,5 @@
+=== refusal decision-patch behav (§23/Gate B): meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json band=15,16,17 head=17 maxnew=200 n=2 splits=train,dev,test ===
+Fri Aug  7 06:56:35 PM IDT 2026
+n-802
+git=76acb44a0e8143c5a6d572f1fbfb4f3a9a30dcc6
+GPU ok: NVIDIA L40S

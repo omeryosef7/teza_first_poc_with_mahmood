@@ -1,0 +1,25 @@
+{
+  "schema": "DONE/1",
+  "run_id": "orthog_clearharm_20260808_160229_736571",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T17:00:00",
+  "end_epoch": 1786197600.4579344,
+  "wall_seconds": 3426.461,
+  "arms": [
+    "ds_base",
+    "concept_L18",
+    "refusal_L18",
+    "concept_orth_ref_L18",
+    "refusal_orth_concept_L18",
+    "both_L18"
+  ],
+  "layers": [
+    18
+  ],
+  "alphas": [
+    8.0
+  ],
+  "swept": false,
+  "gens_written": true
+}

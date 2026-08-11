@@ -1,0 +1,54 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "mode": "band",
+ "prompt_form": "decision",
+ "readout": "refusal_proj",
+ "proj_layer_hs": 18,
+ "proj_layer_decoder": 17,
+ "destinations": "answer",
+ "layers": [
+  8,
+  9,
+  10,
+  11
+ ],
+ "attn_implementation": "eager",
+ "n_items": 4,
+ "cells": {
+  "edge_KO": {
+   "n": 4,
+   "mean_delta_refusal": 0.00082,
+   "mean_delta_random": -0.88928,
+   "specificity": 0.8901,
+   "specificity_ci95": [
+    -0.7398,
+    3.23096
+   ],
+   "ci_reliable": false
+  },
+  "rand_edge": {
+   "n": 4,
+   "mean_delta_refusal": 0.01941,
+   "mean_delta_random": -0.89828,
+   "specificity": 0.91769,
+   "specificity_ci95": [
+    -0.74909,
+    3.31141
+   ],
+   "ci_reliable": false
+  },
+  "all_query_edges": {
+   "n": 4,
+   "mean_delta_refusal": 0.04884,
+   "mean_delta_random": -0.93632,
+   "specificity": 0.98516,
+   "specificity_ci95": [
+    -0.44881,
+    3.24647
+   ],
+   "ci_reliable": false
+  }
+ },
+ "_INVALID": "SUPERSEDED -- DO NOT USE. This summary was produced by the cross-axis delta bug: mean_delta_random was differenced against the REFUSAL axis baseline, so every cell reports a constant ~-0.89 that is the fixed offset between two directions, not an effect. base_proj_random was not stored, so these numbers CANNOT be recomputed correctly from this raw.jsonl. Fixed 2026-08-06; re-smoke 726616 and runs 727983/728189 are correct. validate_all_outputs.py now FAILs this dir by design."
+}

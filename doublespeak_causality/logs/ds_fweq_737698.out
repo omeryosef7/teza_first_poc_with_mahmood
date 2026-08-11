@@ -1,0 +1,6 @@
+GPU: NVIDIA RTX A5000
+[fwd-equiv] n=10 house-vs-indep last-token residual (all layers):
+  max_abs_diff: median=0.375000 max=1.171875
+  rel_diff:     median=2.30e-02 max=8.22e-02
+  verdict: DIFFERENT (real discrepancy)
+=== done ===

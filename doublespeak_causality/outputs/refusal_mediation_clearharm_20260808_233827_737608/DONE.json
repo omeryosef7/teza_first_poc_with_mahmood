@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refusal_mediation_clearharm_20260808_233827_737608",
+  "status": "ok",
+  "rows_written": 252,
+  "end_ts": "2026-08-08T23:39:39",
+  "end_epoch": 1786221579.3045945,
+  "wall_seconds": 72.203,
+  "phase": "refusal_mediation"
+}

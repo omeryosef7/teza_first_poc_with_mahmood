@@ -1,0 +1,37 @@
+=== P6 jacobian readout: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_curated.json kind=behavioral cohort=curated n=0 ===
+    splits=train,test conds=direct,neutral,doublespeak targets=concept,refusal pos=final_prompt,probe_last refrow=-1 grad=inputs_embeds
+Fri Aug  7 01:26:39 PM IDT 2026
+n-802
+git=2f529a86252988d8533e5af23db0dfe510cab68d
+GPU ok: NVIDIA L40S (46068MiB)
+[jac] 10 work items, 20 rows, 3s
+[jac] 20 work items, 40 rows, 5s
+[jac] 30 work items, 60 rows, 7s
+[jac] 40 work items, 80 rows, 9s
+[jac] 50 work items, 100 rows, 11s
+[jac] 60 work items, 120 rows, 13s
+[jac] 70 work items, 140 rows, 15s
+[jac] 80 work items, 160 rows, 17s
+[jac] 90 work items, 180 rows, 19s
+[jac] 100 work items, 200 rows, 21s
+[jac] 110 work items, 220 rows, 22s
+[jac] 120 work items, 240 rows, 24s
+[jac] 130 work items, 260 rows, 26s
+[jac] 140 work items, 280 rows, 28s
+[jac] 150 work items, 300 rows, 30s
+[jac] 306 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/jacobian_curated_20260807_132644_732011
+[jac] hs-index check (acts[L] vs hidden_states[L+1]) maxabs=0.0 | taylor median ratio=0.957153 (1.0 == perfectly linear)
+  [test|direct] target=concept n=21 S=2.77783 peak||J||=L17 peak|jac_proj|=L26
+  [test|direct] target=refusal n=21 S=70.4633 peak||J||=L12 peak|jac_proj|=L23
+  [test|doublespeak] target=concept n=21 S=-3.37989 peak||J||=L16 peak|jac_proj|=L25
+  [test|doublespeak] target=refusal n=21 S=8.9922 peak||J||=L12 peak|jac_proj|=L22
+  [test|neutral] target=concept n=21 S=-4.47488 peak||J||=L16 peak|jac_proj|=L26
+  [test|neutral] target=refusal n=21 S=13.2392 peak||J||=L12 peak|jac_proj|=L26
+  [train|direct] target=concept n=30 S=2.75385 peak||J||=L16 peak|jac_proj|=L26
+  [train|direct] target=refusal n=30 S=66.4649 peak||J||=L12 peak|jac_proj|=L26
+  [train|doublespeak] target=concept n=30 S=-3.06926 peak||J||=L16 peak|jac_proj|=L24
+  [train|doublespeak] target=refusal n=30 S=11.0977 peak||J||=L12 peak|jac_proj|=L23
+  [train|neutral] target=concept n=30 S=-4.29052 peak||J||=L16 peak|jac_proj|=L26
+  [train|neutral] target=refusal n=30 S=17.5664 peak||J||=L12 peak|jac_proj|=L26
+=== done ===
+Fri Aug  7 01:28:01 PM IDT 2026

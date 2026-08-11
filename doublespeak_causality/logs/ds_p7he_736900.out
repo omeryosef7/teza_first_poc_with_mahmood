@@ -1,0 +1,30 @@
+=== Phase7 head/edge: bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json band=13-20 parts=head,edge splits=train,test n=0 anchor=L18 ===
+Sat Aug  8 09:02:45 PM IDT 2026
+n-801
+git=b3922c94e217d5fd0a7dfb7f4f3e59bc134565e9
+GPU ok: NVIDIA L40S (46068MiB)
+[phase7] attn_implementation='eager' (asserted for edge part)
+[phase7] cohort=clearharm band=L13-20 heads=32 parts=['head', 'edge'] anchor=L18 read_rows=[14, 15, 16, 17, 18, 19, 20, 21, 25, 29, 30] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_refhe_clearharm_20260808_211355_736900
+[phase7] 35433 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_refhe_clearharm_20260808_211355_736900 (gpu=NVIDIA L40S)
+  [train] items=85 valid_gap=71 direct=4.50113 ds=1.92092 (anchor L18)
+     HEAD: selfswap_dev=0.0 normrand_dev=0.048566 Holm-sig=82 max_single_frac=0.2529 band_all_frac=0.6083 distributed=True
+           top heads: [('L15H7', 0.2529), ('L13H9', 0.1979), ('L13H12', 0.1799), ('L14H24', 0.1644), ('L16H4', 0.143), ('L15H5', 0.1342)]
+           per-layer_all: {'L13': 0.4054, 'L14': 0.1018, 'L15': 0.1735, 'L16': 0.1478, 'L17': -0.3771, 'L18': -0.0279, 'L19': 0.0, 'L20': 0.0}
+     EDGE all_edges_restore=2.14545
+            demo_codeword: restore=-0.00761 ci=[-0.01366, -0.00194] spec_vs_rand=0.02308 excl0=False
+                  concept: restore=0.03577 ci=[0.01522, 0.05563] spec_vs_rand=-1.47824 excl0=True
+                    query: restore=-0.02933 ci=[-0.03996, -0.01909] spec_vs_rand=-0.06609 excl0=False
+                   answer: restore=-2.6163 ci=[-3.1675, -2.10123] spec_vs_rand=-3.36345 excl0=True
+               separators: restore=0.04808 ci=[0.03408, 0.06279] spec_vs_rand=-0.08597 excl0=False
+  [test] items=42 valid_gap=33 direct=4.32066 ds=2.75592 (anchor L18)
+     HEAD: selfswap_dev=0.0 normrand_dev=0.055663 Holm-sig=48 max_single_frac=0.3251 band_all_frac=0.8146 distributed=True
+           top heads: [('L16H4', 0.3251), ('L13H18', 0.2407), ('L16H10', 0.1836), ('L13H11', 0.1833), ('L13H9', 0.1684), ('L15H7', 0.1654)]
+           per-layer_all: {'L13': 0.5345, 'L14': -0.1425, 'L15': -0.1438, 'L16': 0.4287, 'L17': 0.0455, 'L18': 0.1163, 'L19': 0.0, 'L20': 0.0}
+     EDGE all_edges_restore=1.69478
+            demo_codeword: restore=-0.0104 ci=[-0.01953, -0.00106] spec_vs_rand=-0.08737 excl0=True
+                  concept: restore=0.05621 ci=[0.03123, 0.08264] spec_vs_rand=-0.82446 excl0=False
+                    query: restore=-0.02197 ci=[-0.03871, -0.00625] spec_vs_rand=-0.03433 excl0=True
+                   answer: restore=-3.34039 ci=[-4.12504, -2.57562] spec_vs_rand=-3.6826 excl0=True
+               separators: restore=0.04301 ci=[0.01553, 0.07403] spec_vs_rand=-0.0516 excl0=False
+=== done ===
+Sat Aug  8 09:36:54 PM IDT 2026

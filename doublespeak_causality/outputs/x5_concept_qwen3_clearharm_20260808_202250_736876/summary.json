@@ -1,0 +1,21 @@
+{
+  "model": "Qwen/Qwen3-14B",
+  "cohort": "clearharm",
+  "layers": [
+    16,
+    24
+  ],
+  "fit_split": "train",
+  "eval_splits": [
+    "train",
+    "test"
+  ],
+  "enable_thinking": false,
+  "n_proj": 127,
+  "concept_separation": {
+    "16": 0.4429,
+    "24": 0.4013
+  },
+  "auc": null,
+  "beh": null
+}

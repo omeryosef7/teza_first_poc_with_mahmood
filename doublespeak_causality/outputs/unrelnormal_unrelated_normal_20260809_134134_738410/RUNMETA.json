@@ -1,0 +1,52 @@
+{
+  "schema": "RUNMETA/1",
+  "run_id": "unrelnormal_unrelated_normal_20260809_134134_738410",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/unrelnormal_unrelated_normal_20260809_134134_738410",
+  "script": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/phase20_unrelated_normal.py",
+  "argv": [
+    "doublespeak_causality/scripts/phase20_unrelated_normal.py",
+    "--bench",
+    "doublespeak_causality/data/behavioral_v3/unrelated_normal.json",
+    "--proj-summary",
+    "doublespeak_causality/outputs/refproj_clearharm_20260804_162641_711392/summary.json",
+    "--proj-split",
+    "train",
+    "--layers",
+    "16,18,20",
+    "--n",
+    "0"
+  ],
+  "args": {
+    "bench": "doublespeak_causality/data/behavioral_v3/unrelated_normal.json",
+    "proj_summary": "doublespeak_causality/outputs/refproj_clearharm_20260804_162641_711392/summary.json",
+    "proj_split": "train",
+    "refusal_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_alllayers",
+    "layers": "16,18,20",
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "max_new": 200,
+    "n": 0,
+    "seed": 0
+  },
+  "seed": 0,
+  "slurm_job_id": "738410",
+  "slurm_nodelist": "n-804",
+  "hostname": "n-804",
+  "git_commit": "7940cdc0c8bcc6e3bc7ef4d89110e156a080d0ae",
+  "git_dirty": true,
+  "python": "3.12.13",
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "start_ts": "2026-08-09T13:42:38",
+  "start_epoch": 1786272158.0076265,
+  "cwd": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood",
+  "phase": "unrelated_normal_utility",
+  "cohort": "unrelated_normal",
+  "layers": [
+    16,
+    18,
+    20
+  ]
+}

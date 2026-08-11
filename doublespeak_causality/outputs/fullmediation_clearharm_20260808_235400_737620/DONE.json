@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "fullmediation_clearharm_20260808_235400_737620",
+  "status": "ok",
+  "rows_written": 3,
+  "end_ts": "2026-08-08T23:56:16",
+  "end_epoch": 1786222576.784107,
+  "wall_seconds": 136.321
+}

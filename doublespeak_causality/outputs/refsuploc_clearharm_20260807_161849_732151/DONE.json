@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refsuploc_clearharm_20260807_161849_732151",
+  "status": "ok",
+  "rows_written": 6,
+  "end_ts": "2026-08-07T16:21:15",
+  "end_epoch": 1786108875.059696,
+  "wall_seconds": 140.411
+}

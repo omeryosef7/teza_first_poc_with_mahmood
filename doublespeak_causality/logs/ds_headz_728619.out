@@ -1,0 +1,11 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=2 layers=8-11 ===
+Thu Aug  6 06:15:16 PM IDT 2026
+n-802
+git=a633f5b309e197860a96810c1af064fa7422b2c6
+GPU ok: NVIDIA L40S
+[headz] cohort=clearharm L=32 heads=32 layers=8-11 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_clearharm_demo_20260806_181558_728619
+[headz] 520 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_clearharm_demo_20260806_181558_728619
+  [dev] n_valid=2 selfswap_dev=0.0 Holm-sig heads=0: []
+     top10 by necessity: [('L10H2', 0.0), ('L10H24', 0.0), ('L11H6', 0.0), ('L11H27', 0.0), ('L8H11', 0.0), ('L10H7', 0.0), ('L9H10', 0.0), ('L11H13', 0.0), ('L8H5', 0.0), ('L10H30', 0.0)]
+  [heldout] n_valid=2 selfswap_dev=0.0 Holm-sig heads=0: []
+     top10 by necessity: [('L8H11', 0.0114), ('L8H29', 0.0086), ('L9H23', 0.0086), ('L10H1', 0.0086), ('L9H19', 0.0086), ('L8H28', 0.0086), ('L8H5', 0.0071), ('L9H6', 0.0071), ('L9H29', 0.0071), ('L9H30', 0.0071)]

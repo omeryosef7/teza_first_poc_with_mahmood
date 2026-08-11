@@ -1,0 +1,25 @@
+{
+ "cohort": "clearharm",
+ "refusal_layer": 18,
+ "heads": "L16H4",
+ "by_split": {
+  "test": {
+   "n_items": 3,
+   "median_gap": 2.4681,
+   "heads": {
+    "L16H4": {
+     "n": 3,
+     "mean_TOTAL": 0.2461,
+     "mean_DIRECT": 0.1039,
+     "median_direct_frac": 0.301,
+     "median_mediated_frac": 0.699,
+     "trustworthy": true,
+     "n_frac": 1,
+     "selfswap_max_dev": 0.0,
+     "freeze_consistency_dev": 0.0,
+     "tol": 0.3702
+    }
+   }
+  }
+ }
+}

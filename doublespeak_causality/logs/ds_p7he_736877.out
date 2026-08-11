@@ -1,0 +1,20 @@
+=== Phase7 head/edge: bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json band=17-18 parts=head,edge splits=test n=2 anchor=L18 ===
+Sat Aug  8 08:22:48 PM IDT 2026
+n-801
+git=b3922c94e217d5fd0a7dfb7f4f3e59bc134565e9
+GPU ok: NVIDIA L40S (46068MiB)
+[phase7] attn_implementation='eager' (asserted for edge part)
+[phase7] cohort=clearharm band=L17-18 heads=32 parts=['head', 'edge'] anchor=L18 read_rows=[14, 15, 16, 17, 18, 19, 20, 21, 25, 29, 30] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_refhe_clearharm_20260808_202424_736877
+[phase7] 162 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase7_refhe_clearharm_20260808_202424_736877 (gpu=NVIDIA L40S)
+  [test] items=2 valid_gap=2 direct=2.89956 ds=-0.50498 (anchor L18)
+     HEAD: selfswap_dev=0.0 normrand_dev=0.041011 Holm-sig=0 max_single_frac=0.1334 band_all_frac=0.041 distributed=False
+           top heads: [('L17H24', 0.1334), ('L17H31', 0.112), ('L17H7', 0.0977), ('L17H3', 0.0933), ('L18H20', 0.0923), ('L17H28', 0.0785)]
+           per-layer_all: {'L17': 0.1225, 'L18': 0.0441}
+     EDGE all_edges_restore=3.87868
+            demo_codeword: restore=-0.00064 ci=[-0.00768, 0.0064] spec_vs_rand=0.0852 excl0=True
+                  concept: restore=-0.01147 ci=[-0.025, 0.00207] spec_vs_rand=-3.10828 excl0=True
+                    query: restore=0.00415 ci=[0.00168, 0.00662] spec_vs_rand=0.00366 excl0=True
+                   answer: restore=-0.32721 ci=[-0.46233, -0.1921] spec_vs_rand=-1.65467 excl0=True
+               separators: restore=-0.01872 ci=[-0.03882, 0.00138] spec_vs_rand=-1.34603 excl0=True
+=== done ===
+Sat Aug  8 08:24:33 PM IDT 2026

@@ -1,0 +1,5 @@
+=== behav refusal: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_generated.json maxnew=220 n=0 splits=train,test alpha=1.0 alphas='0,0.05,0.1,0.15,0.2,0.25' ===
+Thu Aug  6 08:41:52 AM IDT 2026
+n-801
+git=149576483c8285a6c186eb1e7998e4a4f5a42ae0
+GPU ok: NVIDIA L40S

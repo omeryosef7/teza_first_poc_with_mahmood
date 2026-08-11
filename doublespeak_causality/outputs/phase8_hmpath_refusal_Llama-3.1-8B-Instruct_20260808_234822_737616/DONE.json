@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase8_hmpath_refusal_Llama-3.1-8B-Instruct_20260808_234822_737616",
+  "status": "ok",
+  "rows_written": 25,
+  "end_ts": "2026-08-08T23:51:08",
+  "end_epoch": 1786222268.2998815,
+  "wall_seconds": 165.424,
+  "aggregated": true
+}

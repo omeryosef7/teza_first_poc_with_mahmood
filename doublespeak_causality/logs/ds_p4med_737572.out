@@ -1,0 +1,11 @@
+=== §4 refusal mediation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json heads=L16H4 splits=test n=3 ===
+Sat Aug  8 11:23:25 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[refmed] cohort=clearharm refusal_L18 heads=[(16, 4)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_mediation_clearharm_20260808_233508_737572
+[refmed] 3 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_mediation_clearharm_20260808_233508_737572
+  [test] n_items=3 median_gap=2.4681
+    L16H4: TOTAL=0.2461 DIRECT=0.1039 direct_frac=0.301 mediated_frac=0.699 trust=True (selfdev=0.0 freezedev=0.0)
+=== done ===
+Sat Aug  8 11:35:22 PM IDT 2026

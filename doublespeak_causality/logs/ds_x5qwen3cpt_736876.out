@@ -1,0 +1,21 @@
+=== §27 X5 Qwen3-14B CONCEPT readout: FIT + PROJECT + PREDICT ===
+    model=Qwen/Qwen3-14B bench=doublespeak_causality/data/behavioral_v3b/beh_clearharm.json layers=16,24 think=false
+    fit_split=train eval_splits=train,test refdir=doublespeak_causality/outputs/refusal_qwen3 cpt_out=doublespeak_causality/outputs/concept_qwen3
+    beh(AUC join)=<none: AUC skipped>  n=3 seed=0
+Sat Aug  8 08:22:48 PM IDT 2026
+n-801
+git=b3922c94e217d5fd0a7dfb7f4f3e59bc134565e9
+GPU ok: NVIDIA L40S
+[x5] model=Qwen/Qwen3-14B cohort=clearharm layers=[16, 24] think=false
+[x5] fit_split=train eval_splits=['train', 'test'] refusal_dir=doublespeak_causality/outputs/refusal_qwen3
+[x5] out_dir=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/x5_concept_qwen3_clearharm_20260808_202250_736876  concept_out=doublespeak_causality/outputs/concept_qwen3
+date 2026-08-08T20:22:57
+[x5][fit] used 85 items (skipped 0) from split=train
+[x5][fit] L16: separation=+0.4429 -> doublespeak_causality/outputs/concept_qwen3/concept_direction_qwen3_L16.pt
+[x5][fit] L24: separation=+0.4013 -> doublespeak_causality/outputs/concept_qwen3/concept_direction_qwen3_L24.pt
+[x5] refusal dirs present at layers [16, 24]
+[x5][proj] wrote 127 doublespeak projection rows
+[x5] done -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/x5_concept_qwen3_clearharm_20260808_202250_736876
+date 2026-08-08T20:29:47
+=== done ===
+Sat Aug  8 08:29:49 PM IDT 2026

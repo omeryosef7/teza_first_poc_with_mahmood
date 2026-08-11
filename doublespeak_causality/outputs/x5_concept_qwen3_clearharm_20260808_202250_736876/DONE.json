@@ -1,0 +1,11 @@
+{
+  "schema": "DONE/1",
+  "run_id": "x5_concept_qwen3_clearharm_20260808_202250_736876",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T20:29:47",
+  "end_epoch": 1786210187.3294113,
+  "wall_seconds": 409.679,
+  "n_fit": 85,
+  "auc_computed": false
+}

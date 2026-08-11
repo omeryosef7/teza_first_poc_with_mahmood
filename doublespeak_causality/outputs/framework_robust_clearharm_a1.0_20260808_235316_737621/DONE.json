@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "framework_robust_clearharm_a1.0_20260808_235316_737621",
+  "status": "ok",
+  "rows_written": 4,
+  "end_ts": "2026-08-08T23:56:15",
+  "end_epoch": 1786222575.8327112,
+  "wall_seconds": 151.645,
+  "phase": "framework_robustness"
+}

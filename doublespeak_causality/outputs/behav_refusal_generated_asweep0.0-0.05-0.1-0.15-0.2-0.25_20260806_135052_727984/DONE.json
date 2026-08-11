@@ -1,0 +1,41 @@
+{
+  "schema": "DONE/1",
+  "run_id": "behav_refusal_generated_asweep0.0-0.05-0.1-0.15-0.2-0.25_20260806_135052_727984",
+  "status": "ok",
+  "rows_written": 50,
+  "end_ts": "2026-08-06T15:26:43",
+  "end_epoch": 1786019203.9341176,
+  "wall_seconds": 5740.775,
+  "arms": [
+    "direct_base",
+    "direct_refabl_a0.0",
+    "direct_refabl_a0.05",
+    "direct_refabl_a0.1",
+    "direct_refabl_a0.15",
+    "direct_refabl_a0.2",
+    "direct_refabl_a0.25",
+    "direct_randabl_a0.0",
+    "direct_randabl_a0.05",
+    "direct_randabl_a0.1",
+    "direct_randabl_a0.15",
+    "direct_randabl_a0.2",
+    "direct_randabl_a0.25",
+    "ds_base",
+    "ds_refabl_a0.0",
+    "ds_refabl_a0.05",
+    "ds_refabl_a0.1",
+    "ds_refabl_a0.15",
+    "ds_refabl_a0.2",
+    "ds_refabl_a0.25"
+  ],
+  "alphas": [
+    0.0,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25
+  ],
+  "alpha_sweep": true,
+  "gens_written": true
+}

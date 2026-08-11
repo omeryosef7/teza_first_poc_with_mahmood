@@ -1,0 +1,10 @@
+=== Phase8 head->MLP path: family=refusal bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json ===
+Sat Aug  8 11:47:58 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[phase8-hmpath:refusal] AGGREGATED n_items=25 (skipped 0) senders=6 receivers=10
+  cand_med_abs_edge=0.0306 ctrl_med_abs_edge=0.0212 self_null_max=0.0
+  specific=False sparse=False median_top_edge_frac=0.7112
+  strongest pooled edge L15h7 -> MLP L16 = median 0.06985 (sign_consistency 0.64, n=25)
+  verdict: NO-PATH (pooled candidate edges do not clear controls/self-null)

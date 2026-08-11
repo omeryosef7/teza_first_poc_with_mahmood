@@ -1,0 +1,14 @@
+=== behav carry: Qwen/Qwen3-14B bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json maxnew=220 n=0 splits=test ===
+Sat Aug  8 04:47:34 PM IDT 2026
+n-801
+git=225866e0b0ca2c9545578a07072f8d1c4929a3cb
+GPU ok: NVIDIA L40S
+[refproj] 5 per-layer refusal dirs (hs rows 17..33)
+[refproj] 42 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refproj_clearharm_20260808_164755_736629
+  [test] n=42 max refusal-suppression (direct-ds) at hs[33] (~L32) = [159.5383, 128.0451, 189.6497]
+     hs[21] mean direct=19.7678 ds=0.9413 neutral=12.8098 | d-ds=[18.8265, 15.6822, 21.7559] rand=[-0.6193, -0.7452, -0.4966]
+     hs[25] mean direct=55.8564 ds=21.9248 neutral=42.0547 | d-ds=[33.9316, 26.8146, 40.7258] rand=[-0.9682, -1.2665, -0.692]
+     hs[33] mean direct=214.3725 ds=54.8342 neutral=154.0551 | d-ds=[159.5383, 128.0451, 189.6497] rand=[-4.9172, -5.9923, -3.83]
+     hs[29] mean direct=136.8414 ds=64.097 neutral=106.9113 | d-ds=[72.7444, 57.9215, 88.0156] rand=[-2.8065, -3.1787, -2.4571]
+=== done ===
+Sat Aug  8 04:48:04 PM IDT 2026

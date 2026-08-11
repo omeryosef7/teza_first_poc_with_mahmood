@@ -1,0 +1,21 @@
+{
+  "schema": "DONE/1",
+  "run_id": "behav_refusal_clearharm_a1.0_4bit_20260808_235314_737626",
+  "status": "ok",
+  "rows_written": 42,
+  "end_ts": "2026-08-09T00:31:07",
+  "end_epoch": 1786224667.74576,
+  "wall_seconds": 2261.494,
+  "arms": [
+    "direct_base",
+    "direct_refabl",
+    "direct_randabl",
+    "ds_base",
+    "ds_refabl"
+  ],
+  "alphas": [
+    1.0
+  ],
+  "alpha_sweep": false,
+  "gens_written": true
+}

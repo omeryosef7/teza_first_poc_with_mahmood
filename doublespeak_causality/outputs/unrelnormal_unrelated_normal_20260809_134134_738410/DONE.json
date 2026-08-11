@@ -1,0 +1,10 @@
+{
+  "schema": "DONE/1",
+  "run_id": "unrelnormal_unrelated_normal_20260809_134134_738410",
+  "status": "ok",
+  "rows_written": 40,
+  "end_ts": "2026-08-09T13:56:12",
+  "end_epoch": 1786272972.6621566,
+  "wall_seconds": 814.654,
+  "phase": "unrelated_normal_utility"
+}

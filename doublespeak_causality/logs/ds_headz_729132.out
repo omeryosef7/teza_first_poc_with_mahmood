@@ -1,0 +1,6 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=16-31 ===
+Thu Aug  6 08:40:30 PM IDT 2026
+n-305
+git=f00aef944d90c8981d2a015dff700a61aab1a95a
+ERROR: NVIDIA GeForce RTX 3090 has only 24576
+0MiB (<23GB); Llama-8B bf16 needs ~18GB

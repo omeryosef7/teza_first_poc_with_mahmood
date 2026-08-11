@@ -1,0 +1,214 @@
+{
+ "cohort": "clearharm",
+ "model": "meta-llama/Llama-3.1-8B-Instruct",
+ "band": [
+  17,
+  18
+ ],
+ "parts": [
+  "head",
+  "edge"
+ ],
+ "readout_anchor": 18,
+ "anchor_row": 19,
+ "validated_readout_rows": [
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  25,
+  29,
+  30
+ ],
+ "n_rows": 162,
+ "by_split": {
+  "test": {
+   "n_items": 2,
+   "n_valid_gap": 2,
+   "direct_proj_anchor": 2.89956,
+   "ds_proj_anchor": -0.50498,
+   "head": {
+    "n_single_cells": 64,
+    "selfswap_max_dev": 0.0,
+    "normrand_max_dev": 0.041011,
+    "n_holm_sig_heads": 0,
+    "holm_sig_heads": [],
+    "top15_by_restore_frac": [
+     [
+      "L17H24",
+      0.1334
+     ],
+     [
+      "L17H31",
+      0.112
+     ],
+     [
+      "L17H7",
+      0.0977
+     ],
+     [
+      "L17H3",
+      0.0933
+     ],
+     [
+      "L18H20",
+      0.0923
+     ],
+     [
+      "L17H28",
+      0.0785
+     ],
+     [
+      "L18H0",
+      0.0644
+     ],
+     [
+      "L18H23",
+      0.0565
+     ],
+     [
+      "L18H25",
+      0.056
+     ],
+     [
+      "L18H6",
+      0.0502
+     ],
+     [
+      "L18H15",
+      0.0433
+     ],
+     [
+      "L17H23",
+      0.0396
+     ],
+     [
+      "L17H21",
+      0.0393
+     ],
+     [
+      "L18H29",
+      0.0314
+     ],
+     [
+      "L18H9",
+      0.0248
+     ]
+    ],
+    "max_single_head_restore_frac": 0.1334,
+    "band_all_restore_frac": 0.041,
+    "per_layer_all_restore_frac": {
+     "L17": 0.1225,
+     "L18": 0.0441
+    },
+    "distributed": false
+   },
+   "edge": {
+    "groups": {
+     "demo_codeword": {
+      "n": 2,
+      "mean_restore": -0.00064,
+      "restore_ci": [
+       -0.00768,
+       0.0064
+      ],
+      "specificity_vs_rand": {
+       "mean": 0.0852,
+       "ci": [
+        0.00226,
+        0.16814
+       ],
+       "excludes_zero": true,
+       "n": 2,
+       "reliable": false
+      },
+      "restore_ci_reliable": false
+     },
+     "concept": {
+      "n": 2,
+      "mean_restore": -0.01147,
+      "restore_ci": [
+       -0.025,
+       0.00207
+      ],
+      "specificity_vs_rand": {
+       "mean": -3.10828,
+       "ci": [
+        -3.28864,
+        -2.92792
+       ],
+       "excludes_zero": true,
+       "n": 2,
+       "reliable": false
+      },
+      "restore_ci_reliable": false
+     },
+     "query": {
+      "n": 2,
+      "mean_restore": 0.00415,
+      "restore_ci": [
+       0.00168,
+       0.00662
+      ],
+      "specificity_vs_rand": {
+       "mean": 0.00366,
+       "ci": [
+        0.00255,
+        0.00476
+       ],
+       "excludes_zero": true,
+       "n": 2,
+       "reliable": false
+      },
+      "restore_ci_reliable": false
+     },
+     "answer": {
+      "n": 2,
+      "mean_restore": -0.32721,
+      "restore_ci": [
+       -0.46233,
+       -0.1921
+      ],
+      "specificity_vs_rand": {
+       "mean": -1.65467,
+       "ci": [
+        -2.84606,
+        -0.46327
+       ],
+       "excludes_zero": true,
+       "n": 2,
+       "reliable": false
+      },
+      "restore_ci_reliable": false
+     },
+     "separators": {
+      "n": 2,
+      "mean_restore": -0.01872,
+      "restore_ci": [
+       -0.03882,
+       0.00138
+      ],
+      "specificity_vs_rand": {
+       "mean": -1.34603,
+       "ci": [
+        -2.67142,
+        -0.02065
+       ],
+       "excludes_zero": true,
+       "n": 2,
+       "reliable": false
+      },
+      "restore_ci_reliable": false
+     }
+    },
+    "all_edges_mean_restore": 3.87868,
+    "all_edges_n": 2,
+    "note": "restore = proj(edge_KO) - proj(DS) on the anchor axis; >0 => the group carried do-not-refuse evidence. specificity_vs_rand = vs count-matched random source edges (firing control)."
+   }
+  }
+ }
+}

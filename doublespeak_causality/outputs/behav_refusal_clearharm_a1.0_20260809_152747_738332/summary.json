@@ -1,0 +1,103 @@
+{
+ "cohort": "clearharm",
+ "refusal_layer": 24,
+ "alpha": 1.0,
+ "by_split": {
+  "train": {
+   "n": 85,
+   "ASR": {
+    "direct_base": 0.0706,
+    "direct_refabl": 0.1059,
+    "direct_randabl": 0.0588,
+    "ds_base": 0.2941,
+    "ds_refabl": 0.1294
+   },
+   "refusal_rate": {
+    "direct_base": 0.9059,
+    "direct_refabl": 0.0353,
+    "direct_randabl": 0.9176,
+    "ds_base": 0.5294,
+    "ds_refabl": 0.0
+   },
+   "empty": {
+    "direct_base": 0.0,
+    "direct_refabl": 0.0,
+    "direct_randabl": 0.0,
+    "ds_base": 0.0,
+    "ds_refabl": 0.0
+   },
+   "direct_refabl_vs_direct_base": {
+    "delta_ASR": 0.0353,
+    "flip_gain": 8,
+    "flip_loss": 5,
+    "mcnemar_p": 0.58105
+   },
+   "direct_randabl_vs_direct_base": {
+    "delta_ASR": -0.0118,
+    "flip_gain": 1,
+    "flip_loss": 2,
+    "mcnemar_p": 1.0
+   },
+   "ds_base_vs_direct_refabl": {
+    "delta_ASR": 0.1882,
+    "flip_gain": 20,
+    "flip_loss": 4,
+    "mcnemar_p": 0.00154
+   },
+   "ds_refabl_vs_ds_base": {
+    "delta_ASR": -0.1647,
+    "flip_gain": 7,
+    "flip_loss": 21,
+    "mcnemar_p": 0.01254
+   }
+  },
+  "test": {
+   "n": 42,
+   "ASR": {
+    "direct_base": 0.0952,
+    "direct_refabl": 0.0714,
+    "direct_randabl": 0.0952,
+    "ds_base": 0.1905,
+    "ds_refabl": 0.0476
+   },
+   "refusal_rate": {
+    "direct_base": 0.881,
+    "direct_refabl": 0.0476,
+    "direct_randabl": 0.9048,
+    "ds_base": 0.619,
+    "ds_refabl": 0.0
+   },
+   "empty": {
+    "direct_base": 0.0,
+    "direct_refabl": 0.0,
+    "direct_randabl": 0.0,
+    "ds_base": 0.0,
+    "ds_refabl": 0.0
+   },
+   "direct_refabl_vs_direct_base": {
+    "delta_ASR": -0.0238,
+    "flip_gain": 2,
+    "flip_loss": 3,
+    "mcnemar_p": 1.0
+   },
+   "direct_randabl_vs_direct_base": {
+    "delta_ASR": 0.0,
+    "flip_gain": 1,
+    "flip_loss": 1,
+    "mcnemar_p": 1.0
+   },
+   "ds_base_vs_direct_refabl": {
+    "delta_ASR": 0.1191,
+    "flip_gain": 8,
+    "flip_loss": 3,
+    "mcnemar_p": 0.22656
+   },
+   "ds_refabl_vs_ds_base": {
+    "delta_ASR": -0.1429,
+    "flip_gain": 2,
+    "flip_loss": 8,
+    "mcnemar_p": 0.10938
+   }
+  }
+ }
+}

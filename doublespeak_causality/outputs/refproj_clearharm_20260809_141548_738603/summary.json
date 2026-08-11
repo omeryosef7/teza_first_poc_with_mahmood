@@ -1,0 +1,560 @@
+{
+ "cohort": "clearharm",
+ "by_split": {
+  "train": {
+   "n": 85,
+   "max_suppression_hs_row": 32,
+   "max_suppression": [
+    30.7679,
+    25.2877,
+    36.5073
+   ],
+   "per_layer": {
+    "1": {
+     "mean": {
+      "direct": 0.0958,
+      "neutral": 0.0953,
+      "doublespeak": 0.1304
+     },
+     "direct_minus_ds": [
+      -0.0345,
+      -0.0374,
+      -0.0317
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0021,
+      -0.0023,
+      -0.0019
+     ]
+    },
+    "2": {
+     "mean": {
+      "direct": 0.1856,
+      "neutral": 0.1848,
+      "doublespeak": 0.1734
+     },
+     "direct_minus_ds": [
+      0.0121,
+      0.0081,
+      0.0162
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0004,
+      -0.0008,
+      0.0
+     ]
+    },
+    "3": {
+     "mean": {
+      "direct": 0.2282,
+      "neutral": 0.2292,
+      "doublespeak": 0.236
+     },
+     "direct_minus_ds": [
+      -0.0078,
+      -0.0125,
+      -0.0031
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0015,
+      0.001,
+      0.0021
+     ]
+    },
+    "4": {
+     "mean": {
+      "direct": 0.1925,
+      "neutral": 0.2033,
+      "doublespeak": 0.2561
+     },
+     "direct_minus_ds": [
+      -0.0636,
+      -0.0724,
+      -0.0556
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0231,
+      -0.0243,
+      -0.0219
+     ]
+    },
+    "5": {
+     "mean": {
+      "direct": 0.1946,
+      "neutral": 0.2307,
+      "doublespeak": 0.2172
+     },
+     "direct_minus_ds": [
+      -0.0226,
+      -0.0374,
+      -0.0072
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0276,
+      0.0253,
+      0.0298
+     ]
+    },
+    "6": {
+     "mean": {
+      "direct": 0.4268,
+      "neutral": 0.4837,
+      "doublespeak": 0.5235
+     },
+     "direct_minus_ds": [
+      -0.0967,
+      -0.1162,
+      -0.0768
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0002,
+      -0.0016,
+      0.0013
+     ]
+    },
+    "7": {
+     "mean": {
+      "direct": 0.1005,
+      "neutral": 0.1453,
+      "doublespeak": 0.0955
+     },
+     "direct_minus_ds": [
+      0.005,
+      -0.0149,
+      0.0245
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0091,
+      -0.0119,
+      -0.0064
+     ]
+    },
+    "8": {
+     "mean": {
+      "direct": 0.1799,
+      "neutral": 0.2362,
+      "doublespeak": 0.116
+     },
+     "direct_minus_ds": [
+      0.0638,
+      0.0433,
+      0.0837
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0204,
+      0.0171,
+      0.0235
+     ]
+    },
+    "9": {
+     "mean": {
+      "direct": 0.0949,
+      "neutral": 0.1765,
+      "doublespeak": -0.0883
+     },
+     "direct_minus_ds": [
+      0.1832,
+      0.1606,
+      0.2038
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0181,
+      0.0141,
+      0.0222
+     ]
+    },
+    "10": {
+     "mean": {
+      "direct": 0.9046,
+      "neutral": 0.97,
+      "doublespeak": 0.4656
+     },
+     "direct_minus_ds": [
+      0.439,
+      0.4087,
+      0.4716
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0108,
+      0.006,
+      0.016
+     ]
+    },
+    "11": {
+     "mean": {
+      "direct": 1.3527,
+      "neutral": 1.2825,
+      "doublespeak": 0.7366
+     },
+     "direct_minus_ds": [
+      0.6162,
+      0.5791,
+      0.6521
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0022,
+      -0.0019,
+      0.0067
+     ]
+    },
+    "12": {
+     "mean": {
+      "direct": 1.5789,
+      "neutral": 1.4498,
+      "doublespeak": 0.9209
+     },
+     "direct_minus_ds": [
+      0.658,
+      0.6132,
+      0.7009
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0012,
+      -0.0065,
+      0.0038
+     ]
+    },
+    "13": {
+     "mean": {
+      "direct": 1.3214,
+      "neutral": 1.0856,
+      "doublespeak": 0.6558
+     },
+     "direct_minus_ds": [
+      0.6656,
+      0.606,
+      0.7262
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0267,
+      -0.0335,
+      -0.02
+     ]
+    },
+    "14": {
+     "mean": {
+      "direct": 2.4883,
+      "neutral": 1.8274,
+      "doublespeak": 1.3331
+     },
+     "direct_minus_ds": [
+      1.1552,
+      1.0402,
+      1.2695
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0508,
+      -0.0604,
+      -0.0415
+     ]
+    },
+    "15": {
+     "mean": {
+      "direct": 2.7405,
+      "neutral": 1.8968,
+      "doublespeak": 1.4258
+     },
+     "direct_minus_ds": [
+      1.3147,
+      1.1493,
+      1.4886
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0256,
+      0.0144,
+      0.0367
+     ]
+    },
+    "16": {
+     "mean": {
+      "direct": 3.4364,
+      "neutral": 2.2231,
+      "doublespeak": 1.9871
+     },
+     "direct_minus_ds": [
+      1.4492,
+      1.1719,
+      1.7451
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0417,
+      0.0284,
+      0.0551
+     ]
+    },
+    "17": {
+     "mean": {
+      "direct": 3.75,
+      "neutral": 2.0215,
+      "doublespeak": 1.8339
+     },
+     "direct_minus_ds": [
+      1.9161,
+      1.555,
+      2.2892
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0177,
+      -0.0307,
+      -0.0052
+     ]
+    },
+    "18": {
+     "mean": {
+      "direct": 4.3171,
+      "neutral": 2.3888,
+      "doublespeak": 2.1884
+     },
+     "direct_minus_ds": [
+      2.1287,
+      1.6991,
+      2.5891
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0893,
+      -0.112,
+      -0.0677
+     ]
+    },
+    "19": {
+     "mean": {
+      "direct": 4.8801,
+      "neutral": 2.5821,
+      "doublespeak": 2.2908
+     },
+     "direct_minus_ds": [
+      2.5893,
+      2.0623,
+      3.1505
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0324,
+      0.0128,
+      0.0513
+     ]
+    },
+    "20": {
+     "mean": {
+      "direct": 4.7133,
+      "neutral": 2.1746,
+      "doublespeak": 1.9667
+     },
+     "direct_minus_ds": [
+      2.7466,
+      2.1605,
+      3.3846
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0085,
+      -0.0081,
+      0.0249
+     ]
+    },
+    "21": {
+     "mean": {
+      "direct": 5.7802,
+      "neutral": 2.9658,
+      "doublespeak": 2.5942
+     },
+     "direct_minus_ds": [
+      3.186,
+      2.5196,
+      3.873
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0499,
+      0.0259,
+      0.0759
+     ]
+    },
+    "22": {
+     "mean": {
+      "direct": 6.1155,
+      "neutral": 3.0443,
+      "doublespeak": 2.5772
+     },
+     "direct_minus_ds": [
+      3.5383,
+      2.7831,
+      4.2753
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0807,
+      0.0571,
+      0.1046
+     ]
+    },
+    "23": {
+     "mean": {
+      "direct": 7.284,
+      "neutral": 3.6548,
+      "doublespeak": 2.785
+     },
+     "direct_minus_ds": [
+      4.499,
+      3.6012,
+      5.3675
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.1274,
+      0.0972,
+      0.1582
+     ]
+    },
+    "24": {
+     "mean": {
+      "direct": 7.2741,
+      "neutral": 3.3892,
+      "doublespeak": 2.4086
+     },
+     "direct_minus_ds": [
+      4.8655,
+      3.9852,
+      5.7703
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0311,
+      -0.0795,
+      0.0174
+     ]
+    },
+    "25": {
+     "mean": {
+      "direct": 7.0622,
+      "neutral": 2.9009,
+      "doublespeak": 2.026
+     },
+     "direct_minus_ds": [
+      5.0362,
+      4.0539,
+      6.0695
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.011,
+      -0.0301,
+      0.0544
+     ]
+    },
+    "26": {
+     "mean": {
+      "direct": 7.5525,
+      "neutral": 3.169,
+      "doublespeak": 2.1947
+     },
+     "direct_minus_ds": [
+      5.3578,
+      4.2788,
+      6.39
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.0074,
+      -0.0385,
+      0.0253
+     ]
+    },
+    "27": {
+     "mean": {
+      "direct": 7.9017,
+      "neutral": 2.9729,
+      "doublespeak": 1.844
+     },
+     "direct_minus_ds": [
+      6.0577,
+      4.9074,
+      7.2164
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.0155,
+      -0.0387,
+      0.0726
+     ]
+    },
+    "28": {
+     "mean": {
+      "direct": 8.8114,
+      "neutral": 3.5529,
+      "doublespeak": 2.5185
+     },
+     "direct_minus_ds": [
+      6.2929,
+      5.0453,
+      7.5783
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.2812,
+      -0.3355,
+      -0.2286
+     ]
+    },
+    "29": {
+     "mean": {
+      "direct": 9.5632,
+      "neutral": 4.1168,
+      "doublespeak": 2.8949
+     },
+     "direct_minus_ds": [
+      6.6683,
+      5.5193,
+      7.9897
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.2449,
+      -0.3178,
+      -0.1728
+     ]
+    },
+    "30": {
+     "mean": {
+      "direct": 10.7491,
+      "neutral": 4.9149,
+      "doublespeak": 3.6551
+     },
+     "direct_minus_ds": [
+      7.094,
+      5.8228,
+      8.5024
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.2841,
+      -0.3402,
+      -0.2177
+     ]
+    },
+    "31": {
+     "mean": {
+      "direct": 14.1062,
+      "neutral": 7.4999,
+      "doublespeak": 5.5894
+     },
+     "direct_minus_ds": [
+      8.5168,
+      7.1366,
+      10.0034
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      0.2585,
+      0.153,
+      0.3648
+     ]
+    },
+    "32": {
+     "mean": {
+      "direct": 67.7054,
+      "neutral": 42.6304,
+      "doublespeak": 36.9375
+     },
+     "direct_minus_ds": [
+      30.7679,
+      25.2877,
+      36.5073
+     ],
+     "direct_minus_ds_RANDCTRL": [
+      -0.1584,
+      -0.4612,
+      0.1346
+     ]
+    }
+   }
+  }
+ }
+}

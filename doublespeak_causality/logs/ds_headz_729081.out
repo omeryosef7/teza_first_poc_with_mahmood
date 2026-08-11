@@ -1,0 +1,6 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=0-15 ===
+Thu Aug  6 08:30:32 PM IDT 2026
+n-501
+git=3a08d18048820c634cdf0c53749e21f594479f19
+ERROR: NVIDIA RTX A5000 has only 24564
+0MiB (<23GB); Llama-8B bf16 needs ~18GB

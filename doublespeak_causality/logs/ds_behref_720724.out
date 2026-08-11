@@ -1,0 +1,6 @@
+[ok] DSALPHAS='0.25' from --export: single value, no comma, safe to pass through.
+=== behav refusal: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json maxnew=220 n=0 splits=train,test alpha=1.0 alphas='0.25' ===
+Thu Aug  6 03:45:01 AM IDT 2026
+n-803
+git=a30e2f7036b7791102c750eb69c4db3dceb9797e
+GPU ok: NVIDIA L40S

@@ -1,0 +1,6 @@
+=== P6 jacobian readout: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json kind=behavioral cohort=clearharm n=2 ===
+    splits=train,test conds=direct,neutral,doublespeak targets=concept,refusal pos=final_prompt,probe_last refrow=-1 grad=inputs_embeds
+Fri Aug  7 12:16:40 PM IDT 2026
+n-307
+git=NA
+GPU ok: NVIDIA GeForce RTX 3090 (24576MiB)

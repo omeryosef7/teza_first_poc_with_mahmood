@@ -1,0 +1,16 @@
+=== §4 refusal mediation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json heads=L16H4,L13H18,L16H10,L13H11,L13H9,L15H7 splits=test n=0 ===
+Sat Aug  8 11:37:55 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[refmed] cohort=clearharm refusal_L18 heads=[(13, 9), (13, 11), (13, 18), (15, 7), (16, 4), (16, 10)] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_mediation_clearharm_20260808_233827_737608
+[refmed] 252 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_mediation_clearharm_20260808_233827_737608
+  [test] n_items=42 median_gap=1.751
+    L13H9: TOTAL=0.13 DIRECT=0.0209 direct_frac=0.122 mediated_frac=0.878 trust=True (selfdev=0.0 freezedev=0.0)
+    L13H11: TOTAL=0.086 DIRECT=0.0095 direct_frac=0.117 mediated_frac=0.883 trust=True (selfdev=0.0 freezedev=0.0)
+    L13H18: TOTAL=0.1438 DIRECT=0.0244 direct_frac=0.116 mediated_frac=0.884 trust=True (selfdev=0.0 freezedev=0.0)
+    L15H7: TOTAL=0.2978 DIRECT=0.0628 direct_frac=0.201 mediated_frac=0.799 trust=True (selfdev=0.0 freezedev=0.0)
+    L16H4: TOTAL=0.2282 DIRECT=0.0676 direct_frac=0.277 mediated_frac=0.723 trust=True (selfdev=0.0 freezedev=0.0)
+    L16H10: TOTAL=0.1105 DIRECT=0.0641 direct_frac=0.494 mediated_frac=0.506 trust=True (selfdev=0.0 freezedev=0.0)
+=== done ===
+Sat Aug  8 11:39:40 PM IDT 2026

@@ -1,0 +1,10 @@
+=== Phase8 head->MLP path: family=refusal bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json ===
+Sat Aug  8 11:23:25 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[phase8-hmpath:refusal] m_clean=-0.40063 senders=2 receivers=1 mlp_edges=0
+  cand_med_abs_edge=None ctrl_med_abs_edge=0.02318 self_null_max=0.0
+  specific=False sparse=False median_top_edge_frac=None recon_ok=None
+  verdict: NO-PATH (candidate head->MLP edges do not clear controls/self-null)
+[phase8-hmpath] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase8_hmpath_refusal_Llama-3.1-8B-Instruct_20260808_233508_737571

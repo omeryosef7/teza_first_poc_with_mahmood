@@ -1,0 +1,1756 @@
+{
+ "benches": [
+  "doublespeak_causality/data/behavioral_v3/beh_clearharm.json",
+  "doublespeak_causality/data/behavioral_v3/beh_generated.json"
+ ],
+ "write_layers": [
+  8,
+  9,
+  10,
+  11
+ ],
+ "refusal_layers": [
+  18
+ ],
+ "alpha": {
+  "18": 2.8261
+ },
+ "carry": {
+  "14": [
+   4,
+   5,
+   23
+  ],
+  "15": [
+   8,
+   11
+  ],
+  "17": [
+   24,
+   27
+  ],
+  "18": [
+   20
+  ],
+  "21": [
+   10
+  ]
+ },
+ "cells": {
+  "0,0": "ds_base",
+  "1,0": "concept_abl",
+  "0,1": "refusal_restored",
+  "1,1": "both"
+ },
+ "arms": [
+  "ds_base",
+  "concept_abl",
+  "refusal_restored",
+  "both"
+ ],
+ "target_dasr": 0.09,
+ "n_items_skipped": 0,
+ "primary_endpoint": "within-item DiD interaction on ASR (Ihat) [POOLED grouping]",
+ "groupings": {
+  "POOLED_all": {
+   "n_rows": 12,
+   "n_paired_complete": 12,
+   "asr": {
+    "ds_base": 0.3333,
+    "concept_abl": 0.3333,
+    "refusal_restored": 0.25,
+    "both": 0.25
+   },
+   "mean_score": {
+    "ds_base": 0.2708,
+    "concept_abl": 0.2812,
+    "refusal_restored": 0.2083,
+    "both": 0.2083
+   },
+   "interaction_binary": {
+    "n": 12,
+    "cell": {
+     "0,0": 0.3333,
+     "1,0": 0.3333,
+     "0,1": 0.25,
+     "1,1": 0.25
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": -0.0833,
+    "delta_both": -0.0833,
+    "Ihat": 0.0,
+    "sd_D": 0.4264,
+    "se_Ihat": 0.12309,
+    "ci95_Ihat": [
+     -0.25,
+     0.25
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 1,
+     "0": 10,
+     "1": 1,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 12,
+    "cell": {
+     "0,0": 0.2708,
+     "1,0": 0.2812,
+     "0,1": 0.2083,
+     "1,1": 0.2083
+    },
+    "delta_concept": 0.0104,
+    "delta_refusal": -0.0625,
+    "delta_both": -0.0625,
+    "Ihat": -0.0104,
+    "sd_D": 0.4345,
+    "se_Ihat": 0.12543,
+    "ci95_Ihat": [
+     -0.25,
+     0.2396
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 2,
+     "zero": 8,
+     "pos": 2
+    }
+   },
+   "ceiling_floor": {
+    "n": 12,
+    "asr_base": 0.3333,
+    "n_base_malicious": 4,
+    "frac_base_benign_no_room": 0.6667,
+    "I_max_arith": 0.75,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 12,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.3333,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      -0.2413,
+      0.2413
+     ],
+     "se_delta_asr": 0.12309,
+     "mcnemar_b": 1,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.3302,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2708,
+      "mean_score_arm": 0.2812,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 4.5,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 4
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 12,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.25,
+     "delta_asr": 0.0833,
+     "ci95_delta_asr": [
+      -0.08,
+      0.2467
+     ],
+     "se_delta_asr": 0.08333,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.2335,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2708,
+      "mean_score_arm": 0.2083,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 2.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 2
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 12,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.25,
+     "delta_asr": 0.0833,
+     "ci95_delta_asr": [
+      -0.208,
+      0.3747
+     ],
+     "se_delta_asr": 0.14865,
+     "mcnemar_b": 2,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4044,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2708,
+      "mean_score_arm": 0.2083,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 6.5,
+      "wilcoxon_z": 0.3682,
+      "wilcoxon_p": 0.712702,
+      "n_nonzero": 4
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 1.2694,
+     "concept_abl": 1.4341,
+     "refusal_restored": 1.2694,
+     "both": 1.4341
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9915,
+    "concept_abl": 0.968,
+    "mean_drop": 0.0235,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "FROZEN_test": {
+   "n_rows": 4,
+   "n_paired_complete": 4,
+   "asr": {
+    "ds_base": 0.5,
+    "concept_abl": 0.5,
+    "refusal_restored": 0.25,
+    "both": 0.5
+   },
+   "mean_score": {
+    "ds_base": 0.4375,
+    "concept_abl": 0.4062,
+    "refusal_restored": 0.1875,
+    "both": 0.4375
+   },
+   "interaction_binary": {
+    "n": 4,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.5,
+     "0,1": 0.25,
+     "1,1": 0.5
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": -0.25,
+    "delta_both": 0.0,
+    "Ihat": 0.25,
+    "sd_D": 0.5,
+    "se_Ihat": 0.25,
+    "ci95_Ihat": [
+     0.0,
+     0.75
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 3,
+     "1": 1,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 4,
+    "cell": {
+     "0,0": 0.4375,
+     "1,0": 0.4062,
+     "0,1": 0.1875,
+     "1,1": 0.4375
+    },
+    "delta_concept": -0.0312,
+    "delta_refusal": -0.25,
+    "delta_both": 0.0,
+    "Ihat": 0.2812,
+    "sd_D": 0.4828,
+    "se_Ihat": 0.24139,
+    "ci95_Ihat": [
+     0.0,
+     0.75
+    ],
+    "perm_p": 0.49971,
+    "D_dist": {
+     "neg": 0,
+     "zero": 2,
+     "pos": 2
+    }
+   },
+   "ceiling_floor": {
+    "n": 4,
+    "asr_base": 0.5,
+    "n_base_malicious": 2,
+    "frac_base_benign_no_room": 0.5,
+    "I_max_arith": 0.75,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 4,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      -0.8002,
+      0.8002
+     ],
+     "se_delta_asr": 0.40825,
+     "mcnemar_b": 1,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.9905,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.4375,
+      "mean_score_arm": 0.4062,
+      "median_paired_diff": 0.0625,
+      "wilcoxon_W": 3.5,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 3
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 4,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.25,
+     "delta_asr": 0.25,
+     "ci95_delta_asr": [
+      -0.24,
+      0.74
+     ],
+     "se_delta_asr": 0.25,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.7004,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.4375,
+      "mean_score_arm": 0.1875,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 4,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      -0.8002,
+      0.8002
+     ],
+     "se_delta_asr": 0.40825,
+     "mcnemar_b": 1,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.9905,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.4375,
+      "mean_score_arm": 0.4375,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.5,
+      "wilcoxon_z": -0.4714,
+      "wilcoxon_p": 0.637352,
+      "n_nonzero": 2
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 0.1835,
+     "concept_abl": 0.6348,
+     "refusal_restored": 0.1835,
+     "both": 0.6348
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9988,
+    "concept_abl": 0.9822,
+    "mean_drop": 0.0165,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_clearharm": {
+   "n_rows": 6,
+   "n_paired_complete": 6,
+   "asr": {
+    "ds_base": 0.3333,
+    "concept_abl": 0.5,
+    "refusal_restored": 0.3333,
+    "both": 0.3333
+   },
+   "mean_score": {
+    "ds_base": 0.2083,
+    "concept_abl": 0.3958,
+    "refusal_restored": 0.25,
+    "both": 0.2917
+   },
+   "interaction_binary": {
+    "n": 6,
+    "cell": {
+     "0,0": 0.3333,
+     "1,0": 0.5,
+     "0,1": 0.3333,
+     "1,1": 0.3333
+    },
+    "delta_concept": 0.1667,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": -0.1667,
+    "sd_D": 0.4082,
+    "se_Ihat": 0.16667,
+    "ci95_Ihat": [
+     -0.5,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 1,
+     "0": 5,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 6,
+    "cell": {
+     "0,0": 0.2083,
+     "1,0": 0.3958,
+     "0,1": 0.25,
+     "1,1": 0.2917
+    },
+    "delta_concept": 0.1875,
+    "delta_refusal": 0.0417,
+    "delta_both": 0.0833,
+    "Ihat": -0.1458,
+    "sd_D": 0.4214,
+    "se_Ihat": 0.17205,
+    "ci95_Ihat": [
+     -0.5,
+     0.0625
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 1,
+     "zero": 4,
+     "pos": 1
+    }
+   },
+   "ceiling_floor": {
+    "n": 6,
+    "asr_base": 0.3333,
+    "n_base_malicious": 2,
+    "frac_base_benign_no_room": 0.6667,
+    "I_max_arith": 0.5,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.5,
+     "delta_asr": -0.1667,
+     "ci95_delta_asr": [
+      -0.4933,
+      0.16
+     ],
+     "se_delta_asr": 0.16667,
+     "mcnemar_b": 0,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4669,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2083,
+      "mean_score_arm": 0.3958,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": -0.8018,
+      "wilcoxon_p": 0.422678,
+      "n_nonzero": 3
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.3333,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4669,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2083,
+      "mean_score_arm": 0.25,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.3333,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      -0.5061,
+      0.5061
+     ],
+     "se_delta_asr": 0.2582,
+     "mcnemar_b": 1,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.6603,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.2083,
+      "mean_score_arm": 0.2917,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 2
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 1.4773,
+     "concept_abl": 1.6003,
+     "refusal_restored": 1.4773,
+     "both": 1.6003
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9997,
+    "concept_abl": 0.9963,
+    "mean_drop": 0.0034,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_clearharm_train": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.5,
+    "concept_abl": 0.5,
+    "refusal_restored": 0.5,
+    "both": 0.0
+   },
+   "mean_score": {
+    "ds_base": 0.25,
+    "concept_abl": 0.375,
+    "refusal_restored": 0.375,
+    "both": 0.0
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.5,
+     "0,1": 0.5,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": -0.5,
+    "Ihat": -0.5,
+    "sd_D": 0.7071,
+    "se_Ihat": 0.5,
+    "ci95_Ihat": [
+     -1.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 1,
+     "0": 1,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.25,
+     "1,0": 0.375,
+     "0,1": 0.375,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.125,
+    "delta_refusal": 0.125,
+    "delta_both": -0.25,
+    "Ihat": -0.5,
+    "sd_D": 0.7071,
+    "se_Ihat": 0.5,
+    "ci95_Ihat": [
+     -1.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 1,
+     "zero": 1,
+     "pos": 0
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.5,
+    "n_base_malicious": 1,
+    "frac_base_benign_no_room": 0.5,
+    "I_max_arith": 0.5,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.25,
+      "mean_score_arm": 0.375,
+      "median_paired_diff": -0.125,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.25,
+      "mean_score_arm": 0.375,
+      "median_paired_diff": -0.125,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.0,
+     "delta_asr": 0.5,
+     "ci95_delta_asr": [
+      -0.48,
+      1.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.25,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.25,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 2.7416,
+     "concept_abl": 2.7138,
+     "refusal_restored": 2.7416,
+     "both": 2.7138
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9997,
+    "concept_abl": 0.9998,
+    "mean_drop": -0.0001,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_clearharm_dev": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.0,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "mean_score": {
+    "ds_base": 0.0,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.0,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 2,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.0,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 0,
+     "zero": 2,
+     "pos": 0
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.0,
+    "n_base_malicious": 0,
+    "frac_base_benign_no_room": 1.0,
+    "I_max_arith": 1.0,
+    "near_floor_flag": true
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 2.1976,
+     "concept_abl": 2.6052,
+     "refusal_restored": 2.1976,
+     "both": 2.6052
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9998,
+    "concept_abl": 0.9985,
+    "mean_drop": 0.0013,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_clearharm_test": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.5,
+    "concept_abl": 1.0,
+    "refusal_restored": 0.5,
+    "both": 1.0
+   },
+   "mean_score": {
+    "ds_base": 0.375,
+    "concept_abl": 0.8125,
+    "refusal_restored": 0.375,
+    "both": 0.875
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 1.0,
+     "0,1": 0.5,
+     "1,1": 1.0
+    },
+    "delta_concept": 0.5,
+    "delta_refusal": 0.0,
+    "delta_both": 0.5,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 2,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.375,
+     "1,0": 0.8125,
+     "0,1": 0.375,
+     "1,1": 0.875
+    },
+    "delta_concept": 0.4375,
+    "delta_refusal": 0.0,
+    "delta_both": 0.5,
+    "Ihat": 0.0625,
+    "sd_D": 0.0884,
+    "se_Ihat": 0.0625,
+    "ci95_Ihat": [
+     0.0,
+     0.125
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 0,
+     "zero": 1,
+     "pos": 1
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.5,
+    "n_base_malicious": 1,
+    "frac_base_benign_no_room": 0.5,
+    "I_max_arith": 0.0,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 1.0,
+     "delta_asr": -0.5,
+     "ci95_delta_asr": [
+      -1.48,
+      0.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 0,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.375,
+      "mean_score_arm": 0.8125,
+      "median_paired_diff": -0.4375,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 2
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.375,
+      "mean_score_arm": 0.375,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 1.0,
+     "delta_asr": -0.5,
+     "ci95_delta_asr": [
+      -1.48,
+      0.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 0,
+     "mcnemar_c": 1,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.375,
+      "mean_score_arm": 0.875,
+      "median_paired_diff": -0.5,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": -0.5074,
+     "concept_abl": -0.518,
+     "refusal_restored": -0.5074,
+     "both": -0.518
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9998,
+    "concept_abl": 0.9907,
+    "mean_drop": 0.009,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_generated": {
+   "n_rows": 6,
+   "n_paired_complete": 6,
+   "asr": {
+    "ds_base": 0.3333,
+    "concept_abl": 0.1667,
+    "refusal_restored": 0.1667,
+    "both": 0.1667
+   },
+   "mean_score": {
+    "ds_base": 0.3333,
+    "concept_abl": 0.1667,
+    "refusal_restored": 0.1667,
+    "both": 0.125
+   },
+   "interaction_binary": {
+    "n": 6,
+    "cell": {
+     "0,0": 0.3333,
+     "1,0": 0.1667,
+     "0,1": 0.1667,
+     "1,1": 0.1667
+    },
+    "delta_concept": -0.1667,
+    "delta_refusal": -0.1667,
+    "delta_both": -0.1667,
+    "Ihat": 0.1667,
+    "sd_D": 0.4082,
+    "se_Ihat": 0.16667,
+    "ci95_Ihat": [
+     0.0,
+     0.5
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 5,
+     "1": 1,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 6,
+    "cell": {
+     "0,0": 0.3333,
+     "1,0": 0.1667,
+     "0,1": 0.1667,
+     "1,1": 0.125
+    },
+    "delta_concept": -0.1667,
+    "delta_refusal": -0.1667,
+    "delta_both": -0.2083,
+    "Ihat": 0.125,
+    "sd_D": 0.4402,
+    "se_Ihat": 0.1797,
+    "ci95_Ihat": [
+     -0.125,
+     0.5
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 1,
+     "zero": 4,
+     "pos": 1
+    }
+   },
+   "ceiling_floor": {
+    "n": 6,
+    "asr_base": 0.3333,
+    "n_base_malicious": 2,
+    "frac_base_benign_no_room": 0.6667,
+    "I_max_arith": 1.0,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.1667,
+     "delta_asr": 0.1667,
+     "ci95_delta_asr": [
+      -0.16,
+      0.4933
+     ],
+     "se_delta_asr": 0.16667,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4669,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.3333,
+      "mean_score_arm": 0.1667,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.1667,
+     "delta_asr": 0.1667,
+     "ci95_delta_asr": [
+      -0.16,
+      0.4933
+     ],
+     "se_delta_asr": 0.16667,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4669,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.3333,
+      "mean_score_arm": 0.1667,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 6,
+     "asr_baseline": 0.3333,
+     "asr_arm": 0.1667,
+     "delta_asr": 0.1667,
+     "ci95_delta_asr": [
+      -0.16,
+      0.4933
+     ],
+     "se_delta_asr": 0.16667,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 0.4669,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.3333,
+      "mean_score_arm": 0.125,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 3.0,
+      "wilcoxon_z": 0.8944,
+      "wilcoxon_p": 0.371093,
+      "n_nonzero": 2
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 1.0614,
+     "concept_abl": 1.2678,
+     "refusal_restored": 1.0614,
+     "both": 1.2678
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9833,
+    "concept_abl": 0.9397,
+    "mean_drop": 0.0436,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_generated_train": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.5,
+    "concept_abl": 0.5,
+    "refusal_restored": 0.5,
+    "both": 0.5
+   },
+   "mean_score": {
+    "ds_base": 0.5,
+    "concept_abl": 0.5,
+    "refusal_restored": 0.5,
+    "both": 0.375
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.5,
+     "0,1": 0.5,
+     "1,1": 0.5
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 2,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.5,
+     "0,1": 0.5,
+     "1,1": 0.375
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": -0.125,
+    "Ihat": -0.125,
+    "sd_D": 0.1768,
+    "se_Ihat": 0.125,
+    "ci95_Ihat": [
+     -0.25,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 1,
+     "zero": 1,
+     "pos": 0
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.5,
+    "n_base_malicious": 1,
+    "frac_base_benign_no_room": 0.5,
+    "I_max_arith": 0.5,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.5,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.5,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.5,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.375,
+      "median_paired_diff": 0.125,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": -0.6569,
+     "concept_abl": -0.6762,
+     "refusal_restored": -0.6569,
+     "both": -0.6762
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9998,
+    "concept_abl": 0.993,
+    "mean_drop": 0.0068,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_generated_dev": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.0,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "mean_score": {
+    "ds_base": 0.0,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.0,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 2,
+     "1": 0,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.0,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": 0.0,
+    "delta_refusal": 0.0,
+    "delta_both": 0.0,
+    "Ihat": 0.0,
+    "sd_D": 0.0,
+    "se_Ihat": 0.0,
+    "ci95_Ihat": [
+     0.0,
+     0.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 0,
+     "zero": 2,
+     "pos": 0
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.0,
+    "n_base_malicious": 0,
+    "frac_base_benign_no_room": 1.0,
+    "I_max_arith": 1.0,
+    "near_floor_flag": true
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.0,
+     "asr_arm": 0.0,
+     "delta_asr": 0.0,
+     "ci95_delta_asr": [
+      0.0,
+      0.0
+     ],
+     "se_delta_asr": 0.0,
+     "mcnemar_b": 0,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.0,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.0,
+      "wilcoxon_W": 0.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 0
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 2.9669,
+     "concept_abl": 2.6918,
+     "refusal_restored": 2.9669,
+     "both": 2.6918
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9523,
+    "concept_abl": 0.8522,
+    "mean_drop": 0.1001,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  },
+  "cohort_generated_test": {
+   "n_rows": 2,
+   "n_paired_complete": 2,
+   "asr": {
+    "ds_base": 0.5,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "mean_score": {
+    "ds_base": 0.5,
+    "concept_abl": 0.0,
+    "refusal_restored": 0.0,
+    "both": 0.0
+   },
+   "interaction_binary": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": -0.5,
+    "delta_refusal": -0.5,
+    "delta_both": -0.5,
+    "Ihat": 0.5,
+    "sd_D": 0.7071,
+    "se_Ihat": 0.5,
+    "ci95_Ihat": [
+     0.0,
+     1.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "-2": 0,
+     "-1": 0,
+     "0": 1,
+     "1": 1,
+     "2": 0
+    }
+   },
+   "interaction_score": {
+    "n": 2,
+    "cell": {
+     "0,0": 0.5,
+     "1,0": 0.0,
+     "0,1": 0.0,
+     "1,1": 0.0
+    },
+    "delta_concept": -0.5,
+    "delta_refusal": -0.5,
+    "delta_both": -0.5,
+    "Ihat": 0.5,
+    "sd_D": 0.7071,
+    "se_Ihat": 0.5,
+    "ci95_Ihat": [
+     0.0,
+     1.0
+    ],
+    "perm_p": 1.0,
+    "D_dist": {
+     "neg": 0,
+     "zero": 1,
+     "pos": 1
+    }
+   },
+   "ceiling_floor": {
+    "n": 2,
+    "asr_base": 0.5,
+    "n_base_malicious": 1,
+    "frac_base_benign_no_room": 0.5,
+    "I_max_arith": 1.5,
+    "near_floor_flag": false
+   },
+   "arm_vs_baseline": {
+    "concept_abl_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.0,
+     "delta_asr": 0.5,
+     "ci95_delta_asr": [
+      -0.48,
+      1.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.5,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "refusal_restored_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.0,
+     "delta_asr": 0.5,
+     "ci95_delta_asr": [
+      -0.48,
+      1.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.5,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    },
+    "both_vs_baseline": {
+     "n_paired": 2,
+     "asr_baseline": 0.5,
+     "asr_arm": 0.0,
+     "delta_asr": 0.5,
+     "ci95_delta_asr": [
+      -0.48,
+      1.48
+     ],
+     "se_delta_asr": 0.5,
+     "mcnemar_b": 1,
+     "mcnemar_c": 0,
+     "mcnemar_p_exact": 1.0,
+     "approx_mde": 1.4008,
+     "target_dasr": 0.09,
+     "verdict": "underpowered",
+     "graded": {
+      "mean_score_baseline": 0.5,
+      "mean_score_arm": 0.0,
+      "median_paired_diff": 0.5,
+      "wilcoxon_W": 1.0,
+      "wilcoxon_z": 0.0,
+      "wilcoxon_p": 1.0,
+      "n_nonzero": 1
+     }
+    }
+   },
+   "refusal_proj_mean": {
+    "L18": {
+     "ds_base": 0.8744,
+     "concept_abl": 1.7877,
+     "refusal_restored": 0.8744,
+     "both": 1.7877
+    }
+   },
+   "pconcept_control": {
+    "ds_base": 0.9977,
+    "concept_abl": 0.9738,
+    "mean_drop": 0.024,
+    "note": "positive control: write ablation should DROP p_concept"
+   }
+  }
+ }
+}

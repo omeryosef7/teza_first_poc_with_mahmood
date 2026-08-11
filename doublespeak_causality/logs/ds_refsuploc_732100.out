@@ -1,0 +1,25 @@
+=== refusal-suppression localize (§3): meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json n=2 ===
+    splits=train,test components=resid_pre,attn_out,mlp_out,resid_post donors=direct,self anchor=L18 layers=all
+Fri Aug  7 03:16:51 PM IDT 2026
+n-307
+git=NA
+GPU ok: NVIDIA GeForce RTX 3090 (24576MiB)
+[refsuploc] cohort=clearharm comps=['resid_pre', 'attn_out', 'mlp_out', 'resid_post'] donors=['direct', 'self'] layers=0..31 anchor=L18 read_rows=[14, 15, 16, 17, 18, 19, 20, 21, 25, 29, 30] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refsuploc_clearharm_20260807_154213_732100
+[refsuploc] 4 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refsuploc_clearharm_20260807_154213_732100
+  SELF-SWAP max|restore| = 4.68e-06 (locality gate, want ~0)
+  [train] n=2 (direct-ds) refusal gap at L18 = +5.093
+       resid_pre|direct|L18  restore=[4.812, 2.1718, 7.4522]  frac_of_gap=0.9372
+      resid_post|direct|L17  restore=[4.812, 2.1718, 7.4522]  frac_of_gap=0.9372
+       resid_pre|direct|L17  restore=[4.3925, 2.3237, 6.4613]  frac_of_gap=0.9062
+      resid_post|direct|L16  restore=[4.3925, 2.3237, 6.4613]  frac_of_gap=0.9062
+       resid_pre|direct|L16  restore=[3.6528, 2.0076, 5.2981]  frac_of_gap=0.7648
+      resid_post|direct|L15  restore=[3.6528, 2.0076, 5.2981]  frac_of_gap=0.7648
+  [test] n=2 (direct-ds) refusal gap at L18 = +6.284
+       resid_pre|direct|L18  restore=[5.9826, 4.5118, 7.4535]  frac_of_gap=0.9514
+      resid_post|direct|L17  restore=[5.9826, 4.5118, 7.4535]  frac_of_gap=0.9514
+       resid_pre|direct|L17  restore=[4.9595, 3.6171, 6.3019]  frac_of_gap=0.7836
+      resid_post|direct|L16  restore=[4.9595, 3.6171, 6.3019]  frac_of_gap=0.7836
+       resid_pre|direct|L16  restore=[3.832, 2.6, 5.0641]  frac_of_gap=0.5975
+      resid_post|direct|L15  restore=[3.832, 2.6, 5.0641]  frac_of_gap=0.5975
+=== done ===
+Fri Aug  7 03:44:02 PM IDT 2026

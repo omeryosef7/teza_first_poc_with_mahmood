@@ -1,0 +1,24 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase5pos_clearharm_20260808_173820_736658",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T19:02:00",
+  "end_epoch": 1786204920.838507,
+  "wall_seconds": 5019.414,
+  "arms": [
+    "direct",
+    "full",
+    "neutral",
+    "mapping_altered",
+    "codeword_randomized",
+    "benign_format",
+    "shuffled",
+    "reduced_count",
+    "single_demo"
+  ],
+  "flagged_variants": {
+    "demo_answers_removed": "\u00a75.3 not constructible: Doublespeak demos are declarative benign sentences with no question/answer segment to remove (doublespeak_attack.py: substituted sentences only)."
+  },
+  "gens_written": true
+}

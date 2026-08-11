@@ -1,0 +1,34 @@
+{
+ "cohort": "unrelated_normal",
+ "n": 40,
+ "layers": [
+  16,
+  18,
+  20
+ ],
+ "alpha": {
+  "16": 1.9681,
+  "18": 2.8261,
+  "20": 3.5935
+ },
+ "refusal_rate": {
+  "normal_base": 0.0,
+  "normal_def_L16": 0.0,
+  "normal_def_L18": 0.0,
+  "normal_def_L20": 0.0,
+  "normal_defrand_L18": 0.0
+ },
+ "empty_rate": {
+  "normal_base": 0.0,
+  "normal_def_L16": 0.0,
+  "normal_def_L18": 0.0,
+  "normal_def_L20": 0.0,
+  "normal_defrand_L18": 0.0
+ },
+ "over_refusal": {
+  "normal_def_L16": 0.0,
+  "normal_def_L18": 0.0,
+  "normal_def_L20": 0.0,
+  "normal_defrand_L18": 0.0
+ }
+}

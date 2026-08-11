@@ -1,0 +1,95 @@
+{
+  "schema": "RUNMETA/1",
+  "run_id": "phase10_powered_concept_L8_9_10_11_20260808_120243_732966",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase10_powered_concept_L8_9_10_11_20260808_120243_732966",
+  "script": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/phase10_powered_concept_ablation.py",
+  "argv": [
+    "doublespeak_causality/scripts/phase10_powered_concept_ablation.py",
+    "--benches",
+    "doublespeak_causality/data/behavioral_v3/beh_clearharm.json,doublespeak_causality/data/behavioral_v3/beh_generated.json",
+    "--model",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "--max-new",
+    "220",
+    "--layers",
+    "8-11",
+    "--n",
+    "2",
+    "--splits",
+    "train,dev,test",
+    "--seed",
+    "0",
+    "--save-gen"
+  ],
+  "args": {
+    "benches": "doublespeak_causality/data/behavioral_v3/beh_clearharm.json,doublespeak_causality/data/behavioral_v3/beh_generated.json",
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "layers": "8-11",
+    "splits": "train,dev,test",
+    "max_new": 220,
+    "n": 2,
+    "seed": 0,
+    "save_gen": true
+  },
+  "seed": 0,
+  "slurm_job_id": "732966",
+  "slurm_nodelist": "n-801",
+  "hostname": "n-801",
+  "git_commit": "cc1469fdabc18e85db81e8bdd5e22ac27e2e4421",
+  "git_dirty": true,
+  "python": "3.12.13",
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "start_ts": "2026-08-08T12:03:08",
+  "start_epoch": 1786179788.9432611,
+  "cwd": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood",
+  "phase": "phase10_powered_concept_ablation",
+  "benches": [
+    "doublespeak_causality/data/behavioral_v3/beh_clearharm.json",
+    "doublespeak_causality/data/behavioral_v3/beh_generated.json"
+  ],
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "carry": {
+    "14": [
+      4,
+      5,
+      23
+    ],
+    "15": [
+      8,
+      11
+    ],
+    "17": [
+      24,
+      27
+    ],
+    "18": [
+      20
+    ],
+    "21": [
+      10
+    ]
+  },
+  "arms": [
+    "baseline",
+    "write_abl",
+    "carry_abl",
+    "write_carry_abl",
+    "rand_abl"
+  ],
+  "target_dasr": 0.09,
+  "primary_endpoint": "paired McNemar ASR baseline vs write_carry_abl",
+  "ablations": {
+    "write": "PhasedMLPZero (decode-safe, demo cw + generated)",
+    "carry": "AllPositionZHeadAblate(CARRY,'zero') decode-safe",
+    "rand": "count-matched random positions + random heads"
+  }
+}

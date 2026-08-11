@@ -1,0 +1,14 @@
+=== behav carry: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json maxnew=220 n=0 splits=train ===
+Sun Aug  9 02:03:49 PM IDT 2026
+n-801
+git=004ebfbcbedbab54e12f92896f59700c2ba63e72
+GPU ok: NVIDIA L40S
+[refproj] 32 per-layer refusal dirs (hs rows 1..32)
+[refproj] 85 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refproj_clearharm_20260809_141548_738603
+  [train] n=85 max refusal-suppression (direct-ds) at hs[32] (~L31) = [30.7679, 25.2877, 36.5073]
+     hs[9] mean direct=0.0949 ds=-0.0883 neutral=0.1765 | d-ds=[0.1832, 0.1606, 0.2038] rand=[0.0181, 0.0141, 0.0222]
+     hs[17] mean direct=3.75 ds=1.8339 neutral=2.0215 | d-ds=[1.9161, 1.555, 2.2892] rand=[-0.0177, -0.0307, -0.0052]
+     hs[32] mean direct=67.7054 ds=36.9375 neutral=42.6304 | d-ds=[30.7679, 25.2877, 36.5073] rand=[-0.1584, -0.4612, 0.1346]
+     hs[31] mean direct=14.1062 ds=5.5894 neutral=7.4999 | d-ds=[8.5168, 7.1366, 10.0034] rand=[0.2585, 0.153, 0.3648]
+=== done ===
+Sun Aug  9 02:16:12 PM IDT 2026

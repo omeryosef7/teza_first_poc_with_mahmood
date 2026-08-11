@@ -1,0 +1,6 @@
+=== §28 framework robustness: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json alpha=1.0 n=4 nnitems=0 splits=test ===
+Sat Aug  8 11:42:57 PM IDT 2026
+n-503
+git=NA
+GPU ok (23gb allowlist, nnitems=0): NVIDIA RTX A5000 (24564MiB)
+[fwrobust] cohort=clearharm refusal_L18 alpha=1.0 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/framework_robust_clearharm_a1.0_20260808_234300_737613

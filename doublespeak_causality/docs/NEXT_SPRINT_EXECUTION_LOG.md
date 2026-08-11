@@ -355,3 +355,16 @@ a hint of L12 specificity but underpowered AND both L12 arms are BELOW vanilla (
 **Q4: concept_up_L9 (0.243) == vanilla (0.243) EXACTLY — the concept objective is inert** (does not
 even beat vanilla), consistent with the concept circuit being epiphenomenal. (n-302 slow-disk avoided;
 evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
+
+## 2026-08-11 — Phase 4 seed-44 in flight + Phase 5 (Phi X2) launched
+- Seed-44 finalists optimizing: refusal@L18(744353), concept@L9(744479), refusal_rand@L18(744550),
+  concept_rand@L9(744582). Seed-43 concept_rand@L9(744093, ~8h) near FINAL. Vanilla s44 evaled
+  (dir `phase9b_v3_arm04_vanilla_ds_seed44`): ASR=0.324 (refusal 0.487). Seed-44 evals pending arm completion.
+- PHASE 5 X2 (Q6, third family) LAUNCHED: job 744772 `run_phi_x2_refusal.slurm`. Builds refusal
+  directions on microsoft/Phi-4-mini-reasoning (32 layers) at L12/14/16/18/20/22 from the SAME
+  model-agnostic bench Llama used (pair_carrot_bomb.json direct=harmful/neutral=harmless, 60/20),
+  with --validate. Provenance-checked: Llama's own refusal dirs came from this bench (n_harmful=60,
+  n_harmless=20) — reusing it keeps the cross-family comparison apples-to-apples. Out: outputs/refusal_phi/.
+- NOTE: build_refusal_direction_llama.py reads bench["behavioral"][i]["direct"/"neutral"]; the
+  behavioral_v3b/beh_clearharm.json uses items/harmful_instruction (WRONG shape for this builder) —
+  pair_benchmark files are the correct direct/neutral source. Documented to avoid re-tripping.

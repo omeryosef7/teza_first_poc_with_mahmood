@@ -1,0 +1,5 @@
+=== baseline drift (§1.2): mistralai/Mistral-7B-Instruct-v0.3 bench=doublespeak_causality/data/behavioral_v3b/beh_clearharm.json rejudge=3 maxnew=200 n=3 splits=test ===
+Sat Aug  8 02:17:23 PM IDT 2026
+n-801
+git=c1a3fabc318f9ed7756d657881170e5b298212c2
+GPU ok: NVIDIA L40S

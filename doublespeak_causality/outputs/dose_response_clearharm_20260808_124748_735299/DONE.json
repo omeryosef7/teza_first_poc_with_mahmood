@@ -1,0 +1,21 @@
+{
+  "schema": "DONE/1",
+  "run_id": "dose_response_clearharm_20260808_124748_735299",
+  "status": "ok",
+  "rows_written": 127,
+  "end_ts": "2026-08-08T14:02:13",
+  "end_epoch": 1786186933.8083725,
+  "wall_seconds": 4464.378,
+  "n_demos": [
+    0,
+    1,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12
+  ],
+  "items_short_of_max": 1,
+  "gens_written": true
+}

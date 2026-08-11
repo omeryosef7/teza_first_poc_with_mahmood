@@ -1,0 +1,11 @@
+=== Phase8 head->MLP path: family=concept bench=doublespeak_causality/data/pair_benchmark/pair_carrot_bomb_offline.json ===
+Sat Aug  8 11:53:05 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[phase8-hmpath:concept] m_clean=-8.06108 senders=6 receivers=6 mlp_edges=8
+  cand_med_abs_edge=0.0 ctrl_med_abs_edge=0.0 self_null_max=0.0
+  specific=False sparse=False median_top_edge_frac=None recon_ok=None
+  strongest edge L8h30 -> MLP L9 = 0.0
+  verdict: NO-PATH (candidate head->MLP edges do not clear controls/self-null)
+[phase8-hmpath] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase8_hmpath_concept_Llama-3.1-8B-Instruct_20260808_235359_737623

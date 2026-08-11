@@ -1,0 +1,47 @@
+=== Phase4 edgeKO: doublespeak_causality/data/bench/bench_clearharm.json n=2 layers=8-11 (--layers 8,9,10,11) ===
+Thu Aug  6 01:10:00 PM IDT 2026
+n-803
+git=034460275aac40bdd92c9c7aed619630a9c6b840
+GPU ok: NVIDIA L40S
+[wrapper] destinations='answer' form=decision readout=refusal_proj proj_hs=18 (decoder L17)
+[edgeko] attn_implementation='eager' (asserted)
+[edgeKO] cohort=clearharm L=32 Hn=32 layers=[8, 9, 10, 11] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_clearharm_20260806_131614_726616
+[edgeko] refusal readout: hs18 (decoder L17) from refusal_direction_llama_L17.pt; norm-matched random control armed
+{
+ "edge_KO": {
+  "n": 4,
+  "mean_delta_refusal": 0.00082,
+  "mean_delta_random": 0.00118,
+  "specificity": -0.00036,
+  "specificity_ci95": [
+   -0.02257,
+   0.01809
+  ],
+  "ci_reliable": false
+ },
+ "rand_edge": {
+  "n": 4,
+  "mean_delta_refusal": 0.01941,
+  "mean_delta_random": -0.00782,
+  "specificity": 0.02723,
+  "specificity_ci95": [
+   -0.01151,
+   0.06838
+  ],
+  "ci_reliable": false
+ },
+ "all_query_edges": {
+  "n": 4,
+  "mean_delta_refusal": 0.04884,
+  "mean_delta_random": -0.04586,
+  "specificity": 0.0947,
+  "specificity_ci95": [
+   -0.105,
+   0.33308
+  ],
+  "ci_reliable": false
+ }
+}
+[edgeko] decision-form summary -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase4_edgeKO_clearharm_20260806_131614_726616
+=== done ===
+Thu Aug  6 01:16:24 PM IDT 2026

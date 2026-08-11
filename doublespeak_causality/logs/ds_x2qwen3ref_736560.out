@@ -1,0 +1,28 @@
+=== §27 X2 Qwen3-14B refusal direction: FIT + VALIDATE ===
+    model=Qwen/Qwen3-14B enable_thinking=false layers=16,24 out=doublespeak_causality/outputs/refusal_qwen3
+    fit_bench=doublespeak_causality/data/pair_benchmark/pair_carrot_bomb.json  val_bench=doublespeak_causality/data/behavioral_v3b/beh_clearharm.json  families=existing
+    val: n=4 maxnew=16 abl(1.0,all_layers) ind(allpos,gap,eval=benign)
+Sat Aug  8 03:57:29 PM IDT 2026
+n-801
+git=db948ec44d50ee4f6d8c71a20ddf7e4f99cba50c
+GPU ok: NVIDIA L40S
+--- (a) FIT build_refusal_direction_llama.py ---
+Sat Aug  8 03:57:29 PM IDT 2026
+[refusal] harmful=60 (pooled) harmless=20 layers=[16, 24] -> doublespeak_causality/outputs/refusal_qwen3
+  harmful 25/60
+  harmful 50/60
+[refusal] L16: separation=+0.3682 -> doublespeak_causality/outputs/refusal_qwen3/refusal_direction_llama_L16.pt
+[refusal] L24: separation=+0.6979 -> doublespeak_causality/outputs/refusal_qwen3/refusal_direction_llama_L24.pt
+[refusal] done. Re-run with --validate to sign-check + select a layer.
+--- (b) VALIDATE validate_refusal_directions.py ---
+Sat Aug  8 03:57:54 PM IDT 2026
+[refval] cohort=clearharm families=['existing'] layers=2 fit_n=85 eval_n=4 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refval_clearharm_20260808_155755_736560
+[refval] harmless set: 20 total -> fit/alpha n=20, induce-eval n=20, disjoint=False
+  [harmless] 20/20 forwards
+[refval] baselines: harmful refusal=0.750 induce-base (benign) refusal=0.250 [headroom for induce_gain = 0.750]
+[refval] existing L16: sep_ho=-0.001 ablate=+0.250(rand +0.000) induce=+0.750(rand +0.000) a_ind=+24.61 valid=True
+[refval] existing L24: sep_ho=+0.035 ablate=+0.250(rand +0.000) induce=+0.750(rand +0.000) a_ind=+108.22 valid=True
+[refval] 2 rows (40 raw) -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refval_clearharm_20260808_155755_736560
+  [existing] valid 2/2 best=L16 score=1.0 invalid=[]
+=== done ===
+Sat Aug  8 03:58:39 PM IDT 2026

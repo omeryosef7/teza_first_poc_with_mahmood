@@ -1,0 +1,6 @@
+=== Phase5 headz: doublespeak_causality/data/bench/bench_clearharm.json n=0 layers=16-31 ===
+Thu Aug  6 09:15:36 PM IDT 2026
+n-305
+git=a2b0bb348970a272303bffa8f847f34b4ab72e5b
+GPU ok: NVIDIA GeForce RTX 3090 (24576MiB)
+[headz] cohort=clearharm L=32 heads=32 layers=16-31 -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase5_headz_clearharm_query_20260806_211724_729250

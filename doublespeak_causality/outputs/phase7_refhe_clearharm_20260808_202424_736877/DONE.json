@@ -1,0 +1,18 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase7_refhe_clearharm_20260808_202424_736877",
+  "status": "ok",
+  "rows_written": 162,
+  "end_ts": "2026-08-08T20:24:32",
+  "end_epoch": 1786209872.2724838,
+  "wall_seconds": 7.095,
+  "parts": [
+    "head",
+    "edge"
+  ],
+  "band": [
+    17,
+    18
+  ],
+  "gpu": "NVIDIA L40S"
+}

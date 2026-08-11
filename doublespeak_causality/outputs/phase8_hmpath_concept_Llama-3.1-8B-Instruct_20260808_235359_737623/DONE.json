@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase8_hmpath_concept_Llama-3.1-8B-Instruct_20260808_235359_737623",
+  "status": "ok",
+  "rows_written": 8,
+  "end_ts": "2026-08-08T23:54:05",
+  "end_epoch": 1786222445.3571303,
+  "wall_seconds": 5.221
+}

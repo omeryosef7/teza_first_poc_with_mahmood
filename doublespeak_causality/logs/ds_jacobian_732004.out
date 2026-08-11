@@ -1,0 +1,47 @@
+=== P6 jacobian readout: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json kind=behavioral cohort=clearharm n=0 ===
+    splits=train,test conds=direct,neutral,doublespeak targets=concept,refusal pos=final_prompt,probe_last refrow=-1 grad=inputs_embeds
+Fri Aug  7 01:21:42 PM IDT 2026
+n-802
+git=2f529a86252988d8533e5af23db0dfe510cab68d
+GPU ok: NVIDIA L40S (46068MiB)
+[jac] 10 work items, 20 rows, 3s
+[jac] 20 work items, 40 rows, 5s
+[jac] 30 work items, 60 rows, 7s
+[jac] 40 work items, 80 rows, 9s
+[jac] 50 work items, 100 rows, 11s
+[jac] 60 work items, 120 rows, 13s
+[jac] 70 work items, 140 rows, 14s
+[jac] 80 work items, 160 rows, 16s
+[jac] 90 work items, 180 rows, 18s
+[jac] 100 work items, 200 rows, 20s
+[jac] 110 work items, 220 rows, 22s
+[jac] 120 work items, 240 rows, 24s
+[jac] 130 work items, 260 rows, 26s
+[jac] 140 work items, 280 rows, 28s
+[jac] 150 work items, 300 rows, 29s
+[jac] 160 work items, 320 rows, 31s
+[jac] 170 work items, 340 rows, 33s
+[jac] 180 work items, 360 rows, 35s
+[jac] 190 work items, 380 rows, 37s
+[jac] 200 work items, 400 rows, 39s
+[jac] 210 work items, 420 rows, 40s
+[jac] 220 work items, 440 rows, 42s
+[jac] 230 work items, 460 rows, 44s
+[jac] 240 work items, 480 rows, 46s
+[jac] 250 work items, 500 rows, 48s
+[jac] 516 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/jacobian_clearharm_20260807_132150_732004
+[jac] hs-index check (acts[L] vs hidden_states[L+1]) maxabs=0.0 | taylor median ratio=0.94135 (1.0 == perfectly linear)
+  [test|direct] target=concept n=42 S=1.31024 peak||J||=L17 peak|jac_proj|=L28
+  [test|direct] target=refusal n=42 S=65.5165 peak||J||=L12 peak|jac_proj|=L23
+  [test|doublespeak] target=concept n=42 S=-1.45367 peak||J||=L12 peak|jac_proj|=L24
+  [test|doublespeak] target=refusal n=42 S=27.5239 peak||J||=L12 peak|jac_proj|=L22
+  [test|neutral] target=concept n=42 S=-2.01314 peak||J||=L12 peak|jac_proj|=L30
+  [test|neutral] target=refusal n=42 S=41.9001 peak||J||=L12 peak|jac_proj|=L26
+  [train|direct] target=concept n=44 S=1.11092 peak||J||=L17 peak|jac_proj|=L26
+  [train|direct] target=refusal n=44 S=65.2656 peak||J||=L12 peak|jac_proj|=L23
+  [train|doublespeak] target=concept n=44 S=-2.0436 peak||J||=L16 peak|jac_proj|=L29
+  [train|doublespeak] target=refusal n=44 S=29.1398 peak||J||=L12 peak|jac_proj|=L22
+  [train|neutral] target=concept n=44 S=-2.59897 peak||J||=L17 peak|jac_proj|=L24
+  [train|neutral] target=refusal n=44 S=42.5939 peak||J||=L12 peak|jac_proj|=L22
+=== done ===
+Fri Aug  7 01:23:59 PM IDT 2026

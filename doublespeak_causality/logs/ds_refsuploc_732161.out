@@ -1,0 +1,32 @@
+=== refusal-suppression localize (§3): meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json n=0 ===
+    splits=train,dev,test components=resid_pre,attn_out,mlp_out,resid_post donors=direct,neutral,rand,self anchor=L18 layers=all
+Fri Aug  7 04:26:45 PM IDT 2026
+n-802
+git=4b84c0a97a06d503d76d9d0ef60fc85efe97b3ab
+GPU ok: NVIDIA L40S (46068MiB)
+[refsuploc] cohort=clearharm comps=['resid_pre', 'attn_out', 'mlp_out', 'resid_post'] donors=['direct', 'neutral', 'rand', 'self'] layers=0..31 anchor=L18 read_rows=[14, 15, 16, 17, 18, 19, 20, 21, 25, 29, 30] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refsuploc_clearharm_20260807_163312_732161
+[refsuploc] 170 rows -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refsuploc_clearharm_20260807_163312_732161
+  SELF-SWAP max|restore| = 4.99e-06 (locality gate, want ~0)
+  [train] n=85 (direct-ds) refusal gap at L18 = +2.559
+          mlp_out|L16  direct_frac=1.2617  rand_frac=-0.5494  neutral_frac=0.947  (direct restore CI=[0.1117, 0.0128, 0.2021])
+        resid_pre|L16  direct_frac=1.2507  rand_frac=4.8869  neutral_frac=0.729  (direct restore CI=[1.5528, 1.1564, 1.9463])
+       resid_post|L15  direct_frac=1.2507  rand_frac=4.9559  neutral_frac=0.729  (direct restore CI=[1.5528, 1.1551, 1.9657])
+        resid_pre|L17  direct_frac=1.1775  rand_frac=5.1928  neutral_frac=0.7012  (direct restore CI=[2.0371, 1.5747, 2.5186])
+       resid_post|L16  direct_frac=1.1775  rand_frac=4.1651  neutral_frac=0.7012  (direct restore CI=[2.0371, 1.5915, 2.512])
+          mlp_out|L15  direct_frac=1.1469  rand_frac=0.5168  neutral_frac=0.7294  (direct restore CI=[0.1424, 0.0587, 0.2232])
+  [dev] n=43 (direct-ds) refusal gap at L18 = +2.441
+        resid_pre|L18  direct_frac=0.9264  rand_frac=-0.873  neutral_frac=-0.1419  (direct restore CI=[2.2714, 1.617, 2.9485])
+       resid_post|L17  direct_frac=0.9264  rand_frac=-0.7771  neutral_frac=-0.1419  (direct restore CI=[2.2714, 1.6324, 2.9213])
+        resid_pre|L17  direct_frac=0.8306  rand_frac=-0.4227  neutral_frac=-0.1636  (direct restore CI=[1.8839, 1.3482, 2.4189])
+       resid_post|L16  direct_frac=0.8306  rand_frac=-0.5519  neutral_frac=-0.1636  (direct restore CI=[1.8839, 1.3087, 2.4297])
+        resid_pre|L16  direct_frac=0.6411  rand_frac=-0.834  neutral_frac=-0.1319  (direct restore CI=[1.4415, 1.0138, 1.8979])
+       resid_post|L15  direct_frac=0.6411  rand_frac=-0.7947  neutral_frac=-0.1319  (direct restore CI=[1.4415, 1.0199, 1.9155])
+  [test] n=42 (direct-ds) refusal gap at L18 = +1.558
+        resid_pre|L18  direct_frac=0.9433  rand_frac=-1.306  neutral_frac=-0.276  (direct restore CI=[1.4422, 0.7261, 2.2295])
+       resid_post|L17  direct_frac=0.9433  rand_frac=-1.168  neutral_frac=-0.276  (direct restore CI=[1.4422, 0.7066, 2.2374])
+        resid_pre|L17  direct_frac=0.8786  rand_frac=-1.1598  neutral_frac=-0.2756  (direct restore CI=[1.1617, 0.4421, 1.8266])
+       resid_post|L16  direct_frac=0.8786  rand_frac=-1.2327  neutral_frac=-0.2756  (direct restore CI=[1.1617, 0.4492, 1.9142])
+        resid_pre|L16  direct_frac=0.7374  rand_frac=-1.2329  neutral_frac=-0.1004  (direct restore CI=[0.8864, 0.3541, 1.4577])
+       resid_post|L15  direct_frac=0.7374  rand_frac=-1.3253  neutral_frac=-0.1004  (direct restore CI=[0.8864, 0.3424, 1.4208])
+=== done ===
+Fri Aug  7 05:32:26 PM IDT 2026

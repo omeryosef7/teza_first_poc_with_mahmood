@@ -1,0 +1,6 @@
+=== refusal-direction validation: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral/beh_clearharm.json families=existing,clearharm ===
+    layers=9,16,18,22,28 n=20 maxnew=64 abl(a=1.0,all_layers) ind(allpos,gap)
+Thu Aug  6 05:09:31 AM IDT 2026
+n-306
+git=c8d54f91b90accf74a7e2cf127f9e772132d8167
+ERROR need L40S got 'NVIDIA GeForce RTX 3090'

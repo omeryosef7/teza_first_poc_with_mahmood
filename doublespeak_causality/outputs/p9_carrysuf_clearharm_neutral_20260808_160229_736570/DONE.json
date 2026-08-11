@@ -1,0 +1,32 @@
+{
+  "schema": "DONE/1",
+  "run_id": "p9_carrysuf_clearharm_neutral_20260808_160229_736570",
+  "status": "ok",
+  "rows_written": 86,
+  "end_ts": "2026-08-08T16:35:00",
+  "end_epoch": 1786196100.9254072,
+  "wall_seconds": 1926.928,
+  "arms": [
+    "baseline",
+    "carry_install",
+    "rand_install",
+    "self_install",
+    "write_carry"
+  ],
+  "recipient": "neutral",
+  "carry": [
+    "L14H4",
+    "L14H5",
+    "L14H23",
+    "L15H8",
+    "L15H11",
+    "L17H24",
+    "L17H27",
+    "L18H20",
+    "L21H10"
+  ],
+  "write_layer": 9,
+  "n_write_skipped": 0,
+  "gens_written": true,
+  "gpu": "NVIDIA L40S"
+}

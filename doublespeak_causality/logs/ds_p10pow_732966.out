@@ -1,0 +1,11 @@
+=== p10 powered concept ablation: meta-llama/Llama-3.1-8B-Instruct benches=doublespeak_causality/data/behavioral_v3/beh_clearharm.json,doublespeak_causality/data/behavioral_v3/beh_generated.json layers=8-11 maxnew=220 n=2 splits=train,dev,test flags= --save-gen ===
+Sat Aug  8 12:02:39 PM IDT 2026
+n-801
+git=cc1469fdabc18e85db81e8bdd5e22ac27e2e4421
+GPU ok: NVIDIA L40S
+[p10] benches=['doublespeak_causality/data/behavioral_v3/beh_clearharm.json', 'doublespeak_causality/data/behavioral_v3/beh_generated.json'] write_layers=[8, 9, 10, 11] carry_heads=9 arms=['baseline', 'write_abl', 'carry_abl', 'write_carry_abl', 'rand_abl'] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase10_powered_concept_L8_9_10_11_20260808_120243_732966
+[p10] 12 items (skipped 0) -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase10_powered_concept_L8_9_10_11_20260808_120243_732966
+  [POOLED_all] n=12 ASR_base=0.4167 | write_carry: dASR=0.0833 CI=[-0.08, 0.2467] McNemar p=1.0 MDE=0.2335 -> underpowered
+  [FROZEN_test] n=4 ASR_base=0.75 | write_carry: dASR=0.25 CI=[-0.24, 0.74] McNemar p=1.0 MDE=0.7004 -> underpowered
+=== done ===
+Sat Aug  8 12:09:09 PM IDT 2026

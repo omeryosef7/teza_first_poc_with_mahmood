@@ -1,0 +1,5 @@
+=== P4a identify: bench=doublespeak_causality/data/bench/bench_clearharm.json readout=fixed split=heldout n=42 band=7-14 ===
+Thu Aug  6 05:15:15 PM IDT 2026
+n-802
+git=a850e9aa38e6e28112ccdd2e714a7014e5fdbcfb
+GPU ok: NVIDIA L40S

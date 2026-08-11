@@ -1,0 +1,23 @@
+{
+  "schema": "DONE/1",
+  "run_id": "refval_clearharm_20260808_155755_736560",
+  "status": "ok",
+  "rows_written": 2,
+  "end_ts": "2026-08-08T15:58:38",
+  "end_epoch": 1786193918.2867243,
+  "wall_seconds": 40.629,
+  "raw_rows": 40,
+  "by_family": {
+    "existing": {
+      "n_layers": 2,
+      "n_valid": 2,
+      "valid_layers": [
+        16,
+        24
+      ],
+      "invalid_layers": [],
+      "best_layer": 16,
+      "best_score": 1.0
+    }
+  }
+}

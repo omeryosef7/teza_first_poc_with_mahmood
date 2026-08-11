@@ -1,0 +1,4 @@
+=== behav carry: meta-llama/Llama-3.1-8B-Instruct bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json maxnew=220 n=0 splits=train ===
+Sun Aug  9 01:18:51 PM IDT 2026
+n-502
+git=NA

@@ -1,0 +1,11 @@
+=== Phase8 head->MLP path: family=refusal bench=doublespeak_causality/data/behavioral_v3/beh_clearharm.json ===
+Sat Aug  8 11:37:55 PM IDT 2026
+n-503
+git=NA
+GPU ok: NVIDIA RTX A5000 (24564MiB)
+[phase8-hmpath:refusal] m_clean=-0.40063 senders=6 receivers=10 mlp_edges=16
+  cand_med_abs_edge=0.01815 ctrl_med_abs_edge=0.00711 self_null_max=0.0
+  specific=True sparse=True median_top_edge_frac=0.6758 recon_ok=None
+  strongest edge L13h11 -> MLP L14 = 0.08965
+  verdict: SPARSE-GRAPH (few receivers carry each sender; edges clear controls)
+[phase8-hmpath] -> /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/phase8_hmpath_refusal_Llama-3.1-8B-Instruct_20260808_233827_737603
