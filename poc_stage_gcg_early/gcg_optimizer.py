@@ -672,6 +672,7 @@ def run_optimization(
     # Refusal-direction loss config
     refusal_direction: Optional[torch.Tensor] = None
     refusal_dir_positions: List[int] = []
+    _rd_oob_warned: set = set()   # tasks already warned about an out-of-range legacy position
     if config.objective.lambda_refusal_dir > 0.0 and config.objective.refusal_dir_path:
         import torch as _torch
         refusal_direction = _torch.load(
@@ -791,7 +792,7 @@ def run_optimization(
         if pos[0] >= spans.input_ids.shape[0]:
             raise ValueError(f"refusal_dir position {pos[0]} out of range "
                              f"(len={spans.input_ids.shape[0]})")
-        return pos
+        return pos   # (legacy_fixed returned earlier, so this check never affects a replay)
 
     def _selection_kwargs(task_id: str, eff_lambda_rd: float, spans=None) -> Dict[str, Any]:
         """Objective wiring for one train task, shared by candidate + acceptance eval."""
@@ -845,9 +846,22 @@ def run_optimization(
             elif _mode != "legacy_fixed":
                 raise ValueError(f"unknown refusal_dir_position_mode={_mode!r}")
             if _rdp and _rdp[0] >= spans.input_ids.shape[0]:
-                raise ValueError(
-                    f"refusal_dir position {_rdp[0]} out of range for task {task.task_id} "
-                    f"(len={spans.input_ids.shape[0]}) -- refusing to silently drop the term")
+                if _mode == "legacy_fixed":
+                    # Do NOT raise here: silently dropping the term is precisely what the
+                    # published runs did, and legacy_fixed exists to replay them exactly.
+                    # Warn once per task so the defect is visible in the log instead.
+                    if task.task_id not in _rd_oob_warned:
+                        _rd_oob_warned.add(task.task_id)
+                        print(f"[GCG] WARNING legacy_fixed: refusal_dir position {_rdp[0]} is "
+                              f"OUT OF RANGE for task {task.task_id} "
+                              f"(len={spans.input_ids.shape[0]}) -- the mechanism term "
+                              f"contributes 0 for this task, as in the published runs.",
+                              flush=True)
+                else:
+                    raise ValueError(
+                        f"refusal_dir position {_rdp[0]} out of range for task "
+                        f"{task.task_id} (len={spans.input_ids.shape[0]}) -- refusing to "
+                        f"silently drop the term")
             g = _token_gradients(
                 model, model_family,
                 spans.input_ids, spans.suffix_slice,
