@@ -40,6 +40,7 @@ export PYTHONUNBUFFERED=1
 : "${ASYM_MAXNEW:=200}"
 : "${ASYM_MALTHR:=0.5}"
 : "${ASYM_GENSPLITS:=train,test}"
+: "${ASYM_GPU:=l40s}"
 : "${ASYM_SEED:=0}"
 SPLITS="train,test"      # features (and thresholds) always need train
 
@@ -47,10 +48,13 @@ echo "=== ASYM P5 two-signal defense: n=$ASYM_N gen_splits=$ASYM_GENSPLITS thr=$
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"; echo "proj=$ASYM_PROJ"
 test -f "$ASYM_PROJ" || { echo "ERROR missing proj summary $ASYM_PROJ"; exit 1; }
 [ -n "${OPENAI_API_KEY:-}" ] || { echo "ERROR OPENAI_API_KEY unset -> StrongREJECT scores null"; exit 1; }
+# GPU class guard (plan §3.1). Every Phase-5 contrast is WITHIN one job -- all six arms are
+# derived from the same two generations per item -- so one class per run is what matters.
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in
-  *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";;
-  *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;;
+GPU_LC="$(echo "$GPU_TYPE" | tr 'A-Z' 'a-z')"
+case "$GPU_LC" in
+  *"$ASYM_GPU"*) echo "GPU ok: $GPU_TYPE (required class: $ASYM_GPU)";;
+  *) echo "ERROR need $ASYM_GPU got '$GPU_TYPE'"; exit 1;;
 esac
 
 python -u doublespeak_causality/scripts/asym_p5_defense_2signal.py \

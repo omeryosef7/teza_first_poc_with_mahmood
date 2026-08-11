@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p2_soft_refusal_free_b0.25_seed42_20260811_221644_750443",
+  "status": "ok",
+  "rows_written": 37,
+  "end_ts": "2026-08-11T22:27:30",
+  "end_epoch": 1786476450.4112778,
+  "wall_seconds": 0.021
+}
