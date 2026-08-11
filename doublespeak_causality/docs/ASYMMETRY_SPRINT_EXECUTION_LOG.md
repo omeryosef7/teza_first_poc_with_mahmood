@@ -1551,3 +1551,27 @@ distinguishing "H2′ is Llama-specific" from "the Phi measurement is noisier" w
 better-conditioned Phi probe. **Not claimed either way.**
 
 ---
+## 2026-08-12 01:52 — GATE C RE-REPORTED against the corrected control (job 751408)
+
+Llama train n=40, `--actcov-drop-top 1`, family diversity now **0.094** mean |pairwise cos|
+(was ~0.97). `‖Jᵀ v_refusal‖ = 22.04`.
+
+| control | n | mean | ratio | pct | paired-diff 95 % CI |
+|---|---|---|---|---|---|
+| isotropic random | 100 | 1.669 | **14.12×** | **1.000** | [+17.32, +23.85] |
+| **covariance-matched (CORRECTED)** | 100 | 5.057 | **4.71×** | **0.990** | [+14.45, +20.65] |
+| other-layer refusal | 3 | 8.086 | 3.43× | 0.983 | [+12.84, +18.84] |
+| concept (foreign) | 1 | 3.244 | 7.33× | 1.000 | [+15.64, +22.17] |
+
+**The corrected control is HARDER than the degenerate one it replaces** — its mean ‖Jᵀv‖ rises
+from 3.80 to 5.06, so the ratio falls from the previously reported **6.74× to 4.71×**. Gate C
+clears it anyway at percentile 0.990 with a CI nowhere near zero.
+
+> **Gate C stands, on a control that is now what the methods section says it is.** The
+> superseded 6.74× is retained in the log for provenance; 4.71× is the number to cite.
+
+Docs updated: `TOKEN_REACHABILITY_ANALYSIS.md` §2.3 now carries the corrected table, and claim
+row **A1** cites 4.71× with the degeneracy history, plus the Phi replication. Row **A2** is
+amended to **VERIFIED on Llama / CROSS-FAMILY PARTIAL NEGATIVE**.
+
+---
