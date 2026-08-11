@@ -1180,3 +1180,47 @@ class. Seed-43 ASR is being judged; seed 44 pair launched (jobs on n-501/n-502),
 close the plan §6.1 ≥3-seed requirement.
 
 ---
+## 2026-08-12 01:05 — PHASE 2 SEED 43: THE SPECIFICITY RESULT REPLICATES EXACTLY
+
+Budget 0.10, held-out n=37, judged at StrongREJECT ≥ 0.5, 0 % null judges:
+
+| seed | GPU | refusal ASR | random ASR | **ΔASR** | McNemar p | boot95 | refusal_rate (ref / rand) |
+|---|---|---|---|---|---|---|---|
+| 42 | L40S | 0.757 | 0.081 | **+0.6757** | 5.96e-08 | [+0.514, +0.811] | 0.027 / 0.460 |
+| **43** | **a5000** | **0.838** | **0.162** | **+0.6757** | **5.96e-08** | **[+0.514, +0.811]** | 0.000 / 0.432 |
+
+**Two seeds, two GPU classes, ΔASR identical to four decimals** (the discordant-pair counts
+happened to match; the underlying arms differ — refusal 0.757 vs 0.838, random 0.081 vs 0.162).
+Internal-target specificity replicates too: refusal Δproj −8.22/−8.65 vs random −2.21/−2.42
+(ratios 3.7× / 3.6×).
+
+Seed 44 pair is queued (751386/751387), which will close the plan §6.1 ≥3-seed requirement and
+remove the last stated limitation on the Phase-2 headline.
+
+## 2026-08-12 01:05 — PHASE 3 LAUNCHED (the last unrun experiment in the plan)
+
+**Smoke passed** (job 751380, 3 steps): the log confirms
+`position_mode=per_task_decision`, the run completed cleanly, and — as expected when
+positions are recomputed per task — **no out-of-range warning fired**. In `legacy_fixed` the
+fixed index 233 is out of range for 1 of the 40 train prompts and would have printed one.
+
+**Full arms launched, compute-matched to the published matrix** (batch 32 × 200 steps, the
+same candidate-forward budget as the shipped `refusal_L18` / `refusal_rand_L18` arms):
+
+* `751392` — `refusal_L18_poscorr` (mechanism)
+* `751393` — `refusal_rand_L18_poscorr` (its matched random control)
+
+Identical λ (0.25), layer index (19), direction files, suffix length (16), topk (256),
+manifest, seed (42), suffix placement and evaluation. **The only difference from the published
+arms is where the projection is read.** Both new arms share a GPU class (a5000), so the
+mechanism-vs-random contrast is internally matched.
+
+**Pre-registered prediction, restated before the result exists:**
+> **Gate B / H2′ predicts these still fail** — the first-order surrogate is invalid at
+> one-token step size regardless of which position it reads, so fixing the position should
+> not rescue a gradient that carries no information about real substitutions.
+> **"Gate D was just an implementation bug" predicts they succeed.**
+> Either outcome resolves whether the sprint's Phase-0 defect D1/D2 finding *explains away*
+> the token-space negative or merely *reframes* it.
+
+---
