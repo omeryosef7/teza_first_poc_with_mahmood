@@ -381,3 +381,10 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
 - Found concept builder path: phase_x5_concept_qwen3.py is model-generic (diff-of-means concept fit +
   concept/refusal/random proj AUC) -> reuse for Phi X5 once X1 labels land. build_unified_directions
   needs a pair_directions npz (heavier) -> X5 script is the lighter, sufficient route.
+
+## 2026-08-11 (tick 3) — seed43 complete; seed44 arm07 near FINAL
+- seed43 concept_rand@L9 eval (744793) DONE: ASR=0.297. Seed-43 now COMPLETE (5/5):
+  vanilla .351 / refusal@L18 .405 / refusal_rand .243 / concept .270 / concept_rand .297.
+  concept<vanilla AND concept<its-random -> concept inert holds; refusal>random +0.162 (seed-dependent).
+- seed44: arm07_refusal_L18 at step 193/200 (near FINAL); 07r@101, 06@147, 06r@118. Phi X1/X3 (744801) 30m in.
+- Held free slot for the imminent seed44 eval rather than pre-launching quant.

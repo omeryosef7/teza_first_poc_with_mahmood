@@ -58,7 +58,9 @@ causally null). MAC/TROPT + 2nd-order ‖J‖² = stretch (documented out-of-sco
 | refusal@L18 | **0.405** |
 | refusal_rand@L18 | **0.243** |
 | concept@L9 | 0.270 |
-| concept_rand@L9 | _pending_ |
+| concept_rand@L9 | 0.297 |
+_Seed-43 COMPLETE (all 5 arms). concept@L9 (0.270) < vanilla (0.351) and < its random (0.297) →
+concept inert/below-random holds. refusal@L18 (0.405) > its random (0.243), ΔASR +0.162._
 **IMPORTANT — cross-seed sign flip / high variance:** refusal@L18 vs its random flips between seeds:
 seed42 ΔASR −0.027 (rand≥refusal) vs seed43 **+0.162** (refusal>rand). Mean(42,43)=+0.068 but the
 between-seed swing (~0.19) dwarfs it — consistent with the plan's ~6pp between-run floor being far
