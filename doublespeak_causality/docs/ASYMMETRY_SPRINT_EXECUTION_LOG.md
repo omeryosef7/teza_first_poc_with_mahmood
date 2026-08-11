@@ -1693,3 +1693,46 @@ statements, and it is the one that goes in the paper.
 `docs/PAPER_OUTLINE_V2.md` §5.2 and claim row **A2** to be amended accordingly.
 
 ---
+## 2026-08-12 02:36 — LOOP: steady state; stale-job check; a scope decision recorded
+
+**Queue:** 2 running (both Phase-3 GCG arms), 0 pending. Step **40–50 of 200** after 1 h 43 m
+→ ~7 h projected. `rd_loss`: mechanism **−0.1484**, matched random **+0.0018**.
+
+**Stale-job check (the >30 min rule, applied properly).** `sacct` reported job **741057** as
+`PENDING` with a submit time of **2026-08-10T00:03** — two days old. Before acting on it I
+checked the live queue: `squeue -j 741057` returns *"Invalid job id specified"*. It is a stale
+**accounting record** from a previous sprint that never started and never resolved, **not** a
+live queued job. It consumes no slot and no priority. **No action taken** — resubmitting or
+cancelling an accounting artifact would have been noise. Worth the 20 seconds to check rather
+than reflexively applying the rule.
+
+**Node contention, revisited.** I left slots empty earlier to protect the GCG arms. On
+reflection that was over-cautious *now*: each job holds its own GPU (`--gpus=1`), so once past
+the weight-loading phase they do not compete for compute — the documented 16× pathology is
+**filesystem I/O during loading**, not steady-state interference. Both arms have been past
+loading for over an hour. The correct rule is "cap concurrent *loads* per node", not "cap jobs
+per node", and that is what the memory note now says.
+
+### The D3 scope-matched activation arm: recorded as NOT RUN, with the reason
+Figure A's top row (activation ablation) is all-position/all-layer, while every input arm is
+16 suffix positions — a **scope** difference on top of the medium difference. The fix is a
+single-layer, single-position (`decision`) activation ablation, which `ds_common.LayerPatch`
+already supports.
+
+**Not run.** Two reasons, stated separately because only one of them is scientific:
+1. *Scientific:* the expected result is close to known. The direction-validation record shows
+   single-layer ablation barely dents refusal (L14: refusal rate 1.000 → 0.933) because later
+   layers re-write the axis; a single-position variant should be weaker still. It would very
+   likely show **activation ≪ continuous** under matched scope, i.e. that the activation arm's
+   dominance in Figure A *is* largely a scope effect — which is exactly what the caveat
+   already asserts.
+2. *Resource:* it needs new code late in a long session, and the risk of a late-introduced
+   error outweighs confirming something the caveat already states.
+
+**This is a deferral, not a finding.** The limitation stays in
+`UPDATED_PAPER_CLAIM_TABLE.md` §D.2 and `PAPER_OUTLINE_V2.md` §8 as an open item, and Figure
+A's activation-vs-continuous row must not be read as a clean medium comparison until it is
+run. Recording the reasoning so a future reader knows it was considered and priced, not
+overlooked.
+
+---
