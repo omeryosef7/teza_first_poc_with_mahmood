@@ -76,3 +76,28 @@ random? (Distinguishes "objective moved its target but ASR didn't beat random" f
 The mechanism-derived objectives do not beat norm-matched random controls; the refusal axis (causal &
 predictive in activation space) does not convert into a specific token-space optimization lever, and
 the concept axis is inert. Pending ≥3-seed confirmation before finalizing.
+
+## MECHANISTIC-VALIDITY (Q5) — seed42, held-out v3 test n=37 (reports/GATE7_V3_MECH_VALIDITY_seed42.json)
+Projection change vs neutral suffix (mean over 37 test prompts), at the fitted hidden_states rows:
+| suffix | Δ refusal_proj @hs19 (L18) | Δ refusal_proj @hs23 (L22) | Δ concept_proj @hs10 (L9) |
+|---|---|---|---|
+| refusal@L18 | **−1.66** | −2.81 | −0.19 |
+| refusal_rand@L18 | **−2.04** | −3.53 | −0.17 |
+| concept@L9 | −1.05 | −1.45 | **−0.16** (wanted UP) |
+| concept_rand@L9 | −1.66 | −2.58 | −0.22 |
+(baseline refusal_proj @hs19 = 3.40, @hs23 = 4.39; concept_proj @hs10 = 0.55)
+**DECISIVE READ:** the refusal-optimized suffix does NOT lower the refusal projection MORE than a
+norm-matched RANDOM-direction suffix — random suppresses it MORE (−2.04 vs −1.66 @hs19; −3.53 vs
+−2.81 @hs23). So the mechanism objective fails to move its intended internal target specifically on
+HELD-OUT prompts. Adversarial GCG suffixes suppress the refusal signal GENERICALLY (any strong
+perturbation does); the validated-direction objective adds no specificity even at the mechanism level.
+The concept "up" objective likewise does NOT raise concept projection (Δ −0.16, wrong direction).
+=> This resolves the ASR seed-variance: the objective is **NON-SPECIFIC at the mechanism level**, not
+merely ASR-underpowered. Q5 answer: the intended internal change does NOT occur more than random.
+
+## GATE D (updated): NON-SPECIFIC NEGATIVE (mechanistically grounded)
+Refusal/concept/Jacobian/combined GCG objectives neither beat norm-matched random controls on ASR
+(refusal-vs-random seed-dependent/underpowered; concept inert) NOR move their intended internal
+targets more than random on held-out test (Q5). The causal+predictive activation-space refusal axis
+does NOT convert into a specific token-space optimization lever. (bf16 primary; Llama-3.1-8B; v3
+leakage-0; 3 seeds; batch32×200.)
