@@ -1065,3 +1065,46 @@ control is **not inert in every pair** (grenade 0.225 vs 0.150 base; pistol 0.48
 ablation-minus-random contrast is the reported quantity. `pooled_usable=False` for both halves.
 
 ---
+## 2026-08-12 00:52 — ⚠ CORRECTION: the 00:40 Gate-F concept numbers were read from RUNNING jobs
+
+**What went wrong.** I ran the Phase-4 aggregate at 00:40 while three concept-ablation jobs
+were still writing. A partial `raw.jsonl` is perfectly well-formed, so the aggregator read it
+without complaint and produced real-looking numbers from an **undefined subset** of items.
+
+Affected numbers in the 00:40 entry and in the first version of
+`docs/MULTICONCEPT_CAUSAL_GENERALIZATION.md`:
+
+| pair | reported at 00:40 | actual (complete) | status |
+|---|---|---|---|
+| **bomb** concept-specific | +0.062 | **+0.000** (n=26, complete) | **CORRECTED** |
+| **grenade** concept-specific | +0.048 | **not yet available** — job 751358 was at 51/60 items | **WITHDRAWN pending completion** |
+| cocaine concept-specific | −0.026 | −0.026 (was already complete at 00:24) | unaffected |
+| all five refusal arms | — | — | unaffected; all five had completed before the aggregate ran |
+
+**The consequence is not cosmetic.** Grenade was the *only* pair classified INFORMATIVE, so it
+was carrying the entire Gate-F verdict. With its partial number correctly excluded, Gate F is
+now:
+
+> **INCONCLUSIVE — no pair yet has both enough Doublespeak attack headroom AND a completed
+> concept arm.**
+
+The 00:40 verdict of "PARTIAL — dissociation holds in all 1 testable pair" is therefore
+**WITHDRAWN**. It may well be reinstated when 751358 finishes, but it was not supported at the
+time I wrote it.
+
+**What was NOT affected:** the refusal half. All five refusal arms had completed before the
+aggregate ran, so 5/5 positive, median +0.414, 4/5 significant after Holm all stand.
+
+### The fix, in code rather than in discipline
+`scripts/asym_p4_aggregate.py` now **requires `DONE.json`** in every run dir and skips
+anything still in flight with a loud `[skip] INCOMPLETE` line. Every harness in this repo
+writes `DONE.json` only on clean completion, so this is a reliable guard. Re-running with the
+guard correctly excluded all three in-flight concept arms and produced the corrected table
+above.
+
+**Lesson recorded:** "the file exists and parses" is not "the run finished". I had already
+been careful about this once — the 23:36 dry-run was explicitly labelled *code-path validation
+only, numbers are not results* — and then made exactly that mistake an hour later when the
+numbers looked publishable. The guard is now mechanical.
+
+---

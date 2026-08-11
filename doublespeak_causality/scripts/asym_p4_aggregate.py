@@ -104,6 +104,13 @@ def main():
 
     def ingest(pattern, kind):
         for d in sorted(glob.glob(pattern)):
+            # A run still writing has a partial raw.jsonl that looks perfectly well-formed.
+            # Reading one silently produces a real-looking number from an undefined subset --
+            # this bit me once (a grenade concept arm aggregated at 51 of 60 items). Every
+            # harness writes DONE.json only on clean completion, so require it.
+            if not os.path.exists(os.path.join(d, "DONE.json")):
+                print(f"[skip] INCOMPLETE (no DONE.json, run still in flight): {d}")
+                continue
             rows = load_raw(d)
             if not rows:
                 print(f"[skip] no raw.jsonl: {d}")
