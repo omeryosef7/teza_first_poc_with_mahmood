@@ -64,11 +64,20 @@ assert min(m['per_split'].values())>=20, 'plan 8.1 needs >=20 per split'"
 if [ -z "${OPENAI_API_KEY:-}" ] && [ "$ASYM_STAGE" != "repr" ]; then
   echo "ERROR: OPENAI_API_KEY unset -> StrongREJECT would silently score null (plan 3.6)"; exit 1
 fi
+# GPU class guard. Plan §3.1 forbids MIXING GPU classes within a direct comparison. Every
+# contrast Phase 4 makes (refusal-abl vs matched-random-abl, concept-abl vs matched-random)
+# is WITHIN one job and therefore within one GPU, and Gate F is a meta-analysis over those
+# within-pair effects -- but to keep the cross-pair table clean we still pin ALL five pairs
+# to ONE class via ASYM_GPU. Set ASYM_GPU=a5000 to use the idle a5000 nodes when L40S
+# fair-share is throttled; the class actually used is echoed and lands in RUNMETA.
+: "${ASYM_GPU:=l40s}"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in
-  *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";;
-  *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;;
+GPU_LC="$(echo "$GPU_TYPE" | tr 'A-Z' 'a-z')"
+case "$GPU_LC" in
+  *"$ASYM_GPU"*) echo "GPU ok: $GPU_TYPE (required class: $ASYM_GPU)";;
+  *) echo "ERROR need $ASYM_GPU got '$GPU_TYPE'"; exit 1;;
 esac
+export ASYM_GPU_CLASS="$GPU_TYPE"
 
 case "$ASYM_STAGE" in
   repr)
