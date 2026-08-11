@@ -12,3 +12,6 @@ outputs/
 TROPT/
 doublespeak_causality/data/gcg/
 doublespeak_causality/outputs/gcg/gcg_suffixes_used.json
+
+# SLURM logs (huge transformers progress-bar spam; never commit)
+logs/
