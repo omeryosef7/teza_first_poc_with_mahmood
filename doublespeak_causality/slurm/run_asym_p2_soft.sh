@@ -55,14 +55,19 @@ if [ -z "$ASYM_LR" ]; then
 fi
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
-OUT="doublespeak_causality/outputs/asym_p2_soft_${ASYM_OBJ}_${ASYM_PARAM}${ASYM_BUDGETREL:+_b$ASYM_BUDGETREL}_seed${ASYM_SEED}_${STAMP}_${SLURM_JOB_ID:-local}"
+OUT="doublespeak_causality/outputs/asym_p2_soft_${ASYM_OBJ}_${ASYM_PARAM}${ASYM_BUDGETREL:+_b$ASYM_BUDGETREL}_seed${ASYM_SEED}_gpu${ASYM_GPU}_${STAMP}_${SLURM_JOB_ID:-local}"
 
 echo "=== ASYM P2 soft prompt: obj=$ASYM_OBJ param=$ASYM_PARAM budget_rel=${ASYM_BUDGETREL:-none} seed=$ASYM_SEED ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"; echo "out=$OUT"
+# GPU class guard. Plan §3.1: never mix GPU classes WITHIN a direct comparison. A mechanism
+# arm and its matched random control must therefore share ASYM_GPU; the class used is echoed
+# and recorded, and the run dir is tagged so a mismatched pair cannot be compared by accident.
+: "${ASYM_GPU:=l40s}"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in
-  *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";;
-  *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;;
+GPU_LC="$(echo "$GPU_TYPE" | tr 'A-Z' 'a-z')"
+case "$GPU_LC" in
+  *"$ASYM_GPU"*) echo "GPU ok: $GPU_TYPE (required class: $ASYM_GPU)";;
+  *) echo "ERROR need $ASYM_GPU got '$GPU_TYPE'"; exit 1;;
 esac
 
 EXTRA=""
