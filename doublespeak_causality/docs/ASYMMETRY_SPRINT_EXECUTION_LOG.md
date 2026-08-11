@@ -1286,3 +1286,41 @@ run-id depends only on the arm name. Future smokes should carry a distinct `--ru
 rather than relying on the operator to move directories afterwards.
 
 ---
+## 2026-08-12 01:30 — PHASE 2 FINAL: 3 SEEDS, NO SIGN FLIPS, ALL p < 1e-4
+
+Budget 0.10, held-out n=37, StrongREJECT ≥ 0.5, 0 % null judges. Every arm paired against a
+**dose-matched, norm-matched, GPU-class-matched** random-direction control.
+
+| seed | GPU | refusal ASR | random ASR | **ΔASR** | McNemar p | boot95 | Δproj refusal / random |
+|---|---|---|---|---|---|---|---|
+| 42 | L40S | 0.757 | 0.081 | **+0.6757** | 5.96e-08 | [+0.514, +0.811] | −8.22 / −2.21 |
+| 43 | a5000 | 0.838 | 0.162 | **+0.6757** | 5.96e-08 | [+0.514, +0.811] | −8.65 / −2.42 |
+| 44 | a5000 | 0.757 | 0.216 | **+0.5405** | 3.59e-05 | [+0.351, +0.730] | −8.15 / −2.11 |
+
+**3-seed aggregate:** refusal ASR **0.784** (sd 0.047) vs random **0.153** (sd 0.068);
+**mean ΔASR +0.631** (sd 0.078, range [+0.541, +0.676]); **0/3 sign flips; 3/3 seeds
+p < 1e-4.** Internal target: refusal Δproj **−8.34** (sd 0.27) vs random **−2.25** (sd 0.16),
+ratio **3.71×**, across two GPU classes.
+
+### The asymmetry, stated at its sharpest
+The **discrete** GCG arms on the *same axis, same layer, same split, same target position,
+same matched-random control design*:
+
+| medium | per-seed refusal-vs-random ΔASR | mean | sign flips | significant seeds |
+|---|---|---|---|---|
+| **continuous** soft prompt | +0.676 / +0.676 / **+0.541** | **+0.631** | **0/3** | **3/3, all p < 1e-4** |
+| **discrete** GCG suffix | −0.027 / +0.162 / −0.081 | +0.018 | **2/3** | **0/3** |
+
+> **Same direction. Same objective. Same data. A 35× difference in mean effect, and the
+> discrete arm's mean is below the StrongREJECT judge's own noise floor (±0.03–0.08) while
+> the continuous arm's is 8× above it.**
+
+**Plan §6.1's ≥3-seed requirement is met.** The last stated limitation on the Phase-2 headline
+is removed: the result is no longer single-seed, and it replicates across GPU classes.
+
+**What remains open on Phase 2** (unchanged): the *dose* 0.10 was read on test, so
+"0.10 is optimal" stays EXPLORATORY — but the specificity contrast is paired at a fixed budget
+shared by both arms and is CONFIRMATORY. And the D3 scope caveat still applies to Figure A's
+activation row.
+
+---
