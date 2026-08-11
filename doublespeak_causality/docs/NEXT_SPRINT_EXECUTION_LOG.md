@@ -429,3 +429,12 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
   on test + geometry cos, --beh=745950 (has ds_base_label). Endpoint: concept AUC~0.5 vs refusal AUC>0.5.
 - quant 4bit(746743)+bf16(746744) running on n-301 (co-located w/ gcg 744550 -> possible I/O contention
   but model-load is one-time; leaving). arm06 concept eval 746718 still generating (n=37, max_new2048).
+
+## 2026-08-11 (tick 10) — PHASE 5 COMPLETE (Phi X5 done); seed44 arm06=.243
+- X5 (747029) DONE test n=42. Geometry: cos(concept,refusal) |.|<=0.056 all layers => near-orthogonal
+  (matches Llama). concept sep 0.32-0.37. AUC: refusal ~0.45, concept ~0.5 (best L20 .61) — ALL CIs span
+  0.5 => neither linear readout predicts jailbreak (underpowered n=42, Phi highly compliant). Sits with
+  X3 (refusal ablation causal) => strongest rep!=behav: causal-on-intervention, not predictive-readout;
+  concept not privileged. THIRD_FAMILY_REPLICATION.md X5 + Phase-5 verdict written. TASK#6 COMPLETE.
+- seed44 arm06_concept EVALED = 0.243 (== s42 concept, inert holds). remaining 07r@155 06r@193(~FINAL).
+- quant 4bit(746743)+bf16(746744) still running (~48m).

@@ -1,0 +1,414 @@
+{
+  "model": "microsoft/Phi-4-mini-reasoning",
+  "cohort": "clearharm",
+  "layers": [
+    12,
+    14,
+    16,
+    18,
+    20,
+    22
+  ],
+  "fit_split": "train",
+  "eval_splits": [
+    "test"
+  ],
+  "enable_thinking": false,
+  "n_proj": 42,
+  "concept_separation": {
+    "12": 0.3687,
+    "14": 0.3685,
+    "16": 0.3657,
+    "18": 0.3348,
+    "20": 0.3316,
+    "22": 0.3233
+  },
+  "auc": {
+    "n_joined": 42,
+    "concept": {
+      "12": {
+        "pooled": {
+          "auc": 0.3424,
+          "ci95": [
+            0.1753,
+            0.5182
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.3424,
+          "ci95": [
+            0.1753,
+            0.5182
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "14": {
+        "pooled": {
+          "auc": 0.3946,
+          "ci95": [
+            0.2148,
+            0.5741
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.3946,
+          "ci95": [
+            0.2148,
+            0.5741
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "16": {
+        "pooled": {
+          "auc": 0.5283,
+          "ci95": [
+            0.3378,
+            0.7083
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.5283,
+          "ci95": [
+            0.3378,
+            0.7083
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "18": {
+        "pooled": {
+          "auc": 0.5601,
+          "ci95": [
+            0.3773,
+            0.7346
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.5601,
+          "ci95": [
+            0.3773,
+            0.7346
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "20": {
+        "pooled": {
+          "auc": 0.6122,
+          "ci95": [
+            0.4282,
+            0.7846
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.6122,
+          "ci95": [
+            0.4282,
+            0.7846
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "22": {
+        "pooled": {
+          "auc": 0.5011,
+          "ci95": [
+            0.322,
+            0.6841
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.5011,
+          "ci95": [
+            0.322,
+            0.6841
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      }
+    },
+    "refusal": {
+      "12": {
+        "pooled": {
+          "auc": 0.3878,
+          "ci95": [
+            0.2148,
+            0.5659
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.3878,
+          "ci95": [
+            0.2148,
+            0.5659
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "14": {
+        "pooled": {
+          "auc": 0.4535,
+          "ci95": [
+            0.2698,
+            0.6377
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4535,
+          "ci95": [
+            0.2698,
+            0.6377
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "16": {
+        "pooled": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2812,
+            0.6494
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2812,
+            0.6494
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "18": {
+        "pooled": {
+          "auc": 0.4535,
+          "ci95": [
+            0.2727,
+            0.6406
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4535,
+          "ci95": [
+            0.2727,
+            0.6406
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "20": {
+        "pooled": {
+          "auc": 0.4512,
+          "ci95": [
+            0.27,
+            0.6346
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4512,
+          "ci95": [
+            0.27,
+            0.6346
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "22": {
+        "pooled": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2834,
+            0.6455
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2834,
+            0.6455
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      }
+    },
+    "rand": {
+      "12": {
+        "pooled": {
+          "auc": 0.483,
+          "ci95": [
+            0.3032,
+            0.6682
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.483,
+          "ci95": [
+            0.3032,
+            0.6682
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "14": {
+        "pooled": {
+          "auc": 0.3878,
+          "ci95": [
+            0.222,
+            0.5721
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.3878,
+          "ci95": [
+            0.222,
+            0.5721
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "16": {
+        "pooled": {
+          "auc": 0.3333,
+          "ci95": [
+            0.1629,
+            0.5153
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.3333,
+          "ci95": [
+            0.1629,
+            0.5153
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "18": {
+        "pooled": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2864,
+            0.6476
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4626,
+          "ci95": [
+            0.2864,
+            0.6476
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "20": {
+        "pooled": {
+          "auc": 0.5125,
+          "ci95": [
+            0.3318,
+            0.6971
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.5125,
+          "ci95": [
+            0.3318,
+            0.6971
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      },
+      "22": {
+        "pooled": {
+          "auc": 0.4649,
+          "ci95": [
+            0.294,
+            0.6435
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "test": {
+          "auc": 0.4649,
+          "ci95": [
+            0.294,
+            0.6435
+          ],
+          "n": 42,
+          "n_mal": 21
+        },
+        "orientation": "lower_proj_more_jailbreak"
+      }
+    }
+  },
+  "beh": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/behav_refusal_clearharm_asweep0.0-1.0_20260811_103912_745950"
+}
