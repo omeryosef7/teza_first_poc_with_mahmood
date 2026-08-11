@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_test_20260811_212152_750362",
+  "status": "ok",
+  "rows_written": 30340,
+  "end_ts": "2026-08-11T21:46:53",
+  "end_epoch": 1786474013.3291426,
+  "wall_seconds": 0.005
+}

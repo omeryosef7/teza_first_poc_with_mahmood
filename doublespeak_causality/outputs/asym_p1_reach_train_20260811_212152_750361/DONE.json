@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_train_20260811_212152_750361",
+  "status": "ok",
+  "rows_written": 32800,
+  "end_ts": "2026-08-11T21:47:05",
+  "end_epoch": 1786474025.8765204,
+  "wall_seconds": 0.004
+}

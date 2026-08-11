@@ -324,3 +324,90 @@ coordinate that matters behaviourally moved a lot — generically.
 no-suffix; template tail measured at 5 tokens, matching the manual token layout in E0.3.
 
 ---
+## 2026-08-11 — PHASE 1 + PHASE 2 FIRST RESULTS
+
+### E1.1 GATE C — the refusal direction has UNUSUALLY **HIGH** token reachability
+*Run: `outputs/asym_p1_reach_train_20260811_212152_750361` (job 750361), frozen train pool
+n=40, 32,800 Jacobian rows, 25 min. Analysis `scripts/asym_p1_analyze.py`.*
+
+`‖Jᵀ v‖` at the `decision` position, `hs[19]`, averaged over the 40 train prompts, against
+all four control families (all directions unit norm):
+
+| direction | kind | `‖Jᵀv‖` | ratio to that family's per-prompt median | mean percentile |
+|---|---|---|---|---|
+| **refusal_L18** | mechanism | **22.4** | — | — |
+| isotropic random (n=100) | `random` | 1.68 | **14.31×** | **1.000** |
+| covariance-matched random (n=100) | `actrandom` | 3.80 | **6.74×** | **0.998** |
+| refusal @ L10/L14/L22 (n=3) | `otherlayer` | 8.29 | **3.40×** | 0.983 |
+| concept_L9 @ hs19 (n=1) | `foreign` | 3.31 | 2.16× | 1.000 |
+
+**GATE C VERDICT: UNUSUALLY-HIGH REACHABILITY.** The result survives every control, including
+the strict covariance-matched null (a direction with the anisotropy of a real activation
+direction but no mechanism) and the same-mechanism-wrong-depth control.
+
+**This decisively REJECTS H1 (input-reachability failure).** The causal refusal direction is
+not hard to reach from suffix-token perturbations — it is *unusually easy* to reach, by a
+large margin, on every prompt.
+
+Consistent with §5.4: the refusal direction lies largely INSIDE the empirical local
+token-reachable subspace — `R(v)` at rank 16 = **0.585** (isotropic null 0.0039, isotropic
+random mean 0.0039) and 0.697 at rank 64, i.e. a rank-16 subspace of token-induced Δh already
+captures ~59% of the refusal direction's mass. At the `last_suffix` position it is far lower
+(0.156 at rank 16) — another quantification of defect D2.
+
+### E1.2 GATE B — OPEN. The first-order model does NOT predict real token substitutions
+Pearson r between the predicted `⟨g_j(v), e_new − e_old⟩` and the measured `Δ⟨h,v⟩` over real
+vocabulary swaps: **r = 0.077**, slope 0.122, sign agreement 0.381 (best cell). This is a
+FAIL by the pre-registered criterion, and per plan Gate B it must be resolved **before** any
+scientific reading of the finite-difference numbers.
+
+The `--eps-scan` diagnostic was added precisely for this and its output
+(`eps_scan.jsonl`) is not yet analysed. Two possibilities, which it distinguishes:
+(a) the Jacobian is correct and a real token swap is simply far outside the linear regime —
+    a *result* about why gradient-guided discrete search is hard here;
+(b) an implementation error.
+**Gate C does not depend on Gate B** (`‖Jᵀv‖` is an autograd quantity, not a finite-difference
+one), but every §5.3/§5.4 claim does, so `R(v)` above is provisional pending the ε-scan.
+
+### E1.3 PHASE 2 — the continuous soft prompt reaches the direction, and behaviour does NOT follow
+*Run: `outputs/asym_p2_soft_refusal_free_b1.0_seed42_20260811_213644_750364` (job 750364),
+16 continuous suffix positions, universal over the 40-item train pool, 300 Adam steps,
+per-position L2 budget = 1.0 × mean init embedding norm (binding at every step).*
+
+Refusal projection at the `decision` position, `hs[19]`:
+
+| pool | baseline | after | Δ | sd before → after |
+|---|---|---|---|---|
+| train (n=40) | +3.365 | **−15.787** | **−19.15** | 2.909 → 0.380 |
+| held-out test (n=37) | +4.417 | **−15.675** | **−20.09** | 2.497 → 0.249 |
+
+For scale, the **entire discrete family** moves this quantity by −0.43 to −2.60 (§19.1b).
+The continuous prompt moves it **~10× further**, and it generalizes (test Δ > train Δ).
+
+**But the behaviour does not follow.** StrongREJECT on the 37 held-out generations
+(`scripts/asym_p2_judge.py` → `reports/ASYM_P2_ASR.json`, 0% null judges):
+
+> **binary ASR = 0.0000 · mean continuous StrongREJECT = 0.0000 · refusal_rate = 0.0000 ·
+> empty_rate = 0.0000** (mean response length ≈ 501 chars)
+
+Zero refusals *and* zero successes: the model is neither refusing nor complying.
+
+**Reading (plan §6.4 CASE D — "investigate before claiming a reachability explanation").**
+The per-prompt standard deviation of the projection collapses from 2.5 to **0.25**: the soft
+prompt is not *steering* the refusal state along its natural manifold, it is **overwriting**
+the decision-position residual with a nearly prompt-independent vector far outside the
+direction's natural range (harmful prompts sit at ≈ +3.4 to +4.4). Driving a linear readout
+to −15.7 does not mean "refusal was suppressed"; it means we left the regime in which that
+readout indexes anything.
+
+**Methodological consequence worth stating in the paper:** *a continuous soft prompt can drive
+a linear probe arbitrarily far without producing the behaviour the probe is supposed to
+index.* Probe displacement is not evidence of mechanism control.
+
+**Action.** Budget `1.0` saturates, so §6.2's dose sweep is not optional — it is the
+experiment. Launched `budget_rel ∈ {0.05, 0.1, 0.25}` (jobs 750441/750442/750443) to find the
+budget at which the continuous intervention lands the projection in the *natural* range
+(≈ 0, comparable to what the activation ablation achieves) and to test ASR there. Only a
+dose-matched comparison can populate Figure A honestly.
+
+---
