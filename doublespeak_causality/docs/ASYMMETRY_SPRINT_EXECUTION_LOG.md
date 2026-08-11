@@ -494,3 +494,59 @@ extrapolating them to real token moves is exactly the error we are diagnosing.
 train result on the locked held-out split with no selection.
 
 ---
+## 2026-08-11 — H4 REFINED + PHASE-2 SPECIFICITY CONTROL
+
+### E1.4 Unoptimized-suffix control (job 750431) — optimization scales a GENERIC profile
+20 suffixes of 16 uniformly-sampled ordinary vocabulary tokens, never optimized, plus the
+GCG initialization suffix. Held-out drop in refusal projection @L18 (baseline 3.4023):
+
+| suffix | held-out Δ refusal proj |
+|---|---|
+| **`init` = `' !'×16` (GCG optimization step 0)** | **+1.015** — it *raises* refusal |
+| 20 unoptimized random-token suffixes | **−0.663** (sd 0.236, range −0.177 … −1.046) |
+| GCG vanilla task-loss (3 seeds) | −1.559 |
+| GCG random-direction (3 seeds) | −1.204 |
+| **GCG refusal-optimized (3 seeds)** | **−2.013** — larger than **all 20** unoptimized suffixes (percentile 1.000) |
+
+But the **layer profile shape** of an unoptimized random-token suffix and of the
+refusal-optimized suffix correlate at **r = 0.985** across L9–L24.
+
+**H4, refined.** The earlier reading ("generic adversarial suppression") was half right. The
+correct statement is:
+
+> **The suppression MODE is generic — any suffix, optimized or not, produces the same
+> late-layer, depth-increasing refusal-suppression profile. What optimization changes is the
+> MAGNITUDE of that shared profile, not its shape or its location.** Optimization is not
+> inert (every optimized suffix beats every unoptimized one), and the refusal objective
+> produces the largest magnitude of all (−2.013 vs −1.204 for its random-direction control),
+> consistent with §19.1(a).
+
+**Internal consistency check (independent, and it passes exactly).** The Phase-2 run measured
+its baseline with the init suffix present and got **+4.417** held-out; the no-suffix baseline
+here is **3.4023**; the init suffix's measured effect is **+1.015**. 3.4023 + 1.015 = 4.417.
+The two independently-written scripts agree to 3 decimals.
+
+### E1.5 PHASE 2 SPECIFICITY CONTROL (job 750365) — continuous optimization IS specific
+Same setup as job 750364 but the objective targets a norm-matched **random** direction
+(cos with v_refusal = +0.0055):
+
+| soft-prompt objective | its own objective reached | **Δ refusal projection (held-out)** |
+|---|---|---|
+| refusal direction | yes | **−20.09** |
+| norm-matched random direction | yes (own loss −12.8) | **−1.56** |
+
+The optimizer is equally *able* to drive a random direction, so the contrast is not an
+optimization artifact. Targeting refusal moves refusal **13× more** than targeting a random
+direction does.
+
+**Continuous input optimization is SPECIFIC to the refusal direction. Discrete token
+optimization is at best marginally so** (§19.1a: −2.013 vs −1.204, sign-unstable across
+seeds). That is the continuous/discrete asymmetry the sprint set out to find, now measured on
+the same axis, the same split, and the same target position.
+
+**Still outstanding:** at budget 1.0 the specific continuous suppression produces **ASR = 0**
+(E1.3, CASE D). The dose sweep (jobs 750441/750442/750443) decides whether a smaller budget
+lands the projection in its natural range *and* raises ASR — which would make this a clean
+CASE A (discrete bottleneck) — or whether behaviour never follows at any dose.
+
+---
