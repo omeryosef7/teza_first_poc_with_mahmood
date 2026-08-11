@@ -45,19 +45,23 @@ export PYTHONUNBUFFERED=1
 : "${ASYM_QUANT:=}"
 : "${ASYM_SMOKE:=0}"
 : "${ASYM_TAG:=}"
+: "${ASYM_GPU:=l40s}"   # must be set BEFORE $OUT below, which tags the dir with it
 # comma lists built HERE, never passed through --export
 REFUSAL_FIT_LAYERS="18"
 CONCEPT_FIT_LAYERS="9"
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
-OUT="doublespeak_causality/outputs/asym_p1_reach_${ASYM_SPLIT}${ASYM_TAG:+_$ASYM_TAG}_${STAMP}_${SLURM_JOB_ID:-local}"
+OUT="doublespeak_causality/outputs/asym_p1_reach_${ASYM_SPLIT}${ASYM_TAG:+_$ASYM_TAG}${ASYM_QUANT:+_$ASYM_QUANT}_gpu${ASYM_GPU}_${STAMP}_${SLURM_JOB_ID:-local}"
 
 echo "=== ASYM P1 reachability: split=$ASYM_SPLIT n=$ASYM_NMAX smoke=$ASYM_SMOKE ==="
 date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"; echo "out=$OUT"
+# GPU class guard (plan §3.1). Phase 7 compares bf16 vs 4-bit reachability, so BOTH
+# precisions must run on the same class; ASYM_GPU pins it and the run dir is tagged.
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
-case "$GPU_TYPE" in
-  *L40S*|*l40s*) echo "GPU ok: $GPU_TYPE";;
-  *) echo "ERROR need L40S got '$GPU_TYPE'"; exit 1;;
+GPU_LC="$(echo "$GPU_TYPE" | tr 'A-Z' 'a-z')"
+case "$GPU_LC" in
+  *"$ASYM_GPU"*) echo "GPU ok: $GPU_TYPE (required class: $ASYM_GPU)";;
+  *) echo "ERROR need $ASYM_GPU got '$GPU_TYPE'"; exit 1;;
 esac
 
 EXTRA=""
