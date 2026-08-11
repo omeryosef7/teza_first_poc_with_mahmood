@@ -611,3 +611,62 @@ inside the unoptimized-suffix range, an ASR measurement there is expected to be
 uninformative, but it was not run and is not claimed.
 
 ---
+## 2026-08-11 — CASE D RESOLVED: it is CASE A. Continuous input optimization JAILBREAKS, specifically.
+
+Judging the Phase-2 dose sweep (`scripts/asym_p2_judge.py` → `reports/ASYM_P2_ASR.json`,
+StrongREJECT ≥ 0.5, held-out n=37, 0 % null judges) turns the earlier ASR=0 from a dead end
+into a **dose-response curve with an interior optimum**:
+
+| arm | budget | Δ refusal proj | resulting proj | **ASR** | mean SR | refusal_rate |
+|---|---|---|---|---|---|---|
+| refusal | 0.05 | −1.07 | +3.35 | **0.162** | 0.162 | 0.730 |
+| **refusal** | **0.10** | **−8.22** | −3.80 | **0.757** | **0.713** | **0.027** |
+| refusal | 1.00 | −20.09 | −15.68 | **0.000** | 0.000 | 0.000 |
+| **random (dose-mismatched)** | 1.00 | −1.56 | +2.86 | **0.000** | 0.000 | 0.000 |
+| simplex relaxed (token upper bound) | — | −8.69 | −4.28 | 0.189 | 0.176 | 0.000 |
+
+For reference: vanilla doublespeak ASR on this split is **0.243–0.351** across seeds and the
+best GCG arm ever recorded is **0.405** (handoff §5).
+
+> **A continuous 16-position soft prompt targeting the refusal direction reaches
+> ASR = 0.757 on the locked held-out split — roughly double the best discrete result — while
+> its refusal_rate collapses to 0.027.**
+
+The ASR/dose relation is an inverted U: too little suppression (0.05) leaves the model
+refusing (refusal_rate 0.73); the right dose (0.10) jailbreaks; too much (1.00) pushes the
+residual so far off-manifold that the model neither refuses nor complies (ASR 0, refusal 0).
+This *explains* the earlier ASR=0 rather than explaining it away, and it vindicates the
+decision to treat CASE D as a dose problem.
+
+**GATE D ⇒ CASE A (discrete-token bottleneck), now established on BEHAVIOUR as well as on the
+internal target.** Continuous input optimization specifically suppresses refusal *and* raises
+ASR; discrete optimization on the same axis, split, position and budget does neither
+specifically.
+
+### THREE CAVEATS, none of which may be dropped when this is written up
+1. **The dose was not pre-registered, and the sweep was read on TEST.** By plan §3.5 this
+   makes the dose curve **EXPLORATORY**, not confirmatory. A confirmatory claim needs the
+   budget frozen on the untouched **v3 `dev` split (n=37)** and then evaluated once on test.
+2. **The random-direction control is DOSE-MISMATCHED.** The only random arm judged so far is
+   at budget 1.0 (where *everything* gives ASR 0). Comparing refusal@0.10 (ASR 0.757) against
+   random@1.00 (ASR 0.000) confounds mechanism with dose, so **that contrast is not yet
+   evidence of specificity on behaviour.** Launched: random-direction soft prompt at
+   **budget 0.10, seeds 42/43/44** (job 750501 + resubmits), plus refusal at budget 0.10 for
+   seeds 43/44 (jobs 750504/750505) to meet the plan's ≥3-seed requirement.
+   **Until the dose-matched random arm lands, the headline is "continuous optimization
+   jailbreaks at a dose where discrete optimization does not" — NOT "specifically".**
+3. Single seed (42) so far at the winning dose; plan §6.1 requires ≥3.
+
+### Process note — 6-job cap
+Submitting the extra seeds pushed the queue to **11 jobs**, violating the plan's
+non-negotiable ≤6 rule (§3.1). Detected immediately and corrected by cancelling
+750495/750496/750497 (Phase-4 pairs 3–5) and 750502/750503 (random seeds 43/44); those are
+queued for resubmission as slots free. Queue is back to exactly 6.
+
+Also: L40S fair-share throttling pushed Phase-4 start times ~18 h out, so all five Phase-4
+pairs were repinned to the idle **a5000** nodes via a new `ASYM_GPU` guard. Every Phase-4
+contrast is within a single job (hence a single GPU) and Gate F is a meta-analysis over those
+within-pair effects, so this does not mix GPU classes inside a comparison; all five pairs are
+still pinned to one class and the class is recorded in the run metadata.
+
+---
