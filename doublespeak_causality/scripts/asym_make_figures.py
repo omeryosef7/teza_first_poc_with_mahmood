@@ -236,12 +236,74 @@ def figure_C(p1_analysis_dirs, out_dir):
         _save(fig, out_dir, f"FIG_C_coherence_{a['split']}")
 
 
+def figure_D(p4_json, out_dir):
+    """Per concept: refusal-specific vs concept-specific ΔASR, with the power grading that
+    decides which concept nulls are interpretable at all (plan §14 Figure D)."""
+    if not os.path.exists(p4_json):
+        return
+    d = json.load(open(p4_json))
+    pc_ = d["per_concept"]
+    names = sorted(pc_, key=lambda c: -(pc_[c].get("refusal_specific", {}).get("delta_ASR", 0)))
+    y = np.arange(len(names))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.8), sharey=True)
+
+    panels = [
+        (ax1, "refusal_specific", "refusal ablation minus matched random\n(the ACTUATOR)"),
+        (ax2, "concept_specific", "concept-circuit ablation minus matched random\n(the REPRESENTATION)"),
+    ]
+    for ax, key, title in panels:
+        vals, los, his, cols = [], [], [], []
+        for c in names:
+            e = pc_[c].get(key)
+            if not e:
+                vals.append(0.0)
+                los.append(0.0)
+                his.append(0.0)
+                cols.append("#eeeeee")
+                continue
+            vals.append(e["delta_ASR"])
+            los.append(max(0.0, e["delta_ASR"] - e["boot95"][0]))
+            his.append(max(0.0, e["boot95"][1] - e["delta_ASR"]))
+            power = str(pc_[c].get("concept_test_power", ""))
+            if key == "concept_specific" and power.startswith("floor"):
+                cols.append("#dddddd")
+            else:
+                cols.append(C_MECH if e["p_mcnemar"] < 0.05 else C_RAND)
+        ax.barh(y, vals, xerr=[los, his], color=cols, height=0.62, capsize=3)
+        ax.axvline(0, color="k", lw=0.9)
+        ax.set_title(title, fontsize=10)
+        ax.set_xlim(-0.35, 0.9)
+        ax.set_xlabel("specific ΔASR (StrongREJECT >= 0.5, held-out)")
+
+    ax1.set_yticks(y)
+    ax1.set_yticklabels(
+        ["{}\n(n={}, ds_base={})".format(c.replace("pair_", ""),
+                                         pc_[c].get("n_test", "?"),
+                                         pc_[c].get("ds_base_asr", "?"))
+         for c in names], fontsize=8)
+    ax1.invert_yaxis()
+
+    for i, c in enumerate(names):
+        pw = str(pc_[c].get("concept_test_power", ""))
+        if pw.startswith("floor"):
+            ax2.text(0.03, i, "  no attack headroom -> uninformative",
+                     fontsize=7, va="center", color="#777777")
+        elif pw == "informative":
+            ax2.text(0.30, i, "<- the only powered test",
+                     fontsize=7, va="center", color=C_MECH)
+
+    fig.suptitle("FIGURE D — multi-concept dissociation (Llama-3.1-8B, frozen pooled L18 axis). "
+                 "blue p<0.05 · grey n.s. · pale = the test had no headroom", fontsize=10)
+    _save(fig, out_dir, "FIG_D_multiconcept")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--p1c-analysis", default=None)
     ap.add_argument("--p1-dir", action="append", default=[])
     ap.add_argument("--p2-asr", default=os.path.join(HERE, "reports/ASYM_P2_ASR.json"))
     ap.add_argument("--p2-dir", action="append", default=[])
+    ap.add_argument("--p4-json", default=os.path.join(HERE, "reports/ASYM_P4_MULTICONCEPT.json"))
     ap.add_argument("--out-dir", default=os.path.join(HERE, "figures/asymmetry"))
     args = ap.parse_args()
 
@@ -250,6 +312,7 @@ def main():
     if args.p1_dir:
         figure_B(args.p1_dir, args.out_dir)
         figure_C(args.p1_dir, args.out_dir)
+    figure_D(args.p4_json, args.out_dir)
     print("[done]")
 
 
