@@ -297,6 +297,59 @@ def figure_D(p4_json, out_dir):
     _save(fig, out_dir, "FIG_D_multiconcept")
 
 
+def figure_E(p5_summary, out_dir):
+    """Defense Pareto: attack ASR reduction vs attack-structured-benign over-refusal, per arm,
+    on BOTH splits, with the random/shuffled controls plotted so a non-specific 'fires less
+    often' saving cannot be mistaken for a mechanism win (plan §14 Figure E)."""
+    if not os.path.exists(p5_summary):
+        return
+    s = json.load(open(p5_summary))
+    style = {
+        "uncond": ("unconditional restoration", "#c0392b", "s"),
+        "gate_refusal": ("gate: refusal only", "#e67e22", "^"),
+        "gate_concept": ("gate: concept only", "#1b6ca8", "o"),
+        "gate_two": ("gate: concept AND refusal", "#16a085", "D"),
+        "gate_random": ("control: Bernoulli, matched fire-rate", "#9aa0a6", "x"),
+        "gate_shuffled": ("control: shuffled features", "#7f8c8d", "+"),
+    }
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5.4))
+    for ax, split in zip(axes, ("train", "test")):
+        blk = s.get("by_split", {}).get(split, {})
+        ds, ben = blk.get("ds"), blk.get("benign_attack")
+        if not ds or not ben:
+            ax.set_visible(False)
+            continue
+        for arm, (lab, col, mk) in style.items():
+            if arm not in ds.get("vs_none", {}):
+                continue
+            x = ben["vs_none"][arm]["delta"]      # over-refusal cost (want small)
+            y = -ds["vs_none"][arm]["delta"]      # ASR REDUCTION (want large)
+            sig = ds["vs_none"][arm]["p_mcnemar"] < 0.05
+            ax.scatter(x, y, s=120 if sig else 70, c=col, marker=mk,
+                       label=lab if split == "train" else None,
+                       edgecolors="k" if sig else "none", linewidths=0.8, zorder=3)
+        ax.axhline(0, color="k", lw=0.8)
+        ax.axvline(0, color="k", lw=0.8)
+        ax.set_xlabel("attack-structured-BENIGN over-refusal increase  (lower is better)")
+        ax.set_ylabel("harmful-Doublespeak ASR REDUCTION  (higher is better)")
+        ax.set_title(f"{split}  (n={ds['n']}; DS baseline ASR = {ds['ASR']['none']:.3f})",
+                     fontsize=10)
+        ax.annotate("better", xy=(0.05, 0.92), xycoords="axes fraction", fontsize=9,
+                    color="#16a085")
+        ax.annotate("↑ / ←", xy=(0.05, 0.86), xycoords="axes fraction", fontsize=9,
+                    color="#16a085")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, fontsize=8, frameon=False,
+               bbox_to_anchor=(0.5, -0.06))
+    fig.suptitle("FIGURE E — defense Pareto. Filled black edge = ASR reduction significant "
+                 "(p<0.05).\n'concept only' is INVISIBLE because it lands exactly under "
+                 "'concept AND refusal' — the refusal half of the AND contributes nothing "
+                 "(it fires on 87-100% of inputs).\nOn TEST no arm reduces ASR: the DS "
+                 "baseline is already at a floor. On TRAIN the gates' over-refusal saving is "
+                 "matched by the Bernoulli and shuffled controls.", fontsize=9)
+    _save(fig, out_dir, "FIG_E_defense_pareto")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--p1c-analysis", default=None)
@@ -304,6 +357,7 @@ def main():
     ap.add_argument("--p2-asr", default=os.path.join(HERE, "reports/ASYM_P2_ASR.json"))
     ap.add_argument("--p2-dir", action="append", default=[])
     ap.add_argument("--p4-json", default=os.path.join(HERE, "reports/ASYM_P4_MULTICONCEPT.json"))
+    ap.add_argument("--p5-summary", default="")
     ap.add_argument("--out-dir", default=os.path.join(HERE, "figures/asymmetry"))
     args = ap.parse_args()
 
@@ -313,6 +367,8 @@ def main():
         figure_B(args.p1_dir, args.out_dir)
         figure_C(args.p1_dir, args.out_dir)
     figure_D(args.p4_json, args.out_dir)
+    if args.p5_summary:
+        figure_E(args.p5_summary, args.out_dir)
     print("[done]")
 
 

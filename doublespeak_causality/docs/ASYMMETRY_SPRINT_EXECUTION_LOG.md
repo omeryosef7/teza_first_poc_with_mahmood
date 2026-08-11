@@ -1593,3 +1593,24 @@ Phi **held-out** reachability launched (job on n-501) to complete the cross-fami
 a locked split.
 
 ---
+## 2026-08-12 02:02 — FIGURE E (defense Pareto) — all five required figures now exist
+
+`FIG_E_defense_pareto.png`: ASR reduction (y, higher better) vs attack-structured-benign
+over-refusal (x, lower better), per arm, on both splits, with the Bernoulli and
+shuffled-feature controls plotted alongside the real gates.
+
+Two things the plot makes visible that a table hides:
+1. **"concept only" is invisible — it lands exactly under "concept AND refusal".** The two
+   arms are numerically identical on every condition and both splits, because the refusal
+   half of the AND fires on 87–100 % of inputs and therefore never narrows anything. The
+   figure now says so in the caption rather than leaving a missing marker unexplained.
+2. **The train panel looks like a win and the test panel is empty.** On train the two-signal
+   gate sits up-and-left of unconditional restoration (same ASR reduction, 39 % of the
+   over-refusal cost) — but the grey controls sit at a similar x, which is the whole reason
+   this is a negative. On test every arm is at or below zero ASR reduction against a 0.143
+   baseline floor.
+
+**Figures A, B, B2, C, D, E — the full §14 set is generated** (7 files; B and B2 exist for
+both splits).
+
+---
