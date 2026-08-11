@@ -45,10 +45,14 @@ export PYTHONUNBUFFERED=1
 : "${ASYM_QUANT:=}"
 : "${ASYM_SMOKE:=0}"
 : "${ASYM_TAG:=}"
+: "${ASYM_OTHERLAYERS:=10,14,22}"
+: "${ASYM_SPANS:=gcg}"      # template = model-agnostic, for cross-family replication
+: "${ASYM_REFDIR:=doublespeak_causality/outputs/refusal_alllayers}"
+: "${ASYM_CONCEPT_NPZ:=doublespeak_causality/outputs/unified_directions/clearharm.npz}"
 : "${ASYM_GPU:=l40s}"   # must be set BEFORE $OUT below, which tags the dir with it
 # comma lists built HERE, never passed through --export
-REFUSAL_FIT_LAYERS="18"
-CONCEPT_FIT_LAYERS="9"
+REFUSAL_FIT_LAYERS="${ASYM_REFLAYER:-18}"
+CONCEPT_FIT_LAYERS="${ASYM_CONLAYER:-9}"
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
 OUT="doublespeak_causality/outputs/asym_p1_reach_${ASYM_SPLIT}${ASYM_TAG:+_$ASYM_TAG}${ASYM_QUANT:+_$ASYM_QUANT}_gpu${ASYM_GPU}_${STAMP}_${SLURM_JOB_ID:-local}"
@@ -72,6 +76,8 @@ python -u doublespeak_causality/scripts/asym_p1_reachability.py \
   --model "$ASYM_MODEL" --manifest "$ASYM_MANIFEST" --split "$ASYM_SPLIT" \
   --n-max "$ASYM_NMAX" --n-random "$ASYM_NRANDOM" --random-seed "$ASYM_SEED" \
   --refusal-fit-layers "$REFUSAL_FIT_LAYERS" --concept-fit-layers "$CONCEPT_FIT_LAYERS" \
+  --span-builder "$ASYM_SPANS" --refusal-dir "$ASYM_REFDIR" --concept-npz "$ASYM_CONCEPT_NPZ" \
+  --otherlayer-fit-layers "$ASYM_OTHERLAYERS" \
   --n-sub-tokens "$ASYM_NSUBTOK" --sub-batch "$ASYM_SUBBATCH" \
   --out-dir "$OUT" $EXTRA
 echo "=== done ==="; date

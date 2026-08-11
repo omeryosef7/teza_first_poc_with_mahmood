@@ -1324,3 +1324,39 @@ shared by both arms and is CONFIRMATORY. And the D3 scope caveat still applies t
 activation row.
 
 ---
+## 2026-08-12 01:06 — LOOP: cross-family reachability enabled (addresses the biggest limitation)
+
+**Queue:** 5 running, 0 pending, nothing meets the >30 min rule. n-501: 2 · n-502: 3.
+Both Phase-3 GCG arms are confirmed *active* on the objective — step 0 logs
+`rd_loss=-0.0070` (mechanism, 751396) and `rd_loss=+0.0061` (matched random, 751393), i.e.
+the refusal-direction term is live and reading the corrected per-task position. Phase-7 4-bit
+at 13/40 prompts; bf16 companion (751398) running.
+
+### Why cross-family, and not Phase 6
+The sprint's own limitation list says *"One model for the reachability geometry
+(Llama-3.1-8B). Cross-family replication of A1/A2 has not been run."* That is the biggest
+open threat to the **headline** claim (H2′: the first-order surrogate is invalid at one-token
+step size). Plan §10's Phi *readout-power* work is about a different, weaker claim, and §11
+explicitly ranks it "lower priority than multi-concept and defense". So the free slots go to
+replicating **Gate B + Gate C on Phi-4-mini-reasoning**, which tests whether the mechanism
+that explains the whole sprint is Llama-specific.
+
+### What had to be built
+`asym_p1_reachability.py` reused the GCG span builder so its base point was byte-identical to
+the optimizer — but that builder is Llama/Qwen/Gemma-specific. Added
+**`--span-builder template`**: renders `instruction + suffix` through the model's *own* chat
+template and locates the suffix from the **measured** template tail (the same model-agnostic
+technique already validated in `asym_p1c` and `asym_p2`), asserting that the suffix token ids
+really sit where the tail says. `gcg` remains the default, so every Llama number in this
+sprint is unchanged.
+
+Runner now passes through `ASYM_SPANS`, `ASYM_REFDIR`, `ASYM_CONCEPT_NPZ`, `ASYM_REFLAYER`,
+`ASYM_OTHERLAYERS` so a non-Llama family can be pointed at its own directions (Phi: L14 from
+`outputs/refusal_phi`, concept disabled — the clearharm concept npz is 4096-dim and Phi is not).
+
+**Operator error caught immediately:** the first Phi submission (751402) went out *before* the
+passthrough patch landed, so it would have run with Llama directions and died on the
+dimension assert. Cancelled and resubmitted as **751403** with the correct config. The assert
+would have caught it regardless — that is why it is there.
+
+---

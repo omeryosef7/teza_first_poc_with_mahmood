@@ -161,6 +161,37 @@ def build_directions(args, hidden_size, device, act_cov=None):
 # Base point (reuses the GCG span builder verbatim)
 # --------------------------------------------------------------------------- #
 
+def template_tail_len(tokenizer, enable_thinking):
+    """How many template tokens follow the user content. Measured, never hardcoded --
+    the same model-agnostic technique used by asym_p1c and asym_p2."""
+    a = tokenizer(dc.apply_template(tokenizer, "X", enable_thinking=enable_thinking),
+                  return_tensors="pt")["input_ids"][0].tolist()
+    b = tokenizer(dc.apply_template(tokenizer, "X Y Y Y", enable_thinking=enable_thinking),
+                  return_tensors="pt")["input_ids"][0].tolist()
+    n = 0
+    while n < min(len(a), len(b)) and a[-1 - n] == b[-1 - n]:
+        n += 1
+    assert 1 <= n < 32, f"implausible template tail {n}"
+    return n
+
+
+def make_base_template(tokenizer, item, suffix_str, suffix_ids, enable_thinking, tail):
+    """Model-agnostic base point: render `instruction + suffix` through the model's OWN chat
+    template and locate the suffix from the measured tail. Used for families the GCG span
+    builder does not support (it is Llama/Qwen/Gemma-specific), so the reachability geometry
+    can be replicated cross-family without porting the optimizer."""
+    text = dc.apply_template(tokenizer, item["instruction"] + suffix_str,
+                             enable_thinking=enable_thinking)
+    ids = tokenizer(text, return_tensors="pt")["input_ids"][0]
+    n = ids.numel()
+    hi = n - tail                      # one past the last suffix token
+    lo = hi - len(suffix_ids)
+    assert lo > 0, "suffix span ran off the front of the prompt"
+    assert ids[lo:hi].tolist() == list(suffix_ids), \
+        "suffix ids not where the measured template tail says they are"
+    return ids, slice(lo, hi), {"decision": n - 1, "last_suffix": hi - 1}
+
+
 def make_base(tokenizer, item, suffix_str, suffix_ids, placement, model_family,
               enable_thinking):
     """Prompt-only ids + suffix span + the two target positions.
@@ -385,6 +416,10 @@ def main():
     ap.add_argument("--n-max", type=int, default=40, help=">=20 required by plan §3.4")
     ap.add_argument("--suffix-length", type=int, default=16)
     ap.add_argument("--suffix-placement", default="user")
+    ap.add_argument("--span-builder", choices=["gcg", "template"], default="gcg",
+                    help="gcg = reuse the optimizer's own span builder (byte-identical to the "
+                         "GCG setup, Llama/Qwen/Gemma only); template = model-agnostic, for "
+                         "cross-family replication")
     ap.add_argument("--enable-thinking", default="false")
     ap.add_argument("--refusal-dir", default=os.path.join(HERE, "outputs/refusal_alllayers"))
     ap.add_argument("--refusal-fit-layers", default="18")
@@ -461,8 +496,15 @@ def main():
         f"plan §3.4 requires >=20 unique examples, got {len(items)}"
     print(f"[data] split={args.split} n_unique={len(items)}", flush=True)
 
-    bases = [make_base(tokenizer, it, suffix_str, suffix_ids, args.suffix_placement,
-                       args.model_family, enable_thinking) for it in items]
+    if args.span_builder == "template":
+        _tail = template_tail_len(tokenizer, enable_thinking)
+        print(f"[spans] model-agnostic builder; measured template tail = {_tail} tokens",
+              flush=True)
+        bases = [make_base_template(tokenizer, it, suffix_str, suffix_ids, enable_thinking,
+                                    _tail) for it in items]
+    else:
+        bases = [make_base(tokenizer, it, suffix_str, suffix_ids, args.suffix_placement,
+                           args.model_family, enable_thinking) for it in items]
 
     act_cov = None
     if args.act_cov:
