@@ -1258,3 +1258,31 @@ null in 5/5 pairs of which only **1** could have detected anything.
 1 free slot. n-501: 1 · n-502: 1 · rest pending-free.
 
 ---
+## 2026-08-12 01:22 — Phase-3 arm 751392 FAILED — and it was the checkpoint guard doing its job
+
+```
+RuntimeError: Checkpoint config_hash fa29d178a7e9f021 does not match current config hash
+d542333550191677. Delete the checkpoint or use a new output directory.
+```
+
+**Not a bug in the new code path.** The run-id is derived from the ARM name only, so the
+3-step / batch-16 **smoke** (job 751380) wrote `checkpoint.pt` into the *same* output dir that
+the 200-step / batch-32 full run then targeted. Different config → different hash → the
+optimizer correctly **refused to resume from an incompatible checkpoint** rather than silently
+continuing from a 3-step state or overwriting it. That is exactly the plan §3.12 protection
+("resume must continue EXACTLY rather than restart with the same filename; never overwrite a
+completed experiment") behaving as designed.
+
+Failed in **1 min 37 s**, so no GPU was wasted.
+
+**Resolution:** the smoke's artifacts were **preserved, not deleted**, at
+`outputs/stage_gcg_full/asym_p3_arm07p_refusal_down_L18_poscorr_seed42_SMOKE3STEP` (clearly
+named so it can never be mistaken for a result), and the full arm was resubmitted as job
+**751396**. The matched random arm (**751393**) was unaffected — no smoke had been run for it —
+and is running normally.
+
+**Lesson for the runner:** a smoke and its full run share an output directory whenever the
+run-id depends only on the arm name. Future smokes should carry a distinct `--run-id` suffix
+rather than relying on the operator to move directories afterwards.
+
+---
