@@ -20,16 +20,20 @@ mechanism.
 
 | pair | test n | **refusal-specific ΔASR** | 95 % CI | McNemar p | **concept-specific ΔASR** | p | `ds_base` |
 |---|---|---|---|---|---|---|---|
-| **grenade** | 40 | **+0.525** | [+0.38, +0.68] | **9.5e-07** | **+0.048** | 1.0 | **0.350** |
+| **grenade** | 40 | **+0.525** | [+0.38, +0.68] | **9.5e-07** | **+0.050** [−0.12,+0.23] | 0.774 | **0.350** |
 | **cocaine** | 38 | **+0.500** | [+0.34, +0.66] | **3.8e-06** | −0.026 | 1.0 | 0.053 |
 | **pistol** | 29 | **+0.414** | [+0.24, +0.59] | **0.00049** | *(running)* | — | 0.000 |
-| **bomb** | 26 | **+0.385** | [+0.19, +0.58] | **0.00195** | +0.062 | 1.0 | 0.115 |
+| **bomb** | 26 | **+0.385** | [+0.19, +0.58] | **0.00195** | **+0.000** [−0.12,+0.12] | 1.0 | 0.115 |
 | **chlorine** | 27 | +0.185 | [−0.04, +0.41] | 0.18 (ns) | *(running)* | — | 0.000 |
 
 **Refusal half:** 5/5 positive, **sign-consistent**, median **+0.414**, range
 [+0.185, +0.525], **4/5 significant after Holm-Bonferroni**.
-**Concept half:** null in every pair tested (3/3, all p = 1.0), sign-**inconsistent**
-(−0.026 … +0.062), 0/3 significant.
+**Concept half:** null in every pair tested (3/3, p = 1.0 / 1.0 / 0.774), sign-**inconsistent**
+(−0.026 … +0.050), 0/3 significant after Holm.
+
+*(Provenance note: an earlier draft of this table carried +0.062 for bomb and +0.048 for
+grenade, read from jobs that were still writing. The aggregator now refuses any run dir
+without `DONE.json`; the values above are from complete runs. See execution log 00:52.)*
 
 `pooled_usable = False` for both halves — the ranges exceed the 0.25 heterogeneity bar, so no
 pooled number is reported (plan §8.4).
@@ -78,7 +82,7 @@ the two halves generalize so differently here.
 > must not be claimed from it (plan Gate F: "Do not say 'general across concepts' from 2/5").
 
 On grenade specifically — the one pair where both halves are powered — the dissociation is
-clean: **refusal-specific +0.525 (p = 9.5e-07)** against **concept-specific +0.048 (p = 1.0)**
+clean: **refusal-specific +0.525 (p = 9.5e-07)** against **concept-specific +0.050 (p = 0.774)**
 on the same 40 held-out items, with the concept effect's sign *positive* (destroying the
 concept circuit did not reduce the attack at all).
 

@@ -1140,3 +1140,43 @@ The smoke also verifies that `legacy_fixed` still prints its loud out-of-range w
 that the corrected mode raises rather than silently dropping a bad position.
 
 ---
+## 2026-08-12 00:57 — GATE F REINSTATED as **PARTIAL**, now on complete data
+
+Grenade's concept arm (job 751358) finished. Re-aggregated with the `DONE.json` guard active,
+so every number below comes from a completed run.
+
+| pair | n | refusal-specific ΔASR | p | concept-specific ΔASR | p | power |
+|---|---|---|---|---|---|---|
+| grenade | 40 | **+0.525** | 9.5e-07 | **+0.050** [−0.12,+0.23] | 0.774 | **INFORMATIVE** |
+| cocaine | 38 | **+0.500** | 3.8e-06 | −0.026 | 1.0 | marginal |
+| pistol | 29 | **+0.414** | 0.00049 | *(running)* | — | floor-limited |
+| bomb | 26 | **+0.385** | 0.00195 | **+0.000** | 1.0 | marginal |
+| chlorine | 27 | +0.185 | 0.18 ns | *(running)* | — | floor-limited |
+
+> **GATE F = PARTIAL.** The dissociation holds in all 1 pair where the concept half was
+> testable, but only 1 of 5 pairs had attack headroom. **The refusal half generalizes**
+> (5/5 positive, sign-consistent, median +0.414, 4/5 significant after Holm). **The concept
+> half is UNDERPOWERED across the family.** Do NOT claim "general across concepts".
+
+On grenade, the one pair where both halves are powered: refusal-specific **+0.525
+(p = 9.5e-07)** vs concept-specific **+0.050 (p = 0.774)** on the same 40 held-out items.
+
+**Correction closed.** The withdrawn 00:40 verdict is reinstated on complete data. The two
+partial numbers landed close to the truth (bomb +0.062 → **+0.000**; grenade +0.048 →
+**+0.050**) — but that was luck, not method, and it does not retroactively justify reading a
+running job. `docs/MULTICONCEPT_CAUSAL_GENERALIZATION.md` now carries the complete values and
+a provenance note.
+
+### Phase 2 — seed 43 replicates seed 42, and across GPU classes
+Budget 0.10, a5000 (seed 42's pair was L40S), held-out n=37:
+
+| seed | GPU | refusal Δproj | random Δproj | ratio |
+|---|---|---|---|---|
+| 42 | L40S | −8.22 | −2.21 | 3.7× |
+| **43** | **a5000** | **−8.65** | **−2.42** | **3.6×** |
+
+The specificity on the internal target replicates on a different seed **and** a different GPU
+class. Seed-43 ASR is being judged; seed 44 pair launched (jobs on n-501/n-502), which will
+close the plan §6.1 ≥3-seed requirement.
+
+---

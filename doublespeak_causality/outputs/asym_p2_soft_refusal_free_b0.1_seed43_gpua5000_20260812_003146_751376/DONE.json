@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p2_soft_refusal_free_b0.1_seed43_gpua5000_20260812_003146_751376",
+  "status": "ok",
+  "rows_written": 37,
+  "end_ts": "2026-08-12T00:40:29",
+  "end_epoch": 1786484429.4403133,
+  "wall_seconds": 0.016
+}

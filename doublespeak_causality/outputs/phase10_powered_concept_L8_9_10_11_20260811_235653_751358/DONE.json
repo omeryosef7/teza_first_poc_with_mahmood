@@ -1,0 +1,28 @@
+{
+  "schema": "DONE/1",
+  "run_id": "phase10_powered_concept_L8_9_10_11_20260811_235653_751358",
+  "status": "ok",
+  "rows_written": 60,
+  "end_ts": "2026-08-12T00:40:35",
+  "end_epoch": 1786484435.4143612,
+  "wall_seconds": 2569.957,
+  "arms": [
+    "baseline",
+    "write_abl",
+    "carry_abl",
+    "write_carry_abl",
+    "rand_abl"
+  ],
+  "write_layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "n_items_skipped": 0,
+  "benches": [
+    "doublespeak_causality/data/behavioral_pairs/beh_pair_grenade.json"
+  ],
+  "gens_written": true,
+  "primary_verdict_pooled": "significant"
+}
