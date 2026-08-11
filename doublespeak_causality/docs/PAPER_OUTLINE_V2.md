@@ -1,0 +1,149 @@
+# PAPER OUTLINE V2 — after the Asymmetry sprint
+
+*Deliverable §15.8. Supersedes `docs/PAPER_OUTLINE_V1.md`. Written 2026-08-12.*
+*Phase 3 (the position-corrected token objective) is still running; §5.3 below is the one
+section whose content is not yet determined, and both of its possible outcomes are drafted.*
+
+---
+
+## The change from V1
+
+**V1's spine was a negative:** *"a refusal direction is causal in activation space but is not a
+usable token-space objective."* That framing had two weaknesses this sprint exposed — the
+token-space objective was **misconfigured** (it read a fixed absolute position, correct for 1
+of 40 prompts), and the negative's effect size sat **below the judge's own noise floor**, so
+it was never measurable at n=37 regardless of mechanism.
+
+**V2's spine is a positive with a mechanism:** *the direction is unusually reachable from the
+input and continuous optimization exploits it to jailbreak at ASR 0.78 — the failure is
+specific to **discrete** search, and we measure why.*
+
+That converts a "we tried and it didn't work" paper into a "here is where the boundary lies
+and here is the quantity that draws it" paper.
+
+---
+
+## Title (working)
+**Reachable but not optimizable: a causal refusal direction is easy to steer continuously and
+hard to reach with discrete tokens**
+
+## Abstract (one paragraph, from the claim table)
+> A linear refusal direction in Llama-3.1-8B is causal in activation space, and it is
+> **unusually easy to reach from input embeddings** — 4.7× more sensitive to suffix
+> perturbations than a covariance-matched control and 14× more than an isotropic one, at
+> percentile ≥ 0.99 on both splits. A continuous 16-position soft prompt targeting it reaches
+> **ASR 0.78** on a locked held-out set versus **0.15** for a dose-matched random direction
+> (mean ΔASR **+0.63** over three seeds, no sign flips, all p < 1e-4). Yet a discrete GCG
+> suffix targeting the *same* direction performs like a random direction (mean ΔASR **+0.018**
+> — below the StrongREJECT judge's own label-flip noise). The gap is not reachability. We show
+> two measured causes: the **first-order surrogate discrete search depends on is invalid at
+> the granularity of a single token** (r = 0.84 at a tenth of a token-step, ≈ 0 at a full one),
+> and a **perfect solution inside the token simplex retains only 5.7 % of its effect once
+> rounded** to real tokens. Interpretability-derived directions can be genuine causal handles
+> and still be unusable by the discrete optimizers red-teaming actually runs.
+
+---
+
+## 1. Introduction
+The interpretability-guided-security promise: if a jailbreak's mechanism is a decodable
+internal direction, it should guide both attack and defense. We test that promise end to end
+and find the promise holds for **intervention** and for **continuous** input control, and
+breaks for **discrete** search — with a measurable reason.
+
+## 2. Background
+Doublespeak / in-context representation hijacking (arXiv 2512.03771); refusal directions
+(Arditi/RepE diff-of-means); GCG; StrongREJECT. Prior program result: the concept circuit is
+real but behaviourally epiphenomenal, and refusal suppression is the causal locus.
+
+## 3. Setup
+ClearHarm **v3 leakage-0** (cluster-disjoint; train pool 40 frozen, dev 37 untouched, test 37
+locked). Llama-3.1-8B-Instruct bf16 primary; Phi-4-mini-reasoning cross-family. Refusal axis
+L18 → `hs[19]`, fitted at the decision token. **StrongREJECT ≥ 0.5** throughout.
+
+### 3.1 Measurement hygiene (a short subsection that earns its space)
+Three things we had to fix before any number meant what it said, each of which is a general
+hazard:
+* a representation objective that read **one absolute token index** taken from the first
+  training example (correct for 1 of 40 prompts, silently zero for another);
+* **two different ASR thresholds** (0.25 / 0.5) reported under one name — recomputable from
+  stored continuous scores, and conclusion-neutral here (27 contrasts, 0 sign flips);
+* a **judge that flips ~3.4 % of labels between runs** at `temperature=0`, giving ±0.03–0.08
+  on ASR at n=37 — which is larger than several previously reported effects.
+
+## 4. The direction is unusually reachable (Gate C)
+`‖Jᵀv‖` against four control families; **4.71× / 4.91×** (train / test) the corrected
+covariance-matched control, percentile 0.990; **14.1× / 14.9×** isotropic. Replicates on
+**Phi** (5.56×, pct 1.000) and under **4-bit NF4** (13.25×, pct 1.000).
+**Figure B.** → H1 (input-reachability failure) is rejected.
+
+*Includes the negative result that the naive covariance-matched control is rank-1 degenerate
+(97–99 % mutually parallel) — a trap for anyone building "in-distribution random" controls.*
+
+## 5. The medium matters
+### 5.1 Continuous input control works, and is specific (Gate D) — **the paper's centrepiece**
+Universal 16-position soft prompt, dose-matched arms. **ASR 0.78 vs 0.15**, ΔASR **+0.63**,
+3 seeds, 2 GPU classes, no sign flips, all p < 1e-4. Inverted-U dose response; at excessive
+dose the projection moves −20 and behaviour **collapses to neither refusing nor complying** —
+probe displacement is not mechanism control. **Figure A.**
+
+### 5.2 Discrete search does not (and why)
+* **Gate B / the ε-scan.** r = 0.84 at ε = 0.10 → ≈ 0 / −0.32 at ε = 1.0 (one real token
+  substitution) — *worse* than a covariance-matched null. **Figure B2.**
+* **The rounding probe.** Token-simplex optimum retains **5.7 %** after discretization; the
+  rounded result lands inside the range of *unoptimized* random-token suffixes.
+* **Cross-family caveat, stated in the paper:** on Phi the surrogate degrades but does not
+  collapse and the mechanism-vs-null ordering inverts. **H2′ is a Llama result.**
+
+### 5.3 Was the discrete negative just a bug? *(Phase 3 — running)*
+The published objective was misconfigured. We re-ran it position-corrected, everything else
+identical, with a pre-registered prediction that it would still fail.
+* **If it still fails:** the defect was a confound, not the cause; H2′ survives its sharpest
+  test and §5.2 is the explanation.
+* **If it succeeds:** the token-space negative was substantially an implementation artifact.
+  We would report that plainly, retract the strong form of the discrete claim, and the paper's
+  contribution becomes the reachability geometry plus a cautionary methods result.
+
+## 6. Generality of the causal locus (Gate F)
+Refusal ablation raises ASR on **5/5** concept pairs (median specific ΔASR **+0.414**, 4/5
+significant after Holm) using the frozen concept-agnostic axis. Concept-circuit ablation is
+null everywhere — **but only 1 of 5 pairs had enough attack headroom for that null to mean
+anything**, so we claim generality for the actuator and *not* for the dissociation.
+**Figure D.**
+
+## 7. The defense does not follow (Gate G)
+Concept-as-detector + refusal-as-actuator. On train the two-signal gate appears to
+Pareto-dominate; **the Bernoulli and shuffled-feature controls match its over-refusal
+saving**, and on test nothing reduces ASR against a floor baseline. Honest negative, and a
+demonstration of why the controls were necessary. **Figure E.**
+
+## 8. Limitations
+Held-out n = 37–42 with a ±0.03–0.08 judge band; one base point for the geometry; the
+scope-matched activation arm (all-position/all-layer vs 16 input positions) not run; the
+optimal continuous dose was read on test and is exploratory; the concept circuit ablated is
+bomb-localized; H2′ is not cross-family.
+
+## 9. Conclusion
+Intervening on a direction, steering it from the input, and optimizing tokens toward it are
+three different capabilities with three different difficulties. The first two work. The third
+fails for a reason we can measure, and that reason is a property of the discrete step size,
+not of the direction.
+
+---
+
+## Figure list
+| # | Content | Status |
+|---|---|---|
+| A | activation vs continuous vs discrete (Δprojection ‖ ΔASR) | done |
+| B | ‖Jᵀv‖ vs four control families, both splits | done |
+| B2 | ε-scan — the surrogate's collapse before token scale | done |
+| C | cross-prompt gradient coherence | done |
+| D | multi-concept dissociation with power grading | done |
+| E | defense Pareto with matched controls | done |
+
+## What a reviewer will ask, and where it is answered
+1. *"Is the continuous result just a bigger perturbation budget?"* — §5.1 dose-matched arms.
+2. *"Is your random control fair?"* — §4, four families, incl. the degeneracy correction.
+3. *"Did you just misconfigure GCG?"* — §5.3, the pre-registered position-corrected re-run.
+4. *"Does the judge support these differences?"* — §3.1, the measured noise floor.
+5. *"Does any of it generalize?"* — §6 (yes, for the actuator), §4 (yes, cross-family and
+   cross-precision), §5.2 (**no** for the surrogate-invalidity mechanism).

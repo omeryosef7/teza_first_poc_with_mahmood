@@ -1614,3 +1614,35 @@ Two things the plot makes visible that a table hides:
 both splits).
 
 ---
+## 2026-08-12 02:08 — LOOP: Phase 3 at step 30/200; PAPER_OUTLINE_V2 written
+
+**Queue:** 3 running, 0 pending. n-501: 2 · n-502: 1. **Three slots deliberately left empty** —
+the two Phase-3 GCG arms are the last science outstanding and adding model loads to these
+nodes would slow them (see the 16× contention pathology earlier tonight). Idle capacity is
+cheaper than a slower critical path.
+
+**Phase 3, both arms now at the SAME step (30/200), so the comparison is clean:**
+
+| arm | rd_loss @ step 30 |
+|---|---|
+| **751396 mechanism** (`refusal_L18_poscorr`) | **−0.1211** |
+| 751393 matched random (`refusal_rand_L18_poscorr`) | −0.0031 |
+
+39× more movement on the intended coordinate. Still a per-step logging diagnostic on
+`train_tasks[0]`, **not** a result, and still no evidence about ASR — which is the entire
+question. ~8 h projected to completion.
+
+### `docs/PAPER_OUTLINE_V2.md` written (deliverable §15.8)
+The substantive change from V1: **V1's spine was a negative** ("causal in activation space but
+not a usable token-space objective"). This sprint showed that framing rested on an objective
+that was **misconfigured** (one absolute position, correct for 1/40 prompts) and on an effect
+**below the judge's noise floor**. **V2's spine is a positive with a mechanism** — the
+direction is unusually reachable, continuous optimization exploits it to ASR 0.78, and the
+failure is specific to *discrete* search for two measured reasons.
+
+The outline drafts **both** outcomes of §5.3 (the running position-corrected re-run) so the
+paper's structure does not depend on which way it lands, and carries an explicit
+"what a reviewer will ask, and where it is answered" section. §5.2 states the cross-family
+partial negative in the paper body rather than burying it in limitations.
+
+---
