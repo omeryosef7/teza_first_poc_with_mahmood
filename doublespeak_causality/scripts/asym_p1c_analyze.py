@@ -107,9 +107,11 @@ def main():
         base = d.get(K(pool, "decision", L, "none"))
         if not base:
             continue
-        for cond in ["neutral"] + [f"{a}_s{s}" for s in seeds
-                                   for a in ("vanilla_ds", "refusal", "refusal_rand",
-                                             "concept", "concept_rand")]:
+        # iterate over EVERY condition present, so unoptimized controls (`init`, `randtok*`)
+        # and any arm added later are included without editing this list
+        present = sorted({c for (p_, pos_, k_, L_, c) in d
+                          if p_ == pool and pos_ == "decision" and L_ == L and c != "none"})
+        for cond in present:
             cur = d.get(K(pool, "decision", L, cond))
             if not cur:
                 continue
