@@ -397,3 +397,15 @@ evals now pinned n-304 and complete fast.) Last 2 arms + combined pair pending.
 - PHASE 6 (Q7) STARTED: run_llama_quant_behav.slurm QUANT=8bit -> job 745089. phase_behav_refusal on
   Llama-3.1-8B, refusal-pt L18, alphas 0/0.5/1.0, test split, bnb 8-bit. Tests whether the refusal-
   ablation dose-response survives quantization vs bf16. 4bit + geometry-under-quant to follow.
+
+## 2026-08-11 (tick 6) — Phi behav FEASIBILITY fix; seed44 arm07 .162
+- seed44 arm07_refusal_L18 EVALED = 0.162 (cross-seed: s42 .324 / s43 .405 / s44 .162 -> wide swing
+  reconfirms refusal-vs-random seed-dependent/underpowered). Remaining seed44: 06@184(~FINAL) 06r@154 07r@127.
+- CAUGHT + FIXED slow job: Phi behav 744801 was only 33/85 through the FIRST (baseline) arm of TRAIN
+  after 2h; train+test(127)×~7 arms(3 alphas)×reasoning-512 projected ~50h >> 12h walltime. KILLED.
+  Relaunched 745950 with REDUCED, sufficient scope: --splits test (42 items) --alphas 0.0,1.0
+  --max-new 256 --enable-thinking false (consistent w/ X5 concept fit). Gives X5 test baseline labels
+  + X3 full-ablation-vs-random dose. NEW --beh dir = behav_refusal_clearharm_asweep0.0-1.0_*_745950;
+  X5 must use --eval-splits test.
+- Judge parse-fail warnings negligible (1). Quant-8bit 745089 (Llama, test-only, non-reasoning) feasible
+  within 10h -> kept running. bench splits: dev43/train85/test42.

@@ -34,13 +34,16 @@ if [ -z "${OPENAI_API_KEY:-}" ]; then echo "WARN OPENAI_API_KEY unset -> StrongR
 echo "[phi-x13] GPU ${VRAM_MB}MB $(nvidia-smi --query-gpu=name --format=csv,noheader|head -1)"
 
 REFPT="${DC}/outputs/refusal_phi/refusal_direction_llama_L14.pt"
+# SCOPE REDUCED (feasibility): reasoning-on 512-tok gen over train+test×3-alpha projected ~50h >> walltime.
+# X5 needs test-split baseline (alpha0) labels; X3 needs full-ablation (alpha1.0) vs random. So:
+# test split only, alphas 0.0+1.0, max_new 256, thinking OFF (consistent with the X5 concept fit).
 python doublespeak_causality/scripts/phase_behav_refusal.py \
   --bench "${DC}/data/behavioral_v3b/beh_clearharm.json" \
   --model microsoft/Phi-4-mini-reasoning \
   --refusal-pt "$REFPT" \
-  --alphas 0.0,0.5,1.0 \
-  --splits train,test \
-  --max-new 512 \
-  --enable-thinking default \
+  --alphas 0.0,1.0 \
+  --splits test \
+  --max-new 256 \
+  --enable-thinking false \
   --n 0 --seed 0
 echo "[phi-x13] done $(date -u)"
