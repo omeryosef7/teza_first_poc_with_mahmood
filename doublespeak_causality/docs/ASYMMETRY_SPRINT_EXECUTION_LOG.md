@@ -1495,3 +1495,59 @@ the early signal now so that neither outcome can be presented as expected after 
 * **751414** — Llama **test** split with the corrected control, companion to 751408.
 
 ---
+## 2026-08-12 01:48 — CROSS-FAMILY (Phi-4-mini-reasoning, job 751413): Gate C replicates, Gate B does NOT
+
+Train n=40, template span builder, refusal **L14 → hs[15]**, concept disabled (Phi is 3072-dim),
+covariance-matched control with `--actcov-drop-top 1` (i.e. the *corrected*, non-degenerate one).
+
+### GATE C — **REPLICATES**
+| control | Phi ratio | pct | (Llama train) |
+|---|---|---|---|
+| 100 isotropic random | **5.56×** | **1.000** | 14.31× |
+| 100 covariance-matched (drop_top=1) | **4.12×** | **1.000** | — |
+| other-layer refusal (L12) | **3.46×** | **1.000** | 3.40× |
+
+`‖Jᵀ v_refusal‖ = 6.07`. **The refusal direction is unusually reachable from suffix tokens on
+Phi as well, at percentile 1.000 against every control family. H1's rejection is
+cross-family.** The magnitude is smaller than Llama's (5.6× vs 14.3× isotropic), but the
+direction and the verdict are the same.
+
+### GATE B / H2′ — **DOES NOT CLEANLY REPLICATE.** Reported as a partial negative.
+r(predicted, actual) by direction family:
+
+| family | ε=0.05 | ε=0.10 | ε=0.25 | ε=0.50 | **ε=1.00** |
+|---|---|---|---|---|---|
+| **Phi mechanism** | 0.170 | **0.535** | 0.494 | 0.187 | **+0.214** |
+| Phi covariance-matched | 0.173 | 0.299 | 0.326 | 0.173 | 0.093 |
+| Phi other-layer | −0.014 | 0.294 | 0.375 | 0.257 | **0.404** |
+| Phi isotropic random | 0.322 | 0.444 | 0.290 | −0.020 | −0.037 |
+| *(Llama mechanism)* | *0.556* | ***0.840*** | *0.632* | *0.053* | ***−0.002*** |
+| *(Llama covariance-matched)* | *0.371* | *0.683* | *0.610* | *0.324* | *0.204* |
+
+Two things differ from Llama:
+1. **The surrogate degrades but does not collapse.** Phi's mechanism r falls from 0.535 to
+   **+0.214** at one-token step size — a ~60 % loss, but it retains real predictive signal,
+   whereas Llama's goes to ≈0 / −0.32.
+2. **The sharp form of the claim FAILS on Phi.** On Llama the striking result was that the
+   refusal direction ends up **worse** than a covariance-matched null at ε=1 (−0.002 vs
+   +0.204). On Phi the ordering is **reversed**: mechanism **+0.214** vs covariance-matched
+   **+0.093**. The refusal direction is, if anything, *better* predicted than the null there.
+
+> **Honest verdict: H2′ (linear-surrogate invalidity at discrete step size) is demonstrated on
+> Llama-3.1-8B and is NOT established as a general property. On Phi-4-mini-reasoning the
+> surrogate weakens substantially but survives, and the mechanism-vs-null ordering inverts.**
+
+**What this does and does not touch.** It does not affect any Llama result: Gates B, C, D, the
+rounding probe and the Phase-2 ASR replication all stand as measured. It constrains the
+*scope* of the explanation — the sprint can claim the mechanism explains the Llama token-space
+negative, not that it is a universal property of transformers. The claim table's A2 row is
+amended from "one model" as a limitation to an explicit **cross-family partial negative**.
+
+**Caveats on the Phi arm itself, stated:** peak r is much lower on Phi (0.535 vs 0.840), so the
+Jacobian is noisier there and the whole ε-curve sits lower; only one other-layer control (L12)
+was available; and Phi's residual covariance is even more rank-1-dominated (top-1 0.9977). A
+weaker instrument on Phi is a plausible partial explanation for the difference, and
+distinguishing "H2′ is Llama-specific" from "the Phi measurement is noisier" would need a
+better-conditioned Phi probe. **Not claimed either way.**
+
+---
