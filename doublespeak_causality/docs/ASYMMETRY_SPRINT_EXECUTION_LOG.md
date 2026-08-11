@@ -831,3 +831,37 @@ documented; the v3b-fit values are the primary here because they match the bench
 evaluated.
 
 ---
+## 2026-08-11 23:36 — LOOP ITERATION 2
+
+**Queue:** 6/6 running, 0 pending, nothing meets the >30 min resubmit rule.
+Verified all six are actively *writing*, not merely alive (the Phase-4 harness prints only a
+header until a split completes, so "no new stdout" is not a hang signal):
+
+| job | pair | items done / 60 |
+|---|---|---|
+| 750849 | cocaine | 51 |
+| 750493 | bomb | 44 |
+| 750494 | grenade | 37 |
+| 750880 | chlorine | 32 |
+| 750879 | pistol | 26 |
+| 751316 | Phase 5 | 105 / 167 rows; pass2 train complete at 1991 s |
+
+### Pre-flight validation of the Phase-4 aggregator (code path only)
+Rather than discover a schema mismatch after five jobs finish, I checked the real output
+against what `scripts/asym_p4_aggregate.py` expects. All four required arms are present
+(`direct_base`, `direct_refabl_a1.0`, `direct_randabl_a1.0`, `ds_base`), cohort tagging and
+split filtering behave, and a full dry-run executes to a Gate-F verdict without error.
+
+> **The numbers that dry-run printed are NOT results and must not be quoted.** The jobs are
+> mid-flight, so each pair's held-out n is partial (10, 18, 30 of 26–40) and the sample is
+> whatever happened to be written by 23:36 — not a defined cohort. The run exists to validate
+> the code path. Gate F will be evaluated once, on complete data, and reported from that run.
+> Nothing in this sprint is selected or decided on the basis of the partial view.
+
+**Still missing for Gate F:** the *concept*-side arm. Only the refusal stage has been run;
+`phase10_powered_concept_ablation.py` (concept-circuit ablation vs matched random) has not
+been launched for any pair, which is why the concept-specific column is empty. Five more jobs
+are needed and will be queued as the refusal jobs free slots — with node spread, per
+[[feedback-slurm-node-contention]].
+
+---
