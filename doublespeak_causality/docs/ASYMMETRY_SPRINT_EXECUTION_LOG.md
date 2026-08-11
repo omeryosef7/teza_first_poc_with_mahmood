@@ -670,3 +670,39 @@ within-pair effects, so this does not mix GPU classes inside a comparison; all f
 still pinned to one class and the class is recorded in the run metadata.
 
 ---
+## 2026-08-11 — MEASUREMENT NOTE: StrongREJECT judge nondeterminism, quantified by accident
+
+Two independent judge runs were launched over the **same** `GENERATIONS.jsonl` files (a stray
+duplicate invocation). They disagree:
+
+| arm | run A ASR | run B ASR | items flipped (n=37) |
+|---|---|---|---|
+| refusal free b=0.05 | 0.1622 | 0.1351 | 1 |
+| **refusal free b=0.10** | **0.7568** | **0.8378** | **3** |
+| refusal free b=1.00 | 0.0000 | 0.0000 | 0 |
+| random free b=1.00 | 0.0000 | 0.0000 | 0 |
+| refusal simplex | 0.1892 | 0.2162 | 1 |
+
+**≈ 5 label flips in ~148 judgements ⇒ a ~3.4 % per-item flip rate**, i.e. an ASR uncertainty
+of roughly **±0.03–0.08 at n=37**, on top of sampling error. `strong_reject/evaluate.py:182`
+already passes `temperature=0`, so this is irreducible OpenAI API nondeterminism, not a
+configuration error.
+
+### Two consequences, both load-bearing
+1. **This sprint's headline survives easily.** The continuous soft prompt at budget 0.10 gives
+   ASR **0.757–0.838** against a vanilla-doublespeak baseline of 0.243–0.351 and a best-ever
+   GCG arm of 0.405. That gap is an order of magnitude larger than judge noise.
+2. **The program's central GCG negative is *smaller than the judge's own noise floor.*** The
+   handoff's Q1/Q3 result is a 3-seed mean ΔASR of **+0.018** for refusal@L18 vs its matched
+   random control (per-seed −0.027 / +0.162 / −0.081). A ±0.03–0.08 judge-noise band means
+   that effect was **never measurable at n=37 regardless of the mechanism**. This does not
+   overturn the negative — it *strengthens* the "non-specific" reading and reframes the
+   between-seed swing of ~0.24 as partly judge variance rather than optimization variance.
+
+### Standing rule adopted for the rest of this sprint
+Any ΔASR below **0.08** at n≈37 is reported as **within judge noise**, never as an effect,
+unless it is backed by repeated judging. Where a contrast matters, the judge is run more than
+once and the spread is reported. `scripts/asym_p2_judge.py` already stores per-item continuous
+scores, so re-judging is cheap and does not require re-generation.
+
+---
