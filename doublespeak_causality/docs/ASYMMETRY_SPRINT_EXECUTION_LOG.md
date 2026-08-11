@@ -1418,3 +1418,38 @@ first full run; I had not looked at it. Cross-family replication paid for itself
 producing a single scientific number.
 
 ---
+## 2026-08-12 01:32 — PHASE 7 COMPLETE: quantization does NOT change token→refusal reachability
+
+Same instrument, same 40 train prompts, same a5000 GPU class, bf16 vs 4-bit NF4
+(jobs 751398 / 751394):
+
+| precision | ‖Jᵀ v_refusal‖ | vs 100 isotropic randoms | vs other-layer refusal | ε-scan r at 0.10 → 1.00 |
+|---|---|---|---|---|
+| **bf16** | **22.04** | **14.12×** (pct 1.000) | 3.43× (pct 0.983) | +0.765 → **−0.022** |
+| **4-bit NF4** | **21.53** | **13.25×** (pct 1.000) | 3.35× (pct 1.000) | +0.717 → **+0.011** |
+
+**Both Gate C and Gate B replicate essentially unchanged under 4-bit.** The direction is just
+as unusually reachable, and the first-order surrogate collapses to r ≈ 0 at one-token step
+size in both precisions.
+
+**GPU-class cross-check, for free:** this bf16 run was on a5000 while the original was on
+L40S — ‖Jᵀv‖ **22.04 vs 22.4**, ratio **14.12× vs 14.31×**. The reachability geometry is
+stable across GPU class.
+
+### Why this is more than a robustness check
+Q7 established that 4-bit has the **strongest activation-space causal effect** of the three
+precisions (ΔASR **+0.548** vs bf16's **+0.286** at threshold 0.5). Yet its **token-space
+reachability geometry is indistinguishable from bf16**.
+
+> **Quantization moves activation-space causal potency without moving token-space
+> reachability.** The two are decoupled — another instance of the sprint's central theme, and
+> a second, independent axis along which "causal in activation space" fails to track
+> "reachable from the input".
+
+### Docs corrected for the degenerate control
+`TOKEN_REACHABILITY_ANALYSIS.md` §2.1 and new §2.3, and claim row **A1**, now lead with the
+two sound control families (isotropic 14.3×/15.0× pct 1.000; other-layer 3.4×) and describe
+the covariance-matched number as *"vs the single dominant residual direction"* rather than as
+a 100-draw null.
+
+---

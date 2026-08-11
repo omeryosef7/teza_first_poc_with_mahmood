@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_train_p7_4bit_gpua5000_20260812_005146_751394",
+  "status": "ok",
+  "rows_written": 32800,
+  "end_ts": "2026-08-12T01:27:26",
+  "end_epoch": 1786487246.5023777,
+  "wall_seconds": 0.019
+}

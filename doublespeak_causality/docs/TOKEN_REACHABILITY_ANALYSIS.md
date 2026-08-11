@@ -77,7 +77,7 @@ strongly anisotropic. So each cell carries:
 | kind | construction | what it rules out |
 |---|---|---|
 | `random` | 100 isotropic unit vectors, `pair_common.norm_matched_random(seed=42+row)` | the plan's §3.8 norm-matched control |
-| `actrandom` | 100 unit vectors drawn as `unit(Σ^{1/2} g)`, `Σ` = empirical residual covariance at that row pooled over prompts and every 4th token position | **the strict null** — a direction that "looks like" a real activation direction but carries no mechanism |
+| `actrandom` | 100 unit vectors drawn as `unit(Σ^{1/2} g)`, `Σ` = empirical residual covariance at that row | **⚠ DEGENERATE — see §2.3.** Intended as a diverse "looks like a real activation direction" null; in practice the covariance is rank-1-dominated so these draws are 97–99 % mutually parallel, i.e. effectively ONE direction. |
 | `foreign` | the concept vector evaluated at the refusal row (and vice versa) | a real, structured, non-random but *wrong* direction |
 | `otherlayer` | refusal directions fitted at L10/L14/L22, evaluated at the target row | the same mechanism, wrong depth |
 
