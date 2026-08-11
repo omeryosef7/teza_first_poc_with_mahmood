@@ -898,3 +898,38 @@ to 0.500. Whether that is concept-specific attack weakness or a property of the 
 bench needs the other four pairs before it means anything.
 
 ---
+## 2026-08-11 23:49 — PHASE 5 COMPLETE — GATE G: HONEST NEGATIVE (job 751316)
+
+Full write-up: `docs/TWO_SIGNAL_DEFENSE.md`. Headline:
+
+* **TRAIN (n=85, where thresholds were fit) looked like a win.** `gate_two` kept the entire
+  unconditional ASR reduction (−0.153, p=0.001) at **39 %** of the over-refusal cost
+  (+0.141 vs +0.365), while the Bernoulli control got the over-refusal saving (+0.153) but
+  **lost** the ASR benefit (−0.047, ns).
+* **TEST (n=42, locked) — it all vanishes.** No arm reduces DS ASR; the unconditional defense
+  nominally *raises* it (+0.048, ns). **Gate G criterion (1) FAILS**, so criterion (2) is moot.
+
+**Three things make this a usable negative rather than a null:**
+1. The gate is **not two-signal**: `gate_concept` and `gate_two` are numerically identical on
+   every condition and both splits. The refusal half contributes nothing because it fires on
+   87 % of attack-structured benign prompts and **100 %** of unrelated ones.
+2. The over-refusal saving is **not specific** — gate_two +0.141, gate_random +0.153,
+   gate_shuffled +0.165, heavily overlapping CIs. **Without the Bernoulli and
+   shuffled-feature controls the train numbers would have been reported as a win.** They are
+   the reason this is a negative and not a false positive.
+3. The **pre-registered warning held**: on test the concept gate fires on 0.262 of attacks
+   but 0.381 of attack-structured benign prompts — more on benign, exactly the failure that
+   sank the refusal-only gate.
+
+**Floor-effect caveat, stated rather than buried:** test DS ASR with no defense is **0.143**.
+A defense cannot show a reduction against a near-zero baseline, so this run shows the gate
+*did not succeed here* and that its train-side advantage is not attributable to the concept
+signal — it does **not** establish that the approach fails on a split with real headroom.
+
+**Also replicated:** unrelated-normal refusal_rate is **0.000 for every arm** despite the
+refusal gate firing on 100 % of those prompts — the utility cost of refusal restoration is
+confined to attack-adjacent inputs.
+
+**Queue:** slot refilled with the bomb concept-ablation arm (job 751357, n-502). 6/6 running.
+
+---

@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "defense_2signal_clearharm_20260811_225420_751316",
+  "status": "ok",
+  "rows_written": 167,
+  "end_ts": "2026-08-11T23:49:36",
+  "end_epoch": 1786481376.9081326,
+  "wall_seconds": 0.003
+}
