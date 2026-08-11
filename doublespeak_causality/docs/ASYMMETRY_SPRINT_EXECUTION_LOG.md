@@ -788,3 +788,46 @@ Full run launched: job **751316** (all splits, max_new 200, α = 2.5893 from the
 projection summary, StrongREJECT ≥ 0.5).
 
 ---
+## 2026-08-11 23:25 — LOOP ITERATION 1
+
+**Queue:** 6/6 running, 0 pending, all past model loading and into generation.
+n-501: 750493 (bomb), 750494 (grenade), 750849 (cocaine) · n-502: 750879 (pistol),
+750880 (chlorine), 751316 (Phase 5). Nothing to resubmit under the >30 min rule.
+
+### The pre-registered Phase-5 warning HELD at full n
+The smoke's n=3 warning was recorded before the full run precisely so this could not be
+spun after the fact. At **train n=85** the full run reports:
+
+```
+ds_concept mean = 1.9934   vs   benign_attack_concept mean = 2.0231
+ds_refusal mean = 1.9450   vs   direct_refusal   mean = 4.4778
+```
+
+So **attack-structured benign prompts still score HIGHER on the concept axis than the
+doublespeak attacks do** (2.0231 vs 1.9934). The margin is small (0.03) but it is in the
+wrong direction, and it is the direction that matters: a `concept > T_concept` gate fitted on
+train will fire *at least as often* on benign prompts as on attacks.
+
+The refusal axis, by contrast, separates the conditions cleanly (1.945 vs 4.478) — which is
+exactly the prior finding: refusal is a good **actuator** and a good *harmful-vs-direct*
+discriminator, but the thing the defense needs is a discriminator between **attack** and
+**attack-structured benign**, and neither axis provides it.
+
+**Predicted outcome (stated now, before the arms are judged):** Phase 5 lands as plan §17
+**RESULT 8** — the two-signal gate reproduces the unconditional tradeoff and does not
+reduce over-refusal. That is an honest negative the plan explicitly counts as publishable,
+and it will be a *quantified* one: six arms (including a dose-matched Bernoulli control and a
+shuffled-feature control) across five utility conditions, where the prior Gate-F negative had
+neither the concept feature nor the direct/neutral/unrelated conditions.
+
+If the judged arms contradict this prediction, that is a genuine surprise and will be
+reported as such.
+
+### Note on threshold provenance
+`T_refusal = 4.4778` here is fit as the **train direct-harmful refusal mean** on the v3b
+bench (n=85), vs 4.32–4.50 in the prior Gate-F run. `alpha = 2.5893` from the v3b-train-fit
+projection summary (the prior run used 2.83 from a v1 n=44 fit). Both differences are
+documented; the v3b-fit values are the primary here because they match the bench being
+evaluated.
+
+---
