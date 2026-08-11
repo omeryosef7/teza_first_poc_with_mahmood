@@ -95,6 +95,8 @@ def _derive_objective_name(args) -> Optional[str]:
         parts.append("refusal_dir_L" + args.refusal_dir_layers.replace(",", "-"))
     elif args.lambda_refusal_dir > 0.0:
         parts.append(f"refusal_dir_L{args.refusal_dir_layer}")
+    if getattr(args, "refusal_dir_position_mode", "legacy_fixed") != "legacy_fixed":
+        parts.append(f"pos_{args.refusal_dir_position_mode}")
     return "+".join(parts) if parts else None
 
 
@@ -161,6 +163,16 @@ def main(argv=None):
                         help="Layer index for refusal direction projection (default: 25 per CoT Hijacking paper).")
     parser.add_argument("--refusal-dir-path", default=None,
                         help="Path to v_refusal .pt file (from compute_refusal_direction.py). Required when --lambda-refusal-dir > 0.")
+    parser.add_argument("--refusal-dir-position-mode",
+                        choices=["legacy_fixed", "per_task_suffix", "per_task_decision"],
+                        default="legacy_fixed",
+                        help="Where the refusal/concept projection is read. legacy_fixed (default, "
+                             "reproduces every published run) uses ONE absolute token index taken "
+                             "from train_tasks[0] for all tasks -- correct for 1 of 40 prompts on "
+                             "the v3 pool. per_task_suffix recomputes the last suffix token per "
+                             "task; per_task_decision uses the last PROMPT token, where the refusal "
+                             "axis was fitted and causally validated. See "
+                             "doublespeak_causality/docs/ASYMMETRY_SPRINT_EXECUTION_LOG.md E0.3.")
     parser.add_argument("--refusal-dir-layers", default=None,
                         help="Multi-layer RD (10D): comma-separated layer indices e.g. '20,25,28'. Overrides --refusal-dir-layer.")
     parser.add_argument("--refusal-dir-paths", default=None,
@@ -243,6 +255,7 @@ def main(argv=None):
             lexicographic_task_eps=args.lexicographic_task_eps,
             lambda_refusal_dir=args.lambda_refusal_dir,
             refusal_dir_layer=args.refusal_dir_layer,
+            refusal_dir_position_mode=args.refusal_dir_position_mode,
             refusal_dir_path=args.refusal_dir_path,
             refusal_dir_layers=[int(x) for x in args.refusal_dir_layers.split(",")] if args.refusal_dir_layers else [],
             refusal_dir_paths=[x.strip() for x in args.refusal_dir_paths.split(",")] if args.refusal_dir_paths else [],

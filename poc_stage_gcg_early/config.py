@@ -108,6 +108,17 @@ class ObjectiveWeights:
     lambda_refusal_dir: float = 0.0          # weight for refusal-direction projection loss
     refusal_dir_layer: int = 25              # layer for refusal direction (CoT paper: layer 25)
     refusal_dir_path: Optional[str] = None  # path to v_refusal .pt file
+    # WHERE the refusal/concept projection is read. See docs/ASYMMETRY_SPRINT_EXECUTION_LOG.md E0.3.
+    #   "legacy_fixed"      ONE absolute index computed from train_tasks[0] and reused for EVERY
+    #                       task. This is what every published run used. On the frozen v3 train
+    #                       pool it lands on the intended token for 1 of 40 prompts (defect D1),
+    #                       and an out-of-range index is silently dropped, making the term 0.
+    #                       DEFAULT, so existing runs replay byte-identically.
+    #   "per_task_suffix"   the last SUFFIX token, recomputed per task -> fixes D1.
+    #   "per_task_decision" the last PROMPT token (after the assistant header), recomputed per
+    #                       task -> fixes D1 AND D2, i.e. reads the residual at the position
+    #                       where the refusal axis was actually fitted and causally validated.
+    refusal_dir_position_mode: str = "legacy_fixed"
     # Multi-layer refusal direction suppression (10D): if non-empty, overrides the single-layer config.
     # Each entry (layer, path, lambda) defines an additive refusal direction loss term.
     refusal_dir_layers: List[int] = field(default_factory=list)

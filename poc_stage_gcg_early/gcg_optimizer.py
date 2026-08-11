@@ -685,13 +685,25 @@ def run_optimization(
             suffix_placement=config.gcg.suffix_placement,
         )
         refusal_dir_positions = [init_spans_rd.suffix_slice.stop - 1]
+        _rd_mode = getattr(config.objective, "refusal_dir_position_mode", "legacy_fixed")
         print(
             f"[GCG] refusal_direction_loss ENABLED: lambda={config.objective.lambda_refusal_dir}, "
             f"layer={config.objective.refusal_dir_layer}, "
-            f"position={refusal_dir_positions}, "
+            f"position_mode={_rd_mode}, "
+            f"position(from train_tasks[0])={refusal_dir_positions}, "
             f"path={config.objective.refusal_dir_path}",
             flush=True,
         )
+        if _rd_mode == "legacy_fixed":
+            print(
+                "[GCG] WARNING: refusal_dir_position_mode=legacy_fixed -- the position above is "
+                "an ABSOLUTE token index taken from train_tasks[0] and reused for EVERY task. "
+                "Prompt lengths differ, so for most tasks this reads the wrong token, and an "
+                "out-of-range index is silently dropped (the term becomes 0). Retained as the "
+                "default only so published runs replay exactly. Use per_task_suffix or "
+                "per_task_decision for new science. See ASYMMETRY_SPRINT_EXECUTION_LOG.md E0.3.",
+                flush=True,
+            )
 
     # Multi-layer refusal direction (10D): if refusal_dir_layers is set, overrides single-layer.
     multilayer_rd_directions: Optional[List[Tuple[int, torch.Tensor, float]]] = None
@@ -759,7 +771,29 @@ def run_optimization(
             flush=True,
         )
 
-    def _selection_kwargs(task_id: str, eff_lambda_rd: float) -> Dict[str, Any]:
+    def _rd_positions_for(spans) -> List[int]:
+        """Refusal/concept readout position for THIS task (asymmetry sprint, defects D1/D2).
+
+        legacy_fixed reproduces the published behaviour exactly: a single absolute index
+        derived from train_tasks[0], reused for every task.
+        """
+        mode = getattr(config.objective, "refusal_dir_position_mode", "legacy_fixed")
+        if mode == "legacy_fixed":
+            return refusal_dir_positions
+        if spans is None:
+            return refusal_dir_positions
+        if mode == "per_task_suffix":
+            pos = [spans.suffix_slice.stop - 1]
+        elif mode == "per_task_decision":
+            pos = [spans.target_slice.start - 1]
+        else:
+            raise ValueError(f"unknown refusal_dir_position_mode={mode!r}")
+        if pos[0] >= spans.input_ids.shape[0]:
+            raise ValueError(f"refusal_dir position {pos[0]} out of range "
+                             f"(len={spans.input_ids.shape[0]})")
+        return pos
+
+    def _selection_kwargs(task_id: str, eff_lambda_rd: float, spans=None) -> Dict[str, Any]:
         """Objective wiring for one train task, shared by candidate + acceptance eval."""
         if not repr_in_selection:
             return {}
@@ -770,7 +804,7 @@ def run_optimization(
             "repr_positions": repr_pos_per_task.get(task_id, []),
             "refusal_direction": refusal_direction,
             "refusal_dir_layer": config.objective.refusal_dir_layer,
-            "refusal_dir_positions": refusal_dir_positions,
+            "refusal_dir_positions": _rd_positions_for(spans),
             "lambda_refusal_dir": eff_lambda_rd,
             "multilayer_rd_directions": multilayer_rd_directions,
             "hs_sub_batch_size": config.objective.repr_selection_sub_batch,
@@ -797,6 +831,23 @@ def run_optimization(
                 suffix_placement=config.gcg.suffix_placement,
             )
             ref_hs = (reference_hs_per_task or {}).get(task.task_id)
+            # Per-task position (asymmetry sprint, defects D1/D2). legacy_fixed keeps the
+            # published behaviour: one absolute index from train_tasks[0] for every task.
+            _rdp = refusal_dir_positions
+            _mode = getattr(config.objective, "refusal_dir_position_mode", "legacy_fixed")
+            if _mode == "per_task_suffix":
+                _rdp = [spans.suffix_slice.stop - 1]
+            elif _mode == "per_task_decision":
+                # last PROMPT token = the token just before the teacher-forced target, i.e.
+                # after the assistant header. This is where the refusal axis was fitted and
+                # causally validated (build_refusal_direction_llama.py:83).
+                _rdp = [spans.target_slice.start - 1]
+            elif _mode != "legacy_fixed":
+                raise ValueError(f"unknown refusal_dir_position_mode={_mode!r}")
+            if _rdp and _rdp[0] >= spans.input_ids.shape[0]:
+                raise ValueError(
+                    f"refusal_dir position {_rdp[0]} out of range for task {task.task_id} "
+                    f"(len={spans.input_ids.shape[0]}) -- refusing to silently drop the term")
             g = _token_gradients(
                 model, model_family,
                 spans.input_ids, spans.suffix_slice,
@@ -809,7 +860,7 @@ def run_optimization(
                 lambda_refusal_dir=eff_lambda_rd,
                 refusal_direction=refusal_direction,
                 refusal_dir_layer=config.objective.refusal_dir_layer,
-                refusal_dir_positions=refusal_dir_positions,
+                refusal_dir_positions=_rdp,
                 multilayer_rd_directions=multilayer_rd_directions,
             )
             if grad_accum is None:
@@ -851,7 +902,7 @@ def run_optimization(
                 model, model_family, eval_spans, cand_lists,
                 eval_batch_size=config.gcg.batch_size,
                 config=config,
-                **_selection_kwargs(eval_task.task_id, eff_lambda_rd),
+                **_selection_kwargs(eval_task.task_id, eff_lambda_rd, eval_spans),
             )
             if summed_eval is None:
                 summed_eval = [dict(r) for r in t_results]
@@ -1009,7 +1060,7 @@ def run_optimization(
             t_curr = _evaluate_candidates(
                 model, model_family, eval_spans, [suffix_ids],
                 eval_batch_size=1, config=config,
-                **_selection_kwargs(eval_task.task_id, eff_lambda_rd),
+                **_selection_kwargs(eval_task.task_id, eff_lambda_rd, eval_spans),
             )
             per_task_task_losses[eval_task.task_id] = t_curr[0]["task_loss"]
             if current_summed is None:
