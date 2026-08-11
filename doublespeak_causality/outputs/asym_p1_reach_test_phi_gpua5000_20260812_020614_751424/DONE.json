@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p1_reach_test_phi_gpua5000_20260812_020614_751424",
+  "status": "ok",
+  "rows_written": 14948,
+  "end_ts": "2026-08-12T02:29:20",
+  "end_epoch": 1786490960.8075147,
+  "wall_seconds": 0.004
+}

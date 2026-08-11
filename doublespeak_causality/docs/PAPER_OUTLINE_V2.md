@@ -91,8 +91,11 @@ probe displacement is not mechanism control. **Figure A.**
   substitution) — *worse* than a covariance-matched null. **Figure B2.**
 * **The rounding probe.** Token-simplex optimum retains **5.7 %** after discretization; the
   rounded result lands inside the range of *unoptimized* random-token suffixes.
-* **Cross-family caveat, stated in the paper:** on Phi the surrogate degrades but does not
-  collapse and the mechanism-vs-null ordering inverts. **H2′ is a Llama result.**
+* **Cross-family scope, stated in the paper body.** On Phi (both splits) the surrogate
+  degrades substantially but does not collapse (0.535→0.214 train, 0.567→0.125 test). So H2′'s
+  **qualitative core** — most surrogate validity is lost before one-token step size — holds in
+  both families, while its **sharp form** — the mechanism ends up worse-predicted than a
+  matched null — is **Llama-only**.
 
 ### 5.3 Was the discrete negative just a bug? *(Phase 3 — running)*
 The published objective was misconfigured. We re-ran it position-corrected, everything else

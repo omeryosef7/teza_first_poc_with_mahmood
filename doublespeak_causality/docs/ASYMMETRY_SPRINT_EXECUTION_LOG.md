@@ -1646,3 +1646,50 @@ paper's structure does not depend on which way it lands, and carries an explicit
 partial negative in the paper body rather than burying it in limitations.
 
 ---
+## 2026-08-12 02:18 — PHI HELD-OUT (job 751424): Gate C confirmed; and a self-correction on Gate B
+
+Phi-4-mini-reasoning, **held-out test n=37**, template spans, L14 → hs[15], corrected control.
+
+### GATE C — confirmed on a locked split
+| control | Phi test | Phi train | Llama test |
+|---|---|---|---|
+| isotropic random | **5.65×** pct 1.000 | 5.56× | 14.92× |
+| covariance-matched (corrected) | **4.35×** pct 1.000 | 4.12× | 4.91× |
+| other-layer refusal | **3.51×** pct 1.000 | 3.46× | 3.39× |
+
+`‖Jᵀ v_refusal‖ = 6.68`. Train and held-out agree within 6 %. **Gate C's cross-family
+replication is solid: the refusal direction is unusually reachable in both families, on both
+splits, against every control — and notably the *corrected covariance-matched* ratio is nearly
+identical across families (4.35 Phi vs 4.91 Llama), even though the isotropic ratio differs
+3× (5.7 vs 14.9).** The isotropic gap is largely a statement about how anisotropic each
+model's residual stream is; the covariance-matched comparison is the stable one.
+
+### GATE B — I must CORRECT my own claim from the 01:48 entry
+ε-scan r for the mechanism, by split:
+
+| | ε=0.10 | ε=0.50 | **ε=1.00** | covariance-matched @ ε=1.00 |
+|---|---|---|---|---|
+| Phi **train** | 0.535 | 0.187 | **+0.214** | +0.093 → mechanism **above** null |
+| Phi **test** | 0.567 | 0.302 | **+0.125** | +0.151 → mechanism **below** null |
+| Llama train | 0.840 | 0.053 | **−0.002** | +0.204 → mechanism below null |
+| Llama test | 0.810 | −0.131 | **−0.324** | +0.334 → mechanism below null |
+
+At 01:48 I wrote that on Phi *"the mechanism-vs-null ordering **inverts**"*. **That was based
+on the train split alone and does not replicate on held-out**, where the ordering goes back to
+mechanism-below-null. The honest statement is:
+
+> **On Phi the mechanism-vs-null ordering at ε = 1 is UNSTABLE across splits (+0.214 vs
+> +0.093 on train; +0.125 vs +0.151 on test) and is not resolvable at n≈40. It is neither
+> established nor inverted.** What *is* stable on Phi is that the surrogate **degrades
+> substantially but does not collapse** (0.535 → 0.214; 0.567 → 0.125), versus Llama where it
+> reaches ≈0 / −0.32 on both splits.
+
+So the cross-family verdict tightens rather than changes: **H2′'s *qualitative* core — the
+first-order surrogate loses most of its validity before one-token step size — holds in both
+families. Its *sharp* form — the refusal direction ends up worse-predicted than a matched null
+— is a Llama-only result.** That is a more defensible claim than either of my previous two
+statements, and it is the one that goes in the paper.
+
+`docs/PAPER_OUTLINE_V2.md` §5.2 and claim row **A2** to be amended accordingly.
+
+---
