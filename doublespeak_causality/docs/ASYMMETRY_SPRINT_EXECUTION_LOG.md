@@ -2067,3 +2067,27 @@ Writing the interpretation rules before the data is the cheapest possible insura
 reading whatever arrives as confirmation.
 
 ---
+## 2026-08-12 07:20 — PHASE 3 seed-42 pair COMPLETE; held-out evaluation launched
+
+Both seed-42 arms finished 200/200 steps and wrote `FINAL_CANDIDATES.jsonl` (2 rows,
+16-token suffix, same schema as the 20 published arms).
+
+**Evaluated as a PAIR, not one arm at a time** — a single arm's ASR is uninterpretable
+without its matched control, and evaluating them in the same job guarantees identical judge
+conditions. Job **751557** runs
+`slurm_scripts/run_gcg_v3_eval.slurm` → `26_eval_p9_gcg_heldout_asr.py --split test` over both
+run-dir basenames, **explicitly named** (never a glob — the preserved smoke directory would
+match `asym_p3_*`; see the 06:36 entry).
+
+`OPENAI_API_KEY` verified present **before** submitting: the eval wrapper only WARNs on a
+missing key, and a silent null judge scores every generation benign, which would make a
+working arm look like a total failure. `judge_fail_frac` will be confirmed 0 before any
+reading, per the pre-registered rules in `docs/ADVANCED_OPTIMIZER_RESULTS.md` §3.
+
+**Queue:** 4 GCG arms (seeds 43, 44) + 1 eval = 5. Seed 43 ~130/200, seed 44 ~115/200.
+
+**Reminder of the binding interpretation rule**, written before this result existed: at
+λ = 0.25 the mechanism term is 0.026 % of the loss selection minimizes, so **a negative here
+means "the position fix alone does not rescue the objective", NOT "H2′ confirmed"**.
+
+---
