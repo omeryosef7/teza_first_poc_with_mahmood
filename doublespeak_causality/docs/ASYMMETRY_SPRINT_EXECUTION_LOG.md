@@ -3826,3 +3826,40 @@ a slot for their eval rather than starting anything new.
 **Queue 4:** 2 λ random arms, per-prompt random arm (755152), per-prompt mechanism eval (755180).
 
 ---
+## 2026-08-13 01:20 — FIRST §7.5 BEHAVIOURAL NUMBER: per-prompt compute-matched mech ASR **0.189**
+
+**755180 COMPLETE** in 5:22 (`generated=37 resumed=0 failed=0`). Aggregated via
+`aggregate_perprompt_asr.py`:
+
+> per-prompt **compute-matched mechanism**, seed 42: **ASR 0.1892**, CI95 **[0.081, 0.324]**,
+> n=37, n_scored=37, **judge_fail = 0.0**, refusal_rate 0.676, empty 0.
+
+### Context — same 37-prompt test set
+| arm | ASR |
+|---|---|
+| universal mech, λ=0.25 | 0.1622 |
+| universal rand, λ=0.25 | 0.2162 |
+| universal mech, λ=10 | 0.6757 |
+| **per-prompt compute-matched mech** | **0.1892** |
+
+**At matched compute, per-prompt shows no detectable advantage over universal**: 0.189 vs 0.162
+is **+0.027**, inside the ±0.03–0.08 judge noise floor.
+
+**This carries more weight than the bare comparison suggests**, for the reason fixed in the
+pre-registration: the per-prompt number is measured **on the very prompts it was optimized for**,
+with **no transfer component at all**, while the universal number is a **transfer** result on
+held-out prompts. The comparison is therefore **stacked in favour of per-prompt** — and
+per-prompt still does not win.
+
+If that holds, it is **evidence against** the universality-failure hypothesis (H1/H4 + §5.5)
+rather than for it — i.e. against the very hypothesis §7.5 was added to test. Worth stating
+plainly now, before the remaining arms land, so the framing is not chosen afterwards.
+
+**Not a verdict:** one seed; the Gate E clause needs the per-prompt **mechanism-vs-matched-random**
+contrast, whose random arm (755152) is at **27/37**; and this is the **compute-matched** budget
+only — the full-budget arm remains gated on the λ verdict.
+
+**Queue down to 3** (2 λ random arms at 194/200 and 196/200, per-prompt random arm). Holding
+slots for the imminent λ random evals, which decide the sprint's headline question.
+
+---
