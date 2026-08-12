@@ -4391,3 +4391,44 @@ grown by thousands of files**. Switching to a **targeted `git add <path>`** took
 from >100 s to **0.46 s**. Commit and push now run as separate bounded commands.
 
 ---
+## 2026-08-13 07:55 — 🟥 ADD-ON 1 RESOLVED over 3 seeds: the specificity result does NOT replicate
+
+**755451 complete** — the third seed. Identical analysis, identical code, coverage 37/37 with
+**0 missing on all three seeds**.
+
+| seed | mech drop | random drop | **mech − rand** | Wilcoxon p | mech<rand |
+|---|---|---|---|---|---|
+| 42 | −0.5233 | −0.1322 | **−0.3911** | **0.0092** | 24/37 |
+| 43 | −0.3706 | −0.3699 | **−0.0007** | 0.50 | 20/37 |
+| **44** | −0.2459 | −0.3438 | **+0.0979** | 0.88 | 18/37 |
+
+**Read plainly: seed 42 favours the mechanism, seed 43 is an exact tie, and seed 44 nominally
+REVERSES** (its random arm suppressed *more*). **1 of 3 significant**; Holm across seeds leaves
+only seed 42 (p → 0.0275).
+
+**Gate E's internal-target clause is NOT met for the per-prompt arms.** The 04:10 claim stays
+retracted, and the retraction is now backed by three seeds instead of two.
+
+### The same signature as every other collapsed contrast today
+| seed | mech drop | random drop |
+|---|---|---|
+| 42 | **−0.5233** (strongest) | **−0.1322** (weakest) |
+| 43 | −0.3706 | −0.3699 |
+| 44 | −0.2459 | −0.3438 |
+
+**Seed 42 has simultaneously the strongest mechanism arm and the weakest random arm** — the two
+happening to coincide is what manufactured a p = 0.009 "effect". Mechanism drops vary 2.1×,
+random drops 2.6×; neither alone is remarkable, but their *product* in one seed looked decisive.
+
+### §7.5 compute-matched: the picture is now a coherent negative
+* **mechanistic advantage: 1 of 3 seeds** (and one nominal reversal)
+* **behavioural advantage: 0 of 2 seeds so far** (third pending, 755450)
+* **per-prompt mechanism ASR itself: highly stable** (0.189 / 0.162 / 0.189)
+* **no advantage over the universal arm at matched compute** (0.189 vs 0.162), despite the
+  comparison being **stacked in favour of per-prompt** (scored on its own prompts, no transfer)
+
+**Per-prompt optimization does not rescue the mechanism objective.** That argues **against** the
+universality-failure hypothesis (H1/H4 + §5.5) that §7.5 was added to test, and leaves the
+discrete/objective explanation standing — the same direction the λ probe pointed.
+
+---
