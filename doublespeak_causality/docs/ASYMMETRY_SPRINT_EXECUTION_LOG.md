@@ -3966,3 +3966,40 @@ change the paper — but the limitation must be **stated up front**, not discove
 thing outstanding.
 
 ---
+## 2026-08-13 02:50 — seed44 λ ΔASR **+0.189** (vs seed42 **+0.622**); full-budget §7.5 pair launched
+
+**755211 COMPLETE** → seed 44 random ASR **0.3514**.
+
+| seed | mechanism | random | ΔASR |
+|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.6216** |
+| 43 | 0.1081 | **PENDING** | — |
+| 44 | 0.5405 | 0.3514 | **+0.1891** |
+
+Two of three deltas positive but **3.3× apart**.
+
+**The random arms are themselves wildly heterogeneous — 0.0541 vs 0.3514, a 6.5× spread.** That
+matters for interpretation: **seed 42's +0.622 is driven as much by an unusually *weak* random arm
+as by a strong mechanism arm.** Reading ΔASR alone would have hidden that, which is why both
+columns are recorded, not just the difference.
+
+**seed 43 decides sign consistency.** Its mechanism arm is **0.1081**; if its random lands
+anywhere above that — and seed 44's random came in at **0.35** — the delta goes **negative** and
+the 3-seed sign consistency Gate E requires **fails outright**.
+
+### Full-budget §7.5 pair launched — 755219–755222
+seed 42, **2 shards per arm**, all pinned to the **3090** class per §3.1. **~29 GPU-h ≈ 15 % of
+the full 129 GPU-h commitment.**
+
+Chosen deliberately in light of the power analysis: **n=37 can only detect large effects**, and
+the **full-budget** arm (200 steps/prompt vs 5) is the one plausibly producing one. **Spending
+15 % to find out whether a large effect exists beats spending 100 % to measure a small one this
+design cannot resolve.**
+
+**All 4 landed on n-301** — normally the documented contention scenario (cap ~2 loads/node).
+**Checked rather than assumed:** they are past the splitter and into optimization with load bars
+completing, because n-301's page cache already holds the weights from earlier jobs. This is the
+**21:50 refinement working as predicted** — concurrent loads are cheap when *warm*, expensive when
+*cold*. Left in place.
+
+---
