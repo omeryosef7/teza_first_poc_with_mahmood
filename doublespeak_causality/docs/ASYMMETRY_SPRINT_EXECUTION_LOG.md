@@ -4567,3 +4567,41 @@ actively *costing* attack success rather than doing nothing. Those are different
 nothing measured so far distinguishes them.
 
 ---
+## 2026-08-13 10:10 — VANILLA lands and it CHANGES the §7.5 reading (seed 42)
+
+**755564 complete.** Vanilla seed 42: **ASR 0.0811**, n=37, `n_missing = 0`, `judge_fail = 0.0`,
+refusal_rate 0.784.
+
+### All three §7.5 compute-matched arms, seed 42
+| arm | ASR | vs vanilla |
+|---|---|---|
+| **vanilla** (task loss only) | **0.0811** | — |
+| matched random direction | 0.1081 | **+0.027** |
+| mechanism direction | 0.1892 | **+0.108** |
+
+**This inverts the interpretation I was heading toward.** Without vanilla, "mechanism ≈ random"
+read as *the mechanism term is inert*. With vanilla, **both direction-guided arms sit ABOVE plain
+task-loss GCG** — so the direction term is **not** inert, and the mechanism direction adds most.
+The ordering is **vanilla < random < mechanism**, which is the ordering the mechanism hypothesis
+predicts.
+
+**This is exactly why the missing arm mattered**, and why finding it at 08:40 was worth the slot.
+Reporting "mechanism ≈ random, therefore the objective does nothing" would have been **wrong** —
+the objective does something; it is just not *specific* to the intended direction.
+
+### Confound checked, not assumed
+Vanilla runs `repr_in_selection=False` while both direction arms run `True`, so I checked whether
+vanilla differs in more than the direction term. Verified from persisted `CONFIG.json`: everything
+else is identical (steps 5, batch 64, topk 256, suffix_len 16, seed 42, selection_mode weighted).
+**With `lambda_refusal_dir = 0.0` the direction term is multiplied by zero**, so the flag is a
+compute optimization rather than a semantic difference — and it matches the **universal matrix's
+own vanilla convention**, keeping the cross-setting comparison consistent. *Stated as reasoning
+from the config, not as a direct A/B test.*
+
+### Caveats
+**One seed.** Seeds 43/44 vanilla evals are running/queued. Given that three single-seed results
+have already failed to replicate today — and that seed 42 has had the most favourable random
+control in every contrast measured — **this ordering is explicitly provisional until all three
+seeds are in.**
+
+---
