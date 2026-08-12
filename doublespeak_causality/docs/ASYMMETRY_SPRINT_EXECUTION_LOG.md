@@ -3221,3 +3221,48 @@ today a first-pass claim of mine failed verification — the verify-before-recor
 16:35 is doing real work.
 
 ---
+## 2026-08-12 18:05 — LOOP + §7.5 aggregator: BUILD COMPLETE (still unlaunched)
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **111–129/200**; nothing
+finished, so no slot has freed.
+
+**`scripts/aggregate_perprompt_asr.py`** — two modes:
+* `perprompt`: each per-prompt run contributes **one Bernoulli own-prompt outcome**; pooled to
+  an ASR with a bootstrap CI (a per-prompt summary must never be quoted individually as "ASR").
+* `transfer`: splits each source's rows into **diagonal** (i→i) and **off-diagonal** (i→j) — the
+  §7.5 prompt-specificity readout.
+
+**Scoring semantics are imported/copied from the existing eval driver, not reinvented** —
+ASR = StrongREJECT ≥ 0.5, dedup on `(task_id, seed)`, non-finite scores counted as **judge
+failures rather than as benign** — so §7.5's numbers are directly comparable to the universal
+arms. The keyword-refusal detector is imported from the eval module rather than reimplemented.
+
+**Fixture-tested** with the failure modes that matter: a duplicate row (5 written → **n=4**
+counted, dedup works), a source with **no results file** (counted missing, no crash), the
+diagonal/off-diagonal split (**1.0 vs 0.1667**, Δ 0.8333, bootstrap CI present), and the
+**null-judge path** (emits `[WARN] judge_fail_frac=1.0` instead of silently reporting ASR = 0 —
+the failure that would make a working arm look like a total failure).
+
+### §7.5 build is COMPLETE and unlaunched
+| piece | status |
+|---|---|
+| `split_manifest_perprompt.py` | tested (37 one-row manifests, both silent-failure guards) |
+| `run_gcg_perprompt.slurm` | syntax-checked, self-reviewed, 2 real bugs fixed |
+| `asym_p1c` `--arm-perprompt` (add-on 1) | unit-tested (explicit skip + coverage counters) |
+| `build_transfer_manifests.py` (add-on 2) | tested (diagonal preserved, deterministic, explicit subsampling) |
+| `aggregate_perprompt_asr.py` | fixture-tested (dedup, missing, judge-failure) |
+
+**Total new code for all of §7.5: four small data/plan/analysis scripts plus one SLURM runner —
+and ZERO changes to the optimizer, the objective, or the eval driver.** That is the §7.1 outcome
+the plan asked for, and it is a much smaller footprint than the recon's initial estimate, which
+had proposed edits to both the eval path and the batched driver.
+
+**Next GPU action, unchanged:** a 10-step 1-row smoke the moment a λ slot frees, to settle the
+unmeasured ~5 s/step figure before sizing the sharded package.
+
+*Test-authoring note:* my assertion used a 1e-6 tolerance against a value the code rounds to 4dp
+and failed on 0.1667 vs 0.16667. **Fourth first-pass check of mine today that was wrong where the
+code was right.** Recording the tally deliberately: the error rate is in my verification claims,
+not in the artifacts, and that is the thing to keep watching.
+
+---
