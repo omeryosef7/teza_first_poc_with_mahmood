@@ -3456,3 +3456,30 @@ modes I attribute to other people's code.*
    the right place to find out**, and it has not OOM'd so far.
 
 ---
+## 2026-08-12 20:50 — LOOP: smoke measures the model-load cost (~18 min), validating the batched design
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Nodes **n-301: 1, n-302: 4,
+n-501: 1**. λ at **168–200/200** — seed 43 mechanism complete, its random pair at 168.
+
+**Smoke 755084 had no `ITERATION_LOG` after 7 minutes.** Diagnosed from the **weight-loading bar
+in `.err`**, not from `squeue`, per the rule already documented for this cluster: the bar **is
+moving** (50/291, 17 %, ~3.7 s/it), so the job is **slow, not hung**. Projected total load
+**~18 min**. (Compute-node clock skew observed again — `.err` mtime reads *ahead* of local
+`now`. Also previously documented; not a fault.)
+
+**That ~18 min is the first of the two numbers this smoke exists to measure, and it retroactively
+validates two design decisions:**
+
+1. **The per-prompt runner loops over prompts inside ONE job** rather than submitting one job per
+   prompt. At 18 min/load, 37 separate jobs would burn **~11 GPU-hours of pure loading per arm
+   per seed** — more than the optimization itself.
+2. **`eval_perprompt_batched.py` loads once** instead of calling `26_eval` per item. My earlier
+   estimate assumed ~4 min/load and put the saving at ~5 GPU-h per arm-seed; **at 18 min the real
+   saving is ~4× larger (~22 GPU-h per arm-seed)**. The decision was right for a bigger reason
+   than the one I gave.
+
+**Caveat on the number:** 18 min is a *contended 3090* upper bound and must not be quoted as the
+general per-load figure — the L40S/a5000 arms load faster. Sizing the real §7.5 package will use
+the smoke's own **steady-state s/step**, which is the second number and is not available yet.
+
+---
