@@ -2786,3 +2786,43 @@ No code or output bug found this iteration; the unequal-step artifact was caught
 for rather than reported.
 
 ---
+## 2026-08-12 12:42 — ⚠ SELF-CORRECTION: my λ task-loss statistic was unstable; conclusion survives, magnitudes do not
+
+**Queue 6/6, 0 pending**, nothing to resubmit. Seed 42 at 50/200, seeds 43/44 at 30–33/200,
+ETA ~5.6–7.3 h.
+
+**The defect (in my analysis, not in the runs).** The 11:06, 12:12 entries summarised
+task-loss progress as `task_loss[0] − task_loss[k]` — a **single-endpoint** statistic. But
+`task_loss` is **not monotonic**: GCG selects candidates on **total** loss, so the task
+component rises on **40 % of steps** (seed 42 mech 40.8 %, seed 43 mech 44.8 %, seed 44 mech
+40.0 %). Reading one endpoint of an oscillating series, and dividing two such readings, gives a
+ratio dominated by where the oscillation happened to be:
+
+| seed | ratio @k=14 | ratio @k=29 (endpoint) | **ratio @k=29 (best-so-far)** |
+|---|---|---|---|
+| 42 | 4.89× | **34.17×** | **3.13×** |
+| 43 | 1.55× | 1.45× | **1.45×** |
+| 44 | 6.21× | **12.19×** | **3.02×** |
+
+The endpoint ratio swung **1.45×–34.17×** across seeds; the **best-so-far** ratio (min task loss
+over steps 0..k, the quantity that actually reflects optimization progress) is **1.45×–3.13×**.
+Seed 42's "34×" was an artifact of that arm sitting near a local peak at exactly k = 29 —
+its mech Δtask read 4.04 at k=14, **0.82** at k=29, 3.41 at k=37, on a *descending* series.
+
+**What changes:** every magnitude I gave for this comparison at 11:06, 12:12 and 12:12's table
+is **withdrawn**. Use best-so-far.
+**What survives, and is now on firmer ground:** the mechanism arm makes **1.45×–3.02×** less
+task-loss progress than its matched random arm, **3/3 sign-consistent**, with a magnitude that
+is now actually *stable* across seeds instead of spanning an order of magnitude. The
+qualitative claim — λ = 10 buys mechanism weight at a cost to the attack objective — is
+**unchanged and better supported** than when I was reporting the noisier number.
+
+**Standing fix:** for oscillating training series in this sprint, report **best-so-far**, never
+a single endpoint, and never a ratio of two endpoints.
+
+Still **no verdict**. This is a training-side diagnostic at 29 of 200 steps; the claim needs
+3-seed locked-test ΔASR. Noted that seed 44 mech reached its best at step **20** and has been
+*worse* since (108.88 vs 103.08) — consistent with the trade-off, but exactly the kind of
+mid-run wobble this entry is about, so it is recorded, not interpreted.
+
+---
