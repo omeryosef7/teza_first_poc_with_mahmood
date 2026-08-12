@@ -4804,3 +4804,25 @@ seed 42 full-budget **57/74** (77 %, 6:29 elapsed, ~2 h left); seed 43 full-budg
 (1:59). Both tracking their measured per-step rates. Nothing to analyze.
 
 ---
+## 2026-08-13 14:55 — LOOP: routine + transfer-matrix wiring dry-run (launch precondition found)
+
+**Queue 6/6, 0 pending**, no failures. n-301: 4, n-304: 2. seed 42 full-budget **61/74** (82 %,
+6:59, ~1.5 h left); seed 43 full-budget **10/37** (2:29).
+
+**Dry-ran the transfer-matrix builder against the real (still partial) full-budget joblist**, so
+any wiring problem surfaces now rather than at launch. It works — and it surfaced a **launch
+precondition worth stating explicitly**:
+
+> `[transfer] sources with finished runs: 29/37` → it would build the matrix on **29 sources, not
+> 37**.
+
+That behaviour is **correct and disclosed** (the builder reports n_finished/n_listed by design,
+per §3.15) — but running it now would silently shrink the matrix by 22 % while still *looking*
+like a complete result in the output file. **Precondition: do not build the transfer plan until
+the source arm reports 37/37.** Recorded because the builder does not refuse to run on a partial
+set, and nothing else in the pipeline would flag it.
+
+At full 37 sources with k=5 the plan is **222 (source, target) generations** — the figure the
+§7.5 pre-registration already discloses against the full 37×37 = 1369.
+
+---
