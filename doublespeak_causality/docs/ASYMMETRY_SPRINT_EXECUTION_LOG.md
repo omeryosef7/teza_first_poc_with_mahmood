@@ -4241,3 +4241,31 @@ not the *direction*; they do not average over control-direction variance at all.
 not determinable from n=2–3, and I am not going to claim it is.
 
 ---
+## 2026-08-13 05:55 — seed43 per-prompt mech ASR **0.162** (vs 0.189): the BEHAVIOUR is the stable part
+
+**755368 complete.** seed 43 per-prompt compute-matched mechanism: **ASR 0.1622**, n=37,
+`n_missing = 0`, `judge_fail = 0.0`, refusal_rate 0.730.
+
+| quantity | seed 42 | seed 43 | spread |
+|---|---|---|---|
+| **per-prompt mechanism ASR** | 0.1892 | 0.1622 | **1.17×** |
+| λ=10 universal mechanism ASR | 0.6757 / 0.1081 / 0.5405 | | 6.25× |
+| add-on 1 projection contrast | −0.3911 | −0.0007 | 582× |
+
+**The per-prompt attack's behavioural outcome is reproducible across seeds. What is not
+reproducible is the CONTRAST against a single random control** — in *both* the projection and the
+ASR experiments.
+
+That is consistent with the 05:40 finding that the variance lives in the control arm, and it
+**sharpens** it: **the mechanism arms are stable in both experiments; the contrasts are unstable
+because the controls are.** This is a cleaner statement of the problem than "results don't
+replicate", and it points at a specific fix (average over many control directions) rather than at
+generic noise.
+
+**Launched:**
+* seed 44 mechanism compute-matched (free slot, n-304 class). With add-on 1 replicating on **1 of
+  2** seeds, a **third** seed is what distinguishes *"seed 42 was the outlier"* from *"seed 43
+  was"*. **1-of-2 is uninformative; 1-of-3 vs 2-of-3 is not.**
+* **755377** — seed 43 per-prompt random eval, so that pair's ΔASR closes.
+
+---
