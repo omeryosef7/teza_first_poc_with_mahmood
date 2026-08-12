@@ -109,6 +109,9 @@ esac
 # with the lambda=0.25 checkpoints and the optimizer refuses to resume (as job 751392 showed).
 LAMTAG=""
 if [ "$LAMBDA_R" != "0.25" ]; then LAMTAG="_lam${LAMBDA_R}"; fi
+# concept_* arms pass LAMBDA_C as --lambda-refusal-dir, so a LAMBDA_C sweep would otherwise
+# reuse the same RUN_ID with a different config_hash -- the job-751392 failure again.
+if [ "$LAMBDA_C" != "0.25" ]; then LAMTAG="${LAMTAG}_lamc${LAMBDA_C}"; fi
 RUN_ID="${RID}${LAMTAG}_seed${SEED}"
 OUT_DIR="${OUT_BASE}/${RUN_ID}"
 mkdir -p "$OUT_DIR"

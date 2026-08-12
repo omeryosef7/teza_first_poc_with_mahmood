@@ -2561,3 +2561,71 @@ noise; and everything in Phases 1, 2, 4, 5, 6, 7.
 **Pending:** seed-44 eval (clause (i) third seed) and the λ=10 pair (~6 h).
 
 ---
+## 2026-08-12 10:45 — ⛔ CORRECTION #2 (from the adversarial audit): the λ diagnostic used the WRONG COLUMN
+
+A 10-agent adversarial audit (5 topics × audit + independent verify) found **two MAJOR bugs in
+my own sprint code**. Both are fixed. One of them invalidates the numbers in the 05:36 and
+08:36 entries.
+
+### BUG A — the logged `refusal_dir_loss` was read at the LEGACY position even in corrected modes
+`gcg_optimizer.py:1136-1160` (post-selection *diagnostic* logging) used the module-level
+`refusal_dir_positions` — the single absolute index from `train_tasks[0]` — instead of the
+per-task corrected position, and then **overwrote** the correct value that selection had
+already computed (`log_record`, `pareto_candidate`). So every `ITERATION_LOG.jsonl` row of a
+`per_task_decision` arm carried the projection at the **legacy** position while `total_loss` in
+the *same row* carried the **corrected-position** term. Two different quantities in one record.
+
+**Optimization was never affected** — gradient and candidate selection both use
+`_rd_positions_for` (verified independently at 10:10, 40/40 prompts correct). **This was
+logging only, so no arm needs resubmitting.**
+
+Recovered the true values from the same logs via `(total_loss − task_loss)/λ/n_train_tasks`
+(exact: `kl = reg = repr = 0` in every row, verified):
+
+| quantity | **REPORTED at 05:36 (wrong)** | **TRUE** |
+|---|---|---|
+| refusal-term share of \|total_loss\|, mechanism | 0.026 % mean / 0.044 % max | **0.370 % mean / 1.495 % max** |
+| same, random arm | 0.0023 % | **0.314 %** |
+| mechanism target trajectory | −0.00702 → −0.08301 | **+0.13126 → +0.00133** |
+| mechanism target movement | 0.0609 | **0.1299** |
+| random target movement | 0.0024 | **0.00206** |
+| mechanism vs random movement | 25× | **63×** |
+| task_loss moved more than λ·refusal by | 3,071× | **1,443×** |
+
+**The interpretation changes in two ways, one of them against my earlier framing:**
+1. **The term is ~14× less negligible than I said** — 0.37 % of the selection loss, not 0.026 %.
+   Still small; "rounding error" was an overstatement.
+2. **The direction of the trajectory was wrong, and the truth is more favourable to the
+   objective**: the corrected mechanism arm drove its target from **+0.131 to +0.001 — a 99 %
+   reduction to essentially zero** — not a small excursion into the negatives. The objective
+   demonstrably acted on its coordinate during training.
+
+**What survives:** the qualitative claim that the mechanism term is small relative to the task
+loss, and therefore that a negative ASR result at λ=0.25 cannot be read as "H2′ confirmed".
+0.37 % is still a weak weighting. **The λ=10 probe remains well-motivated** — it now targets
+~13 % rather than ~1 %, which is if anything a better-chosen point.
+
+**What does not survive:** the specific numbers 0.026 %, 0.044 %, 0.0609, 25×, 3,071×,
+62,866×, and the "−0.007 → −0.083" trajectory, wherever they appear. The verifier identified
+~11 occurrences across this log; they are superseded by this entry, which is authoritative.
+
+### BUG B — my new config field broke resumability of 286 pre-existing runs
+Adding `refusal_dir_position_mode` to `ObjectiveWeights` changed `config_hash()` for every run
+whose stored `CONFIG.json` predates it, and `_load_checkpoint` **raises** on mismatch. A
+requeued legacy job (killable partition!) would have died rather than resumed — directly
+contradicting my claim that `legacy_fixed` "replays published runs exactly".
+**Fixed** by adding it to `_HASH_BACKCOMPAT_DEFAULTS`. Verified: 34 checkpoint/config pairs now
+agree; the 47 that still differ were already drifted before this sprint and are untouched by it.
+
+### BUG C — `LAMTAG` keyed only off `LAMBDA_R`
+A `LAMBDA_C` sweep (concept arms) would have reused the λ=0.25 run-id, and
+`run_optimization.py:281` **overwrites `ENVIRONMENT.json` before** the checkpoint guard fires —
+so it would silently destroy provenance on a published arm before failing. **Fixed.**
+
+### Audit outcome overall
+* GCG patch: 2 MAJOR + 2 MINOR — **all fixed, no resubmission required.**
+* Phase-1 reachability, Phase-2 soft prompt + judge, Phase-4/5 + statistics, docs-vs-artifacts:
+  **no confirmed bugs.** The Gate-E clause (ii) measurement was explicitly verified as reading
+  the same layer *and* token the optimizer targets.
+
+---

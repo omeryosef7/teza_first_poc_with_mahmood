@@ -1147,16 +1147,23 @@ def run_optimization(
                     output_hidden_states=True,
                 )
             rd_layer = config.objective.refusal_dir_layer
+            # BUGFIX (asymmetry sprint, audit 2026-08-12): this diagnostic used the module-level
+            # `refusal_dir_positions` -- the single absolute index from train_tasks[0] -- even
+            # under per_task_* modes, so the LOGGED value was the projection at the legacy
+            # position while `total_loss` in the same row carried the corrected-position term.
+            # Two different quantities in one record. Optimization itself was always correct
+            # (gradient and selection both use _rd_positions_for); this was logging only.
+            _rd_log_pos = _rd_positions_for(sel_spans_rd)
             rd_hs: Dict[int, Dict[int, torch.Tensor]] = {}
             if rd_layer < len(out_rd.hidden_states):
                 lt_rd = out_rd.hidden_states[rd_layer]
                 rd_hs[rd_layer] = {
                     pos: lt_rd[0, pos, :].detach().cpu()
-                    for pos in refusal_dir_positions
+                    for pos in _rd_log_pos
                     if pos < lt_rd.shape[1]
                 }
             rd_val_logged = _rd_loss_fn2(
-                rd_hs, refusal_direction, layer=rd_layer, positions=refusal_dir_positions
+                rd_hs, refusal_direction, layer=rd_layer, positions=_rd_log_pos
             ).item()
 
         # --- Post-selection channel-token-position loss evaluation (Sprint 2 Track 1 diagnostic,

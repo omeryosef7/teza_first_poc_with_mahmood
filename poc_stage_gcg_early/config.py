@@ -156,6 +156,12 @@ _HASH_BACKCOMPAT_DEFAULTS: Dict[str, Any] = {
     "repr_selection_sub_batch": 8,
     "reference_cache_id": None,
     "objective_name": None,
+    # Asymmetry sprint: this field was added 2026-08-12. Every pre-existing run has no such
+    # key in its stored CONFIG.json, so including it unconditionally re-hashed 27 completed
+    # runs and made them un-resumable (_load_checkpoint RAISES on hash mismatch). At its
+    # default it is dropped, so legacy runs keep their original hash; any run that sets a
+    # corrected mode gets a distinct hash, which is what we want.
+    "refusal_dir_position_mode": "legacy_fixed",
 }
 
 
