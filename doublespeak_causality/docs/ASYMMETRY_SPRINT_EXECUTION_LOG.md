@@ -4354,3 +4354,40 @@ timeout there. The append had happened, the commit had not. Checked for a duplic
 before retrying, then ran commit and push as separate bounded commands. Doing the same here.
 
 ---
+## 2026-08-13 07:40 — seed44 pair complete; 3-seed per-prompt ASR is **remarkably stable**
+
+**755439** (seed 44 mechanism eval) and **755395** (seed 44 random arm) both COMPLETE — 37/37,
+`n_missing = 0`, `judge_fail = 0.0`.
+
+### Per-prompt compute-matched MECHANISM ASR, three seeds
+| seed | ASR |
+|---|---|
+| 42 | 0.1892 |
+| 43 | 0.1622 |
+| 44 | 0.1892 |
+
+**Spread 1.17×.** Set against everything else measured in this sprint:
+
+| quantity | spread across seeds |
+|---|---|
+| **per-prompt mechanism ASR** | **1.17×** |
+| λ=10 universal mechanism ASR | 6.25× |
+| λ=10 random-control ASR | 6.50× |
+| add-on 1 projection contrast | 582× |
+
+**The per-prompt attack itself is highly reproducible.** What is not reproducible, in every case
+measured today, is a **contrast against a single random control**. This is now three independent
+confirmations of the 05:40 diagnosis, and it is a cleaner finding than any of the contrasts it
+explains.
+
+**Launched** the two remaining seed-44 analyses: **755450** (random eval → closes the third ΔASR)
+and **755451** (mechval → the third seed for add-on 1's replication test). Both pinned to the
+n-304 class per §3.1.
+
+### Git slowness diagnosed (two consecutive tool timeouts)
+`outputs/` **is** gitignored (`.gitignore:11`), so nothing large was being committed and `.git`'s
+4.2 GB is historical. The cost was **`git add -A` walking a working tree the per-prompt runs have
+grown by thousands of files**. Switching to a **targeted `git add <path>`** took the same commit
+from >100 s to **0.46 s**. Commit and push now run as separate bounded commands.
+
+---
