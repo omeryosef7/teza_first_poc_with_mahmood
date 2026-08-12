@@ -2402,3 +2402,38 @@ nodelist (the lesson from 07:36), `OPENAI_API_KEY` verified before submit.
 **Queue 5**: seed 44 pair (~185/200), λ=10 pair (loading, n-302), seed-43 eval.
 
 ---
+## 2026-08-12 09:55 — PHASE 3 seed 43: the ASR negative REPLICATES; one seed-42 oddity does not
+
+Held-out test n=37, `judge_fail_frac = 0.0` on all four arms.
+
+| seed | mechanism ASR | random ASR | **ΔASR** | refusal_rate (mech / rand) |
+|---|---|---|---|---|
+| 42 | 0.1622 | 0.2162 | **−0.0540** | 0.622 / 0.216 |
+| 43 | 0.3514 | 0.3784 | **−0.0270** | 0.486 / 0.513 |
+
+**2/2 seeds: ΔASR negative and inside the ±0.08 judge-noise floor.** Sign-consistent so far,
+and consistent with the pre-registered reading — *the position fix alone does not rescue the
+objective.*
+
+### The seed-42 refusal_rate inversion did NOT replicate — good that it was flagged
+At seed 42 the refusal-*minimizing* arm had refusal_rate **0.622 vs 0.216**, which I recorded
+at 08:20 as "striking, and the sort of thing that could be an artifact; flagged for the other
+two seeds". At seed 43 the two arms are **0.486 vs 0.513** — essentially equal. **It was
+seed-specific.** Had it been reported as a finding rather than flagged, it would now need
+retracting.
+
+### Absolute ASR varies enormously across seeds
+seed 42 sits at 0.162/0.216, seed 43 at 0.351/0.378 — a swing of ~0.19 in the *same* arm
+across seeds, far larger than the mechanism-vs-random contrast being measured (0.027–0.054).
+That is the same between-seed instability that made the published matrix's ±0.24 swing
+uninterpretable, and it is exactly why the ≥3-seed design was worth protecting at 06:06.
+
+**Launched (job 751786):** seed-43 mech-validity — does clause (ii), the internal-target
+positive, replicate? At seed 42 the corrected objective moved its target 1.9× more than random
+on 35/37 prompts. **That is the sprint's most surprising result and the one most in need of a
+second seed**, since the very claim it overturned (published Q5) was itself a one-seed
+internal-target result.
+
+**Queue 4**: seed 44 random arm (~190/200), λ=10 pair (loading ~57 min, n-302), seed-43 mechval.
+
+---
