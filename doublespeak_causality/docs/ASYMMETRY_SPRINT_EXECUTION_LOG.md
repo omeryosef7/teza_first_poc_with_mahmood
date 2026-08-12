@@ -1769,3 +1769,34 @@ may indicate the refusal term is synergistic with the task loss under the correc
 and says nothing about held-out ASR, which is what Gate E turns on.
 
 ---
+## 2026-08-12 03:36 — LOOP: Phase-3 seed 44 launched; queue at the cap with all six on the critical path
+
+**Queue: 6/6** — every slot is now a Phase-3 GCG arm, which is the last science outstanding.
+0 pending, nothing meets the >30 min rule, node spread 3/3, one new load per node.
+
+| job | arm | seed | step |
+|---|---|---|---|
+| 751396 | mechanism | 42 | 70 / 200 |
+| 751393 | matched random | 42 | 80 / 200 |
+| 751451 | mechanism | 43 | 10 / 200 |
+| 751452 | matched random | 43 | 10 / 200 |
+| new | mechanism | 44 | — |
+| new | matched random | 44 | — |
+
+That completes the plan §7.4 finalist design: **3 identical seeds × {mechanism, matched
+random}**, all compute-matched to the published matrix (batch 32 × 200 steps), all on one GPU
+class, differing from the published arms *only* in where the refusal projection is read.
+
+**Nothing to analyze this iteration** — no job has finished. Recording the queue state and
+moving on rather than manufacturing an update.
+
+**Next actions when the seed-42 pair lands (~4 h):**
+1. Held-out eval via `26_eval_p9_gcg_heldout_asr.py --split test` on both arms (the same
+   evaluation path the published matrix used).
+2. `scripts/asym_p1c_mech_validity_ext.py` on the two new suffixes to measure whether the
+   corrected objective moved its *internal target* on held-out prompts — the Q5 question,
+   now asked of an objective that actually read the right coordinate.
+3. Gate E decision, then `ADVANCED_OPTIMIZER_RESULTS.md`, `ASYMMETRY_FINAL_SYNTHESIS.md` and
+   `RESEARCH_HANDOFF_V2.md` — the last three deliverables, all gated on this.
+
+---
