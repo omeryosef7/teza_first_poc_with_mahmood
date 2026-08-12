@@ -1,8 +1,9 @@
 # PER-PROMPT vs UNIVERSAL GCG — plan §7.5 (per Mahmood)
 
-*Asymmetry sprint deliverable. **Written 2026-08-12, BEFORE any §7.5 run has been launched.***
-*§1–§5 are pre-registered: methods, arms, and the exact reading rules are fixed now so the
-result cannot be framed after the fact. §6 is empty and will be filled from the runs.*
+*Asymmetry sprint deliverable. **§1–§5 were written 2026-08-12 BEFORE any §7.5 run was
+launched** — methods, arms and the exact reading rules were fixed in advance so the result could
+not be framed after the fact. **§6 was added 2026-08-13 from the completed compute-matched runs**
+and is read against those pre-registered rules, unchanged.*
 
 ---
 
@@ -138,11 +139,74 @@ checkpoint with no mismatch).
 
 ---
 
-## 6. Results
+## 6. Results — COMPUTE-MATCHED arm complete (3 seeds); full-budget arm still running
 
-**PENDING — not launched.** The 6-job cap is fully consumed by the λ = 10 probe. Next GPU action
-is a **10-step 1-row smoke** to settle the unmeasured ~5 s/step estimate (no `n_train_tasks=1`
-timing exists anywhere in `outputs/`) before sizing the sharded package.
+*Everything below is the **compute-matched** budget (~5 steps/prompt, matched to the universal
+arm's 200 total steps). The **full-budget** arm (200 steps/prompt — the threat model) is running
+and is reported separately when it lands.*
 
-Will be filled from `outputs/stage_gcg_perprompt/` via
-`scripts/aggregate_perprompt_asr.py --mode {perprompt,transfer}`.
+### 6.1 Behavioural — paired, n=37, judge_fail 0.0 on all arms
+| seed | mechanism | matched random | ΔASR | b/c | exact McNemar p |
+|---|---|---|---|---|---|
+| 42 | 0.1892 | 0.1081 | +0.0811 | 5/2 | 0.45 |
+| 43 | 0.1622 | 0.1622 | 0.0000 | 3/3 | 1.00 |
+| 44 | 0.1892 | 0.1081 | +0.0811 | 3/0 | 0.25 |
+
+**Sign 2/3 positive, 1 exact zero, no reversals. Mean +0.054. Significant in 0/3.**
+
+**This is UNDERPOWERED, not negative.** Simulated paired-McNemar power at these base rates is
+**0.09 at n=37** (0.44 at n=150, 0.75 at n=300). The design detects its own observed effect 9 % of
+the time, so a null here is **absence of evidence**. The honest reading: **a small, directionally
+consistent positive that this design cannot resolve.**
+
+### 6.2 Mechanistic (§19.1 before→after projection) — the endpoint that IS adequately powered
+| seed | mech drop | random drop | mech − rand | Wilcoxon p |
+|---|---|---|---|---|
+| 42 | −0.5233 | −0.1322 | **−0.3911** | **0.0092** |
+| 43 | −0.3706 | −0.3699 | −0.0007 | 0.50 |
+| **44** | −0.2459 | −0.3438 | **+0.0979** | 0.88 |
+
+**1 of 3 significant; seed 43 an exact tie; seed 44 nominally reversed.** Holm across seeds leaves
+only seed 42. **Gate E's internal-target clause is NOT met.** A continuous paired measurement at
+n=37 is *not* power-limited the way binary ASR is, so unlike §6.1 this one is a **real** negative.
+
+### 6.3 Per-prompt vs universal, at matched compute
+| arm | ASR |
+|---|---|
+| per-prompt mechanism (mean of 3 seeds) | **0.180** |
+| universal mechanism, λ=0.25 | 0.162 |
+| universal random, λ=0.25 | 0.216 |
+
+**No detectable per-prompt advantage** (+0.018, far inside the judge floor) — **and the comparison
+is stacked in favour of per-prompt**, which is scored on the very prompts it optimized (zero
+transfer) while the universal arm is scored on held-out transfer. Per-prompt does not win even
+with that thumb on the scale.
+
+### 6.4 What this says about the hypothesis §7.5 was added to test
+**It argues against the universality-failure explanation (H1/H4 + §5.5).** If the universal
+failure were caused by prompt-specific token routes, removing the universality constraint should
+have helped. At matched compute it does not — on either endpoint. The discrete/objective
+explanation is left standing, the same direction the λ probe pointed.
+
+### 6.5 The methodological finding that outlived the result
+**The per-prompt attack is highly reproducible; the CONTRAST against a single random control is
+not.**
+
+| quantity | spread across seeds |
+|---|---|
+| per-prompt mechanism ASR | **1.17×** (0.189 / 0.162 / 0.189) |
+| λ=10 universal mechanism ASR | 6.25× |
+| add-on 1 projection contrast | 582× |
+
+In every collapsed contrast this sprint measured, **seed 42 had the weakest random control of its
+set**, which inflated its contrast. §3.8 already mandates **≥50 random directions** for
+reachability geometry; **behavioural and mechanistic contrasts currently use exactly one**, and
+seeds vary the *suffix*, not the *direction* — so they never average over control-direction
+variance at all. **That is the single highest-value methodological fix this sprint identified.**
+
+---
+
+## 7. Still pending
+* **Full-budget arm** (200 steps/prompt), seed 42, 2 shards/arm — the threat-model number.
+* **Transfer matrix** — deliberately deferred to the full-budget suffixes; on compute-matched
+  suffixes (diagonal ASR 0.18) it would be underpowered by construction.

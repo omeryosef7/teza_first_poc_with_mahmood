@@ -4432,3 +4432,36 @@ universality-failure hypothesis (H1/H4 + §5.5) that §7.5 was added to test, an
 discrete/objective explanation standing — the same direction the λ probe pointed.
 
 ---
+## 2026-08-13 08:10 — §7.5 COMPUTE-MATCHED COMPLETE (3 seeds, both endpoints); deliverable §6 written
+
+**755450 complete** — the third ΔASR closes the compute-matched arm.
+
+### Behavioural, 3 seeds, paired n=37
+| seed | mech | random | ΔASR | b/c | McNemar p |
+|---|---|---|---|---|---|
+| 42 | 0.1892 | 0.1081 | +0.0811 | 5/2 | 0.45 |
+| 43 | 0.1622 | 0.1622 | 0.0000 | 3/3 | 1.00 |
+| 44 | 0.1892 | 0.1081 | +0.0811 | 3/0 | 0.25 |
+
+**2/3 positive, 1 exact zero, no reversals, mean +0.054, significant in 0/3.**
+
+**Reported as UNDERPOWERED, not negative** — 9 % power at n=37. The honest reading is *a small,
+directionally consistent positive this design cannot resolve*. Note this is the **opposite**
+characterisation from the mechanistic endpoint, and deliberately so: **binary ASR at n=37 is
+power-crippled; a continuous paired projection is not.** Calling both "null" would have been
+wrong in one direction or the other.
+
+### `PERPROMPT_VS_UNIVERSAL.md` §6 written
+Filled from the completed runs and read against §1–§5's **pre-registered rules, unchanged**. The
+header now records exactly which sections were written before the data and which after — the
+provenance that makes the pre-registration meaningful rather than decorative.
+
+**§7.5 compute-matched conclusion:** no per-prompt advantage on either endpoint; the per-prompt
+attack itself is highly stable (1.17×); no advantage over universal at matched compute even with
+the comparison stacked in its favour. **Argues against the universality-failure hypothesis §7.5
+was added to test.**
+
+**Still running:** the full-budget arm (the threat model), 4 shards, ~3 h remaining. Transfer
+matrix deliberately deferred to those suffixes.
+
+---
