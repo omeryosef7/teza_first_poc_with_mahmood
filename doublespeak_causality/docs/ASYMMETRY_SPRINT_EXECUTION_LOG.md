@@ -4660,3 +4660,20 @@ control.
 — seed 43 already broke it — but it determines whether the ordering is 1-of-3 or 2-of-3.
 
 ---
+## 2026-08-13 11:25 — seed44 vanilla arm complete; its eval launched (last cell of the matrix)
+
+**755563 COMPLETE** — `ran=37 skipped=0`, 37/37 `FINAL_CANDIDATES`. **All nine §7.5
+compute-matched arm×seed cells now exist** (3 arms × 3 seeds), and **755642** is the last eval
+needed to fill the behavioural matrix.
+
+**Queue 5/6** (4 full-budget shards + this eval). Full-budget at **37/74 — the halfway mark** at
+4:19 elapsed, tracking ~8.7 h.
+
+**What the last cell can and cannot do.** It **cannot** rescue the `vanilla < random < mechanism`
+ordering — seed 43 already reversed it. It determines only whether that ordering is **1-of-3 or
+2-of-3**, and either way the conclusion recorded at 11:10 stands: the arms occupy a **0.08–0.19**
+band whose within-arm spread across seeds is comparable to the between-arm differences, at a
+budget where the design has **9 %** power. Stating that now so the last number is read against a
+fixed expectation rather than framed after it lands.
+
+---
