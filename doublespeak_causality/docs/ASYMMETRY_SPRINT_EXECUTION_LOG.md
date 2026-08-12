@@ -4051,3 +4051,33 @@ will replicate"* — is the same rule whose violation produced the 10:05 retract
 tested in the opposite direction, on the most exciting number the sprint produced, and it held.
 
 ---
+## 2026-08-13 03:40 — LOOP: §7.5 add-on 1 launched (per-prompt mechanistic readout)
+
+**Queue 5/6, 0 pending**, no failures. Full-budget per-prompt shards (755219–222) at **1–3 of
+~19 prompts** each after 30 min — pacing **~23 min/prompt**, exactly as the smoke predicted, on
+track for ~7 h. All four on **n-301 with a warm page cache**, which is the cheap case, not the
+contended one.
+
+**New `slurm_scripts/run_perprompt_mechval.slurm`; launched 755270** on **n-304** — deliberately
+off n-301 so it does not add a *cold* load there.
+
+It measures whether each per-prompt suffix **actually lowers the refusal projection on its own
+prompt**, and more than its matched-random counterpart — **Gate E's "the intended internal target
+must move more than random" clause**, asked of the per-prompt arms. Verified **both joblists are
+37/37 finished** before submitting.
+
+### Why run this when the per-prompt ASR contrast is underpowered
+The projection is a **continuous, paired, per-prompt** measurement, so it does **not** suffer the
+binary-ASR power collapse that left n=37 with only **9 %** power. **The two endpoints have very
+different statistical properties, and only one of them is crippled at this n.** That distinction
+is now written into the script header so it is not lost by whoever reads the results.
+
+### Deliberately NOT launching the transfer matrix yet
+Both compute-matched arms are complete, so add-on 2 is technically unblocked — **but its diagonal
+would be the compute-matched ASR of 0.19**, which makes the diagonal-vs-off-diagonal contrast
+**underpowered by construction**, for exactly the reason the ASR contrast was. It belongs on the
+**full-budget** suffixes, whose diagonal may be high enough to make the comparison resolvable.
+Running it now would produce a null that means nothing — and this sprint has already established
+how easily an underpowered null gets mistaken for a negative.
+
+---
