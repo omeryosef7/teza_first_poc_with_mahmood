@@ -4492,3 +4492,21 @@ the second is a live possibility worth excluding.
 behind the 7.7 h projection. No action; well inside the 16 h wall limit.
 
 ---
+## 2026-08-13 09:10 — LOOP: routine. Queue 6/6, vanilla arms half done.
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | state |
+|---|---|
+| vanilla compute-matched, seeds 42 & 43 | **12/37** each, ~25 min out |
+| full-budget shards | **29/74** prompt-runs at 3:30 elapsed |
+
+**Nothing finished this tick, so nothing to analyze.**
+
+**Noted for the next free slot:** I launched vanilla for seeds **42 and 43 only** — **seed 44
+vanilla is still missing**, so the vanilla arm will be 2-seed while mechanism and matched-random
+are 3-seed. Recording it now rather than discovering it later, since an unmatched seed count
+across arms is exactly the kind of asymmetry that quietly weakens a comparison. It goes in the
+next slot that frees.
+
+---
