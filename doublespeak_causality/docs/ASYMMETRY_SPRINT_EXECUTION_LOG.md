@@ -3102,3 +3102,42 @@ before spending it**, per the plan's "you can consult with me". A 10-step 1-row 
 will settle the 5 s/step extrapolation first, the moment a slot frees.
 
 ---
+## 2026-08-12 16:35 — §7.5 SCOPE SET by author: full package + BOTH add-ons. Runner built + reviewed.
+
+**Author's decision (consulted 16:20):** run **full §7.5 as written** — vanilla + mechanism +
+matched random, 3 seeds, full-budget **and** compute-matched arms — **plus both add-ons**: the
+**per-prompt mechanistic readout** (§19.1 before→after projection) and the **transfer matrix**
+(prompt *i*'s suffix applied to prompt *j*). Recorded as an explicit go-ahead; cost accepted.
+
+**Built this iteration (no GPU used; queue still 6/6 on the λ probe):**
+* `scripts/split_manifest_perprompt.py` — 37 one-row manifests from the frozen test split,
+  guards both silent-failure modes, atomic writes.
+* `slurm_scripts/run_gcg_perprompt.slurm` — shardable per-prompt runner (`SHARD`/`NSHARD`),
+  reusing the universal matrix's exact COMMON flags and the `per_task_decision` position mode.
+  Resume-safe via the existing `FINAL_CANDIDATES.jsonl` sentinel; asserts after every prompt that
+  `ITERATION_LOG` is non-empty and `n_train_tasks == 1`.
+
+### Self code-review — 3 findings, 2 real, **1 of my own claims retracted**
+1. **REAL — stdin swallow.** The prompt loop reads the joblist on stdin, so a child process that
+   reads stdin would consume the remaining prompts and silently shorten the run. Fixed:
+   `run_optimization` is now invoked with `< /dev/null`.
+2. **REAL — torn manifest under concurrency.** Six sharded jobs regenerate the same 1-row
+   manifest paths; a plain `write_text` can be read mid-write by a sibling. Fixed: write-to-temp
+   + `os.replace` (atomic).
+3. **RETRACTED — the `set -e` "bug" was a false positive.** I claimed `[ test ] && VAR=...`
+   would abort the job when `N_STEPS==200`, and wrote that into the script as a comment. **Tested
+   it: it does not.** Bash exempts a failing test that is not the last command of an `&&` list,
+   so mid-script it is harmless (verified: reaches end, exit 0). It **does** exit 1 as the last
+   command of a script *or function* (both verified) — which under SLURM would mark a job FAILED
+   after its work completed. So the if-form is still the right choice, but **for a different and
+   narrower reason than I gave**, and the comment has been corrected rather than left standing.
+
+That is the second time today I have asserted a defect before testing it (cf. the 12:42
+best-so-far correction, where the defect was real but my magnitudes were not). The pattern is
+mine, not the code's: **assert the failure mode, then verify it, before writing it down as fact.**
+
+**Still not launched.** Next GPU action is a **10-step 1-row smoke** the moment a λ slot frees —
+it settles the unmeasured ~5 s/step extrapolation (no `n_train_tasks=1` timing exists anywhere in
+`outputs/`) and the per-job model-load cost, which together decide the shard layout.
+
+---

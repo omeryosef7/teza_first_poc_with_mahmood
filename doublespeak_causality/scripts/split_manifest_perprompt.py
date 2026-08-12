@@ -23,7 +23,7 @@ Guards two SILENT failure modes found in audit (both exit 0 while producing garb
 Safety: prints COUNTS and task_ids only -- never instruction/target text (§3.14).
 """
 from __future__ import annotations
-import argparse, json
+import argparse, json, os
 from pathlib import Path
 
 # SurrogateTask.from_dict has no defaults -- every key must be present on every row (config.py:43-63)
@@ -67,7 +67,11 @@ def main() -> None:
     for r in sel:
         tid = r["task_id"]
         mpath = out_dir / f"{tid}.jsonl"
-        mpath.write_text(json.dumps(r) + "\n", encoding="utf-8")
+        # Atomic write: several sharded jobs regenerate this same path concurrently. A plain
+        # write_text can be read torn by a sibling job mid-write -- a silent data corruption.
+        tmp = mpath.with_suffix(f".tmp{os.getpid()}")
+        tmp.write_text(json.dumps(r) + "\n", encoding="utf-8")
+        os.replace(tmp, mpath)
         odir = run_root / f"{args.arm}_pp_{tid}_seed{args.seed}"
         if str(odir) in seen_dirs:
             raise SystemExit(f"duplicate output_dir {odir} -- cross-prompt resume hazard")
