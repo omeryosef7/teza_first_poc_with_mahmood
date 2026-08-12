@@ -3917,3 +3917,52 @@ Ten minutes of idle capacity is a smaller cost than either committing 129 GPU-h 
 that may dissolve, or building the wrong readout and having to redo it.
 
 ---
+## 2026-08-13 02:20 — ⚠ §7.5 compute-matched contrast is UNDERPOWERED, not negative (n=37 → 9 % power)
+
+**755212 COMPLETE.** Per-prompt compute-matched pair, seed 42, **paired on the same 37 prompts**,
+`judge_fail = 0.0` both arms, 0 missing:
+
+| | value |
+|---|---|
+| mechanism ASR | 0.1892 |
+| matched random ASR | 0.1081 |
+| **ΔASR** | **+0.0811** |
+| discordant | 5 mech-only vs 2 rand-only |
+| **exact McNemar p** | **0.4531** |
+| **paired bootstrap 95 % CI** | **[−0.0541, +0.2162]** — crosses zero |
+
+Point estimate positive and marginally above the ±0.03–0.08 judge floor, **but not statistically
+supported.**
+
+### The important part is WHY — simulated paired-McNemar power at the observed base rates
+| n | power to detect 0.19 vs 0.11 at p<0.05 |
+|---|---|
+| **37** | **0.09** |
+| 74 | 0.21 |
+| 150 | 0.44 |
+| 300 | 0.75 |
+
+**At n=37 this design detects its own observed effect 9 % of the time.** The correct label is
+therefore **UNDERPOWERED, not NEGATIVE** — absence of evidence, not evidence of absence.
+Recording it as a null would be wrong.
+
+### This generalizes well beyond §7.5
+Arguably **the sprint's most important methodological finding after the judge noise floor**: the
+n=37 held-out design can only detect **large** effects. It had ample power for the λ=10 seed-42
+contrast (0.68 vs 0.05) and **essentially none** for anything in the 0.05–0.10 range.
+
+**Several "negatives" in this program sit in exactly that range and should be re-examined as
+underpowered nulls** — including, potentially, the published **+0.018** that the judge floor
+retired. The judge floor said that effect was *unmeasurable*; the power analysis says the same
+design could not have measured it even with a perfect judge. Those are two independent reasons
+the same class of claim was never supportable, and the paper should say so.
+
+### Direct consequence for the 129 GPU-h decision
+Full-budget per-prompt arms **would** detect a large per-prompt advantage but **could not
+distinguish a small one from zero**. That is still worth knowing — only a large effect would
+change the paper — but the limitation must be **stated up front**, not discovered afterwards.
+
+**Queue:** 2 λ random evals still running (755211, 755214). The 3-seed λ verdict is the last
+thing outstanding.
+
+---
