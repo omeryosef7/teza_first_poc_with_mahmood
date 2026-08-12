@@ -4003,3 +4003,51 @@ completing, because n-301's page cache already holds the weights from earlier jo
 *cold*. Left in place.
 
 ---
+## 2026-08-13 03:10 — 🟥 λ=10 THREE-SEED VERDICT: **SIGN CONSISTENCY FAILS. Gate E's negative STANDS.**
+
+**755214 COMPLETE** — the last of the six λ=10 arms. Held-out test, n=37, StrongREJECT ≥ 0.5,
+`judge_fail = 0.0` on all six arms.
+
+| seed | mechanism | random | ΔASR | discordant (b/c) | exact McNemar p |
+|---|---|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.6216** | 24/1 | **1.55e-06** |
+| **43** | 0.1081 | 0.2703 | **−0.1622** | 2/8 | 0.109 |
+| 44 | 0.5405 | 0.3514 | **+0.1892** | 9/2 | 0.065 |
+
+* **sign consistency: 2/3 positive → FAILS**
+* mean ΔASR **+0.216**, range **[−0.162, +0.622]**
+* **all 3 seeds are ABOVE the ±0.08 judge floor**
+
+### Verdict, read against the pre-registered rule
+Gate E (plan §12): *"only call mechanism-derived token optimization a POSITIVE if the mechanism
+objective beats its matched random objective on locked test **with consistent sign across
+seeds**…"*
+
+**Sign is not consistent. λ = 10 is NOT a positive. Gate E's negative STANDS.**
+
+### What this resolves — the sprint's top open question, answered
+`ADVANCED_OPTIMIZER_RESULTS.md` §1 recorded that Gate E's negative could only mean *"the position
+fix alone does not rescue the objective"*, **not** *"a mechanism-weighted token objective cannot
+work"*, because the mechanism term carried only 0.370 % of the selection loss. The λ probe was
+the top follow-up. **It is now run, and the answer is that raising λ 40× does not rescue it
+either.** At λ=10 the term carries **24–34 %** of the loss and drives the projection past zero in
+all three seeds — the objective is doing exactly what it was asked to do internally — and the
+behavioural result is still **not seed-stable.**
+
+That is a materially stronger negative than the one we started the day with, and it **removes the
+caveat that qualified it.**
+
+### The heterogeneity is real, not measurement noise
+**All three |ΔASR| exceed the judge floor**, yet they disagree in sign. So this is **genuine
+seed-to-seed instability of the optimization**, not judge nondeterminism. Note also the *random*
+arms span 0.054–0.351 (6.5×): seed 42's spectacular +0.622 was driven as much by an unusually
+weak random arm as by a strong mechanism arm.
+
+### Process note — the discipline was load-bearing today
+At 23:20 seed 42 alone showed **+0.622 at ~8× the judge noise floor**, and I wrote that if it
+replicated it would overturn Gate E and re-scope the paper. **It did not replicate.** The rule
+that held the line — *"the size of a single-seed effect tells you it is measurable, not that it
+will replicate"* — is the same rule whose violation produced the 10:05 retraction. Today it was
+tested in the opposite direction, on the most exciting number the sprint produced, and it held.
+
+---
