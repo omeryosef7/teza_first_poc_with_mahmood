@@ -3798,3 +3798,31 @@ which is the sprint's headline open question, and they should not have to queue 
 | 44 | pending | pending | — |
 
 ---
+## 2026-08-13 01:00 — All 3 λ=10 MECHANISM arms evaluated: ASR 0.676 / 0.108 / 0.541
+
+**755171 COMPLETE.** Held-out test, n=37, `judge_fail = 0.0` on every arm.
+
+| seed | mechanism | matched random |
+|---|---|---|
+| 42 | **0.6757** | 0.0541 |
+| 43 | **0.1081** | pending |
+| 44 | **0.5405** | pending |
+
+**The mechanism arm's ASR spans 0.108 → 0.676 — a 6× spread** on the same objective, same λ,
+same budget, same eval path. Two of three seeds high, one low.
+
+**This is already informative before ΔASR exists: whatever λ=10 does, it does inconsistently.**
+Even if the sign proves positive in all three seeds — plausible, since if seed 43's random lands
+near seed 42's 0.054 its ΔASR would be ≈ **+0.06**, right at the ±0.03–0.08 judge floor — the
+**effect size is not estimable** from three seeds spanning an order of magnitude.
+
+That distinction will matter for how this is written up: *"λ=10 sometimes produces a large
+mechanism-specific gain"* is a very different claim from *"λ=10 produces a gain of +0.6"*, and
+only the first is supportable by data that looks like this.
+
+Both random arms are at **194/200** and **195/200** — the 3-seed verdict is ~15 min away. Holding
+a slot for their eval rather than starting anything new.
+
+**Queue 4:** 2 λ random arms, per-prompt random arm (755152), per-prompt mechanism eval (755180).
+
+---
