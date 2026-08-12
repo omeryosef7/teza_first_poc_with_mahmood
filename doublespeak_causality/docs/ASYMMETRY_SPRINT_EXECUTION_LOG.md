@@ -2990,3 +2990,51 @@ Throttled per 13:42; both reporting conditions checked and **neither triggered**
 Nothing else to report; no verdict, still gated on locked-test ΔASR.
 
 ---
+## 2026-08-12 15:40 — §7.5 IMPLEMENTATION: recon (no runs; queue is full and stays untouched)
+
+**Queue 6/6, 0 pending**, nothing to resubmit. λ arms at 81–98/200. **No GPU work launched this
+iteration and none is possible** — the 6-job cap is fully consumed by the λ probe, so §7.5 is
+being built to be *smoke-ready the moment a slot frees*, per §3.1 ("smoke test before scale").
+
+§7.5 is now the only unimplemented stage of the plan. Fanned out 4 read-only code audits
+(subagents restricted to code/config/scalars per §3.14 — no dataset or generation text) plus a
+feasibility synthesis. **In parallel I verified the two load-bearing facts myself**, because
+they are the kind that fail silently rather than loudly:
+
+**FINDING 1 — a proven per-prompt harness already exists. Do not write a new one.**
+`poc_stage_gcg_early/run_batched_perbehavior.py` is a "batched per-behavior GCG driver" that
+loops over a **job-list of 1-row manifests, each producing a separate per-behavior suffix**,
+calling the same reusable `gcg_optimizer.run_optimization` core. It **loads the model once and
+loops**, and is **idempotent / resume-safe** (skips a job whose `FINAL_CANDIDATES.jsonl` exists;
+resumes in-flight jobs from `checkpoint.pt`). This is exactly §7.5's requirement and satisfies
+§7.1 ("reuse; do not create a new optimizer"). It also solves the compute problem: 3 arms × 3
+seeds × ~20 prompts is ~180 optimizations, which would be impossible as 180 model loads but is
+routine as a handful of looping jobs.
+
+It is currently hardcoded to **Qwen3-14B, suffix_length=20, lambda_repr=0** (it was built for
+the Native-CoT pilot). §7.5 needs **Llama-3.1-8B, suffix_length=16**, and the refusal-direction
+objective + matched random. That is a **parameterization change to one driver**, not new
+optimizer code.
+
+**FINDING 2 — the D1 position defect vanishes in the per-prompt setting, but D2 does not.**
+`legacy_fixed` reads the refusal projection at an absolute index derived from `train_tasks[0]`
+(`gcg_optimizer.py:_rd_positions_for`). **With exactly one training task, `train_tasks[0]` *is*
+the task**, so D1 — "correct for 1 of 40 prompts" — is structurally impossible here. That is a
+genuine scientific advantage of the per-prompt arm: it is free of the confound that contaminated
+the universal arm.
+
+**But this must not be over-claimed.** D1 and D2 are different defects. D2 is that the fixed
+index sits ~5 template tokens away from where the axis was *fitted* — an offset error *within*
+a task, which one task does not fix. So **§7.5 must still pass `--refusal-dir-position-mode
+per_task_decision`** (`spans.target_slice.start - 1`, verified at `_rd_positions_for`), not rely
+on `legacy_fixed` being "correct now". Recorded so nobody later reasons "n=1 so legacy is fine".
+
+**FINDING 3 — no >1-task arithmetic assumption.** `gcg_optimizer.py:887` guards the gradient
+normalization with `if len(train_tasks) > 1: grad_accum /= len(train_tasks)` — with one task the
+division is a no-op either way, so the guard is harmless rather than a silent bug.
+
+Recon workflow still running for the **eval path** and **mech-validity readout** (whether they
+assume one universal suffix, and the minimal change to accept a `{prompt_id -> suffix}` map).
+Implementation waits on that; nothing is written yet.
+
+---
