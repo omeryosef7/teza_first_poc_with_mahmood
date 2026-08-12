@@ -103,16 +103,27 @@ From the understated 0.026 % share I extrapolated that ~50 % mechanism weight wo
 **~40× the published λ, not ~3,600×**. The retracted number would have made this look
 prohibitive; it is not.
 
-### Early reading (λ = 10, seed 42, step 27/200 — diagnostic, no verdict)
-| arm | task_loss moved | projection | refusal share |
-|---|---|---|---|
-| mechanism | **4.3** | +0.169 → **−0.074** (crosses zero) | **22.7 %** |
-| matched random | **27.9** | +0.020 → +0.012 | 5.6 % |
+### Early reading (λ = 10, **all 3 seeds**, step-matched k = 29/200 — diagnostic, no verdict)
 
-λ = 10 does what it was meant to — real weight, projection driven past zero — **but the task
-loss has nearly stopped improving.** That the two arms diverge this way is consistent with
-Gate C: the refusal direction is *reachable*, so the optimizer profitably spends budget on it;
-the random direction is not, so its λ term yields little gradient.
+**Statistic: best-so-far task loss** (min over steps 0..k). `task_loss` is *not* monotonic —
+GCG selects on **total** loss, so the task component rises on ~40 % of steps, and a
+single-endpoint reading of it is unstable (execution log 12:42 withdraws the endpoint-based
+magnitudes previously quoted here).
+
+| seed | mech task-loss drop | random task-loss drop | ratio | mech Δprojection | random Δprojection |
+|---|---|---|---|---|---|
+| 42 | 9.25 | 28.98 | **3.13×** | **−0.265** | −0.009 |
+| 43 | 17.88 | 26.01 | **1.45×** | **−0.214** | −0.009 |
+| 44 | 8.28 | 24.98 | **3.02×** | **−0.261** | −0.015 |
+
+λ = 10 does what it was meant to — the mechanism term reaches **19–33 %** of the selection loss
+and drives the projection **past zero in all three seeds**, which λ = 0.25 never achieved in a
+full 200 steps. **But the mechanism arm makes 1.45×–3.02× less task-loss progress**, 3/3
+sign-consistent.
+
+That the two arms diverge this way is consistent with Gate C: the refusal direction is
+*reachable*, so the optimizer profitably spends budget on it; the random direction is not, so
+its λ term yields little gradient and the optimizer defaults to the task loss.
 
 > **The finding may be that no λ both preserves the attack and gives the mechanism meaningful
 > weight.** That would be a stronger and more general statement than either a positive or a

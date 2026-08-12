@@ -138,10 +138,14 @@ So **Gate E's negative means "the position fix alone does not rescue the objecti
 mechanism-weighted token objective cannot work."** A λ at which the mechanism term carries real
 weight had never been run — not by this sprint and not by the published work.
 
-It is running now: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}**. Early (step 27/200,
-seed 42, diagnostic only): the mechanism term reaches **22.7 %** of the loss and drives the
-projection **past zero** (+0.169 → −0.074) — **but the task loss nearly stops improving** (moved
-4.3, versus the random arm's 27.9).
+It is running now: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}**. Early (step-matched
+k = 29/200, **all 3 seeds**, diagnostic only): the mechanism term reaches **19–33 %** of the
+selection loss and drives the projection **past zero in all three seeds** (λ = 0.25 never did in
+a full 200 steps) — **but the mechanism arm makes 1.45×–3.02× less task-loss progress** than its
+matched random arm, 3/3 sign-consistent.
+
+*Statistic is best-so-far task loss; `task_loss` is non-monotonic (GCG selects on total loss,
+~40 % up-steps) and single-endpoint readings of it proved unstable — see execution log 12:42.*
 
 **Pre-registered reading:**
 * **The internal-target number gets no verdict.** Single-seed quantities of that type produced

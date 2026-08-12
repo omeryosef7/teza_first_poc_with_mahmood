@@ -111,6 +111,11 @@ Config/optimizer changes in `poc_stage_gcg_early/`:
    to run at different rates are usually just staggered by concurrent weight-load contention
    (~16× penalty when jobs load simultaneously on one node).
 6. **Backticks in `git commit -m` under tcsh execute and silently delete a word.** Use a heredoc.
+7. **`task_loss` in `ITERATION_LOG.jsonl` is non-monotonic** — GCG selects on **total** loss, so
+   the task component rises on ~40 % of steps. Summarise it with **best-so-far**, never a single
+   endpoint, and never a **ratio of two endpoints** (that version of one comparison swung
+   1.45×–34× across seeds and was withdrawn). Also step-match arms before comparing: load
+   contention staggers their start by ~28 min.
 
 ---
 
@@ -122,10 +127,15 @@ At the published **λ = 0.25**, the refusal term is only **0.370 % mean / 1.495 
 fix alone does not rescue the objective"*, **not** *"a mechanism-weighted token objective cannot
 work."*
 
-Running: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}.** Early (seed 42, step 27/200,
-**diagnostic only**): mechanism term reaches **22.7 %** of the loss and drives the projection
-**past zero** (+0.169 → −0.074), **but the task loss nearly stops improving** (moved 4.3 vs the
-random arm's 27.9).
+Running: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}.** Early (step-matched k = 29/200,
+all 3 seeds, **diagnostic only**): the mechanism term reaches **19–33 %** of the selection loss
+and drives the projection **past zero in all 3 seeds** (λ = 0.25 never did in a full 200 steps),
+**but the mechanism arm makes 1.45×–3.02× less task-loss progress**, 3/3 sign-consistent.
+
+⚠ **Statistic matters here.** `task_loss` is non-monotonic (GCG selects on *total* loss, ~40 %
+up-steps). Report **best-so-far**, never a single endpoint and never a ratio of two endpoints —
+the endpoint version of this same comparison swung 1.45×–34× across seeds and had to be
+withdrawn (execution log 12:42). This is trap #7 for §4.
 
 **Pre-registered reading — do not deviate:**
 * The **internal-target number gets no verdict.** Only **ΔASR consistent across all 3 seeds**
