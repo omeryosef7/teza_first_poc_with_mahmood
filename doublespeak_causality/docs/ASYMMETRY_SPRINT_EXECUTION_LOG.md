@@ -1800,3 +1800,31 @@ moving on rather than manufacturing an update.
    `RESEARCH_HANDOFF_V2.md` — the last three deliverables, all gated on this.
 
 ---
+## 2026-08-12 03:41 — INFRASTRUCTURE: completion monitor died silently; restarted
+
+The background job-completion monitor **ended on its own** — its polling loop was bounded at
+400 iterations (`for i in $(seq 1 400)`), which at 60 s per poll expires after ~6.7 h. The
+sprint has been running longer than that.
+
+**Why this mattered more than it looks.** The monitor is how job completions reach me. With it
+dead and six Phase-3 arms in flight, arms would have finished and sat unanalysed until the
+next manual poll — and the failure is **silent**: a dead monitor and a quiet queue look
+identical from the outside. Exactly the class of thing the sprint has been catching all night
+in the science; worth catching in the tooling too.
+
+**Fixed:** restarted as an unbounded `while true` loop (90 s poll) instead of a bounded `for`.
+All six arms verified still running immediately afterwards:
+
+| job | arm | seed | step |
+|---|---|---|---|
+| 751396 | mechanism | 42 | **90** / 200 |
+| 751393 | matched random | 42 | **90** / 200 |
+| 751451 | mechanism | 43 | 20 / 200 |
+| 751452 | matched random | 43 | 20 / 200 |
+| 751459 | mechanism | 44 | 10 / 200 |
+| 751460 | matched random | 44 | 10 / 200 |
+
+Seed 42 is at the halfway point after ~3 h 08 m; projected ~6.9 h total, ~3.5 h remaining.
+Queue 6/6, 0 pending, spread 3/3.
+
+---
