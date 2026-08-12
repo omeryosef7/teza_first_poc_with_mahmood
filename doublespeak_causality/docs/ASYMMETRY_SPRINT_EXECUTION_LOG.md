@@ -2975,3 +2975,18 @@ by git. It is **tracked** — it was picked up by one of the sprint's `git add -
 action needed on their side.
 
 ---
+## 2026-08-12 15:12 — LOOP: routine. Queue healthy, watch conditions not triggered.
+
+**Queue 6/6, 0 pending**, nothing to resubmit. No new failures (`sacct` today shows only the
+three already-handled entries: 751392 FAILED, 751402 / 751557 CANCELLED — all pre-noon and
+already logged). Seed 42 at 96/200, seeds 43/44 at 78–86/200, ETA ~3.8–5.4 h.
+
+Throttled per 13:42; both reporting conditions checked and **neither triggered**:
+* **No job failure.**
+* **No sign flip.** At k = 77: best-so-far 2.44× / **1.15×** / 2.33×, improvement-count 2.07× /
+  1.74× / 8.75×. All still > 1.0, so 3/3 sign consistency holds. Seed 43 sits at **1.15×**,
+  unchanged from k = 65 — near parity but not across it. Watch continues.
+
+Nothing else to report; no verdict, still gated on locked-test ΔASR.
+
+---
