@@ -3703,3 +3703,37 @@ seeds 43/44 the moment their random arms finish; **re-run 755140's random half**
 launched against a run that had no `FINAL_CANDIDATES`.
 
 ---
+## 2026-08-12 23:50 — ✅ First complete §7.5 arm: per-prompt compute-matched mechanism, 37/37 clean
+
+**755124 COMPLETED in 34:47.** Per-prompt compute-matched mechanism, seed 42:
+
+| check | result |
+|---|---|
+| prompts run | **37/37** (`ran=37 skipped=0`) |
+| `FINAL_CANDIDATES` written | **37/37** |
+| post-run guards (`n_train_tasks == 1`) | **37/37 passed** |
+| FATAL / warnings | **zero** |
+
+**The §7.5 pipeline works end-to-end on real data at full prompt count**, not just on the
+single-prompt smoke.
+
+**Cost model validated at arm scale:** 34:47 for 37 prompts × 5 steps = **56 s/prompt**, against
+**58 s/prompt** predicted from the smoke. So the ~193 GPU-h figure for the full package is now
+**measured, not extrapolated** — including the ~24 s/prompt fixed overhead that makes the
+compute-matched arm overhead-dominated.
+
+Its matched-random pair (755152) is at 17/37, ~20 min out. **No comparison until both are done
+and evaluated together** (one batched eval, model loaded once).
+
+### Deliberately holding the free slot
+Both λ random arms are at **190/200 and 191/200** — minutes from finishing — and each needs an
+eval immediately. Holding one slot idle for a few minutes is cheaper than displacing the arms
+that gate the **3-seed λ verdict**.
+
+**Still holding the §7.5 full-budget arms (129 GPU-h)** pending that verdict, per the dependency
+flagged at 23:20: §7.5's premise is that the universal negative might be a *universality*
+failure — but **if λ=10 universal succeeds, there is no universal negative left to explain**, and
+§7.5's comparison target changes. Spending 129 GPU-h against a premise that may dissolve within
+the hour would be the wrong call.
+
+---
