@@ -21,11 +21,18 @@ identical, to answer one question:
 > **Was the token-space negative caused by the position defect?**
 
 ### It is NOT a clean test of H2′ — stated up front
-An in-flight diagnostic (execution log 05:36) showed that at **λ = 0.25**, the published value
-which these arms copy for comparability, the refusal term is **~0.026 % of the `total_loss`
-that GCG's candidate selection minimizes**. Over training the task loss moved **3,071×** more
-than λ·refusal. Candidates are therefore chosen almost entirely on task loss, and the
-mechanism term is, for selection purposes, rounding error.
+A diagnostic (execution log 05:36, **corrected at 10:45** after audit BUG A — the first pass
+read the projection at the *legacy* position even in corrected runs, understating it ~14×; the
+numbers below are the corrected ones) shows that at **λ = 0.25**, the published value which
+these arms copy for comparability, the refusal term is **0.370 % mean / 1.495 % max of the
+`total_loss` that GCG's candidate selection minimizes**. Over training the task loss moved
+**1,443×** more than λ·refusal. Candidates are therefore chosen overwhelmingly on task loss,
+and the mechanism term carries little selection weight.
+
+It is, however, **not inert**: the mechanism arm drives its own projection from **+0.131 to
++0.001** (a 99 % reduction) while the matched random arm moves **63× less**. So even at 0.37 %
+weight the objective demonstrably has purchase on the coordinate it names — which is what makes
+the λ question below the binding one, rather than a formality.
 
 > **Therefore: a negative here means "the position fix ALONE does not rescue the objective",
 > NOT "H2′ (linear-surrogate invalidity at discrete step size) is confirmed."** A λ at which
@@ -83,14 +90,34 @@ Applied here:
 and must never be scored — it carries a `DO_NOT_SCORE.txt` and any `asym_p3_*` glob will match
 it.
 
-## 5. Follow-up already identified (NOT RUN)
+## 5. The λ follow-up — **IN FLIGHT**, not deferred
 
-**A λ sweep is the single highest-value next experiment**, and it exists because of §1's
-diagnostic rather than because of any result here. Target: λ ∈ {0.25, 5, 50, ~900}, reporting
-**task-loss degradation alongside ASR**, because the design tension is the point — reaching
-~50 % mechanism weight needs λ ≈ 900 (≈3,600× the published value), which should swamp the
-task loss and stop the suffix producing its target at all.
+**A λ probe is the single highest-value next experiment**, and it exists because of §1's
+diagnostic rather than because of any result here. It is now **running**: λ = 10 ×
+{mechanism, matched random} × seeds {42, 43, 44}, everything else identical to §2.
+
+**The corrected diagnostic also made this experiment far more tractable than first estimated.**
+From the understated 0.026 % share I extrapolated that ~50 % mechanism weight would need
+λ ≈ 900 (≈3,600× published). From the corrected 0.370 % share the linear estimate is
+**λ ≈ 34**, and the observed λ = 10 share is **22.7 %** — so meaningful weight is reachable at
+**~40× the published λ, not ~3,600×**. The retracted number would have made this look
+prohibitive; it is not.
+
+### Early reading (λ = 10, seed 42, step 27/200 — diagnostic, no verdict)
+| arm | task_loss moved | projection | refusal share |
+|---|---|---|---|
+| mechanism | **4.3** | +0.169 → **−0.074** (crosses zero) | **22.7 %** |
+| matched random | **27.9** | +0.020 → +0.012 | 5.6 % |
+
+λ = 10 does what it was meant to — real weight, projection driven past zero — **but the task
+loss has nearly stopped improving.** That the two arms diverge this way is consistent with
+Gate C: the refusal direction is *reachable*, so the optimizer profitably spends budget on it;
+the random direction is not, so its λ term yields little gradient.
 
 > **The finding may be that no λ both preserves the attack and gives the mechanism meaningful
 > weight.** That would be a stronger and more general statement than either a positive or a
-> negative at λ = 0.25, and it is not answerable from the runs in this document.
+> negative at λ = 0.25.
+
+**Binding reading rule (fixed 10:07, before these runs finish):** the λ arms' *internal-target*
+number gets **no verdict** — single-seed quantities of that type proved unstable and produced
+this sprint's one retraction. Only **ΔASR, consistent across all 3 seeds**, counts as evidence.
