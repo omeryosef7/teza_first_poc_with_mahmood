@@ -3306,3 +3306,39 @@ changes to the optimizer, the objective, or the eval driver**. Five small script
 runner. Awaiting only a free GPU slot for the 10-step smoke.
 
 ---
+## 2026-08-12 19:05 — LOOP + §7.5 pre-flight: flags, values, files and comparison identity verified
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **133–159/200** — ~1.5–2.5 h of
+optimization left. Nothing finished, so the smoke still cannot run.
+
+**Static pre-flight of the per-prompt runner, entirely off-GPU.** This whole error class only
+surfaces *after* a multi-minute model load, which is exactly why it is worth catching statically:
+
+| check | result |
+|---|---|
+| all 25 optimizer flags the runner passes exist in `run_optimization`'s parser | **ALL PRESENT** |
+| `--refusal-dir-position-mode` accepts `per_task_decision` | **yes** — `{legacy_fixed, per_task_suffix, per_task_decision}` |
+| `--split` accepts what the splitter emits | **yes** — parser is `{train,all}`, splitter emits `all` for the test split |
+| both direction files exist | **yes** |
+| all 7 splitter flags the runner passes exist | **ALL PRESENT** |
+
+The 19 apparent "missing" flags in the first pass were SBATCH directives, `nvidia-smi` flags,
+comment dashes and splitter flags — checked separately rather than assumed.
+
+Note the `--split` result closes a loop: the parser accepts only `{train, all}`, and the splitter
+emits **`all`** for any non-train split, so the **empty-train-list silent failure documented at
+16:05 is now unreachable by construction** rather than merely guarded.
+
+**Comparison identity confirmed — and this matters more than the files existing.** The per-prompt
+runner points at the **same** `refusal_direction_llama_L18.pt` and
+`refusal_rand_L18_normmatched_seed20260809.pt` that the **position-corrected** universal arms
+(`asym_p3_arm07p` / `arm07pr`) used — verified by reading those arms' **persisted `CONFIG.json`**,
+not by trusting a constant in a script (the §19.3 direction-identity discipline). This is what
+satisfies **design correction 3 from 16:05**: comparing per-prompt against the *legacy* arms
+would have partly measured the D1 bug fix instead of the per-prompt setting.
+
+**§7.5 is now pre-flighted as far as is possible without a GPU.** The remaining risk is
+concentrated exactly where only a real run can settle it: the **unmeasured ~5 s/step** figure and
+the per-job model-load cost, both of which the 10-step smoke measures directly.
+
+---
