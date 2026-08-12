@@ -4303,3 +4303,19 @@ continuous, paired, and not power-crippled — **that makes seed 43 informative*
 quiet.
 
 ---
+## 2026-08-13 06:25 — LOOP: routine. Queue refilled to 6 with the seed44 random arm.
+
+Queue was 5; launched **seed 44 matched_random** compute-matched (n-304 class, matching its
+mechanism arm per §3.1) so the pair completes together. **Queue 6/6**, nothing pending beyond
+submit, no failures, nothing near the 30-min pending threshold. Spread n-301: 4, n-304: 2.
+
+| work | state |
+|---|---|
+| seed 44 mechanism | 10/37, ~25 min out |
+| full-budget shards | 3–4 of ~19 each after 2 h — on pace for the measured 7.7 h, ~5.5 h remaining |
+
+**Nothing finished this tick, so nothing to analyze.** The next decision point is the seed-44
+pair, which turns §7.5's compute-matched replication from an uninformative **1-of-2** into a
+**1-of-3 or 2-of-3**.
+
+---
