@@ -2934,3 +2934,44 @@ while a seed was still able to flip it — is exactly what produced this sprint'
 No verdict; still gated on locked-test ΔASR. Throttle otherwise stands.
 
 ---
+## 2026-08-12 14:38 — PLAN EDIT: added §7.5 per-prompt vs universal GCG (Mahmood). No runs launched.
+
+**Plan-file edit only, at the plan author's request. Nothing submitted; queue untouched** (6/6
+λ jobs still running).
+
+**What was added.** New **§7.5 "Per-prompt vs universal optimization (per Mahmood)"** at the end
+of §7, plus five one-to-two-sentence cross-references (§1, §2 Q6, §12 Gate E, §13, §14/§15).
+
+**Why it matters — the substantive point.** Our token-space negative is a **universal** suffix
+result: one suffix optimized on the 20-item Gate-7 train pool, evaluated on the frozen 42-item
+test set (the **0.465 refusal vs 0.464 random** held-out numbers are a *transfer* result, seeds
+42+43, 50-step first cut). A universal suffix failing to beat matched random is consistent with
+**two very different explanations** that the universal setting cannot separate:
+* **H3** — the mechanism objective is a poor optimization target; or
+* **H1/H4 + §5.5** — the direction *is* reachable per prompt, but via **prompt-specific** token
+  moves, so no single universal suffix can exploit it.
+
+A per-prompt attack is easier, is still an unsolved and legitimate threat model, and **isolates
+the objective question from the universality confound**. If mechanism > random per-prompt but
+not universally, the paper claim re-scopes from *"the mechanism objective doesn't work"* to
+*"the mechanism objective doesn't transfer into a universal suffix"* — a materially different
+and more defensible claim than the one currently drafted.
+
+**Two conflicts in the request, flagged in the plan rather than silently resolved:**
+1. The request specified **StrongREJECT ≥ 0.25**, but **§3.6 (non-negotiable) sets ≥ 0.5**, and
+   the same request said to respect §3.6. **§3.6 governs**; ≥0.25 is recorded as a secondary
+   column for comparability with older numbers. Flagged in §7.5 for an explicit ruling.
+2. **§19.5 already exists** ("Universal vs per-prompt suffix", train-only, characterization-not-
+   attack). §7.5 does **not** replace it — §7.5 is the test-side full-battery threat-model
+   version, and **§19.5's train-only run is named as its smoke test**. Without this the two
+   would have read as duplicate/competing items.
+
+**Verified after editing:** `git diff` removes exactly **3** lines — the Gate E, Figure A, and
+deliverable-4 lines I extended in place — and adds 48. No restructuring, no other content
+touched.
+
+**Correction to something I told the author earlier today:** I said the plan file was untracked
+by git. It is **tracked** — it was picked up by one of the sprint's `git add -A` commits. No
+action needed on their side.
+
+---

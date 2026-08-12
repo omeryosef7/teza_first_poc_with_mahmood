@@ -76,6 +76,8 @@ We need to distinguish several hypotheses.
 
 **THIS SPRINT SHOULD TRY TO DISCRIMINATE THESE EXPLANATIONS. Do not merely produce another ASR table.**
 
+The **per-prompt vs universal** contrast (new **§7.5**, per Mahmood) is a direct discriminator between **H3** and **H1/H4**: our token-space negative is a *universal* suffix result, and a universal-only failure does **not** imply an objective failure.
+
 ---
 
 ## 2. SECONDARY QUESTIONS
@@ -86,6 +88,7 @@ After the reachability/asymmetry question:
 - **Q3.** Can the two different signals be useful together for **DEFENSE**? Specifically: concept signal = attack/remapping evidence; refusal signal = causal behavioral control. The concept representation is behaviorally epiphenomenal, but that does NOT mean it is useless as a detection/gating feature. Can we restore refusal ONLY when concept-remapping evidence is present AND refusal is suppressed? This could potentially reduce the prior over-refusal failure.
 - **Q4.** Can we power up the Phi readout/predictor result without contaminating the existing test set?
 - **Q5.** Only if justified by the results: does a more advanced MAC/TROPT / Jacobian-aware discrete attack finally beat matched random controls?
+- **Q6.** Does the refusal-derived objective beat a matched random direction in the **easier per-prompt setting**, even if it fails as a **universal** suffix? (See **§7.5**.)
 
 ---
 
@@ -254,6 +257,46 @@ We previously learned a 400-step monolithic run can time out and lose results. *
 
 Question: does mechanism-vs-random separation emerge with optimization time? If not → stronger evidence for a structural negative.
 
+### 7.5 Per-prompt vs universal optimization (per Mahmood)
+
+**Grounding — what our current token-space negative actually is.** The Gate-7 result is a **universal** suffix: ONE suffix optimized on the 20-item train pool and evaluated on the frozen 42-item held-out test set. The headline **0.465 (refusal) vs 0.464 (random)** held-out numbers are therefore a **transfer** result (seeds 42+43, 50-step first cut) — not a per-prompt attack result. *(Note the Gate-7 pool sizes 20/42 differ from the Phase-3 v3 matrix's 40/37; do not conflate the two when quoting numbers.)*
+
+**Why this discriminates hypotheses.** A universal suffix failing to beat a matched random direction is consistent with two very different explanations:
+- **H3 — objective failure.** The mechanism objective is simply a poor optimization target.
+- **H1/H4 + §5.5 — universality failure.** The refusal direction *is* reachable per prompt, but through **prompt-specific** token moves, so no single universal suffix can exploit it. This is exactly the hypothesis §5.5 was written to test from the gradient side.
+
+The universal setting **cannot separate these**; the per-prompt setting can. Mahmood's point is that at this stage a per-prompt attack is (a) **easier** than universal, (b) still an **unsolved and legitimate threat model** in its own right, and (c) **isolates the objective question from the universality confound.** Cross-refs **§5.5** (cross-prompt gradient coherence) and **Gate D4**.
+
+**Relationship to §19.5 — read both.** §19.5 already specifies a **train-only, characterization-not-attack** version of this contrast. §7.5 is the **full** version: test-side, with the complete endpoint battery and paired statistics, framed as a threat model. **§19.5's train-only run is the natural smoke test / first cut for §7.5** — run it first, and do not treat the two as independent results.
+
+**Experiment.** For each prompt **independently**, optimize a dedicated suffix (no shared/universal constraint), **compute-matched across arms**:
+- **Arm 1 — vanilla task-loss GCG** (baseline).
+- **Arm 2 — refusal-projection mechanism objective** at the validated layer (**L18 / hs19**).
+- **Arm 3 — norm-matched random-direction control** matched to Arm 2 per **§7.3**.
+- **Arm 4 (optional)** — best Jacobian/MAC objective from **§7.2** + its own matched random control.
+
+Held identical across arms: suffix length **16 positions** · steps / batch / candidate-forward budget · `--no-filter-cand` (**§3.11**) · `suffix_placement=user` (**§3.10**) · greedy eval · **≥3 identical seeds** · same GPU class (**§3.1**).
+
+**Per-prompt endpoints.**
+- Attack success, **per prompt**.
+- **Internal refusal projection before → after** the optimized suffix — the **§19.1** mechanistic-validity check: does the suffix actually lower refusal *on that prompt*. **This measurement is the core of what Mahmood is asking for; do not drop it.**
+- Refusal rate · empty rate.
+
+**Primary comparison (paired across prompts, per seed).** Does the mechanism objective (a) **lower the refusal projection more** than its matched random control, and (b) yield **higher per-prompt ASR** than random? Report paired **McNemar** / paired **bootstrap CI** + effect size across prompts (**§3.7**).
+
+**Split discipline (§3.5).** Any layer / step-budget / hyperparameter choice is **frozen from train prompts**; report the per-prompt battery on the **frozen test prompts**. There is no shared suffix, so there is no cross-prompt leakage — but the objective layer and step budget must still be **pre-registered from train**.
+
+**Interpretation (feeds §1 and Gate E).**
+- **mechanism > random per-prompt, but not universal** → the negative is a **universality / prompt-specificity failure** (H1/H4, §5.5), **not** an objective failure. Re-scope the paper claim from *"the mechanism objective doesn't work"* to *"the mechanism objective doesn't transfer into a universal suffix."*
+- **mechanism ≈ random per-prompt too** → a **stronger structural negative** (objective / reachability failure) that is independent of universality.
+- **Interpret jointly with §5.5.** Per-prompt reachable + incoherent gradients across prompts ⇒ a mechanistic explanation of the universal failure, not just a description of it.
+
+**Scheduling.** Because this is cheap and is a **high-value, collaborator-requested discriminator**, it MAY be pulled forward as a small early package (still smoke-tested, still ≤6 jobs) rather than waiting for the full Phase-3 matrix. **But it stays gated behind the Phase-1/2 reachability results**, per this plan's ordering philosophy (§7 preamble: do not launch a giant new GCG matrix by default). Do **NOT** rerun the universal matrix — this **adds** the per-prompt arm. Reuse existing GCG/TROPT infra (**§7.1**); no new optimizer unless the current infra genuinely cannot express it.
+
+> ⚠ **Two conflicts in the request as received, flagged rather than silently resolved.**
+> 1. The request specifies *"StrongREJECT MALICIOUS ≥ 0.25"*, but **§3.6 is a non-negotiable rule setting binary success at ≥ 0.5** (and the same request says to respect §3.6). **§3.6 governs: primary binary ASR is ≥ 0.5.** Report ≥ 0.25 alongside it as a secondary column so the comparison to older ≥0.25-era numbers stays possible. Change this only on an explicit instruction to amend §3.6.
+> 2. **§19.5 already exists** and covers the train-only form of this contrast. §7.5 does not replace it; see "Relationship to §19.5" above.
+
 ---
 
 ## 8. PHASE 4 — MULTI-CONCEPT GENERALIZATION
@@ -327,7 +370,7 @@ Use explicit gates. Do not proceed mechanically.
 - **GATE B — REACHABILITY IMPLEMENTATION.** PASS if the autograd derivative matches the finite-difference/token substitution with correct sign and useful correlation. If not, fix implementation before scientific interpretation.
 - **GATE C — LOCAL REACHABILITY RESULT.** Classify refusal direction as: unusually low-reachability · normal-reachability · unusually high-reachability · underpowered/unstable — relative to many norm-matched random directions.
 - **GATE D — CONTINUOUS INPUT TEST.** D1: continuous specifically reaches refusal, GCG does not → discrete bottleneck. D2: continuous ≈ random → universal input-reachability failure / generic suppression. D3: continuous and discrete both suppress refusal non-specifically → generic adversarial suppression. D4: inconsistent / no generalization → prompt-specific route. This gate determines Phase 3 objective work.
-- **GATE E — ADVANCED OPTIMIZER.** Only call mechanism-derived token optimization a POSITIVE if the mechanism objective > its matched random objective on locked test with consistent sign across seeds, CI/statistical support, AND the intended internal target moves more than random. ASR alone is insufficient.
+- **GATE E — ADVANCED OPTIMIZER.** Only call mechanism-derived token optimization a POSITIVE if the mechanism objective > its matched random objective on locked test with consistent sign across seeds, CI/statistical support, AND the intended internal target moves more than random. ASR alone is insufficient. **Distinguish a PER-PROMPT positive from a UNIVERSAL positive (§7.5): a per-prompt-only positive RE-SCOPES the universal negative — it does not overturn it — and both forms still require the intended internal target to move more than random.**
 - **GATE F — MULTI-CONCEPT.** PASS strong generalization only if the central dissociation is observed across multiple independent concept pairs. Do not say "general across concepts" from 2/5. Report exact heterogeneity.
 - **GATE G — SELECTIVE DEFENSE.** PASS only if DS ASR improves AND attack-structured benign over-refusal improves relative to unconditional refusal restoration. Otherwise: honest defense negative.
 
@@ -345,12 +388,14 @@ Never have >6 GPU jobs alive. A sensible initial 6-job package AFTER smoke tests
 
 When these finish: analyze BEFORE launching the next package. Do not submit Phase 3/4/5 just because GPU slots opened — use results to decide. Later packages may parallelize by seed · concept pair · defense condition while maintaining ≤6.
 
+**Per-prompt GCG arms (§7.5) belong to a LATER package, not this initial 6-job set.** They must be compute-matched across arms, stay within ≤6 concurrent, and be smoke-tested first (§3.1) — the §19.5 train-only run is the natural smoke test.
+
 ---
 
 ## 14. REQUIRED FIGURES / ANALYSES
 
 Paper-quality plots, not just JSON. At minimum:
-- **FIGURE A — ACTIVATION vs CONTINUOUS vs DISCRETE.** Arms: direct activation ablation · continuous soft prompt · GCG mechanism suffix · matched random suffix. y1: Δ refusal projection; y2: Δ ASR. Visually shows the asymmetry.
+- **FIGURE A — ACTIVATION vs CONTINUOUS vs DISCRETE.** Arms: direct activation ablation · continuous soft prompt · GCG mechanism suffix · matched random suffix. y1: Δ refusal projection; y2: Δ ASR. Visually shows the asymmetry. **Extend the control hierarchy to four rungs once §7.5 lands: activation · continuous · universal-discrete · per-prompt-discrete.**
 - **FIGURE B — REACHABLE-SUBSPACE.** Empirical local token-reachability score for refusal · concept · random distribution.
 - **FIGURE C — CROSS-PROMPT GRADIENT COHERENCE.** Whether the token direction required to suppress refusal is shared across prompts or prompt-specific.
 - **FIGURE D — MULTI-CONCEPT DISSOCIATION.** Per concept: concept-ablation specific ΔASR · refusal-ablation specific ΔASR.
@@ -368,7 +413,7 @@ At the end produce:
 1. `docs/ASYMMETRY_FINAL_SYNTHESIS.md` — Executive result · Activation-space causality · Token reachability · Continuous-input reachability · Discrete-token reachability · Optimizer/objective tests · Multi-concept generalization · Defense · Cross-model · Nulls · Limitations · Paper implications.
 2. `docs/TOKEN_REACHABILITY_ANALYSIS.md` — exact equations · Jacobian definition · target positions · random-control construction · finite-difference validation · reachable-subspace method · train/test results.
 3. `docs/CONTINUOUS_VS_DISCRETE.md`
-4. `docs/ADVANCED_OPTIMIZER_RESULTS.md`
+4. `docs/ADVANCED_OPTIMIZER_RESULTS.md` — **must include the per-prompt vs universal comparison (§7.5) and the per-prompt mechanism-vs-random paired result.**
 5. `docs/MULTICONCEPT_CAUSAL_GENERALIZATION.md`
 6. `docs/TWO_SIGNAL_DEFENSE.md`
 7. `docs/UPDATED_PAPER_CLAIM_TABLE.md` — every claim row: claim · experiment · model · concept · train/test · n · effect · CI · p · random control · status · limitation. Status values only: VERIFIED · NEGATIVE · UNDERPOWERED · EXPLORATORY · SUPERSEDED · WITHDRAWN.
