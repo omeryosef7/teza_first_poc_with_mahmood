@@ -1863,3 +1863,42 @@ acted on it, the correct-looking response (cancel and resubmit with a directed c
 have destroyed 3 hours of optimization across six jobs.
 
 ---
+## 2026-08-12 04:36 — LOOP: all six arms healthy; Phase-3 eval pre-flighted
+
+**Queue 6/6, 0 pending, spread 3/3, no failures.** True progress read from the per-step
+JSONL (not stdout — see the 04:06 entry):
+
+| seed | mechanism | matched random |
+|---|---|---|
+| 42 | step **110** / 200 | step **114** / 200 |
+| 43 | 44 | 46 |
+| 44 | 30 | 30 |
+
+Rate refines to **~1.7 min/step** (faster than the earlier 2.05 estimate): seed 42 has ~2.5 h
+left, seeds 43/44 trail by ~2 h and ~2.4 h.
+
+### Eval path pre-flighted so it fires cleanly (nothing to analyze this iteration)
+The Phase-3 arms will be evaluated through **exactly the path the published matrix used** —
+`slurm_scripts/run_gcg_v3_eval.slurm`, which loops `26_eval_p9_gcg_heldout_asr.py --split test`
+over run-dir basenames. Verified:
+* its GPU guard is `≥20 GB`, so the a5000 nodes qualify (no re-pinning needed);
+* `--run-dir / --manifest / --split / --seed / --max-new-tokens 2048` match the published
+  invocation, so the new arms are scored identically to the ones they are compared against;
+* it **skips** any run-dir lacking `FINAL_CANDIDATES.jsonl`, so a half-finished arm cannot be
+  silently scored.
+
+**One hazard found and checked:** the wrapper treats a missing `OPENAI_API_KEY` as a
+**WARN**, not a hard failure — a silent null judge would score every generation benign and
+make a working arm look like a total failure, which is exactly the "do not treat null as
+benign" trap in plan §3.6. Verified the key is present in `.env` before queuing anything.
+`26_eval_p9` also records `judge_fail_frac`, which will be checked to be 0 before any Gate-E
+reading.
+
+Ready-to-fire command (held until the seed-42 pair completes):
+```
+sbatch --nodelist=n-501 --export=ALL,RUN_IDS="asym_p3_arm07p_refusal_down_L18_poscorr_seed42 \
+  asym_p3_arm07pr_refusal_rand_L18_poscorr_seed42",SPLIT=test \
+  slurm_scripts/run_gcg_v3_eval.slurm
+```
+
+---
