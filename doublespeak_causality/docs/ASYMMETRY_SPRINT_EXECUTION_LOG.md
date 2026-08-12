@@ -2871,3 +2871,36 @@ task-objective progress; it does **not** say the resulting suffix attacks worse.
 **ΔASR on locked test across 3 seeds**, which does not exist until the runs finish.
 
 ---
+## 2026-08-12 13:42 — LOOP: third readout; sign-stable, magnitudes easing. Throttling this diagnostic.
+
+**Queue 6/6, 0 pending**, nothing to resubmit. Seed 42 at 72/200, seeds 43/44 at 55–59/200,
+ETA ~5.7–7.0 h. Node split unchanged.
+
+Both statistics at a third step-matched readout (k = 54), against the previous two:
+
+| seed | best-so-far ratio @29 / @43 / **@54** | improvement-count ratio @43 / **@54** |
+|---|---|---|
+| 42 | 3.13× / 3.58× / **2.75×** | 4.17× / **2.80×** |
+| 43 | 1.45× / 1.46× / **1.27×** | 2.45× / **2.23×** |
+| 44 | 3.02× / 3.32× / **3.07×** | 9.50× / **8.67×** |
+
+**What is now solid:** 3/3 sign consistency, holding across **three** readout points and **two
+statistics with independent failure modes**. The mechanism arm makes less task-objective
+progress than its matched random arm, in every seed, however it is measured.
+
+**What is not, and I am flagging it rather than waiting to be asked:** the magnitudes are
+**easing as training proceeds** — the improvement-count ratio fell in all three seeds
+(4.17→2.80, 2.45→2.23, 9.50→8.67). The gap may be partly an *early-training* effect, with the
+mechanism arms catching up given enough steps. At 54 of 200 that is not decidable, and it is
+the reason none of this is a verdict. If the gap keeps narrowing, "λ=10 costs the attack" would
+weaken to "λ=10 costs early convergence", which is a much smaller claim.
+
+**Process note: I am throttling this.** Three consecutive iterations have now re-measured the
+same training-side quantity and reached the same qualitative answer with progressively better
+statistics. Continuing to re-report it every 30 minutes adds log volume, not evidence, and
+risks the appearance of accumulating support for a claim that is still gated on a number that
+does not exist yet. Next substantive entry on these runs when **either** an arm finishes and
+locked-test ΔASR becomes computable, **or** a job fails / the trend reverses. Queue and
+resubmit checks continue every iteration as normal.
+
+---
