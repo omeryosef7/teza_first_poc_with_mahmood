@@ -2040,3 +2040,30 @@ that any `asym_p3_*` glob will match it. The eval wrapper takes explicit run-dir
 or a convenience glob, which is when it would actually bite.
 
 ---
+## 2026-08-12 07:06 — LOOP: seed 42 at 186/191 of 200; deliverable §15.4 pre-written
+
+**Queue 6/6, 0 pending.** seed 42 mechanism **186**/200, random **191**/200 (~15–25 min);
+seed 43 119/123; seed 44 108/107. Nothing finished.
+
+`docs/ADVANCED_OPTIMIZER_RESULTS.md` written with **everything except the numbers** — the
+question, the design table, and above all **§3, the pre-registered rules for reading Gate E**,
+committed *before* any result exists:
+1. held-out ASR through the same eval path the published matrix used, with
+   `judge_fail_frac == 0` required first;
+2. **sign consistency across all 3 seeds** — the published matrix's weakness was 2/3 sign
+   flips, so a mean is not sufficient;
+3. any |ΔASR| **below 0.08** reported as *within judge noise*, not as an effect — the same
+   rule that retired the published +0.018;
+4. the internal-target check, i.e. the Q5 question asked of an objective that actually read
+   the right coordinate.
+
+§1 states plainly, in the deliverable itself rather than only in this log, that **a negative
+here means "the position fix alone does not rescue the objective", NOT "H2′ confirmed"** —
+because at λ = 0.25 the mechanism term is 0.026 % of the loss selection minimizes. §5 records
+the λ sweep as the top follow-up and names the outcome that would be most interesting: that
+**no λ both preserves the attack and gives the mechanism meaningful weight**.
+
+Writing the interpretation rules before the data is the cheapest possible insurance against
+reading whatever arrives as confirmation.
+
+---
