@@ -2904,3 +2904,33 @@ locked-test ΔASR becomes computable, **or** a job fails / the trend reverses. Q
 resubmit checks continue every iteration as normal.
 
 ---
+## 2026-08-12 14:12 — LOOP: queue healthy; the "uniform narrowing" I flagged at 13:42 does NOT hold
+
+**Queue 6/6, 0 pending**, nothing to resubmit, **no failed jobs** (`sacct` clean; the only
+non-running entries today are COMPLETED `p3_mechval` / `gcg_v3_eval`). Seed 42 at 83/200,
+seeds 43/44 at 66–71/200, ETA ~5.0–6.0 h.
+
+Throttled per 13:42 — but that entry named "the trend reverses" as a condition for reporting,
+and part of it has, so this is short and factual:
+
+| seed | best-so-far @54 → **@65** | improvement-count @54 → **@65** |
+|---|---|---|
+| 42 | 2.75× → **2.64×** | 2.80× → **2.64×** |
+| 43 | 1.27× → **1.15×** | 2.23× → **1.74×** |
+| 44 | 3.07× → **3.20×** | 8.67× → **10.33×** |
+
+**The narrowing is not uniform — it is seed-dependent.** Seed 44 moved the *other* way on both
+statistics (widened), while seeds 42 and 43 continued to narrow. So the 13:42 framing ("the gap
+may be an early-training effect that closes") is **too clean**; what is actually happening is
+that the seeds are **diverging from each other**, which is a different and less tidy situation.
+
+**One thing to watch, stated now so it is not a surprise later:** seed 43's best-so-far ratio is
+**1.15×** — close enough to 1.0 that this seed is nearly at parity. If it crosses below 1.0, the
+3/3 sign consistency that all of the training-side reporting rests on **breaks**, and the
+correct description becomes "2 of 3 seeds". I am recording that threshold before it is reached
+rather than after, because the mirror image of that situation — a quantity promoted to a verdict
+while a seed was still able to flip it — is exactly what produced this sprint's 10:05 retraction.
+
+No verdict; still gated on locked-test ΔASR. Throttle otherwise stands.
+
+---
