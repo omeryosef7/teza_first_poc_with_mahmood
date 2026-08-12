@@ -2015,3 +2015,28 @@ pre-registered arms are complete rather than instead of them.
 Nothing finished this iteration; nothing analyzed.
 
 ---
+## 2026-08-12 06:36 — LOOP: nothing finished; one contamination hazard neutralized
+
+**Queue 6/6, 0 pending, spread 3/3.** seed 42 **171/176** of 200 (~50 min), seed 43 104/108,
+seed 44 92/92. No arm has written `FINAL_CANDIDATES.jsonl` yet.
+
+**Nothing to analyze this iteration.** Recording that plainly rather than restating progress
+at length.
+
+### Hazard neutralized: the preserved smoke directory is glob-reachable
+`ls outputs/stage_gcg_full | grep ^asym_p3_` returns **7** directories — the 6 real arms *and*
+`asym_p3_arm07p_refusal_down_L18_poscorr_seed42_SMOKE3STEP`, the 3-step / batch-16 smoke I
+preserved (rather than deleted) at 01:22 per plan §3.12. Its `CONFIG.json` confirms
+`n_steps=3, batch=16`, and it **already has a `FINAL_CANDIDATES.jsonl`** — so it is the one
+directory in that tree that would be silently picked up by any `asym_p3_*` glob and scored as
+if it were a 200-step result.
+
+That is the same failure shape as the Phase-4 partial-data aggregate earlier tonight: an
+artifact that is well-formed, parseable, and wrong.
+
+**Fix:** wrote `DO_NOT_SCORE.txt` into the directory stating what it is, why it was kept, and
+that any `asym_p3_*` glob will match it. The eval wrapper takes explicit run-dir basenames
+(not a glob), so the planned command is already safe — this guards against a *future* reader
+or a convenience glob, which is when it would actually bite.
+
+---
