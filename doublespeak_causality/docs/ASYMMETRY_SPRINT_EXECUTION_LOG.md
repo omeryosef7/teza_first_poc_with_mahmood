@@ -4605,3 +4605,21 @@ control in every contrast measured — **this ordering is explicitly provisional
 seeds are in.**
 
 ---
+## 2026-08-13 10:40 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6** (5 running + 1 pending), no failures. Spread **n-301: 4, n-304: 1**.
+
+| work | state |
+|---|---|
+| 755578 vanilla seed43 eval | **PENDING 2.5 min** (submitted 23:33:29, now 23:36:03) — far from the 30-min threshold, no action |
+| 755563 seed44 vanilla arm | 11/37 |
+| full-budget shards | **33/74** prompt-runs at 4:00 elapsed — ~45 %, tracking ~8.9 h total, ~5 h remaining |
+
+**Nothing finished this tick, so nothing to analyze.**
+
+Outstanding to close §7.5's compute-matched arm at full 3-seed width: vanilla evals for seeds 43
+and 44 (one queued, one waiting on its arm). Then all three arms are 3-seed on the behavioural
+endpoint, and the provisional `vanilla < random < mechanism` ordering from seed 42 either
+replicates or does not.
+
+---
