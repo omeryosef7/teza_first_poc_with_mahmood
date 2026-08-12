@@ -3863,3 +3863,31 @@ only — the full-budget arm remains gated on the λ verdict.
 slots for the imminent λ random evals, which decide the sprint's headline question.
 
 ---
+## 2026-08-13 01:40 — seed44 λ pair + per-prompt compute-matched pair complete; evals launched
+
+**751844** (seed 44 λ=10 random) **COMPLETE** 200/200 with `FINAL_CANDIDATES`.
+**755152** (per-prompt compute-matched matched-random) **COMPLETE**: `ran=37 skipped=0`, **37/37**
+`FINAL_CANDIDATES`. **Both per-prompt compute-matched arms are now done**, so the §7.5
+mechanism-vs-random contrast becomes computable once its eval lands.
+
+**Launched:**
+* **755211** — seed 44 λ=10 random, held-out eval (same v3 eval path as every other arm).
+* **755212** — per-prompt matched-random, batched eval, pinned to the **3090** class to match its
+  arm per §3.1.
+
+**seed 43 random is at 199/200 — the last arm of the λ probe.** Once it lands and is evaluated,
+the **3-seed ΔASR verdict** that has gated this sprint's headline question all day becomes
+computable for the first time.
+
+### State going in — recorded now so the verdict is read against a fixed record
+| seed | mechanism | random | ΔASR |
+|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.622** |
+| 43 | 0.1081 | pending | — |
+| 44 | 0.5405 | pending | — |
+
+Mechanism ASR spans **0.108–0.676**, a 6× spread. So whatever the sign proves to be, **the effect
+size is not estimable from these three seeds** — and that limitation is fixed in advance, not
+after seeing the two remaining numbers.
+
+---
