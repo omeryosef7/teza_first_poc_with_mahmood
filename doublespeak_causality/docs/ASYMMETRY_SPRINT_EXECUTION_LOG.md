@@ -3525,3 +3525,42 @@ the **cheapest** item in the package, and it de-risks the expensive arms. **Pinn
 so its matched-random pair can share a GPU class per **§3.1**.
 
 ---
+## 2026-08-12 21:50 — LOOP: warm page cache = 18 min → 4 s load. Refines the node policy; does NOT fix the cost.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 1, n-302: 4, n-501: 1. λ at **180–200/200**
+(seed 42's pair at 197 each — minutes away). Compute-matched mechanism arm **755124 at 9/37**.
+
+**Job 755124 loaded Llama-3.1-8B in 4 SECONDS** (291/291 at 65.75 it/s) on n-301 — versus
+**~18 minutes** for the smoke on the *same node* an hour earlier. A **~270× difference**,
+explained by the OS page cache still holding the weights.
+
+### This refines the standing "spread across nodes" rule rather than contradicting it
+* **Simultaneous** loads on one node **contend** — the ~16× penalty already documented.
+* **Sequential** reuse of a node hits a **warm page cache** — ~270× *faster*.
+
+**Correct policy: stagger job STARTS across nodes, but deliberately REUSE a node for jobs that
+follow one another.** Both effects concern the same resource; they only look contradictory if you
+index on *"same node"* instead of *"same moment"*. The loop instruction's "spread across nodes to
+avoid concurrent-model-load contention" is right — and the operative word is **concurrent**.
+
+### Checked honestly whether this rescues the cost overrun. It does not.
+Load was never the dominant term for the optimization arms. Recomputing from **measured**
+per-prompt time (58 s at 5 steps — 34 s stepping + ~24 s fixed overhead):
+
+| component | × 9 arm-seeds |
+|---|---|
+| full budget | 129 GPU-h |
+| compute-matched | 5 GPU-h |
+| eval | 58 GPU-h |
+| **total** | **~193 GPU-h** |
+
+Warm-cache saving ≈ **8 GPU-h, about 4 %** of the total. **The 2× overrun versus my quoted
+90–110 GPU-h stands**, and I am not letting a dramatic-looking 270× number obscure that.
+
+### One more measured quantity worth recording
+**~24 s of fixed per-prompt overhead** beyond stepping (span building, final-candidate eval,
+checkpoint writes). Negligible at 200 steps (**1.7 %**) — but it is **41 % of the
+compute-matched arm's per-prompt cost**. So the compute-matched arm is **overhead-dominated** and
+must **not** be cost-modelled as 5/200 of the full arm; doing so would underestimate it ~24×.
+
+---
