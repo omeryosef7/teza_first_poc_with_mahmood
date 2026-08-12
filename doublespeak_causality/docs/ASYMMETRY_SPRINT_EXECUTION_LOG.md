@@ -2143,3 +2143,53 @@ read under the rules already fixed in `docs/ADVANCED_OPTIMIZER_RESULTS.md` §3:
 consistency once all three seeds are in — and with the λ caveat binding either outcome.
 
 ---
+## 2026-08-12 08:20 — PHASE 3 SEED 42: the position-corrected objective does NOT beat random
+
+Held-out test n=37, `judge_fail_frac = 0.0` for **both** arms (the pre-registered gate check
+in `ADVANCED_OPTIMIZER_RESULTS.md` §3.1 — passed, so the numbers are readable).
+
+| arm | ASR | mean SR | refusal_rate |
+|---|---|---|---|
+| **mechanism**, position-corrected | **0.1622** | 0.1689 | **0.6216** |
+| **matched random**, position-corrected | **0.2162** | 0.1993 | 0.2162 |
+
+**ΔASR = −0.054** (mechanism *below* random). **|ΔASR| = 0.054 < 0.08**, the measured
+judge-noise floor → by the pre-registered rule this is reported as **within judge noise, i.e.
+no effect** — not as "the mechanism is worse".
+
+### Against the legacy (published) seed-42 arms, same split
+| | legacy | position-corrected |
+|---|---|---|
+| mechanism ASR | 0.324 | **0.162** |
+| matched random ASR | 0.351 | **0.216** |
+| ΔASR | −0.027 | −0.054 |
+
+Two observations, neither yet a claim (one seed):
+1. **The position correction did not rescue the objective** — ΔASR stays within noise, and
+   negative in sign, exactly as Gate B / H2′ predicted it would.
+2. **Both arms' absolute ASR fell substantially** (0.324→0.162 and 0.351→0.216) — and vanilla
+   doublespeak on this split is 0.243, so *both* corrected arms now sit at or below the
+   no-objective baseline. Since the random arm changed too, this is a property of the
+   **position change itself**, not of the mechanism. Reading the projection at the decision
+   token appears to make the optimizer produce *worse* attacks than reading it mid-suffix.
+3. **The mechanism arm's refusal_rate is 0.622 vs 0.216 for random** — the
+   refusal-*minimizing* objective produced the suffix that triggers keyword refusal most.
+   Striking, and the sort of thing that could be an artifact; flagged for the other two seeds.
+
+### THE BINDING CAVEAT, restated because this is exactly when it matters
+At λ = 0.25 the mechanism term is **0.026 %** of the loss candidate selection minimizes. So
+the correct reading of this negative is:
+
+> **"The position fix alone does not rescue the objective."** It is **NOT** "H2′ is
+> confirmed", and it is **NOT** "the refusal direction is unusable as a token objective" —
+> because at this λ the objective barely expresses the mechanism at all.
+
+**Seeds 43 and 44 pending** (~1.5 h, ~2 h) — required before any sign-consistency statement,
+since the published matrix's weakness was 2/3 sign flips.
+
+**Launched (job 751592):** mech-validity on the corrected suffixes — Gate E clause (ii), *does
+the corrected objective move its own internal target more than random on held-out prompts?*
+Includes the **legacy** seed-42 suffixes in the same run, so corrected-vs-legacy is measured
+under identical conditions rather than across runs.
+
+---
