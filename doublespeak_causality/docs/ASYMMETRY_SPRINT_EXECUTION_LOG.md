@@ -3038,3 +3038,67 @@ assume one universal suffix, and the minimal change to accept a `{prompt_id -> s
 Implementation waits on that; nothing is written yet.
 
 ---
+## 2026-08-12 16:05 — §7.5: recon complete, splitter built+tested, and TWO DESIGN FLAWS in my own §7.5 fixed
+
+**Queue 6/6, 0 pending**, nothing to resubmit, **no GPU work launched** (cap fully consumed by
+the λ probe). 5-agent read-only recon workflow completed, 0 errors.
+
+**HEADLINE: §7.5 needs ZERO optimizer/objective/eval code changes.** Per-prompt optimization is
+expressible today by passing a **1-row manifest**; task count is purely manifest content
+(`gcg_optimizer.py:617-619`), and no CLI/config field caps it. Every n>1 construct degrades
+correctly at n=1 (gradient normalization guarded at `:887`, candidate eval is a sum, thresholds
+scale by `n_train`). Precedent exists on disk: completed 1-row runs under
+`outputs/stage_gcg_percot_v2/` with `n_train_tasks==1`. §7.1 (reuse, no new optimizer) is
+satisfied outright. The eval driver also needs no change — it has no minimum-task assert and all
+divisions are guarded by `if n`.
+
+**Built + tested: `scripts/split_manifest_perprompt.py`** (~90 lines, data-only). Verified on the
+frozen test split: **37 one-row manifests** (n=37 ≥ the 20-per-experiment rule), 1 row each, true
+split label **preserved**, 37/37 unique output dirs, correct `--split all` flag emitted, and a
+negative test (`--split nosuch`) fails loudly rather than silently producing nothing.
+
+### Two SILENT-failure modes found and guarded (both exit 0 while producing garbage)
+1. **Empty run.** A 1-row manifest whose split is `test` needs `--split all`, else the train list
+   is empty, `grad_accum` stays `None`, the loop breaks at step 0 (`:884-885`), and an **empty
+   `ITERATION_LOG` is written with exit code 0**. The splitter emits the correct flag rather than
+   rewriting the split label (rewriting would corrupt provenance).
+2. **Cross-prompt resume.** `config_hash()` excludes `run_id`, `output_dir` **and
+   `manifest_path`** (verified `config.py:192-224`). Two prompts sharing an output dir would load
+   **each other's checkpoint with no hash mismatch** and silently optimize the wrong prompt. The
+   splitter asserts unique dirs. *This is the same silent absolute-index/identity bug class that
+   has now hit this repo three times.*
+
+### THREE design corrections to §7.5 — flaws in the subsection I wrote at 14:38
+The audit caught these, not me, and two of them would have produced a **misleading positive**:
+
+1. **Compute asymmetry.** Per-prompt at 200 steps/prompt spends **~37×** the universal arm's
+   optimizer compute. My §7.5 said "compute-matched across arms" — but that only matched the
+   per-prompt arms *to each other*, **not to the universal baseline that is the entire point of
+   the subsection.** Fix: add a **compute-matched arm at ~5 steps/prompt** (essentially free) and
+   always report both budgets. Full-budget = threat model; compute-matched = fair contrast.
+2. **The two arms do not measure the same quantity.** A per-prompt suffix is evaluated **on the
+   prompt it was optimized for — zero transfer component**; the universal 0.465/0.464 is a
+   *transfer* result. Direct comparison would **overstate per-prompt success**. Fix: say so
+   wherever the numbers appear, and report the apples-to-apples reference (universal suffix's ASR
+   on the *same* 37 prompts). Not a §3.5 leakage violation — nothing is *selected* on test
+   outcomes — but it must never be labelled a held-out number.
+3. **Must compare against the POSITION-CORRECTED universal arms.** At n=1 `legacy_fixed` reduces
+   exactly to `per_task_suffix` (`refusal_dir_positions = [suffix_slice.stop-1]` from
+   `train_tasks[0]`, verified `:676-688`). So comparing per-prompt against the *published legacy*
+   arms would **partly measure the D1 bug fix rather than the per-prompt setting**. This refines
+   my 15:40 entry: D1 vanishes at n=1, and the precise reason is that legacy collapses to
+   per_task_suffix — which is still **not** per_task_decision, so D2 persists and
+   `per_task_decision` remains required.
+
+§7.5 in the plan now carries all three corrections plus the two silent-failure guards.
+
+### Cost — and why I am NOT launching on my own authority
+Audit estimate (explicitly labelled an extrapolation; **no `n_train_tasks=1` timing exists
+anywhere**, smallest observed is N=3): **~5 s/step ±40 %**, so 200 steps × 37 prompts ≈ **11 GPU-h
+per arm per seed**. Mechanism + matched random + vanilla × 3 seeds ≈ **90–110 GPU-hours, ~2–3
+days wall** at the 6-job cap. That is a materially larger commitment than any single package this
+sprint has run, and several scope questions change it by 2× or more. **Consulting the author
+before spending it**, per the plan's "you can consult with me". A 10-step 1-row smoke (<5 min GPU)
+will settle the 5 s/step extrapolation first, the moment a slot frees.
+
+---
