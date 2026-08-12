@@ -2308,3 +2308,42 @@ contrast at λ=10 is internally matched, and the λ=0.25 comparison is a
 same-script/same-budget/same-seed difference in exactly one parameter.
 
 ---
+## 2026-08-12 09:36 — LOOP: seed-43 arm NOT stalled; λ arms hit the load-contention rule I wrote
+
+**Queue 5** (seed 43 mechanism, seed 44 pair, λ=10 pair). seed 43 random **COMPLETE** (200/200).
+
+### 1. seed-43 mechanism looked stalled at 194/200 for ~30 min. It is not.
+`ITERATION_LOG.jsonl` mtime is **09:38:15** against a login-node clock of **09:36:50** — the
+compute nodes run ahead (documented at 04:06). It is writing *now*, at step ~194–199, and
+stdout prints only every 10 steps. Second time tonight this shape appeared; the artifact-mtime
+check settled it in one command.
+
+### 2. The λ arms are loading at **12.18 s/it** — the contention pathology, caused by my own
+### co-location choice
+```
+751610  Loading weights: 57%|█████▋ | 167/291 [27:59<25:10, 12.18s/it]
+751611  Loading weights: 57%|█████▋ | 167/291 [27:59<25:11, 12.19s/it]
+```
+~12× the quiet-node rate. I put **both** λ arms on **n-302** deliberately, so the mechanism and
+its matched control would share a GPU class. That satisfied one of my rules and violated the
+other:
+
+> **The two rules conflict when a matched pair is submitted together.** "Mechanism and control
+> must share a GPU class" pushes toward one node; "cap concurrent model loads per node" pushes
+> apart. **The resolution I should have used: two DIFFERENT nodes of the SAME class**
+> (e.g. n-801 + n-802, both L40S), which satisfies both. Recorded in the memory note.
+
+**Not cancelling** — they are 57 % loaded with ~25 min left; restarting costs more than it
+saves, and load contention affects wall-clock only, not results.
+
+### 3. ⚠ A GPU-class caveat on the λ comparison, stated now
+The λ=0.25 arms ran on **a5000** (n-501/n-502); the λ=10 arms are on **n-302 (3090)**. So:
+* **within-λ contrasts are clean** — each mechanism/random pair shares a node, and that is the
+  quantity Gate E turns on;
+* **the λ=10 vs λ=0.25 comparison crosses GPU classes.** The defensible statistic is therefore
+  the **difference-of-differences** (ΔASR at λ=10 minus ΔASR at λ=0.25), which cancels a GPU
+  main effect on ASR under the assumption of no class×λ interaction — reasonable for greedy
+  generation, but an assumption, and it is recorded as one rather than glossed.
+* A same-class rerun is cheap to specify if the λ result turns out to matter.
+
+---
