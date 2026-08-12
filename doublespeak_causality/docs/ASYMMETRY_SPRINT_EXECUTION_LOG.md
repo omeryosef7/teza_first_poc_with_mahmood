@@ -2629,3 +2629,55 @@ so it would silently destroy provenance on a published arm before failing. **Fix
   the same layer *and* token the optimizer targets.
 
 ---
+## 2026-08-12 10:36 — PHASE 3 COMPLETE — GATE E: **NEGATIVE**, and the position correction changes NOTHING
+
+All three pre-registered seeds evaluated, `judge_fail_frac = 0.0` on all six arms.
+
+### Clause (i) — held-out ASR, mechanism vs matched random
+
+| seed | mechanism | random | **ΔASR** |
+|---|---|---|---|
+| 42 | 0.1622 | 0.2162 | **−0.0540** |
+| 43 | 0.3514 | 0.3784 | **−0.0270** |
+| 44 | 0.3243 | 0.2162 | **+0.1081** |
+
+| | per-seed ΔASR | mean | sd | across-seed 95 % CI | positive seeds |
+|---|---|---|---|---|---|
+| **position-corrected** | −0.054 / −0.027 / **+0.108** | **+0.0090** | 0.087 | [−0.207, +0.225] | 1/3 |
+| **published legacy** | −0.027 / +0.162 / −0.081 | **+0.0180** | 0.128 | [−0.299, +0.335] | 1/3 |
+
+> ### The corrected objective reproduces the published result almost exactly.
+> Both means sit within ±0.02 of zero. Both CIs span zero by a wide margin. **Both flip sign
+> across seeds, 1/3 positive in each.** The position fix — which demonstrably made the
+> objective read the right coordinate on **40/40** prompts instead of 1/40, and drove that
+> coordinate 99 % to zero during training — produced **no change whatsoever in the behavioural
+> outcome.**
+
+### GATE E: NEGATIVE (both clauses)
+* **Clause (i)** — no ASR advantage: **confirmed**, 3 seeds, mean +0.009, sign-unstable.
+* **Clause (ii)** — internal target: **withdrawn**, unstable in both configurations (10:20).
+
+### What this licenses, and what it does not
+**Licensed.** *The published token-space negative was not caused by the position defect.* This
+was the sprint's central open question after Phase 0, and it is now answered: fixing D1/D2
+leaves the ASR result statistically identical. The defect was a **confound in the
+interpretation**, not the **cause** of the negative — which is exactly the distinction the
+Phase-0 entry (E0.3) was careful to draw, and it lands on the side that entry called
+"SUPERSEDED-PENDING" rather than "invalidated".
+
+**NOT licensed.** "H2′ is confirmed." At λ = 0.25 the mechanism term is **0.370 %** of the
+selection loss (corrected figure, 10:45). The objective still barely expresses the mechanism,
+so this is a negative **at that weighting**. The λ=10 probe now has 3 seeds in flight
+(751610/11 seed 42 + 4 just submitted for seeds 43/44) — **and given that ΔASR is
+demonstrably sign-unstable across seeds at n=37, a single-seed λ result would have been
+worthless; that is why all three are being run.**
+
+**Also notable:** seed 44's +0.108 individually exceeds the ±0.08 judge-noise floor. Read
+alone it would look like a positive. It is the third seed of three, and the other two are
+negative — a compact illustration of why the ≥3-seed rule was worth protecting at 06:06 and
+why the published matrix's +0.162 seed never meant what it appeared to.
+
+**Queue 6/6**: λ=10 × {mechanism, random} × seeds {42, 43, 44}, spread across five nodes with
+at most one new load per node.
+
+---
