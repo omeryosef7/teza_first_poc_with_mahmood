@@ -4771,3 +4771,29 @@ Nothing finished this tick, so nothing to analyze.
 Nothing finished this tick, so nothing to analyze. No queue or resubmit action warranted.
 
 ---
+## 2026-08-13 13:55 — LOOP: routine, but the node-speed measurement matters for §3.1
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | progress | measured s/step | ⇒ per prompt | ⇒ per shard |
+|---|---|---|---|---|
+| seed 42 full-budget (n-301, 4-way) | **53/74** at 5:59 | **7.43 s** | 24.8 min | 7.8 h |
+| seed 43 full-budget (n-304, 2-way) | **6/37** at 1:29 | **6.21 s** | 20.7 min | 6.6 h |
+
+**The counter misled me again.** 6 prompts in 1:29 implied ~30 min/prompt and a *slower* node.
+Measured per-step says **20.7 min/prompt — n-304 is ~20 % FASTER than n-301**. The gap is the
+one-time model load sitting inside a small completion count. **Fourth time today that measuring
+beat inferring from a completion counter**; the pattern is now consistent enough that inferring
+rates from `done=N` should simply be treated as unreliable.
+
+### ⚠ Consequence for §3.1 that must not be forgotten
+**seed 43's full-budget mechanism arm is on n-304 and runs ~20 % faster per step than n-301.**
+§3.1 forbids mixing GPU classes *within a direct comparison* — so **seed 43's matched-random
+full-budget arm must also be pinned to the n-304 class**, not merely to "a 3090". Both are 3090s,
+yet they are measurably different in throughput, which is exactly the kind of asymmetry the rule
+exists to prevent. Recorded now because that arm gets launched later, from a different tick, when
+the reason would no longer be in view.
+
+Nothing finished this tick, so nothing to analyze.
+
+---
