@@ -4170,3 +4170,23 @@ slots go to its **held-out eval** and its **mechanistic readout** — which toge
 add-on 1's single-seed specificity result (mech−rand **−0.391**, p = 0.009) **replicates**.
 
 ---
+## 2026-08-13 05:25 — seed43 compute-matched pair COMPLETE; replication + eval submitted (PENDING)
+
+**755307 / 755308 COMPLETE**: `ran=37 skipped=0` each, **37/37 `FINAL_CANDIDATES` on both arms**.
+The seed-43 compute-matched pair is a clean replicate of the seed-42 configuration.
+
+**Submitted:**
+| job | purpose |
+|---|---|
+| **755367** `pp_mechval` | **the replication test** for add-on 1's single-seed specificity result (mech−rand **−0.391**, Wilcoxon **p = 0.009**) |
+| **755368** `pp_eval` | seed 43 mechanism held-out ASR |
+
+Both are **PENDING (Priority)** — normal at submit. **Submit time recorded so the >30 min rule has
+a clock**: if either is still PENDING then, cancel and resubmit with a widened nodelist rather
+than leaving them to block the 6-job budget.
+
+**Queue 6/6** (4 running full-budget shards + these 2 pending). The shards are at 2–3 of ~19 with
+~6.5 h to go and gate nothing right now — **these two pending jobs are what gates the replication
+answer**, which is the more important of the two open §7.5 questions.
+
+---
