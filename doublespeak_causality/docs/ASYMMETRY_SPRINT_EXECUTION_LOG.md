@@ -3891,3 +3891,29 @@ size is not estimable from these three seeds** — and that limitation is fixed 
 after seeing the two remaining numbers.
 
 ---
+## 2026-08-13 02:00 — Final λ arm complete: all 6 optimized, 3 evals in flight
+
+**751842** (seed 43 λ=10 random) **COMPLETE** 200/200 with `FINAL_CANDIDATES` — **the last arm of
+the λ probe.** All 6 (3 seeds × mechanism/random) are now optimized.
+
+Launched **755214** for it. Three evals in flight:
+| job | arm |
+|---|---|
+| 755211 | seed 44 λ random |
+| 755214 | seed 43 λ random |
+| 755212 | per-prompt compute-matched matched-random |
+
+When these land, **both** the 3-seed λ ΔASR verdict **and** the §7.5 compute-matched
+mechanism-vs-random contrast become computable.
+
+### Holding the 3 free slots deliberately
+* The **129 GPU-h** full-budget §7.5 arms are gated on the λ verdict, ~10 min away.
+* **Add-on 1** (per-prompt mechanistic readout) needs its own SLURM script, because the existing
+  `run_asym_p1c_mechval.sh` hardcodes the *universal* arms. Writing it now would mean choosing
+  **which arms to read before knowing whether the λ result re-scopes §7.5** — and if λ=10
+  succeeds, the compute-matched arms may not be the right ones to read at all.
+
+Ten minutes of idle capacity is a smaller cost than either committing 129 GPU-h against a premise
+that may dissolve, or building the wrong readout and having to redo it.
+
+---
