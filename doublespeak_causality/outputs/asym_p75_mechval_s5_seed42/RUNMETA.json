@@ -1,0 +1,142 @@
+{
+  "schema": "RUNMETA/1",
+  "run_id": "asym_p75_mechval_s5_seed42",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/asym_p75_mechval_s5_seed42",
+  "script": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/asym_p1c_mech_validity_ext.py",
+  "argv": [
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/asym_p1c_mech_validity_ext.py",
+    "--manifest",
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test",
+    "--arm-perprompt",
+    "pp_mech=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/perprompt_test/joblist_asym_p75_mechanism_s5_seed42.jsonl",
+    "--arm-perprompt",
+    "pp_rand=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/perprompt_test/joblist_asym_p75_matched_random_s5_seed42.jsonl",
+    "--n-random-suffix",
+    "0",
+    "--out-dir",
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/asym_p75_mechval_s5_seed42"
+  ],
+  "args": {
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "manifest": [
+      "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test"
+    ],
+    "arm": [],
+    "arm_perprompt": [
+      "pp_mech=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/perprompt_test/joblist_asym_p75_mechanism_s5_seed42.jsonl",
+      "pp_rand=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/perprompt_test/joblist_asym_p75_matched_random_s5_seed42.jsonl"
+    ],
+    "refusal_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_alllayers",
+    "refusal_fit_layers": "10,11,12,13,14,15,16,17,18,19,20,21,22,23,24",
+    "concept_npz": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/unified_directions/clearharm.npz",
+    "concept_fit_layers": "9,16",
+    "enable_thinking": "false",
+    "n_max": 0,
+    "n_random_suffix": 0,
+    "n_suffix_tokens": 16,
+    "random_suffix_seed": 42,
+    "out_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/asym_p75_mechval_s5_seed42"
+  },
+  "seed": null,
+  "slurm_job_id": "755270",
+  "slurm_nodelist": "n-304",
+  "hostname": "n-304",
+  "git_commit": "dbb255501fa81f14f5f19f06ca6edc9f1d5e6441",
+  "git_dirty": null,
+  "python": "3.12.13",
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "start_ts": "2026-08-12T20:32:27",
+  "start_epoch": 1786555947.6550534,
+  "cwd": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood",
+  "phase": "P1c_mech_validity_ext",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "manifests": [
+    "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test"
+  ],
+  "arms": [],
+  "conditions": [
+    "none",
+    "neutral",
+    "pp_mech",
+    "pp_rand",
+    "init"
+  ],
+  "n_rows": 5661,
+  "perprompt_arms": [
+    "pp_mech",
+    "pp_rand"
+  ],
+  "perprompt_coverage_used": {
+    "pp_mech": 37,
+    "pp_rand": 37
+  },
+  "perprompt_coverage_missing": {},
+  "n_random_suffix": 0,
+  "n_suffix_tokens": 16,
+  "random_suffix_seed": 42,
+  "refusal_fit_layers": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "concept_fit_layers": [
+    9,
+    16
+  ],
+  "hidden_states_rows_refusal": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+  ],
+  "hidden_states_rows_concept": [
+    10,
+    17
+  ],
+  "off_by_one_note": "direction L{k} fitted at hidden_states[k+1]; +1 applied here",
+  "template_tail_tokens_after_user_content": 5,
+  "positions": {
+    "decision": "last token of templated prompt (fit/readout position)",
+    "last_suffix": "last suffix token (position the GCG objective read)"
+  },
+  "elapsed_s": 1468.2245223522186,
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": null,
+  "dtype": "torch.bfloat16",
+  "device": "cuda:0",
+  "num_layers": 32,
+  "hidden_size": 4096,
+  "eos_token_ids": [
+    128001,
+    128008,
+    128009
+  ],
+  "timestamp": "2026-08-12T20:32:27"
+}

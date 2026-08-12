@@ -4081,3 +4081,44 @@ Running it now would produce a null that means nothing — and this sprint has a
 how easily an underpowered null gets mistaken for a negative.
 
 ---
+## 2026-08-13 04:10 — ✅ §7.5 add-on 1 RESULT: the per-prompt objective **IS** mechanistically specific
+
+**755270 complete** (25:31). **Coverage 37/37 on both arms, 0 missing** — the explicit-skip guard
+built for exactly this reported full coverage rather than silently degrading a missing run into
+the `none` baseline.
+
+### Paired, target layer (fit L18 → hs19), decision position, n=37
+| quantity | value |
+|---|---|
+| baseline (no suffix) projection | **+3.3976** |
+| mechanism drop vs baseline | **−0.5233** |
+| matched random drop | −0.1322 |
+| **mech − rand** | **−0.3911** |
+| paired Wilcoxon | **p = 0.0092** |
+| paired bootstrap 95 % CI | **[−0.660, −0.132]** — excludes zero |
+| prompts where mechanism suppressed more | **24/37** |
+
+**The per-prompt mechanism objective moves its intended internal target significantly more than
+matched random. Gate E's internal-target clause PASSES for the per-prompt arms.**
+
+### The interesting part: this REVERSES the sign of the universal-arm result
+§19.1 found the **universal** refusal suffix lowered held-out refusal **less** than a norm-matched
+random suffix (**−1.66 vs −2.04** @hs19) — suppression real but **non-specific**. Per-prompt, the
+contrast **flips**: **−0.523 vs −0.132**, mechanism suppressing **~4× more**.
+
+**Per-prompt optimization achieves the mechanistic specificity that universal optimization did
+not.** That is a genuine §7.5 finding and it is exactly the kind of thing the subsection was added
+to look for.
+
+### Read together with the ASR result on the same arms
+ΔASR **+0.081**, McNemar **p = 0.45**, and only **9 %** power. So on the *same suffixes*: **the
+representation moves specifically, and the behaviour does not detectably follow.** The per-prompt
+setting **reproduces the program's central dissociation in a new place** — which is a more
+interesting outcome than either a clean positive or a clean negative would have been.
+
+### Caveats kept attached to the number
+**One seed**; **compute-matched budget only**; and the magnitudes are **not comparable across
+settings** (universal was 200 steps over 40 prompts, per-prompt is 5 steps over 1). **It is the
+SIGN of the mechanism-vs-random contrast that flips, and that is the claim — not the size.**
+
+---
