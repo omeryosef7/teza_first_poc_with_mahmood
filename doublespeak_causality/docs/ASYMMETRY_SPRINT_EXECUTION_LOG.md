@@ -2193,3 +2193,37 @@ Includes the **legacy** seed-42 suffixes in the same run, so corrected-vs-legacy
 under identical conditions rather than across runs.
 
 ---
+## 2026-08-12 08:36 — LOOP: why did BOTH corrected arms produce worse attacks? Not optimization failure.
+
+**Queue 5** (4 GCG arms + mechval, pending 2 min — well inside the rule). seed 43 164/169 of
+200 (~1 h), seed 44 153/154 (~1.5 h).
+
+Followed up the surprise from 08:20 — the position-corrected arms had *lower* held-out ASR
+than the legacy arms in **both** conditions. Compared the optimization itself (train pool, 200
+steps, same budget):
+
+| arm | task_loss first → last | improvement | final `refusal_dir_loss` |
+|---|---|---|---|
+| legacy mechanism | 109.04 → 66.55 | 42.48 | −0.121 |
+| legacy random | 109.38 → 67.34 | 42.04 | −0.020 |
+| **poscorr mechanism** | 110.20 → **63.32** | **46.89** | −0.083 |
+| poscorr random | 106.42 → 66.86 | 39.56 | −0.002 |
+
+> **The corrected mechanism arm optimized its training objective BETTER than the legacy arm
+> (46.89 vs 42.48) and generalized WORSE (held-out ASR 0.162 vs 0.324).** So the ASR drop is
+> not an optimization failure — the optimizer worked; the result transferred less.
+
+Across all four arms there is **no consistent relationship between train task-loss improvement
+and held-out ASR** (poscorr random improved *least*, 39.56, and also lost ASR). That
+independently reproduces this program's established Jul-2026 finding that **GCG training loss
+does not predict ASR**, now on the corrected objective.
+
+**Caveat:** the two `refusal_dir_loss` columns are **not comparable** — legacy measures the
+projection at the fixed absolute index 233, corrected measures it at each task's own decision
+token. Different quantities at different positions; only the within-family comparison
+(mechanism vs its own random) is meaningful.
+
+**n = 1 seed.** Seeds 43/44 will show whether the ASR drop and the refusal_rate inversion
+(0.622 vs 0.216) are stable or seed-specific. No claim until then.
+
+---
