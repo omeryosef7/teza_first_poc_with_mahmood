@@ -2227,3 +2227,51 @@ token. Different quantities at different positions; only the within-family compa
 (0.622 vs 0.216) are stable or seed-specific. No claim until then.
 
 ---
+## 2026-08-12 08:52 — ⭐ GATE E CLAUSE (ii) IS **POSITIVE** — the position correction FLIPS the Q5 result
+
+Job 751592. Held-out test n=37, refusal projection @ L18 → `hs[19]`, `decision` position, all
+four seed-42 suffixes measured **in one run** so conditions are identical. No-suffix baseline
+**3.3976**. Paired over prompts (10,000-resample bootstrap + sign-flip permutation):
+
+| contrast | mechanism | random | **paired diff** | 95 % CI | p | prompts where mech is lower |
+|---|---|---|---|---|---|---|
+| **position-CORRECTED** | **+1.038** | +2.141 | **−1.103** | [−1.369, −0.855] | 1e-4 | **35/37 (0.95)** |
+| legacy (published) | +1.739 | +1.363 | **+0.376** | [+0.219, +0.544] | 1e-4 | 7/37 (0.19) |
+| corrected vs legacy mechanism | +1.038 | +1.739 | **−0.702** | [−0.987, −0.442] | 1e-4 | 29/37 (0.78) |
+
+> ### The sign REVERSES. With the position corrected, the mechanism objective suppresses its
+> ### own internal target **1.9× more** than its matched random control (−2.360 vs −1.257 from
+> ### the no-suffix baseline), on **35 of 37** held-out prompts, p = 1e-4.
+> The published Q5 result — mechanism suppresses **less** than random — was **an artifact of
+> reading the projection at a position that was correct for 1 of 40 training prompts.**
+
+This closes the B1 loop opened at the start of the sprint. Q5 was already downgraded to
+UNDERPOWERED when seeds 43/44 reversed it; it is now **explained**: the objective was not
+failing to control the refusal coordinate, it was **not reading the refusal coordinate**.
+
+### GATE E — the two clauses now DISAGREE, and that is the finding
+* **Clause (ii), internal target: POSITIVE.** The corrected token objective demonstrably moves
+  the refusal projection on held-out prompts, far more than a matched random direction, with a
+  CI nowhere near zero and near-total per-prompt consistency.
+* **Clause (i), behaviour: NEGATIVE.** ΔASR = **−0.054**, inside the ±0.08 judge-noise floor.
+
+Plan §12 Gate E requires **both**, so **Gate E does not pass**. But the *shape* of the failure
+is now completely different from the published one:
+
+> **A discrete token objective CAN specifically control the causal refusal coordinate on
+> held-out prompts — and behaviour still does not follow.**
+
+That is the same dissociation Phase 2 found at high dose (projection −20.09, ASR 0.000), now
+reproduced in the **discrete** medium with a **specific** control. It removes the last
+"the objective never really worked" escape hatch from the token-space negative.
+
+### What this does NOT license
+The **λ caveat still binds the ASR half**: at λ = 0.25 the mechanism term is 0.026 % of the
+selection loss, so "no ASR advantage" remains "no advantage *at this weighting*". The internal
+target moved anyway, which makes the λ sweep **more** interesting, not less — the objective
+evidently has purchase on the coordinate even at 0.026 % weight.
+
+**One seed.** Seeds 43/44 (~30 min, ~1 h) must reproduce the sign before this is a claim; the
+published Q5 is itself a cautionary tale about a one-seed internal-target result.
+
+---

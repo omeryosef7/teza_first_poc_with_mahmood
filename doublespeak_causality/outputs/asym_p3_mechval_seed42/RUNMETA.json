@@ -1,0 +1,117 @@
+{
+  "schema": "RUNMETA/1",
+  "run_id": "asym_p3_mechval_seed42",
+  "output_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/asym_p3_mechval_seed42",
+  "script": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/scripts/asym_p1c_mech_validity_ext.py",
+  "argv": [
+    "doublespeak_causality/scripts/asym_p1c_mech_validity_ext.py",
+    "--manifest",
+    "doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test",
+    "--refusal-fit-layers",
+    "18",
+    "--concept-fit-layers",
+    "9",
+    "--arm",
+    "poscorr_refusal_s42=outputs/stage_gcg_full/asym_p3_arm07p_refusal_down_L18_poscorr_seed42",
+    "--arm",
+    "poscorr_rand_s42=outputs/stage_gcg_full/asym_p3_arm07pr_refusal_rand_L18_poscorr_seed42",
+    "--arm",
+    "legacy_refusal_s42=outputs/stage_gcg_full/phase9b_v3_arm07_refusal_down_L18_seed42",
+    "--arm",
+    "legacy_rand_s42=outputs/stage_gcg_full/phase9b_v3_arm07r_refusal_rand_L18_seed42",
+    "--out-dir",
+    "doublespeak_causality/outputs/asym_p3_mechval_seed42"
+  ],
+  "args": {
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "manifest": [
+      "doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test"
+    ],
+    "arm": [
+      "poscorr_refusal_s42=outputs/stage_gcg_full/asym_p3_arm07p_refusal_down_L18_poscorr_seed42",
+      "poscorr_rand_s42=outputs/stage_gcg_full/asym_p3_arm07pr_refusal_rand_L18_poscorr_seed42",
+      "legacy_refusal_s42=outputs/stage_gcg_full/phase9b_v3_arm07_refusal_down_L18_seed42",
+      "legacy_rand_s42=outputs/stage_gcg_full/phase9b_v3_arm07r_refusal_rand_L18_seed42"
+    ],
+    "refusal_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/refusal_alllayers",
+    "refusal_fit_layers": "18",
+    "concept_npz": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/doublespeak_causality/outputs/unified_directions/clearharm.npz",
+    "concept_fit_layers": "9",
+    "enable_thinking": "false",
+    "n_max": 0,
+    "n_random_suffix": 0,
+    "n_suffix_tokens": 16,
+    "random_suffix_seed": 42,
+    "out_dir": "doublespeak_causality/outputs/asym_p3_mechval_seed42"
+  },
+  "seed": null,
+  "slurm_job_id": "751592",
+  "slurm_nodelist": "n-302",
+  "hostname": "n-302",
+  "git_commit": "631e4a33cd38393c951fb4a7ad1bee386fdfe8ae",
+  "git_dirty": null,
+  "python": "3.12.13",
+  "python_executable": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "start_ts": "2026-08-12T08:37:42",
+  "start_epoch": 1786513062.9656646,
+  "cwd": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood",
+  "phase": "P1c_mech_validity_ext",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "manifests": [
+    "doublespeak_causality/data/gcg/clearharm_llama_v3/clearharm_llama_doublespeak.jsonl:test"
+  ],
+  "arms": [
+    "poscorr_refusal_s42=outputs/stage_gcg_full/asym_p3_arm07p_refusal_down_L18_poscorr_seed42",
+    "poscorr_rand_s42=outputs/stage_gcg_full/asym_p3_arm07pr_refusal_rand_L18_poscorr_seed42",
+    "legacy_refusal_s42=outputs/stage_gcg_full/phase9b_v3_arm07_refusal_down_L18_seed42",
+    "legacy_rand_s42=outputs/stage_gcg_full/phase9b_v3_arm07r_refusal_rand_L18_seed42"
+  ],
+  "conditions": [
+    "none",
+    "neutral",
+    "poscorr_refusal_s42",
+    "poscorr_rand_s42",
+    "legacy_refusal_s42",
+    "legacy_rand_s42",
+    "init"
+  ],
+  "n_rows": 962,
+  "n_random_suffix": 0,
+  "n_suffix_tokens": 16,
+  "random_suffix_seed": 42,
+  "refusal_fit_layers": [
+    18
+  ],
+  "concept_fit_layers": [
+    9
+  ],
+  "hidden_states_rows_refusal": [
+    19
+  ],
+  "hidden_states_rows_concept": [
+    10
+  ],
+  "off_by_one_note": "direction L{k} fitted at hidden_states[k+1]; +1 applied here",
+  "template_tail_tokens_after_user_content": 5,
+  "positions": {
+    "decision": "last token of templated prompt (fit/readout position)",
+    "last_suffix": "last suffix token (position the GCG objective read)"
+  },
+  "elapsed_s": 60.516568660736084,
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": null,
+  "dtype": "torch.bfloat16",
+  "device": "cuda:0",
+  "num_layers": 32,
+  "hidden_size": 4096,
+  "eos_token_ids": [
+    128001,
+    128008,
+    128009
+  ],
+  "timestamp": "2026-08-12T08:37:42"
+}
