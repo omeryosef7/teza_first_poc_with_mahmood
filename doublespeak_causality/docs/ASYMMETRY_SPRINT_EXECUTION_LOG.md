@@ -4269,3 +4269,37 @@ generic noise.
 * **755377** — seed 43 per-prompt random eval, so that pair's ΔASR closes.
 
 ---
+## 2026-08-13 06:10 — §7.5 compute-matched: seed43 is a clean DOUBLE NULL
+
+**755377 complete**, closing the seed-43 pair.
+
+| seed | mech | random | ΔASR | b/c | McNemar p |
+|---|---|---|---|---|---|
+| 42 | 0.1892 | 0.1081 | +0.0811 | 5/2 | 0.45 |
+| **43** | 0.1622 | 0.1622 | **0.0000** | 3/3 | **1.00** |
+
+**Seed 43 is a double null, and its two halves agree exactly:**
+
+| endpoint | mechanism | random | result |
+|---|---|---|---|
+| projection | −0.3706 | −0.3699 | 0.0007 apart, p = 0.50 |
+| ASR | 0.1622 | 0.1622 | identical, p = 1.00 |
+
+On seed 43 the mechanism-derived per-prompt objective is indistinguishable from a random
+direction **internally AND behaviourally**. **That internal coherence is itself evidence the
+seed-43 measurement is sound rather than noisy** — two independent endpoints, same answer.
+
+### Combined §7.5 compute-matched picture over 2 seeds
+* **behavioural advantage: 0 of 2 seeds**
+* **mechanistic advantage: 1 of 2 seeds**
+
+**Neither supports the universality-failure hypothesis §7.5 was added to test.** And the
+comparison remains **stacked in favour of per-prompt**, which is scored on the very prompts it
+optimized while the universal arms are scored on *transfer*.
+
+**Caveat retained:** the ASR contrast has only **9 %** power at these base rates, so "0 of 2
+behavioural nulls" is weak on its own. **It is the agreement with the projection endpoint** —
+continuous, paired, and not power-crippled — **that makes seed 43 informative** rather than merely
+quiet.
+
+---
