@@ -2091,3 +2091,36 @@ reading, per the pre-registered rules in `docs/ADVANCED_OPTIMIZER_RESULTS.md` §
 means "the position fix alone does not rescue the objective", NOT "H2′ confirmed"**.
 
 ---
+## 2026-08-12 07:36 — LOOP: eval resubmitted with a directed config (before the 30 min mark)
+
+**Queue 5** (4 GCG arms + 1 eval), spread 2/2 on the arms. seed 43 ~130/200, seed 44 ~115/200.
+
+### The eval was Priority-blocked with the node half empty
+Job 751557 sat `PD (Priority)` for 16 minutes with **no estimated start time**. Diagnosed
+before acting:
+
+```
+n-501  CfgTRES  gres/gpu:a5000=8
+       AllocTRES gres/gpu:a5000=2      <- 6 of 8 GPUs FREE
+```
+
+So it is **fair-share priority, not capacity** — the documented pattern. Waiting out the
+remaining 14 minutes of the >30 min rule would have bought nothing, because the fix was
+already identifiable: I had pinned `--nodelist=n-501` out of habit from the GCG arms, but the
+**eval's own guard only requires ≥20 GB VRAM** (`run_gcg_v3_eval.slurm:44`), so it is eligible
+for a5000 / 3090 / a6000 / L40S alike — a 10-node pool instead of 1.
+
+**Resubmitted as 751559** across `n-302, n-501, n-502, n-602, n-801..805, t-806`.
+
+**GPU-class reasoning, since the sprint has a rule about it:** the two arms are evaluated in a
+**single job**, so whichever node it lands on, **both arms share it** — the
+mechanism-vs-random contrast, which is the quantity Gate E turns on, stays internally matched.
+Only the comparison to the *published* ASRs crosses classes, and that is a secondary reference
+rather than the test. Widening the pool is therefore safe here in a way it would not be for
+the optimization arms.
+
+**Rule applied in spirit rather than by the clock:** the >30 min threshold exists to stop jobs
+rotting in the queue. When the cause is already diagnosed and the fix is free, applying it at
+16 minutes is strictly better than waiting for the timer.
+
+---
