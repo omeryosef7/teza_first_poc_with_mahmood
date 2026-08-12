@@ -2718,3 +2718,33 @@ structural statement about this objective family, stronger than either a positiv
 at a single λ. **It is 27 steps of one seed. No verdict.**
 
 ---
+## 2026-08-12 11:45 — Checked an apparent per-arm asymmetry; it is load contention, not a bug
+
+Seeds 43/44 at 36 min showed **mechanism arms at 3–4 steps but random arms at 13**, on the
+*same* nodes. A per-arm asymmetry would be alarming (seed 42 showed none — both at 27). Checked
+before acting, per the rule that cost me a near-miss at the 6-way "stall".
+
+`wall_time_sec` is **per-step**, not cumulative. Decomposing job time (2,170 s) into load + steps:
+
+| arm | per-step | steps done | ⇒ implied **load** time |
+|---|---|---|---|
+| mechanism (seed 43/44) | **125 s** | 4 | **~1,670 s (28 min)** |
+| matched random | 159 s | 13 | **~100 s** |
+
+So the arms are **not** running at different rates — the mechanism arms simply **started ~28
+minutes later** because they lost the concurrent weight-load race on their node. That is the
+**~16× weight-load penalty from concurrent model loads** already documented in this project,
+here at 2 jobs/node (plus whatever other users were loading).
+
+Note the mechanism arms are now stepping **faster** (125 s vs 159 s) — once loaded they are
+fine; the random arms are the ones now sharing the GPU.
+
+**No action.** The penalty is **one-time, not per-step**: cancel-and-resubmit would forfeit the
+28 minutes already paid to buy back at most 28 minutes, at the risk of losing the race again.
+Projected completion 200 × 125 s ≈ **6.9 h**.
+
+**Not a validity issue.** Start-time offset does not touch the mechanism-vs-random contrast:
+both arms run the full 200 steps on identical data with identical budgets, and the comparison
+is over final suffixes, not wall-clock-matched checkpoints.
+
+---
