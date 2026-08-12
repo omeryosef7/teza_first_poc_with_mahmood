@@ -62,6 +62,11 @@ def main():
     ap.add_argument("--manifest", action="append", required=True,
                     help="path[:split] — repeatable. e.g. foo.jsonl:test  bar.jsonl:train")
     ap.add_argument("--arm", action="append", default=[], help="label=run_dir (repeatable)")
+    ap.add_argument("--arm-perprompt", action="append", default=[],
+                    help="label=joblist.jsonl (repeatable). Plan §7.5: a PER-PROMPT arm, where "
+                         "each prompt has its own optimized suffix. The joblist is the one written "
+                         "by scripts/split_manifest_perprompt.py ({task_id, output_dir, ...}); the "
+                         "suffix for each prompt is read from that prompt's own run dir.")
     ap.add_argument("--refusal-dir", default=os.path.join(HERE, "outputs/refusal_alllayers"))
     ap.add_argument("--refusal-fit-layers", default=",".join(str(x) for x in range(10, 25)),
                     help="§19.2 layer sweep; FIT layers, +1 applied internally")
@@ -99,10 +104,27 @@ def main():
     print(f"[dirs] refusal rows={sorted(refusal)} concept rows={sorted(concept)}", flush=True)
 
     # ---- suffix conditions ----
+    # A condition value is either a STRING (one suffix for every prompt -- the universal arms)
+    # or a DICT task_id -> suffix (plan §7.5 per-prompt arms). Resolved per item below.
     conds = {"none": "", "neutral": " "}
     for a in args.arm:
         label, rd = a.split("=", 1)
         conds[label] = final_suffix(rd)
+    for a in args.arm_perprompt:
+        label, jl = a.split("=", 1)
+        jobs = [json.loads(l) for l in open(jl) if l.strip()]
+        mapping, missing_dirs = {}, []
+        for j in jobs:
+            try:
+                mapping[j["task_id"]] = final_suffix(j["output_dir"])
+            except Exception:
+                missing_dirs.append(j["task_id"])   # run not finished / dir absent
+        if not mapping:
+            raise SystemExit(f"--arm-perprompt {label}: no finished runs in {jl}")
+        conds[label] = mapping
+        print(f"[conds] per-prompt arm {label!r}: {len(mapping)}/{len(jobs)} prompts have a "
+              f"final suffix" + (f"; MISSING {len(missing_dirs)}" if missing_dirs else ""),
+              flush=True)
 
     # UNOPTIMIZED controls (the decisive H4 test). The optimized "random-direction" arm is
     # still a GCG-optimized suffix; if suppression is generic, a suffix that was never
@@ -175,6 +197,7 @@ def main():
         return out
 
     rows = []
+    cov_used, cov_missing = {}, {}
     for spec in args.manifest:
         path, _, split = spec.partition(":")
         items = [json.loads(l) for l in open(path)]
@@ -193,6 +216,16 @@ def main():
         print(f"[data] {spec} -> n={len(uniq)}", flush=True)
         for i, it in enumerate(uniq):
             for cname, suf in conds.items():
+                if isinstance(suf, dict):           # §7.5 per-prompt arm
+                    suf = suf.get(it["task_id"])
+                    if suf is None:
+                        # EXPLICIT skip. Falling through with suf="" would be scored as the
+                        # 'none' condition (and would drop the last_suffix position via the
+                        # `if suffix:` guard in project()) -- i.e. a missing run would silently
+                        # look like a real measurement of no-suffix baseline.
+                        cov_missing[cname] = cov_missing.get(cname, 0) + 1
+                        continue
+                    cov_used[cname] = cov_used.get(cname, 0) + 1
                 pr = project(it["instruction"], suf)
                 for (pname, kind, row), val in pr.items():
                     rows.append({"pool": pool, "task_id": it["task_id"], "cond": cname,
@@ -208,6 +241,9 @@ def main():
     meta = {"phase": "P1c_mech_validity_ext", "model": args.model,
             "manifests": args.manifest, "arms": args.arm,
             "conditions": list(conds), "n_rows": len(rows),
+            "perprompt_arms": [a.split("=",1)[0] for a in args.arm_perprompt],
+            "perprompt_coverage_used": cov_used,
+            "perprompt_coverage_missing": cov_missing,
             "n_random_suffix": args.n_random_suffix,
             "n_suffix_tokens": args.n_suffix_tokens,
             "random_suffix_seed": args.random_suffix_seed,

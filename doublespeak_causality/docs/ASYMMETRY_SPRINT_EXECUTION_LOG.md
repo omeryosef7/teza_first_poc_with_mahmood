@@ -3141,3 +3141,38 @@ it settles the unmeasured ~5 s/step extrapolation (no `n_train_tasks=1` timing e
 `outputs/`) and the per-job model-load cost, which together decide the shard layout.
 
 ---
+## 2026-08-12 17:05 — LOOP + §7.5 add-on 1: per-prompt mechanistic readout implemented & unit-tested
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ arms at **88–106/200**; nothing
+finished, so no slot has freed and the §7.5 smoke still cannot run. Sign-flip watch at k=88:
+best-so-far **2.31× / 1.15× / 1.98×**, count **1.67× / 1.79× / 5.57×** — all > 1.0, **no flip**.
+
+**Add-on 1 (approved 16:20) implemented:** `asym_p1c_mech_validity_ext.py` gains
+`--arm-perprompt label=joblist.jsonl`, giving the §19.1 before→after refusal-projection readout
+for per-prompt arms — the endpoint §7.5 calls "the core of what Mahmood is asking".
+
+**Reuse rather than new code:** the joblist written by `split_manifest_perprompt.py` already
+carries `{task_id, output_dir}`, and the existing `final_suffix(run_dir)` already extracts a
+suffix from a run dir. So the arm is built by mapping one over the other. A condition value is
+now `str` (universal arm, one suffix for all prompts) **or** `dict[task_id -> suffix]`
+(per-prompt), resolved per item. Row schema, `projections.jsonl` and `asym_p1c_analyze.py` are
+**unchanged** — no downstream edits.
+
+**The failure mode this edit exists to prevent.** If a per-prompt run is unfinished and its
+`task_id` is missing from the map, the natural implementation lets `suffix` fall through as `""`
+— which `project()` then scores **as the `none` (no-suffix) baseline**, and which also silently
+drops the `last_suffix` position via its `if suffix:` guard. A missing run would therefore appear
+in the output as a **real measurement of the no-suffix condition**. The arm is now resolved with
+an **explicit skip plus coverage counters** (`perprompt_coverage_used` /
+`perprompt_coverage_missing` in `meta.json`), and the loader reports `n/N prompts have a final
+suffix` at startup.
+
+**Unit-tested off-GPU** (the script needs a GPU to run end-to-end, but this logic does not):
+3 prompts, 2 with finished runs and 1 missing. Result — mapping built 2/3, `t3` **skipped**, not
+scored; `cov_missing={'pp_mech':1}`, `cov_used={'pp_mech':2}`; asserted that no per-prompt row is
+ever scored with an empty suffix. **PASS.**
+
+Remaining §7.5 build: add-on 2 (transfer matrix, needs the eval `--suffix-map` change) and the
+per-prompt ASR aggregator.
+
+---
