@@ -3376,3 +3376,39 @@ paper** (mechanism ≈ random per-prompt ⇒ a stronger structural negative) alo
 would force **re-scoping** it. Neither is set up as the convenient answer.
 
 ---
+## 2026-08-12 20:05 — LOOP + §7.5 launch-ready: real manifests materialized, smoke command fixed
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **156–189/200**; **seed 43
+mechanism at 189 is ~20 min from the first finish** — the next iteration should have a free slot.
+
+**Materialized the real per-prompt data on CPU** so the smoke launches instantly when that
+happens: **37 one-row manifests + joblist** under `data/gcg/clearharm_llama_v3/perprompt_test`.
+
+**Verified the directory is gitignored — and this matters beyond tidiness.** These 1-row
+manifests carry **ClearHarm instruction text**. They must not be committed. Confirmed with
+`git check-ignore` rather than assumed.
+
+**Caught a discrepancy between my manual command and the runner.** I passed a *relative*
+`--run-root`; `run_gcg_perprompt.slurm` passes an *absolute*
+`${PROJECT_DIR}/outputs/stage_gcg_perprompt`. **The script was right and my command was wrong** —
+but a relative `output_dir` baked into the joblist would only have broken later, from a different
+cwd, in the evaluator or aggregator. Regenerated with the absolute path so the on-disk joblist
+matches exactly what the job will produce, and asserted both `output_dir` and `manifest` are
+absolute.
+
+**Dry-ran the batched evaluator against the real joblist:** reports *"37 listed, 37 without a
+finished optimization"* and exits cleanly with *"no work items"* — rather than crashing, or
+silently emitting an empty aggregate that would read as ASR = 0. That is the correct behaviour
+before any optimization exists, and it is now confirmed on real data rather than a fixture.
+
+### Smoke command, fixed and recorded
+```
+sbatch --export=ALL,ARM=mechanism,SEED=42,N_STEPS=10,SHARD=0,NSHARD=37 \
+       slurm_scripts/run_gcg_perprompt.slurm
+```
+`NSHARD=37`/`SHARD=0` selects **exactly one prompt**; `N_STEPS=10` sets `BUDTAG=_s10`, so the
+smoke's run dirs **cannot collide** with the real 200-step runs. It measures the two unknowns
+that size the whole package: **seconds/step at n_train_tasks=1** (no such timing exists anywhere
+in `outputs/`) and the **per-job model-load cost**.
+
+---
