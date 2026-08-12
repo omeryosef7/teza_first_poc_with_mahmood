@@ -2437,3 +2437,55 @@ internal-target result.
 **Queue 4**: seed 44 random arm (~190/200), λ=10 pair (loading ~57 min, n-302), seed-43 mechval.
 
 ---
+## 2026-08-12 10:05 — ⛔ RETRACTION: GATE E CLAUSE (ii) DOES NOT REPLICATE. My 08:52 entry was WRONG.
+
+At 08:52 I wrote, under a star: *"⭐ GATE E CLAUSE (ii) IS **POSITIVE** — the position
+correction FLIPS the Q5 result"*, and said it *"closes the B1 loop"* and *"removes the last
+'the objective never really worked' escape hatch"*. **That was a one-seed claim and seed 43
+reverses it.**
+
+Internal-target contrast (mechanism minus matched random) on held-out n=37, negative meaning
+the mechanism suppresses its own target MORE than random:
+
+| | seed 42 | seed 43 | stable? |
+|---|---|---|---|
+| **position-corrected** | **−1.103** (mech more, 35/37 prompts) | **+0.919** (mech LESS, 4/37 prompts) | **NO — sign flips** |
+| legacy (published) | +0.376 (mech less) | **−1.437** (mech MORE, 37/37) | **NO — sign flips, opposite direction** |
+
+Both contrasts are individually "significant" at p = 1e-4 with CIs far from zero — **and both
+flip sign between seeds.** The per-prompt consistency is near-total in *both* directions
+(0.95 vs 0.11; 0.19 vs 1.00). This is not noise around zero; each seed produces a large,
+confidently-measured effect that the next seed contradicts.
+
+### The corrected reading
+> **The internal-target contrast is SEED-UNSTABLE in both the legacy and the position-corrected
+> objectives.** It is dominated by which particular suffix the optimizer happened to find and
+> which random direction was drawn — not by whether the objective reads the right coordinate.
+> **Gate E clause (ii) is WITHDRAWN as unsupported**, exactly the status the original Q5 has.
+
+The position correction therefore does **not** rescue clause (ii); it just relocates the
+instability. My 08:52 explanation — "Q5 was an artifact of reading the wrong position" — is
+**not supported**. The honest statement is that this quantity does not have a stable sign at
+n=37 with one random draw per seed, in either configuration.
+
+### What still stands
+* **§19.1(a)'s original finding is unchanged and now doubly confirmed**: the legacy
+  internal-target result flips across seeds (42 vs 43/44). That was the basis for downgrading
+  Q5 to UNDERPOWERED, and it holds.
+* **Gate E clause (i)** — no ASR advantage — replicates cleanly: ΔASR −0.054 / −0.027, both
+  within judge noise, 2/2 seeds.
+* Nothing in Phases 1, 2, 4, 5, 6 or 7 is touched.
+
+### The lesson, and it is one I had already written down
+At 09:55 — *fifteen minutes before this result* — I wrote that clause (ii) *"is the sprint's
+most surprising result and the one most in need of a second seed, since the very claim it
+overturned was itself a one-seed internal-target result."* I identified the exact failure mode
+and still published the claim with a star. **Flagging a risk is not the same as withholding the
+claim until the risk is retired.** The correct action at 08:52 was to record the seed-42 number
+and state no verdict.
+
+Seed-44 mech-validity launched (job 751806) for the third point; it cannot rescue the claim —
+a quantity that flips between two seeds is unstable regardless of what a third shows — but it
+will quantify the spread.
+
+---
