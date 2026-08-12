@@ -3737,3 +3737,37 @@ failure — but **if λ=10 universal succeeds, there is no universal negative le
 the hour would be the wrong call.
 
 ---
+## 2026-08-13 00:10 — ⚠ λ=10 does NOT look seed-stable: seed43 mech ASR **0.108** vs seed42 **0.676**
+
+**755140 COMPLETED.** It also settled a worry from 22:50: the eval handles a missing arm
+**gracefully** — `SKIP asym_p3_arm07pr_..._seed43 (no FINAL_CANDIDATES)`, exit 0, no crash. **My
+concern that the random half would "fail" was wrong**; it skips cleanly and the mechanism half is
+valid.
+
+### The substantive finding
+| arm | held-out ASR |
+|---|---|
+| seed **42** mechanism, λ=10 | **0.6757** |
+| seed **43** mechanism, λ=10 | **0.1081** |
+
+**A 6× difference** on the same objective, same λ, same budget, same eval path,
+`judge_fail = 0.0` on both. Seed 43's λ=10 mechanism arm is even **below seed 42's λ=0.25
+mechanism arm** (0.1622).
+
+**ΔASR is not yet computable for seed 43** — its matched random arm is at 191/200, ~25 min out.
+So this does **not yet refute** the contrast: if seed 43's random arm is also very low, the sign
+could still be positive with a wildly unstable magnitude.
+
+But it does mean **the seed-42 ΔASR of +0.622 is already looking seed-specific** — which is
+exactly why the 10:07 rule exists, and exactly why I refused a verdict at 23:20 **despite** the
+effect being 8× the judge noise floor.
+
+> **The size of a single-seed effect never told us it would replicate. It only told us it was
+> measurable.** Those are different properties, and today has now produced examples of each being
+> mistaken for the other in both directions.
+
+Holding the next notification until the seed-43 pair completes and ΔASR is computable, rather
+than announcing a second time on another partial result. The earlier push was explicitly hedged
+as one seed, so it does not need correcting yet.
+
+---
