@@ -1902,3 +1902,33 @@ sbatch --nodelist=n-501 --export=ALL,RUN_IDS="asym_p3_arm07p_refusal_down_L18_po
 ```
 
 ---
+## 2026-08-12 05:06 — LOOP: config integrity verified on all Phase-3 arms
+
+**Queue 6/6, 0 pending, spread 3/3.** Progress (per-step JSONL): seed 42 **125/130** of 200,
+seed 43 59/61, seed 44 45/46. All writing within 2 minutes. Seed 42 ~2.3 h remaining.
+
+Nothing finished, so instead of restating that: **verified the arms' PERSISTED config** rather
+than trusting the startup log line. Each arm's `CONFIG.json`:
+
+| arm | position_mode | layer | λ | steps | batch | seed | direction file |
+|---|---|---|---|---|---|---|---|
+| mechanism s42 | `per_task_decision` | 19 | 0.25 | 200 | 32 | 42 | `refusal_direction_llama_L18.pt` |
+| **random s42** | `per_task_decision` | 19 | 0.25 | 200 | 32 | 42 | **`refusal_rand_L18_normmatched_seed20260809.pt`** |
+| mechanism s43 | `per_task_decision` | 19 | 0.25 | 200 | 32 | 43 | `refusal_direction_llama_L18.pt` |
+| mechanism s44 | `per_task_decision` | 19 | 0.25 | 200 | 32 | 44 | `refusal_direction_llama_L18.pt` |
+
+Three things this confirms, each of which would silently invalidate Gate E if wrong:
+1. **The corrected position mode is actually in effect** — `per_task_decision`, not the
+   `legacy_fixed` default. A flag that fails to reach the config is a classic silent no-op,
+   and this sprint has already found one objective term that silently contributed zero.
+2. **The mechanism and random arms differ in exactly one thing** — the direction file. λ,
+   layer index (19 = the L18 off-by-one), steps, batch and seed are identical, so the contrast
+   isolates mechanism identity.
+3. **Compute-matching to the published matrix holds** (batch 32 × 200 steps = the same
+   candidate-forward budget), so the new arms are comparable to the arms they supersede.
+
+The random arm uses the **same norm-matched random direction file the published matrix used**
+(`refusal_rand_L18_normmatched_seed20260809.pt`), so the corrected and legacy runs share a
+control and differ only in read position — which is what makes the comparison interpretable.
+
+---
