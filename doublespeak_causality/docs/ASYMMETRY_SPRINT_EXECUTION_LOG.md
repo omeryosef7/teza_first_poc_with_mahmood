@@ -1828,3 +1828,38 @@ Seed 42 is at the halfway point after ~3 h 08 m; projected ~6.9 h total, ~3.5 h 
 Queue 6/6, 0 pending, spread 3/3.
 
 ---
+## 2026-08-12 04:06 — LOOP: apparent stall was a LOGGING artifact, not a hang
+
+Two consecutive checks showed all six Phase-3 arms at *identical* step counts (90/90, 20/20,
+10/10), which looks exactly like six simultaneously hung jobs. It is not.
+
+**Diagnosis, done on the artifact rather than the stdout log** (per the standing rule: tell a
+hung job from a slow one by what it is *writing*, not by `squeue`):
+
+| job | arm | `ITERATION_LOG.jsonl` rows | last step | file mtime |
+|---|---|---|---|---|
+| 751396 | seed 42 mechanism | 95 | **94** | 04:07:27 |
+| 751451 | seed 43 mechanism | 29 | **28** | 04:07:48 |
+| 751459 | seed 44 mechanism | 15 | **14** | 04:08:19 |
+
+All three are writing *now*. **The stdout `[GCG] step=` line prints only every 10 steps**, so
+at ~2.05 min/step it refreshes every ~21 minutes — a 25-minute polling interval can easily
+straddle two identical reads. The per-step JSONL is the ground truth and was up to 9 steps
+ahead of what stdout showed.
+
+**Second artifact explained:** the file mtimes (04:07–04:08) are *ahead* of the login node's
+own clock (04:06:37). The compute nodes run slightly ahead, which is also why SLURM's elapsed
+`TIME` field appeared to advance more slowly than wall clock between checks. Neither is a
+fault.
+
+**Projected completion:** ~2.05 min/step × 200 steps ≈ 6.8 h per arm; seed 42 ~3.5 h
+remaining, seeds 43/44 behind it. Queue 6/6, 0 pending, spread 3/3, no failures.
+(`741057` remains the stale accounting record already investigated at 02:36 — still not a
+live job.)
+
+**Lesson worth keeping:** a coarse progress log makes a healthy job look hung. Two identical
+reads of a counter that only updates every ~21 minutes is not evidence of a stall — and had I
+acted on it, the correct-looking response (cancel and resubmit with a directed config) would
+have destroyed 3 hours of optimization across six jobs.
+
+---
