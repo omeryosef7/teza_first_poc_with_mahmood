@@ -2681,3 +2681,40 @@ why the published matrix's +0.162 seed never meant what it appeared to.
 at most one new load per node.
 
 ---
+## 2026-08-12 11:06 — LOOP: λ=10 early diagnostic — the predicted design tension is materializing
+
+**Queue 6/6**, 0 pending: λ=10 × {mechanism, random} × seeds {42, 43, 44}. n-302: 4 jobs (2 past
+loading, 2 loading), n-501: 2 loading — **2 concurrent loads per node, at the cap.**
+
+λ=10 seed 42 at step 27/200. True projection recovered via `(total − task)/λ/n` (the logged
+column is still the pre-fix legacy-position one for these arms, since they started before the
+10:45 fix):
+
+| arm | task_loss | **true refusal projection** | **refusal-term share of loss** |
+|---|---|---|---|
+| **mechanism** | 111.97 → **107.64** (moved **4.3**) | +0.169 → **−0.074** (crosses zero) | **22.7 % mean, 38.0 % max** |
+| matched random | 109.40 → **81.48** (moved **27.9**) | +0.020 → +0.012 (barely moves) | 5.6 % mean |
+
+Three things, all early (27/200) and all **diagnostic, not results** — the reading rule fixed
+at 10:07 stands:
+
+1. **λ=10 achieves what it was meant to.** The mechanism term is now **22.7 %** of the
+   selection loss, versus 0.370 % at λ=0.25. The objective finally has real weight.
+2. **And it drives the projection past zero** (+0.169 → −0.074), where λ=0.25 only reached
+   ~0.001 after 200 steps.
+3. **But the task loss has almost stopped improving** — 4.3 versus the random arm's 27.9 over
+   the same 27 steps. **This is precisely the trade-off predicted at 05:36:** raising λ enough
+   for the mechanism to matter starves the objective that makes the suffix an attack at all.
+
+**Why the two arms diverge is itself mechanistically consistent:** the refusal direction is
+*movable* (Gate C: unusually high reachability), so at high λ the optimizer profitably spends
+its budget there and neglects the task loss. The random direction is *not* movable (0.020 →
+0.012), so its λ term contributes little gradient and the optimizer defaults to the task loss.
+The same reachability asymmetry Gate C measured, showing up in the optimizer's behaviour.
+
+**If this holds at 200 steps across 3 seeds**, the result is the one flagged at 05:36 as most
+interesting: *no λ both preserves the attack and gives the mechanism meaningful weight* — a
+structural statement about this objective family, stronger than either a positive or a negative
+at a single λ. **It is 27 steps of one seed. No verdict.**
+
+---
