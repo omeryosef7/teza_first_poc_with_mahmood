@@ -4546,3 +4546,24 @@ statistic, add-on 1) were all caught *before* this audit and are already reflect
 artifacts it checked.
 
 ---
+## 2026-08-13 09:55 — vanilla arms (seeds 42, 43) complete; seed44 vanilla launched to close the gap
+
+**755490 / 755491 COMPLETE** — `ran=37 skipped=0` each. §7.5's **Arm 1 (vanilla task-loss GCG)**,
+missing until 08:40, now exists for two seeds.
+
+**Launched:**
+* **755563** — seed 44 vanilla, closing the arm-count asymmetry flagged at 09:10. All three §7.5
+  arms will now be **3-seed**, so the comparison is not quietly weakened by one arm having fewer
+  seeds than the others.
+* **755564** — vanilla seed 42 held-out eval.
+
+**Queue 6/6**, nothing pending past submit, no failures. Full-budget shards at 3:49 elapsed.
+
+**What vanilla will settle.** The compute-matched mechanism and matched-random arms sit at
+**0.16–0.19** ASR. Vanilla answers whether that band is *where per-prompt GCG lands anyway* — in
+which case the mechanism term is simply inert — or whether **both** direction-guided arms are
+**depressed relative to plain task-loss optimization**, which would mean the mechanism term is
+actively *costing* attack success rather than doing nothing. Those are different claims, and
+nothing measured so far distinguishes them.
+
+---
