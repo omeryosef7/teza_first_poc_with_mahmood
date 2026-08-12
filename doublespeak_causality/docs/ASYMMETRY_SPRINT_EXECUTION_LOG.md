@@ -4190,3 +4190,54 @@ than leaving them to block the 6-job budget.
 answer**, which is the more important of the two open §7.5 questions.
 
 ---
+## 2026-08-13 05:40 — 🟥 RETRACTION: add-on 1's specificity result does NOT replicate on seed 43
+
+**755367 complete.** Identical analysis, identical code path, coverage 37/37 with **0 missing** on
+both seeds.
+
+| seed | baseline | mech drop | random drop | **mech − rand** | Wilcoxon p | mech<rand |
+|---|---|---|---|---|---|---|
+| 42 | +3.3976 | −0.5233 | −0.1322 | **−0.3911** | **0.0092** | 24/37 |
+| **43** | +3.3976 | −0.3706 | −0.3699 | **−0.0007** | **0.50** | 20/37 |
+
+**On seed 43 the mechanism and matched-random arms suppress the projection identically** — a
+difference of **0.0007**, p = 0.50, and 20/37 is chance. The seed-42 effect is **582× larger**.
+
+### This retracts the 04:10 entry
+That entry was headed *"✅ RESULT: the per-prompt objective **IS** mechanistically specific"* and
+called it a Gate-E internal-target **PASS**. **That claim is withdrawn.** It rested on one seed.
+The honest statement is: **on one of two seeds the per-prompt objective is mechanistically
+specific; on the other it is indistinguishable from a random direction.**
+
+*(Nothing propagated to a deliverable — `PERPROMPT_VS_UNIVERSAL.md` §6 still reads PENDING — so
+the retraction is confined to this log. That is the pre-registration discipline working: the
+finding was never written into a paper-facing doc before it replicated.)*
+
+### The common cause — and it is a genuinely useful methodological finding
+**The variance is concentrated in the RANDOM CONTROL arms, not the mechanism arms:**
+
+| experiment | mechanism spread | random-control spread |
+|---|---|---|
+| add-on 1 (projection) | 1.41× | **2.80×** |
+| λ=10 (held-out ASR) | 6.25× | **6.50×** |
+
+**In both experiments, seed 42's random control is the weakest of its set** — −0.132 where seed 43
+gives −0.370, and ASR 0.054 where the others give 0.270/0.351. **That single fact inflated seed
+42's contrast in both experiments, and is the common cause of both single-seed "positives" that
+failed to replicate today.**
+
+**Consequence:** a contrast against **one** norm-matched random direction is unreliable at this
+scale, because the control itself is the noisy term. §3.8 already requires **≥50 random directions
+for reachability geometry** — the same discipline should extend to **behavioural and mechanistic
+contrasts**, which currently use exactly one random direction per seed. Seeds vary the *suffix*,
+not the *direction*; they do not average over control-direction variance at all.
+
+### Tally: three single-seed results failed to replicate today
+1. Gate E clause (ii) at 08:52 → retracted 10:05
+2. λ = 10 ΔASR **+0.622** → sign flipped on seed 43
+3. add-on 1 specificity **−0.391 (p=0.009)** → vanished on seed 43
+
+**Seed 43 broke all three.** Whether that is a property of seed 43 or of the single-seed method is
+not determinable from n=2–3, and I am not going to claim it is.
+
+---
