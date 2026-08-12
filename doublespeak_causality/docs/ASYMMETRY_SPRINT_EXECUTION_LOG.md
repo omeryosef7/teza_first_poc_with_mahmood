@@ -2124,3 +2124,22 @@ rotting in the queue. When the cause is already diagnosed and the fix is free, a
 16 minutes is strictly better than waiting for the timer.
 
 ---
+## 2026-08-12 08:06 — LOOP: the widened resubmit worked; eval running
+
+**Queue 5, 0 pending.** The directed resubmit (07:36) was correct: job **751559** started on
+**n-302** (a 3090) within a minute of submission, against the 16 minutes its n-501-pinned
+predecessor had already spent at `PD (Priority)` with no estimated start. Confirms the
+diagnosis — fair-share on a narrow pin, not capacity.
+
+Now evaluating arm 1 of 2 (`asym_p3_arm07p_refusal_down_L18_poscorr_seed42`), 37 held-out
+prompts at up to 2048 new tokens each plus StrongREJECT judging. No summary written yet for
+either arm.
+
+seed 43 at ~145/200, seed 44 at ~130/200 — roughly 2 h and 2.5 h out respectively.
+
+**Nothing analyzed this iteration.** The next entry should carry the first Phase-3 numbers,
+read under the rules already fixed in `docs/ADVANCED_OPTIMIZER_RESULTS.md` §3:
+`judge_fail_frac == 0` first, then ΔASR against the ±0.08 judge-noise floor, then sign
+consistency once all three seeds are in — and with the λ caveat binding either outcome.
+
+---
