@@ -4156,3 +4156,17 @@ and seed 43/44 full-budget would be another **58 GPU-h** committed against a see
 does not exist yet.
 
 ---
+## 2026-08-13 05:10 — LOOP: routine. Queue 6/6, seed43 compute-matched pair ~5 min out.
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | state |
+|---|---|
+| seed 43 compute-matched | mechanism **28/37**, matched_random **30/37** — ~5 min out |
+| seed 42 full-budget | shards at **2–3 of ~19** each, pacing 24.4 min/prompt as measured, ~6.5 h remaining |
+
+**Nothing finished this tick, so nothing to analyze.** When the seed-43 pair lands, the two freed
+slots go to its **held-out eval** and its **mechanistic readout** — which together test whether
+add-on 1's single-seed specificity result (mech−rand **−0.391**, p = 0.009) **replicates**.
+
+---
