@@ -4465,3 +4465,30 @@ was added to test.**
 matrix deliberately deferred to those suffixes.
 
 ---
+## 2026-08-13 08:40 — LOOP: a real GAP found in my own §7.5 execution — the vanilla arm was never run
+
+**Queue was 4.** Before filling it, I checked what has actually been run against §7.5's approved
+design — and found a gap I had created and not noticed:
+
+> §7.5 specifies **four arms**: **Arm 1 vanilla task-loss GCG (baseline)**, Arm 2 mechanism,
+> Arm 3 matched random, Arm 4 (optional) Jacobian/MAC.
+
+**I have run Arms 2 and 3 across three seeds and never run Arm 1 at all.** The author approved
+*"full §7.5 as written"*, which includes it. It was not deferred with a reason — it was simply
+missed, and every §7.5 result so far has been reported without the baseline the subsection asked
+for.
+
+**Launched vanilla compute-matched, seeds 42 and 43** (755490 / 755491, n-304 class per §3.1).
+~40 min each.
+
+**Why it matters, beyond completeness.** Mechanism-vs-random tells us whether the *direction*
+matters. **Vanilla tells us whether the mechanism term helps or hurts at all** relative to plain
+task-loss GCG. Without it, "mechanism ≈ random" is ambiguous between *"the mechanism term does
+nothing"* and *"both mechanism and random arms are degraded relative to no mechanism term."*
+Those have different implications, and the compute-matched ASRs (0.16–0.19) are low enough that
+the second is a live possibility worth excluding.
+
+**Full-budget shards:** 25/74 prompt-runs at 3:00 elapsed — ~34 %, tracking ~8.8 h total, slightly
+behind the 7.7 h projection. No action; well inside the 16 h wall limit.
+
+---
