@@ -2489,3 +2489,34 @@ a quantity that flips between two seeds is unstable regardless of what a third s
 will quantify the spread.
 
 ---
+## 2026-08-12 10:07 — LOOP: queue state, and what the retraction means for the λ probe
+
+**Queue 4**, 0 pending: seed-44 eval (751788), seed-44 mechval (751806), λ=10 pair (751610/11).
+All on **n-302**. The λ arms are at **step 5 after 1 h** — ~50 min of that was the weight-load
+contention from co-locating the pair (documented 09:36); they are now running normally at
+~2 min/step, so ~6.5 h out.
+
+### The clause-(ii) retraction changes how the λ probe can be read
+The λ=10 probe is **seed 42 only**. Given what was just learned, that matters differently for
+the two quantities it will produce:
+
+| quantity | seed stability observed | what one λ seed can support |
+|---|---|---|
+| **ΔASR** (mechanism vs random) | **stable in sign** — −0.054, −0.027 across seeds 42/43, both within noise | a *preliminary* read: does raising λ move ΔASR out of the noise band at all? |
+| **internal-target contrast** | **UNSTABLE — flips sign across seeds in both configurations** | **nothing.** A single-seed internal-target number is exactly the artifact just retracted. |
+
+> **Binding rule for the λ probe, recorded before it finishes:** its **internal-target** number
+> will be reported as a single-seed observation with **no verdict attached**, whatever it shows.
+> Only its **ΔASR** will be read as evidence, and only as preliminary. If λ=10 appears to
+> rescue the objective on one seed, that requires seeds 43/44 before it is a claim — the same
+> bar that just retracted clause (ii).
+
+Writing this now, rather than after seeing the λ numbers, because the failure at 08:52 was
+precisely publishing before the risk was retired.
+
+### Seed-44 results pending
+Eval 751788 and mechval 751806 both running. Seed 44 completes the pre-registered 3-seed set
+for clause (i) and gives a third internal-target point — which cannot rescue clause (ii) (a
+quantity that flips between two seeds is unstable regardless) but will quantify the spread.
+
+---
