@@ -2347,3 +2347,50 @@ The λ=0.25 arms ran on **a5000** (n-501/n-502); the λ=10 arms are on **n-302 (
 * A same-class rerun is cheap to specify if the λ result turns out to matter.
 
 ---
+## 2026-08-12 10:10 — SELF-AUDIT: the in-flight position fix VERIFIED on all 40 prompts
+
+A 5-agent adversarial code audit is running over every sprint instrument. Ahead of it I
+verified the single highest-risk item myself, because **six jobs are executing that code now**
+and a bug would waste ~40 GPU-hours and invalidate Gate E.
+
+**Both consumers of the position use the identical formula, confirmed by reading:**
+* gradient path — `gcg_optimizer.py:845`, `_rdp = [spans.target_slice.start - 1]`, with `spans`
+  rebuilt from **this** task inside the per-task loop;
+* candidate-selection path — `gcg_optimizer.py:789` via `_rd_positions_for(spans)`, receiving
+  that task's own `eval_spans`.
+
+An inconsistency between these two would have been CRITICAL — the gradient proposing on one
+coordinate while selection scored another. They match.
+
+**Empirical check on the real frozen train pool (all 40 prompts, Llama tokenizer,
+`suffix_placement=user`, suffix 16):**
+
+```
+per_task_decision = target_slice.start - 1
+  out-of-range or before-suffix : 0 / 40
+  distinct token AT that position: {'\n\n'}
+```
+
+**Every one of the 40 prompts resolves to the `'\n\n'` token that ends the assistant header** —
+i.e. the last prompt token, exactly where `build_refusal_direction_llama.py:83` fitted the
+refusal axis and where the mech-validity readout measures it.
+
+| | legacy_fixed | per_task_decision |
+|---|---|---|
+| prompts reading the intended coordinate | **1 / 40** | **40 / 40** |
+| out-of-range (term silently 0) | 1 / 40 | 0 / 40 |
+
+The correction does what it claims. **No resubmission needed for the running arms.**
+
+Also re-derived by inspection (classic bug classes, both correct):
+* `torch.linalg.eigh` returns **ascending** eigenvalues; the subspace code flips to descending
+  before taking the top-r (`asym_p1_reachability.py`), and `--actcov-drop-top` zeroes
+  `ev[-k:]`, which under ascending order is the **largest** — empirically confirmed by the
+  mean-pairwise-cosine dropping 0.97 → 0.094.
+* `top-1 eig frac` is printed as `ev[-1]/ev.sum()`, correct under ascending order.
+
+Audit workflow `wf_3f427d77-a2b` still running over: the GCG patch, Phase-1 reachability,
+Phase-2 soft prompt + judge, Phase-4/5 + all statistics usage, and docs-vs-artifacts
+consistency. Findings and any resubmissions will be recorded here.
+
+---
