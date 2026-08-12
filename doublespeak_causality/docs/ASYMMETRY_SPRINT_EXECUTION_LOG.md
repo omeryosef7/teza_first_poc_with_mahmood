@@ -4797,3 +4797,10 @@ the reason would no longer be in view.
 Nothing finished this tick, so nothing to analyze.
 
 ---
+## 2026-08-13 14:25 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. n-301: 4, n-304: 2.
+seed 42 full-budget **57/74** (77 %, 6:29 elapsed, ~2 h left); seed 43 full-budget **8/37**
+(1:59). Both tracking their measured per-step rates. Nothing to analyze.
+
+---
