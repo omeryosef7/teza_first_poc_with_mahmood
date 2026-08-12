@@ -127,42 +127,39 @@ building an "in-distribution random" control in activation space will hit this.
 
 ---
 
-## 6. The open experiment: λ (in flight)
+## 6. The λ probe — RESOLVED: the negative survives a meaningful λ
 
-Gate E's negative carries a caveat the sprint could not remove in time. At the published
-**λ = 0.25**, the refusal term is **0.370 % mean / 1.495 % max** of the `total_loss` GCG's
-candidate selection actually minimizes (post-audit corrected value; the first pass understated
-it ~14× by reading the legacy position). Candidates are chosen overwhelmingly on task loss.
+Gate E's negative carried one caveat the sprint had to remove. At the published **λ = 0.25** the
+refusal term is only **0.370 % mean / 1.495 % max** of the `total_loss` GCG's candidate selection
+minimizes, so the negative could only mean *"the position fix alone does not rescue the
+objective"*, **not** *"a mechanism-weighted token objective cannot work."*
 
-So **Gate E's negative means "the position fix alone does not rescue the objective", NOT "a
-mechanism-weighted token objective cannot work."** A λ at which the mechanism term carries real
-weight had never been run — not by this sprint and not by the published work.
+**That probe is now run at λ = 10 (≈40× published), 3 seeds, and the caveat is closed.**
 
-It is running now: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}**. Early (step-matched
-k = 29/200, **all 3 seeds**, diagnostic only): the mechanism term reaches **~24 % (mean, full 200-step run)** of the
-selection loss and drives the projection **past zero in all three seeds** (λ = 0.25 never did in
-a full 200 steps) — **but the mechanism arm makes 1.45×–3.02× less task-loss progress** than its
-matched random arm, 3/3 sign-consistent.
+| seed | mechanism | matched random | ΔASR | exact McNemar p |
+|---|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.6216** | 1.55e-06 |
+| **43** | 0.1081 | 0.2703 | **−0.1622** | 0.109 |
+| 44 | 0.5405 | 0.3514 | **+0.1892** | 0.065 |
 
-*Statistic is best-so-far task loss; `task_loss` is non-monotonic (GCG selects on total loss,
-~40 % up-steps) and single-endpoint readings of it proved unstable — see execution log 12:42.*
+**Sign consistency 2/3 → FAILS. Not a Gate-E positive. The negative STANDS**, and is now stronger
+than the one it replaces:
 
-**Pre-registered reading:**
-* **The internal-target number gets no verdict.** Single-seed quantities of that type produced
-  this sprint's one retraction (§7). Only **ΔASR consistent across all 3 seeds** is evidence.
-* **If ASR rises**: Gate E's negative was a λ artifact, and the strong discrete claim must be
-  weakened to "at the λ the literature uses."
-* **If ASR does not rise while task loss degrades**: the result is the more general one — **no
-  λ both preserves the attack and gives the mechanism meaningful weight.** That is a structural
-  statement about this objective family, stronger than a negative at any single λ.
+* **The objective works internally.** At λ=10 the mechanism term carries **24–34 %** of the
+  selection loss and drives the held-out projection **past zero in all three seeds**. Behaviour
+  still does not follow stably.
+* **The instability is real, not judge noise.** All three |ΔASR| **exceed** the ±0.03–0.08 judge
+  floor yet disagree in sign.
+* **ΔASR alone would have misled.** The random arms span **0.054–0.351 (6.5×)**; seed 42's +0.622
+  owes as much to a weak random arm as to a strong mechanism arm.
 
-That the two arms already diverge in *this* way is consistent with Gate C rather than
-independent of it: the refusal direction is *reachable*, so the optimizer profitably spends
-budget moving it; the random direction is not, so its λ term yields little gradient and the
-optimizer defaults to the task loss. The reachability asymmetry showing up in optimizer
-behaviour.
+**Do not quote the mean (+0.216).** The range spans −0.162 to +0.622; the mean of three seeds that
+disagree in sign estimates nothing.
 
----
+**Consequence for the paper:** §5.2's explanation stands, and §5.3's alternative ("the discrete
+negative was substantially an implementation artifact") is **ruled out on two independent
+grounds** — the position fix changed nothing (+0.009 vs +0.018), and a 40× λ increase does not
+produce a seed-stable gain.
 
 ## 7. Process record — the sprint's own errors
 

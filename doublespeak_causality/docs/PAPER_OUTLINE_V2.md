@@ -1,8 +1,8 @@
 # PAPER OUTLINE V2 — after the Asymmetry sprint
 
 *Deliverable §15.8. Supersedes `docs/PAPER_OUTLINE_V1.md`. Written 2026-08-12.*
-*Phase 3 (the position-corrected token objective) is still running; §5.3 below is the one
-section whose content is not yet determined, and both of its possible outcomes are drafted.*
+*Phase 3 is COMPLETE (position-corrected arms + the λ=10 probe). §5.3 is resolved: both
+alternatives to §5.2's explanation are ruled out.*
 
 ---
 
@@ -97,14 +97,28 @@ probe displacement is not mechanism control. **Figure A.**
   both families, while its **sharp form** — the mechanism ends up worse-predicted than a
   matched null — is **Llama-only**.
 
-### 5.3 Was the discrete negative just a bug? *(Phase 3 — running)*
-The published objective was misconfigured. We re-ran it position-corrected, everything else
-identical, with a pre-registered prediction that it would still fail.
-* **If it still fails:** the defect was a confound, not the cause; H2′ survives its sharpest
-  test and §5.2 is the explanation.
-* **If it succeeds:** the token-space negative was substantially an implementation artifact.
-  We would report that plainly, retract the strong form of the discrete claim, and the paper's
-  contribution becomes the reachability geometry plus a cautionary methods result.
+### 5.3 Was the discrete negative just a bug, or just a weak λ? *(Phase 3 — RESOLVED)*
+Two alternatives to §5.2's explanation are now ruled out on independent grounds.
+
+**(a) The position defect.** The published objective read one absolute token index taken from
+`train_tasks[0]` — the intended token for 1 of 40 prompts. Re-running it position-corrected,
+everything else identical, changed the behavioural result by **+0.009 vs +0.018** — i.e. nothing,
+both sign-unstable. The defect was a **confound, not the cause**.
+
+**(b) The objective was too weakly weighted.** At the published λ=0.25 the mechanism term is only
+**0.370 %** of the loss candidate selection minimizes, so the negative might have meant only "this
+λ is too small." Re-run at **λ=10 (≈40×)**, 3 seeds: ΔASR **+0.622 / −0.162 / +0.189** — **sign
+consistency 2/3, FAILS.** At λ=10 the term carries **24–34 %** of the selection loss and drives the
+held-out projection past zero in all three seeds, so the objective demonstrably *works internally*;
+behaviour simply does not follow stably. All three |ΔASR| exceed the judge noise floor, so the
+instability is **real, not measurement noise**.
+
+*A methodological point worth the space:* the random arms span **0.054–0.351 (6.5×)**, so the one
+spectacular seed (+0.622, p=1.6e-06) owes as much to an unusually **weak random arm** as to a
+strong mechanism arm. Reporting ΔASR alone would have hidden that, and a mean over three
+sign-disagreeing seeds (+0.216) estimates nothing.
+
+**So §5.2 stands as the explanation**, and it now survives both of its sharpest alternatives.
 
 ## 6. Generality of the causal locus (Gate F)
 Refusal ablation raises ASR on **5/5** concept pairs (median specific ΔASR **+0.414**, 4/5

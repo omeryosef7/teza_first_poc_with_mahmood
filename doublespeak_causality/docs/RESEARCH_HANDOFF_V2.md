@@ -121,32 +121,24 @@ Config/optimizer changes in `poc_stage_gcg_early/`:
 
 ## 5. What is open
 
-### 5.1 In flight: the λ probe — **the one caveat on the headline negative**
-At the published **λ = 0.25**, the refusal term is only **0.370 % mean / 1.495 % max** of the
-`total_loss` GCG's candidate selection minimizes. So the discrete negative means *"the position
-fix alone does not rescue the objective"*, **not** *"a mechanism-weighted token objective cannot
-work."*
+### 5.1 RESOLVED: the λ probe — the caveat on the headline negative is CLOSED
+At the published **λ = 0.25** the refusal term is only **0.370 %** of the loss candidate selection
+minimizes, so Gate E's negative could only mean *"the position fix alone does not rescue the
+objective."* **That is no longer open.** λ = 10 (≈40× published), 3 seeds:
 
-Running: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}.** Early (step-matched k = 29/200,
-all 3 seeds, **diagnostic only**): the mechanism term reaches **24.5 % mean / 40.9 % max** of the selection loss
-and drives the projection **past zero in all 3 seeds** (λ = 0.25 never did in a full 200 steps),
-**but the mechanism arm makes 1.45×–3.02× less task-loss progress**, 3/3 sign-consistent.
+| seed | mech | random | ΔASR | McNemar p |
+|---|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.6216** | 1.55e-06 |
+| **43** | 0.1081 | 0.2703 | **−0.1622** | 0.109 |
+| 44 | 0.5405 | 0.3514 | **+0.1892** | 0.065 |
 
-⚠ **Statistic matters here.** `task_loss` is non-monotonic (GCG selects on *total* loss, ~40 %
-up-steps). Report **best-so-far**, never a single endpoint and never a ratio of two endpoints —
-the endpoint version of this same comparison swung 1.45×–34× across seeds and had to be
-withdrawn (execution log 12:42). This is trap #7 for §4.
+**Sign 2/3 → FAILS. Not a positive; the negative STANDS.** At λ=10 the term carries 24–34 % of the
+selection loss and pushes the projection past zero in all 3 seeds — it works internally, behaviour
+does not follow. All three |ΔASR| exceed the judge floor, so the instability is **real, not noise**.
+**Never quote the mean (+0.216)**: the range is −0.162 to +0.622.
 
-**Pre-registered reading — do not deviate:**
-* The **internal-target number gets no verdict.** Only **ΔASR consistent across all 3 seeds**
-  is evidence.
-* **ASR rises** → Gate E's negative was a λ artifact; weaken the discrete claim to "at the λ the
-  literature uses."
-* **ASR flat while task loss degrades** → the stronger, more general result: **no λ both
-  preserves the attack and gives the mechanism meaningful weight.**
-
-Note the corrected diagnostic also made this cheap: ~50 % mechanism weight needs **λ ≈ 34**, not
-the λ ≈ 900 estimated from the pre-audit (understated) share.
+⚠ **If you re-run anything here, read both columns.** The *random* arms span 0.054–0.351 (6.5×).
+Seed 42's headline +0.622 is as much a weak random arm as a strong mechanism arm.
 
 ### 5.2 NOT RUN, with reasons
 * **Scope-matched activation arm.** The activation intervention is all-position/all-layer while

@@ -90,7 +90,7 @@ Applied here:
 and must never be scored — it carries a `DO_NOT_SCORE.txt` and any `asym_p3_*` glob will match
 it.
 
-## 5. The λ follow-up — **IN FLIGHT**, not deferred
+## 5. The λ follow-up — **RESOLVED** (was the top open question)
 
 **A λ probe is the single highest-value next experiment**, and it exists because of §1's
 diagnostic rather than because of any result here. It is now **running**: λ = 10 ×
@@ -131,6 +131,36 @@ its λ term yields little gradient and the optimizer defaults to the task loss.
 > weight.** That would be a stronger and more general statement than either a positive or a
 > negative at λ = 0.25.
 
-**Binding reading rule (fixed 10:07, before these runs finish):** the λ arms' *internal-target*
+### ✅ RESULT — three seeds, RESOLVED 2026-08-13 (this is no longer an open question)
+
+Held-out test, n=37, StrongREJECT ≥ 0.5, `judge_fail_frac = 0.0` on all six arms.
+
+| seed | mechanism | matched random | ΔASR | discordant b/c | exact McNemar p |
+|---|---|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.6216** | 24/1 | **1.55e-06** |
+| **43** | 0.1081 | 0.2703 | **−0.1622** | 2/8 | 0.109 |
+| 44 | 0.5405 | 0.3514 | **+0.1892** | 9/2 | 0.065 |
+
+**Sign consistency 2/3 → FAILS. λ = 10 is NOT a Gate-E positive. The negative STANDS.**
+
+Three things make this a *stronger* negative than the one it replaces:
+1. **The objective demonstrably works internally.** At λ=10 the mechanism term carries **24–34 %**
+   of the selection loss (vs 0.370 % at λ=0.25) and drives the held-out projection **past zero in
+   all three seeds**. It is doing exactly what it was asked to do — and behaviour still does not
+   follow stably.
+2. **The instability is real, not measurement noise.** All three |ΔASR| **exceed** the ±0.03–0.08
+   judge floor, yet they disagree in sign. This is genuine seed-to-seed instability of the
+   optimization.
+3. **ΔASR alone would have misled.** The *random* arms span **0.054–0.351 (6.5×)**. Seed 42's
+   spectacular +0.622 is driven as much by an unusually **weak random arm** as by a strong
+   mechanism arm — visible only because both columns are reported.
+
+**The λ caveat that qualified Gate E is therefore CLOSED.** Gate E's negative no longer means
+merely *"the position fix alone does not rescue the objective"*; it now also survives a λ at which
+the mechanism term carries real selection weight. A mean of +0.216 must **not** be quoted — the
+range spans −0.162 to +0.622 and the mean of three seeds that disagree in sign is not an estimate
+of anything.
+
+**Binding reading rule (fixed 10:07, before these runs finished):** the λ arms' *internal-target*
 number gets **no verdict** — single-seed quantities of that type proved unstable and produced
 this sprint's one retraction. Only **ΔASR, consistent across all 3 seeds**, counts as evidence.
