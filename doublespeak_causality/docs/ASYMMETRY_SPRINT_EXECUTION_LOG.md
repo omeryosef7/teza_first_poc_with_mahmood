@@ -4741,3 +4741,21 @@ unsharded" would have been a timeout waiting to happen.
 diagonal on compute-matched suffixes would be ~0.18, underpowered by construction).
 
 ---
+## 2026-08-13 12:55 — LOOP: routine. Queue 6/6, seed43 full-budget confirmed stepping.
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | state |
+|---|---|
+| seed 42 full-budget | **43/74** prompt-runs, 4:59 elapsed (~58 %) |
+| seed 43 full-budget | 29 min in, **0 prompts complete** |
+
+**Checked the seed-43 shards rather than reading `done=0` as a problem.** Their first prompts are
+at **93/200 and 90/200 steps** — stepping normally. `done=0` is expected: at ~24 min/prompt the
+first completion lands around the 25–45 min mark depending on load. This is the same class of
+false alarm as the 11:45 "stall" and the 09:25 audit's `min=1` steps — **a counter that only
+increments on completion looks identical to a hang until you read the per-step log.**
+
+Nothing finished this tick, so nothing to analyze.
+
+---
