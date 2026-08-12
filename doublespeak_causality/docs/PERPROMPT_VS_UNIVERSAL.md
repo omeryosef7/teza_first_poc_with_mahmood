@@ -145,19 +145,37 @@ checkpoint with no mismatch).
 arm's 200 total steps). The **full-budget** arm (200 steps/prompt — the threat model) is running
 and is reported separately when it lands.*
 
-### 6.1 Behavioural — paired, n=37, judge_fail 0.0 on all arms
-| seed | mechanism | matched random | ΔASR | b/c | exact McNemar p |
+### 6.1 Behavioural — COMPLETE 3×3 matrix (ASR, n=37, judge_fail 0.0 throughout)
+| arm | seed42 | seed43 | seed44 | mean | spread |
 |---|---|---|---|---|---|
-| 42 | 0.1892 | 0.1081 | +0.0811 | 5/2 | 0.45 |
-| 43 | 0.1622 | 0.1622 | 0.0000 | 3/3 | 1.00 |
-| 44 | 0.1892 | 0.1081 | +0.0811 | 3/0 | 0.25 |
+| **vanilla** (task loss only) | 0.0811 | 0.1892 | 0.1622 | 0.1442 | 2.33× |
+| **mechanism** | 0.1892 | 0.1622 | 0.1892 | **0.1802** | **1.17×** |
+| **matched random** | 0.1081 | 0.1622 | 0.1081 | 0.1261 | 1.50× |
 
-**Sign 2/3 positive, 1 exact zero, no reversals. Mean +0.054. Significant in 0/3.**
+**Paired contrasts (exact McNemar per seed):**
 
-**This is UNDERPOWERED, not negative.** Simulated paired-McNemar power at these base rates is
-**0.09 at n=37** (0.44 at n=150, 0.75 at n=300). The design detects its own observed effect 9 % of
-the time, so a null here is **absence of evidence**. The honest reading: **a small, directionally
-consistent positive that this design cannot resolve.**
+| contrast | seed42 | seed43 | seed44 | mean | sign-consistent? | significant |
+|---|---|---|---|---|---|---|
+| **mechanism − matched random** | +0.0811 | 0.0000 | +0.0811 | **+0.054** | **YES** (2 pos, 1 zero, **0 reversals**) | **0/3** |
+| mechanism − vanilla | +0.1081 | −0.0270 | +0.0270 | +0.036 | **NO** | 0/3 |
+| matched random − vanilla | +0.0270 | −0.0270 | −0.0541 | −0.018 | **NO** | 0/3 |
+
+**Read carefully, because the three contrasts do not behave the same way:**
+
+* **Only `mechanism − matched random` never reverses.** It is positive in two seeds and exactly
+  zero in the third. That is the contrast §7.5 exists to measure, and it is **directionally
+  consistent** — but the mean (**+0.054**) sits **below the ±0.03–0.08 judge floor** and **0 of 3
+  seeds reach p < 0.05**.
+* **Neither direction arm reliably beats vanilla.** Both of those contrasts flip sign across
+  seeds. So the direction term does **not** dependably improve per-prompt attack success at all.
+* **The mechanism arm is the most stable of the three** (spread 1.17× vs 2.33× for vanilla) —
+  consistent with the sprint-wide finding that mechanism arms are stable and *contrasts* are not.
+
+**Verdict against the §4 pre-registered rules: NOT a positive.** Gate E requires the contrast to
+clear the noise floor **and** the internal target to move more than random. It clears neither: the
+behavioural effect is sub-floor and never significant, and §6.2 shows the projection endpoint
+fails outright (1 of 3, one reversal). **The consistent sign is worth reporting as an unresolved
+weak signal — not as an effect.**
 
 ### 6.2 Mechanistic (§19.1 before→after projection) — the endpoint that IS adequately powered
 | seed | mech drop | random drop | mech − rand | Wilcoxon p |

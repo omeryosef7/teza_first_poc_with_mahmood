@@ -4677,3 +4677,44 @@ budget where the design has **9 %** power. Stating that now so the last number i
 fixed expectation rather than framed after it lands.
 
 ---
+## 2026-08-13 11:55 — ✅ §7.5 COMPUTE-MATCHED ARM COMPLETE (3 arms × 3 seeds, both endpoints)
+
+**755642 complete** — the final cell. Full matrix, n=37, `judge_fail = 0.0` throughout.
+
+| arm | seed42 | seed43 | seed44 | mean | spread |
+|---|---|---|---|---|---|
+| vanilla | 0.0811 | 0.1892 | 0.1622 | 0.1442 | 2.33× |
+| **mechanism** | 0.1892 | 0.1622 | 0.1892 | **0.1802** | **1.17×** |
+| matched random | 0.1081 | 0.1622 | 0.1081 | 0.1261 | 1.50× |
+
+### The three contrasts do NOT behave the same way — this is the finding
+| contrast | per seed | mean | sign-consistent | significant |
+|---|---|---|---|---|
+| **mechanism − matched random** | +0.081 / 0.000 / +0.081 | **+0.054** | **YES — 0 reversals** | 0/3 |
+| mechanism − vanilla | +0.108 / −0.027 / +0.027 | +0.036 | **NO** | 0/3 |
+| matched random − vanilla | +0.027 / −0.027 / −0.054 | −0.018 | **NO** | 0/3 |
+
+**Only the mechanism-vs-random contrast never reverses** — positive twice, exactly zero once.
+That is precisely the contrast §7.5 was built to measure. But the mean **+0.054 sits below the
+±0.03–0.08 judge floor** and **0 of 3 seeds reach p < 0.05**.
+
+**Neither direction arm reliably beats vanilla** — both of those contrasts flip sign. So the
+direction term does not dependably improve per-prompt attack success at all, which is a sharper
+statement than anything available before the vanilla arm existed.
+
+**The mechanism arm is the most stable of the three** (1.17× vs vanilla's 2.33×) — the same
+pattern seen all sprint: **mechanism arms are stable, contrasts are not.**
+
+### Verdict against the pre-registered §4 rules: NOT a positive
+Gate E needs the contrast to clear the noise floor **and** the internal target to move more than
+random. **It clears neither** — sub-floor and never significant behaviourally; **1 of 3 with one
+reversal** mechanistically. The consistent sign is recorded as **an unresolved weak signal, not an
+effect.**
+
+**Deliverable `PERPROMPT_VS_UNIVERSAL.md` §6.1 rewritten** with the complete matrix and all three
+paired contrasts.
+
+**Remaining:** the full-budget arm (37/74, ~4 h out) — the threat-model number — and the transfer
+matrix deferred to those suffixes.
+
+---
