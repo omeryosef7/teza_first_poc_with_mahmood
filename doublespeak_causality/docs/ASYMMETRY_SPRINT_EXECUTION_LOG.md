@@ -4335,3 +4335,22 @@ waits. Worth stating because the reverse mistake — running an analysis that ne
 against a half-finished pair — is exactly what produced the invalid eval at 22:50.
 
 ---
+## 2026-08-13 07:25 — LOOP: routine. Queue 6/6, seed44 random arm ~4 min out.
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | state |
+|---|---|
+| seed 44 random arm (755395) | **33/37**, ~4 min out |
+| seed 44 mechanism eval (755439) | running, 2:49 |
+| full-budget shards | **6 / 4 / 6 / 5** of ~19 each at 2:33 elapsed — on pace |
+
+Nothing finished this tick, so nothing to analyze. When 755395 lands, the seed-44 pair completes
+and both its **eval** and its **mechval** can run — giving the **third seed** that turns §7.5's
+compute-matched replication from 1-of-2 into 1-of-3 or 2-of-3.
+
+*Operational note carried forward from 06:55:* combined `commit && push` hit the 2-minute tool
+timeout there. The append had happened, the commit had not. Checked for a duplicated entry (none)
+before retrying, then ran commit and push as separate bounded commands. Doing the same here.
+
+---
