@@ -4122,3 +4122,37 @@ settings** (universal was 200 steps over 40 prompts, per-prompt is 5 steps over 
 SIGN of the mechanism-vs-random contrast that flips, and that is the claim — not the size.**
 
 ---
+## 2026-08-13 04:40 — LOOP: queue full (6); seed43 compute-matched pair launched to replicate add-on 1
+
+**Queue 6/6, 0 pending**, nothing to resubmit, **no new failures** (`sacct` today shows only the
+three already-handled pre-noon entries).
+
+**Measured the full-budget shards directly instead of inferring from the prompt counter:**
+
+| quantity | value |
+|---|---|
+| median s/step across 11 completed prompts | **7.31 s** |
+| smoke, solo | 6.85 s |
+| **slowdown from 4-way node sharing** | **1.07×** |
+| ⇒ per prompt | 24.4 min |
+| ⇒ per shard (19 prompts) | **7.7 h** (limit 16 h) |
+
+The coarse done-count would have suggested ~25 % slower and prompted an unnecessary reshuffle.
+**Another case where measuring beat inferring** — the same pattern as the 11:45 "stall" and the
+22:50 job-mapping error.
+
+### Two free slots → replicate §7.5's one positive finding
+Launched **755307 / 755308**: seed 43 **compute-matched** per-prompt pair, pinned to **n-304** so
+it adds no load to n-301's four running shards. Same **3090** class as seed 42's pair per §3.1.
+
+**Rationale:** add-on 1's result — *the per-prompt objective IS mechanistically specific*
+(mech−rand **−0.391**, Wilcoxon **p = 0.009**, 24/37 prompts) — is currently **one seed**. That is
+precisely the class of result this sprint has **twice had to retract**, and once today **watched
+fail to replicate** (the λ=10 **+0.622**). Replicating it costs ~40 min per arm and is worth more
+than any other work available at this budget.
+
+**Deliberately not adding more full-budget arms:** the four running shards already saturate n-301,
+and seed 43/44 full-budget would be another **58 GPU-h** committed against a seed-42 result that
+does not exist yet.
+
+---
