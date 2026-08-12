@@ -2394,3 +2394,11 @@ Phase-2 soft prompt + judge, Phase-4/5 + all statistics usage, and docs-vs-artif
 consistency. Findings and any resubmissions will be recorded here.
 
 ---
+## 2026-08-12 09:45 — seed 43 pair COMPLETE; eval launched (job 751704)
+
+Both seed-43 arms finished 200/200. Evaluated as a pair, explicit run-dir basenames, wide
+nodelist (the lesson from 07:36), `OPENAI_API_KEY` verified before submit.
+
+**Queue 5**: seed 44 pair (~185/200), λ=10 pair (loading, n-302), seed-43 eval.
+
+---
