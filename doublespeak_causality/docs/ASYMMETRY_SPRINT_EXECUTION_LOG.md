@@ -4319,3 +4319,19 @@ pair, which turns §7.5's compute-matched replication from an uninformative **1-
 **1-of-3 or 2-of-3**.
 
 ---
+## 2026-08-13 06:55 — seed44 mechanism arm complete (37/37); eval launched
+
+**755379 COMPLETE**: `ran=37 skipped=0`, **37/37 `FINAL_CANDIDATES`**. Launched **755439**, its
+held-out eval. Its matched-random pair (**755395**) is 27 min in and still running, so the seed-44
+contrast is **not yet computable**.
+
+**Queue 6/6**: 4 full-budget shards (2:27 elapsed, 3–4 of ~19 each), seed 44 random arm, seed 44
+mechanism eval. Nothing pending past submit; no failures.
+
+**Sequencing note:** launching the mechanism eval *before* its pair is safe because evals are
+**per-arm** and keyed by `(task_id, suffix_label, seed)` — there is no cross-arm dependency in the
+eval itself, only in the **analysis**. The **mechval** readout *does* need both arms, so that one
+waits. Worth stating because the reverse mistake — running an analysis that needs both arms
+against a half-finished pair — is exactly what produced the invalid eval at 22:50.
+
+---
