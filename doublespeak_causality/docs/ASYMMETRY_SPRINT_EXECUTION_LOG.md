@@ -3564,3 +3564,40 @@ compute-matched arm's per-prompt cost**. So the compute-matched arm is **overhea
 must **not** be cost-modelled as 5/200 of the full arm; doing so would underestimate it ~24×.
 
 ---
+## 2026-08-12 22:20 — FIRST COMPLETE λ=10 PAIR (seed 43) + held-out ASR eval launched
+
+**751843 (seed 43 random) COMPLETED**, joining its mechanism pair — **the first complete λ=10
+matched pair**, both arms 200/200, so no step-matching is needed for the first time.
+
+### Seed 43, λ=10, complete run, corrected metrics
+| | mechanism | random | |
+|---|---|---|---|
+| best-so-far task-loss drop | 25.30 | 32.04 | ratio **1.27×** |
+| best improvements | 20 | 46 | ratio **2.30×** |
+| **projection moved** | **−0.3121** | −0.0116 | ratio **27.0×** |
+| share (proper metric) | **24.5 %** | 4.5 % | |
+| final task_loss | 91.67 | 75.14 | |
+
+Both training-side directions seen in the partial data **hold on the complete run**: the
+mechanism arm makes **less** task-loss progress and moves its projection **27× further**,
+crossing zero to **−0.1175** where λ=0.25 never left ~+0.001.
+
+### Still NO verdict — and seed 43 is specifically the wrong seed to read alone
+This is **one seed**, and the 10:07 rule requires **3-seed consistency in ΔASR**. Worth naming
+explicitly: **seed 43 is the *weakest* of the three** on the task-loss ratio (**1.27×** complete,
+vs 3.13×/3.02× for seeds 42/44 at k=29). So reading it alone would **understate** the effect —
+the exact mirror of the 10:05 retraction, where a single seed *overstated* one. The rule protects
+against both directions, which is why it is not being relaxed now that a result looks
+directionally consistent.
+
+### Held-out ASR eval launched — 755140 (n-304)
+Both seed-43 arms, via **`run_gcg_v3_eval.slurm`** — the **same path the λ=0.25 arms used**, so
+the new numbers are scored identically to the arms they will be compared against (§7.4).
+Verified **before** launching that those arms ran `split=test, seed=42, n=37,
+judge_fail_frac=0.0`, and that `OPENAI_API_KEY` is present in `.env` — a null judge scores
+everything benign and would make a working arm look like total failure.
+
+**Queue back to 6:** 4 λ arms + per-prompt compute-matched (13/37) + this eval. Node spread
+n-301/n-302/n-304 with no concurrent loads.
+
+---
