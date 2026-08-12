@@ -1983,3 +1983,35 @@ and is recorded as **NOT RUN** in this sprint.
 **Queue 6/6, 0 pending.** seed 42 at 140/145 of 200 (~2 h), seed 43 at 74/77, seed 44 at 61.
 
 ---
+## 2026-08-12 06:06 — LOOP: progress + a resource decision considered and DECLINED
+
+**Queue 6/6, 0 pending, spread 3/3.** seed 42 **156/161** of 200 (~1.4 h left), seed 43 89/93,
+seed 44 76/77.
+
+### Considered: cancel the seed-44 pair to run a λ-calibrated arm instead. **Declined.**
+The 05:36 diagnostic showed the mechanism term is ~0.03 % of the loss at λ=0.25, which means
+seeds 43 and 44 add precision to an effect that is *structurally* constrained to be tiny —
+whereas a λ-calibrated arm would test a genuinely different hypothesis ("the objective fails
+because it is under-weighted" vs "it fails because of discreteness"). By plan §18's own test
+— *does this experiment distinguish two plausible explanations?* — the λ arm scores higher
+than the third seed.
+
+**Declined anyway, for three reasons:**
+1. **The 3-seed design was pre-registered** (plan §7.4, "minimum 3 identical seeds across
+   arms"). Dropping to 2 seeds *after* seeing an in-flight diagnostic that makes a negative
+   more likely is exactly the shape of a post-hoc design change, even with an honest motive.
+   The published matrix's headline weakness was **2/3 sign flips**; abandoning seeds to chase
+   a more interesting arm would repeat that mistake in reverse.
+2. **Sunk cost is real but not the argument** — seed 44 is at 76/200, ~2.5 GPU-h per arm.
+   That is a genuine loss but would not by itself decide it.
+3. **The λ question does not need to displace anything.** Two slots free in ~1.4 h when the
+   seed-42 pair lands; the eval jobs are short. The λ arms can run after, without sacrificing
+   the pre-registered design.
+
+**Recorded so the reasoning is auditable:** the λ sweep remains the single highest-value
+follow-up, is already logged as NOT RUN with its target values, and will be queued once the
+pre-registered arms are complete rather than instead of them.
+
+Nothing finished this iteration; nothing analyzed.
+
+---
