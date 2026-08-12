@@ -2275,3 +2275,36 @@ evidently has purchase on the coordinate even at 0.026 % weight.
 published Q5 is itself a cautionary tale about a one-seed internal-target result.
 
 ---
+## 2026-08-12 09:06 — λ PROBE LAUNCHED (λ=10, mechanism + matched random)
+
+**Queue 6/6.** seed 43 179/185 of 200 (~35 min), seed 44 169/170 (~1 h) — untouched. The λ
+probe fills the two free slots on **n-302**, so it displaces nothing and adds no load to the
+nodes running the pre-registered arms.
+
+### Why now
+Gate E clause (ii) turned **positive** at seed 42: the corrected objective moves its own
+internal target 1.9× more than random, on 35/37 held-out prompts — **while carrying only
+0.026 % of the selection loss**. That makes the λ question the binding limitation on the
+remaining half of Gate E, and much sharper than it was when I deferred it at 06:06:
+
+> If the mechanism term already controls the coordinate at **0.026 %** weight, what happens at
+> **1 %**? Either ASR follows — and the published ASR negative was a *weighting* artifact all
+> along — or it does not, and the dissociation (internal control without behavioural
+> consequence) is confirmed at a weight where the objective demonstrably has purchase.
+
+Both outcomes are informative, which is the §18 bar. λ = **10** (40× the published value) puts
+the refusal term at roughly 1 % of the loss — a real increase that should not yet swamp the
+task loss the way the λ ≈ 900 needed for 50 % weight would.
+
+### A collision this would have caused, caught before submitting
+The run-id was `${RID}_seed${SEED}` with **no λ in it**, so a λ=10 arm would have written into
+the λ=0.25 arm's directory and hit the config-hash checkpoint guard — **exactly the failure
+that killed job 751392** at 01:22. Patched `run_gcg_v3_arm.slurm` to append `_lam${LAMBDA_R}`
+whenever λ ≠ 0.25, so the sweep is collision-proof and the default path is byte-identical.
+Verified in the submitted jobs' run-ids before they started.
+
+**Both λ arms share a node (n-302) and therefore a GPU class**, so the mechanism-vs-random
+contrast at λ=10 is internally matched, and the λ=0.25 comparison is a
+same-script/same-budget/same-seed difference in exactly one parameter.
+
+---

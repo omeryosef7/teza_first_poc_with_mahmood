@@ -105,7 +105,11 @@ case "$ARM" in
   *) echo "ERROR unknown ARM=$ARM"; exit 1;;
 esac
 
-RUN_ID="${RID}_seed${SEED}"
+# Asymmetry sprint: a non-default lambda MUST change the run-id, or a lambda sweep collides
+# with the lambda=0.25 checkpoints and the optimizer refuses to resume (as job 751392 showed).
+LAMTAG=""
+if [ "$LAMBDA_R" != "0.25" ]; then LAMTAG="_lam${LAMBDA_R}"; fi
+RUN_ID="${RID}${LAMTAG}_seed${SEED}"
 OUT_DIR="${OUT_BASE}/${RUN_ID}"
 mkdir -p "$OUT_DIR"
 [ -f "$MAN" ] || { echo "ERROR missing manifest $MAN"; exit 1; }
