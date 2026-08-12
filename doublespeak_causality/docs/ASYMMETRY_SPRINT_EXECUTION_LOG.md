@@ -3601,3 +3601,55 @@ everything benign and would make a working arm look like total failure.
 n-301/n-302/n-304 with no concurrent loads.
 
 ---
+## 2026-08-12 22:50 — ⚠ CORRECTION to 22:20 + the training-side gap CLOSES with budget
+
+### Correction 1 — I misread which job ran which arm
+I inferred the job→arm mapping from **node grouping** instead of reading each job's own `ARM=`
+line. The truth:
+
+| job | arm | status |
+|---|---|---|
+| 751610 / 751611 | seed 42 mech / rand | **both COMPLETE** |
+| 751841 / **751842** | seed 43 mech / rand | rand **STILL RUNNING (183/200)** |
+| **751843** / 751844 | seed 44 mech / rand | rand **STILL RUNNING (184/200)** |
+
+**751843 was seed 44 MECHANISM, not seed 43 random.** So **the first complete matched pair is
+SEED 42**, not seed 43.
+
+### Correction 2 — the 22:20 table was an unmatched comparison
+It compared seed 43 mech (**200** steps) against seed 43 rand (**183** steps) while calling both
+complete — violating the step-matching rule I set at 12:12 and enforced on myself all day.
+**Re-checked step-matched at k=182: the ratio is 1.27×, identical to what I published**, because
+both arms' best-so-far minima occurred before step 183. **The numbers survive; the framing and
+provenance were wrong**, and that is what is being corrected.
+
+### Correction 3 — a launched eval is partly invalid
+**755140** was launched on the seed-43 pair, whose random arm has **no `FINAL_CANDIDATES`**. Its
+mechanism half is running correctly (n_tasks=37); **the random half will fail** and must be
+re-run once 751842 finishes. Launched **755150** for the seed-42 pair, which is genuinely
+complete.
+
+### ⚠ SUBSTANTIVE UPDATE — the gap closes, weakening my own earlier framing
+For the **complete** seed-42 pair, the training-side gap **closes monotonically with budget**:
+
+| k | best-so-far | improvement-count |
+|---|---|---|
+| 43 | 3.58× | 4.17× |
+| 65 | 2.64× | 2.64× |
+| 100 | 2.30× | 1.58× |
+| 150 | 1.52× | 1.11× |
+| **199** | **1.21×** | **1.09×** |
+
+**At full budget the mechanism arm has nearly caught up.** So *"λ=10 costs the attack objective"*
+is largely an **early-training** effect — exactly the possibility I flagged at 13:42 and the
+reason I throttled and refused a verdict. At 200 steps λ=10 delivers **34.1 % mechanism share AND
+near-matched task-loss progress**, which is close to the **opposite** of the trade-off story the
+early data suggested.
+
+Had I published the k≈43 numbers as a finding this morning, this is where it would have been
+retracted. The claim that decides it remains **test ASR across 3 seeds**, now running.
+
+**Queue refilled to 6:** 2 λ random arms, 2 per-prompt compute-matched arms (mechanism 755124 +
+matched random 755152, both pinned to **3090** nodes per §3.1), 2 evals.
+
+---
