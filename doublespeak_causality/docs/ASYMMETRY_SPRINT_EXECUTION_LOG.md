@@ -3771,3 +3771,30 @@ than announcing a second time on another partial result. The earlier push was ex
 as one seed, so it does not need correcting yet.
 
 ---
+## 2026-08-13 00:40 — LOOP: queue refilled with work that is outcome-independent
+
+**Queue had dropped to 4.** Filled a slot with work needed **regardless of how the λ verdict
+lands**, rather than releasing the **129 GPU-h** full-budget §7.5 arms that are still gated on it.
+
+**New `slurm_scripts/run_perprompt_eval.slurm`** — thin wrapper over
+`eval_perprompt_batched.py`, both modes, with `SHARD`/`NSHARD` and the same GPU guard and
+offline-HF env as the other runners. It exists because `26_eval` loads the model **per
+invocation** (~18 min measured); this loads **once**.
+
+**Launched 755180** (n-301, pinned to the **3090** class so it matches the arm it evaluates):
+held-out evaluation of the completed **per-prompt compute-matched mechanism** arm, 37 prompts.
+**Dry-ran it first** — *"37 listed, 0 without a finished optimization; 37 of 37 evaluations"* — so
+there is no silent partial.
+
+**One slot deliberately left free.** Seeds 43 and 44 random arms are at **191/200** and
+**193/200** and will each need an eval within the half hour. Those gate the **3-seed λ verdict**,
+which is the sprint's headline open question, and they should not have to queue behind anything.
+
+### λ picture — unchanged and still unresolved
+| seed | mechanism | random | ΔASR |
+|---|---|---|---|
+| 42 | 0.6757 | 0.0541 | **+0.622** |
+| 43 | **0.1081** | pending | — |
+| 44 | pending | pending | — |
+
+---
