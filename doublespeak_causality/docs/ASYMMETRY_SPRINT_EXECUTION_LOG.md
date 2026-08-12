@@ -3176,3 +3176,48 @@ Remaining §7.5 build: add-on 2 (transfer matrix, needs the eval `--suffix-map` 
 per-prompt ASR aggregator.
 
 ---
+## 2026-08-12 17:35 — LOOP + §7.5 add-on 2: transfer matrix needs NO eval-code change
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **100–117/200**; nothing
+finished, so no slot has freed and the §7.5 smoke still cannot run.
+
+**Finding: the transfer matrix needs zero changes to the eval driver.** The recon proposed a
+`--suffix-map` edit; on reading the driver that turns out to be unnecessary.
+`26_eval_p9_gcg_heldout_asr.py` **already applies ONE run-dir's suffix to EVERY row of a
+manifest**, and `evaluate_optimized_suffixes._row_key` is **`(task_id, suffix_label, seed)`** —
+so giving each source its own `--arm-label` keeps rows distinct and resume-safe. Transfer is
+therefore just *source i's run-dir × a manifest of target prompts*.
+
+**Net: neither approved add-on requires an eval-path edit.** Add-on 1 touched only `asym_p1c`;
+add-on 2 touches nothing. Total new code for all of §7.5 is three small data/plan scripts plus
+one SLURM runner.
+
+**New: `scripts/build_transfer_manifests.py`.** Three design decisions recorded rather than
+buried in the code:
+* **Subsampling is explicit** (§3.15, no silent caps). Full matrix = 37×37 = **1369** generations
+  per arm per seed. Default `--k 5` samples 5 off-diagonal targets per source → **222**, ~6×
+  cheaper and sufficient for a paired diagonal-vs-off-diagonal estimate. `--k 0` gives the full
+  matrix. The chosen k **and the exact sampled target ids** are written into the plan, so
+  coverage is auditable rather than asserted.
+* **The diagonal is never sampled away.** i→i is the reference the off-diagonal is measured
+  against; it is always included and always first.
+* **Only sources with a finished run can donate a suffix**, and the builder reports
+  `n_finished/n_listed` instead of silently shrinking the matrix.
+
+**What the readout will mean:** diagonal high / off-diagonal low ⇒ a **prompt-specific** token
+route (H1/H4 + §5.5), which would *explain* the universal-suffix failure. Diagonal ≈ off-diagonal
+⇒ the suffix is generic and per-prompt optimization bought nothing a universal suffix could not
+have found.
+
+**Tested** on a 6-source fixture with 4 finished: plan has 4 rows (unfinished excluded), diagonal
+present and first in every row, k respected, arm labels unique per source, target manifests the
+right length, full-matrix mode 148 pairs, sampling deterministic under a fixed seed and different
+under a different one.
+
+*Test-authoring error worth recording:* my first determinism check diffed the whole plan JSON,
+which contains the `--out-dir` path, and so reported "NOT deterministic". **The test was wrong,
+not the script.** Comparing only `(source, sampled targets)` confirms determinism. Third time
+today a first-pass claim of mine failed verification — the verify-before-recording rule set at
+16:35 is doing real work.
+
+---
