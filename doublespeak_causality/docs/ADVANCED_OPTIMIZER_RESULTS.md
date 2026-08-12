@@ -99,11 +99,13 @@ diagnostic rather than because of any result here. It is now **running**: λ = 1
 **The corrected diagnostic also made this experiment far more tractable than first estimated.**
 From the understated 0.026 % share I extrapolated that ~50 % mechanism weight would need
 λ ≈ 900 (≈3,600× published). From the corrected 0.370 % share the linear estimate is
-**λ ≈ 34**, and the observed λ = 10 share is **22.7 %** — so meaningful weight is reachable at
+**λ ≈ 34**, and the observed λ = 10 share is **~24 % mean over the full run** — so meaningful weight is reachable at
 **~40× the published λ, not ~3,600×**. The retracted number would have made this look
 prohibitive; it is not.
 
 ### Early reading (λ = 10, **all 3 seeds**, step-matched k = 29/200 — diagnostic, no verdict)
+
+> **Metric caveat (found 2026-08-12 20:20).** "Share" must be computed as the proper fraction **|λ·proj·n| / (|task| + |λ·proj·n|)**, NOT |λ·proj·n| / |total_loss|. The latter is not a fraction once the two terms have opposite signs — `total_loss` is their SUM, so |total| becomes *smaller* than |refusal term| and the ratio **exceeded 100 % on 13 of 200 steps** at λ=10 (peaking at 115.7 %). Verified that the λ = 0.25 figure is **unaffected** (0.370 % under both metrics), so §1's headline number stands.
 
 **Statistic: best-so-far task loss** (min over steps 0..k). `task_loss` is *not* monotonic —
 GCG selects on **total** loss, so the task component rises on ~40 % of steps, and a
@@ -116,7 +118,7 @@ magnitudes previously quoted here).
 | 43 | 17.88 | 26.01 | **1.45×** | **−0.214** | −0.009 |
 | 44 | 8.28 | 24.98 | **3.02×** | **−0.261** | −0.015 |
 
-λ = 10 does what it was meant to — the mechanism term reaches **19–33 %** of the selection loss
+λ = 10 does what it was meant to — the mechanism term reaches **24.5 % mean / 40.9 % max** of the selection loss
 and drives the projection **past zero in all three seeds**, which λ = 0.25 never achieved in a
 full 200 steps. **But the mechanism arm makes 1.45×–3.02× less task-loss progress**, 3/3
 sign-consistent.

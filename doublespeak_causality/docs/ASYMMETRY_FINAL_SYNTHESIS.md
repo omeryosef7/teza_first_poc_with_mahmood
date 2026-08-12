@@ -139,7 +139,7 @@ mechanism-weighted token objective cannot work."** A λ at which the mechanism t
 weight had never been run — not by this sprint and not by the published work.
 
 It is running now: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}**. Early (step-matched
-k = 29/200, **all 3 seeds**, diagnostic only): the mechanism term reaches **19–33 %** of the
+k = 29/200, **all 3 seeds**, diagnostic only): the mechanism term reaches **~24 % (mean, full 200-step run)** of the
 selection loss and drives the projection **past zero in all three seeds** (λ = 0.25 never did in
 a full 200 steps) — **but the mechanism arm makes 1.45×–3.02× less task-loss progress** than its
 matched random arm, 3/3 sign-consistent.

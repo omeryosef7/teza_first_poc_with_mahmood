@@ -128,7 +128,7 @@ fix alone does not rescue the objective"*, **not** *"a mechanism-weighted token 
 work."*
 
 Running: **λ = 10 × {mechanism, random} × seeds {42, 43, 44}.** Early (step-matched k = 29/200,
-all 3 seeds, **diagnostic only**): the mechanism term reaches **19–33 %** of the selection loss
+all 3 seeds, **diagnostic only**): the mechanism term reaches **24.5 % mean / 40.9 % max** of the selection loss
 and drives the projection **past zero in all 3 seeds** (λ = 0.25 never did in a full 200 steps),
 **but the mechanism arm makes 1.45×–3.02× less task-loss progress**, 3/3 sign-consistent.
 

@@ -3412,3 +3412,47 @@ that size the whole package: **seconds/step at n_train_tasks=1** (no such timing
 in `outputs/`) and the **per-job model-load cost**.
 
 ---
+## 2026-08-12 20:20 — FIRST λ ARM COMPLETE + ⚠ share-metric defect found in published numbers
+
+**Job 751841 — seed 43 MECHANISM, λ=10 — COMPLETED**: 200/200 steps, exit 0, 7:20:56.
+**Its matched-random pair (751843) is still running, so there is no contrast and no verdict.**
+Queue refilled to 6.
+
+**§7.5 smoke launched** into the freed slot (job **755084**, node **n-301** — a third node, so no
+load contention with the λ jobs). Its log confirms the central design point:
+**`Loaded 1 tasks (split=all)`**.
+
+### ⚠ SHARE-METRIC DEFECT — self-caught, real, and already published
+I had been reporting the mechanism term's weight as **|λ·proj·n| / |total_loss|**. That is **not
+a fraction** once the two terms have opposite signs: `total_loss` is their **sum**, so |total|
+becomes *smaller* than |refusal term|. On the completed run it read **115.7 % max** and
+**exceeded 100 % on 13 of 200 steps** — a number that is impossible for a share and that I
+quoted without noticing.
+
+| metric | seed 43 mechanism, full 200 steps |
+|---|---|
+| old, ill-defined `|rd|/|total|` | 54.1 % mean, **115.7 % max** |
+| **proper fraction `|rd|/(|task|+|rd|)`** | **24.5 % mean, 40.9 % max**, 33.9 % final |
+
+Corrected in **`ADVANCED_OPTIMIZER_RESULTS.md`**, **`ASYMMETRY_FINAL_SYNTHESIS.md`** and
+**`RESEARCH_HANDOFF_V2.md`**, with the caveat recorded where the metric is defined.
+
+**The headline is unaffected, and I verified that rather than assuming it.** At **λ = 0.25** the
+two metrics agree **exactly** — 0.370 % under both, with **0** steps exceeding 100 % — because
+the refusal term is far too small there to invert the sign relationship. So the λ=0.25 diagnostic
+that gates Gate E's interpretation **stands unchanged**; only the λ=10 shares were wrong.
+
+*This is the fifth verification catch today, and the first that found a defect in a number I had
+already published rather than in a claim I was about to make. The 16:35 rule — verify the failure
+mode before recording it as fact — should extend to metrics I define myself, not just to failure
+modes I attribute to other people's code.*
+
+### Two things to carry into the real §7.5 package
+1. **GPU class.** The smoke landed on a **3090**; the λ arms are on L40S/a5000. Fine for a
+   plumbing/timing smoke, but **§3.1 forbids mixing GPU classes within a direct comparison** — the
+   mechanism and matched-random per-prompt arms must be pinned to the **same** class.
+2. **Batch size.** My runner defaults `BATCH=64`; the universal script uses **32 on a 24 GB
+   3090**. At `n_train_tasks=1` memory is far lower, so it may well fit — **the smoke is exactly
+   the right place to find out**, and it has not OOM'd so far.
+
+---
