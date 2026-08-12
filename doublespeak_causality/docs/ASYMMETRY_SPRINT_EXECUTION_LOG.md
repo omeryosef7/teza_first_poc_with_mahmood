@@ -1736,3 +1736,36 @@ run. Recording the reasoning so a future reader knows it was considered and pric
 overlooked.
 
 ---
+## 2026-08-12 03:06 — LOOP: Phase-3 seed 43 launched (Gate E needs ≥3 seeds either way)
+
+**Queue:** 4 (2 running seed-42 arms + 2 new seed-43 arms), 0 pending, nothing meets the
+>30 min rule. **One new model load per node**, respecting the corrected contention rule.
+
+Seed 42 at **step 60/200** after 2 h 13 m (~7.4 h projected, ~5 h remaining):
+
+| arm | task_loss | rd_loss |
+|---|---|---|
+| 751396 mechanism | 69.36 | −0.067 |
+| 751393 matched random | 80.29 | +0.0062 |
+
+### Why launch seed 43 before seed 42 finishes
+Plan §7.4 requires **"minimum 3 identical seeds across arms"** for the finalist arms, and that
+requirement holds **regardless of which way seed 42 lands**:
+* if seed 42 shows the corrected objective working, seeds 43/44 are needed to confirm it;
+* if it shows nothing, they are needed to establish the negative robustly — especially given
+  the published discrete matrix's **2/3 sign flips**, which is exactly the instability more
+  seeds exist to detect.
+
+Waiting would serialize 5 h + 7 h = 12 h; launching now finishes everything in ~7 h. The
+seed-44 pair follows next iteration, staggered so no node takes two simultaneous loads.
+
+Run-ids carry the seed (`asym_p3_arm07p*_seed43`), so there is no checkpoint collision with
+the seed-42 dirs — the failure mode that bit job 751392 earlier tonight.
+
+**Note on `task_loss`:** the mechanism arm's is markedly lower (69.4 vs 80.3). Both arms
+optimize the same cross-entropy with the same λ, so this is not a configuration difference. It
+may indicate the refusal term is synergistic with the task loss under the corrected position.
+**Recorded as an observation only** — it is a training-side quantity on the optimization pool
+and says nothing about held-out ASR, which is what Gate E turns on.
+
+---
