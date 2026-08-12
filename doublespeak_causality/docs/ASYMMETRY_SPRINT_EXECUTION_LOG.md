@@ -3653,3 +3653,53 @@ retracted. The claim that decides it remains **test ASR across 3 seeds**, now ru
 matched random 755152, both pinned to **3090** nodes per §3.1), 2 evals.
 
 ---
+## 2026-08-12 23:20 — 🔴 λ=10 SEED-42 HELD-OUT ASR: ΔASR **+0.622**. ONE SEED. NO VERDICT.
+
+Eval **755150 COMPLETE** (11:36). Held-out test, n=37, same `run_gcg_v3_eval.slurm` path the
+λ=0.25 arms used, **`judge_fail_frac = 0.0` on every arm**, `n_scored = 37/37`, `empty_rate = 0`.
+
+| | mechanism | matched random | ΔASR |
+|---|---|---|---|
+| **λ = 0.25** (published setting) | 0.1622 | 0.2162 | **−0.054** |
+| **λ = 10** | **0.6757** | **0.0541** | **+0.622** |
+
+**The key control is the second row read against the first — same λ, same budget, same 200
+steps, only the DIRECTION differs:**
+* **random** direction: 0.216 → **0.054** — raising λ **hurts** (budget spent chasing a direction
+  that does nothing).
+* **refusal** direction: 0.162 → **0.676** — raising λ **helps enormously**.
+
+Mechanistically coherent: mechanism-arm refusal rate **0.027** vs random **0.460**; mean
+StrongREJECT **0.655** vs **0.085**. The suffix that targets the refusal axis suppresses refusal;
+the one that targets a random axis does not.
+
+ΔASR **+0.622 is ~8× the ±0.03–0.08 judge noise floor** — unlike the +0.018 that floor retired.
+
+### THIS IS ONE SEED. NO VERDICT. The rule is not being relaxed because the number is large.
+Seeds 43 and 44 random arms are **still running** (183/200, 184/200). The 10:07 rule requires
+**ΔASR consistent across all 3 seeds**. **This is structurally identical to the 08:52 situation
+that produced this sprint's 10:05 retraction** — a single-seed positive that looked compelling —
+and the fact that this one is 35× larger changes the *prior*, not the *rule*. Two seeds could
+still reverse it.
+
+### If it replicates, what it would mean (stated now, before the data, so the framing is fixed)
+* **Gate E's negative would be OVERTURNED, and the cause identified as λ, not discreteness.**
+  The published token-space objective was not structurally broken — it was **weighted ~40× too
+  weakly** to influence candidate selection.
+* It would sit alongside the continuous soft-prompt result (**ΔASR +0.631**) at nearly the same
+  magnitude — meaning **discrete optimization reaches the direction about as well as continuous
+  does, once the objective actually carries weight.**
+* That would substantially **re-scope the paper's spine** (`PAPER_OUTLINE_V2` §5.2/§5.3): "the
+  failure is specific to discrete search" would become "the failure was a mis-weighted
+  objective", and H2′ would lose its sharpest support.
+* It would **not** touch Gate C (reachability) or Gate D (continuous), which stand on their own.
+
+Also note this **retires the trade-off story entirely**, from the other direction than 22:50 did:
+λ=10 gives 34 % mechanism weight, near-matched task-loss progress by 200 steps, **and** a large
+ASR gain. There was no trade-off to find.
+
+**Queue:** 5 running (2 λ random arms, 2 per-prompt compute-matched, 1 eval). Next actions: eval
+seeds 43/44 the moment their random arms finish; **re-run 755140's random half**, which was
+launched against a run that had no `FINAL_CANDIDATES`.
+
+---
