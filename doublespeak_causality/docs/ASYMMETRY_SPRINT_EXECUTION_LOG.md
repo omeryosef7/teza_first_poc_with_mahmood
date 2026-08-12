@@ -3483,3 +3483,45 @@ general per-load figure — the L40S/a5000 arms load faster. Sizing the real §7
 the smoke's own **steady-state s/step**, which is the second number and is not available yet.
 
 ---
+## 2026-08-12 21:20 — ✅ SMOKE PASSED · cost re-sized (2× estimate) · first real §7.5 arm launched
+
+### Smoke 755084 — COMPLETED, every design assumption confirmed
+| check | result |
+|---|---|
+| steps | **10/10** |
+| `n_train_tasks` | **1** ✅ (the whole premise) |
+| `FINAL_CANDIDATES.jsonl` | written ✅ |
+| post-run guard | fired: `[pp][ok] … 10 steps, n_train_tasks=1` ✅ |
+| optimization actually working at n=1 | task_loss **1.906 → 1.562** ✅ |
+| `BATCH=64` on a 24 GB 3090 | **no OOM** (universal script uses 32 there) ✅ |
+| **s/step at n_train_tasks=1** | **6.85 s median** |
+
+**That 6.85 s/step is the first such measurement in this repo** — no `n_train_tasks=1` timing
+existed anywhere in `outputs/`. It sits at the **top of my estimated 5 s/step ±40 % band**, so the
+per-step estimate was sound; the *total* was not.
+
+### Re-sized from measured numbers
+| component | per arm-seed | × 9 arm-seeds |
+|---|---|---|
+| full budget (200 × 37) | 14.1 GPU-h + load | **129 GPU-h** |
+| compute-matched (5 × 37) | 39 min | **6 GPU-h** |
+| eval (37 per-prompt + 222 transfer, batched) | 6.5 h | **61 GPU-h** |
+| | | **≈ 196 GPU-h, wall floor ~33 h** |
+
+> **I quoted 90–110 GPU-h when the author approved full scope. The measured figure is ~2× that.**
+> Flagging it rather than silently absorbing it — **scaling down is their call, not mine.**
+> Proceeding meanwhile, because full scope was explicitly approved and the work is real either way.
+
+### ⚠ Wall-time risk found by the same measurement
+A full-budget arm-seed is **14.4 h against a 16 h SLURM limit** — too tight to run unsharded; one
+slow or contended node times out and loses the run. **Full-budget arms must be sharded** (6 shards
+→ ~2.7 h each). The runner already supports `SHARD`/`NSHARD` and is resume-safe, so this costs
+nothing but must not be forgotten at submit time.
+
+### First real §7.5 arm launched — 755124 (n-301)
+**Compute-matched mechanism, seed 42, all 37 prompts, 5 steps/prompt (~40 min).**
+Started here deliberately: it is the **fair contrast that design correction 1 requires**, it is
+the **cheapest** item in the package, and it de-risks the expensive arms. **Pinned to 3090 nodes**
+so its matched-random pair can share a GPU class per **§3.1**.
+
+---
