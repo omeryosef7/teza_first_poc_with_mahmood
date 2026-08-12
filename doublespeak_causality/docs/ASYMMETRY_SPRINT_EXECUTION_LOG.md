@@ -2748,3 +2748,41 @@ both arms run the full 200 steps on identical data with identical budgets, and t
 is over final suffixes, not wall-clock-matched checkpoints.
 
 ---
+## 2026-08-12 12:12 — LOOP: λ=10 trade-off now 3/3 seeds (step-matched); still no verdict
+
+**Queue 6/6, 0 pending.** n-302: 4, n-501: 2. Seed 42 at 38/200, seeds 43/44 at 15–22/200.
+ETA ~6–8 h. Nothing to resubmit.
+
+Seeds 43/44 reproduce the seed-42 pattern. **The arms are at unequal step counts** (mech 15,
+rand 22 — the load-stagger from 11:45), so raw movement is not comparable; both tables below
+are **step-matched**, and the second fixes the cross-seed step confound too by reading every
+seed at the same k = 14.
+
+**All three seeds at k = 14:**
+
+| seed | mech Δtask | rand Δtask | ratio | mech Δproj | rand Δproj |
+|---|---|---|---|---|---|
+| 42 | 4.04 | 19.74 | **4.89×** | **−0.167** | −0.006 |
+| 43 | 13.14 | 20.38 | **1.55×** | **−0.208** | −0.009 |
+| 44 | 3.83 | 23.76 | **6.21×** | **−0.237** | −0.011 |
+
+Two things are **3/3 sign-consistent**:
+1. the matched random arm makes **more task-loss progress** than the mechanism arm — but the
+   magnitude is **very unstable (1.55×–6.21×)**, so the effect's *existence* replicates while
+   its *size* does not;
+2. the mechanism arm moves its projection **~20–25× further**, and in all three seeds drives it
+   **negative** (crosses zero), which λ = 0.25 never did in 200 steps.
+
+**Neither is a verdict, and (2) explicitly gets none** — it is the internal-target quantity, the
+exact class that produced this sprint's retraction at 10:05. (1) is a different kind of number
+(deterministic, training-side, no judge, no split) so it is reportable as a *dynamics*
+observation, but it is still **read at 14 of 200 steps**, and task loss can close a gap late.
+
+**The claim that would matter — that λ=10 buys mechanism weight at the cost of the attack —
+requires ΔASR on locked test across all 3 seeds, which does not exist yet.** Recorded here so
+the pattern is on the record before the ASR lands, not assembled afterwards.
+
+No code or output bug found this iteration; the unequal-step artifact was caught and corrected
+for rather than reported.
+
+---
