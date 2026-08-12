@@ -2826,3 +2826,48 @@ Still **no verdict**. This is a training-side diagnostic at 29 of 200 steps; the
 mid-run wobble this entry is about, so it is recorded, not interpreted.
 
 ---
+## 2026-08-12 13:12 — LOOP: the 12:42 fix validates; a second, endpoint-free statistic agrees
+
+**Queue 6/6, 0 pending**, nothing to resubmit. Seed 42 at 61/200, seeds 43/44 at 44–46/200,
+ETA ~5.1–6.9 h. Node split unchanged (n-302: 4, n-501: 2) — the load penalty is long since paid.
+
+**The corrected statistic is stable across the readout point**, which is the check the 12:42
+entry needed and did not yet have:
+
+| seed | best-so-far ratio @k=29 | @k=43 |
+|---|---|---|
+| 42 | 3.13× | **3.58×** |
+| 43 | 1.45× | **1.46×** |
+| 44 | 3.02× | **3.32×** |
+
+Compare the withdrawn endpoint version, which moved 4.89×→34.17× on seed 42 between the same
+two readouts. Best-so-far moves 3.13×→3.58×. That is what a statistic reflecting the underlying
+quantity looks like versus one reflecting where an oscillation happened to be.
+
+**A second statistic, chosen because it shares no failure mode with the first.** Best-so-far is
+still a *magnitude* on a noisy series. So: **count how often each arm improves its best task
+loss** within the same first 43 steps — a pure count, endpoint-free, scale-free, insensitive to
+oscillation amplitude:
+
+| seed | mech improvements | random improvements | ratio |
+|---|---|---|---|
+| 42 | 6 | 25 | 4.17× |
+| 43 | 11 | 27 | 2.45× |
+| 44 | **2** | 19 | 9.50× |
+| **pooled** | **19** | **71** | **3.74×** |
+
+**3/3 sign-consistent, and it agrees with best-so-far on which seed is the weak one** (43, the
+one seed where the mechanism arm keeps up). Seed 44's mechanism arm improved its best task loss
+**twice in 43 steps** — it is very nearly frozen on the task objective while its projection
+moves −0.266.
+
+So the training-side picture now rests on **two statistics with independent failure modes that
+agree in sign 3/3 and in rank ordering**. That is a materially stronger footing than at 12:12,
+when it rested on one statistic that was itself unstable.
+
+**Still no verdict, and this does not become one.** Everything above is training-side, on the
+*train* pool, at ~43 of 200 steps. It says the optimizer is paying for mechanism weight in
+task-objective progress; it does **not** say the resulting suffix attacks worse. That is
+**ΔASR on locked test across 3 seeds**, which does not exist until the runs finish.
+
+---
