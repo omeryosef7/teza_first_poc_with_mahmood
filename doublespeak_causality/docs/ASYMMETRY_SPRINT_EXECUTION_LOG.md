@@ -4623,3 +4623,40 @@ endpoint, and the provisional `vanilla < random < mechanism` ordering from seed 
 replicates or does not.
 
 ---
+## 2026-08-13 11:10 — 🟥 the vanilla ordering does NOT replicate either (4th single-seed collapse today)
+
+**755578 complete.** Vanilla seed 43: **ASR 0.1892**, n=37, `n_missing = 0`, `judge_fail = 0.0`.
+
+### §7.5 compute-matched — all arms × seeds
+| arm | seed42 | seed43 | seed44 |
+|---|---|---|---|
+| vanilla | **0.0811** | **0.1892** | pending |
+| mechanism | 0.1892 | 0.1622 | 0.1892 |
+| matched random | 0.1081 | 0.1622 | 0.1081 |
+
+**Ordering per seed:**
+* **seed 42:** vanilla **<** random **<** mechanism — the mechanism hypothesis's prediction ✅
+* **seed 43:** random = mechanism (**0.1622**) **<** vanilla (**0.1892**) — **REVERSED**; plain
+  task-loss GCG is the *best* arm, and both direction-guided arms are *worse*
+
+**The 10:10 reading is withdrawn.** It was explicitly labelled provisional at the time — *"seed 42
+has had the most favourable random control in every contrast measured"* — and that caution was
+correct. **This is the fourth single-seed result to fail replication today**, after Gate E clause
+(ii), λ=10's +0.622, and add-on 1's specificity.
+
+### What survives
+Not "the direction term helps" (seed 42) and not "the direction term hurts" (seed 43), but the
+weaker and better-supported statement: **at the compute-matched budget, adding a direction
+term — mechanism or random — moves per-prompt ASR around by ±0.1 in a seed-dependent way that
+this design cannot resolve.** Every arm sits in a **0.08–0.19** band whose within-arm spread
+across seeds is comparable to the between-arm differences.
+
+That is consistent with everything else measured today, and with the 9 % power finding: **n=37
+binary ASR cannot separate effects of this size**, and three seeds do not fix it because the
+variance is not seed-symmetric — it is concentrated in whichever arm happens to draw a favourable
+control.
+
+**Still open:** seed 44 vanilla (arm running) completes the matrix. It cannot rescue the ordering
+— seed 43 already broke it — but it determines whether the ordering is 1-of-3 or 2-of-3.
+
+---
