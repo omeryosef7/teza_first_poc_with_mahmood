@@ -3342,3 +3342,37 @@ concentrated exactly where only a real run can settle it: the **unmeasured ~5 s/
 the per-job model-load cost, both of which the 10-step smoke measures directly.
 
 ---
+## 2026-08-12 19:35 — LOOP + §7.5 PRE-REGISTRATION written before any run exists
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **145–174/200**; seed 43
+mechanism is closest at 174, so the **first finish is ~1 h out**. Nothing finished yet.
+
+**`docs/PERPROMPT_VS_UNIVERSAL.md`** — written **before launch**, §1–§5 pre-registered, §6 empty.
+The point of doing it now rather than later is that §7.5 arrived mid-sprint from a collaborator,
+its three design corrections are fresh, and a result this framing-sensitive should not have its
+reading rules chosen after the numbers land.
+
+What is now fixed in advance:
+* **Why the existing negative can't answer the question** — a universal failure is consistent
+  with both H3 (objective failure) and H1/H4+§5.5 (universality failure), and the universal
+  setting cannot separate them.
+* **Dual budgets.** Full 200 steps/prompt (**the threat model**) *and* ~5 steps/prompt (**the
+  compute-matched fair contrast**), both reported wherever a per-prompt-vs-universal number
+  appears. Quoting only the full-budget number is the single easiest way to overstate this
+  result, so it is ruled out in writing.
+* **The per-prompt number is never labelled held-out**, and the apples-to-apples reference (the
+  universal suffix's ASR on the *same* 37 prompts) is reported beside it.
+* **The judge noise floor is not relaxed for a collaborator-requested experiment.** n = 37 here
+  too, so **|ΔASR| < 0.08 is within noise** — the same rule that retired the published +0.018.
+* **A four-row outcome table**, including two rows that block a premature positive: *"ASR
+  separates but the projection does not → **Gate E fails regardless of ASR**"* and *"sign
+  inconsistent across seeds → **no verdict**"*.
+* **Transfer is paired BY SOURCE.** Diagonal (n=37) and off-diagonal (n≈185) are **not**
+  independent pools and must not be compared as two unpaired samples.
+* **Subsampling disclosed** — k and the exact sampled target ids recorded (§3.15).
+
+The pre-registration deliberately names the outcome that would **most strengthen the current
+paper** (mechanism ≈ random per-prompt ⇒ a stronger structural negative) alongside the one that
+would force **re-scoping** it. Neither is set up as the convenient answer.
+
+---
