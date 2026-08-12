@@ -2520,3 +2520,44 @@ for clause (i) and gives a third internal-target point — which cannot rescue c
 quantity that flips between two seeds is unstable regardless) but will quantify the spread.
 
 ---
+## 2026-08-12 10:20 — CLAUSE (ii), ALL THREE SEEDS: unstable in BOTH configurations. Retraction confirmed.
+
+Internal-target contrast (mechanism − matched random), held-out n=37 per seed. Negative =
+mechanism suppresses its own target MORE than random.
+
+| seed | **position-corrected** | frac prompts mech-lower | **legacy (published)** | frac mech-lower |
+|---|---|---|---|---|
+| 42 | **−1.103** | 0.95 | **+0.376** | 0.19 |
+| 43 | **+0.919** | 0.11 | **−1.437** | 1.00 |
+| 44 | **−0.797** | 0.84 | **−1.344** | 0.95 |
+| **mean ± sd** | **−0.327 ± 1.090** | — | **−0.802 ± 1.021** | — |
+| across-seed 95 % CI | **[−3.04, +2.38]** — spans 0 | | **[−3.34, +1.74]** — spans 0 | |
+
+### The definitive reading
+1. **Both configurations show the SAME instability**: 2 of 3 seeds say the mechanism suppresses
+   its target more, 1 says less — and the dissenting seed's magnitude is comparable to the
+   majority's. The across-seed CI spans zero in **both**.
+2. **The position correction does NOT increase the internal-target advantage.** If anything the
+   legacy mean is *more* negative (−0.802 vs −0.327). The correction relocates which seed
+   dissents; it does not stabilise the quantity.
+3. **Gate E clause (ii): WITHDRAWN in both configurations.** Not "positive for corrected,
+   negative for legacy" — *unsupported for both*, at n=37 with one random draw per seed.
+
+### This also fully explains the original Q5
+Legacy seeds: **+0.376 / −1.437 / −1.344**. The published Q5 conclusion rested on seed 42, the
+**minority** seed — the other two show the opposite. That is precisely what §19.1(a) found at
+the start of this sprint, now confirmed with the arms re-run under identical conditions in a
+single measurement job. Q5's status is unchanged: **UNDERPOWERED, not established.**
+
+### And it explains my 08:52 error in the same terms
+My "the correction FLIPS Q5" claim rested on corrected seed 42 — which is, in the corrected
+configuration, part of the 2/3 majority, but the comparison I drew was against legacy seed 42,
+the 1/3 minority there. **I compared one seed against one seed and read a mechanism into the
+difference.** Both numbers were real and significant; neither was stable.
+
+**Still standing, unchanged:** clause (i) (no ASR advantage) at seeds 42/43, both within judge
+noise; and everything in Phases 1, 2, 4, 5, 6, 7.
+
+**Pending:** seed-44 eval (clause (i) third seed) and the λ=10 pair (~6 h).
+
+---
