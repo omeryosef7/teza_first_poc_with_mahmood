@@ -3266,3 +3266,43 @@ code was right.** Recording the tally deliberately: the error rate is in my veri
 not in the artifacts, and that is the thing to keep watching.
 
 ---
+## 2026-08-12 18:35 — LOOP + §7.5: batched evaluator closes the last gap; pipeline complete
+
+**Queue 6/6, 0 pending**, nothing to resubmit, no failures. λ at **122–144/200**, nothing
+finished. ~2.5–3.5 h of optimization left.
+
+**A real cost problem, found while wiring the last piece.** `26_eval_p9_gcg_heldout_asr.py`
+**loads the model on every invocation.** Driving §7.5 through it means ~**74 model loads per
+arm-seed** (37 per-prompt evals + 37 transfer sources) ≈ **5 GPU-h of pure loading per arm-seed,
+~45 h across the approved 3-arm × 3-seed matrix** — comparable to the optimization itself, spent
+entirely on loading the same weights repeatedly.
+
+**`scripts/eval_perprompt_batched.py`** pays it once. It **does not reimplement scoring**: it
+calls the *same* `evaluate_suffix()` that `26_eval` calls, writing the same
+`FREE_GENERATION_RESULTS.jsonl` with the same `(task_id, suffix_label, seed)` row key — so
+results stay resume-safe, deduped, and directly comparable to the universal arms. One loop
+serves both modes.
+
+Three design points, each aimed at a failure this sprint has already hit once:
+* **Work list is built BEFORE the model loads**, so a bad config fails in seconds instead of
+  after a multi-minute load (verified: a missing joblist errors immediately).
+* **`--dry-run`** reports the work list and exits without loading the model — a shard layout can
+  now be validated on a login node with no GPU at all.
+* **Nonzero failures raise at the end** ("do not aggregate until resolved") rather than letting a
+  partial matrix be silently aggregated — the same class as the partial-`raw.jsonl` incident.
+
+**Verified:** 4 shards over a 16-item fixture **partition exactly** (4/4/4/4, sum = total, no
+overlap and no loss), an out-of-range `--shard` is rejected, and the fail-fast path works.
+
+**One bug fixed before it could mislead:** my progress print used
+`res.get('strongreject_success')`, but the key is **`strongreject_is_success`**
+(`evaluate_optimized_suffixes.py:145`). It would have printed `None` for every row — which reads
+exactly like a judge failure, i.e. it would have looked like the alarming condition rather than
+a typo.
+
+### §7.5 pipeline complete end-to-end
+`split → optimize → evaluate → aggregate`, for **both** per-prompt and transfer, with **zero
+changes to the optimizer, the objective, or the eval driver**. Five small scripts and one SLURM
+runner. Awaiting only a free GPU slot for the 10-step smoke.
+
+---
