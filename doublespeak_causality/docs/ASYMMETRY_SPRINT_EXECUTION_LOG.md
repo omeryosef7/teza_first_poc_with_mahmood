@@ -4718,3 +4718,26 @@ paired contrasts.
 matrix deferred to those suffixes.
 
 ---
+## 2026-08-13 12:25 — LOOP: seed43 full-budget launched early to parallelize the replication
+
+**Queue was 4** (no failures today). Full-budget seed 42 at **39/74** prompt-runs, 4:29 elapsed —
+~53 %, ~4 h remaining.
+
+**Launched 755661/755662** — seed 43 **full-budget mechanism**, 2 shards, pinned to n-304/n-307
+class (not n-301, which already carries four shards).
+
+**Why now rather than after seed 42 finishes.** Every single-seed result this sprint produced has
+required a second and third seed to interpret — four of them collapsed outright. **A single-seed
+full-budget number would be uninterpretable on arrival**, so seeds 43/44 are needed regardless.
+Starting one now costs **the same total compute** and saves **~8 h of wall time**. The alternative
+— wait, discover it needs replication, then start — is strictly worse.
+
+**Shard sizing checked, not assumed.** 2 shards → 19 prompts each → 19 × 24.4 min ≈ **7.7 h**,
+safely inside the 16 h wall. **1 shard would be 37 × 24.4 min ≈ 15.0 h — inside the limit but only
+by 1 h**, which one contended node would erase. Recorded because the tempting "just run it
+unsharded" would have been a timeout waiting to happen.
+
+**Still deliberately deferred:** the transfer matrix, until full-budget suffixes exist (its
+diagonal on compute-matched suffixes would be ~0.18, underpowered by construction).
+
+---
