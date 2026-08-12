@@ -1932,3 +1932,54 @@ The random arm uses the **same norm-matched random direction file the published 
 control and differ only in read position — which is what makes the comparison interpretable.
 
 ---
+## 2026-08-12 05:36 — ⚠ IN-FLIGHT DIAGNOSTIC: the refusal term is **0.026 % of the GCG loss**
+
+Read from the per-step `ITERATION_LOG.jsonl` of the running seed-42 arms (141/146 steps):
+
+| arm | task_loss | refusal_dir_loss | λ·refusal | **refusal share of \|total_loss\|** |
+|---|---|---|---|---|
+| **mechanism** | 110.20 → **63.48** (moved 46.73) | −0.00702 → **−0.06787** (moved 0.0609) | −0.0018 → −0.0170 | **mean 0.026 %, max 0.044 %** |
+| matched random | 106.42 → 68.53 (moved 37.89) | +0.00613 → +0.00854 (moved 0.0024) | +0.0015 → +0.0021 | mean 0.0023 % |
+
+**The task loss moved 3,071× more than λ·refusal over training** (62,866× in the random arm).
+
+### What this means, and why it is recorded BEFORE the result
+At **λ = 0.25** — the value the published matrix used and which I copied for
+comparability — the mechanism term contributes **~0.03 % of the objective that candidate
+selection actually minimizes**. GCG picks candidates by `total_loss`, so candidates are chosen
+**almost entirely on task loss**. The refusal term is, for selection purposes, rounding error.
+
+The term is not inert: the mechanism arm's own projection moved **25× further** than the random
+arm's (0.0609 vs 0.0024), so the small gradient contribution does steer the search a little.
+But its influence on *selection* is negligible by construction.
+
+> **This is a THIRD confound in the published token-space negative, alongside D1 (fixed
+> absolute position, correct for 1/40 prompts) and D2 (fit/use position mismatch): the
+> mechanism objective was weighted at ~0.03 % of the loss it was supposed to shape.**
+> "The refusal objective does not beat random" was never tested at a λ where the refusal
+> objective could plausibly matter.
+
+### Consequence for Phase 3 — stated now, so a negative cannot be over-read
+My Phase-3 arms fix the **position** and hold everything else identical to the published
+matrix, **including λ = 0.25**. That makes them a clean test of *"was the position bug the
+cause?"* — and **NOT** a clean test of H2′.
+
+> **If Phase 3 returns a negative, the correct reading is "the position fix alone does not
+> rescue the objective", NOT "H2′ is confirmed".** A λ at which the mechanism term is a
+> meaningful fraction of the loss has never been run, by this sprint or by the published one.
+
+This is exactly the trap the sprint has been built to avoid: a predicted negative arriving for
+a reason unrelated to the hypothesis it was meant to test. Recorded before the arms finish.
+
+### Why λ cannot simply be raised (the real design tension)
+To make the refusal term ~50 % of the loss would need λ ≈ 0.25 × (63 / 0.017) ≈ **900**, i.e.
+~3,600× larger. At anything near that the task-loss term is swamped and the suffix stops
+producing the target continuation at all — which is presumably why a small λ was chosen. **The
+tension is real and is itself a finding:** on this objective there may be no λ that both
+preserves the attack and gives the mechanism term meaningful weight. A λ sweep
+(e.g. 0.25 / 5 / 50, reporting task-loss degradation alongside ASR) is the correct follow-up
+and is recorded as **NOT RUN** in this sprint.
+
+**Queue 6/6, 0 pending.** seed 42 at 140/145 of 200 (~2 h), seed 43 at 74/77, seed 44 at 61.
+
+---
