@@ -4510,3 +4510,39 @@ across arms is exactly the kind of asymmetry that quietly weakens a comparison. 
 next slot that frees.
 
 ---
+## 2026-08-13 09:25 — 🔍 FULL BUG AUDIT of the §7.5 + λ pipeline and results — 11 checks, 0 bugs
+
+Triggered by the author. Audited the artifacts and every number reported today, not just the code.
+
+| # | check | result |
+|---|---|---|
+| 1 | mechanism vs matched-random suffixes actually **differ** | **0/37 identical**, all 3 seeds — OK |
+| 2 | suffixes differ **across seeds** within an arm | 0/37 identical (42 vs 43, 42 vs 44) — OK |
+| 3 | the two arms load **different direction files** | `refusal_direction_llama_L18.pt` vs `refusal_rand_L18_normmatched…` — OK |
+| 4 | `n_train_tasks == 1` on every per-prompt run | **309 runs, 0 violations** — OK |
+| 5 | cross-arm / cross-prompt **row leakage** in results files | 0 dirs with foreign labels or task_ids — OK |
+| 6 | λ=10 ASRs **recomputed from raw rows**, threshold re-applied from scratch | all 6 match the summaries exactly — OK |
+| 7 | §7.5 per-prompt ASRs recomputed raw vs my aggregator | all 6 match — OK |
+| 8 | **off-by-one** in the mechval readout | 15 (hs_row, fit_layer) pairs, **0** violating `hs_row == fit_layer+1`; L18→hs19 present — OK |
+| 9 | null / failed judge scores | **444 generation rows, 0 nulls** — OK |
+| 10 | the 10-step **smoke** excluded from every analysis | 1 smoke dir on disk, **0** references from any `_s5` joblist — OK |
+| 11 | each arm ran the **step budget it claims** | finished runs: mech s5 111/111 at exactly 5, rand s5 111/111 at 5, full-budget 32/32 at exactly 200 — OK |
+
+**Check 1 was the one worth running.** Seed 43 produced an exact tie on *both* endpoints (ASR
+0.1622 vs 0.1622; projection 0.0007 apart) — the classic signature of two arms accidentally
+sharing a suffix. **They do not**: 0/37 identical. Seed 43's tie is a real measurement, which is
+what makes the add-on 1 retraction sound rather than an artifact.
+
+**Check 11 initially looked like a failure** (`min=1` step on some s5 runs, `min=22` on full-budget)
+until restricted to runs with `FINAL_CANDIDATES` — those were **in-flight** runs being counted
+mid-optimization. Every *finished* run hits its exact budget. Recorded because the naive version
+of this check produces a false alarm, and a future reader running it will hit the same thing.
+
+**Scope, stated honestly:** this audits the §7.5 pipeline and the λ probe — today's new work. It
+does **not** re-audit Phases 1–7, which were audited when they ran.
+
+**No bugs found.** The corrections logged earlier today (share metric, job mapping, endpoint
+statistic, add-on 1) were all caught *before* this audit and are already reflected in the
+artifacts it checked.
+
+---
