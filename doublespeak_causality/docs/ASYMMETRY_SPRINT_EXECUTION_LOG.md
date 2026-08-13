@@ -5400,3 +5400,10 @@ verified fact, and it belongs in the limitations rather than being silently reli
 Nothing to analyze. Inventory diff: no new gaps.
 
 ---
+## 2026-08-14 01:25 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 4, n-304: 2.
+seed 43 full-budget matched_random **28/37**; seed 42 full-budget vanilla **21/37**; seed 44
+full-budget mechanism **3/37**. Inventory diff clean. Nothing to analyze.
+
+---
