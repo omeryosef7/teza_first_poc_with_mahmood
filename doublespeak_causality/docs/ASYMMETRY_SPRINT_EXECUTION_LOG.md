@@ -5387,3 +5387,16 @@ verified fact, and it belongs in the limitations rather than being silently reli
 **Progress:** seed 43 full-budget matched_random **22/37**; seed 42 full-budget vanilla **15/37**.
 
 ---
+## 2026-08-14 00:55 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. Spread **n-301: 4, n-304: 2**.
+
+| work | progress |
+|---|---|
+| seed 43 full-budget matched_random | **25/37** |
+| seed 42 full-budget vanilla | **17/37** |
+| seed 44 full-budget mechanism | **1/37** (28 min in — first completions land ~25–45 min) |
+
+Nothing to analyze. Inventory diff: no new gaps.
+
+---
