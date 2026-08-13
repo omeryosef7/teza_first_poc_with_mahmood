@@ -5736,3 +5736,11 @@ seed 44 full-budget mechanism **21/37**; seed 44 matched_random **7/37**; seed 4
 vanilla **4/37**. Inventory diff: full-budget vanilla still owed for seed 44 only.
 
 ---
+## 2026-08-14 09:00 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 3, n-303: 1, n-350: 2.
+seed 44 full-budget mechanism **23/37**; seed 44 matched_random **10/37**; seed 43 full-budget
+vanilla **8/37**. All tracking measured per-step rates. Inventory diff clean apart from the
+seed-44 full-budget vanilla still owed.
+
+---
