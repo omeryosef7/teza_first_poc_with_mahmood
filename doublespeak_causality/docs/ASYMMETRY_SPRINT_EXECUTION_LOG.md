@@ -5870,3 +5870,22 @@ seed 44 matched_random **30/37**; seed 44 full-budget vanilla **8/37**.
 Two arms are within ~1 h of completing, so the next tick should have evals to launch.
 
 ---
+## 2026-08-14 13:45 — seed43 full-budget VANILLA complete (37/37); eval launched
+
+**756685 COMPLETE** → seed 43 full-budget vanilla **37/37**. Launched **757185**, its held-out
+eval, pinned to the 3090-only pool per the 05:30 correction.
+
+**This is the arm that tests the sprint's newest single-seed claim.** seed 42's full-budget set
+found *plain GCG beats both direction arms* (vanilla 0.351 > random 0.324 > mechanism 0.270) —
+one seed, nothing significant. seed 43 now has all three arms at the threat-model budget, so that
+ordering either replicates or joins the four single-seed patterns that have already collapsed
+today.
+
+**Prediction is already on record** (07:30): given the compute-matched vanilla ordering flipped
+between seeds 42 and 43, this one is expected to be unstable too. Recording that before the
+number lands.
+
+**Queue 6/6.** seed 44 full-budget mechanism **35/37**, matched_random **31/37**, vanilla
+**9/37**.
+
+---
