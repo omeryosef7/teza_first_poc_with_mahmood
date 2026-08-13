@@ -6168,3 +6168,50 @@ not follow.** That is the program's representation ≠ behaviour dissociation, r
 dissociation.
 
 ---
+## 2026-08-14 19:20 — 🎯 §7.5 CORE RESULT COMPLETE: representation moves 3/3, behaviour does not
+
+**757304 complete.** seed 44 full-budget matched_random: **ASR 0.2703**, n=37, `judge_fail = 0.0`.
+The 3-seed full-budget contrast is now closed on **both** endpoints.
+
+### Behavioural — full budget, three seeds
+| seed | mech | rand | ΔASR | McNemar p | Δ graded | Wilcoxon p |
+|---|---|---|---|---|---|---|
+| 42 | 0.2703 | 0.3243 | −0.0541 | 0.754 | −0.0034 | 0.944 |
+| 43 | 0.2973 | 0.2162 | +0.0811 | 0.453 | +0.0946 | 0.148 |
+| 44 | 0.2703 | 0.2703 | **0.0000** | 1.00 | +0.0236 | 0.905 |
+
+**Sign INCONSISTENT on both measures** (binary 1+/1−/1 zero; graded 2+/1−). Means **+0.009**
+binary, **+0.038** graded. **0 of 3 significant.**
+
+### The two endpoints, side by side — same suffixes, same seeds, same budget
+| endpoint | per-seed | sign | significance | mean |
+|---|---|---|---|---|
+| **projection** (internal target) | −0.198 / −0.450 / −0.415 | **3/3 consistent** | **1/3, survives Holm** | **−0.354** |
+| **behaviour** (ΔASR graded) | −0.003 / +0.095 / +0.024 | **inconsistent** | 0/3 | +0.038 |
+
+> **The mechanism objective moves its intended internal coordinate consistently further than a
+> matched random direction — and the behaviour it is supposed to produce does not follow.**
+
+This is the program's **representation ≠ behaviour dissociation**, reproduced inside §7.5's
+threat-model arm, on three seeds, with a proper matched control, on suffixes optimized
+per-prompt. It is a cleaner instance than the original: the *same* optimizer, *same* budget,
+*same* prompts, differing only in which direction the objective names.
+
+### Gate E: FAILS (both clauses required)
+The internal-target clause is **met at full budget**; the behavioural clause is **not**. Under the
+pre-registered §4 rules that is not a positive — and the ordering of the two is the finding, not
+a technicality.
+
+### §7.5's answer to the question it was added to test
+Mahmood's hypothesis was that the universal negative might be a **universality/prompt-specificity**
+failure. Three independent endpoints say no:
+1. **behaviour** — no reliable advantage per-prompt, at either budget;
+2. **transfer** — per-prompt suffixes transfer (off-diagonal 0.173–0.200, ≥ the universal arm's own
+   held-out 0.162), and any prompt-specificity is matched by a random direction;
+3. **projection** — the mechanism *does* move the coordinate, which rules out "the objective is
+   simply inert" and locates the failure downstream of the representation.
+
+**Remaining in flight:** seed 44 vanilla (**21/37**) and the seed-44 transfer pair — both
+completeness items, neither able to change the above.
+
+---
