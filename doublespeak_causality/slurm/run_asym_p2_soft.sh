@@ -41,6 +41,7 @@ export PYTHONUNBUFFERED=1
 : "${ASYM_LR:=}"
 : "${ASYM_BATCH:=8}"
 : "${ASYM_SEED:=42}"
+: "${ASYM_ORTHMU:=1.0}"   # plan §20.1: penalty pinning the refusal projection (objective=task_orth)
 : "${ASYM_TESTSPLIT:=test}"
 : "${ASYM_SMOKE:=0}"
 : "${ASYM_GEN:=1}"
@@ -74,6 +75,7 @@ EXTRA=""
 [ "$ASYM_SMOKE" = "1" ] && EXTRA="--smoke"
 [ "$ASYM_GEN" = "0" ] && EXTRA="$EXTRA --no-generate"
 [ -n "$ASYM_BUDGETREL" ] && EXTRA="$EXTRA --budget-rel $ASYM_BUDGETREL"
+[ "$ASYM_OBJ" = "task_orth" ] && EXTRA="$EXTRA --orth-mu $ASYM_ORTHMU"
 
 python -u doublespeak_causality/scripts/asym_p2_softprompt.py \
   --model "$ASYM_MODEL" --manifest "$ASYM_MANIFEST" \

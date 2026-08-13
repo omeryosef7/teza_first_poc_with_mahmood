@@ -6587,3 +6587,32 @@ report the achieved |proj − proj0| alongside ASR, and treat any run whose proj
 than a pre-set tolerance as a **failed constraint, not a result**.
 
 ---
+## 2026-08-15 03:30 — §20.1 ORTHOGONALITY TEST LAUNCHED (3 seeds)
+
+**Queue 4/6.** 757500 (§20.2 vanilla mechval) still running at 11:06 — cold load on n-301, not
+stalled.
+
+**Launched 757503/757504/757505 — the §20.1 orthogonality test on Gate D**, seeds 42/43/44,
+`--objective task_orth --orth-mu 1.0 --param free --budget-rel 0.1`. Patched
+`run_asym_p2_soft.sh` with an `ASYM_ORTHMU` passthrough (2 lines).
+
+**Config matched to the Gate-D reference run**, read from its persisted `meta.json` rather than
+assumed: `param=free`, `budget_rel=0.1`, `n_suffix=16`, `steps=300`, `lr=0.05`, `batch=8`,
+`temperature=1.0`. The only intended difference is the added projection-pinning penalty.
+
+### ⚠ A GPU-class caveat that already exists in Gate D, recorded rather than introduced
+Gate D's own three seeds are **already split across classes** — the seed-42 b0.1 refusal run has no
+GPU tag (L40S, the runner default) while seeds 43/44 carry `gpua5000`. So the reference arm is not
+class-homogeneous to begin with. The `task_orth` arms are on the runner's default **L40S**
+nodelist, matching the seed-42 reference exactly and the others only in class-of-record. **This is
+inherited, not created** — but it means the §20.1 comparison should lead with **seed 42**, where
+constrained and unconstrained ran on the same class, and treat 43/44 as supporting.
+
+*(Note this is the opposite of the §7.5 3090-only rule: there the constraint was to match
+mechanism against random within a seed; here it is to match a new arm against an existing one.
+Same rule, different referent.)*
+
+**Reading rule (fixed at 03:00, restated):** the arm only counts if the penalty holds. Report
+achieved |proj − proj0| next to ASR; drift past tolerance is a **failed constraint, not a result**.
+
+---
