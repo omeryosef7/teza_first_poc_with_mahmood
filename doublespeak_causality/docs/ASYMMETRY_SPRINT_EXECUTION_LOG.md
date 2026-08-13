@@ -6275,3 +6275,38 @@ where a reader will find it rather than only in this log.
 and Figure A's fourth rung.
 
 ---
+## 2026-08-14 21:20 — FIGURE A EXTENDED TO 4 RUNGS (plan §14 item closed)
+
+**Queue 2/6** — only seed 44 vanilla remains (**26/37**); nothing else in §7.5 is un-run, so four
+slots sit idle with nothing to launch. Used the tick to close the outstanding **plan §14** item:
+*"Extend the control hierarchy to four rungs once §7.5 lands: activation · continuous ·
+universal-discrete · per-prompt-discrete."*
+
+**`FIG_A_control_hierarchy_4rung.png`** — Δ refusal projection (L18→hs19, decision position) with
+matched-random controls, plus held-out ASR where a comparable number exists.
+
+| rung | Δ projection | matched random | held-out ASR | control ASR |
+|---|---|---|---|---|
+| activation ablation (α=1) | **−3.402** | — | — | — |
+| **continuous** soft prompt (b=0.1) | **−8.340** | — | **0.784** | 0.153 |
+| universal discrete (GCG) | −2.013 | −1.204 | 0.162 | 0.216 |
+| **per-prompt discrete (§7.5)** | **−1.868** | −1.514 | 0.279 | 0.270 |
+
+**What the fourth rung adds.** The figure previously ended at *universal discrete*, so it could
+not distinguish "discrete search fails" from "**universal** discrete search fails". With the
+per-prompt rung in place: **removing the universality constraint does not move the picture** —
+per-prompt lands at −1.87 against universal's −2.01 on the projection, and its behavioural
+separation from its own control (0.279 vs 0.270) is **nil**.
+
+**Two things the figure now makes visible at a glance:**
+1. **Continuous overshoots.** The soft prompt moves the coordinate **−8.34** — *past zero* to
+   ≈ −4.9, more than twice what complete ablation achieves (−3.40, which only zeroes it). It is
+   the only rung whose behaviour separates from its control (0.784 vs 0.153).
+2. **Both discrete rungs move the coordinate and neither converts it.** −2.01 and −1.87 are real
+   movements — roughly 55 % of what ablation achieves — yet ASR sits at its control in both cases.
+   **The discrete failure is not a failure to reach the coordinate.**
+
+Existing 5 figures untouched; this is added alongside `FIG_A_control_hierarchy.png` rather than
+replacing it, so the pre-§7.5 version remains reproducible.
+
+---
