@@ -6427,3 +6427,49 @@ ordering has already failed to replicate between seeds 42 and 43.
 vanilla held-out eval, the sprint's last job — running at 9:34. Nothing else outstanding.
 
 ---
+## 2026-08-15 01:15 — 🏁 §7.5 COMPLETE. Final cell + the one behavioural pattern that IS consistent
+
+**757387 complete** — seed 44 full-budget vanilla **ASR 0.3514**. **The 3-arm × 3-seed × 2-budget
+design is finished.**
+
+### Full-budget, complete
+| arm | seed42 | seed43 | seed44 | mean | spread |
+|---|---|---|---|---|---|
+| **vanilla** | 0.3514 | 0.2973 | 0.3514 | **0.3333** | 1.18× |
+| mechanism | 0.2703 | 0.2973 | 0.2703 | 0.2793 | 1.10× |
+| matched random | 0.3243 | 0.2162 | 0.2703 | 0.2703 | 1.50× |
+
+### The pattern that survives: a direction term NEVER beats plain GCG
+| contrast | per-seed ΔASR | positives | mean (binary / graded) |
+|---|---|---|---|
+| mechanism − vanilla | −0.081 / 0.000 / −0.081 | **0 of 3** | −0.054 / −0.035 |
+| random − vanilla | −0.027 / −0.081 / −0.081 | **0 of 3** | −0.063 / −0.073 |
+
+**0 of 6 arm-seed contrasts favour adding a direction term.** Not one is individually significant
+— but **the sign is consistent in a way nothing else in §7.5 was**, and it holds for the mechanism
+*and* the random direction. The honest reading: **at the threat-model budget, adding a
+direction-guided term to per-prompt GCG is at best free and never an improvement.**
+
+*(The per-seed three-arm **ordering** still does not replicate — mechanism and random trade places
+across seeds. What replicates is only the weaker, better-supported claim above: vanilla ≥ both.)*
+
+### §7.5 final answer
+| endpoint | result |
+|---|---|
+| behaviour: mechanism vs random | **sign-inconsistent**, both budgets, 0/6 significant |
+| behaviour: direction term vs vanilla | **0/6 positive** — never helps |
+| **projection (internal target)** | **3/3 consistent**, mean −0.354, Holm-significant in one |
+| transfer | suffixes transfer (off-diag ≥ universal held-out); specificity matched by random |
+
+> **The mechanism objective reliably moves the coordinate it names, reliably fails to improve
+> behaviour, and reliably fails to beat not using it at all.**
+
+That is the sprint's thesis — *reachable, steerable, behaviourally inert through discrete search*
+— demonstrated a second time, in the easier per-prompt threat model, with matched controls, three
+seeds, two budgets. **Mahmood's universality hypothesis is answered: no.**
+
+**Gate E: FAILS** (internal-target clause met at full budget; behavioural clause not).
+
+**Queue 0/6. No jobs outstanding. Every cell of the plan is run.**
+
+---
