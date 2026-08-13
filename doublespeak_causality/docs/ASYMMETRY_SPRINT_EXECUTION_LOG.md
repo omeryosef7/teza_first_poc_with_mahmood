@@ -6846,3 +6846,41 @@ progressing, RUNNING not PENDING, so the >30 min resubmit rule does not apply an
 discard ~26 min of weight load. **Queue 6/6.**
 
 ---
+## 2026-08-14 07:00 — §20.1 all 6 arms COMPLETE; manipulation check passes decisively; CE job 757520 submitted
+
+Matched now — same objective family, same budget (b0.1, free), same GPU class, seeds paired.
+
+| seed | `task_orth` Δproj_test | `task` Δproj_test | gap |
+|---|---|---|---|
+| 42 | **+0.195** | −3.683 | −3.878 |
+| 43 | −0.159 | −2.802 | −2.643 |
+| 44 | −0.113 | −2.777 | −2.664 |
+| **mean** | **−0.026** | **−3.087** | **−3.062** |
+
+**3/3 sign-consistent, smallest gap 2.64, ratio ≈ 120×.** Two things are established, both
+manipulation checks rather than the §20.1 conclusion:
+
+1. **The orthogonality penalty works.** `task_orth` holds the refusal projection at its per-prompt
+   baseline (mean −0.026, and seed 42 is *positive*) — the pin is essentially perfect.
+2. **Plain task optimization moves the refusal coordinate hard as a pure side effect** — mean
+   **−3.087**, never being in that objective. For scale, §7.5's *mechanism* objective, which
+   explicitly targets this coordinate with discrete tokens, achieved **−0.354**. A continuous
+   suffix optimizing only for compliance moves it ~9× further than a discrete suffix optimizing
+   for the coordinate itself.
+
+### Still embargoed, and this is the whole point
+Δproj alone **cannot** distinguish "compliance is reachable without moving the coordinate" from
+"the penalty destroyed the attack." Both produce a pinned projection. Only the **target CE** tells
+them apart, and no arm records it (see 05:40). **757520** re-scores all 6 frozen `soft_suffix.pt`
+in one model load. Until it returns, §20.1 has no conclusion.
+
+Pre-registering the read now, before seeing CE, so it cannot be fit after the fact:
+* `task_orth` CE ≈ `task` CE → compliance reachable with the coordinate pinned → the coordinate is
+  **not necessary** for the continuous attack; Gate D's ASR was not evidence of a mechanism route.
+* `task_orth` CE ≫ `task` CE → pinning is expensive → the coordinate **is** on the causal path for
+  continuous attacks, which would contrast sharply with the discrete-suffix negatives.
+* Intermediate → report the CE gap with its spread; do not force a verdict.
+
+**Queue 5/6** — 757516–519 (§20.7 600-step) + 757520 (CE scoring).
+
+---
