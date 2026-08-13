@@ -4963,3 +4963,30 @@ steps, and the `done=0` counter, now in a fourth guise.
 both the mechanism full-budget eval and the transfer plan.
 
 ---
+## 2026-08-13 18:10 — seed42 full-budget MECHANISM arm complete (37/37); TRANSFER MATRIX launched
+
+**755220 finished** → seed 42 full-budget **mechanism 37/37 READY**. Both full-budget arms of
+seed 42 now exist, and the **transfer-matrix precondition recorded at 14:55 is met.**
+
+**Built the transfer plan** — and it reports exactly what the precondition demanded:
+```
+[transfer] sources with finished runs: 37/37
+[transfer] k=5 (subsampled) -> 222 (source,target) generations, incl. 37 diagonal
+```
+**37/37, not the 29/37 the dry-run would have silently used four hours ago.** The precondition
+did its job.
+
+**Launched:**
+* **756141** — mechanism full-budget held-out eval (37 prompts). Completes the seed-42
+  full-budget ΔASR against the random arm's **0.3243**.
+* **756143** — **the transfer matrix**, 222 (source, target) generations, dry-run verified at
+  `222 of 222` before submitting.
+
+Both pinned to **n-301/n-307**, deliberately **off n-304**, which currently carries four
+full-budget jobs and whose I/O saturation made monitoring unreadable last tick. Adding two more
+generation jobs there would have compounded a known bottleneck for no benefit.
+
+**Queue 6/6.** The transfer matrix is the last unrun piece of §7.5 as approved — after it, only
+seed 43/44 replication of the full-budget arm remains.
+
+---
