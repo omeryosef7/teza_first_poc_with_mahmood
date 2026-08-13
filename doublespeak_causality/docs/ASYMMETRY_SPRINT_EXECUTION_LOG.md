@@ -5251,3 +5251,38 @@ full-budget arms are launched or complete, and the seed-43 pair is both-shards-l
 arms.
 
 ---
+## 2026-08-13 22:40 — CONTINUOUS-SCORE REANALYSIS: the full-budget "reversal" was binarization noise
+
+**755662 complete** (18/18) → seed 43 full-budget mechanism at **35/37**. Queue 5/6; **left one
+slot free** because that arm needs an eval within the hour and nothing high-value was ready to
+fill it. Used the tick for CPU-only work instead — acting on my own 19:10 recommendation to
+prefer the **continuous** StrongREJECT score at this n.
+
+| arm set | ΔASR (binary) | p (McNemar) | **Δ mean score (continuous)** | **p (Wilcoxon)** |
+|---|---|---|---|---|
+| compute-matched s42 | +0.0811 | 0.453 | **+0.0845** | **0.205** |
+| compute-matched s43 | 0.0000 | 1.00 | −0.0101 | 0.739 |
+| compute-matched s44 | +0.0811 | 0.250 | **+0.0709** | **0.114** |
+| **FULL BUDGET s42** | **−0.0541** | 0.754 | **−0.0034** | **0.944** |
+
+### Two things this changes
+1. **The full-budget "reversal" largely disappears.** Binary said mechanism was **−0.054 behind**
+   its control; continuous says **−0.0034** — essentially identical arms. **My 18:40 reading
+   ("the mechanism arm is nominally *behind* its random control") over-read a binarization
+   artifact**, and the size of that artifact is exactly the judge-noise unit measured at 19:10.
+   The corrected statement: at full budget the two arms are **indistinguishable**, not reversed.
+2. **Continuous scores are measurably more sensitive**, as predicted — p drops 0.453→0.205 and
+   0.250→0.114 on the two compute-matched seeds where an effect is nominally present. Still
+   **0/4 significant**, but the binary threshold was discarding real signal *and* injecting noise.
+
+### What is unchanged
+No reliable mechanism advantage on either measure: **2 of 3 compute-matched seeds small-positive,
+one slightly negative, full budget ~zero, nothing significant.** The §7.5 conclusion stands — the
+refusal direction confers no dependable advantage over a random direction — but it now rests on a
+measure that is not self-inflicted noise.
+
+**Methodological upshot for the paper:** binary ASR at n≈37 is doubly bad — it has ~9 % power
+*and* it manufactures ±0.05 swings from threshold-adjacent judge jitter. Contrasts at this scale
+should be reported on continuous scores, with binary ASR quoted only for comparability.
+
+---
