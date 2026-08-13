@@ -32,3 +32,23 @@ Fix: submitted **757513/514/515** = `ASYM_OBJ=task`, free, b0.1, seeds 42/43/44,
 
 **Embargo: do not analyze or write up §20.1 until 757513/514/515 are all COMPLETED.**
 A `task_orth` number on its own is not a §20.1 result.
+
+## 2026-08-14 05:40 — §20.1 second blocker: no arm records CE on its own
+
+`task_orth` optimizes `ce + mu*pen` and the run logs **only that sum**; nothing anywhere
+records CE separately. Comparing the two arms' logged `loss` would compare CE against
+CE+penalty — not a comparison of anything. §20.1's question is about achieved *task*
+performance, so the CE term has to be recovered.
+
+Fix (no rerun needed): `scripts/asym_p201_score_ce.py` + `slurm/run_asym_p201_ce.sh` re-score
+the **frozen** `soft_suffix.pt` of each arm through the optimizer's own
+`build_prompts`/`forward_batch`, so the CE reported is definitionally what `task` minimized.
+Preferred over mid-run logging on two counts: the training print is a per-batch training-pool
+number on a non-monotonic series, and this works on already-finished arms.
+
+**Owed submission — all 6 arms in ONE job** (shared model load, no load-order confound; the
+script asserts the arms share model/manifest/layer):
+`task_orth` 757508/509/510 (s42/43/44) + `task` 757513/514/515 (s42/43/44).
+
+**Embargo stands: no §20.1 analysis until that scoring job has run.** A `Dproj` without a
+matched CE cannot distinguish "the penalty worked" from "the penalty destroyed the attack".
