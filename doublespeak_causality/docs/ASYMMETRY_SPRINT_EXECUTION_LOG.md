@@ -5146,3 +5146,34 @@ contrast flips sign across seeds *and* budgets; **mechanistically** it is signif
 four, in the seed already identified as the outlier.
 
 ---
+## 2026-08-13 20:40 — LOOP: inventory diff (now routine) finds the 4th gap — full-budget vanilla
+
+**Queue 6/6**, no failures. n-301: 1, n-304: 4, plus the new job. Ran the design-vs-inventory diff
+as a **standing check** this tick rather than opportunistically, per the 19:40 note:
+
+| seed42 arm | compute-matched | full budget |
+|---|---|---|
+| vanilla | **37/37** | **0/37 ← GAP** |
+| mechanism | 37/37 | 37/37 |
+| matched_random | 37/37 | 37/37 |
+
+**Launched 756203** — full-budget vanilla, shard 0/2, pinned **n-301/n-307** to match the GPU
+class of the seed-42 full-budget arms it will be compared against (§3.1).
+
+**Why it is worth 14 GPU-h.** At full budget the two direction arms sit at **random 0.324,
+mechanism 0.270**. Without vanilla those numbers cannot distinguish:
+* the direction term contributes **nothing** (vanilla also ≈ 0.30), from
+* the direction term contributes **a lot to both arms** (vanilla ≈ 0.10, and adding *any*
+  direction term roughly triples ASR).
+
+Those are very different claims about what the objective does, and the compute-matched vanilla
+already showed this arm can move the reading — it inverted the seed-42 interpretation at 10:10
+and then dissolved it at 11:10.
+
+**Second shard goes in when a slot frees.** Recorded explicitly because a half-launched shard set
+is exactly the failure caught at 16:55.
+
+seed 43 full-budget: mechanism 24/37+, matched_random 7/37+; random transfer control (756168) at
+29 min.
+
+---
