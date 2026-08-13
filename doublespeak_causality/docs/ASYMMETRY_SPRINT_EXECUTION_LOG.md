@@ -5322,3 +5322,44 @@ the cross-seed comparison instead of the within-seed one.
 own eval next.
 
 ---
+## 2026-08-13 23:55 — seed43 full-budget mechanism: **0.2973** (vs seed42 0.2703) — and a caveat on my own advice
+
+**756315 complete.** seed 43 full-budget mechanism: **ASR 0.2973**, mean score 0.2838, n=37,
+`n_missing = 0`, `judge_fail = 0.0`.
+
+| seed | full-budget mechanism ASR | mean score |
+|---|---|---|
+| 42 | 0.2703 | 0.2838 |
+| 43 | **0.2973** | **0.2838** |
+
+**The full-budget mechanism arm replicates well across seeds** (1.10× spread) — consistent with
+the sprint-wide pattern that *arms* are stable and *contrasts* are not.
+
+### The identical mean score is a coincidence — verified, not assumed
+Two independent seeds giving mean score identical to 6 decimals (0.283784) is the signature of an
+aggregator reading the same directory twice. Checked:
+
+| check | result |
+|---|---|
+| generations identical across seeds | **2/37** — so the suffixes and outputs genuinely differ |
+| per-prompt scores identical | 23/37 (most are 0.0, so ties are common) |
+| score **sums** | **10.5000 vs 10.5000** — exactly equal |
+| distinct score values | seed42 {0, .375, .875, 1.0} · seed43 {0, **.625**, .875, 1.0} |
+
+Different data, different score *values*, same total. A genuine coincidence.
+
+### ⚠ It also tempers the 22:40 recommendation, which I should flag against myself
+That check revealed the StrongREJECT score is **heavily quantized — only 4 distinct values across
+37 prompts**. So the "continuous" score I recommended preferring is really a **4–5 level ordinal**,
+not a continuous measure. It is still **strictly better than binary** (it separates 0.375 from
+0.625 rather than collapsing both to "fail"/"pass"), and the 22:40 sensitivity gain was real. But
+**the improvement is smaller than "continuous vs binary" implies**, and it will not rescue a
+design that is underpowered for other reasons.
+
+**Corrected phrasing for the paper:** prefer the **graded** StrongREJECT score over the binary
+threshold — not "use continuous scores", which overstates what the judge actually emits.
+
+**Queue 4/6** — seed 43's matched-random arm (20/37) is the remaining gate on the full-budget
+replication.
+
+---
