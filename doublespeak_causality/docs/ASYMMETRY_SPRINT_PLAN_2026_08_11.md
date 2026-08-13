@@ -530,3 +530,113 @@ Figure A (activation vs continuous vs discrete) is the centerpiece. **Before run
 ---
 
 *End of plan. This document is not yet executed; §4 (Phase 0 audit + gap matrix) is the first step whenever the sprint begins.*
+
+
+---
+
+## 20. NEXT SPRINT — priorities derived from the completed results
+
+*Added 2026-08-15, after the sprint closed. Produced by a 5-agent design pass (four independent
+lenses + adversarial triage), then ranked by value-per-GPU-hour. Ordering is deliberate: the
+experiments most likely to **overturn our own headline** come first, and the free re-analyses come
+before anything that costs GPU.*
+
+### 20.0 GOVERNANCE — decide BEFORE anything runs
+**The dev split (37 untouched items) is a one-shot resource, and four candidate experiments each
+assume they get it.** They cannot all be right. **Write the allocation decision down first**,
+naming the single contrast that gets dev; everything else must expand the corpus (§20.8) instead.
+Without this, dev is burned by whichever job is submitted first and the program loses its only
+clean out-of-sample surface.
+
+### 20.1 ⭐ THE ORTHOGONALITY TEST ON GATE D — run this first
+**Question:** does a soft prompt that provably does **NOT** move the refusal projection still
+jailbreak?
+
+**Design.** Re-optimize the Gate-D soft prompt with an explicit constraint that the L18/hs19
+projection stays at its clean-prompt value (penalty or projected gradient); and separately, take
+the existing Gate-D solution and null out its component along **v** at the read layer. 3 seeds,
+same 37 frozen test prompts, same eval path. **~4–6 runs, <10 GPU-h.**
+
+**Why first.** Gate D (**ASR 0.784 vs 0.153**) is the program's strongest positive and the whole
+"reachable and steerable" half of the thesis. **If a projection-neutral soft prompt still reaches
+~0.7, Gate D never demonstrated mechanism-guided attack** — it showed that 16 free continuous
+positions can force compliance by *any* route, and the continuous-vs-discrete asymmetry is partly
+an artifact of comparing an *unconstrained* continuous attacker against a *mechanism-constrained*
+discrete one. **This is the single experiment most likely to overturn our headline, and it is
+cheap. That is exactly why it goes first.**
+
+### 20.2 Per-prompt mediation — PARTIALLY DONE, finish the clean slice
+**Already run (n=222, zero GPU):** partial r(success, drop | baseline) = **−0.066**; baseline
+projection predicts success at **r = −0.370, p = 1.3e-8**; sign reverses across baseline strata.
+**The drop does not predict the behaviour it is meant to cause.**
+
+**Remaining:** the association is conditioned on optimizer success in the mechanism/random arms.
+**The vanilla arm is the unconfounded slice** (never optimized toward v) — its projections are
+being measured now. Also add a K=20 random-direction null on the odds ratio.
+**Pre-commit:** report projection-drop spread per arm, and treat any CI wider than ±0.45 as
+*uninformative*, not as a null.
+
+### 20.3 Judge-noise deconvolution — infrastructure, do it early
+M ≥ 5 judge replicates with majority vote, plus the graded endpoint, on existing generations. The
+5.4 % flip figure is an n=37 accident being cited as a constant, and **every downstream cell
+consumes this endpoint**. **First verify the judge is actually stochastic per call** on ~50 items —
+if it is deterministic, M=5 measures nothing and the reliability estimate must come from
+paraphrase/order perturbation of the judge input instead.
+
+### 20.4 Retrospective equivalence bounds on every existing negative
+CPU-only, ~1 h. Convert the program's many nulls into **bounded** claims. Likely outcome: several
+cited negatives support only bounds of roughly ±0.3 ASR and must be softened in the write-up.
+**Run twice** — once now, once after §20.6 supplies a real multi-direction SD — and publish only
+the second.
+
+### 20.5 Best-of-k pool attack (zero new optimization)
+Every per-prompt suffix already exists. §7.5 reported only per-suffix means; **ASR@k over a pool of
+suffixes is a different and much larger number, never computed.** 4–8 GPU-h of generation.
+**Mandatory:** majority-vote judging before taking the max (a max-statistic accumulates judge false
+positives as k grows), a `randtok` pool as the noise-inflated floor, and diagonal pairs dropped.
+
+### 20.6 Randomize the control: K=20 matched-random directions
+The program has diagnosed but not corrected its own defect — **seeds vary the suffix (low-variance)
+and never the direction (high-variance)**, so every behavioural contrast has control n=1 in the
+quantity that actually varies. §3.8 already demands ≥50 directions for geometry; using 1 for
+behaviour is internally inconsistent. **~20 GPU-h.**
+**Pre-register a floor check:** at ~5 steps/prompt every arm sits near floor and all directions
+compress into one band — if mean ASR across arms is < 0.10, **abort and re-budget** rather than
+reporting a percentile. Prefer ~50 steps/prompt with K=10.
+
+### 20.7 Compute-scaling curve for plain per-prompt GCG
+**The largest effect the program ever measured is compute:** the matched-*random* arm gained
+**+0.216 ASR** from 5→200 steps/prompt. Extend plain GCG to **600 and 2000 steps/prompt** and fit
+ASR against log(steps). **If it extrapolates toward ~0.7 the central gap is not about discreteness
+at all; if it plateaus near ~0.3 the program finally has an upper bound for discrete attack** —
+which §7.5 explicitly lacks, since "discrete fails" currently means "discrete reached 0.27 and we
+never established what was achievable."
+
+### 20.8 Expand the evaluation corpus — a precondition, not an afterthought
+n=37 gives **~9 % power**; n=300 gives 0.75. **Optimization is the expensive end; generation and
+judging are cheap.** A universal suffix or soft prompt can be evaluated on 300 held-out behaviours
+for roughly the cost of 74. **Make this a precondition on §20.6, §20.9 and any out-of-sample test**,
+rather than reusing the same 74 prompts for the twelfth time.
+
+### 20.9 Lower priority, in order
+* **Collateral-displacement decomposition** — on-target vs off-target movement per condition
+  (`E = |a_∥| / ‖Δ_⊥‖`), multi-layer read at 12/18/24. Report **as a function of ‖Δ‖**, not as a
+  scalar, or it is confounded with perturbation size.
+* **Discretization ladder with a discretization-aware optimizer** — STE and k-best rounding search,
+  not just argmax. The 5.7 % retention is one number from one rounding rule with no seeds, and it
+  is load-bearing. **Per-rung optimizer-health check required** (train objective reached), or a bad
+  rung is indistinguishable from a hard constraint.
+* **20-direction behavioural null for Gate D** — match on **achieved projection displacement**, not
+  on the budget knob, or the comparison is rigged in one direction or the other.
+* **Cross-family port** (Phi, Qwen3) — requires a **per-model direction-validation gate** (ablation
+  must raise ASR by a pre-registered margin) or a failure is confounded with "we picked the wrong
+  direction for this model."
+
+### 20.10 Explicitly REJECTED, with reasons
+* **Projection-only token frontier** — the λ=10 arm already drove the projection *past zero* in
+  3/3 seeds while ΔASR stayed sign-inconsistent. Tokens can already reach large displacement
+  without producing behaviour; re-measuring the frontier is the worst value in the set.
+* **Gate D under 8-bit/4-bit as a standalone experiment** — Gate C already replicates at 4-bit and
+  the optimize-in-precision arm adapts to the quantization grid by construction, so it cannot
+  reveal a resolution floor. Append the ~2 GPU-h transfer sub-condition to another run instead.
+* **Crossed variance-components calibration** — §20.6 and §20.9 deliver those components free.
