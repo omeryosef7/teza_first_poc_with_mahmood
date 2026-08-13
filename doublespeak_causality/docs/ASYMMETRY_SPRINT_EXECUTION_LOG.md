@@ -6649,3 +6649,46 @@ that tolerates an empty value, the runs would have completed and written to a *d
 output directory, and the §20.1 comparison would have silently pointed at nothing.
 
 ---
+## 2026-08-15 04:30 — ⚠ §20.2 CLEAN SLICE **REVERSES** the 02:30 reading. The projection IS a per-prompt mediator.
+
+**757500 complete**, coverage 37/37 on both vanilla arms, 0 missing.
+
+| slice | partial r(success, drop \| baseline) | n | p | 95 % CI |
+|---|---|---|---|---|
+| mechanism + random (**optimized toward v**) | −0.0655 | 222 | 0.332 | [−0.196, +0.067] |
+| **VANILLA (never optimized toward v)** | **−0.2914** | 74 | **0.0124** | **[−0.489, −0.066]** |
+
+**In the unconfounded arm the projection drop DOES predict per-prompt success**, in the direction
+the mechanism hypothesis requires: **more refusal suppression → more jailbreak** (mean drop
+−1.563 when jailbroken vs −1.279 when not).
+
+### This corrects my 02:30 entry
+I wrote there that *"the drop does not predict the behaviour it is meant to cause"* and speculated
+it might collapse Gate E, §7.5 and Gate G into one finding. **That reading was based only on the
+optimized arms and is withdrawn.** The triage flagged this exact risk before I ran it —
+*selection-induced range restriction and collider structure: projection drop is the thing three of
+the arms optimized, so within them the regressor is conditioned on the optimizer's success* — and
+insisted the vanilla slice was the design that mattered. **It was right, and the pre-committed
+control is what caught my error rather than the error surviving into a deliverable.**
+
+*(The two CIs overlap, so the arms are not significantly different from each other. The claim is
+not "optimization destroys the association"; it is that **the vanilla estimate is the
+unconfounded one** and it is non-null.)*
+
+### The corrected story is more interesting than the wrong one
+1. **The refusal coordinate IS a per-prompt mediator** — suppress it more on a prompt, jailbreak
+   that prompt more often (vanilla, p = 0.012).
+2. **Yet optimizing toward it confers no attack advantage** — Gate E, and §7.5's 0/6 contrasts.
+
+Those are only contradictory if you assume the direction is the *only* route. Together they point
+squarely at **H4 (generic adversarial suppression)**: whatever suppresses refusal helps, and
+targeting *this* coordinate specifically buys nothing over any other perturbation that suppresses
+it. That also explains §7.5's full-budget projection result — the mechanism arm *does* move the
+coordinate 3/3, it just gains nothing behaviourally for doing so.
+
+**Baseline remains the strongest single predictor** (r = −0.326, p = 0.0046; final projection
+r = −0.421, p = 1.9e-4): where a prompt starts still matters more than how far a suffix moves it.
+
+**Queue 4/6** — §20.1's three `task_orth` arms running.
+
+---
