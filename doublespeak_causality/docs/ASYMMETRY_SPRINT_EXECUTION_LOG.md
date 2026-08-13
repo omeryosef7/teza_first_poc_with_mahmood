@@ -6351,3 +6351,29 @@ and this one hid a required deliverable for three days. The audit that caught it
 being asked to check — not by any tooling.
 
 ---
+## 2026-08-14 22:30 — LOOP: one job left; declined to parallelize it, and the reason matters
+
+**Queue 1/6**, no failures, nothing pending. Only **757157** remains — seed 44 full-budget vanilla
+shard 1, at 11/18 with **7 prompts left (~3 h)**. seed 44 vanilla **30/37**. Everything else in
+§7.5 is complete.
+
+**Five slots sit idle for ~3 h. I considered parallelizing the tail and rejected it.**
+
+The runner is resume-safe (skips any prompt with `FINAL_CANDIDATES.jsonl`), so launching extra
+jobs with a different `NSHARD` *looks* free: already-done prompts are skipped instantly and the
+stragglers get picked up in parallel. **But sharding is by index modulo NSHARD, so a different
+NSHARD assigns overlapping prompt sets — and two jobs could work the same prompt at once.** They
+would share an `output_dir`, and therefore a `checkpoint.pt`, with **no lock anywhere in the
+pipeline**.
+
+That is the same family as the cross-prompt resume hazard found at 16:05 on day one
+(`config_hash()` excludes `output_dir` and `manifest_path`, so a mismatched checkpoint loads
+**silently**). Two writers on one checkpoint would not error — it would produce a corrupted or
+silently-wrong suffix for prompts that are part of the *last* arm of the sprint.
+
+**Three idle GPU-hours is a trivially better trade than a silent corruption in the final arm**,
+especially for a completeness item that cannot change any conclusion. Recorded because "the runner
+is resume-safe, so just add shards" is a genuinely tempting shortcut and its failure mode is
+invisible.
+
+---
