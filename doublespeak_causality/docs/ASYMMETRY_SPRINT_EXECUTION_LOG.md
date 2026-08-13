@@ -5083,3 +5083,30 @@ was added to test.** Both §7.5 endpoints now point the same way, as does the λ
 independent routes.
 
 ---
+## 2026-08-13 19:40 — LOOP: two MISSING CONTROLS found and launched
+
+**Queue was 4.** Before filling it I re-checked §7.5's design against what has actually run, and
+found **two gaps — both mine, both cheap, both required**:
+
+**GAP 1 — the transfer matrix had no matched-random control.** I ran the transfer matrix on the
+mechanism arm only (19:10). A diagonal-vs-off-diagonal gap for the mechanism arm **alone cannot
+say whether that pattern is specific to the refusal direction** — §3.8 requires a matched random
+control for every mechanistic claim, and the transfer readout is a mechanistic claim. Plan built
+on **37/37** sources → 222 generations; **launched 756168**. ~20 min, as measured.
+
+**GAP 2 — the mechanistic (projection) readout was never run on the FULL-BUDGET arms.** It ran
+only on the compute-matched arms (04:10 / 07:55). But the full-budget arm is **the threat model**,
+and Gate E's *"the intended internal target must move more than random"* clause has to be
+evaluated on the arms whose ASR is being claimed. **Launched 756169.**
+
+Both pinned to **n-301/n-307**, off the four full-budget optimization jobs saturating n-304.
+
+**Why these were missable:** each analysis I ran individually was correct and complete *for the
+arm it targeted*. Nothing errored, no output looked partial. The gaps only appear when the
+**design** is diffed against the **run inventory** — which is the same check that caught the
+missing vanilla arm at 08:40 and the missing shard at 16:55. **Three gaps, all found by that same
+diff, none by any tool.**
+
+seed 43 full-budget: mechanism **24/37**, matched_random **7/37**.
+
+---
