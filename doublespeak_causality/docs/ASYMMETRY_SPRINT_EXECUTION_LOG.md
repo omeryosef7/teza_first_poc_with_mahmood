@@ -5236,3 +5236,18 @@ at 16:55"*. Closing it on the first available slot rather than letting it drift.
 No failures, nothing pending past submit, spread n-301: 2, n-304: 4.
 
 ---
+## 2026-08-13 22:10 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. Spread **n-301: 2, n-304: 4**.
+
+| work | progress |
+|---|---|
+| seed 43 full-budget mechanism | **31/37** — ~3 prompts per shard left |
+| seed 43 full-budget matched_random | **14/37** |
+| seed 42 full-budget vanilla | **4/37** (both shards running) |
+
+Nothing finished this tick. Design-vs-inventory diff run: **no new gaps** — the three seed-42
+full-budget arms are launched or complete, and the seed-43 pair is both-shards-launched on both
+arms.
+
+---
