@@ -6025,3 +6025,21 @@ One slot free with nothing launchable — seed 44's eval, mechval and transfer a
 random arm finishing. Inventory diff otherwise clean.
 
 ---
+## 2026-08-14 17:15 — seed43 transfer MECHANISM done; holding the analysis for its control
+
+**757207 COMPLETE** (23:03) — seed 43 transfer matrix, mechanism arm. **757208 (its matched-random
+control) is still running** at 23:21.
+
+**Deliberately not analyzing the mechanism transfer yet.** A diagonal-vs-off-diagonal gap for the
+mechanism arm alone says nothing about whether the pattern is *direction-specific* — that is
+precisely why the seed-42 transfer needed its control, and why the missing control was logged as
+a gap at 19:40 yesterday. Reading the mechanism number now would invite exactly the over-reading
+the control exists to prevent, and I would be re-creating a gap I already fixed once.
+
+The comparison that matters is **gap(mechanism) − gap(random)**, which on seed 42 came out at
+**+0.0000**. That requires both arms.
+
+**Queue 4/6**, two slots free and nothing launchable — seed 44's remaining analyses all gate on
+its random arm (**35/37**). seed 44 vanilla **16/37**.
+
+---
