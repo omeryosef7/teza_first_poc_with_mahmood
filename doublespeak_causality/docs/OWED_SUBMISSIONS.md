@@ -80,3 +80,11 @@ min/prompt ≈ **29 GPU-h per seed**; ~7.5 h wall per shard, inside the 16 h lim
 Neither is launched. **§20.1 must not be written into the paper claim table until (1) is scored** —
 a CE-only claim would be exactly the objective-vs-behaviour conflation this program exists to
 document.
+
+## 2026-08-14 08:10 — §20.7 seed 43 is a HALF-LAUNCHED shard set
+757525 (SHARD=0/4, n-306) and 757526 (SHARD=1/4, n-350) are running. **Shards 2 and 3 of 4 are NOT
+submitted** — only 2 slots were free. Until they run, seed 43 covers 19 of 37 prompts.
+
+**Do not aggregate seed 43 as a curve point before shards 2 and 3 complete** — a half-covered seed
+is a biased subset of prompts (shard = index mod 4), not a smaller random sample.
+Seed 44 at 600 steps is still entirely unlaunched.
