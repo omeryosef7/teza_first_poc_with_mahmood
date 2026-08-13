@@ -5493,3 +5493,34 @@ complete or running:
 | 44 | running (10/37) | just launched |
 
 ---
+## 2026-08-14 04:25 — SECOND full-budget contrast: sign flips across seeds here too
+
+**756524 complete.** seed 43 full-budget matched_random: **ASR 0.2162**, n=37, `n_missing = 0`,
+`judge_fail = 0.0`.
+
+| seed | mech | rand | ΔASR (binary) | McNemar p | **Δ graded** | **Wilcoxon p** |
+|---|---|---|---|---|---|---|
+| 42 | 0.2703 | 0.3243 | **−0.0541** | 0.754 | **−0.0034** | 0.944 |
+| 43 | 0.2973 | 0.2162 | **+0.0811** | 0.453 | **+0.0946** | 0.148 |
+
+**The full-budget contrast is sign-inconsistent across seeds — on BOTH measures.** Binary
+−0.054 / +0.081; graded −0.003 / +0.095. Neither seed is significant.
+
+**And the random control moves again:** 0.3243 → 0.2162 (1.5× across seeds), while the mechanism
+arm is stable at 0.2703 / 0.2973 (1.10×). **That is the sprint's signature finding for the fifth
+time — the mechanism arms are reproducible and the contrasts are not, because the variance lives
+in the matched-random control.**
+
+### Where §7.5 now stands on the behavioural endpoint
+| setting | per-seed Δ (graded) | sign |
+|---|---|---|
+| compute-matched | +0.085 / −0.010 / +0.071 | **inconsistent** |
+| full budget | −0.003 / +0.095 / *(seed44 pending)* | **inconsistent** |
+
+**Sign-unstable at both budgets, on both measures, in every seed set measured.** seed 44 is
+running and will complete the 3×2 design, but it cannot make an already-flipped sign consistent —
+it can only determine whether the full-budget set is 1-of-3 or 2-of-3 positive.
+
+**Queue 6/6**; seed 42 full-budget vanilla at 34/37 with 3 left.
+
+---
