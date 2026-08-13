@@ -234,10 +234,24 @@ def forward_batch(model, embed_w, prompts, soft_emb, hs_rows, need_target=False)
     return res
 
 
-def objective_value(res, kind, v, row):
-    """Scalar loss to MINIMIZE, averaged over the batch."""
+def objective_value(res, kind, v, row, v_ref=None, proj0=None, mu=0.0):
+    """Scalar loss to MINIMIZE, averaged over the batch.
+
+    `task_orth` (plan §20.1, the ORTHOGONALITY TEST on Gate D): minimise the ordinary task
+    loss while PINNING the refusal projection to its clean per-prompt value, via a quadratic
+    penalty mu*(proj - proj0)^2. The question it answers: can 16 free continuous positions
+    force compliance WITHOUT moving the refusal coordinate? If yes, Gate D's ASR 0.784 was
+    not evidence of mechanism-guided attack, and the continuous-vs-discrete asymmetry is
+    partly an artifact of comparing an unconstrained continuous attacker against a
+    mechanism-constrained discrete one.
+    """
     if kind == "task":
         return torch.stack([r["ce"] for r in res]).mean()
+    if kind == "task_orth":
+        ce = torch.stack([r["ce"] for r in res]).mean()
+        pen = torch.stack([(torch.dot(r["h"][row], v_ref) - p0) ** 2
+                           for r, p0 in zip(res, proj0)]).mean()
+        return ce + mu * pen
     return torch.stack([torch.dot(r["h"][row], v) for r in res]).mean()
 
 
@@ -253,8 +267,11 @@ def main():
                     help="frozen optimization pool; defaults to --manifest with --train-split")
     ap.add_argument("--train-split", default="train")
     ap.add_argument("--test-split", default="test")
-    ap.add_argument("--objective", choices=["refusal", "random", "task", "none"],
+    ap.add_argument("--objective", choices=["refusal", "random", "task", "task_orth", "none"],
                     required=True)
+    ap.add_argument("--orth-mu", type=float, default=1.0,
+                    help="§20.1 penalty weight pinning the refusal projection to its clean "
+                         "per-prompt value (objective=task_orth only)")
     ap.add_argument("--param", choices=["free", "simplex"], default="free")
     ap.add_argument("--budget", type=float, default=None,
                     help="L2 ball radius on the per-position perturbation (free only)")
@@ -382,7 +399,9 @@ def main():
     if args.objective != "none":
         opt = torch.optim.Adam([soft.var], lr=args.lr)
         rng = np.random.default_rng(args.seed)
-        need_target = args.objective == "task"
+        need_target = args.objective in ("task", "task_orth")
+        # §20.1: per-prompt CLEAN projection, captured before optimization starts.
+        proj0_by_id = {r["task_id"]: r["proj_decision"] for r in baseline_train}
         for step in range(args.steps):
             idx = rng.choice(len(train), size=min(args.batch, len(train)), replace=False)
             opt.zero_grad(set_to_none=True)
@@ -394,7 +413,10 @@ def main():
             for i in idx:
                 res = forward_batch(model, embed_w, [train[i]], soft.embeddings(), [row],
                                     need_target=need_target)
-                loss = objective_value(res, args.objective, v, row) / len(idx)
+                _p0 = ([torch.tensor(proj0_by_id[train[i].task_id], device=v.device,
+                                     dtype=v.dtype)] if args.objective == "task_orth" else None)
+                loss = objective_value(res, args.objective, v, row,
+                                       v_ref=v_ref, proj0=_p0, mu=args.orth_mu) / len(idx)
                 loss.backward()
                 tot += float(loss.detach())
                 del res, loss

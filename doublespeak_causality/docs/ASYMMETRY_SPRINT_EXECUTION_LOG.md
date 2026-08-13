@@ -6556,3 +6556,34 @@ projections were never measured — launched **757500** to fill that gap. If the
 the same null, the selection explanation is ruled out.
 
 ---
+## 2026-08-15 03:00 — SECTION 20 LOOP RESTARTED; §20.1 objective implemented
+
+**Loop restarted** as cron `0dbd528f` (every 30 min) against §20's priorities.
+
+**Queue 1/6** — 757500 (vanilla-arm mechval, the §20.2 clean slice) still running.
+
+**Implemented §20.1's objective — the orthogonality test on Gate D.** Added
+`--objective task_orth` and `--orth-mu` to `asym_p2_softprompt.py`:
+
+> minimise the ordinary **task** loss while **pinning the refusal projection to its clean
+> per-prompt value**, via `mu * (proj - proj0)^2`, where `proj0` is captured per prompt from the
+> pre-optimization baseline pass that already exists in the script.
+
+Compiles; `--help` shows both flags. **~15 lines, one function plus the CLI** — the existing
+baseline evaluation, forward pass, budget projection, rounding probe and eval path are all reused
+unchanged, so the constrained arm is directly comparable to Gate D's numbers.
+
+**Why this is §20.1 and runs first:** Gate D (**ASR 0.784 vs 0.153**) is the program's strongest
+positive and half its thesis. **If a soft prompt that provably does NOT move the refusal
+projection still reaches ~0.7, Gate D never demonstrated mechanism-guided attack** — it showed
+that 16 free continuous positions can force compliance by any route, and the
+continuous-vs-discrete asymmetry is partly an artifact of comparing an *unconstrained* continuous
+attacker against a *mechanism-constrained* discrete one. It costs <10 GPU-h and it is the
+experiment most likely to overturn our own headline, which is exactly why it is first rather than
+last.
+
+**Reading rule, fixed now:** the arm only counts if the penalty actually holds the projection —
+report the achieved |proj − proj0| alongside ASR, and treat any run whose projection drifted more
+than a pre-set tolerance as a **failed constraint, not a result**.
+
+---
