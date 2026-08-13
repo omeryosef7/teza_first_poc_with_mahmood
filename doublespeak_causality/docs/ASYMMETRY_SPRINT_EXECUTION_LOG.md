@@ -5177,3 +5177,45 @@ seed 43 full-budget: mechanism 24/37+, matched_random 7/37+; random transfer con
 29 min.
 
 ---
+## 2026-08-13 21:10 — TRANSFER CONTROL lands: the prompt-specificity gap is NOT direction-specific
+
+**756168 complete** — the matched-random transfer matrix, the control that was missing at 19:10.
+
+| arm | diagonal | off-diagonal | gap | Wilcoxon p | sources favouring own |
+|---|---|---|---|---|---|
+| mechanism | 0.3243 | 0.2000 | **+0.1243** | 0.134 | 12/37 |
+| **matched random** | 0.2973 | 0.1730 | **+0.1243** | 0.211 | 11/37 |
+| **difference of gaps** | | | **+0.0000** | MW p = 0.804 | CI [−0.222, +0.216] |
+
+**The mechanism and random arms show the SAME prompt-specificity gap.** Whatever diagonal-vs-
+off-diagonal structure exists is a **generic property of per-prompt GCG**, not of targeting the
+refusal direction.
+
+### The identical +0.1243 is a coincidence — checked, not assumed
+An exact tie to 4 decimals is the signature of reading the same data twice, so I verified it:
+
+| arm | diagonal | off-diagonal | gap |
+|---|---|---|---|
+| mechanism | **12**/37 | **37**/185 | 23/185 |
+| random | **11**/37 | **32**/185 | 23/185 |
+
+**The diagonals differ (12 vs 11) and the off-diagonals differ (37 vs 32)** — so it is not the
+same data. Both gaps happen to reduce to **23/185** because 60−37 = 55−32 = 23. A small-integer
+coincidence at n=37 with 5 targets per source.
+
+### §7.5 add-on 2 verdict
+Per the §4 pre-registered rules this is the **"diagonal ≈ off-diagonal ⇒ generic"** branch, with
+the control making it stronger than the mechanism arm alone could: **the per-prompt suffix is not
+prompt-specific, and its (weak, non-significant) specificity is matched exactly by a random
+direction.**
+
+**Off-diagonal ASR — mechanism 0.200, random 0.173 — both at or above the universal arm's own
+held-out ASR (0.162).** Per-prompt suffixes transfer to unseen prompts as well as the universal
+suffix works on its own held-out set.
+
+**This closes the last approved §7.5 endpoint.** All three now agree: behavioural (sign flips
+across seeds and budgets), mechanistic (1 of 4, in the outlier seed), and transfer (gap identical
+to random). **No support for the universality/prompt-specificity hypothesis §7.5 was added to
+test.**
+
+---
