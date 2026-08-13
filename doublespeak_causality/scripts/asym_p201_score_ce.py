@@ -54,7 +54,9 @@ def main():
     ap.add_argument("--out", default="doublespeak_causality/outputs/asym_p201_ce_scores.json")
     args = ap.parse_args()
 
-    import doublespeak_causality.common as dc  # noqa
+    # Reuse the handle asym_p2_softprompt already bound (`import ds_common as dc`), so the
+    # loader/seed/template helpers here are byte-identical to the ones the arms ran under.
+    dc = sp.dc
 
     # Every arm in a §20.1 contrast shares model/manifest/layer; assert rather than assume.
     metas = {}
