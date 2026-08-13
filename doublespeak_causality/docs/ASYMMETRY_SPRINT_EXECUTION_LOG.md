@@ -5647,3 +5647,48 @@ correctly killed four such patterns today.
 three-arm set at the threat-model budget.
 
 ---
+## 2026-08-14 07:00 — seed42 FULL-BUDGET three-arm set COMPLETE: plain GCG is the best arm
+
+**756680 complete.** seed 42 full-budget vanilla: **ASR 0.3514**, n=37, `n_missing = 0`,
+`judge_fail = 0.0`.
+
+### All three arms, seed 42, threat-model budget (n=37)
+| arm | ASR | mean graded |
+|---|---|---|
+| **vanilla** (task loss only) | **0.3514** | **0.3311** |
+| matched random | 0.3243 | 0.2872 |
+| mechanism | 0.2703 | 0.2838 |
+
+| contrast | ΔASR | p | Δ graded | p |
+|---|---|---|---|---|
+| mechanism − vanilla | **−0.0811** | 0.581 | −0.0473 | 0.690 |
+| random − vanilla | −0.0270 | 1.00 | −0.0439 | 0.542 |
+| mechanism − random | −0.0541 | 0.754 | −0.0034 | 0.944 |
+
+**At the threat-model budget, plain task-loss GCG is the strongest arm, and BOTH direction-guided
+arms are behind it** — mechanism by −0.081, random by −0.027 (neither significant).
+
+### This inverts the compute-matched ordering, again
+| budget | ordering (seed 42) |
+|---|---|
+| compute-matched | vanilla 0.081 **<** random 0.108 **<** mechanism 0.189 |
+| **full budget** | **mechanism 0.270 < random 0.324 < vanilla 0.351** |
+
+**The arm ordering completely reverses between budgets on the same seed.** Adding a direction
+term looked like it *helped* at 5 steps/prompt and looks like it *costs* at 200 — with nothing
+significant at either.
+
+### What §7.5 now supports
+Across every cell measured — 3 arms × 3 seeds compute-matched, plus seed 42's full three-arm set
+and seeds 42/43 mechanism-vs-random at full budget — **no contrast is stable in sign across seeds
+or budgets, and none reaches significance.** The most defensible statement is the modest one:
+
+> **The refusal-direction objective confers no reliable behavioural advantage over a random
+> direction, or over no direction term at all, at any budget tested.**
+
+**Caveat kept attached:** full-budget vanilla exists for **seed 42 only**. Given that the
+compute-matched vanilla ordering itself flipped between seeds 42 and 43, this single-seed
+full-budget ordering should be treated as provisional — and today's record says such orderings
+usually do not survive a second seed.
+
+---
