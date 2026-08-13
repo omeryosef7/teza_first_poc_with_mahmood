@@ -5545,3 +5545,45 @@ other 3090 nodes would break that. So the correct directed resubmit is **n-301 o
 not a broader nodelist.
 
 ---
+## 2026-08-14 05:30 — STALE PENDING resolved + a latent §3.1 risk audited (clean, but real)
+
+**Monitor fired: 756529 PD 34 min on `(Resources)`.** Resolved — but the standard remedy
+("resubmit with a wider nodelist") needed checking first, and checking it surfaced something.
+
+### `sinfo` reveals the actual node classes
+| class | nodes |
+|---|---|
+| **RTX 3090** | n-301, n-302, n-303, n-304, n-305, n-306, n-307, n-350 |
+| a5000 | n-501, n-502, n-503 |
+| **L40S** | **n-801 – n-805, t-806** |
+| 2080 | n-202 – n-205, s-004, s-005 |
+
+**I have been submitting several §7.5 arms with `--nodelist=n-304,n-307,n-801,n-802` — which
+mixes 3090 with L40S.** Any job landing on n-801/n-802 would have run on a **different GPU class
+from its matched partner**, exactly what §3.1 forbids.
+
+### Audit of where every completed §7.5 arm actually ran — **no violation occurred**
+| arm | nodes |
+|---|---|
+| seed42 compute-matched mech / rand | n-301 / n-301 ✅ |
+| seed43 compute-matched mech / rand | n-304 / n-304 ✅ |
+| seed44 compute-matched mech / rand | n-304 / n-304 ✅ |
+| vanilla compute-matched s42/43/44 | n-304 / n-304 / n-304 ✅ |
+| seed42 full-budget vanilla | n-301 |
+| seed44 full-budget mech / rand | n-301 / n-301 ✅ |
+
+**Every arm landed on a 3090; none reached the L40S nodes.** All within-seed mechanism/random
+pairs share a node. The risk was **latent, not realized** — but it was live for every submission
+using that nodelist, and it would have been invisible in the results.
+
+*(One same-class note: seed 42's compute-matched vanilla ran on n-304 while its mechanism/random
+ran on n-301. Both are 3090s, so §3.1 — which governs **classes** — is satisfied.)*
+
+**Fixed the pending job correctly:** cancelled 756529 and resubmitted as **756558** pinned to
+**`n-301,n-303,n-305,n-306,n-350` — 3090s only**, four of which `sinfo` reports **idle**. That
+satisfies the resubmit instruction *and* §3.1, where a naive widening would have satisfied only
+the former.
+
+**Standing correction: use 3090-only nodelists for all remaining §7.5 submissions.**
+
+---
