@@ -19,3 +19,16 @@ counter-measure; the per-tick inventory diff is the backstop.*
   expected for ~3 h), **launched 2026-08-14 13:00 as 757157** on the first slot that freed,
   pinned `n-304,n-303,n-305,n-306,n-350` as recorded. Owed for 2 h 15 min across 5 ticks; carried
   correctly by the checklist at every one.
+
+## 2026-08-14 — §20.1 was launched WITHOUT its control (caught by design-vs-inventory diff)
+
+757508/509/510 are **all three `task_orth`** (seeds 42/43/44, free, b0.1, L40S). §20.1 asks
+whether task success survives pinning the refusal projection — that is a *contrast*, and the
+unconstrained `task` arm is the other half of it. **No plain `task` arm existed at any budget.**
+As launched, §20.1 could only have reported "task_orth reached loss X", which answers nothing.
+
+Fix: submitted **757513/514/515** = `ASYM_OBJ=task`, free, b0.1, seeds 42/43/44, `ASYM_GPU=l40s`
+(matching the task_orth arms' GPU class per §3.1), n-802/803/804 one seed per node.
+
+**Embargo: do not analyze or write up §20.1 until 757513/514/515 are all COMPLETED.**
+A `task_orth` number on its own is not a §20.1 result.
