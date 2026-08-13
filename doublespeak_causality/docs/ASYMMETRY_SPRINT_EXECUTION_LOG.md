@@ -5819,3 +5819,11 @@ freed since 10:45, so it correctly remains owed rather than forgotten — which 
 of the file.
 
 ---
+## 2026-08-14 11:45 — LOOP: routine. Queue 6/6, nothing finished; 1 shard still owed.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 3.
+seed 44 full-budget mechanism **32/37** (shard 0 at 14/19, ~2 h left; job at 7:59 of a 16 h wall,
+comfortable); matched_random **23/37**; seed 43 full-budget vanilla **26/37**; seed 44 full-budget
+vanilla **3/37** (shard 0 only, shard 1 still OUTSTANDING in `OWED_SUBMISSIONS.md`).
+
+---
