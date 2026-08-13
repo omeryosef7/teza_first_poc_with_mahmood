@@ -4841,3 +4841,28 @@ Per-arm counts printed above and checked each tick from here.
 Nothing finished this tick.
 
 ---
+## 2026-08-13 15:55 — seed42 full-budget MATCHED-RANDOM arm complete (37/37); eval launched
+
+**755221 / 755222 COMPLETE** — `ran=19` + `ran=18` = **37/37**. Per-arm check confirms:
+
+| seed42 full-budget arm | state |
+|---|---|
+| matched_random | **37/37 READY** |
+| mechanism | 33/37, not ready |
+
+**The per-arm tracking switched to at 15:25 paid off immediately** — the shard total (65/74 then)
+would have given no signal that one arm had finished while the other had not.
+
+**Launched:**
+* **756037** — matched-random full-budget held-out eval (37 prompts, batched).
+* **756038** — seed 43 **matched-random full-budget**, shard 0/2, **pinned to `n-304,n-307`
+  only**. This is the §3.1 constraint recorded at 13:55: seed 43's *mechanism* arm is on n-304,
+  which measured **~20 % faster per step than n-301**, so its matched control must run on the
+  same node class — not merely "a 3090". Pinning to the broad 3090 list would have risked landing
+  it on n-301 and confounding the seed-43 mechanism-vs-random contrast with a throughput
+  difference.
+
+**Queue 6/6.** Note the transfer plan still cannot be built: it needs the **mechanism** arm at
+37/37 (currently 33/37), per the precondition recorded at 14:55.
+
+---
