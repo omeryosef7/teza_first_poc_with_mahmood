@@ -5729,3 +5729,10 @@ Nothing to analyze. Inventory diff: full-budget vanilla still missing for **seed
 goes in when two slots free.
 
 ---
+## 2026-08-14 08:30 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 3, n-303: 1, n-350: 2.
+seed 44 full-budget mechanism **21/37**; seed 44 matched_random **7/37**; seed 43 full-budget
+vanilla **4/37**. Inventory diff: full-budget vanilla still owed for seed 44 only.
+
+---
