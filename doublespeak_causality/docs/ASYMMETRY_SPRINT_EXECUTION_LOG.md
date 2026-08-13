@@ -6935,3 +6935,50 @@ Recomputed Δproj matches the arms' own logged values to ~0.01 (+0.187 vs +0.195
 **Queue 4/6** — §20.7 shards 757516–519.
 
 ---
+## 2026-08-14 08:00 — design-vs-inventory diff: **§20.8's n=300 is infeasible.** The corpus ceiling is 179.
+
+The plan makes §20.8 (expand to n=300) a **precondition on §20.6 and §20.9**, and states n=300 gives
+power 0.75. Inventory check:
+
+| pool | size |
+|---|---|
+| `clearharm_llama_doublespeak.jsonl` (in use) | **148** unique task_ids — dev 37 / train 74 / test 37 |
+| `data/clearharm/clearharm_179.csv` (largest upstream) | **179** |
+| `clearharm_universal100.csv` (cited `target_source_file`) | 100 |
+
+**179 is the hard ceiling**, and 148 of them are already used. Keeping a 40-item train pool disjoint
+leaves **≈139 held-out max** — not 300. §20.8 as written cannot be executed.
+
+### What 139 actually buys (paired McNemar, α=0.05, ρ=0.5, 4000 sims)
+| n | Δ=0.054 | Δ=0.10 | Δ=0.15 |
+|---|---|---|---|
+| 37 (current) | 0.05 | 0.15 | 0.30 |
+| 74 | 0.13 | 0.36 | 0.66 |
+| **139 (ceiling)** | **0.29** | **0.64** | **0.92** |
+| 300 (planned, unreachable) | 0.62 | 0.95 | 1.00 |
+
+At n=37 power against the effect §7.5 actually observed (Δ=0.054) is **0.05 — literally the false
+positive rate**. The sprint has been running contrasts with no ability to detect its own effect
+size. Going to the 139 ceiling raises that only to 0.29; it reaches useful power (0.92) only for
+effects ≥0.15. Equivalence bounds would tighten from 0.19–0.27 to **≈0.10–0.14**.
+
+### Consequence for the plan — three options, none of them "as written"
+1. **Re-scope §20.8 to n≈139** and state plainly that Δ≈0.05 effects stay undetectable. Cheapest,
+   keeps corpus comparability with every prior result.
+2. **Import a second corpus** (AdvBench/HarmBench) to reach 300. Breaks comparability with all
+   existing numbers and needs its own Doublespeak templating + direction validation.
+3. **Abandon binary ASR as the primary endpoint** for these contrasts and use the graded score or
+   the projection (continuous, far better SNR — §7.5 already noted the projection is adequately
+   powered at n=37 where ASR is not).
+
+**Option 3 is the one the data supports** and it costs nothing: §20.2 and §20.1 both produced
+significant results at n=37/74 using continuous endpoints, while every binary-ASR contrast in the
+sprint came back null. That is not a coincidence — it is the power table above.
+
+**Recorded as a plan defect. §20.6 and §20.9 must not be launched on the assumption that §20.8
+will deliver n=300.**
+
+**Queue 4/6** — §20.7 shards 757516–519 (28 min in, ~7 h to go). Soft-prompt judging running
+locally (API-only, no slot).
+
+---
