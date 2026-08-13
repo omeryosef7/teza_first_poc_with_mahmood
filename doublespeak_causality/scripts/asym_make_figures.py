@@ -215,7 +215,15 @@ def figure_C(p1_analysis_dirs, out_dir):
             continue
         a = json.load(open(ap))
         coh = a.get("cross_prompt_coherence", {})
-        cell = next((c for k, c in coh.items() if k.startswith("decision")), None)
+        mech_name = a.get("mech_name")
+        # Pick the decision-position cell that actually CONTAINS the mechanism direction.
+        # Taking the first "decision*" key silently selected decision|hs10 (the concept
+        # layer) while mech_name is refusal_L18, which lives at hs19 -- so the guard below
+        # skipped every run and Figure C was never produced. Fixed 2026-08-14.
+        cell = next((c for k, c in coh.items()
+                     if k.startswith("decision") and mech_name in c.get("directions", {})), None)
+        if cell is None:
+            cell = next((c for k, c in coh.items() if k.startswith("decision")), None)
         if not cell:
             continue
         mech = a["mech_name"]

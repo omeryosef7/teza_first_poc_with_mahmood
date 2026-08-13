@@ -6310,3 +6310,44 @@ Existing 5 figures untouched; this is added alongside `FIG_A_control_hierarchy.p
 replacing it, so the pre-§7.5 version remains reproducible.
 
 ---
+## 2026-08-14 22:00 — 🐛 PLAN AUDIT: found a real bug that had silently suppressed FIGURE C
+
+Prompted by the author asking whether the plan is actually finished, I ran a systematic §-by-§
+audit instead of relying on recollection. It produced **two false alarms and one real bug**.
+
+### False alarms — my audit's path errors, not gaps
+* `results/EXPERIMENT_REGISTRY.csv` — **exists** (35 rows at repo root, 396 in
+  `doublespeak_causality/`). I had checked `doublespeak_causality/results/`.
+* Figures A/B/B2/D/E — **exist** in `doublespeak_causality/figures/asymmetry/`. I had checked
+  `outputs/asym_figures/`, a directory *my own 4-rung script had created minutes earlier*, which
+  is why it contained exactly one file. **Nearly reported both as missing deliverables.**
+
+### The real bug — Figure C was never generated
+`asym_make_figures.py:figure_C` selected the coherence cell with:
+```python
+cell = next((c for k, c in coh.items() if k.startswith("decision")), None)
+```
+The first `decision*` key is **`decision|hs10`** — the **concept** layer, whose directions are
+`[concept_L9, otherlayer::…]`. But `mech_name` is **`refusal_L18`**, which lives in
+`decision|hs19`. So the very next guard, `if mech not in d: continue`, fired on **every** run and
+the function returned silently — no error, no warning, no output file.
+
+**Consequence: `FIG_C_coherence` has never existed**, and my deliverables summary listing it among
+the completed figures was **wrong**. Plan §14 requires it.
+
+**Fixed** — select the decision-position cell that actually *contains* `mech_name`, with the old
+behaviour retained as fallback. Regenerated: **`FIG_C_coherence_train.png`**.
+
+*Train-only is correct here*: cross-prompt gradient coherence is a **train-side** characterization
+(§5.5, and §19.5 specifies it as strictly train-only), and the test reachability run has no
+`ANALYSIS.json` because coherence was never computed for it.
+
+**Also consolidated:** moved `FIG_A_control_hierarchy_4rung.png` from the stray
+`outputs/asym_figures/` into `figures/asymmetry/` with the other eight, and removed the empty
+directory. **9 figures, one location.**
+
+**Lesson worth keeping:** a silent `continue` inside a loop is indistinguishable from "no data",
+and this one hid a required deliverable for three days. The audit that caught it was triggered by
+being asked to check — not by any tooling.
+
+---
