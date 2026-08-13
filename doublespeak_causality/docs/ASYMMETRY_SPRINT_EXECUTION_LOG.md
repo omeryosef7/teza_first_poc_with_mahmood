@@ -5612,3 +5612,38 @@ than opportunistically is clearly the right cadence.
 **n-303** after the 05:30 resubmit.
 
 ---
+## 2026-08-14 06:30 — seed43 FULL-BUDGET mechval: the two endpoints are DISSOCIATING
+
+**756578 complete in 43 s** — versus 21:00 for the seed-42 equivalent. Verified this is **entirely
+model load**, not skipped work: both runs have identical structure (`n_rows = 5661`, 5 conditions,
+coverage **37/37** on both arms, 15 fit layers). 21:00 − 43 s ≈ 20 min of cold load, matching the
+measured cold-vs-warm figure exactly. The readout is complete and valid.
+
+### Gate E internal-target clause — all five arm-sets
+| arm set | mech | rand | mech − rand | Wilcoxon p |
+|---|---|---|---|---|
+| compute-matched s42 | −0.5233 | −0.1322 | **−0.3911** | **0.009** |
+| compute-matched s43 | −0.3706 | −0.3699 | −0.0007 | 0.50 |
+| compute-matched s44 | −0.2459 | −0.3438 | **+0.0979** | 0.88 |
+| FULL BUDGET s42 | −1.7814 | −1.5833 | −0.1981 | 0.295 |
+| **FULL BUDGET s43** | **−2.0296** | −1.5794 | **−0.4502** | **0.063** |
+
+### A dissociation between the two endpoints, at the same budget
+**At full budget the projection endpoint favours the mechanism in BOTH seeds** (−0.198, −0.450;
+the second marginal at p = 0.063). **The behavioural endpoint in those same two seeds flips sign**
+(graded −0.003, +0.095).
+
+So on the *same suffixes, same seeds, same budget*: **the internal target moves consistently in
+the predicted direction, and the behaviour does not follow.** That is the program's central
+representation ≠ behaviour dissociation appearing again — now inside §7.5's full-budget arm.
+
+**Stated with the caution it deserves:** two seeds, one marginal, one non-significant; and the
+compute-matched set contradicts it (2 of 3 negative with one outright reversal). seed 44's
+full-budget arms are still optimizing, and its mechval is the third seed that would make this
+either a pattern or another single-seed artifact. **No verdict** — the same rule that has
+correctly killed four such patterns today.
+
+**Queue 5/6**; launched **756680**, seed 42's full-budget **vanilla** eval, completing that seed's
+three-arm set at the threat-model budget.
+
+---
