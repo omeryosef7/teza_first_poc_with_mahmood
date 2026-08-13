@@ -6692,3 +6692,48 @@ r = −0.421, p = 1.9e-4): where a prompt starts still matters more than how far
 **Queue 4/6** — §20.1's three `task_orth` arms running.
 
 ---
+## 2026-08-14 05:10 — §20.4 pass 1 (PROVISIONAL): our negatives only rule out effects larger than ~0.19–0.27 ASR
+
+`scripts/asym_p204_equivalence.py`. Percentile bootstrap over **paired items** (resampling
+task_ids — the pairing is the design); the 90 % CI is exactly the TOST rejection region at
+α = 0.05. Bound = max(|CI_lo|, |CI_hi|).
+
+| budget | contrast | mean Δ | **equivalence bound** |
+|---|---|---|---|
+| low (5 steps) | mechanism − matched random | +0.054 | **0.189** |
+| low | mechanism − vanilla | +0.036 | **0.216** |
+| low | matched random − vanilla | −0.018 | **0.189** |
+| full | mechanism − matched random | +0.009 | **0.189** |
+| full | mechanism − vanilla | −0.054 | **0.270** |
+| full | matched random − vanilla | −0.063 | **0.216** |
+
+### What this costs us
+The plan predicted "roughly ±0.3 ASR" and that is what we got. At n = 37 these nulls rule out
+**only effects larger than ~19–27 ASR points** — and the Doublespeak effect the program studies is
+itself on that order. So §7.5's negatives do **not** establish that per-prompt mechanism
+optimization is useless; they establish that it is not *hugely* better than the controls. Every
+place the write-up reads as "no effect" has to become "no effect larger than ~0.2 ASR detectable
+at this n". That is a real weakening of the claim and I am recording it as such.
+
+This also reframes §20.2: the projection→behaviour mediation we just confirmed in the vanilla
+slice is exactly the size of effect these ASR contrasts are blind to.
+
+### Validation
+All **18** arm × seed ASR cells recomputed here match the §7.5 published table to 4 dp through an
+independent code path (different loader, different joblist traversal). The aggregation underlying
+§7.5 is confirmed correct.
+
+### One trap found
+The `seed` field on an eval row is the **generation** seed — 42 for every arm — not the GCG
+optimization seed, which lives only in the joblist/`output_dir`. Filtering rows by the
+optimization seed returns **zero rows** for seeds 43/44. My first run did exactly that; the
+"≥ 20 paired items" guard refused to emit anything rather than reporting a 1-seed result as a
+3-seed one. Constant `EVAL_SEED = 42` and a comment now pin this down.
+
+**Not for publication.** Plan §20.4 requires a second pass after §20.6 supplies a real
+multi-direction SD, so the margins can be stated in units of natural spread. The JSON carries
+`"provisional": true`.
+
+**Queue 5/6** — 757508/509 (task_orth s42/s43) + 757513/514/515 (the plain-`task` controls).
+
+---

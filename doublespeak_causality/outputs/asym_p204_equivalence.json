@@ -1,0 +1,297 @@
+{
+  "provisional": true,
+  "not_for_publication_reason": "plan \u00a720.4 requires a second pass after \u00a720.6 supplies a multi-direction SD",
+  "method": "percentile bootstrap over paired items; 90% CI = TOST region at alpha=0.05",
+  "n_boot": 20000,
+  "results": [
+    {
+      "budget": "low (5 steps)",
+      "contrast": "mechanism - matched_random",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": 0.08108108108108109,
+          "ci90": [
+            -0.02702702702702703,
+            0.1891891891891892
+          ],
+          "equiv_bound": 0.1891891891891892,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.1891891891891892,
+          "asr_b": 0.10810810810810811
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": 0.0,
+          "ci90": [
+            -0.10810810810810811,
+            0.10810810810810811
+          ],
+          "equiv_bound": 0.10810810810810811,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.16216216216216217,
+          "asr_b": 0.16216216216216217
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": 0.08108108108108109,
+          "ci90": [
+            0.02702702702702703,
+            0.16216216216216217
+          ],
+          "equiv_bound": 0.16216216216216217,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.1891891891891892,
+          "asr_b": 0.10810810810810811
+        }
+      ],
+      "mean_delta": 0.05405405405405406,
+      "worst_equiv_bound": 0.1891891891891892,
+      "n_seeds": 3
+    },
+    {
+      "budget": "low (5 steps)",
+      "contrast": "mechanism - vanilla",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": 0.10810810810810811,
+          "ci90": [
+            0.0,
+            0.21621621621621623
+          ],
+          "equiv_bound": 0.21621621621621623,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.1891891891891892,
+          "asr_b": 0.08108108108108109
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": -0.02702702702702703,
+          "ci90": [
+            -0.10810810810810811,
+            0.05405405405405406
+          ],
+          "equiv_bound": 0.10810810810810811,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.16216216216216217,
+          "asr_b": 0.1891891891891892
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": 0.02702702702702703,
+          "ci90": [
+            -0.08108108108108109,
+            0.13513513513513514
+          ],
+          "equiv_bound": 0.13513513513513514,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.1891891891891892,
+          "asr_b": 0.16216216216216217
+        }
+      ],
+      "mean_delta": 0.036036036036036036,
+      "worst_equiv_bound": 0.21621621621621623,
+      "n_seeds": 3
+    },
+    {
+      "budget": "low (5 steps)",
+      "contrast": "matched_random - vanilla",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": 0.02702702702702703,
+          "ci90": [
+            -0.08108108108108109,
+            0.13513513513513514
+          ],
+          "equiv_bound": 0.13513513513513514,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.10810810810810811,
+          "asr_b": 0.08108108108108109
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": -0.02702702702702703,
+          "ci90": [
+            -0.13513513513513514,
+            0.08108108108108109
+          ],
+          "equiv_bound": 0.13513513513513514,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.16216216216216217,
+          "asr_b": 0.1891891891891892
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": -0.05405405405405406,
+          "ci90": [
+            -0.1891891891891892,
+            0.08108108108108109
+          ],
+          "equiv_bound": 0.1891891891891892,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.10810810810810811,
+          "asr_b": 0.16216216216216217
+        }
+      ],
+      "mean_delta": -0.018018018018018018,
+      "worst_equiv_bound": 0.1891891891891892,
+      "n_seeds": 3
+    },
+    {
+      "budget": "full",
+      "contrast": "mechanism - matched_random",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": -0.05405405405405406,
+          "ci90": [
+            -0.1891891891891892,
+            0.08108108108108109
+          ],
+          "equiv_bound": 0.1891891891891892,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2702702702702703,
+          "asr_b": 0.32432432432432434
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": 0.08108108108108109,
+          "ci90": [
+            -0.02702702702702703,
+            0.1891891891891892
+          ],
+          "equiv_bound": 0.1891891891891892,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2972972972972973,
+          "asr_b": 0.21621621621621623
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": 0.0,
+          "ci90": [
+            -0.16216216216216217,
+            0.16216216216216217
+          ],
+          "equiv_bound": 0.16216216216216217,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2702702702702703,
+          "asr_b": 0.2702702702702703
+        }
+      ],
+      "mean_delta": 0.009009009009009009,
+      "worst_equiv_bound": 0.1891891891891892,
+      "n_seeds": 3
+    },
+    {
+      "budget": "full",
+      "contrast": "mechanism - vanilla",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": -0.08108108108108109,
+          "ci90": [
+            -0.24324324324324326,
+            0.08108108108108109
+          ],
+          "equiv_bound": 0.24324324324324326,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2702702702702703,
+          "asr_b": 0.35135135135135137
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": 0.0,
+          "ci90": [
+            -0.10810810810810811,
+            0.10810810810810811
+          ],
+          "equiv_bound": 0.10810810810810811,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2972972972972973,
+          "asr_b": 0.2972972972972973
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": -0.08108108108108109,
+          "ci90": [
+            -0.2702702702702703,
+            0.10810810810810811
+          ],
+          "equiv_bound": 0.2702702702702703,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2702702702702703,
+          "asr_b": 0.35135135135135137
+        }
+      ],
+      "mean_delta": -0.05405405405405406,
+      "worst_equiv_bound": 0.2702702702702703,
+      "n_seeds": 3
+    },
+    {
+      "budget": "full",
+      "contrast": "matched_random - vanilla",
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_paired": 37,
+          "delta_asr": -0.02702702702702703,
+          "ci90": [
+            -0.16216216216216217,
+            0.10810810810810811
+          ],
+          "equiv_bound": 0.16216216216216217,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.32432432432432434,
+          "asr_b": 0.35135135135135137
+        },
+        {
+          "seed": 43,
+          "n_paired": 37,
+          "delta_asr": -0.08108108108108109,
+          "ci90": [
+            -0.1891891891891892,
+            0.02702702702702703
+          ],
+          "equiv_bound": 0.1891891891891892,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.21621621621621623,
+          "asr_b": 0.2972972972972973
+        },
+        {
+          "seed": 44,
+          "n_paired": 37,
+          "delta_asr": -0.08108108108108109,
+          "ci90": [
+            -0.21621621621621623,
+            0.05405405405405406
+          ],
+          "equiv_bound": 0.21621621621621623,
+          "n_dropped_unpaired": 0,
+          "asr_a": 0.2702702702702703,
+          "asr_b": 0.35135135135135137
+        }
+      ],
+      "mean_delta": -0.06306306306306307,
+      "worst_equiv_bound": 0.21621621621621623,
+      "n_seeds": 3
+    }
+  ],
+  "notes": []
+}
