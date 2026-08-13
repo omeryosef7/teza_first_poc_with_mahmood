@@ -4939,3 +4939,27 @@ contrast at this budget. The bar it must clear is now known and high: **0.3243**
 id is **756055**. Corrected in place.
 
 ---
+## 2026-08-13 17:40 — LOOP: NFS contention degrades MONITORING (jobs unaffected); light-touch tick
+
+**Queue 5/6 running, 0 pending**, no failures. Spread **n-301: 1, n-304: 4** — placement drifted
+as n-301 jobs finished and new ones landed on n-304.
+
+**Three successive status checks timed out at the tool limit** — a Python `os.path.exists` sweep
+over ~150 run dirs, then a shell `ls` glob, then even per-file `grep -c` on job logs. The shared
+filesystem is heavily loaded: **four concurrent full-budget jobs on n-304**, each writing
+`checkpoint.pt` every 10 steps across a 200-step run, plus snapshots.
+
+**Diagnosis: this degrades MY MONITORING, not the jobs.** The runs that could be read are
+progressing normally (755220 at **17/18**, 755661 at 9). My interactive reads are contending with
+the jobs' own writes and losing — which is the correct priority. **No action taken**: throttling
+or relocating a job to speed up my own status checks would trade real compute for observability.
+
+**Adjustment for coming ticks:** use the cheapest available signal (`squeue`, single-file reads)
+and accept coarser visibility while n-304 is saturated. Recorded because three timeouts in a row
+look like a failure and are not one — the same false-alarm shape as the "stall", the `min=1`
+steps, and the `done=0` counter, now in a fourth guise.
+
+**seed 42 mechanism shard 1 is at 17/18 — one prompt from completing the arm**, which unblocks
+both the mechanism full-budget eval and the transfer plan.
+
+---
