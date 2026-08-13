@@ -5363,3 +5363,27 @@ threshold — not "use continuous scores", which overstates what the judge actua
 replication.
 
 ---
+## 2026-08-14 00:25 — LOOP: seed44 full-budget mechanism launched (3rd seed, per §7.4)
+
+**Queue was 4.** Launched **756325 / 756326** — seed 44 full-budget mechanism, both shards,
+pinned `n-301,n-307`. **Both shards submitted together**, per the 16:55 lesson.
+
+**Why now:** plan **§7.4 requires "minimum 3 identical seeds across arms"**, and the full-budget
+contrast currently has **one** complete seed (42) with seed 43 pending its random arm. Starting
+the third seed now costs the same total compute and saves ~8 h wall — the identical reasoning
+used for seed 43 at 12:25, which proved correct.
+
+### ⚠ A cross-seed limitation I should record rather than discover later
+The full-budget **optimization** arms have run on different nodes across seeds: **seed 42 on
+n-301, seed 43 on n-304, seed 44 now on n-301**. §3.1's within-seed requirement is satisfied
+(each seed's mechanism/random pair shares a class), and the ΔASR contrast is a **within-seed
+difference**, so node effects largely cancel inside each Δ.
+
+**But it is not perfectly clean**: comparing seed 42's Δ against seed 43's Δ compares differences
+computed on different hardware, and n-304 measured **~20 % faster per step** than n-301. Since
+both arms of a seed share that node, this should not bias Δ — but it is an assumption, not a
+verified fact, and it belongs in the limitations rather than being silently relied on.
+
+**Progress:** seed 43 full-budget matched_random **22/37**; seed 42 full-budget vanilla **15/37**.
+
+---
