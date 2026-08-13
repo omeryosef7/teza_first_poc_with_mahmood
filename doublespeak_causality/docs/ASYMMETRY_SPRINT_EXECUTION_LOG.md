@@ -5713,3 +5713,19 @@ assumed.
 **Queue 6/6.** seed 44 full-budget mechanism **17/37**, matched_random **2/37**.
 
 ---
+## 2026-08-14 08:00 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. Spread **n-301: 3, n-303: 1, n-350: 2** — better
+distributed than the earlier 4-on-one-node periods, since the 05:30 correction widened the pool
+to five 3090s.
+
+| work | progress |
+|---|---|
+| seed 44 full-budget mechanism | **19/37** |
+| seed 44 full-budget matched_random | **5/37** |
+| seed 43 full-budget vanilla | **0/37** (30 min in — first completions land 25–45 min) |
+
+Nothing to analyze. Inventory diff: full-budget vanilla still missing for **seed 44** only; it
+goes in when two slots free.
+
+---
