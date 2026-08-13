@@ -5751,3 +5751,10 @@ seed 44 full-budget mechanism **26/37**; seed 44 matched_random **13/37**; seed 
 vanilla **10/37**.
 
 ---
+## 2026-08-14 10:00 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 3, n-303: 1, n-350: 2.
+seed 44 full-budget mechanism **28/37** (shards 12/19 and 16/18 — the arm gates on the slower
+shard, ~3 h); seed 44 matched_random **15/37**; seed 43 full-budget vanilla **14/37**.
+
+---
