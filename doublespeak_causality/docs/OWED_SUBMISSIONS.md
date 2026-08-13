@@ -88,3 +88,17 @@ submitted** — only 2 slots were free. Until they run, seed 43 covers 19 of 37 
 **Do not aggregate seed 43 as a curve point before shards 2 and 3 complete** — a half-covered seed
 is a biased subset of prompts (shard = index mod 4), not a smaller random sample.
 Seed 44 at 600 steps is still entirely unlaunched.
+
+## 2026-08-14 08:55 — §20.7 shards will hit the 16 h wall; resubmission required (not lost work)
+Measured throughput is **10.2 s/step** (757516: 260 steps in 44 min), so 600 steps ≈ **102
+min/prompt** and a 10-prompt shard needs ≈17 h against `--time=16:00:00`. My earlier estimate
+(47 min/prompt, ~7.5 h/shard) was **2.2× optimistic** and is retracted.
+
+The runner skips any prompt whose `FINAL_CANDIDATES.jsonl` exists, so this costs a resubmission,
+not the work — only the prompt in flight at the wall is redone.
+
+**OWED after 757516–519 / 757525–526 end (TIMEOUT or COMPLETED):**
+1. Re-submit each shard with the **same** ARM/SEED/N_STEPS/SHARD/NSHARD to finish stragglers.
+2. Verify per-shard completion by counting `FINAL_CANDIDATES.jsonl` under the `_s600` dirs —
+   **not** by SLURM state, since TIMEOUT is expected and is not failure here.
+3. Only then aggregate the 600-step curve point.
