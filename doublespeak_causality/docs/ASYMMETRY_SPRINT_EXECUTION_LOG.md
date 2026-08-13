@@ -5305,3 +5305,20 @@ recorded at 02:00 and 23:50.
 Nothing finished this tick. Inventory diff: no new gaps.
 
 ---
+## 2026-08-13 23:25 — seed43 full-budget MECHANISM arm complete (37/37); eval launched
+
+**755661 complete** → seed 43 full-budget mechanism **37/37**. Launched **756315**, its held-out
+eval.
+
+**Pinned to `n-301,n-307` deliberately — matching where seed 42's evals ran, not where seed 43's
+optimization ran.** The optimization arms are on n-304 (per the §3.1 within-seed constraint from
+13:55), but the *evaluation* is a separate comparison axis: seed 42 vs seed 43 full-budget ASR is
+a **cross-seed** contrast, so the evals should share a class even though the optimizations do not.
+Two different comparisons, two different matching requirements — worth stating because pinning
+the eval to n-304 "to match its arm" would have been the intuitive move and would have confounded
+the cross-seed comparison instead of the within-seed one.
+
+**Queue 5/6** — one slot still held; seed 43's matched-random arm is at 20/37 and will need its
+own eval next.
+
+---
