@@ -5110,3 +5110,39 @@ diff, none by any tool.**
 seed 43 full-budget: mechanism **24/37**, matched_random **7/37**.
 
 ---
+## 2026-08-13 20:10 — FULL-BUDGET mechanistic readout: more compute ⇒ more suppression, NOT more SPECIFIC suppression
+
+**756169 complete.** Coverage 37/37, 0 missing. Baseline projection **+3.398** identical across
+all four arm-sets (a good sanity check — the no-suffix baseline cannot depend on the suffix arm).
+
+| arm set | mech drop | random drop | mech − rand | Wilcoxon p | m<r |
+|---|---|---|---|---|---|
+| compute-matched s42 | −0.5233 | −0.1322 | **−0.3911** | **0.009** | 24/37 |
+| compute-matched s43 | −0.3706 | −0.3699 | −0.0007 | 0.50 | 20/37 |
+| compute-matched s44 | −0.2459 | −0.3438 | +0.0979 | 0.88 | 18/37 |
+| **FULL BUDGET s42** | **−1.7814** | **−1.5833** | **−0.1981** | **0.295** | 21/37 |
+
+### The finding
+**At 40× compute, BOTH arms suppress the refusal projection ~4× harder** (−1.78 / −1.58, versus
+−0.52 / −0.13 at compute-matched). **But the gap between them does not grow — it shrinks**
+(−0.198 vs −0.391), and it is **not significant** (p = 0.295).
+
+**The matched-RANDOM arm suppresses the refusal projection by −1.58 — 89 % of what the mechanism
+arm achieves.** A suffix optimized toward a *random* direction lowers the refusal coordinate
+almost as much as one optimized toward the refusal direction itself.
+
+**That is direct support for H4 (generic adversarial suppression):** strong suffix optimization
+suppresses refusal as a *side effect*, largely regardless of which direction the objective names.
+It also **reproduces, in the per-prompt setting, the §19.1 result on universal arms** — where the
+random suffix suppressed held-out refusal *more* than the refusal-targeted one.
+
+### Gate E internal-target clause: FAILS
+Significant in **1 of 4** arm-sets — and that one (compute-matched s42) is the same seed whose
+random control was anomalously weak in every contrast this sprint, and whose behavioural result
+also failed to replicate. **The clause is not met at either budget.**
+
+Neither §7.5 endpoint supports the mechanism direction being special: **behaviourally** the
+contrast flips sign across seeds *and* budgets; **mechanistically** it is significant once in
+four, in the seed already identified as the outlier.
+
+---
