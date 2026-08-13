@@ -5438,3 +5438,18 @@ that closed the 16:55 missing-shard gap.
 Progress: seed 42 full-budget vanilla **30/37**; seed 44 full-budget mechanism **10/37**.
 
 ---
+## 2026-08-14 03:25 — LOOP: routine. seed43 random still 36/37; slot held a second tick.
+
+**Queue 5/6, 0 pending**, no failures. n-301: 4, n-304: 1.
+seed 43 full-budget matched_random **36/37** — 756038's final prompt is mid-run.
+seed 42 full-budget vanilla and seed 44 full-budget mechanism continue.
+
+**Slot held for a second tick.** Cost so far is ~30 min of one idle slot. The alternative
+remains half-launching seed 44's random pair, which trades a known-cheap idle window for the
+shard-set failure mode caught at 16:55. When the seed-43 eval clears (it runs ~5 min), **two**
+slots free and seed 44's random arm goes in as a complete pair.
+
+If seed 43's final prompt has not landed by the next tick, that is worth checking rather than
+waiting a third time — at ~24 min/prompt it is already past its expected completion.
+
+---
