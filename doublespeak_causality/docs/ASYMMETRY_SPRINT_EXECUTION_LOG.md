@@ -5889,3 +5889,44 @@ number lands.
 **9/37**.
 
 ---
+## 2026-08-14 14:15 — 🟥 the full-budget three-arm ORDERING does not replicate (5th collapse; predicted)
+
+**757185 complete.** seed 43 full-budget vanilla: **ASR 0.2973**, n=37, `judge_fail = 0.0`.
+
+### Full-budget three-arm ordering, both seeds
+| seed | ordering (binary ASR) |
+|---|---|
+| 42 | mechanism 0.2703 **<** random 0.3243 **<** **vanilla 0.3514** |
+| **43** | random 0.2162 **<** vanilla 0.2973 **=** **mechanism 0.2973** |
+
+| seed | graded: vanilla / random / mechanism |
+|---|---|
+| 42 | **0.3311** / 0.2872 / 0.2838 |
+| 43 | 0.2736 / **0.1892** / **0.2838** |
+
+**Nothing about the ordering survives.** seed 42 put vanilla top and mechanism bottom; seed 43
+puts mechanism top (graded) and random bottom. The only arm that keeps its position is *none of
+them* — vanilla goes 1st→2nd, random 2nd→3rd, mechanism 3rd→1st.
+
+**This was predicted and recorded at 07:30 and again at 13:45**, on the grounds that the
+compute-matched vanilla ordering had already flipped between these same two seeds. **Fifth
+single-seed pattern to collapse today** — after Gate E clause (ii), λ=10's +0.622, add-on 1's
+specificity, and the compute-matched vanilla ordering.
+
+*(Incidental: seed 43's mechanism graded mean is **0.2838**, identical to seed 42's — the same
+coincidence verified at 23:55, where different generations and different score values happened to
+sum to the same total. Noted so it is not re-flagged as a bug.)*
+
+### §7.5's behavioural answer is now as complete as it can be
+Across **3 arms × 3 seeds compute-matched** and **3 arms × 2 seeds full-budget**, plus the
+transfer matrix and its control:
+
+> **No contrast is stable in sign across seeds or budgets, and none reaches significance.** The
+> refusal-direction objective confers no reliable behavioural advantage over a random direction,
+> nor over no direction term at all, at any budget tested.
+
+seed 44's arms remain in flight and will complete the 3×3 full-budget design, but on this
+evidence they cannot rescue an ordering that has already flipped — only determine which of three
+unstable orderings appears a second time.
+
+---
