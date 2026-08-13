@@ -224,7 +224,55 @@ variance at all. **That is the single highest-value methodological fix this spri
 
 ---
 
+### 6.6 FULL-BUDGET arm (200 steps/prompt — the threat model)
+
+*Added 2026-08-14. seeds 42 and 43 complete on all three arms; seed 44 in flight.*
+
+| arm | seed42 ASR | seed43 ASR | seed42 graded | seed43 graded |
+|---|---|---|---|---|
+| vanilla | **0.3514** | 0.2973 | **0.3311** | 0.2736 |
+| mechanism | 0.2703 | **0.2973** | 0.2838 | **0.2838** |
+| matched random | 0.3243 | 0.2162 | 0.2872 | 0.1892 |
+
+**Paired mechanism − matched random:**
+
+| seed | ΔASR | McNemar p | Δ graded | Wilcoxon p |
+|---|---|---|---|---|
+| 42 | **−0.0541** | 0.754 | −0.0034 | 0.944 |
+| 43 | **+0.0811** | 0.453 | +0.0946 | 0.148 |
+
+**Sign-inconsistent across seeds on both measures; nothing significant.**
+
+**The three-arm ordering does not replicate either:**
+* seed 42: mechanism **<** random **<** vanilla
+* seed 43: random **<** vanilla **=** mechanism
+
+Vanilla goes 1st→2nd, random 2nd→3rd, mechanism 3rd→1st. **No arm holds its rank.**
+
+#### What the full-budget arm DOES establish
+1. **Compute dominates direction.** The matched-random arm alone rises **0.1081 → 0.3243**
+   (+0.216) from 5→200 steps/prompt — **three times the judge floor, and larger than any
+   direction effect measured anywhere in this sprint.** This is design correction 1 confirmed
+   empirically rather than argued: had §7.5 been run *only* at full budget, "per-prompt beats
+   universal" would have followed — produced entirely by compute, using a **random** direction.
+2. **Direction identity buys nothing at either budget**, on either measure.
+3. **Per-prompt suffixes transfer.** Off-diagonal ASR **0.200** (mechanism) / **0.173** (random)
+   — at or above the universal arm's own held-out ASR (0.162) — and the diagonal-vs-off-diagonal
+   gap is **identical** for mechanism and random (+0.1243 both).
+
+### 6.7 Mechanistic endpoint at full budget
+| arm set | mech − rand | Wilcoxon p |
+|---|---|---|
+| FULL seed42 | −0.1981 | 0.295 |
+| FULL seed43 | **−0.4502** | **0.063** |
+
+At full budget the projection favours the mechanism in **both** seeds (one marginal), **while the
+behavioural contrast in those same seeds flips sign**. On the same suffixes, same seeds, same
+budget: **the internal target moves in the predicted direction and the behaviour does not
+follow** — the program's representation ≠ behaviour dissociation, reproduced inside §7.5.
+**Two seeds, one marginal: suggestive, not established.**
+
 ## 7. Still pending
-* **Full-budget arm** (200 steps/prompt), seed 42, 2 shards/arm — the threat-model number.
-* **Transfer matrix** — deliberately deferred to the full-budget suffixes; on compute-matched
-  suffixes (diagonal ASR 0.18) it would be underpowered by construction.
+* **seed 44** full-budget arms (all three) and its mechval — completes the 3×3 full-budget design.
+  Cannot rescue an ordering that has already flipped; determines only which unstable ordering
+  recurs.

@@ -5946,3 +5946,28 @@ un-launched. So the slot is not idle by choice of priority — there is genuinel
 it that would not have to be re-run later.
 
 ---
+## 2026-08-14 15:15 — LOOP: two slots free but nothing launchable; wrote the full-budget deliverable section
+
+**Queue 4/6, 0 pending**, no failures. **Two slots free and genuinely nothing to put in them** —
+all three seed-44 arms are mid-flight (mechanism 36/37, matched_random 33/37, vanilla 12/37), no
+arm is complete enough to evaluate, and seed 44's mechval needs both its arms. Launching anything
+now would mean re-running it later.
+
+**Used the tick for overdue consolidation instead.** `PERPROMPT_VS_UNIVERSAL.md` §6 covered only
+the compute-matched arm; the full-budget results have been accumulating in this log since 17:10
+yesterday without reaching the deliverable. Added:
+
+* **§6.6 Full-budget arm** — the 3-arm × 2-seed table, paired contrasts, the non-replicating
+  ordering, and the three things the arm *does* establish (compute dominates direction; direction
+  identity buys nothing; per-prompt suffixes transfer).
+* **§6.7 Mechanistic endpoint at full budget** — the −0.198 / −0.450 projection result and the
+  dissociation it creates against the sign-flipping behavioural contrast, labelled **suggestive,
+  not established** (two seeds, one marginal).
+* Rewrote **§7 Still pending** — the full-budget arm and transfer matrix are no longer pending;
+  only seed 44 is, and its role is now stated precisely: *it cannot rescue an ordering that has
+  already flipped, only determine which unstable ordering recurs.*
+
+**Deliverable now matches the evidence.** The log has been the source of truth for ~20 h while the
+paper-facing doc lagged; that gap is closed.
+
+---
