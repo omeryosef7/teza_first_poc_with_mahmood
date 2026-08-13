@@ -5524,3 +5524,24 @@ it can only determine whether the full-budget set is 1-of-3 or 2-of-3 positive.
 **Queue 6/6**; seed 42 full-budget vanilla at 34/37 with 3 left.
 
 ---
+## 2026-08-14 04:55 — LOOP: routine. One job pending on cluster Resources (8.6 min).
+
+**Queue 5/6** (4 running + 1 pending), no failures. All running jobs on **n-301**.
+
+| work | progress |
+|---|---|
+| seed 42 full-budget vanilla | **34/37** — 3 left on shard 1 |
+| seed 44 full-budget mechanism | **12/37** |
+| seed 44 full-budget matched_random | shard 0 starting; **shard 1 (756529) PENDING `(Resources)` 8.6 min** (submitted 10:57:26, now 11:06:05) |
+
+**Clock noted on 756529.** It is pending on **cluster** resources, not my 6-job cap, so the free
+slot in my budget cannot be used to relieve it — submitting anything else would simply queue
+behind it. Holding rather than adding.
+
+**If it passes 30 min**, the directed resubmit would mean widening beyond `n-301,n-307` — and
+here, unlike the eval case at 03:40, **that is acceptable**: this is an *optimization* arm, and
+§3.1 requires it to share a class with **seed 44's mechanism arm**, which is on n-301. Widening to
+other 3090 nodes would break that. So the correct directed resubmit is **n-301 only, or wait** —
+not a broader nodelist.
+
+---
