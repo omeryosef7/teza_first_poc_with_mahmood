@@ -5692,3 +5692,24 @@ full-budget ordering should be treated as provisional — and today's record say
 usually do not survive a second seed.
 
 ---
+## 2026-08-14 07:30 — LOOP: launched seed43 FULL-BUDGET vanilla to test the newest single-seed claim
+
+**Queue was 4.** Inventory diff: full-budget **vanilla** exists for seed 42 only; missing for
+seeds 43 and 44. Launched **756685 / 756686** — seed 43 full-budget vanilla, **both shards
+together**, pinned `n-304,n-303,n-305,n-306,n-350` (**3090-only**, per the 05:30 correction, with
+n-304 first since seed 43's mechanism and random arms both ran there). They landed on **n-350**.
+
+**Why this arm, ahead of seed 44's:** seed 42's full-budget result — *plain GCG beats both
+direction arms* — is **one seed old** and is the newest claim in the sprint. The compute-matched
+vanilla ordering **already flipped between seeds 42 and 43**, so this is precisely the
+single-seed pattern that today's record says usually does not survive. Testing it on seed 43 is
+worth more than extending any other arm.
+
+**Node-placement note:** both shards went to n-350, while seed 43's mechanism/random arms ran on
+n-304. All are 3090s, so §3.1 (which governs **classes**) is satisfied — but I am recording the
+placement so the three-arm seed-43 comparison can be checked against it later rather than
+assumed.
+
+**Queue 6/6.** seed 44 full-budget mechanism **17/37**, matched_random **2/37**.
+
+---
