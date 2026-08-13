@@ -5991,3 +5991,27 @@ expectation:
   endpoint in §7.5 with a consistent direction across three seeds.
 
 ---
+## 2026-08-14 16:15 — seed44 mech ASR 0.2703; launched a SECOND SEED of the transfer matrix
+
+**757205 complete.** seed 44 full-budget mechanism: **ASR 0.2703**, graded 0.2635, n=37,
+`judge_fail = 0.0`.
+
+**The full-budget mechanism arm across all three seeds: 0.2703 / 0.2973 / 0.2703** (spread
+**1.10×**) — the arm is highly reproducible, the same pattern seen at compute-matched (1.17×) and
+in every other arm this sprint. **Arms replicate; contrasts do not.**
+
+### Inventory diff → the transfer matrix had only ONE seed
+Add-on 2 ran on **seed 42 only** (mechanism + its random control, 19:10 / 21:10). seed 43's
+full-budget arms have both been complete since 13:45. Since the seed-42 transfer result — *the
+diagonal-vs-off-diagonal gap is identical for mechanism and random (+0.1243 both)* — is a
+**single-seed** finding, and five such findings have collapsed today, a second seed is the
+obvious test.
+
+**Launched 757207 / 757208** — seed 43 transfer matrices for **both** arms, each built on
+**37/37** sources (222 generations apiece), pinned 3090-only. Running both arms rather than just
+the mechanism is the point: **the control is what made the seed-42 transfer result
+interpretable**, and a mechanism-only second seed would repeat the gap this check exists to catch.
+
+**Queue 5/6.** seed 44 matched_random **34/37** (3 left), vanilla **12/37**.
+
+---
