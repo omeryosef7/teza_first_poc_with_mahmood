@@ -5803,3 +5803,19 @@ the tooling distinguishes that from a finished arm.
 **Queue 6/6.**
 
 ---
+## 2026-08-14 11:15 — LOOP: routine. Queue 6/6, nothing finished; 1 shard still owed.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 3.
+
+| work | progress |
+|---|---|
+| seed 44 full-budget mechanism | **31/37** (shard 0 at 13/19; shard 1 complete) |
+| seed 44 full-budget matched_random | **20/37** |
+| seed 43 full-budget vanilla | **22/37** |
+| seed 44 full-budget vanilla | **1/37** — shard 0 only |
+
+**`OWED_SUBMISSIONS.md` still lists 1 OUTSTANDING** (seed 44 vanilla shard 1/2). No slot has
+freed since 10:45, so it correctly remains owed rather than forgotten — which is the whole point
+of the file.
+
+---
