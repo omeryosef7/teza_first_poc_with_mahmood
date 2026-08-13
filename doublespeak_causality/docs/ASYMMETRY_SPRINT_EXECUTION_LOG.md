@@ -5407,3 +5407,10 @@ seed 43 full-budget matched_random **28/37**; seed 42 full-budget vanilla **21/3
 full-budget mechanism **3/37**. Inventory diff clean. Nothing to analyze.
 
 ---
+## 2026-08-14 01:55 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 4, n-304: 2.
+seed 43 full-budget matched_random **30/37** (7 left, ~1.5 h); seed 42 full-budget vanilla
+**25/37**; seed 44 full-budget mechanism **5/37**. Inventory diff clean.
+
+---
