@@ -6215,3 +6215,27 @@ failure. Three independent endpoints say no:
 completeness items, neither able to change the above.
 
 ---
+## 2026-08-14 19:50 — LOOP: deliverable brought to 3 seeds; §6.8 states the result
+
+**Queue 4/6**, no failures. Two slots free with nothing launchable — seed 44 vanilla is mid-flight
+(**22/37**), and both seed-44 transfer arms are running (757255 at 29 min, 757305 at 8 min).
+
+**Used the tick to bring `PERPROMPT_VS_UNIVERSAL.md` to three seeds.** It carried only two.
+Rewrote:
+
+* **§6.6** — 3-seed full-budget table with per-arm spreads (mechanism **1.10×**, random 1.50×),
+  the three-seed paired contrasts, and the non-replicating three-arm ordering.
+* **§6.7** — the projection endpoint at **3/3 sign-consistent**, mean −0.354, Holm-surviving in
+  seed 44, flagged as *the only §7.5 quantity that holds its sign across three seeds*.
+* **§6.8 (new)** — states the result plainly: **same suffixes, same seeds, same budget — the
+  representation moves consistently and the behaviour does not.** Records that this is a *cleaner*
+  instance of the program's dissociation than the original (identical optimizer, budget and
+  prompts; only the named direction differs), that it **rules out "the objective is inert"**, and
+  that **Gate E still fails** because both clauses are required.
+* **§7** — narrowed to the two completeness items, with an explicit note that **neither can change
+  §6.8**.
+
+The deliverable now matches the evidence, and the sprint's answer to Mahmood's question is written
+where a reader will find it rather than only in this log.
+
+---

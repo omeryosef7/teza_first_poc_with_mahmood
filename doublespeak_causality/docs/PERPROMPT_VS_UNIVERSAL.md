@@ -224,55 +224,74 @@ variance at all. **That is the single highest-value methodological fix this spri
 
 ---
 
-### 6.6 FULL-BUDGET arm (200 steps/prompt — the threat model)
+### 6.6 FULL-BUDGET arm (200 steps/prompt — the threat model) — 3 SEEDS COMPLETE
 
-*Added 2026-08-14. seeds 42 and 43 complete on all three arms; seed 44 in flight.*
+*Updated 2026-08-14 with seed 44. Mechanism and matched-random complete on all three seeds;
+vanilla complete on seeds 42–43.*
 
-| arm | seed42 ASR | seed43 ASR | seed42 graded | seed43 graded |
+| arm | seed42 | seed43 | seed44 | spread |
 |---|---|---|---|---|
-| vanilla | **0.3514** | 0.2973 | **0.3311** | 0.2736 |
-| mechanism | 0.2703 | **0.2973** | 0.2838 | **0.2838** |
-| matched random | 0.3243 | 0.2162 | 0.2872 | 0.1892 |
+| mechanism | 0.2703 | 0.2973 | 0.2703 | **1.10×** |
+| matched random | 0.3243 | 0.2162 | 0.2703 | 1.50× |
+| vanilla | 0.3514 | 0.2973 | *(running)* | — |
 
-**Paired mechanism − matched random:**
+**Paired mechanism − matched random, three seeds:**
 
 | seed | ΔASR | McNemar p | Δ graded | Wilcoxon p |
 |---|---|---|---|---|
-| 42 | **−0.0541** | 0.754 | −0.0034 | 0.944 |
-| 43 | **+0.0811** | 0.453 | +0.0946 | 0.148 |
+| 42 | −0.0541 | 0.754 | −0.0034 | 0.944 |
+| 43 | +0.0811 | 0.453 | +0.0946 | 0.148 |
+| 44 | 0.0000 | 1.00 | +0.0236 | 0.905 |
 
-**Sign-inconsistent across seeds on both measures; nothing significant.**
+**Sign inconsistent on both measures** (binary 1+/1−/1 zero; graded 2+/1−). Means **+0.009**
+binary, **+0.038** graded. **0 of 3 significant.**
 
-**The three-arm ordering does not replicate either:**
-* seed 42: mechanism **<** random **<** vanilla
-* seed 43: random **<** vanilla **=** mechanism
+**Three-arm ordering does not replicate** (seeds 42–43): mechanism < random < vanilla, then
+random < vanilla = mechanism. No arm holds its rank.
 
-Vanilla goes 1st→2nd, random 2nd→3rd, mechanism 3rd→1st. **No arm holds its rank.**
+#### What the full-budget arm establishes
+1. **Compute dominates direction.** Matched-random alone rises **0.1081 → 0.3243** (+0.216) from
+   5→200 steps/prompt — larger than any direction effect in the sprint. Design correction 1
+   confirmed empirically: run only at full budget, "per-prompt beats universal" would have
+   followed, produced by compute using a **random** direction.
+2. **Direction identity buys no reliable behaviour** at either budget, on either measure.
+3. **Per-prompt suffixes transfer.** Off-diagonal ASR **0.173–0.200** across both arms and both
+   measured seeds — at or above the universal arm's own held-out **0.162**.
 
-#### What the full-budget arm DOES establish
-1. **Compute dominates direction.** The matched-random arm alone rises **0.1081 → 0.3243**
-   (+0.216) from 5→200 steps/prompt — **three times the judge floor, and larger than any
-   direction effect measured anywhere in this sprint.** This is design correction 1 confirmed
-   empirically rather than argued: had §7.5 been run *only* at full budget, "per-prompt beats
-   universal" would have followed — produced entirely by compute, using a **random** direction.
-2. **Direction identity buys nothing at either budget**, on either measure.
-3. **Per-prompt suffixes transfer.** Off-diagonal ASR **0.200** (mechanism) / **0.173** (random)
-   — at or above the universal arm's own held-out ASR (0.162) — and the diagonal-vs-off-diagonal
-   gap is **identical** for mechanism and random (+0.1243 both).
+### 6.7 Mechanistic endpoint at full budget — **3/3 SIGN-CONSISTENT**
+| seed | mech drop | rand drop | mech − rand | Wilcoxon p |
+|---|---|---|---|---|
+| 42 | −1.7814 | −1.5833 | −0.1981 | 0.295 |
+| 43 | −2.0296 | −1.5794 | −0.4502 | 0.063 |
+| **44** | −1.7944 | −1.3799 | **−0.4145** | **0.0139** |
 
-### 6.7 Mechanistic endpoint at full budget
-| arm set | mech − rand | Wilcoxon p |
-|---|---|---|
-| FULL seed42 | −0.1981 | 0.295 |
-| FULL seed43 | **−0.4502** | **0.063** |
+**3/3 favour the mechanism**, mean **−0.3543**, and seed 44 **survives Holm** across seeds
+(0.0139 × 3 = 0.0417). **This is the only §7.5 quantity that holds its sign across three seeds.**
 
-At full budget the projection favours the mechanism in **both** seeds (one marginal), **while the
-behavioural contrast in those same seeds flips sign**. On the same suffixes, same seeds, same
-budget: **the internal target moves in the predicted direction and the behaviour does not
-follow** — the program's representation ≠ behaviour dissociation, reproduced inside §7.5.
-**Two seeds, one marginal: suggestive, not established.**
+### 6.8 THE RESULT: representation moves, behaviour does not
+| endpoint | per-seed | sign | significance | mean |
+|---|---|---|---|---|
+| **projection** | −0.198 / −0.450 / −0.415 | **3/3 consistent** | 1/3, Holm-survives | **−0.354** |
+| **behaviour** | −0.003 / +0.095 / +0.024 | inconsistent | 0/3 | +0.038 |
+
+> **Same suffixes, same seeds, same budget: the mechanism objective moves its intended internal
+> coordinate consistently further than a matched random direction, and the behaviour does not
+> follow.**
+
+A **cleaner instance of representation ≠ behaviour than the original** — identical optimizer,
+budget and prompts, differing only in which direction the objective names. It also **rules out
+"the objective is inert"**: the objective works, and the failure sits **downstream of the
+representation**.
+
+**Gate E: FAILS.** Both clauses are required; the internal-target clause is met at full budget,
+the behavioural clause is not. The *ordering* of the two is the finding.
+
+**Budget-specific:** the compute-matched projection was 2/3 with a reversal, so §6.7 is a property
+of the 200-step arm, not of the objective in general.
 
 ## 7. Still pending
-* **seed 44** full-budget arms (all three) and its mechval — completes the 3×3 full-budget design.
-  Cannot rescue an ordering that has already flipped; determines only which unstable ordering
-  recurs.
+* **seed 44 full-budget vanilla** (22/37) — completeness of the 3-arm × 3-seed design.
+* **seed 44 transfer matrix**, both arms — a third seed of §6.6's transfer result.
+
+Neither can change §6.8: the behavioural contrast is already sign-inconsistent across three seeds
+and the projection is already 3/3 consistent.
