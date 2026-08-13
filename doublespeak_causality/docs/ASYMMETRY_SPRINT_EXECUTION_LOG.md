@@ -6421,3 +6421,9 @@ three-arm *ordering* is unstable in a third distinct way or repeats one of the f
 ordering has already failed to replicate between seeds 42 and 43.
 
 ---
+## 2026-08-15 00:45 — LOOP: routine. Final eval running (9:34).
+
+**Queue 1/6**, no failures, nothing pending, nothing to resubmit. **757387** — seed 44 full-budget
+vanilla held-out eval, the sprint's last job — running at 9:34. Nothing else outstanding.
+
+---
