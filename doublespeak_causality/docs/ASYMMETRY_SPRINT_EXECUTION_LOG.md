@@ -5286,3 +5286,22 @@ measure that is not self-inflicted noise.
 should be reported on continuous scores, with binary ASR quoted only for comparability.
 
 ---
+## 2026-08-13 23:10 — LOOP: routine. seed43 mechanism 36/37; holding one slot.
+
+**Queue 5/6, 0 pending**, no failures. Spread **n-301: 2, n-304: 3**.
+
+| work | progress |
+|---|---|
+| seed 43 full-budget mechanism | **36/37** — one prompt left (755661 at 18/19) |
+| seed 43 full-budget matched_random | **20/37** |
+| seed 42 full-budget vanilla | **11/37** |
+
+**Holding the free slot** rather than filling it. The seed-43 mechanism arm completes in ~25 min
+and its eval is on the critical path for replicating the full-budget contrast; the alternatives
+available (seed-43 full-budget vanilla, or a k=0 transfer matrix) are each multi-hour jobs that
+would displace it. Twenty-five minutes of idle capacity is the cheaper trade — the same reasoning
+recorded at 02:00 and 23:50.
+
+Nothing finished this tick. Inventory diff: no new gaps.
+
+---
