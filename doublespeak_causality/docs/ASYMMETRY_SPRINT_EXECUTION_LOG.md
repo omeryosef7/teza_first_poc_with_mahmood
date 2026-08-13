@@ -6079,3 +6079,24 @@ prompt-specificity hypothesis §7.5 was built to test.
 **Queue 3/6.** seed 44 matched_random **35/37**, vanilla **17/37**.
 
 ---
+## 2026-08-14 18:00 — LOOP: seed44 mechanism transfer launched; its CONTROL recorded as owed
+
+**Queue was 3.** seed 44 matched_random **36/37** (1 left), vanilla **20/37** — three idle slots
+with nothing that could be *completed* today except this.
+
+**Launched 757255 — seed 44 transfer matrix, mechanism arm** (37/37 sources, 222 generations).
+Its **matched-random control cannot be built yet**: the random *arm* is at 36/37, and
+`build_transfer_manifests.py` only accepts sources with a finished `FINAL_CANDIDATES.jsonl`.
+
+**Added the control to `OWED_SUBMISSIONS.md` with an explicit analysis embargo:**
+
+> *"OUTSTANDING — build + launch as soon as `asym_p75_matched_random_pp_*_seed44` reaches 37/37.
+> **DO NOT analyze the mechanism transfer until this exists.**"*
+
+The embargo is the important half. Staggering the two arms in *time* is harmless — they only need
+to both exist before the comparison. What is **not** harmless is analyzing the mechanism transfer
+while the control is missing, which is precisely the gap logged at 19:40 yesterday and the reason
+I held the seed-43 analysis at 17:15. The owed list now carries **both** the submission and the
+constraint on reading it.
+
+---

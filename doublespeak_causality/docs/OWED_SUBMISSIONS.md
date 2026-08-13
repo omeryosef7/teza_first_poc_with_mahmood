@@ -6,7 +6,7 @@ counter-measure; the per-tick inventory diff is the backstop.*
 
 | owed | reason | status |
 |---|---|---|
-| *(none)* | | |
+| **seed 44 transfer matrix — MATCHED-RANDOM control** | mechanism transfer launched 2026-08-14 18:00 while seed 44's random *arm* was still at 36/37, so its control could not be built yet | **OUTSTANDING — build + launch as soon as `asym_p75_matched_random_pp_*_seed44` reaches 37/37. DO NOT analyze the mechanism transfer until this exists.** |
 
 ## Cleared
 * seed 43 full-budget matched_random shard 1/2 — owed 2026-08-13 16:55, launched same tick.
