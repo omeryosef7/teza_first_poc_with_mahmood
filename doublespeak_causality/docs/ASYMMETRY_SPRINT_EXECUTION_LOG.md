@@ -5472,3 +5472,24 @@ The seed-43 ΔASR lands next, giving the **second of three** full-budget contras
 42's (binary −0.054 / graded −0.003).
 
 ---
+## 2026-08-14 04:10 — seed44 full-budget random launched as a COMPLETE PAIR; queue 6/6
+
+**756203 complete** (`ran=19`) → seed 42 full-budget vanilla **34/37**, shard 1 (756228) has 3
+left. The seed-43 random eval (756524) is now **RUNNING** — it cleared `(Resources)` on its own,
+so the 30-min resubmit dilemma recorded at 03:40 did not have to be resolved.
+
+**Two slots freed → launched 756528 / 756529, seed 44 full-budget matched_random, BOTH shards
+together**, pinned `n-301,n-307` to share a node class with its mechanism partner (§3.1
+within-seed). This is the pair I have been holding a slot for since 02:55; launching it complete
+rather than half is the rule that came out of the 16:55 gap.
+
+**Queue 6/6.** All three seeds of the full-budget mechanism-vs-random contrast are now either
+complete or running:
+
+| seed | mechanism | matched_random |
+|---|---|---|
+| 42 | ✅ evaluated (0.2703) | ✅ evaluated (0.3243) |
+| 43 | ✅ evaluated (0.2973) | ✅ arm done, eval running |
+| 44 | running (10/37) | just launched |
+
+---
