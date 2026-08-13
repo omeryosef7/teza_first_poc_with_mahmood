@@ -71,3 +71,15 @@ leakage-0**; train pool n=40 (frozen), held-out test n=37 (GCG/soft-prompt) or n
 > that **a perfect solution in the token simplex retains only 5.7 % of its effect once
 > rounded to real tokens**. Interpretability-derived directions can be genuine causal handles
 > and still be unusable by the discrete optimizers red-teaming actually runs.
+
+### §7.5 per-prompt vs universal (added 2026-08-12 per Mahmood; completed 2026-08-14)
+
+| claim | experiment | model | train/test | n | effect | CI / p | random control | status | limitation |
+|---|---|---|---|---|---|---|---|---|---|
+| Per-prompt optimization gives **no reliable behavioural advantage** over a matched random direction | per-prompt GCG, 3 arms × 3 seeds, 2 budgets | Llama-3.1-8B | frozen test (attacked in place) | 37/seed | ΔASR graded: −0.003/+0.095/+0.024 (full), +0.085/−0.010/+0.071 (matched) | 0/6 significant | norm-matched random dir | **NEGATIVE** | sign-inconsistent; n=37 gives ~9 % power for these base rates |
+| The mechanism objective **does move its internal target** more than random, at full budget | per-prompt projection readout, L18→hs19, decision pos | Llama-3.1-8B | frozen test | 37/seed | mean **−0.354** | 3/3 sign-consistent; 1/3 Holm-surviving (p=0.042) | norm-matched random dir | **VERIFIED** | budget-specific (compute-matched is 2/3 with a reversal) |
+| **Representation ≠ behaviour** reproduced in the per-prompt setting | the two rows above, same suffixes/seeds/budget | Llama-3.1-8B | frozen test | 37/seed | projection 3/3 vs behaviour 0/3 | — | same | **VERIFIED** | 3 seeds; behavioural half is a null, not a measured opposite |
+| Per-prompt suffixes **transfer** to unseen prompts | transfer matrix, k=5 off-diagonal/source | Llama-3.1-8B | frozen test | 222 gens/arm | off-diagonal ASR 0.173–0.200 vs universal held-out 0.162 | — | random-direction transfer matrix | **VERIFIED** | 2 seeds; subsampled k=5 of 36 |
+| Prompt-specificity is **not direction-specific** | gap(mech) − gap(rand) | Llama-3.1-8B | frozen test | 37 sources | +0.000 (s42), +0.108 (s43) | MW p=0.80 / 0.31 | yes | **NEGATIVE** | gap itself not significant in any arm |
+| **Compute dominates direction** in per-prompt GCG | matched-random arm, 5 → 200 steps/prompt | Llama-3.1-8B | frozen test | 37 | **+0.216 ASR** | — | n/a (within-arm) | **VERIFIED** | single seed at this contrast |
+| The StrongREJECT judge flips **5.4 %** of labels on byte-identical inputs | accidental test–retest via transfer diagonal | Llama-3.1-8B | frozen test | 37 | 2/37 labels flipped; generations 37/37 identical | — | n/a | **VERIFIED** | both flips threshold-adjacent (0.375→0.5/0.625) |

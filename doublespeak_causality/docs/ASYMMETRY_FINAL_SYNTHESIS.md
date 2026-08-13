@@ -52,6 +52,7 @@ Two measured causes of the discrete failure:
 | **D** | does continuous input control work, and specifically? | **POSITIVE** | **ASR 0.784 vs 0.153**, mean ΔASR **+0.631**, 3 seeds, **0 sign flips**, all **p < 1e-4** |
 | **E** | does mechanism-derived *token* optimization work? | **NEGATIVE, and unstable** | corrected mean ΔASR **+0.009**, legacy **+0.018**; both sign-unstable across seeds; below the ±0.03–0.08 judge floor |
 | **F** | does the causal locus generalize across concepts? | **POSITIVE for the actuator** | refusal ablation raises ASR on **5/5** pairs, median specific ΔASR **+0.414**, **4/5** significant after Holm |
+| **E′** | does removing the UNIVERSALITY constraint rescue it? (§7.5, per Mahmood) | **NEGATIVE behaviourally, POSITIVE mechanistically** | per-prompt ΔASR sign-inconsistent at both budgets (0/3 significant); projection **3/3 consistent**, mean **−0.354**, Holm-surviving in one |
 | **G** | does a mechanism-derived defense follow? | **NEGATIVE (honest)** | on test **no arm** reduces ASR; on train the gates' over-refusal saving is **matched by Bernoulli and shuffled controls** |
 
 ### What replicates beyond the primary setting
@@ -160,6 +161,46 @@ disagree in sign estimates nothing.
 negative was substantially an implementation artifact") is **ruled out on two independent
 grounds** — the position fix changed nothing (+0.009 vs +0.018), and a 40× λ increase does not
 produce a seed-stable gain.
+
+## 6b. §7.5 — per-prompt vs universal (added mid-sprint, per Mahmood)
+
+**The question.** Our token-space negative is a **universal** suffix result. A universal failure
+is consistent with *two* explanations the universal setting cannot separate: the objective is bad
+(**H3**), or the direction is reachable only through **prompt-specific** token moves (**H1/H4 +
+§5.5**). A per-prompt attack is easier, is a legitimate threat model, and isolates the objective
+question from the universality confound.
+
+**Design.** One suffix optimized **per prompt** on the 37 frozen test prompts; 3 arms (vanilla,
+mechanism, matched random) × 3 seeds; **two budgets** — full (200 steps/prompt) and
+**compute-matched** (~5 steps/prompt, matched to the universal arm's total).
+
+**Result — the two endpoints dissociate.**
+| endpoint (full budget) | per seed | sign | significance |
+|---|---|---|---|
+| projection (internal target) | −0.198 / −0.450 / −0.415 | **3/3 consistent**, mean **−0.354** | 1/3, Holm-surviving |
+| behaviour (ΔASR, graded) | −0.003 / +0.095 / +0.024 | **inconsistent** | 0/3 |
+
+> **The mechanism objective moves its intended coordinate consistently further than a matched
+> random direction; the behaviour does not follow.**
+
+This is **a cleaner instance of representation ≠ behaviour than §3's** — identical optimizer,
+budget and prompts, differing only in which direction the objective names — and it **rules out
+"the objective is inert."** The failure sits **downstream of the representation**.
+
+**Answer to the question §7.5 was added for: NO.** Three independent endpoints agree the universal
+negative is *not* a universality/prompt-specificity failure:
+1. no reliable per-prompt behavioural advantage at either budget;
+2. per-prompt suffixes **transfer** (off-diagonal ASR 0.173–0.200 ≥ the universal arm's own
+   held-out 0.162), and their specificity is **matched by a random direction**;
+3. the projection moves — so the objective is not inert.
+
+**A methodological result that outlives it: compute dominates direction.** The matched-**random**
+arm alone gains **+0.216 ASR** from 5→200 steps/prompt, larger than every direction effect in the
+sprint. Had §7.5 been run only at full budget — the obvious way — "per-prompt beats universal"
+would have followed, produced entirely by compute, using a random direction. The compute-matched
+arm was added pre-registration on this exact reasoning.
+
+---
 
 ## 7. Process record — the sprint's own errors
 

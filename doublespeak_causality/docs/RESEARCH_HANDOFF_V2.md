@@ -140,6 +140,32 @@ does not follow. All three |ΔASR| exceed the judge floor, so the instability is
 ⚠ **If you re-run anything here, read both columns.** The *random* arms span 0.054–0.351 (6.5×).
 Seed 42's headline +0.622 is as much a weak random arm as a strong mechanism arm.
 
+### 5.1b §7.5 per-prompt vs universal — RESOLVED (added mid-sprint, per Mahmood)
+**Question:** is the universal token-space negative actually a *universality* failure — the
+direction reachable only via prompt-specific token moves?
+
+**Answer: no.** One suffix per prompt, 37 frozen test prompts, 3 arms × 3 seeds, two budgets.
+
+| endpoint (full budget) | per seed | sign | sig |
+|---|---|---|---|
+| projection | −0.198 / −0.450 / −0.415 | **3/3 consistent** (mean −0.354) | 1/3, Holm-surviving |
+| behaviour ΔASR (graded) | −0.003 / +0.095 / +0.024 | inconsistent | 0/3 |
+
+**The representation moves consistently; the behaviour does not.** Gate E still fails (both
+clauses required). Per-prompt suffixes **transfer** (off-diagonal 0.173–0.200 ≥ universal
+held-out 0.162) with specificity matched by a random direction.
+
+⚠ **Two traps if you extend this work:**
+1. **Compute dominates direction.** The matched-**random** arm gains **+0.216 ASR** from 5→200
+   steps/prompt — bigger than any direction effect measured. **Always run a compute-matched arm**;
+   at full budget alone, "per-prompt beats universal" appears and is produced by compute with a
+   random direction.
+2. **Arms replicate, contrasts do not.** Every arm in §7.5 is stable across seeds (mechanism ASR
+   spread 1.10–1.17×) while every contrast flips sign. The variance is concentrated in the
+   **matched-random control**, and seeds vary the *suffix*, not the *direction* — so they never
+   average over control-direction variance. §3.8 already requires ≥50 random directions for
+   reachability geometry; **behavioural and mechanistic contrasts should do the same.**
+
 ### 5.2 NOT RUN, with reasons
 * **Scope-matched activation arm.** The activation intervention is all-position/all-layer while
   the soft prompt is 16 input positions, so the "continuous < activation" ordering is **not

@@ -164,3 +164,52 @@ of anything.
 **Binding reading rule (fixed 10:07, before these runs finished):** the λ arms' *internal-target*
 number gets **no verdict** — single-seed quantities of that type proved unstable and produced
 this sprint's one retraction. Only **ΔASR, consistent across all 3 seeds**, counts as evidence.
+
+---
+
+## 6. §7.5 PER-PROMPT vs UNIVERSAL (added mid-sprint per Mahmood) — full results in `PERPROMPT_VS_UNIVERSAL.md`
+
+Plan §15 requires this document to carry the per-prompt comparison and the per-prompt
+mechanism-vs-random paired result. Summary; the deliverable has the detail.
+
+**Design:** a separate suffix optimized for **each** prompt (37 frozen test prompts), 3 arms
+(vanilla / mechanism L18-hs19 / matched random) × 3 seeds, at **two budgets** — full (200
+steps/prompt, the threat model) and **compute-matched** (~5 steps/prompt, matched to the universal
+arm's 200 total).
+
+### Behavioural — no reliable advantage at either budget
+| budget | Δ(mechanism − random), per seed | sign | significant |
+|---|---|---|---|
+| compute-matched | +0.085 / −0.010 / +0.071 (graded) | inconsistent | 0/3 |
+| full budget | −0.003 / +0.095 / +0.024 (graded) | inconsistent | 0/3 |
+
+The three-arm ordering also fails to replicate between seeds, and **neither direction arm reliably
+beats plain task-loss GCG**.
+
+### Mechanistic — 3/3 sign-consistent at full budget
+| seed | mech − rand projection | Wilcoxon p |
+|---|---|---|
+| 42 | −0.1981 | 0.295 |
+| 43 | −0.4502 | 0.063 |
+| 44 | **−0.4145** | **0.0139** (Holm-surviving) |
+
+**Mean −0.354, 3/3 consistent — the only §7.5 quantity that holds its sign across three seeds.**
+
+### The result
+**Same suffixes, same seeds, same budget: the mechanism objective moves its intended internal
+coordinate consistently further than a matched random direction, and the behaviour does not
+follow.** This **rules out "the objective is inert"** and places the failure **downstream of the
+representation** — a cleaner instance of representation ≠ behaviour than the original, since
+optimizer, budget and prompts are identical and only the named direction differs.
+
+**Gate E still FAILS** — it requires both clauses; only the internal-target one is met.
+
+### Two findings that outlive the result
+1. **Compute dominates direction.** The matched-**random** arm alone rises 0.108 → 0.324 (+0.216)
+   from 5→200 steps/prompt — larger than any direction effect in the sprint. Run only at full
+   budget, "per-prompt beats universal" would have followed, produced by compute with a *random*
+   direction.
+2. **Per-prompt suffixes transfer** (off-diagonal ASR 0.173–0.200, ≥ the universal arm's own
+   held-out 0.162), and their prompt-specificity is **matched by a random direction**. So the
+   universal negative is **not** a universality/prompt-specificity failure — the hypothesis §7.5
+   was added to test.

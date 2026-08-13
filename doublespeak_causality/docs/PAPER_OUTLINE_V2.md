@@ -120,6 +120,23 @@ sign-disagreeing seeds (+0.216) estimates nothing.
 
 **So §5.2 stands as the explanation**, and it now survives both of its sharpest alternatives.
 
+### 5.4 Is the failure about UNIVERSALITY? (§7.5, per Mahmood) — **no**
+The negative is a *universal*-suffix result, so we tested the easier per-prompt threat model: one
+suffix optimized per prompt, 3 arms × 3 seeds, at the full budget **and** at a compute-matched
+budget (the full-budget arm spends ~37× the universal arm's compute, so the matched arm is what
+makes the comparison legitimate — the random arm alone gains **+0.216 ASR** from that compute).
+
+* **Behaviour:** ΔASR sign-inconsistent at both budgets, 0/3 significant; neither direction arm
+  reliably beats plain task-loss GCG.
+* **Transfer:** per-prompt suffixes transfer (off-diagonal 0.173–0.200 ≥ universal held-out 0.162),
+  and their prompt-specificity is matched by a random direction.
+* **Mechanism:** the projection endpoint is **3/3 sign-consistent** (mean −0.354, Holm-surviving in
+  one seed).
+
+**So the representation moves and the behaviour does not — a cleaner dissociation than §5.1's,
+with optimizer, budget and prompts held identical.** Removing the universality constraint does not
+rescue the objective; the failure is downstream of the representation.
+
 ## 6. Generality of the causal locus (Gate F)
 Refusal ablation raises ASR on **5/5** concept pairs (median specific ΔASR **+0.414**, 4/5
 significant after Holm) using the frozen concept-agnostic axis. Concept-circuit ablation is
