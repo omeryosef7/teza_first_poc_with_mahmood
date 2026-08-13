@@ -5587,3 +5587,28 @@ the former.
 **Standing correction: use 3090-only nodelists for all remaining §7.5 submissions.**
 
 ---
+## 2026-08-14 06:00 — LOOP: inventory diff finds the missing seed43 FULL-BUDGET mechval
+
+**Queue was 5.** The standing design-vs-inventory diff found a gap — the mechanistic readouts on
+disk were:
+
+```
+asym_p75_mechval_FULL_seed42   ← full budget, seed 42 only
+asym_p75_mechval_s5_seed42 / s5_seed43 / s5_seed44
+```
+
+**seed 43's full-budget arms have both been complete since 03:40, but their projection readout was
+never run.** Gate E's internal-target clause needs it at the threat-model budget on more than one
+seed — seed 42 alone gave the 1-of-4 result, and one of the four was that same seed's
+compute-matched arm. **Launched 756578**, pinned 3090-only per the 05:30 standing correction.
+
+**That is the fifth gap this check has caught** (missing vanilla arm, missing shard, missing
+transfer control, missing full-budget mechval, and now its seed-43 counterpart). Every one was an
+omission that produced no error and no partial-looking output. Running the diff every tick rather
+than opportunistically is clearly the right cadence.
+
+**Progress:** seed 42 full-budget vanilla **35/37** (2 left); seed 44 full-budget mechanism
+**14/37**; seed 44 full-budget matched_random **1/37**, with shard 1 (756558) now running on
+**n-303** after the 05:30 resubmit.
+
+---
