@@ -6124,3 +6124,47 @@ behavioural and mechanistic results genuinely diverge rather than both being noi
 **Queue 6/6.** seed 44 vanilla **21/37**.
 
 ---
+## 2026-08-14 18:50 — ✅ FULL-BUDGET PROJECTION: **3/3 sign-consistent**, one significant after Holm
+
+**757306 complete**, coverage 37/37, 0 missing. The third seed of the full-budget projection
+endpoint.
+
+| seed | mech drop | rand drop | **mech − rand** | Wilcoxon p | m<r |
+|---|---|---|---|---|---|
+| 42 | −1.7814 | −1.5833 | **−0.1981** | 0.295 | 21/37 |
+| 43 | −2.0296 | −1.5794 | **−0.4502** | 0.063 | 21/37 |
+| **44** | −1.7944 | −1.3799 | **−0.4145** | **0.0139** | **26/37** |
+
+* **sign: 3/3 favour the mechanism** — mean **−0.3543**
+* **1/3 individually significant**, and it **survives Holm** across the three seeds (0.0139 × 3 =
+  **0.0417**)
+
+**This is the FIRST §7.5 endpoint to hold its sign across all three seeds.** Every other
+quantity measured in this subsection flipped: the behavioural contrast (both budgets), the
+three-arm ordering, the compute-matched projection (2/3 with an outright reversal), and the
+transfer gap comparison.
+
+### The dissociation is now established on three seeds, not two
+| endpoint, full budget | result |
+|---|---|
+| **projection (internal target)** | **3/3 favour mechanism**, mean −0.354, Holm-significant in one |
+| **behaviour (ΔASR)** | **sign-unstable**: −0.054 (s42), +0.081 (s43), s44 pending |
+
+**On the same suffixes, same seeds, same budget: the mechanism objective moves its intended
+internal coordinate consistently further than a matched random direction — and the behaviour does
+not follow.** That is the program's representation ≠ behaviour dissociation, reproduced inside
+§7.5's threat-model arm with a proper matched control.
+
+### What this does and does not change
+* **Gate E still FAILS.** It requires the behavioural contrast *and* the internal target. The
+  internal-target clause is now **met at full budget**; the behavioural clause is not.
+* **It is budget-specific.** The *compute-matched* projection was 2/3 with a reversal, so this is
+  a property of the 200-step arm, not of the objective in general.
+* **It does not resurrect the mechanism as an attack.** Consistently moving a coordinate that
+  behaviour ignores is precisely the sprint's headline: reachable, steerable, and behaviourally
+  inert through discrete search.
+
+**seed 44's behavioural ΔASR (757304) is still running** and completes the other half of this
+dissociation.
+
+---
