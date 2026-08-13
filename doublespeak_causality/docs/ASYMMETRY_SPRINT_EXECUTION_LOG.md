@@ -6015,3 +6015,13 @@ interpretable**, and a mechanism-only second seed would repeat the gap this chec
 **Queue 5/6.** seed 44 matched_random **34/37** (3 left), vanilla **12/37**.
 
 ---
+## 2026-08-14 16:45 — LOOP: routine. Queue 5/6, nothing finished.
+
+**Queue 5/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 2. Owed list: empty.
+seed 44 full-budget matched_random **35/37** (2 left); vanilla **16/37**; both seed-43 transfer
+matrices (757207/757208) running at 12 min.
+
+One slot free with nothing launchable — seed 44's eval, mechval and transfer all gate on its
+random arm finishing. Inventory diff otherwise clean.
+
+---
