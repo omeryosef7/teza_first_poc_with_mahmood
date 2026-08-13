@@ -4826,3 +4826,18 @@ At full 37 sources with k=5 the plan is **222 (source, target) generations** —
 §7.5 pre-registration already discloses against the full 37×37 = 1369.
 
 ---
+## 2026-08-13 15:25 — LOOP: routine. seed42 full-budget 65/74; tracking per-ARM completion now.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 4, n-304: 2.
+seed 43 full-budget **14/37** (2:59). seed 42 full-budget shards: **17/19, 14/19, 18/19, 16/19**
+= **65/74**, 7:29 elapsed, ~1 h left.
+
+**Switched to tracking per-ARM completion rather than the shard total**, because that is what
+actually gates the next step: the transfer plan needs **one arm at 37/37**, and the shards
+straddle both arms (mechanism = 755219+755220, random = 755221+755222). The 65/74 total hides
+that the two arms are at **different** completion levels and will finish at different times.
+Per-arm counts printed above and checked each tick from here.
+
+Nothing finished this tick.
+
+---
