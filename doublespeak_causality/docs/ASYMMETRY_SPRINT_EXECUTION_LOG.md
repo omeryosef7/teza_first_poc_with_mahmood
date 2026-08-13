@@ -5221,7 +5221,7 @@ test.**
 ---
 ## 2026-08-13 21:40 — LOOP: launched the owed vanilla shard 1/2; queue 6/6
 
-**Queue was 5.** Launched **756221** — full-budget vanilla **shard 1/2**, pinned `n-301,n-307` to
+**Queue was 5.** Launched **756228** — full-budget vanilla **shard 1/2**, pinned `n-301,n-307` to
 match shard 0's class. **This was explicitly owed from 20:40**, where I recorded that the second
 shard goes in when a slot frees *"because a half-launched shard set is exactly the failure caught
 at 16:55"*. Closing it on the first available slot rather than letting it drift.
