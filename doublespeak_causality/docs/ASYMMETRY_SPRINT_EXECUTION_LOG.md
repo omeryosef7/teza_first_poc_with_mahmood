@@ -5861,3 +5861,12 @@ which was the condition I set for breaking it.
 **Queue 6/6.** seed 44 mechanism **34/37**, matched_random **28/37**.
 
 ---
+## 2026-08-14 13:30 — LOOP: routine. Queue 6/6, nothing finished; owed list empty.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 3. `OWED_SUBMISSIONS.md`: none.
+seed 43 full-budget vanilla **36/37** (1 left); seed 44 full-budget mechanism **35/37** (2 left);
+seed 44 matched_random **30/37**; seed 44 full-budget vanilla **8/37**.
+
+Two arms are within ~1 h of completing, so the next tick should have evals to launch.
+
+---
