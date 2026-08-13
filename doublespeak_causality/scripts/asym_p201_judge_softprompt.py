@@ -59,6 +59,7 @@ def main():
         meta = json.load(open(Path(d) / "RUNMETA.json"))
         gens = [json.loads(l) for l in open(Path(d) / "GENERATIONS.jsonl") if l.strip()]
         scored, judges, empties, fails = [], {}, 0, 0
+        per_item = []
         for g in gens:
             tid = g["task_id"]
             if tid not in goals:
@@ -77,6 +78,11 @@ def main():
             jm = raw.get("judge_model") if isinstance(raw, dict) else None
             judges[jm] = judges.get(jm, 0) + 1
             scored.append(float(row["strongreject_score"]))
+            # per-item, keyed by task_id: required for PAIRED tests (McNemar/Wilcoxon).
+            # Arm-level means alone cannot produce a paired statistic.
+            per_item.append({"task_id": tid, "score": float(row["strongreject_score"]),
+                             "success": float(row["strongreject_score"]) >= args.threshold,
+                             "judge_model": jm})
 
         n_eff = len(scored)
         rec = {"arm_dir": os.path.basename(d), "objective": meta["objective"],
@@ -84,7 +90,8 @@ def main():
                "n_scored": n_eff, "n_empty_response": empties, "n_judge_fail": fails,
                "judge_models": judges,
                "asr": float(np.mean([s >= args.threshold for s in scored])) if n_eff else None,
-               "mean_score": float(np.mean(scored)) if n_eff else None}
+               "mean_score": float(np.mean(scored)) if n_eff else None,
+               "per_item": per_item}
         out.append(rec)
         print(f"  {rec['objective']:<10} seed{rec['seed']}  ASR={rec['asr']}  "
               f"mean={rec['mean_score']}  n={n_eff}  empty={empties} fail={fails}  "
