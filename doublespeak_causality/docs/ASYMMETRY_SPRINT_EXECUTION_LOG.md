@@ -6772,3 +6772,55 @@ submitted one-seed-per-node, had no such problem — that is the pattern to keep
 **Queue 4/6.** Next tick: collect all 6 arms, submit the single CE-scoring job, then §20.1 lifts.
 
 ---
+## 2026-08-14 06:05 — §20.3 answered without spending a single API call, and the design changes
+
+The plan's gate was: *"first verify the judge is actually stochastic per call — if it is
+deterministic, M=5 measures nothing."* Code read + score-distribution audit answers it.
+
+**The judge runs at `temperature=0`** (`_generate_judge_response(..., temperature=0)`), with no
+`seed` passed. So it is nominally deterministic and the observed 5.4 % flip is residual API
+nondeterminism, not sampling. M=5 will measure *something*, but very inefficiently — see below.
+
+### The 5.4 % flip figure is not a judge-reliability constant. It is the boundary mass.
+All 1998 per-prompt rows, judge_fail_frac = 0:
+
+| | rows | share |
+|---|---|---|
+| score exactly **0.0** | 1549 | 77.5 % |
+| score exactly **1.0** | 304 | 15.2 % |
+| **at an extreme** | 1853 | **92.7 %** |
+| within ±1 rubric step of 0.5 (0.375–0.625) | 59 | 2.95 % |
+| **within ±2 steps (0.25–0.75)** | 93 | **4.65 %** |
+| within ±3 steps (0.125–0.875) | 145 | 7.26 % |
+
+**4.65 % of rows sit within ±2 rubric steps of the 0.5 threshold; the measured flip rate is
+5.4 %.** Those are the same number. A row pinned at 0.0 or 1.0 cannot flip without a full-scale
+jump, and 92.7 % of rows are pinned. So the flip rate is a property of *how many items sit near
+the boundary*, not a constant reliability of the judge — and it will change with any manipulation
+that moves items toward or away from 0.5. Citing 5.4 % as a fixed constant (which the sprint has
+been doing) is wrong.
+
+### Design consequences for §20.3
+1. **Do not replicate all rows.** M=5 over everything spends 5× the budget re-scoring the 92.7 %
+   that cannot flip. Replicate the intermediate band only — **~13× cheaper for the same
+   information** — and treat extreme rows as deterministic (verifiable with a small audit sample).
+2. **The graded endpoint buys much less than assumed.** 92.7 % of the mass sits on two points, so
+   "graded" is very nearly the binary endpoint with a 7 % fringe.
+3. Binary ASR over all per-prompt rows (§3.6, ≥ 0.5) = **0.2107**.
+
+### Separate gap found: the judge silently falls back to a *different model*
+`_generate_judge_response` iterates `models = ("openai/gpt-4o-mini", "openai/gpt-3.5-turbo")` and
+falls through to **gpt-3.5-turbo** whenever the gpt-4o-mini response fails to parse. The library
+records which one answered as `judge_model` — but `evaluate_optimized_suffixes.py` keeps only
+`strongreject_score` and `strongreject_is_success`, so **`judge_model` is absent from all 1998
+rows** and we cannot check post-hoc whether any score came from the fallback judge. A fallback
+flip is not judge noise, it is a different judge.
+
+Not evidence of a defect — the fallback probably rarely fires — but it is **unverifiable with the
+data we have**, and it affects every ASR number in the program. Recording `judge_model` (plus the
+refusal/convincingness/specificity sub-scores, already computed and discarded) is a small edit to
+the eval driver. Logged as a known limitation; no existing number is retracted.
+
+**Queue 2/6** — only 757508/509 left (n-801 contention, at 79 % of weight load after 29 min).
+
+---
