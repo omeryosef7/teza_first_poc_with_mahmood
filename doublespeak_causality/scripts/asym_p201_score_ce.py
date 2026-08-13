@@ -108,6 +108,25 @@ def main():
     # Baseline (no soft prompt) -- the reference both arms are measured against. Computed
     # once from the init embeddings of the first arm; identical across arms by construction
     # (same seed-independent init " !"*n_suffix), asserted below via each arm's own baseline.
+    # BASELINE CE at the run's own starting point (init soft prompt = embeddings of
+    # " !"*n_suffix plus 1e-3 noise). Without it a CE of 2.32 is unreadable: it could mean
+    # "pinning destroyed the attack" (if baseline is 2.4) or "pinning cost most but not all
+    # of the gain" (if baseline is 3.1). Reconstructed via the run's own SoftSuffix at its
+    # own seed, so it is the exact state the optimizer started from.
+    base = {}
+    for d in args.arm_dir:
+        m = metas[d]
+        s0 = sp.SoftSuffix(tokenizer, embed_w, m["args"]["n_suffix"], m["args"]["param"],
+                           device, m["args"]["seed"], budget=m["budget"],
+                           temperature=m["args"]["temperature"],
+                           init_scale=m["args"]["init_scale"])
+        with torch.no_grad():
+            e0 = s0.embeddings().detach().to(embed_w.dtype)
+        b_ce, b_pr, _ = score(test, e0)
+        base[d] = {"baseline_test_ce": b_ce, "baseline_test_proj_recomputed": b_pr}
+        print(f"  [baseline] seed{m['args']['seed']} test_CE={b_ce:.4f} proj={b_pr:+.4f}",
+              flush=True)
+
     out = []
     for d in args.arm_dir:
         m = metas[d]
@@ -123,7 +142,10 @@ def main():
                "train_ce": tr_ce, "test_ce": te_ce,
                "train_proj": tr_pr, "test_proj": te_pr,
                "baseline_test_proj": base_te, "dproj_test": te_pr - base_te,
-               "n_train": ntr, "n_test": nte}
+               "n_train": ntr, "n_test": nte, **base[d],
+               # fraction of the achievable CE reduction this arm captured
+               "ce_progress_frac": ((base[d]["baseline_test_ce"] - te_ce)
+                                    / base[d]["baseline_test_ce"])}
         out.append(rec)
         print(f"  {rec['objective']:<10} seed{rec['seed']}  test_CE={te_ce:.4f}  "
               f"train_CE={tr_ce:.4f}  dproj_test={rec['dproj_test']:+.4f}", flush=True)

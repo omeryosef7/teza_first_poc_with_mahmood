@@ -6884,3 +6884,54 @@ Pre-registering the read now, before seeing CE, so it cannot be fit after the fa
 **Queue 5/6** — 757516–519 (§20.7 600-step) + 757520 (CE scoring).
 
 ---
+## 2026-08-14 07:25 — §20.1 RESOLVED: pinning the refusal coordinate costs 78 % of the attack's objective progress
+
+757522. Baseline test CE (init soft prompt, no attack) = **2.6564**, stable across seeds
+(2.6543/2.6578/2.6569 — the init noise is 1e-3, so this is a real constant, not a fit).
+
+| seed | `task_orth` CE | `task` CE | orth progress | task progress | CE gap |
+|---|---|---|---|---|---|
+| 42 | 2.3038 | 0.6685 | 13.2 % | 74.8 % | +1.635 |
+| 43 | 2.4464 | 1.3153 | 8.0 % | 50.5 % | +1.131 |
+| 44 | 2.2096 | 1.4087 | 16.8 % | 47.0 % | +0.801 |
+| **mean** | **2.3200** | **1.1308** | **12.7 %** | **57.4 %** | **+1.189** |
+
+**3/3 sign-consistent, smallest gap +0.80.** Holding the refusal projection at its per-prompt
+baseline costs **78.0 %** of the CE reduction the same optimizer achieves when left free.
+
+This is the pre-registered branch "`task_orth` CE ≫ `task` CE → pinning is expensive → the
+coordinate is on the causal path for the continuous attack." The baseline row is what makes it
+readable: 2.32 could have meant "the penalty destroyed the attack" (if baseline were ~2.4) — it
+does not. `task_orth` still makes real progress (12.7 %), it is simply crippled.
+
+### Why this does not contradict §7.5 / Gate D — and is the more interesting result
+The discrete results say targeting the coordinate **gains you nothing** (0/6 contrasts favour a
+direction term). This says being **forbidden** from moving it costs you most of your objective
+progress. Those are consistent, and together they say something sharper than either alone:
+
+> The refusal coordinate is **necessary** for the continuous attack but **useless as an
+> optimization target**. Necessity and optimization-usefulness are different properties, and the
+> program has been conflating them.
+
+That also explains §20.2 cleanly: the projection drop predicts success per-prompt (vanilla slice,
+partial r = −0.29) precisely because it is on the causal path — while optimizing toward it still
+buys nothing, because plain task optimization *already* moves it −3.09 for free, ~9× further than
+the discrete mechanism objective's −0.354 ever managed. There is nothing left for a direction term
+to add.
+
+### Two limits I am not going to paper over
+1. **CE is the objective, not behaviour.** This program's central finding is representation ≠
+   behaviour, so a 78 % CE cost does **not** license "the attack fails without the coordinate."
+   The arms wrote `GENERATIONS.jsonl`; the behavioural endpoint has **not** been scored. If
+   `task_orth` reaches far worse CE but comparable ASR, that is another rep≠behaviour
+   dissociation and would substantially weaken this entry. **Owed.**
+2. **μ = 1.0 is one point on a trade-off curve**, and the pin is binding hard (Δproj ≈ −0.03). The
+   78 % is the cost of a *near-total* pin, not of the coordinate per se. A μ sweep maps the
+   frontier and is **owed** before this goes in a paper.
+
+Recomputed Δproj matches the arms' own logged values to ~0.01 (+0.187 vs +0.195, −3.680 vs
+−3.683, …), confirming the scorer reproduces the runs' measurement path.
+
+**Queue 4/6** — §20.7 shards 757516–519.
+
+---
