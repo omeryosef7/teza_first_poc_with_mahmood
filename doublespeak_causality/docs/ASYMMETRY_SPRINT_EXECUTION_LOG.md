@@ -6396,3 +6396,28 @@ the plan.
 **Queue 1/6**, no failures, nothing pending. **757157** at **16/18**; arm **35/37**.
 
 ---
+## 2026-08-15 00:15 — LAST ARM COMPLETE: seed44 full-budget vanilla 37/37; final eval launched
+
+**757157 COMPLETE** (`ran=18`) → seed 44 full-budget vanilla **37/37**. **This is the last
+optimization arm of the entire sprint.** Launched **757387**, its held-out eval — the last job.
+
+**Every §7.5 cell is now run or running:**
+
+| arm | compute-matched | full budget |
+|---|---|---|
+| vanilla | 3/3 seeds ✅ | 3/3 seeds (s44 eval running) |
+| mechanism | 3/3 ✅ | 3/3 ✅ |
+| matched random | 3/3 ✅ | 3/3 ✅ |
+| mechval (projection) | 3/3 ✅ | 3/3 ✅ |
+| transfer matrix + control | — | 3 seeds × 2 arms ✅ |
+
+When 757387 lands, the **3-arm × 3-seed × 2-budget** design is complete and the last cell of the
+full-budget table is filled.
+
+**It cannot change any conclusion.** The behavioural contrast is already sign-inconsistent across
+three seeds at both budgets; the projection is already 3/3 consistent; the transfer result is
+already settled on three seeds. seed 44's vanilla ASR only determines whether the full-budget
+three-arm *ordering* is unstable in a third distinct way or repeats one of the first two — and the
+ordering has already failed to replicate between seeds 42 and 43.
+
+---
