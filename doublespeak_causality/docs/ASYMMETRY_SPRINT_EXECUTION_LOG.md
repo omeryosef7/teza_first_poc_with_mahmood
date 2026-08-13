@@ -5758,3 +5758,24 @@ seed 44 full-budget mechanism **28/37** (shards 12/19 and 16/18 — the arm gate
 shard, ~3 h); seed 44 matched_random **15/37**; seed 43 full-budget vanilla **14/37**.
 
 ---
+## 2026-08-14 10:30 — LOOP: routine. Checked an apparently-frozen counter; healthy.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 3, n-303: 1, n-350: 2.
+seed 44 full-budget mechanism **29/37**; matched_random **17/37**; seed 43 full-budget vanilla
+**18/37**.
+
+**756325's counter read 12 for two consecutive ticks** — 30 min apart, against a ~24 min/prompt
+rate, so it should have advanced. Checked the per-step log rather than the counter: its current
+prompt is at **193/200 steps** and writing, i.e. ~3 min from completion. **Healthy — the 30-min
+sampling interval simply aliased against the ~24-min prompt time**, so one sample landed just
+before a boundary and the next just after the previous one.
+
+*(The mtime check again reported "last write −133 s ago" — the documented compute-node clock skew,
+where node clocks run ahead of the login node. Not a fault; noted so the negative figure is not
+mistaken for a bug.)*
+
+This is the fifth guise of the same false alarm and the second time the fix was "read the
+per-step log". Recording it once more because the failure mode is **sampling aliasing**, which is
+distinct from the earlier four and will recur whenever tick interval ≈ task duration.
+
+---
