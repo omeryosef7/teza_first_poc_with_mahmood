@@ -6385,3 +6385,9 @@ invisible.
 parallelized).
 
 ---
+## 2026-08-14 23:30 — LOOP: routine. seed44 vanilla 34/37 (3 left, ~1.2 h).
+
+**Queue 1/6**, no failures, nothing pending. **757157** at **15/18**; arm **34/37**. Last item in
+the plan.
+
+---
