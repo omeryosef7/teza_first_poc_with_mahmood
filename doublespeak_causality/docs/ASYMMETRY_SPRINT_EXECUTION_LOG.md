@@ -5930,3 +5930,19 @@ evidence they cannot rescue an ordering that has already flipped — only determ
 unstable orderings appears a second time.
 
 ---
+## 2026-08-14 14:45 — LOOP: routine. seed44 mechanism 36/37; holding the slot for its eval.
+
+**Queue 5/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 2. Owed list: **empty**.
+
+| work | progress |
+|---|---|
+| seed 44 full-budget mechanism | **36/37** — 1 left, ~25 min |
+| seed 44 full-budget matched_random | **32/37** |
+| seed 44 full-budget vanilla | **12/37** |
+
+**Holding the free slot** for the seed-44 mechanism eval. Inventory diff shows nothing else
+launchable: seed 44's mechval needs *both* its arms (random still at 32/37), and no other arm is
+un-launched. So the slot is not idle by choice of priority — there is genuinely nothing to put in
+it that would not have to be re-run later.
+
+---
