@@ -5779,3 +5779,27 @@ per-step log". Recording it once more because the failure mode is **sampling ali
 distinct from the earlier four and will recur whenever tick interval ≈ task duration.
 
 ---
+## 2026-08-14 10:45 — seed44 mech shard 1 done; launched vanilla shard 0 with the pair-rule deliberately broken
+
+**756326 COMPLETE** (`ran=18`) → seed 44 full-budget mechanism **30/37**; shard 0 (756325) has 7
+prompts left, **~3 h**.
+
+**Launched 756979 — seed 44 full-budget vanilla, SHARD 0 ONLY.** This deliberately breaks the
+"both shards together" rule I adopted at 16:55, so the reasoning is recorded rather than left as
+drift:
+
+* Only **one** slot was free, and the next will not free for **~3 h**. Holding it that long is a
+  real cost.
+* The rule exists to prevent **forgetting** the second shard — not because a split launch is
+  itself wrong.
+* The forgetting risk is now covered twice over: the **per-tick inventory diff** (which has caught
+  five gaps) and a new explicit **`docs/OWED_SUBMISSIONS.md`** checklist.
+
+**Created `docs/OWED_SUBMISSIONS.md`** listing seed 44 vanilla shard 1/2 as **OUTSTANDING**, with
+its exact pinning, plus the two previously-owed shards that were cleared. A half-launched set
+reports `ran=N skipped=0` and exits 0, so it looks complete — the file exists because nothing in
+the tooling distinguishes that from a finished arm.
+
+**Queue 6/6.**
+
+---
