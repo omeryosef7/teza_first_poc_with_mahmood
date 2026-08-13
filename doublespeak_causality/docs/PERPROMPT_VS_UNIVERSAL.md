@@ -229,11 +229,23 @@ variance at all. **That is the single highest-value methodological fix this spri
 *Updated 2026-08-14 with seed 44. Mechanism and matched-random complete on all three seeds;
 vanilla complete on seeds 42–43.*
 
-| arm | seed42 | seed43 | seed44 | spread |
-|---|---|---|---|---|
-| mechanism | 0.2703 | 0.2973 | 0.2703 | **1.10×** |
-| matched random | 0.3243 | 0.2162 | 0.2703 | 1.50× |
-| vanilla | 0.3514 | 0.2973 | *(running)* | — |
+| arm | seed42 | seed43 | seed44 | mean | spread |
+|---|---|---|---|---|---|
+| **vanilla** | 0.3514 | 0.2973 | 0.3514 | **0.3333** | 1.18× |
+| mechanism | 0.2703 | 0.2973 | 0.2703 | 0.2793 | **1.10×** |
+| matched random | 0.3243 | 0.2162 | 0.2703 | 0.2703 | 1.50× |
+
+**A direction term never beats plain GCG — the one behavioural pattern that IS consistent:**
+
+| contrast | per-seed ΔASR | positives | mean (binary / graded) |
+|---|---|---|---|
+| mechanism − vanilla | −0.081 / 0.000 / −0.081 | **0 of 3** | −0.054 / −0.035 |
+| random − vanilla | −0.027 / −0.081 / −0.081 | **0 of 3** | −0.063 / −0.073 |
+
+**0 of 6 arm-seed contrasts favour adding a direction term.** None individually significant, but
+the sign is consistent where nothing else in §7.5 was, and it holds for the mechanism *and* the
+random direction. The per-seed three-arm *ordering* still does not replicate; what replicates is
+the weaker, better-supported claim: **vanilla ≥ both direction arms, 3/3 seeds.**
 
 **Paired mechanism − matched random, three seeds:**
 
@@ -289,9 +301,25 @@ the behavioural clause is not. The *ordering* of the two is the finding.
 **Budget-specific:** the compute-matched projection was 2/3 with a reversal, so §6.7 is a property
 of the 200-step arm, not of the objective in general.
 
-## 7. Still pending
-* **seed 44 full-budget vanilla** (22/37) — completeness of the 3-arm × 3-seed design.
-* **seed 44 transfer matrix**, both arms — a third seed of §6.6's transfer result.
+## 7. Status: COMPLETE (2026-08-15)
 
-Neither can change §6.8: the behavioural contrast is already sign-inconsistent across three seeds
-and the projection is already 3/3 consistent.
+**3 arms × 3 seeds × 2 budgets, plus the transfer matrix with its matched-random control on 3
+seeds, plus the projection endpoint on 3 seeds at both budgets. No cell outstanding.**
+
+### The four endpoints
+| endpoint | result |
+|---|---|
+| behaviour: mechanism vs matched random | **sign-inconsistent** at both budgets, 0/6 significant |
+| behaviour: any direction term vs vanilla | **0/6 positive** — never helps |
+| **projection (internal target), full budget** | **3/3 sign-consistent**, mean −0.354, Holm-significant in one seed |
+| transfer | suffixes transfer (off-diagonal 0.173–0.211 ≥ universal held-out 0.162); prompt-specificity matched by a random direction |
+
+> **The mechanism objective reliably moves the coordinate it names, reliably fails to improve
+> behaviour, and reliably fails to beat not using it at all.**
+
+**Answer to the question §7.5 was added to test: NO.** The universal token-space negative is not a
+universality/prompt-specificity failure. Removing the universality constraint changes nothing
+behaviourally, per-prompt suffixes transfer, and the objective demonstrably *does* move its target
+— so the failure sits **downstream of the representation**, not in the optimizer's reach.
+
+**Gate E: FAILS** — internal-target clause met at full budget, behavioural clause not.
