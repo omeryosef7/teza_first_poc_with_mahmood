@@ -6239,3 +6239,39 @@ The deliverable now matches the evidence, and the sprint's answer to Mahmood's q
 where a reader will find it rather than only in this log.
 
 ---
+## 2026-08-14 20:35 — TRANSFER MATRIX complete on 3 seeds (both arms each); embargo honoured
+
+**757255 / 757305 complete** — seed 44's mechanism transfer and its matched-random control. The
+18:00 embargo held: the mechanism arm was **never** analyzed without its control.
+
+| seed / arm | diagonal | off-diagonal | gap | Wilcoxon p |
+|---|---|---|---|---|
+| 42 mechanism | 0.3243 | 0.2000 | +0.1243 | 0.134 |
+| 42 matched_random | 0.2973 | 0.1730 | +0.1243 | 0.211 |
+| 43 mechanism | 0.2703 | 0.1730 | +0.0973 | 0.421 |
+| 43 matched_random | 0.1892 | 0.2000 | −0.0108 | 0.755 |
+| 44 mechanism | 0.2162 | 0.2054 | +0.0108 | 0.710 |
+| 44 matched_random | 0.2703 | 0.2108 | +0.0595 | 0.417 |
+
+| seed | gap(mech) − gap(rand) | MW p |
+|---|---|---|
+| 42 | +0.0000 | 0.804 |
+| 43 | +0.1081 | 0.315 |
+| 44 | **−0.0486** | 0.921 |
+
+### Three conclusions, now on three seeds
+1. **No prompt-specificity anywhere.** **0 of 6** arm-seeds shows a significant diagonal-vs-
+   off-diagonal gap (all Wilcoxon p ≥ 0.13). The gap is not established even for the mechanism arm.
+2. **The difference-of-gaps is sign-inconsistent** (+0.000 / +0.108 / −0.049), joining every other
+   §7.5 contrast. My seed-42 phrasing — *"the gap is identical for mechanism and random"* — was an
+   artifact of one seed; the durable claim is the weaker one it supported: **no demonstrable
+   direction-specific prompt-specificity.**
+3. **Per-prompt suffixes transfer — 6/6 arm-seeds.** Off-diagonal ASR spans **0.173–0.211**, every
+   one at or above the universal arm's own held-out **0.162**. This is the transfer result that
+   *is* stable, and it is the direct refutation of the prompt-specificity hypothesis §7.5 was
+   added to test.
+
+**Add-on 2 is complete at full 3-seed × 2-arm coverage.** Remaining: seed 44 vanilla (**23/37**)
+and Figure A's fourth rung.
+
+---
