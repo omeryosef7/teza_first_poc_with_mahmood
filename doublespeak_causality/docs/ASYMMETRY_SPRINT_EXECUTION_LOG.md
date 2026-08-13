@@ -5453,3 +5453,22 @@ If seed 43's final prompt has not landed by the next tick, that is worth checkin
 waiting a third time — at ~24 min/prompt it is already past its expected completion.
 
 ---
+## 2026-08-14 03:40 — seed43 full-budget matched_random COMPLETE (37/37); eval queued
+
+**756038 complete** → seed 43 full-budget matched_random **37/37**. Both seed-43 full-budget arms
+now exist. **Launched 756524**, its held-out eval, pinned `n-301,n-307` to match where seed 42's
+evals ran (the cross-seed matching rule from 23:25).
+
+It is **PENDING on `(Resources)`, not on my 6-job cap** — the cluster itself is busy. Clock noted;
+the 30-min resubmit rule applies from now, and a directed resubmit would mean widening the
+nodelist beyond n-301/n-307 — **which I would not do here**, because that would break the
+cross-seed eval-class matching. If it stalls, the right move is to wait or to re-pin *all* evals
+consistently, not to quietly let this one run on a different class.
+
+**Queue 5/6, holding the last slot** so seed 44's random arm can go in as a **complete pair** when
+the eval clears — per the both-shards rule.
+
+The seed-43 ΔASR lands next, giving the **second of three** full-budget contrasts against seed
+42's (binary −0.054 / graded −0.003).
+
+---
