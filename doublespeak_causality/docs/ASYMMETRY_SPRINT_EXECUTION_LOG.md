@@ -6737,3 +6737,38 @@ multi-direction SD, so the margins can be stated in units of natural spread. The
 **Queue 5/6** — 757508/509 (task_orth s42/s43) + 757513/514/515 (the plain-`task` controls).
 
 ---
+## 2026-08-14 05:45 — §20.1 is blocked twice over; both blockers found before any analysis
+
+**Blocker 1 (fixed):** 757508/509/510 were all three `task_orth`. No plain `task` arm existed at
+any budget, so the contrast had no other side. Launched 757513/514/515.
+
+**Blocker 2 (fixed, no rerun):** `task_orth` optimizes `ce + mu*pen` and logs only the sum;
+**no arm records CE separately**. Comparing logged `loss` across the arms would compare CE against
+CE+penalty. `scripts/asym_p201_score_ce.py` re-scores each frozen `soft_suffix.pt` through the
+optimizer's own forward pass; all 6 arms go in one job.
+
+### First real signal (757513, plain `task`, seed42) — do not over-read yet
+```
+[baseline] test proj=+4.4170
+[RESULT]   obj=task  loss 3.13 -> 0.87   Dproj_test=-3.6829
+```
+vs `task_orth` seed44 (757510): `Dproj_test=-0.1128`.
+
+Optimizing **task alone** drags the refusal projection down by **−3.68** as a pure side effect —
+it was never in that objective. The penalty arm holds it at −0.11, i.e. the pin works. The open
+question is what the pin *cost*, and that is exactly the CE number nothing recorded. If pinning
+turns out to be cheap in CE, compliance is reachable without moving the coordinate; if expensive,
+the coordinate is on the causal path for continuous attacks — the opposite of what Gate D/E
+concluded for discrete suffixes. **Seeds differ (42 vs 44) so even the Dproj pair above is not yet
+a matched contrast.**
+
+### SLURM
+757508/509 both landed on **n-801** and both sat at 164/291 after 19 min — concurrent-model-load
+contention, the failure mode already in the notes (cap ~2/node, spread). 757510 alone on n-802
+loaded in 5:24. They are progressing at 2.48 s/it, so slow, not hung; killing would discard 19 min
+of load, and the >30 min rule is for PENDING, not RUNNING. Left to finish. 757513/514/515, which I
+submitted one-seed-per-node, had no such problem — that is the pattern to keep.
+
+**Queue 4/6.** Next tick: collect all 6 arms, submit the single CE-scoring job, then §20.1 lifts.
+
+---
