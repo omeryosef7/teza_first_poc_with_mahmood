@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p75_mechval_FULL_seed44",
+  "status": "ok",
+  "rows_written": 5661,
+  "end_ts": "2026-08-13T19:29:11",
+  "end_epoch": 1786638551.1209633,
+  "wall_seconds": 0.004
+}
