@@ -6377,3 +6377,11 @@ is resume-safe, so just add shards" is a genuinely tempting shortcut and its fai
 invisible.
 
 ---
+## 2026-08-14 23:00 — LOOP: routine. One job left (5 prompts, ~2 h).
+
+**Queue 1/6**, no failures, nothing pending, nothing to resubmit.
+**757157** — seed 44 full-budget vanilla shard 1 at **13/18**; arm at **32/37**, 5 prompts left,
+~2 h. Nothing else in §7.5 is un-run; nothing launchable (see 22:30 on why the tail is not
+parallelized).
+
+---
