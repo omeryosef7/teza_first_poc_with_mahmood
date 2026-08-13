@@ -5421,3 +5421,20 @@ seed 43 full-budget matched_random **33/37** (4 left, ~1 h); seed 42 full-budget
 **28/37**; seed 44 full-budget mechanism **8/37**. Inventory diff clean.
 
 ---
+## 2026-08-14 02:55 — seed43 random shard 1 done (36/37); holding the slot for its eval
+
+**756055 COMPLETE** (`ran=18`) → seed 43 full-budget matched_random **36/37**; shard 0 (756038)
+has one prompt left, ~25 min.
+
+**Queue 5/6, holding the free slot.** The alternative use would be seed 44's full-budget random
+arm — genuinely needed, and it must share n-301 with its mechanism partner per §3.1. But with one
+slot I could only launch **one of its two shards**, and seed 43's eval lands within ~25 min and
+would then have to queue behind it. Since seed 43's ΔASR is the **second of three** full-budget
+contrasts and directly gates the replication, it gets priority.
+
+**seed 44's random arm goes in as BOTH shards together** once two slots are free — the same rule
+that closed the 16:55 missing-shard gap.
+
+Progress: seed 42 full-budget vanilla **30/37**; seed 44 full-budget mechanism **10/37**.
+
+---
