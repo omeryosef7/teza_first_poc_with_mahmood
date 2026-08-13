@@ -52,3 +52,18 @@ script asserts the arms share model/manifest/layer):
 
 **Embargo stands: no §20.1 analysis until that scoring job has run.** A `Dproj` without a
 matched CE cannot distinguish "the penalty worked" from "the penalty destroyed the attack".
+
+## 2026-08-14 06:30 — §20.7 compute-scaling curve, seed 42 launched; seeds 43/44 OWED
+757516/517/518/519 = `ARM=vanilla SEED=42 N_STEPS=600 SHARD=0..3/4` on n-301/302/303/305
+(3090, matching the GPU class of the existing 5- and 200-step points per §3.1). Shards verified to
+partition all 37 prompts exactly once. Runner tags non-200 budgets `_s600`, so no collision.
+
+Cost basis: the 200-step arm ran 19 prompts in 4:58 on a 3090 (~4.7 s/step), so 600 steps ≈ 47
+min/prompt ≈ **29 GPU-h per seed**; ~7.5 h wall per shard, inside the 16 h limit.
+
+**OWED:**
+* seeds **43 and 44** at 600 steps — until then the 600 point on the ASR-vs-log(steps) curve has
+  **n=1 seed** while the 5- and 200-step points have 3. Do not plot them on one axis as if matched.
+* the **2000-step** point (~97 GPU-h/seed) is NOT launched — scope it explicitly before committing;
+  it may need a prompt subset rather than all 37.
+* aggregation for the curve (reuse `aggregate_perprompt_asr.py --mode perprompt`).

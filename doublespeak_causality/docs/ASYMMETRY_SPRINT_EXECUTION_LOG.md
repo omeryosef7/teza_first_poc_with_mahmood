@@ -6824,3 +6824,25 @@ the eval driver. Logged as a known limitation; no existing number is retracted.
 **Queue 2/6** — only 757508/509 left (n-801 contention, at 79 % of weight load after 29 min).
 
 ---
+## 2026-08-14 06:30 — design-vs-inventory diff + §20.7 launched
+
+**Diff this tick.** §20.1: both blockers fixed, 4 of 6 arms COMPLETE, CE-scoring job still owed
+(embargo holds). §20.2: done. §20.3: answered without API spend; the M=5 replicate run is now a
+*band-only* design, not yet launched. §20.4: pass 1 done and marked provisional; pass 2 blocked on
+§20.6. §20.5/§20.6/§20.8/§20.9: not started — and note the plan makes **§20.8 (corpus expansion) a
+precondition on §20.6 and §20.9**, so §20.6 must not be launched first.
+
+**§20.7 launched** (757516–519): plain per-prompt GCG at **600 steps**, seed 42, 4 shards on
+3090s — the same GPU class as the existing 5- and 200-step points, per §3.1. This is the item that
+attacks the program's weakest claim: "discrete fails" currently means *"discrete reached 0.27 and
+we never established what was achievable."* A third point on ASR vs log(steps) starts to fix that.
+
+Seeds 43/44 and the 2000-step point are **owed, not done** — recorded in `OWED_SUBMISSIONS.md`. The
+600-step point will have n=1 seed against 3 seeds at the other budgets until they land, and must
+not be plotted as if matched.
+
+**SLURM.** 757508/509 still loading on n-801 (82 % at 25:43, up from 56 % at 19:08) — steadily
+progressing, RUNNING not PENDING, so the >30 min resubmit rule does not apply and killing would
+discard ~26 min of weight load. **Queue 6/6.**
+
+---
