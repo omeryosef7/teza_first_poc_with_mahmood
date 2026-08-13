@@ -5834,3 +5834,13 @@ seed 44 full-budget mechanism **33/37**; matched_random **26/37**; seed 43 full-
 **28/37**; seed 44 full-budget vanilla **4/37** (shard 1 still OUTSTANDING).
 
 ---
+## 2026-08-14 12:45 — LOOP: routine. Queue 6/6, nothing finished; 1 shard still owed.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 3.
+seed 44 full-budget mechanism **34/37**; matched_random **28/37**; seed 43 full-budget vanilla
+**32/37** (5 left); seed 44 full-budget vanilla **6/37** (shard 1 still OUTSTANDING).
+
+Two arms are within ~2 h of completing (seed 44 mechanism, seed 43 vanilla); their evals and the
+owed shard are the next three submissions.
+
+---
