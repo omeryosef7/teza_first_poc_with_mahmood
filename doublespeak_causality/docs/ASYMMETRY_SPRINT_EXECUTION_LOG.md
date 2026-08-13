@@ -5844,3 +5844,20 @@ Two arms are within ~2 h of completing (seed 44 mechanism, seed 43 vanilla); the
 owed shard are the next three submissions.
 
 ---
+## 2026-08-14 13:00 — OWED SHARD CLEARED: seed44 vanilla 1/2 launched on the first free slot
+
+**756686 COMPLETE** (`ran=18`) → seed 43 full-budget vanilla **34/37** (shard 0 has 3 left).
+
+**The freed slot went straight to the owed shard: launched 757157 — seed 44 full-budget vanilla
+shard 1/2**, pinned exactly as `OWED_SUBMISSIONS.md` specified. **`OWED_SUBMISSIONS.md` now lists
+none outstanding.**
+
+**The checklist worked as intended.** The shard was owed for **2 h 15 min across 5 ticks**, and
+carried correctly at each one — a period over which, on the evidence of the earlier missing-shard
+gap, it could plausibly have been forgotten. The deliberate rule-break at 10:45 (launching a
+shard set split, against my own "both together" rule) is now closed rather than left as drift,
+which was the condition I set for breaking it.
+
+**Queue 6/6.** seed 44 mechanism **34/37**, matched_random **28/37**.
+
+---
