@@ -6982,3 +6982,55 @@ will deliver n=300.**
 locally (API-only, no slot).
 
 ---
+## 2026-08-14 08:55 — §20.1's CE result does NOT survive contact with behaviour (as pre-registered it might not)
+
+222/222 rows judged, **0 empty, 0 judge failures, `judge_model` = gpt-4o-mini on all 222** — the
+gpt-3.5-turbo fallback never fired here. (It remains a limitation for older runs, where the field
+was discarded rather than shown to be absent.)
+
+| | seed42 | seed43 | seed44 | mean |
+|---|---|---|---|---|
+| `task_orth` ASR | 0.108 | 0.108 | 0.081 | **0.099** |
+| `task` ASR | 0.189 | **0.054** | 0.189 | **0.144** |
+| CE progress (from 07:25) | 13.2 / 74.8 % | 8.0 / 50.5 % | 16.8 / 47.0 % | **12.7 / 57.4 %** |
+
+**CE: 3/3 sign-consistent, 78 % gap. ASR: 2/3, with a reversal at seed 43.**
+
+### The honest reading
+Δ ASR = 0.045. From this morning's power table, n=37 gives **power ≈ 0.05 against Δ = 0.054** —
+the false-positive rate. We therefore **cannot distinguish "pinning the coordinate roughly halves
+ASR" from "pinning does nothing behaviourally."** The equivalence bound will be ≈ ±0.19, i.e.
+wider than the entire effect.
+
+This is exactly the outcome I pre-registered at 07:30 as the one that **weakens** §20.1:
+
+> "If `task_orth` reaches far worse CE but comparable ASR, that is another representation ≠
+> behaviour dissociation and would substantially weaken this entry."
+
+So §20.1 must be stated as an **objective-space** result only:
+
+> Pinning the refusal projection costs 78 % of the attack's *optimization-objective* progress
+> (3/3 seeds). The behavioural consequence is **not established** — the ASR difference (0.144 vs
+> 0.099) points the same way in 2/3 seeds but is far below this design's detection threshold.
+
+The direction is at least *consistent* with the CE result, which the previous entry's framing would
+have over-sold. **§20.1 stays blocked from the paper claim table**, and the block is now for a
+substantive reason rather than a procedural one.
+
+Note this is the program's central dissociation reappearing one level down: not
+representation-vs-behaviour, but **objective-vs-behaviour**. A 78 % change in what the optimizer
+minimizes buys an ASR change we cannot measure.
+
+### §20.7 throughput — my cost estimate was 2.2× optimistic; correcting it
+Measured on 757516: **260 steps in 44 min = 10.2 s/step**, not the 4.7 s/step implied by the
+200-step arm (19 prompts in 4:58). So 600 steps ≈ **102 min/prompt**, and a 10-prompt shard needs
+**≈17 h against the 16 h wall**.
+
+Not fatal: the runner skips any prompt with `FINAL_CANDIDATES.jsonl` present, so a shard that hits
+the wall resumes on resubmission and loses only the prompt it was mid-way through. Letting them
+run and resubmitting the stragglers is cheaper than cancelling 44 min of work now. Recorded in
+`OWED_SUBMISSIONS.md`.
+
+**Queue 6/6.**
+
+---
