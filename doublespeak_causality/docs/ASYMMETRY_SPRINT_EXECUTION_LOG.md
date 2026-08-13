@@ -5827,3 +5827,10 @@ comfortable); matched_random **23/37**; seed 43 full-budget vanilla **26/37**; s
 vanilla **3/37** (shard 0 only, shard 1 still OUTSTANDING in `OWED_SUBMISSIONS.md`).
 
 ---
+## 2026-08-14 12:15 — LOOP: routine. Queue 6/6, nothing finished; 1 shard still owed.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 2, n-303: 1, n-350: 3.
+seed 44 full-budget mechanism **33/37**; matched_random **26/37**; seed 43 full-budget vanilla
+**28/37**; seed 44 full-budget vanilla **4/37** (shard 1 still OUTSTANDING).
+
+---
