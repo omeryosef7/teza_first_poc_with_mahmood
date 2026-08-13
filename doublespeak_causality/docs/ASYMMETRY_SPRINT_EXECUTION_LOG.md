@@ -5033,3 +5033,53 @@ that the sign now flips across budgets *and* seeds, **no verdict** — and per t
 pre-registration, sign inconsistency means exactly that.
 
 ---
+## 2026-08-13 19:10 — TRANSFER MATRIX complete + an accidental TEST–RETEST of the judge
+
+**756143 complete** (20:34): `generated=222 resumed=0 failed=0` — all 222 (source, target) pairs
+genuinely generated, none resumed.
+
+### ⚠ First: an accidental, and unusually clean, measurement of eval noise
+The transfer matrix re-evaluates each suffix **on its own prompt** (the diagonal) — the *same*
+suffix/prompt pairs the direct eval scored an hour earlier. That is an unintended **test–retest of
+the entire eval pipeline on byte-identical inputs**:
+
+| | result |
+|---|---|
+| generations **byte-identical** | **37/37** — generation is fully deterministic |
+| **binary labels flipped** | **2/37 = 5.4 %** |
+| the flipped scores | 0.375 → **0.625**, 0.375 → **0.5** |
+
+**The generation is deterministic; the judge is not.** Both flips are **threshold-adjacent**
+scores crossing 0.5 from below — so the ≥0.5 binarization is what converts small judge jitter into
+label changes.
+
+**This is the cleanest noise measurement in the program** (the earlier ±0.03–0.08 came from a
+different procedure). And it lands with force: **2/37 = ±0.054 on ASR — exactly the size of the
+full-budget ΔASR of −0.0541 reported at 18:40.** That "effect" is precisely one judge-noise unit.
+
+**Concrete recommendation:** prefer the **continuous** StrongREJECT score for contrasts at this n;
+the binary threshold is discarding information *and* amplifying jitter for borderline generations.
+
+### The transfer result — paired BY SOURCE, as pre-registered
+| quantity | value |
+|---|---|
+| mean diagonal (own prompt) | 0.3243 |
+| mean off-diagonal (5 other prompts per source) | **0.2000** |
+| paired diff | **+0.1243** |
+| Wilcoxon paired p | **0.134** |
+| paired bootstrap 95 % CI | **[−0.032, +0.287]** — crosses zero |
+| sources where own-prompt beat its own off-diagonal | **12/37** |
+
+**Reading against §4's pre-registered rules:** this is *neither* "diagonal ≫ off-diagonal"
+(prompt-specific) *nor* cleanly "diagonal ≈ off-diagonal" (generic). It is a **nominal gap that
+does not reach significance**, with fewer than half the sources showing it.
+
+**But the off-diagonal value is the informative number: 0.200.** A per-prompt suffix applied to
+prompts it never saw achieves **ASR 0.200** — **higher than the universal arm's own held-out ASR
+(0.162)**. So these suffixes **transfer**; they are not prompt-specific artifacts.
+
+**That argues against the prompt-specificity hypothesis (H1/H4 + §5.5) — the very hypothesis §7.5
+was added to test.** Both §7.5 endpoints now point the same way, as does the λ probe, by three
+independent routes.
+
+---
