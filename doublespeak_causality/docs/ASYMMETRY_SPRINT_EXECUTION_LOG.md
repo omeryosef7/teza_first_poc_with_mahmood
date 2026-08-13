@@ -6043,3 +6043,39 @@ The comparison that matters is **gap(mechanism) − gap(random)**, which on seed
 its random arm (**35/37**). seed 44 vanilla **16/37**.
 
 ---
+## 2026-08-14 17:45 — TRANSFER MATRIX, second seed: the gap comparison is unstable too
+
+**757208 COMPLETE** — both seed-43 transfer arms now in, so the controlled comparison can be made.
+
+| seed / arm | diagonal | off-diagonal | gap | Wilcoxon p |
+|---|---|---|---|---|
+| 42 mechanism | 0.3243 | 0.2000 | +0.1243 | 0.134 |
+| 42 matched_random | 0.2973 | 0.1730 | +0.1243 | 0.211 |
+| 43 mechanism | 0.2703 | 0.1730 | +0.0973 | 0.421 |
+| 43 matched_random | 0.1892 | 0.2000 | **−0.0108** | 0.755 |
+
+| seed | gap(mech) − gap(rand) | Mann-Whitney p |
+|---|---|---|
+| 42 | **+0.0000** | 0.804 |
+| 43 | **+0.1081** | 0.315 |
+
+**Two things, both negative:**
+1. **No arm in either seed shows significant prompt-specificity.** All four Wilcoxon p ≥ 0.13. The
+   diagonal-vs-off-diagonal gap is not established even for the mechanism arm.
+2. **The mechanism-vs-random *difference in gaps* is itself unstable** — exactly 0.0000 on seed 42,
+   +0.1081 on seed 43, neither significant. So the seed-42 headline ("the gap is identical for
+   mechanism and random") **does not replicate as a precise statement**, though both seeds agree on
+   the conclusion it supported: **no demonstrable direction-specific prompt-specificity.**
+
+Note seed 43's random arm has a **negative** gap (−0.011) — its suffixes work marginally *better*
+on other prompts than their own. That is noise around zero, and it is the cleanest illustration
+that these gaps are not measuring a real effect at this n.
+
+**Off-diagonal ASR across all four arm-seeds: 0.200 / 0.173 / 0.173 / 0.200** — every one at or
+above the universal arm's own held-out ASR (**0.162**). **Per-prompt suffixes transfer**, in both
+seeds and both arms. That is the one transfer finding that *is* stable, and it argues against the
+prompt-specificity hypothesis §7.5 was built to test.
+
+**Queue 3/6.** seed 44 matched_random **35/37**, vanilla **17/37**.
+
+---
