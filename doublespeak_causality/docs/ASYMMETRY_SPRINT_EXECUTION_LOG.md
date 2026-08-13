@@ -6511,3 +6511,48 @@ by the 3-seed rule. The two that *did* survive — the 3/3 projection result and
 never beats vanilla" — are the two the paper can carry.
 
 ---
+## 2026-08-15 02:30 — 🔬 NEXT-SPRINT DESIGN + a major zero-GPU result: the projection DROP does not predict success
+
+Sprint was complete and the loop stopped. The author asked for next steps, so I ran a **5-agent
+design workflow** (four independent lenses — mechanism / attack / statistics / generalization —
+plus adversarial triage), and executed its **rank-1 item**, which costs no GPU.
+
+### RANK-1 RESULT — §19.1(d), never applied to the §7.5 data
+Pooled per-prompt rows, full budget, 3 seeds × 2 arms × 37 prompts, **n = 222**:
+
+| quantity | r with success | p |
+|---|---|---|
+| projection **drop** (raw) | **+0.203** | 0.0024 |
+| **baseline** projection (prompt difficulty) | **−0.370** | **1.3e-08** |
+| drop ↔ baseline (**the confound**) | **−0.670** | — |
+| **partial r(success, drop \| baseline)** | **−0.066** | — |
+| **final** projection (baseline + drop) | **−0.341** | **2.0e-07** |
+
+**Read it carefully — the raw +0.203 is an artifact.** Prompts with a *high* baseline refusal
+projection have more room to fall (r = −0.670), and are also the prompts that resist jailbreak
+(r = −0.370). Controlling for baseline, **the drop carries essentially no predictive power:
+partial r = −0.066** (n=222 ⇒ CI roughly ±0.13, so a large effect is excluded).
+
+**What predicts per-prompt success is where the prompt STARTED** (baseline r = −0.370, p = 1.3e-8)
+and hence where it ends (final r = −0.341) — **not how far the suffix moved it.**
+
+Stratifying by baseline tercile makes the incoherence explicit: within low-baseline prompts more
+suppression associates with *less* success (r = +0.329, p = 0.005); within high-baseline prompts
+with *more* (r = −0.235, p = 0.038). **A quantity with opposite associations in different strata
+is not behaving like a mediator.**
+
+### Why this matters — it may unify three separate negatives
+The whole objective family optimizes *"move the refusal projection"*. If the projection's movement
+does not predict the behaviour it is supposed to cause, then **Gate E** (discrete objective fails),
+**§7.5** (projection moves 3/3, behaviour does not), and **Gate G** (projection-based detector
+fails) are not three findings — they are **one**: the objective targets a coordinate that does not
+control the outcome per prompt.
+
+### Caveat, and the control now running
+This is **observational**, and in the mechanism/random arms the drop is exactly what the optimizer
+maximized — so the association is conditioned on optimizer success (the triage flagged this as the
+rank-1 risk). **The clean slice is the vanilla arm, which was never optimized toward v.** Its
+projections were never measured — launched **757500** to fill that gap. If the vanilla slice shows
+the same null, the selection explanation is ruled out.
+
+---
