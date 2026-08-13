@@ -4889,7 +4889,7 @@ prompts left, ~1 h. Transfer plan **still gated**.
 **Caught a gap while filling the free slot:** at 15:55 I launched seed 43 matched-random with
 `SHARD=0,NSHARD=2` and **never launched shard 1**. That arm would have silently stopped at 19 of
 37 prompts — and because the runner reports `ran=19 skipped=0` and exits 0, it would have *looked*
-complete. **Launched 756061 (shard 1/2)**, pinned to `n-304,n-307` per the §3.1 node-class
+complete. **Launched 756055 (shard 1/2)**, pinned to `n-304,n-307` per the §3.1 node-class
 constraint.
 
 This is the second sharding gap of the sprint (the first was the missing vanilla arm at 08:40).
@@ -4899,5 +4899,43 @@ added at 15:25 is what catches this class** — it counts `FINAL_CANDIDATES` aga
 length rather than trusting that the jobs I *meant* to submit were submitted.
 
 **Queue 6/6.**
+
+---
+## 2026-08-13 17:10 — FIRST FULL-BUDGET §7.5 NUMBER: the compute correction is emphatically vindicated
+
+**756037 complete** (4:21, `generated=37 resumed=0 failed=0`). seed 42 full-budget
+**matched-random**: **ASR 0.3243**, CI95 **[0.189, 0.487]**, n=37, `n_missing = 0`,
+`judge_fail = 0.0`, refusal_rate 0.460.
+
+### The matched-RANDOM arm alone, at two budgets
+| budget | ASR |
+|---|---|
+| compute-matched (5 steps/prompt) | 0.1081 |
+| **full budget (200 steps/prompt)** | **0.3243** |
+| **Δ from 40× more optimizer compute** | **+0.2162** |
+
+**A random-direction objective, given 40× the compute, triples its ASR.** That is **three times
+the ±0.03–0.08 judge floor** and far larger than any mechanism-vs-random contrast measured
+anywhere in this sprint.
+
+### Why this matters more than it looks
+**Design correction 1 — written into §7.5 on 2026-08-12 before any run — is now empirically
+confirmed, not merely argued.** The correction said a full-budget per-prompt arm spends ~37× the
+universal arm's compute, so "per-prompt beats universal" would be uninterpretable without a
+compute-matched arm. **The measurement now shows compute alone buys +0.216 ASR** — larger than
+every direction effect in the sprint combined.
+
+Concretely: the full-budget **random** arm (0.324) already **exceeds every universal arm ever
+run** (λ=0.25: 0.162/0.216; λ=10 mechanism: 0.108–0.676 unstable). **Had §7.5 been run only at
+full budget — the obvious way to run it — the natural conclusion would have been "per-prompt
+optimization beats universal", and that conclusion would have been produced entirely by the
+compute difference, with a random direction.**
+
+### What is still unknown
+The **mechanism** full-budget arm is at 34/37. Until it lands there is **no** mechanism-vs-random
+contrast at this budget. The bar it must clear is now known and high: **0.3243**.
+
+**Also fixed this tick:** the previous entry recorded the new shard as job **756061**; the actual
+id is **756055**. Corrected in place.
 
 ---
