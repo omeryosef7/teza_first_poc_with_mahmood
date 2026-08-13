@@ -5971,3 +5971,23 @@ yesterday without reaching the deliverable. Added:
 paper-facing doc lagged; that gap is closed.
 
 ---
+## 2026-08-14 15:45 — seed44 full-budget MECHANISM complete (37/37); eval launched
+
+**756325 COMPLETE** → seed 44 full-budget mechanism **37/37**. Launched **757205**, its held-out
+eval, 3090-only pool.
+
+**Queue 4/6.** seed 44 matched_random **34/37** (3 left), vanilla **12/37**. Once the random arm
+lands, seed 44's ΔASR completes the **3-seed full-budget contrast** and its mechval becomes
+runnable.
+
+**What the third seed can and cannot settle**, restated so the result is read against a fixed
+expectation:
+* It **completes** the 3×3 full-budget design and gives the third ΔASR.
+* It **cannot** make the contrast sign-consistent — seeds 42 (−0.054) and 43 (+0.081) already
+  disagree, so the best available outcome is **2-of-3 sharing a sign**, which the pre-registered
+  §4 rules do not accept as a positive.
+* Its **mechval** is the more informative half: full-budget projection currently favours the
+  mechanism in **2 of 2** seeds (−0.198, −0.450), and a third negative would make that the only
+  endpoint in §7.5 with a consistent direction across three seeds.
+
+---
