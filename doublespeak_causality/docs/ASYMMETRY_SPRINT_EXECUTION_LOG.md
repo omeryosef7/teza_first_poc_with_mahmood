@@ -6473,3 +6473,41 @@ seeds, two budgets. **Mahmood's universality hypothesis is answered: no.**
 **Queue 0/6. No jobs outstanding. Every cell of the plan is run.**
 
 ---
+## 2026-08-15 01:30 — 🏁 SPRINT COMPLETE — loop stopped
+
+**Final state verified:**
+* **0 SLURM jobs** running or queued.
+* **0 uncommitted files**; everything pushed to `behavioral-causality-sprint`.
+* **`OWED_SUBMISSIONS.md`: 0 outstanding.**
+* **Plan §15 documents:** all 10 present (9 required + `PERPROMPT_VS_UNIVERSAL.md`).
+* **Plan §14 figures:** all present — A, **A-4rung** (§7.5 extension), B×2, B2×2, **C** (recovered
+  after the `figure_C` bug), D, E. Nine PNGs, one directory.
+* **Registry:** `results/EXPERIMENT_REGISTRY.csv` + `doublespeak_causality/EXPERIMENT_REGISTRY.csv`.
+* **§7.5 mechval outputs tracked** as evidence for the 3/3 projection result.
+
+**The 30-minute cron loop (`6494d7ec`) is cancelled** — the condition for running it was "until
+everything defined is finished", and it is.
+
+### What the sprint answered
+| gate | verdict |
+|---|---|
+| A audit | defects D1/D2 found |
+| B surrogate validity | negative (Llama) |
+| C reachability | **positive** — 4.71× matched null |
+| D continuous input | **positive** — ASR 0.784 vs 0.153 |
+| E discrete objective | **negative**, and survives both the position fix and λ=10 |
+| **E′ per-prompt (§7.5)** | **negative behaviourally, positive mechanistically** |
+| F multi-concept | positive for the actuator |
+| G defense | honest negative |
+
+**Thesis, twice demonstrated:** the refusal direction is **reachable** from input, **steerable**
+continuously, and **behaviourally inert through discrete search** — in the universal setting and
+again in the easier per-prompt threat model.
+
+### Five single-seed patterns collapsed on replication
+Gate E clause (ii) · λ=10's ΔASR **+0.622** · add-on 1's specificity · the compute-matched vanilla
+ordering · the full-budget three-arm ordering. **None reached a deliverable**; every one was caught
+by the 3-seed rule. The two that *did* survive — the 3/3 projection result and "a direction term
+never beats vanilla" — are the two the paper can carry.
+
+---
