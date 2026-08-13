@@ -4866,3 +4866,18 @@ would have given no signal that one arm had finished while the other had not.
 37/37 (currently 33/37), per the precondition recorded at 14:55.
 
 ---
+## 2026-08-13 16:25 — LOOP: routine. Queue 6/6 (4 running + 2 just-submitted pending).
+
+**Queue 6/6**, no failures. n-301: 2, n-304: 2, plus **756037 / 756038 PENDING 49 s** (submitted
+03:35:17, now 03:36:06) — nowhere near the 30-min resubmit threshold; **clock noted at 03:35:17**.
+
+| arm | state |
+|---|---|
+| seed 42 full-budget mechanism | **33/37** — 4 left |
+| seed 42 full-budget matched_random | **37/37 READY** (eval queued) |
+| seed 43 full-budget mechanism | 16/37 |
+| seed 43 full-budget matched_random | job pending; its joblist is created by the runner at start, so "not yet created" is expected, not a fault |
+
+Nothing finished this tick. Transfer plan still gated on seed 42 **mechanism** reaching 37/37.
+
+---
