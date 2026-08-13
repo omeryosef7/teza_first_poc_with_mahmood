@@ -6100,3 +6100,27 @@ I held the seed-43 analysis at 17:15. The owed list now carries **both** the sub
 constraint on reading it.
 
 ---
+## 2026-08-14 18:20 — seed44 random arm COMPLETE: three analyses launched, owed control cleared
+
+**756558 COMPLETE** → seed 44 full-budget matched_random **37/37**. Both seed-44 full-budget
+direction arms now exist, unblocking three things at once:
+
+| job | what it gives |
+|---|---|
+| **757304** eval | the **third full-budget ΔASR** — completes the 3-seed contrast |
+| **757305** transfer control | the **owed** matched-random transfer, embargo cleared |
+| **757306** mechval | the **third seed** of the full-budget projection endpoint |
+
+**`OWED_SUBMISSIONS.md` cleared.** The transfer control was owed for **20 minutes**, built and
+launched the moment its arm hit 37/37, and **the embargo held — 757255's mechanism transfer was
+never analyzed alone.** That is the second owed item carried and closed correctly by the
+checklist.
+
+**757306 is the one to watch.** The full-budget projection endpoint currently favours the
+mechanism in **2 of 2** seeds (−0.198, −0.450). A third negative would make it **the only
+endpoint in §7.5 with a consistent direction across three seeds** — and the only place where the
+behavioural and mechanistic results genuinely diverge rather than both being noise.
+
+**Queue 6/6.** seed 44 vanilla **21/37**.
+
+---
