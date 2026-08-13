@@ -5744,3 +5744,10 @@ vanilla **8/37**. All tracking measured per-step rates. Inventory diff clean apa
 seed-44 full-budget vanilla still owed.
 
 ---
+## 2026-08-14 09:30 — LOOP: routine. Queue 6/6, nothing finished.
+
+**Queue 6/6, 0 pending**, no failures. n-301: 3, n-303: 1, n-350: 2.
+seed 44 full-budget mechanism **26/37**; seed 44 matched_random **13/37**; seed 43 full-budget
+vanilla **10/37**.
+
+---
