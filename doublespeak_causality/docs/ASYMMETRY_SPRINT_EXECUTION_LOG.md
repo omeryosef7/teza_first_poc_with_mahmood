@@ -6616,3 +6616,36 @@ Same rule, different referent.)*
 achieved |proj − proj0| next to ASR; drift past tolerance is a **failed constraint, not a result**.
 
 ---
+## 2026-08-15 04:00 — 🐛 §20.1 jobs FAILED on a latent runner bug; fixed and relaunched
+
+**757503/504/505 all FAILED, exit 1**, before any work:
+
+```
+/var/spool/slurmd/job757503/slurm_script: line 59: ASYM_GPU: unbound variable
+```
+
+**The defect.** `run_asym_p2_soft.sh` interpolates `$ASYM_GPU` into `$OUT` at **line 59** but
+defaults it at **line 66** — seven lines too late. Under `set -u`, any invocation that does not
+pass `ASYM_GPU` explicitly aborts immediately.
+
+**This is the same bug class I already fixed once in the P1 runner** (`ASYM_GPU` used before
+defaulted in its `$OUT`). I fixed the sibling and never checked this one — and then launched
+without verifying the runner's required env vars, which is why three jobs died instead of zero.
+Gate D's own runs passed `ASYM_GPU` explicitly (hence the `gpua5000` tags), so the defect sat
+latent in a script that had "worked" for days.
+
+**Fix:** hoisted `: "${ASYM_GPU:=l40s}"` above `$OUT` — moved, not duplicated, so the GPU guard
+downstream still reads the same value. Verified by simulating the exact failing line under
+`set -u` with the variable unset (now yields `..._gpul40s_...` instead of aborting), plus
+`bash -n`.
+
+**Relaunched 757508/509/510** (seeds 42/43/44, `ASYM_GPU=l40s` passed explicitly as well, belt and
+braces). All three confirmed past the failure point — `GPU ok: NVIDIA L40S` is printed, which only
+happens after both `$OUT` and the guard succeed.
+
+**Cost of the miss:** ~4 minutes and three wasted job slots — cheap, because the failure was loud.
+The instructive part is that it was loud only by luck: had `ASYM_GPU` been referenced somewhere
+that tolerates an empty value, the runs would have completed and written to a *differently named*
+output directory, and the §20.1 comparison would have silently pointed at nothing.
+
+---

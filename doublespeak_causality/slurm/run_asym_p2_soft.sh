@@ -55,6 +55,12 @@ if [ -z "$ASYM_LR" ]; then
   esac
 fi
 
+# ASYM_GPU is interpolated into $OUT below AND checked by the GPU guard further down. It was
+# defaulted only after $OUT, so under `set -u` any invocation that did not pass it explicitly
+# aborted before any work (jobs 757503-5, 2026-08-15). Same defect previously fixed in the P1
+# runner. Default it BEFORE first use.
+: "${ASYM_GPU:=l40s}"
+
 STAMP="$(date +%Y%m%d_%H%M%S)"
 OUT="doublespeak_causality/outputs/asym_p2_soft_${ASYM_OBJ}_${ASYM_PARAM}${ASYM_BUDGETREL:+_b$ASYM_BUDGETREL}_seed${ASYM_SEED}_gpu${ASYM_GPU}_${STAMP}_${SLURM_JOB_ID:-local}"
 
@@ -63,7 +69,6 @@ date; hostname; echo "git=$(git rev-parse HEAD 2>/dev/null || echo NA)"; echo "o
 # GPU class guard. Plan §3.1: never mix GPU classes WITHIN a direct comparison. A mechanism
 # arm and its matched random control must therefore share ASYM_GPU; the class used is echoed
 # and recorded, and the run dir is tagged so a mismatched pair cannot be compared by accident.
-: "${ASYM_GPU:=l40s}"
 GPU_TYPE="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 || true)"
 GPU_LC="$(echo "$GPU_TYPE" | tr 'A-Z' 'a-z')"
 case "$GPU_LC" in
