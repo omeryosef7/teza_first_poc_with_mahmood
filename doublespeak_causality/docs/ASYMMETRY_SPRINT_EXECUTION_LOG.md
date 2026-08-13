@@ -4881,3 +4881,23 @@ would have given no signal that one arm had finished while the other had not.
 Nothing finished this tick. Transfer plan still gated on seed 42 **mechanism** reaching 37/37.
 
 ---
+## 2026-08-13 16:55 — seed42 mechanism shard 0 done (34/37); launched the MISSING seed43 random shard
+
+**755219 COMPLETE** (`ran=19`). seed 42 full-budget **mechanism 34/37** — shard 1 (755220) has 3
+prompts left, ~1 h. Transfer plan **still gated**.
+
+**Caught a gap while filling the free slot:** at 15:55 I launched seed 43 matched-random with
+`SHARD=0,NSHARD=2` and **never launched shard 1**. That arm would have silently stopped at 19 of
+37 prompts — and because the runner reports `ran=19 skipped=0` and exits 0, it would have *looked*
+complete. **Launched 756061 (shard 1/2)**, pinned to `n-304,n-307` per the §3.1 node-class
+constraint.
+
+This is the second sharding gap of the sprint (the first was the missing vanilla arm at 08:40).
+Both were **omissions on my side that no tool would have flagged**, because a half-launched shard
+set produces valid-looking output for the shards that did run. **The per-arm completion check
+added at 15:25 is what catches this class** — it counts `FINAL_CANDIDATES` against the joblist
+length rather than trusting that the jobs I *meant* to submit were submitted.
+
+**Queue 6/6.**
+
+---
