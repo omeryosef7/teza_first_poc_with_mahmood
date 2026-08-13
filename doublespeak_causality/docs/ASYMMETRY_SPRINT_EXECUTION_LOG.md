@@ -4990,3 +4990,46 @@ generation jobs there would have compounded a known bottleneck for no benefit.
 seed 43/44 replication of the full-budget arm remains.
 
 ---
+## 2026-08-13 18:40 — 🟥 FULL-BUDGET seed42: ΔASR **−0.054** — the sign flips ACROSS BUDGETS
+
+**756141 complete.** seed 42 full-budget mechanism: **ASR 0.2703**, n=37, `n_missing = 0`,
+`judge_fail = 0.0`.
+
+### The threat-model contrast, paired n=37
+| | ASR |
+|---|---|
+| mechanism | 0.2703 |
+| matched random | **0.3243** |
+| **ΔASR** | **−0.0541** (mechanism *worse*) |
+| discordant b/c | 4/6 |
+| exact McNemar p | 0.754 |
+| paired bootstrap 95 % CI | [−0.216, +0.108] — crosses zero |
+| vs ±0.03–0.08 judge floor | **WITHIN** |
+
+### Seed 42, both budgets — the same seed, opposite signs
+| budget | mechanism | random | ΔASR |
+|---|---|---|---|
+| compute-matched (5 steps/prompt) | 0.1892 | 0.1081 | **+0.0811** |
+| **full budget (200 steps/prompt)** | 0.2703 | 0.3243 | **−0.0541** |
+
+**The contrast reverses between budgets on the same seed.** Every previous instability this
+sprint was *across seeds*; this one is **across compute budgets with the seed held fixed** — a
+fifth axis on which this effect fails to hold still.
+
+### What the full-budget arm actually shows
+1. **Compute buys a lot.** Random 0.108 → **0.324** (+0.216); mechanism 0.189 → **0.270**
+   (+0.081). Both far exceed any direction effect measured.
+2. **Direction identity buys nothing detectable, at either budget.** +0.081 one way,
+   −0.054 the other, neither significant, both within or near the judge floor.
+3. **At the threat-model budget the mechanism arm is nominally *behind* its random control.**
+
+**§7.5's emerging answer:** per-prompt optimization gets stronger with more compute — as expected
+— but **the refusal direction confers no reliable advantage over a random direction at any budget
+tested.** That is the same conclusion the λ probe reached by a different route, and it again
+argues **against** the universality-failure hypothesis §7.5 was added to test.
+
+**One seed at this budget.** Seeds 43/44 full-budget arms are running (4 jobs on n-304). Given
+that the sign now flips across budgets *and* seeds, **no verdict** — and per the §4
+pre-registration, sign inconsistency means exactly that.
+
+---
