@@ -67,3 +67,16 @@ min/prompt ≈ **29 GPU-h per seed**; ~7.5 h wall per shard, inside the 16 h lim
 * the **2000-step** point (~97 GPU-h/seed) is NOT launched — scope it explicitly before committing;
   it may need a prompt subset rather than all 37.
 * aggregation for the curve (reuse `aggregate_perprompt_asr.py --mode perprompt`).
+
+## 2026-08-14 07:30 — §20.1 owes two follow-ups before it can be written up
+§20.1's CE verdict (pinning costs 78 % of objective progress) is **objective-space only**.
+1. **Behavioural endpoint for the 6 soft-prompt arms.** Each arm wrote `GENERATIONS.jsonl` but
+   none has been judged. If `task_orth` reaches far worse CE yet comparable ASR, that is another
+   representation≠behaviour dissociation and materially weakens the §20.1 entry. This is cheap
+   (judging only, no GPU optimization) and is the single highest-value unrun item in §20.
+2. **μ sweep** (μ ∈ {0.1, 0.3, 1, 3, 10}) to map the CE-vs-Δproj frontier. 78 % is the cost of a
+   *near-total* pin (Δproj ≈ −0.03), not of the coordinate as such.
+
+Neither is launched. **§20.1 must not be written into the paper claim table until (1) is scored** —
+a CE-only claim would be exactly the objective-vs-behaviour conflation this program exists to
+document.
