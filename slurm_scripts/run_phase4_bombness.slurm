@@ -35,9 +35,19 @@ WITH_REFUSAL="${WITH_REFUSAL:-0}"
 FACTORIAL="${FACTORIAL:-0}"
 ALPHA="${ALPHA:-1.0}"
 COHORT="${COHORT:-clearharm}"
+MODEL="${MODEL:-meta-llama/Llama-3.1-8B-Instruct}"
+MTAG="$(echo "$MODEL" | sed 's#.*/##; s/[^A-Za-z0-9]/-/g')"
+QUANTIZE="${QUANTIZE:-}"
+# per-model directions + refusal artifact (Llama default; Phi/Qwen for cross-family)
+if [ "$MODEL" = "meta-llama/Llama-3.1-8B-Instruct" ]; then
+    DIRS="${DC}/outputs/phase4_directions/v_bomb_${COHORT}.pt"
+    REFUSAL_PT="${REFUSAL_PT:-${DC}/outputs/stage_gcg_full/refusal_direction_llama_L18.pt}"
+else
+    DIRS="${DC}/outputs/phase4_directions/v_bomb_${MTAG}.pt"
+    REFUSAL_PT="${REFUSAL_PT:?set REFUSAL_PT for non-Llama models}"
+fi
 STAMP="$(date -u +%Y%m%d_%H%M%S)"
-OUT="${DC}/outputs/phase4_bombness_${MODE}_${COHORT}_${STAMP}_${SLURM_JOB_ID:-local}"
-DIRS="${DC}/outputs/phase4_directions/v_bomb_${COHORT}.pt"
+OUT="${DC}/outputs/phase4_bombness_${MODE}_${COHORT}_${MTAG}_${STAMP}_${SLURM_JOB_ID:-local}"
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
@@ -73,8 +83,11 @@ if [ "$FACTORIAL" = "1" ]; then EXTRA="$EXTRA --factorial"; fi
 if [ "$SUFFICIENCY" = "1" ]; then EXTRA="$EXTRA --base-field neutral_prompt --intervene add --dose ${DOSE}"; fi
 echo "FACTORIAL=$FACTORIAL SUFFICIENCY=$SUFFICIENCY DOSE=$DOSE"
 
+MODEL_ARG="--model $MODEL"; [ -n "$QUANTIZE" ] && MODEL_ARG="$MODEL_ARG --quantize $QUANTIZE"
+echo "MODEL=$MODEL REFUSAL_PT=$REFUSAL_PT DIRS=$DIRS"
 python scripts/phase4_bombness_intervention.py \
-    --directions "$DIRS" --split test --cohort "$COHORT" --alpha "$ALPHA" \
+    --directions "$DIRS" --refusal-pt "$REFUSAL_PT" $MODEL_ARG \
+    --split test --cohort "$COHORT" --alpha "$ALPHA" \
     --out "$OUT" $EXTRA
 
 echo "[phase4 done] $OUT"

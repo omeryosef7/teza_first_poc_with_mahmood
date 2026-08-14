@@ -107,12 +107,14 @@ def main():
     ap.add_argument("--dose", type=float, default=1.0,
                     help="for --intervene add: fraction of the natural Direct<->DS gap to add")
     ap.add_argument("--no-judge", action="store_true", help="manipulation check only, skip scoring")
+    ap.add_argument("--model", default=None, help="HF model id (default: ds_common PRIMARY = Llama)")
+    ap.add_argument("--quantize", default=None, choices=[None, "8bit", "4bit"])
     ap.add_argument("--seed", type=int, default=20260814)
     args = ap.parse_args()
 
     os.makedirs(args.out, exist_ok=True)
     dc.set_seed(args.seed)
-    lm = dc.load_model()
+    lm = dc.load_model(args.model or dc.PRIMARY_MODEL, quantize=args.quantize)
     dev = lm.model.device
     pad_id = lm.tokenizer.pad_token_id if lm.tokenizer.pad_token_id is not None else lm.eos_token_ids[0]
 
