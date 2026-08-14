@@ -7549,3 +7549,31 @@ the measurement existed.
 **§20.7:** 37/74 (seed42 25/37, seed43 12/19). **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 15:30 — OWED audit; §20.4's "publish only pass 2" is an unexecutable plan instruction
+
+Re-verified every `OWED_SUBMISSIONS` entry against filesystem + `sacct` rather than trusting my own
+earlier notes. **Four cleared**, six outstanding — full table in that doc.
+
+Two things worth surfacing here:
+
+**1. §20.4 pass 2 is unreachable as specified.** The plan says "run twice — once now, once after
+§20.6 supplies a real multi-direction SD — and **publish only the second**." §20.6 is blocked by
+the corpus ceiling (179, logged 08:00), so pass 2 cannot happen and the instruction cannot be
+followed. **Pass 1 must therefore be published with its limitation stated** — it is currently
+marked `provisional: true` in the artifact and would otherwise sit unpublishable forever. Now that
+§20.4's bounds are anchored to a measured reference (1.9–2.7× the Doublespeak effect, 14:00), the
+multi-direction SD is less necessary than the plan assumed: the bounds already have an
+interpretable scale.
+
+**2. My own audit script printed a misleading denominator.** It reported §20.7 seed 43 as "13/37".
+Only shards 0–1 of 4 were ever launched, so the launchable maximum is **19** — the figure
+simultaneously understates progress (13/19 = 68 %, not 35 %) and implies coverage that was never
+submitted. Corrected in the audit. This is the same class of error as the s600 path bug earlier
+(a check that reads as "nothing finished" when the real answer is "you looked in the wrong place").
+
+Launch order recorded for when slots free: seed 43 shards 2–3 first (**a partial seed cannot be a
+curve point**), then seed 44, then the §20.1 μ sweep.
+
+**§20.7:** 39/74 (seed42 26/37, seed43 13/19). **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---
