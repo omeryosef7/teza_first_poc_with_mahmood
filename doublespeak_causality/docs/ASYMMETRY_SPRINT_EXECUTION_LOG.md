@@ -7034,3 +7034,53 @@ run and resubmitting the stragglers is cheaper than cancelling 44 min of work no
 **Queue 6/6.**
 
 ---
+## 2026-08-14 09:20 — direct measurement of judge replicate noise, and it is the size of our effects
+
+Re-judging the **same 222 generations** with the same script and threshold (only per-item
+persistence was added) gave **different ASRs**. This is a clean two-pass replicate, not a design
+change.
+
+| arm | seed | pass 1 | pass 2 | Δ | rows flipped |
+|---|---|---|---|---|---|
+| `task` | 42 | 0.1892 | **0.2432** | **+0.0540** | 2 |
+| `task` | 43 | 0.0541 | 0.0811 | +0.0270 | 1 |
+| `task` | 44 | 0.1892 | 0.1892 | 0 | 0 |
+| `task_orth` | 42/43/44 | — | — | **0** | 0 |
+
+**3 of 222 rows flipped = 1.35 %.** All three were in the `task` arms; the `task_orth` arms were
+perfectly stable.
+
+### Why this matters more than it looks
+* The **largest single-arm shift was 0.054 ASR** — the same magnitude as the effect §7.5 reports
+  (mechanism − random = +0.054) and larger than several contrasts the sprint has called results.
+* The mean ΔASR for §20.1 moved **+0.0451 → +0.0721** between passes. The *conclusion* survives
+  (2/3 sign, 0/3 significant, all CIs span 0), but the **point estimate moved by 60 % of itself**.
+* Measured flip rate **1.35 %** here vs the **5.4 %** figure the sprint has been citing. Both are
+  small-sample estimates of the same quantity; neither is a constant. This is the third
+  independent confirmation of the 06:05 finding that **5.4 % is not a constant** — it is boundary
+  mass, and these arms (ASR ~0.1, so most rows far from threshold) flip less.
+
+### Consequence — every single-pass ASR in this program carries ±~0.05 of judge noise at n=37
+That is not a reason to retract anything, but it *is* a reason that single-pass ASR at n=37 cannot
+support a claim about a 0.05-sized effect. Combined with the 08:00 power finding (power 0.05 at
+Δ=0.054), the case for **abandoning binary ASR as the primary endpoint** (§20.8 option 3) is now
+supported by two independent lines of evidence: sampling power *and* measurement noise.
+
+### §20.1 paired statistics (pass 2, per-item, same task_ids)
+| seed | n | b (task>orth) | c (orth>task) | ΔASR | McNemar p | Wilcoxon p | 90 % CI |
+|---|---|---|---|---|---|---|---|
+| 42 | 37 | 9 | 4 | +0.135 | 0.267 | 0.118 | [−0.027, +0.297] |
+| 43 | 37 | 3 | 4 | −0.027 | 1.000 | 0.293 | [−0.135, +0.081] |
+| 44 | 37 | 5 | 1 | +0.108 | 0.219 | 0.161 | [+0.000, +0.216] |
+
+**2/3 sign-consistent, 0/3 significant, every CI spans 0.** The 08:55 conclusion stands unchanged
+and is now backed by paired tests rather than arm means: §20.1's 78 % CE cost has **no established
+behavioural consequence**. Its per-seed numbers there (task mean 0.144) were pass-1 values; pass-2
+gives 0.171. Both are the same experiment.
+
+Self-consistency verified: recomputed ASR from `per_item` matches the stored `asr` for all 6 arms,
+37 unique task_ids each.
+
+**Queue 6/6.**
+
+---
