@@ -41,11 +41,11 @@ number produced under a **single model load** as the scorer requires for a valid
 
 | μ | Δproj mean (sd) | suppressed | **CE cost** (sd) |
 |---|---|---|---|
-| 0.1 | −0.722 (0.189) | 76.5 % | **19.5 %** (37.9) |
-| 0.3 | −0.328 (0.261) | 89.1 % | **34.5 %** (21.1) |
-| **1.0** | −0.026 (0.192) | **99.0 %** | **76.9 %** (11.1) |
-| 3.0 | −0.098 (0.139) | 96.6 % | **98.0 %** (0.9) |
-| 10.0 | +0.001 (0.073) | 99.9 % | **100.7 %** (0.4) |
+| 0.1 | −0.726 (0.187) | 76.5 % | **19.5 %** (37.9) |
+| 0.3 | −0.336 (0.263) | 89.1 % | **34.5 %** (21.1) |
+| **1.0** | −0.032 (0.191) | **99.0 %** | **76.9 %** (11.1) |
+| 3.0 | −0.104 (0.138) | 96.6 % | **98.0 %** (0.9) |
+| 10.0 | −0.004 (0.074) | 99.9 % | **100.7 %** (0.4) |
 
 *(Suppression is measured against the free arm's 3-seed mean Δproj of −3.090. Cost is
 1 − `ce_progress_frac`/free, per seed, then averaged.)*
@@ -57,7 +57,7 @@ at μ=10 the pinned prompt makes **no CE progress at all** (100.7 %, i.e. margin
 baseline).
 
 **Past μ=1 the penalty buys no additional suppression and destroys what CE progress remains.**
-μ ∈ {1, 3, 10} hold the coordinate at −0.026, −0.098, +0.001 — mutually indistinguishable, and
+μ ∈ {1, 3, 10} hold the coordinate at −0.032, −0.104, −0.004 — mutually indistinguishable, and
 μ=3 in fact suppresses *slightly less* than μ=1.0 — yet cost climbs 76.9 → 98.0 → 100.7 %. Paired
 within seed, μ=3 and μ=10 are **0/3 cheaper** than μ=1.0 while μ=0.1 and μ=0.3 are **3/3 cheaper**.
 

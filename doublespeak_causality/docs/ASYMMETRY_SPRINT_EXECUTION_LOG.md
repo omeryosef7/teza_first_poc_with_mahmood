@@ -9482,3 +9482,49 @@ between my ticks. No conflicts; different files. Worth knowing that `git log` on
 longer a record of this sprint alone.)*
 
 ---
+## 2026-08-15 13:15 — verified every number in `SECTION20_RESULTS.md` against its artifact. One real inconsistency, fixed.
+
+*(Wall clock 18:00 UTC.)* **Queue empty**, nothing owed, nothing to resubmit. With no computation
+left, this tick checked the thing I had been doing by hand all sprint: **transcribing numbers from
+script stdout into the results doc.** Every quoted value in the sections I wrote (§1b, §7, §8) was
+re-read from its JSON and string-matched against the document.
+
+### Result: 5 of 25 checks were a real mismatch, all in one place
+**§1b's Δproj column came from a different source than its cost column.** The cost figures are from
+`asym_p201_ce_musweep.json`; the Δproj figures I had transcribed from each run's own
+`projections.json`. The two disagree by a small, systematic **~0.006** — the CE scorer recomputes
+the baseline projection in its own forward pass (`baseline_test_proj_recomputed`) rather than
+reusing the value the optimization run stored.
+
+| μ | doc had (run dirs) | artifact says (CE job) |
+|---|---|---|
+| 0.1 | −0.722 | **−0.726** |
+| 0.3 | −0.328 | **−0.336** |
+| 1.0 | −0.026 | **−0.032** |
+| 3.0 | −0.098 | **−0.104** |
+| 10.0 | +0.001 | **−0.004** |
+
+Nothing changes qualitatively — the ordering, the saturation at μ≥1 and the suppression percentages
+all hold, and the suppression column was *already* computed from the CE artifact. But a table whose
+two columns come from two different computations of the same quantity is exactly the kind of thing
+that looks fine until someone recomputes one column and cannot reproduce the other. **Now single
+sourced to the CE artifact**, table and prose both (μ=10's entry also flips sign, +0.001 → −0.004,
+which matters for a row claiming a perfect pin).
+
+### The other 8 "mismatches" were my checker, not the doc
+§7's curve values failed to match because the document uses the Unicode minus (U+2212) and my
+comparison used ASCII hyphen. Worth recording because a naive automated audit of this file will
+report **every negative number as missing** — normalise the sign character first.
+
+**After the fix: 25/25 quoted values match their artifacts exactly.**
+
+### Design-vs-inventory diff — unchanged
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ (all propagated and now numerically verified).
+§20.0 governance decision still unwritten, dev still unspent. §20.6/§20.9 still blocked behind
+§20.8's unmeetable n=300.
+
+### SLURM
+**Empty.** No sprint jobs, nothing PENDING, nothing to launch — the two open items need decisions,
+not compute.
+
+---
