@@ -9317,3 +9317,29 @@ refilled: §20.1 and §20.5 are complete, §20.6/§20.9 are blocked by design, s
 to launch. Nothing read.
 
 ---
+## 2026-08-15 11:15 — three prompts out, all mid-optimization. Gate verified still closed.
+
+*(Wall clock 17:01 UTC.)* No completions. Seed 44 holds at **34/37**, with its last three prompts
+in flight: 757697 at step **400/600**, 757709 at **370/600**, 757741 at **270/600**. One prompt each,
+so **seed 44 completes in roughly 35–40 minutes** and the pre-registered read unlocks with it.
+
+Ran the read command to confirm the guard rather than assume it:
+`REFUSING to combine: seeds not at full coverage -> seed44 34/37`. It is doing its job at the last
+possible moment, which is when a hand-rolled "just look at 34" would be most tempting.
+
+**When it opens, per the 10:15 rule, the same tick does all three:** run
+`--combine-seeds 42,43,44 --budgets 200,600`, apply the decision rule fixed at 22:15 (descope the
+2000-step point unless pooled p < 0.05 **and** ≥2/3 seeds individually significant and
+sign-consistent **and** per-step efficiency within 10× of 5→200), and propagate to
+`SECTION20_RESULTS.md` §7 — not the log alone.
+
+### Design-vs-inventory diff
+§20.1 ✅ complete, propagated. §20.5 ✅ complete, propagated. §20.2/§20.3/§20.4 ✅. §20.7 three
+prompts from its read. §20.6/§20.9 behind the corpus ceiling — the only open items, both blocked by
+design.
+
+### SLURM
+**3 sprint jobs**, all §20.7 seed-44 shards, nothing PENDING, nothing owed to launch. (An external
+`phase4_bomb` also runs; not this sprint's.) **§20.7:** seeds 42 and 43 **37/37**, seed 44 **34/37**.
+
+---
