@@ -35,7 +35,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
-| Phase 1 — Bombness probe | 5 | ◐ | dataset builder done+tested (CPU); extraction/fit await GPU |
+| Phase 1 — Bombness probe | 5 | ◐ | full CPU code done+tested (22 tests); GPU extraction queued |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -288,6 +288,55 @@ Reuse so far (plan §2A.9 / App. §A11): extraction will wrap
 code needed to be copied for this step. `activation_extraction.py` +
 `contextual_identity_probe.py` are the next modules — the first needs a GPU node to
 run, so it is authored-then-SLURM-launched once a slot frees.
+
+### E8 — 2026-08-14 — Phase 1 code complete (CPU-tested); GPU extraction queued ◐
+
+Authored the rest of the Phase 1 pipeline. All reuse existing infra (plan §2A.9);
+no new hooks written.
+
+**`src/probes/contextual_identity_probe.py`** (fit + eval, numpy/sklearn, no torch):
+L2 logistic (default penalty; `penalty='l2'` is deprecated in sklearn 1.9 → rely on
+the default) + difference-of-means; C selected on dev; **bootstrap AUC CI resamples
+EXAMPLES not rows** (App. §A9.6); ROC-AUC + balanced accuracy; a **train/eval
+example-leak guard that raises**; and the Gate-1 controls (label-shuffle,
+norm-matched random direction, scalar-nuisance baseline, cosine geometry).
+
+**`src/probes/activation_extraction.py`** (SLURM/GPU entrypoint): wraps
+`ds_common.load_model` + `pair_common.capture_components` to pull `resid_post`
+(= `hidden_states[L+1]`, D1) at `codeword_last` (query codeword) and `final_prompt`
+(decision token), all layers. **Single-example forward passes (batch 1, no padding)**
+→ sidesteps the left-pad/`arange(0,N)` position drift entirely (D5 / B9). A
+**preflight cross-checks** `capture_components`' resolved `codeword_last` against the
+corpus's precomputed query span and **aborts on mismatch** — the regression test for
+the absolute-position bug class. Emits `acts.npy` + `items.jsonl` (no prompt text) +
+`RUNMETA.json` + `DONE.json`. Verified the corpus was tokenized with the same Llama
+tokenizer (`_meta.tokenizer`), so the cross-check is well-posed.
+
+**`src/probes/smoke_fit.py`**: the §2A.5 pipeline sanity check — grouped half/half
+split, **fixed C** (a mechanics check must not tune C on its own eval slice),
+per-layer AUC at the query position. Self-review caught the C-on-eval leak and fixed
+it to fixed C before commit.
+
+**`slurm_scripts/run_probe_extract.slurm`**: MODE=smoke|full, reuses the
+`run_gcg_perprompt` env + GPU-guard idioms (incl. the unreachable-error-branch fix
+that killed 757702). Smoke mode extracts a slice then runs `smoke_fit`.
+
+**Tests: 22 GPU-free, all passing.** `test_probe_dataset` (7) + `test_contextual_
+identity_probe` (8, incl. smoke_fit on a synthetic run dir). Synthetic activations
+with a planted signal verify: probe recovers signal (AUC>0.9), label-shuffle and
+random-direction at chance, leak guard fires, no-signal at chance, best-layer
+localization. Two self-caught bugs this tick (both test-side, modules correct):
+signal=0 made pos/neg bit-identical (degenerate diff-of-means) → added independent
+noise; missing `json` import in the test.
+
+Env note: tests run under conda env **`poc_stage2`** (numpy 2.4.6, sklearn 1.9.0);
+the login `python3` has no numpy. Recorded for the loop.
+
+**Ready to launch the moment a GPU slot frees** (still 6/6): `sbatch
+slurm_scripts/run_probe_extract.slurm --export=ALL,MODE=smoke,COHORT=clearharm`.
+If the preflight aborts on a position offset, that is the corpus-span vs
+`resolve_positions` tokenization reconciliation point — investigate before trusting
+any extraction (do NOT paper over it).
 
 ---
 
