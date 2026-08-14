@@ -7371,3 +7371,32 @@ loss means the direction term neither helped nor hurt that component.
 **§20.7:** 23/74 prompts. **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 13:15 — ⚠ softening my 12:15 saturation claim: the 200→600 effect is **growing** as n fills in
+
+Seed 42's 600-step arm went 14 → 18 paired prompts. The 200→600 leg moved **toward** significance,
+not away:
+
+| n paired | mean Δ | improved | p | loss per 1000 steps | vs 5→200 |
+|---|---|---|---|---|---|
+| 14 | −0.0792 | 9/14 | 0.363 | 0.198 | 25× less efficient |
+| **18** | **−0.1217** | **13/18** | **0.133** | 0.304 | 16× less efficient |
+
+At 12:15 I wrote *"the optimizer saturates by ~200 steps"* and recommended descoping the 2000-step
+arm. **The strong form of that is not established and I am withdrawing it.** What survives:
+
+* **ROBUST — dramatically diminishing returns.** The 200→600 leg is 16–25× less efficient per step
+  than 5→200, at every n examined. This is not sensitive to the interim subset.
+* **NOT ESTABLISHED — saturation.** Δ grew by 54 % and p fell from 0.36 to 0.13 on four extra
+  prompts. 13/18 improving is a plausible small real effect, and it may well cross 0.05 at n=37.
+
+**Revised recommendation on the 2000-step arm:** the descope argument stands on *efficiency*
+(16–25× worse per step), not on "no further gain". Decide it **after seed 42 reaches 37/37**, not
+now — the estimate is visibly still moving. I should not have made a resource recommendation off
+an interim n=14 subset that was also shard-biased (index mod 4) and completion-ordered.
+
+The §20.7 headline is unchanged and does not depend on this: **compute is by far the largest
+effect the program has measured**, and the direction term buys ≤23 % of it (12:45, powered).
+
+**§20.7:** 27/74 prompts (seed42 18/37, seed43 9/19). **Queue 6/6**, nothing PENDING.
+
+---
