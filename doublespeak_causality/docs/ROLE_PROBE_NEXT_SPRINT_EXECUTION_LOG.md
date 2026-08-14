@@ -975,3 +975,42 @@ deferred follow-ons in the synthesis §12/§13.
 
 Deliverable status: 7 of 9 §20 reports present + synthesis + claim audit + manifest + audit;
 the 2 absent are unrun phases, deferred with rationale.
+
+### E29 — 2026-08-15 — Phi behavioral Phase 3/4: epiphenomenal-Bombness replicates; refusal-lever does NOT (Phi pre-collapsed) ◐
+
+Full Phi Phase 4 (758057, manip check PASSED: ablate−base −6 to −8) + Phi Phase 3.
+Nuanced, honest cross-family behavioral result — NOT a clean full Story-A replication.
+
+Phi Phase 4 (n=42):
+| arm | ASR | refusal rate |
+| --- | --- | --- |
+| ds_base | 0.262 | **0.048** |
+| ds_bomb_ablate | 0.190 | 0.048 |
+| ds_bomb_random | 0.214 | 0.048 |
+| ds_refusal_ablate | 0.357 | 0.000 |
+
+- **Bombness necessity NULL replicates**: ΔASR −0.071 (p=0.58), = random (−0.024, p=1.0).
+  The epiphenomenal half of Story A holds behaviorally on Phi (with the partial-ablation
+  caveat: Phi re-accumulates Bombness, so late-layer readout only partly drops).
+- **Refusal-lever does NOT cleanly replicate**: refusal-ablation ΔASR +0.095 (p=0.39, ns).
+  Root cause: **Phi's baseline doublespeak refusal rate is 0.048** (Llama 0.64) — the
+  attack ALREADY collapses Phi's refusal, so the positive control has almost no headroom
+  (floor issue, cf B7).
+
+Phi Phase 3 (n=42, jailbreak 0.262): refusal-projection AUC **0.525**, Bombness AUC
+**0.575** — NEITHER predicts Phi jailbreak. Because Phi barely refuses doublespeak,
+refusal state doesn't vary in a way that separates jailbreak from non-jailbreak; the
+residual jailbreak variation is driven by something else (compliance vs off-target
+output at already-low refusal).
+
+**Honest cross-family behavioral net:**
+- Bombness-epiphenomenal: replicates on Phi (necessity null + non-predictive).
+- Refusal-is-the-behavioral-lever: **Llama-specific in this form** — Phi is far more
+  susceptible to doublespeak at baseline (refusal pre-collapsed), so refusal is neither
+  the discriminating predictor nor a headroom-having lever there.
+
+Interesting substantive finding: **doublespeak's behavioral mechanism differs by model** —
+on Llama it works by suppressing an otherwise-strong refusal; on Phi refusal is weak
+against doublespeak to begin with. The semantic-remapping REPRESENTATION is cross-family
+(3 models); the refusal-CONTROL behavioral story is model-dependent. Reported as an honest
+boundary (§3.11). Registered 758057. Updating synthesis §9 + PHI report + claim audit.
