@@ -8434,3 +8434,16 @@ n-304, n-305, n-350** — all 3090s. **§20.7:** 72/74 (seed 42 37/37 FINAL, see
 seed 44 **21/37**.
 
 ---
+## 2026-08-15 00:45 — quiet tick. Both seed-43 shards are inside their last prompt.
+
+*(Wall clock 14:31 UTC.)* No completions; queue 6/6; nothing PENDING; nothing to read. Seed 43
+holds at **35/37** with both remaining prompts mid-optimization — 757662 at step 560/600, 757672 at
+step 440/600 — so seed 43 lands within the hour and frees the two slots. Seed 44 is at **24/37**.
+
+No diff movement: §20.5 floor and the §20.1 μ sweep remain ready and cap-blocked, in that launch
+order (fixed at 00:15); §20.2/§20.3/§20.4 complete; §20.6/§20.9 behind the corpus ceiling. Read
+gate unchanged — all three seeds at 37/37, seed 44 ~4 h out.
+
+**§20.7:** 72/74, seed 44 24/37. Nodes n-301..n-306, n-350, one job each, all 3090s.
+
+---
