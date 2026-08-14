@@ -7122,3 +7122,31 @@ anyway: "expected to fit" is not "verified complete", and the check is one `find
 **Queue 6/6**, no PENDING jobs, nothing to resubmit.
 
 ---
+## 2026-08-14 10:15 — §20.3 replicate run launched with the band-only design (15× cheaper), control included
+
+`scripts/asym_p203_judge_replicates.py`, M=5. Pool confirms the 06:05 arithmetic exactly:
+
+```
+[pool] total rows=1998  band=93 (4.65%)  extreme=1853  control sample=40
+[cost] 665 judge calls vs 9990 for a full-corpus M=5 design (15.0x saving)
+```
+
+The control is the part that matters. Replicating only the band would **assume** what §20.3 is
+supposed to demonstrate — that extreme rows are stable. A matched 40-row sample of score-0.0/1.0
+rows is replicated alongside, and the script prints an explicit WARNING (and the result is
+reported either way) if the extremes flip at a comparable rate, which would invalidate the
+band-only design and void the saving.
+
+Endpoint: per-row flip of the binary success indicator (§3.6, ≥0.5) plus per-row score SD. Rows
+deduped by (output_dir, row_key, task_id, condition_label) so none is counted twice across
+joblists.
+
+Prior evidence this run will test:
+* 5.4 % — the sprint's long-cited flip figure (n=37, one arm)
+* 1.35 % — measured this morning across 222 rows, two passes, all flips in `task` arms
+* prediction from 06:05: flips concentrate in the band; extremes near 0 %
+
+**§20.7:** 6/74 prompts complete, one per shard, all six shards healthy. Queue 6/6, nothing
+PENDING, nothing to resubmit.
+
+---
