@@ -21,7 +21,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 
 | Gate | What it tests | Status |
 | --- | --- | --- |
-| **Gate 0** | Jobs reconciled, threshold frozen, split policy explicit, registry/deviation logs current, manifest committed | ◐ |
+| **Gate 0** | Jobs reconciled, threshold frozen, split policy explicit, registry/deviation logs current, manifest committed | ☑ **PASSED 2026-08-14** (see E6) |
 | Gate 1 | Contextual Bombness probe validity | ☐ |
 | Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☐ |
 | Gate 3 | Frozen latent-state prediction report written | ☐ |
@@ -34,8 +34,8 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | --- | --- | --- | --- |
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
-| **Phase 0 — governance repair** | 4 | ◐ | audit fan-out running |
-| Phase 1 — Bombness probe | 5 | ☐ | blocked by Gate 0 |
+| **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
+| Phase 1 — Bombness probe | 5 | ☐ | Gate 0 clear; blocked only by GPU cap (6/6) |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -186,7 +186,64 @@ forbidden from reading or quoting harmful-prompt or generation text — this rep
 data files contain such text, and prior sessions have had subagents terminated by
 the cyber-safeguard classifier for reading it. Structural/scalar delegation only.
 
-_(results appended as E6 when the fan-out returns)_
+### E6 — 2026-08-14 — Phase 0 audit returned; GATE 0 PASSED ☑
+
+All 7 audit agents succeeded (491k subagent tokens, 0 errors). Acted on results:
+
+**Registry backfill.** `scripts/update_registry.py --apply` (purpose-built,
+idempotent, dry-run-default, writes `.bak`): **395 → 573 rows (+178)**, 168 with
+git commits, 0 existing rows rewritten, 0 flagged-missing. asym coverage **1 → 47**.
+Post-apply re-run = **0 to add** (idempotent). Verified: **545/545 on-disk output
+dirs now registered, 0 missing.**
+
+**Bug-log backfill.** Appended **B6–B18 + V1** to `BUG_AND_DEVIATION_LOG.md`
+(95 → 260 lines), each with an immutable source citation. All 8 plan-§4.2-required
+items captured (GCG candidate-selection bug B6, v1 leakage B7, refusal-layer
+off-by-one B8, test-selected dose B12, missing GCG raw dirs B14, threshold conflict
+B13, Section-20 deviations B15, stale claims B14/B15/B17). Plus the two open items
+that ARE later sprint phases: B11 (D3 scope-match = Phase 6), B16 (Phi concept half
+= Phase 7).
+
+**Threshold contract frozen (D2 confirmed).** Two families found: legacy 0.25
+(`behav_judge.py` + numbered scripts + `phase_behav_*`) vs newer 0.5 (`asym_p2_judge`,
+`asym_p201`, `26_eval_p9`). **Continuous scores ARE persisted** → offline
+sensitivity table is rebuildable. Freeze **0.5 for new work**; do NOT flip
+`behav_judge.py`'s constant (a desync guard `validate_experiment_coverage.py` would
+fire on every historical run). Logged B13.
+
+**Split policy frozen (D4 confirmed).** v3 (`clearharm_doublespeak_v3.json`) is the
+leakage-0 corpus: train 162 / dev 82 / test 80, **0 straddling** concepts/codewords/
+clusters, **104/60/60 disjoint codewords** each used once. **CARROT is in DEV
+(held out from train fitting); BOMB in no split** — satisfies §5.2's "hold CARROT
+out." The v3 schema already carries the two-key structure this sprint needs:
+`codeword` (declared) vs `target_concept`/`normalized_concept` (decoded), all six
+conditions materialized, `wrong_concept`/`wrong_codeword` controls, and
+**precomputed `codeword_occurrences_templated` token positions** — so no substring
+heuristic is needed (upstream's brittle span-finding is unnecessary for us).
+
+**Infra catalogue (Phase 1 will write almost no new extraction code).**
+- `ds_common.load_model` — bfloat16, sdpa, revision **not pinned by default** → the
+  sprint pins the resolved HF sha in RUNMETA (manifest).
+- `pair_common.capture_components(lm, templated_text, probe_word, components, positions)`
+  — one forward pass → `{resid_pre, attn_out, mlp_out, resid_post}` × `{codeword_last,
+  following, final_prompt, first_generated}`. **`resid_post` == `hidden_states[L+1]`
+  == our D1 space.** This IS the Bombness extraction primitive.
+- `ds_common.LayerPatch(model, layer_idx, positions, vector, mode, alpha)` — modes
+  `replace`/`add`/`project_out` = activation-patch / steering / ablation, per-position,
+  with alpha. This IS the Phase-4 intervention primitive.
+- Indexing convention confirmed in 3 independent places (D1/B8 regression test).
+
+**Deliverables committed this gate:**
+`reports/GOVERNANCE_REPAIR_2026_08_14.md`, `configs/manifests/role_probe_sprint_v1.json`
+(FROZEN, JSON-validated), backfilled registry + bug log.
+
+**GATE 0: all five conditions met.** Jobs reconciled (E4/§5), threshold frozen,
+split policy explicit, registry+bug log current, manifest committed. GPU science
+still blocked only by the 6/6 concurrency cap — the §2A.5 sanity reproduction
+launches on the first free slot.
+
+**New open question raised → Q2 below** (confirmatory holdout: is v3 test
+probe-unexposed enough to serve, or construct a fresh one?).
 
 ---
 
@@ -204,4 +261,5 @@ Every entry here must have a matching row in `BUG_AND_DEVIATION_LOG.md`.
 
 | # | Question | Blocking? | Status |
 | --- | --- | --- | --- |
-| Q1 | _(none yet)_ | | |
+| Q2 | **Confirmatory holdout for the Bombness probe.** v3 test (80 ex, 60 disjoint codewords, leakage-0) is exposed to prior *behavioral* work but NOT to any *probe* analysis. Accept it as probe-unexposed and use it once as the Gate-1 holdout, or construct a fresh probe holdout? | Not blocking Phase 1 (fit=train, select=dev). Blocks only the final Gate-1 confirmatory claim. | OPEN — recommend (a) accept v3 test, since the probe construction is genuinely new and the split is codeword-disjoint. Will proceed under (a) unless told otherwise. |
+| Q1 | GitHub PAT is live in `.git/config` plaintext (`ghp_…`, confirmed real). Rotate + move to SSH/credential-helper. | Security, not sprint-blocking | OPEN — awaiting user |

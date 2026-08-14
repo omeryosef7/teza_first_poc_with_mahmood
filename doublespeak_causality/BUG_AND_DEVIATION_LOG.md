@@ -93,3 +93,168 @@ layer/validation choice change the Gate-7 conclusion?
 first-cut scope. Both direction arms therefore run on the SAME v1 `clearharm_llama_doublespeak.jsonl`, so the
 comparison is purely the L18-vs-L22 direction axis (split held at v1). v3-GCG is logged as a future build.
 Scale (user): MINIMAL first-cut only (~6-8 GPU-h) to prove the pipeline before any full matrix.
+
+---
+
+# BACKFILL 2026-08-14 — Asymmetry / Section 20 sprint (2026-08-08 → 08-14)
+
+The log stopped being maintained after the 2026-08-08 Gate-7 entry while the
+Asymmetry (Part F) and Section 20 (Part G) sprint ran. This block backfills the
+load-bearing bugs, deviations, and self-corrections of that window, reconstructed
+from immutable docs. Each entry cites its source; none was fabricated. Ordered by
+severity within theme, not by date. Governance report:
+`reports/GOVERNANCE_REPAIR_2026_08_14.md`. Also see `RESEARCH_LOG_AUDIT_2026-08-14.md`
+(independent recompute audit, findings A1–A17 / B1–B15) and the Role-Probe sprint
+plan §2A / Appendix A (upstream-code review findings that become our own regression
+tests).
+
+## B6 — GCG candidate-selection bug (P9.0): objective in gradient only, never in selection
+**Date:** discovered/fixed ~2026-08-05/06 (fix commits `84bf7a1e`, `76acb44a`).
+The mechanism/refusal objective term entered the GCG *gradient* but was never
+included in *candidate selection*, so it never influenced which suffix was kept
+at each step. **Every pre-fix "mechanism-derived GCG is net-negative" statement
+was made with the objective disabled in selection** and is non-citable.
+**Source:** RESEARCH_LOG_SPRINT_2026-08-02_TO_08-14.md §8.7 (:306-312), §21 item 9;
+RESEARCH_LOG_AUDIT_2026-08-14.md B11 (:138); CONTINUATION_PROGRESS.md:193.
+**Affects:** all pre-fix Gate-7 / attack-objective negatives. **First-class
+regression test for the new sprint** (plan §13.2): any new mechanism objective must
+be verified to influence *both* gradient proposal and candidate selection.
+
+## B7 — v1 split has ~90% train/test leakage
+**Date:** found 2026-08-09→11 (`reports/P1B_V3_SPLIT.md`).
+The v1 ClearHarm doublespeak split hashed per-instruction, so 77/86 rows,
+14/43 concepts, and 17/21 codewords straddle train/test. The frozen 16-arm GCG
+matrix was specced on v1. Superseded by v3 (`clearharm_doublespeak_v3.json`,
+leakage-0: 0 straddling concepts/codewords/clusters across all split pairs).
+**Source:** RESEARCH_LOG_SPRINT §Part E (:431-435); reports/P1B_V3_SPLIT.md.
+**Affects:** every v1-split GCG/Gate-7 number, including the 2026-08-08 Gate-7
+entry above (ran on v1). **New sprint uses v3 or a freshly constructed holdout
+only** (plan §3.5, D4).
+
+## B8 — Refusal-direction layer off-by-one (hidden_states[L+1] vs [L])
+**Date:** 2026-08-09→11.
+Direction builders store `hidden_states[L+1]` but label it L, while
+`gcg_optimizer.py:173` read `hidden_states[layer]` directly — a one-block shift
+between where a refusal direction was fitted and where the GCG objective read it.
+**Source:** RESEARCH_LOG_SPRINT (:436-438).
+**Affects:** any GCG arm optimized toward a refusal direction before the fix.
+Confirms the hidden-state indexing convention now frozen for the new sprint:
+`hidden_states[L+1]` == post-block-L residual == LayerPatch/directions row L
+(ds_common.py:869/972, build_refusal_direction_llama.py:19). **Regression test**
+(plan §3.9, App. §A3).
+
+## B9 — GCG DEFECT D1: objective used one absolute token index from train_tasks[0]
+**Date:** 2026-08-11 (`ASYMMETRY_SPRINT_EXECUTION_LOG.md` Phase 0, :54-80).
+`gcg_optimizer.py:680-687` computed `refusal_dir_positions` once from
+`train_tasks[0]` and applied it as an absolute token index for every task
+(gradients :812, selection :433/:440). Prompt lengths vary across the 40-item
+pool, so the objective read the wrong position for most tasks. This is the
+project's recurring **absolute-position-index bug class** (now hit ≥3×).
+**Source:** ASYMMETRY_SPRINT_EXECUTION_LOG.md:54-80; ASYMMETRY_FINAL_SYNTHESIS.md:49.
+**Affects:** the published Gate-E / token-objective negative (refusal-vs-random
+stays apples-to-apples; both arms misaligned identically). **First-class
+regression test** (plan §3.9, App. §A9.2 — the same class threatens Gate 1).
+
+## B10 — GCG DEFECT D2: fit-position vs use-position mismatch
+**Date:** 2026-08-11 (ASYMMETRY_SPRINT_EXECUTION_LOG.md:82-99).
+Even for task 0 the objective read the last suffix token (index 233, inside the
+user turn) while the refusal direction was fitted and validated at the last token
+after the assistant header (index 238) — a five-token template offset.
+**Source:** ASYMMETRY_SPRINT_EXECUTION_LOG.md:82-99. **Affects:** same as B9;
+constrains how §7.5 per-prompt arms compare to legacy universal arms.
+
+## B11 — DEFECT D3: intervention-scope asymmetry (scope-matched arm NOT RUN) — OPEN
+**Date:** identified 2026-08-11; **still not run as of 2026-08-14.**
+The activation-space causal result ablates the direction at all positions, all
+decode steps, and (multilayer) all layers, while the token/soft-prompt objective
+touches 16 input positions at one layer. The "activation-space causal but
+token-space unoptimizable" hierarchy is therefore **not budget-matched.**
+**Source:** ASYMMETRY_SPRINT_EXECUTION_LOG.md:100-108; RESEARCH_LOG_AUDIT B5.
+**Affects:** the §17 "activation > continuous > discrete" hierarchy.
+**This is Phase 6 / D3 of the new sprint (plan §10) — the reviewer-critical gap.**
+
+## B12 — Gate D continuous dose (budget_rel=0.10) selected on the test split
+**Date:** 2026-08-11 run; flagged through 08-14.
+The headline continuous ASR (0.784 vs 0.153) uses budget 0.10, chosen by reading
+the dose sweep **on test**. The response is inverted-U: at full budget the prompt
+drives refusal projection −20.09 yet yields ASR 0.000, refusal_rate 0.000 — "the
+model is neither refusing nor complying." Methodological lesson: **probe
+displacement is not evidence of mechanism control.**
+**Source:** RESEARCH_LOG_SPRINT §17 (:600-624); CONTINUOUS_VS_DISCRETE.md §5/§7;
+RESEARCH_LOG_AUDIT B4. **Affects:** Gate D "POSITIVE" → must be labelled
+EXPLORATORY. **New sprint re-confirms this dose on an untouched split (plan §10.2)
+and carries the lesson into Phase 4 (a manipulation check ≠ a behavioral effect).**
+
+## B13 — StrongREJECT threshold conflict (0.25 vs 0.5) — RESOLVED for new work
+**Date:** identified 2026-08-12; contract frozen for the new sprint 2026-08-14.
+`scripts/behav_judge.py:85` sets `MAL_THRESHOLD = 0.25` (what actually ran for the
+legacy behavioral harness and the numbered scripts 14/17/18/40 and `phase_behav_*`),
+while every paper-facing doc and the newer asym scripts (`asym_p2_judge.py`,
+`asym_p201_judge_softprompt.py`, `26_eval_p9_gcg_heldout_asr.py`) use ≥ 0.5 and
+persist the continuous score.
+**Resolution (new sprint, plan §3.6):** freeze **binary malicious = score ≥ 0.5**
+for all new work via the 0.5 judge path; **do NOT flip `behav_judge.py`'s constant**
+— `scripts/validate_experiment_coverage.py` guards `(score≥MAL_THRESHOLD)==(label==MALICIOUS)`
+and would fire on every historical run. Continuous scores are persisted, so a
+0.25/0.5/continuous sensitivity table for historical claims is rebuildable offline
+with no GPU. **Source:** ASYMMETRY_FINAL_SYNTHESIS.md:62,99-101; RESEARCH_LOG_AUDIT A8.
+**Affects:** potentially every ASR/ΔASR number in the prior sprint.
+
+## B14 — Gate-7 v3 matrix raw run-dirs missing (20/20); Gate-E / λ=10 dirs pruned
+**Date:** discovered 2026-08-14.
+All 20 per-seed run dirs named in `reports/GATE7_V3_MATRIX_STATS.json` are absent
+from `outputs/`; the heldout-ASR dirs for the position-corrected Gate-E result
+(+0.009) and the λ=10 probe (+0.622/−0.162/+0.189) were also pruned. Those numbers
+survive only via committed summary `.md`/`.json`, not raw-reproducibly.
+**Source:** RESEARCH_LOG_AUDIT A10 (:60-61), §18/§22. **Affects:** §13 fair GCG
+matrix / Gate-7 negative and Gate-E negative are **summary-backed only**. Marks
+them REPORT-ONLY in the claim audit; the immutability rule (plan §3.7) exists to
+stop this recurring.
+
+## B15 — Judge-flip rate superseded twice (5.4% → 3.4% → 0.62%/1.65%)
+**Date:** 2026-08-14.
+The judge noise floor was quoted as 5.4% (n=37), then ~3.4% (an n≈148 hand-count,
+report-only), then measured via an M=5 band-only replicate design:
+`asym_p203_judge_replicates.json` gives 35.48% flips *inside the contested band*
+but 1.65% corpus-wide. The ±0.03–0.08 floor used to retire effects derived from
+the retired 3.4% figure. **Source:** SECTION20_RESULTS.md §4; RESEARCH_LOG_AUDIT
+staleness item 4. **Affects:** every effect retired "below the judge floor."
+
+## B16 — Phi-4 cross-family claim is missing its concept half
+**Date:** drop decided 2026-08-12; flagged 2026-08-14.
+§14 claims the representation≠behavior dissociation replicates on Phi-4, but
+`THIRD_FAMILY_REPLICATION.md` contains only X2 geometry, X3 refusal-ablation, X5
+AUC — **no Phi concept-ablation arm with a count-matched random control.** The
+refusal half replicated; the concept half was never tested.
+**Source:** RESEARCH_LOG_AUDIT B13; THIRD_FAMILY_REPLICATION.md. **Affects:** §14.
+**This is Phase 7 of the new sprint (plan §11).**
+
+## B17 — L18 refusal direction fitted on a different distribution than applied to
+**Date:** disclosed 2026-08-14.
+The L18 refusal axis used throughout Parts F/G was fitted on `pair_carrot_bomb.json`
+(n_harmful 60 / n_harmless 20, separation 0.9525) and applied to ClearHarm — a
+cross-distribution transfer never previously flagged. Its bidirectional validation
+(`ablate_gain +0.4667, induce_gain +0.6667, score 1.1333`) qualifies the word
+"validated." **Source:** RESEARCH_LOG_AUDIT B6; UPDATED_PAPER_CLAIM_TABLE.md:51;
+outputs/stage_gcg_full/refusal_direction_llama_L18.json. **Affects:** essentially
+every refusal-direction number in Parts F/G. New sprint freezes and re-uses this
+exact validated direction (plan §6.1) and records the fit cohort explicitly.
+
+## B18 — Governance artifacts lapsed 2026-08-08 → 08-14 (this backfill)
+**Date:** lapse 2026-08-08→14; repaired 2026-08-14.
+`EXPERIMENT_REGISTRY.csv` last updated 2026-08-05 (395 rows vs 545 output dirs;
+1 asym match against 65 asym dirs); `BUG_AND_DEVIATION_LOG.md` last entry
+2026-08-08. The entire Asymmetry (Part F) and Section 20 (Part G) work was
+unregistered and its deviations unlogged, while the sprint log advertised heavy
+provenance discipline. **Repair:** `scripts/update_registry.py --apply` added 178
+rows (395→573; asym 1→47, idempotent re-run = 0 to add) from immutable RUNMETA.json;
+this backfill block (B6–B18); `reports/GOVERNANCE_REPAIR_2026_08_14.md`.
+**Source:** RESEARCH_LOG_AUDIT B14 (:150-153). **Affects:** provenance claims in the
+prior sprint log §3/§6 — now repaired.
+
+## V1 (deviation) — code review deliverable folded into the plan as Appendix A
+**Date:** 2026-08-14.
+Plan §2A.2 names the upstream code-review deliverable
+`docs/ROLE_CONFUSION_CODE_REVIEW.md`; per user request for a single tracking file
+it was folded into `docs/ROLE_PROBE_NEXT_SPRINT_PLAN.md` as Appendix A and the
+separate file deleted. Documentation location only; no scientific effect.
