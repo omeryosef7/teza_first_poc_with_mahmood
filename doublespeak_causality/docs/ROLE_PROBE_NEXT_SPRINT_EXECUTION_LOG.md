@@ -23,10 +23,10 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | --- | --- | --- |
 | **Gate 0** | Jobs reconciled, threshold frozen, split policy explicit, registry/deviation logs current, manifest committed | ☑ **PASSED 2026-08-14** (see E6) |
 | Gate 1 | Contextual Bombness probe validity | ☑ **PASSED 2026-08-14** (E15) |
-| Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☐ |
+| Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☑ **2026-08-14** (E16; frozen refusal_L18 projection = Refusalness readout) |
 | Gate 3 | Frozen latent-state prediction report written | ☑ **2026-08-14** (E16, `DUAL_STATE_PREDICTION.md`) |
-| Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☑ **PASSED 2026-08-14** (E19) |
-| Gate A–F | Decision tree §18 | ☐ |
+| Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☑ **PASSED 2026-08-14** (E19; + 2×2 E20, sufficiency E24) |
+| Gate A–F | Decision tree §18 | ☑ A–D resolved: Gate A/B/C pass (Gate 1); Gate D = **Story A** (Bombness epiphenomenal) → §13.x says do NOT optimize Bombness as an attack objective |
 
 ### Phases
 
@@ -38,22 +38,22 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
 | Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
-| Phase 4 — causal interventions | 8 | ☑ | **STORY A: necessity −0.05; 2×2 interaction +0.00 [−0.14,+0.14]; refusal +0.36** (E19-E20). Sufficiency = optional |
-| Phase 5 — component patching | 9 | ☐ | |
-| Phase 6 — D3 scope-matched control | 10 | ☐ | |
-| Phase 7 — Phi concept completion | 11 | ☐ | |
-| Phase 8 — cross-model replication | 12 | ☐ | |
-| Phase 9 — attack objective | 13 | ☐ | gated on Phase 4 outcome |
-| Phase 10 — second corpus / power | 14 | ☐ | |
-| Phase 11 — Section 20 hygiene | 15 | ☐ | partly running (see E4) |
+| Phase 4 — causal interventions | 8 | ☑ **COMPLETE** | **STORY A**: necessity −0.05; 2×2 interaction +0.00; **sufficiency +0.05** (E24); refusal +0.24/+0.33/+0.36. Bombness neither necessary, sufficient, nor gated |
+| Phase 5 — component patching | 9 | ☐ | follow-on |
+| Phase 6 — D3 scope-matched control | 10 | ☐ | follow-on (asymmetry thread) |
+| Phase 7 — Phi concept completion | 11 | ☐ | follow-on (B16) |
+| Phase 8 — cross-model replication | 12 | ◐ | cross-COHORT done (E21/E22): Gate 1 replicates, prediction cohort-specific, generated causal inconclusive. Cross-MODEL (Phi/Qwen) open |
+| Phase 9 — attack objective | 13 | ✗ N/A | Gate D = Story A → plan §13 says do NOT optimize Bombness (epiphenomenal) |
+| Phase 10 — second corpus / power | 14 | ☐ | follow-on |
+| Phase 11 — Section 20 hygiene | 15 | — | concurrent §20 session's thread; §20.7 seeds 42/43/44 all complete |
 
 ### Compute
 
 | | |
 | --- | --- |
 | SLURM concurrency cap | 6 (project rule) |
-| Currently running | 6 / 6 — **at cap, cannot launch** |
-| GPU work permitted | **No** — Gate 0 unmet AND cap reached |
+| GPU work permitted | **Yes** — Gate 0 passed; slots vary (share with concurrent §20 session) |
+| Session GPU jobs run | probe extractions (clearharm 757886, generated 757957), Phase-4 (757931/757943/757967/757992) |
 
 ---
 
