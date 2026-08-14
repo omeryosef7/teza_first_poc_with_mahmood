@@ -338,6 +338,42 @@ If the preflight aborts on a position offset, that is the corpus-span vs
 `resolve_positions` tokenization reconciliation point — investigate before trusting
 any extraction (do NOT paper over it).
 
+### E9 — 2026-08-14 — Threshold sensitivity table built (Gate-0 §3.6 deliverable) ☑
+
+GPU still 6/6, so did the flagged GPU-free Gate-0 item: the 0.25/0.5/continuous
+StrongREJECT sensitivity table for the headline behavioral claims, rebuilt offline
+from persisted continuous scores.
+
+**`scripts/threshold_sensitivity.py`** — reuses `mcnemar_exact` from
+`phase_behav_refusal.py`; paired bootstrap 10k; reads only `*_score`/`*_label`
+columns, never generation text. Verified ΔASR = (b−c)/n by hand against output.
+py_compile clean. Self-caught one bug: a malformed f-string in `render_md` (an
+`f|...replace()` hack) — fixed to a clean row before running.
+
+**`reports/THRESHOLD_SENSITIVITY_2026_08_14.md`** over the three quantization
+precisions (clearharm test, n=42). Findings:
+
+1. **Refusal ablation is threshold-robust:** `direct_refabl_a1.0` vs `direct_base`
+   ΔASR is identical/near-identical at 0.25 vs 0.5 (bf16 +0.286/+0.286, 8bit
+   +0.262/+0.262, 4bit +0.571/+0.548), continuous CIs exclude 0. The recompute
+   **matches the audit's A4 corrected numbers exactly** → confirmed raw-reproducible.
+2. **New paired result: `ds_base` vs `direct_base` ≈ 0 at both thresholds** (all
+   McNemar p=1.00, continuous CIs straddle 0) — on ClearHarm the doublespeak
+   framing alone does not raise ASR over the direct ask; the behavioral lever is
+   refusal suppression. A clean behavioral restatement of the representation≠
+   behavior thesis, threshold-robust. Bounded (n=42), not exact-zero.
+3. **Score↔label integrity: 84/84 agreement** in every contrast — no silent
+   corruption in these files.
+
+**Implication (B13):** freezing 0.5 for new work changes no headline conclusion
+here. Gate-0 §3.6's "sensitivity table for major historical claims" requirement is
+now satisfied for the refusal-ablation headline; extend to other RAW-reproducible
+claims as those files are touched.
+
+Lesson logged: the script rewrites the whole report file, so the findings section
+must be re-added after the final run (or moved into the script) — did the latter by
+hand this time.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
