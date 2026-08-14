@@ -8274,3 +8274,51 @@ seed 44 (all four shards). **§20.7:** 67/74 (seed 42 37/37 FINAL, seed 43 **30/
 **12/37**.
 
 ---
+## 2026-08-14 22:45 — integrity check on the pre-registered contrast: the 600-step arm did **not** resume from the 200-step checkpoints
+
+*(Wall clock 12:31 UTC.)* No completions; queue 6/6; nothing PENDING. Seed 43 **31/37**, seed 44
+**14/37**. With the read pre-registered last tick, this tick went after the assumption underneath
+it — one the SLURM script itself flags as a live hazard.
+
+### Why this needed checking
+`run_gcg_perprompt.slurm`'s own header warns that `config_hash()` **excludes `manifest_path` and
+`output_dir`**, so two runs sharing a directory load each other's checkpoint with no mismatch
+error. The `BUDTAG` scheme (`_s600`) is what keeps the budgets apart. If it had ever failed, a
+600-step run would have *resumed from its own 200-step checkpoint* — and the 200→600 contrast, the
+exact number the descope decision rests on, would be partly trivial: comparing a run against its
+own continuation rather than against an independent optimization.
+
+### It held — and the evidence is unambiguous
+Mean **step-0** `task_loss` across all 37 seed-42 prompts, by budget:
+
+| arm | n | mean step-0 loss | min | max |
+|---|---|---|---|---|
+| 5-step | 37 | 2.3843 | 1.508 | 3.750 |
+| 200-step | 37 | 2.3801 | 1.555 | 3.547 |
+| **600-step** | 37 | **2.3767** | 1.523 | 3.719 |
+
+All three budgets start from the **same fresh-init level (~2.38)**, and every 600-step run's first
+logged step index is **0**. A run resuming from a 200-step checkpoint would open near that arm's
+converged value — mean best **1.13** — not at 2.38. The gap between 2.38 and 1.13 is far larger
+than any noise here, so this is decisive rather than suggestive.
+
+Per-prompt step-0 losses are *not* bit-identical across budgets (5/37 match exactly; the rest
+differ by ~0.01–0.17 in both directions). That is the stochastic first candidate batch, not
+contamination: the differences are two orders of magnitude smaller than the resume signature would
+be, and they have no consistent sign. Recording the non-identity explicitly so it is not mistaken
+for a defect later — the check that matters is the *level*, not bitwise equality.
+
+**The pre-registered 200→600 contrast compares independent optimizations.** Verified before the
+read rather than after it.
+
+### Design-vs-inventory diff
+§20.5 harness ready (minutes, 3090). §20.1 μ sweep ready (4 values, L40S). Both cap-blocked.
+§20.2/§20.3/§20.4 complete and documented. §20.6/§20.9 behind the corpus ceiling. §20.7 running
+with its final read pre-registered and now integrity-checked.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 68/74 (seed 42 37/37 FINAL, seed 43 **31/37** — 6 prompts
+left, in shards 2 and 3), seed 44 **14/37**.
+
+---
