@@ -496,6 +496,35 @@ definition is later refined.
 on V100), then run `gate1_eval.py` on the login node (CPU). 6/6 now (concurrent
 session took the slot); slot-waiter armed for the full launch.
 
+### E14 — 2026-08-14 — Offline confound preview: length/position are near-chance ☑
+
+Before spending the full GPU extraction, computed the two most mechanical Gate-1
+controls **offline** (tokenizer only, no GPU) over the full n=340 clearharm labelled
+set (170 doublespeak / 170 benign):
+
+| control | AUC | detail |
+| --- | --- | --- |
+| **length-only** | **0.554** | doublespeak median len 232 vs benign 236; ranges overlap heavily ([150,281] vs [197,284]) |
+| **position-only** | **0.557** | doublespeak median codeword pos 219 vs benign 220 |
+
+Both near chance. So:
+- The smoke's AUC≈1.0 (E13) was **n=4 overfitting, not a length/position confound** —
+  the corpus (P8.5 matched-condition build) length-matches doublespeak and benign by
+  design.
+- The Gate-1 length/position controls will sit ~0.55, well below any real probe
+  signal → a high full-n probe AUC would reflect something beyond surface length.
+
+**Remaining (subtler) confound the smoke can't rule out:** even length-matched, the
+doublespeak vs benign demo BLOCKS differ in content (harmful-concept demos vs
+benign-concept demos). A probe could read "the demos were about a harmful topic"
+rather than "THIS codeword is bound to a harmful concept." This is adjudicated by the
+**CARROT cross-codeword transfer** (train without CARROT, test on it — held-out
+binding must generalize) and the **token-identity control** — both already in
+`gate1_eval`. That is the real Gate-1 question; the mechanical confounds are handled.
+
+Net: Phase-1 design is materially de-risked. Proceeding to the full extraction is
+warranted. Slot-waiter armed.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
