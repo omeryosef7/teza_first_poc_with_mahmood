@@ -9629,3 +9629,48 @@ recorded as owed:** integrating §20 into `ASYMMETRY_FINAL_SYNTHESIS.md` and
 **No sprint jobs**, nothing PENDING, nothing to launch.
 
 ---
+## 2026-08-15 14:45 — correcting my own owed-item list: the gap matrix must **not** be updated with §20.
+
+*(Wall clock 19:31 UTC.)* No sprint jobs; the one running job is an external `phase4_bomb`
+(757992). Nothing to launch.
+
+At 14:15 I recorded as owed: *"integrating §20 into `ASYMMETRY_FINAL_SYNTHESIS.md` and
+`ASYMMETRY_GAP_MATRIX.md`."* Reading both headers before acting on that shows the two documents are
+not the same kind of object:
+
+| document | self-declared status |
+|---|---|
+| `ASYMMETRY_GAP_MATRIX.md` | *"Phase 0 deliverable (plan §4). **Written 2026-08-11 before any GPU job.**"* |
+| `ASYMMETRY_FINAL_SYNTHESIS.md` | *"Deliverable §15.9. Written 2026-08-12. **One experiment is in flight; §6 states its reading rule and both outcomes in advance.**"* |
+
+**The gap matrix is a dated pre-sprint snapshot, not a live tracker.** Its whole evidentiary value
+is that it records what was known *before any GPU job ran* — that is what makes its
+NEW/PARTIAL/UNDERPOWERED classifications and its pre-registered reasoning meaningful. Retrofitting
+§20 outcomes into it would destroy exactly the property it exists to have, and would make the
+sprint look like it predicted results it did not.
+
+**So: the gap matrix is correct as-is and should be left alone.** My 14:15 note was wrong to list
+it as owed; scratching that half of the item.
+
+The synthesis is the opposite case — it was written *mid-sprint with an experiment in flight* and
+explicitly reasons about outcomes not yet in. It is a living document, which is why annotating the
+superseded transfer claim there was appropriate, and why fuller §20 integration is legitimately
+owed for it (an editorial call, still the plan owner's).
+
+**Revised owed list:**
+1. §20.0 dev-split allocation decision — never written; dev verified unspent.
+2. §20.6/§20.9 — blocked behind §20.8's unmeetable n=300; Option 3 recorded as the recommended
+   unblock (08:00), a plan decision.
+3. §20 integration into **`ASYMMETRY_FINAL_SYNTHESIS.md` only** — beyond the two annotations at
+   14:15.
+4. ~~§20 integration into `ASYMMETRY_GAP_MATRIX.md`~~ — **withdrawn**; it is a pre-GPU snapshot and
+   updating it would corrupt a dated deliverable.
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ — complete, propagated, verified, reconciled.
+Nothing in §20 is computable and undone.
+
+### SLURM
+**No sprint jobs**, nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
