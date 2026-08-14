@@ -7268,3 +7268,51 @@ Status split: 3 ESTABLISHED (§20.1 objective-space, §20.2 mediation, §20.3 ju
 **§20.7:** 16/74 prompts. **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 12:15 — §20.7 INTERIM, objective space: **the optimizer saturates by ~200 steps.** Recommend descoping the 2000-step arm.
+
+§20.7's stated endpoint is ASR vs log(steps) — the endpoint §20.8 showed this design has ~0.05
+power on. The **objective**-space curve is continuous, paired per-prompt, judge-free, and
+available now. `asym_p207_objective_curve.py`, seed 42, endpoint = best-so-far task_loss (the
+series is non-monotonic, so endpoint value ≠ achieved performance).
+
+Paired on the **14 prompts complete at all three budgets** (600-step arm still running — interim):
+
+| steps | mean best task_loss | sd |
+|---|---|---|
+| 5 | 2.0246 | 0.358 |
+| 200 | 1.0711 | 0.428 |
+| 600 | 0.9919 | 0.326 |
+
+| contrast | mean Δ | improved | Wilcoxon p |
+|---|---|---|---|
+| 5 → 200 | **−0.9534** | **14/14** | **1.2e-4** |
+| 5 → 600 | −1.0326 | 14/14 | 9.8e-4 |
+| **200 → 600** | **−0.0792** | **9/14** | **0.363** |
+
+**9/14 is indistinguishable from a coin flip (binomial p = 0.42).** Per unit compute the 200→600
+leg is **25× less efficient** than 5→200 (0.198 vs 4.889 loss per 1000 steps/prompt).
+
+### Consequence: the 2000-step point should not be launched as planned
+§20.7 was framed as *"if it extrapolates toward ~0.7 the central gap is not about discreteness at
+all; if it plateaus near ~0.3 the program finally has an upper bound for discrete attack."* In
+objective space **it plateaus** — and it plateaus already by 200 steps, not somewhere past 600.
+The 2000-step arm (~97 GPU-h/seed) would be buying a leg that is 25× less efficient than one we
+have already shown to be non-significant. **Recommending it be descoped**, with the ~97 GPU-h
+redirected to the corpus problem (§20.8), which is the actual blocker.
+
+The log-linear fit (`best_loss = 2.367 − 0.2265·ln steps`, extrapolating to 0.28 at 10 000 steps)
+is reported in the artifact but is **the wrong model** — it is dominated by the 5→200 jump and
+cannot represent saturation. Do not quote the extrapolation; quote the pairwise contrasts.
+
+### Limits, stated plainly
+* **Interim, n=14 paired**, and the subset is shard-determined (index mod 4) plus
+  completion-ordered, so it is not a random sample of the 37.
+* **Objective space only.** Per §20.1 an objective-space result does **not** imply the behavioural
+  one; a saturating loss does not by itself prove ASR saturates. The behavioural curve still needs
+  the full 37 prompts — but it will land in the ~0.05-power regime, so it will be a *bound*, not a
+  point estimate.
+* Seed 42 only so far; seed 43 is at 6/19, seed 44 unlaunched.
+
+**§20.7:** 19/74 prompts. **Queue 6/6**, nothing PENDING.
+
+---
