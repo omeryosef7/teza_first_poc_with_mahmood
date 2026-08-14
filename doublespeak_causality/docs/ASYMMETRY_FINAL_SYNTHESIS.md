@@ -192,11 +192,25 @@ negative is *not* a universality/prompt-specificity failure:
 1. no reliable per-prompt behavioural advantage at either budget;
 2. per-prompt suffixes **transfer** (off-diagonal ASR 0.173–0.200 ≥ the universal arm's own
    held-out 0.162), and their specificity is **matched by a random direction**;
+   > ⚠️ **SUPERSEDED by §20.5 (2026-08-15).** Point 2 was made without a noise floor. One now
+   > exists: 10 un-optimized 16-token random suffixes over the same 37 test prompts, same
+   > evaluator, score **ASR@1 = 0.2351** (`asym_p205_bestofk_existing.json`). Every off-diagonal
+   > transfer cell (0.171–0.230) sits **at or below** that. "Per-prompt suffixes transfer" is
+   > therefore not supported — the transfer numbers are indistinguishable from, and mostly worse
+   > than, what random token strings achieve. The *conclusion* of this list is unaffected (the
+   > universal negative is still not a universality failure), but this leg of it no longer carries
+   > weight. See `SECTION20_RESULTS.md` §8.
 3. the projection moves — so the objective is not inert.
 
 **A methodological result that outlives it: compute dominates direction.** The matched-**random**
 arm alone gains **+0.216 ASR** from 5→200 steps/prompt, larger than every direction effect in the
-sprint. Had §7.5 been run only at full budget — the obvious way — "per-prompt beats universal"
+sprint.
+> **Refinement from §20.5's floor (2026-08-15), not a contradiction.** That gain runs
+> **0.126 → 0.270** on the diagonal, i.e. from **below** the random-token floor (0.2351) to just
+> above it. So the compute effect is real and still dwarfs every direction effect — but what
+> compute mostly buys is *reaching parity with random token strings*, and only the full-budget
+> arm clears the floor at all. This strengthens "compute dominates direction" while weakening any
+> reading of the 200-step arm as a strong attack. Had §7.5 been run only at full budget — the obvious way — "per-prompt beats universal"
 would have followed, produced entirely by compute, using a random direction. The compute-matched
 arm was added pre-registration on this exact reasoning.
 

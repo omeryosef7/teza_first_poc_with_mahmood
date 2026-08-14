@@ -9578,3 +9578,54 @@ decision still unwritten, dev still unspent. §20.6/§20.9 still blocked behind 
 decisions, not compute.
 
 ---
+## 2026-08-15 14:15 — the diff went up a level: **§20.5 contradicts a claim in the paper-facing synthesis.**
+
+*(Wall clock 19:01 UTC.)* Queue empty of sprint jobs. With `SECTION20_RESULTS.md` verified end to
+end over the last two ticks, the diff moved outward to the documents §20 is supposed to feed.
+
+**`ASYMMETRY_FINAL_SYNTHESIS.md` (last touched Aug 13) and `ASYMMETRY_GAP_MATRIX.md` (Aug 11)
+contain zero mentions of §20** — they predate the entire sprint. Mostly that is a completeness gap.
+But one item is worse than incomplete.
+
+### The contradiction
+Synthesis §6b, answering the question §7.5 was added for, lists as evidence:
+
+> *"per-prompt suffixes **transfer** (off-diagonal ASR 0.173–0.200 ≥ the universal arm's own
+> held-out 0.162)"*
+
+**That claim was made without a noise floor.** One now exists: 10 un-optimized random 16-token
+suffixes, same 37 test prompts, same evaluator, **ASR@1 = 0.2351**. Every off-diagonal transfer
+cell (0.171–0.230) sits **at or below** it. Per-prompt suffixes do not transfer in any sense that
+survives comparison to random strings — the transfer numbers are indistinguishable from, and mostly
+worse than, noise.
+
+Marked in place as **SUPERSEDED by §20.5**, with the artifact and the pointer to §8. The list's
+*conclusion* is unaffected — the universal negative is still not a universality failure, and legs 1
+and 3 stand — so the correction is scoped to the leg that fails, not to the finding.
+
+### And a refinement to the claim next to it
+The same section's "compute dominates direction" rests on the matched-random arm gaining **+0.216
+ASR** from 5→200 steps. Checked against the floor: that gain runs **0.126 → 0.270**, i.e. **from
+below the random-token floor to just above it**. Not a contradiction — the compute effect is real
+and still dwarfs every direction effect — but what compute mostly buys is *reaching parity with
+random token strings*. Recorded as a refinement that **strengthens** the methodological claim while
+weakening any reading of the 200-step arm as a strong attack.
+
+### Why edit the synthesis rather than only log it
+I have kept §20's own results doc current all sprint, but a refuted claim sitting in a
+paper-facing deliverable is the failure mode that actually reaches a reader. The edits are
+**annotations, not rewrites**: original text preserved with its provenance, correction attached
+inline, artifact named. Anything beyond that — reorganising §6b, or integrating §20 into the gap
+matrix — is an editorial call for the plan's owner, and is **not** done here.
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅, all propagated, verified, and now reconciled
+against the synthesis. **Still open, both needing decisions rather than compute:** §20.0's dev
+allocation (dev verified unspent), and §20.6/§20.9 behind §20.8's unmeetable n=300. **Newly
+recorded as owed:** integrating §20 into `ASYMMETRY_FINAL_SYNTHESIS.md` and
+`ASYMMETRY_GAP_MATRIX.md` beyond these two annotations.
+
+### SLURM
+**No sprint jobs**, nothing PENDING, nothing to launch.
+
+---
