@@ -8594,3 +8594,55 @@ point (757867, n-805 L40S). Nothing PENDING. **§20.7:** seed 42 **37/37**, seed
 seed 44 **24/37**. Read gate holds — seed 44 is the last one, ~3.5 h out.
 
 ---
+## 2026-08-15 02:45 — μ=0.1 lands. **The obvious cost number from it is invalid**, and catching that is the tick's result.
+
+*(Wall clock 15:00 UTC.)* 757867 COMPLETED in 13:22. First μ-sweep point in hand.
+
+### What the run shows on its own terms
+| objective | μ | Δproj_test | trajectory loss (start → end) |
+|---|---|---|---|
+| `task` (unpinned) | — | **−3.683** | 3.132 → 0.874 |
+| `task_orth` | **0.1** | **−0.522** | 3.132 → 2.086 |
+| `task_orth` | 1.0 | **+0.195** | 3.133 → 2.978 |
+
+The pin is **monotone and graded**, which is the thing worth having: μ=1.0 holds the coordinate
+slightly *positive*, μ=0.1 lets it fall 0.52, and free optimization drives it 3.68. So μ does what
+it is supposed to, and a sweep over it is meaningful.
+
+### The trap I walked into and backed out of
+Dividing those loss gains gives "cost = 53.7 % at μ=0.1 versus 93.1 % at μ=1.0", which reads like a
+direct answer to §20.1's open question. **It is not a valid number.** `asym_p2_softprompt.py`
+appends `tot` to the trajectory, and for `task_orth` that value is
+`objective_value(..., mu=args.orth_mu)` — **the task loss plus μ·penalty**. Comparing a penalized
+objective against the free arm's unpenalized one is apples-to-oranges, and worse, the confound
+**scales with μ**: larger μ inflates the loss it is being blamed for, manufacturing exactly the
+monotone "cost rises with pin strength" curve the sweep is meant to test.
+
+Checked the source rather than trusting the field name. That is the whole reason the number did not
+get written into `SECTION20_RESULTS.md`.
+
+### The valid endpoint, and what it costs
+§20.1's "78 %" comes from `asym_p201_ce_scores.json → ce_progress_frac` — a **separate post-hoc CE
+scoring pass** on the frozen soft prompt (μ=1.0 seed 42 records `ce_progress_frac = 0.132`, i.e.
+86.8 % cost; the 78 % headline is the across-seed mean). The optimization run alone cannot produce
+it.
+
+**Design finding for the ledger: every μ point needs two jobs, not one** — the optimization, then a
+CE scoring pass. The sweep's cost estimate doubles, and this was not in the 20:45 "launch-ready,
+4 values" note.
+
+Submitted **757884** on n-802 (L40S): CE scoring of **μ=0.1 together with its μ=1.0 anchor and the
+free `task` arm, in one job**, because the script asserts arms in a contrast share
+model/manifest/layer and warns that a shared model load is what removes the load-order confound.
+Written to `asym_p201_ce_musweep.json` so the existing §20.1 artifact is not clobbered — the μ=1.0
+and free arms get rescored here, and agreement with their recorded values is itself a check.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, the K=10 floor (757879, **194/370**), the CE scorer
+(757884). Nothing PENDING. Nodes n-301..n-305 (3090s), n-802 (L40S). **§20.7:** seeds 42 and 43
+**37/37**, seed 44 **24/37**. Read gate holds.
+
+Next μ values (0.3, 3, 10) wait until μ=0.1 has a valid CE number — no point spending four slots on
+points whose endpoint is unresolved.
+
+---
