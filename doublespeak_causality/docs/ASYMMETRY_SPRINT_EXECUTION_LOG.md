@@ -9811,3 +9811,44 @@ into `ASYMMETRY_FINAL_SYNTHESIS.md` · registry scope for the project-level `out
 **No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
 
 ---
+## 2026-08-15 16:45 — **there are two different "§20"s on this branch.** Disambiguating before the record is misread.
+
+*(Wall clock 22:01 UTC.)* Queue empty, nothing PENDING, nothing to launch. The diff this tick found
+no gap in §20's artifacts — but it found an ambiguity in the record that will mislead a reader.
+
+### The collision
+The concurrent session just committed **`07962599 "§20 deliverables: standalone 2x2 factorial +
+cross-model replication reports"`**. That is **not this §20.**
+
+| | this sprint's §20 | the other session's §20 |
+|---|---|---|
+| plan | `docs/ASYMMETRY_SPRINT_PLAN_2026_08_11.md` §20 — *"NEXT SPRINT — priorities derived from the completed results"* | `docs/ROLE_PROBE_NEXT_SPRINT_PLAN.md` §20 — *"REQUIRED DELIVERABLES"* (line 1954) |
+| content | 20.0 governance, 20.1 orthogonality/μ sweep, 20.4 equivalence bounds, 20.5 pool attack, 20.7 compute curve | 9 report files: bombness/refusal 2×2 factorial, cross-model probe replication, Gate 1, Phases 5/6 |
+| output | `docs/SECTION20_RESULTS.md` | `reports/*.md` |
+
+Their commit touched **none** of my files (`SECTION20_RESULTS.md`, this log, `OWED_SUBMISSIONS.md`
+— zero overlap), so there is **no conflict and nothing to reconcile**. The problem is purely
+referential: `git log` on `behavioral-causality-sprint` now interleaves *"§20.7 COMPLETE"* and
+*"§20 deliverables"* commits from two unrelated programmes, and a reader — or a future me — will
+reasonably assume one §20.
+
+**Recording it rather than renaming anything.** Renaming another session's sections mid-flight would
+be worse than the ambiguity, and my own commit messages are already scoped by their content
+(`20.7`, `20.5`, `mu sweep`). The disambiguation lives here, where anyone reconstructing this
+sprint will be reading anyway.
+
+**Practical rule for whoever reads the branch:** in this log and in `SECTION20_RESULTS.md`, "§20.x"
+always means the **asymmetry** plan. Anything mentioning `reports/`, Gate 1, bombness, role probes
+or Phases 5–8 belongs to the role-probe sprint.
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ — complete, propagated, fully traced,
+verified, reconciled. No new asymmetry artifacts since 21:15 other than the bounds file I wrote.
+Owed list unchanged and now consolidated in `OWED_SUBMISSIONS.md`'s closing section: §20.0
+governance · §20.6/§20.9 unblock · §20.5c dense grid (optional) · synthesis integration · registry
+scope. **None is a submittable job.**
+
+### SLURM
+**No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
