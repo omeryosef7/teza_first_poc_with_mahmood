@@ -38,7 +38,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
 | Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
-| Phase 4 — causal interventions | 8 | ◐ | harness + v_bomb directions built (E17); manip-check smoke queued |
+| Phase 4 — causal interventions | 8 | ◐ | **manip-check PASSED** (ablate −1.9, random ~0); full behavioral run next |
 | Phase 5 — component patching | 9 | ☐ | |
 | Phase 6 — D3 scope-matched control | 10 | ☐ | |
 | Phase 7 — Phi concept completion | 11 | ☐ | |
@@ -640,6 +640,30 @@ follows. Only if it moves Bombness do I run the judged behavioral arm. Given Pha
 stays ~ baseline ~ random → Story A confirmed causally. But that must be measured.
 
 6/6 at cap; slot-waiter armed to launch the manip-check smoke.
+
+### E18 — 2026-08-14 — Phase 4 manipulation check PASSES (§8.3 gate) ☑
+
+Relaunched smoke 757930 (after the no_grad fix) COMPLETED. Manipulation check on 6 DS
+prompts — the downstream Bombness readout (mean) at UNPATCHED layers under each arm:
+
+| layer | ds_base | ds_bomb_ablate | ds_bomb_random | ablate−base | random−base |
+| --- | --- | --- | --- | --- | --- |
+| L20 | +0.99 | −0.88 | +1.00 | **−1.87** | +0.005 |
+| L24 | +1.88 | −0.04 | +1.88 | **−1.92** | −0.000 |
+| L28 | +1.00 | −0.98 | +1.01 | **−1.98** | +0.008 |
+| L31 | +5.35 | +2.90 | +5.30 | **−2.45** | −0.042 |
+
+Ablating v_bomb at the write band (L8-18) **propagates to collapse the Bombness readout
+at every downstream unpatched layer** (readout goes from BOMB-like positive to
+≈0/negative), while the norm-matched random ablation leaves it unchanged (≤0.04). The
+intervention is **valid and specific** — §8.3 gate PASSED. The first no_grad-crash run
+(757928) wasted no behavioral compute (died at 32s in setup).
+
+⇒ Cleared to run the decisive behavioral experiment: does removing Bombness (which we
+now know collapses the concept readout) change ASR? Launching MODE=full (all 42 test DS
+prompts, judged, + the refusal-ablation positive control). Given Phase 3, the expected
+outcome is Story A (ASR unchanged vs base and vs random, while refusal ablation moves
+it), but this is the measurement that makes the claim causal rather than predictive.
 
 ---
 
