@@ -7980,3 +7980,59 @@ With no half-launched set left, the next free slot goes to the **§20.1 μ sweep
 on the ledger, and the first non-§20.7 launch in several ticks.
 
 ---
+## 2026-08-14 20:15 — §20.5's second mandatory condition is met from disk too. The k=2 gain survives denoising.
+
+*(Wall clock 10:00 UTC.)* No completions again; queue 6/6 unchanged. The diff went after the
+§20.5 follow-up I had classified as **API spend** — and that classification was also wrong.
+
+### §20.3 already re-judged this exact pool
+`asym_p203_judge_replicates.json` has `pool_total = 1998` — which is the 666 diagonal rows **plus
+the 1332 transfer rows**. The transfer grid was inside the replicate run all along: **66 of the 93
+boundary-band rows are `xfer_*` rows**, each with M=5 scores and a majority label. So the plan's
+*"majority-vote judging before taking the max"* needs **no API spend**; the labels exist.
+
+Recomputed with majority labels substituted for band rows (52 off-diagonal overrides across the
+six cells; non-band rows keep their single pass on §20.3's deterministic-extremes evidence — 40
+sampled, 0 flips, mean sd 0.0023, the same basis §20.4 pass 2 published on):
+
+| arm | seed | raw @1 | raw @2 | **maj @1** | **maj @2** | labels moved |
+|---|---|---|---|---|---|---|
+| matched_random | 42 | 0.1921 | 0.2485 | 0.1959 | 0.2524 | 1/9 |
+| matched_random | 43 | 0.2203 | 0.2964 | 0.2095 | 0.2865 | 4/10 |
+| matched_random | 44 | 0.2139 | 0.2740 | 0.2116 | 0.2695 | 2/10 |
+| mechanism | 42 | 0.2156 | 0.2956 | 0.1976 | 0.2866 | 2/9 |
+| mechanism | 43 | 0.1762 | 0.2706 | 0.1709 | 0.2625 | 4/6 |
+| mechanism | 44 | 0.2208 | 0.3525 | 0.2299 | 0.3615 | 1/8 |
+
+**Mean k=2 gain: +0.0831 raw → +0.0839 majority-vote.** The objection that motivated the mandatory
+condition — a max-statistic accumulating judge false positives — **is answered empirically**: 14
+individual labels move, and the pooled gain does not. Valid at **threshold 0.5 only**; §20.3's band
+was defined as |score0 − 0.5| ≤ 2 steps, so these labels say nothing at 0.25, and the 0.25 column
+stays raw.
+
+**§20.5 now has one unmet condition, not two**: the `randtok` noise floor, which genuinely needs
+GPU generation. That is the only thing standing between this and a publishable pool result.
+
+### A benchmark I computed, got backwards, and kept as a warning
+With no floor on disk I reached for a free reference: if a target's two draws were independent
+Bernoulli at its own rate, ASR@2 would be 1−(1−p)². Observed sits **above** it in all six cells
+(+0.013 to +0.033), which I first read as evidence about clustering. **That reading is wrong.**
+ASR@k here is exact sampling *without* replacement from pools of 2–11, while 1−(1−p)² is *with*
+replacement — on tiny finite pools the former is mechanically larger (a 2-subset of a 2-pool
+holding one success hits with probability 1, against 0.75 under independence). The gap is an
+artifact of the estimator, not a property of the attack.
+
+Kept in the artifact under the field name `..._with_replacement_ref_NOT_a_floor` with the reason
+inline, specifically so the next reader does not re-derive it and believe it. **It is not a
+substitute for the randtok floor and nothing in §20.5 should cite it.**
+
+### Design-vs-inventory diff (rest of §20)
+§20.1 μ sweep **0 dirs** — top GPU item, goes in on the next free slot. §20.2/§20.3/§20.4/§20.6/
+§20.8/§20.9 unchanged. §20.7 running.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING in `squeue`. One job per node across **n-301, n-302,
+n-303, n-304, n-305, n-350** — all 3090s. **§20.7:** 62/74 (seed 42 37/37 FINAL, seed 43 **25/37**),
+seed 44 4/37, all four shards running.
+
+---

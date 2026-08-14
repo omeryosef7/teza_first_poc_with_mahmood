@@ -1,12 +1,14 @@
 {
   "provisional": true,
   "unmet_mandatory_conditions": [
-    "majority-vote judging before the max (on-disk judging is M=1; k>1 is biased upward by accumulated judge false positives)",
     "randtok pool as the noise-inflated floor (never generated for these prompts)"
   ],
   "met_conditions": [
-    "diagonal pairs dropped"
+    "diagonal pairs dropped",
+    "majority-vote judging before the max -- at threshold 0.5 only, from \u00a720.3's M=5 replicates, whose 1998-row pool contains this transfer grid; non-band rows keep their single pass on \u00a720.3's deterministic-extremes evidence (40 sampled, 0 flips)"
   ],
+  "denoise_threshold": 0.5,
+  "denoise_not_valid_at": "0.25 -- the \u00a720.3 band was defined as |score0 - 0.5| <= 2 steps",
   "k_balanced_max": 2,
   "why_k_is_capped": "off-diagonal pool sizes are unequal (2..11); a max-statistic over unequal pools is not comparable across targets, so k is capped at the global minimum pool with all targets retained",
   "asr_at_k_is_exact": "1 - C(n_fail,k)/C(n,k) per target, then averaged; no resampling",
@@ -64,7 +66,22 @@
           "1": 0.1920849420849421,
           "2": 0.24851994851994855
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.19594594594594594,
+          "2": 0.2523809523809524
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.2525094992952136,
+        "0.5": 0.23591576270147696
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.23977676656248087
+      },
+      "n_majority_overrides": 9,
+      "n_labels_changed_by_majority": 1
     },
     {
       "arm": "asym_p75_matched_random",
@@ -119,7 +136,22 @@
           "1": 0.22027027027027027,
           "2": 0.2963963963963964
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.20945945945945946,
+          "2": 0.2864864864864865
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.30256404363547224,
+        "0.5": 0.27955062205062203
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.2692202917202917
+      },
+      "n_majority_overrides": 10,
+      "n_labels_changed_by_majority": 4
     },
     {
       "arm": "asym_p75_matched_random",
@@ -174,7 +206,22 @@
           "1": 0.2138996138996139,
           "2": 0.274002574002574
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.21164736164736164,
+          "2": 0.2694980694980695
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.2780011644297359,
+        "0.5": 0.2600131764417478
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.25644711037568174
+      },
+      "n_majority_overrides": 10,
+      "n_labels_changed_by_majority": 2
     },
     {
       "arm": "asym_p75_mechanism",
@@ -229,7 +276,22 @@
           "1": 0.21563706563706564,
           "2": 0.2956241956241956
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.1976190476190476,
+          "2": 0.2866151866151866
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.2807150517864804,
+        "0.5": 0.2774718085432371
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.2654597965312251
+      },
+      "n_majority_overrides": 9,
+      "n_labels_changed_by_majority": 2
     },
     {
       "arm": "asym_p75_mechanism",
@@ -284,7 +346,22 @@
           "1": 0.17623337623337623,
           "2": 0.27061347061347063
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.17091377091377094,
+          "2": 0.2625482625482626
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.25783725902773524,
+        "0.5": 0.24810752929800545
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.24003033645890787
+      },
+      "n_majority_overrides": 6,
+      "n_labels_changed_by_majority": 4
     },
     {
       "arm": "asym_p75_mechanism",
@@ -339,7 +416,22 @@
           "1": 0.22084942084942089,
           "2": 0.3525096525096525
         }
-      }
+      },
+      "asr_denoised": {
+        "0.5": {
+          "1": 0.22985842985842986,
+          "2": 0.3615186615186615
+        }
+      },
+      "asr_with_replacement_ref_NOT_a_floor": {
+        "0.25": 0.3455436048293191,
+        "0.5": 0.31923729852301275
+      },
+      "asr_denoised_with_replacement_ref_NOT_a_floor": {
+        "0.5": 0.3282463075320218
+      },
+      "n_majority_overrides": 8,
+      "n_labels_changed_by_majority": 1
     }
   ]
 }
