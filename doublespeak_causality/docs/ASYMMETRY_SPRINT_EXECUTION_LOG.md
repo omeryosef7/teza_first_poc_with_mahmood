@@ -9674,3 +9674,46 @@ Nothing in §20 is computable and undone.
 **No sprint jobs**, nothing PENDING, nothing to resubmit, nothing to launch.
 
 ---
+## 2026-08-15 15:15 — inventory check on the experiment registry: **§20's two largest compute items are invisible in it.**
+
+*(Wall clock 20:01 UTC.)* Queue empty, nothing PENDING, nothing to launch. Ran the diff against the
+project's canonical experiment index rather than against the docs.
+
+### What is registered
+`EXPERIMENT_REGISTRY.csv` (598 rows) is auto-maintained by `scripts/update_registry.py`, and it is
+**fully current for its scope**: a dry run reports **570 run dirs on disk, 570 already registered,
+0 to add, 0 flagged**. All **12 μ-sweep runs are present**, auto-added from their `RUNMETA.json`
+with the git commit of the tick that produced each — §20.1's provenance is intact end to end.
+
+### What is not
+**§20.7's 111 per-prompt GCG runs and §20.5's 10 randtok floor dirs have no registry rows.** Not a
+maintenance lapse — a **scope boundary**: the updater defaults `--outputs` to
+`doublespeak_causality/outputs` and *hardcodes* that prefix into the `output_dir` column (lines 137,
+180). The §7.5/§20.7 per-prompt tree and the floor live in the **project-level** `outputs/`, which
+the registry has never indexed. The 7 rows matching `p75|perprompt` are the mechval readouts, which
+do sit under `doublespeak_causality/outputs/`.
+
+So the single largest block of GPU time in this sprint — **111 runs × ~1 h/prompt ≈ 900 GPU-hours**
+— is absent from the index that is supposed to be the project's run-of-record.
+
+**Not fixed here, and the reason matters:** pointing `--outputs` at the project tree would write
+**wrong paths**, because the `doublespeak_causality/outputs/` prefix is hardcoded rather than
+derived. It is a code change, not a flag, and it would additionally backfill hundreds of historical
+rows from every earlier stage — a scope decision for the registry's owner, not a side effect of a
+§20 tick. **Recorded as owed.**
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ — complete, propagated, verified, reconciled
+against the synthesis, and (for the soft-prompt half) registered.
+
+**Owed, none of it compute:**
+1. §20.0 dev-split allocation decision — never written; dev verified unspent.
+2. §20.6/§20.9 — behind §20.8's unmeetable n=300; Option 3 recorded as the recommended unblock.
+3. §20 integration into `ASYMMETRY_FINAL_SYNTHESIS.md` beyond the 14:15 annotations.
+4. **NEW —** registry scope: index the project-level `outputs/` tree, or record deliberately that
+   it is out of scope. Requires the hardcoded prefix to be derived first.
+
+### SLURM
+**No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
