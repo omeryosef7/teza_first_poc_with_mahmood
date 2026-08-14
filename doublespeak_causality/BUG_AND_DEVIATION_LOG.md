@@ -258,3 +258,23 @@ Plan §2A.2 names the upstream code-review deliverable
 `docs/ROLE_CONFUSION_CODE_REVIEW.md`; per user request for a single tracking file
 it was folded into `docs/ROLE_PROBE_NEXT_SPRINT_PLAN.md` as Appendix A and the
 separate file deleted. Documentation location only; no scientific effect.
+
+## B19 — v3 corpus `codeword_occurrences_templated` spans are stale vs the stored `*_prompt`
+**Date:** found 2026-08-14 (role-probe sprint, launching the generated-cohort replication).
+The corpus per-example `codeword_occurrences_templated` spans (and `n_codeword_occurrences_templated`)
+were computed on a DIFFERENT rendering than the stored `doublespeak_prompt` field: occurrence
+counts differ for ~65% of clearharm (26/40) and ~50% of generated (20/40) examples (e.g.
+generated_0173: stored prompt 9 codeword tokens, corpus says 13; corpus query-last 213 vs the
+stored-prompt query-last 182). The stored `doublespeak_prompt` is the REAL attack — the behavioural
+harness generates `ds_base_score` from it, and the Bombness extraction reads from it.
+**Impact: NONE on results.** Extraction is correct by construction: `pair_common.capture_components`
+locates the codeword via `resolve_positions` on the actual (templated stored) prompt, so it reads at
+the true query-codeword position regardless of the stale spans. Gate 1's clean result (holdout AUC
+0.997, token-identity control exactly 0.500, cross-codeword generalization) confirms the positions
+were correct. The corpus-span anchor was only an external cross-check.
+**Fix:** `preflight_positions` downgraded — HARD check that the codeword resolves to a real
+prompt-body position (0 <= codeword_last < final_prompt), and the corpus-span match becomes a SOFT
+reported rate (warn if <0.5, never abort). The B9 absolute-position bug class is structurally
+impossible here anyway (positions are resolved per example, never reused). Regression test
+`test_generated_cohort_resolves` locks that the generated cohort now passes. This UNBLOCKS the
+generated-cohort replication; the clearharm Gates 1-4 are unaffected.
