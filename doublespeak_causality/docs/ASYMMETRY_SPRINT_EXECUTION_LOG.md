@@ -9224,3 +9224,50 @@ corpus ceiling.
 seed 44 **30/37**, ~2 h from the pre-registered three-seed read.
 
 ---
+## 2026-08-15 09:45 — **§20.1 IS COMPLETE.** The trade-off is sharply convex, and past μ=1 the penalty is pure damage.
+
+*(Wall clock 16:10 UTC.)* 757932 COMPLETED — 18 arms, one model load. Both axes are now closed at
+three seeds per point.
+
+| μ | Δproj mean (sd) | suppressed | **cost** (sd) |
+|---|---|---|---|
+| 0.1 | −0.722 (0.189) | 76.5 % | **19.5 %** (37.9) |
+| 0.3 | −0.328 (0.261) | 89.1 % | **34.5 %** (21.1) |
+| **1.0** | −0.026 (0.192) | **99.0 %** | **76.9 %** (11.1) |
+| 3.0 | −0.098 (0.139) | 96.6 % | **98.0 %** (0.9) |
+| 10.0 | +0.001 (0.073) | 99.9 % | **100.7 %** (0.4) |
+
+**The answer to the question this sweep was launched for:** three-quarters of the coordinate's free
+movement is removable for **19.5 %** of the achievable CE reduction; reaching 99 % costs **57 more
+points**; and the last approach to a perfect pin consumes everything left — at μ=10 the pinned
+prompt makes **no CE progress at all**.
+
+**And past μ=1 the penalty buys nothing but damage.** μ ∈ {1, 3, 10} are mutually indistinguishable
+on suppression (−0.026, −0.098, +0.001 — μ=3 is even slightly *looser* than μ=1.0), while cost runs
+76.9 → 98.0 → 100.7 %. Paired within seed: μ=3 and μ=10 are **0/3 cheaper** than μ=1.0; μ=0.1 and
+μ=0.3 are **3/3 cheaper**. This was the n=1 impression at 08:15 that I refused to interpret; it is
+the one of the four that **survived** replication, and it survived with sds of 0.9 and 0.4.
+
+So the published **78 % is the price of a near-total pin, and μ=1.0 sits at the knee** — the "limits"
+caveat in `SECTION20_RESULTS.md` §1 was conjecture and is now measurement.
+
+### Propagated
+`SECTION20_RESULTS.md` gains **§1b** with the full table, both caveats carried in the same block as
+the numbers (the weak-μ noise, sd 37.9 including a seed at −8.6 % where the pinned run beat its own
+free arm; and the fact that cost does **not** track achieved tightness across pooled runs, ρ = −0.50
+p = 0.14, so the claim rests on the μ-ordered means and not that correlation). The bar I set at
+07:15 was a complete ladder rather than a good-looking trend; it is met, so it propagates.
+
+### Design-vs-inventory diff
+**§20.1 complete. §20.5 complete.** §20.2/§20.3/§20.4 complete. §20.7 running, read pre-registered
+and gated on seed 44. §20.6/§20.9 remain behind the corpus ceiling — the only §20 items not closed,
+and both blocked by design rather than by resources.
+
+### SLURM
+**Queue 4/6** — the four §20.7 seed-44 shards, and nothing else to launch: every registered §20 item
+is complete except §20.7, which is running, and the two behind the corpus ceiling, which the plan
+forbids starting. Idle slots here are the correct state, not a gap.
+
+**§20.7:** seeds 42 and 43 **37/37**, seed 44 **30/37**. Read gate holds.
+
+---

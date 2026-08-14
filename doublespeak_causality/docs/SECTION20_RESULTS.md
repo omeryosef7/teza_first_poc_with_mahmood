@@ -32,8 +32,47 @@ Manipulation checks both pass: the pin holds the projection at Δproj = −0.026
 objective. For scale, §7.5's *mechanism* objective — which explicitly targets this coordinate with
 discrete tokens — achieved only **−0.354**.
 
-**Limits.** μ=1.0 is one point on a trade-off curve and the pin binds hard, so 78 % is the cost of
-a *near-total* pin, not of the coordinate as such. A μ sweep is owed.
+### 1b. The μ sweep is done, and the trade-off is sharply convex
+
+**ESTABLISHED.** `asym_p201_ce_musweep.json` — 18 arms (5 μ values + free, × 3 seeds), every CE
+number produced under a **single model load** as the scorer requires for a valid contrast. The
+μ=1.0 anchor reproduces `asym_p201_ce_scores.json` exactly (`ce_progress_frac` 0.13206,
+`dproj_test` 0.18678), so this table extends the published result rather than replacing it.
+
+| μ | Δproj mean (sd) | suppressed | **CE cost** (sd) |
+|---|---|---|---|
+| 0.1 | −0.722 (0.189) | 76.5 % | **19.5 %** (37.9) |
+| 0.3 | −0.328 (0.261) | 89.1 % | **34.5 %** (21.1) |
+| **1.0** | −0.026 (0.192) | **99.0 %** | **76.9 %** (11.1) |
+| 3.0 | −0.098 (0.139) | 96.6 % | **98.0 %** (0.9) |
+| 10.0 | +0.001 (0.073) | 99.9 % | **100.7 %** (0.4) |
+
+*(Suppression is measured against the free arm's 3-seed mean Δproj of −3.090. Cost is
+1 − `ce_progress_frac`/free, per seed, then averaged.)*
+
+**Three-quarters of the suppression is nearly free; the last percent costs everything.** 76.5 % of
+the coordinate's free movement is removable for 19.5 % of the achievable CE reduction. Going from
+there to 99 % costs 57 more points, and the final approach to a perfect pin consumes the rest —
+at μ=10 the pinned prompt makes **no CE progress at all** (100.7 %, i.e. marginally worse than
+baseline).
+
+**Past μ=1 the penalty buys no additional suppression and destroys what CE progress remains.**
+μ ∈ {1, 3, 10} hold the coordinate at −0.026, −0.098, +0.001 — mutually indistinguishable, and
+μ=3 in fact suppresses *slightly less* than μ=1.0 — yet cost climbs 76.9 → 98.0 → 100.7 %. Paired
+within seed, μ=3 and μ=10 are **0/3 cheaper** than μ=1.0 while μ=0.1 and μ=0.3 are **3/3 cheaper**.
+
+**So the 78 % headline is the price of a near-total pin, and μ=1.0 sits at the knee of the curve** —
+the limit stated below is now measured rather than conjectured. The coordinate as such is far
+cheaper to suppress than that number suggests.
+
+**Two caveats that belong with the numbers.** (i) The weak-μ end is *noisy*: sd 37.9 at μ=0.1,
+including one seed at −8.6 % where the pinned run beat its own free arm. Penalty strength buys
+reproducibility as well as tightness — sd falls monotonically 37.9 → 21.1 → 11.1 → 0.9 → 0.4.
+(ii) Cost does **not** track achieved pin tightness across pooled runs (Spearman ρ = −0.50,
+p = 0.14, n=10 at the time of testing); the claim rests on the μ-ordered means at n=3, not on that
+correlation.
+
+**Limits.** Objective space only, one budget (b=0.1), one parameterisation (`free`), one model.
 
 ## 2. That necessity does **not** transfer to behaviour (§20.1 follow-up)
 
