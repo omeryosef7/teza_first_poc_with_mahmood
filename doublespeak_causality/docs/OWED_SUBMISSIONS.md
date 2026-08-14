@@ -99,6 +99,12 @@ not the work — only the prompt in flight at the wall is redone.
 
 **OWED after 757516–519 / 757525–526 end (TIMEOUT or COMPLETED):**
 1. Re-submit each shard with the **same** ARM/SEED/N_STEPS/SHARD/NSHARD to finish stragglers.
-2. Verify per-shard completion by counting `FINAL_CANDIDATES.jsonl` under the `_s600` dirs —
-   **not** by SLURM state, since TIMEOUT is expected and is not failure here.
+2. Verify per-shard completion by counting `FINAL_CANDIDATES.jsonl` — **not** by SLURM state,
+   since TIMEOUT is expected here and is not failure. Exact command (outputs live under
+   `outputs/stage_gcg_perprompt/`, NOT under `perprompt_test/`):
+   ```
+   find outputs/stage_gcg_perprompt -maxdepth 2 -name FINAL_CANDIDATES.jsonl -path '*s600*' | wc -l
+   ```
+   Target is **37 per seed**. Joblists verified: seed42/seed43 each have 37 rows, 37 unique
+   task_ids, 37 unique output_dirs (no collision that would silently overwrite).
 3. Only then aggregate the 600-step curve point.
