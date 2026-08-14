@@ -49,38 +49,59 @@ PRIMARY_POSITIONS = ("codeword_last", "final_prompt")
 COMPONENT = "resid_post"  # == hidden_states[L+1], D1 space
 
 
-def _prompt_text(corpus_example: dict, prompt_field: str) -> str:
-    """Load the templated prompt text for a condition. Runs on the GPU node only."""
+def _templated_prompt(lm, corpus_example: dict, prompt_field: str) -> str:
+    """Load the RAW prompt for a condition and apply the official chat template.
+
+    The corpus `*_prompt` fields are raw (pre-template); the corpus's
+    `codeword_occurrences_templated` spans are in CHAT-TEMPLATED token space, and the
+    chat-templated form is also how the model is actually attacked (the behavioural
+    harness templates). We reuse the canonical `ds_common.apply_template`
+    (single user turn, add_generation_prompt=True, Llama default) so the codeword
+    positions match the corpus spans and the refusal-direction work. Runs on the GPU
+    node only (loads prompt text). Verified offline: templating puts the last codeword
+    token at the corpus's query-span index (see execution log E12)."""
     txt = corpus_example[prompt_field]
     if not isinstance(txt, str) or not txt:
         raise ValueError(f"missing/empty prompt field {prompt_field}")
-    return txt
+    return dc.apply_template(lm.tokenizer, txt, add_generation_prompt=True)
 
 
-def preflight_positions(lm, corpus, items, n_check=8):
-    """Cross-check capture_components' resolved codeword_last against the corpus's
-    precomputed query span. Guards the absolute-position bug class (B9). Aborts on any
-    mismatch. Returns the number checked."""
+def preflight_positions(lm, corpus, items, n_check=24):
+    """Cross-check `resolve_positions` against the corpus's precomputed query span,
+    for the DOUBLESPEAK condition only. Guards the absolute-position bug class (B9).
+
+    The corpus `codeword_occurrences_templated` spans are computed for the DOUBLESPEAK
+    prompt specifically (they carry the demo+query occurrences, n_occ ~ 13). The benign
+    and neutral prompts are different strings, so the codeword lands elsewhere and there
+    is no corpus anchor for them -- their positions come from `resolve_positions`, the
+    same validated infra, which the doublespeak match here validates. Aborts on any
+    doublespeak mismatch; returns (n_doublespeak_checked, n_other_resolved)."""
     by_id = {str(e["example_id"]): e for e in corpus["examples"]}
-    checked = 0
+    checked = other = 0
     for it in items[:n_check]:
         ex = by_id[it.example_id]
-        text = _prompt_text(ex, it.prompt_field)
+        text = _templated_prompt(lm, ex, it.prompt_field)
         pos = pc.resolve_positions(lm, text, it.codeword)
-        want = it.query_span()  # (start, end) into templated tokens
+        if it.condition != pdset.POSITIVE_CONDITION:
+            # no corpus anchor; just confirm the codeword resolves at all
+            if pos.codeword_last is None:
+                raise AssertionError(f"codeword did not resolve for "
+                                     f"{it.example_id}/{it.condition}")
+            other += 1
+            continue
+        want = it.query_span()  # doublespeak (start, end) into templated tokens
         if want is None:
             continue
         # corpus span is [start, end); the query codeword's last token is end-1.
-        # resolve_positions.codeword_last is a single token index for a single-token
-        # codeword. For single-token codewords, end-1 == start.
+        # For single-token codewords, end-1 == start.
         exp_tok = want[1] - 1
         if pos.codeword_last != exp_tok:
             raise AssertionError(
-                f"position mismatch for {it.example_id}/{it.condition}: "
-                f"capture={pos.codeword_last} corpus_query_last={exp_tok} "
+                f"doublespeak position mismatch for {it.example_id}: "
+                f"resolve={pos.codeword_last} corpus_query_last={exp_tok} "
                 f"(absolute-position bug class B9 -- aborting)")
         checked += 1
-    return checked
+    return checked, other
 
 
 def extract(lm, corpus, items):
@@ -91,7 +112,7 @@ def extract(lm, corpus, items):
     blocks, kept, posmeta, dropped = [], [], [], []
     for it in items:
         ex = by_id[it.example_id]
-        text = _prompt_text(ex, it.prompt_field)
+        text = _templated_prompt(lm, ex, it.prompt_field)
         res = pc.capture_components(lm, text, it.codeword,
                                     components=[COMPONENT],
                                     position_names=PRIMARY_POSITIONS)
@@ -139,8 +160,9 @@ def main():
     lm = dc.load_model(args.model, dtype=getattr(torch, args.dtype),
                        revision=args.revision)
 
-    n_pre = preflight_positions(lm, corpus, items)
-    print(f"[preflight] verified {n_pre} codeword positions against corpus spans")
+    n_pre, n_other = preflight_positions(lm, corpus, items)
+    print(f"[preflight] verified {n_pre} doublespeak positions against corpus spans; "
+          f"{n_other} benign/neutral resolved (no corpus anchor)")
 
     acts, kept, posmeta = extract(lm, corpus, items)
     if acts.shape[0] != len(kept) or len(posmeta) != len(kept):
@@ -163,7 +185,7 @@ def main():
         "n_items": len(kept), "acts_shape": list(acts.shape),
         "cohort": args.cohort, "conditions": list(conds),
         "corpus": os.path.relpath(os.path.abspath(args.corpus), _PKG),
-        "preflight_checked": n_pre,
+        "preflight_doublespeak_checked": n_pre, "preflight_other_resolved": n_other,
         **dc.env_metadata(),
         "model_meta": lm.meta(),
     }

@@ -418,6 +418,45 @@ reconcile before trusting extraction; (b) smoke_fit "mechanics_only" if the 24-i
 slice is single-split (expected — smoke slice is dev-heavy); (c) an above-chance
 best-layer AUC = green light for the full extraction. Completion waiter armed.
 
+### E12 — 2026-08-14 — Smoke 757877 FAILED at preflight (by design); root-caused + fixed ☑
+
+**The preflight did exactly its job.** 757877 aborted with
+`position mismatch ... capture=179 corpus_query_last=209 (B9 -- aborting)` — the
+absolute-position bug class the plan flags, caught before any wrong-position
+activation was extracted. (Also: it landed on a V100 node; my fixed GPU guard
+passed cleanly — the 757702 V100 death was the old guard's unreachable-error
+branch, since fixed.)
+
+Root cause (diagnosed offline, tokenizer only, no GPU, no harmful text printed):
+- The corpus `*_prompt` fields are **raw** (no chat template); I was passing the raw
+  string to `capture_components`. Raw → last codeword at token 179.
+- The corpus `codeword_occurrences_templated` spans are in **chat-templated** token
+  space. Chat-templating the user message (35-token template prefix) puts the last
+  codeword at **209 = the corpus span exactly**.
+- Further: the corpus spans are **doublespeak-specific** (n_occ≈13 = demos+query).
+  Benign/neutral are different strings, so the codeword lands elsewhere and there is
+  **no corpus anchor** for them — my first preflight wrongly compared all 3 conditions
+  to the doublespeak span (24/36 spurious mismatches).
+
+**Fix (reuses canonical infra, plan §2A.9):**
+1. `_templated_prompt` now applies `ds_common.apply_template` (single user turn,
+   `add_generation_prompt=True`) before extraction — matching the corpus spans AND
+   how the model is actually attacked (the behavioral harness templates the same way).
+2. `preflight_positions` anchors **only doublespeak** against corpus spans; benign/
+   neutral are confirmed to resolve via `resolve_positions` (the same validated infra),
+   with no corpus anchor. Returns `(n_ds_checked, n_other_resolved)`.
+
+Verified offline over 36 items: **12 doublespeak anchored (all match), 24 benign/
+neutral resolved.** New regression test `tests/test_extraction_positions.py` (2
+tests, loads the real tokenizer offline, skips if uncached) locks this and proves the
+anchor is load-bearing (raw prompt fails it). **Full probe suite: 20 GPU-free tests
+passing.**
+
+Scientific note: extracting from the chat-templated prompt is the correct choice on
+its own merits — the probe now reads the codeword representation as the model
+processes it under attack, comparable to the refusal-direction work. Relaunching the
+smoke on the next free slot.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
