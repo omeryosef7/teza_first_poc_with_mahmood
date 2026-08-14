@@ -24,7 +24,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | **Gate 0** | Jobs reconciled, threshold frozen, split policy explicit, registry/deviation logs current, manifest committed | ☑ **PASSED 2026-08-14** (see E6) |
 | Gate 1 | Contextual Bombness probe validity | ☑ **PASSED 2026-08-14** (E15) |
 | Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☐ |
-| Gate 3 | Frozen latent-state prediction report written | ☐ |
+| Gate 3 | Frozen latent-state prediction report written | ☑ **2026-08-14** (E16, `DUAL_STATE_PREDICTION.md`) |
 | Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☐ |
 | Gate A–F | Decision tree §18 | ☐ |
 
@@ -36,8 +36,8 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
-| Phase 2 — refusal/compliance readout | 6 | ☐ | |
-| Phase 3 — latent-state experiments | 7 | ☐ | |
+| Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
+| Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
 | Phase 5 — component patching | 9 | ☐ | |
 | Phase 6 — D3 scope-matched control | 10 | ☐ | |
@@ -564,6 +564,53 @@ Registered extraction 757886.
 **Next (Phase 2/3):** the Refusalness outcome probe + the dual-probe prediction (which
 latent state predicts DS success). Generated-cohort extraction is a cheap cross-cohort
 replication when a slot frees.
+
+### E16 — 2026-08-14 — Phase 2+3: Refusalness predicts DS success, Bombness does not ☑ (headline)
+
+Entirely offline (CPU) — behavioral outcomes for all 170 clearharm doublespeak
+prompts join to the extraction by example_id (`ds_base_score`, stable across 3 runs
+at 94–96% agreement). No GPU needed.
+
+**Phase 2 (§6):** froze the validated refusal_L18 direction as the Refusalness readout
+(decision-token residual · refusal_dir; not refit). Primary causal coordinate per §6.1.
+
+**Phase 3 (§7.3):** nested logistic models predicting DS jailbreak (score≥0.5), fit on
+train / C-selected on dev / evaluated on the frozen test holdout (n=42):
+
+| model | holdout AUC |
+| --- | --- |
+| A. Bombness only | **0.592** [0.506, 0.855] |
+| B. Refusalness only | **0.976** [0.921, 1.000] |
+| C. both | 0.959 (Δ over B **−0.016**) |
+| D. + interaction | 0.955 |
+
+Refusalness − Bombness AUC gap **+0.384, CI [0.114, 0.482] excludes 0.** Bombness
+quantiles→success flat `[.21,.27,.24,.35,.18]`; Refusalness monotone
+`[.50,.53,.21,.00,.00]`. Bombness adds nothing to discrimination after conditioning on
+refusal (only a small log-loss/calibration gain).
+
+**The dissociation, in latent-state form:** Bombness is near-perfectly *decodable*
+(Gate 1, 0.997) yet carries **no predictive information** about which doublespeak
+prompts jailbreak (0.59); the refusal state predicts almost perfectly (0.98). The
+semantic-identity confusion is real but is not the behavioral security failure — a
+separable refusal-suppressed state is. This is Story A (§22), and it *extends* the
+role-confusion result: latent confusion tracking success is not automatic — the
+semantic-confusion axis here does NOT track success, a distinct control axis does.
+
+**Honesty:** this is PREDICTIVE, not causal (report §5). Prediction≠causation; Phase 4
+(Bombness necessity/sufficiency + the 2×2 factorial) is the decisive causal test.
+n=42 holdout is small (7 successes) — the pooled n=170 (Refusalness 0.849) is the
+stabler estimate; the *direction* is robust across pooled/holdout and 3 outcome runs.
+
+**Deliverable:** `reports/DUAL_STATE_PREDICTION.md`; `src/probes/dual_state_predict.py`
+(+ 2 unit tests); `dual_state_predict.json` in the run dir. **22 GPU-free probe tests**
+(2 tokenizer-dependent skip without HF_HOME set).
+
+Note: Gate 2/3 reached without a separately-fitted outcome-state probe — the frozen
+refusal projection already predicts strongly and is the better-supported causal
+coordinate (§6.1). A fitted 3-class outcome probe (REFUSAL/MALICIOUS/OTHER) is a
+secondary readout, deferred (would need per-example 3-way labels; not on the critical
+path to Phase 4).
 
 ---
 
