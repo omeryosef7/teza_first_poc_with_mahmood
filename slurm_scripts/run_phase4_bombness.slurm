@@ -32,6 +32,7 @@ DC="${PROJECT_DIR}/doublespeak_causality"
 MODE="${MODE:-smoke}"
 LIMIT="${LIMIT:-6}"
 WITH_REFUSAL="${WITH_REFUSAL:-0}"
+FACTORIAL="${FACTORIAL:-0}"
 ALPHA="${ALPHA:-1.0}"
 STAMP="$(date -u +%Y%m%d_%H%M%S)"
 OUT="${DC}/outputs/phase4_bombness_${MODE}_${STAMP}_${SLURM_JOB_ID:-local}"
@@ -64,6 +65,8 @@ cd "$DC"
 EXTRA=""
 if [ "$MODE" = "smoke" ]; then EXTRA="--no-judge --limit ${LIMIT}"; fi
 if [ "$WITH_REFUSAL" = "1" ]; then EXTRA="$EXTRA --with-refusal"; fi
+if [ "$FACTORIAL" = "1" ]; then EXTRA="$EXTRA --factorial"; fi
+echo "FACTORIAL=$FACTORIAL"
 
 python scripts/phase4_bombness_intervention.py \
     --directions "$DIRS" --split test --cohort clearharm --alpha "$ALPHA" \
