@@ -7199,3 +7199,47 @@ The sprint's long-cited **5.4 %** flip figure is superseded: the corpus-level tw
 **§20.7:** 6/74 prompts. **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 11:15 — §20.8: **my own proposed fix does not work.** Switching endpoints buys 1.34× effective n.
+
+At 08:00 I argued option 3 — drop binary ASR for the graded score — was "the one the data supports"
+and "costs nothing". I tested it head-to-head instead of asserting it. `asym_p208_endpoint_compare.py`
+runs both endpoints on the **same rows, same pairing, same bootstrap**, over all 18 of §7.5's
+contrasts (3 contrasts × 3 seeds × 2 budgets).
+
+| | significant at .05 | mean 90 % CI width (SD units) |
+|---|---|---|
+| binary ASR (McNemar) | **0/18** | 0.677 |
+| graded score (Wilcoxon) | **0/18** | 0.585 |
+
+**Graded is 13.6 % tighter — variance ratio 0.746, i.e. an effective sample-size multiplier of
+1.34×.** n=37 with the graded endpoint behaves like **n≈50**, where power against Δ=0.054 is ~0.08
+(vs 0.05 at n=37). **Still hopeless. 0/18 significant under either endpoint.**
+
+### Why so small — and this was predictable
+92.7 % of rows sit at exactly 0.0 or 1.0, so **the graded score is very nearly the binary one**.
+I wrote precisely this at 06:05 ("the graded endpoint buys much less than assumed... very nearly
+the binary endpoint with a 7 % fringe") and then argued the opposite at 08:00. The measurement
+agrees with the 06:05 version: a ~7 % intermediate fringe yields a ~14 % width reduction.
+
+### The honest resolution of §20.8
+None of the three options rescues behavioural detection at this scale:
+1. **n=300** — infeasible (corpus ceiling 179).
+2. **graded endpoint** — 1.34× effective n. Insufficient.
+3. **a second corpus** — the only route to real power, and it costs comparability plus its own
+   templating and direction-validation gate.
+
+What actually has power here are the **objective-space** endpoints — projection (§7.5: 3/3
+sign-consistent, Holm-surviving in one seed) and CE (§20.1: 3/3, 78 % gap). They are precisely the
+endpoints that do **not** license behavioural claims, which is this program's whole thesis.
+
+So the defensible position is not "switch endpoints" but: **report behavioural results as
+equivalence bounds rather than point estimates** — which §20.4 already computes — and stop
+describing 0/18-significant contrasts as findings in either direction. Where a behavioural claim
+is actually needed, only a second corpus will support it.
+
+**§20.6 and §20.4-pass-2 remain blocked**, and the blocker is now characterized rather than merely
+identified: it is not the endpoint, it is the corpus.
+
+**§20.7:** 12/74 prompts (2 per shard, uniform). **Queue 6/6**, nothing PENDING.
+
+---
