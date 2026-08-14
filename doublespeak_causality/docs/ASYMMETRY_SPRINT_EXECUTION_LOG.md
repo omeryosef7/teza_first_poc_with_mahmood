@@ -7900,3 +7900,70 @@ and goes in when 757525 finishes.
 until 37/37.
 
 ---
+## 2026-08-14 19:45 — **§20.5 was not "not started" — most of its generation has been on disk since §7.5.** Delivered provisionally, zero GPU.
+
+*(Wall clock 09:30 UTC.)* Still no job completions (queue 6/6, unchanged). With no read to take,
+the diff went after the one owed item recorded as *queue-blocked* rather than *design-blocked* —
+and the record was wrong.
+
+### The find
+§20.5 has been carried as "not started; 4-8 GPU-h of generation". But §7.5's `--mode transfer`
+runs already wrote a **37x37 source-x-target grid per (arm, seed)** into
+`FREE_GENERATION_RESULTS.jsonl` under `xfer_<arm>_seed<NN>_from_<source>` labels — **1332 rows,
+6 cells** (mechanism and matched_random at seeds 42/43/44), 37 sources and 37 targets each. The
+pool statistic is computable from that with **no GPU at all**.
+
+`asym_p205_bestofk_existing.py` -> `asym_p205_bestofk_existing.json`. ASR@k computed **exactly**
+(1 - C(n_fail,k)/C(n,k) per target, then averaged) rather than by resampling.
+
+| arm | seed | ASR@1 | ASR@2 | ASR@1 | ASR@2 |
+|---|---|---|---|---|---|
+| | | *thr 0.25* | | *thr 0.5* | |
+| matched_random | 42 | 0.2104 | 0.2650 | 0.1921 | 0.2485 |
+| matched_random | 43 | 0.2379 | 0.3206 | 0.2203 | 0.2964 |
+| matched_random | 44 | 0.2238 | 0.2938 | 0.2139 | 0.2740 |
+| mechanism | 42 | 0.2210 | 0.2983 | 0.2156 | 0.2956 |
+| mechanism | 43 | 0.1816 | 0.2814 | 0.1762 | 0.2706 |
+| mechanism | 44 | 0.2407 | 0.3804 | 0.2208 | 0.3525 |
+
+Pooling k=2 adds **+0.06 to +0.14 ASR** in all 6 cells. **This is not yet evidence of a pool
+attack**, for a reason that has to lead rather than follow: a max over more draws can only go up,
+so the sign is guaranteed by construction. Whether it exceeds noise is exactly what the plan's
+mandatory `randtok` floor was for, and that floor does not exist. Marked `provisional: true` with
+the unmet conditions enumerated in the artifact itself:
+
+* **majority-vote judging before the max — UNMET.** On-disk judging is a single StrongREJECT pass
+  (M=1). A max-statistic accumulates judge false positives as k grows, so **every k>1 number above
+  is biased upward by an unknown amount**. This is API spend, not GPU.
+* **`randtok` noise floor — UNMET.** Never generated for these prompts. Without it, +0.08 at k=2
+  cannot be attributed to the pool rather than to two draws of judge noise.
+* diagonal pairs dropped — met (a suffix on its own prompt is §7.5's threat model, not a transfer).
+
+### The design finding, which matters more than the numbers
+**Balanced k caps at 2.** Off-diagonal pool sizes run **2 to 11** per target — the grid was sharded
+for eval cost, never designed as a pool. A max-statistic over unequal pools is not comparable
+across targets (11 candidates = 11 chances), so k is capped at the global minimum with all 37
+targets kept. Going past k=2 means keeping only large-pool targets, i.e. a non-random subset —
+the same selection bias §20.7's interim reads are being held back for.
+
+So **§20.5 as specified cannot be reached by evaluating more of the same grid.** A real pool
+attack at meaningful k needs a *designed* dense grid, and its cost should be re-estimated from
+that, not from the "4-8 GPU-h" figure. Also: **the vanilla arm has no transfer rows at all**, so
+nothing from disk can include it.
+
+**Net change to the ledger:** §20.5 moves from "not started, GPU-blocked" to "provisional result
+delivered; remaining work is (a) a randtok floor pool, (b) M=5 re-judging (API), (c) a redesigned
+dense grid if large-k is wanted" — three separable items, only one of which needs a GPU slot.
+
+### Design-vs-inventory diff (rest of §20)
+§20.1 μ sweep **still 0 dirs** — unchanged, still the top GPU item. §20.2/§20.3/§20.4 unchanged.
+§20.6/§20.9 blocked behind the corpus ceiling. §20.7 running.
+
+### SLURM
+**Queue 6/6**, all RUNNING, **nothing PENDING in `squeue`** (per the 19:15 refinement). One job per
+node across **n-301, n-302, n-303, n-305, n-306, n-350** — all 3090s, none doubled. 757525 is at
+9:56 on its 10th and last prompt; it frees the next slot, which is owed to **seed 44 shard 3**.
+
+**§20.7:** 60/74 (seed 42 **37/37 FINAL**, seed 43 **23/37**). Seed 44 2/37, shards 0-2 launched.
+
+---
