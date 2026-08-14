@@ -8646,3 +8646,29 @@ Next μ values (0.3, 3, 10) wait until μ=0.1 has a valid CE number — no point
 points whose endpoint is unresolved.
 
 ---
+## 2026-08-15 03:15 — short tick: both analysis jobs still running, nothing to launch.
+
+*(Wall clock 15:02 UTC.)* No completions since 02:45. **Queue 6/6**, nothing PENDING.
+
+* **757884** (CE scoring of μ=0.1 + its two anchors, n-802 L40S) — 1:18 in, `scoring 6 args over
+  3 arms`. Until it lands, μ=0.1 has no valid endpoint and the remaining μ values stay unlaunched
+  by design (02:45).
+* **757879** (K=10 randtok floor, n-305) — **202/370**. Now producing occasional `sr_score=1.0`
+  rows, which is the per-suffix variance that motivated extending K in the first place showing up
+  in the data.
+* Four §20.7 seed-44 shards: 7/10, 6/9, 7/9, 6/9 done, each with **9–10.5 h of wall left** against
+  ~3–4 h of work. No wall risk.
+
+**§20.7:** seed 42 **37/37**, seed 43 **37/37**, seed 44 **26/37** — 11 prompts out. Read gate
+holds; nothing is read until seed 44 completes.
+
+Design-vs-inventory diff unchanged from 02:45: §20.5 floor being strengthened, §20.1 μ sweep
+blocked on its own CE endpoint rather than on slots, §20.2/§20.3/§20.4 complete, §20.6/§20.9 behind
+the corpus ceiling.
+
+*(Account note: an external `probe_extract` (757883) ran to completion alongside these — another
+session's job, briefly putting the account at 7. Not this sprint's, and not cancelled: the 02:15
+cancellation was correct because **my** submission caused that overage, whereas here the sprint was
+already at its 6 and killing sprint work to absorb someone else's job would be the wrong trade.)*
+
+---
