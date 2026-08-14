@@ -56,7 +56,9 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | --- | --- | --- | --- | --- | --- |
 | CC1 | Gate 1 (Bombness decodable) replicates on the generated cohort | `gate1_codeword_last.json` (generated run) | 38 holdout | AUC 0.997 [0.990,1.000]; controls near chance | **VERIFIED** |
 | CC2 | Bombness is non-predictive on generated too (epiphenomenal half holds) | `dual_state_predict.json` (generated) | 38 | AUC 0.49 (chance) | **VERIFIED** |
-| CC3 | Refusal-predicts-jailbreak does NOT cleanly replicate on generated | same | 38 | frozen dir 0.525; native probe 0.60–0.63 (vs clearharm 0.98); gap CI includes 0 | **UNDERPOWERED / cohort-specific** (honest boundary, B17 transfer + less-predictable cohort) |
+| CC3 | Refusal-predicts-jailbreak does NOT cleanly replicate on generated (as a PREDICTOR) | dual_state (generated) | 38 | frozen dir 0.525; native probe 0.60–0.63 (vs clearharm 0.98); gap CI includes 0 | **cohort-specific PREDICTION** — but the mechanism replicates causally (CC5); the gap is frozen-direction transfer (B17), not "refusal doesn't matter" |
+| CC4 | Bombness causal necessity on generated | run 757967 `phase4_analysis.json` | 38 | **INCONCLUSIVE** — manip check FAILED (readout +0.3 to +0.7, not down) | **INCONCLUSIVE** (intervention did not cleanly manipulate Bombness on generated; bomb_ablate == bomb_random exactly) |
+| CC5 | Refusal ablation IS causal on generated (positive control replicates) | same | 38 | ΔASR **+0.21** [+0.03,+0.29], p=0.02; refusal rate 0.24→0.03; 2×2 main-effect refusal +0.16 [0.03,0.29] | **VERIFIED** — the refusal mechanism replicates causally cross-cohort |
 
 ## E. Headline synthesis claim
 

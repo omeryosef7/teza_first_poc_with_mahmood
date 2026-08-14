@@ -797,6 +797,44 @@ This is a genuine, reportable limitation, not a failure — kept per §3.11. Upd
 synthesis §9 and the claim audit to state the cross-cohort boundary precisely.
 Registered 757957.
 
+### E22 — 2026-08-14 — Generated Phase 4: manip-check FAILS (Bombness inconclusive); refusal control replicates ◐
+
+Ran the generated-cohort Phase 4 (757967, 5 arms × 38 test prompts). Honest, mixed result:
+
+**Manipulation check FAILED (the key caveat).** ablate−base Bombness readout is POSITIVE
+on generated (+0.30/+0.33/+0.40/+0.68 @L20/24/28/31) — the readout went UP, not down
+(clearharm: −1.3 to −1.6). `manip_check_passed: False`. The project_out ablation did not
+cleanly reduce the generated Bombness readout, so **the generated Bombness behavioral
+numbers are INCONCLUSIVE** (the analysis verdict flags this). Process lesson: I skipped
+the manip-check smoke for the new cohort and went straight to full — should always
+smoke-check the manipulation on a new cohort first (the intervention doesn't transfer for
+free). Likely cause: generated v_bomb is less clean (cos_vs_refusal up to 0.21 vs
+clearharm 0.15) and/or the generated concept binding is weaker at the codeword.
+
+**What IS interpretable:**
+- `ds_bomb_ablate` ASR == `ds_bomb_random` ASR **exactly** (0.368) — the "ablation" is
+  behaviorally indistinguishable from a random perturbation (consistent with Story A, but
+  not cleanly demonstrated given the failed manip check).
+- **Refusal positive control WORKS on generated:** ablation ΔASR **+0.21** [+0.03,+0.29],
+  p=0.02; refusal rate 0.237→0.026; 2×2 main-effect refusal +0.158 [0.026, 0.290].
+
+**This resolves last tick's open question.** The weak generated *prediction* (E21,
+refusalness 0.525) is NOT because refusal doesn't matter — it causally does (+0.21). It is
+a **frozen-direction transfer artifact** (the carrot_bomb-fit refusal direction predicts
+generated jailbreak poorly, B17), not a mechanism difference. The refusal MECHANISM
+replicates causally cross-cohort; the refusal DIRECTION does not transfer as a predictor.
+
+**Net cross-cohort status:**
+- Gate 1 (Bombness decodable): replicates (0.997). [E21]
+- Bombness non-predictive: replicates (0.49). [E21]
+- Bombness causal necessity on generated: **INCONCLUSIVE** (manip check failed). [E22]
+- Refusal causal on generated: **replicates** (+0.21, p=0.02). [E22]
+
+So the clearharm causal Story A stands; its generated causal replication for the Bombness
+half is unproven (a clean generated intervention would need better-conditioned directions
+— e.g. a narrower band or a dose that keeps the readout on-manifold). Reported as an
+honest limitation, not a positive. Registered 757967.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
