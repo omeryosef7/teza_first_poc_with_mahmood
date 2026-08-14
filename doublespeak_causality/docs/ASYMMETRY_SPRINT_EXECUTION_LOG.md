@@ -9109,3 +9109,44 @@ over all 19 arms.** That is 3 optimization jobs plus 1 scoring job — the sweep
 PENDING. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
 
 ---
+## 2026-08-15 08:15 — μ=3 complete at 3 seeds: it does **not** break the pattern. The pin saturates at μ≥1.
+
+*(Wall clock 15:55 UTC.)* 757919 COMPLETED. Projection axis, every point now at three seeds except
+μ=10:
+
+| μ | seed 42 | seed 43 | seed 44 | mean | sd | suppressed |
+|---|---|---|---|---|---|---|
+| 0.1 | −0.522 | −0.747 | −0.898 | −0.722 | 0.189 | 80.4 % |
+| 0.3 | −0.469 | −0.489 | −0.027 | −0.328 | 0.261 | 91.1 % |
+| 1.0 | +0.195 | −0.159 | −0.113 | −0.026 | 0.192 | 99.3 % |
+| **3.0** | −0.241 | −0.088 | +0.036 | **−0.098** | 0.139 | **97.3 %** |
+
+**μ=3 and μ=1.0 are indistinguishable** (−0.098 vs −0.026; SEs ≈ 0.08 and 0.11 at n=3, difference
+0.072). The 07:15 worry that μ=3 "breaks the pattern by suppressing less while costing more" was
+seed 42's −0.241 alone — **the third n=1 impression in this sweep to dissolve under replication.**
+The three-seed rule has now paid for itself three times, which is worth stating rather than quietly
+enjoying.
+
+**The pin saturates at μ ≥ 1**: both values hold the coordinate at ≈0, i.e. ~98–99 % of the free
+movement suppressed. Nothing above μ=1 buys more tightness.
+
+### That sharpens the one question the final CE pass will answer
+If the pin is already saturated at μ=1, does **cost** keep climbing past it? Seed 42 alone says yes
+(82.3 % at μ=1.0 → 96.9 % at μ=3) — and at n=1 that is worth exactly as much as the three claims
+above were. But if it survives three seeds, it is the cleanest available statement of the nuance
+that has been circling this sweep since 05:45: **past μ=1 the penalty buys no additional suppression
+and keeps destroying CE progress**, so cost is not merely the price of suppression. Held until μ=10
+completes and one CE pass scores all 19 arms.
+
+**757921** = μ=10 seed 43. Remaining: μ=10 seed 44, then the final scoring pass.
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: μ ∈ {0.1, 0.3, 1.0, 3.0} complete at 3 seeds on the projection axis (cost axis
+complete for the first three); μ=10 at 1 of 3 with the second running. §20.2/§20.3/§20.4 complete.
+§20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, μ=10 seeds 42 and 43 (757920, 757921). **§20.7:** seeds
+42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
+
+---
