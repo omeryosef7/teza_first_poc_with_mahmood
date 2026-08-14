@@ -155,6 +155,9 @@ def main():
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--revision", default=None, help="pin the HF revision (recorded)")
+    ap.add_argument("--quantize", default=None, choices=[None, "8bit", "4bit"],
+                    help="bnb quantization for large models (e.g. Qwen3-14B); acceptable "
+                         "for reading activations. Recorded in RUNMETA.")
     ap.add_argument("--limit", type=int, default=0, help="smoke: first N items only")
     args = ap.parse_args()
 
@@ -168,7 +171,7 @@ def main():
 
     import torch
     lm = dc.load_model(args.model, dtype=getattr(torch, args.dtype),
-                       revision=args.revision)
+                       revision=args.revision, quantize=args.quantize)
 
     n_pre, n_other, span_rate = preflight_positions(lm, corpus, items)
     print(f"[preflight] {n_pre} doublespeak + {n_other} benign/neutral positions resolved "
