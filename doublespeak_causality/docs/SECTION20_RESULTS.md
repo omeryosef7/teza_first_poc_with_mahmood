@@ -262,11 +262,63 @@ is exactly the bias that made the earlier interim reads unstable, so it must not
 *contradicts* it — the fit is dominated by the 5→200 jump, and the measured 200→600 segment is
 flat where the fit predicts continued descent.
 
-**Status.** 57/74 prompts (seed 42 **37/37 FINAL**, seed 43 20/37, all 4 shards running). Seed 44
-is a separate curve point at 0/37 with shards 0–2 launched, 3 owed. All completed runs verified:
-600/600 steps, `n_train_tasks == 1`.
+**Status.** 66/74 prompts (seed 42 **37/37 FINAL**, seed 43 **29/37**, all 4 shards running). Seed
+44 is a separate curve point at **9/37**, all 4 shards launched and running. No half-launched set
+remains. All completed runs verified: 600/600 steps, `n_train_tasks == 1`.
 
 **Caveat.** Objective space only. Per §2 this licenses **no** behavioural claim.
+
+---
+
+## 8. Pooling suffixes adds ~0.08 ASR at k=2 — PROVISIONAL, one condition short (§20.5)
+
+**PROVISIONAL — do not cite as a result yet.** `asym_p205_bestofk_existing.json`
+(`provisional: true`), built by `asym_p205_bestofk_existing.py`.
+
+§20.5 was carried for weeks as "not started, 4–8 GPU-h". It was not: §7.5's `--mode transfer` runs
+had already written a **37×37 source×target grid per (arm, seed)** — 1332 rows across 6 cells
+(mechanism and matched_random at seeds 42/43/44) — so the pool statistic computes with **zero GPU**.
+ASR@k is exact (`1 − C(n_fail,k)/C(n,k)` per target, then averaged), not resampled.
+
+| arm | seed | ASR@1 | ASR@2 | ASR@1 (maj) | ASR@2 (maj) |
+|---|---|---|---|---|---|
+| matched_random | 42 | 0.1921 | 0.2485 | 0.1959 | 0.2524 |
+| matched_random | 43 | 0.2203 | 0.2964 | 0.2095 | 0.2865 |
+| matched_random | 44 | 0.2139 | 0.2740 | 0.2116 | 0.2695 |
+| mechanism | 42 | 0.2156 | 0.2956 | 0.1976 | 0.2866 |
+| mechanism | 43 | 0.1762 | 0.2706 | 0.1709 | 0.2625 |
+| mechanism | 44 | 0.2208 | 0.3525 | 0.2299 | 0.3615 |
+
+*(StrongREJECT ≥ 0.5. "maj" = §20.3's M=5 majority labels substituted for boundary-band rows.)*
+
+**Mean k=2 gain: +0.0831 raw → +0.0839 majority-vote.** Two of the plan's three mandatory
+conditions are met, and the second was met from disk as well: §20.3's replicate pool
+(`pool_total = 1998`) is the 666 diagonal rows **plus these 1332 transfer rows**, so 66 of its 93
+band rows are `xfer_*` and carry M=5 majority labels. The false-positive-accumulation objection —
+a max-statistic absorbing judge noise as k grows — **is answered empirically**: 14 individual
+labels move and the pooled gain does not. Valid at threshold 0.5 only; §20.3's band was defined as
+|score0 − 0.5| ≤ 2 steps.
+
+**Why it is still provisional: the `randtok` floor does not exist.** A max over more draws rises by
+construction, so +0.08 means nothing until compared against un-optimized suffixes drawn the same
+way. Verified absent rather than assumed: the only random-ish condition on disk, `neutral_control`,
+has 20 023 rows over 549 tasks and **0 clearharm**; the `*_rand_*` arms are *optimized* suffixes
+against a random direction, which is not a floor. The harness is built and validated
+(`asym_p205_make_randtok_floor.py`, 3 stubs × 37 prompts = 111 generations, minutes of GPU on a
+**3090** to match the class its pools ran on).
+
+**Two limitations that constrain what §20.5 can ever say from this grid:**
+1. **Balanced k caps at 2.** Off-diagonal pools run 2–11 per target because the grid was sharded
+   for eval cost, not designed as a pool; a max over unequal pools is not comparable across
+   targets. Larger k means keeping only large-pool targets — a non-random subset. **A real pool
+   attack at meaningful k needs a redesigned dense grid**, and its cost must be re-estimated from
+   that design.
+2. **The vanilla arm has no transfer rows at all**, so nothing from disk can include it.
+
+**Do not cite** `..._with_replacement_ref_NOT_a_floor` from the artifact. It records 1−(1−p)², which
+observed ASR@2 exceeds in all 6 cells — an estimator artifact (exact sampling *without* replacement
+from pools of 2–11 versus a *with*-replacement reference), not a property of the attack. It is kept
+only so the comparison is not re-derived and believed.
 
 ---
 

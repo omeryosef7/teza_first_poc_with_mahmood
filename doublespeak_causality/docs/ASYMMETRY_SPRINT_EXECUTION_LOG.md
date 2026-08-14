@@ -8162,3 +8162,52 @@ asym_p205_make_randtok_floor.py` reproduces them byte-for-byte. Don't go looking
 tree.)*
 
 ---
+## 2026-08-14 21:45 — §20.5 written into the results doc; the "all runs verified" claim re-verified at n=75
+
+*(Wall clock 11:31 UTC.)* No completions; queue 6/6; nothing PENDING; both ready GPU jobs still
+waiting on a slot. With no read available, the work went to the reader-facing doc, which had
+fallen behind by an entire section.
+
+### `SECTION20_RESULTS.md` had no §20.5 at all
+Three ticks of §20.5 findings existed **only** in this chronological log — where they are spread
+across the discovery (20:15), the denoising (20:15), the floor-absence check (20:45) and the
+harness build (21:15), interleaved with two retractions. A reader reconstructing §20.5 from here
+would have to assemble it from four entries and correctly discard the benchmark I got backwards.
+That is exactly the failure the 17:30 entry called out for §20.2.
+
+Added **§8** to the results doc: the ASR@k table (raw and majority-vote), the +0.0831 → +0.0839
+result, the two met conditions with *how* the majority one was met from disk, and the unmet floor
+stated as the reason it stays `provisional`. Both structural limits are stated up front rather
+than buried — **balanced k caps at 2** (so a real pool attack needs a redesigned dense grid, and
+its cost must be re-estimated from that design), and **the vanilla arm has no transfer rows at
+all**. The with-replacement reference is marked **do not cite**, with its artifact field name, so
+the warning travels with the number.
+
+§20.5 is deliberately **not** added to the "What §20 changes about the paper" list. It is
+provisional; a contribution list is not the place for a result missing a mandatory control.
+
+### Re-verified rather than restated
+Updating §7's status line meant carrying forward "all completed runs verified: 600/600 steps,
+`n_train_tasks == 1`". Rather than propagate an inherited claim, checked it across every completed
+600-step directory: **75 dirs — 37 + 29 + 9 — every ITERATION_LOG exactly 600 rows, every run
+`n_train_tasks == 1`, zero violations.** The claim is now true at n=75, not true-as-of-whenever.
+
+Status line corrected 57/74 → **66/74**, and seed 44 from "0/37, shards 0–2 launched, 3 owed" to
+**9/37, all four launched** — it had gone stale by three ticks.
+
+### Design-vs-inventory diff
+§20.5 harness ready, one minutes-scale 3090 job outstanding. §20.1 μ sweep ready, 4 values, L40S.
+Both blocked only by the 6-job cap, not by design. §20.2/§20.3/§20.4 complete and documented.
+§20.6/§20.9 behind the corpus ceiling. §20.7 running.
+
+**Note on allocation, for the record:** the two ready jobs are *minutes* (floor) and *modest*
+(μ sweep), while the six slots hold §20.7 shards with ~8 h left each. Under the ≤6 cap the right
+move is still to wait — but it is worth seeing that the cap, not the hardware, is what is holding
+two cheap results behind six long ones.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 66/74 (seed 42 37/37 FINAL, seed 43 **29/37**), seed 44
+**9/37**.
+
+---
