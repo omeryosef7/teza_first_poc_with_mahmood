@@ -3,6 +3,10 @@
   "unmet_mandatory_conditions": [
     "randtok pool as the noise-inflated floor (never generated for these prompts)"
   ],
+  "floor": {
+    "present": false,
+    "note": "randtok floor not generated yet; build the stubs with asym_p205_make_randtok_floor.py, run the eval, then pass --floor-root"
+  },
   "met_conditions": [
     "diagonal pairs dropped",
     "majority-vote judging before the max -- at threshold 0.5 only, from \u00a720.3's M=5 replicates, whose 1998-row pool contains this transfer grid; non-band rows keep their single pass on \u00a720.3's deterministic-extremes evidence (40 sampled, 0 flips)"

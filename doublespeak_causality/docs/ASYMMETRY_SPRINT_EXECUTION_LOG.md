@@ -8093,3 +8093,72 @@ since it needs K=20 *directions*, and only 3 exist (one per seed). §20.7 runnin
 n-305, n-350** — all 3090s. **§20.7:** 63/74 (seed 42 37/37 FINAL, seed 43 **26/37**), seed 44 5/37.
 
 ---
+## 2026-08-14 21:15 — randtok floor harness BUILT and validated against the real evaluator. One sbatch away.
+
+*(Wall clock 11:01 UTC.)* No completions; queue 6/6; nothing PENDING. Last tick specced the floor
+job and left it unbuilt, which meant the next free slot would have been spent writing code instead
+of running it. Built it this tick — CPU only, nothing submitted.
+
+### What was built
+`asym_p205_make_randtok_floor.py` (new) writes **K=3 stub run-dirs** under a dedicated root
+`outputs/stage_gcg_randtok_floor/`, each holding a one-line `FINAL_CANDIDATES.jsonl` with a
+16-token suffix sampled uniformly from the ordinary vocabulary (specials/added excluded, one
+deterministic RNG seed per pool index), plus the transfer plan pointing all three at the 37 test
+prompts. **111 generations.**
+
+* **No evaluator code was touched.** `--mode transfer` reads suffixes via
+  `final_suffix(source_run_dir)`; the stubs are that shape exactly, so the floor goes through the
+  *byte-identical* scoring path as every §7.5 number — which is the only way a floor is comparable
+  to the thing it floors.
+* **Own root, deliberately.** Not inside `outputs/stage_gcg_perprompt/`: several analyses glob that
+  tree by prefix, and a stub with no `ITERATION_LOG` is a partial-run-shaped object. Keeping it out
+  avoids a silent contamination of the §20.7 coverage counters and the curve script.
+* **Uniform-over-vocab is the right null** for "what does an *unoptimized* suffix of the same
+  length buy" — it is the distribution GCG's search starts from before any gradient is used.
+
+### Validated, not assumed
+Dry-ran the plan through the real evaluator on the login node (`--dry-run`, no GPU):
+**`3 sources, 0 without a finished optimization` → `111 of 111 (suffix,prompt) evaluations`**, with
+the correct test-split task_ids. The stub trick works against the actual code path, not my reading
+of it.
+
+`asym_p205_bestofk_existing.py` grew `--floor-root`, and **both branches were smoke-tested**:
+
+* **floor absent** (today) → `provisional: true`, the unmet condition still listed, and an explicit
+  note rather than a silent skip;
+* **floor present** (synthetic scores in a scratch dir, deleted after) → floor ASR@k printed beside
+  the arms' k-gain, `provisional` flips to `false`, `unmet_mandatory_conditions` empties, and the
+  stale "not generated yet" note is dropped from the artifact.
+
+Testing the present-branch now matters because the real floor lands *after* a GPU job finishes; a
+crash discovered then would waste the slot. The synthetic numbers were meaningless and are gone —
+only the plumbing was under test.
+
+### To run it (one line, when a slot frees)
+```
+sbatch --nodelist=<free 3090s> --export=ALL,MODE=transfer,\
+PLAN=doublespeak_causality/data/gcg/clearharm_llama_v3/randtok_floor_plan.jsonl,EVAL_SEED=42 \
+  slurm_scripts/run_perprompt_eval.slurm
+python doublespeak_causality/scripts/asym_p205_bestofk_existing.py --floor-root outputs/stage_gcg_randtok_floor
+```
+**3090s here** — unlike the μ sweep, this floor must match the class its pools ran on (§3.1).
+Minutes of GPU, so it can share a slot ahead of or beside the μ sweep rather than waiting for one.
+
+### Design-vs-inventory diff
+§20.5: harness complete, one GPU minute-scale job outstanding. §20.1 μ sweep: launch-ready, 4
+values, L40S (see 20:45). §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+§20.7 running.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 64/74 (seed 42 37/37 FINAL, seed 43 **27/37**), seed 44
+**8/37**.
+
+---
+*(Footnote: the stub dirs and `randtok_floor_plan.jsonl` are **not in git** — `outputs/` and
+`doublespeak_causality/data/gcg/` are both gitignored repo-wide, as for every other run artifact.
+The generator is committed and the RNG seed is fixed per pool index, so `python
+asym_p205_make_randtok_floor.py` reproduces them byte-for-byte. Don't go looking for them in the
+tree.)*
+
+---
