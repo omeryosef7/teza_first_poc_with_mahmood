@@ -8849,3 +8849,42 @@ recommendation.
 **37/37**, seed 44 **26/37**. Read gate holds.
 
 ---
+## 2026-08-15 05:15 — μ=0.3 replicates confirm the seed-variance diagnosis: **Δproj ranges −0.03 to −0.49 at one μ**
+
+*(Wall clock 15:25 UTC.)* 757907/757908 COMPLETED. The μ=0.3 point now has all three seeds, and the
+04:45 suspicion is confirmed on the projection endpoint before the CE numbers even arrive:
+
+| μ=0.3 | Δproj_test | final trajectory loss |
+|---|---|---|
+| seed 42 | −0.477 | 1.831 |
+| seed 43 | −0.489 | 2.180 |
+| **seed 44** | **−0.027** | 1.844 |
+
+**Seeds 42 and 43 agree closely; seed 44 barely moved the coordinate at all.** A spread of 0.46 at a
+*single* μ, against a total μ=0.1→1.0 spread of 0.71, means **run-to-run variance is the same order
+as the effect the sweep is trying to measure.** The 04:45 call — that the non-monotone 0.1-vs-0.3
+ordering was noise, not mechanism — is now supported by direct replication rather than inference.
+
+This also retro-justifies the ledger correction: had the sweep run one seed per μ as originally
+scoped, it would have produced a five-point "curve" whose shape was mostly seed lottery, and nothing
+in the artifact would have revealed that.
+
+**757909** is scoring **all 10 soft-prompt arms in one job** — free × 3 seeds, μ=1.0 × 3, μ=0.3 × 3,
+μ=0.1 × 1 — replacing the 4-arm artifact. One model load for the whole contrast, per the script's
+contract.
+
+**757910** = μ=0.1 at seed 43, launched into the freed slot: μ=0.1 is the only point still at n=1,
+and it is one of the two whose ordering is in question. Seed 44 at μ=0.1 follows.
+
+### Design-vs-inventory diff
+§20.5 **closed** (`provisional: false`, no unmet conditions). §20.1 μ sweep: μ=1.0 complete at 3
+seeds, μ=0.3 complete at 3 seeds, μ=0.1 at 1 of 3 with a second running; {3, 10} untouched, and the
+04:45 note that μ≈0.5 would buy more shape than either still stands as a recommendation.
+§20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, the 10-arm CE scorer (757909, n-802), μ=0.1 seed 43
+(757910). Nothing PENDING beyond fair-share pickup. **§20.7:** seeds 42 and 43 **37/37**, seed 44
+**26/37**. Read gate holds.
+
+---
