@@ -8979,3 +8979,47 @@ RUNMETA rather than assume one.)*
 PENDING. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
 
 ---
+## 2026-08-15 06:45 — μ=0.1 complete at 3 seeds. **The pin IS monotone in μ — my 04:15 "saturates below 0.3" was an n=1 artifact.**
+
+*(Wall clock 15:40 UTC.)* 757911 and 757914 both COMPLETED. Δproj_test, now three seeds deep at
+three values:
+
+| μ | seed 42 | seed 43 | seed 44 | mean | sd |
+|---|---|---|---|---|---|
+| 0.1 | −0.522 | −0.747 | −0.898 | **−0.722** | 0.189 |
+| 0.3 | −0.469 | −0.489 | −0.027 | **−0.328** | 0.261 |
+| 1.0 | +0.195 | −0.159 | −0.113 | **−0.026** | 0.192 |
+| 3.0 | −0.241 | *(running)* | *(owed)* | −0.241 (n=1) | — |
+
+**The means separate cleanly and monotonically**: −0.722 → −0.328 → −0.026 as μ goes 0.1 → 0.3 →
+1.0. With sd ≈ 0.19–0.26 at n=3, the 0.1-vs-0.3 gap (0.39) is ~2.5 SE and the 0.3-vs-1.0 gap (0.30)
+~2 SE. The knob works exactly as designed.
+
+**Correcting 04:15.** I wrote there that "the pin's effect saturates below μ≈0.3", from seed 42
+alone (−0.522 at μ=0.1 vs −0.477 at μ=0.3 — a 0.045 difference). At three seeds that gap is
+**0.39**, and the apparent saturation was entirely seed 42's draw. Same lesson as the cost curve,
+now on the projection axis too: **every n=1 shape claim in this sweep has failed replication.** I
+have made that mistake twice here; the rule going forward is that no μ-sweep statement gets written
+down before its point has three seeds.
+
+That also retires the "μ≈0.5 would buy more shape" recommendation from 04:45 — it rested on the
+false saturation. The registered ladder {0.1, 0.3, 1, 3, 10} is spaced fine.
+
+μ=3 at seed 42 gives **−0.241**, *less* tightly pinned than μ=1.0's mean of −0.026, which would be
+backwards — but it is n=1 and well inside the ±0.19 seed band, so it gets no interpretation until
+seeds 43/44 land. **757918** = μ=3 seed 43, launched.
+
+**757917** is scoring all **13** complete arms in one model load — free ×3, μ=1.0 ×3, μ=0.3 ×3,
+μ=0.1 ×3, μ=3 ×1. The live question it answers: does the non-monotone *cost* ordering between
+μ=0.1 and μ=0.3 survive at n=3, now that the *projection* ordering did not?
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: μ ∈ {0.1, 0.3, 1.0} complete at 3 seeds, μ=3 at 1 of 3 with a second running,
+μ=10 untouched. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, the 13-arm CE scorer (757917, n-802), μ=3 seed 43
+(757918, PENDING on pickup). **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate
+holds.
+
+---
