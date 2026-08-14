@@ -8447,3 +8447,42 @@ gate unchanged — all three seeds at 37/37, seed 44 ~4 h out.
 **§20.7:** 72/74, seed 44 24/37. Nodes n-301..n-306, n-350, one job each, all 3090s.
 
 ---
+## 2026-08-15 01:15 — **first non-§20.7 launch in nine ticks: the randtok floor is running.**
+
+*(Wall clock 14:35 UTC.)* 757662 (seed 43 shard 2) COMPLETED clean — `ran=9 skipped=0`, 7:31:00 —
+freeing the first slot since 09:33. It went to the job fixed in advance at 00:15:
+
+**757862 = §20.5 randtok floor**, `MODE=transfer` over `randtok_floor_plan.jsonl`, on **n-305 (RTX
+3090)** — the class its pools ran on, per §3.1. 111 generations; model is loaded and the eval loop
+has started. This closes §20.5's last unmet mandatory condition, after which the pool result stops
+being provisional.
+
+The μ sweep is next, on the slot 757672 frees — it is on its final prompt.
+
+### Same latent guard bug found in the eval script, fixed
+`run_perprompt_eval.slurm` carried the **identical** fragile probe that killed 757702:
+`VRAM_MB=$(nvidia-smi ... 2>/dev/null | awk ...)` under `set -e`, which aborts at the assignment
+with the probe's exit code and leaves its own `ERROR: GPU unusable` branch unreachable. Fixed the
+same way (keep rc and stderr, let the guard decide), and added the `[guard] GPU OK` line this
+script never had — it had **no** positive confirmation that the check ran at all. The edit does not
+affect 757862, which sbatch snapshotted at submit.
+
+**The pattern is repo-wide: 86 scripts contain that exact `awk 'NR==1{print;exit}'` probe.** Not
+mass-editing them — almost all are completed work, and a sweeping edit nobody asked for across 86
+SLURM files is its own risk. Fixed the two the sprint actively submits
+(`run_gcg_perprompt.slurm`, `run_perprompt_eval.slurm`) and recording the rest here so the next
+person hitting a 14-second unexplained FAILED knows where to look first.
+
+### Design-vs-inventory diff
+§20.5: floor **running**; the analysis path for it was already built and both branches smoke-tested
+at 21:15, so folding it in is one command. §20.1 μ sweep ready, L40S, next slot. §20.2/§20.3/§20.4
+complete. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — five §20.7 shards plus the floor. Nothing PENDING. Nodes **n-301, n-302, n-303,
+n-304, n-305, n-350**, one job each, all 3090s. **§20.7:** 73/74 (seed 42 37/37 FINAL, seed 43
+**36/37** — one prompt, mid-run in 757672), seed 44 **24/37**.
+
+Read gate unchanged: nothing until all three seeds are at 37/37, seed 44 ~4 h out.
+
+---

@@ -48,9 +48,19 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 echo "MODE=$MODE EVAL_SEED=$EVAL_SEED SHARD=$SHARD/$NSHARD"
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
-VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk 'NR==1{print;exit}')
+# Same fix as run_gcg_perprompt.slurm (see 757702): as a command substitution under `set -e`, a
+# failing probe aborts the job AT THE ASSIGNMENT with the probe's exit code, leaving the ERROR
+# branch below unreachable and `2>/dev/null` swallowing the only diagnostic -- a 14 s job with an
+# empty stderr and no explanation. Keep the rc and the stderr; let the guard decide. The trailing
+# [guard] line also gives this script the positive confirmation it never had.
+NV_RC=0
+NV_OUT=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>&1) || NV_RC=$?
+VRAM_MB=$(printf '%s\n' "$NV_OUT" | awk 'NR==1{print $1}')
+if [ "$NV_RC" -ne 0 ]; then
+    echo "ERROR: nvidia-smi probe failed rc=${NV_RC}: ${NV_OUT}"; exit 1; fi
 if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
     echo "ERROR: GPU unusable or <20GB (vram='${VRAM_MB}MB')"; exit 1; fi
+echo "[guard] GPU OK ${VRAM_MB}MB"
 
 if [ "$MODE" = "perprompt" ]; then
     JOBLIST="${JOBLIST:?set JOBLIST}"; ARM_LABEL="${ARM_LABEL:?set ARM_LABEL}"
