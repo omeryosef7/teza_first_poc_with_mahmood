@@ -61,11 +61,23 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | CC4 | Bombness causal necessity on generated | run 757967 `phase4_analysis.json` | 38 | **INCONCLUSIVE** — manip check FAILED (readout +0.3 to +0.7, not down) | **INCONCLUSIVE** (intervention did not cleanly manipulate Bombness on generated; bomb_ablate == bomb_random exactly) |
 | CC5 | Refusal ablation IS causal on generated (positive control replicates) | same | 38 | ΔASR **+0.21** [+0.03,+0.29], p=0.02; refusal rate 0.24→0.03; 2×2 main-effect refusal +0.16 [0.03,0.29] | **VERIFIED** — the refusal mechanism replicates causally cross-cohort |
 
+## CM. Cross-model replication (Phi-4-mini-reasoning, Qwen3-14B)
+
+| # | Claim | Source | n | Effect | Status |
+| --- | --- | --- | --- | --- | --- |
+| CM1 | Gate 1 (Bombness decodable) replicates on 3 model families | gate1 jsons: Llama 757886, Phi 758022, Qwen 758030 | 42/38/42 | holdout AUC 0.997 / 0.985 / 0.999; token-id 0.500 each | **VERIFIED** |
+| CM2 | Bombness ⊥ refusal across families | `geometry_vs_refusal.json` per model | — | cos 0.06–0.15 (Llama) / 0.01–0.04 (Phi) / 0.03–0.12 (Qwen) | **VERIFIED** |
+| CM3 | Bombness-epiphenomenal replicates behaviorally on Phi | run 758057; `phase4_analysis.json` | 42 | necessity ΔASR −0.07 (p=0.58) = random; manip check passed (−6 to −8) | **VERIFIED** |
+| CM4 | Refusal-is-the-lever does NOT cleanly replicate on Phi | same + Phi Phase 3 | 42 | Phi base refusal 0.048 (Llama 0.64); refusal control +0.095 (p=0.39 ns); refusal-proj AUC 0.525, Bombness 0.575 (both chance) | **BOUNDARY** — doublespeak pre-collapses Phi refusal; behavioral mechanism is model-dependent |
+| CM5 | Qwen3 behavioral Phase 3/4 | run 758075 | 42 | _in progress (~2h run)_ | _PENDING_ |
+
 ## E. Headline synthesis claim
 
 | # | Claim | Basis | Status |
 | --- | --- | --- | --- |
-| E1 | Doublespeak creates a real, decodable, causally-manipulable BOMB-like semantic identity that is orthogonal to refusal, does not predict jailbreak, and does not causally control it; a separable refusal-suppressed state does. (Story A) | B1–B5 + C1–C4 + D1–D4, three convergent lines | **VERIFIED** (necessity; sufficiency/2×2 strengthen) |
+| E1 | Doublespeak creates a real, decodable, causally-manipulable BOMB-like semantic identity that is orthogonal to refusal, does not predict jailbreak, and does not causally control it; a separable refusal-suppressed state does. (Story A, **on Llama**) | B1–B5 + C1–C4 + D1–D6, three convergent lines + audit §21 | **VERIFIED** (Llama: necessity, sufficiency, 2×2) |
+| E2 | The **semantic-remapping representation** (Bombness decodable, ⊥ refusal, behaviorally epiphenomenal) is a **cross-family** property (Llama, Phi, Qwen probe; Phi behavioral) | CM1–CM3 | **VERIFIED** for representation + Phi epiphenomenal-behavior |
+| E3 | The **refusal-control behavioral mechanism** (refusal suppression is the lever) is **model-dependent** — established on Llama; on Phi refusal is pre-collapsed by doublespeak (base refusal 0.048) | D2–D6 (Llama) + CM4 (Phi) | **VERIFIED boundary** — a substantive finding, not a failure |
 
 ## Known limitations (carried into the synthesis)
 
