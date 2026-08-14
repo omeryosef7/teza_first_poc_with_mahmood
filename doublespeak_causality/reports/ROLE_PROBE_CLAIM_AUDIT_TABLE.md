@@ -50,6 +50,14 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | D4 | Bombness ablation leaves the refusal decision untouched | same | 42 | refusal rate 0.643→0.643 | — | **VERIFIED** |
 | D5 | 2×2 Bombness×refusal: no interaction; Bombness inert in BOTH refusal states (Story B refuted) | run 757943; `phase4_analysis.json` `factorial_2x2` | 42 | **interaction +0.000** [−0.143,+0.143]; main-effect Bombness +0.000 [−0.071,+0.071]; main-effect refusal +0.357 [+0.202,+0.500] | 4 cells one run; manip-check passed (−1.3 to −1.6) | **VERIFIED** |
 
+## CC. Cross-cohort replication (generated cohort, run 757957)
+
+| # | Claim | Source | n | Effect | Status |
+| --- | --- | --- | --- | --- | --- |
+| CC1 | Gate 1 (Bombness decodable) replicates on the generated cohort | `gate1_codeword_last.json` (generated run) | 38 holdout | AUC 0.997 [0.990,1.000]; controls near chance | **VERIFIED** |
+| CC2 | Bombness is non-predictive on generated too (epiphenomenal half holds) | `dual_state_predict.json` (generated) | 38 | AUC 0.49 (chance) | **VERIFIED** |
+| CC3 | Refusal-predicts-jailbreak does NOT cleanly replicate on generated | same | 38 | frozen dir 0.525; native probe 0.60–0.63 (vs clearharm 0.98); gap CI includes 0 | **UNDERPOWERED / cohort-specific** (honest boundary, B17 transfer + less-predictable cohort) |
+
 ## E. Headline synthesis claim
 
 | # | Claim | Basis | Status |

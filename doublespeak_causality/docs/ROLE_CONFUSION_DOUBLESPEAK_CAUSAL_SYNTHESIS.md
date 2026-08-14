@@ -114,12 +114,25 @@ Three independent lines, one conclusion:
 The concept representation is real, decodable, orthogonal to refusal, and causally
 manipulable — and behaviorally inert. Refusal predicts and causally controls behavior.
 
-## 9. Cross-model status
+## 9. Cross-cohort and cross-model status
 
-Not yet run for the Bombness probe. Prior sprint: the refusal-half dissociation replicates
-on Phi-4 (X3/X5), but the Phi **concept** half was never tested (B16, = Phase 7). Qwen3
-and Phi probe replication (Phase 8) are open. Cross-cohort (generated) replication of the
-clearharm result here is also open.
+**Cross-cohort (generated cohort, gpt-4o-mini one-line requests; run 757957):**
+- **Gate 1 replicates strongly** — Bombness holdout AUC **0.997** [0.990, 1.000], controls
+  near chance. The decodability result generalizes to a distributionally-different cohort.
+- **Bombness is non-predictive there too** (AUC 0.49) — the epiphenomenal half of Story A
+  holds cross-cohort.
+- **The refusal-predicts-jailbreak result is weaker on generated** and does not cleanly
+  replicate: frozen clearharm refusal direction AUC 0.525 (gap vs Bombness CI includes 0);
+  a native decision-token probe reaches only 0.60–0.63 vs clearharm's 0.98. So the
+  *strength* of the refusal-prediction result is clearharm-specific — attributable to
+  cross-distribution transfer of the refusal direction (B17) and to generated jailbreaks
+  being inherently less predictable. The directional dissociation survives; the effect
+  size does not. The clearharm **causal** result (Gate 4/2×2) is unaffected; a
+  generated-cohort Phase-4 run would test causal replication (deferred).
+
+**Cross-model:** not yet run for the Bombness probe. Prior sprint: the refusal-half
+dissociation replicates on Phi-4 (X3/X5), but the Phi **concept** half was never tested
+(B16, = Phase 7). Qwen3 and Phi probe replication (Phase 8) are open.
 
 ## 10. Attack-objective implication
 

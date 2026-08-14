@@ -758,6 +758,45 @@ intervention incl. 2×2). Remaining items (sufficiency, cross-cohort, Phi/Qwen, 
 corpus, normalized-space arm) are follow-ons per §19, not required for the core result.
 Registered 757943.
 
+### E21 — 2026-08-14 — Cross-cohort (generated) replication: probe generalizes, prediction is cohort-dependent ◐
+
+Ran the generated-cohort replication (extraction 757957, `acts[462,32,2,4096]`, after the
+B19 preflight fix unblocked it). Honest, nuanced result — **not** a clean full replication:
+
+**Gate 1 REPLICATES strongly.** Generated holdout AUC **0.9972** [0.990, 1.000] @L11;
+controls near chance (label-shuffle 0.406, position 0.579, length 0.586, token-id 0.500).
+The Bombness probe generalizes to a second, distributionally-different cohort
+(gpt-4o-mini one-line requests). Solid external validity for the decodability result.
+
+**Phase 3 prediction is WEAKER / does not cleanly replicate.** On generated (n=38 holdout,
+success 0.29):
+- Bombness predicts jailbreak at **0.49** (chance) — the epiphenomenal half of Story A
+  **holds** cross-cohort.
+- Frozen clearharm refusal direction predicts at **0.525** (chance); the refusal−Bombness
+  gap CI [−0.21, +0.16] **includes 0**. A native decision-token→outcome probe fit ON
+  generated does better (0.60–0.63 across L14-24) but still far below clearharm's 0.98.
+
+**Interpretation (honest boundary):** the "refusal-state strongly predicts jailbreak"
+result is **clearharm-specific in strength**. Two contributing causes: (a) the refusal
+direction is fit cross-distribution on carrot_bomb (B17) and transfers poorly to the
+generated distribution (0.525); (b) even a native-fit probe only reaches ~0.63, so
+generated-cohort jailbreaks are inherently **less predictable** than clearharm's. The
+directional dissociation survives (native refusal-state 0.63 > Bombness 0.49), but the
+effect size does not.
+
+**What this does and does not change:**
+- Story A's Bombness-is-epiphenomenal half **replicates** (decodable everywhere;
+  non-predictive everywhere).
+- The refusal-is-the-strong-predictor half is **distribution-dependent** — strong on
+  clearharm, modest on generated.
+- The clearharm CAUSAL result (Gate 4, 2×2) is unaffected (it is causal, not predictive,
+  and clearharm-specific by design). Whether the causal story replicates on generated
+  would need a generated-cohort Phase-4 run (v_bomb directions + intervention) — deferred.
+
+This is a genuine, reportable limitation, not a failure — kept per §3.11. Updating the
+synthesis §9 and the claim audit to state the cross-cohort boundary precisely.
+Registered 757957.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
