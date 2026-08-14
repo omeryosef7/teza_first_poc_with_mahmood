@@ -9528,3 +9528,53 @@ report **every negative number as missing** — normalise the sign character fir
 not compute.
 
 ---
+## 2026-08-15 13:45 — extended the verification to the sections I inherited. **§5 was stale the same way §8 was.**
+
+*(Wall clock 18:31 UTC.)* No sprint jobs; the single queued job is an external `phase4_bomb`
+(757967, n-804), not this sprint's. Last tick verified the sections I wrote; this tick did the same
+for the ones I did not — §2 through §6 — on the theory that a failure mode found once is worth
+looking for everywhere.
+
+### §5 was still marked provisional five hours after pass 2 closed it
+`SECTION20_RESULTS.md` §5 opened **"BOUNDED — provisional"**, cited only
+`asym_p204_equivalence.json`, and showed the pass-1 bounds. But `asym_p204_equivalence_pass2.json`
+has `provisional: false` and was delivered at 18:00 — **the same failure as §8**, which I caught at
+10:15 and wrote a rule about. The rule ("the tick that closes a section updates the results doc in
+the same tick") was written *after* §20.4 closed, so §5 was already stale when I made it — and I
+checked §8 without checking whether the same thing had happened elsewhere.
+
+**Updated with both passes side by side**, because the comparison is the finding:
+
+| budget | contrast | pass 1 | **pass 2 (denoised)** |
+|---|---|---|---|
+| full | mechanism − matched_random | 0.189 | **0.243** |
+| full | matched_random − vanilla | 0.216 | **0.243** |
+| *(other four unchanged)* | | | |
+| **mean worst bound** | | **0.2117** | **0.2252** |
+
+**Denoising made the bounds ~6 % WIDER**, and that is why the section is no longer provisional
+rather than in spite of it: removing judge noise shifts point estimates without reducing sampling
+variance, so these bounds are **sampling-limited, not judge-limited**. No better judging tightens
+them; only more prompts would, and the ceiling is 179. The doc's "1.9–2.7× the Doublespeak effect"
+is corrected to **2.1–2.3×** against the pass-2 mean.
+
+Verified after editing: every pass-1 and pass-2 bound in the section now matches the artifact.
+
+### Swept the rest of the document for the same marker
+Every remaining occurrence of *provisional / RUNNING / interim / owed* is now either describing an
+artifact that genuinely carries `provisional: false` (§5, §8) or is the status legend itself. **No
+stale status markers remain.**
+
+§2, §3, §3b, §4, §6 checked against their artifacts — `asym_p201_softprompt_asr.json`,
+`asym_p203_judge_replicates.json`, `asym_p203_denoised_contrasts.json`,
+`asym_p208_endpoint_compare.json` — no discrepancies found.
+
+### Design-vs-inventory diff — unchanged
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ (now correctly marked) §20.5 ✅ §20.7 ✅. §20.0 governance
+decision still unwritten, dev still unspent. §20.6/§20.9 still blocked behind §20.8.
+
+### SLURM
+**No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch — the open items need
+decisions, not compute.
+
+---

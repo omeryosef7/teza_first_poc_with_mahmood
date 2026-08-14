@@ -185,24 +185,38 @@ effect — so they should not be quoted to three decimals.
 
 ## 5. Every behavioural negative is bounded at ~±0.2 ASR (§20.4)
 
-**BOUNDED — provisional.** `asym_p204_equivalence.json`. 90 % CI = TOST region at α=0.05, paired
-bootstrap over items.
+**BOUNDED — both passes done.** `asym_p204_equivalence.json` (pass 1) and
+`asym_p204_equivalence_pass2.json` (pass 2, `provisional: false`). 90 % CI = TOST region at
+α=0.05, paired bootstrap over items.
 
-| budget | contrast | mean Δ | equivalence bound |
-|---|---|---|---|
-| low | mechanism − matched random | +0.054 | 0.189 |
-| low | mechanism − vanilla | +0.036 | 0.216 |
-| low | matched random − vanilla | −0.018 | 0.189 |
-| full | mechanism − matched random | +0.009 | 0.189 |
-| full | mechanism − vanilla | −0.054 | **0.270** |
-| full | matched random − vanilla | −0.063 | 0.216 |
+| budget | contrast | mean Δ | bound (pass 1) | **bound (pass 2, denoised)** |
+|---|---|---|---|---|
+| low | mechanism − matched random | +0.054 | 0.189 | 0.189 |
+| low | mechanism − vanilla | +0.036 | 0.216 | 0.216 |
+| low | matched random − vanilla | −0.018 | 0.189 | 0.189 |
+| full | mechanism − matched random | +0.009 | 0.189 | **0.243** |
+| full | mechanism − vanilla | −0.054 | **0.270** | 0.270 |
+| full | matched random − vanilla | −0.063 | 0.216 | **0.243** |
+| **mean worst bound** | | | **0.2117** | **0.2252** |
+
+**Pass 2 is the reason this is no longer provisional — and it made the bounds ~6 % WIDER, not
+narrower.** The plan's specified pass 2 (a §20.6 multi-direction SD) is unreachable, since §20.6 is
+blocked by the corpus ceiling; what *was* reachable is the other stated motivation, measurement
+quality. Recomputing on the judge-denoised endpoint (majority vote over M=5 on the 4.65 % band,
+extremes validated deterministic) moved 2 of 6 bounds, both outward, and every change is an exact
+multiple of 1/37 — one or two rows.
+
+**That widening is the finding.** Removing judge noise shifts point estimates without reducing
+sampling variance, so the bound — `max(|CI_lo|, |CI_hi|)` — can move either way. These bounds are
+**sampling-limited, not judge-limited**, which closes the question: no amount of better judging
+tightens them. Only more prompts would, and the corpus ceiling is 179.
 
 These nulls rule out **only effects larger than ~0.19–0.27 ASR**. For scale, the **Doublespeak
 effect itself is +0.100 ASR** (test split, majority-vote, n=30: doublespeak 0.800 vs direct 0.700 —
-`baseline_drift_clearharm_…_741427/summary.json`). So the bounds are **1.9–2.7× the size of the
-phenomenon the paper is about**: our behavioural nulls cannot exclude an effect two to three times
-larger than Doublespeak. Every "no effect" in the write-up must read "no effect larger than ~0.2
-ASR detectable at this n".
+`baseline_drift_clearharm_…_741427/summary.json`). So the bounds are **2.1–2.3× the size of the
+phenomenon the paper is about** (mean worst bound 0.2252 vs 0.100): our behavioural nulls cannot
+exclude an effect twice as large as Doublespeak. Every "no effect" in the write-up must read "no
+effect larger than ~0.2 ASR detectable at this n".
 
 *Validation:* all 18 arm × seed ASR cells reproduce the §7.5 published table to 4 dp through an
 independent code path.
