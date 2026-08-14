@@ -35,7 +35,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
-| Phase 1 — Bombness probe | 5 | ◐ | full CPU code done+tested (22 tests); GPU extraction queued |
+| Phase 1 — Bombness probe | 5 | ◐ | code done (25 tests); **smoke extraction 757877 launched** |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -393,6 +393,30 @@ sweep for freed slots, so there is a mild race. The probe smoke needs only ONE
 slot; if the μ sweep grabs both first, the next slot-free cycle catches the probe.
 Arming a Monitor on `squeue < 6` to launch promptly rather than waiting for the
 30-min cron tick.
+
+### E11 — 2026-08-14 — First GPU job launched: probe smoke extraction 757877 ◐
+
+While waiting on the slot, authored `gate1_eval.py` (the full Gate-1 verdict) and
+its tests (25 GPU-free tests total now), and fixed a self-review gap: extraction
+now persists `codeword_last_idx` + `seq_len` per item so the position-only /
+length-only Gate-1 controls (D5) are computable. Self-caught bug: the label-shuffle
+control was a single noisy permutation (0.79 on strong signal) → averaged over 10
+seeds (0.48), matching the random-direction convention.
+
+Slot freed as predicted: both seed-43 shards finished, freeing 2 slots. The
+concurrent session took one for `asym_p2` (757867); I launched the probe smoke
+extraction into the other. **`sbatch --export=ALL,MODE=smoke,COHORT=clearharm
+run_probe_extract.slurm` → job 757877** (PENDING/Priority). Total 6/6, at cap,
+respected.
+
+757877 will: extract `resid_post` at query-codeword + decision token for the first
+24 clearharm items (all 6 GPU-guard idioms), run the position preflight against the
+corpus spans, then `smoke_fit` for a per-layer above-chance AUC. This is the §2A.5
+pipeline sanity check AND the first real Bombness signal. **Watch for:** (a)
+preflight ABORT = corpus-span vs `resolve_positions` tokenization offset to
+reconcile before trusting extraction; (b) smoke_fit "mechanics_only" if the 24-item
+slice is single-split (expected — smoke slice is dev-heavy); (c) an above-chance
+best-layer AUC = green light for the full extraction. Completion waiter armed.
 
 ---
 
