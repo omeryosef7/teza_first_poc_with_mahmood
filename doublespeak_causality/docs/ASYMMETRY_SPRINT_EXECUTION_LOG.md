@@ -7967,3 +7967,16 @@ node across **n-301, n-302, n-303, n-305, n-306, n-350** — all 3090s, none dou
 **§20.7:** 60/74 (seed 42 **37/37 FINAL**, seed 43 **23/37**). Seed 44 2/37, shards 0-2 launched.
 
 ---
+### 19:45 addendum — 757525 COMPLETED mid-tick; **seed 44's shard set is now fully launched**
+757525 (seed 43 shard 0) finished clean at 09:33 UTC: `ran=10 skipped=0`, 9:55:55. The freed slot
+went to the last owed item, **757741 = seed 44 shard 3/4** on **n-304** — so seed 44 now has all
+four shards submitted and its denominator becomes the full 37. **No half-launched set remains**;
+the shard=index-mod-4 bias warning that governed seeds 43 and 44 is cleared for both.
+
+**Queue back to 6/6** across **n-301, n-302, n-303, n-304, n-305, n-350** — all 3090s, one job per
+node. **§20.7:** 61/74 (seed 42 37/37 FINAL, seed 43 **24/37**), seed 44 2/37.
+
+With no half-launched set left, the next free slot goes to the **§20.1 μ sweep** — the top GPU item
+on the ledger, and the first non-§20.7 launch in several ticks.
+
+---
