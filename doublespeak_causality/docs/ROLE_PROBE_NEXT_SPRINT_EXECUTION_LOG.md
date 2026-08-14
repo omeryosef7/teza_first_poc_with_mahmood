@@ -374,6 +374,26 @@ Lesson logged: the script rewrites the whole report file, so the findings sectio
 must be re-added after the final run (or moved into the script) — did the latter by
 hand this time.
 
+### E10 — 2026-08-14 — Slot-contention decision: WAIT, do not cancel (user)
+
+User asked whether to cancel non-plan SLURM jobs and launch what we need. Checked:
+the 6 running `gcg_perprompt` jobs are **§20.7 600-step work = Phase 11 §15.1 of
+THIS plan** (finish seeds 43/44), not off-plan; seed 42 done 37/37, **seed 43
+35/37 (both shards on their last prompt)**, seed 44 24/37; and a **concurrent
+session is actively babysitting them** (`quiet tick:` commits). So the user's
+condition ("not in the plan and we don't need it") is not met.
+
+Presented the options; **user chose "Wait ~1h" (recommended).** Nothing cancelled.
+Seed 43's two shards are on their final prompt, so 2 slots free on their own within
+~1h with zero wasted compute and no disruption to the concurrent §20 loop. The
+probe smoke extraction (1 slot, ~2h) launches on the first free slot.
+
+Contention note: the concurrent session's OWED launch order queues the §20.1 μ
+sweep for freed slots, so there is a mild race. The probe smoke needs only ONE
+slot; if the μ sweep grabs both first, the next slot-free cycle catches the probe.
+Arming a Monitor on `squeue < 6` to launch promptly rather than waiting for the
+30-min cron tick.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
