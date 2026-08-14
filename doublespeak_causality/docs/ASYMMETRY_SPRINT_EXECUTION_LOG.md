@@ -8745,3 +8745,40 @@ Account **6/6**, sprint **6/6**. Floor 757879 at **278/370**. The cap-interpreta
 above stands unanswered and I am continuing with the strict account-wide reading.
 
 ---
+## 2026-08-15 04:15 — μ=0.3 done; **the pin's effect saturates below μ≈0.3**, on the projection at least
+
+*(Wall clock 15:15 UTC.)* 757891 COMPLETED — all 300 steps, 257 s, `Dproj_test=-0.4686`.
+
+### Projection side of the curve, three points in
+| μ | Δproj_test | fraction of the free arm's −3.680 |
+|---|---|---|
+| 1.0 | **+0.195** | pin over-holds (105 %) |
+| 0.3 | **−0.469** | 87 % held |
+| 0.1 | **−0.522** | 86 % held |
+
+**μ=0.3 and μ=0.1 are nearly identical** (−0.469 vs −0.522) while μ=1.0 is far away (+0.195). So on
+the projection endpoint the pin's grip is **already saturated by μ≈0.3**, and essentially all of the
+action lives between μ=0.3 and μ=1.0. If the CE cost tracks the pin, the interesting region is that
+same interval — and the two cheap extremes {3, 10} will mostly confirm the μ=1.0 end rather than add
+shape. Worth knowing before spending four more slots on the registered value list.
+
+Whether cost tracks the pin is exactly what the CE pass decides: **757905** now scores all four arms
+(free, μ=1.0, μ=0.3, μ=0.1) in **one job under one model load**, per the script's contract, replacing
+the 3-arm `asym_p201_ce_musweep.json`.
+
+### Housekeeping: cancelled 757888 left an empty directory
+The μ=0.3 job I cancelled at 03:45 had already created its output dir before dying, leaving an
+**empty** `..._757888/` — no RUNMETA, no projections. It broke a glob that assumed every
+`asym_p2_soft_*` dir has a RUNMETA, which is how it was noticed. Removed (`rmdir`, so it could only
+have succeeded on an empty dir — nothing was deleted that held data).
+
+Worth stating as a pattern: **a cancelled job leaves a directory-shaped hole**, and analyses that
+glob by prefix trip over it. Same hazard that motivated putting the randtok floor stubs under their
+own root at 21:15.
+
+### SLURM
+**Queue 6/6**, account 6, nothing PENDING. Four §20.7 seed-44 shards, the K=10 floor (757879,
+**336/370** — nearly done), and the 4-arm CE scorer (757905, n-802). **§20.7:** seeds 42 and 43
+**37/37**, seed 44 **26/37**. Read gate holds.
+
+---
