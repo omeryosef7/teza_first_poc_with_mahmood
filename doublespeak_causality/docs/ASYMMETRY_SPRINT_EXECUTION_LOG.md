@@ -7150,3 +7150,52 @@ Prior evidence this run will test:
 PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 10:45 — §20.3 COMPLETE. Band-only design validated; and it **corrects my own 09:20 framing**
+
+M=5 replicates, 665 judge calls (15× cheaper than a full-corpus M=5 design):
+
+| group | n | flipped | flip rate | mean score SD |
+|---|---|---|---|---|
+| **intermediate band** | 93 | 33 | **35.48 %** | 0.1047 |
+| **extreme control** | 40 | 0 | **0.00 %** | **0.0023** |
+
+**The extreme control never flipped — 0/40, score SD 0.0023.** Every control row had p ∈ {0,1}
+across all 5 replicates. The band-only design is **validated**, not assumed: rows pinned at 0.0/1.0
+are effectively deterministic, and the 15× saving is real. The 06:05 prediction holds exactly.
+
+Within the band, instability is substantial: 33 of 93 band rows flipped, mean p(1−p) = 0.066.
+
+### This corrects what I wrote at 09:20
+I framed judge noise as "the size of our effects" and put it alongside sampling power as a joint
+reason to abandon binary ASR. **The replicate data does not support that framing.** Decomposing a
+single-pass arm ASR at n=37, p≈0.15:
+
+| source | SD | share of variance |
+|---|---|---|
+| **sampling** (prompt-to-prompt binomial) | **0.0587** | 90–98 % |
+| judge (typical) | 0.0091 | 2.3 % |
+| judge (worst case: 2 maximally unstable rows) | 0.0191 | 9.6 % |
+
+**Sampling noise is 3–6× larger than judge noise and dominates the variance.** The 0.054 shift I
+highlighted was the *maximum over 6 arms* — 2.8 worst-case SD, a tail draw, not the typical
+magnitude. Stating it as the characteristic noise level overstated the case.
+
+Also reconciled: 3 flips in 222 rows (this morning's two-pass measurement) against the
+replicate-implied 0.617 % corpus rate → expected 1.37, **P(X≥3) = 0.16**. Consistent; the apparent
+2× gap was small-number variation over 3 events, not a real disagreement. And the soft-prompt arms
+have *less* band mass (3.15 %) than the per-prompt corpus (4.65 %), so a population difference
+cannot explain it either.
+
+### Net effect on the §20.8 endpoint argument — it gets **simpler**, not weaker
+The conclusion (drop binary ASR as primary endpoint at this n) stands, but it now rests on **one**
+dominant cause, not two co-equal ones: **statistical power**. Judge noise is a real but secondary
+contributor (≤10 % of variance) and, importantly, **is now cheaply fixable** — majority-vote over
+M=5 on the 4.65 % band costs 665 calls and removes essentially all of it. Sampling noise is not
+fixable without more prompts, and the corpus ceiling is 179 (08:00).
+
+The sprint's long-cited **5.4 %** flip figure is superseded: the corpus-level two-pass rate is
+**≈0.6 %**, and flips are confined to a 4.65 % boundary band where they run ~35 %.
+
+**§20.7:** 6/74 prompts. **Queue 6/6**, nothing PENDING.
+
+---
