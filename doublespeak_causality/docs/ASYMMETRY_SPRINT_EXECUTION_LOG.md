@@ -8369,3 +8369,32 @@ n-305, n-350** — all 3090s. **§20.7:** 69/74 (seed 42 37/37 FINAL, seed 43 **
 **16/37**.
 
 ---
+## 2026-08-14 23:45 — quiet tick. Integrity re-verified at n=90; nothing else changed.
+
+*(Wall clock 13:31 UTC.)* No completions; queue 6/6; nothing PENDING. Seed 43 **33/37**, seed 44
+**20/37**. Everything actionable is either finished, cap-blocked, or behind the pre-registered gate
+that opens when seed 44 reaches 37/37 (~6 h out). Recording the tick rather than inventing work for
+it.
+
+### Integrity, re-checked at the current count rather than inherited
+**90 completed 600-step runs — 37 + 33 + 20 — every ITERATION_LOG exactly 600 rows, every run
+`n_train_tasks == 1`, zero violations.** Cross-shard prompt uniqueness also holds per seed (37/37,
+35/35, 24/24 distinct task_ids across all directories including in-flight ones), so the four shards
+of each seed are disjoint and nothing is being optimized twice under two names.
+
+This is the check that would catch the `config_hash` collision hazard the SLURM header warns about
+if the per-prompt directory naming ever failed. It is cheap, and it is the claim §7's status line
+in `SECTION20_RESULTS.md` makes, so it gets re-run as the count grows rather than asserted once.
+
+### Design-vs-inventory diff
+Unchanged from 23:15. §20.5 harness ready (minutes, 3090); §20.1 μ sweep ready (4 values, L40S);
+both blocked by the ≤6 cap, not by design. §20.2/§20.3/§20.4 complete and documented.
+§20.6/§20.9 behind the corpus ceiling. §20.7 running, read pre-registered, contrast
+integrity-checked, wall-clock cleared.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 70/74 (seed 42 37/37 FINAL, seed 43 **33/37** — 4 prompts
+left), seed 44 **20/37**. Still nothing read until seed 44 completes.
+
+---
