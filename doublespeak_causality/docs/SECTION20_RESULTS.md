@@ -70,6 +70,31 @@ and is non-null.
 Baseline projection remains the strongest single predictor (r = −0.326, p = 0.0046); final
 projection r = −0.421, p = 1.9e-4.
 
+### 3b. The mediation is MODALITY-SPECIFIC — it does not hold for continuous attacks
+
+The §20.1 soft-prompt `task` arms share §20.2's causal structure exactly (optimized for compliance
+only; projection moves as a side effect), giving a free replication in another modality:
+
+| slice | partial r(success, drop \| baseline) | n | 95 % CI |
+|---|---|---|---|
+| **discrete GCG, vanilla** (§20.2) | **−0.291** | 74 | [−0.489, −0.066] |
+| **continuous soft `task`** | **−0.008** | 111 | [−0.195, +0.180] |
+| continuous soft `task_orth` | −0.170 | 111 | [−0.346, +0.018] |
+
+**It does not replicate**, and at n=111 the soft arm *excludes* an effect as strong as the discrete
+one — despite a larger drop range (−6.64 → +1.48 vs −4.87 → +0.67).
+
+A saturating dose-response was hypothesised (soft prompts move the coordinate ~2× further: mean
+−3.09 vs ≈−1.4) and tested by stratifying: at drop > −2 (n=30, mean −0.54) partial r = **+0.041**.
+**Unsupported, but not falsified** — that CI is [−0.331, +0.401] and does not exclude −0.291.
+Underpowered; saturation remains open.
+
+**Well-powered side finding.** `task_orth` gives **r(success, baseline) = −0.512, p = 9.6e-09**:
+when the attack cannot move the refusal coordinate, intrinsic prompt refusal propensity dominates
+outcomes. In the unpinned `task` arm the same correlation is **−0.037 (p = 0.70)** — a −3.09 move
+washes baseline out completely. This is a *behavioural* demonstration that the pin works, which
+§2's ASR contrast (0/3 significant) could not provide.
+
 **Synthesis of 1–3.** The refusal coordinate is **necessary** for the attack but **useless as an
 optimization target**: plain task optimization already moves it −3.09 for free, ~9× further than
 the discrete mechanism objective ever managed, so a direction term has nothing left to add. That
@@ -102,6 +127,22 @@ it is the condition whose ASR sits closest to 0.5. Corpus-level two-pass disagre
 
 **Sampling dominates judge noise by 3.5–7.4×.** Judge noise is real, secondary, and cheaply removable
 (majority-vote over M=5 on the 4.65 % band).
+
+**That removal was carried out, not just asserted** (`asym_p203_denoised_contrasts.json`). The
+replicate run covers every band row (93/93, 0 missing) and extremes are validated deterministic, so
+a fully denoised endpoint required no new API calls. Re-running all 18 §7.5 contrasts:
+
+| | result |
+|---|---|
+| ΔASR moved | **7/18** (mean 0.031, max **0.054** = exactly 2 rows of 37) |
+| significance flipped | **0/18** |
+
+Every shift is an exact multiple of 1/37, confirming denoising flips whole rows rather than
+smearing scores. **Caveat that limits the claim:** all 18 contrasts are null under both endpoints,
+so "0 flips" was near-guaranteed — this demonstrates robustness *of nulls* only. A contrast near
+threshold could be moved across by a 2-row shift. Practical consequence: individual ΔASR values
+carry ~±0.05 of judge-attributable uncertainty *on top of* sampling — 54 % of the whole Doublespeak
+effect — so they should not be quoted to three decimals.
 
 ## 5. Every behavioural negative is bounded at ~±0.2 ASR (§20.4)
 
@@ -221,6 +262,9 @@ by the 5→200 jump and cannot represent saturation.
 1. **A necessity/usefulness distinction the program was conflating.** The refusal coordinate is
    necessary for the continuous attack yet useless as an optimization target. This reconciles the
    mechanism-targeting negatives with the mediation result instead of leaving them in tension.
+   The mediation is further **modality-specific** (§3b): it holds for discrete suffixes and is
+   excluded at n=111 for continuous soft prompts, consistent with the coordinate acting as a
+   **gate** rather than a dose — though the stratified test lacks power to establish that.
 2. **The objective-vs-behaviour dissociation**, distinct from representation-vs-behaviour: a 78 %
    change in the optimized quantity yields an unmeasurable behavioural change.
 3. **Every behavioural negative must be restated as a bound** (~±0.2 ASR), because at n=37 the

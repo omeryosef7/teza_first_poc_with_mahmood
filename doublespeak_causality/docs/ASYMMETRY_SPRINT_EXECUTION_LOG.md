@@ -7688,3 +7688,24 @@ then the §20.1 μ sweep.
 **§20.7:** 49/74 prompts. **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 17:30 — results doc brought current (3 findings were only in the chronological log)
+
+`SECTION20_RESULTS.md` had fallen two ticks behind. Added:
+
+* **§3b (new)** — the modality-specificity of §20.2's mediation: discrete −0.291 (n=74) vs
+  continuous −0.008 (n=111, CI excludes the discrete value), the saturating dose-response
+  hypothesis marked *unsupported but not falsified* with its underpowered CI stated, and the
+  well-powered `task_orth` baseline finding (r = −0.512, p = 9.6e-09).
+* **§4 extended** — the denoising was executed, not just asserted: 7/18 ΔASR values moved, 0/18
+  significance flips, with the caveat that all-null contrasts make "0 flips" near-guaranteed, so it
+  demonstrates robustness *of nulls* only.
+* **Contribution list item 1** now records the gate-vs-dose reading.
+
+Keeping this doc current matters because the execution log is chronological and interleaved with
+retractions — a reader reconstructing §20.2 from it would hit the 04:30 reversal, the 16:30
+modality split, and the falsified saturation hypothesis in three different places.
+
+**§20.7:** 49/74 (seed42 33/37, seed43 16/37 with all 4 shards now running). 757662/757672 are in
+model-load; no new completions this tick. **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---
