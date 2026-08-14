@@ -1,0 +1,107 @@
+{
+  "endpoint": "best-so-far GCG task_loss, paired per prompt within seed",
+  "method": "paired bootstrap over items; 90% percentile interval of the mean; bound = max(|lo|,|hi|); headline = worst bound across seeds",
+  "n_boot": 10000,
+  "rng_seed": 20260815,
+  "budget": 200,
+  "compute_effect_5_to_200": 0.9462538710585583,
+  "why_this_file_exists": "SECTION20_RESULTS.md \u00a77 quoted these bounds (0.2151 / 0.1618) with no artifact behind them; a scan of 1881 JSONs on 2026-08-15 found none. Recomputation reproduces them to bootstrap noise, so this closes a provenance gap, not a correctness one.",
+  "contrasts": [
+    {
+      "contrast": "mechanism - vanilla",
+      "budget": 200,
+      "per_seed": [
+        {
+          "seed": 42,
+          "n": 37,
+          "mean_delta": 0.024809966216216218,
+          "ci90_lo": -0.06329180743243243,
+          "ci90_hi": 0.10895534206081077,
+          "bound": 0.10895534206081077
+        },
+        {
+          "seed": 43,
+          "n": 37,
+          "mean_delta": -0.10475612331081081,
+          "ci90_lo": -0.2145283467060811,
+          "ci90_hi": -2.3754222973011382e-05,
+          "bound": 0.2145283467060811
+        },
+        {
+          "seed": 44,
+          "n": 37,
+          "mean_delta": 0.013091216216216216,
+          "ci90_lo": -0.09787003800675675,
+          "ci90_hi": 0.11734586148648649,
+          "bound": 0.11734586148648649
+        }
+      ],
+      "worst_bound": 0.2145283467060811,
+      "pct_of_compute_effect": 22.67133094695738
+    },
+    {
+      "contrast": "mechanism - matched_random",
+      "budget": 200,
+      "per_seed": [
+        {
+          "seed": 42,
+          "n": 37,
+          "mean_delta": 0.06400443412162163,
+          "ci90_lo": -0.03283493454391892,
+          "ci90_hi": 0.15912690033783783,
+          "bound": 0.15912690033783783
+        },
+        {
+          "seed": 43,
+          "n": 37,
+          "mean_delta": -0.00538429054054054,
+          "ci90_lo": -0.09364706503378378,
+          "ci90_hi": 0.08467324746621618,
+          "bound": 0.09364706503378378
+        },
+        {
+          "seed": 44,
+          "n": 37,
+          "mean_delta": -0.055927998310810814,
+          "ci90_lo": -0.16374577702702703,
+          "ci90_hi": 0.047826488597972956,
+          "bound": 0.16374577702702703
+        }
+      ],
+      "worst_bound": 0.16374577702702703,
+      "pct_of_compute_effect": 17.30463483798987
+    },
+    {
+      "contrast": "matched_random - vanilla",
+      "budget": 200,
+      "per_seed": [
+        {
+          "seed": 42,
+          "n": 37,
+          "mean_delta": -0.03919446790540541,
+          "ci90_lo": -0.1634963576858108,
+          "ci90_hi": 0.08250633445945946,
+          "bound": 0.1634963576858108
+        },
+        {
+          "seed": 43,
+          "n": 37,
+          "mean_delta": -0.09937183277027027,
+          "ci90_lo": -0.22844568201013513,
+          "ci90_hi": 0.032416596283783704,
+          "bound": 0.22844568201013513
+        },
+        {
+          "seed": 44,
+          "n": 37,
+          "mean_delta": 0.06901921452702703,
+          "ci90_lo": -0.040358424831081076,
+          "ci90_hi": 0.18108767947635132,
+          "bound": 0.18108767947635132
+        }
+      ],
+      "worst_bound": 0.22844568201013513,
+      "pct_of_compute_effect": 24.142113337362286
+    }
+  ]
+}

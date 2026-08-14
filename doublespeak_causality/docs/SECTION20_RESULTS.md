@@ -281,8 +281,15 @@ task loss; continuous, paired per-prompt, judge-free), at full n=37.
 
 | contrast | worst bound (loss units) | as % of compute effect |
 |---|---|---|
-| mechanism − vanilla | 0.2151 | **22.7 %** |
-| mechanism − matched_random | 0.1618 | 17.1 % |
+| mechanism − vanilla | 0.2145 | **22.7 %** |
+| mechanism − matched_random | 0.1637 | 17.3 % |
+| matched_random − vanilla | 0.2284 | 24.1 % |
+
+*(`asym_p207_arm_bounds.json`. These bounds were quoted here for days with **no artifact behind
+them** — a scan of 1 881 JSONs on 2026-08-15 found none — and are now recomputed and persisted:
+paired bootstrap over the 37 items, 90 % interval, `max(|lo|,|hi|)`, worst across seeds, seeded RNG.
+The recomputation lands within bootstrap noise of the originally quoted 0.2151 / 0.1618, so this
+was a provenance gap, not a correctness one; the table now carries the reproduced values.)*
 
 > Any benefit from the direction term is at most ~23 % of what plain compute buys — on an endpoint
 > that detects the compute effect at p = 1.1e-07.

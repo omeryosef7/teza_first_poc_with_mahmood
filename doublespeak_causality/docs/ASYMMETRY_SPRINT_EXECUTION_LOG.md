@@ -9757,3 +9757,57 @@ into `ASYMMETRY_FINAL_SYNTHESIS.md` · registry scope for the project-level `out
 **No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
 
 ---
+## 2026-08-15 16:15 — **§7's headline bound had no artifact behind it.** Recomputed, reproduced, persisted.
+
+*(Wall clock 21:00 UTC.)* Queue empty. The one §20 number I had never traced was §7's equivalence
+bound — the sprint's strongest form of the direction-term negative, and item 5 in "What §20 changes
+about the paper": *"the direction term's uselessness is now bounded at ≤23 % of the compute
+effect."*
+
+### The gap
+§7 quoted `mechanism − vanilla = 0.2151` and `mechanism − matched_random = 0.1618`, attributing
+them to `asym_p207_arm_contrasts.json`. **That file has no bound column** — it carries
+`mean_delta`, `p`, `n_better`, `n` and nothing else. A numeric scan of **1 881 JSON files** across
+both output trees found those values only as coincidental matches inside unrelated studies
+(`pair_causal_dose_cloze`, `features_llama8b`, `lko_gen`).
+
+So a headline claim sat in a document whose own preamble promises *"Every number is quoted from an
+artifact under `doublespeak_causality/outputs/`, not from the execution log."* It was computed once,
+reported, and never written down.
+
+### Recomputed — the claim holds
+`asym_p207_arm_bounds.py` → `asym_p207_arm_bounds.json`. Paired bootstrap over the 37 items, 90 %
+interval, `max(|lo|,|hi|)`, worst across seeds, seeded RNG:
+
+| contrast | worst bound | % of compute effect | quoted before |
+|---|---|---|---|
+| mechanism − vanilla | **0.2145** | **22.7 %** | 0.2151 / 22.7 % |
+| mechanism − matched_random | **0.1637** | **17.3 %** | 0.1618 / 17.1 % |
+| matched_random − vanilla | **0.2284** | 24.1 % | *(never quoted)* |
+
+Differences of 0.0006 and 0.0019 are resampling noise at n_boot=10 000 under a different RNG seed.
+**The ≤23 % claim is correct.** This was a provenance gap, not a correctness one — which is the
+good outcome, and is exactly why it was worth checking rather than assuming either way.
+
+Two things changed in §7: the table now carries the **reproduced** values with the artifact named,
+and it gains the third contrast (`matched_random − vanilla`, 0.2284) that the original omitted —
+the largest of the three, so leaving it out flattered the summary slightly.
+
+### Verification status of §20 is now complete
+Every number in `SECTION20_RESULTS.md` is traced to an artifact and matches it. The last three
+ticks found, in order: a section five ticks stale (§8), a two-source column (§1b), a stale
+provisional marker (§5), a superseded claim in the synthesis, and now an unsourced headline bound.
+**All five were invisible from the execution log alone** — they only surfaced by reading the
+artifacts back.
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ — complete, propagated, **fully traced**,
+reconciled, registered (soft-prompt half), discoverable.
+
+**Owed, none of it compute:** §20.0 dev allocation · §20.6/§20.9 unblock decision · §20 integration
+into `ASYMMETRY_FINAL_SYNTHESIS.md` · registry scope for the project-level `outputs/` tree.
+
+### SLURM
+**No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
