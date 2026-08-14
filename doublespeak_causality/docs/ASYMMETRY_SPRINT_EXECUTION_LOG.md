@@ -8398,3 +8398,39 @@ n-305, n-350** — all 3090s. **§20.7:** 70/74 (seed 42 37/37 FINAL, seed 43 **
 left), seed 44 **20/37**. Still nothing read until seed 44 completes.
 
 ---
+## 2026-08-15 00:15 — quiet tick. Seed 43 is 2 prompts out; the next-free-slot order is fixed in advance.
+
+*(Wall clock 14:01 UTC.)* No completions; queue 6/6; nothing PENDING. Seed 43 **35/37**, seed 44
+**21/37**. Both seed-43 shards are at 8/9, so seed 43 finishes within roughly an hour and
+**757662/757672 will free two slots** — the first slots available in eight ticks.
+
+### What goes in those slots, decided now
+Same reasoning as the pre-registration: decide before the moment arrives, so the choice is not made
+under "a slot is idle" pressure.
+
+1. **randtok floor first** (`randtok_floor_plan.jsonl`, 111 generations, **3090**). It is *minutes*,
+   so it closes §20.5's last mandatory condition and hands the slot straight back. Running the
+   multi-hour job first would park a mandatory control behind it for no gain.
+2. **§20.1 μ sweep second** (4 values {0.1, 0.3, 3, 10}, **L40S**, its own pinned nodelist and
+   class guard — do not override).
+
+This ordering is not the ledger's priority order (μ sweep is listed first). The ledger ranks by
+*evidential value*; with two slots opening simultaneously both run anyway, and if only one opens,
+the minutes-long job should take it. Recording the deviation and its reason rather than silently
+reordering.
+
+**Seed 43 completing still does not trigger the read** — the registered gate is all three seeds at
+37/37, and seed 44 is ~5 h out. Restated because two slots freeing is the moment that temptation
+returns.
+
+### Design-vs-inventory diff
+Unchanged. §20.5 harness ready; §20.1 μ sweep ready; both cap-blocked. §20.2/§20.3/§20.4 complete.
+§20.6/§20.9 behind the corpus ceiling. §20.7 running.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. Shard progress: 757662 **8/9**, 757672 **8/9**,
+757697 6/10, 757711 6/9, 757709 5/9, 757741 4/9. One job per node across **n-301, n-302, n-303,
+n-304, n-305, n-350** — all 3090s. **§20.7:** 72/74 (seed 42 37/37 FINAL, seed 43 **35/37**),
+seed 44 **21/37**.
+
+---
