@@ -9863,3 +9863,4 @@ entries are how a chronological log stops being readable. Subsequent idle ticks 
 one line each unless something actually changes.
 
 ---
+### 17:45 — idle. Queue: 1 role-probe job (`phase4_bomb` 758070), no asymmetry work. Diff unchanged; nothing owed that is not a decision.
