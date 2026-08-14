@@ -8322,3 +8322,50 @@ n-305, n-350** — all 3090s. **§20.7:** 68/74 (seed 42 37/37 FINAL, seed 43 **
 left, in shards 2 and 3), seed 44 **14/37**.
 
 ---
+## 2026-08-14 23:15 — wall-clock projection: no shard is at risk. And seed 43 finishing does **not** trigger the read.
+
+*(Wall clock 13:01 UTC.)* No completions; queue 6/6; nothing PENDING. Seed 43 **32/37**, seed 44
+**16/37**.
+
+### Projected completion against the 16 h wall — all six clear
+Rate measured per job from its own finished prompts, not assumed:
+
+| job | shard | done | h/prompt | needs | has left | verdict |
+|---|---|---|---|---|---|---|
+| 757662 | s43 shard 2 | 7/9 | 0.85 | 1.7 h | 10.0 h | ok |
+| 757672 | s43 shard 3 | 6/9 | 0.96 | 2.9 h | 10.2 h | ok |
+| 757697 | s44 shard 0 | 5/10 | 0.99 | 5.0 h | 11.0 h | ok |
+| 757709 | s44 shard 1 | 4/9 | 1.12 | 5.6 h | 11.5 h | ok |
+| 757711 | s44 shard 2 | 4/9 | 1.11 | 5.5 h | 11.6 h | ok |
+| 757741 | s44 shard 3 | 3/9 | 1.15 | 6.9 h | 12.6 h | ok |
+
+Worst case is 757741 needing 6.9 h with 12.6 h in hand — **no resubmission expected**, and the
+08:55 wall concern stays moot at 600 steps as it was at 200. Per-prompt cost is consistent across
+nodes (0.85–1.15 h), so no node is degraded.
+
+### The timing consequence, stated before it becomes tempting
+**Seed 43 reaches 37/37 in roughly 3 hours. Seed 44 needs about 7.** That gap creates exactly the
+opening the pre-registration exists to close, so the answer is recorded now, while it costs
+nothing:
+
+**Seed 43 completing does not trigger a read.** The registered analysis is
+`--combine-seeds 42,43,44`, and its guard refuses until all three are at 37/37. Substituting a
+2-seed read because seed 43 happened to finish first would be re-choosing the analysis after seeing
+which data arrived — the precise flexibility pre-registration removes. A 2-seed read is not
+*biased* the way a partial seed is (both seeds would be complete), merely lower-powered; that
+distinction is why it would be tempting, and it is not a reason to change a registered plan.
+
+So: **nothing is read until seed 44 is also at 37/37**, ~7 h out. The 2000-step descope decision
+waits with it, as it has since 18:00.
+
+### Design-vs-inventory diff
+Unchanged: §20.5 harness ready (minutes, 3090), §20.1 μ sweep ready (4 values, L40S), both
+cap-blocked, not design-blocked. §20.2/§20.3/§20.4 complete and documented. §20.6/§20.9 behind the
+corpus ceiling. §20.7 running, read pre-registered and integrity-checked.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 69/74 (seed 42 37/37 FINAL, seed 43 **32/37**), seed 44
+**16/37**.
+
+---
