@@ -90,10 +90,19 @@ manipulation-check-verified intervention, at a power that excludes the refusal-m
 effect. Combined with the prediction null and the orthogonal geometry, the
 representation≠behavior dissociation is now supported causally, not just observationally.
 
+**Sufficiency (§8.5) — DONE (run 757992, dose 0.25 on-manifold).** Injecting Bombness into
+neutral prompts to the natural doublespeak level (manipulation check: readout +5 to +8,
+verified on-manifold) does **not** induce harm: neu_bomb_add ASR 0.262 vs neu_base 0.214
+(**ΔASR +0.048, p=0.50**), refusal rate identical (0.667 → 0.667), and indistinguishable
+from a random injection. The refusal-from-neutral positive control moves ASR **+0.333**
+[p=0.001] and collapses the refusal rate (0.667 → 0.071). **Bombness is not sufficient.**
+
+Together with necessity (−0.05) and the 2×2 interaction (0.00), Bombness is **neither
+necessary, nor sufficient, nor gated** — fully epiphenomenal for behavior from both
+intervention directions. Refusal is the entire causal lever (necessity +0.24, sufficiency
+control +0.33, 2×2 main effect +0.36).
+
 **Does NOT establish:**
-- **Sufficiency** (§8.5): whether *adding* Bombness to a non-jailbreaking (e.g. neutral)
-  prompt induces harm. Necessity ≠ sufficiency; the sufficiency arm is the natural next
-  run (add α·v_bomb from neutral, ± refusal).
 - ~~**The 2×2 interaction** (§8.6)~~ **DONE (run 757943):** all four cells from one run —
   ASR (bomb high/low × refusal intact/suppressed) = 0.214 / 0.214 / 0.571 / 0.571.
   main-effect Bombness **+0.00** [−0.07,+0.07]; main-effect refusal **+0.36** [+0.20,+0.50];

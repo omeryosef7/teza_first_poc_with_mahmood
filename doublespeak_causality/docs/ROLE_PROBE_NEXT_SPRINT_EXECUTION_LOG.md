@@ -871,3 +871,31 @@ Every entry here must have a matching row in `BUG_AND_DEVIATION_LOG.md`.
 | --- | --- | --- | --- |
 | Q2 | **Confirmatory holdout for the Bombness probe.** v3 test (80 ex, 60 disjoint codewords, leakage-0) is exposed to prior *behavioral* work but NOT to any *probe* analysis. Accept it as probe-unexposed and use it once as the Gate-1 holdout, or construct a fresh probe holdout? | Not blocking Phase 1 (fit=train, select=dev). Blocks only the final Gate-1 confirmatory claim. | OPEN — recommend (a) accept v3 test, since the probe construction is genuinely new and the split is codeword-disjoint. Will proceed under (a) unless told otherwise. |
 | Q1 | GitHub PAT is live in `.git/config` plaintext (`ghp_…`, confirmed real). Rotate + move to SSH/credential-helper. | Security, not sprint-blocking | OPEN — awaiting user |
+
+### E24 — 2026-08-14 — Sufficiency NULL: Bombness neither necessary, sufficient, nor gated ☑
+
+Full sufficiency run 757992 (dose 0.25 on-manifold) COMPLETED. Manipulation check PASSED
+(add−base readout +5.2/+4.8/+5.3/+7.8 — injected to natural doublespeak level). Behavioral
+(n=42):
+
+| arm | ASR | refusal rate |
+| --- | --- | --- |
+| neu_base | 0.214 | 0.667 |
+| neu_bomb_add | 0.262 | 0.667 |
+| neu_bomb_random | 0.167 | 0.667 |
+| neu_refusal_ablate | 0.548 | 0.071 |
+
+- Sufficiency (add vs base): **ΔASR +0.048, p=0.50** — not significant; refusal rate
+  identical. Injecting doublespeak-level Bombness into a neutral prompt does NOT induce harm.
+- vs random: +0.095, p=0.125 (bomb_add ≈ random).
+- Refusal-from-neutral control: **+0.333, p=0.001**; refusal rate collapses 0.667→0.071.
+
+**Phase 4 COMPLETE on clearharm.** Bombness is **neither necessary (−0.05), nor sufficient
+(+0.05), nor gated (2×2 interaction 0.00)** — fully epiphenomenal for behavior from both
+intervention directions plus the factorial. Refusal is the entire causal lever (necessity
++0.24, sufficiency-control +0.33, 2×2 main +0.36). Story A holds in the strongest possible
+form. Note neu_base ASR 0.214 ≈ ds_base 0.214 — the doublespeak framing/binding does not
+itself raise ASR (consistent with E9's ds vs direct ≈ 0); the behavioral action is refusal.
+
+Deliverables updated: BOMBNESS_CAUSAL_INTERVENTION.md §5, synthesis §7/§11/§12/§13, claim
+audit D6. On-manifold dosing (§8.2) + manip-check-first (E22) both applied. Registered 757992.

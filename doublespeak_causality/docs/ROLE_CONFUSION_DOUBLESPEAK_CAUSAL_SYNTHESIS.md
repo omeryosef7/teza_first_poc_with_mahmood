@@ -98,6 +98,13 @@ Bombness readout by −1.3 to −1.6 at L20/24/28/31; norm-matched random ablati
 - **2×2 factorial (§8.6):** main-effect Bombness **+0.00** [−0.07, +0.07]; main-effect
   refusal **+0.36** [+0.20, +0.50]; **interaction +0.00** [−0.14, +0.14]. Bombness is
   inert whether refusal is intact *or* suppressed — **Story B (gated causality) refuted.**
+- **Sufficiency (§8.5):** injecting Bombness into neutral prompts to the natural
+  doublespeak level (manipulation check verified on-manifold, readout +5 to +8) does not
+  induce harm — neu_bomb_add ΔASR **+0.05** [p=0.50], refusal rate identical; the
+  refusal-from-neutral control moves ASR **+0.33** [p=0.001]. **Bombness is not sufficient.**
+
+**Bombness is neither necessary, nor sufficient, nor gated** — fully epiphenomenal for
+behavior, established from both intervention directions (remove and add) plus the 2×2.
 
 ## 8. Concept-vs-refusal dissociation
 
@@ -155,8 +162,6 @@ No new attack objective is warranted by these results.
 
 ## 12. What is still not established
 
-- **Sufficiency:** whether *adding* Bombness to a non-jailbreaking prompt induces harm
-  (expected null given all above, but unmeasured).
 - **Cross-family** Bombness (Phi/Qwen, Phase 8) and the **Phi concept** completion (B16).
 - **Cross-cohort** (generated) and **second-corpus** (Phase 10) replication.
 - The **normalized-space** (upstream mid-block) probe robustness arm.
@@ -165,13 +170,16 @@ No new attack objective is warranted by these results.
 
 ## 13. Ranked next steps
 
-1. **Sufficiency arm** (§8.5) — cheap; closes the necessity/sufficiency pair. (GPU)
-2. **Generated-cohort replication** of Gates 1/3/4 — external validity, one extraction. (GPU)
-3. **Phi concept completion (B16)** + **cross-family probe (Phase 8)** — is Story A a
+1. **Phi concept completion (B16)** + **cross-family probe (Phase 8)** — is Story A a
    cross-family property? (GPU)
-4. **Second corpus + prospective power (Phase 10)** — publication-grade behavioral n.
-5. Normalized-space robustness arm; component-restricted patching (Phase 5).
-6. Independent adversarial audit (§21) against raw artifacts before write-up.
+2. **A re-conditioned generated-cohort Phase-4** (narrower band / lower dose) to get a clean
+   manipulation check there (E22); the clearharm causal result is complete.
+3. **Second corpus + prospective power (Phase 10)** — publication-grade behavioral n.
+4. Normalized-space robustness arm; component-restricted patching (Phase 5).
+5. Independent adversarial audit (§21) against raw artifacts before write-up.
+
+_Done since first draft: sufficiency (§8.5, run 757992) and generated-cohort Gate 1 +
+prediction (§9)._
 
 ---
 
