@@ -189,3 +189,27 @@ Submit shards 1–3 as slots free, before the §20.1 μ sweep.
 3090-only `--nodelist`. 757702 was submitted without one, landed on an 8× V100 DGX node, and died
 at 14 s only because the GPU probe crashed — *not* because the guard rejected it. The guard could
 not have reported anything: its error branch was unreachable under `set -e` until fixed this tick.
+
+## 2026-08-14 19:45 — §20.7 fully launched; §20.5 reclassified
+
+**Resolved**
+* ~~§20.7 seed 44 shard 3/4~~ — **757741** on n-304. All four shards of every seed are now
+  submitted; **no half-launched set remains** and the index-mod-4 bias caveat is cleared.
+* ~~§20.5 "not started, 4-8 GPU-h"~~ — **the classification was wrong.** §7.5's transfer runs left
+  a 37x37 grid on disk (1332 rows, 6 cells); a provisional pool result is delivered with **zero
+  GPU** in `asym_p205_bestofk_existing.json`.
+
+**Still owed, in launch order as slots free**
+1. **§20.1 μ sweep** (μ ∈ {0.1, 0.3, 1, 3, 10}) — still **0 output dirs**, now the top GPU item and
+   the next thing to launch. Needed before §20.1's "78 % cost" can go in the paper.
+2. **§20.5 follow-ups** — three separable items, not one job:
+   a. **`randtok` floor pool** (GPU generation) — *mandatory*; without it the +0.08 at k=2 cannot
+      be separated from two draws of judge noise.
+   b. **M=5 re-judging** of the transfer grid (**API spend, not GPU**) — *mandatory*; single-pass
+      judging biases every k>1 number upward.
+   c. **A redesigned dense grid** if large-k is wanted — balanced k caps at **2** on the existing
+      one, and going higher keeps only big-pool targets. Re-estimate the cost from this design,
+      not from the stale 4-8 GPU-h figure. Note the **vanilla arm has no transfer rows at all**.
+3. **§20.7 2000-step point** — descope still recommended on seed 42's null; the call waits on
+   seed 43 reaching 37/37 (24/37 now). Do not score seed 43 before full coverage.
+4. **§20.6 / §20.9** — blocked by the corpus ceiling (179) via §20.8.
