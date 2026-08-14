@@ -88,7 +88,7 @@ def extract(lm, corpus, items):
     primary positions for each item. Items whose positions cannot be resolved are
     dropped and reported (never silently)."""
     by_id = {str(e["example_id"]): e for e in corpus["examples"]}
-    blocks, kept, dropped = [], [], []
+    blocks, kept, posmeta, dropped = [], [], [], []
     for it in items:
         ex = by_id[it.example_id]
         text = _prompt_text(ex, it.prompt_field)
@@ -102,11 +102,16 @@ def extract(lm, corpus, items):
         # reps[COMPONENT]: [n_layers, n_positions, hidden]; positions in `names` order
         blocks.append(res["reps"][COMPONENT].numpy().astype(np.float32))
         kept.append(it)
+        # scalar position/length metadata for the Gate-1 position/length controls
+        # (D5, plan §5.4): codeword token index and sequence length per item.
+        p = res["positions"]
+        posmeta.append({"codeword_last_idx": int(p["codeword_last"]),
+                        "seq_len": int(p["final_prompt"]) + 1})
     if dropped:
         print(f"[extract] dropped {len(dropped)} items with unresolved positions "
               f"(first: {dropped[:3]})")
     acts = np.stack(blocks, axis=0) if blocks else np.empty((0,))
-    return acts, kept
+    return acts, kept, posmeta
 
 
 def main():
@@ -137,16 +142,17 @@ def main():
     n_pre = preflight_positions(lm, corpus, items)
     print(f"[preflight] verified {n_pre} codeword positions against corpus spans")
 
-    acts, kept = extract(lm, corpus, items)
-    if acts.shape[0] != len(kept):
-        raise RuntimeError("acts/items length mismatch")
+    acts, kept, posmeta = extract(lm, corpus, items)
+    if acts.shape[0] != len(kept) or len(posmeta) != len(kept):
+        raise RuntimeError("acts/items/posmeta length mismatch")
 
     os.makedirs(args.out, exist_ok=True)
     np.save(os.path.join(args.out, "acts.npy"), acts)
     with open(os.path.join(args.out, "items.jsonl"), "w") as fh:
-        for it in kept:
+        for it, pm in zip(kept, posmeta):
             rec = pdset.to_jsonl_records([it])[0]
             rec.pop("codeword_spans", None)  # keep metadata compact; spans re-derivable
+            rec.update(pm)                    # codeword_last_idx, seq_len (Gate-1 controls)
             fh.write(json.dumps(rec) + "\n")
 
     meta = {
