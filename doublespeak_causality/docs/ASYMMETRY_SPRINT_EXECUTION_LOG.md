@@ -9310,3 +9310,10 @@ against ~2 h of work). Nothing PENDING, nothing to launch. **§20.7:** seeds 42 
 seed 44 **32/37** — five prompts out. Read gate holds.
 
 ---
+### 10:45 — 757711 (seed 44 shard 2) COMPLETED clean: `ran=9 skipped=0`, 8:12:40. **Seed 44 at 34/37.**
+Three prompts from the pre-registered read. Remaining work sits in 757697 (shard 0), 757709
+(shard 1), 757741 (shard 3) — all running, all with 7+ h of wall against ~1 h of work. No slot
+refilled: §20.1 and §20.5 are complete, §20.6/§20.9 are blocked by design, so there is nothing owed
+to launch. Nothing read.
+
+---
