@@ -899,3 +899,19 @@ itself raise ASR (consistent with E9's ds vs direct ≈ 0); the behavioral actio
 
 Deliverables updated: BOMBNESS_CAUSAL_INTERVENTION.md §5, synthesis §7/§11/§12/§13, claim
 audit D6. On-manifold dosing (§8.2) + manip-check-first (E22) both applied. Registered 757992.
+
+### E25 — 2026-08-14 — Final independent audit (§21): all load-bearing numbers raw-reproducible ☑
+
+Recomputed every headline number from raw artifacts with FRESH code (not the analysis
+scripts): Gate 1 AUC 0.9972 (from acts.npy), token-id 0.500, necessity −0.048, refusal
++0.238, 2×2 (main_bomb +0.000 / main_refusal +0.357 / interaction +0.000), sufficiency
++0.048, refusal control +0.333 — ALL match the reported values exactly. The analysis
+scripts have no bugs affecting reported numbers. §21 checklist (15 items) passed; 7/7
+probe+phase4 runs registered, all dirs unique (no overwrites). Report:
+`reports/ROLE_PROBE_FINAL_AUDIT_2026_08_14.md`. The result is trustworthy for write-up;
+the one material boundary (cross-cohort) is documented, not hidden.
+
+**Sprint status: core COMPLETE and audited.** Gates 0-4 passed; Phase 4 complete
+(necessity + 2×2 + sufficiency); cross-cohort Gate 1 replicated with honest prediction
+boundary; final audit passed. Remaining are non-core follow-ons (Phi/Qwen cross-family,
+second corpus, component patching, D3).
