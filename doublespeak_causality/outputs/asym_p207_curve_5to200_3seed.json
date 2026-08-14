@@ -1,0 +1,46 @@
+{
+  "arm": "vanilla",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "contrast": "5->200",
+  "coverage": {
+    "42": "37/37",
+    "43": "37/37",
+    "44": "37/37"
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "mean_delta": -0.964527027027027,
+      "n_improved": 37,
+      "n": 37,
+      "p": 1.1397432479304981e-07
+    },
+    {
+      "seed": 43,
+      "mean_delta": -0.8824693834459459,
+      "n_improved": 36,
+      "n": 37,
+      "p": 1.677362978305324e-07
+    },
+    {
+      "seed": 44,
+      "mean_delta": -0.9917652027027027,
+      "n_improved": 37,
+      "n": 37,
+      "p": 1.1392721847135869e-07
+    }
+  ],
+  "pooled": {
+    "mean_delta": -0.9462538710585583,
+    "n_improved": 37,
+    "n_prompts": 37,
+    "p": 1.4551915228366852e-11,
+    "unit": "prompt (per-seed deltas averaged before testing)"
+  },
+  "n_seeds_individually_significant": 3,
+  "preregistered": "2026-08-14, before seeds 43/44 completed"
+}

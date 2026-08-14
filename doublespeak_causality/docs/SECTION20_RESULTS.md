@@ -277,33 +277,43 @@ This is the §20 result that most improves the paper: it converts the program's 
 *"we found nothing, with 5 % power"* into *"we found nothing, on an endpoint able to find something
 4× smaller than what we sought."* §20.4's ±0.19–0.27 ASR bounds could not support that.
 
-**Scaling beyond 200 steps — seed 42 is now FINAL at 37/37 and the 200→600 gain is NULL.**
-`asym_p207_objective_curve_seed42_FINAL37.json` (`interim: false`, `n_paired: 37`).
+### Scaling beyond 200 steps — the pre-registered 3-seed read (COMPLETE)
 
-| contrast | mean Δ | improved | p |
+**All three seeds at 37/37; 111 runs verified 600/600 steps, `n_train_tasks == 1`, zero
+violations.** `asym_p207_curve_200to600_3seed.json`, `asym_p207_curve_5to200_3seed.json`.
+
+The statistic and the decision rule were fixed **before seeds 43/44 finished** (unit = the prompt,
+per-seed deltas averaged before testing, so 3 × 37 paired diffs are not treated as 111 independent
+units; the script hard-refuses to run below full coverage). Read once, here.
+
+| contrast | seed 42 | seed 43 | seed 44 | **pooled (n=37 prompts)** |
+|---|---|---|---|---|
+| 5 → 200 | −0.9645 (p=1.1e-07) | −0.8825 (1.7e-07) | −0.9918 (1.1e-07) | **−0.9463, 37/37, p=1.5e-11** |
+| **200 → 600** | −0.0723 (p=0.252) | −0.2224 (**0.0025**) | −0.0963 (0.071) | **−0.1303, 26/37, p=0.0023** |
+
+**The 200→600 gain is real but small.** Pooled p = 0.0023 — so the earlier "null" reading from
+seed 42 alone was underpowered, not correct. But only **1 of 3 seeds** reaches significance
+individually, and the effect is **7.3× smaller** than the 5→200 jump measured on the same prompts.
+
+### The 2000-step point is DESCOPED — 1 of 3 pre-registered criteria met
+| # | criterion (fixed 2026-08-14, before the data) | result | verdict |
 |---|---|---|---|
-| 5 → 200 | **−0.9645** | **37/37** | **1.14e-07** |
-| 5 → 600 | −1.0368 | 37/37 | 1.14e-07 |
-| **200 → 600** | **−0.0723** | **22/37** | **0.252** |
+| 1 | pooled p < 0.05 | 0.0023 | **PASS** |
+| 2 | ≥2/3 seeds individually significant and sign-consistent | 1/3 | **FAIL** |
+| 3 | per-step efficiency within 10× of 5→200 | **14.9×** worse | **FAIL** |
 
-Tripling the budget past 200 steps buys **no detectable objective-space gain**, on the same
-endpoint and the same 37 prompts where 5→200 lands at p = 1.1e-07. This is the single
-pre-committed read: the estimate was watched oscillate (−0.079 at n=14 → −0.122 at n=18 → −0.062
-interim) and deliberately not re-read until full coverage, so it is reported once, here.
+Efficiency: 5→200 buys **0.004853** loss/step; 200→600 buys **0.000326**. The descope always
+rested on efficiency rather than on "no further gain" — and the gain now demonstrably exists while
+costing ~15× more per step. **Extending to 2000 steps is not justified**, and the reason is
+sharper than a null would have been.
 
-**The 2000-step point is descoped** — but on *seed 42 only*, and the decision is held one more
-tick, because seed 43's **interim** 20/37 slice points the other way (−0.197, 14/20, p = 0.026).
-That slice is not a random subsample (completion order tracks per-prompt optimization cost), which
-is exactly the bias that made the earlier interim reads unstable, so it must not be scored until
-37/37. Seed 43 has all four shards running; the call is cheap to defer and expensive to get wrong.
+**Do not quote** the log-linear extrapolation (0.706 at 2000 steps). The measured 200→600 segment
+is −0.1303 where the fit predicts ≈−0.55 over the same interval; the fit is dominated by the
+5→200 jump and cannot represent the tail.
 
-**Do not quote** the log-linear extrapolation (0.706 at 2000 steps): the completed seed now
-*contradicts* it — the fit is dominated by the 5→200 jump, and the measured 200→600 segment is
-flat where the fit predicts continued descent.
-
-**Status.** 66/74 prompts (seed 42 **37/37 FINAL**, seed 43 **29/37**, all 4 shards running). Seed
-44 is a separate curve point at **9/37**, all 4 shards launched and running. No half-launched set
-remains. All completed runs verified: 600/600 steps, `n_train_tasks == 1`.
+**Caveat.** Objective space only. Per §2 this licenses **no** behavioural claim — and §8's floor
+result is the reason that caveat has teeth: on the behavioural endpoint the compute-matched arms
+sit *below* random token strings.
 
 **Caveat.** Objective space only. Per §2 this licenses **no** behavioural claim.
 

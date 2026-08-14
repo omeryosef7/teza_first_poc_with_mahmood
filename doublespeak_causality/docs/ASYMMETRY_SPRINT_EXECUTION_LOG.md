@@ -9343,3 +9343,63 @@ design.
 `phase4_bomb` also runs; not this sprint's.) **§20.7:** seeds 42 and 43 **37/37**, seed 44 **34/37**.
 
 ---
+## 2026-08-15 11:45 — **§20.7 IS COMPLETE. The pre-registered read: the 200→600 gain is REAL, and the 2000-step point is descoped anyway.**
+
+*(Wall clock 17:26 UTC.)* 757741 COMPLETED — `ran=9 skipped=0`, 7:51:37. **All three seeds at
+37/37.** Integrity re-verified at full coverage first: **111 completed runs, every ITERATION_LOG
+exactly 600 rows, every run `n_train_tasks == 1`, zero violations.**
+
+Then the read, once, as registered.
+
+| contrast | seed 42 | seed 43 | seed 44 | **pooled (n=37 prompts)** |
+|---|---|---|---|---|
+| 5 → 200 | −0.9645 (1.1e-07) | −0.8825 (1.7e-07) | −0.9918 (1.1e-07) | **−0.9463, 37/37, p=1.5e-11** |
+| **200 → 600** | −0.0723 (0.252) | −0.2224 (**0.0025**) | −0.0963 (0.071) | **−0.1303, 26/37, p=0.0023** |
+
+### The gain is real — my seed-42 "null" was underpowered, not right
+At 18:00 I reported seed 42's −0.0723 / p=0.252 as *"the 200→600 gain is NULL"* and treated that as
+the headline. Pooled across three seeds at the pre-registered unit, **p = 0.0023**. The effect
+exists; one seed at n=37 simply could not see it. Recording this plainly because it is the fourth
+time in this sprint that a single-seed read misled — and this time the correction runs in the
+*opposite* direction from the previous three (they dissolved effects; this one revealed one).
+
+**The waiting was still right.** Had I read at 34/37 or pooled two complete seeds when tempted at
+00:15, I would have gotten a different number from a differently-biased slice. The value of the
+pre-registration was never that the answer would be null; it was that the answer would be *one*
+answer.
+
+### Decision rule, applied as written
+| # | criterion (fixed 2026-08-14, before the data) | result | verdict |
+|---|---|---|---|
+| 1 | pooled p < 0.05 | 0.0023 | **PASS** |
+| 2 | ≥2/3 seeds individually significant and sign-consistent | 1/3 | **FAIL** |
+| 3 | per-step efficiency within 10× of 5→200 | **14.9×** worse | **FAIL** |
+
+**2000-step point DESCOPED**, 1 of 3 criteria met. 5→200 buys **0.004853** loss/step; 200→600 buys
+**0.000326**. The descope always rested on efficiency rather than on absence of gain — and it now
+rests on a *measured* gain that costs ~15× more per step, which is a stronger argument than the
+null I expected to be writing.
+
+Criterion 3's 10× threshold was set at 22:15 with seed 42's 27.4× as the only anchor. At three
+seeds the true ratio is 14.9× — still outside, but by less than the anchor suggested. Worth stating
+that the threshold was not tuned to the answer: it was fixed when the only available estimate was
+nearly twice as far outside it.
+
+### Propagated in the same tick (10:15 rule)
+`SECTION20_RESULTS.md` §7 rewritten: the full 3-seed table, the criteria table with its verdict,
+the efficiency numbers, and the extrapolation warning sharpened — the fit predicts ≈−0.55 over
+200→600 where the measurement is −0.1303. Also linked §7's objective-space caveat to §8's floor
+result, which is what gives it teeth: on the behavioural endpoint the compute-matched arms sit
+*below* random token strings.
+
+### Design-vs-inventory diff — §20 is closed except for the two blocked items
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ **§20.7 ✅** — all complete and propagated.
+§20.6 and §20.9 remain behind the corpus ceiling (179 vs the plan's assumed 300), blocked **by
+design, not by resources**; the 08:00 entry records the three options and recommends Option 3
+(continuous endpoints), which is a plan decision rather than mine to take.
+
+### SLURM
+**Queue empty of sprint jobs.** Every registered §20 computation is done. Nothing owed, nothing
+PENDING, nothing to resubmit.
+
+---
