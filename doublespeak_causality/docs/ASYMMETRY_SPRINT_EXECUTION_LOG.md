@@ -7709,3 +7709,44 @@ modality split, and the falsified saturation hypothesis in three different place
 model-load; no new completions this tick. **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 18:00 — §20.4 pass 2 delivered on a denoised endpoint. It does **not** improve on pass 1, and that is the finding.
+
+The plan's pass 2 ("after §20.6 supplies a real multi-direction SD") is **unreachable** — §20.6 is
+blocked by the corpus ceiling. But the other stated motivation for a second pass was measurement
+quality, and that *is* reachable: recompute the bounds on the judge-denoised endpoint (majority vote
+over M=5 on the 4.65 % band; extremes validated deterministic).
+
+| budget | contrast | pass 1 bound | pass 2 bound | change |
+|---|---|---|---|---|
+| low | mechanism − matched_random | 0.1892 | 0.1892 | 0 |
+| low | mechanism − vanilla | 0.2162 | 0.2162 | 0 |
+| low | matched_random − vanilla | 0.1892 | 0.1892 | 0 |
+| full | mechanism − matched_random | 0.1892 | **0.2432** | **+0.0541** |
+| full | mechanism − vanilla | 0.2703 | 0.2703 | 0 |
+| full | matched_random − vanilla | 0.2162 | **0.2432** | **+0.0270** |
+| **mean** | | **0.2117** | **0.2252** | **+6.4 %** |
+
+**Denoising made the bounds ~6 % WIDER.** Not a defect in the denoising — a demonstration that
+these bounds are **sampling-limited, not judge-limited**:
+
+* the bound is `max(|CI_lo|, |CI_hi|)`, and removing judge noise shifts *point estimates* without
+  reducing sampling variance;
+* here the denoised estimates happened to land slightly further from zero (seed 43's
+  `full mechanism − matched_random` moved +0.081 → +0.108), pushing the far CI edge out;
+* every change is an exact multiple of 1/37 — 1 or 2 rows.
+
+This is exactly what the 15:00 variance decomposition predicted (judge = 1.8–7.5 % of variance), and
+it **closes the question**: no amount of better judging will tighten these bounds. They stay at
+**2.1–2.3× the Doublespeak effect** (0.100). Only more prompts would help, and the corpus ceiling is
+179.
+
+Written to `asym_p204_equivalence_pass2.json` with `provisional: false`, an explicit
+`why_not_the_planned_pass2` field, and the reference scale recorded. **§20.4 is now a publishable
+deliverable** rather than an artifact stuck behind an unexecutable instruction — and pass 1's
+numbers stand, now with a second endpoint confirming them.
+
+**§20.7:** 53/74 (seed42 **34/37**, seed43 19/37). Not re-reading the 200→600 estimate at 34 — a
+peek now plus another at 37 is the multiple-peeking that produced the earlier oscillation narrative.
+**Queue 6/6**, nothing PENDING.
+
+---
