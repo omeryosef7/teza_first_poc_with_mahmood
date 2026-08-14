@@ -7669,3 +7669,22 @@ the recorded launch order (complete the half-launched set before starting seed 4
 §20.7: 45/74.
 
 ---
+## 2026-08-14 17:00 — seed 43's half-launched shard set is now COMPLETE (all 4 shards submitted)
+
+757526 (seed43 shard 1) finished clean — `ran=9 skipped=0`, 9/9 prompts, every run 600 steps with
+`n_train_tasks=1`. Freed slots went to the owed work in the recorded order:
+
+* **757662** = seed 43 **shard 2/4** on n-305 (launched 16:30)
+* **757672** = seed 43 **shard 3/4** on n-350 (launched 17:00)
+
+**Seed 43 now has all four shards submitted**, so the 08:10 "HALF-LAUNCHED shard set" warning is
+cleared and its denominator becomes the full 37 rather than 19. This mattered: a shard-determined
+subset (index mod 4) is a *biased* slice, not a smaller random sample, so seed 43 could not have
+been used as a curve point at 19/37 however many prompts finished.
+
+Remaining §20.7 work: **seed 44 entirely unlaunched** (0 output dirs) — next in line as slots free,
+then the §20.1 μ sweep.
+
+**§20.7:** 49/74 prompts. **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---

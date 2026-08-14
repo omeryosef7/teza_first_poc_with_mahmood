@@ -134,9 +134,9 @@ rather than assumed.
 1. **§20.1 μ sweep** (μ ∈ {0.1, 0.3, 1, 3, 10}) — **not run** (0 matching output dirs). Needed
    before §20.1's "78 % cost" goes in the paper: 78 % is the price of a *near-total* pin
    (Δproj ≈ −0.03), not of the coordinate as such. GPU; queue is full.
-2. **§20.7 seed 43 shards 2–3 of 4** — **not submitted.** Seed 43 is at **13 of a launchable 19**,
-   not 13/37. *(My own audit script printed "13/37", which understates progress and overstates
-   coverage at the same time — the denominator for launched work is 19.)*
+2. ~~**§20.7 seed 43 shards 2–3 of 4** — not submitted.~~ **RESOLVED 2026-08-14 17:00:** shard 2 =
+   **757662** (n-305), shard 3 = **757672** (n-350). Seed 43 now has all 4 shards launched, so its
+   denominator is the full **37**. Shard 1 (757526) finished clean: `ran=9 skipped=0`.
 3. **§20.7 seed 44** — **entirely unlaunched** (0 output dirs).
 4. **§20.7 2000-step point** — deferred by decision. The estimate for 200→600 oscillated
    (−0.079 → −0.122 → −0.062 as n grew); decide at 37/37, not before.
