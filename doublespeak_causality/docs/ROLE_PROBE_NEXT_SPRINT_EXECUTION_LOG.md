@@ -35,7 +35,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
-| Phase 1 — Bombness probe | 5 | ☐ | Gate 0 clear; blocked only by GPU cap (6/6) |
+| Phase 1 — Bombness probe | 5 | ◐ | dataset builder done+tested (CPU); extraction/fit await GPU |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -244,6 +244,50 @@ launches on the first free slot.
 
 **New open question raised → Q2 below** (confirmatory holdout: is v3 test
 probe-unexposed enough to serve, or construct a fresh one?).
+
+### E7 — 2026-08-14 — Phase 1 foundation: corpus supports the probe with zero new data ◐
+
+Verified offline (structure only, no prompt text) that the v3 corpus already
+provides the headline paired-binding construction (plan §5.2), so **no new data
+generation is needed** for the Bombness probe:
+
+- All **324 examples** carry all six conditions.
+- The codeword appears in **doublespeak / neutral / benign** (surface-identical
+  across them); absent from `direct` (which uses the real concept).
+- **All 324 codewords are single-token** (`single_token_primary`) — clean
+  position-anchored probing.
+- Token positions are **precomputed** (`codeword_occurrences_templated` spans), so
+  upstream's brittle substring/heuristic span-finding (App. §A6) is unnecessary.
+- Two-key structure is native: `codeword` (declared) vs `target_concept` /
+  `normalized_concept` (decoded), plus `wrong_concept` / `wrong_codeword` = the
+  shuffled/unrelated controls.
+
+**Headline label (frozen in `probe_dataset.py`):** positive = `doublespeak`
+(codeword bound to harmful target → Bombness high), negative = `benign` (same
+codeword bound to a benign concept → Bombness low). Within a matched pair the
+surface codeword is byte-identical, so the token-identity control is satisfied by
+construction — the probe must decode the *contextually assigned* identity, exactly
+the role-confusion analogue.
+
+**Built `src/probes/probe_dataset.py`** (pure Python, no torch — the
+corpus→labeled-extraction-spec step; extraction that needs the model is separate).
+Emits ids/splits/labels/codeword-token-ids/integer spans only, never prompt text.
+Includes `assert_split_discipline()` which **raises** on any codeword/concept leak,
+CARROT-in-train, or BOMB-as-codeword (D4 enforced in code, not just prose).
+
+CLI output: 972 items / 648 labelled; train 162+162 (104 cw / 97 concepts), dev
+82+82 (60 cw, incl. CARROT), test 80+80 (60 cw); all single-token; discipline OK.
+
+**Tests `tests/test_probe_dataset.py` — 7 passed** (GPU-free). Includes a
+planted-leak test proving the discipline guard actually fires (not vacuous). One
+self-caught bug: initial test assertion had the label→condition mapping reversed
+(pair[1]=doublespeak, not benign); fixed the test, module was correct.
+
+Reuse so far (plan §2A.9 / App. §A11): extraction will wrap
+`pair_common.capture_components` (resid_post = D1 space); no upstream extraction
+code needed to be copied for this step. `activation_extraction.py` +
+`contextual_identity_probe.py` are the next modules — the first needs a GPU node to
+run, so it is authored-then-SLURM-launched once a slot frees.
 
 ---
 
