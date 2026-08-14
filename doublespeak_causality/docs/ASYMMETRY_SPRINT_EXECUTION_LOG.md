@@ -7243,3 +7243,28 @@ identified: it is not the endpoint, it is the corpus.
 **§20.7:** 12/74 prompts (2 per shard, uniform). **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 11:45 — `docs/SECTION20_RESULTS.md` written: §20 consolidated as claims + bounds
+
+The execution log is chronological and now very long; the paper needs §20 organised by **claim**
+with evidence and limits attached. `SECTION20_RESULTS.md` does that. Every number in it was
+re-read from the JSON artifacts under `outputs/`, **not** transcribed from log entries — the
+artifact inventory was verified first (all 5 present) and the §20.1 CE table, §20.3 replicate
+rates, §20.4 bounds and §20.8 endpoint widths were re-derived from file.
+
+Status split: 3 ESTABLISHED (§20.1 objective-space, §20.2 mediation, §20.3 judge reliability),
+2 BOUNDED (§20.1 behaviour, §20.4), 1 BLOCKED (§20.8, and with it §20.6 / §20.4-pass-2),
+1 RUNNING (§20.7).
+
+**What §20 actually contributes to the paper**, stated in the doc:
+1. a **necessity vs optimization-usefulness** distinction the program was conflating — it
+   reconciles the mechanism-targeting negatives with the mediation result rather than leaving them
+   in tension;
+2. an **objective-vs-behaviour** dissociation distinct from representation-vs-behaviour;
+3. every behavioural negative restated as a **bound** (~±0.2 ASR), since at n=37 the design has
+   0.05 power against its own reported effect;
+4. two corrected methodological figures — the 5.4 % judge-flip rate (really ~0.6 % corpus, in a
+   4.65 % band) and the assumption a graded endpoint restores power (1.34×).
+
+**§20.7:** 16/74 prompts. **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---
