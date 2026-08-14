@@ -7750,3 +7750,22 @@ peek now plus another at 37 is the multiple-peeking that produced the earlier os
 **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 18:15 — seed 42 at 35/37; seed 44 started (shard 0). Holding the 200→600 read until 37/37.
+
+757517 (seed42 shard1) finished clean: `ran=9 skipped=0`. **Seed 42 is at 35/37** — two prompts
+outstanding, one each in shards 0 and 2.
+
+Freed slot went to **757697** = seed 44 shard 0/4 (n-302), per the launch order now that seed 43 is
+fully submitted. Recorded in `OWED_SUBMISSIONS.md` as a **half-launched set**: shards 1–3 still owed,
+and seed 44 cannot serve as a curve point until all four are in, for the same index-mod-4 bias
+reason that applied to seed 43.
+
+**Still not reading the 200→600 contrast.** At 35/37 the temptation is obvious, but I have already
+watched this estimate go −0.079 → −0.122 → −0.062 across three interim reads and drew a wrong
+conclusion from the first one. Two prompts from complete, the right move is to wait for 37/37 and
+read once. The 2000-step descope decision waits with it.
+
+**§20.7:** 54/74 (seed42 35/37, seed43 19/37, seed44 0/37 with 1 of 4 shards launched).
+**Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---

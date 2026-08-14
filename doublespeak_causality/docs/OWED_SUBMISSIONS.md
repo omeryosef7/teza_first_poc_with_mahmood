@@ -150,3 +150,15 @@ rather than assumed.
    half-launched set; a partial seed cannot be a curve point.
 2. §20.7 seed 44 shards 0–3 — third seed for the curve.
 3. §20.1 μ sweep — new evidence rather than more coverage of the same point.
+
+## 2026-08-14 18:15 — §20.7 seed 44 is now a HALF-LAUNCHED set (shard 0 only)
+**757697** = `ARM=vanilla SEED=44 N_STEPS=600 SHARD=0 NSHARD=4` on n-302. **Shards 1, 2, 3 are NOT
+submitted** — only one slot was free.
+
+Launched incrementally rather than waiting for four slots, because seed 42's remaining shards are
+each one prompt from done and idling a GPU costs more than the tracking does. **But the seed-43
+lesson applies verbatim: shard = index mod 4, so a partially-launched seed is a BIASED subset, not a
+smaller random sample. Seed 44 must not be used as a curve point until all 4 shards are submitted
+and complete.**
+
+Submit shards 1–3 as slots free, before the §20.1 μ sweep.
