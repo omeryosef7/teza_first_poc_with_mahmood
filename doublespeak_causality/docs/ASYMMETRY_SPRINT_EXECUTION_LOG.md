@@ -8949,3 +8949,33 @@ now in flight; {3, 10} untouched; μ≈0.5 still recommended over them. §20.2/�
 PENDING beyond pickup. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
 
 ---
+## 2026-08-15 06:15 — μ=0.1 seed 43 done; μ=3 launched. CE held until the point is complete.
+
+*(Wall clock 15:35 UTC.)* 757910 COMPLETED. μ=0.1 projections so far: **seed 42 −0.522, seed 43
+−0.747**; seed 44 (757911) still running at 2:29.
+
+**No CE job submitted this tick, deliberately.** The scorer is cheapest and cleanest when it takes
+every arm in one model load — that is the script's own contract for a valid contrast — so scoring
+μ=0.1 at two of three seeds now would mean re-running it again in twenty minutes for the third.
+Waiting for 757911.
+
+**757914** = μ=**3**, seed 42, launched into the freed slot. This is a **registered** value from the
+plan's {0.1, 0.3, 1, 3, 10}, not the μ≈0.5 I recommended at 04:45 — that recommendation stays a
+recommendation until someone other than me decides to reshape the value list. μ=3 tests whether cost
+saturates at the strong end, where μ=1.0 already over-holds the coordinate (Δproj +0.19 at seed 42).
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1 μ sweep: μ=1.0 and μ=0.3 at 3 seeds, μ=0.1 at 2 of 3 with the third running,
+μ=3 started at seed 42, μ=10 untouched. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus
+ceiling.
+
+*(Recurring nuisance, already logged at 04:15: an in-flight run's directory exists before its
+RUNMETA is written, so prefix globs over `asym_p2_soft_*` hit a `FileNotFoundError` mid-sweep. Same
+shape as the cancelled-job hole. Any analysis script that walks this tree needs to skip dirs without
+RUNMETA rather than assume one.)*
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, μ=0.1 seed 44 (757911), μ=3 seed 42 (757914). Nothing
+PENDING. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
+
+---
