@@ -90,9 +90,15 @@ is a biased subset of prompts (shard = index mod 4), not a smaller random sample
 Seed 44 at 600 steps is still entirely unlaunched.
 
 ## 2026-08-14 08:55 — §20.7 shards will hit the 16 h wall; resubmission required (not lost work)
-Measured throughput is **10.2 s/step** (757516: 260 steps in 44 min), so 600 steps ≈ **102
-min/prompt** and a 10-prompt shard needs ≈17 h against `--time=16:00:00`. My earlier estimate
-(47 min/prompt, ~7.5 h/shard) was **2.2× optimistic** and is retracted.
+**CORRECTED 09:45.** The 10.2 s/step figure was measured over a window that included the ~6 min
+model load, so it over-stated per-prompt cost. End-to-end measurement from shard 0's own RUN
+timestamps (23:07:00 -> 00:20:08) is **73 min/prompt**. A 10-prompt shard therefore needs
+**≈12.2 h**, which **fits inside the 16 h wall**.
+
+So: my first estimate (47 min/prompt) was optimistic, my second (102 min/prompt, "will hit the
+wall") was pessimistic, and the measured value is 73 min/prompt. **No resubmission is expected to
+be necessary** — but the verification step below stays mandatory, because "expected to fit" is not
+"verified complete".
 
 The runner skips any prompt whose `FINAL_CANDIDATES.jsonl` exists, so this costs a resubmission,
 not the work — only the prompt in flight at the wall is redone.

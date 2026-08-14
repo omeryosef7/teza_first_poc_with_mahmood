@@ -7084,3 +7084,41 @@ Self-consistency verified: recomputed ASR from `per_item` matches the stored `as
 **Queue 6/6.**
 
 ---
+## 2026-08-14 09:45 — §20.7 first completions validate; throughput corrected (again), now from end-to-end timing
+
+**3 of 74 prompts complete** (seed42 shards). Validation of every completed run:
+
+| run | steps | n_train_tasks | task_loss first → best |
+|---|---|---|---|
+| `…0007_07229790` | 600 | {1} | 1.898 → 1.078 |
+| `…0013_0c5a2be8` | 600 | {1} | 2.234 → 1.117 |
+| `…0014_0e328230` | 600 | {1} | 2.281 → 0.836 |
+
+All three ran the **full 600 steps** with `n_train_tasks == 1` (the per-prompt guard), and all
+three reduced task loss substantially. The budget is real, not silently truncated.
+
+### Throughput: correcting my own correction
+My 08:55 entry said 10.2 s/step → 102 min/prompt → **~17 h, will hit the 16 h wall.** That was
+measured over a window containing the ~6 min model load. The end-to-end number from shard 0's own
+RUN timestamps (23:07:00 → 00:20:08) is **73 min/prompt** → **≈12.2 h for a 10-prompt shard**,
+which **fits**.
+
+Three estimates in one session: 47 min (optimistic, extrapolated from the 200-step arm), 102 min
+(pessimistic, load-contaminated), **73 min (measured end-to-end)**. The lesson is the one already
+in the notes for model loading — derive wall-clock from run-to-run timestamps, not from an
+instantaneous rate sampled during startup.
+
+**No resubmission is now expected.** The `OWED_SUBMISSIONS` verification step stays mandatory
+anyway: "expected to fit" is not "verified complete", and the check is one `find | wc -l`.
+
+### Design-vs-inventory diff
+* §20.1 — CLOSED (objective-space result; behaviour not established; blocked from claim table).
+* §20.2 — closed. §20.3 — answered; band-only replicate design not launched.
+* §20.4 — pass 1 provisional; pass 2 blocked on §20.6, which is itself blocked by §20.8's ceiling.
+* §20.7 — running, 3/74 prompts done, seed 44 unlaunched, 2000-step point unscoped.
+* §20.5, §20.6, §20.8, §20.9 — not started; §20.8 **cannot be executed as written** (corpus
+  ceiling 179, logged 08:00).
+
+**Queue 6/6**, no PENDING jobs, nothing to resubmit.
+
+---
