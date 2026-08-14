@@ -22,7 +22,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Gate | What it tests | Status |
 | --- | --- | --- |
 | **Gate 0** | Jobs reconciled, threshold frozen, split policy explicit, registry/deviation logs current, manifest committed | ☑ **PASSED 2026-08-14** (see E6) |
-| Gate 1 | Contextual Bombness probe validity | ☐ |
+| Gate 1 | Contextual Bombness probe validity | ☑ **PASSED 2026-08-14** (E15) |
 | Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☐ |
 | Gate 3 | Frozen latent-state prediction report written | ☐ |
 | Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☐ |
@@ -35,7 +35,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
-| Phase 1 — Bombness probe | 5 | ◐ | **pipeline PASSES end-to-end (757883)**; full extraction + Gate-1 next |
+| Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -524,6 +524,46 @@ binding must generalize) and the **token-identity control** — both already in
 
 Net: Phase-1 design is materially de-risked. Proceeding to the full extraction is
 warranted. Slot-waiter armed.
+
+### E15 — 2026-08-14 — GATE 1 PASSED: contextual Bombness is real ☑ (headline result)
+
+Full clearharm extraction (757886) COMPLETED: `acts[510, 32, 2, 4096]`, preflight
+passed. Ran `gate1_eval` (CPU) at both primary positions. **All five Gate-1 criteria
+met.** Full report: `reports/BOMBNESS_PROBE_VALIDATION.md`.
+
+| criterion | result |
+| --- | --- |
+| 1. held-out discrimination | query codeword **AUC 0.997** [0.990,1.000] @L11; decision token 0.964 |
+| 2. cross-codeword transfer | holdout has **22 codewords, 0 overlap with 27 train** → the holdout IS the transfer test |
+| 3. trivial controls near chance | label-shuffle 0.465, random 0.529, position 0.578, length 0.587, token-id **0.500** (exact, by matched-pair design); max 0.587 vs probe 0.997 |
+| 4. dev/holdout agree | 0.9995 vs 0.997 |
+| 5. geometry interpretable | **cos(Bombness, refusal_L18) = +0.091 at codeword (⊥), +0.468 at decision token** |
+
+**Scientific reading.** Bombness — the model's internal encoding of "this codeword is
+contextually bound to a harmful concept" — is a real, robustly decodable latent
+variable that generalizes to unseen codewords and is geometrically **orthogonal to the
+refusal axis at the codeword position** (0.09), entangling with it only by the decision
+token (0.47). This confirms and sharpens §1.1 with a controlled role-confusion-style
+probe, and sets up the sprint's central question exactly: a strong, refusal-orthogonal
+semantic state whose *behavioral causality* is unknown (§1.2 prior: likely
+epiphenomenal). Phases 3–4 test that.
+
+**Honesty guardrails held:** did NOT claim decodability off the n=4 smoke (E13);
+previewed the length/position confounds offline before spending GPU (E14, 0.55); the
+preflight caught a real position bug before any bad data (E12). AUC 0.997 is
+decodability, NOT causality — stated explicitly in the report §5.
+
+Token-identity = 0.500 exact is a nice construction check: within a matched pair,
+doublespeak and benign share the codeword, so token-id is perfectly balanced → the
+probe cannot be reading surface codeword identity.
+
+**Deliverables:** `reports/BOMBNESS_PROBE_VALIDATION.md`; run-dir artifacts
+`gate1_codeword_last.json`, `gate1_final_prompt.json`, `geometry_vs_refusal.json`.
+Registered extraction 757886.
+
+**Next (Phase 2/3):** the Refusalness outcome probe + the dual-probe prediction (which
+latent state predicts DS success). Generated-cohort extraction is a cheap cross-cohort
+replication when a slot frees.
 
 ---
 
