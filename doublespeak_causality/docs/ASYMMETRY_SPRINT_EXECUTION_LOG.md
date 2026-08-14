@@ -8782,3 +8782,70 @@ own root at 21:15.
 **37/37**, seed 44 **26/37**. Read gate holds.
 
 ---
+## 2026-08-15 04:45 — K=10 floor closes §20.5. And the μ curve turns out **non-monotone**, which means one run per μ is not enough.
+
+*(Wall clock 15:20 UTC.)* Two jobs landed: the K=10 randtok floor (757879, 27:09, `generated=259
+resumed=111` — the resume path reused every earlier row) and the 4-arm CE scorer (757905, 37 s).
+
+### §20.5 is closed: the pool advantage is +0.035, not +0.084
+Floor at **K=10**, all balanced, same evaluator:
+
+| | ASR@1 | ASR@2 | k=2 gain |
+|---|---|---|---|
+| arms (majority-vote, mean of 6 cells) | 0.2074 | 0.2913 | **+0.0839** |
+| **randtok floor** | **0.2351** | 0.2841 | **+0.0489** |
+| | | | **excess +0.0350** |
+
+The K=3 estimate (+0.029) holds up at K=10 (+0.035). **Roughly 60 % of §20.5's apparent pool gain
+is max-statistic inflation** that random suffixes produce just as readily. Per-suffix floor ASR
+ranges **0.108–0.351** (sd 0.069 across 10 draws, so SE of the mean ≈ 0.022) — the spread that made
+the K=3 read directional is now averaged down.
+
+Against a floor of **0.2351 ± ~0.022**:
+
+* **vanilla 200-step diagonal 0.3333** — clearly above. The only arm that is.
+* **mechanism 0.2793, matched_random 0.2703** — inside the floor's upper CI. **Not distinguishable
+  from random token strings.**
+* **all six transfer cells 0.171–0.230** — at or below the floor.
+* **all three 5-step arms 0.126–0.180** — below it.
+* And the floor's own k-curve reaches **0.3784 at k=10**: pooling ten *random* suffixes beats the
+  best single optimized suffix (0.3333).
+
+`asym_p205_bestofk_existing.json` now has `provisional: false` and an empty
+`unmet_mandatory_conditions`.
+
+### The μ curve is non-monotone — and that is a measurement problem, not a result
+| μ | Δproj_test | test CE | ce_progress | of free | **cost** |
+|---|---|---|---|---|---|
+| free | −3.680 | 0.6685 | 0.7482 | 1.000 | 0 % |
+| 0.1 | −0.528 | 1.9107 | 0.2802 | 0.374 | **62.6 %** |
+| **0.3** | **−0.477** | 1.5802 | 0.4047 | 0.541 | **45.9 %** |
+| 1.0 | +0.187 | 2.3038 | 0.1321 | 0.177 | **82.3 %** |
+
+**μ=0.3 pins slightly harder than μ=0.1 (−0.477 vs −0.528) yet costs 17 points less.** A weaker
+penalty producing a *higher* cost is not a mechanism anyone would predict; the far likelier reading
+is **optimization noise between single runs** — μ=0.3's trajectory simply landed better (final
+1.831 vs 2.086). At **n=1 seed per μ**, run-to-run variance swamps the μ effect between adjacent
+points.
+
+**What survives:** both weak pins cost far less than μ=1.0 (45.9 % and 62.6 % vs 82.3 %), so the
+03:45 conclusion — *the ~78 % headline is the price of a near-total pin, not of the coordinate* —
+**stands on the μ=1.0-vs-weak contrast**, which is large. **What does not survive:** any claim
+about the *shape* of the curve, or the ordering of μ=0.1 against μ=0.3.
+
+**Ledger correction, second one for this item.** 20:45 said the sweep was 4 values. 02:45 said each
+value needs two jobs. Now: **each value needs seeds too** — 4 μ × 3 seeds × (opt + CE), not 4 jobs.
+Launched **757907/757908** = μ=0.3 at **seeds 43 and 44**, because making an existing point
+interpretable beats adding a fourth uninterpretable one. Both PENDING on fair-share; 30-minute
+clock started from `SUBMIT_TIME`.
+
+**Design note, flagged not acted on:** with the projection saturating below μ≈0.3 and all the
+action between 0.3 and 1.0, an intermediate **μ≈0.5** would buy more shape than the registered
+extremes {3, 10}. Not substituting it for the plan's values on my own — recording the
+recommendation.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards plus the two μ=0.3 replicates. **§20.7:** seeds 42 and 43
+**37/37**, seed 44 **26/37**. Read gate holds.
+
+---

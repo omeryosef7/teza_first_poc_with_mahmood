@@ -54,6 +54,24 @@
       "baseline_test_ce": 2.6543469203485026,
       "baseline_test_proj_recomputed": 4.404817075342746,
       "ce_progress_frac": 0.28016153273511
+    },
+    {
+      "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed42_gpul40s_20260814_181033_757891",
+      "objective": "task_orth",
+      "seed": 42,
+      "budget_rel": 0.1,
+      "orth_mu": 0.3,
+      "train_ce": 1.7219054371118545,
+      "test_ce": 1.580228082231573,
+      "train_proj": 2.976292033493519,
+      "test_proj": 3.9396085755245105,
+      "baseline_test_proj": 4.416970501074919,
+      "dproj_test": -0.4773619255504089,
+      "n_train": 40,
+      "n_test": 37,
+      "baseline_test_ce": 2.6543469203485026,
+      "baseline_test_proj_recomputed": 4.404817075342746,
+      "ce_progress_frac": 0.40466407381892006
     }
   ]
 }
