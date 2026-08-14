@@ -958,3 +958,20 @@ resolve_positions finds the codeword in each model's own tokenization.
 Scope held honest: representation half cross-family (3 models); behavioral Phase 3/4 half
 is the audited Llama result (Phi/Qwen behavioral outcomes on v3 doublespeak don't exist).
 Synthesis §9 = 3-family table. Registry 602. Phase 8 (probe replication) essentially done.
+
+### E28 — 2026-08-15 — §20 deliverable completeness pass
+
+Checked the §20 required-deliverables list. Filled the two gaps I have complete data for:
+- `reports/BOMBNESS_REFUSAL_FACTORIAL.md` — the 2×2 (run 757943), previously folded into
+  BOMBNESS_CAUSAL_INTERVENTION; now the standalone deliverable the plan names.
+- `reports/PHI_CONCEPT_COMPLETION.md` — repurposed to the cross-model probe replication
+  (3-family Gate 1 + geometry), which is this sprint's role-probe analogue of the original
+  B16 Phi concept arm; honestly scopes what is NOT done (Phi/Qwen behavioral Phase 3/4).
+
+Two remaining §20 files correspond to genuinely UNRUN phases and are NOT written (writing
+empty stubs would misrepresent status): `PROBE_COMPONENT_PATCHING.md` (Phase 5) and
+`D3_SCOPE_MATCHED_CONTROL.md` (Phase 6, an asymmetry-thread control). Both are documented as
+deferred follow-ons in the synthesis §12/§13.
+
+Deliverable status: 7 of 9 §20 reports present + synthesis + claim audit + manifest + audit;
+the 2 absent are unrun phases, deferred with rationale.
