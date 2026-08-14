@@ -38,7 +38,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
 | Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
-| Phase 4 — causal interventions | 8 | ☑ | **STORY A CAUSAL: Bombness ablation ΔASR −0.05 [−0.14,+0.05]; refusal +0.24** (E19). Sufficiency + 2×2 = optional follow-ons |
+| Phase 4 — causal interventions | 8 | ☑ | **STORY A: necessity −0.05; 2×2 interaction +0.00 [−0.14,+0.14]; refusal +0.36** (E19-E20). Sufficiency = optional |
 | Phase 5 — component patching | 9 | ☐ | |
 | Phase 6 — D3 scope-matched control | 10 | ☐ | |
 | Phase 7 — Phi concept completion | 11 | ☐ | |
@@ -722,6 +722,41 @@ the ablation was strong. One bug caught pre-behavioral-compute (no_grad, E18).
 setup); v_bomb band L8-21→L8-31 (self-review, pre-launch); the position preflight (E12).
 
 Registered 757931. Gates 1-4 all passed; the sprint's core causal question is answered.
+
+### E20 — 2026-08-14 — 2×2 factorial: Story B refuted; sprint core complete ☑
+
+Run 757943 (5 arms × 42 prompts, judged, 37 min) → the 2×2 Bombness × refusal factorial:
+
+| | refusal intact | refusal suppressed |
+| --- | --- | --- |
+| Bombness high | 0.214 | 0.571 |
+| Bombness low | 0.214 | 0.571 |
+
+- main-effect Bombness **+0.000** [−0.071, +0.071]
+- main-effect refusal **+0.357** [+0.202, +0.500]
+- **interaction +0.000 [−0.143, +0.143]**
+
+Bombness is behaviorally inert in BOTH refusal states — exactly zero effect whether
+refusal is intact or suppressed. **Story B (gated causality) is refuted**; Story A holds
+in its strongest form. Manipulation check confirmed the ablation fired (readout −1.3 to
+−1.6), so this is a verified null, not a dead intervention. (Base ASR 0.214 vs the prior
+run's 0.238 = run-to-run drift B15; qualitative result identical.)
+
+Process bug caught pre-compute: the first 2×2 launch passed `--factorial` to sbatch,
+which doesn't forward positional args → would have silently produced 3 cells. Cancelled
+(PENDING, no loss), added a `FACTORIAL` env var, relaunched as 757943.
+
+**Capstone deliverables written:**
+- `docs/ROLE_CONFUSION_DOUBLESPEAK_CAUSAL_SYNTHESIS.md` — the 13-section synthesis (§20).
+- `reports/ROLE_PROBE_CLAIM_AUDIT_TABLE.md` — every claim VERIFIED with provenance (§21);
+  D5 (2×2) now VERIFIED.
+- `reports/BOMBNESS_CAUSAL_INTERVENTION.md` updated with the 2×2.
+
+**Sprint core complete: Gates 0-4 all passed.** The central question is answered
+definitively across three convergent lines (decodability, prediction, causal
+intervention incl. 2×2). Remaining items (sufficiency, cross-cohort, Phi/Qwen, second
+corpus, normalized-space arm) are follow-ons per §19, not required for the core result.
+Registered 757943.
 
 ---
 

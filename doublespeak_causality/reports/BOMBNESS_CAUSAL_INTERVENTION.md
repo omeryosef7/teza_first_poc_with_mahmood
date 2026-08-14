@@ -94,9 +94,12 @@ representation≠behavior dissociation is now supported causally, not just obser
 - **Sufficiency** (§8.5): whether *adding* Bombness to a non-jailbreaking (e.g. neutral)
   prompt induces harm. Necessity ≠ sufficiency; the sufficiency arm is the natural next
   run (add α·v_bomb from neutral, ± refusal).
-- **The 2×2 interaction** (§8.6): whether Bombness becomes causal *only* under suppressed
-  refusal (Story B's gated version). The refusal-intact necessity null argues against it,
-  but the 2×2 is the direct test.
+- ~~**The 2×2 interaction** (§8.6)~~ **DONE (run 757943):** all four cells from one run —
+  ASR (bomb high/low × refusal intact/suppressed) = 0.214 / 0.214 / 0.571 / 0.571.
+  main-effect Bombness **+0.00** [−0.07,+0.07]; main-effect refusal **+0.36** [+0.20,+0.50];
+  **interaction +0.00** [−0.14,+0.14]. Bombness is inert whether refusal is intact OR
+  suppressed — **Story B refuted**; Story A holds in its strongest form. Manipulation check
+  fired (readout −1.3 to −1.6), so this is a verified null.
 - **Robustness**: single dose (α=1, full ablation), single band (L8-18), single cohort
   (clearharm), single seed. The manipulation check confirms the ablation was strong; a
   dose/band/cohort sweep would harden the null.

@@ -48,7 +48,7 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | D2 | Bombness is NOT behaviorally necessary | same | 42 | **ΔASR −0.048** [−0.143,+0.048], p=0.625 | vs random: −0.048 | **VERIFIED** (bound excludes refusal-magnitude effect) |
 | D3 | Refusal ablation IS behaviorally causal (positive control) | same | 42 | **ΔASR +0.238** [+0.071,+0.405], p=0.021; refusal rate 0.643→0.048 | — | **VERIFIED** |
 | D4 | Bombness ablation leaves the refusal decision untouched | same | 42 | refusal rate 0.643→0.643 | — | **VERIFIED** |
-| D5 | 2×2 Bombness×refusal interaction (Story B test) | run 757943; `phase4_analysis.json` `factorial_2x2` | 42 | _pending (run in flight)_ | 4 cells, one run | _PENDING_ |
+| D5 | 2×2 Bombness×refusal: no interaction; Bombness inert in BOTH refusal states (Story B refuted) | run 757943; `phase4_analysis.json` `factorial_2x2` | 42 | **interaction +0.000** [−0.143,+0.143]; main-effect Bombness +0.000 [−0.071,+0.071]; main-effect refusal +0.357 [+0.202,+0.500] | 4 cells one run; manip-check passed (−1.3 to −1.6) | **VERIFIED** |
 
 ## E. Headline synthesis claim
 
