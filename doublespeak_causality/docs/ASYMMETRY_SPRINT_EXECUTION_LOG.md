@@ -9403,3 +9403,61 @@ design, not by resources**; the 08:00 entry records the three options and recomm
 PENDING, nothing to resubmit.
 
 ---
+## 2026-08-15 12:15 — closing audit. **§20.0 was never executed — but the resource it protects is intact.**
+
+*(Wall clock 17:31 UTC.)* **Queue empty**, no sprint jobs, nothing PENDING, nothing owed to launch.
+With every computable §20 item closed, this tick audited the plan's item list against what actually
+exists rather than against my own log.
+
+### The finding: §20.0 GOVERNANCE was skipped
+§20.0 is not an experiment — it is a **precondition**: *"The dev split (37 untouched items) is a
+one-shot resource, and four candidate experiments each assume they get it… Write the allocation
+decision down first, naming the single contrast that gets dev. Without this, dev is burned by
+whichever job is submitted first."*
+
+**No such decision was ever written.** It appears nowhere in `SECTION20_RESULTS.md`,
+`OWED_SUBMISSIONS.md`, or 8 700 lines of this log. The sprint ran §20.1–§20.7 without satisfying
+its own stated precondition.
+
+### But dev was not burned — verified, not assumed
+| check | result |
+|---|---|
+| manifest splits | dev **37**, train 74, test 37 |
+| soft-prompt runs (§20.1, §20.2) | `test_split = test` on **31/31** runs |
+| §20.7 per-prompt GCG (all 111) | `SPLIT=test` |
+| §20.5 transfer grid + randtok floor plan | `split = test` |
+| §20.5 pool / §20.7 curve target counts | 37 = the **test** 37 |
+
+**Every §20 job evaluated on test and trained on the 40-item train pool. The dev split is
+untouched and still allocatable.** The process step was skipped; the risk it guards against did not
+materialise — which is luck, and worth labelling as luck rather than filed as compliance.
+
+**What this means for whoever picks the sprint up:** dev remains a clean one-shot out-of-sample
+surface, and §20.0's decision is *still owed* before anything is run against it. The four
+candidates the plan names are still four.
+
+### Design-vs-inventory diff — final state of §20
+| item | status |
+|---|---|
+| §20.0 governance | **NOT DONE** — decision unwritten; dev verified unspent |
+| §20.1 orthogonality test + μ sweep | ✅ complete, propagated (§1, §1b) |
+| §20.2 per-prompt mediation | ✅ complete, propagated (§3, §3b) |
+| §20.3 judge-noise deconvolution | ✅ complete, propagated (§4) |
+| §20.4 equivalence bounds | ✅ complete, both passes (§5) |
+| §20.5 best-of-k pool attack | ✅ complete, all 3 mandatory conditions met (§8) |
+| §20.6 K=20 random directions | ⛔ blocked — §20.8 precondition unmeetable |
+| §20.7 compute-scaling curve | ✅ complete, pre-registered read, descope decided (§7) |
+| §20.8 corpus expansion to n=300 | ⛔ infeasible — ceiling is 179, ≈139 usable |
+| §20.9 lower-priority list | ⛔ not started — behind §20.8 |
+| §20.10 rejected items | n/a |
+
+**Six of seven computable items are complete and propagated. The three open items are one skipped
+governance decision and two blocked on a corpus that does not exist** — none of them resolvable by
+submitting a job, which is why the queue is legitimately empty rather than idle.
+
+The 08:00 entry records the three options for the §20.8 blockage and recommends **Option 3**
+(continuous endpoints, adequately powered at n=37 where binary ASR is not). That, and §20.0's dev
+allocation, are the two decisions the sprint now waits on — both belong to the plan's owner, not to
+me.
+
+---
