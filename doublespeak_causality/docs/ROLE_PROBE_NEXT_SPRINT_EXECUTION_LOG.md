@@ -35,7 +35,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Upstream import | 2A.1 | ☑ | commit `ec333c40`, no `.git`, MIT retained |
 | Upstream code review | 2A.2 | ☑ | Appendix A of the plan |
 | **Phase 0 — governance repair** | 4 | ☑ | registry 395→573, bug log B6–B18, manifest frozen |
-| Phase 1 — Bombness probe | 5 | ◐ | code done (25 tests); **smoke extraction 757877 launched** |
+| Phase 1 — Bombness probe | 5 | ◐ | **pipeline PASSES end-to-end (757883)**; full extraction + Gate-1 next |
 | Phase 2 — refusal/compliance readout | 6 | ☐ | |
 | Phase 3 — latent-state experiments | 7 | ☐ | |
 | Phase 4 — causal interventions | 8 | ☐ | **highest value** |
@@ -456,6 +456,45 @@ Scientific note: extracting from the chat-templated prompt is the correct choice
 its own merits — the probe now reads the codeword representation as the model
 processes it under attack, comparable to the refusal-direction work. Relaunching the
 smoke on the next free slot.
+
+### E13 — 2026-08-14 — Smoke 757883 PASSES: pipeline works end-to-end (§2A.5) ☑ — with an honest caveat
+
+757883 COMPLETED (48s on V100 after model load). Preflight passed (8 doublespeak
+anchored to corpus spans, 16 benign/neutral resolved). Extraction produced
+`acts[24, 32, 2, 4096]` (24 items × 32 layers × 2 positions × 4096 hidden) + RUNMETA
++ DONE. `smoke_fit`: per-layer AUC at the query codeword, best **L1 AUC 1.000**,
+near-1.0 at almost every layer. Artifact:
+`outputs/probe_bombness_smoke_clearharm_20260814_145913_757883/`.
+
+**§2A.5 pipeline sanity check: PASS.** The extraction → probe pipeline runs
+end-to-end and the signal is decodable.
+
+**Honest caveat — this is NOT a validity result, and AUC≈1.0 is a FLAG not a win:**
+- n = **4 eval examples** (grouped half/half on the 24-item smoke slice). Perfect
+  separation is trivial at this n and says nothing about generalization.
+- Near-perfect AUC even at **L0** (0.875) is suspicious: the doublespeak (positive)
+  and benign (negative) prompts differ in the ENTIRE demonstration block — demos,
+  structure, and **length** (e.g. example 0: doublespeak codeword at tok 209 vs
+  benign at 223). So the probe may be reading "is this a doublespeak-structured
+  prompt" (trivial surface confound) rather than "is the codeword bound to a harmful
+  concept" (the real Bombness question). This is exactly the confound §5.2 / App.
+  §A9.1 warn about.
+- **This is what the Gate-1 blocking controls are for.** The position-only and
+  length-only baselines (D5) will reveal whether the seq-length / codeword-position
+  difference between doublespeak and benign explains the signal. If those controls
+  approach the probe AUC, the naive contrast is confounded and Gate 1 correctly FAILS
+  — at which point the fix is a length/structure-matched contrast, not a probe tweak.
+
+Do NOT report "Bombness is decodable" off this smoke. The claim awaits the full
+extraction (train 162 / dev 82 / test 80) + all 9 controls + CARROT transfer.
+
+The extraction stores per-condition activations regardless of which contrast Gate 1
+ultimately uses, so the full extraction is not wasted even if the positive/negative
+definition is later refined.
+
+**Next:** launch MODE=full COHORT=clearharm (170 ex × 3 cond = 510 items, ~20-25 min
+on V100), then run `gate1_eval.py` on the login node (CPU). 6/6 now (concurrent
+session took the slot); slot-waiter armed for the full launch.
 
 ---
 
