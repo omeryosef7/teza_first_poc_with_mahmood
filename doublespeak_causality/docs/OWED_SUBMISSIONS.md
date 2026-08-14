@@ -213,3 +213,40 @@ not have reported anything: its error branch was unreachable under `set -e` unti
 3. **§20.7 2000-step point** — descope still recommended on seed 42's null; the call waits on
    seed 43 reaching 37/37 (24/37 now). Do not score seed 43 before full coverage.
 4. **§20.6 / §20.9** — blocked by the corpus ceiling (179) via §20.8.
+
+---
+
+# 2026-08-15 — CLOSING STATE. Three of the four items above are DONE; this ledger was stale.
+
+**Read this section before acting on anything above it.** The 19:45 entry listed the μ sweep and
+the randtok floor as owed. Both have since been executed. Acting on that list now would **relaunch
+~30 completed jobs**, which is precisely the failure this ledger exists to prevent.
+
+## RESOLVED since 19:45
+| item | resolution |
+|---|---|
+| §20.1 μ sweep ("0 output dirs, top GPU item") | **COMPLETE.** μ ∈ {0.1, 0.3, 1.0, 3.0, 10.0} × seeds {42, 43, 44} = 15 runs + 3 free arms, all CE-scored in one model load. `asym_p201_ce_musweep.json`, propagated to `SECTION20_RESULTS.md` §1b |
+| §20.5a randtok floor (*mandatory*) | **COMPLETE.** K=10 × 37 prompts = 370 evals. Floor ASR@1 = **0.2351**. `asym_p205_bestofk_existing.json` is now `provisional: false` |
+| §20.5b M=5 re-judging (*mandatory*) | **ALREADY MET FROM DISK** — §20.3's replicate pool (`pool_total = 1998`) contains the transfer grid; 66 of its 93 band rows are `xfer_*`. **No API spend was needed**, contrary to the 19:45 entry |
+| §20.7 2000-step point | **DESCOPED** by the pre-registered decision rule, 1 of 3 criteria met (pooled p = 0.0023 PASS; 1/3 seeds significant FAIL; efficiency 14.9× worse FAIL). `asym_p207_curve_200to600_3seed.json` |
+
+## STILL OWED — none of it is a job you can submit
+1. **§20.0 governance** — the dev-split allocation decision named as a *precondition* in the plan
+   was **never written**. Dev (37 items) is **verified unspent**: every §20 job ran `split=test`
+   on the 37-item test set with the 40-item train pool. It remains a clean one-shot out-of-sample
+   surface, and the decision is still owed **before** anything is run against it.
+2. **§20.6 / §20.9** — behind §20.8, whose n=300 is unreachable (corpus ceiling **179**, ≈139
+   usable). The 08:00 entry records three options and recommends **Option 3** (continuous
+   endpoints, adequately powered at n=37 where binary ASR is not). **A plan decision, not compute.**
+3. **§20.5c dense grid** — only if large-k is wanted. Balanced k caps at **2** on the existing
+   sharded grid; going higher keeps only large-pool targets. Cost must be re-estimated from a
+   *designed* grid, not from the stale "4–8 GPU-h". The **vanilla arm has no transfer rows at all**.
+4. **§20 integration into `ASYMMETRY_FINAL_SYNTHESIS.md`** beyond the two annotations of 2026-08-15
+   (one superseded claim, one refinement). Editorial. **Do not** touch `ASYMMETRY_GAP_MATRIX.md` —
+   it is a dated pre-GPU snapshot and retrofitting results into it would corrupt the deliverable.
+5. **Registry scope** — `EXPERIMENT_REGISTRY.csv` indexes only `doublespeak_causality/outputs/`, so
+   §20.7's **111 per-prompt runs (~900 GPU-h)** and the floor have no rows. Fixing needs the
+   hardcoded `output_dir` prefix in `scripts/update_registry.py` derived rather than assumed.
+
+**Queue state at close: empty.** Every registered §20 computation is done, and every number in
+`SECTION20_RESULTS.md` is traced to an artifact and verified against it.
