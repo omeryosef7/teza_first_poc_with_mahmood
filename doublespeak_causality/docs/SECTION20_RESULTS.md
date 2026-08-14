@@ -85,7 +85,11 @@ reconciles §20.1, §20.2 and §7.5/Gate D without any of them being wrong.
 | **extreme control** | 40 | **0** | **0.00 %** | 0.0023 |
 
 Rows pinned at 0.0/1.0 are effectively deterministic (0/40, SD 0.0023), which **validates** the
-band-only design rather than assuming it. Corpus-level two-pass disagreement ≈ **0.62 %**, not
+band-only design rather than assuming it. *Prior art:* the `baseline_drift` runs already used
+majority-vote judging and recorded per-condition flip rates; what is new here is the **band-only
+targeting** and the **extreme-row control**, not replicate judging as such. Those runs also
+locate the likely provenance of the 5.4 % figure — the `benign` condition alone shows 5.55 %, and
+it is the condition whose ASR sits closest to 0.5. Corpus-level two-pass disagreement ≈ **0.62 %**, not
 5.4 %; the sprint's cited figure was one arm at n=37 and is not a constant. The judge runs at
 `temperature=0`.
 
@@ -113,9 +117,12 @@ bootstrap over items.
 | full | mechanism − vanilla | −0.054 | **0.270** |
 | full | matched random − vanilla | −0.063 | 0.216 |
 
-These nulls rule out **only effects larger than ~0.19–0.27 ASR** — and the Doublespeak effect is
-itself that size. Every "no effect" in the write-up must read "no effect larger than ~0.2 ASR
-detectable at this n".
+These nulls rule out **only effects larger than ~0.19–0.27 ASR**. For scale, the **Doublespeak
+effect itself is +0.100 ASR** (test split, majority-vote, n=30: doublespeak 0.800 vs direct 0.700 —
+`baseline_drift_clearharm_…_741427/summary.json`). So the bounds are **1.9–2.7× the size of the
+phenomenon the paper is about**: our behavioural nulls cannot exclude an effect two to three times
+larger than Doublespeak. Every "no effect" in the write-up must read "no effect larger than ~0.2
+ASR detectable at this n".
 
 *Validation:* all 18 arm × seed ASR cells reproduce the §7.5 published table to 4 dp through an
 independent code path.
