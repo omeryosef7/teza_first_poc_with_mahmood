@@ -37,8 +37,10 @@ COHORT="${COHORT:-clearharm}"
 CONDITIONS="${CONDITIONS:-doublespeak,benign,neutral}"
 LIMIT="${LIMIT:-24}"
 REVISION="${REVISION:-}"           # pin the HF revision for the run (recorded in RUNMETA)
+MODEL="${MODEL:-meta-llama/Llama-3.1-8B-Instruct}"
+MTAG="$(echo "$MODEL" | sed 's#.*/##; s/[^A-Za-z0-9]/-/g')"
 STAMP="$(date -u +%Y%m%d_%H%M%S)"
-OUT="${DC}/outputs/probe_bombness_${MODE}_${COHORT}_${STAMP}_${SLURM_JOB_ID:-local}"
+OUT="${DC}/outputs/probe_bombness_${MODE}_${COHORT}_${MTAG}_${STAMP}_${SLURM_JOB_ID:-local}"
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
@@ -68,8 +70,9 @@ LIMIT_ARG="";  [ "$MODE" = "smoke" ] && LIMIT_ARG="--limit $LIMIT"
 REV_ARG="";    [ -n "$REVISION" ] && REV_ARG="--revision $REVISION"
 
 cd "$DC"
+echo "MODEL=$MODEL"
 python -m src.probes.activation_extraction \
-    --out "$OUT" $COHORT_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG
+    --out "$OUT" --model "$MODEL" $COHORT_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG
 
 echo "[extract done] $OUT"
 
