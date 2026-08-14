@@ -9023,3 +9023,63 @@ seeds 43/44 land. **757918** = μ=3 seed 43, launched.
 holds.
 
 ---
+## 2026-08-15 07:15 — **the μ cost curve at n=3: monotone, and the "near-total pin" reading is back — supported this time.**
+
+*(Wall clock 15:45 UTC.)* 757917 COMPLETED (1:11), 13 arms under one model load. This is the **first
+read at the three-seed threshold** set at 06:45, so it is the one that counts.
+
+### Cost, three seeds per point
+| μ | seed 42 | seed 43 | seed 44 | mean | sd |
+|---|---|---|---|---|---|
+| 0.1 | 62.6 % | 4.5 % | −8.6 % | **19.5 %** | 37.9 |
+| 0.3 | 45.9 % | 47.4 % | 10.1 % | **34.5 %** | 21.1 |
+| 1.0 | 82.3 % | 84.3 % | 64.2 % | **76.9 %** | 11.1 |
+| 3.0 | 96.9 % | *(running)* | *(running)* | 96.9 % (n=1) | — |
+
+**The means are monotone in μ**, and the non-monotonicity flagged at 04:45 (μ=0.3 "cheaper" than
+μ=0.1) **does not survive replication** — it was seed 42's 62.6 % outlier against seeds 43/44 at
+4.5 % and −8.6 %. Paired within seed against μ=1.0: **3/3 positive for μ=0.1** (drops of 19.8, 79.7,
+72.7) and **3/3 for μ=0.3** (36.4, 36.9, 54.1).
+
+*(seed 44 at μ=0.1 scores −8.6 %: the pinned run made **more** CE progress than its own free arm.
+With a penalty that weak the constraint barely binds, and that run simply optimized better. It is
+noise, and it is why μ=0.1's sd is 37.9.)*
+
+### The finding, in the form that matters
+Converting μ into what it actually achieves:
+
+| μ | suppresses of the free −3.680 | costs |
+|---|---|---|
+| 0.1 | **80.4 %** | **19.5 %** |
+| 0.3 | 91.1 % | 34.5 % |
+| 1.0 | **99.3 %** | **76.9 %** |
+
+**Four-fifths of the coordinate suppression is available for a fifth of the CE progress. Closing the
+last fifth costs the other 57 points.** The cost is sharply convex in how completely the coordinate
+is held — which is the claim I made at 03:45, **retracted at 05:45, and can now support.**
+
+That oscillation is worth owning plainly: 03:45 asserted it from **one seed per point**; 05:45
+retracted it because Spearman(|Δproj|, cost) was **0.000** across 7 runs; at 13 arms that same
+correlation is **−0.503 (p = 0.14)** — the right sign, still not significant, and *not* the evidence
+the claim rests on. **What supports it is the μ-ordered means at n=3**, which is a different and
+stronger design than correlating across pooled runs whose μ differs. The 05:45 retraction was
+correct on 05:45's evidence.
+
+**μ=3 breaks the pattern on the projection axis** — it suppresses only 93.5 % (less than μ=1.0's
+99.3 %) while costing 96.9 %. If that holds at three seeds it means the penalty stops buying
+tightness and starts only buying damage past μ=1. **n=1, no interpretation yet**; 757918 (seed 43)
+is running and **757919** (seed 44) just launched.
+
+### Still not propagated
+`SECTION20_RESULTS.md` remains untouched. μ=3 is 1 of 3, μ=10 is untouched, and after two corrections
+on this sweep the bar for writing it down is a complete ladder, not a good-looking trend.
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: μ ∈ {0.1, 0.3, 1.0} complete at 3 seeds; μ=3 at 1 of 3 with both replicates in
+flight; μ=10 untouched. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, μ=3 seeds 43 and 44 (757918, 757919). **§20.7:** seeds 42
+and 43 **37/37**, seed 44 **28/37**. Read gate holds.
+
+---

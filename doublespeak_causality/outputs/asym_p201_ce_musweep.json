@@ -110,6 +110,24 @@
       "ce_progress_frac": 0.40466407381892006
     },
     {
+      "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed42_gpul40s_20260814_183448_757914",
+      "objective": "task_orth",
+      "seed": 42,
+      "budget_rel": 0.1,
+      "orth_mu": 3.0,
+      "train_ce": 2.8472223430871964,
+      "test_ce": 2.592075731303241,
+      "train_proj": 3.099206858873367,
+      "test_proj": 4.169276073172286,
+      "baseline_test_proj": 4.416970501074919,
+      "dproj_test": -0.2476944279026334,
+      "n_train": 40,
+      "n_test": 37,
+      "baseline_test_ce": 2.6543469203485026,
+      "baseline_test_proj_recomputed": 4.404817075342746,
+      "ce_progress_frac": 0.023460079226224784
+    },
+    {
       "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed43_gpul40s_20260814_013606_757509",
       "objective": "task_orth",
       "seed": 43,
@@ -146,6 +164,24 @@
       "ce_progress_frac": 0.2658873692975632
     },
     {
+      "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed43_gpul40s_20260814_182910_757910",
+      "objective": "task_orth",
+      "seed": 43,
+      "budget_rel": 0.1,
+      "orth_mu": 0.1,
+      "train_ce": 1.4340136975049973,
+      "test_ce": 1.37580590473639,
+      "train_proj": 2.964516681432724,
+      "test_proj": 3.673008665845201,
+      "baseline_test_proj": 4.423233839305672,
+      "dproj_test": -0.7502251734604708,
+      "n_train": 40,
+      "n_test": 37,
+      "baseline_test_ce": 2.657816081433683,
+      "baseline_test_proj_recomputed": 4.413435454304154,
+      "ce_progress_frac": 0.4823547369032959
+    },
+    {
       "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed44_gpul40s_20260814_013601_757510",
       "objective": "task_orth",
       "seed": 44,
@@ -180,6 +216,24 @@
       "baseline_test_ce": 2.6568953088811926,
       "baseline_test_proj_recomputed": 4.407860507836213,
       "ce_progress_frac": 0.4223373462245495
+    },
+    {
+      "arm_dir": "asym_p2_soft_task_orth_free_b0.1_seed44_gpul40s_20260814_183205_757911",
+      "objective": "task_orth",
+      "seed": 44,
+      "budget_rel": 0.1,
+      "orth_mu": 0.1,
+      "train_ce": 1.5075764387845993,
+      "test_ce": 1.3017898338872034,
+      "train_proj": 2.7736209288239477,
+      "test_proj": 3.5171495563275106,
+      "baseline_test_proj": 4.417115929964426,
+      "dproj_test": -0.8999663736369157,
+      "n_train": 40,
+      "n_test": 37,
+      "baseline_test_ce": 2.6568953088811926,
+      "baseline_test_proj_recomputed": 4.407860507836213,
+      "ce_progress_frac": 0.5100334478608487
     }
   ]
 }
