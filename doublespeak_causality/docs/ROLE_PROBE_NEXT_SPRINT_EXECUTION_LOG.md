@@ -915,3 +915,24 @@ the one material boundary (cross-cohort) is documented, not hidden.
 (necessity + 2×2 + sufficiency); cross-cohort Gate 1 replicated with honest prediction
 boundary; final audit passed. Remaining are non-core follow-ons (Phi/Qwen cross-family,
 second corpus, component patching, D3).
+
+### E26 — 2026-08-14 — Cross-MODEL Gate 1 replicates on Phi-4-mini-reasoning ☑
+
+Extended the probe to a second model family (Phase 8), parameterizing the extraction by
+MODEL. Phi-4-mini-reasoning (acts[510,32,2,3072]):
+- **Gate 1 PASS**: holdout AUC **0.985** [0.967, 0.998] @L10; controls near chance
+  (label-shuffle 0.514, random 0.487, position 0.562, length 0.559, token-id 0.500 exact).
+- **Geometry**: cos(Bombness codeword, Phi refusal) = **+0.01 to +0.04** (L12-20) — even
+  more orthogonal than Llama. The decodable, refusal-orthogonal semantic representation is
+  a CROSS-FAMILY property.
+
+The B19 preflight relaxation was load-bearing here: Phi tokenization ≠ the Llama-tokenized
+corpus spans (soft match rate 0.0), but the hard check passed and resolve_positions found
+the codeword in Phi's own tokenization (correct by construction). Had the original
+hard-abort anchor still been in place, cross-model extraction would have been impossible —
+the honest B19 fix (E21) directly enabled this result.
+
+Scope: Phi's Phase 3/4 (prediction/causal) need Phi behavioral outcomes on v3 doublespeak,
+which don't exist (existing Phi/Qwen screens are a different cohort). So Story A's
+REPRESENTATION half is cross-family (Llama + Phi); its BEHAVIORAL half is Llama-only so far.
+Qwen3-14B probe replication open. Synthesis §9 + registry updated (758021/758022).

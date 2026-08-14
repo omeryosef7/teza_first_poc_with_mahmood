@@ -137,9 +137,17 @@ manipulable — and behaviorally inert. Refusal predicts and causally controls b
   size does not. The clearharm **causal** result (Gate 4/2×2) is unaffected; a
   generated-cohort Phase-4 run would test causal replication (deferred).
 
-**Cross-model:** not yet run for the Bombness probe. Prior sprint: the refusal-half
-dissociation replicates on Phi-4 (X3/X5), but the Phi **concept** half was never tested
-(B16, = Phase 7). Qwen3 and Phi probe replication (Phase 8) are open.
+**Cross-model (Phi-4-mini-reasoning; run 758022):**
+- **Gate 1 replicates** — Bombness holdout AUC **0.985** [0.967, 0.998] @L10, all controls
+  near chance (token-id 0.500 exact). Contextual Bombness is decodable on a second model
+  family.
+- **Geometry replicates** — cos(Bombness, Phi refusal direction) = **+0.01 to +0.04** at
+  L12–L20 (even more orthogonal than Llama's 0.06–0.15). The decodable, refusal-orthogonal
+  semantic representation is a **cross-family property**.
+- The Phi *prediction* and *causal* arms (Phase 3/4) are not run — they need Phi behavioral
+  outcomes on the v3 doublespeak corpus, which do not yet exist (the existing Phi/Qwen
+  screens are a different cohort). Qwen3-14B probe replication is open. So Story A's
+  *representation* half is confirmed cross-family; its *behavioral* half is Llama-only so far.
 
 ## 10. Attack-objective implication
 
