@@ -8036,3 +8036,60 @@ n-303, n-304, n-305, n-350** — all 3090s. **§20.7:** 62/74 (seed 42 37/37 FIN
 seed 44 4/37, all four shards running.
 
 ---
+## 2026-08-14 20:45 — the randtok floor really does need a GPU (checked, unlike the last two). μ sweep verified launch-ready, and it must NOT go on a 3090.
+
+*(Wall clock 10:31 UTC.)* No completions; queue 6/6 unchanged; nothing PENDING. Two ticks running,
+the answer to "does this owed item actually need a GPU?" has been *no*, so the third got checked
+rather than assumed.
+
+### §20.5's last condition: no usable floor exists on disk — this one is real
+Searched every `FREE_GENERATION_RESULTS.jsonl` for a random-token / no-suffix / neutral condition
+on these prompts. Exactly one candidate exists, `neutral_control` — **20 023 rows, 549 tasks, and
+0 of them `clearharm`**. It is a different corpus and cannot serve as the floor here. The
+random-*direction* arms (`*_rand_L18`, `arm06r`, `arm07pr`) are not floors either: those are
+*optimized* suffixes against a random direction, whereas the floor has to be un-optimized tokens —
+the whole point is to measure how much max-over-k inflates by chance alone.
+
+**So §20.5 stands at one genuinely GPU-blocked condition.** Unlike the previous two, this one was
+verified absent rather than assumed present.
+
+### But it is a small job, not the 4–8 GPU-h the ledger implies
+Balanced k caps at 2, so the floor only needs a **2-suffix random pool per target: 37 × 2 = 74
+generations**, plus judging. That is minutes of GPU, not hours — it can ride along in any free slot
+rather than waiting for a dedicated one.
+
+**One interface gap to close first:** `eval_perprompt_batched.py --mode transfer` reads each
+suffix via `final_suffix(source_run_dir)`, i.e. from a `FINAL_CANDIDATES.jsonl` inside a real
+optimization directory. A random-token pool has no such directory. Two clean options, no scoring
+code touched either way: synthesize 2 stub dirs per pool holding a one-line `FINAL_CANDIDATES.jsonl`
+with a random suffix, or add a `--mode randtok`. The stub route is preferable — it reuses the exact
+scoring path, which is the harness's stated design principle ("does NOT reimplement scoring").
+**Not built this tick**; specced so the next free slot is productive.
+
+### §20.1 μ sweep: launch-ready, cheaper than recorded, and 3090 would be WRONG
+Verified rather than assumed, since it is next in line:
+
+* **The knob exists** — `run_asym_p2_soft.sh` takes `ASYM_ORTHMU` (default 1.0) and passes
+  `--orth-mu` when `ASYM_OBJ=task_orth`. No script work needed.
+* **It is 4 values, not 5.** The completed `task_orth` arms ran at the default **μ = 1.0**, so the
+  sweep owes only **μ ∈ {0.1, 0.3, 3, 10}** — 4 per seed, with μ=1 already in hand as the anchor.
+* **It must run on L40S.** The three existing `task_orth` runs are `gpul40s` on **n-801**
+  (RUNMETA confirms `gpu: NVIDIA L40S`). §3.1 requires an arm and its comparison share a GPU
+  class, so **the standing "3090-only nodelist" rule does not apply here** — that correction was
+  scoped to §7.5/§20.7 GCG submissions, whose partners are on 3090s. Applying it to the μ sweep
+  would create exactly the cross-class comparison §3.1 forbids.
+* **The script already defends this**: it pins `--nodelist=n-801..805,t-806` itself and has a guard
+  that exits if the allocated GPU does not match `ASYM_GPU` (default `l40s`). **Do not override its
+  nodelist on the command line.** n-802 is idle, n-801/803/804/805 mixed.
+
+### Design-vs-inventory diff (rest of §20)
+§20.2/§20.3/§20.4 unchanged and complete. §20.6/§20.9 still behind the corpus ceiling — and note
+the 08:00 entry already recorded the resolution the plan needs (Option 3: continuous endpoints,
+which are adequately powered at n=37 where binary ASR is not); §20.6 remains GPU-heavy regardless,
+since it needs K=20 *directions*, and only 3 exist (one per seed). §20.7 running.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. **§20.7:** 63/74 (seed 42 37/37 FINAL, seed 43 **26/37**), seed 44 5/37.
+
+---
