@@ -137,17 +137,24 @@ manipulable — and behaviorally inert. Refusal predicts and causally controls b
   size does not. The clearharm **causal** result (Gate 4/2×2) is unaffected; a
   generated-cohort Phase-4 run would test causal replication (deferred).
 
-**Cross-model (Phi-4-mini-reasoning; run 758022):**
-- **Gate 1 replicates** — Bombness holdout AUC **0.985** [0.967, 0.998] @L10, all controls
-  near chance (token-id 0.500 exact). Contextual Bombness is decodable on a second model
-  family.
-- **Geometry replicates** — cos(Bombness, Phi refusal direction) = **+0.01 to +0.04** at
-  L12–L20 (even more orthogonal than Llama's 0.06–0.15). The decodable, refusal-orthogonal
-  semantic representation is a **cross-family property**.
-- The Phi *prediction* and *causal* arms (Phase 3/4) are not run — they need Phi behavioral
-  outcomes on the v3 doublespeak corpus, which do not yet exist (the existing Phi/Qwen
-  screens are a different cohort). Qwen3-14B probe replication is open. So Story A's
-  *representation* half is confirmed cross-family; its *behavioral* half is Llama-only so far.
+**Cross-model — Gate 1 replicates on THREE model families** (runs 758022 Phi, 758030 Qwen):
+
+| model | hidden | Gate 1 holdout AUC | max control | cos(Bombness, refusal) |
+| --- | --- | --- | --- | --- |
+| Llama-3.1-8B-Instruct | 4096 | 0.997 [0.990,1.000] | 0.587 | 0.06–0.15 |
+| Phi-4-mini-reasoning | 3072 | 0.985 [0.967,0.998] | 0.562 | 0.01–0.04 |
+| Qwen3-14B (8-bit) | 5120 | 0.999 [0.995,1.000] | 0.591 | 0.03–0.12 |
+
+On all three (token-identity control exactly 0.500 in each, by matched-pair design),
+contextual Bombness is **decodable and orthogonal to refusal**. The decodable,
+refusal-orthogonal semantic-remapping representation is a **cross-family property** —
+robust across three distinct architectures and three hidden sizes, not a Llama quirk.
+
+- The Phi/Qwen *prediction* and *causal* arms (Phase 3/4) are not run — they need
+  model-specific behavioral outcomes on the v3 doublespeak corpus, which do not yet exist
+  (the existing Phi/Qwen screens are a different cohort). So Story A's **representation**
+  half is confirmed cross-family (3 models); its **behavioral** half is the audited Llama
+  result.
 
 ## 10. Attack-objective implication
 

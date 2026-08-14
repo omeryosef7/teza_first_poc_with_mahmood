@@ -936,3 +936,25 @@ Scope: Phi's Phase 3/4 (prediction/causal) need Phi behavioral outcomes on v3 do
 which don't exist (existing Phi/Qwen screens are a different cohort). So Story A's
 REPRESENTATION half is cross-family (Llama + Phi); its BEHAVIORAL half is Llama-only so far.
 Qwen3-14B probe replication open. Synthesis §9 + registry updated (758021/758022).
+
+### E27 — 2026-08-14/15 — Cross-model Gate 1 confirmed on THREE families (Phi + Qwen3) ☑
+
+Added Qwen3-14B (8-bit, via the new --quantize passthrough; acts[510,40,2,5120]) to the
+cross-model set. Gate 1 + geometry now replicate across three model families:
+
+| model | hidden | Gate 1 AUC | max control | cos(Bombness,refusal) |
+| --- | --- | --- | --- | --- |
+| Llama-3.1-8B | 4096 | 0.997 | 0.587 | 0.06–0.15 |
+| Phi-4-mini-reasoning | 3072 | 0.985 | 0.562 | 0.01–0.04 |
+| Qwen3-14B (8bit) | 5120 | 0.999 | 0.591 | 0.03–0.12 |
+
+Token-identity control exactly 0.500 in all three (matched-pair design). The decodable,
+refusal-orthogonal semantic-remapping representation is a CROSS-FAMILY property — 3
+architectures, 3 hidden sizes, no per-model code (just MODEL/QUANTIZE params; the reused
+capture_components/resolve_positions/gate1_eval pipeline). The B19 preflight relaxation
+(E21) was essential — it lets the Llama-tokenized corpus spans be ignored while
+resolve_positions finds the codeword in each model's own tokenization.
+
+Scope held honest: representation half cross-family (3 models); behavioral Phase 3/4 half
+is the audited Llama result (Phi/Qwen behavioral outcomes on v3 doublespeak don't exist).
+Synthesis §9 = 3-family table. Registry 602. Phase 8 (probe replication) essentially done.
