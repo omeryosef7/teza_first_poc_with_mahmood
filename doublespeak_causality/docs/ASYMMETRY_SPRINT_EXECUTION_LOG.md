@@ -7620,3 +7620,52 @@ are true and the write-up should carry both.
 from done, so a slot should free shortly — seed 43 shards 2–3 go in first per the recorded order.
 
 ---
+## 2026-08-14 16:30 — §20.2's mediation is **modality-specific**: it holds for discrete suffixes, not for continuous soft prompts
+
+§20.2 found that per-prompt refusal-projection drop predicts per-prompt success in the *discrete*
+GCG attack (vanilla slice, partial r = −0.291, n=74, p=0.012). The §20.1 soft-prompt `task` arms
+have **exactly the same causal structure** — optimized for compliance only, projection moves as a
+side effect — so they are an independent replication in a different attack modality, at no GPU
+cost (`projections.json` per-prompt × the per-item ASR from 16:00).
+
+| slice | partial r(success, drop \| baseline) | n | 95 % CI |
+|---|---|---|---|
+| **discrete GCG, vanilla** (§20.2) | **−0.291** | 74 | [−0.489, −0.066] |
+| **continuous soft `task`** | **−0.008** | 111 | **[−0.195, +0.180]** |
+| continuous soft `task_orth` | −0.170 | 111 | [−0.346, +0.018] |
+
+**It does not replicate**, and at n=111 the soft-prompt arm **excludes** an effect as strong as the
+discrete one (−0.291 lies outside [−0.195, +0.180]). This is despite a *larger* drop range
+(−6.64 → +1.48 vs the discrete −4.87 → +0.67) and a larger n.
+
+### A hypothesis I formed and then falsified
+Soft prompts move the coordinate ~2× further (mean −3.09 vs discrete ≈ −1.4), so I hypothesised a
+**saturating dose-response**: the association should reappear among prompts whose drop is in the
+discrete-like range. Stratified test:
+
+| stratum | n | mean drop | partial r |
+|---|---|---|---|
+| drop > −2 (discrete-like) | 30 | −0.540 | **+0.041** |
+| drop ≤ −2 | 81 | −4.031 | −0.039 |
+
+**Not supported.** But I am *not* calling it falsified: at n=30 the CI is [−0.331, +0.401], width
+0.73, which does **not** exclude −0.291. The stratified test is underpowered and the saturation
+model remains open — it simply has no support here.
+
+### A new finding worth keeping
+`task_orth` shows **r(success, baseline) = −0.512, p = 9.6e-09** — when the attack is forbidden to
+move the refusal coordinate, the prompt's *intrinsic* refusal propensity dominates outcomes almost
+completely. In the unpinned `task` arm the same correlation is **−0.037 (p = 0.70)**: moving the
+coordinate by −3.09 washes baseline out entirely. That is a clean, well-powered demonstration that
+the pin works *behaviourally*, which §20.1's ASR contrast (0/3 significant) could not show.
+
+**Reading.** The coordinate is necessary for the continuous attack (§20.1, 78 % CE cost) and
+mediates per-prompt success for the discrete attack (§20.2) — but per-prompt drop magnitude does
+not predict success once a continuous attack is moving it. Consistent with the coordinate acting
+as a *gate* rather than a dose, though the stratified test lacks the power to establish that.
+
+**SLURM.** 757519 (seed42 shard3) COMPLETED → launched **757662** = seed 43 shard 2/4 on n-305, per
+the recorded launch order (complete the half-launched set before starting seed 44). **Queue 6/6.**
+§20.7: 45/74.
+
+---
