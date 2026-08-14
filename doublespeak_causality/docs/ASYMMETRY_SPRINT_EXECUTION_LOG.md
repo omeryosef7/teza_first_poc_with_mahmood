@@ -9461,3 +9461,24 @@ allocation, are the two decisions the sprint now waits on — both belong to the
 me.
 
 ---
+### 12:45 — provenance gap closed: the μ-sweep run metadata was never committed
+The repo's convention for `doublespeak_causality/outputs/` run dirs is exactly **`DONE.json` +
+`RUNMETA.json`** — metadata tracked, payload (generations, `soft_suffix.pt`, projections) not. All
+19 pre-existing `asym_p2_soft_*` dirs follow it; **my 12 μ-sweep dirs did not**, because I never
+staged them.
+
+That mattered more than it looks: **`RUNMETA.json → args.orth_mu` is the only place μ is recorded**
+(the 01:45 entry flagged that the directory name carries objective, param, budget, seed, GPU class
+and timestamp, but *not* μ). Uncommitted, the entire sweep's independent variable existed only on
+scratch disk. Now staged for all 12 — μ ∈ {0.1, 0.3, 3.0, 10.0} × seeds {42, 43, 44}, verified by
+reading `orth_mu` back out of each staged file. (μ=1.0's three runs were already tracked from the
+earlier §20.1 work.)
+
+**Not staged:** the six `phase4_bombness_*` / `probe_bombness_*` dirs also sitting untracked — those
+belong to the concurrent session working this branch, and are theirs to commit.
+
+*(Branch note: another session is committing here too — `50b7ee93`, `3e72c5b3`, `73d1daff` landed
+between my ticks. No conflicts; different files. Worth knowing that `git log` on this branch is no
+longer a record of this sprint alone.)*
+
+---

@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p2_soft_task_orth_free_b0.1_seed43_gpul40s_20260814_182223_757907",
+  "status": "ok",
+  "rows_written": 37,
+  "end_ts": "2026-08-14T18:27:10",
+  "end_epoch": 1786721230.032907,
+  "wall_seconds": 0.003
+}
