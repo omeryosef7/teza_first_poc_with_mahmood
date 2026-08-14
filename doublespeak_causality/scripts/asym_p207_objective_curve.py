@@ -57,9 +57,85 @@ def best_losses(pattern, require_steps=None):
     return out
 
 
+def combine_seeds(arm, seeds, budgets, min_paired):
+    """PRE-REGISTERED 3-seed read for the 200->600 contrast. Written 2026-08-14 21:45, while
+    seed 43 stood at 30/37 and seed 44 at 12/37 -- i.e. BEFORE their data existed.
+
+    Two decisions fixed in advance, because both are choices a person could make differently
+    after seeing the numbers:
+
+    1. **Refuses to run until every requested seed is at FULL coverage.** The whole reason this
+       function exists is that the 200->600 estimate was watched swing -0.079 / -0.122 / -0.062
+       across interim reads and produced a wrong conclusion the first time. A partial seed is not
+       a smaller random sample: prompts complete in optimization-cost order, and cost correlates
+       with the loss being scored. So the guard is a hard exit, not a warning.
+
+    2. **The pooled test averages within prompt FIRST, then tests across the 37 prompts.**
+       Stacking 3 x 37 paired diffs into one Wilcoxon would treat the same 37 prompts measured
+       under 3 suffix RNG seeds as 111 independent units, inflating n threefold. Averaging the
+       three per-seed deltas for each prompt gives 37 units that ARE independent across prompts,
+       which is the unit the design randomizes over.
+
+    Reported alongside: each seed's own contrast and how many are individually significant, since
+    the sprint's convention (see §20.1) is sign-consistency across seeds, not a single pooled p.
+    """
+    per_seed, coverage = {}, {}
+    for s in seeds:
+        pb = {b: best_losses(patterns(arm)[b].format(seed=s), require_steps=b) for b in budgets}
+        n_expected = max(len(d) for d in pb.values())
+        common = sorted(set.intersection(*(set(d) for d in pb.values())))
+        coverage[s] = (len(common), n_expected)
+        per_seed[s] = {b: {t: pb[b][t] for t in common} for b in budgets}
+
+    incomplete = {s: c for s, c in coverage.items() if c[0] < c[1]}
+    if incomplete:
+        raise SystemExit(
+            "REFUSING to combine: seeds not at full coverage -> "
+            + ", ".join(f"seed{s} {n}/{e}" for s, (n, e) in sorted(incomplete.items()))
+            + "\nThis guard is deliberate. Completion order tracks optimization cost, so a partial"
+              "\nseed is a biased slice, not a smaller sample. Wait for full coverage and read once."
+        )
+
+    # Exactly two budgets, always. With the default --budgets 5,200,600 a min/max reading silently
+    # returns 5->600 -- a contrast nobody is deciding anything on -- when the pre-registered read
+    # is 200->600. Forcing the caller to name both ends makes the tested contrast unambiguous in
+    # the command line and in the artifact.
+    if len(budgets) != 2:
+        raise SystemExit(f"--combine-seeds needs exactly two budgets, got {budgets}. "
+                         f"The pre-registered read is --budgets 200,600.")
+    lo, hi = min(budgets), max(budgets)
+    prompts = sorted(set.intersection(*(set(per_seed[s][hi]) for s in seeds)))
+    if len(prompts) < min_paired:
+        raise SystemExit("too few prompts shared across seeds")
+
+    seed_rows = []
+    for s in seeds:
+        d = np.array([per_seed[s][hi][t] - per_seed[s][lo][t] for t in prompts])
+        seed_rows.append({"seed": s, "mean_delta": float(d.mean()),
+                          "n_improved": int((d < 0).sum()), "n": len(d),
+                          "p": float(wilcoxon(d).pvalue)})
+
+    # unit of analysis = the prompt, averaged over seeds (see docstring point 2)
+    per_prompt = np.array([np.mean([per_seed[s][hi][t] - per_seed[s][lo][t] for s in seeds])
+                           for t in prompts])
+    pooled = {"mean_delta": float(per_prompt.mean()),
+              "n_improved": int((per_prompt < 0).sum()), "n_prompts": len(per_prompt),
+              "p": float(wilcoxon(per_prompt).pvalue),
+              "unit": "prompt (per-seed deltas averaged before testing)"}
+    return {"arm": arm, "seeds": list(seeds), "contrast": f"{lo}->{hi}",
+            "coverage": {str(s): f"{c[0]}/{c[1]}" for s, c in coverage.items()},
+            "per_seed": seed_rows, "pooled": pooled,
+            "n_seeds_individually_significant": sum(1 for r in seed_rows if r["p"] < 0.05),
+            "preregistered": "2026-08-14, before seeds 43/44 completed"}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--combine-seeds", default=None,
+                    help="comma list, e.g. 42,43,44 -- runs the PRE-REGISTERED multi-seed read "
+                         "instead of the single-seed one. Exits if any seed is short of full "
+                         "coverage.")
     ap.add_argument("--arm", default="vanilla",
                     choices=["vanilla", "mechanism", "matched_random"])
     ap.add_argument("--budgets", default="5,200,600",
@@ -69,6 +145,24 @@ def main():
     args = ap.parse_args()
 
     want = [int(x) for x in args.budgets.split(",")]
+
+    if args.combine_seeds:
+        seeds = [int(x) for x in args.combine_seeds.split(",")]
+        res = combine_seeds(args.arm, seeds, want, args.min_paired)
+        print(f"  PRE-REGISTERED {res['contrast']} read, arm={res['arm']}, "
+              f"seeds {res['seeds']}, coverage {res['coverage']}\n")
+        for r in res["per_seed"]:
+            print(f"    seed {r['seed']}: mean d = {r['mean_delta']:+.4f}  "
+                  f"improved {r['n_improved']}/{r['n']}  p = {r['p']:.3e}")
+        p = res["pooled"]
+        print(f"\n    POOLED over prompts (n={p['n_prompts']}): mean d = {p['mean_delta']:+.4f}  "
+              f"improved {p['n_improved']}/{p['n_prompts']}  p = {p['p']:.3e}")
+        print(f"    seeds individually significant: "
+              f"{res['n_seeds_individually_significant']}/{len(res['seeds'])}")
+        Path(args.out).write_text(json.dumps(res, indent=2))
+        print(f"\nwrote {args.out}")
+        return
+
     PAT = patterns(args.arm)
     per_budget = {b: best_losses(PAT[b].format(seed=args.seed), require_steps=b) for b in want}
     for b, d in per_budget.items():

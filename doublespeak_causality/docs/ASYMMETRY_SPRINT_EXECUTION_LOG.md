@@ -8211,3 +8211,66 @@ n-305, n-350** — all 3090s. **§20.7:** 66/74 (seed 42 37/37 FINAL, seed 43 **
 **9/37**.
 
 ---
+## 2026-08-14 22:15 — **PRE-REGISTRATION of the 3-seed 200→600 read**, written while seeds 43/44 are still running
+
+*(Wall clock 12:01 UTC.)* No completions; queue 6/6; nothing PENDING. Seed 43 is at **30/37** and
+seed 44 at **12/37**, so the decisive read is a few hours out. Fixing the statistic and the
+decision rule **now**, before the data exists, because this specific estimate is the one the sprint
+has already been burned by: it swung −0.079 → −0.122 → −0.062 across interim reads and a wrong
+conclusion was drawn from the first.
+
+### The statistic, fixed in advance
+Implemented as `asym_p207_objective_curve.py --combine-seeds`, so the read is one command run once,
+not a fresh analysis choice made while looking at numbers.
+
+**Unit of analysis = the prompt, averaged over seeds before testing.** Stacking 3 × 37 paired
+diffs into one Wilcoxon would treat the same 37 prompts measured under 3 suffix RNG seeds as 111
+independent units and inflate n threefold. Averaging each prompt's three deltas gives 37 units that
+are independent across prompts — the unit the design actually randomizes over. Reported alongside:
+each seed's own contrast and how many are individually significant, since the sprint's convention
+(§20.1) is sign-consistency across seeds rather than a single pooled p.
+
+**Two guards, both deliberate:**
+* **Refuses to run unless every requested seed is at full 37/37.** Not a warning — a hard exit.
+  Verified live: it currently prints `REFUSING to combine: seeds not at full coverage -> seed43
+  30/37, seed44 12/37`. Completion order tracks optimization cost and cost correlates with the loss
+  being scored, so a partial seed is a biased slice, not a smaller sample.
+* **Requires exactly two budgets.** With the default `--budgets 5,200,600` a min/max reading
+  silently returns **5→600** — a contrast nobody is deciding anything on — when the pre-registered
+  read is **200→600**. Caught by smoke-testing the combine path on seed 42 before trusting it.
+
+Validated against the known answer: `--combine-seeds 42 --budgets 200,600` reproduces seed 42's
+single-seed result exactly (−0.0723, 22/37, p = 0.2515), so the new path agrees with the old one
+where the answer is already established.
+
+### The decision rule, fixed in advance
+The 2000-step point is **descoped unless all three of these hold**:
+1. pooled prompt-level p < 0.05;
+2. ≥ 2 of 3 seeds individually significant **and** sign-consistent;
+3. per-step efficiency of 200→600 within **10×** of 5→200's.
+
+Criterion 3 is the one that actually matters and is stated because the descope argument has always
+rested on *efficiency*, not on "no further gain" — a large enough budget buys something eventually.
+The 10× threshold is a judgment call; it is written down now precisely so it cannot be tuned later.
+**Seed 42's anchor:** 5→200 buys 0.004946 loss/step, 200→600 buys 0.000181 loss/step — **27.4×
+worse**, already outside the threshold on the one complete seed.
+
+The exact command for the record:
+```
+python doublespeak_causality/scripts/asym_p207_objective_curve.py \
+  --arm vanilla --combine-seeds 42,43,44 --budgets 200,600 \
+  --out doublespeak_causality/outputs/asym_p207_curve_200to600_3seed.json
+```
+
+### Design-vs-inventory diff
+§20.5 harness ready (minutes, 3090). §20.1 μ sweep ready (4 values, L40S). Both cap-blocked, not
+design-blocked. §20.2/§20.3/§20.4 complete and documented. §20.6/§20.9 behind the corpus ceiling.
+§20.7 running, and its final read is now pre-registered.
+
+### SLURM
+**Queue 6/6**, all RUNNING, nothing PENDING. One job per node across **n-301, n-302, n-303, n-304,
+n-305, n-350** — all 3090s. Remaining §20.7 work is 7 prompts on seed 43 (shards 2 and 3) and 25 on
+seed 44 (all four shards). **§20.7:** 67/74 (seed 42 37/37 FINAL, seed 43 **30/37**), seed 44
+**12/37**.
+
+---
