@@ -9083,3 +9083,29 @@ flight; μ=10 untouched. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the
 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
 
 ---
+## 2026-08-15 07:45 — μ=3 at two seeds; CE deliberately held; μ=10 started.
+
+*(Wall clock 15:50 UTC.)* 757918 COMPLETED (4:03). μ=3 projections: **seed 42 −0.241, seed 43
+−0.088**; seed 44 (757919) still running at 3:39.
+
+**No CE job this tick — the 06:45 rule applied to my own curiosity.** μ=3 is the point that looked
+like it might break the pattern (suppressing *less* than μ=1.0 while costing more), which makes it
+exactly the point where a two-seed peek would be most tempting and least trustworthy. Seed 43's
+−0.088 is already closer to μ=1.0's −0.026 than seed 42's −0.241 was, so the n=1 impression is
+moving. It waits for the third seed.
+
+**757920** = μ=**10**, seed 42 — the last registered value, launched into the freed slot so the
+ladder finishes rather than stalling one rung short.
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: μ ∈ {0.1, 0.3, 1.0} complete at 3 seeds; μ=3 at 2 of 3 (third running); μ=10
+at 1 of 3 just started. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+
+**Remaining §20.1 work after this: μ=3 seed 44 (running), μ=10 seeds 43/44, then one final CE pass
+over all 19 arms.** That is 3 optimization jobs plus 1 scoring job — the sweep is close.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, μ=3 seed 44 (757919), μ=10 seed 42 (757920). Nothing
+PENDING. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
+
+---
