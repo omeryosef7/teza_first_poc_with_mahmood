@@ -1014,3 +1014,14 @@ on Llama it works by suppressing an otherwise-strong refusal; on Phi refusal is 
 against doublespeak to begin with. The semantic-remapping REPRESENTATION is cross-family
 (3 models); the refusal-CONTROL behavioral story is model-dependent. Reported as an honest
 boundary (§3.11). Registered 758057. Updating synthesis §9 + PHI report + claim audit.
+
+### E30 — 2026-08-15 — Qwen behavioral Phase 4 running (INTERIM note, not a result)
+
+Full Qwen Phase 4 (758075, 8-bit) in progress (~2h run; 22/42 at this tick). **Interim
+read (n=22, NOT final, do not cite):** Qwen ds_base refusal_rate ≈ 0.23, ASR ≈ 0.045.
+Preliminary placement: Qwen sits BETWEEN Llama (base refusal 0.64) and Phi (0.048) —
+suggesting the doublespeak behavioral-susceptibility is a **spectrum** across families, not
+Phi as a binary outlier. Caveat forming: Qwen base ASR ≈ 0.045 is very low, so the
+refusal-lever positive control will likely be floor-limited (little jailbreak headroom to
+raise). Awaiting the full n=42 before recording anything. No result committed this tick;
+claim-audit CM5 stays PENDING.
