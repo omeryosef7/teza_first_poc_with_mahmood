@@ -153,18 +153,54 @@ describing 0/18-significant contrasts as findings in either direction. Only a se
 real behavioural power, at the cost of comparability plus its own templating and
 direction-validation gate. **§20.6 and §20.4-pass-2 are blocked by the corpus, not the endpoint.**
 
-## 7. Compute-scaling curve (§20.7)
+## 7. Compute is the dominant effect, and the direction term buys ≤23 % of it (§20.7)
 
-**RUNNING.** Plain per-prompt GCG at 600 steps, seed 42 (4 shards) + seed 43 (2 of 4 shards).
-16/74 prompts complete. All completed runs verified: 600/600 steps, `n_train_tasks == 1`,
-substantial loss reduction.
+**ESTABLISHED (objective space).** `asym_p207_objective_curve.json`, `asym_p207_arm_contrasts.json`.
 
-Measured throughput **73 min/prompt** end-to-end (~12.2 h per 10-prompt shard, inside the 16 h
-wall). Seeds 43 shards 2–3 and all of seed 44 are **owed**; the 2000-step point is unscoped
-(~97 GPU-h/seed).
+§7.5's central negative — the mechanism/direction term buys nothing — was measured on binary ASR
+at **0.05 power**, an uninformative null. Re-asked on the optimization objective (best-so-far GCG
+task loss; continuous, paired per-prompt, judge-free), at full n=37.
 
-Motivation stands: "discrete fails" currently means *"discrete reached 0.27 and we never
-established what was achievable."*
+**The endpoint's sensitivity is demonstrated, not assumed.** Across all 9 arm × seed cells,
+5 → 200 steps gives:
+
+| arm | mean Δ | prompts improved | p |
+|---|---|---|---|
+| vanilla | −0.946 | 37/37, 36/37, 37/37 | 1.1e-07 ×2, 1.7e-07 |
+| mechanism | −0.957 | 37/37 all seeds | 1.1e-07 |
+| matched_random | −0.965 | 37/37 all seeds | 1.1e-07 |
+
+**On that endpoint, 0 of 18 arm contrasts are significant** (9 at 5 steps, 9 at 200), and they are
+*bounded*, not merely non-significant (paired bootstrap, 200 steps):
+
+| contrast | worst bound (loss units) | as % of compute effect |
+|---|---|---|
+| mechanism − vanilla | 0.2151 | **22.7 %** |
+| mechanism − matched_random | 0.1618 | 17.1 % |
+
+> Any benefit from the direction term is at most ~23 % of what plain compute buys — on an endpoint
+> that detects the compute effect at p = 1.1e-07.
+
+This is the §20 result that most improves the paper: it converts the program's weakest claim from
+*"we found nothing, with 5 % power"* into *"we found nothing, on an endpoint able to find something
+4× smaller than what we sought."* §20.4's ±0.19–0.27 ASR bounds could not support that.
+
+**Scaling beyond 200 steps — diminishing, saturation NOT established.** Seed 42, interim:
+
+| n paired | 200→600 mean Δ | improved | p | efficiency vs 5→200 |
+|---|---|---|---|---|
+| 14 | −0.079 | 9/14 | 0.363 | 25× worse per step |
+| 18 | −0.122 | 13/18 | 0.133 | 16× worse per step |
+
+Diminishing returns are robust; **saturation is not** — the estimate grew 54 % on four extra
+prompts. The 2000-step descope argument rests on *efficiency*, not on "no further gain", and should
+be decided at 37/37. **Do not quote** the log-linear extrapolation in the artifact: it is dominated
+by the 5→200 jump and cannot represent saturation.
+
+**Status.** 27/74 prompts. Seed 43 shards 2–3 and all of seed 44 owed. All completed runs verified:
+600/600 steps, `n_train_tasks == 1`.
+
+**Caveat.** Objective space only. Per §2 this licenses **no** behavioural claim.
 
 ---
 
@@ -180,3 +216,8 @@ established what was achievable."*
 4. **Two methodological figures are corrected:** the 5.4 % judge-flip rate (actually ~0.6 % corpus
    two-pass, confined to a 4.65 % boundary band) and the assumption that a graded endpoint would
    restore power (1.34×).
+5. **A powered null replaces an uninformative one.** The direction term's uselessness is now
+   bounded at ≤23 % of the compute effect on a demonstrably sensitive endpoint, rather than resting
+   on a binary-ASR contrast with 0.05 power. Where the behavioural question cannot be answered at
+   this corpus size, the objective-space question can be — and the two must be reported as
+   different claims (§2).

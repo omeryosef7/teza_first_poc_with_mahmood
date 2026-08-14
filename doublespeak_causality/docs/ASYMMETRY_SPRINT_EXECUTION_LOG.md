@@ -7400,3 +7400,17 @@ effect the program has measured**, and the direction term buys ≤23 % of it (12
 **§20.7:** 27/74 prompts (seed42 18/37, seed43 9/19). **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 13:30 — `SECTION20_RESULTS.md` §7 rewritten around the powered null
+
+§7 of the results doc was a status stub for the compute curve; it is now the strongest §20 claim:
+the endpoint's sensitivity is demonstrated (5→200 at p=1.1e-07 in 8/9 cells), 0/18 arm contrasts
+are significant on it, and the direction term is **bounded at ≤23 % of the compute effect**.
+The saturation sub-result is recorded with its n=14→18 trajectory and explicitly marked **not
+established**, with the "do not quote the log-linear extrapolation" warning attached.
+
+Added a fifth item to "What §20 changes about the paper": a powered null replaces an uninformative
+one, and the behavioural vs objective-space questions must be reported as **different claims**.
+
+**§20.7:** 27/74. **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---
