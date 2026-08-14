@@ -34,9 +34,10 @@ LIMIT="${LIMIT:-6}"
 WITH_REFUSAL="${WITH_REFUSAL:-0}"
 FACTORIAL="${FACTORIAL:-0}"
 ALPHA="${ALPHA:-1.0}"
+COHORT="${COHORT:-clearharm}"
 STAMP="$(date -u +%Y%m%d_%H%M%S)"
-OUT="${DC}/outputs/phase4_bombness_${MODE}_${STAMP}_${SLURM_JOB_ID:-local}"
-DIRS="${DC}/outputs/phase4_directions/v_bomb_clearharm.pt"
+OUT="${DC}/outputs/phase4_bombness_${MODE}_${COHORT}_${STAMP}_${SLURM_JOB_ID:-local}"
+DIRS="${DC}/outputs/phase4_directions/v_bomb_${COHORT}.pt"
 
 cd "$PROJECT_DIR"
 source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
@@ -69,7 +70,7 @@ if [ "$FACTORIAL" = "1" ]; then EXTRA="$EXTRA --factorial"; fi
 echo "FACTORIAL=$FACTORIAL"
 
 python scripts/phase4_bombness_intervention.py \
-    --directions "$DIRS" --split test --cohort clearharm --alpha "$ALPHA" \
+    --directions "$DIRS" --split test --cohort "$COHORT" --alpha "$ALPHA" \
     --out "$OUT" $EXTRA
 
 echo "[phase4 done] $OUT"
