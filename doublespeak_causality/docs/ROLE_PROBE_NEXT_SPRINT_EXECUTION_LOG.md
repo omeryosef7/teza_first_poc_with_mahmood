@@ -25,7 +25,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Gate 1 | Contextual Bombness probe validity | ☑ **PASSED 2026-08-14** (E15) |
 | Gate 2 | Outcome probe beats trivial baselines; refusal direction still better-supported causally | ☐ |
 | Gate 3 | Frozen latent-state prediction report written | ☑ **2026-08-14** (E16, `DUAL_STATE_PREDICTION.md`) |
-| Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☐ |
+| Gate 4 | Bombness causal claim admissible (manipulation check + controls + holdout) | ☑ **PASSED 2026-08-14** (E19) |
 | Gate A–F | Decision tree §18 | ☐ |
 
 ### Phases
@@ -38,7 +38,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
 | Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
-| Phase 4 — causal interventions | 8 | ◐ | **manip-check PASSED** (ablate −1.9, random ~0); full behavioral run next |
+| Phase 4 — causal interventions | 8 | ☑ | **STORY A CAUSAL: Bombness ablation ΔASR −0.05 [−0.14,+0.05]; refusal +0.24** (E19). Sufficiency + 2×2 = optional follow-ons |
 | Phase 5 — component patching | 9 | ☐ | |
 | Phase 6 — D3 scope-matched control | 10 | ☐ | |
 | Phase 7 — Phi concept completion | 11 | ☐ | |
@@ -664,6 +664,64 @@ now know collapses the concept readout) change ASR? Launching MODE=full (all 42 
 prompts, judged, + the refusal-ablation positive control). Given Phase 3, the expected
 outcome is Story A (ASR unchanged vs base and vs random, while refusal ablation moves
 it), but this is the measurement that makes the claim causal rather than predictive.
+
+### E19 — 2026-08-14 — GATE 4 PASSED: Bombness is behaviorally epiphenomenal (causal) ☑ (HEADLINE)
+
+Full Phase 4 run 757931 COMPLETED (42 test DS prompts × 4 arms, judged, 29 min).
+Verdict via `analyze_phase4`: **STORY A, causally confirmed.** Deliverable:
+`reports/BOMBNESS_CAUSAL_INTERVENTION.md`.
+
+**Manipulation check (full n):** ablate−base Bombness readout drops −1.32/−1.30/−1.39/
+−1.62 at L20/24/28/31. The ablation collapses the concept readout on all 42 prompts;
+random ablation leaves it unchanged.
+
+**Behavioral (n=42):**
+
+| arm | ASR | refusal rate |
+| --- | --- | --- |
+| ds_base | 0.238 | 0.643 |
+| ds_bomb_ablate | 0.190 | **0.643** |
+| ds_bomb_random | 0.238 | 0.667 |
+| ds_refusal_ablate | 0.476 | **0.048** |
+
+| contrast | ΔASR | 95% CI | McNemar p |
+| --- | --- | --- | --- |
+| Bombness ablation vs base | **−0.048** | [−0.143, +0.048] | 0.625 |
+| vs random (specificity) | −0.048 | [−0.143, +0.048] | 0.625 |
+| Refusal ablation vs base (pos. control) | **+0.238** | [+0.071, +0.405] | 0.021 |
+
+**The clincher — refusal rate:** Bombness ablation leaves it identical (0.643→0.643);
+refusal ablation collapses it (0.643→0.048). Bombness ablation does not touch the
+refusal decision or the behavior; it is indistinguishable from a random ablation.
+
+**Not underpowered:** the positive control detects +0.24 (p=0.02) at the same n, so the
+design has power for that magnitude; the Bombness null CI [−0.14,+0.05] **excludes** it.
+
+**Three convergent lines → Story A:**
+| | Bombness | Refusal |
+|---|---|---|
+| decodable (Gate 1) | 0.997 | — |
+| geometry | ⊥ refusal (0.09) | — |
+| predicts success (Ph 3) | 0.59 | 0.98 |
+| causal necessity (Ph 4) | −0.05 [−0.14,+0.05] | +0.24 [+0.07,+0.41] |
+
+Doublespeak creates a real, decodable, causally-manipulable BOMB-like semantic identity
+that is orthogonal to refusal, does not predict jailbreak, and — when removed — does not
+change jailbreak. A separable refusal-suppressed state predicts AND causally controls
+behavior. **Being placed in the adversarial latent identity is not the security failure.**
+This is the sprint's paper-level result and a genuine extension of the role-confusion
+paper (latent confusion tracking success is not automatic; the causal locus is a
+separate control state).
+
+**Honesty:** necessity only, not sufficiency (§8.5) or the 2×2 (§8.6) — both optional
+follow-ons; the refusal-intact necessity null argues against Story B's gated version but
+the 2×2 is the direct test. Single dose/band/cohort/seed; the manipulation check confirms
+the ablation was strong. One bug caught pre-behavioral-compute (no_grad, E18).
+
+**Bugs caught by guards this phase, none reaching a result:** no_grad crash (E18, 32s in
+setup); v_bomb band L8-21→L8-31 (self-review, pre-launch); the position preflight (E12).
+
+Registered 757931. Gates 1-4 all passed; the sprint's core causal question is answered.
 
 ---
 
