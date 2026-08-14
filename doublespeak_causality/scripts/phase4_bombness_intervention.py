@@ -64,9 +64,11 @@ def classify(score, refused, thr=0.5):
     return "MALICIOUS" if score >= thr else ("REFUSAL" if refused else "OTHER")
 
 
+@torch.no_grad()
 def bombness_readout(lm, text, cw_pos, vbomb, patches):
     """Bombness projection at READOUT_LAYERS (downstream of the patch) under the given
-    LayerPatch contexts. Returns {L: projection}. One forward pass."""
+    LayerPatch contexts. Returns {L: projection}. One forward pass. no_grad is required:
+    ComponentCapture does not detach, so without it .numpy() raises on grad tensors."""
     tok = lm.tokenizer(text, return_tensors="pt", add_special_tokens=False).to(lm.model.device)
     with ExitStack() as st:
         for p in patches:
