@@ -77,6 +77,24 @@ All under `doublespeak_causality/scripts/`:
 | `asym_p5_defense_2signal.py` | 5 conditions × 7 arms from 2 generations |
 | `asym_make_figures.py` | Figures A, B, B2, C, D, E |
 
+**§20 instruments** (added 2026-08-15; same "reuse, don't rewrite" rule):
+
+| script | what it gives you |
+|---|---|
+| `asym_p201_score_ce.py` | post-hoc target-CE scoring of **frozen** soft prompts; scores every arm of a contrast under **one model load** (asserts shared model/manifest/layer) so there is no load-order confound. Emits `ce_progress_frac` |
+| `asym_p201_judge_softprompt.py` | behavioural endpoint for the soft-prompt arms (StrongREJECT), records `judge_model` per row |
+| `asym_p203_judge_replicates.py` | judge reliability on the **band-only** design: M=5 replicates confined to the boundary band, extremes sampled as a determinism control. 15× cheaper than full-corpus |
+| `asym_p203_denoised_contrasts.py` | re-runs contrasts on the majority-vote (judge-denoised) endpoint |
+| `asym_p204_equivalence.py` | TOST equivalence bounds (90 % CI, paired bootstrap over items) for any negative |
+| `asym_p205_bestofk_existing.py` | **exact** ASR@k (`1−C(n_fail,k)/C(n,k)`, no resampling) over the §7.5 transfer grid; substitutes §20.3 majority labels at thr 0.5; `--floor-root` folds in the randtok floor and flips `provisional` |
+| `asym_p205_make_randtok_floor.py` | builds the un-optimized random-token floor as **stub run-dirs** so it scores through the byte-identical evaluator path; CPU only, deterministic per pool index |
+| `asym_p207_objective_curve.py` | compute-scaling curve in objective space; `--combine-seeds` runs the **pre-registered multi-seed read** and **hard-refuses below full coverage** (a partial seed is a biased slice, not a smaller sample) |
+| `asym_p208_endpoint_compare.py` | is the graded endpoint actually better powered than binary ASR here? (answer: 1.04×) |
+
+*(Not yet in this table, and not described here because I have not read them:
+`asym_p1_analyze.py`, `asym_p1c_analyze.py`, `asym_p2_judge.py`, `asym_pair_to_behavioral.py`,
+`asym_relabel_asr.py`. They exist under `scripts/` and are worth a look before rewriting anything.)*
+
 Config/optimizer changes in `poc_stage_gcg_early/`:
 * `config.py`: `refusal_dir_position_mode ∈ {legacy_fixed, per_task_suffix, per_task_decision}`,
   registered in **`_HASH_BACKCOMPAT_DEFAULTS`** so 286 pre-existing runs still replay.

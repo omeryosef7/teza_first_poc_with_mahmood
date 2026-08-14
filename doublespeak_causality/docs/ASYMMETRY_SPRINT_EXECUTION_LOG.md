@@ -9717,3 +9717,43 @@ against the synthesis, and (for the soft-prompt half) registered.
 **No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
 
 ---
+## 2026-08-15 15:45 — the handoff's "reuse, don't rewrite" table was missing 14 of 20 instruments.
+
+*(Wall clock 20:31 UTC.)* Queue empty, nothing PENDING, nothing to launch. Diff target this tick:
+`RESEARCH_HANDOFF_V2.md` §3 — *"New instruments (what to reuse, not rewrite)"*.
+
+**It listed 6 scripts. There are 20 under `doublespeak_causality/scripts/asym_*.py`.** Every §20
+instrument was absent — including all four built during this sprint. For a section whose entire
+purpose is stopping the next person rebuilding what exists, a 30 % coverage rate is the failure it
+was written to prevent.
+
+Added a **§20 instruments** block in the table's own format, with one line each for
+`asym_p201_score_ce`, `asym_p201_judge_softprompt`, `asym_p203_judge_replicates`,
+`asym_p203_denoised_contrasts`, `asym_p204_equivalence`, `asym_p205_bestofk_existing`,
+`asym_p205_make_randtok_floor`, `asym_p207_objective_curve`, `asym_p208_endpoint_compare`.
+
+Each line names the property worth reusing rather than restating the filename: the CE scorer's
+**one-model-load contract**, the replicate design's **band-only** economy, the pool script's
+**exact** (non-resampled) ASR@k, the floor's **stub-dir trick** that reuses the evaluator byte for
+byte, and the curve script's **hard refusal below full coverage**.
+
+**Five pre-§20 scripts I did not describe** (`asym_p1_analyze`, `asym_p1c_analyze`, `asym_p2_judge`,
+`asym_pair_to_behavioral`, `asym_relabel_asr`) are **named in a parenthetical with an explicit note
+that I have not read them.** Describing a script from its filename is how a reuse table becomes
+actively misleading — a wrong one-liner is worse than an honest gap, because it invites reuse on a
+false premise. Named so they are discoverable; undescribed so nobody trusts a guess.
+
+Verified after editing: **20 of 20 instruments on disk are named in the handoff, and every name in
+the handoff exists on disk** — no dangling references either direction.
+
+### Design-vs-inventory diff
+§20.1 ✅ §20.2 ✅ §20.3 ✅ §20.4 ✅ §20.5 ✅ §20.7 ✅ — complete, propagated, verified, reconciled,
+registered (soft-prompt half), and now discoverable.
+
+**Owed, none of it compute:** §20.0 dev allocation · §20.6/§20.9 unblock decision · §20 integration
+into `ASYMMETRY_FINAL_SYNTHESIS.md` · registry scope for the project-level `outputs/` tree.
+
+### SLURM
+**No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
