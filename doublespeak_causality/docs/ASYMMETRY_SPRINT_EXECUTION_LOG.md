@@ -9271,3 +9271,42 @@ forbids starting. Idle slots here are the correct state, not a gap.
 **§20.7:** seeds 42 and 43 **37/37**, seed 44 **30/37**. Read gate holds.
 
 ---
+## 2026-08-15 10:15 — caught `SECTION20_RESULTS.md` §8 five ticks stale: it still said the floor did not exist.
+
+*(Wall clock 16:31 UTC.)* No completions. Queue 4 sprint jobs; nothing to launch.
+
+### The staleness
+§8 was written at 21:45 while §20.5 was provisional. The floor landed at 02:15, was extended to
+K=10 and closed the section at 04:45 — but **only in this log.** The reader-facing doc still opened
+with *"PROVISIONAL — do not cite as a result yet"*, still said *"the `randtok` floor does not
+exist"*, and still described the harness as something to be run.
+
+Anyone reading the results doc between 04:45 and now would have concluded §20.5 was unfinished when
+it was in fact complete, with its headline number **cut by 60 %**. That is the same failure the
+17:30 entry flagged for §20.2 and the 21:45 entry flagged for §20.5's absence — third occurrence,
+and the first where the doc was actively *wrong* rather than merely missing.
+
+**Rule for the rest of this sprint: the tick that closes a section updates
+`SECTION20_RESULTS.md` in the same tick, not the log alone.** §20.1 was propagated correctly at
+09:45 within minutes of completing; §20.5 was not, and the difference was luck rather than process.
+
+### What §8 now says
+Retitled from *"Pooling suffixes adds ~0.08 ASR at k=2 — PROVISIONAL"* to **"The pool 'attack' is
+mostly a max-statistic artifact, and optimized suffixes barely beat random tokens"**, marked
+ESTABLISHED, with: the K=10 floor table (arms +0.0839 vs floor +0.0489, **excess +0.035**); the
+floor's 0.2351 ± 0.022 against every arm condition; and the three consequences — transferred
+suffixes do not beat random tokens, the compute-matched arms underperform noise, and pooling ten
+random suffixes (0.3784) beats the best single optimized suffix (0.3333). The "two of three
+conditions met" line is corrected to all three.
+
+### Design-vs-inventory diff
+§20.1 ✅ complete and propagated. §20.5 ✅ complete and **now** propagated. §20.2/§20.3/§20.4
+complete. §20.7 running; its §7 status line will need the same same-tick propagation when seed 44
+closes. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 4 sprint jobs** — the four §20.7 seed-44 shards (9/10, 8/9, 8/9, 7/9; 7.5–9 h wall left
+against ~2 h of work). Nothing PENDING, nothing to launch. **§20.7:** seeds 42 and 43 **37/37**,
+seed 44 **32/37** — five prompts out. Read gate holds.
+
+---

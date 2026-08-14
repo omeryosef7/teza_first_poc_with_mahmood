@@ -309,10 +309,10 @@ remains. All completed runs verified: 600/600 steps, `n_train_tasks == 1`.
 
 ---
 
-## 8. Pooling suffixes adds ~0.08 ASR at k=2 — PROVISIONAL, one condition short (§20.5)
+## 8. The pool "attack" is mostly a max-statistic artifact, and optimized suffixes barely beat random tokens (§20.5)
 
-**PROVISIONAL — do not cite as a result yet.** `asym_p205_bestofk_existing.json`
-(`provisional: true`), built by `asym_p205_bestofk_existing.py`.
+**ESTABLISHED.** `asym_p205_bestofk_existing.json` (`provisional: false`, no unmet conditions),
+built by `asym_p205_bestofk_existing.py` with the floor from `asym_p205_make_randtok_floor.py`.
 
 §20.5 was carried for weeks as "not started, 4–8 GPU-h". It was not: §7.5's `--mode transfer` runs
 had already written a **37×37 source×target grid per (arm, seed)** — 1332 rows across 6 cells
@@ -330,21 +330,50 @@ ASR@k is exact (`1 − C(n_fail,k)/C(n,k)` per target, then averaged), not resam
 
 *(StrongREJECT ≥ 0.5. "maj" = §20.3's M=5 majority labels substituted for boundary-band rows.)*
 
-**Mean k=2 gain: +0.0831 raw → +0.0839 majority-vote.** Two of the plan's three mandatory
-conditions are met, and the second was met from disk as well: §20.3's replicate pool
+**Mean k=2 gain: +0.0831 raw → +0.0839 majority-vote.** All three of the plan's mandatory
+conditions are now met; the second was met from disk: §20.3's replicate pool
 (`pool_total = 1998`) is the 666 diagonal rows **plus these 1332 transfer rows**, so 66 of its 93
 band rows are `xfer_*` and carry M=5 majority labels. The false-positive-accumulation objection —
 a max-statistic absorbing judge noise as k grows — **is answered empirically**: 14 individual
 labels move and the pooled gain does not. Valid at threshold 0.5 only; §20.3's band was defined as
 |score0 − 0.5| ≤ 2 steps.
 
-**Why it is still provisional: the `randtok` floor does not exist.** A max over more draws rises by
-construction, so +0.08 means nothing until compared against un-optimized suffixes drawn the same
-way. Verified absent rather than assumed: the only random-ish condition on disk, `neutral_control`,
-has 20 023 rows over 549 tasks and **0 clearharm**; the `*_rand_*` arms are *optimized* suffixes
-against a random direction, which is not a floor. The harness is built and validated
-(`asym_p205_make_randtok_floor.py`, 3 stubs × 37 prompts = 111 generations, minutes of GPU on a
-**3090** to match the class its pools ran on).
+### The floor, and what it does to that +0.084
+
+A max over more draws rises by construction, so the third mandatory condition — a pool of
+**un-optimized** suffixes drawn the same way — is what decides whether +0.084 means anything. No
+such pool existed (the only random-ish condition on disk, `neutral_control`, has 20 023 rows over
+549 tasks and **0 clearharm**; the `*_rand_*` arms are *optimized* against a random direction,
+which is not a floor), so one was generated: **10 suffixes × 37 test prompts = 370 evaluations**,
+16 random tokens each drawn uniformly from the ordinary vocabulary, scored through the byte-identical
+evaluator path on a **3090** to match the class its pools ran on.
+
+| | ASR@1 | ASR@2 | k=2 gain |
+|---|---|---|---|
+| arms (majority-vote, mean of 6 cells) | 0.2074 | 0.2913 | **+0.0839** |
+| **randtok floor (K=10)** | **0.2351** | 0.2841 | **+0.0489** |
+| | | | **excess +0.0350** |
+
+**Roughly 60 % of the apparent pool gain is max-statistic inflation that random suffixes produce
+just as readily.** The genuine advantage is **+0.035**, not +0.084.
+
+**The floor also sits above most of the optimized arms.** Per-suffix floor ASR ranges 0.108–0.351
+(sd 0.069 over 10 draws; SE of the mean ≈ 0.022), giving a floor of **0.2351 ± ~0.022**:
+
+| condition | ASR | vs floor |
+|---|---|---|
+| vanilla, 200 steps, diagonal | 0.3333 | **clearly above** |
+| mechanism, 200 steps, diagonal | 0.2793 | inside the floor's upper CI |
+| matched_random, 200 steps, diagonal | 0.2703 | inside the floor's upper CI |
+| all six transfer cells, ASR@1 | 0.171–0.230 | at or **below** |
+| all three 5-step (compute-matched) arms | 0.126–0.180 | **below** by 0.07–0.13 |
+
+Three consequences. **Transferred suffixes do not beat random tokens at all** — optimization on
+prompt A buys nothing on prompt B. **The compute-matched arms underperform noise**, so §7.5's
+compute-matched contrast compared two conditions that are both worse than random. And the floor's
+own k-curve reaches **0.3784 at k=10**, so **pooling ten random suffixes beats the best single
+optimized suffix** (0.3333). Only the full-budget `vanilla` diagonal clears the floor by a visible
+margin.
 
 **Two limitations that constrain what §20.5 can ever say from this grid:**
 1. **Balanced k caps at 2.** Off-diagonal pools run 2–11 per target because the grid was sharded
