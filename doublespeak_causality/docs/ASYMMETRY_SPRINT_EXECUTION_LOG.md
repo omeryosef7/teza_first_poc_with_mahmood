@@ -8888,3 +8888,64 @@ seeds, μ=0.3 complete at 3 seeds, μ=0.1 at 1 of 3 with a second running; {3, 1
 **26/37**. Read gate holds.
 
 ---
+## 2026-08-15 05:45 — 10-arm CE lands. **The μ effect is robust; my 03:45 explanation of it is not.**
+
+*(Wall clock 15:31 UTC.)* 757909 COMPLETED (1:00), scoring all 10 arms under one model load.
+
+### First, a validation worth stating
+| μ | seed 42 | seed 43 | seed 44 | mean cost |
+|---|---|---|---|---|
+| 0.1 | 62.6 % | *(running)* | *(queued)* | 62.6 % (n=1) |
+| 0.3 | 45.9 % | 47.4 % | 10.1 % | **34.5 %** |
+| 1.0 | 82.3 % | 84.3 % | 64.2 % | **76.9 %** |
+
+**μ=1.0's across-seed mean is 76.9 %** — the published §20.1 headline is **78 %**. The rescoring
+reproduces it from an independent job, so this whole table is on the same footing as the artifact it
+is extending.
+
+### The robust result
+**Within every seed, relaxing μ from 1.0 to 0.3 cuts the cost by 36–54 points:**
+seed 42 82.3→45.9, seed 43 84.3→47.4, seed 44 64.2→10.1. **3/3 sign-consistent, paired, large.**
+The penalty strength, not the coordinate, is what the ~78 % is buying — that much stands.
+
+### The part of 03:45 I got wrong
+At 03:45 I wrote that the 78 % is *"the price of a near-total pin"*, i.e. that cost is driven by how
+tightly Δproj is held to zero. **The 7 runs do not support that.** Sorted by pin tightness:
+
+| μ | seed | \|Δproj\| | cost |
+|---|---|---|---|
+| 0.3 | 44 | **0.033** | **10.1 %** |
+| 1.0 | 44 | 0.118 | 64.2 % |
+| 1.0 | 43 | 0.165 | 84.3 % |
+| 1.0 | 42 | 0.187 | 82.3 % |
+| 0.3 | 42 | 0.477 | 45.9 % |
+| 0.3 | 43 | 0.498 | 47.4 % |
+| 0.1 | 42 | 0.528 | 62.6 % |
+
+**Spearman ρ = 0.000 (p = 1.00).** The tightness story predicts ρ < 0, and the single tightest pin
+in the whole set — seed 44 at μ=0.3, Δproj = −0.033 — is also the **cheapest run at 10.1 %**. A
+run can hold the coordinate almost perfectly and pay almost nothing.
+
+So: **μ→cost is robust and paired; Δproj→cost is not established, and the mechanism I proposed for
+it is contradicted by the tightest run in the set.** Correcting the 03:45 wording rather than
+leaving it: the defensible claim is *the headline is the price of the penalty term at μ=1.0*, and
+**what the penalty is actually costing is now an open question** — plausibly it distorts the
+optimization in ways unrelated to the final projection it achieves.
+
+This is precisely why the seeds were worth spending slots on. At n=1 per μ the tightness story would
+have looked clean and gone into the results doc.
+
+### Nothing propagates yet
+`SECTION20_RESULTS.md` is untouched — μ=0.1 is still n=1 (757910 running seed 43, **757911** just
+launched for seed 44), and the correction above is only three points deep on the tightness axis.
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1 μ sweep: μ=1.0 and μ=0.3 complete at 3 seeds; μ=0.1 at 1 of 3, both replicates
+now in flight; {3, 10} untouched; μ≈0.5 still recommended over them. §20.2/§20.3/§20.4 complete.
+§20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, μ=0.1 seed 43 (757910), μ=0.1 seed 44 (757911). Nothing
+PENDING beyond pickup. **§20.7:** seeds 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
+
+---
