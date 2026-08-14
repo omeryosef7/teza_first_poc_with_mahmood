@@ -9150,3 +9150,41 @@ complete for the first three); μ=10 at 1 of 3 with the second running. §20.2/�
 42 and 43 **37/37**, seed 44 **28/37**. Read gate holds.
 
 ---
+## 2026-08-15 08:45 — μ=10 at two seeds; final seed launched. The §20.1 ladder is one job from complete.
+
+*(Wall clock 16:01 UTC.)* 757920 and 757921 COMPLETED (14:49, 13:16). **757929** = μ=10 seed 44,
+the last optimization job the registered ladder needs.
+
+**Not reading μ=10 at two seeds**, per the rule that has now dissolved three separate n<3
+impressions in this sweep. Its projections stay unexamined until seed 44 lands, at which point one
+CE pass over all **19 arms** answers both open questions together: μ=10's cost, and whether cost
+keeps climbing past μ=1 while the pin is already saturated.
+
+**Queue is at 5, deliberately.** The sixth slot is being held for that final CE pass rather than
+filled with make-work: every remaining §20 item is either complete (§20.2–§20.5), running (§20.7),
+or blocked behind the corpus ceiling (§20.6/§20.9). Filling a slot to look busy would mean either
+re-running something already at three seeds or starting §20.6 against the plan's explicit
+precondition.
+
+### §20.7 seed-44 shards — wall check
+| job | done | wall left |
+|---|---|---|
+| 757697 | 8/10 | 8:01 |
+| 757711 | 8/9 | 8:33 |
+| 757709 | 7/9 | 8:30 |
+| 757741 | 7/9 | 9:32 |
+
+At ~1 h/prompt, the most loaded shard needs ~2 h against 8 h remaining. **No wall risk**; seed 44
+should complete in roughly two hours, which is when the pre-registered three-seed §20.7 read
+unlocks.
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: μ ∈ {0.1, 0.3, 1.0, 3.0} complete at 3 seeds (projection), first three complete
+on cost; μ=10 at 2 of 3 with the third running. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the
+corpus ceiling.
+
+### SLURM
+**Queue 5/6** by choice — four §20.7 seed-44 shards, μ=10 seed 44 (757929). Nothing PENDING.
+**§20.7:** seeds 42 and 43 **37/37**, seed 44 **30/37**. Read gate holds.
+
+---
