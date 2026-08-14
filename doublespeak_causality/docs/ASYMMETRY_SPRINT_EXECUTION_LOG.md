@@ -9852,3 +9852,14 @@ scope. **None is a submittable job.**
 **No sprint jobs.** Nothing PENDING, nothing to resubmit, nothing to launch.
 
 ---
+### 17:15 — idle tick, no change. The asymmetry §20 loop has nothing left to do.
+Queue holds one job, `phase4_bomb` — the **role-probe** sprint's, not this one (see 16:45). No new
+asymmetry artifacts since `asym_p207_arm_bounds.json`. Diff unchanged: §20.1–§20.5 and §20.7
+complete, propagated, fully traced to artifacts and verified against them; owed list consolidated in
+`OWED_SUBMISSIONS.md`'s closing section, and **every item on it needs a decision, not a job**.
+
+Logging this briefly rather than at length: this file is at 9 854 lines, and near-identical idle
+entries are how a chronological log stops being readable. Subsequent idle ticks will be recorded as
+one line each unless something actually changes.
+
+---
