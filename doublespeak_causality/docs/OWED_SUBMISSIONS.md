@@ -114,3 +114,39 @@ not the work — only the prompt in flight at the wall is redone.
    Target is **37 per seed**. Joblists verified: seed42/seed43 each have 37 rows, 37 unique
    task_ids, 37 unique output_dirs (no collision that would silently overwrite).
 3. Only then aggregate the 600-step curve point.
+
+---
+
+# 2026-08-14 15:30 — FULL AUDIT of every entry above, checked against filesystem + squeue
+
+Stale tracking is how a half-launched set gets forgotten, so each claim above was re-verified
+rather than assumed.
+
+## CLEARED (verified, no action)
+| entry | check | result |
+|---|---|---|
+| 04:xx §20.1 missing control | `sacct 757513/514/515` | all **COMPLETED** |
+| 05:40 §20.1 CE term unrecorded | `asym_p201_ce_scores.json` | **exists**, 6 arms |
+| 07:30 §20.1 behavioural endpoint | `asym_p201_softprompt_asr.json` | **exists**, 222 rows judged |
+| 08:55 §20.7 "will hit the 16 h wall" | measured 73 min/prompt end-to-end | **moot** — ~12.2 h/shard, fits. No resubmission expected; the completion check below still applies |
+
+## OUTSTANDING
+1. **§20.1 μ sweep** (μ ∈ {0.1, 0.3, 1, 3, 10}) — **not run** (0 matching output dirs). Needed
+   before §20.1's "78 % cost" goes in the paper: 78 % is the price of a *near-total* pin
+   (Δproj ≈ −0.03), not of the coordinate as such. GPU; queue is full.
+2. **§20.7 seed 43 shards 2–3 of 4** — **not submitted.** Seed 43 is at **13 of a launchable 19**,
+   not 13/37. *(My own audit script printed "13/37", which understates progress and overstates
+   coverage at the same time — the denominator for launched work is 19.)*
+3. **§20.7 seed 44** — **entirely unlaunched** (0 output dirs).
+4. **§20.7 2000-step point** — deferred by decision. The estimate for 200→600 oscillated
+   (−0.079 → −0.122 → −0.062 as n grew); decide at 37/37, not before.
+5. **§20.4 pass 2** — blocked. The plan requires a §20.6 multi-direction SD; §20.6 is blocked by
+   the corpus ceiling (179). **Pass 2 is unreachable as specified** — the plan's "publish only the
+   second" instruction cannot be followed, and pass 1 must be published with its limitation stated.
+6. **§20.5 / §20.6 / §20.9** — not started.
+
+## Launch order when slots free (in priority order)
+1. §20.7 seed 43 shards 2,3 (`SEED=43 N_STEPS=600 SHARD=2|3 NSHARD=4`) — completes an existing
+   half-launched set; a partial seed cannot be a curve point.
+2. §20.7 seed 44 shards 0–3 — third seed for the curve.
+3. §20.1 μ sweep — new evidence rather than more coverage of the same point.
