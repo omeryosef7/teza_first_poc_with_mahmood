@@ -7849,3 +7849,13 @@ n-306, n-350** — all 3090s, no node doubled, so no repeat of the weight-load c
 **§20.7:** 57/74 (seed 42 **37/37 FINAL**, seed 43 20/37). Seed 44 0/37, shards 0–2 launched.
 
 ---
+### Footnote to the 18:45 tick — 757711 has no commit stamp
+Its .out reads GIT: unknown. The job started 08:35:16 UTC, inside the window where this tick's
+git add held index.lock, so the script's git rev-parse failed and fell through to its "unknown"
+default. The hash is recoverable by construction: HEAD at 08:35:16 was 1e364973 (dce44a92 was not
+committed until ~08:40), and sbatch snapshots the script at submit time, so 757711 is running the
+FIXED guard against tree 1e364973 - and its .out confirms the new guard path, one
+"[guard] GPU OK 24576MB" line on an RTX 3090. Provenance intact, just not self-recorded.
+**Do not run git index operations while submitting jobs**; the stamp is the only in-band record.
+
+---
