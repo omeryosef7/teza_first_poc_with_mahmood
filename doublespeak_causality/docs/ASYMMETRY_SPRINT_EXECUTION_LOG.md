@@ -9188,3 +9188,39 @@ corpus ceiling.
 **§20.7:** seeds 42 and 43 **37/37**, seed 44 **30/37**. Read gate holds.
 
 ---
+## 2026-08-15 09:15 — **the §20.1 μ ladder is complete on the projection axis.** Final CE pass running.
+
+*(Wall clock 16:07 UTC.)* 757929 COMPLETED — every registered μ now has three seeds.
+
+| μ | seed 42 | seed 43 | seed 44 | mean | sd | suppressed |
+|---|---|---|---|---|---|---|
+| 0.1 | −0.522 | −0.747 | −0.898 | −0.722 | 0.189 | 80.4 % |
+| 0.3 | −0.469 | −0.489 | −0.027 | −0.328 | 0.261 | 91.1 % |
+| 1.0 | +0.195 | −0.159 | −0.113 | −0.026 | 0.192 | 99.3 % |
+| 3.0 | −0.241 | −0.088 | +0.036 | −0.098 | 0.139 | 97.3 % |
+| 10.0 | −0.083 | +0.044 | +0.042 | **+0.001** | **0.073** | **100.0 %** |
+
+Two clean structural facts, both at n=3:
+
+1. **The pin tightens monotonically from μ=0.1 to μ=1.0, then saturates.** μ ∈ {1, 3, 10} all hold
+   the coordinate at ≈0 — −0.026, −0.098, +0.001, mutually indistinguishable at these SEs. Nothing
+   above μ=1 buys tightness.
+2. **The seed spread shrinks as μ rises**: sd 0.189 → 0.261 → 0.192 → 0.139 → **0.073**. A stronger
+   penalty produces a more *reproducible* pin, not just a tighter one — which is a tidy explanation
+   for why the three n=1 impressions that dissolved in this sweep all came from the weak-μ end,
+   where the seed lottery is widest.
+
+**757932** is scoring all 18 arms (`scoring 36 args over 18 arms`) in one model load. That closes
+the cost axis, and with it the question the sweep exists to answer: with the pin saturated from
+μ=1 upward, does cost keep climbing anyway?
+
+### Design-vs-inventory diff
+§20.5 closed. §20.1: projection axis **complete** (5 values × 3 seeds); cost axis complete for
+{0.1, 0.3, 1.0} and scoring now for {3, 10}. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the
+corpus ceiling.
+
+### SLURM
+**Queue 5/6** — four §20.7 seed-44 shards plus the CE pass. **§20.7:** seeds 42 and 43 **37/37**,
+seed 44 **30/37**, ~2 h from the pre-registered three-seed read.
+
+---
