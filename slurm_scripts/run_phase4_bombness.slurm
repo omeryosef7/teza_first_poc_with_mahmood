@@ -63,11 +63,15 @@ if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
 echo "[guard] GPU OK ${VRAM_MB}MB"
 
 cd "$DC"
+SUFFICIENCY="${SUFFICIENCY:-0}"
+DOSE="${DOSE:-1.0}"
 EXTRA=""
 if [ "$MODE" = "smoke" ]; then EXTRA="--no-judge --limit ${LIMIT}"; fi
 if [ "$WITH_REFUSAL" = "1" ]; then EXTRA="$EXTRA --with-refusal"; fi
 if [ "$FACTORIAL" = "1" ]; then EXTRA="$EXTRA --factorial"; fi
-echo "FACTORIAL=$FACTORIAL"
+# sufficiency (§8.5): start from neutral prompts and ADD Bombness at dose*gap
+if [ "$SUFFICIENCY" = "1" ]; then EXTRA="$EXTRA --base-field neutral_prompt --intervene add --dose ${DOSE}"; fi
+echo "FACTORIAL=$FACTORIAL SUFFICIENCY=$SUFFICIENCY DOSE=$DOSE"
 
 python scripts/phase4_bombness_intervention.py \
     --directions "$DIRS" --split test --cohort "$COHORT" --alpha "$ALPHA" \

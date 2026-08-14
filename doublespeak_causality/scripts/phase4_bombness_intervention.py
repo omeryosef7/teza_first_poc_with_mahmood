@@ -98,6 +98,14 @@ def main():
     ap.add_argument("--factorial", action="store_true",
                     help="2x2 Bombness x refusal (§8.6): adds the refusal arm AND the combined "
                          "bomb+refusal ablation cell, giving all four cells in one run")
+    ap.add_argument("--base-field", default="doublespeak_prompt",
+                    help="which prompt to start from (doublespeak_prompt = necessity; "
+                         "neutral_prompt = sufficiency)")
+    ap.add_argument("--intervene", default="ablate", choices=["ablate", "add"],
+                    help="ablate = project_out v_bomb (remove Bombness, necessity); "
+                         "add = inject dose*gap*v_bomb (induce Bombness, sufficiency §8.5)")
+    ap.add_argument("--dose", type=float, default=1.0,
+                    help="for --intervene add: fraction of the natural Direct<->DS gap to add")
     ap.add_argument("--no-judge", action="store_true", help="manipulation check only, skip scoring")
     ap.add_argument("--seed", type=int, default=20260814)
     args = ap.parse_args()
@@ -125,29 +133,36 @@ def main():
     if args.limit:
         exs = exs[:args.limit]
 
+    # prefix + bomb-arm suffix depend on the intervention mode
+    PFX = "neu" if args.base_field == "neutral_prompt" else "ds"
+    BSUF = "add" if args.intervene == "add" else "ablate"
+
     def patches_for(vecs):
-        """Stacked LayerPatch(project_out) at the codeword over PATCH_BAND."""
+        """Stacked LayerPatch at the codeword over PATCH_BAND. ablate = project_out
+        (alpha=1 removes the component); add = inject dose*gap*v_bomb."""
+        if args.intervene == "add":
+            return lambda cw: [dc.LayerPatch(lm.model, L, [cw],
+                                             vector=torch.tensor(vecs[L], dtype=torch.float32),
+                                             mode="add", alpha=args.dose * gap[L])
+                               for L in PATCH_BAND if L in vecs]
         return lambda cw: [dc.LayerPatch(lm.model, L, [cw],
                                          vector=torch.tensor(vecs[L], dtype=torch.float32),
                                          mode="project_out", alpha=args.alpha)
                            for L in PATCH_BAND if L in vecs]
 
     ARMS = {
-        "ds_base": lambda cw: [],
-        "ds_bomb_ablate": patches_for(vbomb),
-        "ds_bomb_random": patches_for(vrand),
+        f"{PFX}_base": lambda cw: [],
+        f"{PFX}_bomb_{BSUF}": patches_for(vbomb),
+        f"{PFX}_bomb_random": patches_for(vrand),
     }
     def refusal_ctx():
         return pc.AllPositionProjectOutMultiLayer(lm.model, range(lm.num_layers), v_ref, args.alpha)
 
     if args.with_refusal or args.factorial:
-        # bomb HIGH, refusal SUPPRESSED
-        ARMS["ds_refusal_ablate"] = lambda cw: [refusal_ctx()]
+        ARMS[f"{PFX}_refusal_ablate"] = lambda cw: [refusal_ctx()]
     if args.factorial:
-        # bomb LOW, refusal SUPPRESSED -- the 4th 2x2 cell: stack Bombness ablation
-        # at the codeword over the band AND all-position refusal ablation.
         _bomb = patches_for(vbomb)
-        ARMS["ds_bomb_and_refusal_ablate"] = lambda cw: _bomb(cw) + [refusal_ctx()]
+        ARMS[f"{PFX}_bomb_and_refusal_ablate"] = lambda cw: _bomb(cw) + [refusal_ctx()]
 
     @torch.no_grad()
     def generate(text, patches):
@@ -176,7 +191,7 @@ def main():
     print(f"[phase4] {len(exs)} DS prompts x {len(ARMS)} arms, patch band L{PATCH_BAND[0]}-{PATCH_BAND[-1]}", flush=True)
 
     for k, e in enumerate(exs):
-        raw = e["doublespeak_prompt"]
+        raw = e[args.base_field]
         goal = e.get("original_request") or e.get("target_concept")
         text = dc.apply_template(lm.tokenizer, raw, add_generation_prompt=True)
         pos = pc.resolve_positions(lm, text, e["codeword"])

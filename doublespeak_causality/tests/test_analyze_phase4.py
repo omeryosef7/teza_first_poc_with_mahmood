@@ -28,7 +28,7 @@ def test_story_a():
         rows.append(_row(i, s, s, s, 0.9 if i < 30 else 0.1))  # refusal ablation ASR 0.75
     res = ap.analyze(rows, ARMS)
     assert res["verdict"]["manipulation_check_passed"] is True
-    assert abs(res["verdict"]["bombness_necessity_d_asr"]) < 0.1
+    assert abs(res["verdict"]["bombness_d_asr"]) < 0.1
     assert res["verdict"]["refusal_positive_control_d_asr"] > 0.3
     assert "STORY A" in res["verdict"]["reading"]
 
@@ -40,7 +40,7 @@ def test_story_b():
         ablate = 0.1                                # ablation removes all success
         rows.append(_row(i, base, ablate, base, base))
     res = ap.analyze(rows, ARMS)
-    assert res["verdict"]["bombness_necessity_d_asr"] < -0.1
+    assert res["verdict"]["bombness_d_asr"] < -0.1
     assert "STORY B" in res["verdict"]["reading"]
 
 
