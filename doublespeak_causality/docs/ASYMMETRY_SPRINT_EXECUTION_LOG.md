@@ -7859,3 +7859,44 @@ FIXED guard against tree 1e364973 - and its .out confirms the new guard path, on
 **Do not run git index operations while submitting jobs**; the stamp is the only in-band record.
 
 ---
+## 2026-08-14 19:15 — a quiet tick: no job completions. Diff clears three stale sacct records.
+
+*(Wall clock 09:00 UTC.)* **No job finished this tick**, so there is no new read and nothing was
+launched. Recording it anyway, because "nothing happened" is a different claim from "I did not
+look", and this file is the only place that distinction survives.
+
+### Design-vs-inventory diff — the sprint's own state is unchanged
+§20.1 arms + CE + softprompt ASR present, **μ sweep still 0 dirs**. §20.2 done. §20.3 on disk.
+§20.4 pass 1 + pass 2 on disk, pass 2 non-provisional. §20.5 not started (queue-blocked, not
+design-blocked). §20.6/§20.9 blocked by the corpus ceiling via §20.8. §20.7 running. Unchanged
+from 18:45 — as expected when no job completed.
+
+### What the diff *did* surface: three jobs SLURM still thinks are alive
+`sacct` reports **741053 / 741054 RUNNING for 4d 11h** and **741057 PENDING since Aug 10** — none
+of which appear in `squeue`. All three were **CANCELLED at 2026-08-10T01:03:59**, the same second,
+i.e. one deliberate `scancel`; slurmdbd never recorded the terminal state. They are bookkeeping
+ghosts, not live jobs, and they do **not** count against the 6-job cap.
+
+The reason to chase them at all is that 741057 would otherwise trip the standing
+**"PENDING > 30 min → cancel and resubmit"** rule, and blindly resubmitting a 4-day-old ghost from
+a *different* sprint would have burned a slot the §20.7 shards need. **Rule refinement: verify
+PENDING in `squeue` before acting on it; `sacct` state can be stale indefinitely.**
+
+Checked whether they left an inventory hole, since they were fresh starts (`step=0`) of the v3 GCG
+matrix: **all 20 `phase9b_v3_*` arms have `FINAL_CANDIDATES.jsonl`**, arm10r_L12_seed42 included
+(checkpoints through step 199). So the Aug-10 cancellation killed *duplicate relaunches of already
+complete arms* — which is presumably why they were cancelled. **No work is owed from them**, and
+nothing needs resubmitting.
+
+### SLURM
+**Queue 6/6**, all RUNNING, **nothing PENDING** (confirmed in `squeue`, per the refinement above).
+One job per node across **n-301, n-302, n-303, n-305, n-306, n-350** — all 3090s, none doubled.
+Per-shard progress by completed prompts: 757525 **9/10** (seed 43 shard 0, ~1 h from done and the
+next slot to free), 757662 2, 757672 2, 757697 1, 757709 0, 757711 0. **Seed 44 shard 3 is owed**
+and goes in when 757525 finishes.
+
+**§20.7:** 59/74 (seed 42 **37/37 FINAL**, seed 43 **22/37**, up 2 within running shards). Seed 44
+1/37 with shards 0–2 launched. Seed 43 is **not** read at 22/37 — the 18:45 bias argument stands
+until 37/37.
+
+---
