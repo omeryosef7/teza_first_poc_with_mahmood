@@ -7414,3 +7414,50 @@ one, and the behavioural vs objective-space questions must be reported as **diff
 **§20.7:** 27/74. **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 14:00 — anchoring §20.4 to the Doublespeak effect, and independent support for §20.3
+
+### The §20.4 bounds are 1.9–2.7× the effect the paper is about
+I have repeatedly written that the equivalence bounds are "wider than the Doublespeak effect
+itself" without ever quoting that effect. It is measurable in existing artifacts:
+`baseline_drift_clearharm_…_741427/summary.json`, **test split, majority-vote judging, n=30/cell**:
+
+| condition | ASR (majority) |
+|---|---|
+| doublespeak | **0.800** |
+| direct | 0.700 |
+| neutral | 0.767 |
+| benign | 0.567 |
+
+**Doublespeak effect = 0.800 − 0.700 = +0.100 ASR.**
+
+| §20.4 bound | value | as a multiple of the Doublespeak effect |
+|---|---|---|
+| tightest | 0.189 | **1.9×** |
+| widest | 0.270 | **2.7×** |
+
+The rhetorical claim is now quantitative, and stronger than I had stated: our behavioural nulls
+cannot exclude an effect **two to three times the size of the phenomenon the paper studies**.
+
+### Prior art I should have found earlier
+These `baseline_drift` runs **already used majority-vote judging** and already recorded
+`judge_flip_rate_mean` / `judge_any_flip_rate` per condition. §20.3's contribution is therefore
+narrower than I implied: the novel parts are the **band-only targeting** and the **extreme-row
+control**, not replicate judging as such.
+
+Their flip rates also suggest where the sprint's **5.4 %** figure came from: `benign` shows
+**5.55 %** (train) and **5.55 %** (test) — a single condition, n=30, and the one whose ASR sits
+closest to 0.5. That is consistent with the figure being one high-boundary-mass cell generalised
+into a constant.
+
+### Weak independent support for the §20.3 mechanism
+§20.3 predicts flips concentrate where mass sits near the 0.5 boundary. Across the 8
+condition × split cells: **r(|ASR − 0.5|, judge_flip_rate) = −0.348, p = 0.398**.
+
+**Direction as predicted, not significant.** Reporting it as weak support only — n=8 cells, and
+|ASR − 0.5| is a crude proxy for band mass (the real predictor is the fraction of *rows* near the
+threshold, which these summaries do not expose). It does not add to the direct §20.3 evidence
+(0/40 extreme rows flipped vs 33/93 band rows); it merely fails to contradict it.
+
+**§20.7:** 29/74 (seed42 20/37, seed43 9/19). **Queue 6/6**, nothing PENDING.
+
+---
