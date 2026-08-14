@@ -76,8 +76,14 @@ def main():
 
     # Pair on the intersection so every budget is compared on the SAME prompts.
     common = sorted(set.intersection(*(set(d) for d in per_budget.values())))
-    print(f"\n  paired on {len(common)} prompts present at ALL budgets "
-          f"(600-step arm is still running; this is an INTERIM subset)")
+    # "Interim" is a fact about the data, not a constant: the 5/200-step arms are complete, so the
+    # widest budget's count is the corpus size for this split, and the read is final exactly when
+    # every budget reaches it. Hardcoding interim=True mislabels the completed read as provisional.
+    n_expected = max(len(d) for d in per_budget.values())
+    interim = len(common) < n_expected
+    print(f"\n  paired on {len(common)} prompts present at ALL budgets"
+          + (f" of {n_expected} (some arm still running; INTERIM subset)" if interim
+             else f" -- FULL coverage ({n_expected}/{n_expected}), this read is FINAL"))
     if len(common) < args.min_paired:
         raise SystemExit("too few paired prompts to report")
 
@@ -112,7 +118,8 @@ def main():
           "an objective-space gain does NOT imply an ASR gain (§20.1).")
 
     Path(args.out).write_text(json.dumps(
-        {"seed": args.seed, "n_paired": len(common), "interim": True,
+        {"seed": args.seed, "arm": args.arm, "n_paired": len(common),
+         "n_expected": n_expected, "interim": interim,
          "per_budget": rows, "contrasts": contrasts,
          "logfit": {"slope": float(slope), "intercept": float(intercept)}}, indent=2))
     print(f"\nwrote {args.out}")

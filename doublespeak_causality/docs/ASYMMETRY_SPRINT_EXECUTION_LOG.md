@@ -7769,3 +7769,83 @@ read once. The 2000-step descope decision waits with it.
 **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 18:45 — **seed 42 hits 37/37; the pre-committed 200→600 read is NULL.** Plus a silent-failure bug in the GPU guard.
+
+*(Wall clock for this tick: 08:36 UTC / 11:36 IDT. The header times in this file have drifted from
+the cluster clock; job timestamps quoted below are UTC from the `.out` files.)*
+
+### The read that was being held for
+757516 (seed 42 shard 0) finished clean at 08:32 UTC — `ran=10 skipped=0`, and with it
+**seed 42's 600-step arm is 37/37**. The estimate has been deliberately unread since n=14. Read
+once, now, at full coverage:
+
+| contrast | mean Δ | improved | p |
+|---|---|---|---|
+| 5 → 200 | −0.9645 | **37/37** | 1.14e-07 |
+| 5 → 600 | −1.0368 | 37/37 | 1.14e-07 |
+| **200 → 600** | **−0.0723** | **22/37** | **0.252** |
+
+**Past 200 steps the objective-space gain is not detectable** — on an endpoint that resolves the
+5→200 effect at p = 1.1e-07 and, per §20.7's bound, would detect a direction-term effect 4× smaller
+than the one sought. Waiting was the right call: the three interim values were −0.079, −0.122,
+−0.062, and the final is −0.072 with p = 0.25. Any of those peeks, taken as the answer, supports a
+different story about saturation.
+
+`asym_p207_objective_curve_seed42_FINAL37.json`, `interim: false`, `n_paired: 37`.
+
+### The 2000-step decision: descope on seed 42, but hold one more tick
+Seed 43's **interim** 20/37 gives 200→600 = −0.197, 14/20, **p = 0.026** — the opposite conclusion.
+That slice is *not* a random subsample: prompts complete in optimization-cost order, and cost
+correlates with the loss being scored. It is the same bias class as the index-mod-4 shard slice
+from the 17:00 entry, so it does not get read at 20/37 either. Seed 43 has all four shards running,
+so the tiebreak is hours away and costs nothing to wait for. **Descope stands on seed 42 alone
+until then**; it is not yet a program-level decision.
+
+### Design-vs-inventory diff (this tick)
+§20.1 six arms + `asym_p201_ce_scores.json` + `asym_p201_softprompt_asr.json` present; **μ sweep
+still 0 output dirs — top of the launch queue once §20.7 clears**. §20.2 done. §20.3 replicates +
+denoised contrasts on disk. §20.4 pass 1 + pass 2 on disk, pass 2 `provisional: false`. §20.5
+best-of-k **not started** (zero new optimization, but 4–8 GPU-h of generation — queue-blocked, not
+blocked on design). §20.6 blocked by the corpus ceiling via §20.8. §20.8 n=300 infeasible (179).
+§20.9 not started. **No design item is missing an inventory entry beyond that standing list.** The
+diff's catch this tick was operational, below.
+
+### A real bug: the GPU guard cannot report its own failure
+**757702 failed in 14 s** — exit 13, **empty stderr**, and the `[guard] GPU OK` line never printed.
+Two faults, one of mine and one latent in the script:
+
+1. **Mine:** I submitted seed 44 shard 1 with **no `--nodelist`**, against the standing 06:00
+   correction (*3090-only for all §7.5 submissions*, §3.1 GPU-class matching). It landed on
+   `rack-gww-dgx1` — **8× Tesla V100**. Nothing was written before it died, so **no scientific
+   damage**; had the VRAM guard passed it (V100-32GB clears the 20 GB floor comfortably), a
+   full 600-step shard would have run on the wrong GPU class and been invisible in the results.
+   Resubmitted correctly as **757709** pinned to `n-303,n-304` → running on **n-303**.
+
+2. **Latent in `run_gcg_perprompt.slurm`:** the probe was written as
+   `VRAM_MB=$(nvidia-smi ... 2>/dev/null | awk ...)` under `set -euo pipefail`. A non-zero probe
+   **aborts the job at the assignment**, so the `ERROR: GPU unusable` branch below it was
+   **unreachable dead code**, and `2>/dev/null` discarded the only diagnostic. That is precisely
+   the 14 s / exit 13 / empty-stderr signature. Fixed: run the probe separately, keep its rc and
+   its stderr, then let the guard decide. Dry-run against four faked `nvidia-smi` binaries before
+   committing (healthy 8-GPU → OK; rc=13 with a message → `ERROR: nvidia-smi probe failed rc=13:
+   Unable to determine the device handle`; 11 GB 2080 → rejected; empty output rc=0 → rejected).
+
+The guard never *ran* on 757702 — worth stating plainly, since "the guard caught it" would be the
+comfortable reading and it is false. What stopped the V100 run was the probe crashing, i.e. luck.
+
+### Also fixed: the curve script hardcoded `interim: True`
+`asym_p207_objective_curve.py` stamped every artifact — including this completed one — as interim,
+and printed "the 600-step arm is still running" unconditionally. Now derived from the data
+(`n_expected` = widest budget's count; the 5/200 arms are complete, so that is the corpus size for
+the split) and both the JSON and stdout say FINAL only when every budget is at full coverage.
+Regression-checked on seed 43, which correctly still reports `INTERIM subset` at 20/37.
+
+**SLURM.** 757516 COMPLETED (9:25:40) and 757518 COMPLETED (9:08:16) freed two slots; both went to
+the owed seed 44 shards in the recorded order — **757709** = shard 1/4 (n-303), **757711** =
+shard 2/4 (n-301). **Shard 3 is still owed.** **Queue 6/6**, all RUNNING, **nothing PENDING** so
+the >30 min resubmit rule does not fire. One job per node across **n-301, n-302, n-303, n-305,
+n-306, n-350** — all 3090s, no node doubled, so no repeat of the weight-load contention.
+
+**§20.7:** 57/74 (seed 42 **37/37 FINAL**, seed 43 20/37). Seed 44 0/37, shards 0–2 launched.
+
+---

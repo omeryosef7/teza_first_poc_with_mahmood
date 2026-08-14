@@ -162,3 +162,30 @@ smaller random sample. Seed 44 must not be used as a curve point until all 4 sha
 and complete.**
 
 Submit shards 1–3 as slots free, before the §20.1 μ sweep.
+
+## 2026-08-14 18:45 — seed 44 shards 1–2 launched; shard 3 still owed. §20.7 seed 42 CLOSED.
+
+**Resolved this tick**
+* ~~§20.7 seed 42~~ — **COMPLETE 37/37** (757516 was the last shard). Final read taken once, at
+  full coverage: 200→600 mean Δ = −0.0723, 22/37, **p = 0.252** (null).
+  `asym_p207_objective_curve_seed42_FINAL37.json`, `interim: false`.
+* §20.7 seed 44 **shard 1/4 = 757709** (n-303), **shard 2/4 = 757711** (n-301).
+
+**Still owed, in launch order as slots free**
+1. **§20.7 seed 44 shard 3/4** — completes the set. Seed 44 remains a **half-launched** set until
+   it is in, and (shard = index mod 4) must not be a curve point before then.
+2. **§20.1 μ sweep** (μ ∈ {0.1, 0.3, 1, 3, 10}) — still **0 output dirs**. Needed before §20.1's
+   "78 % cost" can go in the paper: 78 % is the price of a *near-total* pin (Δproj ≈ −0.03).
+3. **§20.5 best-of-k pool attack** — not started; no new optimization, but 4–8 GPU-h of generation.
+   Mandatory conditions from the plan: majority-vote judging *before* the max, a `randtok` pool as
+   the noise-inflated floor, diagonal pairs dropped.
+4. **§20.7 2000-step point** — **descope is the standing recommendation** on seed 42's null, but the
+   final call waits on seed 43 reaching 37/37, whose interim slice disagrees (p = 0.026 at 20/37).
+   Do not score seed 43 before full coverage: completion order tracks optimization cost, so the
+   partial set is biased in the endpoint being measured.
+5. **§20.6 / §20.9** — blocked by the corpus ceiling (179) via §20.8. Do not launch §20.6 first.
+
+**Standing submission rule (reaffirmed the hard way):** every §7.5/§20.7 job takes an explicit
+3090-only `--nodelist`. 757702 was submitted without one, landed on an 8× V100 DGX node, and died
+at 14 s only because the GPU probe crashed — *not* because the guard rejected it. The guard could
+not have reported anything: its error branch was unreachable under `set -e` until fixed this tick.

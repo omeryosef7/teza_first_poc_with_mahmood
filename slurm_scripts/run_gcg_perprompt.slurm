@@ -72,7 +72,16 @@ export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 echo "ARM=$ARM SEED=$SEED N_STEPS=$N_STEPS SHARD=$SHARD/$NSHARD SPLIT=$SPLIT_NAME"
 echo "GIT: $(git rev-parse HEAD 2>/dev/null || echo unknown)  DATE: $(date -u)"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
-VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk 'NR==1{print;exit}')
+# The probe is split out of the assignment on purpose. As `VRAM_MB=$(nvidia-smi ... )` under
+# `set -e`, a probe that exits non-zero aborts the whole job AT THE ASSIGNMENT with the probe's
+# own exit code -- so the ERROR branch below was unreachable dead code, and `2>/dev/null` threw
+# away the only diagnostic. That is what killed 757702 (14 s, exit 13, empty stderr, no guard
+# line) on rack-gww-dgx1. Keep stderr, keep going, and let the guard do the deciding.
+NV_RC=0
+NV_OUT=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>&1) || NV_RC=$?
+VRAM_MB=$(printf '%s\n' "$NV_OUT" | awk 'NR==1{print $1}')
+if [ "$NV_RC" -ne 0 ]; then
+    echo "ERROR: nvidia-smi probe failed rc=${NV_RC}: ${NV_OUT}"; exit 1; fi
 if [ -z "${VRAM_MB:-}" ] || [ "$VRAM_MB" -lt 20000 ] 2>/dev/null; then
     echo "ERROR: GPU unusable or <20GB (vram='${VRAM_MB}MB')"; exit 1; fi
 echo "[guard] GPU OK ${VRAM_MB}MB (BATCH=$BATCH)"

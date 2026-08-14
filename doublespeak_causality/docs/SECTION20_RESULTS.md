@@ -238,19 +238,32 @@ This is the §20 result that most improves the paper: it converts the program's 
 *"we found nothing, with 5 % power"* into *"we found nothing, on an endpoint able to find something
 4× smaller than what we sought."* §20.4's ±0.19–0.27 ASR bounds could not support that.
 
-**Scaling beyond 200 steps — diminishing, saturation NOT established.** Seed 42, interim:
+**Scaling beyond 200 steps — seed 42 is now FINAL at 37/37 and the 200→600 gain is NULL.**
+`asym_p207_objective_curve_seed42_FINAL37.json` (`interim: false`, `n_paired: 37`).
 
-| n paired | 200→600 mean Δ | improved | p | efficiency vs 5→200 |
-|---|---|---|---|---|
-| 14 | −0.079 | 9/14 | 0.363 | 25× worse per step |
-| 18 | −0.122 | 13/18 | 0.133 | 16× worse per step |
+| contrast | mean Δ | improved | p |
+|---|---|---|---|
+| 5 → 200 | **−0.9645** | **37/37** | **1.14e-07** |
+| 5 → 600 | −1.0368 | 37/37 | 1.14e-07 |
+| **200 → 600** | **−0.0723** | **22/37** | **0.252** |
 
-Diminishing returns are robust; **saturation is not** — the estimate grew 54 % on four extra
-prompts. The 2000-step descope argument rests on *efficiency*, not on "no further gain", and should
-be decided at 37/37. **Do not quote** the log-linear extrapolation in the artifact: it is dominated
-by the 5→200 jump and cannot represent saturation.
+Tripling the budget past 200 steps buys **no detectable objective-space gain**, on the same
+endpoint and the same 37 prompts where 5→200 lands at p = 1.1e-07. This is the single
+pre-committed read: the estimate was watched oscillate (−0.079 at n=14 → −0.122 at n=18 → −0.062
+interim) and deliberately not re-read until full coverage, so it is reported once, here.
 
-**Status.** 27/74 prompts. Seed 43 shards 2–3 and all of seed 44 owed. All completed runs verified:
+**The 2000-step point is descoped** — but on *seed 42 only*, and the decision is held one more
+tick, because seed 43's **interim** 20/37 slice points the other way (−0.197, 14/20, p = 0.026).
+That slice is not a random subsample (completion order tracks per-prompt optimization cost), which
+is exactly the bias that made the earlier interim reads unstable, so it must not be scored until
+37/37. Seed 43 has all four shards running; the call is cheap to defer and expensive to get wrong.
+
+**Do not quote** the log-linear extrapolation (0.706 at 2000 steps): the completed seed now
+*contradicts* it — the fit is dominated by the 5→200 jump, and the measured 200→600 segment is
+flat where the fit predicts continued descent.
+
+**Status.** 57/74 prompts (seed 42 **37/37 FINAL**, seed 43 20/37, all 4 shards running). Seed 44
+is a separate curve point at 0/37 with shards 0–2 launched, 3 owed. All completed runs verified:
 600/600 steps, `n_train_tasks == 1`.
 
 **Caveat.** Objective space only. Per §2 this licenses **no** behavioural claim.
