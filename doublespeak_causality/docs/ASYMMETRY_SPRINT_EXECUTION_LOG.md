@@ -8486,3 +8486,46 @@ n-304, n-305, n-350**, one job each, all 3090s. **§20.7:** 73/74 (seed 42 37/37
 Read gate unchanged: nothing until all three seeds are at 37/37, seed 44 ~4 h out.
 
 ---
+## 2026-08-15 01:45 — **seed 43 is 37/37.** μ sweep launched. Floor at 83/111.
+
+*(Wall clock 14:43 UTC.)* 757672 (seed 43 shard 3) COMPLETED clean — `ran=9 skipped=0` — and
+**seed 43 is now 37/37**. Two of three seeds are complete; **seed 44 is at 24/37**, ~4 h out.
+**Nothing is read**, exactly as pre-registered at 22:15 and restated at 00:15: the gate is all
+three seeds, and seed 43 finishing first is precisely the case that pre-registration exists to
+handle. Noting it here so the record shows the gate was reached and honoured, not forgotten.
+
+### μ sweep started — the first §20.1 work in this stretch
+**757867** = `ASYM_OBJ=task_orth ASYM_PARAM=free ASYM_BUDGETREL=0.1 ASYM_SEED=42 ASYM_ORTHMU=0.1`
+on **n-805**, and its class guard printed `GPU ok: NVIDIA L40S (required class: l40s)` — the check
+that makes the 20:45 "must not go on a 3090" warning self-enforcing.
+
+**μ=0.1 chosen first** as the weak-pin extreme: §20.1's headline is that pinning the refusal
+coordinate costs 78 % CE, and the open question is whether that is the price of the coordinate or
+the price of a *near-total* pin (μ=1.0 achieved Δproj ≈ −0.03). The weak end is where those two
+readings diverge most.
+
+### Verified the sweep's anchor instead of assuming it
+The 20:45 entry claimed the completed `task_orth` arms ran at the default μ=1.0, inferred from the
+script's default. Checked it in the data: all three RUNMETA files record
+**`args.orth_mu = 1.0`** (seeds 42, 43, 44). The anchor is confirmed, and the sweep really does
+owe only {0.1, 0.3, 3, 10}.
+
+**Provenance caveat worth knowing:** the output directory name carries objective, param, budget,
+seed, GPU class and timestamp — but **not μ**. The μ=0.1 run is distinguishable from the μ=1.0 run
+only by job id and timestamp. It *is* recoverable (`RUNMETA.json → args.orth_mu`), so nothing is
+lost, but **any μ-sweep analysis must key on RUNMETA, never on the path**. Recording rather than
+renaming: changing the naming scheme mid-sweep would leave the anchor runs on the old convention
+and the new ones on another, which is worse than one documented rule.
+
+### Design-vs-inventory diff
+§20.5 floor **83/111**, every score so far 0.0 — as expected for un-optimized suffixes, and exactly
+why the floor is the right control. §20.1 μ sweep **1 of 4 values running** (seed 42); the other
+three follow as slots free. §20.2/§20.3/§20.4 complete. §20.6/§20.9 behind the corpus ceiling.
+
+### SLURM
+**Queue 6/6** — four §20.7 shards (seed 44), the floor, and the μ sweep. Nothing PENDING. Nodes
+**n-301, n-302, n-303, n-304, n-305** (3090s) and **n-805** (L40S), one job each. **§20.7:** 74/74
+on the two-seed denominator — **seed 42 37/37, seed 43 37/37** — with seed 44 at **24/37** as the
+third curve point.
+
+---
