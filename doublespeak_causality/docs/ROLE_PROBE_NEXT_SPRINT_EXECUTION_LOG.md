@@ -835,6 +835,24 @@ half is unproven (a clean generated intervention would need better-conditioned d
 — e.g. a narrower band or a dose that keeps the readout on-manifold). Reported as an
 honest limitation, not a positive. Registered 757967.
 
+### E23 — 2026-08-14 — Sufficiency arm calibrated on-manifold; full run launched ◐
+
+Built the §8.5 sufficiency arm (add Bombness to neutral prompts). Manipulation-check
+smokes FIRST (E22 lesson):
+- dose=1.0 (757990): ADD works + specific, but OVERSHOOTS — readout +13 to +19 vs the
+  natural doublespeak level ~+0.3 to +1.8 (adding gap·v_bomb across 11 layers compounds).
+  Off-manifold — rejected per §8.2.
+- **dose=0.25 (757991): on-manifold** — bomb_add readout +0.4 to +2.7 (≈ natural
+  doublespeak), random unchanged. add−base +4.6 to +7.2. Clean, calibrated injection.
+
+So the sufficiency intervention now brings the neutral codeword to the natural doublespeak
+Bombness level. Full judged run launched (757992, dose 0.25, + refusal control). Question:
+does making the neutral codeword BOMB-like (to doublespeak level) induce harm? Given Story
+A, expected null (Bombness not sufficient); refusal-ablation-from-neutral is the control.
+
+Discipline note: two 90s smokes + §8.2 on-manifold check avoided a 40-min judged run at an
+off-manifold dose. The manipulation-check-first rule (E22) is now standing practice.
+
 ---
 
 ## 4. DEVIATIONS FROM THE PLAN
