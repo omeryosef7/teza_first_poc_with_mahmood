@@ -93,14 +93,14 @@ it is the condition whose ASR sits closest to 0.5. Corpus-level two-pass disagre
 5.4 %; the sprint's cited figure was one arm at n=37 and is not a constant. The judge runs at
 `temperature=0`.
 
-**Variance decomposition of a single-pass arm ASR at n=37, p≈0.15:**
+**Variance decomposition of a single-pass arm ASR at n=37, p = 0.2107 (measured pooled ASR):**
 
 | source | SD | share |
 |---|---|---|
-| sampling (prompt-to-prompt) | **0.0587** | 90–98 % |
-| judge (typical / worst case) | 0.0091 / 0.0191 | 2.3 / 9.6 % |
+| sampling (prompt-to-prompt) | **0.0670** | 92.5–98.2 % |
+| judge (typical / worst case) | 0.0091 / 0.0191 | 1.8 / 7.5 % |
 
-**Sampling dominates judge noise by 3–6×.** Judge noise is real, secondary, and cheaply removable
+**Sampling dominates judge noise by 3.5–7.4×.** Judge noise is real, secondary, and cheaply removable
 (majority-vote over M=5 on the 4.65 % band).
 
 ## 5. Every behavioural negative is bounded at ~±0.2 ASR (§20.4)
@@ -148,12 +148,17 @@ bootstrap, all 18 contrasts):
 
 | endpoint | significant at .05 | mean 90 % CI width (SD units) |
 |---|---|---|
-| binary ASR | 0/18 | 0.677 |
+| binary ASR | 0/18 | 0.598 |
 | graded score | 0/18 | 0.585 |
 
-13.6 % tighter → variance ratio 0.746 → **effective n multiplier 1.34×** (n=37 behaves like n≈50).
-Expected, because 92.7 % of rows sit at exactly 0.0/1.0, so the graded score is very nearly the
-binary one.
+Only **2.2 % tighter** → variance ratio 0.957 → **effective n multiplier 1.04×**. The graded
+endpoint buys essentially nothing. Expected, because 92.7 % of rows sit at exactly 0.0/1.0, so the
+graded score is very nearly the binary one.
+
+*(An earlier version of this table reported 1.34×. That standardized the binary width by an
+**assumed** binomial SD at p=0.15 while standardizing the graded width by its **empirical** SD.
+The measured pooled ASR is 0.2107, giving an empirical binary SD of 0.405, not 0.357 — the
+mismatch flattered the graded endpoint. Both are now divided by their own empirical pooled SD.)*
 
 **Resolution.** Report behavioural results as **equivalence bounds, not point estimates**, and stop
 describing 0/18-significant contrasts as findings in either direction. Only a second corpus buys
@@ -222,7 +227,7 @@ by the 5→200 jump and cannot represent saturation.
    design has 0.05 power against its own reported effect size.
 4. **Two methodological figures are corrected:** the 5.4 % judge-flip rate (actually ~0.6 % corpus
    two-pass, confined to a 4.65 % boundary band) and the assumption that a graded endpoint would
-   restore power (1.34×).
+   restore power (actually 1.04×).
 5. **A powered null replaces an uninformative one.** The direction term's uselessness is now
    bounded at ≤23 % of the compute effect on a demonstrably sensitive endpoint, rather than resting
    on a binary-ASR contrast with 0.05 power. Where the behavioural question cannot be answered at

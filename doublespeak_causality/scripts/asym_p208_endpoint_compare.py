@@ -93,6 +93,11 @@ def main():
                     p_gr = float("nan")
                 lo_g, hi_g = boot_ci(dg, args.n_boot, rng)
                 sd_pool = float(np.std(np.concatenate([sa, sb])))
+                # Standardize EACH endpoint by its OWN empirical pooled SD. Using an assumed
+                # binomial SD for the binary arm (an earlier version hardcoded p=0.15, while the
+                # measured pooled ASR is 0.2107) understates it and makes graded look better than
+                # it is -- that error inflated the reported gain from 1.04x to 1.34x.
+                sd_bin = float(np.std(np.concatenate([ba, bb])))
 
                 rows.append({"budget": blab, "contrast": f"{a_arm}-{b_arm}", "seed": seed,
                              "n": len(ids),
@@ -101,15 +106,16 @@ def main():
                              "graded_delta": float(dg.mean()), "graded_ci90": [lo_g, hi_g],
                              "graded_width": hi_g - lo_g, "graded_p": p_gr,
                              "score_sd_pooled": sd_pool,
+                             "binary_sd_pooled": sd_bin,
+                             "binary_width_sd_units": (hi_b - lo_b) / sd_bin if sd_bin else None,
                              "graded_width_sd_units": (hi_g - lo_g) / sd_pool if sd_pool else None})
                 print(f"{blab:<7}{a_arm+'-'+b_arm:<28}{seed:>5}"
                       f"  {db.mean():+.3f} [{lo_b:+.3f},{hi_b:+.3f}]{p_bin:>8.3f}"
                       f"   {dg.mean():+.3f} [{lo_g:+.3f},{hi_g:+.3f}]{p_gr:>8.3f}")
 
     Path(args.out).write_text(json.dumps({"n_boot": args.n_boot, "rows": rows}, indent=2))
-    bw = np.array([r["binary_width"] for r in rows])
     gw = np.array([r["graded_width_sd_units"] for r in rows])
-    bwsd = np.array([r["binary_width"] / np.sqrt(0.15 * 0.85) for r in rows])  # ASR in SD units
+    bwsd = np.array([r["binary_width_sd_units"] for r in rows])
     nsig_b = sum(r["binary_p"] < 0.05 for r in rows)
     nsig_g = sum(r["graded_p"] < 0.05 for r in rows)
     print(f"\n  contrasts: {len(rows)}")

@@ -7496,3 +7496,56 @@ answer; the 2000-step descope decision waits for it.
 **§20.7:** 33/74 (seed42 22/37, seed43 11/19). **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 15:00 — self code review of the 6 new §20 scripts: **one real bug found and fixed**
+
+Overdue per the standing instruction ("check for code bugs every 5 loops"). Six scripts written
+today carry load-bearing conclusions.
+
+### BUG (fixed) — `asym_p208_endpoint_compare.py`, inconsistent standardization
+To compare CI widths across endpoints I divided each by a SD. But the **graded** width was divided
+by its *empirical* pooled score SD, while the **binary** width was divided by an *assumed*
+binomial SD hardcoded at `sqrt(0.15*0.85) = 0.357`. The measured pooled ASR across these rows is
+**0.2107** — I computed it myself at 06:05 — giving an empirical binary SD of **0.405**.
+Understating the binary SD inflated its standardized width and flattered the graded endpoint.
+
+| | binary width | graded width | ratio | effective n |
+|---|---|---|---|---|
+| as shipped (assumed p=0.15) | 0.677 | 0.585 | 0.864 | **1.34×** |
+| **corrected (both empirical)** | **0.598** | **0.585** | **0.978** | **1.04×** |
+
+**The graded endpoint buys essentially nothing — 2.2 % tighter, not 13.6 %.** Both endpoints now
+divide by their own empirical pooled SD; the constant is gone.
+
+This **strengthens** the §20.8 conclusion (option 3 does not work) while correcting its magnitude.
+The corrected figure is also more consistent with the mechanism I gave for it: 92.7 % of rows at
+exactly 0.0/1.0 should leave almost no room for a graded endpoint to help, and 1.04× fits that far
+better than 1.34× did.
+
+### Knock-on: §20.3 variance decomposition used the same p=0.15
+Recomputed at the measured p=0.2107:
+
+| source | SD | share |
+|---|---|---|
+| sampling | 0.0587 → **0.0670** | 92.5–98.2 % |
+| judge (typical / worst) | 0.0091 / 0.0191 | 1.8 / 7.5 % |
+
+Sampling dominates by **3.5–7.4×** (was stated 3–6×). **Conclusion unchanged**; the numbers are now
+right. Both docs updated.
+
+### Clean — the other five
+* `asym_p204_equivalence.py` — no assumed constants; already validated (18/18 ASR cells reproduce
+  the §7.5 published table to 4 dp via an independent path).
+* `asym_p201_score_ce.py` — recomputed Δproj matches each arm's logged value to ~0.01.
+* `asym_p201_judge_softprompt.py` — `per_item` recomputes the stored `asr` exactly for all 6 arms.
+* `asym_p203_judge_replicates.py` — dedup key is (output_dir, row_key, task_id, condition_label);
+  the two-pass estimate correctly weights extremes at zero variance.
+* `asym_p207_objective_curve.py` — `task_id` parsing is budget-independent, confirmed by the
+  5-vs-200 intersection returning the full 37 (a parsing mismatch would have shrunk it).
+
+**Pattern worth noting:** the bug was a hardcoded constant standing in for a quantity I had already
+measured in the same session. Both places it appeared were mine, and both were introduced *after*
+the measurement existed.
+
+**§20.7:** 37/74 (seed42 25/37, seed43 12/19). **Queue 6/6**, nothing PENDING.
+
+---

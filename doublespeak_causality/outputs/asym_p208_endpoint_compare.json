@@ -21,6 +21,8 @@
       "graded_width": 0.19932432432432431,
       "graded_p": 0.20478155362589467,
       "score_sd_pooled": 0.3218736591949777,
+      "binary_sd_pooled": 0.35574179948886986,
+      "binary_width_sd_units": 0.607789741118069,
       "graded_width_sd_units": 0.6192626163409722
     },
     {
@@ -43,6 +45,8 @@
       "graded_width": 0.20608108108108109,
       "graded_p": 0.7388826803635273,
       "score_sd_pooled": 0.35951168717306653,
+      "binary_sd_pooled": 0.36859950532394203,
+      "binary_width_sd_units": 0.5865884600854132,
       "graded_width_sd_units": 0.5732249838706218
     },
     {
@@ -65,6 +69,8 @@
       "graded_width": 0.13513513513513511,
       "graded_p": 0.11384629800665805,
       "score_sd_pooled": 0.3380953410534882,
+      "binary_sd_pooled": 0.35574179948886986,
+      "binary_width_sd_units": 0.37986858819879316,
       "graded_width_sd_units": 0.39969534840101845
     },
     {
@@ -87,6 +93,8 @@
       "graded_width": 0.20945945945945948,
       "graded_p": 0.16052953514392299,
       "score_sd_pooled": 0.32749366417237147,
+      "binary_sd_pooled": 0.3418678551533384,
+      "binary_width_sd_units": 0.6324555320336758,
       "graded_width_sd_units": 0.6395832419805642
     },
     {
@@ -109,6 +117,8 @@
       "graded_width": 0.13175675675675677,
       "graded_p": 0.6858304344516057,
       "score_sd_pooled": 0.35825548344316066,
+      "binary_sd_pooled": 0.3805439956845601,
+      "binary_width_sd_units": 0.426132494537061,
       "graded_width_sd_units": 0.36777317541787397
     },
     {
@@ -131,6 +141,8 @@
       "graded_width": 0.20608108108108109,
       "graded_p": 0.5785147215079439,
       "score_sd_pooled": 0.36119036241790736,
+      "binary_sd_pooled": 0.3805439956845601,
+      "binary_width_sd_units": 0.568176659382748,
       "graded_width_sd_units": 0.5705608524588469
     },
     {
@@ -153,6 +165,8 @@
       "graded_width": 0.17567567567567566,
       "graded_p": 0.9155825203905921,
       "score_sd_pooled": 0.26708960347036653,
+      "binary_sd_pooled": 0.29265415983388804,
+      "binary_width_sd_units": 0.7388113544633763,
       "graded_width_sd_units": 0.6577405986345957
     },
     {
@@ -175,6 +189,8 @@
       "graded_width": 0.1858108108108108,
       "graded_p": 0.6830913983096087,
       "score_sd_pooled": 0.3672811632595902,
+      "binary_sd_pooled": 0.3805439956845601,
+      "binary_width_sd_units": 0.568176659382748,
       "graded_width_sd_units": 0.505908904126079
     },
     {
@@ -197,6 +213,8 @@
       "graded_width": 0.22297297297297297,
       "graded_p": 0.5229555877454194,
       "score_sd_pooled": 0.3209815058536442,
+      "binary_sd_pooled": 0.3418678551533384,
+      "binary_width_sd_units": 0.7905694150420947,
       "graded_width_sd_units": 0.69465987574574
     },
     {
@@ -219,6 +237,8 @@
       "graded_width": 0.25,
       "graded_p": 0.9436104270663556,
       "score_sd_pooled": 0.42885782382197896,
+      "binary_sd_pooled": 0.457068500683453,
+      "binary_width_sd_units": 0.5913123959890827,
       "graded_width_sd_units": 0.5829437778982348
     },
     {
@@ -241,6 +261,8 @@
       "graded_width": 0.20945945945945948,
       "graded_p": 0.14745716303084003,
       "score_sd_pooled": 0.4112889509441462,
+      "binary_sd_pooled": 0.4368440506822868,
+      "binary_width_sd_units": 0.4949505799117968,
       "graded_width_sd_units": 0.5092756782758905
     },
     {
@@ -263,6 +285,8 @@
       "graded_width": 0.31418918918918914,
       "graded_p": 0.904534818234505,
       "score_sd_pooled": 0.41073704107391307,
+      "binary_sd_pooled": 0.44409937095013474,
+      "binary_width_sd_units": 0.7302967433402214,
       "graded_width_sd_units": 0.7649399926719784
     },
     {
@@ -285,6 +309,8 @@
       "graded_width": 0.30067567567567566,
       "graded_p": 0.6898091605088983,
       "score_sd_pooled": 0.44417646484377166,
+      "binary_sd_pooled": 0.4628255078255057,
+      "binary_width_sd_units": 0.7007485949685405,
       "graded_width_sd_units": 0.6769284270417864
     },
     {
@@ -307,6 +333,8 @@
       "graded_width": 0.2027027027027027,
       "graded_p": 0.9434157867953739,
       "score_sd_pooled": 0.4357093166962961,
+      "binary_sd_pooled": 0.457068500683453,
+      "binary_width_sd_units": 0.4730499167912662,
       "graded_width_sd_units": 0.46522462324117164
     },
     {
@@ -329,6 +357,8 @@
       "graded_width": 0.34797297297297297,
       "graded_p": 0.4642468727926494,
       "score_sd_pooled": 0.43432861297265396,
+      "binary_sd_pooled": 0.4628255078255057,
+      "binary_width_sd_units": 0.8175400274632972,
       "graded_width_sd_units": 0.8011744162820834
     },
     {
@@ -351,6 +381,8 @@
       "graded_width": 0.2702702702702703,
       "graded_p": 0.5423464168482917,
       "score_sd_pooled": 0.4432407970021488,
+      "binary_sd_pooled": 0.472972972972973,
+      "binary_width_sd_units": 0.5714285714285714,
       "graded_width_sd_units": 0.6097594627981865
     },
     {
@@ -373,6 +405,8 @@
       "graded_width": 0.21621621621621623,
       "graded_p": 0.16391533479839504,
       "score_sd_pooled": 0.40566222158398346,
+      "binary_sd_pooled": 0.4368440506822868,
+      "binary_width_sd_units": 0.4949505799117968,
       "graded_width_sd_units": 0.53299569127231
     },
     {
@@ -395,6 +429,8 @@
       "graded_width": 0.23648648648648649,
       "graded_p": 0.23280433193453265,
       "score_sd_pooled": 0.4273782179304786,
+      "binary_sd_pooled": 0.46282550782550563,
+      "binary_width_sd_units": 0.5839571624737838,
       "graded_width_sd_units": 0.5533423945460778
     }
   ]
