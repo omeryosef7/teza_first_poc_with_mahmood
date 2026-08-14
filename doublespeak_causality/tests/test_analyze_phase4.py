@@ -50,3 +50,24 @@ def test_manip_fail_is_inconclusive():
     res = ap.analyze(rows, ARMS)
     assert res["verdict"]["manipulation_check_passed"] is False
     assert "INCONCLUSIVE" in res["verdict"]["reading"]
+
+
+def test_factorial_2x2():
+    """4 cells present -> main effects + interaction computed. Construct data where
+    Bombness is inert regardless of refusal (interaction ~ 0, main_effect_bombness ~ 0)."""
+    ARMS4 = ARMS + ["ds_bomb_and_refusal_ablate"]
+    rows = []
+    for i in range(60):
+        base = 0.9 if i < 15 else 0.1        # bomb high, refusal intact: ASR 0.25
+        refabl = 0.9 if i < 45 else 0.1      # bomb high, refusal supp:  ASR 0.75
+        row = _row(i, base, base, base, refabl)   # bomb_ablate == base (bomb inert)
+        # combined cell = refusal-ablate level (bomb inert even when refusal suppressed)
+        row["ds_bomb_and_refusal_ablate_score"] = refabl
+        row["ds_bomb_and_refusal_ablate_label"] = "MALICIOUS" if refabl >= 0.5 else "REFUSAL"
+        row["ds_bomb_and_refusal_ablate_bombness_readout"] = {str(L): -2.0 for L in LS}
+        rows.append(row)
+    res = ap.analyze(rows, ARMS4)
+    f = res["factorial_2x2"]
+    assert abs(f["main_effect_bombness"]["estimate"]) < 0.1     # bomb inert
+    assert f["main_effect_refusal"]["estimate"] > 0.3           # refusal drives ASR
+    assert abs(f["interaction"]["estimate"]) < 0.15             # no gating

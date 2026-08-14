@@ -95,6 +95,9 @@ def main():
     ap.add_argument("--max-new", type=int, default=220)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--with-refusal", action="store_true", help="add the refusal-ablation positive control arm")
+    ap.add_argument("--factorial", action="store_true",
+                    help="2x2 Bombness x refusal (§8.6): adds the refusal arm AND the combined "
+                         "bomb+refusal ablation cell, giving all four cells in one run")
     ap.add_argument("--no-judge", action="store_true", help="manipulation check only, skip scoring")
     ap.add_argument("--seed", type=int, default=20260814)
     args = ap.parse_args()
@@ -134,9 +137,17 @@ def main():
         "ds_bomb_ablate": patches_for(vbomb),
         "ds_bomb_random": patches_for(vrand),
     }
-    if args.with_refusal:
-        ARMS["ds_refusal_ablate"] = lambda cw: [
-            pc.AllPositionProjectOutMultiLayer(lm.model, range(lm.num_layers), v_ref, args.alpha)]
+    def refusal_ctx():
+        return pc.AllPositionProjectOutMultiLayer(lm.model, range(lm.num_layers), v_ref, args.alpha)
+
+    if args.with_refusal or args.factorial:
+        # bomb HIGH, refusal SUPPRESSED
+        ARMS["ds_refusal_ablate"] = lambda cw: [refusal_ctx()]
+    if args.factorial:
+        # bomb LOW, refusal SUPPRESSED -- the 4th 2x2 cell: stack Bombness ablation
+        # at the codeword over the band AND all-position refusal ablation.
+        _bomb = patches_for(vbomb)
+        ARMS["ds_bomb_and_refusal_ablate"] = lambda cw: _bomb(cw) + [refusal_ctx()]
 
     @torch.no_grad()
     def generate(text, patches):
