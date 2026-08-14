@@ -8672,3 +8672,64 @@ cancellation was correct because **my** submission caused that overage, whereas 
 already at its 6 and killing sprint work to absorb someone else's job would be the wrong trade.)*
 
 ---
+## 2026-08-15 03:45 — **§20.1's open question is answered: the 78 % is the price of a NEAR-TOTAL pin, not of the coordinate.**
+
+*(Wall clock 15:06 UTC.)* 757884 COMPLETED in 5:19. The μ=0.1 point now has §20.1's own endpoint.
+
+### The result
+`asym_p201_ce_musweep.json`. All three arms scored in **one job under one model load**, as the
+script requires for a valid contrast. `ce_progress_frac` = fraction of baseline test CE eliminated;
+cost is measured against the free arm's 0.7482.
+
+| objective | μ | Δproj_test | ce_progress_frac | of free | **cost** | pin holds |
+|---|---|---|---|---|---|---|
+| `task` (free) | — | −3.680 | 0.7482 | 1.000 | 0 % | — |
+| `task_orth` | **0.1** | **−0.528** | **0.2802** | 0.374 | **62.6 %** | 86 % |
+| `task_orth` | 1.0 | +0.187 | 0.1321 | 0.177 | **82.3 %** | 105 % |
+
+**Relaxing the pin tenfold cuts the cost from 82.3 % to 62.6 % while still suppressing 86 % of the
+coordinate's free movement.** A fifth of the lost CE progress comes back for a pin that is, by any
+reasonable description, still tight — the coordinate moves 0.53 where free optimization moves 3.68.
+
+**So the cost is sharply nonlinear in pin strength and concentrated at the near-total end.** §20.1's
+headline number is the price of driving Δproj to ≈0, not the price of the refusal coordinate as
+such. That is precisely the alternative reading the 15:30 audit flagged as unresolved
+(*"78 % is the price of a near-total pin (Δproj ≈ −0.03), not of the coordinate"*), and it now has
+data instead of a caveat.
+
+**Two points is a curve with two points.** μ ∈ {0.3, 3, 10} still owed, seeds 43/44 still owed, and
+the shape between 0.1 and 1.0 is where the nonlinearity lives. Nothing goes in
+`SECTION20_RESULTS.md` until at least μ=0.3 fills that gap.
+
+### The rescore validates itself
+The μ=1.0 anchor and the free arm were rescored here rather than copied. They reproduce the
+recorded values **exactly** — `ce_progress_frac` 0.13206 vs 0.13206, `dproj_test` 0.18678 vs
+0.18678. So the new artifact is on the same footing as `asym_p201_ce_scores.json`, and the μ=0.1
+row is comparable to the published 78 %.
+
+*(Labelling wrinkle: the free `task` arm's row records `orth_mu = 1.0`, the argparse default,
+because the field is dumped regardless of objective. It is unused when `objective != task_orth`.
+Read μ only on `task_orth` rows.)*
+
+### Cap: cancelled my own μ=0.3 submission, and the rule needs settling
+Submitted **757888** (μ=0.3) into what I read as the slot 757884 freed — but an external
+`probe_extract` (757886) had taken it, so the account went to **7**. Cancelled **757888**, my own
+newest job, ~1 minute in.
+
+I first considered leaving it: the previous two `probe_extract` runs lasted 0:48 and 1:46, so the
+overage looked transient. But 757886 was already at 2:17 and still going, and *"it will probably
+clear"* is the reasoning that turns a rule into a suggestion. **Consistency with the 02:15
+cancellation decided it** — same situation, same action.
+
+**This has now cost two submissions and needs an answer: is the ≤6 cap account-wide or
+sprint-wide?** I have been applying the strict account-wide reading, which means another session's
+2-minute smoke jobs can repeatedly displace multi-hour sprint work. If the cap is meant as "≤6 of
+*my* sprint jobs", μ=0.3 should simply have run. Flagged rather than silently switching
+interpretation.
+
+### SLURM
+Account **7** (six sprint + one external); **sprint jobs 6**. Four §20.7 seed-44 shards, the K=10
+floor (757879), and — once the external job clears — μ=0.3 goes back in. **§20.7:** seeds 42 and 43
+**37/37**, seed 44 **26/37**. Read gate holds.
+
+---
