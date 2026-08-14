@@ -7577,3 +7577,46 @@ curve point**), then seed 44, then the §20.1 μ sweep.
 **§20.7:** 39/74 (seed42 26/37, seed43 13/19). **Queue 6/6**, nothing PENDING, nothing to resubmit.
 
 ---
+## 2026-08-14 16:00 — §20.3's payoff delivered: judge-denoised contrasts. Point estimates move, conclusions don't.
+
+At 10:45 I claimed judge noise was "cheaply removable by majority-vote over M=5 on the band". That
+was an assertion; this executes it. The replicate run covers **every** band row in the corpus
+(93/93, **0 majority votes missing**), and extremes are validated deterministic, so a fully
+denoised endpoint needed **no new API calls**:
+
+> `denoised(row)` = majority vote over 5 replicates if the row is in the band, else its single-pass
+> score (deterministic, 0/40 flipped).
+
+Re-ran all 18 §7.5 contrasts:
+
+| | result |
+|---|---|
+| contrasts whose ΔASR **moved** | **7/18** |
+| shift magnitude | mean 0.031, **max 0.054** (exactly 2 rows of 37) |
+| contrasts whose **significance flipped** | **0/18** |
+| significant at .05 | single 0/18 · denoised 0/18 |
+
+Every shift is an exact multiple of 1/37, as it must be — a useful internal check that the
+denoising is doing what it claims (flipping whole rows, not smearing scores).
+
+### What this does and does not show
+**Does:** individual ΔASR values in this sprint carry roughly **±0.05 of judge-attributable
+uncertainty on top of sampling**. The largest shift, 0.054, is **54 % of the entire Doublespeak
+effect** (0.100). So any single reported ΔASR here is fragile at that scale even before sampling
+error — e.g. `full mechanism − matched_random` seed 42 moves from **−0.054 to exactly 0.000**.
+
+**Does not:** prove conclusions are robust in general. **All 18 contrasts are null under both
+endpoints**, so "0/18 significance flips" was close to guaranteed — there was nothing to flip. This
+test can only demonstrate robustness *of nulls*. If a contrast were near the threshold, a 2-row
+shift could plainly move it across.
+
+### Net
+Judge noise is confirmed **secondary to sampling** (1.8–7.5 % of variance, 10:45) and now
+demonstrably **not the driver of any §20 conclusion** — while also being large enough relative to
+the Doublespeak effect that point estimates should not be quoted to three decimals. Both statements
+are true and the write-up should carry both.
+
+**§20.7:** 43/74 (seed42 29/37, seed43 14/19). **Queue 6/6**, nothing PENDING; 757526 is one prompt
+from done, so a slot should free shortly — seed 43 shards 2–3 go in first per the recorded order.
+
+---
