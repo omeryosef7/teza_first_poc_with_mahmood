@@ -7316,3 +7316,58 @@ cannot represent saturation. Do not quote the extrapolation; quote the pairwise 
 **§20.7:** 19/74 prompts. **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 12:45 — a **POWERED** null for §7.5's central claim, in objective space
+
+§7.5's headline negative — the mechanism/direction term buys nothing — was measured on binary ASR
+with **0.05 power** (§20.8). It was an *uninformative* null. The same claim is testable on the
+optimization objective, at full n=37 paired, with an endpoint whose sensitivity can be
+demonstrated rather than assumed.
+
+### Step 1 — establish the endpoint is sensitive (full n=37, all 9 arm × seed cells)
+| arm | mean Δ (5→200 steps) | prompts improved | p |
+|---|---|---|---|
+| vanilla | −0.946 | 37/37, 36/37, 37/37 | 1.1e-07 (×2), 1.7e-07 |
+| mechanism | −0.957 | 37/37 all seeds | 1.1e-07 |
+| matched_random | −0.965 | 37/37 all seeds | 1.1e-07 |
+
+**The endpoint detects the compute effect at p = 1.1e-07 in 8 of 9 cells.** It is not
+underpowered at n=37.
+
+### Step 2 — ask the §7.5 question on that endpoint
+| budget | contrasts tested | significant at .05 |
+|---|---|---|
+| 5 steps | 9 | **0** |
+| 200 steps | 9 | **0** |
+
+**0/18.** And bounded, not merely non-significant (paired bootstrap, 200 steps):
+
+| contrast | worst bound (loss units) | as % of the compute effect |
+|---|---|---|
+| mechanism − vanilla | 0.2151 | 22.7 % |
+| mechanism − matched_random | 0.1618 | 17.1 % |
+
+> **Any benefit from the direction term is at most ~23 % of what plain compute buys — measured on
+> an endpoint that detects the compute effect at p = 1.1e-07.**
+
+### Why this matters for the paper
+This converts §7.5's weakest result from *"we found nothing, with 5 % power"* into *"we found
+nothing, on an endpoint demonstrably able to find something 4× smaller than the effect we were
+looking for."* The §20.4 equivalence bounds (±0.19–0.27 ASR, i.e. wider than the Doublespeak
+effect itself) could not support that; this can.
+
+It also completes the §20 synthesis. The direction term:
+* does **not** help the optimizer reach lower task loss (**powered null**, here);
+* does **not** improve behaviour (bounded null, §20.4);
+* yet the coordinate it targets **is** necessary — pinning it costs 78 % of CE progress (§20.1)
+  and it mediates per-prompt success (§20.2).
+
+Necessary, mediating, and useless as an optimization target — now with the "useless" half resting
+on a powered test rather than an underpowered one.
+
+**Caveats.** Objective space only; per §20.1 this does not license a behavioural claim. Best-so-far
+task loss (the series is non-monotonic). The mechanism arm optimizes task + λ·repr, so equal *task*
+loss means the direction term neither helped nor hurt that component.
+
+**§20.7:** 23/74 prompts. **Queue 6/6**, nothing PENDING.
+
+---

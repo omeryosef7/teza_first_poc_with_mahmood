@@ -1,0 +1,9 @@
+{
+  "schema": "DONE/1",
+  "run_id": "asym_p75_mechval_VANILLA_s42s43",
+  "status": "ok",
+  "rows_written": 5661,
+  "end_ts": "2026-08-14T01:42:55",
+  "end_epoch": 1786660975.123378,
+  "wall_seconds": 0.004
+}

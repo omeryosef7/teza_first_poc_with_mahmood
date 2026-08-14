@@ -23,9 +23,12 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import wilcoxon
 
-PATTERNS = {5: "asym_p75_vanilla_s5_pp_*seed{seed}",
-            200: "asym_p75_vanilla_pp_*seed{seed}",
-            600: "asym_p75_vanilla_s600_pp_*seed{seed}"}
+def patterns(arm):
+    """`_pp_` immediately after the arm name marks the 200-step (untagged) budget, so the
+    200 glob cannot accidentally match the s5/s600 dirs."""
+    return {5: f"asym_p75_{arm}_s5_pp_*seed{{seed}}",
+            200: f"asym_p75_{arm}_pp_*seed{{seed}}",
+            600: f"asym_p75_{arm}_s600_pp_*seed{{seed}}"}
 
 
 def best_losses(pattern, require_steps=None):
@@ -57,11 +60,17 @@ def best_losses(pattern, require_steps=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--arm", default="vanilla",
+                    choices=["vanilla", "mechanism", "matched_random"])
+    ap.add_argument("--budgets", default="5,200,600",
+                    help="comma list; omit 600 to analyse only completed budgets at full n")
+    ap.add_argument("--min-paired", type=int, default=10)
     ap.add_argument("--out", default="doublespeak_causality/outputs/asym_p207_objective_curve.json")
     args = ap.parse_args()
 
-    per_budget = {b: best_losses(pat.format(seed=args.seed), require_steps=b)
-                  for b, pat in PATTERNS.items()}
+    want = [int(x) for x in args.budgets.split(",")]
+    PAT = patterns(args.arm)
+    per_budget = {b: best_losses(PAT[b].format(seed=args.seed), require_steps=b) for b in want}
     for b, d in per_budget.items():
         print(f"  budget {b:>4} steps: {len(d)} completed prompts")
 
@@ -69,7 +78,7 @@ def main():
     common = sorted(set.intersection(*(set(d) for d in per_budget.values())))
     print(f"\n  paired on {len(common)} prompts present at ALL budgets "
           f"(600-step arm is still running; this is an INTERIM subset)")
-    if len(common) < 10:
+    if len(common) < args.min_paired:
         raise SystemExit("too few paired prompts to report")
 
     rows, budgets = [], sorted(per_budget)
