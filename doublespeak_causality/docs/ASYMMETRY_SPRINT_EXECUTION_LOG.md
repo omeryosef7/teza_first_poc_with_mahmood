@@ -8733,3 +8733,15 @@ floor (757879), and — once the external job clears — μ=0.3 goes back in. **
 **37/37**, seed 44 **26/37**. Read gate holds.
 
 ---
+### 03:45 addendum — external job cleared; μ=0.3 resubmitted as **757891**
+`probe_extract` (757886) exited, the account dropped to 5, and μ=0.3 went back in within the cap:
+**757891**, same config as the cancelled 757888 (`task_orth`, free, b0.1, seed 42, `ASYM_ORTHMU=0.3`,
+L40S). Currently **PENDING (Priority)** — all five L40S nodes are `mixed`, so this is fair-share
+queueing, not a bad config. Under the standing rule it gets **30 minutes** before it is cancelled
+and resubmitted with a directed nodelist; noted here so the next tick checks it against
+`SUBMIT_TIME`, not elapsed.
+
+Account **6/6**, sprint **6/6**. Floor 757879 at **278/370**. The cap-interpretation question from
+above stands unanswered and I am continuing with the strict account-wide reading.
+
+---
