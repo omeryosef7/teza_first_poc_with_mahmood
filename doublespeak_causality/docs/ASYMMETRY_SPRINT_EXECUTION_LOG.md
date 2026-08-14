@@ -7461,3 +7461,38 @@ threshold, which these summaries do not expose). It does not add to the direct �
 **§20.7:** 29/74 (seed42 20/37, seed43 9/19). **Queue 6/6**, nothing PENDING.
 
 ---
+## 2026-08-14 14:30 — the 200→600 estimate **oscillates**; seed 43 replicates the magnitude. Stop reading interim n.
+
+Seed 42 grew 18 → 22 paired prompts and the estimate moved **back**:
+
+| seed | n | mean Δ | improved | p |
+|---|---|---|---|---|
+| 42 | 14 | −0.0792 | 9/14 (0.64) | 0.363 |
+| 42 | 18 | −0.1217 | 13/18 (0.72) | 0.133 |
+| 42 | **22** | **−0.0621** | **13/22 (0.59)** | **0.485** |
+| **43** (independent) | 11 | −0.1133 | 7/11 (0.64) | 0.175 |
+
+Seed 42's trajectory is −0.079 → −0.122 → **−0.062** (p 0.36 → 0.13 → 0.49). **It is not converging
+in one direction — it oscillates**, exactly as a small true effect plus sampling noise would.
+
+At 12:15 I called this saturation and recommended a descope. At 13:15 I withdrew that because the
+effect looked like it was growing. Both readings were **over-interpretations of an interim subset**;
+the n=18 point was noise in the other direction. The discipline this enforces: on a growing
+subset, report only what is stable across reads, and make no resource decisions until the arm is
+complete.
+
+**What is stable across all four reads (including an independent seed):**
+* **Sign is negative every time** — 600 does beat 200. There is probably a small real gain.
+* **Magnitude 0.06–0.12 = 6–13 % of the 5→200 gain** (0.946).
+* **Never significant**; improved fraction 0.59–0.64, against **1.00** for 5→200.
+* Seed 43 replicates seed 42's magnitude (−0.113 vs −0.062/−0.122), which is more informative than
+  any single n on one seed.
+
+**Net for §20.7:** the headline is unchanged and does not rest on this — compute's *first* leg is
+the dominant effect the program has measured, and the direction term buys ≤23 % of it (powered,
+12:45). Whether 600 beats 200 by ~0.1 is a second-order question that the completed 37/37 run will
+answer; the 2000-step descope decision waits for it.
+
+**§20.7:** 33/74 (seed42 22/37, seed43 11/19). **Queue 6/6**, nothing PENDING, nothing to resubmit.
+
+---
