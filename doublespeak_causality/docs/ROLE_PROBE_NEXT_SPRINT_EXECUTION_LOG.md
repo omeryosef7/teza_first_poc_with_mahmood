@@ -38,7 +38,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done · ⊘ blocked · ✗ fai
 | Phase 1 — Bombness probe | 5 | ☑ | **GATE 1 PASSED**: holdout AUC 0.997, cross-codeword, ⊥ refusal at codeword |
 | Phase 2 — refusal/compliance readout | 6 | ☑ | frozen refusal_L18 projection = Refusalness readout (E16) |
 | Phase 3 — latent-state experiments | 7 | ☑ | **Refusalness predicts DS success (0.98), Bombness at chance (0.59)** |
-| Phase 4 — causal interventions | 8 | ☐ | **highest value** |
+| Phase 4 — causal interventions | 8 | ◐ | harness + v_bomb directions built (E17); manip-check smoke queued |
 | Phase 5 — component patching | 9 | ☐ | |
 | Phase 6 — D3 scope-matched control | 10 | ☐ | |
 | Phase 7 — Phi concept completion | 11 | ☐ | |
@@ -611,6 +611,35 @@ refusal projection already predicts strongly and is the better-supported causal
 coordinate (§6.1). A fitted 3-class outcome probe (REFUSAL/MALICIOUS/OTHER) is a
 secondary readout, deferred (would need per-example 3-way labels; not on the critical
 path to Phase 4).
+
+### E17 — 2026-08-14 — Phase 4 harness built (causal intervention) ◐
+
+Built the decisive causal test infrastructure (§8), reusing existing intervention
+infra (no new hooks).
+
+- `src/probes/build_intervention_directions.py` → `outputs/phase4_directions/
+  v_bomb_clearharm.pt`: per-layer v_bomb (diff-of-means db−benign at codeword, L8-31),
+  natural dose gap (2.1→10.9 with depth, gap/sd≈1.7), refusal-orthogonalized variant,
+  norm-matched random. cos(v_bomb, refusal) 0.02-0.15 everywhere (orthogonal).
+- `scripts/phase4_bombness_intervention.py` (SLURM/GPU): ablate v_bomb at the codeword
+  over the write+carry band (L8-18) via stacked `LayerPatch(project_out)`, vs a
+  norm-matched random ablation (specificity), with a **manipulation check** = the
+  downstream Bombness readout at UNPATCHED layers L20/24/28/31 (must drop if the
+  ablation propagated). Optional refusal-ablation positive control. Reuses
+  `dc.load_model`/`LayerPatch`/`AllPositionProjectOutMultiLayer`/`strongreject_scoring`.
+- `slurm_scripts/run_phase4_bombness.slurm`: MODE=smoke (manip-check only, the §8.3
+  gate) / full (judged + refusal arm).
+
+Self-review caught a real bug pre-launch: v_bomb built L8-21 but the readout needs
+L20-31 → rebuilt over L8-31. py_compile clean; reused symbols verified.
+
+**Manipulation-check gate first (§8.3):** if ablating v_bomb does NOT reduce the
+downstream Bombness readout, the intervention is invalid and no behavioral conclusion
+follows. Only if it moves Bombness do I run the judged behavioral arm. Given Phase 3
+(Bombness doesn't predict), the expected outcome is: ablation moves Bombness but ASR
+stays ~ baseline ~ random → Story A confirmed causally. But that must be measured.
+
+6/6 at cap; slot-waiter armed to launch the manip-check smoke.
 
 ---
 
