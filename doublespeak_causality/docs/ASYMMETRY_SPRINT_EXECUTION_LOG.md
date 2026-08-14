@@ -8529,3 +8529,68 @@ on the two-seed denominator — **seed 42 37/37, seed 43 37/37** — with seed 4
 third curve point.
 
 ---
+## 2026-08-15 02:15 — **the randtok floor lands, and it reframes §20.5: optimized suffixes barely beat random tokens.**
+
+*(Wall clock 14:50 UTC.)* 757862 COMPLETED — `generated=111 resumed=0 failed=0 in 802s`, 13:56
+total, as predicted. §20.5's last mandatory condition is met and the pool statistic now has its
+noise floor.
+
+### The floor is high
+**Un-optimized 16-token random suffixes score ASR@1 = 0.2523** (StrongREJECT ≥ 0.5, 111
+generations, same evaluator, same prompts). Against that:
+
+| condition | ASR | vs floor 0.2523 |
+|---|---|---|
+| **floor (random tokens)** | **0.2523** | — |
+| vanilla, 200 steps, diagonal | 0.3333 | +0.081 |
+| mechanism, 200 steps, diagonal | 0.2793 | +0.027 |
+| matched_random, 200 steps, diagonal | 0.2703 | +0.018 |
+| transfer ASR@1 (all 6 arm×seed cells) | 0.171–0.230 | **−0.02 to −0.08 (below)** |
+| mechanism, **5 steps**, diagonal | 0.1802 | **−0.072 (below)** |
+| vanilla, **5 steps**, diagonal | 0.1441 | **−0.108 (below)** |
+| matched_random, **5 steps**, diagonal | 0.1261 | **−0.126 (below)** |
+
+Three readings, in order of how well the data supports them:
+
+1. **§20.5's pool gain is mostly a max-statistic artifact.** The floor's own k=2 gain is
+   **+0.0541**; the arms' is **+0.0831**. The pool attack's advantage over pooling *random*
+   suffixes is therefore about **+0.029**, not +0.083 — which is what the mandatory floor existed
+   to reveal, and it removes most of the apparent effect.
+2. **Transferred suffixes do not beat random tokens.** Every one of the six arm×seed transfer
+   cells sits at or below the floor. Optimization on prompt A buys nothing on prompt B — not
+   "less", *nothing*.
+3. **The compute-matched (5-step) arms are worse than random tokens**, all three by 0.07–0.13.
+   §7.5's compute-matched contrast was between two conditions that both underperform noise.
+
+Only the full-budget diagonal clears the floor, and only vanilla clears it by a visible margin
+(+0.081). This is consistent with, and sharpens, the sprint's arc: the discrete attack's
+behavioural payoff is small and the direction term contributes none of it.
+
+### Held back from overclaiming: the floor rests on 3 draws
+Per-suffix floor ASR is **0.3514 / 0.1892 / 0.2162** — a range of 0.16 across three random
+suffixes. The mean is 0.2523 but its own uncertainty is wide, and one random draw (0.3514) beats
+every optimized arm above. **Every comparison in the table is directional until the floor is
+firmer.** Extended it to **K=10** — same generator, same seeds for pools 0–2 (verified unchanged:
+`rng_seed` 20260814/15/16), 370 total evaluations of which 111 already exist and resume — running
+now as **757879**. The three readings above get re-run against K=10 before any of them goes in a
+document that is not this log.
+
+### A cap breach I caused, and fixed
+Between two `squeue` checks an unrelated **`probe_extract` (757877)** appeared on the account —
+another session's job, not this sprint's. My floor resubmission took the account to **7 running,
+over the ≤6 rule**. Cancelled **my own newest job** (757878) rather than someone else's work; the
+eval is resume-safe and row-keyed, so **all 111 existing rows survived** and nothing was recomputed.
+757877 then failed on its own (1:46) and the slot came back, so the extended floor went out as
+757879 within the cap.
+
+*(For whoever owns 757877: it failed on `AssertionError: position mismatch for
+clearharm_0000_0031553e/doublespeak: capture=179 corpus_query_last=209 (absolute-position bug class
+B9 -- aborting)`. Its preflight caught the absolute-position bug class before it could write
+anything — the guard did its job. Not touched, not in this sprint's scope.)*
+
+### SLURM
+**Queue 6/6** — four §20.7 seed-44 shards, the extended floor (757879, n-305), the μ=0.1 sweep
+point (757867, n-805 L40S). Nothing PENDING. **§20.7:** seed 42 **37/37**, seed 43 **37/37**,
+seed 44 **24/37**. Read gate holds — seed 44 is the last one, ~3.5 h out.
+
+---

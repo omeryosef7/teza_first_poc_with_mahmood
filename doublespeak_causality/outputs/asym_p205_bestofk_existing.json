@@ -1,11 +1,61 @@
 {
-  "provisional": true,
-  "unmet_mandatory_conditions": [
-    "randtok pool as the noise-inflated floor (never generated for these prompts)"
-  ],
+  "provisional": false,
+  "unmet_mandatory_conditions": [],
   "floor": {
-    "present": false,
-    "note": "randtok floor not generated yet; build the stubs with asym_p205_make_randtok_floor.py, run the eval, then pass --floor-root"
+    "present": true,
+    "asr": {
+      "0.25": {
+        "1": 0.2522522522522523,
+        "2": 0.30630630630630634,
+        "3": 0.35135135135135137
+      },
+      "0.5": {
+        "1": 0.2522522522522523,
+        "2": 0.30630630630630634,
+        "3": 0.35135135135135137
+      }
+    },
+    "n_targets": 37,
+    "k_max": 3,
+    "pool_sizes": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ]
   },
   "met_conditions": [
     "diagonal pairs dropped",
