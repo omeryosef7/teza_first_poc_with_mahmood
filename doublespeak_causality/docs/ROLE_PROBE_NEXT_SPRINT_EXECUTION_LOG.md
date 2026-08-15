@@ -1406,3 +1406,19 @@ decision run). Reconciled: fixed the stale "NOT RUN" caveat (line 134, contradic
 own §0), added a provenance note to the report. Going forward: NOT re-running any D3/asymmetry
 arm the parallel session owns; the §10.2 dev cross-medium re-runs should be coordinated, not
 duplicated.
+
+---
+
+### E51 — registry gap fixed (my process bug: forgot --apply); collision reconciled (2026-08-15)
+
+Post-collision reconciliation check found my Phase 5 (758162/3) and D3 (758290/1/2) runs were
+NOT in EXPERIMENT_REGISTRY.csv despite E45/E49 logs claiming "+8". Root cause = MY bug, not a
+clobber: update_registry.py is dry-run by default; at E45/E49 I ran it WITHOUT --apply, so
+"+8" was only a preview. Fixed: ran with --apply -> 4 new rows carrying a git commit, all 5
+runs now present, 616 rows, 0 flagged missing.
+
+Collision status: the parallel session (also "Omer Yosef") acknowledged convergence
+(commit 98a28eba "sessions converged on D3 independently; their fix caught a contradiction my
+annotation made") and is now idle (3a6e013b "idle tick: no asymmetry change; queue empty").
+Branch consistent, 0 duplicate run_ids. Both sessions' D3 numbers agree to the decimal.
+Nothing further to reconcile.
