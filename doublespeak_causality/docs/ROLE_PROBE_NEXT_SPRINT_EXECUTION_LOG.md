@@ -1422,3 +1422,22 @@ Collision status: the parallel session (also "Omer Yosef") acknowledged converge
 annotation made") and is now idle (3a6e013b "idle tick: no asymmetry change; queue empty").
 Branch consistent, 0 duplicate run_ids. Both sessions' D3 numbers agree to the decimal.
 Nothing further to reconcile.
+
+---
+
+### E52 — Phase 10 §14.1: second-corpus builder (AdvBench) built + launched; ultracode bug-sweep running (2026-08-15)
+
+User: run the whole plan, and ultracode-audit the sprint code for bugs. Launched a
+find->adversarially-verify Workflow (wpa3xrg9v) over 10 sprint code files + a cross-file
+row-alignment check (CODE ONLY; reviewers barred from harmful-text data files). Will apply
+confirmed fixes in the main loop.
+
+Phase 10 §14.1: wrote scripts/build_advbench_doublespeak.py — SECOND doublespeak corpus from
+public AdvBench (harmful_behaviors.csv, 520 goals), reusing the locked clearharm pipeline
+(build_doublespeak_split.build_item/get_demos/codeword lexicon/_llm_pick_concept) with a new
+AdvBench source + a LEAKAGE-0 3-way split (concept-disjoint AND codeword-disjoint via
+partitioned codeword sub-pools) + source sha256 recorded. Structural smoke (--no-api, 8 items):
+0 concept/codeword straddle, clean train/dev/test, full 6-prompt-variant schema matching
+clearharm. Full API build launched in background (concept extraction + paper-faithful demos,
+gpt-4o-mini, cached). Not pooled with ClearHarm (independent replication per §14.1). Harmful
+text handled in-process only, never delegated to a subagent.
