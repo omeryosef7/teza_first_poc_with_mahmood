@@ -9979,3 +9979,51 @@ scopes. Owed list otherwise unchanged (five decisions, no jobs).
 Queue empty. Nothing PENDING, nothing of mine to launch.
 
 ---
+## 2026-08-16 04:45 — **CORRECTION: the 04:15 D3 entry read a SMOKE run as a result.** n=4.
+
+*(Wall clock 09:31 UTC.)* The first line of `logs/d3_actscope_758209.out` reads:
+
+```
+SCOPE=decision LAYER=18 SPLIT=test VALN=4 ALPHA=1.0
+```
+
+**`VALN=4`. That job was a 4-prompt smoke run.** I tailed the log, read the `[refval]` summary
+lines, and never looked at the header. The 04:15 entry then presented its numbers as a held-out
+finding — a formatted table, and an interpretation ("ablation does nothing at the scope a token
+attack can reach", "asymmetry-within-the-asymmetry", "not what a pure scope-mismatch story
+predicts") — **all of it resting on n=4.**
+
+What those numbers actually are: `ablate=+0.000` is **0 of 4**; `induce=+1.000` is 4/4 and `+0.750`
+is 3/4. At that n, none of it distinguishes anything. The `valid=False` reading is likewise a
+4-prompt gate outcome, not evidence about D2.
+
+**This is the exact error this sprint spent fifteen ticks catching in the μ sweep** — three separate
+n=1 impressions that dissolved under replication, after which I wrote the rule *"no μ-sweep
+statement gets written down before its point has three seeds."* I then applied none of that
+scepticism to someone else's run, one tick after their own commit message said **"smoke validated;
+launch 3 full activation-scope runs on test"** (`ad935dcb`). The commit told me what 758209 was and
+I did not read it.
+
+**Everything substantive in the 04:15 entry is withdrawn.** The table stands only as a record of a
+smoke run. No D3 conclusion — in either direction — is available yet.
+
+### The real runs are already in flight
+**758248 / 758249 / 758250**, all three scopes, PENDING as of this tick. That also retires my
+04:15 offer to launch the comparators "if still unrun next tick": **not launching was correct** —
+the other session had it in hand, and submitting would have duplicated three jobs.
+
+**Reading rule for when they land, fixed now:** the D3 comparison is `all_layers` vs `single_layer`
+vs `decision` **ablate** at full eval n, on the same held-out split, α=1.0. If `all_layers` ablate
+is materially > 0 while `decision` ablate ≈ 0, scope explains a large part of the
+activation-vs-token gap and §20's framing needs revisiting. If all three are ≈ 0, the held-out
+setup differs from the published activation result and *that* discrepancy becomes the finding —
+not a scope conclusion. Written before the data, as it should have been last tick.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 unchanged: complete, traced, verified. D3 watch item: **0 of 3 arms at full n**
+(the 04:15 "1 of 3" was the smoke). Owed list unchanged.
+
+### SLURM
+3 jobs PENDING, all the other session's D3 runs, none of mine. Nothing for me to launch.
+
+---
