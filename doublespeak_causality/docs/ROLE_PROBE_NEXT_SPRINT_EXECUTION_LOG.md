@@ -1238,3 +1238,19 @@ remainder=30.4 (dominant), random=8.2 (norm-matched to bomb); spec additivity ho
 Only the GPU generation wrapper remains (consume spec → dc.LayerPatch → generate → judge,
 reusing the phase4 path). Deliberately NOT written un-smoked: it will be built + smoked +
 launched together on greenlight. No GPU spent; no generation.
+
+---
+
+### E42 — Phase 5 GPU harness built + smoke launched (user greenlit GPU) (2026-08-15)
+
+User greenlit GPU. Built scripts/phase5_component_patch.py (per-example component patch
+generation) + slurm_scripts/run_phase5_component.slurm, reusing the phase4 path
+(dc.load_model / LayerPatch add-mode / ComponentCapture readout / strongreject judge) and
+the tested phase5_patch_spec builder. Patch band L8-18 (disjoint from readout 20/24/28/31);
+necessity subtracts (sign -1) each example's own component, sufficiency adds (+1).
+
+Preflight: harness compiles; patch_spec imports; slurm bash -n clean; example_id alignment
+42/42 test in artifact (B9 guard will pass not skip). Smoke gate launched: job 758159
+(MODE=smoke necessity LIMIT=6, --no-judge) — the gate is whether per-example subtraction
+MOVES the downstream Bombness readout (bomb arm should lower it). If it doesn't manipulate,
+do not scale to full/judged.
