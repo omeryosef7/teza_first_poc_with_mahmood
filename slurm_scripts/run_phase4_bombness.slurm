@@ -89,7 +89,7 @@ CORPUS_ARG=""; [ -n "${CORPUS:-}" ] && CORPUS_ARG="--corpus $CORPUS"
 echo "MODEL=$MODEL REFUSAL_PT=$REFUSAL_PT DIRS=$DIRS CORPUS=${CORPUS:-<default>}"
 python scripts/phase4_bombness_intervention.py \
     --directions "$DIRS" --refusal-pt "$REFUSAL_PT" $MODEL_ARG $CORPUS_ARG \
-    --split test --cohort "$COHORT" --alpha "$ALPHA" \
+    --split "${SPLIT:-test}" --cohort "$COHORT" --alpha "$ALPHA" \
     --out "$OUT" $EXTRA
 
 echo "[phase4 done] $OUT"
