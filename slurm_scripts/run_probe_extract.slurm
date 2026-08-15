@@ -68,12 +68,13 @@ echo "[guard] GPU OK ${VRAM_MB}MB"
 COHORT_ARG=""; [ "$COHORT" != "all" ] && COHORT_ARG="--cohort $COHORT"
 LIMIT_ARG="";  [ "$MODE" = "smoke" ] && LIMIT_ARG="--limit $LIMIT"
 REV_ARG="";    [ -n "$REVISION" ] && REV_ARG="--revision $REVISION"
+SPACE_ARG=""; [ -n "${SPACE:-}" ] && SPACE_ARG="--space $SPACE"
 QUANT_ARG=""; [ -n "${QUANTIZE:-}" ] && QUANT_ARG="--quantize $QUANTIZE"
 
 cd "$DC"
 echo "MODEL=$MODEL"
 python -m src.probes.activation_extraction \
-    --out "$OUT" --model "$MODEL" $COHORT_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG $QUANT_ARG
+    --out "$OUT" --model "$MODEL" $COHORT_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG $QUANT_ARG $SPACE_ARG
 
 echo "[extract done] $OUT"
 

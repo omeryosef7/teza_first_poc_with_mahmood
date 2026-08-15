@@ -145,6 +145,53 @@ def extract(lm, corpus, items):
     return acts, kept, posmeta
 
 
+def extract_norm_mid(lm, corpus, items):
+    """ROBUSTNESS ARM (plan §A3.1): extract UPSTREAM's normalized mid-block space
+    (post_attention_layernorm output == the MLP's input == upstream all_pre_mlp_hidden
+    _states) at the primary positions, to check the Bombness result is not specific to
+    our raw-residual space choice (D1). Hooks `layer.post_attention_layernorm` exactly as
+    the upstream demo does. Returns (acts [n, L, P, H], kept, posmeta). One forward pass
+    per item, batch 1 (no padding), single-example resolution -> no B9 position drift."""
+    import torch
+    layers = dc._get_layers(lm.model)
+    n_layers = len(layers)
+    by_id = {str(e["example_id"]): e for e in corpus["examples"]}
+    blocks, kept, posmeta, dropped = [], [], [], []
+    for it in items:
+        ex = by_id[it.example_id]
+        text = _templated_prompt(lm, ex, it.prompt_field)
+        pos = pc.resolve_positions(lm, text, it.codeword)
+        idxs = [pos.codeword_last, pos.final_prompt]
+        if any(p is None or not (0 <= p) for p in idxs):
+            dropped.append((it.example_id, it.condition)); continue
+        buf = {}
+        handles = []
+
+        def mk(li):
+            def h(mod, inp, out):
+                buf[li] = out.detach()[0].float().cpu()  # [seq, H]
+            return h
+        for li, layer in enumerate(layers):
+            handles.append(layer.post_attention_layernorm.register_forward_hook(mk(li)))
+        try:
+            with torch.no_grad():
+                tok = lm.tokenizer(text, return_tensors="pt",
+                                   add_special_tokens=False).to(lm.model.device)
+                lm.model(**tok)
+        finally:
+            for hh in handles:
+                hh.remove()
+        # [L, P, H] at [codeword_last, final_prompt]
+        blk = np.stack([buf[li].numpy()[idxs, :] for li in range(n_layers)], axis=0)
+        blocks.append(blk.astype(np.float32)); kept.append(it)
+        posmeta.append({"codeword_last_idx": int(pos.codeword_last),
+                        "seq_len": int(pos.final_prompt) + 1})
+    if dropped:
+        print(f"[extract_norm_mid] dropped {len(dropped)} (first {dropped[:3]})")
+    acts = np.stack(blocks, axis=0) if blocks else np.empty((0,))
+    return acts, kept, posmeta
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--corpus", default=os.path.join(
@@ -155,6 +202,9 @@ def main():
     ap.add_argument("--model", default=dc.PRIMARY_MODEL)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--revision", default=None, help="pin the HF revision (recorded)")
+    ap.add_argument("--space", default="resid_post", choices=["resid_post", "norm_mid"],
+                    help="resid_post = raw post-block residual (D1, default); norm_mid = "
+                         "upstream's normalized mid-block (post_attention_layernorm) robustness arm")
     ap.add_argument("--quantize", default=None, choices=[None, "8bit", "4bit"],
                     help="bnb quantization for large models (e.g. Qwen3-14B); acceptable "
                          "for reading activations. Recorded in RUNMETA.")
@@ -177,7 +227,8 @@ def main():
     print(f"[preflight] {n_pre} doublespeak + {n_other} benign/neutral positions resolved "
           f"(hard check passed); corpus-span match rate {span_rate} (soft, B19)")
 
-    acts, kept, posmeta = extract(lm, corpus, items)
+    acts, kept, posmeta = (extract_norm_mid(lm, corpus, items) if args.space == "norm_mid"
+                           else extract(lm, corpus, items))
     if acts.shape[0] != len(kept) or len(posmeta) != len(kept):
         raise RuntimeError("acts/items/posmeta length mismatch")
 
@@ -193,7 +244,10 @@ def main():
     meta = {
         "script": "src/probes/activation_extraction.py",
         "manifest": "configs/manifests/role_probe_sprint_v1.json",
-        "component": COMPONENT, "residual_space": "hidden_states[L+1] (D1)",
+        "component": (COMPONENT if args.space == "resid_post" else "post_attention_layernorm"),
+        "space": args.space,
+        "residual_space": ("hidden_states[L+1] (D1)" if args.space == "resid_post"
+                           else "normalized mid-block (upstream all_pre_mlp_hidden_states)"),
         "positions": list(PRIMARY_POSITIONS),
         "n_items": len(kept), "acts_shape": list(acts.shape),
         "cohort": args.cohort, "conditions": list(conds),
