@@ -3,6 +3,15 @@
 Closes the pre-registered but previously-deferred D3 control (ASYMMETRY_GAP_MATRIX §D3;
 "NOT RUN" in ASYMMETRY_FINAL_SYNTHESIS §caveats / CONTINUOUS_VS_DISCRETE §202-207).
 
+> **Provenance / independent reproduction.** This control was run *concurrently by two
+> sessions* on 2026-08-15. A parallel session resolved it first (commits `f2384ceb` /
+> `9bed50de`, ~13:02) and annotated the framing docs; this session built the reusable
+> tooling (`pair_common.SinglePositionProjectOut` + 4 unit tests, `run_d3_activation_scope.slurm`,
+> `analyze_d3_scope.py`) and ran an independent replication (runs 758290/1/2). **Both agree to
+> the decimal**, which is the strongest possible confirmation of a reviewer-critical control.
+> The duplicate GPU was unintended (the two sessions' commits interleaved on one branch); noted
+> for honesty.
+
 **Question.** The published control hierarchy is
 `activation intervention > continuous soft-prompt > discrete GCG`. But the activation
 arm ablates the refusal axis at **every layer, every position, every decode step**

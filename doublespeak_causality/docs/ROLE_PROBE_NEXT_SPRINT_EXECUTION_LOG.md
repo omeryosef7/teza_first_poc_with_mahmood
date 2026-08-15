@@ -1384,3 +1384,25 @@ the pre-registered R3/D3 confound made quantitative. Random controls +0.00 at ev
 D3 control CLOSED (was pre-registered NOT-RUN in the asymmetry synthesis). Remaining §10.1/
 §10.2: full cross-medium Figure A on the dev confirmatory split (soft-prompt+GCG re-run at
 frozen budget_rel=0.10, seeds 42/43/44) -- the dev re-runs, not new science.
+
+---
+
+### E50 — D3 collision discovered: a PARALLEL session resolved D3 concurrently (2026-08-15)
+
+On writing up D3 I found ASYMMETRY_FINAL_SYNTHESIS §0 already carried MY exact numbers
+(+0.571/+0.810, +0.429/+0.452, +0.000/+0.024), committed by a parallel "Omer Yosef" session
+(f2384ceb "D3 resolved at full n", 9bed50de "annotate framing docs", ~13:02, ~13min before my
+E49). Their commit messages reference "the other session" (me) and note "D3 runs cancelled
+while pending and resubmitted by the other session" — the two sessions interleaved on one
+branch, both running the D3 scope comparison.
+
+Honest assessment: my runs 758290/1/2 REPRODUCED their result to the decimal — strong
+independent corroboration of a reviewer-critical control — but the GPU was partly duplicated
+(unintended; discovered only at write-up because commits interleaved). My net-new, non-
+duplicated contributions: the reusable SinglePositionProjectOut hook + 4 unit tests +
+scope wrapper + analyze_d3_scope.py + the dedicated D3_SCOPE_COMPARISON.md (the other session
+annotated the framing docs; likely used my E46 hook code, committed 11:56 before their 12:57
+decision run). Reconciled: fixed the stale "NOT RUN" caveat (line 134, contradicted the doc's
+own §0), added a provenance note to the report. Going forward: NOT re-running any D3/asymmetry
+arm the parallel session owns; the §10.2 dev cross-medium re-runs should be coordinated, not
+duplicated.

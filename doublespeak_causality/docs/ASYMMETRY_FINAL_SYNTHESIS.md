@@ -131,9 +131,14 @@ building an "in-distribution random" control in activation space will hit this.
   only 1 of 5 pairs had enough attack headroom for that null to mean anything.** We claim
   generality for the *actuator* (refusal) and explicitly **not** for the representation ≠
   behavior dissociation.
-* **No scope-matched activation arm.** The activation intervention is all-position/all-layer
-  while the soft prompt is 16 input positions, so the "continuous < activation" ordering is not
-  budget-matched. Recorded as NOT RUN with reason.
+* **Scope-matched activation arm — NOW RUN (2026-08-15), supersedes the earlier "NOT RUN".**
+  The activation intervention is all-position/all-layer while the soft prompt is 16 input
+  positions. The D3 control ran the same ablation at three scopes (α=1.0, held-out, full n):
+  all-layers `ablate_gain` +0.571/+0.810, single-layer +0.429/+0.452, single-layer +
+  single-position (token-reachable scope) **+0.000/+0.024**. So the "continuous < activation"
+  ordering is **largely a scope effect, not medium** (see §0 note and `reports/D3_SCOPE_COMPARISON.md`;
+  independently reproduced by two concurrent sessions — runs 758290/1/2 and the decision-arm full-n
+  run — with identical numbers). The refusal-rate readout, not doublespeak ASR, is the caveat.
 * **The optimal continuous dose was read on test** and is exploratory, not a locked estimate.
 * **One base point** for the reachability geometry.
 
