@@ -10435,3 +10435,4 @@ qualifications.** §20.6/§20.9 blocked.
 ### 16:15 — idle. Queue empty, no new artifacts, no new commits from either session. Diff unchanged.
 ### 16:45 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 17:15 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
+### 17:45 — idle. Queue: 1 role-probe job PENDING (`probe_extract` 758955, just submitted — well inside the 30 min rule, and theirs). No new asymmetry artifacts. Their `dbb45667` records the mechanism-derived attack objective as a by-design negative, consistent with §20.5's floor result; no conflict with §20's record. Diff unchanged.
