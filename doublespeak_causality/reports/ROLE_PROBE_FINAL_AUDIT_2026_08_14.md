@@ -76,7 +76,9 @@ cross-model) is now audit-covered.
 - Single dose/band/seed for the clearharm Phase 4; the sufficiency dose was calibrated
   on-manifold (§8.2).
 - Refusal direction fit cross-distribution (B17); disclosed.
-- Cross-model (Phi/Qwen) not run.
+- Cross-model (Phi/Qwen): representation + behavioral-epiphenomenality arms **are** run and
+  raw-audited (§1b); the Phi refusal-lever reads at the base-refusal floor (0.048), so its
+  behavioral *lever* magnitude is model-limited, not the mechanism — stated in the synthesis.
 
 ## 4. Verdict
 

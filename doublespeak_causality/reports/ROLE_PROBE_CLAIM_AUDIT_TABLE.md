@@ -83,7 +83,11 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 
 ## Known limitations (carried into the synthesis)
 
-- **Single cohort** (clearharm) for Gates 1/3/4; generated-cohort replication not yet run.
+- **Headline cohort is clearharm** for Gates 1/3/4. The generated cohort **is** run as a
+  held-out replication (rows CC1–CC5): Gate 1 and the epiphenomenal half replicate cleanly
+  (CC1/CC2), the refusal *causal* lever replicates (CC5), but the refusal *predictor* is
+  transfer-limited (CC3) and the generated Bombness-causal run is INCONCLUSIVE (CC4, manip
+  check failed). So "single cohort" applies to the *predictive* Gate 3, not to Gate 1.
 - **Single dose/band/seed** for Phase 4 (α=1 full ablation, band L8-18); manipulation
   check confirms a strong ablation, but a dose/band/seed sweep would harden the null.
 - **n=42 holdout** for behavioral claims (base ASR ~0.24). Nulls are stated as bounds

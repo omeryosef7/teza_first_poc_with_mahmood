@@ -1092,3 +1092,26 @@ residual-space choice** — it holds in upstream's own space too. This validates
 for steerability) and pre-empts the "cherry-picked the space" question; full-circle to §2A.
 BOMBNESS_PROBE_VALIDATION §6b + synthesis updated. Registered 758099. The last
 clearly-in-scope autonomous item is complete.
+
+---
+
+### E35 — cross-deliverable consistency audit: fixed two stale self-contradictions (2026-08-15)
+
+Ran a programmatic headline-number + stale-phrasing scan across all role-probe
+`reports/*.md` + docs (scalar-only, no GPU, no generation text). The headline numbers
+(0.997 / 0.994 / 0.985 / 0.999 / −0.048 / 0.357 / 0.238 / 0.333) are consistent across
+files. The scan caught **two genuine doc-drift contradictions** (E33-class), both now fixed:
+
+1. `ROLE_PROBE_FINAL_AUDIT_2026_08_14.md` §3 said "Cross-model (Phi/Qwen) not run," but
+   §1b of the SAME file (appended 2026-08-15) recomputes the Phi/Qwen numbers from raw and
+   §1's checklist covers them. The limitation line was stale from before §1b was appended.
+   → rewritten to state Phi/Qwen representation+epiphenomenality arms ARE run and audited,
+   with the Phi refusal-lever floor (0.048) as the true, disclosed boundary.
+2. `ROLE_PROBE_CLAIM_AUDIT_TABLE.md` "Known limitations" said "generated-cohort replication
+   not yet run," but rows CC1–CC5 in the SAME table report that replication in detail
+   (Gate 1 + epiphenomenality replicate; refusal causal replicates; predictor transfer-
+   limited; Bombness-causal inconclusive). → rewritten to say "single cohort" applies to
+   the *predictive* Gate 3 only, not Gate 1, cross-referencing CC1–CC5.
+
+No numeric claim changed; both edits only correct stale prose that contradicted the file's
+own body. This is the "self code-review for bugs" arm — found and fixed, no new GPU spent.
