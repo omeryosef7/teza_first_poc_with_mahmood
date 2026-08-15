@@ -1216,3 +1216,25 @@ non-orthogonal axes (cos 0.3) that fails under the old math and passes now.
 8/8 Phase-5 tests pass. Real artifact built (170 ex, band 8-21, frac_bomb 0.22→0.13,
 consistent with E36). The GPU generation-loop change (add ±arm_i keyed per example) is the
 only remaining piece and stays GPU + greenlight gated. No GPU spent; no generation.
+
+---
+
+### E41 — Phase 5 per-example patch-spec builder (pure, tested, zero-GPU) (2026-08-15)
+
+Added src/probes/phase5_patch_spec.py — the B9-critical piece isolated from torch so it
+is fully unit-testable: maps a corpus example to the RIGHT row of the per-example vector
+artifact (lookup by example_id, never by enumeration index) and emits the per-layer patch
+spec {layer, vector, mode:add, alpha:±1}. Sign convention: -1 subtract (necessity, base
+doublespeak), +1 add (sufficiency, base donor). Pre-scaled per-example vectors keep the
+dose on-manifold (§8.2) with no gap rescale.
+
+6 new tests (row-by-id not position; missing-id guard raises; sign/arm/layer encoding;
+band filtering; invalid arm/sign; spec_norm). Full Phase-5 suite: 14/14 pass.
+
+End-to-end on the REAL artifact (comp_clearharm_benign): full |spec|=31.5, bomb=8.2,
+refusal=0.68 (near-null — codeword-Δh has ~no refusal component, consistent E36/E37),
+remainder=30.4 (dominant), random=8.2 (norm-matched to bomb); spec additivity holds.
+
+Only the GPU generation wrapper remains (consume spec → dc.LayerPatch → generate → judge,
+reusing the phase4 path). Deliberately NOT written un-smoked: it will be built + smoked +
+launched together on greenlight. No GPU spent; no generation.
