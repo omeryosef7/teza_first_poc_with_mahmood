@@ -1564,3 +1564,25 @@ ALL conditions (7 records had the codeword missing from neutral_prompt). Two fix
 Rebuild: 399 records (train 230/dev 81/test 88), 0 locatability failures, split discipline
 PASS, leakage-0. CPU pre-checks now cover all 3 crash classes (schema/discipline/locatability)
 -> no more GPU round-trips for these. Relaunching extraction. 5th bug caught by executing.
+
+---
+
+### E59 — Phase 10 §14.3: advbench Gate1 (decodable but position-confounded); directions built; Phase4 launched (2026-08-15)
+
+Extraction 758606 DONE: acts (1197,32,2,4096), 399 balanced triples. Gate 1:
+- holdout AUC **0.982** (codeword) / **1.000** (decision) -> Bombness DECODES strongly on the
+  second corpus (decodability replicates).
+- BUT verdict FAIL: controls not near chance -- position_only 0.785, length_only 0.752
+  (label_shuffle 0.54, random_dir 0.42, token_id 0.50). Controls are IDENTICAL across readout
+  positions -> the confound is a PROPERTY OF THE CORPUS: doublespeak vs benign demo blocks
+  differ in token length (mean prompt 1075 vs 1070 but codeword absolute position differs),
+  so codeword-position + length correlate with the label. clearharm length-matched its demos
+  (position_only 0.557); my AdvBench builder did not. HONEST LIMITATION: the second-corpus
+  PROBE is position/length-confounded; a clean second-corpus probe needs demo-length-matching
+  (future builder work). The probe (0.982) still far exceeds the confound (0.785) so real
+  Bombness signal is present, but the clean-control criterion is not met.
+
+Proceeding to the BEHAVIORAL replication (the actual §14.3 external-validity goal): the
+REFUSAL-lever result is confound-robust (independent of the Bombness probe). Built
+v_bomb_advbench directions (14 layers, cos_vs_refusal 0.06-0.20, ⊥ refusal as on clearharm).
+Launching Phase4 FACTORIAL+refusal on advbench test (n=88, ~2x clearharm power).
