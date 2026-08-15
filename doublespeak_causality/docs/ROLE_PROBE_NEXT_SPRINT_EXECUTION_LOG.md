@@ -1196,3 +1196,23 @@ which needs a new per-example-keyed patch capability + GPU. Documented this in t
 we don't burn GPU re-deriving the Phase-4 null. This is the "self code-review prevents a
 wasted experiment" outcome. Per-example harness build deferred to greenlight (will
 CPU-unit-test the vector construction before any GPU).
+
+---
+
+### E40 — Phase 5 per-example patch-vector construction + tests (zero-GPU) (2026-08-15)
+
+Built src/probes/build_phase5_perexample.py — the NON-redundant Phase-5 input (E39):
+per-example, per-band decomposition of each example's donor shift Δhᵢ into arms
+{full, bomb, refusal, remainder, random(norm-matched)} at the codeword position, saved
+as a tensor artifact keyed by example_id for a future per-example-keyed GPU patch harness.
+
+Self-review caught a real BUG before it could bias results: with raw dual projection,
+bomb+refusal+remainder ≠ full because v_bomb ⟂ refusal only ~cos 0.09 (real build showed
+6e-2 additivity error). Fix: orthogonalise refusal against v_bomb per layer → exact
+additive orthogonal decomposition (recon rel-err 6e-17 on real data). The 'refusal' arm
+is thus refusal-⊥-bomb (documented). Added a regression test with deliberately
+non-orthogonal axes (cos 0.3) that fails under the old math and passes now.
+
+8/8 Phase-5 tests pass. Real artifact built (170 ex, band 8-21, frac_bomb 0.22→0.13,
+consistent with E36). The GPU generation-loop change (add ±arm_i keyed per example) is the
+only remaining piece and stays GPU + greenlight gated. No GPU spent; no generation.
