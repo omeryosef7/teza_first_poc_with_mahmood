@@ -68,6 +68,33 @@ reported.
    codeword, yet behaviorally epiphenomenal; refusal — which lives downstream — is
    the causal lever).
 
+## Cross-family (zero-GPU, same method on existing artifacts)
+
+Same decomposition re-run on Phi-4-mini-reasoning (extraction 758022,
+`refusal_phi/…L18`) and Qwen3-14B (758030, `refusal_qwen3/…L24`), 170 triples each,
+benign donor, codeword position. Index guard cos=1.000 every layer for both (the
+module adapted to Qwen's 40-layer stack automatically).
+
+| model | frac v_bomb L8–11 | frac v_bomb L18–22 | **frac refusal (max over bands)** | cos refusal (max) |
+| --- | --- | --- | --- | --- |
+| Llama-3.1-8B | 0.216 | 0.133 | 0.005 | 0.05 |
+| Phi-4-mini | 0.190 | 0.075 | **0.0004** | 0.009 |
+| Qwen3-14B | 0.167 | 0.253 | **0.0017** | 0.032 |
+
+**Invariant:** the refusal axis carries ~zero energy in the codeword-position donor
+shift in **all three families** (frac ≤ 0.002, cos ≤ 0.05 everywhere). The
+"refusal is written downstream, not at the codeword" geometry is family-invariant —
+the same mechanistic-invariance signature seen for the representation itself
+(§9 synthesis).
+
+**Honest nuance:** the *Bombness* share is not identical across families. In Llama
+and Phi `v_bomb`'s energy fraction **falls** with depth (0.22→0.13, 0.19→0.07),
+whereas in Qwen it **rises** (0.17→0.25). So the Bombness direction becomes a
+larger part of the shift deeper in Qwen — a genuine cross-family difference in the
+*concept* axis, on top of the invariant refusal-absence. (Bands are absolute layer
+indices; depth is not normalized across the 32- vs 40-layer stacks, so read the
+trajectory qualitatively.)
+
 ## What remains (needs GPU + explicit go-ahead)
 
 Q3/Q4 — patch each component (bomb / refusal / remainder / complement / full-donor

@@ -1148,3 +1148,22 @@ component + generate + score ΔASR) reuse the Phase-4 harness + existing corpus 
 harmful authoring) and need GPU + explicit go-ahead — NOT launched autonomously.
 Report: reports/PHASE5_DECOMPOSITION.md. Self-reviewed: QR basis, matched triples by
 example_id (170/170 complete), donor-independent selfcheck, invalid-position rejection.
+
+---
+
+### E37 — Phase 5 decomposition extended cross-family (zero-GPU) (2026-08-15)
+
+Re-ran phase5_decompose on Phi (758022, refusal_phi L18) and Qwen (758030, refusal_qwen3
+L24), 170 triples each, benign donor, codeword position. Index guard cos=1.000 every layer
+both (module auto-adapted to Qwen's 40-layer stack).
+
+- **Refusal axis ~absent from the codeword shift in ALL 3 families**: frac_refusal
+  Llama ≤0.005 / Phi ≤0.0004 / Qwen ≤0.0017; cos ≤0.05 everywhere. The
+  "refusal is downstream, not written at the codeword" geometry is family-invariant —
+  same mechanistic-invariance signature as the representation itself.
+- **Honest cross-family nuance on the Bombness axis**: v_bomb energy share FALLS with
+  depth in Llama/Phi (0.22→0.13, 0.19→0.07) but RISES in Qwen (0.17→0.25). Reported as a
+  genuine difference, not smoothed over. Bands are absolute layer indices (32 vs 40-layer
+  stacks), so trajectory is qualitative.
+Report §"Cross-family" updated. Still representation-energy only; Q3/Q4 behavioral remain
+GPU-gated + go-ahead-gated.
