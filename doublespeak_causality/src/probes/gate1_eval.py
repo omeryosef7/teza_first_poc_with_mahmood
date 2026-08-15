@@ -52,13 +52,20 @@ def _labelled_mask(items):
     return np.array([it.get("label") in (0, 1) for it in items])
 
 
-def select_layer_on_dev(items, acts, position, Cs=cip.DEFAULT_CS):
-    """Fit each layer on TRAIN, score on DEV; return the layer with best dev AUC and its C."""
+def select_layer_on_dev(items, acts, position, Cs=cip.DEFAULT_CS, exclude_codeword=None):
+    """Fit each layer on TRAIN, score on DEV; return the layer with best dev AUC and its C.
+    exclude_codeword removes that codeword from BOTH train and dev during selection — used
+    so the CARROT transfer estimate is measured at a layer/C chosen without carrot (no
+    leakage of the transfer target into model selection)."""
     pos_ix = POSITIONS.index(position)
     lab = _labelled_mask(items)
     split = np.array([it.get("split") for it in items])
+    cw = np.array([str(it.get("codeword", "")).lower() for it in items])
     tr_m = lab & (split == "train")
     dv_m = lab & (split == "dev")
+    if exclude_codeword is not None:
+        tr_m = tr_m & (cw != exclude_codeword)
+        dv_m = dv_m & (cw != exclude_codeword)
     _, Xtr, ytr, _ = _subset(items, acts, pos_ix, tr_m)
     _, Xdv, ydv, gdv = _subset(items, acts, pos_ix, dv_m)
     if len(np.unique(ytr)) < 2 or len(np.unique(ydv)) < 2:
@@ -98,15 +105,25 @@ def evaluate(items, acts, run_meta=None, position="codeword_last",
     carrot_m = lab & (cw == CARROT)
     transfer = None
     if carrot_m.sum() >= 4:
+        # select layer/C on a CARROT-FREE dev subset so carrot never influences the
+        # layer at which its own transfer is measured (no selection leakage of the
+        # transfer target). Falls back to the primary layer/C if carrot-free selection
+        # is degenerate (e.g. dev has no non-carrot both-class rows).
+        try:
+            sel_nc = select_layer_on_dev(items, acts, position, exclude_codeword=CARROT)
+            layer_t, C_t = sel_nc["layer"], sel_nc["C"]
+        except ValueError:
+            layer_t, C_t = layer, C
         tr_nc = tr_m & (cw != CARROT)  # train already excludes carrot (carrot is dev), but be explicit
         # fit on all non-carrot labelled train, eval on carrot items
         _, Xtrn, ytrn, _ = _subset(items, acts, pos_ix, tr_nc)
         _, Xca, yca, gca = _subset(items, acts, pos_ix, carrot_m)
         if len(np.unique(ytrn)) == 2 and len(np.unique(yca)) == 2:
-            clf_nc = cip.fit_logreg(Xtrn[:, layer, :], ytrn, C)
-            ca_scores = clf_nc.decision_function(Xca[:, layer, :])
+            clf_nc = cip.fit_logreg(Xtrn[:, layer_t, :], ytrn, C_t)
+            ca_scores = clf_nc.decision_function(Xca[:, layer_t, :])
             transfer = {"carrot_auc": float(cip.roc_auc_score(yca, ca_scores)),
-                        "n_carrot_examples": int(len(np.unique(gca)))}
+                        "n_carrot_examples": int(len(np.unique(gca))),
+                        "selected_layer_carrot_free": int(layer_t)}
 
     # --- controls at the selected (layer, position) ---
     # Both stochastic controls are AVERAGED over 10 seeds: a single label permutation

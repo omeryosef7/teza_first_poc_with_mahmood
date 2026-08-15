@@ -83,7 +83,9 @@ def main():
     result = {"family": args.family, "layer": args.layer, "rows": recs,
               "scope_desc": SCOPE_DESC, "verdict": verdict}
     if args.out:
-        os.makedirs(os.path.dirname(args.out), exist_ok=True)
+        d = os.path.dirname(args.out)
+        if d:
+            os.makedirs(d, exist_ok=True)
         json.dump(result, open(args.out, "w"), indent=2)
         print(f"\nwrote {args.out}")
 

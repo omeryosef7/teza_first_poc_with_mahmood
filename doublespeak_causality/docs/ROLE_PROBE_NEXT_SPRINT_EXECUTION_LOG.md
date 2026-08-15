@@ -1441,3 +1441,30 @@ partitioned codeword sub-pools) + source sha256 recorded. Structural smoke (--no
 clearharm. Full API build launched in background (concept extraction + paper-faithful demos,
 gpt-4o-mini, cached). Not pooled with ClearHarm (independent replication per §14.1). Harmful
 text handled in-process only, never delegated to a subagent.
+
+---
+
+### E53 — ultracode bug-sweep: 3 confirmed bugs found + fixed (2026-08-15)
+
+Workflow wpa3xrg9v (18 agents: 10 file reviewers + cross-file alignment + adversarial
+verifiers) found 7 raw findings; adversarial verify confirmed 3, rejected 4. All 3 fixed +
+tested (21/21 tests pass):
+
+1. [MEDIUM crash] analyze_d3_scope.py: os.makedirs(dirname(out)) crashed on a bare --out
+   filename (dirname=''), discarding results after all work. Fixed: guard empty dirname.
+   Verified: bare --out now writes cleanly.
+2. [MEDIUM selection-leakage] gate1_eval.py: CARROT (transfer target, lives in dev) was in
+   the dev set used to pick layer/C, so carrot_auc was optimistically biased. Fixed:
+   select_layer_on_dev gains exclude_codeword; the carrot transfer now selects layer/C on a
+   carrot-free dev subset. Primary holdout selection byte-identical (param defaults None) so
+   the headline 0.997 is unchanged; only the (n>=4) carrot-transfer path is de-biased.
+3. [LOW label] phase5_component_patch.py + phase4_bombness_intervention.py: classify()
+   returned EMPTY for a non-empty REFUSED completion when the judge errored/returned None
+   (genuine-empty is handled earlier by the caller). Fixed both: score-None -> REFUSAL if
+   refused else OTHER. ΔASR numbers unaffected (analysis binarizes score>=0.5 directly, not
+   the label), but the label semantics are now correct.
+
+The cross-file Phase-5 row-alignment check (build_phase5_perexample sorted-eids ->
+phase5_patch_spec by-id -> phase5_component_patch) returned CLEAN (no off-by-one / order
+mismatch) — the B9-critical path is verified end-to-end. Reviewers scoped to code only
+(no harmful-text data files).
