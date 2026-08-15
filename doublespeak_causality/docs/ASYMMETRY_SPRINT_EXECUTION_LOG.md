@@ -10429,3 +10429,4 @@ qualifications.** §20.6/§20.9 blocked.
 
 ---
 ### 14:15 — idle. Queue: 1 role-probe job (`phase4_bomb` 758657, 50 min). No new asymmetry artifacts, no new commits. Diff unchanged: §20 complete/traced/verified, D3 resolved, §20.8 route promising and unproven with three open qualifications.
+### 14:45 — idle. Queue empty, no new asymmetry artifacts. Their `cd00328c` ("Phase 10 §14.3 COMPLETE: Story A replicates on AdvBench at ~2x power") is role-probe scope — it uses the AdvBench corpus for their probe/behavioural replication, **not** for the asymmetry refusal-direction gate, which is untouched. §20.8's three qualifications stand. Diff otherwise unchanged.
