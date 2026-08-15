@@ -10066,3 +10066,71 @@ smoke's `valid=False`, which I read at 04:15 as "D2 showing up as a measurement"
 **No interpretation recorded. 1 of 3 arms at full n.**
 
 ---
+## 2026-08-16 06:15 — **D3 RESOLVED at full n: the activation effect is scope-dependent, and at token-reachable scope it is ZERO.**
+
+*(Wall clock 10:10 UTC.)* 758290 and 758291 COMPLETED. All three arms now at **VALN=0, 260 raw rows
+each**, same held-out split, same α=1.0, nothing selected on eval. Headers verified on all three.
+
+`ablate_gain = refusal_rate(base) − refusal_rate(ablated)`, harmful-set baseline refusal **0.881**:
+
+| scope | existing | clearharm |
+|---|---|---|
+| **all_layers** (published Arditi config) | **+0.571** | **+0.810** |
+| **single_layer** (L18, all positions/steps) | +0.429 | +0.452 |
+| **decision** (L18, decision position, prefill only) | **+0.000** | **+0.024** |
+
+*(`sep_ho`, `induce` and `a_ind` are byte-identical across all three arms — in this harness `SCOPE`
+gates only the ablation path. Induce is therefore **not** informative about scope here, and the
+04:15 smoke reading that leaned on it was wrong twice over.)*
+
+### The pre-registered branch that fired
+The rule fixed at 04:45, before the data: *"If `all_layers` ablate is materially > 0 while
+`decision` ablate ≈ 0, scope explains a large part of the activation-vs-token gap and §20's framing
+needs revisiting."* **That is what happened** — 0.571/0.810 against 0.000/0.024.
+
+**D3 is confirmed as a first-order confound, not a caveat.** The Phase-0 gap matrix called it *"a
+first-class alternative to H1–H5"*; it now has the numbers.
+
+### Where the effect actually dies — the layer restriction is cheap, the position restriction is total
+Reading the ladder rather than just its ends:
+
+* all-layers → **single layer**: 0.571 → 0.429 and 0.810 → 0.452. Costs 25 % and 44 % — real, but
+  most of the effect survives on **one layer**.
+* single-layer → **decision position**: 0.452 → **0.024**. Near-total collapse.
+
+So it is **not** "one layer is too little". It is **one position is too little** — and one position
+is precisely what the GCG objective touches. The sprint's framing has been carrying "activation-
+space causal but token-space unreachable" as a medium difference (continuous vs discrete). A large
+part of it is a **positional-scope** difference that has nothing to do with medium: at the scope the
+token attack can reach, the *activation* intervention is also inert.
+
+### What this does and does not overturn
+**Does not:** the token-space negatives themselves (§7.5, §20.5, §20.7) stand — those are
+measurements, unaffected. Nor does it revive the mechanism objective: §20.5's floor already showed
+those suffixes do not beat random tokens.
+
+**Does:** the *explanation*. §20's synthesis and the final-synthesis §0 puzzle ("causal in
+activation space, yet GCG toward the same direction failed") now have a mundane and well-supported
+competing account for a large share of the gap. That needs writing up before either document is
+read as settled.
+
+**Scope of the claim, stated:** this is the **direction-validation** endpoint (refusal rate on
+harmful/harmless probe sets), not the doublespeak ASR endpoint the GCG arms use. It shows the
+activation intervention is scope-dependent on *its own* endpoint. Carrying it across to ASR is an
+inference, not a measurement.
+
+**Provenance:** these are the other session's runs (Phase 6 / E47–E48) and their analyzer
+(`21ff7fee`) will score the comparison formally. Recorded here because D3 originates in **this**
+sprint's gap matrix (row R3) and the result bears on this sprint's central claim — the formal
+write-up is theirs.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. **D3 watch item: 3 of 3 arms at full n — CLOSED as a
+result, OPEN as a write-up.** Owed list gains a sixth item: **reconcile the asymmetry framing with
+D3** in `SECTION20_RESULTS.md` and `ASYMMETRY_FINAL_SYNTHESIS.md`. That is a substantive editorial
+change to a headline claim, not a maintenance annotation — **flagged, not taken.**
+
+### SLURM
+Queue empty. Nothing PENDING, nothing of mine to launch.
+
+---
