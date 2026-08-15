@@ -9883,3 +9883,48 @@ one line each unless something actually changes.
 ### 02:15 — idle. Queue empty. No asymmetry artifacts, no diff change.
 ### 02:45 — idle. Queue: 2 role-probe `phase5_comp` jobs, no asymmetry work. No artifacts, no diff change.
 ### 03:15 — idle. Queue empty. No asymmetry artifacts, no diff change.
+## 2026-08-16 03:45 — **the D3 confound is being tested — by the other sprint.** First asymmetry-relevant activity in many ticks.
+
+*(Wall clock 09:00 UTC.)* Queue holds one job, **758209 `d3_actscope`**, and unlike every
+`phase4_bomb` / `phase5_comp` / `probe_extract` of the last several ticks, **this one is ours.**
+
+`slurm_scripts/run_d3_activation_scope.slurm` opens:
+`# ASYMMETRY / D3 — intervention-scope-matched activation control (gap-matrix §D3)`.
+
+It is the control for **R3/D3**, the third position defect this sprint's Phase-0 gap matrix
+recorded as *"NEW (not a bug — a confound) … 'activation-space causal but token-space unreachable'
+is partly 'all-position/all-layer vs one-position/one-layer'. Must be controlled … and is a
+first-class alternative to H1–H5."* Design: the same refusal-direction ablation at three scopes on
+the **held-out** split, α fixed at 1.0, nothing selected on eval —
+
+* `all_layers` — Arditi ablation (every layer, position, step)
+* `single_layer` — one layer, all positions/steps
+* `decision` — one layer, decision position only, prefill only ← **the D3 control**
+
+### Amending my 16:45 disambiguation
+At 16:45 I recorded that the two §20s are disjoint programmes and their commit touched none of my
+files. **The first half of that is now too strong.** The role-probe sprint's Phase 6
+(`D3_SCOPE_MATCHED`, named in their §20 deliverables as an unrun phase) **executes a control the
+asymmetry gap matrix specified.** The documents are still separate; the *science* overlaps at
+exactly this point.
+
+**Why it matters here:** D3 is a first-class alternative explanation for the asymmetry this whole
+sprint is named after. If `decision`-scope ablation reproduces the `all_layers` behavioural effect,
+the activation-vs-token gap is not about scope and H1–H5 survive. If it collapses toward the token
+arm, then a large part of "activation-causal but token-unreachable" was **scope mismatch all along**
+— and §20's framing, and the synthesis's §0 puzzle, would need revisiting.
+
+**Not touching their job**, and not pre-registering a reading on their behalf — it is their
+experiment and their call how to score it. Recorded so that when it lands, whoever picks up the
+asymmetry sprint knows the result bears directly on its central claim rather than on a neighbouring
+programme's.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete, traced, verified. Owed list unchanged (five decisions, no jobs) —
+**plus, newly, a watch item: the D3 scope result**, which is compute someone else is already
+running.
+
+### SLURM
+1 job, not mine to manage. Nothing PENDING on the asymmetry side, nothing to launch.
+
+---
