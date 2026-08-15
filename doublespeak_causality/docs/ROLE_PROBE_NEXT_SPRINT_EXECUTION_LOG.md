@@ -1616,3 +1616,24 @@ epiphenomenal; power; probe-confound disclosed). Updated synthesis §12/13: move
 from "not established" to "now established" (external validity achieved); the residual open
 items are a length-matched second corpus (clean probe) + the deferred AdvBench dual-probe.
 Phase 10 fully integrated into the paper-facing deliverables.
+
+---
+
+### E62 — Deliverable-completeness check: role-probe plan SUBSTANTIVELY COMPLETE (2026-08-15)
+
+Verified every §20-required report exists (content-complete; some names differ from the
+plan's canonical spelling but the plan permits that):
+  BOMBNESS_PROBE_VALIDATION, DUAL_STATE_PREDICTION, BOMBNESS_CAUSAL_INTERVENTION,
+  BOMBNESS_REFUSAL_FACTORIAL, PHASE5_DECOMPOSITION+PHASE5_BEHAVIORAL (=component patching),
+  D3_SCOPE_COMPARISON (=scope-matched control), PHI_CONCEPT_COMPLETION, PHASE10_REPLICATION,
+  ROLE_PROBE_FINAL_AUDIT, ROLE_PROBE_CLAIM_AUDIT_TABLE. Plus the 13-section synthesis
+  (ROLE_CONFUSION_DOUBLESPEAK_CAUSAL_SYNTHESIS), EXPERIMENT_REGISTRY, this log, BUG log.
+
+Plan status: Gates 0-4, Phases 1-8, Phase 5, Phase 6/D3, Phase 7/8 cross-model, Phase 10
+second corpus -- ALL DONE and audited. Phase 9 (§13) = documented Story-A negative (do NOT
+optimize Bombness). Phase 11 (§15) = asymmetry/Section-20 thread owned by the parallel session.
+REMAINING (optional polish): §17 Figures 1-4 (only refusal_trajectory.png exists); a
+length-matched second corpus for a clean AdvBench probe; the deferred AdvBench dual-probe.
+
+Session bug-hunt total: 13 real bugs found+fixed (7 from 2 adversarial review workflows +
+6 from executing the Phase-10 pipeline), 25 unit tests green.
