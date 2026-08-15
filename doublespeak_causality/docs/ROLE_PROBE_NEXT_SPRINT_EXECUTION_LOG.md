@@ -1329,3 +1329,21 @@ Wired scope="decision" into validate_refusal_directions.ablate_ctx + --ablate-sc
 4 GPU-free hook tests pass (projects only at decision pos; no-op on cached decode; tuple/bare
 forms; alpha scaling). Harness compiles. Next: run all three scopes (all_layers / single_layer
 L18 / decision L18) on the confirmatory dev split for the D3 medium-vs-scope comparison.
+
+---
+
+### E47 — Phase 6/D3: smoke validated; 3 full activation-scope runs launched (2026-08-15)
+
+Smoke 758209 (decision, n=4) validated the pipeline end-to-end: raw.jsonl/summary/results.csv
+written, decision hook fires without crash, refusal rates compute. Early signal: existing L18
+decision-scope ablate=+0.000 (no refusal reduction at n=4) — consistent with the hook being
+correct (4 unit tests pass) and single-position ablation being too weak to flip robust
+refusal, which is the D3 hypothesis.
+
+Launched 3 FULL scope runs on held-out test (VALN=0, all items), L40S:
+  758248 all_layers   (Arditi: every layer/position/step)
+  758249 single_layer (L18, all positions)
+  758250 decision     (L18, decision position only, prefill only)  <- D3 control
+D3 question: does the activation refusal-reduction collapse as scope narrows toward the
+token attack's one-layer/one-position budget? If yes, the "activation >> tokens" hierarchy
+is substantially a SCOPE artifact, not the medium. Results pending.
