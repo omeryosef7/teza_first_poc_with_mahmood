@@ -83,12 +83,39 @@ For a ΔASR = 0.10 effect at 80% power, ~**n=305** is required — even n=88 can
 zero". The second corpus roughly doubles power (n=88 vs 42) and is decisive for the
 refusal-magnitude effect, which is the point of Phase 10.
 
-## Not run (honestly bounded)
+## Result 4 — Dual-probe prediction (§14.3 item 5): dissociation replicates (clean v2)
 
-- **Dual-probe prediction (§14.3 item 5)** on AdvBench: needs behavioral outcomes on the
-  TRAIN split (Phase 4 generated only the test split), i.e. a further base-generation GPU
-  run; and the Bombness predictor is confounded by Result 1, so its predictive value would
-  be muddied. Deferred rather than report a confounded predictor.
+On the length-matched v2 extraction, with base outcomes generated on both train (n=230) and
+test (n=88) splits (runs 758963/758964), a probe fit on train and evaluated on the test
+holdout predicts base jailbreak success:
+
+| predictor | holdout AUC (n=88) | reading |
+| --- | --- | --- |
+| **Bombness** (concept state) | **0.489** | chance — the concept representation does NOT predict behavior |
+| **Refusalness** (refusal state) | **0.862** | strong — the refusal state predicts jailbreak success |
+
+The **prediction dissociation replicates on the independent corpus with a clean, confound-free
+probe** (v2 Gate 1 PASS): Refusalness carries the behavioral signal (AUC 0.86) while Bombness
+is at chance (0.49). This mirrors the ClearHarm Phase-3 result (Bombness non-predictive,
+Refusalness predictive) and completes the Story-A picture on the second corpus — Bombness
+neither predicts (Result 4) nor causally controls (Result 2) behavior, while refusal does both.
+
+## v2 behavioral re-confirmation (clean corpus)
+
+Re-running Phase 4 on the length-matched v2 test split (758963, base ASR 0.159) reproduces
+Result 2 and, with the clean corpus, gives an even tighter Bombness null:
+
+| effect | v2 estimate | 95% CI |
+| --- | --- | --- |
+| refusal necessity ΔASR | **+0.352** (McNemar p=0.0) | — |
+| 2×2 main effect refusal | **+0.335** | [0.239, 0.438] |
+| 2×2 main effect Bombness | +0.017 | **[−0.023, +0.057]** (now includes 0) |
+| bomb vs random | +0.023 (p=0.69) | — |
+
+## Not run
+
+Nothing material remains for Phase 10 — Gate 1 (clean, v2), behavioral (v1 + v2 test),
+2×2, power, and dual-probe are all complete.
 - A **length-matched** second corpus (clean Gate 1) — the builder fix for Result 1.
 
 ## Verdict

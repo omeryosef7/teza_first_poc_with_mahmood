@@ -97,8 +97,9 @@ def _fit_eval(feats_tr, y_tr, feats_ev, y_ev, Cs=(1e-3, 1e-2, 1e-1, 1e0, 1e1),
     (auc, logloss, coef, intercept, C). Sign is handled by the fitted coefficients."""
     sc = StandardScaler().fit(feats_tr)
     Xtr, Xev = sc.transform(feats_tr), sc.transform(feats_ev)
-    Xdev = sc.transform(feats_dev) if feats_dev is not None else Xev
-    ydev = y_dev if y_dev is not None else y_ev
+    have_dev = feats_dev is not None and len(feats_dev) > 0   # empty dev (no dev outcomes)
+    Xdev = sc.transform(feats_dev) if have_dev else Xev        # -> select C on the eval set
+    ydev = y_dev if have_dev else y_ev
     best = None
     for C in Cs:
         m = LogisticRegression(C=C, max_iter=5000).fit(Xtr, y_tr)

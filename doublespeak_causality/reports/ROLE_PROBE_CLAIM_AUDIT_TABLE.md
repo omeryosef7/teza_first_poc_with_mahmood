@@ -90,6 +90,9 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | P10c | Second corpus roughly doubles power; refusal well-powered, Bombness null is a tight bound | `phase10_power_analysis` (§14.2) | 88 | refusal p_disc 0.36 → min-detect 0.186 (detects +0.295); bomb p_disc 0.057 (5/88 pairs); ΔASR 0.10 needs n≈305 | **VERIFIED** |
 | P10d | Bombness **decodes cleanly** on the AdvBench second corpus once demos are length-matched (v2): Gate 1 PASSES with all controls at chance. The v1 confound (position/length) was a builder gap (not length-matching demos), fixed in v2 (`--equalize-demos`, position gap 22→1 tokens) | `gate1_eval` v2 (758955) vs v1 (758606) | 176 | **v2: AUC 0.9995, position_only 0.531, length_only 0.529, token-id 0.500 → PASS**; v1: AUC 0.982 but position_only 0.785 | **VERIFIED (clean)** — decodability external validity |
 
+| P10e | The **prediction dissociation replicates** on the clean second corpus: Bombness non-predictive, Refusalness predictive | `dual_state_predict` v2 (758955 + base outcomes 758963/758964) | 88 holdout | **Bombness AUC 0.489 (chance); Refusalness AUC 0.862** (fit train n=230, eval test n=88) | **VERIFIED** — Story A: Bombness neither predicts nor causes behavior |
+| P10f | v2 clean-corpus behavioral re-confirm: refusal lever strong, Bombness null even tighter | v2 test 758963 | 88 | refusal necessity +0.352 (p=0.0), 2×2 refusal +0.335 [0.24,0.44]; bomb 2×2 +0.017 [−0.023,+0.057] (CI incl. 0) | **VERIFIED** |
+
 ## E. Headline synthesis claim
 
 | # | Claim | Basis | Status |

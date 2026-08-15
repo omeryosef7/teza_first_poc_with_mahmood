@@ -1,0 +1,144 @@
+{
+  "n_total": 318,
+  "n_train": 230,
+  "n_holdout": 88,
+  "success_rate_total": 0.1918,
+  "success_rate_holdout": 0.1591,
+  "models": {
+    "A_bombness": {
+      "auc": 0.4894,
+      "log_loss": 0.4451,
+      "coef": [
+        -0.005
+      ],
+      "intercept": -1.359,
+      "C": 0.001
+    },
+    "B_refusalness": {
+      "auc": 0.862,
+      "log_loss": 0.4327,
+      "coef": [
+        -0.064
+      ],
+      "intercept": -1.361,
+      "C": 0.001
+    },
+    "C_both": {
+      "auc": 0.8687,
+      "log_loss": 0.3827,
+      "coef": [
+        0.934,
+        -4.695
+      ],
+      "intercept": -4.72,
+      "C": 10.0
+    },
+    "D_both_interaction": {
+      "auc": 0.8707,
+      "log_loss": 0.3697,
+      "coef": [
+        1.239,
+        -2.939,
+        -2.226
+      ],
+      "intercept": -4.872,
+      "C": 10.0
+    }
+  },
+  "univariate_holdout_auc": {
+    "bombness": 0.5106,
+    "refusalness": 0.862
+  },
+  "univariate_holdout_auc_ci95": {
+    "bombness": [
+      0.3289,
+      0.686
+    ],
+    "refusalness": [
+      0.7662,
+      0.9374
+    ],
+    "refusalness_minus_bombness": [
+      0.1363,
+      0.5582
+    ]
+  },
+  "quantile_success": {
+    "by_bombness": [
+      {
+        "bin": 0,
+        "n": 63,
+        "mean_val": 4.92,
+        "success": 0.175
+      },
+      {
+        "bin": 1,
+        "n": 64,
+        "mean_val": 7.39,
+        "success": 0.219
+      },
+      {
+        "bin": 2,
+        "n": 63,
+        "mean_val": 8.85,
+        "success": 0.159
+      },
+      {
+        "bin": 3,
+        "n": 64,
+        "mean_val": 10.366,
+        "success": 0.297
+      },
+      {
+        "bin": 4,
+        "n": 64,
+        "mean_val": 12.275,
+        "success": 0.109
+      }
+    ],
+    "by_refusalness": [
+      {
+        "bin": 0,
+        "n": 63,
+        "mean_val": 0.071,
+        "success": 0.667
+      },
+      {
+        "bin": 1,
+        "n": 64,
+        "mean_val": 2.066,
+        "success": 0.297
+      },
+      {
+        "bin": 2,
+        "n": 63,
+        "mean_val": 4.172,
+        "success": 0.0
+      },
+      {
+        "bin": 3,
+        "n": 64,
+        "mean_val": 5.742,
+        "success": 0.0
+      },
+      {
+        "bin": 4,
+        "n": 64,
+        "mean_val": 7.142,
+        "success": 0.0
+      }
+    ]
+  },
+  "nested_delta_auc": {
+    "refusalness_over_bombness": 0.3726,
+    "both_over_refusalness": 0.0067,
+    "interaction_over_both": 0.002
+  },
+  "provenance": {
+    "run": "outputs/probe_bombness_full_advbench_Llama-3-1-8B-Instruct_20260815_203248_758955",
+    "outcomes": "/tmp/claude-47249/v2_base_outcomes.jsonl",
+    "refusal": "outputs/stage_gcg_full/refusal_direction_llama_L18.pt",
+    "threshold": 0.5,
+    "bomb_layer": 11
+  }
+}

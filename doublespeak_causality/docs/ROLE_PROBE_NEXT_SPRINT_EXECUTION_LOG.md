@@ -1712,3 +1712,23 @@ established cleanly (not just as a bounded signal). Updated PHASE10_REPLICATION 
 (v1-vs-v2 table) + claim-table P10d (DISCLOSED LIMITATION -> VERIFIED clean). Behavioral
 results (Result 2) remain on v1 and are confound-robust regardless. One item left: the
 AdvBench dual-probe (needs v2 train+test base outcomes).
+
+---
+
+### E67 — Phase 10 dual-probe COMPLETE (dissociation replicates); Phase 10 fully done (2026-08-16)
+
+Ran the LAST item. v2 Phase-4 test 758963 + train 758964 gave base outcomes on both splits;
+combined -> dual_state_predict on the clean v2 extraction 758955:
+- **Bombness AUC 0.489 (chance)** — concept state does NOT predict jailbreak success.
+- **Refusalness AUC 0.862** — refusal state predicts success.
+The prediction dissociation REPLICATES on the independent corpus with a clean probe (mirrors
+ClearHarm Phase 3). 14th BUG fixed en route: _fit_eval crashed StandardScaler on an EMPTY dev
+set (I generated train+test outcomes, no dev) -> guard len(feats_dev)>0, fall back to eval set
+for C-selection.
+v2 test behavioral re-confirm (clean corpus): refusal necessity +0.352 (p=0.0), 2×2 refusal
++0.335 [0.24,0.44]; Bombness 2×2 main +0.017 [−0.023,+0.057] (CI now INCLUDES 0 -> even
+cleaner null than v1). Story A holds on the clean corpus.
+
+PHASE 10 FULLY COMPLETE: Gate 1 (clean v2 PASS 0.9995), behavioral (v1+v2), 2×2, power,
+dual-probe -- all §14.3 items done. Report PHASE10_REPLICATION Results 1-4 + claim-table
+P10a-f. Registry updated. Session bug total: 14 real bugs found+fixed.
