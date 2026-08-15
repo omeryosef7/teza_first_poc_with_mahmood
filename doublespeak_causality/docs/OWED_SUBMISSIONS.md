@@ -298,3 +298,13 @@ dropped that scope.
 Held-out arithmetic is unaffected (dev+test = 173; pooled ≈312). **Third remaining item added:**
 move `advbench::hack` or rebuild the split, alongside direction validation and the comparability
 decision. Their corpus, their fix — their own pipeline is what refused.
+
+### 2026-08-15 — item 2 amendment 2: AdvBench rebuilt clean, n=399
+`aba6b69b` fixed the codeword-locatability crash and rebuilt. Verified directly: **399 examples,
+230 train / 81 dev / 88 test**, and **all four leakage fields now overlap 0 — including
+`intent_cluster`**, so the `advbench::hack` straddle flagged on 2026-08-15 is gone. The
+two-integrity-failures caution is **discharged**.
+
+Held-out arithmetic updated: dev + test = **169**, pooled with ClearHarm's ≈139 → **≈308**, still
+past n=300. **Remaining: (1) direction validation on AdvBench — the only technical gate left;
+(2) the comparability decision on pooling two corpora.**

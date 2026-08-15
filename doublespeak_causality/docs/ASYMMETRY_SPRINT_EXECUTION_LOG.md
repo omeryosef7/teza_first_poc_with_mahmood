@@ -10295,3 +10295,42 @@ number I can quote today. The held-out arithmetic (≈312 pooled) still stands *
 Their corpus, their debugging cycle — not narrating further iterations unless the outcome changes
 §20's standing. Queue empty; nothing of mine.
 ### 12:15 — idle. Queue empty, no new artifacts, no new commits (other session quiet since their AdvBench failures). Diff unchanged.
+## 2026-08-16 12:45 — AdvBench corpus rebuilt clean (n=399). **Both integrity failures fixed; the `intent_cluster` straddle is gone too.**
+
+*(Wall clock 15:30 UTC.)* Their `aba6b69b` fixed the codeword-locatability crash and rebuilt.
+Re-checked the corpus directly rather than taking the commit message:
+
+| | before (417) | **now (399)** |
+|---|---|---|
+| splits | 244 / 87 / 86 | **230 train / 81 dev / 88 test** |
+| `target_concept` train∩test | 0 | 0 |
+| `normalized_concept` / `wrong_concept` | 0 | 0 |
+| **`intent_cluster` train∩test** | **1 (`advbench::hack`)** | **0** |
+
+**Both faults I logged are resolved** — the 'violet' offset-localization crash (their fix) and the
+`advbench::hack` straddle I flagged at 11:15, which the rebuild also cleared. 18 examples dropped.
+A probe extraction is running against it now (758606, 27 min in).
+
+### §20.8 assessment, restored and tightened
+The 11:45 caution ("hold the downgrade loosely, two integrity failures in a row") is **discharged**:
+the corpus now passes every leakage field I can check, on a rebuild rather than a patch.
+
+Held-out arithmetic, updated: **dev 81 + test 88 = 169**, pooled with ClearHarm's ≈139 →
+**≈308**, still past the plan's n=300 (power **0.62** vs **0.05** at n=37 against Δ=0.054).
+
+**Remaining before §20.6/§20.9 can run — back to two, both named:**
+1. **Direction validation on AdvBench** — still owed, still a short job. This is now the *only*
+   technical gate.
+2. **The comparability decision** on pooling two corpora — a plan call.
+
+Ledger amended. Recording the discharge explicitly because I raised the caution publicly two ticks
+ago; a caution that is quietly dropped when the evidence turns is worse than one never raised.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3 resolved and annotated. §20.8 downgrade **restored
+on verified ground**. §20.6/§20.9 blocked behind one job and one decision.
+
+### SLURM
+1 job, theirs. Nothing PENDING of mine, nothing to launch.
+
+---
