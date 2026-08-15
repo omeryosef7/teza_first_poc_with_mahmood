@@ -84,9 +84,11 @@ if [ "$SUFFICIENCY" = "1" ]; then EXTRA="$EXTRA --base-field neutral_prompt --in
 echo "FACTORIAL=$FACTORIAL SUFFICIENCY=$SUFFICIENCY DOSE=$DOSE"
 
 MODEL_ARG="--model $MODEL"; [ -n "$QUANTIZE" ] && MODEL_ARG="$MODEL_ARG --quantize $QUANTIZE"
-echo "MODEL=$MODEL REFUSAL_PT=$REFUSAL_PT DIRS=$DIRS"
+# CORPUS override (Phase 10 §14.3 second corpus). Default keeps clearharm_v3.
+CORPUS_ARG=""; [ -n "${CORPUS:-}" ] && CORPUS_ARG="--corpus $CORPUS"
+echo "MODEL=$MODEL REFUSAL_PT=$REFUSAL_PT DIRS=$DIRS CORPUS=${CORPUS:-<default>}"
 python scripts/phase4_bombness_intervention.py \
-    --directions "$DIRS" --refusal-pt "$REFUSAL_PT" $MODEL_ARG \
+    --directions "$DIRS" --refusal-pt "$REFUSAL_PT" $MODEL_ARG $CORPUS_ARG \
     --split test --cohort "$COHORT" --alpha "$ALPHA" \
     --out "$OUT" $EXTRA
 

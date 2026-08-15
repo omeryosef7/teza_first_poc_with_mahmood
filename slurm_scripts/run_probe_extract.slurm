@@ -70,11 +70,13 @@ LIMIT_ARG="";  [ "$MODE" = "smoke" ] && LIMIT_ARG="--limit $LIMIT"
 REV_ARG="";    [ -n "$REVISION" ] && REV_ARG="--revision $REVISION"
 SPACE_ARG=""; [ -n "${SPACE:-}" ] && SPACE_ARG="--space $SPACE"
 QUANT_ARG=""; [ -n "${QUANTIZE:-}" ] && QUANT_ARG="--quantize $QUANTIZE"
+# CORPUS override (Phase 10 §14.3: second corpus = AdvBench). Default keeps clearharm_v3.
+CORPUS_ARG=""; [ -n "${CORPUS:-}" ] && CORPUS_ARG="--corpus $CORPUS"
 
 cd "$DC"
-echo "MODEL=$MODEL"
+echo "MODEL=$MODEL CORPUS=${CORPUS:-<default clearharm_v3>}"
 python -m src.probes.activation_extraction \
-    --out "$OUT" --model "$MODEL" $COHORT_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG $QUANT_ARG $SPACE_ARG
+    --out "$OUT" --model "$MODEL" $COHORT_ARG $CORPUS_ARG --conditions "$CONDITIONS" $LIMIT_ARG $REV_ARG $QUANT_ARG $SPACE_ARG
 
 echo "[extract done] $OUT"
 
