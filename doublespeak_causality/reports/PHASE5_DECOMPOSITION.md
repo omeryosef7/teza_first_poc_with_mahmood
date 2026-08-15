@@ -1,0 +1,87 @@
+# PHASE 5 — Donor-shift energy decomposition (representational precondition)
+
+Plan §9. **Zero-GPU / zero-generation** first slice of component-restricted
+patching: before spending GPU on component patch-and-generate runs (Q3/Q4), we
+partition the donor activation shift itself and ask *how much of it even lives
+along the Bombness and refusal axes*. Computed entirely from artifacts already on
+disk (`acts.npy`, `v_bomb_clearharm.pt`, `refusal_direction_llama_L18.pt`);
+scalar-only.
+
+**Model / run:** Llama-3.1-8B-Instruct, extraction `757886`, clearharm cohort,
+`resid_post` (D1). 170 complete (doublespeak, benign, neutral) triples.
+**Method:** for each matched triple, Δh(L) = h_doublespeak(L) − h_donor(L) at the
+**codeword** position. Partition ‖Δh‖² into the component along per-layer
+`v_bomb[L]`, the component along the (fixed L18) refusal direction, and the
+orthogonal remainder. Because v_bomb ⟂ refusal only approximately (§4), the
+plane/remainder split uses an orthonormalised QR basis of span(v_bomb, refusal).
+
+**Index-alignment guard (B9 class).** The analysis recomputes the benign-donor
+diff-of-means from `acts` and checks it against stored `v_bomb`: **cos = 1.000 at
+every layer**, confirming the acts layer axis is aligned with the v_bomb keys.
+The guard also correctly *rejected* an invalid configuration — applying the
+codeword-built `v_bomb` at the `final_prompt` position (cos → 0.004–0.18), which
+is why only the `codeword_last` decomposition (where v_bomb is defined) is
+reported.
+
+## Result (codeword position, mean energy fraction per band)
+
+**Bombness contrast — donor = benign** (same codeword, harmful vs benign binding):
+
+| band | frac along v_bomb | frac along refusal | orthogonal remainder | cos(Δh, v_bomb) | cos(Δh, refusal) |
+| --- | --- | --- | --- | --- | --- |
+| concept-write L8–11 | **0.216** | 0.002 | 0.784 | +0.44 | +0.03 |
+| refusal-onset L13–18 | 0.174 | 0.005 | 0.824 | +0.40 | +0.05 |
+| decision L18–22 | 0.133 | 0.003 | 0.865 | +0.35 | +0.03 |
+
+**donor = neutral** (neutral→doublespeak shift):
+
+| band | frac along v_bomb | frac along refusal | orthogonal remainder |
+| --- | --- | --- | --- |
+| concept-write L8–11 | 0.142 | 0.003 | 0.856 |
+| refusal-onset L13–18 | 0.143 | 0.011 | 0.853 |
+| decision L18–22 | 0.098 | 0.009 | 0.897 |
+
+## Reading
+
+1. **The refusal axis carries essentially zero energy in the codeword-position
+   donor shift** (frac_refusal ≤ 0.011, cos ≤ 0.10 in every band, both donors).
+   This upgrades the §4 *direction* orthogonality (cos ≈ 0.09) to an *energy*
+   statement about the actual shift: at the codeword, the doublespeak binding is
+   installed with no measurable movement along refusal. Consistent with refusal
+   being a *downstream/decision-region* variable, not something written at the
+   codeword — exactly why refusal, not Bombness, is the behavioral lever.
+
+2. **`v_bomb` is a coherent but minority summary of the shift** — it captures
+   ~14–22 % of ‖Δh‖² at the concept-write band, falling toward the decision
+   region; ~80 % is orthogonal remainder (codeword/topic-specific content).
+   So the Bombness direction is the dominant *named* axis of the codeword shift
+   but not the bulk of it — which is why whole-Δh patching and pure `v_bomb`
+   patching are not interchangeable, and why a component decomposition (this
+   phase) is the right lens rather than another generic residual patch.
+
+3. **Q1/Q2 precondition met, honestly bounded.** Among the two named axes, the
+   Bombness component dominates the codeword-position `p_concept`-relevant shift
+   and the refusal component is absent there. This is a statement about
+   *representation energy*, **not** behavioral mediation (Q3) — that still
+   requires the GPU component-patch-and-generate runs. It is fully consistent
+   with the established headline (Bombness decodable & refusal-orthogonal at the
+   codeword, yet behaviorally epiphenomenal; refusal — which lives downstream — is
+   the causal lever).
+
+## What remains (needs GPU + explicit go-ahead)
+
+Q3/Q4 — patch each component (bomb / refusal / remainder / complement / full-donor
+/ random) into the neutral run at the candidate bands and measure ΔASR — reuse the
+existing corpus and the Phase-4 harness (no new harmful authoring). Not launched
+autonomously.
+
+## Reproduce
+
+```
+python -m src.probes.phase5_decompose \
+  --run outputs/probe_bombness_full_clearharm_20260814_150624_757886 \
+  --v-bomb outputs/phase4_directions/v_bomb_clearharm.pt \
+  --refusal outputs/stage_gcg_full/refusal_direction_llama_L18.pt \
+  --donor benign --position codeword_last     # and --donor neutral
+```
+Outputs: `phase5_decompose_{benign,neutral}_codeword_last.json` in the run dir.

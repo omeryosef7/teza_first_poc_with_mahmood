@@ -1115,3 +1115,36 @@ files. The scan caught **two genuine doc-drift contradictions** (E33-class), bot
 
 No numeric claim changed; both edits only correct stale prose that contradicted the file's
 own body. This is the "self code-review for bugs" arm — found and fixed, no new GPU spent.
+
+---
+
+### E36 — Phase 5 started: donor-shift energy decomposition (zero-GPU slice) (2026-08-15)
+
+First slice of Phase 5 (plan §9), chosen because it needs NO generation and NO new
+GPU — pure numpy on activations already on disk (`acts.npy` 757886, `v_bomb_clearharm`,
+`refusal_direction_llama_L18`). New reusable module `src/probes/phase5_decompose.py`.
+
+For 170 matched (doublespeak, benign, neutral) triples, partition the donor shift
+Δh(L)=h_ds−h_donor at the codeword position into energy along v_bomb[L], along refusal
+(L18), and orthogonal remainder (QR-orthonormalised plane so the split is exact under
+the ~0.09 non-orthogonality).
+
+Built-in B9 index-alignment guard: recompute benign diff-of-means from acts, compare to
+stored v_bomb → **cos=1.000 every layer** (axis aligned). The guard also correctly
+REJECTED applying codeword-built v_bomb at final_prompt (cos→0.004–0.18); that invalid
+output was deleted, only codeword_last reported.
+
+Findings (codeword position):
+- **Refusal axis ≈ absent from the codeword shift**: frac_refusal ≤ 0.011, cos ≤ 0.10 in
+  every band, both donors. Upgrades §4 direction-orthogonality to an energy statement —
+  refusal is a downstream/decision variable, not written at the codeword. Explains why
+  refusal (not Bombness) is the behavioral lever.
+- **v_bomb is a coherent MINORITY summary**: ~14–22% of ‖Δh‖² at concept-write L8–11,
+  falling to ~10–13% at decision; ~80% orthogonal remainder (topic-specific). So whole-Δh
+  patching ≠ v_bomb patching — motivates the component lens.
+
+This is a REPRESENTATION-energy result, NOT behavioral mediation (Q3). Q3/Q4 (patch each
+component + generate + score ΔASR) reuse the Phase-4 harness + existing corpus (no new
+harmful authoring) and need GPU + explicit go-ahead — NOT launched autonomously.
+Report: reports/PHASE5_DECOMPOSITION.md. Self-reviewed: QR basis, matched triples by
+example_id (170/170 complete), donor-independent selfcheck, invalid-position rejection.
