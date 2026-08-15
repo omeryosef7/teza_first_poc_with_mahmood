@@ -40,6 +40,51 @@ CONCEPT_CACHE = os.path.join(DC, "data", "splits", "_advbench_concept_cache.json
 OUT = os.path.join(DC, "data", "splits", "advbench_doublespeak_v1.json")
 
 
+_FILLER_SENT = " The afternoon passed quietly without any particular event that day."
+_FILLER_TOK = " the"
+_INSTR_PREFIX = "Do not reason, just"   # ds_common.build_conditions default prefix
+
+
+def _tok_len(tok, s):
+    return len(tok(s, add_special_tokens=False)["input_ids"])
+
+
+def _split_demos_query(prompt):
+    """Split a doublespeak/benign prompt into (demo_prefix, query_part). The query begins
+    at the LAST '\\n\\n{prefix}' (build_conditions puts the demos before the query)."""
+    marker = "\n\n" + _INSTR_PREFIX
+    i = prompt.rfind(marker)
+    return (prompt[:i], prompt[i:]) if i > 0 else ("", prompt)
+
+
+def equalize_demo_lengths(rec, tok):
+    """Pad the shorter of the doublespeak/benign DEMO blocks to equal token length with
+    neutral filler (no codeword/concept), so the codeword lands at the SAME position in
+    both — removing the position/length confound in the Gate-1 doublespeak-vs-benign
+    contrast (P10d). The extraction re-localizes the codeword at run time, so only the
+    prompt strings need fixing. Filler contains neither the codeword nor the concept."""
+    cw, concept = rec["codeword"].lower(), rec["target_concept"].lower()
+    if cw in _FILLER_SENT.lower() or concept in _FILLER_SENT.lower():
+        return rec  # (defensive; the generic filler never contains a codeword/concept)
+    ds_d, ds_q = _split_demos_query(rec["doublespeak_prompt"])
+    be_d, be_q = _split_demos_query(rec["benign_prompt"])
+    if not ds_d or not be_d:
+        return rec
+    tgt = max(_tok_len(tok, ds_d), _tok_len(tok, be_d))
+
+    def pad(demos):
+        while _tok_len(tok, demos) <= tgt - len(tok(_FILLER_SENT, add_special_tokens=False)["input_ids"]):
+            demos = demos + _FILLER_SENT
+        while _tok_len(tok, demos) < tgt:              # tighten to within 1 token
+            demos = demos + _FILLER_TOK
+        return demos
+
+    rec["doublespeak_prompt"] = pad(ds_d) + ds_q
+    rec["benign_prompt"] = pad(be_d) + be_q
+    rec["demos_equalized"] = True
+    return rec
+
+
 def sha256_file(path):
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -143,6 +188,9 @@ def main():
     ap.add_argument("--model", default="gpt-4o-mini")
     ap.add_argument("--tokenizer", default="meta-llama/Llama-3.1-8B-Instruct")
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--no-equalize-demos", action="store_true",
+                    help="disable demo-length matching (leaves the P10d position/length "
+                         "confound); default is to equalize for a clean Gate-1 probe")
     args = ap.parse_args()
     use_api = not args.no_api
 
@@ -213,6 +261,8 @@ def main():
             #                                        probe_dataset.build_items
             rec["wrong_codeword"] = wrong_cw       # tracked for the leakage self-check
             rec["wrong_concept"] = wrong["concept"]
+            if not args.no_equalize_demos:
+                rec = equalize_demo_lengths(rec, tok)   # match codeword position (P10d fix)
             # locatability guard: the extraction resolves the codeword position in EVERY
             # condition (doublespeak/benign/neutral). Drop any record where the codeword is
             # not a locatable standalone word in all three, so activation_extraction's

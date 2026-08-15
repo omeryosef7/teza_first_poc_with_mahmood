@@ -1649,3 +1649,30 @@ across Llama/Phi/Qwen clearharm + per-example Phase 5 + AdvBench Phase 10. Bombn
 in the near-zero band (-0.05..+0.06) everywhere; refusal bars are large (+0.10..+0.36). The
 representation≠behavior dissociation with cross-family + per-example + second-corpus external
 validity, in one figure (§17 Figure 3/4 combined). No GPU, no harmful text.
+
+---
+
+### E64 — ultracode VERIFICATION: everything actually true, no bugs; 5 doc-nits fixed + length-match builder (2026-08-15)
+
+User: complete everything, verify all claims are TRUE, ensure no bugs, ultracode+document.
+
+VERIFICATION (workflow wy8vnpqbu, 18 agents, code+scalar-only) + independent raw re-derivation:
+- RAW RE-DERIVATION (fresh code, main loop): ALL headline numbers reproduce EXACTLY --
+  P5 bomb/random +0.048; P10 refusal +0.295 (b3c29n88), bomb +0.057 (b0c5); D3 +0.809/
+  +0.452/+0.024. Everything is ACTUALLY TRUE.
+- WORKFLOW: 0 code bugs, 0 false numbers. 5 CONFIRMED doc-consistency nits (all LOW/MED),
+  all fixed: (1) PHASE10 b/c convention swapped between Result 2/3 -> standardized to
+  gains-convention (c=base-fail->success) + note; (2) AdvBench refusal power numbers had no
+  saved JSON -> saved PHASE10_POWER_ADVBENCH_REFUSAL.json (min-detect 0.186, n=305,
+  reproduced); (3) claim-table P5a said frac_refusal <=0.002 but source <=0.011 -> corrected;
+  (4) synthesis sec13 next-step #1 still listed Phase 10 as pending -> replaced (it's done);
+  (5) synthesis sec12 had a duplicated+truncated Phase-5 bullet -> de-duplicated.
+- 2 classifier-gap reviews self-verified: figure Phi -0.071/+0.095 & Qwen +0.048/+0.167 MATCH
+  raw; D3 report matches its JSON. Clean.
+
+COMPLETION — length-matched second corpus (fixes the P10d confound): added equalize_demo_
+lengths() to build_advbench_doublespeak (pads shorter doublespeak/benign demo block to equal
+token length with neutral filler, so the codeword lands at the same position; extraction
+re-localizes so only prompt strings need fixing). Built advbench_doublespeak_v2_lenmatched.json
+(demos_equalized=True); v1 restored to match the committed Phase-10 runs. Next: re-extract +
+re-Gate1 on v2 to confirm position_only drops to chance.

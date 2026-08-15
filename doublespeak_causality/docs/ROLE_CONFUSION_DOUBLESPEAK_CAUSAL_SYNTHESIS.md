@@ -216,12 +216,6 @@ _Now established (were open in earlier drafts):_
 - **Component-restricted per-example patching (Phase 5)** — NULL both ways (necessity +
   sufficiency): a strong, specific manipulation of each example's Bombness component
   (readout ±18–19) yields ΔASR +0.048 [−0.048,+0.143], the sharpest form of Story A
-- **Cross-family** Bombness representation + behavioral epiphenomenality (Llama/Phi/Qwen,
-  §9) and refusal-lever on Llama+Qwen (Phi = base-refusal floor).
-- **Normalized-space** (upstream mid-block) probe robustness — AUC 0.994 (E34/§6b).
-- **Component-restricted per-example patching (Phase 5)** — NULL both ways (necessity +
-  sufficiency): a strong, specific manipulation of each example's Bombness component
-  (readout ±18–19) yields ΔASR +0.048 [−0.048,+0.143], the sharpest form of Story A
   (`PHASE5_BEHAVIORAL.md`, runs 758162/758163).
 - **D3 scope-matched control (Phase 6)** — the activation ≫ token advantage is largely a
   *scope* artifact: scope-matched activation ablation retains 0–3 % of full-scope effect
@@ -229,12 +223,16 @@ _Now established (were open in earlier drafts):_
 
 ## 13. Ranked next steps
 
-1. **Second corpus + prospective power (Phase 10)** — publication-grade behavioral n
-   (needs explicit go-ahead; harmful generation at scale).
+1. **A length-matched second corpus** — the AdvBench builder now equalizes doublespeak/
+   benign demo lengths (`build_advbench_doublespeak.py --equalize-demos`) to remove the
+   P10d position/length confound and give a clean second-corpus Gate 1.
 2. **A re-conditioned generated-cohort Phase-4** (narrower band / lower dose) to get a clean
    manipulation check there (E22); the clearharm causal result is complete.
-3. Independent adversarial audit (§21) against raw artifacts before write-up — **DONE**
-   (`ROLE_PROBE_FINAL_AUDIT_2026_08_14.md`, all numbers raw-reproduced incl. cross-family).
+3. Independent adversarial audit — **DONE** twice (`ROLE_PROBE_FINAL_AUDIT_2026_08_14.md`
+   + the E64 verify-workflow: all headline numbers raw-reproduced, no code bugs, only
+   doc-consistency nits found and fixed).
+
+_Second-corpus replication (Phase 10) is DONE (see §12 "now established")._
 
 _Done since first draft: sufficiency (§8.5, run 757992); generated-cohort Gate 1 +
 prediction (§9); cross-family (§9); normalized-space (E34); per-example Phase 5 (E45);

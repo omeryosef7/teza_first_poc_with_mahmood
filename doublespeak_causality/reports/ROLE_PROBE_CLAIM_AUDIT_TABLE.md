@@ -77,7 +77,7 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 
 | # | Claim | Basis | n | Numbers | Status |
 | --- | --- | --- | --- | --- | --- |
-| P5a | The DS→benign codeword shift decomposes with ~14–22% energy along v_bomb and **~0% along refusal** (family-invariant: Llama/Phi/Qwen); v_bomb IS the unit mean diff-of-means (cos=1.0) so mean-field patching = Phase 4 | `phase5_decompose` (E36/E37/E39); 14 unit tests | 170 | frac_bomb 0.13–0.25, frac_refusal ≤0.002, remainder ~0.80 | **VERIFIED** |
+| P5a | The DS→benign codeword shift decomposes with ~14–22% energy along v_bomb and **~0% along refusal** (family-invariant: Llama/Phi/Qwen); v_bomb IS the unit mean diff-of-means (cos=1.0) so mean-field patching = Phase 4 | `phase5_decompose` (E36/E37/E39); 14 unit tests | 170 | frac_bomb 0.13–0.25, frac_refusal ≤0.011 (both donors; ≤0.005 benign-donor), remainder ~0.80 | **VERIFIED** |
 | P5b | **Per-example** Bombness patching is behaviorally NULL both ways — a strong specific manipulation (readout ±18–19 vs random ≈0) yields ΔASR +0.048 [−0.048,+0.143], indistinct from random and 0 | runs 758162/758163 `PHASE5_BEHAVIORAL.md`; smoke-gated manip check | 42 | necessity/sufficiency bomb +0.048; random +0.048/0.000; remainder inert | **VERIFIED** — sharpest form of Story A |
 | P5c | The ~80% example-specific remainder carries no behavioral signal either (not a hidden lever the mean missed) | same | 42 | remainder ΔASR 0.000 / −0.024 | **VERIFIED** |
 

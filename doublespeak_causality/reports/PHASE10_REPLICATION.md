@@ -35,9 +35,13 @@ Base ASR 0.205 (n=88). The **refusal** arm is independent of the Bombness probe 
 
 | arm | ΔASR | 95%/McNemar | manipulation check |
 | --- | --- | --- | --- |
-| **refusal ablation (the lever)** | **+0.295** | b=29 c=3, **p=0.0** | refusal rate 0.64→0.19 |
-| bomb necessity (ablate v_bomb) | +0.057 | b=5 c=0, p=0.06 (n.s.) | readout dropped −0.8…−1.6 (passed) |
-| bomb vs norm-matched random | +0.034 | b=4 c=1, p=0.38 (n.s.) | — (bomb ≈ random) |
+| **refusal ablation (the lever)** | **+0.295** | b=3 c=29, **p=0.0** | refusal rate 0.64→0.19 |
+| bomb necessity (ablate v_bomb) | +0.057 | b=0 c=5, p=0.06 (n.s.) | readout dropped −0.8…−1.6 (passed) |
+| bomb vs norm-matched random | +0.034 | b=1 c=4, p=0.38 (n.s.) | — (bomb ≈ random) |
+
+_(McNemar convention throughout this report and the power table: **b** = base-success→arm-fail
+(losses), **c** = base-fail→arm-success (gains); ΔASR = (c−b)/n. Confirmed by independent raw
+re-derivation, E64.)_
 
 **2×2 factorial (n=88):**
 
