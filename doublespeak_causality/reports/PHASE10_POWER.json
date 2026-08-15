@@ -1,0 +1,12 @@
+{
+  "p_disc": 0.40476190476190477,
+  "source": "phase4_bombness_full_20260814_164727_757943 (ds_refusal_ablate_score): b=1 c=16 n=42",
+  "required_n": {
+    "0.10": 335,
+    "0.15": 150,
+    "0.20": 85
+  },
+  "corpus_n": 40,
+  "min_detectable_delta_at_corpus_n": 0.28523930623417815,
+  "power_at_corpus_n_delta0.10": 0.1125
+}

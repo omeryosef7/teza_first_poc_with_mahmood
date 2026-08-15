@@ -1468,3 +1468,35 @@ The cross-file Phase-5 row-alignment check (build_phase5_perexample sorted-eids 
 phase5_patch_spec by-id -> phase5_component_patch) returned CLEAN (no off-by-one / order
 mismatch) — the B9-critical path is verified end-to-end. Reviewers scoped to code only
 (no harmful-text data files).
+
+---
+
+### E54 — ultracode bug-sweep #2: 4 confirmed bugs found + fixed (2 HIGH in new code) (2026-08-15)
+
+Second Workflow (wxd73l4i5, 14 agents) over analysis/probe code + the new AdvBench builder.
+7 raw findings -> 4 CONFIRMED (adversarial verify rejected 3). All fixed + tested (21/21):
+
+1. [HIGH control-contamination] build_advbench_doublespeak.py: the shuffled/unrelated "wrong"
+   concept was the CSV neighbor (items[i+1]), which in AdvBench often shares the concept
+   (rows 164/165 both "bomb"), collapsing the control to the real concept. FIXED: pick a
+   DIFFERENT concept in the SAME split. **Caught before use — I killed the running build
+   (PID 2277819) and relaunched with fixed code (PID 2282765).**
+2. [HIGH leakage] same file: wrong_cw came from the neighbor's split-disjoint pool -> a
+   test/dev codeword embedded in a train example's demos; the self-check missed it. FIXED
+   by (1)'s same-split partner + folding wrong_codeword into the leakage self-check.
+   Re-smoke (30 items): 0 contaminated controls, 0 concept/codeword straddle.
+3. [MEDIUM paired-denominator] analyze_phase4.py: d_asr used MARGINAL ASRs (different
+   denominators) while McNemar used the paired subset -> inconsistent when an arm has None
+   scores. FIXED: d_asr is now paired (b-c)/pairs; marginals kept as descriptive.
+   IMPACT: re-ran on 757931/757943 -> ALL headline numbers UNCHANGED (2x2 refusal main
+   +0.357, interaction +0.000, bomb necessity -0.0476) because those runs had no None-score
+   arms (marginal==paired). Latent bug, no reported number corrupted.
+4. [MEDIUM CI-bias] dual_state_predict.py: bootstrap re-took max(a,1-a) per resample,
+   biasing near-0.5 univariate CIs upward. FIXED: orient once from full holdout, hold sign
+   fixed across resamples. IMPACT: uni_ci was None in BOTH existing outputs and cited in NO
+   report -> latent, no headline corrupted; the fix protects the AdvBench Phase-3 replication.
+5. [mine] phase10_power_analysis.py crashed formatting a None min-detectable-delta -> guarded.
+
+Net: the sweep prevented a contaminated/leaky second corpus (bugs 1-2, pre-use) and hardened
+two latent analysis bugs (3-4) before they could bias the AdvBench replication. Reviewers
+were CODE-ONLY (no harmful-text data).

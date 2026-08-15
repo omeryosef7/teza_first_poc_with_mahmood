@@ -151,6 +151,12 @@ def run(rows, holdout="test", n_boot=10000, seed=0):
         a = roc_auc_score(mask_y, v)
         return max(a, 1 - a)
 
+    def _auc_fixed(mask_y, v, s):
+        # orient by a FIXED sign s (from the full holdout), not per-resample max():
+        # re-taking max() inside the bootstrap folds every near-0.5 resample upward and
+        # pushes the lower CI bound spuriously above 0.5 (false discrimination).
+        return 0.5 + s * (roc_auc_score(mask_y, v) - 0.5)
+
     def uni_auc(v):
         if len(np.unique(y[ho])) < 2:
             return None
@@ -174,11 +180,15 @@ def run(rows, holdout="test", n_boot=10000, seed=0):
     Bh, Rh, yh = B[ho], R[ho], y[ho]
     uni_ci = None
     if len(np.unique(yh)) >= 2:
+        # fix each variable's orientation ONCE from the full holdout, then hold it fixed
+        # across bootstrap resamples (avoids the max()-per-resample upward bias at ~0.5).
+        sB = 1.0 if roc_auc_score(yh, Bh) >= 0.5 else -1.0
+        sR = 1.0 if roc_auc_score(yh, Rh) >= 0.5 else -1.0
         uni_ci = {
-            "bombness": _boot_ci(lambda s: _auc_oriented(yh[s], Bh[s])),
-            "refusalness": _boot_ci(lambda s: _auc_oriented(yh[s], Rh[s])),
+            "bombness": _boot_ci(lambda s: _auc_fixed(yh[s], Bh[s], sB)),
+            "refusalness": _boot_ci(lambda s: _auc_fixed(yh[s], Rh[s], sR)),
             "refusalness_minus_bombness": _boot_ci(
-                lambda s: _auc_oriented(yh[s], Rh[s]) - _auc_oriented(yh[s], Bh[s])),
+                lambda s: _auc_fixed(yh[s], Rh[s], sR) - _auc_fixed(yh[s], Bh[s], sB)),
         }
 
     return {

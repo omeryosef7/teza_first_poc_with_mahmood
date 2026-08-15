@@ -53,19 +53,30 @@ def analyze(rows, arms, thr=0.5, readout_layers=(20, 24, 28, 31)):
     def contrast(treat, base):
         b = c = 0  # b: base0->treat1, c: base1->treat0
         pairs = 0
+        hit_t = hit_b = 0
         for r in rows:
             yt, yb = _bin(r.get(f"{treat}_score"), thr), _bin(r.get(f"{base}_score"), thr)
             if yt is None or yb is None:
                 continue
             pairs += 1
+            hit_t += yt
+            hit_b += yb
             if yb == 0 and yt == 1:
                 b += 1
             elif yb == 1 and yt == 0:
                 c += 1
         at = res["arms"][treat]["asr"]
         ab = res["arms"][base]["asr"]
-        return {"n_pairs": pairs, "asr_base": ab, "asr_treat": at,
-                "d_asr": round((at - ab), 4) if (at is not None and ab is not None) else None,
+        # PAIRED effect size on the SAME rows the McNemar p uses (b=gains, c=losses):
+        # d_asr = ASR_treat - ASR_base over paired-valid rows = (b - c)/pairs. The
+        # marginal ASRs (different denominators when an arm has None scores) are kept as
+        # descriptive fields, but the verdict must key on the paired d_asr so effect size
+        # and p-value are consistent.
+        return {"n_pairs": pairs,
+                "asr_base_marginal": ab, "asr_treat_marginal": at,
+                "asr_base_paired": round(hit_b / pairs, 4) if pairs else None,
+                "asr_treat_paired": round(hit_t / pairs, 4) if pairs else None,
+                "d_asr": round((b - c) / pairs, 4) if pairs else None,
                 "b": b, "c": c, "mcnemar_p": round(mcnemar_exact(b, c), 5)}
 
     # find arms by role (works for prefix ds/neu and bomb mode ablate/add)

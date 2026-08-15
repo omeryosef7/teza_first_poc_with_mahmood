@@ -156,13 +156,29 @@ def main():
         it["target_concept"] = it["concept"]
     split_of, concept_cw, pools = assign_splits_leakage0(items, cws, seed=args.seed)
 
+    # index items by split so the shuffled/unrelated partner is a DIFFERENT concept in
+    # the SAME split (fixes: (1) control-contamination if the CSV neighbor shares the
+    # concept; (2) codeword leakage if the neighbor's codeword came from another split's
+    # disjoint pool). A same-split partner guarantees wrong_cw is from split_of[c]'s pool.
+    from collections import defaultdict
+    idx_by_split = defaultdict(list)
+    for j, jt in enumerate(items):
+        idx_by_split[split_of[jt["concept"]]].append(j)
+
     records = []
     for i, it in enumerate(items):
         c = it["concept"]
         codeword = concept_cw[c]
-        # wrong (shuffled-demo) concept: a different concept in the SAME split, with a
-        # different codeword, so the shuffled/unrelated controls stay well-formed.
-        wrong = items[(i + 1) % len(items)]
+        s = split_of[c]
+        pool = idx_by_split[s]
+        wrong = it  # degenerate fallback (single-concept split): build_item may assert-skip
+        if len(pool) > 1:
+            pos = pool.index(i)
+            for step in range(1, len(pool)):
+                cand = items[pool[(pos + step) % len(pool)]]
+                if cand["concept"] != c:
+                    wrong = cand
+                    break
         wrong_cw = concept_cw.get(wrong["concept"], cws[0])
         if wrong_cw == codeword:
             wrong_cw = cws[(cws.index(codeword) + 1) % len(cws)]
@@ -173,6 +189,8 @@ def main():
                                wrong["concept"], wrong_cw, demo_cache, client, args.model,
                                args.num_demos, args.seed, use_api)
             rec["split"] = split_of[c]
+            rec["wrong_codeword"] = wrong_cw       # tracked for the leakage self-check
+            rec["wrong_concept"] = wrong["concept"]
             records.append(rec)
         except AssertionError as e:
             print(f"  skip {ex_id}: {e}")
@@ -180,12 +198,15 @@ def main():
     if use_api:
         json.dump(demo_cache, open(B.DEMO_CACHE, "w"), indent=1)
 
-    # leakage self-check: no concept and no codeword straddles two splits
-    from collections import defaultdict
+    # leakage self-check: no concept and no codeword straddles two splits. Includes the
+    # wrong_codeword embedded in each record's shuffled/unrelated demos (a cross-split
+    # wrong_cw would leak a held-out codeword into a train example otherwise).
     concept_splits, cw_splits = defaultdict(set), defaultdict(set)
     for r in records:
         concept_splits[r["target_concept"]].add(r["split"])
         cw_splits[r["codeword"]].add(r["split"])
+        cw_splits[r.get("wrong_codeword")].add(r["split"])
+    cw_splits.pop(None, None)
     straddle_concept = [c for c, s in concept_splits.items() if len(s) > 1]
     straddle_cw = [c for c, s in cw_splits.items() if len(s) > 1]
 
