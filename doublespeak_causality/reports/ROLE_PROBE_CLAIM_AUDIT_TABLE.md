@@ -81,6 +81,15 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | P5b | **Per-example** Bombness patching is behaviorally NULL both ways — a strong specific manipulation (readout ±18–19 vs random ≈0) yields ΔASR +0.048 [−0.048,+0.143], indistinct from random and 0 | runs 758162/758163 `PHASE5_BEHAVIORAL.md`; smoke-gated manip check | 42 | necessity/sufficiency bomb +0.048; random +0.048/0.000; remainder inert | **VERIFIED** — sharpest form of Story A |
 | P5c | The ~80% example-specific remainder carries no behavioral signal either (not a hidden lever the mean missed) | same | 42 | remainder ΔASR 0.000 / −0.024 | **VERIFIED** |
 
+## P10. Second-corpus replication (Phase 10, AdvBench, external validity + power)
+
+| # | Claim | Basis | n | Numbers | Status |
+| --- | --- | --- | --- | --- | --- |
+| P10a | The **refusal lever replicates strongly + SIGNIFICANTLY** on an independent harmful corpus (AdvBench doublespeak, leakage-0) at ~2× power | run 758657 `PHASE10_REPLICATION.md` | 88 | necessity ΔASR **+0.295** (McNemar p=0.0); 2×2 refusal main **+0.284 [0.19,0.38]**; refusal rate 0.64→0.19 | **VERIFIED** — external validity |
+| P10b | **Bombness stays epiphenomenal** on the second corpus — necessity null AND indistinguishable from random despite a passing manip check | same | 88 | bomb necessity +0.057 (p=0.06 n.s.); bomb vs random +0.034 (p=0.38); 2×2 bomb main +0.046 non-specific; interaction −0.02 (null) | **VERIFIED** — Story A reproduced |
+| P10c | Second corpus roughly doubles power; refusal well-powered, Bombness null is a tight bound | `phase10_power_analysis` (§14.2) | 88 | refusal p_disc 0.36 → min-detect 0.186 (detects +0.295); bomb p_disc 0.057 (5/88 pairs); ΔASR 0.10 needs n≈305 | **VERIFIED** |
+| P10d | Bombness **decodes** on AdvBench but the probe is **position/length confounded** (builder did not length-match demos, unlike clearharm) — a disclosed corpus limitation, does NOT affect the confound-robust refusal result | `gate1_eval` (advbench 758606) | — | holdout AUC 0.982 (codeword)/1.0 (decision); position_only 0.785, length_only 0.752 | **DISCLOSED LIMITATION** |
+
 ## E. Headline synthesis claim
 
 | # | Claim | Basis | Status |

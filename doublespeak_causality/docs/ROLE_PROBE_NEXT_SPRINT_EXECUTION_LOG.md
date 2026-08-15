@@ -1606,3 +1606,13 @@ Phase4 advbench 758657 DONE (n=88, base ASR 0.205). RESULTS (reports/PHASE10_REP
   already said example_id) -> handle both. Dual-probe prediction deferred (needs train-split
   outcomes = further GPU; probe confounded anyway).
 Phase 10 delivers its purpose. 13th bug fixed this session.
+
+---
+
+### E61 — Phase 10 folded into synthesis + claim-audit table (2026-08-15)
+
+Added P10a-d rows to ROLE_PROBE_CLAIM_AUDIT_TABLE (refusal replicates p=0.0; Bombness
+epiphenomenal; power; probe-confound disclosed). Updated synthesis §12/13: moved second-corpus
+from "not established" to "now established" (external validity achieved); the residual open
+items are a length-matched second corpus (clean probe) + the deferred AdvBench dual-probe.
+Phase 10 fully integrated into the paper-facing deliverables.

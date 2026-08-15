@@ -198,12 +198,24 @@ No new attack objective is warranted by these results.
 
 ## 12. What is still not established
 
-- **Second-corpus** (Phase 10) replication — needs a larger harmful corpus for
-  publication-grade behavioral n (gated on explicit go-ahead; not run).
 - A **re-conditioned generated-cohort Phase-4** (narrower band / lower dose) for a clean
   manipulation check there (E22); the clearharm causal result is complete.
+- A **length-matched second corpus** for a clean second-corpus PROBE (the AdvBench build's
+  Gate 1 is position/length confounded — P10d); the behavioral replication is unaffected.
+- The **dual-probe prediction on AdvBench** (needs train-split behavioral outcomes; the
+  AdvBench probe is confounded) — deferred, not run.
 
 _Now established (were open in earlier drafts):_
+- **Second-corpus replication (Phase 10, AdvBench, n=88 ≈ 2× power)** — the refusal lever
+  replicates strongly and SIGNIFICANTLY (necessity +0.295, p=0.0; 2×2 main +0.284) and
+  Bombness stays epiphenomenal (P10a–c; `PHASE10_REPLICATION.md`). External validity of the
+  causal headline achieved.
+- **Cross-family** Bombness representation + behavioral epiphenomenality (Llama/Phi/Qwen,
+  §9) and refusal-lever on Llama+Qwen (Phi = base-refusal floor).
+- **Normalized-space** (upstream mid-block) probe robustness — AUC 0.994 (E34/§6b).
+- **Component-restricted per-example patching (Phase 5)** — NULL both ways (necessity +
+  sufficiency): a strong, specific manipulation of each example's Bombness component
+  (readout ±18–19) yields ΔASR +0.048 [−0.048,+0.143], the sharpest form of Story A
 - **Cross-family** Bombness representation + behavioral epiphenomenality (Llama/Phi/Qwen,
   §9) and refusal-lever on Llama+Qwen (Phi = base-refusal floor).
 - **Normalized-space** (upstream mid-block) probe robustness — AUC 0.994 (E34/§6b).
