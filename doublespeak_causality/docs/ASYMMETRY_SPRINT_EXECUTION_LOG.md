@@ -10027,3 +10027,15 @@ not a scope conclusion. Written before the data, as it should have been last tic
 3 jobs PENDING, all the other session's D3 runs, none of mine. Nothing for me to launch.
 
 ---
+### 05:15 — D3 runs cancelled and resubmitted (theirs, not mine). Watch item still 0/3 at full n.
+758248/9/50 were **CANCELLED while PENDING** — `Elapsed 00:00:00`, `Start=None`, so they never ran
+and nothing was lost. Immediately resubmitted by the other session as **758290/1/2**, now PENDING
+on `Reason=Priority` (fair-share, not a bad config), consistent with their commit `21ff7fee`
+*"D3 scope-comparison analyzer (tested on smoke); runs pending on fair-share"* — they have also
+built the analyzer, so the comparison will be scored by their tooling when the arms land.
+
+Nothing for me here: not my jobs, no asymmetry work of mine queued, and the >30 min PENDING rule is
+theirs to apply to their submissions. **D3 remains 0 of 3 arms at full n**, and the reading rule
+fixed at 04:45 stands unchanged. Diff otherwise unchanged.
+
+---
