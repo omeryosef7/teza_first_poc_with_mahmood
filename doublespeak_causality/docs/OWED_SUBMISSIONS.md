@@ -308,3 +308,17 @@ two-integrity-failures caution is **discharged**.
 Held-out arithmetic updated: dev + test = **169**, pooled with ClearHarm's ≈139 → **≈308**, still
 past n=300. **Remaining: (1) direction validation on AdvBench — the only technical gate left;
 (2) the comparability decision on pooling two corpora.**
+
+### 2026-08-15 — item 2 amendment 3: the AdvBench validation is NOT a short job (correcting my own estimate)
+I called direction validation on AdvBench "a ~15 min job, not a research problem" three times.
+Wrong. `validate_refusal_directions.py` reads `data["items"]` (corpus has `data["examples"]`) and
+`conditions_for()` requires `harmful_word`, `harmful_instruction`, `demos`, `id` — **all four absent
+from the AdvBench records**, which ship already-templated `direct_prompt`/`neutral_prompt`/etc. and
+`demo_ids`.
+
+The formats sit at different levels of assembly: the validator wants ingredients because it calls
+`dc.build_conditions(...)` itself; the corpus ships assembled prompts. **Remaining work is a
+corpus→bench converter (resolve `demo_ids`, recover `harmful_word` and a raw instruction, possibly
+via `original_clearharm_id`) plus a decision on assembly-path parity** — bypassing
+`build_conditions` would run AdvBench through a different path than the ClearHarm validation it is
+compared against, which is its own confound. Scope unknown; **not an idle-queue filler.**

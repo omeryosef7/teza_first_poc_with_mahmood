@@ -10334,3 +10334,51 @@ on verified ground**. §20.6/§20.9 blocked behind one job and one decision.
 1 job, theirs. Nothing PENDING of mine, nothing to launch.
 
 ---
+## 2026-08-16 13:15 — correcting my own estimate: AdvBench direction validation is **not** "a short job".
+
+*(Wall clock 16:00 UTC.)* Queue empty, so I went to close §20.8's last technical gate myself —
+direction validation on AdvBench — having called it *"a ~15 min job, not a research problem"* three
+times now (10:45, 12:45, and the ledger). **Checking the interface before running it shows that was
+wrong.**
+
+`validate_refusal_directions.py` does not read the corpus format. Two mismatches:
+
+* **Container.** `load_items()` reads `data["items"]`; the AdvBench corpus stores `data["examples"]`.
+* **Record schema.** `conditions_for()` requires `harmful_word`, `harmful_instruction`, `codeword`,
+  `demos`, `id`, `split`. AdvBench provides `codeword` and `split`, and is **missing all four
+  others** — it carries `direct_prompt` / `neutral_prompt` / `doublespeak_prompt` / `benign_prompt`
+  (already-templated strings) plus `demo_ids`, `example_id`, `target_concept`.
+
+The two formats are at **different levels of assembly**: the validator wants the *ingredients*
+(`harmful_word` + instruction + demos) because it calls `dc.build_conditions(...)` to assemble
+conditions itself; the AdvBench corpus ships the *assembled* prompts and only references its demos
+by id. Feeding one to the other needs a real converter — resolve `demo_ids` → demo text, recover a
+`harmful_word` and a raw `harmful_instruction` from templated prompts (or from
+`original_clearharm_id` where present), and decide whether to rebuild conditions or bypass
+`build_conditions` entirely.
+
+**That is not 15 minutes, and it is not purely mechanical** — bypassing `build_conditions` would
+mean the AdvBench validation ran a *different* assembly path from the ClearHarm validation it is
+meant to be compared against, which is its own confound.
+
+### The estimate was mine, repeated, and unchecked
+I asserted "short job" from the fact that the validator reads its cohort from `_meta` — true, and
+irrelevant to whether it can read the records. **I checked the one thing that supported the estimate
+and none of the things that could refute it**, then propagated it into the ledger twice. Same shape
+as the smoke-run error: an available detail read as confirmation without testing the load path.
+
+**Ledger corrected.** §20.8's remaining technical gate is now stated as: *a corpus→bench converter
+plus direction validation, with an explicit decision about assembly-path parity* — scope unknown
+until someone reads `build_conditions` and the demo store, and **not** something to slot into an
+idle queue.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3 resolved. §20.8: corpus **clean and verified**
+(that stands); the path from corpus to a validated direction is **longer than I said**. §20.6/§20.9
+still blocked, behind more than I claimed two ticks ago.
+
+### SLURM
+Queue empty. Nothing launched — deliberately, because the job I was about to run would have failed
+at `load_items` in the first second.
+
+---
