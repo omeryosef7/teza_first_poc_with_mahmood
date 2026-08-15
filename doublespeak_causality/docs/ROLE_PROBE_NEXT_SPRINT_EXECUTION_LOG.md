@@ -1254,3 +1254,21 @@ Preflight: harness compiles; patch_spec imports; slurm bash -n clean; example_id
 (MODE=smoke necessity LIMIT=6, --no-judge) — the gate is whether per-example subtraction
 MOVES the downstream Bombness readout (bomb arm should lower it). If it doesn't manipulate,
 do not scale to full/judged.
+
+---
+
+### E43 — Phase 5 smoke gate PASSED; full necessity+sufficiency launched (2026-08-15)
+
+Smoke 758159 (necessity, manip-check) row 1 — mean downstream Bombness readout Δ vs base:
+  bomb -29.9 | full -26.6 | remainder -6.8 | refusal -0.05 | random -0.40
+Textbook-clean: per-example bomb subtraction moves the readout STRONGLY and SPECIFICALLY
+(norm-matched random -0.40 ≈ 0; refusal ≈ 0 consistent with ~no refusal energy at codeword,
+E36/E41). Manipulation check PASSES → valid to scale + judge.
+
+Cancelled smoke; launched FULL judged runs on L40S (--constraint=l40s):
+  758162 necessity  (base doublespeak, subtract each example's component)
+  758163 sufficiency (base benign, add each example's component)
+Both all-arms {base,full,bomb,refusal,remainder,random}, 42 test prompts, StrongREJECT.
+The behavioral question: does per-example component subtraction/addition move ASR, or is
+the manipulated Bombness still epiphenomenal (predicted: null bomb arm, refusal already
+known to be the lever)? Results pending.
