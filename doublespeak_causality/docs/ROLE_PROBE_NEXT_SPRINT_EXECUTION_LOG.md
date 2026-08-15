@@ -1295,3 +1295,20 @@ by the SHARPEST causal test in the sprint — per-example component patching, no
 direction ablation. Base ASR 0.167 limits necessity headroom, but the manip check proves
 the representation WAS moved, so the null is a real dissociation. Sufficiency run 758163
 (add into benign, higher headroom) pending.
+
+---
+
+### E45 — Phase 5 sufficiency NULL; Phase 5 COMPLETE (2026-08-15)
+
+Sufficiency run 758163 DONE (n=42, base ASR 0.286). Adding each example's own component
+into the benign prompt:
+  bomb ΔASR +0.048 [−0.048,+0.143], McNemar b=1 c=3, readout +18.9 (strong install)
+  random +0.000, full +0.000, remainder −0.024, refusal 0.000
+Same NULL as necessity: strong specific manipulation (readout +18.9 vs random +0.65),
+no behavioral effect (bomb CI includes 0 and random; upper bound +0.143 << refusal lever
++0.24/+0.36).
+
+PHASE 5 COMPLETE. Both directions confirm per-example Bombness component patching is
+behaviorally epiphenomenal — the sharpest causal test in the sprint. Report:
+reports/PHASE5_BEHAVIORAL.md. Runs registered (registry 612). Decomposition report
+"what remains" updated to DONE. Bootstrap CIs computed. All GPU done for Phase 5.

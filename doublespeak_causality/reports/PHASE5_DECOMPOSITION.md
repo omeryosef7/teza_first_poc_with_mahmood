@@ -118,14 +118,16 @@ the population mean. That tests whether the ~80 % example-specific *remainder*
 direction misses. This requires a genuinely new harness capability — a patch keyed
 per generation example — plus GPU. It is the honest, non-redundant next step.
 
-## What remains (needs a new per-example harness + GPU + explicit go-ahead)
+## Behavioral half — DONE (see PHASE5_BEHAVIORAL.md)
 
-Per-example component patch: for each example, add its own decomposed component of
-Δh at the candidate band, generate, and measure ΔASR — arms {bomb, refusal,
-remainder, complement, full-Δh, random}. Reuses the existing corpus and the
-Phase-4 generation/scoring path (no new harmful authoring) but needs a per-example
-add-vector keyed to the example being generated. Not launched autonomously; will
-build → CPU-unit-test the vector construction → smoke → launch on your greenlight.
+The per-example component patch (arms {full, bomb, refusal, remainder, random},
+necessity + sufficiency) was built, smoke-gated, and run on L40S (runs 758162 /
+758163). **Result: behaviorally NULL.** The bomb arm moves the downstream Bombness
+readout ±18–19 (strong, specific vs norm-matched random ≈ 0) yet ΔASR is +0.048 in
+both directions (95% CI [−0.048, +0.143], indistinguishable from random and from 0,
+upper bound far below the refusal lever). The ~80 % remainder carries no behavioral
+signal either. Per-example causal surgery confirms Bombness is behaviorally
+epiphenomenal — the sharpest form of Story A.
 
 ## Reproduce
 
