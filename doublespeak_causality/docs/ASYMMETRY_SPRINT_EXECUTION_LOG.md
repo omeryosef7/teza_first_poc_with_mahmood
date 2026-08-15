@@ -10134,3 +10134,47 @@ change to a headline claim, not a maintenance annotation — **flagged, not take
 Queue empty. Nothing PENDING, nothing of mine to launch.
 
 ---
+## 2026-08-16 06:45 — the two sessions converged on D3 independently. **And their fix caught a contradiction my annotation created.**
+
+*(Wall clock 10:31 UTC.)* Queue empty, no new artifacts. The other session committed
+`54002bab "D3 reconciliation (E50): fix stale NOT-RUN caveat; note concurrent parallel-session
+reproduction"` and `7e0f1b57`.
+
+### Independent reproduction
+Their write-up records: *"A parallel session resolved D3 ~13 min before my write-up
+(f2384ceb/9bed50de) with identical numbers; my runs 758290/1/2 independently reproduced them."*
+Those two commits are mine. **Same three-arm numbers, reached from the same runs by two sessions
+scoring them separately** — +0.571/+0.810, +0.429/+0.452, +0.000/+0.024. No disagreement to
+reconcile, which is the good outcome and worth stating explicitly rather than assuming.
+
+They also produced `reports/D3_SCOPE_COMPARISON.md` and committed to **not re-running asymmetry
+arms this session owns**. For the record on the GPU side: **this session launched no D3 job** — the
+04:15 entry declined to, and that was right; every D3 run on the cluster was theirs.
+
+### The part that is a lesson for me
+Their commit fixed a **self-contradiction my annotation introduced.** I added the ⚠️ note above
+§0 of `ASYMMETRY_FINAL_SYNTHESIS.md` saying D3 was resolved — while **line 134 of the same document
+still read "No scope-matched activation arm … Recorded as NOT RUN with reason."** The document then
+asserted both at once, and I did not check.
+
+**Annotating one statement of a fact does not annotate the others.** I grepped the insertion point,
+not the document. The correct move — and the rule from here — is: **before annotating a claim,
+search the whole file for every statement of the same fact**, because a half-annotated document is
+worse than an un-annotated one; it reads as internally inconsistent and a reader cannot tell which
+half is current.
+
+Checked now across the documents I maintain: `ASYMMETRY_FINAL_SYNTHESIS.md` has exactly two
+scope statements (line 11 mine, line 134 theirs) and they **agree**; `SECTION20_RESULTS.md` and
+`ASYMMETRY_GAP_MATRIX.md` contain no stale "NOT RUN"/no-scope-arm claims. No further contradictions
+outstanding.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3: 3/3 arms, resolved, reproduced independently, and
+annotated in both framing documents. Owed list unchanged at six — item 6 (reconcile the framing) is
+now **partly served** by their §134 fix and `D3_SCOPE_COMPARISON.md`, but §20's contribution list
+and the synthesis's H1/H2′ framing are still written pre-D3.
+
+### SLURM
+Queue empty. Nothing PENDING, nothing of mine to launch.
+
+---
