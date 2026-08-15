@@ -1363,3 +1363,24 @@ as scope narrows (all_layers -> single_layer -> decision). Tested on the smoke d
 correctly: decision gain +0.00, sep_ho +0.28). Ready to run the instant the trio lands.
 D3 pipeline now complete end-to-end (hook+wiring+wrapper+analyzer, all tested); only GPU
 scheduling remains.
+
+---
+
+### E49 — Phase 6/D3 RESULT: activation advantage is largely SCOPE (control closed) (2026-08-15)
+
+Runs 758290/1/2 done (n=42). Refusal-reduction (attack strength) by scope:
+  scope         clearharm  existing  random
+  all_layers      +0.81      +0.57    +0.00
+  single_layer    +0.45      +0.43    +0.00
+  decision        +0.02      +0.00    +0.00   <- scope-matched to a token attack
+Projection separation identical across scopes (0.17/0.22).
+
+FINDING: the scope-matched (single-layer L18, decision-position, prefill-only) activation
+attack retains 0-3% of the full-scope refusal-reduction. The "activation >> token"
+hierarchy is LARGELY a SCOPE artifact (every layer/position/step), not the medium. This is
+the pre-registered R3/D3 confound made quantitative. Random controls +0.00 at every scope
+(specific). Report: reports/D3_SCOPE_COMPARISON.md; reports/D3_SCOPE_COMPARISON.json.
+
+D3 control CLOSED (was pre-registered NOT-RUN in the asymmetry synthesis). Remaining §10.1/
+§10.2: full cross-medium Figure A on the dev confirmatory split (soft-prompt+GCG re-run at
+frozen budget_rel=0.10, seeds 42/43/44) -- the dev re-runs, not new science.

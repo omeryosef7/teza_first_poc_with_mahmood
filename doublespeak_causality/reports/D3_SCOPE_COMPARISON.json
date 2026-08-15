@@ -1,0 +1,45 @@
+{
+  "family": "clearharm",
+  "layer": "18",
+  "rows": [
+    {
+      "scope": "all_layers",
+      "run": "d3_actscope_all_layers_L18_test_20260815_094741_758290",
+      "refusal_base": 0.881,
+      "refusal_ablated": 0.0714,
+      "ablate_gain": 0.8095,
+      "ablate_gain_rand": 0.0,
+      "ablate_vs_rand_p": 0.0,
+      "separation_heldout": 0.174389,
+      "n_harmful": 42
+    },
+    {
+      "scope": "single_layer",
+      "run": "d3_actscope_single_layer_L18_test_20260815_094741_758291",
+      "refusal_base": 0.881,
+      "refusal_ablated": 0.4286,
+      "ablate_gain": 0.4524,
+      "ablate_gain_rand": 0.0,
+      "ablate_vs_rand_p": 4e-06,
+      "separation_heldout": 0.174389,
+      "n_harmful": 42
+    },
+    {
+      "scope": "decision",
+      "run": "d3_actscope_decision_L18_test_20260815_094740_758292",
+      "refusal_base": 0.881,
+      "refusal_ablated": 0.8571,
+      "ablate_gain": 0.0238,
+      "ablate_gain_rand": 0.0,
+      "ablate_vs_rand_p": 1.0,
+      "separation_heldout": 0.174389,
+      "n_harmful": 42
+    }
+  ],
+  "scope_desc": {
+    "all_layers": "every layer / every position / every step (Arditi)",
+    "single_layer": "one layer (L18) / all positions",
+    "decision": "one layer (L18) / decision position only (D3 scope-matched)"
+  },
+  "verdict": "decision scope retains 3% of the all-layer refusal-reduction (+0.02 vs +0.81) \u2014 the activation advantage is LARGELY SCOPE (D3 confound confirmed)"
+}
