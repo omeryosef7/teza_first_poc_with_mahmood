@@ -95,12 +95,37 @@ larger part of the shift deeper in Qwen — a genuine cross-family difference in
 indices; depth is not normalized across the 32- vs 40-layer stacks, so read the
 trajectory qualitatively.)
 
-## What remains (needs GPU + explicit go-ahead)
+## Scope clarification — the mean-field behavioral Q3 is already Phase 4 (verified)
 
-Q3/Q4 — patch each component (bomb / refusal / remainder / complement / full-donor
-/ random) into the neutral run at the candidate bands and measure ΔASR — reuse the
-existing corpus and the Phase-4 harness (no new harmful authoring). Not launched
-autonomously.
+Before spending GPU on Q3/Q4 it is worth being precise about what is *new*. The
+per-layer Bombness direction `v_bomb[L]` is built as the **unit mean diff-of-means**
+`unit(mean_doublespeak − mean_benign)`. We verified numerically that the mean
+full-shift direction equals `v_bomb` at **cos = 1.00000 at every band layer**
+(L8/L11/L14/L18/L21).
+
+Consequently a **mean-field** Q3 — "install the mean bomb component as a fixed
+add-direction and measure ΔASR" — is *identical* to the Phase-4 **sufficiency**
+arm (add `v_bomb`), which already ran and returned a **null** (ΔASR +0.05, manip
+check confirmed). Likewise the mean "full-donor" add is the same fixed direction.
+So a fixed-direction Q3/Q4 built on the existing harness would **re-run Phase 4**,
+not add evidence.
+
+The only behavioral content Phase 5 adds beyond Phase 4 is therefore **per-example
+component patching**: for each example install *its own* Δh_bomb =
+(Δhᵢ·v_bomb)·v_bomb (and Δh_refusal, Δh_remainder, complement, random) rather than
+the population mean. That tests whether the ~80 % example-specific *remainder*
+(§Result) or the per-example Bombness component carries behavioral signal the mean
+direction misses. This requires a genuinely new harness capability — a patch keyed
+per generation example — plus GPU. It is the honest, non-redundant next step.
+
+## What remains (needs a new per-example harness + GPU + explicit go-ahead)
+
+Per-example component patch: for each example, add its own decomposed component of
+Δh at the candidate band, generate, and measure ΔASR — arms {bomb, refusal,
+remainder, complement, full-Δh, random}. Reuses the existing corpus and the
+Phase-4 generation/scoring path (no new harmful authoring) but needs a per-example
+add-vector keyed to the example being generated. Not launched autonomously; will
+build → CPU-unit-test the vector construction → smoke → launch on your greenlight.
 
 ## Reproduce
 

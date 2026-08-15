@@ -1179,3 +1179,20 @@ shift Δh = a·v_bomb + b·refusal + c·perp in synthetic activations and assert
 - the B9 index-alignment selfcheck returns cos≈1 when v_bomb == normalized diff-of-means,
   and ~0 when handed a misaligned axis (both OK and WARN paths verified).
 Locks in the E36/E37 numbers against future refactors. All pass.
+
+---
+
+### E39 — Phase 5 scope clarification: mean-field Q3 == Phase-4 sufficiency (zero-GPU) (2026-08-15)
+
+Self-review of the Q3/Q4 build surfaced (and I verified numerically) that v_bomb[L] IS the
+unit mean diff-of-means: cos(mean full-shift, v_bomb) = 1.00000 at every band layer
+(L8/11/14/18/21). Therefore a fixed-direction mean-field Q3 ("add the mean bomb component,
+measure ΔASR") is IDENTICAL to the Phase-4 sufficiency arm (add v_bomb), already run = null
+(+0.05). A naive fixed-direction Q3/Q4 on the existing harness would just re-run Phase 4.
+
+The only NON-redundant behavioral content in Phase 5 is PER-EXAMPLE component patching
+(install each example's own Δh_bomb / Δh_refusal / Δh_remainder / complement / full / random),
+which needs a new per-example-keyed patch capability + GPU. Documented this in the report so
+we don't burn GPU re-deriving the Phase-4 null. This is the "self code-review prevents a
+wasted experiment" outcome. Per-example harness build deferred to greenlight (will
+CPU-unit-test the vector construction before any GPU).
