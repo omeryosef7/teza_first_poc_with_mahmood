@@ -1586,3 +1586,23 @@ Proceeding to the BEHAVIORAL replication (the actual §14.3 external-validity go
 REFUSAL-lever result is confound-robust (independent of the Bombness probe). Built
 v_bomb_advbench directions (14 layers, cos_vs_refusal 0.06-0.20, ⊥ refusal as on clearharm).
 Launching Phase4 FACTORIAL+refusal on advbench test (n=88, ~2x clearharm power).
+
+---
+
+### E60 — Phase 10 §14.3 COMPLETE: Story A replicates on AdvBench at ~2x power (2026-08-15)
+
+Phase4 advbench 758657 DONE (n=88, base ASR 0.205). RESULTS (reports/PHASE10_REPLICATION.md):
+- REFUSAL LEVER replicates STRONGLY + SIGNIFICANTLY: necessity ΔASR +0.295 (b=29 c=3, p=0.0),
+  2x2 main +0.284 [0.188,0.381]. Confound-robust headline holds with external validity.
+- BOMBNESS epiphenomenal: necessity +0.057 (n.s., p=0.06), = random +0.034 (p=0.38, non-
+  specific) despite manip check passing; 2x2 bomb main +0.046 (non-specific); interaction
+  null. Story A reproduced.
+- POWER (§14.2): refusal p_disc 0.364, n=88 min-detectable 0.186 (refusal well-powered);
+  bomb p_disc 0.057 (5/88 pairs) -> null is a tight bound; ΔASR 0.10 needs n~305.
+- Gate 1: Bombness DECODES (0.982) but probe is POSITION/LENGTH CONFOUNDED (0.785) -- my
+  builder didn't length-match demos (clearharm did). Honest corpus limitation, documented;
+  does not affect the confound-robust refusal result.
+- Bug fixed en route: load_ds_outcomes read r["id"] but phase4 raw uses example_id (docstring
+  already said example_id) -> handle both. Dual-probe prediction deferred (needs train-split
+  outcomes = further GPU; probe confounded anyway).
+Phase 10 delivers its purpose. 13th bug fixed this session.

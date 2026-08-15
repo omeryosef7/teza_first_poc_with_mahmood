@@ -1,0 +1,12 @@
+{
+  "p_disc": 0.056818181818181816,
+  "source": "phase4_bombness_full_advbench_Llama-3-1-8B-Instruct_20260815_161045_758657 (ds_bomb_ablate_score): b=0 c=5 n=88",
+  "required_n": {
+    "0.10": null,
+    "0.15": null,
+    "0.20": null
+  },
+  "corpus_n": 88,
+  "min_detectable_delta_at_corpus_n": null,
+  "power_at_corpus_n_delta0.10": NaN
+}

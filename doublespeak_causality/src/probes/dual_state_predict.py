@@ -58,7 +58,10 @@ def load_ds_outcomes(path, threshold=0.5):
         s = r.get("ds_base_score")
         if s is None:
             continue
-        out[str(r["id"])] = (int(float(s) >= threshold), float(s))
+        rid = r.get("id", r.get("example_id"))   # phase4 raw uses example_id (docstring says so)
+        if rid is None:
+            continue
+        out[str(rid)] = (int(float(s) >= threshold), float(s))
     return out
 
 
