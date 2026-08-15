@@ -179,9 +179,16 @@ def main():
                 if cand["concept"] != c:
                     wrong = cand
                     break
-        wrong_cw = concept_cw.get(wrong["concept"], cws[0])
+        wrong_cw = concept_cw.get(wrong["concept"], pools[s][0])
         if wrong_cw == codeword:
-            wrong_cw = cws[(cws.index(codeword) + 1) % len(cws)]
+            # pick a different codeword from THIS split's pool only — never fall back to
+            # the global lexicon (that reintroduces cross-split codeword leakage). If the
+            # split's pool has a single codeword, reuse is unavoidable but stays in-split.
+            p = pools[s]
+            if len(p) > 1 and codeword in p:
+                wrong_cw = p[(p.index(codeword) + 1) % len(p)]
+            elif len(p) > 1:
+                wrong_cw = p[0]
         ex_id = f"advbench_{i:04d}_{B.sha16(it['instruction'])[:8]}"
         try:
             rec = B.build_item(tok, "advbench", ex_id, it["clearharm_id"], "advbench",

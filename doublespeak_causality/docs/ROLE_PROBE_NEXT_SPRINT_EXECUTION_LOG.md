@@ -1500,3 +1500,21 @@ Second Workflow (wxd73l4i5, 14 agents) over analysis/probe code + the new AdvBen
 Net: the sweep prevented a contaminated/leaky second corpus (bugs 1-2, pre-use) and hardened
 two latent analysis bugs (3-4) before they could bias the AdvBench replication. Reviewers
 were CODE-ONLY (no harmful-text data).
+
+---
+
+### E55 — Phase 10 §14.1: AdvBench second corpus BUILT (leakage-0, n=417) (2026-08-15)
+
+First fixed build (after E54 bugs 1-2) exposed a RESIDUAL codeword leak via the now-hardened
+self-check: codeword_straddle=['blanket','potato']. Root cause: when the same-split wrong
+partner's codeword collided with the real codeword, the fallback picked from the GLOBAL
+lexicon (cross-split). Fixed: fallback now draws from THIS split's pool only. (The
+defense-in-depth self-check catching a leak my first fix missed is exactly why it was added.)
+
+Rebuild (cached, fast): 417 records (train 244 / dev 87 / test 86), 116 concepts, all
+single-token, **0 concept straddle, 0 codeword straddle** (incl. wrong_codeword), 0
+contaminated controls. Source AdvBench sha256 6cd1a5c6..., gpt-4o-mini demos. test n=86 =
+~2x the clearharm endpoint (§14.2: needed ~250-335 for ΔASR 0.10 power; 86 gives min
+detectable ~0.17 at p_disc 0.40 — a real power gain but still bounded). Committed (clearharm
+corpus is tracked, so follow convention). Next §14.3: extraction + Gate 1 + headline causal
+on advbench (CORPUS override wired into the extract/phase4 wrappers).
