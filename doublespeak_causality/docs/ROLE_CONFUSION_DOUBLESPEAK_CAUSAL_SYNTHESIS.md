@@ -193,7 +193,8 @@ No new attack objective is warranted by these results.
   identical across the two full runs and the 2×2.
 - Refusal direction fit cross-distribution (carrot_bomb, B17); it nonetheless predicts and
   causally controls clearharm behavior, which validates it.
-- Necessity + interaction established; **sufficiency (§8.5) not run.**
+- Necessity, sufficiency, and the 2×2 interaction all established (Llama); necessity + the
+  epiphenomenal null also established on Phi and Qwen (cross-family behavioral, §9).
 
 ## 12. What is still not established
 

@@ -1071,3 +1071,13 @@ from acts.npy, Phase-4 ΔASRs from raw.jsonl): Phi Gate 1 0.9858, Qwen 0.9989; P
 The analysis scripts are bug-free for the cross-family runs too. The ENTIRE body of work
 (Llama core + cross-cohort + 3-family cross-model) is now §21-audit-covered.
 `reports/ROLE_PROBE_FINAL_AUDIT_2026_08_14.md` §1b added.
+
+### E33 — 2026-08-15 — Deliverable coherence pass (fixed 2 stale limitation lines)
+
+Ran a cross-doc consistency check of the headline numbers (Gate 1 0.997, necessity nulls,
+cross-family refusal +0.24/+0.17/+0.10). Numbers consistent everywhere. Caught and fixed 2
+STALE "not run" lines (the doc-drift the prior sprint's audit flagged):
+- synthesis §11: "sufficiency (§8.5) not run" → sufficiency WAS run (E24/D6); corrected.
+- claim audit limitations: "Cross-family (Phi/Qwen) ... not yet run" → 3-family Gate 1 +
+  Phi/Qwen behavioral ARE done (CM1–CM7); corrected, with the genuinely-open items listed.
+No numeric claim changed; documentation now internally consistent.

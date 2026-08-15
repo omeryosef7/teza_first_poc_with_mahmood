@@ -91,7 +91,10 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 - **Refusal direction fit cross-distribution** on carrot_bomb (B17); still predicts and
   causally controls clearharm DS behavior (validates it), disclosed.
 - **Necessity, not sufficiency** (§8.5) — the natural next causal arm.
-- Cross-family (Phi/Qwen, Phase 8) and the normalized-space robustness arm not yet run.
+- Cross-family probe Gate 1 + geometry DONE on 3 families (CM1–CM2); cross-family behavioral
+  DONE on Phi + Qwen (CM3–CM7). Still open: the normalized-space robustness arm, a second
+  corpus (Phase 10), component-restricted patching (Phase 5), and full cross-family Phase 3
+  (Phi/Qwen prediction underpowered — Phi refusal pre-collapsed, Qwen only 3 jailbreaks).
 
 ## Reproduce-from-scratch pointers
 
