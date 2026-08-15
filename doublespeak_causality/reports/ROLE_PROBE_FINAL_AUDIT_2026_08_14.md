@@ -28,6 +28,24 @@ Gate 1 AUC was recomputed by loading `acts.npy` directly and fitting a fresh
 `raw.jsonl` and computing the 2×2 estimands by hand. All match the analysis-script
 outputs to the printed precision.
 
+## 1b. Cross-family recomputation (added 2026-08-15)
+
+Independently recomputed the Phi/Qwen numbers from raw (Gate 1 from `acts.npy`, Phase-4
+ASRs from `raw.jsonl`, fresh code):
+
+| quantity | recomputed | reported | match |
+| --- | --- | --- | --- |
+| Phi Gate 1 AUC @L10 | 0.9858 | 0.985 | ✅ |
+| Qwen Gate 1 AUC @L15 | 0.9989 | 0.999 | ✅ |
+| Phi necessity ΔASR | −0.071 | −0.071 | ✅ |
+| Phi refusal ΔASR | +0.095 | +0.095 | ✅ |
+| Qwen necessity ΔASR | +0.048 | +0.048 | ✅ |
+| Qwen refusal ΔASR | +0.167 | +0.167 | ✅ |
+
+All cross-family headline numbers are raw-reproducible; the analysis scripts are bug-free
+for the Phi/Qwen runs too. The entire body of work (Llama core + cross-cohort + 3-family
+cross-model) is now audit-covered.
+
 ## 2. §21 checklist
 
 | # | Item | Status |

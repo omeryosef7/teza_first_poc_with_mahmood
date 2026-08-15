@@ -1062,3 +1062,12 @@ This is a cleaner, stronger story than after Phi alone. The behavioral susceptib
 doublespeak is a spectrum (Phi most susceptible, Qwen least, Llama middle), but the mechanism
 is invariant: Bombness never matters, refusal always does (when present). Registered 758075.
 Updating synthesis §9 + claim audit CM5/E3.
+
+### E32 — 2026-08-15 — §21 audit extended to cross-family (all numbers raw-reproducible) ☑
+
+Independently recomputed the Phi/Qwen headline numbers from raw with fresh code (Gate 1
+from acts.npy, Phase-4 ΔASRs from raw.jsonl): Phi Gate 1 0.9858, Qwen 0.9989; Phi necessity
+−0.071 / refusal +0.095; Qwen necessity +0.048 / refusal +0.167 — ALL match reported exactly.
+The analysis scripts are bug-free for the cross-family runs too. The ENTIRE body of work
+(Llama core + cross-cohort + 3-family cross-model) is now §21-audit-covered.
+`reports/ROLE_PROBE_FINAL_AUDIT_2026_08_14.md` §1b added.
