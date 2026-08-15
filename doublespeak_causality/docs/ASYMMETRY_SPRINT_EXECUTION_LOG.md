@@ -10286,3 +10286,11 @@ accurate rather than a borrowed leakage claim.
 Queue empty. Nothing PENDING, nothing of mine to launch.
 
 ---
+### 11:45 — second AdvBench integrity failure (758599): `ValueError: word 'violet' not found in text (offset localization)`
+A different fault from 758597's cluster straddle — here a recorded codeword is absent from its own
+templated text. **Two independent integrity failures on the new corpus in a row**, so the §20.8
+downgrade recorded at 10:45 should be held more loosely than "three remaining items" implies: the
+corpus is **not yet usable**, and its remaining cost is whatever their debugging settles at, not a
+number I can quote today. The held-out arithmetic (≈312 pooled) still stands *if* it stabilises.
+Their corpus, their debugging cycle — not narrating further iterations unless the outcome changes
+§20's standing. Queue empty; nothing of mine.
