@@ -1347,3 +1347,19 @@ Launched 3 FULL scope runs on held-out test (VALN=0, all items), L40S:
 D3 question: does the activation refusal-reduction collapse as scope narrows toward the
 token attack's one-layer/one-position budget? If yes, the "activation >> tokens" hierarchy
 is substantially a SCOPE artifact, not the medium. Results pending.
+
+---
+
+### E48 — Phase 6/D3: analysis script ready; runs pending on fair-share (2026-08-15)
+
+3 full scope runs (758248/9/50) sat PENDING(Priority) ~50min — global fair-share, not
+capacity (many jobs run this session). Resubmitted without --constraint=l40s (758290/1/2);
+still Priority-pending, confirming it's fair-share (recovers with time), so holding.
+
+Zero-GPU prep: wrote scripts/analyze_d3_scope.py — reads the validate_refusal_directions
+results.csv per scope and tabulates ablate_gain (refusal reduction), random control, and
+projection separation per scope, with a verdict on whether the activation attack collapses
+as scope narrows (all_layers -> single_layer -> decision). Tested on the smoke dir (parses
+correctly: decision gain +0.00, sep_ho +0.28). Ready to run the instant the trio lands.
+D3 pipeline now complete end-to-end (hook+wiring+wrapper+analyzer, all tested); only GPU
+scheduling remains.
