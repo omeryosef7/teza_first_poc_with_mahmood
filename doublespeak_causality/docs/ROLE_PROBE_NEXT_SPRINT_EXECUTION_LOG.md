@@ -1531,3 +1531,20 @@ normalized_concept/split/target_concept — advbench had all but normalized_conc
 stamp normalized_concept = target_concept (clearharm convention where they're equal). Rebuilt
 (cached), leakage-0 still holds. Relaunched smoke extraction 758597. Caught by actually running
 the pipeline — the value of executing, not just building.
+
+---
+
+### E57 — Phase 10 §14.3: fix advbench split discipline (2 issues assert caught) (2026-08-15)
+
+Smoke extraction 758597 crashed assert_split_discipline with TWO real violations (the guard
+working as defense-in-depth):
+1. concept leak train/test ['hack']: I clustered by exact-case concept, but the guard
+   lowercases the split key -> 'hack'/'Hack' are one cluster and must share a split. FIXED:
+   cluster + normalized_concept + self-check all use LOWERCASED concept.
+2. CARROT-in-train: the guard reserves carrot(->dev)/bomb(->absent) codewords for the
+   clearharm/fixed-pair studies; my pool used them. FIXED: exclude carrot/bomb from the
+   AdvBench codeword lexicon.
+Rebuilt: train 241 / dev 91 / test 85 pairs; codeword-disjoint (12/4/4), concept-disjoint
+(69/23/23), balanced pos/neg. Added a CPU pre-check: assert_split_discipline PASSES with the
+extraction's default carrot/bomb args BEFORE spending GPU (catches this class without a GPU
+round-trip). Launching full extraction. Both bugs found by actually running the pipeline.

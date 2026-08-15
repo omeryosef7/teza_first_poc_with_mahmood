@@ -100,7 +100,9 @@ def assign_splits_leakage0(records, codewords, seed=7):
     codeword pool is partitioned into 3 DISJOINT sub-pools so a codeword seen in one
     split never appears in another (concept-disjoint AND codeword-disjoint). ~60/20/20
     over concept clusters, assigned deterministically by sorted concept hash."""
-    concepts = sorted({r["target_concept"] for r in records})
+    # cluster by LOWERCASED concept (assert_split_discipline lowercases the split key, so
+    # 'hack' and 'Hack' are one cluster and must share a split).
+    concepts = sorted({r["target_concept"].lower() for r in records})
     # deterministic shuffle by hash(concept, seed) so it is reproducible w/o RNG state
     def hkey(c):
         return hashlib.sha256(f"{seed}:{c}".encode()).hexdigest()
@@ -146,7 +148,10 @@ def main():
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     demo_cache = json.load(open(B.DEMO_CACHE)) if os.path.exists(B.DEMO_CACHE) else {}
-    cws = [w for w in B.CODEWORD_LEXICON if B.is_single_token(tok, w)]
+    # exclude carrot/bomb: assert_split_discipline reserves them (carrot->dev, bomb->absent)
+    # for the clearharm/fixed-pair studies; they must not be AdvBench codewords.
+    RESERVED = {"carrot", "bomb"}
+    cws = [w for w in B.CODEWORD_LEXICON if B.is_single_token(tok, w) and w.lower() not in RESERVED]
     assert len(cws) >= 3, f"need >=3 single-token codewords, got {len(cws)}"
 
     items = extract_advbench_concepts(tok, client, args.model, use_api, args.limit or args.smoke)
@@ -163,23 +168,24 @@ def main():
     from collections import defaultdict
     idx_by_split = defaultdict(list)
     for j, jt in enumerate(items):
-        idx_by_split[split_of[jt["concept"]]].append(j)
+        idx_by_split[split_of[jt["concept"].lower()]].append(j)
 
     records = []
     for i, it in enumerate(items):
-        c = it["concept"]
-        codeword = concept_cw[c]
-        s = split_of[c]
+        c = it["concept"]            # exact-cased (needed for the verbatim swap in build_item)
+        ck = c.lower()               # cluster/split key (matches assert_split_discipline)
+        codeword = concept_cw[ck]
+        s = split_of[ck]
         pool = idx_by_split[s]
         wrong = it  # degenerate fallback (single-concept split): build_item may assert-skip
         if len(pool) > 1:
             pos = pool.index(i)
             for step in range(1, len(pool)):
                 cand = items[pool[(pos + step) % len(pool)]]
-                if cand["concept"] != c:
+                if cand["concept"].lower() != ck:
                     wrong = cand
                     break
-        wrong_cw = concept_cw.get(wrong["concept"], pools[s][0])
+        wrong_cw = concept_cw.get(wrong["concept"].lower(), pools[s][0])
         if wrong_cw == codeword:
             # pick a different codeword from THIS split's pool only — never fall back to
             # the global lexicon (that reintroduces cross-split codeword leakage). If the
@@ -195,8 +201,8 @@ def main():
                                it["intent_cluster"], it["instruction"], c, codeword,
                                wrong["concept"], wrong_cw, demo_cache, client, args.model,
                                args.num_demos, args.seed, use_api)
-            rec["split"] = split_of[c]
-            rec["normalized_concept"] = c          # cluster/split key (== target_concept,
+            rec["split"] = split_of[ck]
+            rec["normalized_concept"] = ck         # cluster/split key (lowercased concept,
             #                                        matching clearharm); required by
             #                                        probe_dataset.build_items
             rec["wrong_codeword"] = wrong_cw       # tracked for the leakage self-check
@@ -213,10 +219,10 @@ def main():
     # wrong_cw would leak a held-out codeword into a train example otherwise).
     concept_splits, cw_splits = defaultdict(set), defaultdict(set)
     for r in records:
-        concept_splits[r["target_concept"]].add(r["split"])
-        cw_splits[r["codeword"]].add(r["split"])
-        cw_splits[r.get("wrong_codeword")].add(r["split"])
-    cw_splits.pop(None, None)
+        concept_splits[r["normalized_concept"]].add(r["split"])   # lowercased cluster key
+        cw_splits[r["codeword"].lower()].add(r["split"])
+        cw_splits[str(r.get("wrong_codeword")).lower()].add(r["split"])
+    cw_splits.pop("none", None)
     straddle_concept = [c for c, s in concept_splits.items() if len(s) > 1]
     straddle_cw = [c for c, s in cw_splits.items() if len(s) > 1]
 
