@@ -1676,3 +1676,25 @@ token length with neutral filler, so the codeword lands at the same position; ex
 re-localizes so only prompt strings need fixing). Built advbench_doublespeak_v2_lenmatched.json
 (demos_equalized=True); v1 restored to match the committed Phase-10 runs. Next: re-extract +
 re-Gate1 on v2 to confirm position_only drops to chance.
+
+---
+
+### E65 — Phase 9 + Phase 11 completion status (2026-08-15)
+
+**Phase 9 (§13, mechanism-derived attack objective): DONE as a by-design negative.**
+reports/PHASE9_ATTACK_OBJECTIVE_DECISION.md records it: §13 is conditional on a causal state
+emerging; Story A (Bombness epiphenomenal across every causal test incl. Phase 5 + cross-family
++ Phase 10) falsifies the premise; optimizing an epiphenomenal direction is a CI-backed negative
+already observed in the GCG/Gate-7 attack-objective work. Not run, by design — the plan's
+intended branch.
+
+**Phase 11 (§15, Section-20 paper-hygiene): owned + substantially complete by the asymmetry/
+parallel session; coordinated, not duplicated.** Per ASYMMETRY_SPRINT_EXECUTION_LOG: §20.1-20.5,
+§20.7 complete/traced/verified; D3 resolved; §20.6/§20.8/§20.9 in-progress there (blocked on that
+thread's own one-job/one-decision). The parallel session actively tracks this branch (tags the
+role-probe jobs, records no conflict). The plan (§15) itself marks these "secondary to the causal
+probe experiment." The role-probe sprint does not drive §20 hygiene -- doing so would re-collide
+(cf. the D3 collision, E50). Status: coordinated; the asymmetry thread completes its own §20.6/8/9.
+
+Both non-role-probe-core items now have a definitive, documented status. The role-probe plan
+itself (Gates 0-4, Phases 1-8, 5, 6/D3, 10) is complete + verified (E64) + figured (E63).
