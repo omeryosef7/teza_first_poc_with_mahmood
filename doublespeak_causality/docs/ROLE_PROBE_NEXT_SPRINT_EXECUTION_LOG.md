@@ -1167,3 +1167,15 @@ both (module auto-adapted to Qwen's 40-layer stack).
   stacks), so trajectory is qualitative.
 Report §"Cross-family" updated. Still representation-energy only; Q3/Q4 behavioral remain
 GPU-gated + go-ahead-gated.
+
+---
+
+### E38 — unit test hardening phase5_decompose (zero-GPU) (2026-08-15)
+
+Added tests/test_phase5_decompose.py (4 tests, GPU-free, 0.32s). Plants a known donor
+shift Δh = a·v_bomb + b·refusal + c·perp in synthetic activations and asserts:
+- decompose() recovers the planted energy fractions exactly (bomb/refusal/remainder);
+- the QR plane split is exact (frac_bomb+frac_refusal == 1-remainder for orthogonal axes);
+- the B9 index-alignment selfcheck returns cos≈1 when v_bomb == normalized diff-of-means,
+  and ~0 when handed a misaligned axis (both OK and WARN paths verified).
+Locks in the E36/E37 numbers against future refactors. All pass.
