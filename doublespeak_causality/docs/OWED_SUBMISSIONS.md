@@ -322,3 +322,19 @@ corpus→bench converter (resolve `demo_ids`, recover `harmful_word` and a raw i
 via `original_clearharm_id`) plus a decision on assembly-path parity** — bypassing
 `build_conditions` would run AdvBench through a different path than the ClearHarm validation it is
 compared against, which is its own confound. Scope unknown; **not an idle-queue filler.**
+
+### 2026-08-15 — item 2 amendment 4: AdvBench is position/length-confounded
+Their `d485fe00`: AdvBench Gate1 decodes at 0.982 but `position_only` control reaches **0.785** —
+the builder did not length-match doublespeak/benign demos (ClearHarm did), so codeword position and
+length correlate with the label. Leakage fields are still 0; **leakage-zero is not confound-free.**
+
+`v_bomb_advbench.pt` is a **bombness** direction (built perpendicular to refusal) and does **not**
+close the refusal-validation gate.
+
+Effect on §20.8: probably inert for arm contrasts (those hold the prompt fixed and vary the
+suffix/direction, while the confound is between-condition) — **reasoning, not a checked result**.
+But it raises the price of the comparability decision: pooling now requires arguing the construction
+difference is inert for the endpoint, not merely deciding to pool.
+
+**Route status: promising and unproven.** Three open qualifications — converter + assembly-path
+parity, the position/length confound, and the strengthened comparability argument.

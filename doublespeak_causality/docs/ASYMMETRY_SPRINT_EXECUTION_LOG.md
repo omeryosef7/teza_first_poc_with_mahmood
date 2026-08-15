@@ -10382,3 +10382,49 @@ Queue empty. Nothing launched — deliberately, because the job I was about to r
 at `load_items` in the first second.
 
 ---
+## 2026-08-16 13:45 — a third qualification on AdvBench: **it is position/length-confounded where ClearHarm is not.**
+
+*(Wall clock 16:31 UTC.)* Their `d485fe00`: *"advbench Gate1 decodable (0.982) but
+position-confounded ... the AdvBench builder did not length-match doublespeak/benign demos
+(clearharm did), so codeword position + length correlate with the label. Honest corpus
+limitation."* Their control `position_only` reaches **0.785**.
+
+**This is not covered by anything I checked.** At 12:45 I discharged the integrity caution because
+all four leakage fields overlap 0 — and that remains true. But **leakage-zero is not
+confound-free**: the two corpora are built differently, and the difference is systematic.
+
+`v_bomb_advbench.pt` was also built, but it is a **bombness** direction built *perpendicular to
+refusal* — it does **not** close §20.8's gate, which needs the **refusal** axis validated on
+AdvBench. The gate stands exactly where 13:15 left it.
+
+### What the confound does and does not do to §20.8
+**Probably does not bias the arm contrasts §20.6/§20.9 need.** Those hold the prompt fixed and vary
+the *suffix/direction*; a doublespeak-vs-benign demo length asymmetry is a between-*condition*
+property, not a between-*arm* one. I am flagging that as reasoning, not as a checked result.
+
+**Does raise the price of the comparability decision** — which I have been carrying as the softer
+of the two remaining items. Pooling ClearHarm and AdvBench now means pooling corpora that differ in
+a way **known to be exploitable by a linear probe at 0.785**. Any pooled estimate has to argue that
+the difference is inert for its endpoint, not merely assume it. That is a stronger obligation than
+"decide whether to pool".
+
+**Three qualifications now sit on the AdvBench route, none of them fatal, none of them mine to
+fix:** the converter + assembly-path parity problem (13:15), the position/length confound (here),
+and the comparability argument that must now address it.
+
+### Recording a pattern in my own reporting
+This is the third time in six ticks that a claim about AdvBench needed narrowing —
+"leakage-0 verified" → scoped to concept/codeword (11:15); "short validation job" → wrong (13:15);
+"clean, caution discharged" → clean *on leakage*, confounded on construction (here). Each
+narrowing came from someone else's evidence, not from my checking further. **The corpus is younger
+than my confidence in it has been**, and §20.8's route should be described as *promising and
+unproven* until its owner says otherwise.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3 resolved. §20.8 route: **promising, three open
+qualifications.** §20.6/§20.9 blocked.
+
+### SLURM
+1 job, theirs (`phase4_bomb` 758657). Nothing of mine, nothing to launch.
+
+---
