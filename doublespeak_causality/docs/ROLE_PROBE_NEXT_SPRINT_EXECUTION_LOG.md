@@ -1637,3 +1637,15 @@ length-matched second corpus for a clean AdvBench probe; the deferred AdvBench d
 
 Session bug-hunt total: 13 real bugs found+fixed (7 from 2 adversarial review workflows +
 6 from executing the Phase-10 pipeline), 25 unit tests green.
+
+---
+
+### E63 — §17 capstone figure generated (2026-08-15)
+
+The existing make_*_figure.py scripts are hardcoded to other sprints (no argparse), so wrote
+a self-contained scripts/make_roleprobe_causal_figure.py from the AUDITED headline ΔASRs.
+figures/roleprobe_causal_summary.png: grouped bars, Bombness ablation vs refusal ablation
+across Llama/Phi/Qwen clearharm + per-example Phase 5 + AdvBench Phase 10. Bombness bars sit
+in the near-zero band (-0.05..+0.06) everywhere; refusal bars are large (+0.10..+0.36). The
+representation≠behavior dissociation with cross-family + per-example + second-corpus external
+validity, in one figure (§17 Figure 3/4 combined). No GPU, no harmful text.
