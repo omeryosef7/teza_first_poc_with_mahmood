@@ -108,10 +108,27 @@ python -m src.probes.gate1_eval --run <run_dir> --position final_prompt
 Artifacts in the run dir: `acts.npy`, `items.jsonl`, `gate1_codeword_last.json`,
 `gate1_final_prompt.json`, `geometry_vs_refusal.json`, `RUNMETA.json`, `DONE.json`.
 
+## 6b. Space-choice robustness (normalized mid-block, upstream's space) — run 758099
+
+We fit the headline probe in the raw post-block residual (D1) so Phase-4 steering is
+well-defined. As a robustness check (§A3.1) we re-extracted in **upstream's own space** —
+`post_attention_layernorm` output (RMSNorm-normalized mid-block = upstream's
+`all_pre_mlp_hidden_states`) — and refit Gate 1:
+
+| space | holdout AUC | layer | max control |
+| --- | --- | --- | --- |
+| raw post-block residual (D1, headline) | 0.997 [0.990,1.000] | L11 | 0.587 |
+| **normalized mid-block (upstream)** | **0.994 [0.984,1.000]** | L7 | 0.587 |
+
+Bombness decodes essentially identically in both (controls near chance, token-id 0.500 in
+both). **The Gate-1 result is not an artifact of the residual-space choice**; it holds in
+upstream's own space too (best layer slightly earlier, L7 vs L11, consistent with the
+mid-block being one sub-block upstream).
+
 ## 7. Limitations / next
 
-- Single cohort (clearharm). The generated cohort is a held-out replication (extract
-  with `COHORT=generated`); cross-cohort transfer is a stronger generalization test.
-- The normalized-space robustness arm (upstream's mid-block space) is not yet run.
+- Single cohort (clearharm) for the headline; the generated cohort is a held-out
+  replication (§9 synthesis) and Phi/Qwen are cross-family replications.
+- Normalized-space robustness arm: **DONE** (§6b, decodes at 0.994).
 - Bombness vs Refusalness *predictive* comparison (which predicts DS success) is
   Phase 3; causal intervention is Phase 4. Gate 1 is the precondition, now met.

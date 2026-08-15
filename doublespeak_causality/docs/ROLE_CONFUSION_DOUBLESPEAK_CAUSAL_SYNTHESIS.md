@@ -211,7 +211,7 @@ No new attack objective is warranted by these results.
 2. **A re-conditioned generated-cohort Phase-4** (narrower band / lower dose) to get a clean
    manipulation check there (E22); the clearharm causal result is complete.
 3. **Second corpus + prospective power (Phase 10)** — publication-grade behavioral n.
-4. Normalized-space robustness arm; component-restricted patching (Phase 5).
+4. Component-restricted patching (Phase 5); normalized-space arm DONE (0.994, robust).
 5. Independent adversarial audit (§21) against raw artifacts before write-up.
 
 _Done since first draft: sufficiency (§8.5, run 757992) and generated-cohort Gate 1 +

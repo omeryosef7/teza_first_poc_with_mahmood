@@ -1081,3 +1081,14 @@ STALE "not run" lines (the doc-drift the prior sprint's audit flagged):
 - claim audit limitations: "Cross-family (Phi/Qwen) ... not yet run" → 3-family Gate 1 +
   Phi/Qwen behavioral ARE done (CM1–CM7); corrected, with the genuinely-open items listed.
 No numeric claim changed; documentation now internally consistent.
+
+### E34 — 2026-08-15 — Normalized-space robustness arm: Gate 1 robust to space choice (D1) ☑
+
+Re-extracted in upstream's normalized mid-block space (post_attention_layernorm, run 758099)
+and refit Gate 1: holdout AUC **0.994** [0.984,1.000] @L7, controls near chance (token-id
+0.500). Compared to raw post-block residual (D1 headline, 0.997 @L11): Bombness decodes
+essentially identically in BOTH spaces. **The Gate-1 result is not an artifact of the
+residual-space choice** — it holds in upstream's own space too. This validates D1 (chosen
+for steerability) and pre-empts the "cherry-picked the space" question; full-circle to §2A.
+BOMBNESS_PROBE_VALIDATION §6b + synthesis updated. Registered 758099. The last
+clearly-in-scope autonomous item is complete.
