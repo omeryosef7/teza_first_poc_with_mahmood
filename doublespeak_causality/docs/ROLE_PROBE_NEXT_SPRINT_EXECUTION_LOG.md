@@ -1518,3 +1518,16 @@ contaminated controls. Source AdvBench sha256 6cd1a5c6..., gpt-4o-mini demos. te
 detectable ~0.17 at p_disc 0.40 — a real power gain but still bounded). Committed (clearharm
 corpus is tracked, so follow convention). Next §14.3: extraction + Gate 1 + headline causal
 on advbench (CORPUS override wired into the extract/phase4 wrappers).
+
+---
+
+### E56 — Phase 10 §14.3: fix corpus schema (normalized_concept); extraction relaunched (2026-08-15)
+
+First advbench extraction (758578) crashed KeyError 'normalized_concept' at probe_dataset.py:146.
+Cause: my builder reused build_doublespeak_split.build_item (v1-era) which emits target_concept
+but not the v3-era normalized_concept (the cluster/split key). Schema diff confirmed that was
+the ONLY missing required field (build_items needs codeword/cohort/example_id/harm_category/
+normalized_concept/split/target_concept — advbench had all but normalized_concept). Fixed:
+stamp normalized_concept = target_concept (clearharm convention where they're equal). Rebuilt
+(cached), leakage-0 still holds. Relaunched smoke extraction 758597. Caught by actually running
+the pipeline — the value of executing, not just building.

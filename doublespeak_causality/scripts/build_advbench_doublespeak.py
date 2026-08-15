@@ -196,6 +196,9 @@ def main():
                                wrong["concept"], wrong_cw, demo_cache, client, args.model,
                                args.num_demos, args.seed, use_api)
             rec["split"] = split_of[c]
+            rec["normalized_concept"] = c          # cluster/split key (== target_concept,
+            #                                        matching clearharm); required by
+            #                                        probe_dataset.build_items
             rec["wrong_codeword"] = wrong_cw       # tracked for the leakage self-check
             rec["wrong_concept"] = wrong["concept"]
             records.append(rec)
