@@ -10039,3 +10039,30 @@ theirs to apply to their submissions. **D3 remains 0 of 3 arms at full n**, and 
 fixed at 04:45 stands unchanged. Diff otherwise unchanged.
 
 ---
+## 2026-08-16 05:45 — D3 `decision` arm at **full n** (VALN=0). 1 of 3. No comparison yet.
+
+*(Wall clock 09:56 UTC.)* 758292 COMPLETED (8:40). **Header checked first this time:**
+`SCOPE=decision LAYER=18 SPLIT=test VALN=0 ALPHA=1.0` — `VALN=0` is the full eval, **260 raw rows**
+against the smoke's 40.
+
+| cohort | sep_ho | **ablate** | induce | valid |
+|---|---|---|---|---|
+| existing | +0.221 | **+0.000** (rand +0.000) | +1.000 | False |
+| clearharm | +0.174 | **+0.024** (rand +0.000) | +0.800 | True |
+
+Baselines: harmful refusal **0.881**, induce-base (harmless) 0.000.
+
+So the smoke's *direction* survives at full n — decision-scope ablation moves behaviour by 0.000 and
+0.024 — but that sentence is the whole of what this arm licenses. **The two comparators
+(`all_layers`, `single_layer`) are 758290/758291, both still RUNNING at 9:46.** Per the rule fixed
+at 04:45, the D3 question is a *comparison*, and a single arm answers none of it: an ablate of ≈0 at
+decision scope is only interesting against a materially larger ablate at all-layer scope, and if
+that one is also ≈0 the finding is about this held-out setup, not about scope.
+
+One change worth noting against the smoke: clearharm now returns **`valid=True`** where the
+4-prompt run said False. That is the validation gate flipping on real n — and a reminder that the
+smoke's `valid=False`, which I read at 04:15 as "D2 showing up as a measurement", was noise.
+
+**No interpretation recorded. 1 of 3 arms at full n.**
+
+---
