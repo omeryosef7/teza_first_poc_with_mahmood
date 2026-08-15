@@ -1272,3 +1272,26 @@ Both all-arms {base,full,bomb,refusal,remainder,random}, 42 test prompts, Strong
 The behavioral question: does per-example component subtraction/addition move ASR, or is
 the manipulated Bombness still epiphenomenal (predicted: null bomb arm, refusal already
 known to be the lever)? Results pending.
+
+---
+
+### E44 — Phase 5 necessity result: per-example Bombness patching = NULL (2026-08-15)
+
+Full necessity run 758162 DONE (n=42, base ASR 0.167). Per-example subtraction of each
+example's OWN component at codeword L8-18:
+
+  arm        ΔASR     McNemar b/c   manip readoutΔ
+  bomb       +0.048   b=1 c=3       -18.68  (strong, specific manipulation)
+  random     +0.048   b=0 c=2       -0.16
+  full       -0.048   b=4 c=2       -10.48
+  refusal     0.000   b=1 c=1       +0.07
+  remainder   0.000   b=3 c=3       +1.21
+
+DECISIVE: bomb subtraction removed Bombness STRONGLY and SPECIFICALLY (readout -18.7 vs
+norm-matched random -0.16) yet produced the SAME ΔASR as random (+0.048, both n.s.,
+McNemar discordant tiny). A potent, specific manipulation of Bombness → no behavioral
+effect beyond random noise. This is Story A (Bombness behaviorally epiphenomenal) confirmed
+by the SHARPEST causal test in the sprint — per-example component patching, not mean-
+direction ablation. Base ASR 0.167 limits necessity headroom, but the manip check proves
+the representation WAS moved, so the null is a real dissociation. Sufficiency run 758163
+(add into benign, higher headroom) pending.
