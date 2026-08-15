@@ -19,15 +19,24 @@ not pooled with ClearHarm. Purpose: external validity and higher behavioral powe
 | codeword | **0.982** [0.96,1.00] | 0.785 | 0.752 | 0.500 |
 | decision | **1.000** | 0.785 | 0.752 | 0.500 |
 
-Bombness **decodes strongly** — decodability replicates on the second corpus. **But the
-probe FAILS the clean-control criterion**: `position_only`/`length_only` reach 0.75–0.79.
-The controls are identical across readout positions, so this is a **property of the
-corpus, not the readout**: my AdvBench builder did not length-match the doublespeak vs
-benign demo blocks (ClearHarm did — its `position_only` was 0.557), so the codeword's
-absolute position and the prompt length correlate with the label. **This is a
-corpus-construction limitation, stated not hidden.** The probe (0.982) still far exceeds
-the confound (0.79) so real Bombness signal is present, but a clean second-corpus probe
-requires demo-length-matching (future builder work).
+Two corpus versions were built:
+
+| corpus | Gate 1 | holdout AUC | position_only | length_only |
+| --- | --- | --- | --- | --- |
+| v1 (demos not length-matched) | FAIL | 0.982 | 0.785 | 0.752 |
+| **v2 (length-matched, `--equalize-demos`)** | **PASS** | **0.9995** | **0.531** | **0.529** |
+
+The v1 build did not length-match the doublespeak vs benign demo blocks, so the codeword's
+absolute position (mean gap **−18 tokens**) and prompt length correlated with the label —
+`position_only`/`length_only` reached 0.75–0.79 (a property of the corpus, not the readout).
+**Fixed in v2:** the builder now pads the shorter demo block with neutral filler to equal
+token length (`equalize_demo_lengths`), collapsing the codeword-position gap to **1.1 tokens**.
+On v2, Bombness **decodes essentially perfectly (AUC 0.9995) with every control at chance**
+(position 0.531, length 0.529, token-id 0.500, label-shuffle 0.494, random-dir 0.472) — a
+**clean, confound-free second-corpus probe (Gate 1 PASS).** Decodability external validity is
+therefore established cleanly, not just as a bounded signal. (The behavioral results, Result 2,
+are on v1 and are confound-robust regardless — they use the refusal lever + interventions, not
+the probe.)
 
 ## Result 2 — Phase 4: Story A replicates at higher power (the confound-robust core)
 

@@ -1698,3 +1698,17 @@ probe experiment." The role-probe sprint does not drive §20 hygiene -- doing so
 
 Both non-role-probe-core items now have a definitive, documented status. The role-probe plan
 itself (Gates 0-4, Phases 1-8, 5, 6/D3, 10) is complete + verified (E64) + figured (E63).
+
+---
+
+### E66 — Length-matched second corpus: CLEAN Gate 1 (confound fixed) (2026-08-15)
+
+v2 extraction 758955 DONE. Gate 1 on the length-matched corpus: **PASS**, holdout AUC
+**0.9995**, ALL controls at chance (position_only 0.531 [was 0.785], length_only 0.529 [was
+0.752], token-id 0.500, label-shuffle 0.494, random-dir 0.472). The demo-length-matching fix
+(equalize_demo_lengths, position gap 22->1.1 tokens) fully removed the P10d confound. The
+second corpus now has a CLEAN, confound-free Bombness probe -> decodability external validity
+established cleanly (not just as a bounded signal). Updated PHASE10_REPLICATION Result 1
+(v1-vs-v2 table) + claim-table P10d (DISCLOSED LIMITATION -> VERIFIED clean). Behavioral
+results (Result 2) remain on v1 and are confound-robust regardless. One item left: the
+AdvBench dual-probe (needs v2 train+test base outcomes).
