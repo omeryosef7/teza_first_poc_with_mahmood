@@ -9928,3 +9928,54 @@ running.
 1 job, not mine to manage. Nothing PENDING on the asymmetry side, nothing to launch.
 
 ---
+## 2026-08-16 04:15 — D3 `decision` scope lands: **ablation does nothing at the scope a token attack can reach.** One arm of three.
+
+*(Wall clock 09:15 UTC.)* 758209 COMPLETED (17:25, n-801).
+`d3_actscope_decision_L18_test_20260815_085800_758209`, 2 rows / 40 raw.
+
+At **decision scope** — one layer (L18), decision position only, prefill only, α=1.0, held-out,
+nothing selected on eval:
+
+| cohort | sep_ho | **ablate** | induce | valid |
+|---|---|---|---|---|
+| existing | +0.365 | **+0.000** (rand +0.000) | +1.000 | **False** |
+| clearharm | +0.281 | **+0.000** (rand +0.000) | +0.750 | **False** |
+
+**Ablating the refusal direction at the position a token attack actually reads produces exactly
+zero behavioural change — in both cohorts.** Inducing along the same axis at the same scope is
+near-total (+1.000 / +0.750). So the axis is *live* at that position for pushing refusal **up**, and
+inert for pushing it **down**.
+
+That asymmetry-within-the-asymmetry is worth stating plainly because it is not what a pure
+scope-mismatch story predicts: if `decision` scope were simply too weak an intervention, induce
+should be attenuated too. It is not.
+
+Both cohorts return **`valid=False`** at this scope — the direction fails its own validation gate
+where the GCG objective reads it, which is **D2** (fit-position vs use-position mismatch) showing
+up as a measurement rather than as an argument.
+
+### What this does NOT yet establish
+**Only the `decision` arm ran.** `all_layers` (the published Arditi configuration) and
+`single_layer` were not, so the scope *comparison* — the entire point of D3 — is not yet available.
+The headline question stays open: is `all_layers` ablation also ~0 here (in which case scope is not
+the explanation and something about this held-out setup differs from the published result), or does
+it show the expected effect (in which case scope explains a large part of the
+activation-vs-token gap)?
+
+Both comparators are **one sbatch each**, ~17 min:
+`--export=ALL,SCOPE=all_layers,LAYER=18,SPLIT=test` and `SCOPE=single_layer`.
+
+**I have not launched them.** This is the other session's experiment, mid-flight, and they are the
+likely next thing that session submits; duplicating would waste a slot and muddy whose run is whose.
+Flagged rather than taken — but if it is still unrun next tick with the queue idle, it is the single
+highest-value GPU item available to either programme, because it bears on the claim this sprint is
+named after.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete, traced, verified. Watch item **advanced, not closed**: D3 has 1 of 3
+scopes. Owed list otherwise unchanged (five decisions, no jobs).
+
+### SLURM
+Queue empty. Nothing PENDING, nothing of mine to launch.
+
+---
