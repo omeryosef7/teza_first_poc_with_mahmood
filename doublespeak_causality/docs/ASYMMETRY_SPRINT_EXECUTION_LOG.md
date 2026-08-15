@@ -10294,3 +10294,4 @@ corpus is **not yet usable**, and its remaining cost is whatever their debugging
 number I can quote today. The held-out arithmetic (≈312 pooled) still stands *if* it stabilises.
 Their corpus, their debugging cycle — not narrating further iterations unless the outcome changes
 §20's standing. Queue empty; nothing of mine.
+### 12:15 — idle. Queue empty, no new artifacts, no new commits (other session quiet since their AdvBench failures). Diff unchanged.
