@@ -421,6 +421,43 @@ only so the comparison is not re-derived and believed.
 
 ---
 
+## ⚠️ Read first: D3 supplies a competing explanation for the gap §20 is interpreting (2026-08-15)
+
+§20's results are measurements and stand. **The framing they sit inside does not, unmodified.**
+
+The Phase 6 scope-matched activation control (`d3_actscope_*_L18_test_*_7582{90,91,92}`, all three
+arms at full eval n=260 raw rows, same held-out split, α=1.0) ran the *same* refusal-direction
+ablation at three intervention scopes. `ablate_gain = refusal_rate(base) − refusal_rate(ablated)`,
+harmful baseline 0.881:
+
+| scope | existing | clearharm |
+|---|---|---|
+| all_layers (the published configuration) | +0.571 | +0.810 |
+| single_layer (L18, all positions/steps) | +0.429 | +0.452 |
+| **decision (L18, decision position, prefill only)** | **+0.000** | **+0.024** |
+
+**At the scope a token attack can reach, the activation intervention is also inert.** The layer
+restriction is cheap (−25 %, −44 %); the *position* restriction is total. So a large share of
+"causal in activation space, unreachable in token space" is a **positional-scope** difference, not
+a medium difference — which is what gap-matrix row **R3/D3** predicted and flagged as *"a
+first-class alternative to H1–H5."*
+
+**What this does not touch:** every token-space negative below (§7.5, §20.5, §20.7). Those are
+measurements. §20.5's floor independently shows the mechanism suffixes do not beat random tokens.
+
+**What it does touch:** the contribution list that follows, and the puzzle in
+`ASYMMETRY_FINAL_SYNTHESIS.md` §0. Both are written as though the asymmetry needs a
+representation-vs-behaviour explanation; a mundane scope account now covers much of it.
+
+**Caveat, stated:** this is the direction-validation endpoint (refusal rate on the probe sets), not
+the doublespeak ASR endpoint the GCG arms use. Carrying it across is an inference, not a
+measurement.
+
+*(Annotation, not a rewrite. The list below is unedited. Reconciling it properly against D3 is a
+substantive editorial change and is recorded as owed in `OWED_SUBMISSIONS.md`.)*
+
+---
+
 ## What §20 changes about the paper
 
 1. **A necessity/usefulness distinction the program was conflating.** The refusal coordinate is

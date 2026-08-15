@@ -250,3 +250,19 @@ the randtok floor as owed. Both have since been executed. Acting on that list no
 
 **Queue state at close: empty.** Every registered §20 computation is done, and every number in
 `SECTION20_RESULTS.md` is traced to an artifact and verified against it.
+
+## 2026-08-15 — item 6: reconcile the asymmetry framing with D3
+
+The Phase 6 scope-matched control (`d3_actscope_*_L18_test_*`, 3 arms, full n) shows the published
+activation ablation is **positional-scope dependent**: +0.571/+0.810 at all-layers, +0.429/+0.452 at
+one layer, **+0.000/+0.024** at one layer and one position — the scope a token attack reaches.
+
+Both `SECTION20_RESULTS.md` and `ASYMMETRY_FINAL_SYNTHESIS.md` now carry an **annotation** at the
+point where the framing is stated. Neither has been rewritten. **Owed:** reconcile §20's
+contribution list and the synthesis's §0 puzzle with a scope account that covers much of the gap —
+substantive editorial work on a headline claim, and a decision about how much of the
+representation-vs-behaviour framing survives.
+
+**Do not treat the token-space negatives as affected**: §7.5, §20.5 and §20.7 are measurements and
+stand. **Do note the endpoint caveat**: D3 is measured on direction-validation (probe refusal
+rates), not doublespeak ASR.

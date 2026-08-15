@@ -7,6 +7,17 @@
 
 ## 0. The question the sprint was built to answer
 
+> ⚠️ **The premise of this puzzle is now partly explained away (2026-08-15).** The Phase 6
+> scope-matched control ran the same ablation at three scopes, full eval, held-out, α=1.0:
+> `ablate_gain` = **+0.571 / +0.810** at all-layers (the published configuration), **+0.429 /
+> +0.452** at one layer, and **+0.000 / +0.024** at one layer *and one position*. The published
+> "causal in activation space" result is an **all-position** intervention; the GCG objective reads
+> **one position**, and at that scope the activation intervention does nothing either. So a large
+> share of the asymmetry below is **positional scope**, not medium — gap-matrix row R3/D3, which
+> flagged exactly this as *"a first-class alternative to H1–H5."* The token-space negatives are
+> unaffected (they are measurements); the *explanation* framed here is. Caveat: that control uses
+> the direction-validation endpoint, not doublespeak ASR. See `SECTION20_RESULTS.md`, top note.
+
 The program had reached a puzzle. A linear refusal direction in Llama-3.1-8B is **causal in
 activation space** — ablating it raises attack success, and it is the locus the whole prior arc
 converged on. Yet **GCG suffixes optimized toward that same direction failed**, performing like
