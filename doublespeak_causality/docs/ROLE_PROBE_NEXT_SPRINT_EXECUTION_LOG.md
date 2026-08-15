@@ -1548,3 +1548,19 @@ Rebuilt: train 241 / dev 91 / test 85 pairs; codeword-disjoint (12/4/4), concept
 (69/23/23), balanced pos/neg. Added a CPU pre-check: assert_split_discipline PASSES with the
 extraction's default carrot/bomb args BEFORE spending GPU (catches this class without a GPU
 round-trip). Launching full extraction. Both bugs found by actually running the pipeline.
+
+---
+
+### E58 — Phase 10 §14.3: fix codeword-locatability (extraction crash on 'violet'); corpus final (2026-08-15)
+
+Full extraction 758599 ran 19min then FAILED: resolve_positions couldn't localize codeword
+'violet' (concept 'id') in a record. Root cause: the LLM concept extractor returned fragile
+short/generic concepts ('id','harm','risk','virus'...) with no length guard on the API path;
+for such concepts the concept->codeword substitution doesn't land the codeword cleanly in
+ALL conditions (7 records had the codeword missing from neutral_prompt). Two fixes:
+1. API concept path now enforces len(concept)>=4 (matches the heuristic path; drops 'id').
+2. Build-loop locatability guard: drop any record whose codeword isn't a standalone word in
+   doublespeak+benign+neutral, so activation_extraction.resolve_positions can never raise.
+Rebuild: 399 records (train 230/dev 81/test 88), 0 locatability failures, split discipline
+PASS, leakage-0. CPU pre-checks now cover all 3 crash classes (schema/discipline/locatability)
+-> no more GPU round-trips for these. Relaunching extraction. 5th bug caught by executing.

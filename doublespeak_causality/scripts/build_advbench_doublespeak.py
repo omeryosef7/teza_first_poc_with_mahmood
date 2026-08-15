@@ -23,6 +23,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -74,6 +75,11 @@ def extract_advbench_concepts(tok, client, model, use_api, limit):
                     concept = w
                     break
         if not concept:
+            continue
+        # reject too-short/fragment concepts (e.g. the LLM returning 'id'): they are
+        # generic, not specifically harmful, and the codeword substitution is fragile in
+        # some conditions (the API path had no length guard, unlike the heuristic).
+        if len(concept) < 4:
             continue
         # enforce the build_conditions swap contract: concept must appear verbatim
         if concept not in instr:
@@ -207,6 +213,15 @@ def main():
             #                                        probe_dataset.build_items
             rec["wrong_codeword"] = wrong_cw       # tracked for the leakage self-check
             rec["wrong_concept"] = wrong["concept"]
+            # locatability guard: the extraction resolves the codeword position in EVERY
+            # condition (doublespeak/benign/neutral). Drop any record where the codeword is
+            # not a locatable standalone word in all three, so activation_extraction's
+            # resolve_positions can never raise mid-run (fragile short/generic concepts).
+            cw_pat = re.compile(r"\b" + re.escape(codeword) + r"\b")
+            if not all(cw_pat.search(rec.get(f, "")) for f in
+                       ("doublespeak_prompt", "benign_prompt", "neutral_prompt")):
+                print(f"  skip {ex_id}: codeword {codeword!r} not locatable in all conditions")
+                continue
             records.append(rec)
         except AssertionError as e:
             print(f"  skip {ex_id}: {e}")
