@@ -287,3 +287,14 @@ with ClearHarm's ≈139 gives **≈312**, past the plan's n=300 (power 0.62 vs 0
 
 *Not launched by this session: it is the other session's corpus and they may be validating it. If
 still unvalidated with an idle queue, it is the highest-value §20 GPU item.*
+
+### 2026-08-15 — item 2 amendment: scope the AdvBench "leakage-0" claim
+Their smoke (758597) refused with `concept leak train/test: ['hack']`. Direct check of the corpus:
+`target_concept` / `normalized_concept` / `wrong_concept` overlap **0** (what the builder verifies),
+but **`intent_cluster` has one straddle — `advbench::hack` in both train and test**. Both checks are
+right about different fields; "leakage-0" is true as the builder scopes it, and my 10:45 use of it
+dropped that scope.
+
+Held-out arithmetic is unaffected (dev+test = 173; pooled ≈312). **Third remaining item added:**
+move `advbench::hack` or rebuild the split, alongside direction validation and the comparability
+decision. Their corpus, their fix — their own pipeline is what refused.

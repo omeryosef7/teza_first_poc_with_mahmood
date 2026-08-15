@@ -10238,3 +10238,51 @@ something finite.
 Queue empty. Nothing PENDING, nothing of mine to launch.
 
 ---
+## 2026-08-16 11:15 — qualifying yesterday's "leakage-0": the AdvBench corpus has **one `intent_cluster` straddling train/test**.
+
+*(Wall clock 15:00 UTC.)* Their AdvBench smoke (758597) FAILED on a real assertion, not
+infrastructure:
+
+```
+concept leak train/test: ['hack']
+CARROT must be held out of train (plan §5.2)
+```
+
+At 10:45 I wrote that the corpus is *"leakage-0 verified"* and leaned on that to downgrade §20.8's
+blockage. **That phrase was accurate about what their builder checks and too broad as I used it.**
+Checked every candidate field directly:
+
+| field | train ∩ test | note |
+|---|---|---|
+| `target_concept` | **0** | what the builder verifies |
+| `normalized_concept` | **0** | " |
+| `wrong_concept` | **0** | " |
+| **`intent_cluster`** | **1** | **`advbench::hack` straddles train and test** |
+| `harm_category` | 1 | constant `advbench`; not meaningful |
+
+So both checks are right about different fields: the **builder** verified concept- and
+codeword-straddle at zero; the **probe extractor** checks `intent_cluster` and correctly refuses.
+Their "leakage-0" claim is true as scoped; my repetition of it dropped the scope.
+
+### What it does and does not change for §20.8
+**Does not change the arithmetic.** Held-out counts are unaffected: dev 87 + test 86 = 173, pooled
+with ClearHarm's ≈139 still ≈312. One straddling semantic cluster does not shrink the corpus.
+
+**Does change how clean it is.** For a behavioural ASR contrast the concern is whether held-out
+prompts are independent of what was fit on, and one shared intent cluster is a *weaker* violation
+than codeword or concept straddle — but it is not nothing, and it is exactly the kind of thing that
+turns into "the effect only holds on prompt families we also trained on" at review. **§20.8's
+remaining cost is now three items, not two:** direction validation, the comparability decision, and
+**whether `advbench::hack` gets moved or the split rebuilt.**
+
+Ledger item 2 amended accordingly. Their job to fix — it is their corpus and their builder — and
+they will hit it immediately, since their own pipeline is what refused.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 unchanged. D3 resolved. §20.8: still downgraded from unexecutable, now with an
+accurate rather than a borrowed leakage claim.
+
+### SLURM
+Queue empty. Nothing PENDING, nothing of mine to launch.
+
+---
