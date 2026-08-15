@@ -150,19 +150,31 @@ contextual Bombness is **decodable and orthogonal to refusal**. The decodable,
 refusal-orthogonal semantic-remapping representation is a **cross-family property** —
 robust across three distinct architectures and three hidden sizes, not a Llama quirk.
 
-**Phi behavioral Phase 3/4 (run 758057, n=42) — a substantive cross-family boundary:**
-- **Bombness-epiphenomenal replicates on Phi**: ablation ΔASR −0.07 (p=0.58, = random, manip
-  check passed); Bombness predicts jailbreak at 0.575 (chance). The epiphenomenal half of
-  Story A holds behaviorally on a second family.
-- **The refusal-is-the-lever half does NOT cleanly replicate on Phi**: Phi's baseline
-  doublespeak refusal rate is **0.048** (Llama 0.64) — the attack already collapses Phi's
-  refusal, so refusal neither predicts jailbreak (proj AUC 0.525) nor has ablation headroom
-  (control +0.095, p=0.39, ns).
-- **Interpretation:** doublespeak's behavioral mechanism is model-dependent — on Llama it
-  works by suppressing an otherwise-strong refusal; on Phi refusal is weak against
-  doublespeak to begin with. The semantic-remapping **representation** is cross-family (3
-  models); the **behavioral refusal-control story** is a Llama property (and Phi is *more*
-  susceptible). Qwen3 behavioral Phase 3/4 not yet run.
+**Behavioral Phase 4 across three families** (Llama 757931/757943/757992, Phi 758057,
+Qwen 758075; manipulation check passed on all):
+
+| model | base refusal | base ASR | Bombness necessity (ΔASR) | refusal ablation (ΔASR) |
+| --- | --- | --- | --- | --- |
+| Llama-3.1-8B | 0.64 | 0.24 | −0.05 (null, =random) | **+0.24, p=0.02** |
+| Phi-4-mini | 0.048 | 0.26 | −0.07 (null, =random) | +0.10, p=0.39 (ns, floor) |
+| Qwen3-14B | 0.119 | 0.071 | +0.05 (null, =random) | **+0.17, p=0.04** |
+
+Two cross-family conclusions:
+1. **Bombness is behaviorally epiphenomenal on all three families** — necessity null (=
+   random) everywhere, manipulation check passed everywhere. The representation≠behavior
+   dissociation is cross-family.
+2. **Refusal is the causal lever on Llama and Qwen** (both significant) — the two families
+   that retain refusal headroom against doublespeak. Phi's ns result is a **floor artifact**
+   (base refusal 0.048; doublespeak already collapsed it), not a mechanism difference. So the
+   refusal-lever story is general: refusal is causal *wherever there is refusal to ablate*.
+
+**Interpretation.** Behavioral *susceptibility* to doublespeak is a spectrum (Phi most
+susceptible, Qwen least, Llama middle), but the *mechanism* is invariant across families:
+Bombness never matters; refusal always does when present. The semantic-remapping
+representation and its behavioral epiphenomenality are both cross-family; the only
+model-dependence is how much of the model's refusal doublespeak has already defeated.
+(Phase 3 prediction: Llama refusal AUC 0.98; Phi/Qwen underpowered — Phi refusal
+pre-collapsed, Qwen only 3 jailbreaks — so prediction is a Llama result.)
 
 ## 10. Attack-objective implication
 

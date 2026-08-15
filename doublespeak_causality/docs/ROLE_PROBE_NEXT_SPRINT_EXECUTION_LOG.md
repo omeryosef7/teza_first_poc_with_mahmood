@@ -1025,3 +1025,40 @@ Phi as a binary outlier. Caveat forming: Qwen base ASR ≈ 0.045 is very low, so
 refusal-lever positive control will likely be floor-limited (little jailbreak headroom to
 raise). Awaiting the full n=42 before recording anything. No result committed this tick;
 claim-audit CM5 stays PENDING.
+
+### E31 — 2026-08-15 — Qwen behavioral Phase 4 completes the 3-family picture ☑
+
+Full Qwen Phase 4 (758075, n=42, manip check passed −4 to −6):
+| arm | ASR | refusal |
+| --- | --- | --- |
+| ds_base | 0.071 | 0.119 |
+| ds_bomb_ablate | 0.119 | 0.071 |
+| ds_bomb_random | 0.119 | 0.024 |
+| ds_refusal_ablate | 0.238 | 0.000 |
+- Bombness necessity **NULL** (ΔASR +0.048, p=0.63, = random) — epiphenomenal replicates.
+- Refusal ablation **+0.167, p=0.039 (SIGNIFICANT)** — refusal IS the lever on Qwen.
+
+Qwen Phase 3: only 3 jailbreaks (ASR 0.071) → underpowered; refusal-proj AUC 0.82 but noisy
+(3 positives). Directionally consistent, not citable as a prediction result.
+
+**Completed three-family behavioral picture:**
+| model | base refusal | base ASR | Bombness necessity | refusal ablation |
+| --- | --- | --- | --- | --- |
+| Llama-3.1-8B | 0.64 | 0.24 | −0.05 (null) | **+0.24, p=0.02** |
+| Phi-4-mini | 0.048 | 0.26 | −0.07 (null) | +0.10, p=0.39 (ns, floor) |
+| Qwen3-14B | 0.119 | 0.071 | +0.05 (null) | **+0.17, p=0.04** |
+
+**Two clean cross-family conclusions:**
+1. **Bombness is behaviorally epiphenomenal on ALL THREE families** — necessity null (= random)
+   everywhere, manip check passed everywhere. The strongest form of the representation≠behavior
+   dissociation, now cross-family.
+2. **Refusal is the causal lever on Llama AND Qwen** (both refusal-ablation significant,
+   p<0.05) — the two families that RETAIN refusal headroom against doublespeak. Phi's ns
+   result is a **floor artifact** (base refusal 0.048; doublespeak already collapsed it), NOT
+   a mechanism difference. So Qwen RESCUES the generality that Phi alone made ambiguous: refusal
+   is causal wherever there is refusal to ablate.
+
+This is a cleaner, stronger story than after Phi alone. The behavioral susceptibility to
+doublespeak is a spectrum (Phi most susceptible, Qwen least, Llama middle), but the mechanism
+is invariant: Bombness never matters, refusal always does (when present). Registered 758075.
+Updating synthesis §9 + claim audit CM5/E3.

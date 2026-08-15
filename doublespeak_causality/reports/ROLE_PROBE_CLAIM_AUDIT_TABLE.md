@@ -68,8 +68,10 @@ Residual space: `resid_post == hidden_states[L+1]` (D1). Manifest:
 | CM1 | Gate 1 (Bombness decodable) replicates on 3 model families | gate1 jsons: Llama 757886, Phi 758022, Qwen 758030 | 42/38/42 | holdout AUC 0.997 / 0.985 / 0.999; token-id 0.500 each | **VERIFIED** |
 | CM2 | Bombness ⊥ refusal across families | `geometry_vs_refusal.json` per model | — | cos 0.06–0.15 (Llama) / 0.01–0.04 (Phi) / 0.03–0.12 (Qwen) | **VERIFIED** |
 | CM3 | Bombness-epiphenomenal replicates behaviorally on Phi | run 758057; `phase4_analysis.json` | 42 | necessity ΔASR −0.07 (p=0.58) = random; manip check passed (−6 to −8) | **VERIFIED** |
-| CM4 | Refusal-is-the-lever does NOT cleanly replicate on Phi | same + Phi Phase 3 | 42 | Phi base refusal 0.048 (Llama 0.64); refusal control +0.095 (p=0.39 ns); refusal-proj AUC 0.525, Bombness 0.575 (both chance) | **BOUNDARY** — doublespeak pre-collapses Phi refusal; behavioral mechanism is model-dependent |
-| CM5 | Qwen3 behavioral Phase 3/4 | run 758075 | 42 | _in progress (~2h run)_ | _PENDING_ |
+| CM4 | Refusal-lever on Phi is floor-limited (not a mechanism difference) | Phi run 758057 + Phase 3 | 42 | Phi base refusal 0.048; refusal control +0.095 (p=0.39 ns) — no headroom | **BOUNDARY (floor)** — clarified by Qwen (CM6) |
+| CM5 | Bombness necessity NULL on Qwen3 (epiphenomenal replicates, 3rd family) | run 758075; `phase4_analysis.json` | 42 | ΔASR +0.048 (p=0.63) = random (0.000, p=1.0); manip check passed (−4 to −6) | **VERIFIED** |
+| CM6 | Refusal IS the causal lever on Qwen3 (rescues generality) | same | 42 | refusal ablation ΔASR **+0.167, p=0.039**; base refusal 0.119 (has headroom) | **VERIFIED** — refusal-lever now 2/3 families; Phi is the floor exception |
+| CM7 | Behavioral: Bombness epiphenomenal on ALL 3 families; refusal is the lever wherever refusal headroom exists | CM3/CM5 (bomb null ×3) + Llama D2 + CM6 (refusal sig ×2) | 42×3 | Bombness necessity −0.05/−0.07/+0.05 (all null); refusal +0.24/+0.17 sig (Llama,Qwen), Phi floor | **VERIFIED** |
 
 ## E. Headline synthesis claim
 
