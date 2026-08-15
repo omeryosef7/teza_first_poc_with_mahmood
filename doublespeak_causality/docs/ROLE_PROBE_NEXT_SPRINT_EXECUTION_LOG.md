@@ -1312,3 +1312,20 @@ PHASE 5 COMPLETE. Both directions confirm per-example Bombness component patchin
 behaviorally epiphenomenal — the sharpest causal test in the sprint. Report:
 reports/PHASE5_BEHAVIORAL.md. Runs registered (registry 612). Decomposition report
 "what remains" updated to DONE. Bootstrap CIs computed. All GPU done for Phase 5.
+
+---
+
+### E46 — Phase 6/D3: scope-matched activation control implemented (user chose full Phase 6) (2026-08-15)
+
+Subagent mapped the full Phase-6 run plan. Finding: the ONLY genuinely-missing science is the
+D3 scope-matched activation arm (single-layer L18, single-position=decision) — pre-registered
+(ASYMMETRY_GAP_MATRIX §D3) but NOT RUN (deferred as "new code late in session"). Other arms
+just need dev-split re-runs.
+
+Implemented it: pair_common.make_single_position_project_out_hook + SinglePositionProjectOut
+(projects the refusal axis out at ONLY the decision position, ONLY during prefill — the
+scope-matched analogue of a token attack; contrast AllPositionProjectOut = every pos/step).
+Wired scope="decision" into validate_refusal_directions.ablate_ctx + --ablate-scope choices.
+4 GPU-free hook tests pass (projects only at decision pos; no-op on cached decode; tuple/bare
+forms; alpha scaling). Harness compiles. Next: run all three scopes (all_layers / single_layer
+L18 / decision L18) on the confirmatory dev split for the D3 medium-vs-scope comparison.

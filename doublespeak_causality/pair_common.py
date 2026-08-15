@@ -737,6 +737,64 @@ class AllPositionProjectOutMultiLayer:
 
 
 # --------------------------------------------------------------------------- #
+# Single-position / single-layer ablation — the D3 SCOPE-MATCHED control
+# --------------------------------------------------------------------------- #
+def make_single_position_project_out_hook(direction: torch.Tensor, alpha: float = 1.0,
+                                          pos: int = -1):
+    """Project `direction` out of the block output at ONE position (default the last
+    prompt token = the `decision` position) and ONLY during PREFILL (a multi-token
+    forward). This is the intervention-scope-matched analogue of a token attack, which
+    perturbs the input at fixed positions and then lets the model generate normally:
+    here we perturb the L18 residual at the single decision position during prefill; the
+    change propagates through that position's KV and the generated answer follows, but no
+    all-position/all-timestep suppression is applied. Contrast AllPositionProjectOut(Multi
+    Layer), which ablates at every position and every decode step (the R3/D3 scope
+    confound, ASYMMETRY_GAP_MATRIX §D3). On KV-cached decode steps (seq==1) the hook is a
+    no-op — there is no decision position to touch. `direction` is normalized here.
+    """
+    d_cpu = direction.detach().float().cpu()
+    d_cpu = d_cpu / (d_cpu.norm() + 1e-8)
+
+    def hook(module, inputs, output):
+        is_tuple = isinstance(output, tuple)
+        h = output[0] if is_tuple else output
+        if h.shape[1] <= 1:                       # decode step (cached) → no-op
+            return output
+        d = d_cpu.to(device=h.device, dtype=h.dtype)
+        h = h.clone()
+        hp = h[:, pos, :]                          # [batch, hidden] at decision position
+        proj = (hp * d).sum(dim=-1, keepdim=True)  # [batch, 1]
+        h[:, pos, :] = hp - alpha * proj * d
+        return (h,) + tuple(output[1:]) if is_tuple else h
+
+    return hook
+
+
+class SinglePositionProjectOut:
+    """Context manager: single-layer, single-position (decision) project-out — the
+    pre-registered D3 scope-matched activation control (gap-matrix §D3, execution-log
+    E-D3 deferral). Same medium as AllPositionProjectOut but scope-matched to the token
+    attack's one-position/one-layer budget, so medium and scope are separable."""
+
+    def __init__(self, model, layer_idx: int, direction: torch.Tensor,
+                 alpha: float = 1.0, pos: int = -1):
+        self.layer = dc._get_layers(model)[layer_idx]
+        self.layer_idx = layer_idx
+        self._hook = make_single_position_project_out_hook(direction, alpha, pos)
+        self._handle = None
+
+    def __enter__(self):
+        self._handle = self.layer.register_forward_hook(self._hook)
+        return self
+
+    def __exit__(self, *exc):
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+        return False
+
+
+# --------------------------------------------------------------------------- #
 # All-position / all-timestep MLP-OUTPUT ablation (P10 §0.9 — decode-safe BEHAV-WRITE)
 # --------------------------------------------------------------------------- #
 class AllPositionMLPAblate:

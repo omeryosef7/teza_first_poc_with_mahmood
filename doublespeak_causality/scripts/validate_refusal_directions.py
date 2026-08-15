@@ -228,7 +228,9 @@ def score(completion):
 def ablate_ctx(lm, vec, alpha, scope, L):
     if scope == "all_layers":       # phase_behav_refusal.py:145 / brd.validate_layer:160
         return pc.AllPositionProjectOutMultiLayer(lm.model, range(lm.num_layers), vec, alpha)
-    return pc.AllPositionProjectOut(lm.model, L, vec, alpha)
+    if scope == "decision":         # D3 scope-matched: single layer L, decision position only
+        return pc.SinglePositionProjectOut(lm.model, L, vec, alpha, pos=-1)
+    return pc.AllPositionProjectOut(lm.model, L, vec, alpha)   # single_layer, all positions
 
 
 def induce_ctx(lm, vec, alpha, scope, L, inlen):
@@ -275,7 +277,11 @@ def main():
     ap.add_argument("--ablate-alpha", type=float, default=1.0,
                     help="directional-ablation strength (1.0 = full projection = the Arditi "
                          "standard and phase_behav_refusal's historical default)")
-    ap.add_argument("--ablate-scope", default="all_layers", choices=["all_layers", "single_layer"])
+    ap.add_argument("--ablate-scope", default="all_layers",
+                    choices=["all_layers", "single_layer", "decision"],
+                    help="all_layers = Arditi (every layer/position/step); single_layer = "
+                         "one layer, all positions; decision = D3 scope-matched (one layer, "
+                         "decision position only, prefill only)")
     ap.add_argument("--induce-scope", default="allpos", choices=["allpos", "prompt"])
     ap.add_argument("--induce-eval", default="harmless", choices=["harmless", "neutral", "benign"],
                     help="population the INDUCE arm is evaluated on. 'harmless' = "
