@@ -266,3 +266,24 @@ representation-vs-behaviour framing survives.
 **Do not treat the token-space negatives as affected**: §7.5, §20.5 and §20.7 are measurements and
 stand. **Do note the endpoint caveat**: D3 is measured on direction-validation (probe refusal
 rates), not doublespeak ASR.
+
+## 2026-08-15 — item 2 UPDATED: §20.8's Option 2 is now half-executed
+
+`data/splits/advbench_doublespeak_v1.json` (another session, `7c35be81`): **417 examples**, train
+244 / dev 87 / test 86, Doublespeak-templated with matched controls, **leakage-0 verified**.
+
+§20.8's Option 2 was *"import a second corpus to reach 300 — needs its own Doublespeak templating +
+direction validation."* **Templating: done.** Held-out arithmetic: AdvBench dev+test = 173, pooled
+with ClearHarm's ≈139 gives **≈312**, past the plan's n=300 (power 0.62 vs 0.05 at n=37 against
+Δ=0.054).
+
+**Remaining before §20.6/§20.9 can run:**
+1. **Direction validation on AdvBench** — a ~15 min job, not a research problem
+   (`validate_refusal_directions.py` reads its cohort from `_meta`; the D3 runs exercise the
+   per-family path). Without it an AdvBench null is confounded with "wrong direction for this
+   corpus" — precisely what §20.9's cross-family item warns about.
+2. **The comparability decision** — pooling two corpora for one ASR estimate affects every existing
+   number. A plan call, not a computation.
+
+*Not launched by this session: it is the other session's corpus and they may be validating it. If
+still unvalidated with an idle queue, it is the highest-value §20 GPU item.*

@@ -10185,3 +10185,56 @@ Queue empty. Nothing PENDING, nothing of mine to launch.
 ### 09:15 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 09:45 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 10:15 — idle. Queue empty, no new artifacts. Checked the other session's bug sweep (`d154750a`, 4 fixes incl. 2 HIGH): the files touched are `build_advbench_doublespeak.py`, `phase10_power_analysis.py`, `analyze_phase4.py`, `dual_state_predict.py` — **none on any §20 code path** (no `asym_*`, no per-prompt GCG, no optimizer/evaluator/validator). §20's artifacts are unaffected; no re-verification needed. Diff unchanged.
+## 2026-08-16 10:45 — **§20.8's blockage has moved: an AdvBench Doublespeak corpus now exists (n=417).**
+
+*(Wall clock 14:30 UTC.)* Queue empty, no asymmetry jobs. But the other session's `7c35be81`
+changes the standing of **my longest-running owed item.**
+
+`data/splits/advbench_doublespeak_v1.json` — **417 examples, train 244 / dev 87 / test 86**,
+Doublespeak-templated (`doublespeak_prompt`, `direct_prompt`, `benign_prompt`, `codeword`), and
+**leakage-0 verified**: 0 concept straddle, 0 codeword straddle, 0 contaminated controls, after they
+caught a residual codeword leak in the collision fallback and rebuilt.
+
+### Why this matters to §20
+§20.8 (expand the corpus) is the **precondition on §20.6 and §20.9**, and the 08:00 entry recorded
+it as unexecutable: the plan assumes n=300 held-out, the ClearHarm ceiling is **179** (≈139 usable),
+and three options were laid out. **Option 2 was "import a second corpus (AdvBench/HarmBench) to
+reach 300"**, costed as *"breaks comparability with all existing numbers and needs its own
+Doublespeak templating + direction validation."*
+
+**The templating half of that cost is now paid, and paid well** (leakage-0, matched control
+conditions). Held-out arithmetic: AdvBench dev+test = **173**, and pooled with ClearHarm's ≈139 that
+is **≈312 — past the plan's n=300**, where the power table gives **0.62** against Δ=0.054 versus
+**0.05** at the current n=37.
+
+### What is still owed before §20.6/§20.9 can run — and it is smaller than it was
+1. **Direction validation on AdvBench.** The refusal axis was fit on `pair_carrot_bomb` and
+   validated on ClearHarm; gap-matrix **A6** already flags cross-distribution transfer as a live
+   limitation, and applying the same axis to a third distribution compounds it. This is now a
+   **short job, not a research problem**: `validate_refusal_directions.py` already reads its cohort
+   from the corpus `_meta` and the D3 runs exercise exactly that path per-family. Unvalidated, an
+   AdvBench null is confounded with "wrong direction for this corpus" — the same trap §20.9's
+   cross-family item warns about.
+2. **The comparability decision.** Pooling two corpora for one ASR estimate is a choice with
+   consequences for every existing number; §20.8's Option 2 flagged it and it remains a **plan
+   call, not a computation.**
+
+### Ledger updated
+`OWED_SUBMISSIONS.md` item 2 no longer reads "blocked, unreachable n=300". It now reads: **Option 2
+is half-executed by another session; what remains is one validation job plus one comparability
+decision.** That is the first movement on this item since 08:00 yesterday.
+
+**Not launching the validation myself:** it is their corpus, built hours ago, and they may be about
+to validate it — the same reasoning that made declining the D3 comparators correct. If it is still
+unvalidated with an idle queue in a few ticks, it is a ~15 min job and the highest-value GPU item
+for §20.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3 resolved and annotated. **§20.8: blockage
+downgraded from unexecutable to two named steps.** §20.6/§20.9 still blocked, but now behind
+something finite.
+
+### SLURM
+Queue empty. Nothing PENDING, nothing of mine to launch.
+
+---
