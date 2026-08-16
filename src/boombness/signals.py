@@ -153,7 +153,17 @@ def logit_lens_boombness_batch(lm, hidden: torch.Tensor, concept_ids: Sequence[i
     l_w = logits[:, wi].max(dim=1).values
     p_c = lp[:, ci].logsumexp(dim=1).exp()
     p_w = lp[:, wi].logsumexp(dim=1).exp()
-    # Rank of the best variant of each word, computed without a full argsort per row.
+    # COMPETITION rank of the best variant of each word: the number of tokens with a strictly
+    # greater logit. Deliberately not the argsort position, which is arbitrary within a tie
+    # block.
+    #
+    # CAVEAT, measured 2026-08-16 (smoke 1000604 vs 1001753): this rank is ILL-CONDITIONED
+    # wherever it is large. The float32 logit distribution has a very flat tail, so tie and
+    # near-tie blocks are hundreds of tokens wide, and a 1e-7 change in the logit (the ordinary
+    # reduction-order difference between a batched and an unbatched matmul) moves the rank by
+    # up to ~283 out of 128256. Every other metric here agreed to <= 3e-5 across that same
+    # change. Treat rank as a coarse diagnostic that is meaningful only when SMALL (say < 100);
+    # use `logit_lens_boombness` or the probability mass for anything quantitative.
     rank_c = (logits > l_c.unsqueeze(1)).sum(dim=1)
     rank_w = (logits > l_w.unsqueeze(1)).sum(dim=1)
     out = []

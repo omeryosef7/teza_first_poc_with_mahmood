@@ -303,3 +303,24 @@ threshold without regenerating. Also `analyze_boombness.py` (plan §6.4/§7).
 **Self-review in flight:** a 5-lens adversarial review workflow over the whole module (positions,
 directions, generator, run contract, analysis), each finding independently double-refuted before it
 counts.
+
+**Batching verified equivalent (760594 vs 760588).** `src/boombness/compare_runs.py` compares every
+shared numeric column row-by-row. Result: **every substantive metric agrees to ≤ 3.05e-5**
+(`llfollow|L24|boombness`; probabilities to ≤ 3.6e-7) — ordinary float32 reduction-order difference
+between a batched and an unbatched matmul.
+
+**One metric did NOT agree, and it is a finding rather than a bug:** `rank_concept` moved by up to
+**283 ranks out of 128256**. Two causes compound. (a) The old code read the argsort *position*,
+which is arbitrary inside a tie block; the new code uses competition rank (count of strictly
+greater logits), which is deterministic and is the better definition. (b) More importantly, the
+float32 logit distribution has a very flat tail, so tie/near-tie blocks are hundreds of tokens wide
+and a 1e-7 logit perturbation reorders them. **Conclusion: `rank_concept` is ill-conditioned
+wherever it is large and must be treated as a coarse diagnostic only (meaningful below ~100), never
+as a quantitative metric.** Documented in `signals.py`; `compare_runs.py` now classes `rank`
+columns as soft so they cannot silently gate a submission. Everything quantitative uses
+`logit_lens_boombness` or the probability mass instead.
+
+**SLURM 760596 submitted:** full extraction, all 1464 bank rows, all 32 layers, logit lens at
+L0/4/8/12/16/20/24/28/31, caching final-occurrence reps for the Phase-3 probes, 6h limit,
+nodelist `n-802,n-803,n-805,t-806` (n-801 omitted — every weight load slower than 15 min in 232
+logged runs happened there).
