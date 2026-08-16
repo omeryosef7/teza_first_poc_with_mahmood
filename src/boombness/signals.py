@@ -360,10 +360,23 @@ def random_control_direction(d: torch.Tensor, seed: int) -> torch.Tensor:
     return pc.norm_matched_random(d, 1, seed=seed)[0]
 
 
+# The two controls must be INDEPENDENT draws. `pair_common.orthogonal_random` internally calls
+# `norm_matched_random` with the SAME seed and then projects out the component along d — and in
+# 4096 dimensions a random vector's component along any fixed direction is ~1/sqrt(4096) ≈ 0.016,
+# so that projection changes ~0.02% of the vector. Passing the same seed to both therefore yields
+# two near-identical vectors, and reporting "random and orthogonal both fail" would be one
+# observation stated twice rather than two independent controls. (Found by the tick-16 audit: the
+# two arms had agreed to 3 decimal places, which should have been the tell.)
+ORTHOGONAL_SEED_OFFSET = 977_777
+
+
 def orthogonal_control_direction(d: torch.Tensor, seed: int) -> torch.Tensor:
-    """Norm-matched but orthogonal to d — separates 'any perturbation' from 'this axis'."""
+    """Norm-matched but orthogonal to d — separates 'any perturbation' from 'this axis'.
+
+    Uses a seed offset from the random control so the two are independent draws.
+    """
     pc = __import__("pair_common")
-    return pc.orthogonal_random(d, 1, seed=seed)[0]
+    return pc.orthogonal_random(d, 1, seed=seed + ORTHOGONAL_SEED_OFFSET)[0]
 
 
 def orthogonalize(d: torch.Tensor, against: torch.Tensor) -> torch.Tensor:

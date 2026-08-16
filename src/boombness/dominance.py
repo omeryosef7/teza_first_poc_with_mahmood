@@ -41,7 +41,8 @@ REQUIREMENTS AND TRAPS
   `h // (n_q_heads // n_kv_heads)`. Getting this wrong silently attributes flow to the wrong head.
   The `--selftest` gate below catches it.
 * Two invariants are asserted rather than trusted, mirroring the paper's own checks:
-  `sum_{h,src} Y == attn_out[dst]` and `sum_{h,src} D_attn == 1`.
+  `sum_{h,src} Y` must equal the module's ACTUAL o_proj output at dst. NOTE: checking that
+  `sum D_attn == 1` is a TAUTOLOGY (D_attn is normalized by sum(Y) itself) and verifies nothing.
 """
 from __future__ import annotations
 
@@ -106,9 +107,26 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
     rep = nq // nkv
     layers_mod = ds()._get_layers(model)
 
-    with ValueCapture(model, layers) as vc:
-        out = model(input_ids=torch.tensor([input_ids], device=model.device),
-                    output_attentions=True, use_cache=False)
+    # Capture the module's TRUE attention output (o_proj output) so the decomposition can be
+    # checked against it rather than against a tautology.
+    attn_true: Dict[int, torch.Tensor] = {}
+    handles = []
+
+    def _mk(li):
+        def f(mod, inp, o):
+            t = (o[0] if isinstance(o, tuple) else o).detach()
+            attn_true[li] = t[0, dst, :].float().cpu()
+        return f
+
+    for li in layers:
+        handles.append(layers_mod[li].self_attn.o_proj.register_forward_hook(_mk(li)))
+    try:
+        with ValueCapture(model, layers) as vc:
+            out = model(input_ids=torch.tensor([input_ids], device=model.device),
+                        output_attentions=True, use_cache=False)
+    finally:
+        for h in handles:
+            h.remove()
     attns = out.attentions
     if attns is None or attns[0] is None:
         raise RuntimeError(
@@ -144,12 +162,23 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
         D_attn[L] = torch.einsum("htd,d->ht", Y, attn_out) / denom.clamp_min(1e-12)
 
         if check_invariants:
-            s = float(D_attn[L].sum())
-            if abs(s - 1.0) > 1e-3:
-                raise AssertionError(
-                    f"L{L}: sum of D_attn over (head, src) = {s:.6f}, expected 1.0 — the "
-                    "value-flow decomposition does not reconstruct the attention output, so the "
-                    "head mapping or the o_proj slicing is wrong")
+            # NOT the sum of D_attn. That check is an algebraic TAUTOLOGY: D_attn is defined as
+            # <Y, sum(Y)>/||sum(Y)||^2, so it sums to 1 for ANY Y whatsoever — including a Y built
+            # with a wrong GQA head map or wrong o_proj slicing. The tick-16 audit caught this:
+            # the self-test it gated was verifying nothing about the decomposition.
+            #
+            # The real check compares the reconstructed attention output against the module's
+            # ACTUAL output. Only a correct head mapping and o_proj slicing reproduce it.
+            got = attn_out
+            want = attn_true.get(L)
+            if want is not None:
+                num = float((got - want).norm())
+                den = float(want.norm()) or 1.0
+                if num / den > 1e-3:
+                    raise AssertionError(
+                        f"L{L}: the value-flow decomposition does not reconstruct the attention "
+                        f"output (relative error {num/den:.3e}). The GQA head map or the o_proj "
+                        "slicing is wrong.")
     res: Dict[str, Dict[int, torch.Tensor]] = {"D_attn": D_attn}
     if direction is not None:
         res["D_dir"] = D_dir
