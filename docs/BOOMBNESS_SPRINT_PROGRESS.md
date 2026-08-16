@@ -2095,3 +2095,26 @@ appealing interpretation is already available and I would rather the code state 
 which it fails than decide after the fact.
 
 Sign-flip arm judging now; `random` and `orthogonal` at α=0.25 still generating.
+
+### 2026-08-17 — Tick 30 (sign-flip arm clean; awaiting the last control)
+
+`steer_neg_a025` (`d_surface` @ L8, **α = −0.25**) completed with 960 generations, 0 failures, and
+**passes coherence** (uniq 0.710, 3-gram 0.020, 14% truncated — closest of any intervened arm to
+the un-intervened baseline). So the falsifier is measurable rather than degenerate, which is the
+condition it needed to be informative.
+
+Judging in progress for the sign-flip arm and the `orthogonal` control; `random` still generating.
+`analyze_steering.py` runs once all three land, on the intersected prompt set, with the sign test
+decided by the script.
+
+**What each outcome would mean, fixed now:**
+
+| result | reading |
+|---|---|
+| +0.25 suppresses, −0.25 **raises** ASR | the effect follows the axis — concept-ness is causally related to attack success, in the direction that *more* concept-ness means *less* success |
+| **both signs suppress** | **disturbance, not direction** — the α=+0.25 result is a shove, and the "doublespeak hides the concept" reading is dead |
+| neither moves vs the controls | the axis is causally inert at coherent doses; §12's objective has no causal support |
+
+The middle row is the one I consider most likely on the evidence so far, because the α=0.10 arm did
+nothing and the jump to suppression at 0.25 has the shape of a tolerance threshold rather than a
+graded mechanistic response.
