@@ -82,6 +82,7 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | tick-8 independent audit (34 agents) | **25 confirmed findings, 9 result-corrupting.** Four invalidate the tick-7 headline (unreported query-kind restriction; mid-band "null" is a sign-flipping n_examples cancellation; probe convergence computed on a superseded run; L31 delta confounded with bank regeneration). Others: pseudo-replication (n=60 not 30, domain ICC≈0.53); no multiplicity correction over 32 layers; null asserted without an interval; `--intervene add` reintroduced the unit-vector dosing bug; probe table omitted L31; `metadata.json` records the git commit at FINISH not start; no consumer checks `DONE.json`; plan §2.1 model/tokenizer/dataset revisions missing. | **result-corrupting** | Full retraction written below; `reanalyze_corrected.py` added (per-query-kind + pooled, layer×n_examples surface, domain-clustered SEs, Holm, intervals for nulls); dosing recurrence fixed in `score_behavior`. | **YES — tick-7 claims retracted; probes re-run against the headline run; analysis redone.** |
 | 2026-08-16 | §5 pilot (job 760722) | **The pilot was launched on a query kind for which a position-matched transplant is undefined.** `semantic_forced_choice` names both words, so donor cell B's query reads `bomb…carrot…bomb` while recipient cell C's reads `carrot…carrot…bomb` — the target occurrence positions do not correspond. All 16 families were rejected by the live position assertion (`pair_occurrence_positions_differ`), producing 0 rows. | crash (caught) | The assertion behaved correctly; the launch should not have been possible. `aggressive_patching` now **refuses** any query kind with `occurrence_analysis_safe=False` up front, naming the safe alternatives. Pilot re-run on `semantic_one_word` (job 760731). | Yes — 0 rows had been produced, so nothing was invalidated. |
 | 2026-08-16 | `dominance.py` self-test (job 760719) | Device mismatch: `v` stayed on cuda while the per-head projection was moved to cpu, so the `D_dir` einsum raised. | crash (caught) | All single-destination arithmetic is now done on CPU float32 explicitly. | Yes — resubmitted as 760730. |
+| 2026-08-16 | §10 positive control (job 760741) | **`AttentionKnockout` appears NOT TO FIRE under transformers 5.12.** The positive-control arm blocked **every** pre-query key in **every** head at two layers — 7392 edges, leaving the final token attending only to itself — and the semantic readout moved by **−0.086 log-odds**. That is physically impossible if the mask edit reached the attention computation. `AttentionKnockout` raises when the mask is not 4-D and it did *not* raise, so a 4-D mask was present and was edited; the question is whether transformers 5.x still *uses* that per-layer kwarg under its pluggable attention interface. | **result-corrupting** | `diagnose_knockout.py` measures it unambiguously: capture attention weights with and without a total knockout. Job 760757. | **All §10 knockout results are void pending this.** Scope may extend beyond this sprint: any prior work in this repo that used `AttentionKnockout` under this transformers version is affected. |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -1234,3 +1235,35 @@ exists (semantic log-odds / the demonstration-retrieval pathway) and is the one 
 Not yet measured: refusalness per prompt, so §9 Q6/Q7 ("does Boombness beat/add-to refusalness")
 remain open. Given refusal moves 96%→7% between arms, refusalness is likely the dominant term and
 that comparison is the next thing to run.
+
+### 2026-08-16 — Tick 15 (the §10 null was a dead intervention — caught by the positive control)
+
+The knockout smoke returned deltas of ≤0.12 log-odds with three arms at *exactly* 0.000, which is
+the signature of an intervention that is not firing rather than one that has no effect. So I added a
+**positive control** — block every pre-query key in every head at the chosen layers — and it failed:
+
+| arm | Δ semantic log-odds | edges cut |
+|---|---|---|
+| `topk_demo` | +0.044 | 16 |
+| `all_demo` | +0.117 | 256 |
+| **`positive_control`** | **−0.086** | **7392** |
+
+Leaving the final token attending only to itself, at two layers, cannot move the readout by 0.086.
+**The knockout is not reaching the computation**, and every §10 arm is void.
+
+This is the single most valuable thing the positive control has done all sprint: without it I would
+have written "cutting the demonstration edges has no effect on the semantic readout", which — given
+G1 says the demonstrations are the causal lever — would have been a *striking* and completely false
+result. It would have fitted the retracted representation story neatly, which is exactly what makes
+it dangerous.
+
+`diagnose_knockout.py` (job 760757) settles it by measuring the attention weights directly with and
+without a total mask-out. **If the weights are unchanged, the defect is in
+`pair_common.AttentionKnockout` under transformers 5.12 and affects any prior result in this
+repository that used it** — not only this sprint. That possibility is flagged now rather than after
+the check, because it changes who needs to know.
+
+**Meanwhile, refusalness (§9 Q6/Q7) is the next measurement**, and it is the one that decides
+between plan outcome **A** (Boombness is the story) and outcome **C** (refusal suppression is the
+story, with Boombness a correlate). Given ASR refusal rates of 95.8% → 7.4% → 0.0% across
+direct / doublespeak / stated-mapping, outcome C is currently the more likely reading.

@@ -54,7 +54,15 @@ from extract_boombness import resolve_occurrences  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 ARMS = ("none", "topk_demo", "bottomk_demo", "random_demo", "random_nondemo",
-        "same_head_random", "all_demo")
+        "same_head_random", "all_demo", "positive_control")
+
+# POSITIVE CONTROL — the arm that makes a null interpretable.
+# `positive_control` blocks EVERY key before the query position, in every head, at the chosen
+# layers. The final token is then left attending only to itself, which must move the readout
+# enormously. If it does not, the knockout is not firing and every other arm's "no effect" is a
+# statement about the hook, not about the model. The first knockout smoke returned deltas of
+# <=0.12 log-odds with three arms at exactly 0.000, which is exactly the pattern a dead
+# intervention produces, so this arm is now mandatory rather than optional.
 
 
 @torch.no_grad()
@@ -78,6 +86,9 @@ def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
         cand_demo = [(h, s) for h in range(nh) for s in range(T) if s in demo]
         cand_non = [(h, s) for h in range(nh) for s in range(T)
                     if s not in demo and s < T - 1]
+        if arm == "positive_control":
+            out[L] = [(h, s) for h in range(nh) for s in range(T) if s < T - 1]
+            continue
         if arm == "all_demo":
             out[L] = cand_demo
             continue
@@ -216,6 +227,9 @@ def main() -> int:
         ledger.ok()
 
     run.finish(summary={"model": lm.model_id, "n_rows": n, "arms": list(ARMS),
+                        "positive_control_note": "positive_control blocks every pre-query key in "
+                                                 "every head; if its delta is small the knockout "
+                                                 "is not firing and all other arms are void",
                         "layers": layers, "topk": args.topk,
                         "condition": args.condition, "query_kind": args.query_kind},
                ledger=ledger)
