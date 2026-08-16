@@ -102,9 +102,16 @@ COL_RE = re.compile(r"^(?P<metric>[a-z_]+)\|L(?P<layer>\d+)\|(?P<stat>\w+)$")
 
 
 def discover_columns(rows: List[Dict]) -> Dict[str, List[int]]:
-    """Map "<metric>|<stat>" -> sorted layers present."""
+    """Map "<metric>|<stat>" -> sorted layers present.
+
+    Scans EVERY row, not a prefix. Rows are heterogeneous here — a logit-lens column only
+    exists on rows whose layer was in --logit-lens-layers, and occurrence rows differ from one
+    another — so sampling the first N would silently drop a metric that happens not to appear
+    early, and the analysis would then report on fewer metrics than the run produced without
+    saying so.
+    """
     found: Dict[str, set] = collections.defaultdict(set)
-    for r in rows[:200]:
+    for r in rows:
         for k in r:
             m = COL_RE.match(k)
             if m:

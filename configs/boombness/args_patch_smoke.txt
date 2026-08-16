@@ -1,0 +1,1 @@
+--tag smoke --n-families 2 --n-examples 4 --alphas 0.5,1,2 --singletons 8,9,18 --query-kind semantic_one_word

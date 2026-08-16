@@ -154,6 +154,14 @@ class RunDir:
         if want_cache:
             os.makedirs(self.cache, exist_ok=True)
 
+        # A reused run directory would silently DOUBLE its results, because log_row appends.
+        # run_id carries a timestamp and a pid so a collision means something is wrong; fail
+        # rather than produce a file whose row count no longer matches the ledger.
+        if os.path.exists(os.path.join(self.path, "results.jsonl")):
+            raise FileExistsError(
+                f"{self.path}/results.jsonl already exists — refusing to append to an existing "
+                "run directory (rows would silently duplicate). Use a new run_id/tag.")
+
         self._args = args
         self._results_fh = None
         self._n_rows = 0
