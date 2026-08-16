@@ -70,6 +70,32 @@ def main() -> int:
     print(f"\n  max |Δ attention weight| = {d_attn:.6e}")
     print(f"  max |Δ final logit|      = {d_log:.6e}")
 
+    # COMPOSITION CHECK. The diagnostic above uses ONE AttentionKnockout with heads=None.
+    # surgical_knockout instead stacks ONE CONTEXT MANAGER PER HEAD (heads=[h]), because it cuts
+    # a per-(head, src) edge set. Those must be equivalent when the per-head set covers all heads;
+    # if they are not, the stacked form is the defect rather than the primitive.
+    import contextlib
+    nh = int(lm.model.config.num_attention_heads)
+    with torch.no_grad():
+        with contextlib.ExitStack() as st:
+            for h in range(nh):
+                st.enter_context(pc.AttentionKnockout(
+                    lm.model, [args.layer], query_positions=[dst],
+                    blocked_keys=list(range(dst)), heads=[h]))
+            ko2 = lm.model(input_ids=t, output_attentions=True, use_cache=False)
+    A2 = ko2.attentions[args.layer][0, :, dst, :].float().cpu()
+    lg2 = ko2.logits[0, -1, :].float().cpu()
+    print(f"\n[diag] COMPOSITION: {nh} stacked per-head knockouts vs one all-head knockout")
+    print(f"  stacked: mass on keys<dst = {float(A2[:, :dst].sum(dim=1).mean()):.6f}  "
+          f"self = {float(A2[:, dst].mean()):.6f}")
+    print(f"  max |Δ attention| stacked vs all-head = {float((A1 - A2).abs().max()):.6e}")
+    print(f"  max |Δ logit|     stacked vs all-head = {float((lg1 - lg2).abs().max()):.6e}")
+    if float((A1 - A2).abs().max()) > 1e-6:
+        print("  WARNING: the stacked per-head form does NOT match the all-head form — "
+              "surgical_knockout's composition is the defect, not AttentionKnockout itself.")
+    else:
+        print("  stacked per-head composition is equivalent to the all-head form.")
+
     if d_attn < 1e-6:
         print("\n  VERDICT: THE KNOCKOUT IS NOT FIRING. The attention weights are unchanged after a "
               "total mask-out, so kwargs['attention_mask'] is not what this transformers version "
