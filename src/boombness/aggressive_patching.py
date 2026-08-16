@@ -172,12 +172,18 @@ def readout(lm, ids: List[int], cap: "BlockCapture",
     lp = torch.log_softmax(logits, dim=-1)
     ci = torch.tensor(list(concept_ids), dtype=torch.long)
     wi = torch.tensor(list(codeword_ids), dtype=torch.long)
-    p_c = float(lp[ci].logsumexp(0).exp())
-    p_w = float(lp[wi].logsumexp(0).exp())
+    # LOG-ODDS IS THE PRIMARY STATISTIC. Both candidates sit deep in the tail (p ~ 1e-6..1e-13)
+    # because a chat model does not open with the bare answer word, so a difference of
+    # probabilities discards the signal entirely - see next_token_readout in score_behavior.py.
+    # Computed in log space directly, never by exponentiating and re-logging.
+    lse_c = float(lp[ci].logsumexp(0))
+    lse_w = float(lp[wi].logsumexp(0))
     rec: Dict[str, float] = {
-        "p_concept": p_c, "p_codeword": p_w,
-        "semantic_margin": p_c - p_w,
-        "p_ratio_log": float(torch.log(torch.tensor(max(p_c, 1e-30) / max(p_w, 1e-30)))),
+        "logp_concept": lse_c, "logp_codeword": lse_w,
+        "semantic_logodds": lse_c - lse_w,
+        "p_concept": float(torch.tensor(lse_c).exp()),
+        "p_codeword": float(torch.tensor(lse_w).exp()),
+        "semantic_margin_p_diff": float(torch.tensor(lse_c).exp() - torch.tensor(lse_w).exp()),
     }
     hs = torch.stack([cap.at(L, probe_pos) for L in readout_layers], dim=0)
     lls = sg.logit_lens_boombness_batch(lm, hs, concept_ids, codeword_ids)

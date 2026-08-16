@@ -6,24 +6,24 @@
   "pools_sha16": "b5e399712b996b7d",
   "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
   "stats": {
-    "bank_content_sha16": "59ad8c8c44f7c3fa",
-    "n_rows": 1464,
+    "bank_content_sha16": "33de458113a4a7eb",
+    "n_rows": 1752,
     "n_benign_remap_rows": 72,
     "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
-    "n_2x2_families_checked": 180,
+    "n_2x2_families_checked": 240,
     "n_alignment_violations": 0,
     "alignment_violations": [],
     "by_condition": {
-      "benign_literal": 348,
+      "benign_literal": 420,
       "benign_remap": 72,
-      "concept_in_benign_ctx": 216,
+      "concept_in_benign_ctx": 288,
       "direct_codeword": 72,
-      "direct_harmful": 216,
-      "natural_doublespeak": 540
+      "direct_harmful": 288,
+      "natural_doublespeak": 612
     },
     "by_block": {
       "consistency": 72,
-      "core2x2": 864,
+      "core2x2": 1152,
       "extra_conditions": 144,
       "families": 144,
       "position": 24,
@@ -33,43 +33,44 @@
     "by_query_kind": {
       "behavioral": 660,
       "comprehension_usage": 288,
+      "semantic_forced_choice": 288,
       "semantic_one_word": 516
     },
     "by_n_examples": {
-      "0": 240,
-      "1": 144,
-      "16": 144,
-      "2": 192,
-      "4": 468,
-      "8": 276
+      "0": 288,
+      "1": 192,
+      "16": 192,
+      "2": 240,
+      "4": 516,
+      "8": 324
     },
     "by_domain": {
-      "city_bridge": 244,
-      "farm_storage": 244,
-      "game_manual": 244,
-      "instructional": 244,
-      "lab_safety": 244,
-      "news_report": 244
+      "city_bridge": 292,
+      "farm_storage": 292,
+      "game_manual": 292,
+      "instructional": 292,
+      "lab_safety": 292,
+      "news_report": 292
     },
     "by_split": {
-      "dev": 888,
-      "heldout": 576
+      "dev": 1032,
+      "heldout": 720
     },
     "by_role_style": {
       "assistant_like": 24,
       "cot_like": 24,
-      "plain": 1344,
+      "plain": 1632,
       "system_like_quoted": 24,
       "tool": 24,
       "user_like": 24
     }
   },
   "hostname": "c-004",
-  "git_commit": "928b098c415bd42f8efa46d7c85622043f550168",
+  "git_commit": "b686fa009258e0fbb275268b5a82e73e88daeda6",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA TITAN Xp",
-  "timestamp": "2026-08-16T19:38:48"
+  "timestamp": "2026-08-16T19:54:24"
 }

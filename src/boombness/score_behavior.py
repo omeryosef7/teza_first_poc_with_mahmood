@@ -47,7 +47,21 @@ COMPREHENSION_WORDS = ("literal", "coded")
 
 @torch.no_grad()
 def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> Dict[str, float]:
-    """Probability mass on each id group at the next-token position."""
+    """LOG-probability mass on each id group at the next-token position (plus the raw p).
+
+    THE STATISTIC MUST BE A LOG-ODDS, NOT A DIFFERENCE OF PROBABILITIES. A safety-tuned chat
+    model does not open its answer with the bare answer word, so both candidates sit far in the
+    tail — p ~ 1e-6 to 1e-13. A difference `p_concept - p_codeword` is then dominated by
+    whichever term is larger and throws the information away: measured on the smoke, the benign
+    arm had p_concept = 1.8e-12 and the doublespeak arm 3.4e-6, a ~2-million-fold difference
+    that the subtraction rendered as "both approximately zero". The first read of that was
+    "the readout is dead"; the readout was fine and the metric was wrong.
+
+    In log space the same rows separate cleanly (benign −17.2 vs doublespeak −3.5), and the
+    log-odds is exactly the quantity a logit-lens/logistic view calls the decision margin.
+    Log-probs come straight from `log_softmax`, so nothing is computed by exponentiating and
+    re-logging a denormal.
+    """
     ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
     t = torch.tensor([ids], device=lm.model.device)
     logits = lm.model(input_ids=t, use_cache=False).logits[0, -1, :].float().cpu()
@@ -55,7 +69,9 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> 
     out = {}
     for name, g in groups.items():
         idx = torch.tensor(sorted(set(g)), dtype=torch.long)
-        out[f"p_{name}"] = float(lp[idx].logsumexp(0).exp())
+        lse = float(lp[idx].logsumexp(0))
+        out[f"logp_{name}"] = lse
+        out[f"p_{name}"] = float(torch.tensor(lse).exp())
     return out
 
 
@@ -108,7 +124,28 @@ def main() -> int:
     kinds = [k.strip() for k in args.query_kinds.split(",") if k.strip()]
     rows = [r for r in rows if r["query_kind"] in kinds]
     if args.limit:
-        rows = rows[:args.limit]
+        # STRATIFIED, not the first N. Taking a prefix of the bank returns only n_examples=0
+        # rows, because that is how the generator orders its blocks - and those are the
+        # degenerate baseline where every codeword-surface condition IS the bare query. The
+        # first smoke was scored entirely on them, which is why the readout looked dead: with
+        # no demonstrations the model has nothing to answer from. Round-robin over
+        # (query_kind, condition, n_examples) so a smoke exercises real prompts.
+        import itertools
+        buckets: Dict[tuple, List[Dict]] = collections.defaultdict(list)
+        for r in rows:
+            buckets[(r["query_kind"], r["condition"], r["n_examples"])].append(r)
+        order = sorted(buckets)
+        picked: List[Dict] = []
+        for i in itertools.count():
+            added = False
+            for k in order:
+                if i < len(buckets[k]):
+                    picked.append(buckets[k][i]); added = True
+                    if len(picked) >= args.limit:
+                        break
+            if len(picked) >= args.limit or not added:
+                break
+        rows = picked[:args.limit]
 
     run = RunDir("score_behavior", args, tag=args.tag)
     ledger = FailureLedger()
@@ -183,14 +220,18 @@ def main() -> int:
                 if row["query_kind"] in ("semantic_one_word",):
                     rec = next_token_readout(lm, templated,
                                              {"concept": c_ids, "codeword": w_ids})
-                    rec["semantic_margin"] = rec["p_concept"] - rec["p_codeword"]
+                    # log-odds is the primary; the probability difference is kept only as a
+                    # diagnostic, and is meaningless when both terms are in the tail.
+                    rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
+                    rec["semantic_margin_p_diff"] = rec["p_concept"] - rec["p_codeword"]
                     run.log_row({**base, "readout": "semantic", **rec})
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "comprehension_usage":
                     rec = next_token_readout(lm, templated,
                                              {w: comp_ids[w] for w in COMPREHENSION_WORDS})
-                    rec["comprehension_margin"] = rec["p_coded"] - rec["p_literal"]
+                    rec["comprehension_logodds"] = rec["logp_coded"] - rec["logp_literal"]
+                    rec["comprehension_margin_p_diff"] = rec["p_coded"] - rec["p_literal"]
                     run.log_row({**base, "readout": "comprehension", **rec})
                     counts["comprehension"] += 1
 

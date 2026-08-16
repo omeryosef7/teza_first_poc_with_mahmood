@@ -114,6 +114,13 @@ def audit_family_alignment(tok, rows: List[Dict], dc) -> Optional[List[str]]:
     core = ("benign_literal", "direct_harmful", "natural_doublespeak", "concept_in_benign_ctx")
     if not set(core).issubset(by_cond):
         return None          # NOT "no violations" — this family was never checkable
+    # A query that deliberately names BOTH words (the forced-choice kinds) cannot satisfy the
+    # exact-swap invariant at the token level either: cell B's query reads "...bomb ... carrot
+    # or ... bomb" where cell C's reads "...carrot ... carrot or ... bomb". Those families are
+    # reported as NOT CHECKED rather than as passing, which is the distinction the previous
+    # version of this function got wrong.
+    if any(not r.get("occurrence_analysis_safe", True) for r in rows):
+        return None
 
     ids = {}
     occ = {}

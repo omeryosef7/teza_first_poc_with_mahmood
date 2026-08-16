@@ -719,3 +719,58 @@ a generic perturbation.
 the behavioural readout is the dead `semantic_margin`. Diagnostic job **760683** is testing three
 framings (as-is / assistant-primed / house-style forced choice) to find one that puts real mass on
 the answer words.
+
+### 2026-08-16 — Tick 10 (the "dead readout" was TWO bugs, and neither was the readout)
+
+I reported last tick that the semantic readout was dead. That was the wrong diagnosis, and the
+correction matters more than the original observation.
+
+**Bug A — the wrong statistic.** `semantic_margin` was `p_concept − p_codeword`. A safety-tuned chat
+model does not open its answer with the bare answer word, so both candidates sit deep in the tail,
+and a *difference of probabilities* there is dominated by the larger term and discards everything.
+On the same smoke rows:
+
+| cell | p_concept | p_codeword | p-difference (what I used) | **log-odds (correct)** |
+|---|---|---|---|---|
+| A benign_literal | 1.8e-12 | 5.3e-05 | −5.3e-05 | **−17.19** |
+| C natural_doublespeak | 3.4e-06 | 1.1e-04 | −1.1e-04 | **−3.50** |
+| B direct_harmful | 6.3e-07 | 1.8e-09 | +6.3e-07 | **+5.83** |
+
+`p_concept` differs between the benign and doublespeak arms by a factor of ~2 million, and the
+subtraction rendered it as "both ≈ 0". In log space the arms separate by **13.7 log-units**. Both
+readouts now report log-odds as primary (computed in log space, never by exponentiating and
+re-logging), with the p-difference kept only as a diagnostic.
+
+The comprehension control is alive too, and correct: it calls the benign carrot **literal**
+(−2.94) and the doublespeak carrot **coded** (+2.06). §2.6's control works.
+
+**Bug B — the smoke was scored entirely on degenerate prompts.** `--limit N` took the *first* N bank
+rows, and the generator emits `n_examples=0` first. Those are the zero-demonstration baseline where
+every codeword-surface condition **is** the bare query — the model has nothing to answer from, which
+is why `A` and `C` came back byte-identical in the smoke. `--limit` is now a **stratified round-robin
+over (query_kind, condition, n_examples)**, so a smoke exercises real prompts.
+
+**What the diagnostic (job 760683) showed on real n=4 prompts** — three framings, `p` on the answer:
+
+| framing | direct | doublespeak | benign |
+|---|---|---|---|
+| as-is ("what does X refer to?") | 1.4e-02 | 1.3e-03 | 1.2e-08 |
+| assistant-primed | 2.4e-02 | 2.8e-02 | 1.5e-07 |
+| **forced choice (both options named)** | **0.979** | 0.028 / 0.482 | 7.4e-06 |
+
+The forced-choice framing concentrates mass on the answer (0.979 for direct) and is the house
+framing (`46_forced_choice_patchscope`) for exactly this reason. Added as query kind
+`semantic_forced_choice`; bank now 1752 rows.
+
+**A first read of the effect size, from the as-is diagnostic:** in log-odds the benign arm is −6.0,
+doublespeak +2.8, direct +15.8 — so the doublespeak prompt sits **~40% of the way** from benign to
+direct on what the model *says the word means*, while the token's representation moved only ~5%
+along `d_surface` at L8. Those are different quantities and the gap between them is itself worth
+investigating; not yet a claim, n=2 prompts.
+
+**Invariant scoping.** A forced-choice query names both words, so the exact-swap invariant genuinely
+cannot hold on the full prompt (swapping would turn "a carrot or a bomb" into "a carrot or a
+carrot"). `check_alignment` now applies it to the **demo block** for those kinds, and the
+tokenization audit reports such families as **not checked** rather than passing — the same
+skipped-vs-passed distinction the earlier audit got wrong. Rebuilt clean: 1752 rows, 240 families,
+**0 character-level and 0 token-level violations**, 1752 rows ok / 0 bad / 0 ambiguous.
