@@ -89,10 +89,22 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict])
     if not spec:
         return []
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
-    dmap = payload[name] if name in payload else None
-    if dmap is None:
-        raise SystemExit(f"direction {name!r} not in the fitted payload")
-    gaps = (payload.get("gap") or {}).get(name, {})
+    # Norm-matched controls are DERIVED from d_surface with a fixed seed, using the same house
+    # helpers aggressive_patching uses, so a steering arm and its control are matched in
+    # magnitude by construction rather than by hand.
+    if name in ("random", "orthogonal"):
+        import signals as _sg
+        base = payload["d_surface"]
+        maker = _sg.random_control_direction if name == "random" else _sg.orthogonal_control_direction
+        dmap = {L: maker(v, seed=20260816 + L) for L, v in base.items()}
+        gaps = (payload.get("gap") or {}).get("d_surface", {})
+    else:
+        dmap = payload[name] if name in payload else None
+        if dmap is None:
+            raise SystemExit(f"direction {name!r} not in the fitted payload "
+                             f"(have {sorted(k for k in payload if k.startswith('d_'))} "
+                             "plus the derived controls random/orthogonal)")
+        gaps = (payload.get("gap") or {}).get(name, {})
     ctxs = []
     for L in band:
         d = dmap.get(L)
