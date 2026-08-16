@@ -16,12 +16,13 @@ implements them as four TRAIN/TEST REGIMES over the same 2x2 bank:
                    included because the plan asks for the comparison.
   d2_aligned       same, restricted to matched 2x2 families, so the only difference between
                    the classes is the target word.
-  d3_hard_negative adds the hard negatives the plan lists, which our design already supplies:
-                   E = concept token in a BENIGN context (positive, but no harmful context) and
-                   C = codeword token in a HARMFUL context (negative, but harm-laden context).
-                   A probe that has really learned "concept-ness" must still call E positive
-                   and C negative; one that has learned "harm-context-ness" will fail exactly
-                   here, and the two failure modes are distinguishable in the per-cell recall.
+  d3_hard_negative TRAIN on the easy diagonal A vs B only (benign carrot vs harmful bomb —
+                   the very contrast the plan's naive B-A direction uses), then TEST on the
+                   OFF-DIAGONAL hard cells: E = concept token in a benign context, C = codeword
+                   token in a harmful context. A probe that learned CONCEPT-ness calls E
+                   positive and C negative; a probe that learned HARM-CONTEXT-ness gets both
+                   exactly backwards. Averaged accuracy hides that, so per-cell recall is
+                   reported. This is the cleanest available separation of the two hypotheses.
   d4_heldout_ds    THE GENERALIZATION TEST. Train with cell C (natural doublespeak) REMOVED,
                    then ask the probe to score C. `mean P(concept | C)` versus its score on the
                    benign-literal control A is the learned-classifier analogue of the C-A
@@ -127,10 +128,20 @@ def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]
         pool = [r for r in table if r["bank_block"] == "core2x2"]
         return pool, pool
     if regime == "d3_hard_negative":
-        # Same pool, but the metrics are broken out per cell so that the hard cells (E, C)
-        # are visible instead of being averaged into the easy ones.
+        # TRAIN on the easy, confounded contrast only — A (benign carrot) vs B (harmful bomb),
+        # which is exactly the diagonal the plan's naive B-A direction uses — then TEST on the
+        # OFF-DIAGONAL hard cells E and C.
+        #
+        # This is the decisive test, and it is why d3 is not just d2 with extra reporting (the
+        # first draft returned the same pool for both, which made d3 a duplicate computation):
+        #   a probe that learned CONCEPT-ness  calls E positive (concept token, benign context)
+        #                                       and C negative (codeword token, harmful context);
+        #   a probe that learned HARM-CONTEXT-ness gets both exactly BACKWARDS.
+        # Averaged accuracy hides that; the per-cell recall reported below separates them.
         pool = [r for r in table if r["bank_block"] == "core2x2"]
-        return pool, pool
+        train = [r for r in pool if r["cell"] in ("A", "B")]
+        test = [r for r in pool if r["cell"] in ("E", "C")]
+        return train, test
     if regime == "d4_heldout_ds":
         pool = [r for r in table if r["bank_block"] == "core2x2"]
         train = [r for r in pool if r["cell"] != "C"]
