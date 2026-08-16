@@ -1955,3 +1955,64 @@ dose:
 The negative-direction arm is the sharp test. If the mechanism is "concept-ness is hidden", steering
 away from the concept should push ASR **above** baseline. If instead both signs reduce ASR, the
 effect is disturbance, not direction, and this whole reading collapses.
+
+---
+
+## CORRECTION to G2 and §9 Q6/Q7 — both claims survive, both magnitudes were inflated by selection
+
+Third audit: 26 candidates, **25 confirmed**. Two hit the standing claims. Neither reverses a
+direction; both mean I quoted numbers that were larger than the evidence supports, and in both
+cases the inflation came from **a selection that favoured my hypothesis**.
+
+### C1 — the L8 headline was half residual-stream norm
+
+`d_surface|L|proj` is an *unnormalised* inner product, so it scales with `‖h‖`. The norm is itself
+an ASR predictor, and `analyze_g2.py` never controlled for it even though `extract_boombness`
+writes `hnorm|L0..L31` into the very rows it reads. Now it does:
+
+| predictor | ρ | ρ given ‖h‖ | ‖h‖ vs ASR | norm share |
+|---|---|---|---|---|
+| **`d_surface` L8 proj** (my headline) | +0.342 | **+0.172** | −0.315 | **50%** |
+| **`d_surface` L12 proj** | +0.307 | **+0.302** | −0.059 | **2%** |
+| `d_surface` L31 proj | +0.273 | +0.287 | +0.204 | −5% |
+
+**Half of my headline was a nuisance scalar.** Worse, I selected L8 by argmax over 28 correlated
+columns — and it is the single most norm-contaminated layer of the ten. The norm-free value at L8
+(+0.172) would not clear Holm over that family.
+
+**Corrected headline: `d_surface` L12 proj, ρ = +0.307, norm-partial ρ = +0.302 (p = 2.6e-06),
+positive in 5 of 6 domains.** The claim "Boombness predicts ASR within the doublespeak arm"
+**survives cleanly** — at a different layer, with a control I should have run.
+
+The script now prints the partial and flags any predictor where >⅓ of the association is norm.
+
+### C2 — the "40×" over refusalness was a selection artifact
+
+I compared refusalness pinned at **L18 (near its own minimum, R²=0.0032)** against the
+**argmax-selected** Boombness column, then quoted the ratio. Given the same freedom:
+
+| | R² |
+|---|---|
+| refusalness, **best** single layer (L12) | **0.0386** |
+| refusalness, all 5 layers jointly | **0.0725** |
+| `d_surface` L12 proj | 0.1411 |
+| Boombness adds over refusalness-L12 | **+0.1044** |
+| **refusalness (all layers) adds over Boombness** | **+0.0393** |
+
+**Honest ratio: 3.7× in-sample (3.0× cross-validated), not 40×. Refusalness adds +0.039 over
+Boombness, not +0.0005.** The direction holds; the magnitude does not.
+
+Two things the audit established that I should have stated originally:
+- **The refusal probe is fine** — it separates the arms by ~9σ (`direct_harmful` +7.30 vs
+  `natural_doublespeak` +0.04). The low within-arm R² is **range restriction** (within-arm sd 0.74
+  vs pooled 3.07), so "refusal is unimportant" is only true *within the attack arm* and must never
+  be quoted as a general statement.
+- **The two predictors are read at different token positions** (refusalness at the last token,
+  `d_surface` at `codeword_last`), so part of "Boombness beats refusalness" is "the codeword
+  position beats the last position". That is a footing mismatch, not a fair contest.
+
+### The pattern, again
+
+Three retractions were *manipulated ≠ measured*. These two are its sibling: **compare-the-best-of-mine
+against-a-fixed-instance-of-yours**. Same root — an asymmetry that happens to point the way I
+expected — and it survived my own review both times because the number looked plausible.

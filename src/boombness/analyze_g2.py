@@ -44,6 +44,27 @@ def spearman(x, y):
     return float(r.statistic), float(r.pvalue)
 
 
+def rank_partial(x, y, z):
+    """Spearman(x, y | z): Pearson correlation of the residuals of the RANKS.
+
+    Added because the tick-24 audit showed the headline predictor was ~55% shared with the
+    residual-stream norm at the same position: Spearman(d_surface|L8|proj, hnorm|L8) = -0.731 and
+    Spearman(hnorm|L8, ASR) = -0.315, so partialling the norm out dropped the reported rho from
+    +0.342 to +0.151. A quantity a GCG objective would push (position ON the axis) is not the
+    same as how large the activation is, and the two must be separated before either is claimed.
+    """
+    import numpy as np
+    from scipy.stats import rankdata, pearsonr
+    rx, ry, rz = (rankdata(np.asarray(v, dtype=float)) for v in (x, y, z))
+    def resid(a, b):
+        b1 = np.column_stack([np.ones_like(b), b])
+        beta, *_ = np.linalg.lstsq(b1, a, rcond=None)
+        return a - b1 @ beta
+    ex, ey = resid(rx, rz), resid(ry, rz)
+    r, p = pearsonr(ex, ey)
+    return float(r), float(p)
+
+
 def holm(pvals: Dict[str, float], alpha: float = 0.05) -> Dict[str, bool]:
     items = sorted(pvals.items(), key=lambda kv: kv[1])
     m, out, ok = len(items), {}, True
@@ -97,6 +118,13 @@ def main() -> int:
             c = f"ll|L{L}|boombness"
             if c in r:
                 d[(L, "ll")] = r[c]
+        # The residual-stream NORM at the same position. `d_surface|L|proj` is an unnormalised
+        # inner product, so it scales with ||h||, and ||h|| is itself an ASR predictor. Without
+        # this control a "Boombness" association can be mostly "how big the activation is".
+        for L in layers:
+            c = f"hnorm|L{L}"
+            if c in r:
+                d[(L, "hnorm")] = r[c]
     if set(qk_seen) - {"behavioral"}:
         raise SystemExit(
             f"representation rows came from query kinds {dict(qk_seen)} — the predictor must be "
@@ -138,9 +166,17 @@ def main() -> int:
             xs = [rep[p].get((L, stat)) for p in kept]
             if any(v is None for v in xs):
                 continue
+            if stat == "hnorm":
+                continue
             r, p = spearman(xs, y)
             name = f"d_surface|L{L}|{stat}" if stat != "ll" else f"logit_lens|L{L}"
-            rows.append((name, r, p, float(_sd(xs))))
+            hn = [rep[pp].get((L, "hnorm")) for pp in kept]
+            if all(v is not None for v in hn):
+                rp, pp_ = rank_partial(xs, y, hn)
+                rn, pn = spearman(hn, y)
+            else:
+                rp = pp_ = rn = pn = float("nan")
+            rows.append((name, r, p, float(_sd(xs)), rp, pp_, rn))
             pv[name] = p
     # semantic predictor, on its own (different) prompt
     sem_keys = [p for p in kept if fam_key(meta[p]["family_id"]) in sem_by_fam]
@@ -148,17 +184,25 @@ def main() -> int:
         xs = [sem_by_fam[fam_key(meta[p]["family_id"])] for p in sem_keys]
         ys = [asr[p] for p in sem_keys]
         r, p = spearman(xs, ys)
-        rows.append((f"semantic_logodds (n={len(sem_keys)}, OTHER prompt)", r, p, float(_sd(xs))))
+        rows.append((f"semantic_logodds (n={len(sem_keys)}, OTHER prompt)", r, p, float(_sd(xs)),
+                     float("nan"), float("nan"), float("nan")))
         pv["semantic_logodds"] = p
 
     rej = holm(pv)
     rows.sort(key=lambda t: -abs(t[1]))
-    print(f"\n{'predictor':44s} {'rho':>8s} {'p':>10s} {'Holm':>6s} {'sd(x)':>9s}")
-    for name, r, p, sd in rows:
-        print(f"{name:44s} {r:>+8.3f} {p:>10.2e} {str(rej.get(name.split(' ')[0], '')):>6s} {sd:>9.4f}")
+    print(f"\n{'predictor':38s} {'rho':>8s} {'p':>9s} {'Holm':>5s} "
+          f"{'rho|hnorm':>10s} {'p':>9s} {'hnorm~y':>8s}  norm-share")
+    for name, r, p, sd, rp, pp_, rn in rows:
+        share = (1 - abs(rp) / abs(r)) if (r and math.isfinite(rp) and abs(r) > 1e-9) else float("nan")
+        flag = ""
+        if math.isfinite(share) and share > 0.33:
+            flag = "  <-- >1/3 of this is the NORM, not the axis"
+        print(f"{name:38s} {r:>+8.3f} {p:>9.2e} {str(rej.get(name.split(' ')[0], '')):>5s} "
+              f"{rp:>+10.3f} {pp_:>9.2e} {rn:>+8.3f} {100*share:>8.0f}%{flag}")
     report["predictors"] = [{"name": n, "spearman": r, "p": p, "sd": sd,
+                             "partial_given_hnorm": rp, "partial_p": pp_, "hnorm_vs_asr": rn,
                              "holm_rejected": bool(rej.get(n.split(" ")[0], False))}
-                            for n, r, p, sd in rows]
+                            for n, r, p, sd, rp, pp_, rn in rows]
 
     if zero:
         yz = [asr[p] for p in zero]
@@ -179,10 +223,35 @@ def main() -> int:
             from sklearn.linear_model import LinearRegression
             yv = np.array([asr[p] for p in rk])
             med: Dict[str, object] = {"n": len(rk)}
-            for RL in (12, 16, 18, 20):
+            # SYMMETRIC HEAD-TO-HEAD. The first version pinned refusalness to L18 (near its own
+            # minimum) and compared it against the argmax-selected Boombness column, then quoted
+            # the resulting 40x. Given the same freedom, refusalness's best layer is L12
+            # (R2 0.0386, rho +0.167 p=0.011) and the honest ratio is ~3.7x. The joint model over
+            # all refusal layers is also reported, because "+0.0005 added" was one fixed column
+            # against a selected one; jointly refusalness adds ~+0.039.
+            refus_layers = [RL for RL in (12, 14, 16, 18, 20)
+                            if f"refusalness|L{RL}|proj" in refus[rk[0]]]
+            R_all = np.column_stack([[refus[p][f"refusalness|L{RL}|proj"] for p in rk]
+                                     for RL in refus_layers]) if refus_layers else None
+            best_rl, best_r2 = None, -1.0
+            for RL in refus_layers:
+                v = np.array([refus[p][f"refusalness|L{RL}|proj"] for p in rk]).reshape(-1, 1)
+                r2 = LinearRegression().fit(v, yv).score(v, yv)
+                if r2 > best_r2:
+                    best_rl, best_r2 = RL, r2
+            if R_all is not None:
+                r2_joint = LinearRegression().fit(R_all, yv).score(R_all, yv)
+                print(f"  refusalness: best single layer L{best_rl} R2={best_r2:.4f}; "
+                      f"all {len(refus_layers)} layers jointly R2={r2_joint:.4f}")
+                med["refusalness_best_layer"] = best_rl
+                med["refusalness_best_r2"] = best_r2
+                med["refusalness_joint_r2"] = r2_joint
+                # within-arm range restriction, the reason the R2 is small at all
+                for RL in refus_layers:
+                    v = [refus[p][f"refusalness|L{RL}|proj"] for p in rk]
+                    med[f"refusalness_L{RL}_sd_within_arm"] = float(np.std(v))
+            for RL in refus_layers:
                 col = f"refusalness|L{RL}|proj"
-                if col not in refus[rk[0]]:
-                    continue
                 rv = np.array([refus[p][col] for p in rk])
                 r0, p0 = spearman(rv.tolist(), yv.tolist())
                 print(f"  refusalness L{RL:<2d} -> ASR   rho={r0:+.3f} p={p0:.2e}  sd={float(rv.std()):.3f}")
@@ -201,9 +270,14 @@ def main() -> int:
                     # and the reverse: does refusalness add over Boombness alone?
                     Xb = xv.reshape(-1, 1)
                     rb = LinearRegression().fit(Xb, yv).score(Xb, yv)
-                    print(f"    R2 refusalness-only {r1:.4f} | +{name} -> {r2:.4f} "
-                          f"(delta {r2-r1:+.4f}) | {name}-only {rb:.4f} "
-                          f"(refusalness adds {r2-rb:+.4f})")
+                    add_joint = float("nan")
+                    if R_all is not None:
+                        Xj = np.column_stack([R_all, xv])
+                        add_joint = LinearRegression().fit(Xj, yv).score(Xj, yv) - rb
+                    print(f"    R2 refusal-L{RL}-only {r1:.4f} | +{name} -> {r2:.4f} "
+                          f"(Boombness adds {r2-r1:+.4f}) | {name}-only {rb:.4f} "
+                          f"(this refusal layer adds {r2-rb:+.4f}; ALL refusal layers jointly add "
+                          f"{add_joint:+.4f})")
                     med[f"L{RL}_vs_{name}"] = {"r2_refusal_only": r1, "r2_both": r2,
                                                "delta_boombness_over_refusal": r2 - r1,
                                                "r2_boombness_only": rb,
