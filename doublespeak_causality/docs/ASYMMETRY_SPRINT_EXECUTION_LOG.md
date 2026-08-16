@@ -10524,3 +10524,31 @@ count. Emptiness is only claimed when the header is present.
 be submitted, and the >30 min PENDING rule remains unevaluable. Diff otherwise unchanged.
 
 ---
+## 2026-08-18 03:15 — controller recovered. **Queue genuinely empty — and this time the check can tell.**
+
+*(Wall clock 06:01 UTC.)* First tick using the corrected idiom from 02:45:
+
+```
+squeue_rc=0
+JOBID PARTITION NAME USER ST TIME NODES NODELIST(REASON)     <- header present
+VERDICT: controller OK, jobs=0
+```
+
+**The header is the point.** Under the outage the same situation produced *no* header and *no*
+rows; now it produces a header and no rows. Those are different states and the check now
+distinguishes them — which the `-h` version could not, and which is why three ticks of "queue
+empty" before 02:15 were luckier than they were rigorous. `sinfo` also answers again (23 mixed,
+20 idle, 3 down), confirming slurmctld rather than a partial recovery.
+
+**Duration:** unreachable at 05:01 and 05:31, answering at 06:01 — roughly a one-hour outage. No
+asymmetry job was in flight at any point (last submission 2026-08-14), so nothing was lost, nothing
+needs resubmitting, and no >30 min PENDING case arose.
+
+### Design-vs-inventory diff
+§20.1–§20.5, §20.7 complete/traced/verified. D3 resolved and annotated. §20.8 route promising and
+unproven (three qualifications). No new asymmetry artifacts. Six owed items, all decisions.
+
+### SLURM
+**Queue empty — verified, not inferred.** Nothing PENDING, nothing to resubmit, nothing to launch.
+
+---
