@@ -184,7 +184,7 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
 
     for L in layers:
         li = layer_index[L]
-        y_all, p_all, cell_all, cond_all = [], [], [], []
+        y_all, p_all, m_all, cell_all, cond_all = [], [], [], [], []
         for tr_domains, te_domains in folds:
             tr = [r for r in train_pool if r["domain"] in tr_domains]
             te = [r for r in eval_pool if r["domain"] in te_domains]
@@ -200,8 +200,17 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             clf = fit_probe(X_tr, y_tr, seed, C=C, n_components=n_components)
             X_te = np.stack([reps[r["prompt_id"]][li] for r in te])
             p_te = clf.predict_proba(X_te)[:, 1]
+            # The MARGIN (signed distance to the hyperplane) is the graded score, not the
+            # probability. The sigmoid compresses everything on one side of a well-separated
+            # boundary into p ~ 0, so P(concept|C) - P(concept|A) came back as +0.0000 even
+            # after PCA removed the numerical saturation: both are codeword-surface rows, both
+            # land far on the negative side, and the probability scale cannot resolve a shift
+            # between them. The margin can, and it is the direct analogue of the cosine along
+            # d_surface that analyze_boombness reports.
+            m_te = clf.decision_function(X_te)
             y_all.extend(r["y"] for r in te)
             p_all.extend(p_te.tolist())
+            m_all.extend(np.asarray(m_te).ravel().tolist())
             cell_all.extend(r["cell"] for r in te)
             cond_all.extend(r["condition"] for r in te)
 
@@ -212,16 +221,31 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
         # Per-cell mean predicted P(concept) — the quantity the plan's hypothesis is about.
         by_cell: Dict[str, Dict[str, float]] = {}
         for c in sorted(set(cell_all)):
-            m = np.array([pp for pp, cc in zip(p_all, cell_all) if cc == c])
-            yy = np.array([yv for yv, cc in zip(y_all, cell_all) if cc == c])
-            by_cell[c] = {"n": int(len(m)), "mean_p_concept": float(m.mean()),
-                          "sem": float(m.std(ddof=1) / math.sqrt(len(m))) if len(m) > 1 else float("nan"),
-                          "recall_at_0.5": float(((m >= 0.5).astype(int) == yy).mean())}
+            pp = np.array([v for v, cc in zip(p_all, cell_all) if cc == c])
+            mm = np.array([v for v, cc in zip(m_all, cell_all) if cc == c])
+            yy = np.array([v for v, cc in zip(y_all, cell_all) if cc == c])
+            by_cell[c] = {
+                "n": int(len(pp)),
+                "mean_p_concept": float(pp.mean()),
+                "mean_margin": float(mm.mean()),
+                "sem_margin": float(mm.std(ddof=1) / math.sqrt(len(mm))) if len(mm) > 1 else float("nan"),
+                "recall_at_0.5": float(((pp >= 0.5).astype(int) == yy).mean()),
+            }
         rec["by_cell"] = by_cell
+        # The learned-probe analogue of the C-A contrast, on the MARGIN scale.
         if "C" in by_cell and "A" in by_cell:
-            # The learned-probe analogue of the C-A contrast: how much more concept-like does
-            # the probe judge a doublespeak carrot than a benign-literal carrot?
             rec["p_C_minus_p_A"] = by_cell["C"]["mean_p_concept"] - by_cell["A"]["mean_p_concept"]
+            rec["margin_C_minus_A"] = by_cell["C"]["mean_margin"] - by_cell["A"]["mean_margin"]
+            # Expressed as a fraction of the full codeword->concept margin gap, so it is
+            # comparable across layers whose margins have different scales.
+            if "B" in by_cell:
+                span = by_cell["B"]["mean_margin"] - by_cell["A"]["mean_margin"]
+                rec["margin_frac_C"] = (rec["margin_C_minus_A"] / span) if abs(span) > 1e-9 else float("nan")
+        # d3 evaluates only on {E, C}; report the same movement there.
+        if "C" in by_cell and "E" in by_cell and "A" not in by_cell:
+            rec["margin_C_minus_E"] = by_cell["C"]["mean_margin"] - by_cell["E"]["mean_margin"]
+            rec["recall_E"] = by_cell["E"]["recall_at_0.5"]
+            rec["recall_C"] = by_cell["C"]["recall_at_0.5"]
         per_layer[L] = rec
 
     best = None
@@ -299,9 +323,14 @@ def main() -> int:
             b = shuf["per_layer"][L].get("auroc")
             if a is None or b is None or math.isnan(a) or math.isnan(b):
                 continue
+            rl = real["per_layer"][L]
             paired[L] = {"auroc_real": a, "auroc_shuffled": b, "auroc_lift": a - b,
-                         "saturation_frac": real["per_layer"][L].get("saturation_frac"),
-                         "p_C_minus_p_A": real["per_layer"][L].get("p_C_minus_p_A")}
+                         "saturation_frac": rl.get("saturation_frac"),
+                         "p_C_minus_p_A": rl.get("p_C_minus_p_A"),
+                         "margin_C_minus_A": rl.get("margin_C_minus_A"),
+                         "margin_frac_C": rl.get("margin_frac_C"),
+                         "margin_C_minus_E": rl.get("margin_C_minus_E"),
+                         "recall_E": rl.get("recall_E"), "recall_C": rl.get("recall_C")}
         real["paired_vs_shuffled"] = paired
         best = max(paired, key=lambda L: paired[L]["auroc_lift"]) if paired else None
         real["best_layer_by_lift"] = best
@@ -311,14 +340,18 @@ def main() -> int:
                      "best_layer_by_lift": best, "paired_vs_shuffled": paired})
 
         print(f"  {regime}")
-        print(f"    {'L':>3} {'AUROC':>7} {'shuf':>7} {'lift':>7} {'sat':>6} {'P(C)-P(A)':>10}")
+        print(f"    {'L':>3} {'AUROC':>7} {'shuf':>7} {'sat':>5} "
+              f"{'margC-A':>9} {'fracC':>7} {'margC-E':>9} {'recE':>5} {'recC':>5}")
         for L in sorted(paired):
             v = paired[L]
-            d = v["p_C_minus_p_A"]
-            ds = f"{d:+.4f}" if isinstance(d, float) else "     -"
+            def f(k, w, p=4):
+                x = v.get(k)
+                return f"{x:>+{w}.{p}f}" if isinstance(x, float) and not math.isnan(x) else " " * (w - 1) + "-"
             mark = " <-" if L == best else ""
             print(f"    {L:>3} {v['auroc_real']:>7.4f} {v['auroc_shuffled']:>7.4f} "
-                  f"{v['auroc_lift']:>+7.4f} {v['saturation_frac']:>6.2f} {ds:>10}{mark}")
+                  f"{v['saturation_frac']:>5.2f} {f('margin_C_minus_A', 9)} "
+                  f"{f('margin_frac_C', 7, 3)} {f('margin_C_minus_E', 9)} "
+                  f"{f('recall_E', 5, 2)} {f('recall_C', 5, 2)}{mark}")
 
     summary = {
         "run_scored": os.path.abspath(args.run), "bank": args.bank,
