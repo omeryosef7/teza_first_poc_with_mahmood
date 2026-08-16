@@ -62,9 +62,9 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | Gate | Question | Verdict | Date |
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS — but the lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout +71–84% of span; transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
-| G2 (§9) | Does prompt-level Boombness predict ASR? | **SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
+| G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
-| G4 (§12) | Is Boombness a usable GCG objective? | **Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
+| G4 (§12) | Is Boombness a usable GCG objective? | **REOPENED — the G2 negative was an artifact; the objective is viable and untested.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
 
 ---
@@ -1366,3 +1366,69 @@ complementary by construction, so "refusal predicts ASR" would be a tautology ra
 Two of those I consider genuine risks to the current verdicts rather than box-ticking: **range
 restriction** could manufacture the G2 null, and **n=2** cannot distinguish G3's null from a large
 effect.
+
+---
+
+## ⛔⛔ RETRACTION #2 — G2 was BACKWARDS. The representation Boombness DOES predict ASR.
+
+The tick-16 audit (44 agents, 40 candidates, **30 confirmed**) found that the G2 table read the
+predictor **off the wrong prompt**. Recomputed with the committed, reproducible
+`src/boombness/analyze_g2.py`:
+
+```
+python src/boombness/analyze_g2.py \
+  --judge   outputs/boombness/judge/base_20260816_210948_3024689 \
+  --extract outputs/boombness/extract_boombness/full_20260816_185942_1008673 \
+  --score   outputs/boombness/score_behavior/base_20260816_203355_3985444
+```
+
+`arm=natural_doublespeak`: **270 judged prompts, 270 with a representation (100% coverage)**,
+234 analysed after excluding zero-demo prompts. Spearman vs continuous StrongReject, Holm over
+predictors:
+
+| predictor | ρ | p | Holm |
+|---|---|---|---|
+| **`d_surface` L8 proj** | **+0.342** | 8.0e-08 | ✓ |
+| `d_surface` L12 proj | +0.307 | 1.7e-06 | ✓ |
+| `d_surface` L11 cos | +0.305 | 1.9e-06 | ✓ |
+| `d_surface` L31 cos | +0.305 | 2.0e-06 | ✓ |
+| `d_surface` L8 cos | +0.292 | 5.4e-06 | ✓ |
+| logit lens L31 | +0.279 | 1.5e-05 | ✓ |
+| **`semantic_logodds`** (n=162, *different* prompt) | **+0.249** | 1.4e-03 | ✓ |
+
+**21 predictors survive Holm. The representation Boombness at L8 predicts ASR BETTER than the
+semantic readout does (+0.342 vs +0.249).** My published verdict — *"the representation Boombness
+does not predict ASR; the plan's proposed objective is a documented negative"* — was **exactly
+backwards.**
+
+### What went wrong, and it is the same mistake as the first retraction
+
+The join stripped `query_kind` from `family_id` to match arms. That is a sound *key*, but it pulled
+`d_surface` from the **`semantic_one_word` prompt** while ASR came from the **`behavioral` prompt** —
+two different prompts with different final queries. The quantity that bears on a GCG objective is
+the representation on the **attack** prompt. `analyze_g2.py` now joins on `prompt_id` directly and
+**refuses to run** if the representation rows come from any query kind other than the judged one.
+
+Three further confirmed defects, all in the same ad-hoc analysis:
+1. **72 of 270 doublespeak rows were silently dropped** by that join — and not at random: the
+   dropped set was entirely `strength=none/consistent/near/plain`, with ASR 0.224 vs 0.176 and
+   refusal 0.000 vs 0.101. **This is the identical failure mode — an unreported restriction — that
+   forced retraction #1.** Coverage is now printed on every run and is 100%.
+2. **36 of the 198 rows had `n_examples=0`** — no demonstrations, so no codeword mapping, so not
+   doublespeak prompts at all. That stratum alone carries ρ=+0.717 at L31. Now excluded by default
+   (`--min-examples 1`) and reported separately.
+3. **Three of five coefficients did not reproduce**, and *nothing in the repo could regenerate the
+   table* — it lived in a shell heredoc. That is a direct violation of the plan's §2.1
+   reproducibility contract, which I wrote the `RunDir` machinery to enforce and then bypassed for
+   the single most important table in the sprint.
+
+### Corrected verdicts
+
+- **G2 = the representation Boombness DOES predict ASR** (ρ≈+0.29–0.34 at L8–L12, Holm-significant,
+  100% coverage). The semantic readout also predicts it (+0.249) but *less well*, and on a different
+  prompt.
+- **G4 = the plan's proposed GCG objective is NOT a documented negative.** It is viable and now
+  worth testing. My "documented negative" was an artifact.
+- The **tick-13b dissociation** claim (semantic moves 59%, representation only 3–5%) still stands as
+  a statement about *effect sizes*, but its interpretation — "the representation is not what tracks
+  behaviour" — is withdrawn.
