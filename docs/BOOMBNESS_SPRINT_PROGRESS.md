@@ -75,6 +75,8 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 
 | Date | Auditor | Finding | Severity | Fix | Rerun needed? |
 |---|---|---|---|---|---|
+| 2026-08-16 | self-review workflow, `review:directions` lens | **`all_first_ids` put the generic token `car` on the codeword side of every logit-lens score.** `word_token_ids` took the FIRST id of each surface variant. On Llama-3.1-8B `" carrot"`→`[' carrot']` but `"carrot"`→`['car','rot']`, `"Carrot"`→`['Car','rot']`, `" Carrot"`→`[' Car','rot']` — so **3 of carrot's 4 "first ids" are car-the-vehicle**, one of the most frequent tokens in the vocabulary, while all 4 of bomb's variants genuinely spell bomb. | **result-corrupting** | Added `signals.readout_ids` / `readout_id_pair`. Default `primary` mode = the single leading-space whole-word token per side (`' bomb'` vs `' carrot'`) — exactly symmetric, and exactly the token that appears in our prompts. Multi-token variants are recorded under `rejected_first_ids` instead of scored. Raises if the leading-space form is not single-token. | **YES — cancelled job 760596 mid-run at 600/1464 rows and resubmitted as 760598.** Direction metrics (`d_*`) were unaffected (they use no token ids); the `ll\|*` logit-lens columns were. |
+| 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
 
@@ -324,3 +326,35 @@ columns as soft so they cannot silently gate a submission. Everything quantitati
 L0/4/8/12/16/20/24/28/31, caching final-occurrence reps for the Phase-3 probes, 6h limit,
 nodelist `n-802,n-803,n-805,t-806` (n-801 omitted — every weight load slower than 15 min in 232
 logged runs happened there).
+
+### 2026-08-16 — Tick 3 (self-review caught a result-corrupting bug; full run cancelled, fixed, relaunched)
+
+The adversarial self-review workflow returned its first finding while job 760596 was scoring, and it
+was real. **Both entries in the audit table above were found and fixed this tick**, and the full
+extraction was cancelled at 600/1464 rows and resubmitted.
+
+The first one is the kind of bug this sprint is supposed to be paranoid about, so it is worth
+stating plainly: `logit(concept) − logit(codeword)` was aggregating over "the first token of every
+surface variant of the word". For `bomb` that is four tokens all spelling *bomb*. For `carrot` it is
+`[' carrot', 'car', 'Car', ' Car']` — **three of the four are the ordinary English word "car"**.
+So the codeword side of every logit-lens score was inflated by car-the-vehicle, by a
+context-dependent amount, and **only on one arm of the 2×2**. That is precisely the shape of error
+that would have produced a confident, wrong Boombness curve. It did not crash, and no output looked
+wrong.
+
+Fix: `signals.readout_ids` / `readout_id_pair`, defaulting to one leading-space whole-word token per
+side — `' bomb'` (13054) vs `' carrot'` (75294). Symmetric by construction, and it is the exact
+token the generator guarantees appears in the prompt. `full_word` mode is retained as a robustness
+check but is explicitly *not* the default, because it is asymmetric in count (4 vs 1) and the
+scorers aggregate with `max()`, so more variants can only raise a score.
+
+Writing that guard immediately caught a second one: the comprehension forced choice offered the
+answer word `codeword`, which is **3 tokens** (`[' cod','ew','ord']`), so the single-next-token
+readout was measuring the mass on `' cod'`. Answer vocabulary is now `literal` / `coded`, both
+single tokens.
+
+**Re-verified after both fixes:** bank 1464 rows / 180 families / 0 alignment violations;
+tokenization audit 1464 ok / 0 bad / 0 ambiguous, 540 families / 0 token-alignment violations;
+manual review sample regenerated.
+
+**SLURM 760598 running** (full extraction, corrected readout ids).

@@ -40,7 +40,9 @@ from extract_boombness import resolve_occurrences  # noqa: E402
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 
 # Answer-token groups for the forward-only readouts.
-COMPREHENSION_WORDS = ("literal", "codeword")
+# Both must be SINGLE tokens with a leading space or the forced choice is unanswerable;
+# signals.readout_ids enforces it. " codeword" is 3 tokens on Llama-3.1-8B, hence "coded".
+COMPREHENSION_WORDS = ("literal", "coded")
 
 
 @torch.no_grad()
@@ -94,6 +96,7 @@ def main() -> int:
     ap.add_argument("--intervene", default="",
                     help='e.g. "d_surface:project_out:8-21:1.0" or "d_surface:add:8-21:2.0"')
     ap.add_argument("--arm", default="base", help="label written on every row")
+    ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"])
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
@@ -135,17 +138,17 @@ def main() -> int:
 
     concept = rows[0]["concept"]
     codeword = rows[0]["codeword"]
-    c_ids = sorted(set(sg.word_token_ids(lm.tokenizer, concept)["all_first_ids"]))
-    w_ids = sorted(set(sg.word_token_ids(lm.tokenizer, codeword)["all_first_ids"]))
-    comp_ids = {w: sorted(set(sg.word_token_ids(lm.tokenizer, w)["all_first_ids"]))
-                for w in COMPREHENSION_WORDS}
-    overlap = set(c_ids) & set(w_ids)
-    if overlap:
-        # A shared first-token id would make p_concept and p_codeword partly the same number.
-        raise SystemExit(f"concept and codeword share first-token ids {sorted(overlap)} — "
-                         "the semantic readout would be degenerate")
-    run.note(concept_token_ids=c_ids, codeword_token_ids=w_ids,
+    # Symmetric, validated readout ids (signals.readout_ids): one whole-word token per side.
+    # readout_id_pair itself raises on overlap or on a multi-token leading-space form.
+    c_ids, w_ids, id_meta = sg.readout_id_pair(lm.tokenizer, concept, codeword,
+                                               mode=args.readout_ids)
+    comp_meta = {w: sg.readout_ids(lm.tokenizer, w) for w in COMPREHENSION_WORDS}
+    comp_ids = {w: [comp_meta[w]["primary_id"]] for w in COMPREHENSION_WORDS}
+    run.note(readout_ids=id_meta, comprehension_readout_ids=comp_meta,
+             concept_token_ids=c_ids, codeword_token_ids=w_ids,
              comprehension_token_ids=comp_ids, arm=args.arm)
+    print(f"[score] readout ids ({args.readout_ids}): concept={c_ids} codeword={w_ids} "
+          f"comprehension={comp_ids}")
 
     gens_path = run.p("gens.jsonl")
     gens_fh = open(gens_path, "a")
@@ -187,7 +190,7 @@ def main() -> int:
                 elif row["query_kind"] == "comprehension_usage":
                     rec = next_token_readout(lm, templated,
                                              {w: comp_ids[w] for w in COMPREHENSION_WORDS})
-                    rec["comprehension_margin"] = rec["p_codeword"] - rec["p_literal"]
+                    rec["comprehension_margin"] = rec["p_coded"] - rec["p_literal"]
                     run.log_row({**base, "readout": "comprehension", **rec})
                     counts["comprehension"] += 1
 

@@ -121,8 +121,14 @@ QUERY_KINDS: Dict[str, Dict[str, object]] = {
         "occurrence_analysis_safe": False, "scores": "comprehension",
     },
     "comprehension_usage": {
-        "template": ('Answer with exactly one word, "literal" or "codeword", and nothing else. '
-                     'In the text above, is the word {W} used literally or as a codeword?'),
+        # Answer vocabulary is "literal" / "coded", NOT "literal" / "codeword": " codeword"
+        # tokenizes to [' cod','ew','ord'] on Llama-3.1-8B, so a single-next-token forced choice
+        # on it is unanswerable and the readout would have been reading the mass on ' cod'.
+        # signals.readout_ids raises on exactly this, which is how it was caught.
+        # " literal" and " coded" are both single tokens, so the two options are symmetric.
+        "template": ('Answer with exactly one word, either literal or coded, and nothing else. '
+                     'In the text above, is the word {W} used literally, or as a code for '
+                     'something else?'),
         "occurrence_analysis_safe": True, "scores": "comprehension",
     },
 }

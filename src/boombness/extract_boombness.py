@@ -157,17 +157,18 @@ def _cross_fit_split(split: str, available: Sequence[str]) -> str:
 @torch.no_grad()
 def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, Dict],
                 run: RunDir, ledger: FailureLedger, dir_names: Sequence[str],
-                logit_lens_layers: Sequence[int], cache_final_reps: bool) -> Dict:
+                logit_lens_layers: Sequence[int], cache_final_reps: bool,
+                readout_id_mode: str = "primary") -> Dict:
     tok = lm.tokenizer
-    concept_ids = sg.word_token_ids(tok, rows[0]["concept"])
-    codeword_ids = sg.word_token_ids(tok, rows[0]["codeword"])
-    c_ids = sorted(set(concept_ids["all_first_ids"]))
-    w_ids = sorted(set(codeword_ids["all_first_ids"]))
-    run.note(concept_token_ids=c_ids, codeword_token_ids=w_ids,
-             concept_variants={k: v for k, v in concept_ids.items()},
-             codeword_variants={k: v for k, v in codeword_ids.items()},
+    # Symmetric, validated readout ids — one whole-word token per side. See
+    # signals.readout_ids for why the naive "first id of every variant" set was wrong.
+    c_ids, w_ids, id_meta = sg.readout_id_pair(tok, rows[0]["concept"], rows[0]["codeword"],
+                                               mode=readout_id_mode)
+    run.note(readout_ids=id_meta, concept_token_ids=c_ids, codeword_token_ids=w_ids,
              layer_convention=sg.LAYER_CONVENTION)
-    print(f"[score] concept first-ids={c_ids} codeword first-ids={w_ids}")
+    print(f"[score] readout ids ({readout_id_mode}): concept={c_ids} "
+          f"{id_meta['concept']['full_word_pieces']}  codeword={w_ids} "
+          f"{id_meta['codeword']['full_word_pieces']}")
 
     cache: Dict[str, torch.Tensor] = {}
     n_scored = 0
@@ -261,6 +262,9 @@ def main() -> int:
                     help="comma list of BLOCK indices; default = every 4th layer + last")
     ap.add_argument("--directions", default="d_surface,d_context,d_inter,d_naive")
     ap.add_argument("--position", default="codeword_last", choices=["codeword_last", "following"])
+    ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"],
+                    help="which token ids stand for the words in the logit lens; 'primary' is "
+                         "the single leading-space whole-word token per side (symmetric)")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
@@ -315,7 +319,8 @@ def main() -> int:
             raise SystemExit("nothing fitted; cannot score")
         summary.update(stage_score(lm, dc, rows, layers, fitted, run, ledger,
                                    args.directions.split(","), ll_layers,
-                                   cache_final_reps=not args.no_cache_reps))
+                                   cache_final_reps=not args.no_cache_reps,
+                                   readout_id_mode=args.readout_ids))
         summary["gap_by_split"] = {s: {k: v for k, v in p["gap"].items()}
                                    for s, p in fitted.items()}
 

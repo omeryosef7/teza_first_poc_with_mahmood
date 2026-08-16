@@ -87,12 +87,11 @@ def logit_lens(lm, hidden: torch.Tensor, apply_norm: bool = True) -> torch.Tenso
 
 
 def word_token_ids(tokenizer, word: str) -> Dict[str, List[int]]:
-    """Token ids for the surface variants that matter, with the leading-space form first.
+    """Diagnostic tokenization of a word's surface variants.
 
-    Multi-token words are NOT collapsed: the caller is handed the full id list and the
-    aggregation choice is explicit (plan §6.1 "handle spans carefully and document the
-    aggregation"). `primary` is the id used for scalar scores: the FIRST id of the
-    leading-space form, which is the id the model must emit to start writing the word.
+    DO NOT USE `all_first_ids` FOR SCORING — use `readout_ids` below. Kept only because the
+    tokenization audit reports these variants, and because the bug it caused is worth being
+    able to reproduce. See the docstring of `readout_ids`.
     """
     out: Dict[str, List[int]] = {}
     for name, s in (("bare", word), ("space", " " + word),
@@ -102,6 +101,92 @@ def word_token_ids(tokenizer, word: str) -> Dict[str, List[int]]:
     out["all_first_ids"] = sorted({v[0] for k, v in out.items()
                                    if k != "primary" and v})
     return out
+
+
+def readout_ids(tokenizer, word: str) -> Dict[str, object]:
+    """The token ids that may legitimately stand for `word` in a next-token / logit-lens score.
+
+    WHY THIS EXISTS (bug found by the self-review, 2026-08-16, and it was corrupting results):
+    the obvious construction — take the FIRST id of every surface variant — is wrong for any
+    word that is multi-token in some variant. On Llama-3.1-8B:
+
+        " carrot" -> [' carrot']              (1 token)
+        "carrot"  -> ['car', 'rot']           first id is 'car'
+        "Carrot"  -> ['Car', 'rot']           first id is 'Car'
+        " Carrot" -> [' Car', 'rot']          first id is ' Car'
+
+    so three of carrot's four "first ids" are the generic English word **car**, one of the most
+    frequent tokens in the vocabulary. Meanwhile every variant of "bomb" is a single token that
+    really does spell bomb. Scoring `logit(concept) - logit(codeword)` off those sets therefore
+    inflated the codeword side with car-the-vehicle, and inflated it by a context-dependent
+    amount — a systematic, ARM-ASYMMETRIC bias in exactly the quantity the sprint measures.
+
+    The fix is to score only tokens that spell the whole word:
+      primary_id     the leading-space single-token form, ' word'. This is the token that
+                     actually appears in our prompts (the generator guarantees every occurrence
+                     is preceded by a space) and the token the model must emit to answer with
+                     the word. ONE id per word, so the two arms are exactly symmetric.
+      full_word_ids  every variant that is a single token AND decodes (stripped, casefolded) to
+                     the word. Recorded for a robustness check; note it is asymmetric in SIZE
+                     between words (1 for carrot, 4 for bomb), and since the scorers aggregate
+                     with max(), more variants can only raise a score — so it must not be the
+                     default.
+
+    Raises if the leading-space form is not a single token: that is a modelling decision
+    (which subtoken represents the word?) that must be made explicitly, not defaulted.
+    """
+    variants: Dict[str, List[int]] = {}
+    for name, s in (("bare", word), ("space", " " + word),
+                    ("cap", word.capitalize()), ("space_cap", " " + word.capitalize())):
+        variants[name] = tokenizer(s, add_special_tokens=False)["input_ids"]
+
+    space_ids = variants["space"]
+    if len(space_ids) != 1:
+        raise ValueError(
+            f"readout_ids({word!r}): ' {word}' tokenizes to {len(space_ids)} tokens "
+            f"{[tokenizer.decode([i]) for i in space_ids]}, not 1. Decide explicitly how a "
+            f"multi-token word should be scored before using a logit-lens readout on it.")
+
+    full: List[int] = []
+    for name, ids in variants.items():
+        if len(ids) != 1:
+            continue
+        if tokenizer.decode(ids).strip().casefold() == word.casefold():
+            full.append(ids[0])
+
+    return {
+        "word": word,
+        "primary_id": space_ids[0],
+        "primary_piece": tokenizer.decode(space_ids),
+        "full_word_ids": sorted(set(full)),
+        "full_word_pieces": [tokenizer.decode([i]) for i in sorted(set(full))],
+        "variants": {k: v for k, v in variants.items()},
+        "rejected_first_ids": sorted({v[0] for v in variants.values()
+                                      if len(v) > 1}),
+    }
+
+
+def readout_id_pair(tokenizer, concept: str, codeword: str,
+                    mode: str = "primary") -> Tuple[List[int], List[int], Dict[str, object]]:
+    """Symmetric, validated id groups for (concept, codeword). Returns (c_ids, w_ids, meta).
+
+    mode="primary"   one id each — the default, and the only fully symmetric option.
+    mode="full_word" every single-token full-word variant; asymmetric in count, so it is a
+                     robustness check rather than the headline metric.
+    """
+    rc = readout_ids(tokenizer, concept)
+    rw = readout_ids(tokenizer, codeword)
+    if mode == "primary":
+        c_ids, w_ids = [rc["primary_id"]], [rw["primary_id"]]
+    elif mode == "full_word":
+        c_ids, w_ids = list(rc["full_word_ids"]), list(rw["full_word_ids"])
+    else:
+        raise ValueError(f"unknown readout id mode {mode!r}")
+    if set(c_ids) & set(w_ids):
+        raise ValueError(f"concept and codeword share readout ids {sorted(set(c_ids) & set(w_ids))} "
+                         "— the score would be partly the same number on both sides")
+    return c_ids, w_ids, {"mode": mode, "concept": rc, "codeword": rw,
+                          "concept_ids": c_ids, "codeword_ids": w_ids}
 
 
 @torch.no_grad()

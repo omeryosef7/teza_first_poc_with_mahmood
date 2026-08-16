@@ -276,6 +276,7 @@ def main() -> int:
     ap.add_argument("--readout-layers", default="")
     ap.add_argument("--singletons", default="8,9,10,14,15,16,17,18,19,20,21")
     ap.add_argument("--no-transplant", action="store_true")
+    ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"])
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="smoke")
@@ -313,11 +314,11 @@ def main() -> int:
     windows = build_windows(lm.num_layers, [int(x) for x in args.singletons.split(",") if x.strip()])
     alphas = [float(x) for x in args.alphas.split(",") if x.strip()]
 
-    concept_ids = sorted(set(sg.word_token_ids(lm.tokenizer, rows[0]["concept"])["all_first_ids"]))
-    codeword_ids = sorted(set(sg.word_token_ids(lm.tokenizer, rows[0]["codeword"])["all_first_ids"]))
+    concept_ids, codeword_ids, id_meta = sg.readout_id_pair(
+        lm.tokenizer, rows[0]["concept"], rows[0]["codeword"], mode=args.readout_ids)
     run.note(readout_layers=readout_layers, windows={k: v for k, v in windows.items()},
              alphas=alphas, concept_token_ids=concept_ids, codeword_token_ids=codeword_ids,
-             fit_dir=args.fit_dir)
+             readout_ids=id_meta, fit_dir=args.fit_dir)
     print(f"[patch] model={lm.model_id} readout_layers={readout_layers} windows={len(windows)}")
 
     total = 0
