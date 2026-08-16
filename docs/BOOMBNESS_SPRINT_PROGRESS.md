@@ -1026,3 +1026,67 @@ another** (the hardcoded `choices` list, the `occurrence_analysis_safe` flag, th
 That is now three instances, so it is a pattern in this codebase rather than three accidents — the
 mitigation is to derive from the source of truth rather than restate, which is what all three fixes
 did.
+
+---
+
+## Tick 13b — Phase 5 forward readouts: the central dissociation
+
+`base_20260816_203355_3985444`: 660 behavioural generations + 516 semantic + 288 comprehension
+readouts over the bank, **0 failures**. ASR judging is running separately; the forward readouts are
+already decisive on their own.
+
+### The semantic readout — what the model SAYS the codeword means
+
+Paired within **60 matched core-2×2 families** (`log p(concept) − log p(codeword)` at the answer
+position):
+
+| cell | mean | |
+|---|---|---|
+| A benign_literal | −14.48 | the codeword read literally |
+| C natural_doublespeak | **−1.73** | |
+| E concept_in_benign_ctx | +1.98 | |
+| B direct_harmful | +7.00 | the concept read directly |
+
+**paired `C−A` = +12.76 ± 0.68 (t = 18.7, n = 60 families)**, against `B−A` = +21.49 — so the
+doublespeak prompt carries the codeword **59.4%** of the way from a literal reading to the direct
+concept. And it is cleanly **dose-dependent in demonstrations**:
+
+| n_examples | 1 | 2 | 4 | 8 | 16 |
+|---|---|---|---|---|---|
+| paired C−A | +7.56 | +10.76 | +12.95 | +15.71 | **+16.81** |
+
+The controls hold: **`F` benign_remap = −10.89**, close to the literal arm `A` and nowhere near `C`.
+So the *structure* of a remapping alone produces almost nothing — the effect is specific to
+remapping onto the harmful concept, which is exactly what plan §2.5's control is for.
+`D` direct_codeword = +4.11: **stating** the mapping outright beats demonstrating it.
+
+### The comprehension control — the model knows it is a codeword
+
+`log p(coded) − log p(literal)`: A = −4.99 (**1.7%** say "coded"), **C = +0.70 (68.3% say
+"coded")**, B = −3.05 (20%). So in the doublespeak arm the model explicitly reports the word is
+being used as a code, two thirds of the time. Comprehension is intact, which is what makes any
+later "intervention reduced ASR" claim interpretable at all (§2.6).
+
+### THE DISSOCIATION — this is the sprint's main finding so far
+
+| quantity | doublespeak effect | dose-response in demonstrations |
+|---|---|---|
+| **what the model SAYS the word means** (semantic log-odds) | **+59% of the way to direct**, t=18.7 | **monotonically increasing**: +7.6 → +16.8 |
+| **the token's representation along the concept axis** (`d_surface`) | **~3–5%**, and only L4/L31 survive correction | **mid-layers move the WRONG way**: L20 goes −0.002 → −0.051 as demos increase |
+
+The plan's hypothesis — *"benign surface tokens acquire a hidden representation that is increasingly
+concept-like"* — is **true as a claim about what the model computes, and false as a claim about the
+token's own representation moving along the concept-identity axis.** More demonstrations make the
+model report the codeword as the concept far more strongly, while pushing the token's mid-layer
+representation *further from* the concept direction.
+
+**Direct consequence for plan §12:** a GCG objective that maximizes `⟨h_final_codeword, d_surface⟩`
+would be optimizing the quantity that does *not* track the behaviour. The semantic log-odds — or
+whatever mediates it — is the candidate worth optimizing, and identifying that mediator is the
+obvious next experiment.
+
+### `dominance.py` verified (adoption plan P1)
+
+Self-test on Llama-3.1-8B: `Σ_{head,src} D_attn = 1.000000` at L8 and L18, shape `[32 heads, T]`.
+The value-flow decomposition reconstructs the attention output exactly, which confirms the GQA head
+mapping (32 query heads over 8 KV heads, `h//4`) and the `o_proj` per-head slicing are right.
