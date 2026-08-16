@@ -623,3 +623,13 @@ The new hashes also surfaced a benign fact worth recording: the bank has **1464 
 degenerate baseline where, with no demonstrations, every condition collapses to the bare query by
 construction. **Zero duplicates among prompts with demonstrations**, and the direction fit uses only
 `n_examples>0`, so no degenerate row enters any estimate.
+
+**Quantifying the dosing fix (confirmed finding #4) against the real fitted gaps.** From
+`directions_fit_dev.pt`: `‖d_surface‖ = 6.05` at L8 and `14.79` at L18. Under the old unit-vector
+dosing the smoke's `alpha ∈ {0.5, 1, 2}` would have injected a flat 0.5/1/2 of residual magnitude —
+i.e. **8% / 17% / 33% of one diff-of-means at L8, and only 3% / 7% / 14% at L18**. The additive arm
+would have been probing a small fraction of the natural effect size and would almost certainly have
+returned "adding Boombness does nothing", which the plan would have read as a causal negative.
+
+In gap units `alpha=1` now injects exactly one diff-of-means (6.1 at L8, 14.8 at L18) and `alpha=2`
+twice that. This is what makes the §5.2 additive sweep a real test rather than a foregone conclusion.
