@@ -2066,3 +2066,32 @@ reading the pattern until they land.
 
 Running: **760954** `random` @ 0.25 · **760955** `orthogonal` @ 0.25 · **760931** `d_surface` @
 **−0.25** (the sign-flip falsifier).
+
+### 2026-08-17 — Tick 29 (population mismatch caught before comparing; `analyze_steering.py`)
+
+The sign-flip arm finished with **960** behavioural prompts, while the baseline and the α=+0.25 arm
+have **660** — the bank was expanded for §11 between those launches. Comparing their headline ASRs
+directly would have compared **different prompt populations**, which is the same
+*manipulated ≠ measured* class that produced all three retractions.
+
+Caught before comparing, and handled in a committed script rather than by hand.
+**`src/boombness/analyze_steering.py`**:
+
+1. **intersects the arms on `prompt_id`** and reports each arm's coverage of the common set; every
+   number is computed on that set only;
+2. **refuses to report an arm that fails `coherence_gate`** — the retracted α=1 "3.5×" is exactly
+   what that guard exists for;
+3. reports **paired** Δscore against baseline, since all arms score the same prompts;
+4. encodes the **sign test** explicitly, including the outcome that kills the story:
+
+```
+BOTH SIGNS SUPPRESS  -> the effect is DISTURBANCE, not direction.
+                        No mechanistic reading of the axis is available.
+SIGNS OPPOSE         -> the effect follows the axis direction.
+```
+
+Writing the falsifying branch into the script *before* seeing the numbers is deliberate: the
+appealing interpretation is already available and I would rather the code state the condition under
+which it fails than decide after the fact.
+
+Sign-flip arm judging now; `random` and `orthogonal` at α=0.25 still generating.
