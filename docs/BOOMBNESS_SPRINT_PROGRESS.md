@@ -851,3 +851,59 @@ call site: `score_behavior.make_intervention` passed a bare `alpha` to `AllPosit
 vector. At L18 (gap 14.8) `alpha=1` would have been ~7% of one diff-of-means, so every §10
 intervention arm would have been under-dosed by ~14×. Now dosed in gap units, and it raises rather
 than silently defaulting if `gap` is absent.
+
+---
+
+## Corrected result (replaces the retracted Tick-7 headline)
+
+Probes re-run against the **headline** extract run (`headline_20260816_200516_2995581`,
+`run_scored = full_20260816_185942_1008673`, L31 now included). The convergence claim I made
+falsely at tick 7 can now be made properly, because both estimators finally read the **same
+activations of the same prompts**.
+
+`C−A` as a fraction of the codeword→concept span, two independent estimators:
+
+| L | direction (pooled, domain-clustered) | probe `d4_heldout_ds` (trained with C removed) | sign |
+|---|---|---|---|
+| 0 | −0.0009 | +0.0070 | (both ≈0) |
+| 4 | **+0.0230** | **+0.0498** | ✓ |
+| 8 | +0.0272 | +0.0672 | ✓ |
+| 12 | +0.0154 | +0.0656 | ✓ |
+| 16 | **−0.0230** | **−0.0102** | ✓ |
+| 20 | **−0.0293** | **−0.0348** | ✓ |
+| 24 | −0.0206 | −0.0235 | ✓ |
+| 28 | −0.0002 | +0.0034 | (both ≈0) |
+| 31 | **+0.0473** | **+0.0886** | ✓ |
+
+**Pearson r = 0.967, Spearman = 0.950** over 9 layers; signs agree at 7/9, and both disagreements
+are at layers where both estimators are ≈0.
+
+### The shape is three-phase, not two-humped
+
+**positive (L4–L12) → NEGATIVE (L16–L24) → positive (L30–L31).**
+
+The middle band is not a null and never was. The doublespeak carrot moves *toward* the concept
+early, **away from it through the middle layers**, and toward it again at the very end. The
+retracted "two-humped with a null carry band" was that middle negative phase averaged to zero by an
+unreported query-kind restriction.
+
+Two features make this more interesting than the original claim:
+- The **middle-layer repulsion strengthens with demonstration count** (L20: −0.002 at n=1 →
+  **−0.051 at n=8**, t=−9.2). More teaching pushes the codeword *further from* the concept in mid
+  layers, which is the opposite of the plan's hypothesis.
+- The **L31 effect is flat in demonstration count** (+0.044 to +0.050 across n=1…16) but **highly
+  heterogeneous across query kind** (behavioral +0.133, comprehension +0.000, semantic +0.009).
+
+### Caveats that stay attached to this result
+
+1. **Not independent estimators in the strong sense.** Both read the same activations of the same
+   prompts, so a shared error (a wrong position, a bad direction basis) would move both together.
+   The agreement rules out *estimator-specific* error, not *data-level* error.
+2. **Only L4 and L31 survive Holm** under domain-clustered inference on the direction side. The
+   L8/L12/L16/L20/L24 entries are directionally consistent across estimators but individually
+   uncorrected-significant only.
+3. **The probe `d4` is partly saturated** (`saturation_frac` 0.26–0.50), so its margins are
+   compressed and its magnitudes should not be compared to the direction's on an absolute scale.
+4. **`d3`'s recall = 1.00 is a lexical-identity result** (audit finding #11/#18): it shows the
+   diagonal probe is not confusing concept with *harm context*, but it cannot separate
+   concept-identity from *token identity*, because the two are perfectly confounded in that design.
