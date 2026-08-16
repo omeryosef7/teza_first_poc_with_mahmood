@@ -92,7 +92,8 @@ def semantic_logodds(lm, ids: List[int], c_ids: Sequence[int], w_ids: Sequence[i
 
 
 def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
-               all_positions: Sequence[int], k: int, arm: str, rng) -> Dict[int, List[Tuple[int, int]]]:
+               all_positions: Sequence[int], k: int, arm: str, rng,
+               dsts_global: Sequence[int] = ()) -> Dict[int, List[Tuple[int, int]]]:
     """Return {layer: [(head, src), ...]} for one arm. Every arm returns exactly k edges."""
     out: Dict[int, List[Tuple[int, int]]] = {}
     demo = set(demo_positions)
@@ -105,7 +106,11 @@ def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
             out[L] = cand_demo          # caller widens the layer set for this arm
             continue
         if arm == "positive_control":
-            out[L] = [(h, s) for h in range(nh) for s in range(T) if s < T - 1]
+            # Exclude the destinations' own self-edges: blocking every key INCLUDING self makes
+            # the whole softmax row -inf and the result is a degenerate uniform row, which is a
+            # different (and uninterpretable) perturbation from "attend only to yourself".
+            out[L] = [(h, s) for h in range(nh) for s in range(T)
+                      if s < T - 1 and s not in set(dsts_global)]
             continue
         if arm == "all_demo":
             out[L] = cand_demo
@@ -149,6 +154,15 @@ def main() -> int:
     ap.add_argument("--query-kind", default="semantic_one_word")
     ap.add_argument("--condition", default="natural_doublespeak")
     ap.add_argument("--seed", type=int, default=20260816)
+    ap.add_argument("--dst", default="readout", choices=["readout", "codeword", "both"],
+                    help="WHICH DESTINATION the edges are cut into. This was a fatal design flaw "
+                         "in the first version: it cut edges into the final CODEWORD occurrence "
+                         "while the readout reads the next-token distribution at the LAST token, "
+                         "typically 9 tokens later. Blocking attention arriving at a position the "
+                         "readout does not directly depend on can only act indirectly, which is "
+                         "why every arm read about zero. 'readout' (default) cuts into the "
+                         "position actually being measured; 'codeword' reproduces the old, wrong "
+                         "behaviour; 'both' cuts into each.")
     ap.add_argument("--demo-scope", default="codeword", choices=["codeword", "block"],
                     help="which source positions count as 'the demonstrations'. 'codeword' = the "
                          "demonstration CODEWORD occurrences only (the original scope). 'block' = "
@@ -203,7 +217,16 @@ def main() -> int:
         except ValueError as e:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
-        dst = last[-1]                       # the final (query) codeword occurrence
+        # The destination MUST be the position the readout reads, or the intervention and the
+        # measurement are about different tokens (see --dst).
+        readout_pos = len(ids) - 1
+        if args.dst == "readout":
+            dsts = [readout_pos]
+        elif args.dst == "codeword":
+            dsts = [last[-1]]
+        else:
+            dsts = sorted({last[-1], readout_pos})
+        dst = dsts[0]                        # for ranking/reporting
         if args.demo_scope == "codeword":
             demo_pos = last[:-1]             # the demonstration codeword occurrences
         else:
@@ -236,7 +259,9 @@ def main() -> int:
 
         base = {k: row[k] for k in ("prompt_id", "prompt_sha16", "family_id", "condition",
                                     "cell", "domain", "split", "n_examples", "query_kind")}
-        base.update({"dst": dst, "n_demo_positions": len(demo_pos), "seq_len": len(ids),
+        base.update({"dst": dst, "dsts": dsts, "readout_pos": readout_pos,
+                     "dst_mode": args.dst,
+                     "n_demo_positions": len(demo_pos), "seq_len": len(ids),
                      "demo_scope": args.demo_scope})
 
         for arm in ARMS:
@@ -265,7 +290,7 @@ def main() -> int:
                 # per layer, and the ranking is irrelevant because every demo edge is cut.
                 dom_arm = {L: dom["D_dir"][layers[0]] for L in arm_layers}
             edges = pick_edges(dom_arm, demo_pos, list(range(len(ids))),
-                               args.topk, arm, rng)
+                               args.topk, arm, rng, dsts_global=dsts)
             n_cut = sum(len(v) for v in edges.values())
             if n_cut == 0:
                 ledger.fail(f"arm_{arm}:no_edges", row["prompt_id"])
@@ -281,7 +306,7 @@ def main() -> int:
                             by_head[h].append(s)
                         for h, srcs in by_head.items():
                             st.enter_context(pc.AttentionKnockout(
-                                lm.model, [L], query_positions=[dst],
+                                lm.model, [L], query_positions=dsts,
                                 blocked_keys=sorted(set(srcs)), heads=[h]))
                     val = semantic_logodds(lm, ids, c_ids, w_ids)
             except Exception as e:

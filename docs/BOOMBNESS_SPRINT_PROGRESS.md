@@ -63,7 +63,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS (direction robust; magnitude restated with intervals). The lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout strongly toward the donor (95% CI +23% to +135% of span); transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
-| G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
+| G3 (§10) | Can Boombness be removed without destroying comprehension? | **RETRACTED AGAIN — the knockout cut edges into the codeword token while the readout reads the last token, 9 positions away, so every arm was measuring an indirect path. Rerunning with the corrected destination (job 760816).** ~~RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
 | G4 (§12) | Is Boombness a usable GCG objective? | **REOPENED — the G2 negative was an artifact; the objective is viable and untested.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
 
@@ -84,6 +84,7 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | `dominance.py` self-test (job 760719) | Device mismatch: `v` stayed on cuda while the per-head projection was moved to cpu, so the `D_dir` einsum raised. | crash (caught) | All single-destination arithmetic is now done on CPU float32 explicitly. | Yes — resubmitted as 760730. |
 | 2026-08-16 | §10 positive control (job 760741) — **CORRECTED, see the row below: the primitive DOES fire.** ~~`AttentionKnockout` appears NOT TO FIRE under transformers 5.12.~~ Original reasoning kept for the record: The positive-control arm blocked **every** pre-query key in **every** head at two layers — 7392 edges, leaving the final token attending only to itself — and the semantic readout moved by **−0.086 log-odds**. That is physically impossible if the mask edit reached the attention computation. `AttentionKnockout` raises when the mask is not 4-D and it did *not* raise, so a 4-D mask was present and was edited; the question is whether transformers 5.x still *uses* that per-layer kwarg under its pluggable attention interface. | **result-corrupting** | `diagnose_knockout.py` measures it unambiguously: capture attention weights with and without a total knockout. Job 760757. | **All §10 knockout results are void pending this.** Scope may extend beyond this sprint: any prior work in this repo that used `AttentionKnockout` under this transformers version is affected. |
 | 2026-08-16 | `diagnose_knockout.py` (job 760757) | **CORRECTION to the row above — `AttentionKnockout` DOES fire.** A total mask-out at L8 drove the last token's attention mass on prior keys from **0.945 → 0.000** (self-attention 0.055 → 1.000), `max\|Δ attention weight\| = 0.997`, `max\|Δ final logit\| = 1.157`. My inference that "0.086 log-odds is impossible" was wrong: one layer's attention at one position changes final logits by only ~1.16, and the semantic **log-odds ratio** can move far less than that because both terms shift together. | — (my error, not a code defect) | No fix needed to the primitive. The §10 null may therefore be a **genuine** null. One difference remains untested: the diagnostic used a single all-head knockout, while `surgical_knockout` **stacks one context manager per head**. Job 760762 tests whether those compose identically. | **RESOLVED (job 760762): stacked per-head composition is bit-identical to the all-head form (max|Δ|=0.0), so the machinery is verified end to end and the §10 null is genuine.** No prior repo result is implicated — that warning is withdrawn. |
+| 2026-08-17 | tick-16 audit finding, verified 2026-08-17 | **FATAL to all of §10: the knockout cut edges into the WRONG DESTINATION.** Edges were blocked into `dst = the final codeword occurrence` (token ~104) while the readout is the next-token distribution at the **last token** (~113) — **9 tokens away**, measured on every prompt in the run. Blocking attention arriving at a position the readout does not directly depend on can only act indirectly, which is why every arm read ≈0 and why only `no_demo_text` (which deletes the text) moved anything. | **result-corrupting** | `--dst {readout,codeword,both}` added, defaulting to the position actually measured. Also fixed: the positive control was blocking the destination's own **self-edge**, making the whole softmax row `-inf` and the result a degenerate uniform row rather than "attend only to yourself". | **YES — the G3 resolution recorded one tick earlier is RETRACTED. Job 760814 cancelled mid-run (same flaw); rerunning as 760816 with `--dst both --demo-scope block`.** |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -1630,3 +1631,54 @@ falsifiable:
 
 Steering arms 760798/760799 still generating (the α=1 and α=2 `d_surface` arms); the norm-matched
 random control 760800 has finished with 660 generations and 0 failures.
+
+---
+
+## ⛔⛔⛔ RETRACTION #3 — §10 cut edges into the wrong destination
+
+One tick after recording G3 as resolved, a tick-16 audit finding I had not yet worked through turned
+out to be fatal to all of §10, including the resolution itself.
+
+**The knockout blocked attention edges arriving at `dst` = the final CODEWORD occurrence. The
+readout is the next-token distribution at the LAST token.** Measured on every prompt in the run,
+those are **9 tokens apart**:
+
+```
+dst=104  seq_len=114  last_index=113   gap = 9
+dst=109  seq_len=119  last_index=118   gap = 9      (all 6 prompts identical)
+```
+
+So the intervention and the measurement were about **different tokens**. Blocking what arrives at
+the codeword can only reach the readout indirectly, through nine intervening positions — which is
+exactly why every attention arm read ≈0 while `no_demo_text` (which deletes the text and therefore
+affects everything) moved the readout by −11.5.
+
+**Everything I concluded from §10 is withdrawn**, including "~93% of the demonstrations' influence
+does not flow through attention to the codeword tokens" and the predicate hypothesis built on it.
+That inference was drawn from a comparison between an intervention on the wrong token and a text
+deletion, which is not a comparison at all.
+
+A second defect from the same audit, fixed alongside: the **positive control was blocking the
+destination's own self-edge**, so the entire softmax row went `-inf` and the row became uniform —
+a degenerate perturbation, not "attend only to yourself". That is very likely why the positive
+control moved the readout *less* than `all_demo` and why it established no dynamic range.
+
+Fixes: `--dst {readout,codeword,both}` (default `readout`), self-edges excluded from the positive
+control, `--demo-scope block` retained. Job 760814 cancelled mid-run; **760816** runs
+`--dst both --demo-scope block`.
+
+### The pattern, stated plainly
+
+This is the third retraction, and the third time the same category of error has done the damage:
+**the measured quantity and the manipulated quantity were not the same thing.**
+
+| # | what was manipulated / measured | what should have been |
+|---|---|---|
+| 1 | pooled over query kinds without saying so | report per query kind |
+| 2 | `d_surface` read off the *semantic* prompt, ASR from the *behavioural* prompt | same prompt |
+| 3 | edges cut into the *codeword* token, readout at the *last* token | same token |
+
+Each time the code ran, produced plausible numbers, and passed its own internal checks. The
+defence that works is not more care — it is a **positive control that ties the manipulation to the
+measurement**, which is what `no_demo_text` did for the readout and what `--dst readout` now does
+for the intervention.
