@@ -1544,3 +1544,23 @@ uninterpretable null.
 **A real dynamic-range control is needed** — e.g. deleting the demonstrations from the prompt
 outright, which must move the readout enormously — before §10 can conclude anything. Until then G3
 is **UNRESOLVED**, not a null.
+
+### 2026-08-17 — Tick 19 (fixing G3's missing dynamic range; steering still generating)
+
+Steering arms 760798/799/800 still generating (660 behavioural prompts × 192 tokens each, ×3 arms).
+
+**Two dynamic-range controls added to `surgical_knockout.py`** (job 760806), because the original
+`positive_control` did not establish one:
+
+| new arm | what it bounds |
+|---|---|
+| `all_layers_demo` | cut query→demo edges at **every** layer, not just the chosen two. If the demonstration influence is distributed over depth, a 2-layer cut can do nothing while an all-layer cut does a lot — and **the first design could not see that distinction at all**, which is the actual reason the §10 null was uninterpretable. |
+| `no_demo_text` | evaluate the same query with the **demonstration block deleted**. This is the true ceiling: what "the demonstrations are not there" actually means, in text space, with no attention machinery involved. |
+
+The second is the one that matters most. If deleting the demonstrations outright does not move the
+semantic readout, then the readout is not measuring the demonstrations' influence and **nothing in
+§10 can be interpreted** — including the arms I already reported. If it moves the readout a lot,
+then a 2-layer attention cut doing nothing becomes a real and interesting localization result rather
+than an artifact.
+
+Sample also raised from 2 to 6 families, since n=2 was the other thing the audit flagged about G3.

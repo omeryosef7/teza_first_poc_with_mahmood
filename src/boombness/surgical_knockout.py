@@ -54,7 +54,22 @@ from extract_boombness import resolve_occurrences  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 ARMS = ("none", "topk_demo", "bottomk_demo", "random_demo", "random_nondemo",
-        "same_head_random", "all_demo", "positive_control")
+        "same_head_random", "all_demo", "positive_control",
+        "all_layers_demo", "no_demo_text")
+
+# THE TWO DYNAMIC-RANGE CONTROLS THE FIRST VERSION LACKED.
+# `positive_control` (block every pre-query key at the CHOSEN layers) turned out to move the
+# readout LESS than `all_demo`, so it established no dynamic range and made the §10 null
+# uninterpretable. Two stronger ceilings are now measured on every run:
+#   all_layers_demo  cut query->demo edges at EVERY layer, not just the chosen few. If the
+#                    demonstration influence is distributed over depth, a 2-layer cut can do
+#                    nothing while an all-layer cut does a lot; that distinction is the whole
+#                    question and the first design could not see it.
+#   no_demo_text     evaluate the prompt with the demonstration block DELETED. This is the true
+#                    ceiling: it is what "the demonstrations are not there" actually means, in
+#                    text space, with no attention machinery involved. If even this does not move
+#                    the readout, the readout is not measuring the demonstrations' influence and
+#                    nothing else in §10 can be interpreted.
 
 # POSITIVE CONTROL — the arm that makes a null interpretable.
 # `positive_control` blocks EVERY key before the query position, in every head, at the chosen
@@ -86,6 +101,9 @@ def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
         cand_demo = [(h, s) for h in range(nh) for s in range(T) if s in demo]
         cand_non = [(h, s) for h in range(nh) for s in range(T)
                     if s not in demo and s < T - 1]
+        if arm == "all_layers_demo":
+            out[L] = cand_demo          # caller widens the layer set for this arm
+            continue
         if arm == "positive_control":
             out[L] = [(h, s) for h in range(nh) for s in range(T) if s < T - 1]
             continue
@@ -199,7 +217,26 @@ def main() -> int:
                 run.log_row({**base, "arm": arm, "n_edges_cut": 0, "semantic_logodds": val})
                 n += 1
                 continue
-            edges = pick_edges(dom["D_dir"], demo_pos, list(range(len(ids))),
+            if arm == "no_demo_text":
+                # The true ceiling: the same query with the demonstration block removed.
+                q = row.get("final_query_text") or ""
+                if not q:
+                    ledger.fail("no_demo_text:missing_query", row["prompt_id"])
+                    continue
+                t2 = dc.apply_template(lm.tokenizer, q)
+                ids2 = lm.tokenizer(t2, add_special_tokens=False)["input_ids"]
+                val = semantic_logodds(lm, ids2, c_ids, w_ids)
+                run.log_row({**base, "arm": arm, "n_edges_cut": -1,
+                             "seq_len_used": len(ids2), "semantic_logodds": val})
+                n += 1
+                continue
+            arm_layers = list(range(lm.num_layers)) if arm == "all_layers_demo" else layers
+            dom_arm = dom["D_dir"]
+            if arm == "all_layers_demo":
+                # D_dir was only computed at `layers`; for an all-layer cut we need an edge set
+                # per layer, and the ranking is irrelevant because every demo edge is cut.
+                dom_arm = {L: dom["D_dir"][layers[0]] for L in arm_layers}
+            edges = pick_edges(dom_arm, demo_pos, list(range(len(ids))),
                                args.topk, arm, rng)
             n_cut = sum(len(v) for v in edges.values())
             if n_cut == 0:
