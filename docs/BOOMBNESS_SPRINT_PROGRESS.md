@@ -63,7 +63,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS — but the lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout +71–84% of span; transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
-| G3 (§10) | Can Boombness be removed without destroying comprehension? | pending | |
+| G3 (§10) | Can Boombness be removed without destroying comprehension? | **Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
 | G4 (§12) | Is Boombness a usable GCG objective? | **Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
 
@@ -83,7 +83,7 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | §5 pilot (job 760722) | **The pilot was launched on a query kind for which a position-matched transplant is undefined.** `semantic_forced_choice` names both words, so donor cell B's query reads `bomb…carrot…bomb` while recipient cell C's reads `carrot…carrot…bomb` — the target occurrence positions do not correspond. All 16 families were rejected by the live position assertion (`pair_occurrence_positions_differ`), producing 0 rows. | crash (caught) | The assertion behaved correctly; the launch should not have been possible. `aggressive_patching` now **refuses** any query kind with `occurrence_analysis_safe=False` up front, naming the safe alternatives. Pilot re-run on `semantic_one_word` (job 760731). | Yes — 0 rows had been produced, so nothing was invalidated. |
 | 2026-08-16 | `dominance.py` self-test (job 760719) | Device mismatch: `v` stayed on cuda while the per-head projection was moved to cpu, so the `D_dir` einsum raised. | crash (caught) | All single-destination arithmetic is now done on CPU float32 explicitly. | Yes — resubmitted as 760730. |
 | 2026-08-16 | §10 positive control (job 760741) — **CORRECTED, see the row below: the primitive DOES fire.** ~~`AttentionKnockout` appears NOT TO FIRE under transformers 5.12.~~ Original reasoning kept for the record: The positive-control arm blocked **every** pre-query key in **every** head at two layers — 7392 edges, leaving the final token attending only to itself — and the semantic readout moved by **−0.086 log-odds**. That is physically impossible if the mask edit reached the attention computation. `AttentionKnockout` raises when the mask is not 4-D and it did *not* raise, so a 4-D mask was present and was edited; the question is whether transformers 5.x still *uses* that per-layer kwarg under its pluggable attention interface. | **result-corrupting** | `diagnose_knockout.py` measures it unambiguously: capture attention weights with and without a total knockout. Job 760757. | **All §10 knockout results are void pending this.** Scope may extend beyond this sprint: any prior work in this repo that used `AttentionKnockout` under this transformers version is affected. |
-| 2026-08-16 | `diagnose_knockout.py` (job 760757) | **CORRECTION to the row above — `AttentionKnockout` DOES fire.** A total mask-out at L8 drove the last token's attention mass on prior keys from **0.945 → 0.000** (self-attention 0.055 → 1.000), `max\|Δ attention weight\| = 0.997`, `max\|Δ final logit\| = 1.157`. My inference that "0.086 log-odds is impossible" was wrong: one layer's attention at one position changes final logits by only ~1.16, and the semantic **log-odds ratio** can move far less than that because both terms shift together. | — (my error, not a code defect) | No fix needed to the primitive. The §10 null may therefore be a **genuine** null. One difference remains untested: the diagnostic used a single all-head knockout, while `surgical_knockout` **stacks one context manager per head**. Job 760762 tests whether those compose identically. | §10 arms remain provisional until the composition check returns; **no prior repo result is implicated** — that warning is withdrawn. |
+| 2026-08-16 | `diagnose_knockout.py` (job 760757) | **CORRECTION to the row above — `AttentionKnockout` DOES fire.** A total mask-out at L8 drove the last token's attention mass on prior keys from **0.945 → 0.000** (self-attention 0.055 → 1.000), `max\|Δ attention weight\| = 0.997`, `max\|Δ final logit\| = 1.157`. My inference that "0.086 log-odds is impossible" was wrong: one layer's attention at one position changes final logits by only ~1.16, and the semantic **log-odds ratio** can move far less than that because both terms shift together. | — (my error, not a code defect) | No fix needed to the primitive. The §10 null may therefore be a **genuine** null. One difference remains untested: the diagnostic used a single all-head knockout, while `surgical_knockout` **stacks one context manager per head**. Job 760762 tests whether those compose identically. | **RESOLVED (job 760762): stacked per-head composition is bit-identical to the all-head form (max|Δ|=0.0), so the machinery is verified end to end and the §10 null is genuine.** No prior repo result is implicated — that warning is withdrawn. |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -1299,3 +1299,41 @@ semantic readout even though transplanting the demonstration *states* moves it 7
 If that holds, it says the demonstration influence is **not** carried by the attention edges from
 the final codeword token at those layers — the retrieval happens somewhere else, or earlier, or is
 distributed enough that cutting 16 edges per layer cannot touch it.
+
+---
+
+## §10 result — the demonstration influence is INDIRECT (machinery fully verified)
+
+The composition check closes the loop: 32 stacked per-head knockouts are **bit-identical** to one
+all-head knockout (`max|Δ attention| = 0.000000e+00`, `max|Δ logit| = 0.000000e+00`). Combined with
+the total-mask-out test (attention mass 0.945 → 0.000), **the §10 machinery is verified end to end**
+and the null is a real null.
+
+### The finding
+
+Both interventions target **the same positions** — the demonstration codeword occurrences
+(`last[:-1]`) — at the same layers, on the same readout:
+
+| intervention at the demo codeword positions | effect on semantic log-odds |
+|---|---|
+| **replace the STATE** there (transplant, L8 or L18) | **+71% to +84% of span** |
+| **cut the ATTENTION EDGES** from the final codeword token to them (L8, L18) | **≈ 0** (`topk` +0.044, `all_demo` +0.117 with all 256 edges cut) |
+
+So the demonstration codeword states matter enormously, but **not through direct attention from the
+final codeword token to them at these layers**. Cutting *every* query→demo edge at L8 and L18 does
+essentially nothing.
+
+The reading is that the influence is **indirect / multi-hop**: perturbing the state at demo position
+`p` changes everything causally downstream of `p` — other demonstration tokens, intervening text,
+and the query position at later layers — whereas cutting the query→`p` edge blocks only the direct
+one-hop path. A one-hop attention story for doublespeak retrieval is therefore **not supported**.
+
+**Caveats, explicitly:** only L8 and L18 were tested, and only edges to the demo *codeword* tokens
+(not the whole demonstration block). A wider layer sweep and whole-block edge cuts are the obvious
+follow-ups, and `dominance.py` already provides the ranking to target them.
+
+This also revises the G1 reading slightly. G1 established the demonstrations are the causal lever;
+§10 now says that lever is **not** a direct attention pathway into the codeword token. Together with
+G2 (the representation Boombness does not predict ASR), the emerging picture is that the doublespeak
+effect is neither "the codeword token becomes concept-like" nor "the query token reads the demos in
+one hop".
