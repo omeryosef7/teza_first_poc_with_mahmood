@@ -149,6 +149,14 @@ def main() -> int:
     ap.add_argument("--query-kind", default="semantic_one_word")
     ap.add_argument("--condition", default="natural_doublespeak")
     ap.add_argument("--seed", type=int, default=20260816)
+    ap.add_argument("--demo-scope", default="codeword", choices=["codeword", "block"],
+                    help="which source positions count as 'the demonstrations'. 'codeword' = the "
+                         "demonstration CODEWORD occurrences only (the original scope). 'block' = "
+                         "EVERY token of the demonstration block. The G3 result motivates this: "
+                         "cutting all query->demo-codeword edges at every layer recovered only ~7% "
+                         "of the effect of deleting the demonstrations, which suggests the mapping "
+                         "is carried by the PREDICATES ('exploded', 'defused') rather than by the "
+                         "repeated codeword. 'block' is the direct test of that.")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
     seed_everything(args.seed)
@@ -184,7 +192,8 @@ def main() -> int:
     layers = [int(x) for x in args.layers.split(",")]
     d_surface = {L: payload["d_surface"][L] for L in layers if L in payload["d_surface"]}
     c_ids, w_ids, id_meta = sg.readout_id_pair(lm.tokenizer, rows[0]["concept"], rows[0]["codeword"])
-    run.note(readout_ids=id_meta, layers=layers, topk=args.topk, arms=list(ARMS))
+    run.note(readout_ids=id_meta, layers=layers, topk=args.topk, arms=list(ARMS),
+             demo_scope=args.demo_scope)
     print(f"[knockout] {len(rows)} prompts, layers={layers}, k={args.topk} edges/layer/arm")
 
     n = 0
@@ -195,9 +204,27 @@ def main() -> int:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
         dst = last[-1]                       # the final (query) codeword occurrence
-        demo_pos = last[:-1]                 # the demonstration codeword occurrences
+        if args.demo_scope == "codeword":
+            demo_pos = last[:-1]             # the demonstration codeword occurrences
+        else:
+            # Every token of the demonstration block. Located by character offset of the
+            # recorded demo_block inside the TEMPLATED prompt, so it cannot drift from the
+            # generator's own notion of what the demonstrations are.
+            blk = row.get("demo_block") or ""
+            if not blk:
+                ledger.fail("no_demo_block", row["prompt_id"])
+                continue
+            templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
+            ci = templated.find(blk)
+            if ci < 0:
+                ledger.fail("demo_block_not_found_in_templated", row["prompt_id"])
+                continue
+            enc = lm.tokenizer(templated, add_special_tokens=False, return_offsets_mapping=True)
+            lo, hi = ci, ci + len(blk)
+            demo_pos = [i for i, (a, b) in enumerate(enc["offset_mapping"])
+                        if a >= lo and b <= hi and b > a and i < dst]
         if not demo_pos:
-            ledger.fail("no_demo_occurrences", row["prompt_id"])
+            ledger.fail(f"no_demo_positions:{args.demo_scope}", row["prompt_id"])
             continue
 
         try:
@@ -209,7 +236,8 @@ def main() -> int:
 
         base = {k: row[k] for k in ("prompt_id", "prompt_sha16", "family_id", "condition",
                                     "cell", "domain", "split", "n_examples", "query_kind")}
-        base.update({"dst": dst, "n_demo_occurrences": len(demo_pos), "seq_len": len(ids)})
+        base.update({"dst": dst, "n_demo_positions": len(demo_pos), "seq_len": len(ids),
+                     "demo_scope": args.demo_scope})
 
         for arm in ARMS:
             if arm == "none":

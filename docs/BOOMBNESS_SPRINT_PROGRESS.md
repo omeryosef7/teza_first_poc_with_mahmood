@@ -1608,3 +1608,25 @@ code and it was the difference between an uninterpretable number and a result. I
 in the first version of the module, and the reason it was not is that I designed the controls to
 distinguish *between hypotheses* and forgot to include one that establishes the *measurement works
 at all*.
+
+### 2026-08-17 — Tick 20 (the predicate hypothesis is now a running experiment)
+
+G3 said cutting every query→demo-**codeword** edge at every layer recovers only ~7% of the effect of
+deleting the demonstrations, which points at the **predicates** carrying the mapping. That is now a
+config flag rather than a hypothesis in prose:
+
+`surgical_knockout.py --demo-scope {codeword,block}` — `block` treats **every token of the
+demonstration block** as a demonstration source, located by character offset of the recorded
+`demo_block` inside the templated prompt (so it cannot drift from the generator's own notion of what
+the demonstrations are). Every existing arm and control then runs unchanged on the wider scope.
+
+Job **760814** runs `--demo-scope block`. The prediction the G3 result makes is explicit and
+falsifiable:
+
+- if the mapping is carried by the predicates, `all_layers_demo` under `block` scope should recover a
+  **large** fraction of the `no_demo_text` ceiling (−11.5), versus the ~7% the codeword scope managed;
+- if it recovers little there too, then the influence is not carried by attention from the query at
+  all, and something other than a retrieval-by-attention account is needed.
+
+Steering arms 760798/760799 still generating (the α=1 and α=2 `d_surface` arms); the norm-matched
+random control 760800 has finished with 660 generations and 0 failures.
