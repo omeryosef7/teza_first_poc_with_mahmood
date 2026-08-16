@@ -261,3 +261,45 @@ Both fixed, bank regenerated, both checks now clean. See F4 above.
 **Phase 2 submitted.** SLURM job **760588** on `n-805` (`src/boombness/slurm/run_boombness.sh`,
 L40S-guarded, cpus=4 mem=48G per the house fast-allocating footprint), running
 `extract_boombness.py --stage both --limit 24` as the plan §2.3 smoke before the full sweep.
+
+### 2026-08-16 — Tick 2 (Phase 2/3 smoke green, full extraction prepared)
+
+**SLURM 760588 (smoke extraction) COMPLETE, 0 failures.** `--limit 24`, Llama-3.1-8B-Instruct on
+n-805 (4 min weight load, ~3 min compute). Run dir
+`outputs/boombness/extract_boombness/smoke_20260816_183101_1000604`, contract complete
+(`config.json` / `metadata.json` / `results.jsonl` / `summary.json` / `RUNMETA.json` / `DONE.json` /
+`plots/` / `cache/`), 28 attempted / 28 succeeded / 0 failed, 36 occurrence rows.
+
+First look at the direction norms (fit on 1 family per cell — **noisy, not a result**, but the
+structure is worth recording because it is the first evidence on the F1 question):
+
+| ‖·‖ | L0 | L4 | L8 | L12 | L16 | L20 | L24 | L28 |
+|---|---|---|---|---|---|---|---|---|
+| `d_surface` | 1.79 | 4.78 | 7.17 | 8.61 | 13.02 | 19.35 | 27.36 | 34.74 |
+| `d_context` | 0.08 | 0.98 | 2.37 | 3.12 | 2.99 | 3.71 | 5.90 | 9.28 |
+| `d_inter` | 0.13 | 1.51 | 3.49 | 4.91 | 5.22 | 6.68 | 10.63 | 16.23 |
+| `d_naive` | 1.79 | 4.86 | 7.66 | 9.06 | 13.27 | 20.07 | 29.31 | 38.13 |
+
+`‖d_surface‖ ≫ ‖d_context‖` at every layer, and `d_naive ≈ d_surface` — i.e. the plan's naive
+direction is dominated by the surface-word effect, with the context effect a much smaller
+component. With n=1 per cell, `d_context` and `d_inter` are differences-of-differences of single
+samples and are largely noise; the full fit (240 rows, 60 per cell per split) is what decides this.
+
+**Token-id check passed:** concept first-ids `[13054, 33909, 79444, 92826]`, codeword first-ids
+`[3341, 7063, 9028, 75294]` — disjoint, so `p_concept` and `p_codeword` are not partly the same
+number. `score_behavior.py` now hard-fails if that ever stops holding.
+
+**Optimization before the full run.** The scoring loop made one `lm_head` call per (layer, position)
+pair — ~101k calls for the full bank, nearly all of it host/device round-trip rather than the
+4096×|V| matmul. Added `signals.logit_lens_boombness_batch` and batched every (layer, position)
+pair of an occurrence into one call (~12× fewer). Re-running the smoke as **760594** to confirm the
+optimized path is numerically identical before committing GPU hours to the full sweep.
+
+**New this tick:** `src/boombness/score_behavior.py` (plan §5.3/§8/§9) — forward-only readouts for
+the semantic and comprehension query kinds, generation for the behavioral rows into a separate
+`gens.jsonl`, with judging deliberately deferred to a CPU/API step so ASR can be recomputed at any
+threshold without regenerating. Also `analyze_boombness.py` (plan §6.4/§7).
+
+**Self-review in flight:** a 5-lens adversarial review workflow over the whole module (positions,
+directions, generator, run contract, analysis), each finding independently double-refuted before it
+counts.

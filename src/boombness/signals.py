@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import os
 import sys
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -130,6 +131,43 @@ def logit_lens_boombness(lm, hidden: torch.Tensor, concept_ids: Sequence[int],
         "rank_codeword": min(rank[int(t)] for t in wi.tolist()),
         "apply_norm": apply_norm,
     }
+
+
+@torch.no_grad()
+def logit_lens_boombness_batch(lm, hidden: torch.Tensor, concept_ids: Sequence[int],
+                               codeword_ids: Sequence[int],
+                               apply_norm: bool = True) -> List[Dict[str, float]]:
+    """Batched `logit_lens_boombness`: hidden is [N, H], returns N records.
+
+    One `lm_head` matmul for the whole batch instead of N. Scoring the full bank touches
+    ~100k (layer, position) pairs, and a per-vector call spends nearly all its time on
+    host/device round-trips rather than on the 4096 x |V| matmul itself.
+    """
+    if hidden.dim() != 2:
+        raise ValueError(f"expected [N, H], got {tuple(hidden.shape)}")
+    logits = logit_lens(lm, hidden, apply_norm=apply_norm)      # [N, V] float32 cpu
+    lp = torch.log_softmax(logits, dim=-1)
+    ci = torch.tensor(sorted(set(concept_ids)), dtype=torch.long)
+    wi = torch.tensor(sorted(set(codeword_ids)), dtype=torch.long)
+    l_c = logits[:, ci].max(dim=1).values
+    l_w = logits[:, wi].max(dim=1).values
+    p_c = lp[:, ci].logsumexp(dim=1).exp()
+    p_w = lp[:, wi].logsumexp(dim=1).exp()
+    # Rank of the best variant of each word, computed without a full argsort per row.
+    rank_c = (logits > l_c.unsqueeze(1)).sum(dim=1)
+    rank_w = (logits > l_w.unsqueeze(1)).sum(dim=1)
+    out = []
+    for i in range(hidden.shape[0]):
+        pc_, pw_ = float(p_c[i]), float(p_w[i])
+        out.append({
+            "logit_concept": float(l_c[i]), "logit_codeword": float(l_w[i]),
+            "logit_lens_boombness": float(l_c[i] - l_w[i]),
+            "p_concept": pc_, "p_codeword": pw_,
+            "log_ratio": math.log(max(pc_, 1e-30) / max(pw_, 1e-30)),
+            "rank_concept": int(rank_c[i]), "rank_codeword": int(rank_w[i]),
+            "apply_norm": apply_norm,
+        })
+    return out
 
 
 # --------------------------------------------------------------------------- #

@@ -212,16 +212,23 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
                     rec[f"{name}|L{L}|cos"] = s["cosine"]
                     rec[f"{name}|L{L}|proj"] = s["projection"]
                 rec[f"hnorm|L{L}"] = float(h.norm())
-            for L in logit_lens_layers:
-                ll = sg.logit_lens_boombness(lm, hs[L + 1, pos, :], c_ids, w_ids)
-                rec[f"ll|L{L}|boombness"] = ll["logit_lens_boombness"]
-                rec[f"ll|L{L}|p_concept"] = ll["p_concept"]
-                rec[f"ll|L{L}|p_codeword"] = ll["p_codeword"]
-                rec[f"ll|L{L}|rank_concept"] = ll["rank_concept"]
-                # `following` readout: the house code repeatedly finds the semantic content
-                # sits on the token AFTER the word, so both are recorded rather than assumed.
-                llf = sg.logit_lens_boombness(lm, hs[L + 1, fpos, :], c_ids, w_ids)
-                rec[f"llfollow|L{L}|boombness"] = llf["logit_lens_boombness"]
+            # Batched logit lens: one lm_head matmul for every (layer, position) pair of this
+            # occurrence instead of 2*len(logit_lens_layers) separate calls. The `following`
+            # readout is included because the house code repeatedly finds the semantic content
+            # sits on the token AFTER the word, so both are recorded rather than assumed.
+            if logit_lens_layers:
+                stack = torch.stack(
+                    [hs[L + 1, pos, :] for L in logit_lens_layers]
+                    + [hs[L + 1, fpos, :] for L in logit_lens_layers], dim=0)
+                lls = sg.logit_lens_boombness_batch(lm, stack, c_ids, w_ids)
+                nL = len(logit_lens_layers)
+                for j, L in enumerate(logit_lens_layers):
+                    ll = lls[j]
+                    rec[f"ll|L{L}|boombness"] = ll["logit_lens_boombness"]
+                    rec[f"ll|L{L}|p_concept"] = ll["p_concept"]
+                    rec[f"ll|L{L}|p_codeword"] = ll["p_codeword"]
+                    rec[f"ll|L{L}|rank_concept"] = ll["rank_concept"]
+                    rec[f"llfollow|L{L}|boombness"] = lls[nL + j]["logit_lens_boombness"]
             run.log_row(rec)
 
         if cache_final_reps:
