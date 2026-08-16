@@ -1,1 +1,1 @@
---tag smoke --limit 24 --max-new 128
+--tag smoke2 --limit 24 --max-new 128

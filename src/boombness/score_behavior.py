@@ -200,12 +200,26 @@ def main() -> int:
                     else:
                         g = dc.generate(lm, row["full_prompt"], max_new_tokens=args.max_new,
                                         templated=True)
-                        text = g["text"] if isinstance(g, dict) else str(g)
+                        # ds_common.generate returns {"completion", "n_new_tokens",
+                        # "stop_reason", ...}. The first draft read g["text"], which does not
+                        # exist, and every behavioural row died with KeyError - caught loudly by
+                        # the FailureLedger (8/8 in the smoke) rather than silently producing an
+                        # empty gens.jsonl that would have read as ASR = 0.
+                        if "completion" not in g:
+                            raise KeyError(f"generate() returned keys {sorted(g)}, no 'completion'")
+                        text = g["completion"]
+                        n_new = int(g.get("n_new_tokens", 0))
+                        stop = g.get("stop_reason")
                         gens_fh.write(json.dumps({**base, "generation": text,
-                                                  "n_chars": len(text)}) + "\n")
+                                                  "n_chars": len(text), "n_new_tokens": n_new,
+                                                  "stop_reason": stop}) + "\n")
                         gens_fh.flush()
+                        # plan §5.3 asks for generation length and a malformed-output flag;
+                        # "truncated" means it hit the token cap without emitting EOS.
                         run.log_row({**base, "readout": "generation",
-                                     "gen_chars": len(text),
+                                     "gen_chars": len(text), "n_new_tokens": n_new,
+                                     "stop_reason": stop,
+                                     "gen_truncated": stop == "length",
                                      "gen_empty": len(text.strip()) == 0})
                         n_gen += 1
                         counts["behavioral"] += 1
