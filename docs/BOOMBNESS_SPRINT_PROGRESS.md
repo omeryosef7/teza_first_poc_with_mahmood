@@ -2043,3 +2043,26 @@ the failure surfaces where the shell is no longer visible. Memory updated
 
 Jobs **760954** (`random`) and **760955** (`orthogonal`) relaunched with verified args; **760931**
 (`d_surface` at α = −0.25, the sign-flip falsifier) running.
+
+### 2026-08-17 — Tick 28 (the steering dose–response, still uninterpreted pending controls)
+
+`steer_L8_a010` judged: 660 generations, null_frac 0.0000, coherence PASSED.
+
+| α (gap units, `d_surface` @ L8) | coherence | ASR@0.5 | 95% CI | refusal |
+|---|---|---|---|---|
+| 0 (baseline) | OK | 0.219 | [0.173, 0.272] | 0.074 |
+| **0.10** | OK | **0.241** | [0.194, 0.295] | 0.144 |
+| **0.25** | OK | **0.082** | [0.054, 0.120] | 0.696 |
+| 1.00 | **DEGENERATE** | (0.759) | — | 0.000 |
+| 2.00 | **DEGENERATE** | (0.000) | — | 0.000 |
+
+**α=0.10 is indistinguishable from baseline** — 0.241 vs 0.219 with overlapping intervals. The
+suppression appears only at α=0.25, where ASR falls to 0.082 and refusal rises to 0.696.
+
+So the usable dose window is narrow *and* the response inside it is not gradual: nothing at 0.10,
+a large suppression at 0.25, incoherence by 1.0. Whether that is a threshold in the mechanism or
+just the onset of disturbance is exactly what the three running controls decide, and I am not
+reading the pattern until they land.
+
+Running: **760954** `random` @ 0.25 · **760955** `orthogonal` @ 0.25 · **760931** `d_surface` @
+**−0.25** (the sign-flip falsifier).
