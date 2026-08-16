@@ -1337,3 +1337,32 @@ This also revises the G1 reading slightly. G1 established the demonstrations are
 G2 (the representation Boombness does not predict ASR), the emerging picture is that the doublespeak
 effect is neither "the codeword token becomes concept-like" nor "the query token reads the demos in
 one hop".
+
+### 2026-08-16 — Tick 16 (second 4-hourly audit; refusalness measurement launched)
+
+**`refusalness.py` submitted (job 760773)** — plan §9 Q6/Q7, and the measurement that decides the
+sprint's §18 outcome label:
+
+- **outcome A** — Boombness is the story;
+- **outcome C** — refusal suppression is the story and Boombness is a correlate of it.
+
+It measures `<h[final prompt token, L], unit(v_refusal[L])>` at L12/14/16/18/20 using the **house**
+refusal directions (`stage_gcg_full/refusal_direction_llama_L*.pt`), so the numbers are comparable
+to every previous refusal result in this repo rather than to a private re-derivation.
+
+The design choice that matters: refusalness is measured **on the prompt, before generation**. Using
+the *observed* refusal in the output would be near-circular — refusal and ASR are close to
+complementary by construction, so "refusal predicts ASR" would be a tautology rather than a finding.
+
+**Second independent audit launched**, pointed squarely at the gate verdicts rather than the code:
+
+| auditor | brief |
+|---|---|
+| `g2-asr` | reproduce rho=+0.418 and the `d_surface` nulls; check the family_id join (stripping the query-kind component - could it collide two families?); redo with **domain-level aggregation** as the hijacking paper does; test whether the `d_surface` null is **range restriction** rather than absence of relationship; and whether "a GCG objective on `d_surface` would optimize the wrong quantity" overreaches from a correlational null |
+| `g1-g3-power` | G1 rests on **n=8 families**, G3 on **n=2 prompts** - compute real intervals; G1's percentages share a noisy denominator (the span, estimated from the same 8), so propagate that; is G3's "one-hop attention not supported" broader than a 2-layer, codeword-positions-only design supports? |
+| `new-code` | `dominance.py` GQA mapping independent of its own self-test; whether `abs()` in the top-k ranking conflates positive and negative flow; whether `refusalness.py` is exposed to the transformers 5.12 last-layer tie; what else was silently inherited from the role-confusion port |
+| `consistency` | is anything in the **retracted** sections still being relied on downstream? spot-check >=10 quoted numbers against their cited runs; is any phase marked DONE on invalidated evidence? |
+
+Two of those I consider genuine risks to the current verdicts rather than box-ticking: **range
+restriction** could manufacture the G2 null, and **n=2** cannot distinguish G3's null from a large
+effect.
