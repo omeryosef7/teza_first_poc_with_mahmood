@@ -1884,3 +1884,28 @@ standing, not the ones already retracted. Two briefs I aimed at my own weakest p
 Also asked: are the coherence thresholds post-hoc fitted to make α=1 fail, and is the random
 control at 0.466 unique-word ratio (baseline 0.741) itself partly degenerate and therefore not a
 clean control?
+
+### 2026-08-17 — Tick 26 (the steering dose–coherence curve; both low doses are clean)
+
+All four steering doses through `coherence_gate.py`, against the un-intervened baseline:
+
+| arm (add `d_surface` @ L8, gap units) | uniq-word | 3-gram repeat | top-word | truncated | verdict |
+|---|---|---|---|---|---|
+| baseline (no intervention) | 0.741 | 0.017 | 0.101 | 37% | OK |
+| **α = 0.10** | 0.761 | 0.014 | 0.097 | 48% | **OK** |
+| **α = 0.25** | 0.861 | 0.006 | 0.093 | 30% | **OK** |
+| α = 1.00 | 0.302 | 0.551 | 0.139 | 100% | **DEGENERATE** |
+| α = 2.00 | 0.051 | 0.848 | 0.651 | 100% | **DEGENERATE** |
+
+**The model tolerates a quarter of a diff-of-means along this axis and collapses well before a
+whole one.** Between α=0.25 and α=1 the trigram repetition rate goes from 0.006 to 0.551 — that is
+not a gradual degradation, it is a cliff. Anything reported at α≥1 is a statement about a broken
+model, which is exactly what the retracted 3.5×-ASR result was.
+
+Worth noting for §12: a GCG-style objective that maximizes this projection has no reason to stop at
+0.25. If the usable range is this narrow, "optimize Boombness" needs an explicit coherence
+constraint in the objective, not just in the evaluation — otherwise the optimizer will find the
+degenerate regime, and the judge will score it as success.
+
+Both clean arms are now being judged; **their ASR is the actual G4 causal test**, and unlike the
+α=1 run it will be readable.
