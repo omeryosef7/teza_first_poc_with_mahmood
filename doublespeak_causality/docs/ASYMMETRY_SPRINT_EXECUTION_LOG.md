@@ -10452,3 +10452,16 @@ qualifications.** §20.6/§20.9 blocked.
 ### 00:45 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 01:15 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 01:45 — idle. Queue empty, no new artifacts, no new commits. Diff unchanged.
+### 02:15 — **SLURM controller unreachable; queue state UNKNOWN, not empty.**
+`squeue` returned `slurm_load_jobs error: Unable to contact slurm controller (connect failure)`, and
+a follow-up probe (`squeue` retry + `sacct` + `sinfo`) **hung past 120 s** — consistent with a
+controller/slurmdbd outage rather than a transient blip.
+
+**The `count=0` my one-liner would normally print is a failed query, not an empty queue.** Recording
+it as "queue empty" would be reporting a tool failure as a measurement — the same error class as
+reading a smoke run as a result. **Queue state this tick: unknown.**
+
+Nothing of mine was running (last confirmed empty at 01:45 and no asymmetry job has been submitted
+since 2026-08-14), so the outage has no effect on §20 — but that is an inference from history, not
+an observation of now. No resubmission decisions can be made while the controller is down, and the
+>30 min PENDING rule cannot be evaluated. Diff otherwise unchanged.
