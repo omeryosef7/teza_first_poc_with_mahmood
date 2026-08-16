@@ -27,12 +27,12 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P2.5 | §5.4 | `decision_gate.md` | TODO | |
 | P3.1 | §6.1 | Logit-lens Boombness | DONE | `signals.logit_lens` + `logit_lens_boombness_batch`; ids validated by `readout_id_pair` |
 | P3.2 | §6.2 | Direction Boombness | DONE | `signals.estimate_directions` — the 2×2 estimator (`d_surface`/`d_context`/`d_inter`/`d_naive`) |
-| P3.3 | §6.3 | Simple probe | DONE | `probes.py` — PCA-64, margin readout, shuffled control ~0.5; run `margin_20260816_192040` |
-| P3.4 | §6.3 | Hard-negative / held-out-condition probe | DONE | `d4_heldout_ds` reproduces the d_surface layer profile from a held-out-trained classifier |
-| P3.5 | §6.4 | Metric comparison | DONE | 4 metrics compared: d_surface / d_naive / probe margin / logit lens — see Tick 7 |
+| P3.3 | §6.3 | Simple probe | REDO | probe run was on a superseded extract; re-running against the headline run |
+| P3.4 | §6.3 | Hard-negative / held-out-condition probe | REDO | same — the d4 convergence claim is retracted pending the rerun |
+| P3.5 | §6.4 | Metric comparison | REDO | metric comparison must be per-query-kind; see retraction |
 | P4.1 | §7.1 | Token-level Boombness per occurrence × layer | DONE | 8472 occurrence rows, per-occurrence × per-layer, run `full_20260816_185942_1008673` |
 | P4.2 | §7.1 | Occurrence × layer heatmaps | DONE | `analysis/plots/occurrence_x_layer_*.png` for all four 2×2 cells |
-| P4.3 | §7.1 | Later-carrot-more-bomb-like test | DONE | two-humped profile: write hump L8, null L16–22, readout hump L24–31 |
+| P4.3 | §7.1 | Later-carrot-more-bomb-like test | RETRACTED | "two-humped / null carry band" invalidated by the tick-8 audit |
 | P4.4 | §8 | Example-count sweep | TODO | |
 | P5.1 | §4 | ~600-prompt bank | TODO | |
 | P5.2 | §9 | Generations + evaluation | TODO | |
@@ -47,7 +47,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P6.6 | §10 | Causal vs destructive separation | TODO | |
 | P7.1 | §11 | Role-style variants | TODO | |
 | P7.2 | §11 | Role framing → Boombness | TODO | |
-| P7.3 | §11 | Userness/CoTness probes (if feasible) | TODO | |
+| P7.3 | §11 | Userness/CoTness probes (if feasible) | IN PROGRESS | adopting the role-confusion codebase (`third_party/prompt_injection_role_confusion`) rather than reimplementing |
 | P7.4 | §11 | Boombness + role predicts ASR | TODO | |
 | P8.1 | §12.1 | Boombness GCG objective | TODO (gated) | |
 | P8.2 | §12.2 | Boombness − refusal objective | TODO (gated) | |
@@ -79,6 +79,7 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | §5 smoke (job 760661) | **Readouts at the patched layer were PRE-patch.** `out.hidden_states[L+1]` is filled by the framework's own capture, registered before ours, so at the very layer being intervened on it reported the value the patch was about to overwrite. Measured: patching window `L8` left the L8 boombness readout bit-identical to baseline (−0.2294) while a window containing layers *below* 8 moved it (+0.1477) — the readout only ever saw upstream effects and reported "no effect at the intervened layer" **by construction**. | **result-corrupting** | New `BlockCapture` registers our own forward hooks on the decoder blocks *after* the patch contexts, so they run later and read the block's true output. Wired into all 5 readout call sites. | **YES — smoke 760661 discarded, resubmitted as 760681.** No full run had been done, so nothing published was affected. |
 | 2026-08-16 | §5 smoke (job 760661) | **The L31 readout in `aggressive_patching` was in the wrong coordinates.** `forward_hidden` was fixed for the last-layer norm tie, but `readout()` read `out.hidden_states` directly, so its L31 projection mixed post-norm activations against directions fitted on raw block outputs. | **result-corrupting** | Same `BlockCapture` fix — reading the block's own output is raw by construction. | Same rerun. |
 | 2026-08-16 | §5 score smoke (job 760663) | **All 8 behavioural generations died with `KeyError: 'text'`.** `ds_common.generate` returns `{"completion", "n_new_tokens", "stop_reason", …}`; my code read `g["text"]`, and the fallback `g["text"] if isinstance(g, dict) else str(g)` checked the *type* but assumed the *key*. | crash (caught) | Use the documented `completion` key, raise with the actual key list if absent, and also persist `n_new_tokens` / `stop_reason` / `gen_truncated`, which plan §5.3 asks for anyway. | Yes — smoke resubmitted as 760684. **Nothing was silently lost:** the `FailureLedger` reported 8/8 failures with the reason, which is precisely the §2.2 contract working. Had this been a bare `except: pass`, it would have produced an empty `gens.jsonl` and read as **ASR = 0**. |
+| 2026-08-16 | tick-8 independent audit (34 agents) | **25 confirmed findings, 9 result-corrupting.** Four invalidate the tick-7 headline (unreported query-kind restriction; mid-band "null" is a sign-flipping n_examples cancellation; probe convergence computed on a superseded run; L31 delta confounded with bank regeneration). Others: pseudo-replication (n=60 not 30, domain ICC≈0.53); no multiplicity correction over 32 layers; null asserted without an interval; `--intervene add` reintroduced the unit-vector dosing bug; probe table omitted L31; `metadata.json` records the git commit at FINISH not start; no consumer checks `DONE.json`; plan §2.1 model/tokenizer/dataset revisions missing. | **result-corrupting** | Full retraction written below; `reanalyze_corrected.py` added (per-query-kind + pooled, layer×n_examples surface, domain-clustered SEs, Holm, intervals for nulls); dosing recurrence fixed in `score_behavior`. | **YES — tick-7 claims retracted; probes re-run against the headline run; analysis redone.** |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
