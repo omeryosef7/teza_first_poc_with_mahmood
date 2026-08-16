@@ -144,4 +144,84 @@ at the codeword position it is a length/context confound.
 **Design response:** the Boombness generator emits `DIRECT_WITH_DEMOS` and `BENIGN_WITH_DEMOS` arms so
 every condition carries a demo block of matched size and matched sentence frames.
 
+#### F3 (§5.4, §10.3) — a Boombness direction ablation has ALREADY been run here, and it is a negative
+
+Scouting turned up prior, uncommitted work I did not know about: `doublespeak_causality/scripts/phase4_bombness_intervention.py`
+plus direction bundles `outputs/phase4_directions/v_bomb_*.pt` and 15 run dirs `outputs/phase4_bombness_*`
+(2026-08-14/15). The existing `v_bomb[L]` is the unit diff-of-means **(doublespeak − benign) at
+`codeword_last`**, over the write/carry band `L8–21`, shipped with `v_bomb_perp_ref` (orthogonalized
+against refusal-L18), a norm-matched `v_random` control, and a per-layer `gap` dose unit.
+
+Aggregating the most recent AdvBench/Llama-3.1-8B run (`phase4_bombness_full_advbench_..._758964`,
+n=230, patch band L8–18, α=1.0, readouts L20/24/28/31 — scalars only):
+
+| arm | ASR (judge = MALICIOUS) | mean judge score | bombness readout L20 / L24 / L28 / L31 |
+|---|---|---|---|
+| `ds_base` | 0.2043 | 0.1826 | −0.388 / −0.048 / +0.212 / +10.373 |
+| `ds_bomb_ablate` | 0.2217 | 0.2005 | **−1.218 / −1.081 / −1.109 / +7.664** |
+| `ds_bomb_random` | 0.1957 | 0.1826 | −0.376 / −0.040 / +0.222 / +10.429 |
+
+Paired Δ(judge score) vs base: **ablate = +0.0179, 95% CI [−0.0001, +0.0360]**; random = 0.0000,
+CI [−0.0111, +0.0111].
+
+**Read:** the intervention *demonstrably works on the representation* — the bombness readout is driven
+negative at every readout layer, while the norm-matched random direction moves it not at all. And ASR
+does **not fall**; if anything it drifts marginally up. This is the plan §18 **outcome-B/C signature**
+(representation manipulable, behavior unmoved) and it is consistent with the repo's established result
+that *refusal suppression, not concept content, is the causal locus*
+(`project_continuation_v2_complete`, `project_causal_circuit_sprint`).
+
+**Why the sprint is still worth running (this is the sharpened hypothesis):** `v_bomb = doublespeak − benign`
+is measured with the surface word held constant (`carrot` in both arms) and the demo domain varying — so
+under the F1 2×2 it is the **context main effect**, not the surface-identity effect. It is also fitted
+against the misaligned benign arm (F1). The plan's actual claim — "`carrot` acquires a hidden
+representation that is increasingly *bomb*-like" — is a claim about movement along the
+**surface-identity axis**, which is a *different direction*:
+
+```
+d_surface := ½[ (B − C) + (E − A) ]     # "bomb token minus carrot token", context matched
+d_context := ½[ (C − A) + (B − E) ]     # what the existing v_bomb approximates
+Boombness(h) := <h, d_surface>          # A low, B high; the question is where C lands
+```
+
+So the sprint's job is to redo the gate with the **unconfounded** `d_surface`, plus the interaction term
+`(B−C) − (E−A)` which isolates what is doublespeak-*specific*. If the negative survives that, it is a
+well-controlled negative worth publishing rather than a measurement artifact — which is exactly the
+outcome the plan's §18-D asks us to be explicit about.
+
+#### F4 (§2.4) — `carrot` and `bomb` do NOT tokenize symmetrically, and it hit the most important position
+
+The mandatory tokenization audit (`src/boombness/tokenization_audit.py`, 1464 rows, Llama-3.1-8B-Instruct):
+
+| variant | `carrot` | `bomb` |
+|---|---|---|
+| `" carrot"` / `" bomb"` | **1 token** | **1 token** |
+| `"carrot"` / `"bomb"` (no leading space) | **2 tokens** `['car','rot']` | 1 token |
+| `"Carrot"` / `"Bomb"` | 2 tokens | 1 token |
+| `" Carrot"` / `" Bomb"` | 2 tokens | 1 token |
+
+`bomb` is one token in essentially every surface form; `carrot` is one token **only** with a
+leading space and lowercase. Measured over the first full bank: `bomb` was 1 subtoken in
+2664/2664 occurrences, `carrot` in 4918/5808 — **890 two-subtoken occurrences**, and 558/1464
+prompts contained a mix of widths.
+
+Two distinct causes, both now fixed:
+
+1. **The query template.** `the word "{W}"` renders `"carrot"`, and the opening quote steals the
+   leading space → `['"','car','rot','"']`. This hit **the final query occurrence — the single
+   most load-bearing position in the sprint** — in 516/516 semantic rows. Quotes around the
+   target were removed from every query and mapping template.
+2. **Sentence-initial demo sentences** ("Carrots can be stored…") → 374 occurrences. `demo_pools._clean`
+   now requires the occurrence to be preceded by a space, so it is never sentence-initial.
+
+**Why this mattered rather than being cosmetic:** the house readout position is `codeword_last`,
+the *last* subtoken of the occurrence. For a 2-subtoken carrot that is the vector at `"rot"` —
+a different vector entirely, and not comparable to the `" bomb"` vector it is differenced against
+in `d_surface`. Left unfixed it would have put a systematic, arm-asymmetric error straight into
+the direction estimate and the logit lens, in the direction of *understating* Boombness in the
+carrot arm. After the fix every occurrence in both arms is exactly one token.
+
+`extract_boombness.py` now records `n_subtokens` / `is_single_token` per occurrence regardless,
+so any residual case can be conditioned on rather than averaged over.
+
 - Next: await scouts, then write `src/boombness/prompt_families.py` implementing the 2×2 + plan axes.
