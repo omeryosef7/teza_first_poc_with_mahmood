@@ -1432,3 +1432,64 @@ Three further confirmed defects, all in the same ad-hoc analysis:
 - The **tick-13b dissociation** claim (semantic moves 59%, representation only 3–5%) still stands as
   a statement about *effect sizes*, but its interpretation — "the representation is not what tracks
   behaviour" — is withdrawn.
+
+---
+
+## §9 Q6/Q7 answered — Boombness dominates refusalness *within* the attack arm (outcome A, with a C-shaped caveat)
+
+`refusalness.py` (job 760773), house refusal directions, measured on the **prompt before
+generation**. Mediation computed by the committed `analyze_g2.py --refusalness …`, so every number
+below is regenerable from one command.
+
+### Between arms, refusal is the whole story
+
+mean refusalness (L18 projection) by condition:
+
+| condition | refusalness |
+|---|---|
+| `direct_harmful` | **+7.30** |
+| `concept_in_benign_ctx` | +6.29 |
+| `benign_remap` | +0.67 |
+| `direct_codeword` | +0.10 |
+| **`natural_doublespeak`** | **+0.04** |
+| `benign_literal` | −0.15 |
+
+A doublespeak prompt is, to the refusal direction, **indistinguishable from a benign one** (+0.04 vs
+−0.15) while the matched direct request sits at +7.30. That is what the ASR table's 95.8% → 7.4%
+refusal collapse looks like in representation space.
+
+### Within the attack arm, refusalness explains almost nothing and Boombness explains 14× more
+
+n = 234 doublespeak prompts, `n_examples ≥ 1`, 100% coverage. R² against the continuous
+StrongReject score:
+
+| model | R² |
+|---|---|
+| refusalness (L18) alone | **0.0032** |
+| `d_surface` L12 proj alone | **0.1411** |
+| both | 0.1416 |
+| **Boombness adds over refusalness** | **+0.1384** |
+| **refusalness adds over Boombness** | **+0.0005** |
+
+Same picture at every refusal layer tested (L12/16/18/20): refusalness-only R² ranges 0.0013–0.0386,
+Boombness-only 0.115–0.141, and refusalness contributes ≤+0.008 on top of Boombness.
+
+**Plan §9 Q6 — does Boombness predict ASR better than refusalness? YES, by ~40×** in explained
+variance. **Q7 — does it add beyond refusalness? YES (+0.138); the converse is +0.0005.**
+
+### The two-level reading, which is what I think is actually true
+
+- **Between arms:** the attack works by *collapsing refusal* — 7.30 → 0.04. Refusal suppression is
+  why doublespeak succeeds where a direct request fails.
+- **Within the attack:** *which* doublespeak prompts succeed is predicted by **Boombness**
+  (R²=0.14), not by residual refusalness (R²=0.003).
+
+So the plan's §18 label is **A** — Boombness is the story — **for the within-attack variation**,
+while the between-arm effect is **C**-shaped (refusal suppression). Those are compatible, and
+collapsing them into one label would lose the finding.
+
+### Caveats, stated up front this time
+1. **Correlational.** No steering experiment yet. §12's objective test would settle direction.
+2. **Within-arm only**, one model (Llama-3.1-8B), one concept pair (carrot↔bomb).
+3. R² ≈ 0.14 means Boombness explains ~14% of ASR variance — real and dominant relative to
+   refusalness, but most of the variance is still unexplained.

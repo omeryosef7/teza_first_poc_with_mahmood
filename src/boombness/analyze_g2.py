@@ -63,6 +63,10 @@ def main() -> int:
                     help="drop n_examples<this; 0-demo prompts establish no mapping and are not "
                          "doublespeak prompts (audit finding 3)")
     ap.add_argument("--layers", default="4,8,11,12,16,18,20,24,28,31")
+    ap.add_argument("--refusalness", default=None,
+                    help="refusalness run dir; enables the §9 Q6/Q7 mediation analysis that "
+                         "decides the §18 outcome label (A: Boombness is the story; C: refusal "
+                         "suppression is the story and Boombness is a correlate)")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -163,6 +167,48 @@ def main() -> int:
             if all(v is not None for v in xs):
                 r, p = spearman(xs, yz)
                 print(f"  [zero-demo stratum, n={len(zero)}] d_surface|L{L}|cos rho={r:+.3f} p={p:.2e}")
+
+    # ---- §9 Q6/Q7: does Boombness survive controlling for refusalness? -------------- #
+    if args.refusalness:
+        R = read_jsonl(os.path.join(args.refusalness, "results.jsonl"))
+        refus = {r["prompt_id"]: r for r in R if r["prompt_id"] in asr}
+        rk = [p for p in kept if p in refus]
+        print(f"\n[G2] refusalness joined on prompt_id for {len(rk)}/{len(kept)} analysed prompts")
+        if rk:
+            import numpy as np
+            from sklearn.linear_model import LinearRegression
+            yv = np.array([asr[p] for p in rk])
+            med: Dict[str, object] = {"n": len(rk)}
+            for RL in (12, 16, 18, 20):
+                col = f"refusalness|L{RL}|proj"
+                if col not in refus[rk[0]]:
+                    continue
+                rv = np.array([refus[p][col] for p in rk])
+                r0, p0 = spearman(rv.tolist(), yv.tolist())
+                print(f"  refusalness L{RL:<2d} -> ASR   rho={r0:+.3f} p={p0:.2e}  sd={float(rv.std()):.3f}")
+                med[f"refusalness_L{RL}_vs_asr"] = {"spearman": r0, "p": p0}
+                # does the best representation predictor add over refusalness alone?
+                for name, LL, stat in (("d_surface|L8|proj", 8, "proj"),
+                                       ("d_surface|L12|proj", 12, "proj"),
+                                       ("d_surface|L31|cos", 31, "cos")):
+                    xv = np.array([rep[p].get((LL, stat), float("nan")) for p in rk])
+                    if np.isnan(xv).any():
+                        continue
+                    X1 = rv.reshape(-1, 1)
+                    X2 = np.column_stack([rv, xv])
+                    r1 = LinearRegression().fit(X1, yv).score(X1, yv)
+                    r2 = LinearRegression().fit(X2, yv).score(X2, yv)
+                    # and the reverse: does refusalness add over Boombness alone?
+                    Xb = xv.reshape(-1, 1)
+                    rb = LinearRegression().fit(Xb, yv).score(Xb, yv)
+                    print(f"    R2 refusalness-only {r1:.4f} | +{name} -> {r2:.4f} "
+                          f"(delta {r2-r1:+.4f}) | {name}-only {rb:.4f} "
+                          f"(refusalness adds {r2-rb:+.4f})")
+                    med[f"L{RL}_vs_{name}"] = {"r2_refusal_only": r1, "r2_both": r2,
+                                               "delta_boombness_over_refusal": r2 - r1,
+                                               "r2_boombness_only": rb,
+                                               "delta_refusal_over_boombness": r2 - rb}
+            report["mediation"] = med
 
     out = args.out or os.path.join(args.judge, "g2_analysis.json")
     with open(out, "w") as f:
