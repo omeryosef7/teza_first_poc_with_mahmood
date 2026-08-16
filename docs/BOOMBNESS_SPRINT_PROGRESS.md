@@ -22,13 +22,13 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P1.6 | §3 | Iterate generator until alignment + tokenization OK | DONE | two defects found and fixed (substring-vs-whole-word filter; quote/sentence-initial tokenization), bank regenerated clean |
 | P2.1 | §5.1 | Hidden-state replacement, smoke | TODO | |
 | P2.2 | §5.2 | Additive bomb-direction sweep, smoke | TODO | |
-| P2.3 | §5.3 | Metrics + comprehension controls validated | TODO | |
+| P2.3 | §5.3 | Metrics + comprehension controls validated | DONE | forward-only readouts validated; comprehension answer pair fixed to single tokens |
 | P2.4 | §5 | Pilot 30–50 prompts | TODO | |
 | P2.5 | §5.4 | `decision_gate.md` | TODO | |
-| P3.1 | §6.1 | Logit-lens Boombness | TODO | |
-| P3.2 | §6.2 | Direction Boombness | TODO | |
-| P3.3 | §6.3 | Simple probe | TODO | |
-| P3.4 | §6.3 | Hard-negative / held-out-condition probe | TODO | |
+| P3.1 | §6.1 | Logit-lens Boombness | DONE | `signals.logit_lens` + `logit_lens_boombness_batch`; ids validated by `readout_id_pair` |
+| P3.2 | §6.2 | Direction Boombness | DONE | `signals.estimate_directions` — the 2×2 estimator (`d_surface`/`d_context`/`d_inter`/`d_naive`) |
+| P3.3 | §6.3 | Simple probe | IN PROGRESS | `src/boombness/probes.py` — 4 regimes + shuffled-label control, pilot running |
+| P3.4 | §6.3 | Hard-negative / held-out-condition probe | IN PROGRESS | regime `d4_heldout_ds`: train without cell C, score C (the generalization test) |
 | P3.5 | §6.4 | Metric comparison | TODO | |
 | P4.1 | §7.1 | Token-level Boombness per occurrence × layer | TODO | |
 | P4.2 | §7.1 | Occurrence × layer heatmaps | TODO | |
@@ -427,3 +427,36 @@ specific statement than "carrot becomes bomb-like".
 > computed on post-final-norm vectors. The contrast is internally consistent (all four cells share the
 > convention) but is not comparable to the other layers and may be partly an artifact. It will be
 > re-measured in the corrected rerun before it is claimed. **L0–L30 are unaffected by that fix.**
+
+### 2026-08-16 — Tick 5 (Phase 3 probes implemented; corrected extraction re-running)
+
+- **SLURM 760611** (corrected full extraction, every confirmed fix in place) running on `n-805`.
+  Weight load is slow this time (~7.5 min, 1.3–4.4 s/it vs 1.8 s/it earlier) — node contention, not
+  a hang: the loading bar is advancing, which is the house diagnostic for telling the two apart.
+- **`src/boombness/probes.py` added** (plan §6.3) and a pilot is running on the cached
+  final-occurrence reps of the previous run.
+
+The four probe regimes are deliberately ordered by how much they can be fooled:
+
+| regime | train → test | what it can be fooled by |
+|---|---|---|
+| `d1_simple` | concept-surface (B,E) vs codeword-surface (A,C), all blocks | **lexical identity** — expected near-ceiling at L0 and worth nothing on its own |
+| `d2_aligned` | same, restricted to matched 2×2 families | template memorization (removed by the domain split) |
+| `d3_hard_negative` | same pool, metrics broken out **per cell** | conflating *concept-ness* with *harm-context-ness* — E (concept token, benign context) and C (codeword token, harmful context) are the two cells that separate those hypotheses, so their per-cell recall is reported rather than averaged away |
+| `d4_heldout_ds` | **train with cell C removed, then score C** | nothing — this is the generalization test the plan asks for |
+
+`p_C_minus_p_A` from `d4_heldout_ds` is the learned-classifier analogue of the `C−A` contrast in
+`analyze_boombness`: a probe that never saw a doublespeak prompt is asked how concept-like the
+doublespeak carrot looks, relative to the benign-literal carrot.
+
+Two design choices worth stating because they are what keep the number honest:
+- **Splits are by DOMAIN** (group-k-fold), never by row, so a probe cannot memorize a template and
+  then score its twin.
+- **Every regime is also run with SHUFFLED LABELS.** A shuffled-label AUROC meaningfully above 0.5
+  means the split leaks and the real number is not interpretable. This is plan §2.5's shuffled-label
+  control, and it is reported next to every headline AUROC rather than in an appendix.
+
+Also fixed two minor review findings: `discover_columns` scanned only the first 200 rows (rows here
+are heterogeneous, so a prefix scan could silently drop a metric), and `RunDir` now refuses to open
+an existing run directory (`log_row` appends, so a reused directory would silently double its rows
+and desynchronise the count from the failure ledger).
