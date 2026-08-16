@@ -10570,3 +10570,14 @@ unproven (three qualifications). No new asymmetry artifacts. Six owed items, all
 ### 11:15 — idle. Controller OK (header verified), queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 11:45 — idle. Controller OK (header verified), queue empty, no new artifacts, no new commits. Diff unchanged.
 ### 12:15 — idle. Controller OK (header verified), queue empty, no new artifacts, no new commits. Diff unchanged.
+### 12:45 — new third workstream on the account: **`boombness`** (760588, n-805). Not asymmetry.
+Commit `2e094418` ("boombness P1 complete: bank clean; P2 smoke submitted") adds a **new tree** —
+`src/boombness/`, `data/boombness_prompts/`, `docs/BOOMBNESS_SPRINT_PROGRESS.md` — with its own
+runner `src/boombness/slurm/run_boombness.sh`. Distinct from the role-probe sprint's `phase4_bomb`
+(*bombness*) and from anything in §20.
+
+**Three programmes now share this account**: asymmetry (mine, idle), role-probe (theirs), and
+boombness (new). The §20 cap discipline is unchanged — I hold at 0 jobs and would count all three
+against ≤6 before submitting, per the 02:15 precedent where my own submission caused the breach.
+
+No asymmetry artifacts, no §20 impact. Diff unchanged.
