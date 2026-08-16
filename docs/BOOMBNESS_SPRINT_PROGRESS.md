@@ -1144,3 +1144,32 @@ over the demonstrations, not a rewriting of the codeword token.*
 **Caveat:** n=8 families per cell in this pilot, so the SEs are ±0.5–1.6 log-odds. The direction and
 sign of every effect above is far larger than that, but the exact percentages should be re-measured
 at the plan's ≥20-per-condition before they are quoted as final.
+
+### 2026-08-16 — Tick 14 (Phase 6 built, motivated by G1)
+
+**`src/boombness/surgical_knockout.py`** (plan §10.1/§10.2), written *because* of the G1 result
+rather than as a checklist item. G1 says the doublespeak reading is driven by the demonstration
+positions and that the codeword's meaning is retrieved from them at answer time. If that is right,
+cutting the attention edges from the final codeword token to the demonstration tokens should
+collapse the semantic readout, and cutting the same number of other edges should not.
+
+It composes the two pieces already built and verified:
+- **`dominance.py`** ranks the edges — `D_dir[h, src]` is how much Boombness arrived at the final
+  codeword token from source `src` through head `h`. This is what makes the cut *surgical* instead
+  of "ablate the demo block and report that something happened".
+- **`pair_common.AttentionKnockout`** cuts specific (query → key) edges per layer and head. It is a
+  silent no-op under SDPA, so the loader forces `attn_implementation="eager"`.
+
+Seven arms, all cutting the **same number** of edges except the floor and ceiling, with the count
+recorded per row so equality can be checked rather than assumed:
+
+| arm | tests |
+|---|---|
+| `topk_demo` | the hypothesis — the highest-|D_dir| demonstration edges |
+| `bottomk_demo` | is the *ranking* real, or would any demo edges do? |
+| `random_demo` | is it *these* edges? |
+| `random_nondemo` | is it the demonstrations at all? |
+| `same_head_random` | head or position — same heads, random positions |
+| `all_demo` / `none` | ceiling and floor |
+
+Smoke submitted as **760740**. ASR judging for G2 is at 597/660.
