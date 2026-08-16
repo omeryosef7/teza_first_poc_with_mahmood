@@ -1909,3 +1909,49 @@ degenerate regime, and the judge will score it as success.
 
 Both clean arms are now being judged; **their ASR is the actual G4 causal test**, and unlike the
 α=1 run it will be readable.
+
+---
+
+## G4 steering, coherent dose — the effect runs OPPOSITE to the hypothesis (preliminary)
+
+`steer_L8_a025`, coherence **PASSED** (uniq 0.861, 3-gram 0.006, 30% truncated — cleaner than
+baseline), 660 generations, judge null_frac 0.0000.
+
+| arm | ASR@0.5 | mean score | **refusal** |
+|---|---|---|---|
+| baseline (no intervention) | 0.219 | 0.188 | **0.074** |
+| **`d_surface` @ L8, α=0.25** | **0.082** | 0.074 | **0.696** |
+| — direct_harmful under the same intervention | 0.000 | 0.000 | 1.000 |
+
+**Adding Boombness cut the attack's success by 63% (0.219 → 0.082) and raised refusal nearly
+tenfold (7% → 70%).**
+
+If Boombness were the mechanism the attack exploits, pushing the codeword *toward* the concept
+should make the attack work **better**. It does the opposite, and strongly. The natural reading is
+that doublespeak succeeds by **hiding** the harmful concept from the safety machinery, and making
+the codeword more concept-like **un-hides it** — the model then recognises the request and refuses.
+
+That is a coherent story, and it is consistent with G2 (Boombness correlates with ASR **within** the
+arm) only if the correlation is not causal in the direction assumed — which is precisely why the
+plan asks for a steering test rather than stopping at a correlation.
+
+### I am NOT calling this yet — the control that decides it is running
+
+The missing comparison is a **norm-matched perturbation at the same dose**. Without it I cannot
+separate:
+
+- **(i)** `d_surface` specifically un-hides the concept and triggers refusal, versus
+- **(ii)** *any* perturbation of this magnitude at L8 disturbs the prompt enough to trigger refusal.
+
+The α=1 random control is useless here — it was degenerate. Three arms now running at the coherent
+dose:
+
+| job | arm | question it answers |
+|---|---|---|
+| 760929 | `random` @ α=0.25 | is it the axis, or any perturbation? |
+| 760930 | `orthogonal` @ α=0.25 | same, with an independent draw (the two were previously the *same* draw) |
+| 760931 | `d_surface` @ **α = −0.25** | does pushing AWAY from the concept *raise* ASR? |
+
+The negative-direction arm is the sharp test. If the mechanism is "concept-ness is hidden", steering
+away from the concept should push ASR **above** baseline. If instead both signs reduce ASR, the
+effect is disturbance, not direction, and this whole reading collapses.
