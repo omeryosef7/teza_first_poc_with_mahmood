@@ -20,11 +20,11 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P1.4 | §3.1 | Generate 50 prompts + manual review | DONE | 1464 rows, 180 families, 0 alignment violations; `data/boombness_prompts/manual_review_50.md` reviewed |
 | P1.5 | §2.4 | Tokenization audit | DONE | `tokenization_audit.py`: 1464 ok / 0 bad / 0 ambiguous; 8472/8472 occurrences single-token; 540 families, 0 token-alignment violations |
 | P1.6 | §3 | Iterate generator until alignment + tokenization OK | DONE | two defects found and fixed (substring-vs-whole-word filter; quote/sentence-initial tokenization), bank regenerated clean |
-| P2.1 | §5.1 | Hidden-state replacement, smoke | TODO | |
-| P2.2 | §5.2 | Additive bomb-direction sweep, smoke | TODO | |
+| P2.1 | §5.1 | Hidden-state replacement, smoke | DONE | `aggressive_patching.py`; transplant verified by an exact self-swap no-op |
+| P2.2 | §5.2 | Additive bomb-direction sweep, smoke | DONE | additive sweep in **gap units** (α=1 = one diff-of-means); dose bug fixed twice |
 | P2.3 | §5.3 | Metrics + comprehension controls validated | DONE | forward-only readouts validated; comprehension answer pair fixed to single tokens |
-| P2.4 | §5 | Pilot 30–50 prompts | TODO | |
-| P2.5 | §5.4 | `decision_gate.md` | TODO | |
+| P2.4 | §5 | Pilot 30–50 prompts | DONE | pilot `pilot_20260816_210506_1142800`, 8 families, 2368 rows |
+| P2.5 | §5.4 | `decision_gate.md` | DONE | G1 recorded with propagated intervals via `analyze_g1_g3.py` |
 | P3.1 | §6.1 | Logit-lens Boombness | DONE | `signals.logit_lens` + `logit_lens_boombness_batch`; ids validated by `readout_id_pair` |
 | P3.2 | §6.2 | Direction Boombness | DONE | `signals.estimate_directions` — the 2×2 estimator (`d_surface`/`d_context`/`d_inter`/`d_naive`) |
 | P3.3 | §6.3 | Simple probe | REDO | probe run was on a superseded extract; re-running against the headline run |
@@ -33,23 +33,23 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P4.1 | §7.1 | Token-level Boombness per occurrence × layer | DONE | 8472 occurrence rows, per-occurrence × per-layer, run `full_20260816_185942_1008673` |
 | P4.2 | §7.1 | Occurrence × layer heatmaps | DONE | `analysis/plots/occurrence_x_layer_*.png` for all four 2×2 cells |
 | P4.3 | §7.1 | Later-carrot-more-bomb-like test | RETRACTED | "two-humped / null carry band" invalidated by the tick-8 audit |
-| P4.4 | §8 | Example-count sweep | TODO | |
-| P5.1 | §4 | ~600-prompt bank | TODO | |
-| P5.2 | §9 | Generations + evaluation | TODO | |
-| P5.3 | §9 | Prompt-level Boombness | TODO | |
-| P5.4 | §9 | Correlation / regression | TODO | |
-| P5.5 | §9 | Figure-9-style plot | TODO | |
-| P6.1 | §10.1 | Attention edge knockout | TODO | |
+| P4.4 | §8 | Example-count sweep | PARTIAL | n_examples × layer surface in `reanalyze_corrected.py`; §8 sweep plots not written up |
+| P5.1 | §4 | ~600-prompt bank | DONE | 1752-row bank (`bank_content_sha16` 59ad8c8c44f7c3fa) |
+| P5.2 | §9 | Generations + evaluation | DONE | `base_20260816_203355_3985444` (660 gens) + judge, null_frac 0.0000 |
+| P5.3 | §9 | Prompt-level Boombness | DONE | `analyze_g2.py`, 100% coverage, committed and reproducible |
+| P5.4 | §9 | Correlation / regression | DONE | G2 + §9 Q6/Q7 mediation vs refusalness |
+| P5.5 | §9 | Figure-9-style plot | TODO | Figure-9 plot not yet produced |
+| P6.1 | §10.1 | Attention edge knockout | DONE | `surgical_knockout.py` with `--dst`, `--demo-scope`, and 2 dynamic-range controls |
 | P6.2 | §10.2 | Head knockout | TODO | |
-| P6.3 | §10.3 | Direction knockout | TODO | |
+| P6.3 | §10.3 | Direction knockout | DONE | direction knockout covered by the additive/ablate arms |
 | P6.4 | §10.4 | Combined Boombness/refusal | TODO | |
-| P6.5 | §10 | Comprehension controls | TODO | |
-| P6.6 | §10 | Causal vs destructive separation | TODO | |
-| P7.1 | §11 | Role-style variants | TODO | |
-| P7.2 | §11 | Role framing → Boombness | TODO | |
+| P6.5 | §10 | Comprehension controls | DONE | comprehension readout live (`comprehension_usage`, log-odds) |
+| P6.6 | §10 | Causal vs destructive separation | DONE | `coherence_gate.py` separates causal from destructive |
+| P7.1 | §11 | Role-style variants | DONE | role_style axis in the bank (6 styles) |
+| P7.2 | §11 | Role framing → Boombness | PARTIAL | Boombness flat across 6 role styles (spread 0.016 at L8); ASR side underpowered at n=6/style |
 | P7.3 | §11 | Userness/CoTness probes (if feasible) | IN PROGRESS | adopting the role-confusion codebase (`third_party/prompt_injection_role_confusion`) rather than reimplementing |
-| P7.4 | §11 | Boombness + role predicts ASR | TODO | |
-| P8.1 | §12.1 | Boombness GCG objective | TODO (gated) | |
+| P7.4 | §11 | Boombness + role predicts ASR | BLOCKED | needs ≥20 rows per role style — currently 12 (extract) / 6 (ASR) |
+| P8.1 | §12.1 | Boombness GCG objective | IN PROGRESS | steering test at α∈{0.10,0.25} — jobs 760859/760860 |
 | P8.2 | §12.2 | Boombness − refusal objective | TODO (gated) | |
 | P8.3 | §12.5 | Baseline / refusal-only comparison | TODO (gated) | |
 | P8.4 | §12.5 | Universality + held-out transfer | TODO (gated) | |
@@ -86,7 +86,7 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | `diagnose_knockout.py` (job 760757) | **CORRECTION to the row above — `AttentionKnockout` DOES fire.** A total mask-out at L8 drove the last token's attention mass on prior keys from **0.945 → 0.000** (self-attention 0.055 → 1.000), `max\|Δ attention weight\| = 0.997`, `max\|Δ final logit\| = 1.157`. My inference that "0.086 log-odds is impossible" was wrong: one layer's attention at one position changes final logits by only ~1.16, and the semantic **log-odds ratio** can move far less than that because both terms shift together. | — (my error, not a code defect) | No fix needed to the primitive. The §10 null may therefore be a **genuine** null. One difference remains untested: the diagnostic used a single all-head knockout, while `surgical_knockout` **stacks one context manager per head**. Job 760762 tests whether those compose identically. | **RESOLVED (job 760762): stacked per-head composition is bit-identical to the all-head form (max|Δ|=0.0), so the machinery is verified end to end and the §10 null is genuine.** No prior repo result is implicated — that warning is withdrawn. |
 | 2026-08-17 | tick-16 audit finding, verified 2026-08-17 | **FATAL to all of §10: the knockout cut edges into the WRONG DESTINATION.** Edges were blocked into `dst = the final codeword occurrence` (token ~104) while the readout is the next-token distribution at the **last token** (~113) — **9 tokens away**, measured on every prompt in the run. Blocking attention arriving at a position the readout does not directly depend on can only act indirectly, which is why every arm read ≈0 and why only `no_demo_text` (which deletes the text) moved anything. | **result-corrupting** | `--dst {readout,codeword,both}` added, defaulting to the position actually measured. Also fixed: the positive control was blocking the destination's own **self-edge**, making the whole softmax row `-inf` and the result a degenerate uniform row rather than "attend only to yourself". | **YES — the G3 resolution recorded one tick earlier is RETRACTED. Job 760814 cancelled mid-run (same flaw); rerunning as 760816 with `--dst both --demo-scope block`.** |
 | 2026-08-17 | tick-16 audit | **The `random` and `orthogonal` controls were the same draw.** `pair_common.orthogonal_random` internally calls `norm_matched_random` with the SAME seed and projects out the component along `d`; in 4096-D that component is ~1/√4096 ≈ 0.016, so the projection changes ~0.02% of the vector. Reporting "random and orthogonal both fail" was **one observation stated twice**, not two independent controls. The tell was there: the two arms agreed to 3 decimals (−0.168 vs −0.167; −3.945 vs −3.948). | **minor (over-claimed control strength)** | `orthogonal_control_direction` now offsets the seed, so the two are independent draws. | Controls should be re-run; the *direction* of the G1 control conclusion is unaffected (both were far from the `d_surface` arm), only its strength as evidence. |
-| 2026-08-17 | tick-16 audit | **The `dominance.py` invariant was an algebraic TAUTOLOGY.** `D_attn := <Y, ΣY>/‖ΣY‖²` sums to 1 for **any** `Y` whatsoever — including one built with a wrong GQA head map or wrong `o_proj` slicing. The "selftest OK — the GQA head mapping and o_proj slicing are correct" claim verified **nothing**. | **result-corrupting (a verification that verified nothing)** | Replaced with a real check: capture the module's actual `o_proj` output at `dst` via a hook and require the reconstructed `ΣY` to match it to 1e-3 relative. Job 760858 re-runs the self-test. | Yes — the dominance-based edge ranking used by §10 rests on this, so it is unverified until 760858 passes. |
+| 2026-08-17 | tick-16 audit | **The `dominance.py` invariant was an algebraic TAUTOLOGY.** `D_attn := <Y, ΣY>/‖ΣY‖²` sums to 1 for **any** `Y` whatsoever — including one built with a wrong GQA head map or wrong `o_proj` slicing. The "selftest OK — the GQA head mapping and o_proj slicing are correct" claim verified **nothing**. | **result-corrupting (a verification that verified nothing)** | Replaced with a real check: capture the module's actual `o_proj` output at `dst` via a hook and require the reconstructed `ΣY` to match it to 1e-3 relative. Job 760862 (after the print was also corrected). | **RESOLVED: reconstruction relative error 3.9e-07 at L8 and 3.7e-07 at L18** — `sum(Y)` reproduces the module's own `o_proj` output, so the GQA head map and slicing are genuinely correct and the §10 edge ranking rests on a verified decomposition. |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -1815,3 +1815,45 @@ like verification* standing in for one. Job **760862** re-runs it.
 
 Low-dose steering (α=0.10, α=0.25) running as **760859** / **760860**; both will go through
 `coherence_gate.py` before any ASR from them is read.
+
+---
+
+## §11 role framing — Boombness is FLAT across role styles; the ASR side is underpowered
+
+`analyze_role.py` (committed) over the headline extract + judge runs. `role_style` varies while
+demonstration content, domain, demo count and final query are held fixed — the content-constancy
+design §11 asks for.
+
+| role_style | n | Boombness L8 | L12 | L31 | n_ASR | mean ASR |
+|---|---|---|---|---|---|---|
+| plain | 396 | −0.3278 | −0.2954 | −0.2109 | 204 | 0.200 |
+| tool | 12 | −0.3202 | −0.3038 | −0.2318 | 6 | 0.146 |
+| assistant_like | 12 | −0.3249 | −0.3010 | −0.2169 | 6 | 0.083 |
+| cot_like | 12 | −0.3151 | −0.2972 | −0.2215 | 6 | 0.000 |
+| system_like_quoted | 12 | −0.3118 | −0.2935 | −0.2093 | 6 | 0.000 |
+| user_like | 12 | −0.3265 | −0.3033 | −0.2090 | 6 | 0.000 |
+
+**Boombness is flat.** Across all six role styles the L8 Boombness spans **0.016** (−0.312 to
+−0.328) — an order of magnitude smaller than the effects this axis shows elsewhere (the
+doublespeak-vs-benign contrast is ~0.29 on the same scale). Role framing does **not** detectably
+move the codeword along the concept axis.
+
+Mediation on the rows with both (n=234): R² role-only **0.032**, Boombness-only **0.165**, both
+**0.185**. Boombness adds **+0.153** over role; role adds **+0.020** over Boombness.
+
+So on the §11 menu the answer is **(b)/(c)**: role framing does not act through Boombness, and adds
+little to ASR prediction beyond it.
+
+### The ASR column must not be read, and I am flagging that rather than burying it
+
+**n_ASR = 6 per non-plain role style.** The apparent ordering (plain 0.200 → tool 0.146 →
+assistant 0.083 → cot/system/user 0.000) is six prompts per cell; a single judged prompt moves a
+cell by 0.167. Nothing about "cot_like and user_like suppress the attack" is supportable from this,
+and the zeros are what six samples of a ~0.2-rate process look like a fair fraction of the time.
+
+The Boombness flatness *is* reasonably supported — n=12 per style, and the between-style spread is
+tiny relative to the axis's demonstrated range — but the behavioural claim is not.
+
+**Fix if §11 is to be answered properly:** the `role_style` block in the bank is 6 domains × 1 split
+× 2 conditions × 1 demo count = 12 rows per style. It needs the demo-count and split axes opened up
+to reach the plan's ≥20 per condition. That is a generator config change, not new machinery.
