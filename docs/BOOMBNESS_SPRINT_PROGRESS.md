@@ -2016,3 +2016,30 @@ Two things the audit established that I should have stated originally:
 Three retractions were *manipulated ≠ measured*. These two are its sibling: **compare-the-best-of-mine
 against-a-fixed-instance-of-yours**. Same root — an asymmetry that happens to point the way I
 expected — and it survived my own review both times because the number looked plausible.
+
+### 2026-08-17 — Tick 27 (control arms lost to a zsh expansion bug, twice)
+
+The two matched controls for the G4 steering result (`random`, `orthogonal` at α=0.25) both **FAILED
+at launch**, and the cause was the shell, not the code:
+
+```
+wrote:  --intervene $d:add:8-8:0.25          with d=random
+got:    --intervene /home/.../randomdd:8-8:0.25
+```
+
+**`$d:a` is zsh's absolute-path history modifier**, so `$d:add` expanded to `<abs path>` + `dd`.
+The job then died inside Python on `ValueError: not enough values to unpack (expected 4, got 3)` —
+an error two steps removed from its cause, pointing at the parser rather than at the shell.
+
+The retry hit **the other** documented zsh hazard: `set -- $spec` does not word-split an unquoted
+variable in zsh, so `$1` became the whole string and the configs came out worse. Both are in my
+memory file already; I wrote the note after the `git commit -m` quoting failures and then walked
+into the same family twice in one tick.
+
+Fixed by building the files with `printf` and **grepping them back** before submitting — which is
+now the rule, because a generated config that looks right in the script can be wrong on disk and
+the failure surfaces where the shell is no longer visible. Memory updated
+(`feedback_zsh_expansion_hazards`).
+
+Jobs **760954** (`random`) and **760955** (`orthogonal`) relaunched with verified args; **760931**
+(`d_surface` at α = −0.25, the sign-flip falsifier) running.
