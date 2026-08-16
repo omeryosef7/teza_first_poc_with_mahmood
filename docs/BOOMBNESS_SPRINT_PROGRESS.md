@@ -61,7 +61,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 
 | Gate | Question | Verdict | Date |
 |---|---|---|---|
-| G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | pending | |
+| G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS — but the lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout +71–84% of span; transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | pending (needs ASR run) | |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | pending | |
 | G4 (§12) | Is Boombness a usable GCG objective? | pending | |
@@ -1090,3 +1090,57 @@ obvious next experiment.
 Self-test on Llama-3.1-8B: `Σ_{head,src} D_attn = 1.000000` at L8 and L18, shape `[32 heads, T]`.
 The value-flow decomposition reconstructs the attention output exactly, which confirms the GQA head
 mapping (32 query heads over 8 KV heads, `h//4`) and the `o_proj` per-head slicing are right.
+
+---
+
+## ✅ GATE G1 — answered (pilot `pilot_20260816_210506_1142800`, 2368 rows, 0 failures)
+
+8 families × {4,8} demos, forced readout = semantic log-odds. Self-swap is an **exact** no-op
+(`Δ = 0.00e+00`) in both pairs, so the machinery is sound and a null would be a real null.
+
+`harm_ctx` (recipient = doublespeak, donor = direct). Baseline −1.72, donor ceiling +6.37,
+**span = 8.09**. Effect expressed as % of that span:
+
+| intervention | semantic log-odds | % of span |
+|---|---|---|
+| **transplant, QUERY token only, L8** | −7.84 | **−75.6%** |
+| transplant, query only, L8–21 | −8.25 | **−80.7%** |
+| **transplant, DEMONSTRATIONS only, L8** | +4.00 | **+70.8%** |
+| **transplant, demonstrations only, L18** | +5.07 | **+83.9%** |
+| transplant, all positions, all layers | +6.37 | +100.0% |
+| add `d_surface` α=1 (L8–21, query) | +2.85 | +56.5% |
+| add **random** α=1 | −3.95 | −27.5% |
+| add **orthogonal** α=1 | −3.95 | −27.5% |
+
+### The answer, and it inverts the representation-level reading
+
+**§5.4 Q6 — which token positions matter? THE DEMONSTRATIONS, not the query token.**
+Transplanting the direct prompt's concept representation into the **demonstration** positions moves
+the semantic readout **71–84% of the way** to the direct-prompt ceiling. Transplanting it into the
+**query token itself moves the readout ~76–81% the WRONG WAY** — it destroys the doublespeak
+reading rather than strengthening it.
+
+That is the exact opposite of what the representation-level result said at tick 9, where
+`demos_only` did nothing to `⟨h_query, d_surface⟩` and `query_only` did everything. Both are true
+and consistent: overwriting the query token's own state removes the *thing being asked about*, while
+the meaning the model reports is computed by **reading the demonstrations**. The codeword's meaning
+is not stored in the codeword token; it is retrieved from the demonstration block at answer time.
+
+**§5.4 Q7 — which layers?** A single layer suffices on the demo positions: L8 alone gives +70.8%,
+L18 alone +83.9%. No wide band is needed.
+
+**§5.4 Q1 — can we force it?** Yes, and controls pass: norm-matched **random** and **orthogonal**
+directions at the same dose move the readout −27.5% (they *degrade* it), against +56.5% for
+`d_surface`, so the additive effect is axis-specific rather than generic perturbation. The additive
+dose-response peaks at α=1 (+56.5%) and *declines* at α=2 and α=4 (+48%, +38%) — over-driving the
+direction damages the representation, which is itself an argument against a naive "maximize the
+projection" GCG objective.
+
+**Verdict: G1 = PASS, with the mechanism relocated.** We can control the behaviour, but the lever is
+the demonstration block, not the codeword token's representation. Combined with the tick-13b
+dissociation, the sprint's working model is now: *the doublespeak effect is a retrieval phenomenon
+over the demonstrations, not a rewriting of the codeword token.*
+
+**Caveat:** n=8 families per cell in this pilot, so the SEs are ±0.5–1.6 log-odds. The direction and
+sign of every effect above is far larger than that, but the exact percentages should be re-measured
+at the plan's ≥20-per-condition before they are quoted as final.
