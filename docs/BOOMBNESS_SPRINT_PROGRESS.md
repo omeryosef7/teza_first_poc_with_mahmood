@@ -2118,3 +2118,25 @@ decided by the script.
 The middle row is the one I consider most likely on the evidence so far, because the α=0.10 arm did
 nothing and the jump to suppression at 0.25 has the shape of a tolerance threshold rather than a
 graded mechanistic response.
+
+### 2026-08-17 — Tick 31 (all five steering arms generated; controls are clean)
+
+Coherence gate on every arm at the coherent dose:
+
+| arm | uniq-word | 3-gram | truncated | verdict |
+|---|---|---|---|---|
+| baseline | 0.741 | 0.017 | 37% | OK |
+| `d_surface` +0.25 | 0.861 | 0.006 | 30% | OK |
+| **`d_surface` −0.25** | 0.710 | 0.020 | 14% | OK |
+| **`random` +0.25** | 0.732 | 0.017 | 32% | OK |
+| **`orthogonal` +0.25** | 0.739 | 0.015 | 29% | OK |
+
+**All five are coherent**, and the two controls sit essentially on top of the baseline (0.732 /
+0.739 vs 0.741). That matters: the α=1 random control was itself half-degenerate (0.466) and could
+not have served as a comparison. At α=0.25 the norm-matched perturbations leave generation intact,
+so any ASR difference between `d_surface` and them is attributable to the direction rather than to
+damage.
+
+That is the condition under which the sign test is meaningful, and it now holds. Judges running for
+the sign-flip arm and both controls; `analyze_steering.py` produces the verdict on the intersected
+prompt set as soon as they land.
