@@ -580,3 +580,27 @@ representation and agree with each other.
 
 **Phase 3 (§6) and Phase 4 (§7.1) are substantially answered.** Remaining for Phase 4: the
 example-count sweep (§8) plots are generated but not yet written up.
+
+### 2026-08-16 — Tick 8 (Phase 2 + Phase 5 launched; 4-hourly independent audit running)
+
+Every 8th tick carries an independent audit, and this is it. The audit is deliberately pointed at
+the **tick-7 claims themselves**, not just the code — four auditors, each told to try to break a
+specific claim, with every finding independently refuted before it counts:
+
+| auditor | job |
+|---|---|
+| `outputs-vs-claims` | recompute `C−A` from `results.jsonl` and check the two-humped shape, the n=30, the zero self-fits, and whether the L16–L22 null survives changing the subset |
+| `new-code` | the `forward_hidden` hook, the `stage_fit` family intersection, and — the one I most want checked — whether probe margins from **different folds** (each with its own scaler/PCA/classifier) are comparable at all, since pooling incomparable margins would invalidate `margin_C_minus_A` |
+| `statistics` | are 30 families independent when they share pools and domains? is the "null" actually powered to exclude an L8-sized effect, or should it be downgraded to "not detected"? do the effects survive multiple-comparison correction across 32 layers? is "two-humped" a formal result or pattern-matching on a 32-point curve? |
+| `provenance` | **`prompt_id = sha256(family_id + condition)` does not hash the prompt TEXT** — and the bank has been regenerated several times with changed content, so two runs could share a `prompt_id` while referring to different prompts |
+
+That last one I flagged to the auditor myself: it is a latent provenance hazard I introduced in
+Phase 1 and have not yet fixed.
+
+**Jobs submitted:**
+- **760661** `aggressive_patching.py` smoke (plan §5) on `n-802` — the Phase-2 decision gate G1.
+- **760663** `score_behavior.py` smoke (plan §5.3/§9) on `n-801` — the first step toward gate G2.
+
+`bscore` was initially submitted as 760662 and sat **PENDING (Resources)**; per the house rule that
+no job should sit queued, it was cancelled and resubmitted with a wider nodelist, and started
+immediately.
