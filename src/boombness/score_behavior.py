@@ -76,13 +76,23 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> 
 
 
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict]):
-    """Return a list of context managers implementing --intervene, or []."""
+    """Return a list of context managers implementing --intervene, or [].
+
+    DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
+    an `add` with a bare alpha injects an absolute residual magnitude that is unrelated to the
+    natural effect size — at L18 the gap is 14.8, so alpha=1 would be ~7% of one diff-of-means.
+    This is the SAME bug the self-review confirmed in `aggressive_patching`; it was fixed there
+    and this second call site was missed, which the 4-hourly audit caught. `add` is therefore
+    dosed in gap units here too (alpha=1 = one diff-of-means). `project_out` is scale-free —
+    it removes the component along a unit direction — so it is left unscaled.
+    """
     if not spec:
         return []
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     dmap = payload[name] if name in payload else None
     if dmap is None:
         raise SystemExit(f"direction {name!r} not in the fitted payload")
+    gaps = (payload.get("gap") or {}).get(name, {})
     ctxs = []
     for L in band:
         d = dmap.get(L)
@@ -91,7 +101,12 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict])
         if mode == "project_out":
             ctxs.append(pc.AllPositionProjectOut(lm.model, L, d, alpha=alpha))
         elif mode == "add":
-            ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha))
+            g = float(gaps.get(L, 1.0))
+            if not gaps:
+                raise SystemExit(
+                    f"direction {name!r} has no `gap` entry; refusing to dose an additive "
+                    "intervention on a unit vector (see the docstring)")
+            ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * g))
         else:
             raise SystemExit(f"unknown intervention mode {mode!r}")
     if not ctxs:
@@ -170,7 +185,8 @@ def main() -> int:
         if not os.path.exists(p):
             p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
         payload = torch.load(p, map_location="cpu", weights_only=False)
-        run.note(intervention=spec, intervention_direction_file=p)
+        run.note(intervention=spec, intervention_direction_file=p,
+                 dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
         print(f"[score] intervention {spec} from {os.path.basename(p)}")
 
     concept = rows[0]["concept"]

@@ -774,3 +774,79 @@ carrot"). `check_alignment` now applies it to the **demo block** for those kinds
 tokenization audit reports such families as **not checked** rather than passing — the same
 skipped-vs-passed distinction the earlier audit got wrong. Rebuilt clean: 1752 rows, 240 families,
 **0 character-level and 0 token-level violations**, 1752 rows ok / 0 bad / 0 ambiguous.
+
+---
+
+## ⛔ RETRACTION — the Tick-7 headline result does not survive audit
+
+The 4-hourly independent audit (tick 8, 34 agents) returned **30 candidate findings, 25 confirmed**
+after independent refutation, **9 of them result-corrupting**. Four directly invalidate the tick-7
+claims. **Treat the Tick-7 section above as superseded by this one.** It is left in place
+un-edited, because a research log that quietly rewrites its own errors is worth less than one that
+shows them.
+
+### What I claimed, and what is actually true
+
+`reanalyze_corrected.py` recomputes the same contrast with the corrections applied. Contrast is
+`C−A` on `d_surface|cos`, paired within family, **domain-clustered** SEs, Holm across layers.
+
+| # | Tick-7 claim | Verdict |
+|---|---|---|
+| 1 | "Two-humped profile with a **null carry band** at L16–L22" | **FALSE.** The band is not null; it is significantly **NEGATIVE** (L20 = −0.029, t=−4.2). The "null" was an artifact of restricting to one query kind. |
+| 2 | "L8 write hump, +0.048, t=5.3" | **DOES NOT SURVIVE.** Under domain-clustered inference t falls 5.3 → 3.3, and Holm across 32 layers **rejects** it (p=0.022). |
+| 3 | "The held-out probe reproduces the profile independently" | **VOID.** The probe run scored a **superseded extract run** (`…184609_1003374`), not the headline run. Those runs differ at *every* layer because the bank was regenerated between them — 7527/8472 rows have different token positions. Not two estimators on the same rows; two data generations. |
+| 4 | "L31 = +0.133, and the last-layer fix caused +0.112 → +0.133" | **BOTH WRONG.** Pooled over query kinds L31 is **+0.047**, not +0.133 — the unreported behavioral-only restriction nearly tripled it. And the +0.112 → +0.133 delta is **confounded with the bank regeneration**: layers the norm-tie cannot touch also moved (L20 went from −0.011, t=−3.1 *significant*, to −0.004, "null"). |
+
+### What the data actually shows
+
+**(a) Query kind drives the result, and I restricted to one without saying so.**
+
+| L | behavioral | comprehension | semantic | **pooled** |
+|---|---|---|---|---|
+| 8 | +0.048 (t+2.1) | +0.017 (t+4.5) | +0.017 (t+4.4) | +0.027 (t+3.3) |
+| 20 | −0.004 (t−0.6) | **−0.037 (t−4.6)** | **−0.046 (t−4.2)** | **−0.029 (t−4.2)** |
+| 31 | **+0.133 (t+9.8)** | +0.000 (t+0.0) | +0.009 (t+1.9) | +0.047 (t+10.5) |
+
+The L31 heterogeneity is severe (+0.133 vs +0.000): a pooled number across components that
+disagree that much is itself of limited meaning, and is flagged rather than headlined.
+
+**(b) The "null" was a cancellation across demonstration count — and the sign is the opposite of
+the plan's hypothesis.** `C−A` pooled over query kinds, by `n_examples`:
+
+| L | n=1 | n=2 | n=4 | n=8 | n=16 |
+|---|---|---|---|---|---|
+| 20 | −0.002 (t−0.6) | −0.015 (t−1.1) | −0.037 (t−3.6) | **−0.051 (t−9.2)** | −0.042 (t−5.5) |
+| 31 | +0.049 | +0.046 | +0.049 | +0.044 | +0.050 |
+
+**More demonstrations make the doublespeak carrot *less* bomb-like through the middle layers**, not
+more. The plan predicts the opposite. The L31 effect, by contrast, is flat in `n_examples`.
+
+**(c) Only two layers survive Holm under clustered inference:** L4 (+0.023, p=0.0016) and L31
+(+0.047, p=0.0001). The L8 hump does not.
+
+**(d) A null needs an interval.** The non-significant layers can only exclude effects larger than
+**24–34% of the largest observed effect**. So "no effect at L8/L16/L24" is not supportable; the
+honest statement is **"not detected, and underpowered to exclude an effect a third the size of the
+L31 one."**
+
+### Why this happened, and what changes
+
+Root causes, all mine: an **unreported subset restriction** (behavioral-only); **pseudo-replication**
+(60 rows treated as 60 independent draws when they are 6 domains × nested example counts × 2
+splits); **no multiplicity correction** over 32 layers; **asserting a null from p>0.05**; and
+**joining across bank regenerations** via a `prompt_id` that does not hash prompt text — the exact
+hazard I had identified and flagged to the auditor one tick earlier, while a stale comparison built
+on it was already in the log.
+
+Process changes: `reanalyze_corrected.py` is now the reporting path (per-query-kind + pooled,
+layer×n_examples surface, clustered SEs, Holm, intervals for nulls); no pooled number may be quoted
+without its per-query-kind breakdown; the probes must be re-run against the headline run before any
+convergence claim is restated.
+
+### Code bug from the same audit, fixed
+
+**The unit-vector dosing bug recurred.** I fixed it in `aggressive_patching` and missed the second
+call site: `score_behavior.make_intervention` passed a bare `alpha` to `AllPositionAdd` on a unit
+vector. At L18 (gap 14.8) `alpha=1` would have been ~7% of one diff-of-means, so every §10
+intervention arm would have been under-dosed by ~14×. Now dosed in gap units, and it raises rather
+than silently defaulting if `gap` is absent.
