@@ -10596,3 +10596,8 @@ No asymmetry artifacts, no §20 impact. Diff unchanged.
 ### 19:15 — idle. Controller OK (header verified), queue empty (boombness steering batch finished). No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 19:45 — idle. Controller OK (header verified). Queue: 2 boombness `steer_L8` jobs (theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 20:15 — idle. Controller OK (header verified). Queue: 1 boombness `steer_ne` job (theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 20:45 — idle. Controller OK (header verified). Queue: 3 boombness jobs (`steer_ne`, `ctrl_ran`, `ctrl_ort` — theirs). No new asymmetry artifacts, no §20 commits.
+*(Their `02d18675` — "control arms lost to a zsh expansion bug, twice" — is the same shell-quoting
+hazard recorded in this project's memory and hit by my own commit message on 2026-08-14. Their
+workstream, but the recurrence is worth noting: it has now cost three separate sessions.)*
+Diff unchanged.
