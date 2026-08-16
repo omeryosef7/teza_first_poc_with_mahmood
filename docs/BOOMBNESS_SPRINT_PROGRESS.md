@@ -1733,3 +1733,55 @@ is distributed retrieval, not a sparse circuit.
   contributions. A `--dst readout` arm would isolate it and is the obvious next run.
 - The layer sweep is all-or-two. Where between 2 and 32 layers the effect appears — and whether it
   is smoothly redundant or has a threshold — is unmeasured and is the interesting follow-up.
+
+---
+
+## G4 steering — a spurious 3.5× ASR result, caught BEFORE it was reported
+
+The first steering run looked like the result the whole sprint was aiming at:
+
+| arm | ASR@0.5 | vs baseline |
+|---|---|---|
+| baseline (no intervention) | 0.219 | — |
+| **`d_surface` @ L8, α=1 gap** | **0.759** | **3.5×** |
+| `d_surface` @ L8, α=2 gap | 0.000 | — |
+| norm-matched random, α=1 | 0.000 | — |
+
+Read naively: *steering the Boombness axis causally drives the attack, and the matched random
+control does nothing.* That is precisely the §12 finding the plan hoped for.
+
+**It is an artifact.** Structural degeneracy statistics on the same generations:
+
+| arm | uniq-word ratio | 3-gram repeat | top-word frac | truncated |
+|---|---|---|---|---|
+| baseline | 0.741 | 0.017 | 0.101 | 37% |
+| **steer α=1** | **0.302** | **0.551** | 0.139 | **100%** |
+| steer α=2 | 0.051 | 0.848 | 0.651 | 100% |
+| random α=1 | 0.466 | 0.271 | 0.120 | 72% |
+
+Healthy English sits near 0.55–0.75 unique-word ratio with <0.15 trigram repetition. **The α=1 arm
+repeats 55% of its trigrams and never emits EOS.** The α=2 arm is worse — a single word is 65% of
+the output. The intervention did not make the model comply; **it broke generation**, and the judge
+scored the resulting harmful-adjacent loop as a success.
+
+Plan §2.6 warns against reading a *lowered* ASR as causal understanding when the intervention is
+destructive. The same holds with the sign flipped: **a raised ASR from a destroyed model is not a
+causal result either** — and it is more seductive, because it confirms the hypothesis.
+
+### `coherence_gate.py` — coherence is now a gate, not a footnote
+
+Committed, with generous thresholds (0.45 uniq / 0.30 trigram / 0.25 top-word / 0.90 truncated).
+`--strict` exits non-zero. Applied to the four runs above it passes baseline and random-α=1, and
+fails both `d_surface` arms. **No ASR number from an intervention run is reportable until it
+passes.**
+
+### Relaunched at doses that might preserve coherence
+
+Jobs **760859** (α=0.10) and **760860** (α=0.25). One gap of `d_surface` is evidently far past the
+model's tolerance at L8; the question is whether there is a dose that moves ASR while leaving
+generation intact. If there is not, the honest §12 conclusion is that this axis cannot be steered
+non-destructively — which is a real finding, and a very different one from "steering works".
+
+**This is the first spurious result in the sprint caught before being written up as a finding
+rather than after.** The difference was having a structural check that does not depend on the
+number I wanted to see.

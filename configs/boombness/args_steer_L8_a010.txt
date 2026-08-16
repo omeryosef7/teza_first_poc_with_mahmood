@@ -1,0 +1,1 @@
+--tag steer_L8_a010 --arm steer_L8_a010 --query-kinds behavioral --max-new 192 --fit-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --intervene d_surface:add:8-8:0.10
