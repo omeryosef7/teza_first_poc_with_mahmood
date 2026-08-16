@@ -15,11 +15,11 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | Phase | Plan § | Description | Status | Evidence |
 |---|---|---|---|---|
 | P1.1 | §1 | Clone `interp-jailbreak` to `external_repos/`, strip `.git` | DONE | `external_repos/interp-jailbreak/` @ upstream `89620cf` (2025-06-20) |
-| P1.2 | §1 | `notes/interp_jailbreak_best_practices.md` | TODO | |
-| P1.3 | §3 | Aligned prompt generator `src/boombness/prompt_families.py` | TODO | |
-| P1.4 | §3.1 | Generate 50 prompts + manual review | TODO | |
-| P1.5 | §2.4 | Tokenization audit | TODO | |
-| P1.6 | §3 | Iterate generator until alignment + tokenization OK | TODO | |
+| P1.2 | §1 | `notes/interp_jailbreak_best_practices.md` | DONE | `notes/interp_jailbreak_best_practices.md` (252 lines, 10 sections) + `notes/boombness_reuse_inventory.md` + 6 scout reports |
+| P1.3 | §3 | Aligned prompt generator `src/boombness/prompt_families.py` | DONE | `src/boombness/prompt_families.py` — 2×2 design, 6 domains, 8 axes |
+| P1.4 | §3.1 | Generate 50 prompts + manual review | DONE | 1464 rows, 180 families, 0 alignment violations; `data/boombness_prompts/manual_review_50.md` reviewed |
+| P1.5 | §2.4 | Tokenization audit | DONE | `tokenization_audit.py`: 1464 ok / 0 bad / 0 ambiguous; 8472/8472 occurrences single-token; 540 families, 0 token-alignment violations |
+| P1.6 | §3 | Iterate generator until alignment + tokenization OK | DONE | two defects found and fixed (substring-vs-whole-word filter; quote/sentence-initial tokenization), bank regenerated clean |
 | P2.1 | §5.1 | Hidden-state replacement, smoke | TODO | |
 | P2.2 | §5.2 | Additive bomb-direction sweep, smoke | TODO | |
 | P2.3 | §5.3 | Metrics + comprehension controls validated | TODO | |
@@ -225,3 +225,39 @@ carrot arm. After the fix every occurrence in both arms is exactly one token.
 so any residual case can be conditioned on rather than averaged over.
 
 - Next: await scouts, then write `src/boombness/prompt_families.py` implementing the 2×2 + plan axes.
+
+### 2026-08-16 — Tick 1 (Phase 1 complete, Phase 2 submitted)
+
+**Phase 1 DONE.** The bank is `data/boombness_prompts/boombness_prompt_bank.jsonl`:
+
+| | |
+|---|---|
+| rows | 1464 |
+| matched 2×2 families | 180 checked, **0 alignment violations** |
+| token-level families | 540 checked, **0 token-alignment violations** |
+| target occurrences | 8472, **all single-token in both arms** |
+| conditions | benign_literal 348 · natural_doublespeak 540 · direct_harmful 216 · concept_in_benign_ctx 216 · direct_codeword 72 · benign_remap 72 |
+| blocks | core2x2 864 · extra_conditions 144 · families 144 · role_style 120 · strength 96 · consistency 72 · position 24 |
+| query kinds | behavioral 660 · semantic_one_word 516 · comprehension_usage 288 |
+| n_examples | 0:240 · 1:144 · 2:192 · 4:468 · 8:276 · 16:144 |
+| pools | `demo_pools.json` sha16 `3c430bec89d32db9`, 18 pools × 40 sentences (6 domains × {benign, harm, filler}) |
+
+Manual review of `manual_review_50.md` plus a direct read of one example per axis confirmed every
+axis renders as intended: `tool` / `cot_like` / `system_like_quoted` wrappers, `irrelevant`
+(distractor word `tulip`, so the query codeword has no demo support — occurrences drop to 1 by
+design), `conflicting` (counter-mapping sentence appended), `mixed` (half harm / half benign),
+`distributed` (demos interleaved with word-free filler), `aggressive` (statement ×3), `direct_codeword`.
+
+**Two defects the Phase-1 checks caught before any GPU time was spent** — both would have been
+invisible in results:
+
+| # | Defect | Detected by | Blast radius if shipped |
+|---|---|---|---|
+| 1 | Pool filter counted substrings (`"bombing"` passes) while span-finding used whole words | `check_alignment` — 114/180 families | 2×2 arms carry different occurrence counts → position-matched patching compares the wrong tokens |
+| 2 | `carrot` is 2 tokens without a leading space (`"carrot"`, `Carrot`), `bomb` is 1 in every form; quoted query `the word "{W}"` hit **the final query occurrence in 516/516 semantic rows** | `tokenization_audit` — 890/5808 carrot occurrences at 2 subtokens | `codeword_last` reads the vector at `"rot"`; `d_surface` and the logit lens acquire a systematic arm-asymmetric error |
+
+Both fixed, bank regenerated, both checks now clean. See F4 above.
+
+**Phase 2 submitted.** SLURM job **760588** on `n-805` (`src/boombness/slurm/run_boombness.sh`,
+L40S-guarded, cpus=4 mem=48G per the house fast-allocating footprint), running
+`extract_boombness.py --stage both --limit 24` as the plan §2.3 smoke before the full sweep.

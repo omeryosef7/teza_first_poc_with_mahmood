@@ -3,7 +3,7 @@
   "seed": 20260816,
   "codeword": "carrot",
   "concept": "bomb",
-  "pools_sha16": "1726a2632a131c2d",
+  "pools_sha16": "3c430bec89d32db9",
   "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
   "stats": {
     "n_rows": 1464,
@@ -62,11 +62,11 @@
     }
   },
   "hostname": "c-004",
-  "git_commit": "08227fb8820d40fd7d7c4e2cc6495b1add2d1716",
+  "git_commit": "ebb04da9e754c13892104c197e298636e3d22e5e",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA TITAN Xp",
-  "timestamp": "2026-08-16T18:21:40"
+  "timestamp": "2026-08-16T18:27:55"
 }

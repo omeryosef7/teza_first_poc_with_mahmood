@@ -1,0 +1,1 @@
+--stage both --tag smoke --limit 24 --layers all --logit-lens-layers 8,16,20,24,28,31 --no-cache-reps
