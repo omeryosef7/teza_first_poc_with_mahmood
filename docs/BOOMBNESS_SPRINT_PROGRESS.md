@@ -80,6 +80,8 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | 2026-08-16 | §5 smoke (job 760661) | **The L31 readout in `aggressive_patching` was in the wrong coordinates.** `forward_hidden` was fixed for the last-layer norm tie, but `readout()` read `out.hidden_states` directly, so its L31 projection mixed post-norm activations against directions fitted on raw block outputs. | **result-corrupting** | Same `BlockCapture` fix — reading the block's own output is raw by construction. | Same rerun. |
 | 2026-08-16 | §5 score smoke (job 760663) | **All 8 behavioural generations died with `KeyError: 'text'`.** `ds_common.generate` returns `{"completion", "n_new_tokens", "stop_reason", …}`; my code read `g["text"]`, and the fallback `g["text"] if isinstance(g, dict) else str(g)` checked the *type* but assumed the *key*. | crash (caught) | Use the documented `completion` key, raise with the actual key list if absent, and also persist `n_new_tokens` / `stop_reason` / `gen_truncated`, which plan §5.3 asks for anyway. | Yes — smoke resubmitted as 760684. **Nothing was silently lost:** the `FailureLedger` reported 8/8 failures with the reason, which is precisely the §2.2 contract working. Had this been a bare `except: pass`, it would have produced an empty `gens.jsonl` and read as **ASR = 0**. |
 | 2026-08-16 | tick-8 independent audit (34 agents) | **25 confirmed findings, 9 result-corrupting.** Four invalidate the tick-7 headline (unreported query-kind restriction; mid-band "null" is a sign-flipping n_examples cancellation; probe convergence computed on a superseded run; L31 delta confounded with bank regeneration). Others: pseudo-replication (n=60 not 30, domain ICC≈0.53); no multiplicity correction over 32 layers; null asserted without an interval; `--intervene add` reintroduced the unit-vector dosing bug; probe table omitted L31; `metadata.json` records the git commit at FINISH not start; no consumer checks `DONE.json`; plan §2.1 model/tokenizer/dataset revisions missing. | **result-corrupting** | Full retraction written below; `reanalyze_corrected.py` added (per-query-kind + pooled, layer×n_examples surface, domain-clustered SEs, Holm, intervals for nulls); dosing recurrence fixed in `score_behavior`. | **YES — tick-7 claims retracted; probes re-run against the headline run; analysis redone.** |
+| 2026-08-16 | §5 pilot (job 760722) | **The pilot was launched on a query kind for which a position-matched transplant is undefined.** `semantic_forced_choice` names both words, so donor cell B's query reads `bomb…carrot…bomb` while recipient cell C's reads `carrot…carrot…bomb` — the target occurrence positions do not correspond. All 16 families were rejected by the live position assertion (`pair_occurrence_positions_differ`), producing 0 rows. | crash (caught) | The assertion behaved correctly; the launch should not have been possible. `aggressive_patching` now **refuses** any query kind with `occurrence_analysis_safe=False` up front, naming the safe alternatives. Pilot re-run on `semantic_one_word` (job 760731). | Yes — 0 rows had been produced, so nothing was invalidated. |
+| 2026-08-16 | `dominance.py` self-test (job 760719) | Device mismatch: `v` stayed on cuda while the per-head projection was moved to cpu, so the `D_dir` einsum raised. | crash (caught) | All single-destination arithmetic is now done on CPU float32 explicitly. | Yes — resubmitted as 760730. |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -1004,3 +1006,23 @@ ever built**. Two invariants are asserted rather than trusted, mirroring their o
 `Σ_{h,src} Y == attn_out[dst]` and `Σ D_attn == 1` — which is also what catches a wrong GQA head
 mapping (Llama-3.1-8B: 32 query heads over 8 KV heads, so query head `h` reads KV head `h//4`).
 `attn_implementation="eager"` is required, the same constraint `AttentionKnockout` has.
+
+### 2026-08-16 — Tick 13 (two launch failures, both caught by guards; jobs relaunched)
+
+- **760714** (Phase 5, gate G2 input) running well: 1300/1464 rows, 506 behavioural generations
+  written so far, 288 comprehension, 0 failures.
+- **760722** (Phase 2 pilot) produced **0 rows** — every family rejected by the live position
+  assertion. Correct behaviour: I had pointed the pilot at `semantic_forced_choice`, a query kind
+  that names *both* words, so donor and recipient target occurrences do not correspond and a
+  position-matched transplant is undefined. The generator already marks it
+  `occurrence_analysis_safe=False`; `aggressive_patching` simply did not consult that flag. It does
+  now, and refuses up front rather than failing 16 times with a cryptic reason.
+- **760719** (dominance self-test) died on a device mismatch — captured `v` on cuda, projection on
+  cpu. Single-destination arithmetic is now explicitly CPU float32.
+
+Both are cheap, both were caught by guards rather than by producing a wrong number, and both are
+the *same class* as the two earlier recurrences: **a fact stated in one place and not consulted in
+another** (the hardcoded `choices` list, the `occurrence_analysis_safe` flag, the `gap` dose unit).
+That is now three instances, so it is a pattern in this codebase rather than three accidents — the
+mitigation is to derive from the source of truth rather than restate, which is what all three fixes
+did.

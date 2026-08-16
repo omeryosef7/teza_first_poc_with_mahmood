@@ -117,25 +117,28 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
 
     D_attn: Dict[int, torch.Tensor] = {}
     D_dir: Dict[int, torch.Tensor] = {}
+    # Everything below is done on CPU in float32: these are single-destination tensors, the
+    # arithmetic is cheap, and mixing a cuda-resident v with a cpu-resident projection is exactly
+    # the device mismatch that killed the first self-test (job 760719).
+    head_map = torch.arange(nq) // rep                            # GQA: query head h reads kv h//rep
     for L in layers:
-        A = attns[L][0, :, dst, :].float()                       # [n_q_head, T]
-        v = vc.buf[L][0].float().view(-1, nkv, hd)               # [T, n_kv_head, head_dim]
-        Wo = layers_mod[L].self_attn.o_proj.weight.float()       # [d_model, n_q_head*head_dim]
+        A = attns[L][0, :, dst, :].detach().float().cpu()         # [n_q_head, T]
+        v = vc.buf[L][0].float().cpu().view(-1, nkv, hd)          # [T, n_kv_head, head_dim]
+        Wo = layers_mod[L].self_attn.o_proj.weight.detach().float().cpu()  # [d_model, nq*hd]
+        vh = v[:, head_map, :]                                    # [T, n_q_head, head_dim]
 
         if direction is not None and L in direction:
-            u = direction[L].float().reshape(-1)
+            u = direction[L].float().reshape(-1).cpu()
             u = u / u.norm()
             # wo_dir[h] = W_O[h]^T u  ->  [n_q_head, head_dim];  no [T, d_model] tensor is built.
-            wo_dir = torch.einsum("d,dk->k", u.to(Wo.device), Wo).view(nq, hd).cpu()
-            vh = v[:, torch.arange(nq) // rep, :]                 # [T, n_q_head, head_dim] (GQA map)
+            wo_dir = torch.einsum("d,dk->k", u, Wo).view(nq, hd)
             proj = torch.einsum("thk,hk->ht", vh, wo_dir)         # [n_q_head, T]
-            D_dir[L] = (A.cpu() * proj)
+            D_dir[L] = A * proj
 
         # D_attn needs the full per-(head,src) vector, but only for this one dst.
-        vh = v[:, torch.arange(nq) // rep, :]                     # [T, n_q_head, head_dim]
-        Wo_h = Wo.view(Wo.shape[0], nq, hd).permute(1, 0, 2).cpu()   # [n_q_head, d_model, head_dim]
+        Wo_h = Wo.view(Wo.shape[0], nq, hd).permute(1, 0, 2)      # [n_q_head, d_model, head_dim]
         Yv = torch.einsum("hdk,thk->htd", Wo_h, vh)               # [n_q_head, T, d_model]
-        Y = A.cpu().unsqueeze(-1) * Yv                            # [n_q_head, T, d_model]
+        Y = A.unsqueeze(-1) * Yv                            # [n_q_head, T, d_model]
         attn_out = Y.sum(dim=(0, 1))                              # == attention output at dst
         denom = attn_out.pow(2).sum()
         D_attn[L] = torch.einsum("htd,d->ht", Y, attn_out) / denom.clamp_min(1e-12)

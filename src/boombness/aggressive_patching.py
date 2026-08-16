@@ -377,6 +377,19 @@ def main() -> int:
     for r in rows:
         by_family[r["family_id"]][r["condition"]] = r
 
+    # A transplant is position-matched: it copies donor state at occurrence i into recipient
+    # occurrence i. That is only meaningful when donor and recipient have the SAME occurrence
+    # positions, which a query naming BOTH words breaks by construction (cell B's query contains
+    # bomb...carrot...bomb, cell C's carrot...carrot...bomb). Job 760722 was launched on
+    # semantic_forced_choice and every one of its 16 families was rejected by the live position
+    # assertion - correct behaviour, but it should never have been launchable. Refuse up front.
+    if not _QK.get(args.query_kind, {}).get("occurrence_analysis_safe", True):
+        raise SystemExit(
+            f"--query-kind {args.query_kind!r} names both the concept and the codeword, so donor "
+            "and recipient occurrence positions do not correspond and a position-matched "
+            "transplant is undefined. Use an occurrence-safe kind: "
+            + ", ".join(sorted(k for k, v in _QK.items() if v.get("occurrence_analysis_safe", True))))
+
     run = RunDir("aggressive_patching", args, tag=args.tag)
     ledger = FailureLedger()
 
