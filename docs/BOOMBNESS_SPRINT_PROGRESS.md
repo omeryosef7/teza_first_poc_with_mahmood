@@ -63,7 +63,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS (direction robust; magnitude restated with intervals). The lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout strongly toward the donor (95% CI +23% to +135% of span); transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
-| G3 (§10) | Can Boombness be removed without destroying comprehension? | **RETRACTED AGAIN — the knockout cut edges into the codeword token while the readout reads the last token, 9 positions away, so every arm was measuring an indirect path. Rerunning with the corrected destination (job 760816).** ~~RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
+| G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED (3rd attempt, corrected destination). Cutting query→demo-BLOCK attention at ALL layers recovers 84% of the demonstration-deletion ceiling (−9.708 vs −11.509); the same cut at 2 layers recovers 0.1%. The retrieval is attention-carried but DISTRIBUTED and REDUNDANT over depth. Dynamic range established; controls at 0.** ~~RETRACTED AGAIN — the knockout cut edges into the codeword token while the readout reads the last token, 9 positions away, so every arm was measuring an indirect path. Rerunning with the corrected destination (job 760816).** ~~RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
 | G4 (§12) | Is Boombness a usable GCG objective? | **REOPENED — the G2 negative was an artifact; the objective is viable and untested.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
 
@@ -1682,3 +1682,52 @@ Each time the code ran, produced plausible numbers, and passed its own internal 
 defence that works is not more care — it is a **positive control that ties the manipulation to the
 measurement**, which is what `no_demo_text` did for the readout and what `--dst readout` now does
 for the intervention.
+
+---
+
+## ✅ GATE G3 — resolved properly. The retrieval IS attention-carried, and it is DISTRIBUTED OVER DEPTH.
+
+`dstfix_20260817_003501_3067690` — `--dst both --demo-scope block`, 6 families, 0 failures. The
+destination now matches the readout and the demonstration scope is the whole block.
+
+| arm | Δ semantic log-odds | edges cut | % of ceiling |
+|---|---|---|---|
+| **`no_demo_text`** | **−11.509** | (text deleted) | 100% (the ceiling) |
+| **`all_layers_demo`** | **−9.708** | 56 832 | **84%** |
+| `positive_control` | +3.534 | 7 200 | (large, opposite sign) |
+| `all_demo` (2 layers) | −0.008 | 3 552 | **0.1%** |
+| `topk_demo` / `random_demo` / `bottomk_demo` / `same_head_random` / `random_nondemo` | ≈0 | 16 | ≈0 |
+
+### The finding, and it is the opposite of what I retracted
+
+Cutting attention from the query to the **whole demonstration block at every layer** recovers
+**84% of the effect of deleting the demonstrations outright**. The influence *is* attention-carried.
+
+But cutting the same edges at **two layers** (L8 and L18) recovers **0.1%** — 3552 edges, no effect.
+And every 16-edge arm is at zero.
+
+**So the retrieval is distributed over depth and highly redundant.** No small set of layers or edges
+carries it; removing 2 of 32 layers changes nothing because the remaining 30 suffice. That is why
+every localized knockout in this sprint read zero, and why the earlier "attention doesn't carry it"
+conclusion was exactly backwards — it was measuring a redundant pathway one slice at a time.
+
+This also retires the predicate hypothesis in its earlier form: the effect appears at **block**
+scope, not at codeword scope, so it is the demonstration *content* that matters — but the mechanism
+is distributed retrieval, not a sparse circuit.
+
+### Why this is now trustworthy where the previous two versions were not
+
+1. **Dynamic range established** — `no_demo_text` = −11.5 and `positive_control` = +3.5, both far
+   larger than any test arm, so a zero in a test arm is informative.
+2. **Destination matches the readout** (`--dst both`), the defect that voided the previous run.
+3. **Controls at zero** — random, bottom-k, non-demo and same-head-random all ≈0 at matched edge
+   counts, so the effect is not "cutting lots of edges does something".
+4. **Regenerated by a committed script** (`analyze_g1_g3.py`), not a heredoc.
+
+### Remaining limitations, stated
+- **n = 6 families.** The gap between −9.708 and −0.008 is far larger than the SEs (0.898, 0.451),
+  but the percentages should be re-measured at the plan's ≥20 per condition.
+- `--dst both` cuts into the codeword *and* the readout position, so this run cannot separate their
+  contributions. A `--dst readout` arm would isolate it and is the obvious next run.
+- The layer sweep is all-or-two. Where between 2 and 32 layers the effect appears — and whether it
+  is smoothly redundant or has a threshold — is unmeasured and is the interesting follow-up.
