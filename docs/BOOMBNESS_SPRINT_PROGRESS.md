@@ -907,3 +907,59 @@ Two features make this more interesting than the original claim:
 4. **`d3`'s recall = 1.00 is a lexical-identity result** (audit finding #11/#18): it shows the
    diagonal probe is not confusing concept with *harm context*, but it cannot separate
    concept-identity from *token identity*, because the two are perfectly confounded in that design.
+
+---
+
+## Adopting the three reference codebases (answering a direct question from the user)
+
+The user asked whether this sprint uses the Doublespeak code, the CoT-ness/Role-Confusion work and
+the Ben-Tov/Geva/Sharif hijacking paper. Honest answer at the time: **two partially, one not at
+all.** Full audit in `notes/three_codebase_adoption.md`.
+
+| codebase | before | now |
+|---|---|---|
+| **Doublespeak** (`ds_common`/`pair_common`) | reused wholesale | unchanged |
+| **interp-jailbreak** (2506.12880) | cloned, methodology noted, **code reimplemented** | port planned (P1), see below |
+| **Role Confusion** (`third_party/prompt_injection_role_confusion`) | **never opened** | **adopted (P0)** |
+
+The Role-Confusion miss was the bad one: the code was already in this repo and contains exactly the
+Userness/CoTness machinery §11 asks for, while I had written role-style prompt wrappers, no probes,
+and marked P7.3 "if feasible".
+
+### P0 done — `src/boombness/role_probes.py`
+
+Ported from `experiments/role-analysis/02-train-role-probes.ipynb` cells 18/19/26 and
+`utils/role_templates.py`, keeping their design decisions rather than inventing:
+
+- **`SKIP_FIRST_N = 32`** — drop the first 32 tokens of each role segment, because the role tag
+  sits at the segment start and without this the probe reads the tag and reports ~100% while
+  measuring nothing. Their guard against exactly the failure mode this sprint already hit once.
+- **`C = 5e-3`**, L2, optional standardization — from their per-model `config/probe.yaml`.
+  Worth noting: **my own probe saturated at the sklearn default `C=1.0`; they had already solved
+  that three orders of magnitude away.** Had I read their config first I would not have spent a
+  tick rediscovering it.
+- **Grouped split by conversation**, never by token.
+- **The tagged / untagged / mistagged triad** (their cell 26) — the same content with no tags, with
+  its true tags, and wrapped in the *wrong* tag. This is the validity gate that makes a role probe
+  mean anything: a probe that learned *role* must follow the TAG, not the content. Verified by
+  self-test that all five renderings preserve the content exactly and differ only in markup.
+- **Added `render_single_llama3`**, which their repo does not ship (their model set is gpt-oss /
+  Qwen3 / GLM / OLMo / Jamba / Apriel / Nemotron), written to match the official Llama-3.1 template.
+
+Two deviations recorded rather than inherited silently: sklearn instead of cuml (not installed, and
+at our n the GPU path buys nothing), and **extraction site** — their probes train on
+`post_attention_layernorm` output while our patching machinery works on the residual stream, so we
+extract there and **their published `C` must be re-swept** rather than assumed.
+
+### Next from the adoption plan
+- **P1** `src/boombness/dominance.py` — port the hijacking paper's dominance score onto HF eager
+  attention. Notably our port should be *better* than theirs for this use: they materialize the
+  per-head value-flow tensor for all layers and all destinations (~28 GB at T=120); we need one
+  destination (the final codeword token), which is ~T× cheaper. **Do not install their
+  TransformerLens fork.** Pair the ranking with `pair_common.AttentionKnockout` on the same edges.
+- **P2** `refusal_dir_adapter.py` — their refusal-direction *selection* is better than ours
+  (position×layer candidate bank, KL≤0.1 coherence guard, bidirectional induce check); their
+  datasets are not (none of their checkpoints are our models). Their machinery, our data.
+- Blocker recorded: `Chain_of_Thought_Hijacking/Hijacking/` contains **no hooks or attention
+  capture at all**, so §10.1 edge knockout must come from our `AttentionKnockout` plus the
+  interp-jailbreak port, not from that repo.
