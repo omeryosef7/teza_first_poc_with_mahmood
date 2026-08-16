@@ -144,7 +144,9 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
              scopes: Sequence[str], alphas: Sequence[float], directions: Dict[str, Dict[int, torch.Tensor]],
              readout_layers: Sequence[int], concept_ids: Sequence[int], codeword_ids: Sequence[int],
              run: RunDir, ledger: FailureLedger, pair_name: str,
-             do_transplant: bool, add_dirs: Sequence[str]) -> int:
+             do_transplant: bool, add_dirs: Sequence[str],
+             scales: Optional[Dict[str, Dict[int, float]]] = None,
+             dose_unit: str = "gap") -> int:
     """Every intervention for one donor/recipient family. Returns rows written."""
     try:
         _, d_ids, d_last, _, d_nsub = resolve_occurrences(dc, lm.tokenizer, donor)
@@ -241,7 +243,12 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                         d = dmap.get(L)
                         if d is None:
                             continue
-                        patches.append((L, pos, d, alpha))
+                        # alpha is in GAP UNITS by default (see main()): the effective
+                        # residual-space magnitude is alpha * ||diff-of-means at this layer||.
+                        k = 1.0
+                        if dose_unit == "gap" and scales is not None:
+                            k = scales.get(dname, {}).get(L, 1.0)
+                        patches.append((L, pos, d, alpha * k))
                     if not patches:
                         continue
                     try:
@@ -254,8 +261,12 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                     except Exception as e:
                         ledger.fail(f"add:{type(e).__name__}", recip["prompt_id"])
                         continue
+                    eff = [round(a, 4) for (_, _, _, a) in patches]
                     run.log_row({**base, "intervention": "add", "scope": scope, "window": wname,
-                                 "n_positions": len(pos), "alpha": alpha, "direction": dname, **rec})
+                                 "n_positions": len(pos), "alpha": alpha, "direction": dname,
+                                 "dose_unit": dose_unit,
+                                 "effective_alpha_min": min(eff), "effective_alpha_max": max(eff),
+                                 **rec})
                     n += 1
     ledger.ok()
     return n
@@ -277,6 +288,11 @@ def main() -> int:
     ap.add_argument("--singletons", default="8,9,10,14,15,16,17,18,19,20,21")
     ap.add_argument("--no-transplant", action="store_true")
     ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"])
+    ap.add_argument("--dose-unit", default="gap", choices=["gap", "absolute"],
+                    help="'gap' (default): alpha is in units of the layer's diff-of-means norm, "
+                         "so alpha=1 injects one natural gap. 'absolute': alpha is a raw "
+                         "residual-space magnitude on a unit vector (the old, badly-scaled "
+                         "behaviour; kept only to reproduce it).")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="smoke")
@@ -339,11 +355,27 @@ def main() -> int:
                               for L, v in payload["d_surface"].items()}
             dirs["orthogonal"] = {L: sg.orthogonal_control_direction(v, seed=args.seed + L)
                                   for L, v in payload["d_surface"].items()}
+            # Dose scale, per direction and per layer. estimate_directions stores UNIT vectors
+            # and keeps the effect size in `gap`, so `h += alpha * d_unit` would treat alpha as
+            # an absolute residual-space magnitude. The measured gaps are ||d_surface|| ~ 8.6 at
+            # L12 and ~27 at L24, so the nominal sweep alpha<=8 would inject well under ONE
+            # natural gap while the transplant arm moves the full donor-recipient distance —
+            # and the run would then report "adding the direction does nothing" as an artifact
+            # of the dose, which is exactly the false negative this gate must not produce.
+            # So alpha is expressed in GAP UNITS: alpha=1 means "one diff-of-means".
+            # Controls are scaled by the SAME gap so they stay norm-matched to the real arm.
+            gaps = payload.get("gap", {})
+            scales: Dict[str, Dict[int, float]] = {}
+            for dname in dirs:
+                src = dname if dname in gaps else "d_surface"
+                scales[dname] = {L: float(gaps.get(src, {}).get(L, 1.0))
+                                 for L in dirs[dname]}
             total += run_pair(lm, dc, pc, donor, recip, windows,
                               args.scopes.split(","), alphas, dirs, readout_layers,
                               concept_ids, codeword_ids, run, ledger, pair_name,
                               do_transplant=not args.no_transplant,
-                              add_dirs=args.add_directions.split(","))
+                              add_dirs=args.add_directions.split(","),
+                              scales=scales, dose_unit=args.dose_unit)
             print(f"  {fam[:60]} -> {total} rows")
 
     run.finish(summary={"model": lm.model_id, "n_rows": total, "pairs": list(PAIRS),

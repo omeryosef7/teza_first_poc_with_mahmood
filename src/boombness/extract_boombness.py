@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import hashlib
 import json
 import os
 import sys
@@ -43,6 +44,7 @@ DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 CORE_2X2 = ("benign_literal", "direct_harmful", "natural_doublespeak", "concept_in_benign_ctx")
 COND_TO_CELL = {"benign_literal": "A", "direct_harmful": "B",
                 "natural_doublespeak": "C", "concept_in_benign_ctx": "E"}
+CORE_2X2_CELLS = ("A", "B", "C", "E")
 
 
 # --------------------------------------------------------------------------- #
@@ -78,11 +80,57 @@ def resolve_occurrences(dc, tok, row: Dict) -> Tuple[str, List[int], List[int], 
 
 
 @torch.no_grad()
-def forward_hidden(lm, ids: List[int]) -> torch.Tensor:
-    """Return hidden states as [n_blocks+1, seq, H] float32 on CPU (index 0 = embeddings)."""
-    t = torch.tensor([ids], device=lm.model.device)
-    out = lm.model(input_ids=t, output_hidden_states=True, use_cache=False)
-    return torch.stack([h[0].float().cpu() for h in out.hidden_states], dim=0)
+def forward_hidden(lm, ids: List[int], _diag: Optional[Dict] = None) -> torch.Tensor:
+    """Return hidden states as [n_blocks+1, seq, H] float32 on CPU (index 0 = embeddings).
+
+    THE LAST ELEMENT NEEDS A HOOK, NOT A SLICE. transformers 5.12 ties the last entry of
+    `out.hidden_states` to `out.last_hidden_state`
+    (`transformers/utils/output_capturing.py:265-267`, `tie_last_hidden_states=True` by default),
+    and for Llama `last_hidden_state = self.norm(final_block_output)`. So the tuple element that
+    looks like "block N-1's residual" is actually the POST-FINAL-NORM state, while every other
+    element is a raw block output.
+
+    Left alone that breaks three things at once: the logit lens would RMSNorm an already-normed
+    vector at the last layer, the per-layer curves would have a silent semantic discontinuity at
+    their right-hand end, and `aggressive_patching` would transplant a post-norm donor vector
+    into a position the model then norms again.
+
+    So we capture `layers[-1]`'s true output with a forward hook and substitute it in. The result
+    is uniform: `hs[L+1]` is the raw output of block `L` for every `L`. `_diag`, if given,
+    receives the relative discrepancy between the hooked and the tied vector, so the correction
+    can be shown to have mattered rather than asserted to.
+    """
+    layers = dc_layers(lm)
+    grabbed: Dict[str, torch.Tensor] = {}
+
+    def _hook(mod, inp, out):
+        grabbed["h"] = (out[0] if isinstance(out, tuple) else out).detach()
+
+    handle = layers[-1].register_forward_hook(_hook)
+    try:
+        t = torch.tensor([ids], device=lm.model.device)
+        out = lm.model(input_ids=t, output_hidden_states=True, use_cache=False)
+        hs = [h[0].float().cpu() for h in out.hidden_states]
+    finally:
+        handle.remove()
+
+    if "h" not in grabbed:
+        raise RuntimeError("forward hook on the last decoder block did not fire; refusing to "
+                           "fall back to the tied post-norm hidden state silently")
+    raw_last = grabbed["h"][0].float().cpu()
+    if len(hs) != lm.num_layers + 1:
+        raise RuntimeError(f"expected {lm.num_layers + 1} hidden states, got {len(hs)}")
+    if _diag is not None:
+        tied = hs[-1]
+        denom = float(tied.norm()) or 1.0
+        _diag["last_layer_tied_vs_raw_relnorm"] = float((tied - raw_last).norm()) / denom
+    hs[-1] = raw_last
+    return torch.stack(hs, dim=0)
+
+
+def dc_layers(lm):
+    """The decoder block ModuleList, via the house accessor."""
+    return ds()._get_layers(lm.model)
 
 
 # --------------------------------------------------------------------------- #
@@ -90,10 +138,20 @@ def forward_hidden(lm, ids: List[int]) -> torch.Tensor:
 # --------------------------------------------------------------------------- #
 def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
               ledger: FailureLedger, position: str = "codeword_last") -> Dict[str, Dict]:
-    """Accumulate 2x2 cell means per split, then estimate directions per split."""
-    sums: Dict[str, Dict[str, Dict[int, torch.Tensor]]] = collections.defaultdict(
+    """Estimate the 2x2 directions per split, averaging every cell over THE SAME families.
+
+    The identification argument behind d_surface = 1/2[(B-C)+(E-A)] is that the two differences
+    are context-matched, and that only holds if the four cells are averaged over the same set of
+    families. Equal cell COUNTS are not sufficient — a run that loses family f from cell B and a
+    different family g from cell C has 30 rows in each and a d_surface contaminated by which
+    demo blocks happened to survive. So per-family vectors are kept, the four cells' family sets
+    are intersected, and any family missing from any cell is dropped from ALL of them and
+    recorded in the ledger.
+    """
+    # per_fam[split][cell][family_id] = Tensor[len(layers), H]
+    per_fam: Dict[str, Dict[str, Dict[str, torch.Tensor]]] = collections.defaultdict(
         lambda: collections.defaultdict(dict))
-    counts: Dict[str, collections.Counter] = collections.defaultdict(collections.Counter)
+    diag_accum: List[float] = []
 
     fit_rows = [r for r in rows
                 if r["condition"] in CORE_2X2 and r["bank_block"] == "core2x2"
@@ -108,50 +166,94 @@ def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
             ledger.fail(f"fit:{e}", row["prompt_id"])
             continue
         pos = last[-1] if position == "codeword_last" else following[-1]
-        hs = forward_hidden(lm, ids)
-        cell = COND_TO_CELL[row["condition"]]
-        split = row["split"]
-        for L in layers:
-            v = hs[L + 1, pos, :]
-            cur = sums[split][cell].get(L)
-            sums[split][cell][L] = v if cur is None else cur + v
-        counts[split][cell] += 1
+        diag: Dict[str, float] = {}
+        hs = forward_hidden(lm, ids, _diag=diag)
+        if "last_layer_tied_vs_raw_relnorm" in diag:
+            diag_accum.append(diag["last_layer_tied_vs_raw_relnorm"])
+        per_fam[row["split"]][COND_TO_CELL[row["condition"]]][row["family_id"]] = \
+            torch.stack([hs[L + 1, pos, :] for L in layers], dim=0)
         ledger.ok()
 
+    if diag_accum:
+        run.note(last_layer_tied_vs_raw_relnorm_mean=sum(diag_accum) / len(diag_accum),
+                 last_layer_tied_vs_raw_relnorm_max=max(diag_accum),
+                 last_layer_note="hidden_states[-1] is tied to last_hidden_state (post final "
+                                 "norm) in transformers 5.x; forward_hidden substitutes the "
+                                 "hooked raw block output so hs[L+1] is uniform across L")
+
     fitted: Dict[str, Dict] = {}
-    for split, cells in sums.items():
-        means = {c: {L: v / counts[split][c] for L, v in per_layer.items()}
-                 for c, per_layer in cells.items()}
+    fit_report: Dict[str, Dict] = {}
+    for split, cells in per_fam.items():
+        if not set(CORE_2X2_CELLS).issubset(cells):
+            ledger.fail(f"fit:missing_cells:{sorted(set(CORE_2X2_CELLS) - set(cells))}", split)
+            continue
+        fam_sets = {c: set(cells[c]) for c in CORE_2X2_CELLS}
+        common = set.intersection(*fam_sets.values())
+        dropped = {c: sorted(fam_sets[c] - common) for c in CORE_2X2_CELLS}
+        n_dropped = sum(len(v) for v in dropped.values())
+        if n_dropped:
+            for c, fams in dropped.items():
+                for f in fams:
+                    ledger.fail(f"fit:family_not_in_all_cells:{c}", f)
+            print(f"[fit] split={split} DROPPED {n_dropped} cell-family entries not present in "
+                  f"all four cells; {len(common)} families common to all cells")
+        if not common:
+            ledger.fail("fit:no_common_families", split)
+            continue
+
+        common_sorted = sorted(common)
+        means: Dict[str, Dict[int, torch.Tensor]] = {}
+        for c in CORE_2X2_CELLS:
+            stacked = torch.stack([cells[c][f] for f in common_sorted], dim=0)   # [n_fam, nL, H]
+            m = stacked.mean(dim=0)
+            means[c] = {L: m[i] for i, L in enumerate(layers)}
+
+        fam_hash = hashlib.sha256("|".join(common_sorted).encode()).hexdigest()[:16]
         try:
             dset = sg.estimate_directions(
-                means, n_per_cell=dict(counts[split]),
-                meta={"split_fitted_on": split, "position": position,
-                      "model": lm.model_id, "n_fit_rows": sum(counts[split].values())})
+                means, n_per_cell={c: len(common_sorted) for c in CORE_2X2_CELLS},
+                meta={"split_fitted_on": split, "position": position, "model": lm.model_id,
+                      "n_families_common": len(common_sorted), "family_set_sha16": fam_hash,
+                      "n_cell_family_entries_dropped": n_dropped})
         except ValueError as e:
             ledger.fail(f"fit_directions:{e}", split)
             continue
         payload = dset.as_payload()
         payload["cell_means"] = means
+        payload["families"] = common_sorted
         path = run.p(f"directions_fit_{split}.pt")
         torch.save(payload, path)
         fitted[split] = payload
-        print(f"[fit] split={split} cells={dict(counts[split])} -> {os.path.basename(path)}")
+        fit_report[split] = {"n_families_common": len(common_sorted),
+                             "family_set_sha16": fam_hash,
+                             "n_cell_family_entries_dropped": n_dropped,
+                             "n_rows_per_cell": {c: len(fam_sets[c]) for c in CORE_2X2_CELLS}}
+        print(f"[fit] split={split} families={len(common_sorted)} (sha16 {fam_hash}) "
+              f"-> {os.path.basename(path)}")
         for name in ("d_surface", "d_context", "d_inter", "d_naive"):
             g = dset.gap[name]
             print(f"       ||{name}|| by layer: " +
                   " ".join(f"L{L}={g[L]:.2f}" for L in layers[::max(1, len(layers)//8)]))
+    run.note(fit_report=fit_report)
     return fitted
 
 
 # --------------------------------------------------------------------------- #
 # Stage: score
 # --------------------------------------------------------------------------- #
-def _cross_fit_split(split: str, available: Sequence[str]) -> str:
-    """Score a dev row with heldout-fitted directions and vice versa."""
+def _cross_fit_split(split: str, available: Sequence[str]) -> Tuple[str, bool]:
+    """Score a dev row with heldout-fitted directions and vice versa.
+
+    Returns (split_to_use, is_self_fit). Falling back to the row's OWN split is legal only as an
+    explicit, recorded state: a cosine read off a direction fitted on the very same text is
+    inflated by in-sample fit, and the §6.4 sanity check would then pass trivially. The caller
+    records `is_self_fit` on every row and the run summary counts them, so no consumer can
+    mistake a self-fit number for a cross-fit one.
+    """
     other = "heldout" if split == "dev" else "dev"
     if other in available:
-        return other
-    return split
+        return other, False
+    return split, True
 
 
 @torch.no_grad()
@@ -178,7 +280,7 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
         except ValueError as e:
             ledger.fail(f"score:{e}", row["prompt_id"])
             continue
-        fit_split = _cross_fit_split(row["split"], list(fitted))
+        fit_split, is_self_fit = _cross_fit_split(row["split"], list(fitted))
         payload = fitted.get(fit_split)
         if payload is None:
             ledger.fail("score:no_fitted_directions", row["prompt_id"])
@@ -200,7 +302,7 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
                 "is_query_occurrence": occ_i == n_occ - 1,   # query word is always last
                 "token_pos": pos, "seq_len": len(ids),
                 "n_subtokens": nsub, "is_single_token": nsub == 1,
-                "directions_fitted_on": fit_split,
+                "directions_fitted_on": fit_split, "is_self_fit": is_self_fit,
                 "layer_convention": sg.LAYER_CONVENTION,
             }
             for L in layers:

@@ -55,7 +55,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, write_jsonl, seed_everything, ds  # noqa: E402
-from demo_pools import DOMAINS, POOL_PATH, load_pools  # noqa: E402
+from demo_pools import DOMAINS, POOL_PATH, REMAP_SOURCE_WORD, load_pools  # noqa: E402
 
 BANK_PATH = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 
@@ -231,14 +231,19 @@ def build_demo_block(pools: Dict, ax: Axes, codeword: str, concept: str) -> Tupl
     prov: Dict[str, object] = {"pool_domain": ax.domain, "pool_valence": valence}
 
     if ax.condition == "benign_remap":
-        # Structure preserved, mapping harmless: benign sentences from a DIFFERENT domain,
-        # remapped onto the codeword.
-        others = [d for d in DOMAINS if d != ax.domain]
-        src_domain = others[ax.family_slot % len(others)]
-        pool = pools[f"{src_domain}|benign"][ax.split]
-        prov["pool_domain"] = src_domain
+        # Structure preserved, mapping HARMLESS: sentences about a different benign object
+        # (REMAP_SOURCE_WORD, "bicycle") in the SAME domain, with that word substituted onto the
+        # codeword — so the demos teach `carrot = bicycle`.
+        #
+        # The first version of this drew from the `benign` pool, whose natural word is ALREADY
+        # the codeword, and substituted nothing. That made all 72 benign_remap prompts
+        # byte-identical to benign_literal prompts: the control was numerically the same arm it
+        # was meant to be contrasted against. Caught by the self-review, 2026-08-16.
+        pool = pools[f"{ax.domain}|remap"][ax.split]
         sents = _take(pool, n, ax.family_slot)
-        # pool's natural word for benign is the codeword already
+        sents = _substitute(sents, REMAP_SOURCE_WORD, codeword)
+        prov["pool_valence"] = "remap"
+        prov["remap_source"] = REMAP_SOURCE_WORD
         return sents, prov
 
     if ax.consistency == "irrelevant":
@@ -495,8 +500,21 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
                                                 violations.extend(
                                                     f"{fam_rows[CORE_2X2[0]]['family_id']}: {x}" for x in v)
 
+    # The benign_remap control must not reproduce benign_literal. Asserting it here means a
+    # future change to the pools cannot quietly collapse the control again.
+    by_prompt: Dict[str, set] = {}
+    for r in rows:
+        by_prompt.setdefault(r["full_prompt"], set()).add(r["condition"])
+    collapsed = sum(1 for conds in by_prompt.values()
+                    if "benign_remap" in conds and "benign_literal" in conds)
+    n_remap = sum(1 for r in rows if r["condition"] == "benign_remap")
+    if collapsed:
+        violations.append(f"benign_remap collapsed onto benign_literal for {collapsed} prompts")
+
     stats = {
         "n_rows": len(rows),
+        "n_benign_remap_rows": n_remap,
+        "n_benign_remap_identical_to_benign_literal": collapsed,
         "n_2x2_families_checked": n_families,
         "n_alignment_violations": len(violations),
         "alignment_violations": violations[:50],

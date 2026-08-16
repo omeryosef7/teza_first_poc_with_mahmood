@@ -46,6 +46,10 @@ CELL_LABEL = {"A": "A benign_literal", "C": "C natural_doublespeak",
               "E": "E concept_in_benign_ctx", "B": "B direct_harmful",
               "D": "D direct_codeword", "F": "F benign_remap"}
 CODEWORD_CELLS = {"A", "C", "D", "F"}
+# The sanity check must only use the matched 2x2; D and F are codeword-side conditions with a
+# different demo-block distribution and would smuggle a context effect into a surface-effect test.
+SANITY_CELLS = {"A", "B", "C", "E"}
+SANITY_CODEWORD_CELLS = {"A", "C"}
 CONCEPT_CELLS = {"B", "E"}
 
 
@@ -117,12 +121,20 @@ def col(metric_stat: str, layer: int) -> str:
 # §6.4 sanity: does d_surface separate concept-surface from codeword-surface cells?
 # --------------------------------------------------------------------------- #
 def direction_sanity(rows: List[Dict], metric_stat: str, layers: Sequence[int]) -> Dict:
-    final = [r for r in rows if r.get("is_final_occurrence")]
+    """Does the direction separate concept-surface from codeword-surface cells?
+
+    Restricted to the FOUR 2x2 cells and, within them, to matched families: comparing {B,E}
+    against {A,C,D,F} would pool the extra conditions D (mapping stated) and F (benign remap),
+    which live only on the codeword side and carry a different demo-block distribution — so the
+    contrast would absorb a context effect and the check that gates --strict could pass for the
+    wrong reason. Only A vs E and C vs B are context-matched comparisons.
+    """
+    final = [r for r in rows if r.get("is_final_occurrence") and r["cell"] in SANITY_CELLS]
     out = {}
     for L in layers:
         c = col(metric_stat, L)
         concept = [r[c] for r in final if r["cell"] in CONCEPT_CELLS and c in r]
-        code = [r[c] for r in final if r["cell"] in CODEWORD_CELLS and c in r]
+        code = [r[c] for r in final if r["cell"] in SANITY_CODEWORD_CELLS and c in r]
         out[L] = {"mean_concept_surface": mean(concept), "mean_codeword_surface": mean(code),
                   "delta": mean(concept) - mean(code), "d": cohens_d(concept, code),
                   "n_concept": len(concept), "n_codeword": len(code)}

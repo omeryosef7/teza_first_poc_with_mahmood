@@ -101,13 +101,19 @@ def audit_row(tok, row: Dict, dc) -> Dict:
     return rec
 
 
-def audit_family_alignment(tok, rows: List[Dict], dc) -> List[str]:
-    """Token-level 2x2 invariants for one family. Returns violation strings."""
+def audit_family_alignment(tok, rows: List[Dict], dc) -> Optional[List[str]]:
+    """Token-level 2x2 invariants for one family.
+
+    Returns a (possibly empty) list of violations, or None if the family does not contain all
+    four core conditions and therefore could not be checked at all. Returning [] for an
+    unchecked family made the summary read "540 families, 0 violations" when only 216 of them
+    had ever been examined — a coverage claim the run had not earned.
+    """
     by_cond = {r["condition"]: r for r in rows}
     bad: List[str] = []
     core = ("benign_literal", "direct_harmful", "natural_doublespeak", "concept_in_benign_ctx")
     if not set(core).issubset(by_cond):
-        return bad
+        return None          # NOT "no violations" — this family was never checkable
 
     ids = {}
     occ = {}
@@ -213,9 +219,19 @@ def main() -> int:
             families[row["family_id"]].append(row)
 
         fam_violations: List[str] = []
+        n_checked = n_skipped = 0
         for fam, frows in families.items():
-            for v in audit_family_alignment(tok, frows, dc):
+            vs = audit_family_alignment(tok, frows, dc)
+            if vs is None:
+                n_skipped += 1
+                continue
+            n_checked += 1
+            for v in vs:
                 fam_violations.append(f"{fam}: {v}")
+                # Plan §2.2: a violation must appear in the failure ledger, not only in a
+                # console line and a summary sub-key, or summary.json reports n_failed=0 on a
+                # run whose exact-swap pairs are misaligned.
+                ledger.fail(f"family_token_alignment:{v.split(':')[0]}", fam)
 
         summary["models"][model_id] = {
             "variants": variants,
@@ -223,6 +239,8 @@ def main() -> int:
             "n_ambiguous": per_model["ambiguous"],
             "ambiguous_prompt_ids": ambiguous_ids[:50],
             "n_families": len(families),
+            "n_families_alignment_checked": n_checked,
+            "n_families_skipped_incomplete_2x2": n_skipped,
             "n_family_token_alignment_violations": len(fam_violations),
             "family_token_alignment_violations": fam_violations[:50],
             "codeword_is_single_token": all(
@@ -231,7 +249,8 @@ def main() -> int:
                 len(v["ids"]) == 1 for k, v in variants[concept].items() if k == " " + concept),
         }
         print(f"  rows ok={per_model['ok']} bad={per_model['bad']} ambiguous={per_model['ambiguous']}")
-        print(f"  families={len(families)} token-alignment violations={len(fam_violations)}")
+        print(f"  families={len(families)} checked={n_checked} "
+              f"skipped_incomplete={n_skipped} token-alignment violations={len(fam_violations)}")
         for v in fam_violations[:5]:
             print(f"    VIOLATION {v}")
 

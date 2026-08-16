@@ -358,3 +358,72 @@ tokenization audit 1464 ok / 0 bad / 0 ambiguous, 540 families / 0 token-alignme
 manual review sample regenerated.
 
 **SLURM 760598 running** (full extraction, corrected readout ids).
+
+### 2026-08-16 — Tick 4 (self-review: 26 candidates → 6 confirmed; FIRST BOOMBNESS RESULT)
+
+The adversarial self-review workflow finished: **26 candidate findings, 6 confirmed** after each was
+independently double-refuted (57 agents). All six were real. Two were fixed in Tick 3; the other four
+are fixed here.
+
+| # | Confirmed finding | Fix |
+|---|---|---|
+| 1 | `all_first_ids` put generic `car` on the codeword side of every logit-lens score | `readout_id_pair` (Tick 3) |
+| 2 | comprehension answer `"codeword"` is 3 tokens → unanswerable forced choice | `literal`/`coded` (Tick 3) |
+| 3 | **Top-layer logit lens applies the final norm twice.** transformers 5.12 ties `hidden_states[-1]` to `last_hidden_state` (`output_capturing.py:265-267`, `tie_last_hidden_states=True`), which for Llama is `norm(final block output)`. So `hs[L+1]` was the raw block residual for every L **except the last**, where it was post-norm — the lens then normed it again, and `d_surface[31]` was fitted in different coordinates from every other layer. | `forward_hidden` now captures `layers[-1]`'s true output with a forward hook and substitutes it, so `hs[L+1]` is uniform in L. A `_diag` field records the raw-vs-tied discrepancy so the correction is demonstrated, not asserted. |
+| 4 | **Additive doses were ~10× too small.** `estimate_directions` stores UNIT vectors with the effect size in `gap`, but `aggressive_patching` applied `h += alpha·d_unit` with `alpha ≤ 8`, while the measured gaps are ‖d_surface‖ ≈ 6–32. The additive arm would have reported "adding Boombness does nothing" as a pure dose artifact — exactly the false negative this gate must not produce. | `alpha` is now in **gap units** (`alpha=1` = one diff-of-means), with controls scaled by the same gap so they stay norm-matched. `--dose-unit absolute` reproduces the old behaviour. |
+| 5 | **`benign_remap` (cell F) applied no remapping.** It drew from the `benign` pool, whose natural word is *already* the codeword, and substituted nothing — so **72/72 F rows were byte-identical to a `benign_literal` row**. The control was numerically the same arm it was meant to be contrasted against. | New per-domain `remap` pools about `bicycle`, substituted onto the codeword, so the demos teach `carrot = bicycle`: same structure and same remapping operation as doublespeak, harmless meaning. `generate_bank` now asserts F never collapses onto A. |
+| 6 | **Family alignment violations never reached the `FailureLedger`**, and `audit_family_alignment` returned `[]` for families it had never checked — so the audit reported "540 families, 0 violations" when only **216** were 2×2-complete and **324 were silently skipped**. My own Tick-1 coverage claim was overstated because of this. | Returns `None` for unchecked families; summary now reports `n_families_alignment_checked` / `n_families_skipped_incomplete_2x2`; every violation calls `ledger.fail`. |
+
+Also hardened (candidates that did not survive double-refutation but are cheap insurance):
+`stage_fit` now intersects the four cells' **family sets** and drops any family missing from any cell
+(equal counts are not equal composition), recording the family-set hash; `_cross_fit_split` returns an
+explicit `is_self_fit` flag recorded on every row.
+
+#### FIRST BOOMBNESS RESULT (run `full_20260816_184609_1003374`, 1464 rows, 8472 occurrences, 0 failures)
+
+Directions fitted on 30 families/cell/split, cross-fitted. Norms confirm the Tick-2 hint at full n:
+
+| ‖·‖ | L0 | L8 | L16 | L24 | L28 |
+|---|---|---|---|---|---|
+| `d_surface` | 1.79 | 6.08 | 11.70 | 25.63 | 32.04 |
+| `d_context` | 0.12 | 1.96 | 3.04 | 5.98 | 9.11 |
+| `d_inter` | 0.23 | **4.09** | 6.29 | 10.84 | 15.65 |
+
+`‖d_surface‖ ≫ ‖d_context‖` everywhere — and **`‖d_inter‖ > ‖d_context‖` at every layer**, i.e. the
+*interaction* (is the surface effect itself context-dependent?) is a bigger term than the context main
+effect. That is the doublespeak-specific quantity, and it is not small.
+
+**The headline.** `Boombness = ⟨h, d_surface⟩` at the final query occurrence, per 2×2 cell, and the
+key contrast `C − A` (doublespeak carrot vs benign-literal carrot — same token, same query, only the
+demo valence differs). `(C−A)/(B−A)` is the fraction of the way from benign-carrot to direct-bomb:
+
+| L | A benign | C doublespeak | E bomb/benign | B direct | **C−A** | sem | (C−A)/(B−A) |
+|---|---|---|---|---|---|---|---|
+| 0 | −0.629 | −0.632 | 0.601 | 0.598 | −0.003 | 0.000 | −0.002 |
+| 4 | −0.540 | −0.529 | 0.492 | 0.490 | +0.011 | 0.004 | 0.011 |
+| **8** | −0.465 | −0.426 | 0.423 | 0.460 | **+0.039** | 0.007 | **0.042** |
+| 12 | −0.430 | −0.402 | 0.365 | 0.387 | +0.028 | 0.005 | 0.034 |
+| 16 | −0.551 | −0.556 | 0.396 | 0.417 | −0.005 | 0.005 | −0.005 |
+| 20 | −0.540 | −0.551 | 0.460 | 0.475 | −0.011 | 0.004 | −0.011 |
+| 24 | −0.531 | −0.529 | 0.411 | 0.467 | +0.002 | 0.005 | 0.002 |
+| 28 | −0.466 | −0.439 | 0.369 | 0.442 | +0.027 | 0.006 | 0.030 |
+| 31 | −0.491 | −0.379 | 0.346 | 0.450 | +0.112 | 0.008 | 0.119 |
+
+Three things stand out:
+
+1. **The sanity check passes at all 32 layers** (concept-surface cells score above codeword-surface
+   cells), and `C−A ≈ 0` at L0–L2 as it must — no context has been integrated yet.
+2. **There is a real but small early effect peaking at L8** (+0.039, ≈5.5σ): the doublespeak carrot
+   travels ~**4%** of the way toward the direct-bomb representation. L8 is precisely the write band
+   this repo has localized before (`v_bomb` uses `range(8,22)`; the concept write was placed at L9).
+3. **The middle layers L16–L22 are flat or slightly NEGATIVE**, then the effect returns late.
+
+So the trajectory is two-humped — a write-band bump, a null carry band, a late-layer rise — and at no
+point does the doublespeak carrot approach the bomb representation. That is already a much more
+specific statement than "carrot becomes bomb-like".
+
+> ⚠️ **The L31 number is NOT yet reportable.** The largest apparent effect (+0.112) sits at exactly
+> the layer affected by confirmed finding #3 — this run predates the `forward_hidden` fix, so L31 was
+> computed on post-final-norm vectors. The contrast is internally consistent (all four cells share the
+> convention) but is not comparable to the other layers and may be partly an artifact. It will be
+> re-measured in the corrected rerun before it is claimed. **L0–L30 are unaffected by that fix.**
