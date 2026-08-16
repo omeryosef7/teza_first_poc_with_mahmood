@@ -667,3 +667,54 @@ readouts (boombness cosine, logit lens) are unaffected and are working.
 This needs the actual next-token distribution inspected before the readout is trusted; it is the
 next thing to fix. Recorded here rather than worked around, because "the metric was flat" is exactly
 how a dead readout gets mistaken for a negative result.
+
+#### G1 partial answer (smoke2 `smoke2_20260816_194436_3945609`, 472 rows, 0 failures)
+
+Both invariants hold after the `BlockCapture` fix: patching at L8 now moves the L8 readout
+(−0.2294 → **+0.1272, exactly the donor's own L8 value**, which is what a correct transplant must
+produce), and the self-swap is still an exact no-op (0.00e+00 across all layers and families).
+
+Boombness `⟨h, d_surface⟩` at the query position, `harm_ctx` pair (recipient = doublespeak,
+donor = direct):
+
+| arm | L8 | L16 | L18 | L24 | L31 |
+|---|---|---|---|---|---|
+| baseline (doublespeak) | −0.229 | −0.301 | −0.313 | −0.326 | −0.052 |
+| donor ceiling (direct) | +0.127 | +0.238 | +0.288 | +0.260 | +0.231 |
+| **transplant, query only, L8 alone** | +0.127 | **+0.291** | **+0.392** | **+0.336** | **+0.275** |
+| transplant, query only, L18 alone | −0.229 | −0.301 | +0.288 | +0.249 | +0.199 |
+| **transplant, demos only, L8–21** | −0.229 | −0.343 | −0.361 | −0.371 | −0.063 |
+| add `d_surface` α=1 (L8–21) | +0.593 | +0.804 | +0.821 | +0.717 | +0.199 |
+| add **random** α=1 | −0.168 | −0.013 | −0.033 | +0.002 | +0.051 |
+| add **orthogonal** α=1 | −0.167 | −0.036 | −0.030 | +0.005 | +0.053 |
+
+**Plan §5.4 questions 1, 6 and 7 are answered on the representation side:**
+
+1. *Can we force `carrot` to be internally `bomb`-like?* **Yes, easily.** A single-layer transplant
+   at L8 flips the query token from −0.23 to +0.13 and the effect **propagates and amplifies** —
+   downstream it lands *above* the genuine direct prompt (+0.392 vs +0.288 at L18).
+6. *Which token positions matter?* **The query position, and only it.** Transplanting the
+   **demonstration** carrots across the whole L8–21 band does **nothing** to the query token
+   (−0.229 → −0.229 at L8; slightly *more* codeword-like downstream). The query token's
+   representation is not inherited from the demo positions in this band.
+7. *Which layers?* **L8 alone suffices** — patching only L8 reproduces or exceeds the full-band
+   effect at every downstream readout. Patching at L18 alone affects L18 onward but leaves L8/L16
+   untouched, as causality requires.
+
+Controls pass: norm-matched **random** and **orthogonal** directions at the same dose barely move
+the readout (+0.06 drift at L8 versus +0.82 for `d_surface`), so the effect is axis-specific and not
+a generic perturbation.
+
+**Two caveats, stated plainly:**
+- The additive arm is partly **circular**: adding `d_surface` and then measuring `⟨h, d_surface⟩`
+  must increase by construction. Its value is as a *dose-response tool for the behavioural readout*,
+  not as evidence in itself. The transplant arm is not circular — the donor state is measured, not
+  constructed.
+- The `benign_ctx` control pair behaves **almost identically** to `harm_ctx` (e.g. L18: −0.230 →
+  +0.383 vs −0.313 → +0.392). So forcing a carrot to be bomb-like works the same **whether or not
+  doublespeak context is present**. Whatever the transplant is doing, it is not doublespeak-specific.
+
+**G1 remains OPEN** on the question that decides it — *does any of this change behaviour?* — because
+the behavioural readout is the dead `semantic_margin`. Diagnostic job **760683** is testing three
+framings (as-is / assistant-primed / house-style forced choice) to find one that puts real mass on
+the answer words.
