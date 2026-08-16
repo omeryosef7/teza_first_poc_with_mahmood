@@ -501,20 +501,30 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
                                                     f"{fam_rows[CORE_2X2[0]]['family_id']}: {x}" for x in v)
 
     # The benign_remap control must not reproduce benign_literal. Asserting it here means a
-    # future change to the pools cannot quietly collapse the control again.
+    # future change to the pools cannot quietly collapse the control again (it did once: the
+    # first version drew from the benign pool and substituted nothing, so 72/72 F rows were
+    # byte-identical to an A row).
+    #
+    # n_examples == 0 is EXCLUDED from the assertion, and legitimately so: with no
+    # demonstrations there is nothing for the conditions to differ in, so every
+    # codeword-surface condition collapses to the bare query by construction. That is the
+    # shared zero-demonstration baseline, not a broken control.
     by_prompt: Dict[str, set] = {}
     for r in rows:
+        if r["n_examples"] == 0:
+            continue
         by_prompt.setdefault(r["full_prompt"], set()).add(r["condition"])
     collapsed = sum(1 for conds in by_prompt.values()
                     if "benign_remap" in conds and "benign_literal" in conds)
     n_remap = sum(1 for r in rows if r["condition"] == "benign_remap")
     if collapsed:
-        violations.append(f"benign_remap collapsed onto benign_literal for {collapsed} prompts")
+        violations.append(f"benign_remap collapsed onto benign_literal for {collapsed} "
+                          f"prompts with n_examples>0")
 
     stats = {
         "n_rows": len(rows),
         "n_benign_remap_rows": n_remap,
-        "n_benign_remap_identical_to_benign_literal": collapsed,
+        "n_benign_remap_identical_to_benign_literal_nonzero_demos": collapsed,
         "n_2x2_families_checked": n_families,
         "n_alignment_violations": len(violations),
         "alignment_violations": violations[:50],

@@ -15,3 +15,6 @@ doublespeak_causality/outputs/gcg/gcg_suffixes_used.json
 
 # SLURM logs (huge transformers progress-bar spam; never commit)
 logs/
+
+# Boombness sprint: activation caches are large (~500MB/run) and reproducible from the run config
+outputs/boombness/**/cache/
