@@ -1,0 +1,1 @@
+--tag pilot --fit-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --n-families 8 --n-examples 4,8 --alphas 0.5,1,2,4 --singletons 8,12,18,24 --query-kind semantic_forced_choice

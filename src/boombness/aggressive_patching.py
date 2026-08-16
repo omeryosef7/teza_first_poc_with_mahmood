@@ -343,8 +343,11 @@ def main() -> int:
     ap.add_argument("--bank", default=DEFAULT_BANK)
     ap.add_argument("--fit-dir", required=True, help="extract_boombness run dir with directions_fit_*.pt")
     ap.add_argument("--model", default=None)
-    ap.add_argument("--query-kind", default="semantic_one_word",
-                    choices=["semantic_one_word", "behavioral", "comprehension_usage"])
+    # Choices are DERIVED from the generator's own table, not restated here: a hardcoded copy
+    # silently desynced when `semantic_forced_choice` was added and killed job 760715 at launch.
+    from prompt_families import QUERY_KINDS as _QK
+    ap.add_argument("--query-kind", default="semantic_forced_choice",
+                    choices=sorted(_QK))
     ap.add_argument("--n-families", type=int, default=4, help="matched families per pair (smoke=2)")
     ap.add_argument("--n-examples", default="4", help="comma list")
     ap.add_argument("--scopes", default=",".join(SCOPES))

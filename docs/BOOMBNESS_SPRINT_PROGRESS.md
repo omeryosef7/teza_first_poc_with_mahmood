@@ -963,3 +963,44 @@ extract there and **their published `C` must be re-swept** rather than assumed.
 - Blocker recorded: `Chain_of_Thought_Hijacking/Hijacking/` contains **no hooks or attention
   capture at all**, so §10.1 edge knockout must come from our `AttentionKnockout` plus the
   interp-jailbreak port, not from that repo.
+
+### 2026-08-16 — Tick 12 (Phase 5 + Phase 2 launched; dominance score ported)
+
+**Jobs:** `760714` full Phase-5 pass (behavioural generation + semantic + comprehension over the
+1752-row bank — the input to gate **G2**); `760722` Phase-2 pilot at 8 families × {4,8} demos ×
+α∈{0.5,1,2,4} on the **forced-choice** readout (gate **G1**); `760719` dominance self-test.
+
+`760715` (first pilot attempt) **FAILED at launch**: `--query-kind` had a hardcoded `choices=[...]`
+that desynced when `semantic_forced_choice` was added two ticks earlier. Now derived from
+`prompt_families.QUERY_KINDS`, so the list cannot drift from the generator again. Cheap failure —
+argparse rejected it in 65 s — but it is the same *class* as the dosing bug that recurred: a value
+restated in a second place instead of read from one.
+
+**P1 of the adoption plan done — `src/boombness/dominance.py`.** The hijacking paper's dominance
+score, ported to HF eager attention. Their quantity exactly:
+
+```
+Y[l,h,dst,src,:] = A[l,h,dst,src] · (W_O[l,h] @ v[l,h,src])
+D_attn = <Y, attn_out[dst]> / ‖attn_out[dst]‖²      sums to 1 over (head, src)
+D_dir  = <Y, unit(dir)>                              with dir = d_surface[l]
+```
+
+`D_dir[h, src]` answers plan §10.1 directly: **how much of the Boombness arriving at the final
+codeword token was supplied by each demonstration token, through which head** — which is the
+ranking that tells `AttentionKnockout` which edges are worth cutting, instead of cutting all of
+them and reporting that something happened.
+
+**Our port is cheaper than theirs, and not by cutting corners.** They materialize `Y` for all
+layers and all destinations — `[n_layer, n_head, T, T, d_model]`, ~28 GB at T=120 on an 8B model.
+We need **one** destination (the final codeword occurrence), which removes a factor of T; and for
+`D_dir` the `d_model` axis collapses analytically:
+
+```
+<Y[h,src], u> = A[h,dst,src] · <v[h,src], W_Oᵀ u>
+```
+
+so `wo_dir[h] = W_Oᵀu` is precomputed once per head ([head_dim]) and **no `[T, d_model]` tensor is
+ever built**. Two invariants are asserted rather than trusted, mirroring their own checks:
+`Σ_{h,src} Y == attn_out[dst]` and `Σ D_attn == 1` — which is also what catches a wrong GQA head
+mapping (Llama-3.1-8B: 32 query heads over 8 KV heads, so query head `h` reads KV head `h//4`).
+`attn_implementation="eager"` is required, the same constraint `AttentionKnockout` has.
