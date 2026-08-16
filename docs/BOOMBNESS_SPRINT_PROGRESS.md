@@ -76,6 +76,8 @@ Every 4h an independent agent audits code + outputs for result-affecting bugs. F
 | Date | Auditor | Finding | Severity | Fix | Rerun needed? |
 |---|---|---|---|---|---|
 | 2026-08-16 | self-review workflow, `review:directions` lens | **`all_first_ids` put the generic token `car` on the codeword side of every logit-lens score.** `word_token_ids` took the FIRST id of each surface variant. On Llama-3.1-8B `" carrot"`→`[' carrot']` but `"carrot"`→`['car','rot']`, `"Carrot"`→`['Car','rot']`, `" Carrot"`→`[' Car','rot']` — so **3 of carrot's 4 "first ids" are car-the-vehicle**, one of the most frequent tokens in the vocabulary, while all 4 of bomb's variants genuinely spell bomb. | **result-corrupting** | Added `signals.readout_ids` / `readout_id_pair`. Default `primary` mode = the single leading-space whole-word token per side (`' bomb'` vs `' carrot'`) — exactly symmetric, and exactly the token that appears in our prompts. Multi-token variants are recorded under `rejected_first_ids` instead of scored. Raises if the leading-space form is not single-token. | **YES — cancelled job 760596 mid-run at 600/1464 rows and resubmitted as 760598.** Direction metrics (`d_*`) were unaffected (they use no token ids); the `ll\|*` logit-lens columns were. |
+| 2026-08-16 | §5 smoke (job 760661) | **Readouts at the patched layer were PRE-patch.** `out.hidden_states[L+1]` is filled by the framework's own capture, registered before ours, so at the very layer being intervened on it reported the value the patch was about to overwrite. Measured: patching window `L8` left the L8 boombness readout bit-identical to baseline (−0.2294) while a window containing layers *below* 8 moved it (+0.1477) — the readout only ever saw upstream effects and reported "no effect at the intervened layer" **by construction**. | **result-corrupting** | New `BlockCapture` registers our own forward hooks on the decoder blocks *after* the patch contexts, so they run later and read the block's true output. Wired into all 5 readout call sites. | **YES — smoke 760661 discarded, resubmitted as 760681.** No full run had been done, so nothing published was affected. |
+| 2026-08-16 | §5 smoke (job 760661) | **The L31 readout in `aggressive_patching` was in the wrong coordinates.** `forward_hidden` was fixed for the last-layer norm tie, but `readout()` read `out.hidden_states` directly, so its L31 projection mixed post-norm activations against directions fitted on raw block outputs. | **result-corrupting** | Same `BlockCapture` fix — reading the block's own output is raw by construction. | Same rerun. |
 | 2026-08-16 | the fix's own guard | **The comprehension forced choice was unanswerable.** `readout_ids` raised on the answer word `"codeword"`: it tokenizes to `[' cod','ew','ord']` (3 tokens), so the single-next-token readout was measuring the mass on `' cod'`, not on the intended answer. | **result-corrupting** | Answer vocabulary changed to `literal` / `coded`, both single tokens (`' literal'`=24016, `' coded'`=47773), so the two options are symmetric. Query template reworded to match. | Yes — bank regenerated, tokenization audit re-run clean (1464 ok / 0 bad / 0 ambiguous, 540 families / 0 violations); no prior comprehension results existed to invalidate. |
 
 ---
@@ -633,3 +635,35 @@ returned "adding Boombness does nothing", which the plan would have read as a ca
 
 In gap units `alpha=1` now injects exactly one diff-of-means (6.1 at L8, 14.8 at L18) and `alpha=2`
 twice that. This is what makes the §5.2 additive sweep a real test rather than a foregone conclusion.
+
+### 2026-08-16 — Tick 9 (G1 smoke found two more measurement bugs; machinery otherwise verified)
+
+**The transplant machinery is verified correct.** The live self-swap invariant — replace a prompt's
+own captured states at its own positions — is an **exact** no-op: `|baseline − self_swap| = 0.00e+00`
+on all four families. That is the check that says a null result later would be a real null rather
+than a hook that never fired.
+
+**Two measurement bugs, both found by the smoke, both silent, both now fixed** (see the audit table):
+readouts at the patched layer were pre-patch, and the L31 readout used post-norm coordinates against
+raw-fitted directions. The first is the more insidious: it would have made every intervention look
+like it had *no effect at the layer it was applied to*, which is exactly the shape of a false causal
+negative. Smoke 760661 discarded; **760681** resubmitted.
+
+**A third problem, not yet fixed — the semantic readout is dead.** Across every arm including the
+donor ceiling, `p_concept` and `p_codeword` are ~1e-6 to 1e-5, so `semantic_margin` is numerically
+zero everywhere:
+
+| arm | p_concept | p_codeword |
+|---|---|---|
+| baseline (doublespeak) | 6.5e-06 | 2.6e-06 |
+| donor ceiling (direct bomb) | 5.2e-06 | 4.4e-08 |
+
+The `semantic_one_word` query asks "what does the word X actually refer to?", but the model's
+**immediate next token** is evidently not the answer word — it is presumably a preamble token. So
+the next-token readout measures nothing, in every arm, and any §5.2/§5.3 conclusion drawn from
+`semantic_margin` would be a conclusion about a number that is always zero. The *representation*
+readouts (boombness cosine, logit lens) are unaffected and are working.
+
+This needs the actual next-token distribution inspected before the readout is trusted; it is the
+next thing to fix. Recorded here rather than worked around, because "the metric was flat" is exactly
+how a dead readout gets mistaken for a negative result.

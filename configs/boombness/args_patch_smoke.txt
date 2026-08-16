@@ -1,1 +1,1 @@
---tag smoke --fit-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --n-families 2 --n-examples 4 --alphas 0.5,1,2 --singletons 8,18 --query-kind semantic_one_word
+--tag smoke2 --fit-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --n-families 2 --n-examples 4 --alphas 0.5,1,2 --singletons 8,18 --query-kind semantic_one_word

@@ -106,14 +106,68 @@ def select_positions(last_idx: List[int], scope: str) -> List[int]:
 # --------------------------------------------------------------------------- #
 # Readouts
 # --------------------------------------------------------------------------- #
+class BlockCapture:
+    """Capture the TRUE output of chosen decoder blocks, after any patch hooks have run.
+
+    Two bugs in one, both found by the §5 smoke and both silent:
+
+    (a) READS AT THE PATCHED LAYER WERE PRE-PATCH. `out.hidden_states[L+1]` is filled by the
+        framework's own capture, which is registered before ours, so at the very layer being
+        patched it reports the value the patch was about to overwrite. Measured: patching
+        window `L8` left the L8 readout bit-identical to baseline (-0.2294) while a window
+        containing layers *below* 8 moved it (+0.1477) — i.e. the readout only ever saw
+        upstream effects and reported "no effect at the intervened layer" by construction.
+
+    (b) THE LAST LAYER WAS IN THE WRONG COORDINATES. transformers 5.12 ties
+        `hidden_states[-1]` to `last_hidden_state` (post final norm), while the directions are
+        fitted on RAW block outputs, so the L31 projection mixed two coordinate systems.
+
+    Registering our own forward hooks on the blocks fixes both: they run after the patch hooks
+    (later registration = later execution on the same module), and they read the block's own
+    output rather than the framework's tied tuple.
+    """
+
+    def __init__(self, model, layer_idxs: Sequence[int]):
+        self.layers = ds()._get_layers(model)
+        self.idxs = list(layer_idxs)
+        self.buf: Dict[int, torch.Tensor] = {}
+        self._handles: List[object] = []
+
+    def _hook(self, li: int):
+        def f(mod, inp, out):
+            h = out[0] if isinstance(out, tuple) else out
+            self.buf[li] = h.detach()
+        return f
+
+    def __enter__(self):
+        self.buf.clear()
+        for li in self.idxs:
+            self._handles.append(self.layers[li].register_forward_hook(self._hook(li)))
+        return self
+
+    def __exit__(self, *exc):
+        for h in self._handles:
+            h.remove()
+        self._handles = []
+        return False
+
+    def at(self, layer: int, pos: int) -> torch.Tensor:
+        if layer not in self.buf:
+            raise KeyError(f"block {layer} was not captured (hook did not fire)")
+        return self.buf[layer][0, pos, :].float().cpu()
+
+
 @torch.no_grad()
-def readout(lm, ids: List[int], stack: contextlib.ExitStack,
+def readout(lm, ids: List[int], cap: "BlockCapture",
             concept_ids: Sequence[int], codeword_ids: Sequence[int],
             readout_layers: Sequence[int], d_surface: Dict[int, torch.Tensor],
             probe_pos: int) -> Dict[str, float]:
-    """One patched forward -> next-token semantics + boombness + logit lens at `probe_pos`."""
+    """One patched forward -> next-token semantics + boombness + logit lens at `probe_pos`.
+
+    `cap` must already be entered, AFTER the patch contexts, so its hooks see patched values.
+    """
     t = torch.tensor([ids], device=lm.model.device)
-    out = lm.model(input_ids=t, output_hidden_states=True, use_cache=False)
+    out = lm.model(input_ids=t, use_cache=False)
     logits = out.logits[0, -1, :].float().cpu()
     lp = torch.log_softmax(logits, dim=-1)
     ci = torch.tensor(list(concept_ids), dtype=torch.long)
@@ -125,15 +179,16 @@ def readout(lm, ids: List[int], stack: contextlib.ExitStack,
         "semantic_margin": p_c - p_w,
         "p_ratio_log": float(torch.log(torch.tensor(max(p_c, 1e-30) / max(p_w, 1e-30)))),
     }
-    for L in readout_layers:
-        h = out.hidden_states[L + 1][0, probe_pos, :].float().cpu()
+    hs = torch.stack([cap.at(L, probe_pos) for L in readout_layers], dim=0)
+    lls = sg.logit_lens_boombness_batch(lm, hs, concept_ids, codeword_ids)
+    for i, L in enumerate(readout_layers):
+        h = hs[i]
         d = d_surface.get(L)
         if d is not None:
             s = sg.direction_boombness(h, d)
             rec[f"boombness|L{L}|cos"] = s["cosine"]
             rec[f"boombness|L{L}|proj"] = s["projection"]
-        ll = sg.logit_lens_boombness(lm, h, concept_ids, codeword_ids)
-        rec[f"ll|L{L}|boombness"] = ll["logit_lens_boombness"]
+        rec[f"ll|L{L}|boombness"] = lls[i]["logit_lens_boombness"]
     return rec
 
 
@@ -182,14 +237,16 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
     n = 0
     # -- baseline (no intervention) ------------------------------------------ #
     with contextlib.ExitStack() as st:
-        rec = readout(lm, r_ids, st, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
+        cap = st.enter_context(BlockCapture(lm.model, readout_layers))
+        rec = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "none", "scope": "", "window": "", "alpha": 0.0,
                  "direction": "", **rec})
     n += 1
 
     # -- donor ceiling: what the readout looks like on the donor prompt itself - #
     with contextlib.ExitStack() as st:
-        rec = readout(lm, d_ids, st, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
+        cap = st.enter_context(BlockCapture(lm.model, readout_layers))
+        rec = readout(lm, d_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "donor_ceiling", "scope": "", "window": "", "alpha": 0.0,
                  "direction": "", **rec})
     n += 1
@@ -200,7 +257,8 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
     src_self = {L: recip_hs[L + 1, r_last, :].clone() for L in all_layers}
     with contextlib.ExitStack() as st:
         st.enter_context(pc.ComponentOutSwap(lm.model, r_last, src_self, component="resid_post"))
-        rec_self = readout(lm, r_ids, st, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
+        cap = st.enter_context(BlockCapture(lm.model, readout_layers))
+        rec_self = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "self_swap_noop_check", "scope": "all", "window": "all",
                  "alpha": 0.0, "direction": "", **rec_self})
     n += 1
@@ -216,7 +274,8 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                 try:
                     with contextlib.ExitStack() as st:
                         st.enter_context(pc.ComponentOutSwap(lm.model, pos, src, component="resid_post"))
-                        rec = readout(lm, r_ids, st, concept_ids, codeword_ids,
+                        cap = st.enter_context(BlockCapture(lm.model, readout_layers))
+                        rec = readout(lm, r_ids, cap, concept_ids, codeword_ids,
                                       readout_layers, d_surface, probe_pos)
                 except Exception as e:
                     ledger.fail(f"transplant:{type(e).__name__}", recip["prompt_id"])
@@ -256,7 +315,8 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                             for L, p, d, a in patches:
                                 st.enter_context(dc.LayerPatch(lm.model, L, p, vector=d,
                                                                mode="add", alpha=a))
-                            rec = readout(lm, r_ids, st, concept_ids, codeword_ids,
+                            cap = st.enter_context(BlockCapture(lm.model, readout_layers))
+                            rec = readout(lm, r_ids, cap, concept_ids, codeword_ids,
                                           readout_layers, d_surface, probe_pos)
                     except Exception as e:
                         ledger.fail(f"add:{type(e).__name__}", recip["prompt_id"])
