@@ -460,3 +460,35 @@ Also fixed two minor review findings: `discover_columns` scanned only the first 
 are heterogeneous, so a prefix scan could silently drop a metric), and `RunDir` now refuses to open
 an existing run directory (`log_row` appends, so a reused directory would silently double its rows
 and desynchronise the count from the failure ledger).
+
+### 2026-08-16 — Tick 6 (probe pilot exposed two flaws in my own analysis; both fixed)
+
+The probe pilot completed (1320 labellable prompts: C 540 · A 348 · B 216 · E 216, 3-fold over
+domains, 0 missing reps). It ran clean and reported **AUROC = 1.0000 for every regime at every
+layer** — which is not a result, it is a bug report about the probe.
+
+**Flaw 1 — saturation.** Each fold trains on ~576 examples in **4096 dimensions**. At that ratio
+the classes are almost surely linearly separable, so the logistic fit drives the margin to
+saturation: `P(concept|A)` and `P(concept|C)` both came back as *exactly* 0.0, and their difference
+— the graded quantity the whole probe exists to produce — was 1e-33 to 1e-9. A perfect classifier
+carrying no information. Fixed by standardize → **PCA (fit on the training fold only, unsupervised,
+so no leakage)** → L2 logistic. `--pca 0` reproduces the saturated behaviour so it can be
+demonstrated rather than asserted, and every layer now reports a `saturation_frac` next to its AUROC.
+
+**Flaw 2 — the shuffled-label control was not a control.** It came back at 0.58–0.64 rather than
+0.5, which looks like a leaking split. It was not: I was reporting **argmax-over-layers for the real
+arm and argmax-over-layers for the shuffled arm and comparing the two**. Both are maxima of nine
+noisy estimates, so both are biased upward by selection, and the difference of two independently
+selected maxima is not a comparison at all. Fixed: real and shuffled are now paired **at the same
+layer**, the reported quantity is the per-layer `auroc_lift = real − shuffled`, and the headline
+layer is chosen on the lift rather than on the raw AUROC. The full per-layer table is printed, so
+`L0 = 1.0` (pure lexical identity) is visible as the artifact it is instead of being selected as
+"the best layer".
+
+This is the same selection-bias family the self-review flagged in `analyze_boombness.prompt_level`
+(argmax over layers per prompt, then compare groups). Both now report the full curve.
+
+- **SLURM 760611** still scoring; fit stage completed cleanly with the new guard:
+  `dev families=30 sha16 e92f0ae8`, `heldout families=30 sha16 667cc4fa` — all four cells averaged
+  over an identical, recorded family set, and the two splits disjoint.
+- Probe rerun with PCA-64 and paired reporting is running.

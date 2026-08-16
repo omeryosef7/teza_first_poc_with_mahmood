@@ -94,13 +94,35 @@ def domain_folds(rows: List[Dict], n_folds: int, seed: int) -> List[Tuple[List[s
     return [(sorted(set(order) - set(f)), sorted(f)) for f in folds]
 
 
-def fit_probe(X_tr: np.ndarray, y_tr: np.ndarray, seed: int, C: float = 1.0):
+def fit_probe(X_tr: np.ndarray, y_tr: np.ndarray, seed: int, C: float = 1.0,
+              n_components: int = 64):
+    """Standardize -> (optional) PCA -> L2 logistic regression.
+
+    WHY THE PCA STEP EXISTS. Each fold trains on ~576 examples in 4096 dimensions. At that
+    ratio the two classes are almost surely linearly separable, so an ordinary logistic fit
+    drives the margin to saturation: the pilot returned AUROC = 1.0000 at EVERY layer, with
+    P(concept|A) and P(concept|C) both exactly 0.0 and their difference at 1e-33 — a perfect
+    classifier that carries no graded information at all. Since the whole purpose of the probe
+    here is the GRADED score `p_C_minus_p_A`, a saturated probe answers nothing, and the layer
+    profile becomes a flat line of 1.0 that hides whatever structure exists.
+
+    Reducing to `n_components` principal components (fit on the TRAINING fold only, so no
+    leakage — PCA is unsupervised and never sees y) removes the separability, restores graded
+    probabilities, and is the standard treatment for linear probes on high-dimensional
+    activations. `n_components=0` disables it and reproduces the saturated full-dimensional
+    behaviour, which is kept only so the saturation can be demonstrated rather than asserted.
+    """
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
+    from sklearn.decomposition import PCA
     from sklearn.pipeline import make_pipeline
-    clf = make_pipeline(
-        StandardScaler(with_mean=True, with_std=True),
-        LogisticRegression(max_iter=2000, C=C, random_state=seed))
+    steps = [StandardScaler(with_mean=True, with_std=True)]
+    if n_components and n_components > 0:
+        k = int(min(n_components, X_tr.shape[0] - 1, X_tr.shape[1]))
+        if k >= 2:
+            steps.append(PCA(n_components=k, random_state=seed))
+    steps.append(LogisticRegression(max_iter=5000, C=C, random_state=seed))
+    clf = make_pipeline(*steps)
     clf.fit(X_tr, y_tr)
     return clf
 
@@ -116,6 +138,9 @@ def score_metrics(y: np.ndarray, p: np.ndarray) -> Dict[str, float]:
     out["auprc"] = float(average_precision_score(y, p))
     out["accuracy"] = float(accuracy_score(y, (p >= 0.5).astype(int)))
     out["brier"] = float(brier_score_loss(y, p))
+    # Fraction of predictions pinned to 0 or 1. A saturated probe can post a perfect AUROC
+    # while its graded score carries no information, so this is reported next to it, always.
+    out["saturation_frac"] = float(((p < 1e-6) | (p > 1 - 1e-6)).mean())
     return out
 
 
@@ -151,7 +176,8 @@ def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]
 
 def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
                layers: Sequence[int], layer_index: Dict[int, int], n_folds: int,
-               seed: int, shuffle_labels: bool = False) -> Dict:
+               seed: int, shuffle_labels: bool = False, C: float = 1.0,
+               n_components: int = 64) -> Dict:
     train_pool, eval_pool = regime_rows(table, regime)
     folds = domain_folds(train_pool, n_folds, seed)
     per_layer: Dict[int, Dict] = {}
@@ -171,7 +197,7 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
                 y_tr = rng.permutation(y_tr)
             if len(set(y_tr.tolist())) < 2:
                 continue
-            clf = fit_probe(X_tr, y_tr, seed)
+            clf = fit_probe(X_tr, y_tr, seed, C=C, n_components=n_components)
             X_te = np.stack([reps[r["prompt_id"]][li] for r in te])
             p_te = clf.predict_proba(X_te)[:, 1]
             y_all.extend(r["y"] for r in te)
@@ -203,7 +229,8 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
         cand = {L: v for L, v in per_layer.items() if not math.isnan(v.get("auroc", float("nan")))}
         if cand:
             best = max(cand, key=lambda L: cand[L]["auroc"])
-    return {"regime": regime, "shuffled_labels": shuffle_labels,
+    return {"regime": regime, "shuffled_labels": shuffle_labels, "C": C,
+            "n_components": n_components,
             "n_train_pool": len(train_pool), "n_eval_pool": len(eval_pool),
             "n_folds": len(folds), "per_layer": per_layer, "best_layer_by_auroc": best}
 
@@ -215,6 +242,10 @@ def main() -> int:
     ap.add_argument("--layers", default="", help="comma list of BLOCK layers; default = every 2nd")
     ap.add_argument("--folds", type=int, default=3, help="group-k-fold over domains")
     ap.add_argument("--regimes", default="d1_simple,d2_aligned,d3_hard_negative,d4_heldout_ds")
+    ap.add_argument("--C", type=float, default=1.0, help="L2 inverse strength")
+    ap.add_argument("--pca", type=int, default=64,
+                    help="PCA components fit on the TRAIN fold only; 0 disables (and the probe "
+                         "then saturates at this n/d ratio — see fit_probe)")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="probe")
     args = ap.parse_args()
@@ -247,23 +278,47 @@ def main() -> int:
 
     results: Dict[str, Dict] = {}
     for regime in [r.strip() for r in args.regimes.split(",") if r.strip()]:
-        for shuf in (False, True):
-            key = regime + ("_shuffled" if shuf else "")
-            res = run_regime(regime, table, reps, want, layer_index, args.folds,
-                             args.seed, shuffle_labels=shuf)
-            results[key] = res
-            run.log_row({"regime": key, **{k: v for k, v in res.items() if k != "per_layer"},
-                         "per_layer_auroc": {L: v.get("auroc") for L, v in res["per_layer"].items()}})
-            b = res["best_layer_by_auroc"]
-            if b is not None:
-                v = res["per_layer"][b]
-                extra = ""
-                if "p_C_minus_p_A" in v:
-                    extra = f"  P(concept|C)-P(concept|A)={v['p_C_minus_p_A']:+.4f}"
-                print(f"  {key:26s} best L{b:<3d} AUROC={v['auroc']:.4f} "
-                      f"acc={v['accuracy']:.4f}{extra}")
-            else:
-                print(f"  {key:26s} no usable layer")
+        real = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
+                          shuffle_labels=False, C=args.C, n_components=args.pca)
+        shuf = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
+                          shuffle_labels=True, C=args.C, n_components=args.pca)
+        results[regime] = real
+        results[regime + "_shuffled"] = shuf
+
+        # PER-LAYER, REAL vs SHUFFLED AT THE SAME LAYER.
+        # The pilot reported argmax-over-layers for the real arm and argmax-over-layers for the
+        # shuffled arm and compared the two. Both are maxima of 9 noisy estimates, so both are
+        # biased upward and the comparison is not a comparison — it is how a shuffled control
+        # came back at 0.58-0.64 and looked like leakage. The honest quantity is the paired
+        # per-layer difference, and the headline layer is chosen on THAT.
+        paired = {}
+        for L in real["per_layer"]:
+            if L not in shuf["per_layer"]:
+                continue
+            a = real["per_layer"][L].get("auroc")
+            b = shuf["per_layer"][L].get("auroc")
+            if a is None or b is None or math.isnan(a) or math.isnan(b):
+                continue
+            paired[L] = {"auroc_real": a, "auroc_shuffled": b, "auroc_lift": a - b,
+                         "saturation_frac": real["per_layer"][L].get("saturation_frac"),
+                         "p_C_minus_p_A": real["per_layer"][L].get("p_C_minus_p_A")}
+        real["paired_vs_shuffled"] = paired
+        best = max(paired, key=lambda L: paired[L]["auroc_lift"]) if paired else None
+        real["best_layer_by_lift"] = best
+
+        run.log_row({"regime": regime, "C": args.C, "n_components": args.pca,
+                     "n_train_pool": real["n_train_pool"], "n_eval_pool": real["n_eval_pool"],
+                     "best_layer_by_lift": best, "paired_vs_shuffled": paired})
+
+        print(f"  {regime}")
+        print(f"    {'L':>3} {'AUROC':>7} {'shuf':>7} {'lift':>7} {'sat':>6} {'P(C)-P(A)':>10}")
+        for L in sorted(paired):
+            v = paired[L]
+            d = v["p_C_minus_p_A"]
+            ds = f"{d:+.4f}" if isinstance(d, float) else "     -"
+            mark = " <-" if L == best else ""
+            print(f"    {L:>3} {v['auroc_real']:>7.4f} {v['auroc_shuffled']:>7.4f} "
+                  f"{v['auroc_lift']:>+7.4f} {v['saturation_frac']:>6.2f} {ds:>10}{mark}")
 
     summary = {
         "run_scored": os.path.abspath(args.run), "bank": args.bank,
