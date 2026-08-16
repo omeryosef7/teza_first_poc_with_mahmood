@@ -487,8 +487,13 @@ def _blocks(preset: str) -> List[Dict]:
              query_kinds=["behavioral", "semantic_one_word"], slots=[0]),
         # (6) Role-confusion variants (plan §11), on both the doublespeak arm and its
         #     benign-literal control so a role effect can be told from a mapping effect.
-        dict(name="role_style", domains=domains, splits=["dev"],
-             conditions=["natural_doublespeak", "benign_literal"], n_examples=[4],
+        # §11 needs >=20 rows per role style. The original block was 6 domains x 1 split x
+        # 2 conditions x 1 demo count = 12 extract rows and only 6 JUDGED rows per style, at
+        # which one judged prompt moves a cell's ASR by 0.167 — far too coarse to say anything
+        # about role framing. Opening the split and demo-count axes gives 6 x 2 x 3 = 36 per
+        # (style, condition), which clears the plan's threshold with margin.
+        dict(name="role_style", domains=domains, splits=list(SPLITS),
+             conditions=["natural_doublespeak", "benign_literal"], n_examples=[2, 4, 8],
              strengths=["none"], consistencies=["consistent"], positions=["near"],
              role_styles=[r for r in ROLE_STYLES if r != "plain"],
              query_kinds=["behavioral", "semantic_one_word"], slots=[0]),

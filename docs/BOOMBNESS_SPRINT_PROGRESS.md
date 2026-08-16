@@ -1857,3 +1857,30 @@ tiny relative to the axis's demonstrated range — but the behavioural claim is 
 **Fix if §11 is to be answered properly:** the `role_style` block in the bank is 6 domains × 1 split
 × 2 conditions × 1 demo count = 12 rows per style. It needs the demo-count and split axes opened up
 to reach the plan's ≥20 per condition. That is a generator config change, not new machinery.
+
+### 2026-08-17 — Tick 25 (role block given real power; third audit launched, overdue)
+
+**Bank expanded to fix §11's power problem.** The `role_style` block was 6 domains × 1 split ×
+2 conditions × 1 demo count = 12 extract rows and only **6 judged** rows per style. Opening the
+split and demo-count axes gives **72 behavioural rows per style**:
+
+```
+bank: 2352 rows, 240 matched 2x2 families, 0 alignment violations,
+      0 token-alignment violations, benign_remap collapse 0,
+      bank_content_sha16 7002854cf834e9f9
+```
+
+Extraction and scoring on the new rows queue behind the steering jobs.
+
+**Third audit launched (overdue — should have run at tick 24).** Pointed at the claims currently
+standing, not the ones already retracted. Two briefs I aimed at my own weakest points:
+
+- **C2 may be measuring a bad refusal probe rather than refusal's unimportance.** The audit checks
+  whether the house refusal direction separates `direct_harmful` from benign at all on this model;
+  if it does not, "Boombness dominates refusalness" is a statement about the probe.
+- **C3's headline comparison changes edge count (56832 vs 3552) at the same time as layer
+  coverage**, so it may not isolate depth-distribution at all.
+
+Also asked: are the coherence thresholds post-hoc fitted to make α=1 fail, and is the random
+control at 0.466 unique-word ratio (baseline 0.741) itself partly degenerate and therefore not a
+clean control?
