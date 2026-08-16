@@ -135,6 +135,7 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
 
     D_attn: Dict[int, torch.Tensor] = {}
     D_dir: Dict[int, torch.Tensor] = {}
+    recon_err: Dict[int, float] = {}
     # Everything below is done on CPU in float32: these are single-destination tensors, the
     # arithmetic is cheap, and mixing a cuda-resident v with a cpu-resident projection is exactly
     # the device mismatch that killed the first self-test (job 760719).
@@ -174,12 +175,13 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
             if want is not None:
                 num = float((got - want).norm())
                 den = float(want.norm()) or 1.0
+                recon_err[L] = num / den
                 if num / den > 1e-3:
                     raise AssertionError(
                         f"L{L}: the value-flow decomposition does not reconstruct the attention "
                         f"output (relative error {num/den:.3e}). The GQA head map or the o_proj "
                         "slicing is wrong.")
-    res: Dict[str, Dict[int, torch.Tensor]] = {"D_attn": D_attn}
+    res: Dict[str, Dict[int, torch.Tensor]] = {"D_attn": D_attn, "recon_rel_err": recon_err}
     if direction is not None:
         res["D_dir"] = D_dir
     return res
@@ -212,10 +214,17 @@ def main() -> int:
                        check_invariants=True)
     for L in layers:
         da, dd = res["D_attn"][L], res["D_dir"][L]
-        print(f"  L{L}: D_attn sum={float(da.sum()):.6f} (must be 1.0)  shape={tuple(da.shape)}  "
+        err = res["recon_rel_err"].get(L, float("nan"))
+        # The REAL check is recon_rel_err: |sum(Y) - actual o_proj output| / |actual|. The
+        # D_attn sum is printed only to show it is uninformative — it is 1.0 by construction
+        # for any Y at all, which is why the earlier version of this self-test verified nothing.
+        print(f"  L{L}: reconstruction rel.err = {err:.3e}  <-- THE CHECK "
+              f"(tautological D_attn sum = {float(da.sum()):.6f}, informative only as a smoke test)  "
               f"D_dir range=[{float(dd.min()):+.3f}, {float(dd.max()):+.3f}]")
-    print("selftest OK — the value-flow decomposition reconstructs the attention output, "
-          "so the GQA head mapping and o_proj slicing are correct")
+    worst = max(res["recon_rel_err"].values()) if res["recon_rel_err"] else float("nan")
+    print(f"selftest OK — sum(Y) reproduces the module's own o_proj output to {worst:.3e} "
+          "relative error, so the GQA head mapping and o_proj slicing are correct. "
+          "(The D_attn==1 identity proves nothing and is not the basis of this verdict.)")
     return 0
 
 

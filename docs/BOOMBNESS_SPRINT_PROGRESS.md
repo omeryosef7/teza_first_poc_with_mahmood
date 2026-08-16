@@ -1785,3 +1785,33 @@ non-destructively — which is a real finding, and a very different one from "st
 **This is the first spurious result in the sprint caught before being written up as a finding
 rather than after.** The difference was having a structural check that does not depend on the
 number I wanted to see.
+
+### 2026-08-17 — Tick 23 (the dominance verification is now real, and says so)
+
+Job 760858 passed the **reconstruction** check — `sum(Y)` reproduces the module's own `o_proj`
+output — so the GQA head mapping (32 query heads over 8 KV heads, `h//4`) and the `o_proj` per-head
+slicing are genuinely correct, and the §10 edge ranking rests on something verified.
+
+But the self-test **printed the tautology** as if it were the verdict:
+
+```
+L8: D_attn sum=1.000000 (must be 1.0)
+selftest OK — the value-flow decomposition reconstructs the attention output, ...
+```
+
+A reader of that log would conclude the sum-check is the evidence. It is not — it is 1.0 by
+construction for any `Y` at all. The print now leads with the real number and labels the other
+explicitly:
+
+```
+L8: reconstruction rel.err = ...e-XX  <-- THE CHECK
+    (tautological D_attn sum = 1.000000, informative only as a smoke test)
+selftest OK — sum(Y) reproduces the module's own o_proj output to ...e-XX relative error ...
+    (The D_attn==1 identity proves nothing and is not the basis of this verdict.)
+```
+
+Small change, but it is the same class of problem as the rest of this sprint: a *number that looks
+like verification* standing in for one. Job **760862** re-runs it.
+
+Low-dose steering (α=0.10, α=0.25) running as **760859** / **760860**; both will go through
+`coherence_gate.py` before any ASR from them is read.
