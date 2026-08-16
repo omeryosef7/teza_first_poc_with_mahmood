@@ -10487,3 +10487,40 @@ submit / cancel / resubmit decision can be taken on them. Queue state stays **un
 
 Nothing to do but wait: no asymmetry job is in flight to be rescued, and submitting into a dead
 controller is not possible anyway.
+## 2026-08-18 02:45 — outage continues. **And my own tick command turns a failed query into a convincing "queue empty".**
+
+*(Wall clock 05:31 UTC.)* First probe of the tick:
+`timeout 25 squeue -u omeryosef -o ... -h 2>&1 | head -4` → **no output, exit 0.** I read that as
+the controller having recovered with an empty queue. It had not:
+
+```
+$ squeue
+slurm_load_jobs error: Unable to contact slurm controller (connect failure)
+$ sinfo
+slurm_load_partitions: Unable to contact slurm controller (connect failure)
+```
+
+**slurmctld is still down.** The empty output came from the probe being killed at the timeout before
+it emitted, and `-h` suppressing the header that would have made emptiness distinguishable from
+silence.
+
+### Two failure modes stacked, both in the command I have used every tick
+1. **`-h` removes the only positive signal.** With the header, "no jobs" prints a header and nothing
+   else; without it, "no jobs" and "died before printing" are byte-identical.
+2. **`rc=` after a pipe reports `head`, not `squeue`.** Both `rc=0` readings above are `head`
+   succeeding. The failing command's status was never visible.
+
+One tick after writing *"the `count=0` my one-liner would print is a failed query, not an empty
+queue"*, I ran that one-liner and believed it. Recognising a trap in principle did not stop me
+walking into its concrete instance — the same shape as the smoke-run and the "short job" errors.
+
+### Fixed for subsequent ticks
+Queue checks now (a) run `squeue` **without `-h`** so the header proves the controller answered,
+and (b) test **`squeue`'s own** status rather than a pipeline's. Concretely:
+`out=$(squeue -u omeryosef); rc=$?` then require `rc -eq 0` **and** a header line before reading any
+count. Emptiness is only claimed when the header is present.
+
+**Queue state: still unknown** — third consecutive tick. No asymmetry job is in flight, nothing can
+be submitted, and the >30 min PENDING rule remains unevaluable. Diff otherwise unchanged.
+
+---
