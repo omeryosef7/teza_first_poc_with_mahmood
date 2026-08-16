@@ -63,7 +63,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS (direction robust; magnitude restated with intervals). The lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout strongly toward the donor (95% CI +23% to +135% of span); transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
-| G3 (§10) | Can Boombness be removed without destroying comprehension? | **UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
+| G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
 | G4 (§12) | Is Boombness a usable GCG objective? | **REOPENED — the G2 negative was an artifact; the objective is viable and untested.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
 
@@ -1564,3 +1564,47 @@ then a 2-layer attention cut doing nothing becomes a real and interesting locali
 than an artifact.
 
 Sample also raised from 2 to 6 families, since n=2 was the other thing the audit flagged about G3.
+
+---
+
+## ✅ GATE G3 — resolved. The demonstrations' influence is NOT carried by attention to the codeword tokens.
+
+`dynrange_20260817_000454_3064437`, 6 families, 60 rows, 0 failures. **Dynamic range is now
+established**, so the arms are interpretable for the first time:
+
+| arm | Δ semantic log-odds | edges cut | what it is |
+|---|---|---|---|
+| **`no_demo_text`** | **−11.509** | (text deleted) | **the true ceiling** — the demonstrations removed |
+| `positive_control` | −1.135 | 7264 | all pre-query keys, 2 layers |
+| **`all_layers_demo`** | **−0.784** | 4096 | **query→demo-codeword edges at ALL 32 layers** |
+| `all_demo` | −0.093 | 256 | query→demo-codeword edges, 2 layers |
+| `topk_demo` | −0.025 | 16 | |
+| `random_demo` / `same_head_random` / `random_nondemo` / `bottomk_demo` | ≈0 | 16 | controls |
+
+### The finding
+
+Deleting the demonstration text moves the readout by **−11.5 log-odds**. Cutting **every** attention
+edge from the final codeword token to **every** demonstration codeword token, at **every layer**,
+moves it by **−0.78** — about **7% of the ceiling**.
+
+**So ~93% of the demonstrations' influence on what the model thinks the codeword means does not flow
+through attention from the query codeword to the demonstration codewords, at any depth.**
+
+That is a much stronger statement than the retracted 2-layer version, and it now has the control to
+support it. The natural mechanistic reading is that the mapping is taught by the **predicates**, not
+by the repeated codeword tokens: *"A carrot exploded near the bridge"* teaches `carrot = bomb`
+through *exploded*, not through *carrot*. The codeword occurrences in the demos are the least
+informative tokens in them.
+
+**Obvious next experiment**, now well-posed: cut attention to the **whole demonstration block**
+(and separately to the harm predicates) rather than only to the codeword occurrences. `dominance.py`
+already ranks arbitrary source positions, so this is a config change, not new machinery.
+
+### Gate history, kept because the process matters more than the answer
+
+G3 went null (uninterpretable) → "dead intervention" (wrong) → "genuine null" (premature) →
+**resolved** once a control with real dynamic range existed. The `no_demo_text` arm is four lines of
+code and it was the difference between an uninterpretable number and a result. It should have been
+in the first version of the module, and the reason it was not is that I designed the controls to
+distinguish *between hypotheses* and forgot to include one that establishes the *measurement works
+at all*.
