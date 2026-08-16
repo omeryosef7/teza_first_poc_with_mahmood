@@ -27,12 +27,12 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P2.5 | §5.4 | `decision_gate.md` | TODO | |
 | P3.1 | §6.1 | Logit-lens Boombness | DONE | `signals.logit_lens` + `logit_lens_boombness_batch`; ids validated by `readout_id_pair` |
 | P3.2 | §6.2 | Direction Boombness | DONE | `signals.estimate_directions` — the 2×2 estimator (`d_surface`/`d_context`/`d_inter`/`d_naive`) |
-| P3.3 | §6.3 | Simple probe | IN PROGRESS | `src/boombness/probes.py` — 4 regimes + shuffled-label control, pilot running |
-| P3.4 | §6.3 | Hard-negative / held-out-condition probe | IN PROGRESS | regime `d4_heldout_ds`: train without cell C, score C (the generalization test) |
-| P3.5 | §6.4 | Metric comparison | TODO | |
-| P4.1 | §7.1 | Token-level Boombness per occurrence × layer | TODO | |
-| P4.2 | §7.1 | Occurrence × layer heatmaps | TODO | |
-| P4.3 | §7.1 | Later-carrot-more-bomb-like test | TODO | |
+| P3.3 | §6.3 | Simple probe | DONE | `probes.py` — PCA-64, margin readout, shuffled control ~0.5; run `margin_20260816_192040` |
+| P3.4 | §6.3 | Hard-negative / held-out-condition probe | DONE | `d4_heldout_ds` reproduces the d_surface layer profile from a held-out-trained classifier |
+| P3.5 | §6.4 | Metric comparison | DONE | 4 metrics compared: d_surface / d_naive / probe margin / logit lens — see Tick 7 |
+| P4.1 | §7.1 | Token-level Boombness per occurrence × layer | DONE | 8472 occurrence rows, per-occurrence × per-layer, run `full_20260816_185942_1008673` |
+| P4.2 | §7.1 | Occurrence × layer heatmaps | DONE | `analysis/plots/occurrence_x_layer_*.png` for all four 2×2 cells |
+| P4.3 | §7.1 | Later-carrot-more-bomb-like test | DONE | two-humped profile: write hump L8, null L16–22, readout hump L24–31 |
 | P4.4 | §8 | Example-count sweep | TODO | |
 | P5.1 | §4 | ~600-prompt bank | TODO | |
 | P5.2 | §9 | Generations + evaluation | TODO | |
@@ -62,7 +62,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | Gate | Question | Verdict | Date |
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | pending | |
-| G2 (§9) | Does prompt-level Boombness predict ASR? | pending | |
+| G2 (§9) | Does prompt-level Boombness predict ASR? | pending (needs ASR run) | |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | pending | |
 | G4 (§12) | Is Boombness a usable GCG objective? | pending | |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
@@ -492,3 +492,91 @@ This is the same selection-bias family the self-review flagged in `analyze_boomb
   `dev families=30 sha16 e92f0ae8`, `heldout families=30 sha16 667cc4fa` — all four cells averaged
   over an identical, recorded family set, and the two splits disjoint.
 - Probe rerun with PCA-64 and paired reporting is running.
+
+### 2026-08-16 — Tick 7 (CORRECTED FULL RESULT — Phases 3 and 4 substantially answered)
+
+Run `full_20260816_185942_1008673`: 1464 prompts, 8472 occurrences, **0 failures**, directions fitted
+on 30 families/cell/split with recorded family-set hashes (`dev e92f0ae8`, `heldout 667cc4fa`,
+0 cell-family entries dropped), **0 rows self-fitted** (every score is genuinely cross-fitted).
+
+#### The last-layer fix was not cosmetic
+
+The diagnostic `last_layer_tied_vs_raw_relnorm` came back at **mean 0.653, max 0.692** — the tied
+(post-final-norm) and the true (raw block) last-layer vectors differ by ~65% of the vector norm.
+They are not nearly the same vector. Everything previously computed at L31 was a different quantity.
+
+**And the L31 effect survived it, larger:** `C−A` went from +0.112 (contaminated) to **+0.133**
+(corrected). So the late-layer rise is real, not a norm artifact — a good outcome for a check that
+could equally have destroyed the headline.
+
+#### Boombness `C−A`, paired within family (n=30 families, t on the paired differences)
+
+`C−A` = doublespeak carrot minus benign-literal carrot: same token, same query, only the demo
+valence differs. `frac` = `(C−A)/(B−A)`, the fraction of the way to the direct-bomb representation.
+
+| L | 0 | 4 | **8** | 12 | 16 | 20 | 24 | 28 | **31** |
+|---|---|---|---|---|---|---|---|---|---|
+| mean | −0.003 | +0.017 | **+0.048** | +0.036 | +0.003 | −0.004 | +0.015 | +0.043 | **+0.133** |
+| t | −6.8 | +5.6 | +5.3 | +5.4 | **+0.7** | **−1.1** | +2.5 | +5.9 | +14.0 |
+| frac | −0.002 | +0.016 | **+0.052** | +0.045 | +0.003 | −0.004 | +0.015 | +0.048 | **+0.141** |
+
+**A two-humped trajectory with a null in the middle:**
+1. **Write hump, L4–L14, peaking at L8** (+0.048, t=5.3, ~5% of the surface distance). L8 is exactly
+   the write band this repo localized independently (`v_bomb` uses `range(8,22)`; the concept write
+   was placed at L9).
+2. **Null carry band, L16–L22** (t = +0.7, +0.1, −1.1, +1.0) — no displacement along the
+   surface-identity axis at all.
+3. **Readout hump, L24–L31**, rising monotonically to +0.133 (t=14.0, ~14%).
+
+At no layer does the doublespeak carrot approach the bomb representation. "Carrot becomes bomb-like"
+is too strong; "carrot is displaced a few percent toward bomb, in two specific layer bands, with a
+null between them" is what the data supports.
+
+#### Convergent validity: the held-out probe reproduces the same profile
+
+`probes.py` regime `d4_heldout_ds` trains with cell C **entirely removed** and then scores it. The
+graded score is the decision-function margin (`margin_C_minus_A`, normalized as `fracC`):
+
+| L | 0 | 4 | **8** | 12 | 16 | 20 | 24 | 28 | 30 |
+|---|---|---|---|---|---|---|---|---|---|
+| fracC | +0.007 | +0.043 | **+0.066** | +0.062 | −0.010 | −0.025 | −0.013 | +0.012 | +0.038 |
+
+Same shape from a completely different estimator: hump peaking at L8, **null/negative at L16–L24**,
+rise at L28–L30. A diff-of-means direction and a linear classifier that never saw a doublespeak
+prompt agree on the layer profile and roughly on the magnitude (5% vs 6.6% at L8).
+
+#### The naive direction inflates the effect ~2× and manufactures signal where there is none
+
+This is the empirical payoff of the F1 design change. Same rows, same contrast, `d_naive = B−A`
+(what plan §6.2 asks for) versus the identified `d_surface`:
+
+| L | 4 | 8 | 12 | **16** | **20** | 28 | 31 |
+|---|---|---|---|---|---|---|---|
+| `d_surface` frac | +0.016 | +0.052 | +0.045 | **+0.003** | **−0.004** | +0.048 | +0.141 |
+| `d_naive` frac | +0.046 | +0.091 | +0.094 | **+0.030** | **+0.017** | +0.085 | +0.216 |
+
+`d_naive` roughly **doubles** the effect at every layer, and in the carry band L16–L20 it reports a
+clearly positive effect (+0.030, +0.017; t=+6.4, +4.3) where the identified direction finds **zero**.
+That difference is exactly `d_context` — the confound. Had we used the plan's direction we would have
+reported a monotone, everywhere-positive Boombness curve and missed the null band entirely.
+
+#### The naive diagonal probe learned CONCEPT-ness, not harm-context-ness
+
+Regime `d3_hard_negative` trains on the easy diagonal A vs B only, then tests on the off-diagonal:
+**recall on E = 1.00 and recall on C = 1.00 at every layer.** A probe that had learned
+"harm-context-ness" would get both exactly backwards. So the surface-identity signal is genuinely
+about the token's concept identity and is not confusable with the context valence — which is why
+the small `C−A` displacement is interpretable as movement along a concept axis at all.
+
+#### Where the metrics disagree, and why that is not a contradiction
+
+The logit lens gives a *different* picture early: `C−A` is **negative** at L0–L20 (−0.65 to −2.38,
+|t| up to 14.7) and positive only at L28/L31 (+2.08, +5.92). This is reported as a distinct
+construct, not as a refutation: the logit lens at the carrot position decodes the **next-token
+prediction**, and in a doublespeak demo the token after `carrot` is a harm predicate ("exploded",
+"was defused"), so the lens is reading local continuation rather than the token's own concept
+identity. Two constructs, two answers; the direction and probe metrics measure the token's own
+representation and agree with each other.
+
+**Phase 3 (§6) and Phase 4 (§7.1) are substantially answered.** Remaining for Phase 4: the
+example-count sweep (§8) plots are generated but not yet written up.
