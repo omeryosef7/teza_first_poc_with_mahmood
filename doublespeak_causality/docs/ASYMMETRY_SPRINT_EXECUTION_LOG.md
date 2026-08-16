@@ -10465,3 +10465,25 @@ Nothing of mine was running (last confirmed empty at 01:45 and no asymmetry job 
 since 2026-08-14), so the outage has no effect on §20 — but that is an inference from history, not
 an observation of now. No resubmission decisions can be made while the controller is down, and the
 >30 min PENDING rule cannot be evaluated. Diff otherwise unchanged.
+### 02:15 addendum — diagnosis: **slurmctld is down, slurmdbd is up.** And that closes the only check that makes `sacct` trustworthy.
+The probe that hung has now returned:
+
+| command | result |
+|---|---|
+| `squeue` (×2) | `Unable to contact slurm controller (connect failure)` |
+| `sinfo` | `Unable to contact slurm controller (connect failure)` |
+| **`sacct`** | **responds** — returns 740944 / 741053 / 741054 as `RUNNING` |
+
+So the **controller** is unreachable while the **accounting DB** answers. The three jobs `sacct`
+reports RUNNING are the **Aug-10 ghosts** identified on 2026-08-14 — records slurmdbd never closed —
+not live work. Their reappearance here is confirmation of that earlier finding, not new activity.
+
+**This sharpens the standing rule.** On 2026-08-14 I wrote: *"verify PENDING in `squeue` before
+acting on it; `sacct` state can be stale indefinitely."* During a controller outage **that
+verification path does not exist** — `squeue` is exactly what is unavailable. So the rule becomes:
+**while slurmctld is down, `sacct` liveness states are unusable, not merely suspect**, and no
+submit / cancel / resubmit decision can be taken on them. Queue state stays **unknown** until
+`squeue` answers again.
+
+Nothing to do but wait: no asymmetry job is in flight to be rescued, and submitting into a dead
+controller is not possible anyway.
