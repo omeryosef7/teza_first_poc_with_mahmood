@@ -6,6 +6,7 @@
   "pools_sha16": "b5e399712b996b7d",
   "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
   "stats": {
+    "bank_content_sha16": "59ad8c8c44f7c3fa",
     "n_rows": 1464,
     "n_benign_remap_rows": 72,
     "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
@@ -64,11 +65,11 @@
     }
   },
   "hostname": "c-004",
-  "git_commit": "f5df4291bd6f55d8e1d6aa170d52868235b41e27",
+  "git_commit": "928b098c415bd42f8efa46d7c85622043f550168",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA TITAN Xp",
-  "timestamp": "2026-08-16T18:58:25"
+  "timestamp": "2026-08-16T19:38:48"
 }

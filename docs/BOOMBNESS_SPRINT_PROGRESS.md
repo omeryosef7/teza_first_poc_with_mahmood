@@ -604,3 +604,22 @@ Phase 1 and have not yet fixed.
 `bscore` was initially submitted as 760662 and sat **PENDING (Resources)**; per the house rule that
 no job should sit queued, it was cancelled and resubmitted with a wider nodelist, and started
 immediately.
+
+**Provenance hazard fixed (self-identified, before the audit reported).** `prompt_id` is
+`sha256(family_id + condition)` — it names "this cell of this family" and deliberately stays stable
+across bank versions so matched rows can be joined. On its own that is a hazard: the bank has been
+regenerated several times with changed content (the `benign_remap` fix rewrote 72 prompts), so two
+runs could be joined on `prompt_id` while referring to **different prompt text**, with nothing to
+detect it.
+
+Every row now also carries `prompt_sha16` (a hash of the prompt text), the bank meta carries
+`bank_content_sha16` (`59ad8c8c44f7c3fa`), and `extract_boombness` / `score_behavior` record the
+per-row content hash on every result row. Stale joins are now detectable rather than silent. The
+identity id is kept as-is, because losing it would break the matched-family joins the whole 2×2
+analysis depends on.
+
+The new hashes also surfaced a benign fact worth recording: the bank has **1464 distinct
+`prompt_id` but 1238 distinct prompt texts**. All 240 duplicate rows are `n_examples=0` — the
+degenerate baseline where, with no demonstrations, every condition collapses to the bare query by
+construction. **Zero duplicates among prompts with demonstrations**, and the direction fit uses only
+`n_examples>0`, so no degenerate row enters any estimate.

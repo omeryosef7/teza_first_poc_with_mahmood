@@ -326,10 +326,19 @@ def build_prompt(pools: Dict, ax: Axes, codeword: str, concept: str,
 
     fam = f"{ax.domain}|{ax.split}|slot{ax.family_slot}|n{ax.n_examples}|{ax.strength}|" \
           f"{ax.consistency}|{ax.example_position}|{ax.role_style}|{ax.query_kind}"
+    # prompt_id is a STABLE IDENTITY: it names "this cell of this family", so matched rows can be
+    # joined across bank versions. That is deliberate, but on its own it is a provenance hazard —
+    # the bank has been regenerated several times with changed content (the benign_remap fix
+    # rewrote 72 prompts), and an id that does not depend on the text lets two runs be joined on
+    # prompt_id while referring to DIFFERENT prompts, with nothing to detect it.
+    # So every row also carries a CONTENT hash. Consumers record it per result row, which makes a
+    # stale join detectable instead of silent.
     pid = hashlib.sha256((fam + "|" + ax.condition).encode()).hexdigest()[:16]
+    psha = hashlib.sha256(full.encode()).hexdigest()[:16]
 
     return {
         "prompt_id": pid,
+        "prompt_sha16": psha,
         "family_id": fam,
         "cell": spec["cell"],
         "domain": ax.domain,
@@ -521,7 +530,12 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
         violations.append(f"benign_remap collapsed onto benign_literal for {collapsed} "
                           f"prompts with n_examples>0")
 
+    bank_sha16 = hashlib.sha256(
+        "|".join(r["prompt_sha16"] for r in sorted(rows, key=lambda r: r["prompt_id"]))
+        .encode()).hexdigest()[:16]
+
     stats = {
+        "bank_content_sha16": bank_sha16,
         "n_rows": len(rows),
         "n_benign_remap_rows": n_remap,
         "n_benign_remap_identical_to_benign_literal_nonzero_demos": collapsed,

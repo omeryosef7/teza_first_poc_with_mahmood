@@ -290,7 +290,7 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
         n_occ = len(last)
         for occ_i, (pos, fpos, nsub) in enumerate(zip(last, following, n_sub)):
             rec: Dict[str, object] = {
-                "prompt_id": row["prompt_id"], "family_id": row["family_id"],
+                "prompt_id": row["prompt_id"], "prompt_sha16": row.get("prompt_sha16"), "family_id": row["family_id"],
                 "condition": row["condition"], "cell": row["cell"], "domain": row["domain"],
                 "split": row["split"], "bank_block": row["bank_block"],
                 "query_kind": row["query_kind"], "n_examples": row["n_examples"],

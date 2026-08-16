@@ -157,8 +157,8 @@ def main() -> int:
 
     for i, row in enumerate(rows):
         templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
-        base = {k: row[k] for k in
-                ("prompt_id", "family_id", "condition", "cell", "domain", "split",
+        base = {k: row.get(k) for k in
+                ("prompt_id", "prompt_sha16", "family_id", "condition", "cell", "domain", "split",
                  "bank_block", "query_kind", "n_examples", "strength", "consistency",
                  "example_position", "role_style", "target_surface", "n_target_occurrences")}
         base["arm"] = args.arm
