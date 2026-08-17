@@ -11,8 +11,15 @@ that caused three retractions in this sprint. So this script:
   2. refuses to report an arm that fails `coherence_gate` (a raised ASR from a broken model is
      not a result — see the retracted α=1 "3.5×");
   3. reports PAIRED deltas against the baseline arm, since every arm scores the same prompts;
-  4. keeps the sign-flip arm's interpretation explicit: if BOTH +α and −α suppress ASR, the
-     effect is disturbance, not direction, and no mechanistic reading is available.
+  4. keeps the sign-flip arm's interpretation explicit: if BOTH +α and −α suppress ASR, mean ASR
+     does not follow the sign of the axis and no attack objective is licensed;
+  5. reports the ROUTE of each suppression (what fraction of the prompts an arm suppressed are
+     refusals), because two arms can both lower mean ASR by entirely different mechanisms and the
+     sign test is blind to that — here +α suppresses via refusal 90% of the time and −α 0%, so
+     "both signs suppress, therefore pure disturbance" was too strong;
+  6. builds a CONTROL BAND across independent `ctrl_rand_s<seed>` draws, because a single random
+     vector cannot support "more than a random direction" — the between-draw spread is the
+     comparator, not one draw's prompt-level SEM.
 """
 from __future__ import annotations
 
@@ -171,6 +178,47 @@ def main() -> int:
             print(f"  {c['a']:20s} - {c['b']:20s} {c['mean']:>+9.4f} ± {c['sem']:.4f}  "
                   f"z={c['z']:>+5.1f}")
 
+    # CONTROL BAND over independent random draws (audit A4-4, 2026-08-17).
+    #
+    # Each control was ONE random vector. The paired SEMs above are prompt-level only and contain
+    # NO direction-level variance, so "d_surface suppresses more than a random direction" rested on
+    # a single draw of "a random direction" — the same n=1-stated-as-evidence mistake as the
+    # random/orthogonal same-draw finding. Arms named `ctrl_rand_s<seed>` are independent draws of
+    # the SAME control condition, so the honest comparator is the BETWEEN-DRAW spread, not one
+    # draw's prompt-level SEM. A steering arm has to clear the band, not the point.
+    band = [r for r in rows if r["arm"].startswith("ctrl_rand_s")]
+    if len(band) >= 3:
+        ds_ = [r["paired_delta_mean"] for r in band]
+        k = len(ds_)
+        bm = sum(ds_) / k
+        bsd = math.sqrt(sum((x - bm) ** 2 for x in ds_) / (k - 1))
+        bse = bsd / math.sqrt(k)
+        print(f"\n[steer] RANDOM-CONTROL BAND over {k} independent draws:")
+        for r in sorted(band, key=lambda r: r["paired_delta_mean"]):
+            print(f"    {r['arm']:24s} {r['paired_delta_mean']:>+9.4f}")
+        print(f"  band mean {bm:>+.4f}   BETWEEN-DRAW sd {bsd:.4f}   sem {bse:.4f}")
+        report_band = {"n_draws": k, "draws": {r["arm"]: r["paired_delta_mean"] for r in band},
+                       "mean": bm, "between_draw_sd": bsd, "sem": bse, "vs_steering": {}}
+        for r in rows:
+            if not r["arm"].startswith("steer"):
+                continue
+            diff = r["paired_delta_mean"] - bm
+            # combine the steering arm's prompt-level SEM with the band's between-draw SEM
+            se = math.sqrt(r["paired_delta_sem"] ** 2 + bse ** 2)
+            z = diff / se if se else float("nan")
+            verdict = ("clears the band" if abs(z) >= 2 else
+                       "DOES NOT clear the band — indistinguishable from a random direction")
+            print(f"  {r['arm']:24s} vs band: {diff:>+.4f} ± {se:.4f}  z={z:>+5.1f}   {verdict}")
+            report_band["vs_steering"][r["arm"]] = {"diff": diff, "se": se, "z": z,
+                                                    "clears_band": bool(abs(z) >= 2)}
+    else:
+        report_band = {"n_draws": len(band),
+                       "note": "fewer than 3 independent control draws; between-draw variance "
+                               "is unestimated and any 'more than a random direction' claim "
+                               "rests on n=1 or n=2 draws"}
+        print(f"\n[steer] RANDOM-CONTROL BAND: only {len(band)} draw(s) — between-draw variance "
+              f"UNESTIMATED. Do not claim 'more than a random direction' from this.")
+
     # ROUTE OF SUPPRESSION. Two arms can both lower mean ASR by entirely different means; the
     # sign test below reads only the means and is blind to that. Report the refusal composition of
     # each arm's suppressed set so the verdict cannot flatten a refusal trigger and a generic
@@ -220,7 +268,8 @@ def main() -> int:
         json.dump({"condition": args.condition, "n_common": len(common),
                    "runs": {n: os.path.abspath(d) for n, d in runs},
                    "rows": rows, "sign_verdict": verdict,
-                   "paired_contrasts": contrasts, "suppression_routes": routes}, f, indent=2)
+                   "paired_contrasts": contrasts, "suppression_routes": routes,
+                   "control_band": report_band}, f, indent=2)
     print(f"\n[steer] -> {out}")
     return 0
 

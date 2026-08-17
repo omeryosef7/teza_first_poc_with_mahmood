@@ -157,5 +157,9 @@
       "n_suppressed": 64,
       "frac_refusal": 0.0
     }
+  },
+  "control_band": {
+    "n_draws": 0,
+    "note": "fewer than 3 independent control draws; between-draw variance is unestimated and any 'more than a random direction' claim rests on n=1 or n=2 draws"
   }
 }
