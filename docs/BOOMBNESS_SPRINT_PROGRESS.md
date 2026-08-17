@@ -3376,3 +3376,43 @@ that is robust to model, to multiplicity, and to demonstration count.
 **Consequence for §13 criterion 6 ("replicates across models"):** it moves from **NO** toward
 **PARTIAL** — the methodological confound and the L31 effect replicate; the mid-layer structure does
 not. The ASR-side replication (G2 + the position effect) is still generating on job 761818.
+
+## §14 REPLICATION RESULT #2 — the token-level result replicates on Qwen3, **including its control**
+
+Δ(final occurrence − earlier occurrences) on `d_surface|L|cos`, within prompt, domain-clustered:
+
+| L | Llama doublespeak | p | Llama **benign ctrl** | p | Qwen3 doublespeak | p | Qwen3 **benign ctrl** | p |
+|---|---|---|---|---|---|---|---|---|
+| 4 | −0.0247 | 0.004 | −0.0315 | 0.000 | −0.0129 | 0.009 | −0.0139 | 0.003 |
+| 8 | −0.0819 | 0.002 | −0.0935 | 0.000 | −0.0129 | 0.046 | −0.0230 | 0.001 |
+| 12 | −0.0902 | 0.001 | −0.1085 | 0.001 | −0.0211 | 0.019 | −0.0134 | 0.144 |
+| 16 | −0.1544 | 0.000 | −0.1051 | 0.001 | −0.0217 | 0.002 | −0.0114 | 0.222 |
+| 20 | −0.1225 | 0.000 | −0.0677 | 0.003 | −0.0236 | 0.001 | −0.0172 | 0.067 |
+| 24 | −0.1194 | 0.001 | −0.0727 | 0.003 | −0.0649 | 0.000 | −0.0656 | 0.001 |
+| 31 | −0.0798 | 0.014 | −0.1313 | 0.003 | −0.0483 | 0.045 | −0.0860 | 0.000 |
+
+(n = 246/162 prompts on Llama, 396/312 on Qwen3.)
+
+**Both halves replicate.** On Qwen3 the final occurrence is again **lower** on the concept axis than
+earlier occurrences at every layer, and the **benign control shows the same sign and comparable
+magnitude** — at L24 and L31 the benign effect is actually *larger* (−0.0656 vs −0.0649; −0.0860 vs
+−0.0483), exactly as on Llama at L31. So the positional reading holds on a second model: **the last
+occurrence of a word sits lower on the axis regardless of what the word means.**
+
+Magnitudes are ~3–5× smaller on Qwen3 (−0.013…−0.065 vs −0.025…−0.154), which is worth stating rather
+than smoothing over — the *sign and the control pattern* replicate, the effect size does not.
+
+**Why this one matters more than a typical replication:** it is a **negative** finding replicating
+*with its control*. The retracted "the later `carrot` becomes more `bomb`-like" claim is now refuted on
+two models, and the alternative explanation that replaced it — that this is a position effect, not
+concept accumulation — is what holds in both. A negative that replicates is much harder to dismiss
+than a positive that does.
+
+**Running tally on §13 criterion 6 (replicates across models):**
+| finding | replicates? |
+|---|---|
+| naive direction inflates ~2× (the 2×2 confound) | **YES** (median 1.74 on Qwen3, every layer) |
+| L31 effect survives Holm | **YES** (only layer both models agree on) |
+| final-occurrence-is-lower, positional not semantic | **YES**, control included |
+| mid-layer (L16–L24) negative band | **NO** — Llama-only, sign flips on Qwen3 |
+| G2 correlation / position effect | pending job 761818 (496/960 generated) |
