@@ -144,6 +144,30 @@ def score_metrics(y: np.ndarray, p: np.ndarray) -> Dict[str, float]:
     return out
 
 
+# LABEL BY REGIME (added 2026-08-17). Until now every regime used ONE label — cell in {B,E},
+# i.e. "the target token IS the concept" — which is the SURFACE WORD. That label is perfectly
+# decodable from the embedding layer, so d1-d4 all returned AUROC = 1.000 at EVERY layer including
+# layer 0, in every regime, with shuffled controls near chance. Those 1.000s are not evidence that
+# Boombness is linearly decodable; they are evidence that "bomb" and "carrot" have different
+# embeddings, which was never in question. Note d3_hard_negative is affected too: its C-vs-E test
+# set is also a carrot-vs-bomb contrast.
+#
+# The question the sprint actually asks needs the surface word HELD CONSTANT and the meaning varied:
+#   d5_surface_matched_codeword  A vs C — both surface "carrot"; does the doublespeak context change
+#                                the representation AT the codeword token?
+#   d6_surface_matched_concept   E vs B — both surface "bomb"; does harmful context change it?
+# These are the informative contrasts, and neither is decodable from the embedding by construction.
+LABEL_POS = {
+    "d5_surface_matched_codeword": {"C"},
+    "d6_surface_matched_concept": {"B"},
+}
+
+
+def regime_label(regime: str, r: Dict) -> int:
+    pos = LABEL_POS.get(regime)
+    return (1 if r["cell"] in pos else 0) if pos else r["y"]
+
+
 def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]:
     """Return (train_pool, eval_pool) for a regime. eval_pool may extend train_pool."""
     if regime == "d1_simple":
@@ -171,6 +195,12 @@ def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]
         pool = [r for r in table if r["bank_block"] == "core2x2"]
         train = [r for r in pool if r["cell"] != "C"]
         return train, pool
+    if regime == "d5_surface_matched_codeword":
+        pool = [r for r in table if r["bank_block"] == "core2x2" and r["cell"] in ("A", "C")]
+        return pool, pool
+    if regime == "d6_surface_matched_concept":
+        pool = [r for r in table if r["bank_block"] == "core2x2" and r["cell"] in ("B", "E")]
+        return pool, pool
     raise ValueError(f"unknown regime {regime!r}")
 
 
@@ -191,7 +221,7 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             if not tr or not te:
                 continue
             X_tr = np.stack([reps[r["prompt_id"]][li] for r in tr])
-            y_tr = np.array([r["y"] for r in tr])
+            y_tr = np.array([regime_label(regime, r) for r in tr])
             if shuffle_labels:
                 rng = np.random.RandomState(seed + L)
                 y_tr = rng.permutation(y_tr)
@@ -208,7 +238,7 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             # between them. The margin can, and it is the direct analogue of the cosine along
             # d_surface that analyze_boombness reports.
             m_te = clf.decision_function(X_te)
-            y_all.extend(r["y"] for r in te)
+            y_all.extend(regime_label(regime, r) for r in te)
             p_all.extend(p_te.tolist())
             m_all.extend(np.asarray(m_te).ravel().tolist())
             cell_all.extend(r["cell"] for r in te)
@@ -265,7 +295,8 @@ def main() -> int:
     ap.add_argument("--bank", default=DEFAULT_BANK)
     ap.add_argument("--layers", default="", help="comma list of BLOCK layers; default = every 2nd")
     ap.add_argument("--folds", type=int, default=3, help="group-k-fold over domains")
-    ap.add_argument("--regimes", default="d1_simple,d2_aligned,d3_hard_negative,d4_heldout_ds")
+    ap.add_argument("--regimes", default="d1_simple,d2_aligned,d3_hard_negative,d4_heldout_ds,"
+                                    "d5_surface_matched_codeword,d6_surface_matched_concept")
     ap.add_argument("--C", type=float, default=1.0, help="L2 inverse strength")
     ap.add_argument("--pca", type=int, default=64,
                     help="PCA components fit on the TRAIN fold only; 0 disables (and the probe "

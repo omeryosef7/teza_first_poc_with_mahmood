@@ -27,9 +27,9 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P2.5 | §5.4 | `decision_gate.md` | DONE | G1 recorded with propagated intervals via `analyze_g1_g3.py` |
 | P3.1 | §6.1 | Logit-lens Boombness | DONE | `signals.logit_lens` + `logit_lens_boombness_batch`; ids validated by `readout_id_pair` |
 | P3.2 | §6.2 | Direction Boombness | DONE | `signals.estimate_directions` — the 2×2 estimator (`d_surface`/`d_context`/`d_inter`/`d_naive`) |
-| P3.3 | §6.3 | Simple probe | REDO | probe run was on a superseded extract; re-running against the headline run |
-| P3.4 | §6.3 | Hard-negative / held-out-condition probe | REDO | same — the d4 convergence claim is retracted pending the rerun |
-| P3.5 | §6.4 | Metric comparison | REDO | metric comparison must be per-query-kind; see retraction |
+| P3.3 | §6.3 | Simple probe | **DONE — uninformative by design, documented** | d1/d2 label is the SURFACE WORD, so AUROC=1.000 at every layer including block 0. Trivial; must not be quoted as Boombness decodability. `probes/headline_20260816_200516` |
+| P3.4 | §6.3 | Hard-negative / held-out-condition probe | **DONE — same defect** | d3's C-vs-E test set is also a carrot-vs-bomb contrast, and d4 shares the surface label, so both read 1.000 for the same trivial reason. The retracted d4 convergence claim stays retracted. |
+| P3.5 | §6.4 | Metric comparison | **DONE — superseded by surface-matched regimes** | Added `d5_surface_matched_codeword` (A vs C) and `d6_surface_matched_concept` (B vs E): AUROC ~0.98 at all layers, shuffled at chance, and NOT explained by length/position (both alone = 0.47). Shows context reaches the codeword token; does not show the content is bombness. `probes/surfmatch_20260817_103543` |
 | P4.1 | §7.1 | Token-level Boombness per occurrence × layer | DONE | 8472 occurrence rows, per-occurrence × per-layer, run `full_20260816_185942_1008673` |
 | P4.2 | §7.1 | Occurrence × layer heatmaps | DONE | `analysis/plots/occurrence_x_layer_*.png` for all four 2×2 cells |
 | P4.3 | §7.1 | Later-carrot-more-bomb-like test | RETRACTED | "two-humped / null carry band" invalidated by the tick-8 audit |
@@ -3008,3 +3008,52 @@ met — the steering prerequisite returned a directional null), **P8.5** (DONE a
 headline extract) and P4.4 (§8 example-count sweep written up only as the layer surface in
 `reanalyze_corrected.py`, no dedicated plots). These are the remaining real gaps and none of them
 bears on a gate verdict.
+
+## §6.3 probes (P3.3/P3.4/P3.5) — the existing suite was UNINFORMATIVE BY DESIGN. New surface-matched regimes added.
+
+The four probe regimes had all been run against the headline extract, so these rows needed a
+**write-up, not a rerun** — and writing them up is what exposed the problem.
+
+### ⚠ d1–d4 return AUROC = **1.000 at every layer, in every regime**. That is not a result.
+Every regime shared one label: `cell ∈ {B, E}` = "the target token IS the concept" — which is just
+**the surface word**. `bomb` and `carrot` are trivially separable, so 1.000 everywhere is expected
+and says nothing about whether the model builds a bombness representation. `d3_hard_negative` is
+affected too: its C-vs-E test set is *also* a carrot-vs-bomb contrast. Shuffled-label controls sit
+near chance (0.23–0.78), so the probes are not broken — the **task** was trivial.
+
+**These 1.000s must never be quoted as "Boombness is linearly decodable."** That is exactly the
+sentence they invite and it is not what they show.
+
+### New regimes that hold the surface word CONSTANT and vary the meaning
+- `d5_surface_matched_codeword` — A vs C, both surface **carrot**: does doublespeak context change
+  the representation *at the codeword token*?
+- `d6_surface_matched_concept` — B vs E, both surface **bomb**.
+
+| layer | d5 AUROC | shuffled | d6 AUROC | shuffled |
+|---|---|---|---|---|
+| 0 | 0.960 | 0.561 | 0.974 | 0.376 |
+| 8 | 0.984 | 0.468 | 0.985 | 0.629 |
+| 12 | 0.982 | 0.571 | 0.985 | 0.408 |
+| 31 | 0.983 | 0.657 | 0.979 | 0.594 |
+
+### A confound I suspected and had to abandon
+A/E prompts average **137.9** tokens and B/C **129.6**, with the codeword 8.3 tokens later — and that
+difference tracks **context**, which is exactly the d5/d6 label. A probe reading length or position
+would score well for the wrong reason. Tested directly: **`seq_len` alone gives AUROC 0.472 and
+`token_pos` alone 0.473** — chance. The per-family direction is not even consistent (A's codeword is
+later in only 42/72 families). **The confound is refuted; the d5/d6 result is real.**
+
+### What d5/d6 do and do not establish
+**Do:** with the surface word held constant, the codeword token's representation carries strong
+information about which context preceded it — from block 0 onward, shuffled controls at chance, not
+explained by length or position. This is a probe-side confirmation of G1's retrieval story: context
+information reaches the codeword token.
+
+**Do not:** establish that the retrieved content is specifically *bombness*. A and C differ in their
+demonstration text, so a probe separating them shows the context is encoded there, not what it
+encodes. The question "is the retrieved content the concept" is a projection question, and it is the
+one the 2×2 (`d_surface` vs `d_context`) was built to answer — which is why the sprint's conclusions
+rest on the projections rather than on these probes.
+
+P3.3/P3.4/P3.5 are closed on that basis: the original regimes are uninformative by construction, the
+new ones are informative but bounded, and neither changes a gate verdict.
