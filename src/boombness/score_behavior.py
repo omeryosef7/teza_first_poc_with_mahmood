@@ -199,6 +199,8 @@ def main() -> int:
     # `dc.generate`, which templates internally, so a "thinking-off" run was byte-identical in
     # structure to a thinking-on one. A claim about thinking mode must be verified against the
     # rendered prompt.
+    think_probe = {"n": 0, "unclosed": 0}   # unconditional: a NameError on the Llama
+                                            # path would kill a run for a check it does not use
     if ENABLE_THINKING is not None:
         _probe = rows[0]["full_prompt"]
         _on = dc.apply_template(lm.tokenizer, _probe, enable_thinking=True)
@@ -208,12 +210,17 @@ def main() -> int:
                 "[score] REFUSING: --enable-thinking was requested but this tokenizer's template "
                 "renders identically for True and False, so the flag cannot do anything. Either the "
                 "model does not support thinking mode or the template ignores the kwarg.")
-        _want = _off if ENABLE_THINKING is False else _on
-        _got = dc.apply_template(lm.tokenizer, _probe, enable_thinking=ENABLE_THINKING)
-        if _got != _want:
-            raise SystemExit("[score] REFUSING: enable_thinking did not propagate into apply_template")
-        print(f"[score] enable_thinking={ENABLE_THINKING} VERIFIED against the rendered prompt "
-              f"(len {len(_got)} vs {len(_on if ENABLE_THINKING is False else _off)} for the other mode)")
+        print(f"[score] enable_thinking={ENABLE_THINKING}: template renders differently for the two "
+              f"modes (len {len(_on)} vs {len(_off)}), so the flag is capable of acting. The binding "
+              f"check is on the OUTPUT, below.")
+        # NOTE ON WHAT THIS CHECK IS *NOT*. The first version of it compared
+        #     apply_template(..., enable_thinking=ENABLE_THINKING)
+        # against `_off if ENABLE_THINKING is False else _on` — which is the SAME CALL, so it could
+        # never fail. That is a tautological guard, the same shape as the `D_attn == 1`
+        # "verification" this sprint already retracted, and it would have given false comfort about
+        # precisely the bug it was written for: the flag reached `apply_template` and NOT
+        # `dc.generate`, which templates internally. Verifying the readout path proves nothing about
+        # the generation path. So the real check is on generated OUTPUT and lives in the loop below.
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="sdpa", num_layers=lm.num_layers)
@@ -323,6 +330,29 @@ def main() -> int:
                         text = g["completion"]
                         n_new = int(g.get("n_new_tokens", 0))
                         stop = g.get("stop_reason")
+                        # THE BINDING THINKING CHECK — on the OUTPUT, because that is the thing the
+                        # claim is about. With thinking off, completions must not be unclosed
+                        # reasoning traces. The failure this catches was 100% of generations opening
+                        # <think> and 7.6% closing it: 92% were truncated thoughts with NO answer,
+                        # and judging them would have scored the wrong object entirely. Checked on a
+                        # prefix so a broken configuration dies in a minute, not in an hour.
+                        if ENABLE_THINKING is False:
+                            think_probe["n"] += 1
+                            if "<think>" in text and "</think>" not in text:
+                                think_probe["unclosed"] += 1
+                            if think_probe["n"] == 24:
+                                frac = think_probe["unclosed"] / think_probe["n"]
+                                if frac > 0.25:
+                                    raise SystemExit(
+                                        f"[score] REFUSING: --enable-thinking false, but "
+                                        f"{think_probe['unclosed']}/{think_probe['n']} of the first "
+                                        f"completions are UNCLOSED reasoning traces. The flag is not "
+                                        f"reaching the generation path (dc.generate templates "
+                                        f"internally and needs its own enable_thinking kwarg), so "
+                                        f"these completions contain no answer to judge.")
+                                print(f"[score] thinking-off VERIFIED ON OUTPUT: only "
+                                      f"{think_probe['unclosed']}/{think_probe['n']} of the first "
+                                      f"completions are unclosed thoughts", flush=True)
                         gens_fh.write(json.dumps({**base, "generation": text,
                                                   "n_chars": len(text), "n_new_tokens": n_new,
                                                   "stop_reason": stop}) + "\n")

@@ -3492,3 +3492,41 @@ accepted the string. That is the discipline the three dead guards lacked, applie
 failure rather than after it.
 
 Job **762143** is the relaunch.
+
+### The thinking fix now works — and the guard I wrote for it was TAUTOLOGICAL
+
+Job 762143, with `enable_thinking` reaching `dc.generate`:
+
+| | thinking-ON | first "off" attempt (inert) | 762143 (fixed) |
+|---|---|---|---|
+| generations containing `<think>` | 724/724 (100%) | 112/112 (100%) | **0 / 28 (0%)** |
+| median words | 156 | 157 | **44** |
+
+Qwen3 now answers directly, matched to the Llama arm's condition. ASR from this run is a legitimate
+measurement of the same object.
+
+**But reviewing my own guard, half of it could never fail.** I had written:
+
+```python
+_want = _off if ENABLE_THINKING is False else _on
+_got  = dc.apply_template(..., enable_thinking=ENABLE_THINKING)
+if _got != _want: raise
+```
+
+`_got` and `_want` are **the same call**. That branch is a tautology — the `D_attn == 1` shape this
+sprint already retracted, and it would have given false comfort about *precisely* the bug it was
+written for, since it verifies the **readout** templating and the bug was in the **generation**
+templating. (The other half — refuse if the two modes render identically — is real, and it is what
+printed `len 157 vs 138`.)
+
+**Replaced with a check on the OUTPUT, which is what the claim is about:** over the first 24
+behavioural completions, if thinking is off and >25% are *unclosed* `<think>` traces, the run aborts
+with the specific diagnosis (`dc.generate` templates internally and needs its own kwarg). That check
+would have killed the inert run in under a minute instead of after 112 generations. `think_probe` is
+initialised unconditionally so the Llama path cannot hit a NameError for a check it does not use.
+
+**Fourth instance of the same shape, and worth naming as a pattern rather than an incident:** a flag
+or check threaded into one of two paths that must agree — `stage_score`'s missing `position`,
+`readout_position` written but never read, `dc.generate`'s missing `enable_thinking`, and now a guard
+that validated the path that was already correct. **The lesson generalises: verify the OUTPUT of the
+thing you claim to have changed, never the input you passed.**
