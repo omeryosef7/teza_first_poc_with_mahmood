@@ -2589,3 +2589,18 @@ get identical treatment — but "refusalness at the codeword token" should not b
 refusal measurement at that position.
 
 `outputs/boombness/position_2x2.json` holds the table.
+
+### Tick 37 — 2026-08-17
+
+`761268` closed the predictor×position 2×2 (above); §18 is now **C**. Short update taken to
+**revision 3** — the first revision that changes the sprint's conclusion rather than tightening it,
+so revisions 1 and 2 are explicitly withdrawn in its header.
+
+**§11 (P7.4) is finally unblocked end-to-end.** `761178` produced 960 behavioural generations
+including 72 per role style (vs 6 before), and the StrongReject judge is running over them now.
+Note the judge **refused to start** on the first attempt because `OPENAI_API_KEY` was unset — it
+declines rather than emitting all-null scores, on the grounds that a null must never be read as
+benign. That guard behaved correctly, unlike the two that were found inoperative earlier today.
+
+Control draws 3–4 (`761258`/`761259`) still running; with draws 1–2 that will give the 4-draw
+control band the G4 "not inert" claim needs (audit A4-4).

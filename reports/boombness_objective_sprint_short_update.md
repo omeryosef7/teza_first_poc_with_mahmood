@@ -4,10 +4,12 @@
 **Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint` · all four gates answered.
 
-> **This is revision 2.** An independent audit on 08-17 found that one retracted quantity was still
-> load-bearing in revision 1, that the headline p-value ignored domain clustering, and that the
-> §10 depth claim was not identified. All three are corrected below and the affected sentences are
-> marked ⚠. Read this version, not the one I sent earlier.
+> **This is revision 3, and it changes the sprint's conclusion.** Revision 1's headline —
+> "Boombness beats refusalness 3.7×" — was a **position artifact**: the two predictors were read at
+> different tokens. Measured at the same token the ratio inverts, refusalness wins, and the §18
+> label moves from **B (mechanistic but not causal)** to **C (refusal-suppression is the story;
+> Boombness is a correlate)**. Corrections are marked ⚠; retractions ⛔. Please read this version
+> and discard revisions 1 and 2.
 
 ---
 
@@ -67,22 +69,31 @@ codeword mapping ⇒ not a doublespeak prompt). Those 12 zero-demo `direct_codew
 ASR = 1.0 and carried the entire gap. Headline table and headline correlation must be on the same
 population; they now are.
 
-⛔ **RETRACTED (this replaces revision 2's claim).** I reported that within the doublespeak arm
-Boombness explains ~3.7× more than refusalness (R² 0.141 vs 0.039) and called it the sprint's most
-robust number. **It was a position artifact.** The two predictors were read at different tokens —
-`d_surface` at `codeword_last`, refusalness at the last prompt token. Re-measured at the same token:
+⛔ **RETRACTED — and the replacement inverts it.** I reported that within the doublespeak arm
+Boombness explains ~3.7× more than refusalness (R² 0.141 vs 0.039), and called it the sprint's most
+robust number. **It was a position artifact.** `d_surface` was read at `codeword_last`; refusalness
+at the last prompt token. Completing the 2×2 on the same 234 prompts, same ASR, same script:
 
-| | refusalness @ last | refusalness @ **codeword_last** |
-|---|---|---|
-| best single-layer R² | 0.039 | **0.176** |
-| all-layers joint R² | 0.073 | **0.257** |
-| `d_surface|L12|proj` R² | 0.141 | 0.141 |
-| **ratio** | **3.66** | **0.80** |
+| single-predictor R² | @ last token | @ codeword_last | position effect |
+|---|---|---|---|
+| `d_surface|L12|proj` | **0.036** | 0.141 | **4.0×** |
+| refusalness (best layer) | 0.039 | **0.176** | **4.6×** |
+| **ratio Boombness / refusalness** | **0.92** | **0.80** | |
 
-At matched position **refusalness is the better predictor** (ρ = +0.405 at L18, p = 1.2e-10, vs
-Boombness +0.307); Boombness adds only +0.04–0.08 over it, while refusalness jointly adds +0.14 over
-Boombness. The 3.7× survived nested CV and leave-one-domain-out — but those resample *rows*, and no
-resampling fixes a contrast whose arms sit at different positions.
+**At either matched position refusalness is the better predictor.** The 3.7× existed only in the
+cross-position comparison. It had survived nested CV and leave-one-domain-out — but those resample
+*rows*, and no resampling repairs a contrast whose two arms sit in different places.
+
+**What replaces it is a position finding, and it is new.** Both probes are ~4× more predictive of
+ASR at the codeword token than at the final prompt token — a bigger factor than any difference
+*between* the probes. The attack-relevant state is **localized at the codeword**, which is
+independently consistent with G1 (meaning retrieved into the codeword from the demonstrations) and
+G3 (that retrieval carried by a large redundant edge set). A *position* result, not a *direction*
+result — and the one claim here the matched design supports rather than undermines.
+
+Caveat: the refusal direction was fitted for a last-token readout, so reading it at the codeword
+token is off-label. The comparison is fair (both probes treated identically), but "refusalness at
+the codeword token" is not a validated refusal measurement at that position.
 
 Two caveats we owe you, both of which revision 1 dropped or half-stated:
 - **Range restriction.** Within-arm refusalness sd is 0.74 vs 3.07 pooled, so "refusal doesn't
@@ -158,7 +169,11 @@ broke generation (55% of trigrams repeated) and the judge scored the loop as har
 reported it.** The usable dose window is narrow, which matters for §12 — an optimizer maximizing
 this projection has no reason to stop at 0.25.
 
-**§18 label: outcome B — mechanistic but not causal.**
+**§18 label: outcome C — refusal-suppression is the story; Boombness is a correlate.**
+Moved from B. Two independent lines agree: correlationally, refusalness ≥ Boombness at matched
+position; interventionally, `+d_surface` suppresses ASR by **triggering refusal** in 90.1% of the
+prompts it suppresses. Both point at refusal rather than concept representation, and both point
+away from the objective this sprint set out to build.
 
 ## What we'd take from this sprint
 
@@ -180,7 +195,7 @@ this projection has no reason to stop at 0.25.
    It roughly doubles the effect at L4–L12 and L31 (1.75–2.4×), but at L16–L24 the *identified*
    direction finds a real negative displacement (clustered p 0.009–0.053) that the naive direction
    washes out (p 0.22–0.62). Both rows now come from the committed `reanalyze_corrected.py`.
-3. **Process.** Four retractions and three corrections, every one from independent audit, and all
+3. **Process.** Five retractions and four corrections, every one from independent audit, and all
    one family: *the manipulated and measured quantities were not the same thing*, or *the best of
    mine was compared against a fixed instance of yours*. Two guards written to prevent exactly this
    were themselves silently inoperative until the 08-17 audit — a coherence gate that never bound,
