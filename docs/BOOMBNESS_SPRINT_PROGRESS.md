@@ -3698,3 +3698,37 @@ If **adding Boombness with refusal removed** raises ASR above arm C alone, then 
 behavioural effect and refusal was masking it — **§18 = B is a ceiling artifact and §12 reopens.**
 If arm F ≈ arm C, then Boombness has no behavioural effect even with the ceiling lifted, and B becomes a
 much stronger claim than it is today. The prediction is recorded here before the numbers exist.
+
+### Tick 53 — arm B is clean on every precondition; its ASR is judging
+
+`projout_beh` (arm B, `d_surface:project_out:8-8:1.0`) finished: **960/960 rows, 0 failures**, and it
+passes the coherence gate (uniq 0.712, trigram 0.021, top-word 0.106, truncated 0.43 → OK). Combined
+with the comprehension result (Δ = +0.088, **p = 0.681** — unchanged), this arm satisfies **both** §2.6
+preconditions *before* its ASR is looked at:
+
+| precondition | arm B status |
+|---|---|
+| generation not degenerate (coherence gate) | **OK** |
+| model still understands the mapping (§2.6 comprehension) | **preserved**, p=0.681 |
+| ledger complete (§2.2) | 960 attempted / 960 succeeded / 0 failed |
+
+**This is the first intervention in the sprint to arrive at the ASR question with both controls already
+green.** Every earlier arm had at least one problem: α=1 was degenerate (retracted), −0.25 degrades
+comprehension, +0.25 improves comprehension but *raises refusal* so its ASR drop has an obvious
+alternative explanation. Arm B removes the concept component by projection and changes neither
+coherence nor comprehension.
+
+So the §0.3 question — *does surgical removal reduce ASR without destroying comprehension?* — is now a
+clean two-outcome test, and the outcomes are recorded here before the judge finishes:
+
+- **If ASR drops:** the sprint has its first genuinely causal result. Removing the concept component
+  reduces attack success while the model still understands the prompt and still produces coherent text.
+  That is exactly what §0.3 asks for and what G4 failed to deliver, and it would reopen §12 on a much
+  better footing than the correlation ever justified.
+- **If ASR does not drop:** it is the cleanest negative in the sprint, because the two escape hatches
+  are already closed — nobody can say "the intervention broke the model" or "it stopped understanding".
+  It would also sharpen §18=B from "steering does not follow the sign" to "the concept component is not
+  load-bearing for the behaviour at all".
+
+Judging now. Also running: 762187 (arm C ASR), 762188 (arm F ASR), and the Qwen3 judge (§14's
+behavioural half) at 250/960.
