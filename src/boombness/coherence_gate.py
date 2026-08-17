@@ -58,18 +58,43 @@ def degeneracy(text: str) -> Optional[Dict[str, float]]:
     }
 
 
-def assess(run_dir: str) -> Dict:
+def assess(run_dir: str, condition: Optional[str] = None,
+           keep_ids: Optional[set] = None) -> Dict:
+    """Coherence of a score_behavior run.
+
+    `condition` / `keep_ids` restrict the statistic to the population actually being reported on.
+    Without them this pools EVERY condition and every prompt in the run, which is the wrong
+    denominator whenever the caller is reporting on one arm of one condition over a common
+    prompt subset (audit finding, 2026-08-17): a steering run's doublespeak rows can be degenerate
+    while the pooled statistic, diluted by benign rows, still passes.
+
+    `degeneracy()` returns None for texts under 8 words, so short generations — including refusals,
+    which is exactly what a suppressing intervention produces — are EXCLUDED from the ratios.
+    `n_dropped_short` reports how many, because a run whose generations are mostly 5-word refusals
+    can post excellent coherence numbers computed on a small unrepresentative tail.
+    """
     gens = os.path.join(run_dir, "gens.jsonl")
     res = os.path.join(run_dir, "results.jsonl")
-    stats = [degeneracy(json.loads(l).get("generation", "")) for l in open(gens)]
+    rows = [json.loads(l) for l in open(gens)]
+    if condition is not None:
+        rows = [r for r in rows if r.get("condition") == condition]
+    if keep_ids is not None:
+        rows = [r for r in rows if r.get("prompt_id") in keep_ids]
+    n_considered = len(rows)
+    stats = [degeneracy(r.get("generation", "")) for r in rows]
     stats = [s for s in stats if s]
     trunc = None
     if os.path.exists(res):
         g = [r for r in read_jsonl(res) if r.get("readout") == "generation"]
+        if condition is not None:
+            g = [r for r in g if r.get("condition") == condition]
+        if keep_ids is not None:
+            g = [r for r in g if r.get("prompt_id") in keep_ids]
         if g:
             trunc = sum(1 for r in g if r.get("gen_truncated")) / len(g)
     out = {"run": os.path.abspath(run_dir), "n_scored": len(stats),
-           "truncated_frac": trunc}
+           "n_considered": n_considered, "n_dropped_short": n_considered - len(stats),
+           "condition": condition, "truncated_frac": trunc}
     for k in ("uniq_word_ratio", "trigram_repeat", "top_word_frac"):
         out[k] = st.mean(s[k] for s in stats) if stats else float("nan")
     fails = []

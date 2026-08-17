@@ -2236,3 +2236,95 @@ count** (56832 vs 3552 vs 16) rather than by layer spread.
 **The full report is deliberately not written yet.** Two of those checks can change sentences in it,
 and writing the final document before the audit that could invalidate it is the exact ordering that
 produced retractions R1–R3.
+
+
+## Audit 4 (2026-08-17) — G4 conclusion + provenance
+
+### A4-1 — CONFIRMED BUG: the coherence gate was silently non-binding. **Fixed, re-run.**
+`analyze_steering.py` took the arm name from the **judge** dir's tag but the coherence key from the
+**score_behavior** dirname — `steer_a025` vs `steer_L8_a025`, `baseline` vs `base`. Every lookup
+missed, `coherent` came back `None`, and the gate tested `coherent is not False`, so **`None`
+passed as if it had been checked**. The gate that exists specifically to stop another retracted
+α=1 result was not protecting the two arms it most needed to.
+
+Fix: resolve coherence through the **recorded linkage** (`judge/config.json → args.gens`), never a
+filename; `coherent is None` is now **fatal** unless `--allow-missing-coherence` is passed
+explicitly. Re-ran: **all five arms OK, every number identical.** No GPU rerun, no number changed —
+but the progress doc's claim "all intervened arms passed the coherence gate" was, when written,
+**not supported by the artifact it cited** (`steering_analysis.json` recorded `null`, not `true`).
+That sentence is corrected above.
+
+Sub-fix: `coherence_gate.assess` pooled **all conditions and all prompts** in a run rather than the
+condition and common prompt set being reported, and silently drops texts under 8 words — which
+excluded 68 of the +0.25 arm's 270 doublespeak generations, i.e. exactly the refusals the
+intervention produces. `assess()` now takes `condition`/`keep_ids` and reports `n_dropped_short`.
+
+### C3 — CORRECTION: "2–3× the controls" was never actually computed, and is sign-dependent.
+The script only compared each arm to baseline; it never contrasted arm against control, so the
+"2–3×" was eyeballed from two independent means. Now computed as **paired** contrasts on the same
+270 prompts:
+
+| contrast | Δ | z |
+|---|---|---|
+| +0.25 − orthogonal | −0.0838 ± 0.0230 | **−3.6** |
+| +0.25 − random | −0.0792 ± 0.0221 | **−3.6** |
+| −0.25 − orthogonal | −0.0435 ± 0.0192 | −2.3 |
+| −0.25 − random | −0.0389 ± 0.0185 | −2.1 |
+| +0.25 − (−0.25) | −0.0403 ± 0.0207 | −1.9 |
+
+So **"the axis is not inert" is solid for +0.25 and weak for −0.25** (~2σ uncorrected, over two
+comparisons). Stating one blended "2–3×" over both signs overstated the negative arm. Corrected.
+
+### A4-2 — SUBSTANTIVE: the verdict flattened two different mechanisms. **Verdict reworded.**
+The sign test reads only mean StrongReject and is blind to *how* each arm suppresses. Of the
+prompts each arm suppressed, the fraction that are keyword refusals:
+
+| arm | n suppressed | refusal fraction |
+|---|---|---|
+| **+0.25** | 71 | **0.901** |
+| **−0.25** | 64 | **0.000** |
+| random | 55 | 0.000 |
+| orthogonal | 48 | 0.042 |
+
+`+α` is a **refusal trigger**; `−α` is a **generic degradation statistically indistinguishable from
+the norm-matched controls**. "Both signs suppress, therefore pure disturbance" is too strong — it is
+true that ASR does not follow the sign, which is what kills the attack objective, but the two arms
+are not doing the same thing. `analyze_steering.py` now computes the route table and the verdict
+string refuses to say "disturbance" unqualified when the routes differ by >0.3.
+
+### A4-3 — REFUTED: provenance. And the zsh hazard bit *me* mid-audit.
+The auditor reported `src/boombness/` untracked with run-recorded shas missing the code. Both are
+wrong: 26 files tracked, present in HEAD. My own verification *reproduced* the auditor's false
+result until I noticed why — I wrote `git cat-file -e $s:src/boombness/...` and **zsh parsed `:s`
+as the substitution history modifier**, mangling the path. Braced, it resolves, and the stronger
+fact is available: `score_behavior.py` is blob `08775968` — **byte-identical at the +0.25 run's
+sha, the −0.25 run's sha, and HEAD**. So the thing the auditor called unprovable (same intervention
+code across arms) is positively proven. This is the third time `feedback_zsh_expansion_hazards` has
+fired; it now has an audit-level example.
+
+Still open: `metadata.json` and `RUNMETA.json` in the same run dir record **different**
+`git_commit` values. Real defect, cosmetic here (both contain identical code), worth fixing.
+
+### A4-4 — ACTED: controls rested on n=2 draws.
+Each control was a **single** random vector; the ±0.018 SEMs are prompt-level only and carry no
+direction-level variance, so "more than a random perturbation" leaned on two draws that happened to
+agree. Four more random draws launched (seeds 20260817–20 → jobs 761172–5) to turn that into a
+proper control band.
+
+### A4-5 — NOT ACTED, disclosed: scope mismatch between fitting and intervening.
+`d_surface` is fitted at the **codeword-occurrence token**, but the intervention adds it at **every
+position and every decode step**. "The axis is not inert" is therefore a claim about a global
+injection, not about the representation at the token the axis was fitted on. A position-scoped add
+is the fair test; not run, and the limitation is now stated rather than papered over.
+
+### Verified clean (attempted refutations that failed)
+- The −0.25 arm **is** the exact negation of the same fitted direction: same `fit-dir`, same layer,
+  same direction file, alpha the sole sign carrier, no `abs()`, no re-normalization. Layer
+  convention confirmed (fit at `hs[L+1]`, hook on block 8 — no off-by-one). Greedy decoding, so no
+  RNG confound from the 660- vs 960-row banks.
+- Controls **are** dosed in gap units: they take `gap["d_surface"]`, so all four intervened arms
+  inject magnitude 0.25 × 6.0549 = 1.5137. Identical dose. cos(rand, d)=−0.0005, cos(orth, d)=7e−9,
+  cos(rand, orth)=0.019 — genuinely independent draws. **The recurring gap-unit bug did not recur.**
+- Intersection genuinely covers baseline; 0 null scores, 0 duplicate ids, and `prompt_sha16`
+  identical across arms for all shared rows.
+- `refused` is one code path for all arms; every refused row has StrongReject exactly 0.0.
