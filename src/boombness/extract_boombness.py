@@ -265,7 +265,14 @@ def _cross_fit_split(split: str, available: Sequence[str]) -> Tuple[str, bool]:
 def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, Dict],
                 run: RunDir, ledger: FailureLedger, dir_names: Sequence[str],
                 logit_lens_layers: Sequence[int], cache_final_reps: bool,
-                readout_id_mode: str = "primary") -> Dict:
+                readout_id_mode: str = "primary", position: str = "codeword_last") -> Dict:
+    """BUG FIXED 2026-08-17 (independent audit). `position` was accepted by `stage_fit` but NOT by
+    `stage_score`, which unconditionally read at the codeword occurrence. A run launched with
+    `--position last` therefore RE-FIT the direction on last-token activations and then READ it at
+    the codeword — a combination nobody asked for, reported under the label "d_surface at the last
+    token". 1464/1464 rows carried a `token_pos` identical to the codeword run and 0/2352 sat at
+    `seq_len-1`. The cell was a phantom, and an entire conclusion (the predictor x position 2x2,
+    and the §18 label move to C) was built on it."""
     tok = lm.tokenizer
     # Symmetric, validated readout ids — one whole-word token per side. See
     # signals.readout_ids for why the naive "first id of every variant" set was wrong.
@@ -292,8 +299,23 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
             continue
 
         hs = forward_hidden(lm, ids)
-        n_occ = len(last)
-        for occ_i, (pos, fpos, nsub) in enumerate(zip(last, following, n_sub)):
+        n_occ = 1 if position == "last" else len(last)
+        # `last` holds the codeword-occurrence indices. For `--position last` the readout is the
+        # final PROMPT token instead; there is exactly one such position per prompt, so the
+        # per-occurrence loop collapses to a single record.
+        if position == "last":
+            occ_iter = [(len(ids) - 1, len(ids) - 1, n_sub[-1] if n_sub else 1)]
+        else:
+            occ_iter = list(zip(last, following, n_sub))
+        for occ_i, (pos, fpos, nsub) in enumerate(occ_iter):
+            # SELF-CHECK. The phantom-cell bug was invisible because nothing ever asserted that the
+            # readout index matched the requested position. It does now, on every row.
+            if position == "last" and pos != len(ids) - 1:
+                raise AssertionError(
+                    f"--position last but readout index {pos} != seq_len-1 ({len(ids)-1})")
+            if position == "codeword_last" and pos not in last:
+                raise AssertionError(
+                    f"--position codeword_last but readout index {pos} is not a codeword occurrence")
             rec: Dict[str, object] = {
                 "prompt_id": row["prompt_id"], "prompt_sha16": row.get("prompt_sha16"), "family_id": row["family_id"],
                 "condition": row["condition"], "cell": row["cell"], "domain": row["domain"],
@@ -350,7 +372,7 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
     if cache_final_reps and cache:
         os.makedirs(run.cache, exist_ok=True)
         torch.save({"layers": layers, "layer_convention": sg.LAYER_CONVENTION,
-                    "position": "codeword_last(final occurrence)",
+                    "position": position,
                     "dtype": "float16", "reps": cache},
                    os.path.join(run.cache, "final_occurrence_reps.pt"))
         print(f"[score] cached {len(cache)} final-occurrence rep stacks")
@@ -435,7 +457,8 @@ def main() -> int:
         summary.update(stage_score(lm, dc, rows, layers, fitted, run, ledger,
                                    args.directions.split(","), ll_layers,
                                    cache_final_reps=not args.no_cache_reps,
-                                   readout_id_mode=args.readout_ids))
+                                   readout_id_mode=args.readout_ids,
+                                   position=args.position))
         summary["gap_by_split"] = {s: {k: v for k, v in p["gap"].items()}
                                    for s, p in fitted.items()}
 

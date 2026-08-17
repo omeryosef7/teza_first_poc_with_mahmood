@@ -65,7 +65,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **YES, with corrected inference: `d_surface|L12|proj`, rho=+0.307, norm-partial +0.302, n=234, 100% coverage, 6/6 domains positive (2 essentially null). p = 5.0e-04 within-domain permutation / 1.2e-03 CR1-clustered — NOT the i.i.d. 1.7e-06.** ⛔ Two earlier verdicts superseded: ~~L8 proj rho=+0.342, p=8e-08~~ (C1: L8 is the most norm-contaminated layer, norm-free +0.172 fails Holm) and ~~the original negative~~ (R2: predictor read off the wrong prompt). | 2026-08-17 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED, and the depth reading is RETRACTED (B4a). Cutting query→demo-block attention at all 32 layers recovers 84% (CI [62%,110%]) of the deletion ceiling; at 2 layers 0.07% (CI [−6.7%,+8.2%]). But the edge-count-matched arm shows layer spread is NOT the operative variable: 3,552 edges over 32 layers moves the readout +0.09, the same nothing as 3,552 edges at 2 layers (−0.01). The redundancy is in the EDGE SET — removing 6.25% of demo edges does nothing however distributed, removing 100% recovers 84%. The converse arm is impossible: a layer holds only ~3,648 edges, so any cut >7.3k edges must span layers. Identification one-sided by construction.** | 2026-08-17 |
 | G4 (§12) | Is Boombness a usable GCG objective? | **NO — steering is a documented NEGATIVE. Both signs of `d_surface` at a coherent dose SUPPRESS ASR (paired Δ −0.114 and −0.074 vs −0.035/−0.031 for norm-matched controls), so the effect is disturbance, not direction. The axis is not inert (2–3× the controls) and refusal responds directionally (0.696 vs 0.067), but ASR does not follow the sign — which is what an objective needs.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
-| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **C — refusal-suppression is the story; Boombness is a correlate.** Moved from B on 08-17 by RETRACTION #5 and the completed predictor×position 2×2: at matched position refusalness predicts ASR at least as well as Boombness (ratio 0.92 @last, 0.80 @codeword_last), and G4's intervention suppresses ASR by triggering refusal 90.1% of the time. The surviving positive finding is a POSITION one — both probes are ~4x more predictive at the codeword token than at the last token — not a direction one. §12's objective is unjustified on both lines. | 2026-08-17 |
+| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **REVERTED TO B-PENDING (08-17).** The move to C was built on a PHANTOM CELL: `stage_score` never received `--position`, so the 'd_surface at last token' run re-fit the direction at the last token and still READ it at the codeword (1464/1464 rows share the codeword run's `token_pos`; 0/2352 sit at seq_len-1). Only ONE matched position was ever measured. There, d_surface 0.141 vs refusalness 0.176 = ratio **0.80, 95% CI [0.37, 1.24]** — a TIE, not an inversion. Bug fixed, job 761457 rerunning. The 3.7x retraction still STANDS. | 2026-08-17 |
 
 ---
 
@@ -2704,3 +2704,70 @@ candidate columns vs refusalness's 5), and it is **refit** at each position (`st
 fixed direction at both positions. So `d_surface` got the better-fitted comparator at both cells
 and still lost at both. The asymmetries run *against* Boombness, which makes the conclusion
 conservative.
+
+## ☠ THE §18 = C CONCLUSION WAS BUILT ON A PHANTOM CELL. Reverted to B-pending.
+
+The audit launched to *attack* RETRACTION #5 found that the retraction is right but the
+**replacement conclusion is not measured**. Verified independently before acting:
+
+**`stage_score` never accepted `position`.** `--position` was threaded into `stage_fit`
+(`extract_boombness.py:429`) but `stage_score` had no such parameter and read `hs[L+1, pos, :]` at
+the codeword occurrence unconditionally. So `--position last` produced a run that **re-fit the
+direction on last-token activations and then read it at the codeword** — a quantity nobody asked
+for, reported under the label "d_surface at the last token".
+
+Empirical confirmation I ran myself: `token_pos` is **identical to the codeword run in 1464/1464**
+final-occurrence rows, and **0 of 2352** rows sit at `seq_len-1`.
+
+### What that invalidates
+
+| claim | status |
+|---|---|
+| the 3.7× was a footing mismatch and is withdrawn | **STANDS** — both numbers reproduce, read at different tokens |
+| "at **either** matched position refusalness is better" | **WITHDRAWN** — only ONE matched position was measured |
+| "position dominates for **both** probes (~4×)" | **WITHDRAWN** — true for refusalness (0.039→0.176, 4.6×, clean); **untested** for d_surface |
+| §18 label = C | **REVERTED to B-pending** |
+
+### And the one real cell is a tie, not an inversion
+Domain-clustered bootstrap (6 domains, 4000 reps) on the single matched comparison:
+`d_surface|L12|proj / refusalness|L20|proj` @codeword_last = **0.80, 95% CI [0.37, 1.24]**,
+P(ratio>1) = 0.16; against the canonical L18, **0.86, CI [0.41, 1.23]**. **The CI covers 1.0 under
+every resampling scheme**, so "refusalness is the better predictor" is not distinguishable from
+"they are equivalent". My selection-fairness check last tick was correct as far as it went and still
+missed this — it compared point estimates without an interval.
+
+### A second, independent reason C was premature: construct validity
+The auditor also checked whether `refusalness@codeword_last` still behaves like a refusal probe. By
+condition, mean refusalness:
+
+| condition | @last | @codeword_last |
+|---|---|---|
+| direct_harmful | **+7.298** | −1.971 |
+| concept_in_benign_ctx | +6.290 | −1.955 |
+| natural_doublespeak | +0.036 | −1.988 |
+| benign_literal | −0.155 | **−2.429** |
+
+At the last token the probe orders conditions exactly as a refusal probe should. **At the codeword
+position that ordering collapses and partly inverts** — `direct_harmful` becomes indistinguishable
+from doublespeak. It is not merely a restatement of `d_surface` (ρ = −0.03/−0.05 at L18/L20, and
+the two combine near-additively, R² 0.141+0.176 → 0.250), but calling the winning quantity
+"**refusal** suppression" is **not licensed by this run**. That bears directly on an A-vs-C label.
+
+### Fixes applied
+1. `position` threaded into `stage_score`; for `--position last` the per-occurrence loop collapses
+   to the single final prompt token.
+2. **A self-check on every row**: `--position last` asserts `pos == seq_len-1`, `--position
+   codeword_last` asserts `pos` is a codeword occurrence. The phantom was invisible precisely
+   because nothing ever asserted the readout index matched the request.
+3. Job **761457** rerunning `--position last`.
+4. Still owed, and recorded so it is not forgotten: give both probes the **same layer/stat freedom**
+   in `analyze_g2.py` (it argmaxes refusalness over 5 layers against 3 hard-coded d_surface columns);
+   at the last position that asymmetry alone is worth ~4×. And add a construct-validity assertion
+   that whatever quantity wins at `codeword_last` still separates `direct_harmful` from
+   `benign_literal`.
+
+**The lesson, and it is the same one for the fourth time this sprint: I verified the *direction* of
+the fix and not the *thing being measured*.** I checked that the last-position run refit its
+directions (it did, freshly, at `position=last` — recorded in `summary.json`) and took that as
+evidence the readout had moved. Fitting and reading are two different positions, and only one of
+them changed.
