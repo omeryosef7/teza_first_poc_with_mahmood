@@ -1,0 +1,18 @@
+{
+ "design": "predictor x position, 234 prompts",
+ "r2": {
+  "d_surface@last": 0.0357,
+  "d_surface@codeword_last": 0.1411,
+  "refusalness@last": 0.0386,
+  "refusalness@codeword_last": 0.1759
+ },
+ "ratio_boombness_over_refusalness": {
+  "at_last": 0.9248704663212435,
+  "at_codeword_last": 0.8021603183627061
+ },
+ "rho_d_surface": {
+  "at_last": 0.21362792504247027,
+  "at_codeword_last": 0.306667780204175
+ },
+ "verdict": "position dominates for BOTH probes (~4x); at either matched position refusalness >= Boombness; the 3.7x was entirely cross-position"
+}
