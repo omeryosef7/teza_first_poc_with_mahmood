@@ -10607,3 +10607,15 @@ Diff unchanged.
 *(Their `2670d02e` closes boombness G4 as a negative — steering does not support a directional
 causal claim. Same shape as §20's own arc: a representation that decodes and correlates, but does
 not drive behaviour under intervention. Independent workstream, converging conclusion.)*
+### 22:45 — idle. **Account at 5/6** (all boombness: 3 RUNNING, 2 PENDING at 0:00 — no >30 min trigger).
+No new asymmetry artifacts, no §20 commits. Nothing of mine queued, so the cap is not binding on me
+— but at 5/6 any §20 submission would take the account to 6, and per the 02:15 precedent I count
+all three programmes against the limit before submitting.
+
+*(Worth carrying across: their `adc959d8` — "SLURM argsfiles must live on the shared filesystem, not
+the /tmp scratchpad" — is a general cluster lesson, and this session uses a `/tmp` scratchpad for
+working files. Any future §20 submission must keep anything SLURM reads (plans, joblists, argsfiles)
+on the shared FS. The randtok floor plan already lives under `doublespeak_causality/data/`, so no
+past submission was exposed.)*
+
+Diff unchanged.
