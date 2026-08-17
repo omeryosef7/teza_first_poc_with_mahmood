@@ -3102,3 +3102,17 @@ constant at `carrot` and demonstration count varied. Cluster-robust t over 6 dom
 - Scale caveat, stated: these are cosines in the 0.01–0.05 range. The **sign structure and the dose
   response** are the findings; the magnitudes are small and should not be quoted as "the
   representation moves a lot".
+
+### Tick 45 — all 40 board rows resolved; final verification launched
+
+Every phase row is now DONE / CLOSED / DROPPED / NOT RUN / RETRACTED with a stated reason; nothing
+remains quietly marked TODO. The queue is empty and the analysis is complete.
+
+Rather than add more analysis, this tick launches a **final independent verification of the claims
+still standing in revision 4** — the document that actually goes to collaborators. After five
+retractions, three of which were caught by audit rather than by me, certifying the deliverable is
+worth more than another experiment. The verifier is asked to re-derive all ten claim clusters from
+committed artifacts and, specifically, to confirm the `lastpos` run really read at the last token
+(the prior one did not) and that the corrected group-demeaned permutation p is the one reported.
+
+The §15 full report is being written in parallel and will not be sent until that verification lands.
