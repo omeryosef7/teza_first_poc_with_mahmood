@@ -4,7 +4,7 @@
 **Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint` · all four gates answered.
 
-> **This is revision 5. Read only this one.**
+> **This is revision 6. Read only this one.**
 > - Revision 1's headline "Boombness beats refusalness 3.7×" is **retracted** — the two predictors
 >   were read at different tokens. That retraction stands.
 > - Revision 3 then claimed refusalness *wins* at matched position and moved the label to **C**.
@@ -17,6 +17,10 @@
 >   **two wrong tables and thirteen disclosure gaps**, fixed here. The two that mattered: the
 >   condition table was still on a mixed population (one cell's **sign** flipped), and the
 >   "like for like" increment bullet was itself built on the mixed footing this report retracts.
+>
+> - **Revision 6 adds the sprint's first clean causal result, and it INVERTS the guiding hypothesis:**
+>   surgically *removing* Boombness **raises** ASR. Two further retractions land here too (#6 the role
+>   null, #7 the control band). See the new section below.
 >
 > Corrections ⚠, retractions ⛔.
 
@@ -255,6 +259,45 @@ the harmful−benign gap **collapses ~16×** (7.45 → 0.46), `direct_harmful` b
 overtakes `direct_harmful` as the highest condition. That is still enough to withhold the name
 "refusal" from the codeword-position quantity — but the reason is the collapse, not a reversal.
 
+## ★ The sprint's first clean causal result — and it runs the OTHER way
+
+`project_out` on `d_surface` at L8 removes the concept component by projection. It is the only
+intervention here that reaches the ASR question with **every** precondition green: coherence OK,
+comprehension **unchanged** (Δ +0.088, p=0.681), ledger 960/960/0, refusal **unchanged**.
+
+| arm | ASR | refusal | paired Δ vs baseline |
+|---|---|---|---|
+| baseline | 0.219 | 0.074 | — |
+| **remove Boombness (project_out)** | **0.300** | **0.074** | **+0.074 ± 0.025** |
+| add Boombness +0.25 | 0.081 | **0.696** | −0.114 |
+| random / orthogonal +0.25 | 0.178 / 0.189 | 0.085 / 0.093 | −0.035 / −0.031 |
+
+Domain-clustered (6 domains): arm B beats the **random** control by +0.109 (**p=0.025**) and the
+**orthogonal** control by +0.104 (**p=0.020**). ⚠ Against baseline *alone* it is **p=0.117** — so the
+effect is only visible against controls, and that is how we quote it.
+
+**The whole intervention picture is now coherent, and it is the reverse of what we assumed:**
+
+| manipulation | concept-ness at codeword | refusal | ASR |
+|---|---|---|---|
+| **add** | higher | 0.074 → **0.696** | 0.219 → **0.081** |
+| **remove** | lower | 0.074 → 0.074 | 0.219 → **0.300** |
+
+**Boombness at the codeword is a DETECTION signal for the safety mechanism, not a driver of compliance.**
+Raise it and the request becomes legible, so refusal fires. Remove it and the request becomes less
+legible, so the attack succeeds more. This also dissolves the earlier puzzle — why the within-arm
+correlation was positive while steering "the wrong way" suppressed ASR: the correlation was reading a
+**detectability** gradient.
+
+**§12 reopens with the sign flipped.** An objective on this axis should **minimise** the projection, not
+maximise it; `project_out` is its idealised limit. That is a concrete, testable direction we did not have
+before.
+
+⚠ **Not yet a settled fact.** p=0.117 against baseline means this needs a second concept pair, a
+projection dose–response (partial removal), and the same arm on Qwen3 — especially since G2 itself did not
+replicate there.
+
+
 ## What we'd take from this sprint
 
 1. **The 2×2 design is the reusable artifact.** It separates surface identity from context and it
@@ -290,7 +333,7 @@ overtakes `direct_harmful` as the highest condition. That is still enough to wit
    and the mid-layer negative band is a **semantic/comprehension-prompt phenomenon that does not
    survive multiplicity correction**. Quoting raw clustered p while the artifact's own Holm field
    says no was over-claiming. Both rows come from the committed `reanalyze_corrected.py`.
-3. **Process.** Five retractions and five corrections, every one from independent audit, and all
+3. **Process.** Seven retractions and ten corrections, every one from independent audit, and all
    one family: *the manipulated and measured quantities were not the same thing*, or *the best of
    mine was compared against a fixed instance of yours*. **Three** guards written to prevent
    exactly this were themselves silently inoperative: a coherence gate that keyed on the wrong

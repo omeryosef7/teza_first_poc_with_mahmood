@@ -25,10 +25,11 @@ requires — returned a directional null, and the plan made §12 explicitly cond
 | gate | question | verdict |
 |---|---|---|
 | **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The **single-layer L18** demo transplant moves the semantic readout +84% of span, CI [+57%, +105%] (n=8 families, **2 domains**); the query-codeword transplant moves it the *wrong way*. ⚠ One arm of ~130 — the all-layer variant goes the wrong way too (−0.76). |
-| **G2** (§9) | Does Boombness predict attack success? | **Yes, modestly.** ρ = +0.307 at L12, +0.302 norm-partialled, n=234, 6/6 domains positive (two essentially null), **p < 5e-4** (within-domain permutation, at its resolution floor). |
+| **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only — does NOT replicate on Qwen3-14B** (there the pooled ρ is +0.364 but collapses to +0.015 when one of six domains is dropped; 3/6 domains positive; clustered p=0.206). In Llama: **modestly.** ρ = +0.307 at L12, +0.302 norm-partialled, n=234, 6/6 domains positive (two essentially null), **p < 5e-4** (within-domain permutation, at its resolution floor). |
 | **G3** (§10) | Can it be removed surgically? | **No — it is massively redundant.** Cutting 6.25% of demo→query edges does nothing *however distributed*; cutting 100% recovers 84% of the deletion ceiling. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR, so ASR does not follow the axis. Only `+0.25` exceeds a 4-draw random-control band, and it does so by **triggering refusal**. |
-| **FINAL** (§18) | outcome label | **B — mechanistic but not causal.** |
+| **§0.3 / §10.4-B** | Does surgical REMOVAL reduce ASR without destroying comprehension? | **NO — removal RAISES ASR** (0.219 → 0.300; vs norm-matched controls +0.104/+0.109, clustered p=0.020/0.025; vs baseline alone p=0.117). Comprehension preserved (p=0.68), refusal unchanged, coherence OK. **The sign is opposite to the hypothesis.** |
+| **FINAL** (§18) | outcome label | **B — mechanistic but not causal** for the *additive* axis; but see §0.3 above — the *projection* arm gives a directional effect against controls, so this label is under active revision. |
 
 **§12 was therefore not built.** That is a decision forced by data, recorded as a documented
 negative rather than left as an unfinished row.
@@ -335,6 +336,47 @@ maximizing this projection has no reason to stop at 0.25 and will find the degen
 
 ---
 
+## 4b. The §2.6 comprehension control, and what it does to every intervention claim (added 2026-08-17)
+
+The plan's §2.6 forbids reading a lowered ASR as causal without checking the model still understands the
+prompt. **That control was missing for the whole sprint** until an independent plan-coverage sweep found
+it. It now exists, and it reorders the intervention arms.
+
+Readout: `comprehension_logodds` = log p("coded") − log p("literal") on `comprehension_usage` rows;
+positive means the model still reports the codeword as meaning the coded thing. 60 doublespeak prompts
+with ≥1 demonstration, common to all arms, domain-clustered over 6 domains:
+
+| arm | Δ comprehension | p | frac still "coded" | verdict |
+|---|---|---|---|---|
+| `d_surface` **+0.25** | +0.643 | 0.006 | 0.733 | improves |
+| **random +0.25** | **+1.065** | 0.001 | 0.800 | improves MORE |
+| `d_surface` **−0.25** | **−0.792** | 0.040 | **0.500** | **degrades below zero** |
+| **random −0.25** | **−1.470** | 0.004 | **0.383** | degrades MORE |
+| **`project_out`** | **+0.088** | **0.681** | 0.683 | **unchanged** |
+| arm C (remove refusalness) | +0.207 | 0.001 | 0.717 | improves |
+| arm F (add Boombness + remove refusalness) | +0.863 | 0.002 | 0.783 | improves |
+
+**Three consequences, one of them a retraction of my own claim.**
+
+1. **The −0.25 arm is disqualified.** Its ASR suppression (0.219 → 0.148) coincides with comprehension
+   falling *below zero* — the model now prefers the literal reading — so that suppression is at least
+   partly confusion. It must not be described as "removing concept-ness reduces attack success".
+2. **The +0.25 arm is exonerated** in the narrow sense that matters: comprehension did **not** degrade, so
+   its ASR drop is not confusion. Combined with refusal rising 0.074 → 0.696, the reading "it triggers
+   refusal" stands.
+3. ⛔ **But the pattern is NOT axis-specific, which retracts a gloss I added (C10).** The effect is driven
+   by the **sign of the dose**: positive steps raise p(coded), negative steps lower it, for `d_surface`
+   *and* for a norm-matched random direction — and **random moves comprehension further in both
+   directions**. I had claimed "only the negative `d_surface` step degrades comprehension, and no control
+   does"; that was untested (no negative random control existed) and is false. Comprehension therefore
+   does **not** discriminate `d_surface` from a generic perturbation.
+
+**What survives as genuinely distinctive: `project_out` is the only one of five arms that leaves
+comprehension unchanged** while all four additive arms move it by 0.6–1.5. That is what makes it the
+surgical condition, and it is why its ASR result (§0.3, above) is the sprint's cleanest causal test.
+
+---
+
 ## 5. Role framing (§11)
 
 Six role styles with demonstration content, domain, demo count and final query held **fixed**
@@ -349,10 +391,18 @@ Six role styles with demonstration content, domain, demo count and final query h
 | plain | −0.2909 | 0.195 |
 | user_like | −0.2888 | **0.233** |
 
-**Boombness is flat, and it is a tight null:** `role → Boombness` gives **F = 0.175, p = 0.972** at
-L12, and **p = 0.60 (L8) / 0.75 (L31)** — so the null holds across all three tested layers, not just
-the most favourable one. The **sd of the six style means** is 3.6% of the pooled within-style sd (the
-*range* is 9.3% — "spread" should not be read as range). The design has the resolution to say so.
+⛔ **RETRACTED (retraction #6) — the "tight null" was an ERROR TERM mistake and the corrected answer is
+the opposite.** The arithmetic reproduced exactly (F=0.175, p=0.972 at L12), but the design is perfectly
+crossed — 72 complete 6-style stems — and the correct **paired within-stem** test gives
+**F(5,355)=20.30, p=8.1e-18** (permutation p<5e-5), with **11 of 15 pairwise style differences surviving
+Bonferroni**. Blocking on `query_kind` alone already breaks the null (p=0.016).
+The "3.6% of within-style sd" was a **variance-decomposition error** — that denominator (0.110) is almost
+entirely *between-stem* variance, which the paired design removes; against the correct within-stem residual
+(0.0082) the spread is **53%**. And in the 816-row pool `plain` and the five role styles occupy **disjoint
+`bank_block`s with zero family overlap**, so "content, domain, demo count and query held fixed" was **false
+for the analysis actually run** — true only inside the 72 stems.
+**Corrected: role framing DOES move Boombness — reliably but by a small amount** (largest pairwise gap
+0.0116 = **4.1% of the grand mean** at L12). A small, highly reliable effect, not a null.
 
 **The ASR half is suggestive but not established:** `role → ASR` F = 1.94, **p = 0.087** on an
 unbalanced omnibus (`plain` n=204 vs 36 each); the largest pair (0.035 vs 0.233, a 6.6× ratio) is
@@ -534,7 +584,7 @@ and the correlation with ASR is real. But steering at α=1 destroys generation (
 optimizer maximizing this projection has no reason to stop at 0.25.
 
 **5. Does Boombness predict ASR?**
-**Yes, modestly.** ρ = **+0.307** (`d_surface|L12|proj`), **+0.302** norm-partialled, n = 234, 6/6
+**Yes, modestly — in Llama-3.1-8B, and only there** (it does not replicate on Qwen3-14B; see §14). ρ = **+0.307** (`d_surface|L12|proj`), **+0.302** norm-partialled, n = 234, 6/6
 domains positive though two are essentially null, **p < 5e-4** (within-domain permutation; the i.i.d.
 1.7e-06 is withdrawn as pseudo-replication).
 
@@ -550,7 +600,10 @@ which biases those ratios toward Boombness.
 earlier draft had this backwards from a mixed-footing artifact.
 
 **8. Do user-like / CoT-like framings increase Boombness?**
-**No — and this is a tight null, not an underpowered one.** Across six role styles with content, domain,
+⛔ **RETRACTED — the answer is YES, by a little (retraction #6).** I reported a tight null; the paired
+within-stem test gives F(5,355)=20.30, p=8.1e-18 with 11/15 pairwise gaps surviving Bonferroni, and the
+"3.6%" statistic used a between-stem denominator where the within-stem residual was correct (53%). The
+effect is **small but reliable** — largest pairwise gap 4.1% of the grand mean. Across six role styles with content, domain,
 demo count and query held fixed: `role → Boombness` **F = 0.175, p = 0.972** at L12 (and p = 0.60/0.75
 at L8/L31), with the sd of style means at **3.6%** of the within-style sd. Whether role framing changes
 *ASR* is unresolved (F = 1.94, p = 0.087; largest pair p ≈ 0.105 Bonferroni). `role_style` is a
@@ -604,10 +657,10 @@ hosted model was attacked; the only API use is the *judge*, which evaluates rath
 
 | # | criterion | met? |
 |---|---|---|
-| 1 | Boombness predicts ASR across prompts | **YES** — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive (2 near-null) |
+| 1 | Boombness predicts ASR across prompts | **YES IN LLAMA ONLY** — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
 | 2 | Adding Boombness increases behaviour or relevant internal scores | **NO** — adding it (+0.25) *decreases* ASR by triggering refusal |
-| 3 | Removing Boombness reduces ASR | **AMBIGUOUS** — −0.25 does reduce ASR, but indistinguishably from a norm-matched random perturbation (p=0.070) |
-| 4 | Comprehension is preserved | **PARTIAL** — coherence-gated, but the +0.25 arm's verdict rests on 202/270 rows |
+| 3 | Removing Boombness reduces ASR | **NO — it RAISES it.** The projection arm increases ASR 0.219 → 0.300 (vs controls, clustered p=0.020/0.025) with comprehension preserved. The −0.25 additive arm lowers ASR but degrades comprehension, so it is disqualified. |
+| 4 | Comprehension is preserved | **NOW MEASURED (§2.6).** project_out: preserved (p=0.681). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **PARTIAL** — a 4-draw band separates +0.25 (p=0.0014) but not −0.25 |
 | 6 | Replicates across prompt families or models | **NO** — one model, one concept pair, and C7 shows a headline band that does **not** replicate across query kinds |
 
