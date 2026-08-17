@@ -1,18 +1,24 @@
 {
- "design": "predictor x position, 234 prompts",
- "r2": {
-  "d_surface@last": 0.0357,
-  "d_surface@codeword_last": 0.1411,
-  "refusalness@last": 0.0386,
-  "refusalness@codeword_last": 0.1759
+ "d_surface": {
+  "n_cols": 20,
+  "best_cw": [
+   "d_surface|L12|proj",
+   0.14110547945959884
+  ],
+  "best_last": [
+   "d_surface|L8|proj",
+   0.07009225379341755
+  ]
  },
- "ratio_boombness_over_refusalness": {
-  "at_last": 0.9248704663212435,
-  "at_codeword_last": 0.8021603183627061
- },
- "rho_d_surface": {
-  "at_last": 0.21362792504247027,
-  "at_codeword_last": 0.306667780204175
- },
- "verdict": "position dominates for BOTH probes (~4x); at either matched position refusalness >= Boombness; the 3.7x was entirely cross-position"
+ "refusalness": {
+  "n_cols": 10,
+  "best_cw": [
+   "refusalness|L20|cos",
+   0.1888453390239655
+  ],
+  "best_last": [
+   "refusalness|L12|cos",
+   0.04546744238609124
+  ]
+ }
 }

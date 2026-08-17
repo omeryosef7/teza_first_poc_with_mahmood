@@ -65,7 +65,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **YES, with corrected inference: `d_surface|L12|proj`, rho=+0.307, norm-partial +0.302, n=234, 100% coverage, 6/6 domains positive (2 essentially null). p = 5.0e-04 within-domain permutation / 1.2e-03 CR1-clustered — NOT the i.i.d. 1.7e-06.** ⛔ Two earlier verdicts superseded: ~~L8 proj rho=+0.342, p=8e-08~~ (C1: L8 is the most norm-contaminated layer, norm-free +0.172 fails Holm) and ~~the original negative~~ (R2: predictor read off the wrong prompt). | 2026-08-17 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED, and the depth reading is RETRACTED (B4a). Cutting query→demo-block attention at all 32 layers recovers 84% (CI [62%,110%]) of the deletion ceiling; at 2 layers 0.07% (CI [−6.7%,+8.2%]). But the edge-count-matched arm shows layer spread is NOT the operative variable: 3,552 edges over 32 layers moves the readout +0.09, the same nothing as 3,552 edges at 2 layers (−0.01). The redundancy is in the EDGE SET — removing 6.25% of demo edges does nothing however distributed, removing 100% recovers 84%. The converse arm is impossible: a layer holds only ~3,648 edges, so any cut >7.3k edges must span layers. Identification one-sided by construction.** | 2026-08-17 |
 | G4 (§12) | Is Boombness a usable GCG objective? | **NO — steering is a documented NEGATIVE. Both signs of `d_surface` at a coherent dose SUPPRESS ASR (paired Δ −0.114 and −0.074 vs −0.035/−0.031 for norm-matched controls), so the effect is disturbance, not direction. The axis is not inert (2–3× the controls) and refusal responds directionally (0.696 vs 0.067), but ASR does not follow the sign — which is what an objective needs.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
-| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **REVERTED TO B-PENDING (08-17).** The move to C was built on a PHANTOM CELL: `stage_score` never received `--position`, so the 'd_surface at last token' run re-fit the direction at the last token and still READ it at the codeword (1464/1464 rows share the codeword run's `token_pos`; 0/2352 sit at seq_len-1). Only ONE matched position was ever measured. There, d_surface 0.141 vs refusalness 0.176 = ratio **0.80, 95% CI [0.37, 1.24]** — a TIE, not an inversion. Bug fixed, job 761457 rerunning. The 3.7x retraction still STANDS. | 2026-08-17 |
+| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **B — mechanistic but not causal (SETTLED 08-17 on rebuilt real cells).** Freedom-matched 2×2: ratio Boombness/refusalness = 1.54 [0.64,3.60] @last and 0.75 [0.33,1.13] @codeword_last — **both CIs straddle 1**, so neither probe dominates and C is not supported. POSITION dominates for both (2.0× and 4.2×), which is the surviving positive finding: the ASR-predictive state is localized at the codeword token. The 3.7× retraction stands — it was the most favourable of the four cross-position pairings. §12's objective unsupported (G4 directional null). | 2026-08-17 |
 
 ---
 
@@ -2833,3 +2833,50 @@ triple); `refusalness.py` `pos` definedness; `rng.permutation` usage across knoc
 
 **Running:** 761457 (`--position last` rerun with the readout actually moved, plus the new per-row
 position assertion) and control-band judging (2 of 4 arms judged).
+
+## The predictor × position 2×2, REBUILT on real cells. §18 settles at **B**.
+
+Job 761457 reran `--position last` with the readout actually moved: **2352/2352 rows at
+`seq_len-1`**, and the new per-row assertion would have raised otherwise. Rebuilt the table — and
+caught a second freedom confound before quoting it: `d_surface` had **64** candidate columns at
+`codeword_last` but only **20** at `last`, so the *position* comparison was not freedom-matched
+either. Restricted to columns present at BOTH positions (20 for `d_surface`, 10 for refusalness),
+same 234 prompts, same ASR, single-predictor R²:
+
+| probe | @ last token | @ codeword_last | **position effect** |
+|---|---|---|---|
+| `d_surface` (20 common cols) | 0.0701 | 0.1411 | **2.0×** |
+| refusalness (10 common cols) | 0.0455 | 0.1888 | **4.2×** |
+| **ratio Boombness / refusalness** | **1.54** | **0.75** | |
+
+Domain-clustered bootstrap (6 domains, 4000 reps):
+- @last: ratio **1.54, 95% CI [0.64, 3.60]**, P(>1) = 0.89
+- @codeword_last: ratio **0.75, 95% CI [0.33, 1.13]**, P(>1) = 0.10
+
+### Three conclusions, and the middle one corrects yesterday's correction
+
+**1. "Position dominates for both probes" is now MEASURED and it HOLDS** — 2.0× for `d_surface`,
+4.2× for refusalness. It was withdrawn earlier today as resting on a phantom cell; with the real
+cell it survives. **This is the sprint's surviving positive finding:** the ASR-predictive state is
+localized at the **codeword token**, for a concept probe and a refusal probe alike, consistent with
+G1 (meaning retrieved into the codeword) and G3 (retrieval carried by a large redundant edge set).
+
+**2. "Refusalness is the better predictor" is FALSE as a general claim.** Which probe wins **depends
+on where you read**: Boombness wins at the last token (1.54), refusalness at the codeword (0.75).
+**Both CIs straddle 1.0**, so neither difference is significant at either position. The two probes
+are comparable; position is the variable that matters.
+
+**3. The 3.7× retraction STANDS, and is now fully explained.** The original compared
+`d_surface`@codeword_last (0.141) against refusalness@last (0.039) — **the single most favourable
+of the four possible cross-position pairings**, 3.66. No matched pairing reproduces anything like it.
+
+### §18 FINAL LABEL: **B — mechanistic but not causal**
+Not **C**: refusalness does not dominate; it only wins in one cell, insignificantly, and its
+construct validity at that cell is doubtful (at the codeword position the probe no longer orders
+`direct_harmful` above `benign_literal`, so calling that quantity "refusal" is not licensed).
+Not **A**: Boombness does not beat refusalness at matched footing either, and G4 showed no
+directional causal effect. **B** is where the evidence sits: Boombness is measurable, correlates
+with ASR, localizes to the codeword — and does not support a steering objective.
+
+`outputs/boombness/position_2x2.json` now holds the freedom-matched table and replaces the
+phantom-cell version.
