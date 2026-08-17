@@ -141,10 +141,14 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
 
 ## Where the mechanism lives
 
-- **Not in the codeword token.** Transplanting the *demonstration* states moves the model's reported
-  meaning **+84% of the baseline→ceiling span, 95% CI [+57%, +105%]**; transplanting the *query
-  codeword* moves it the **wrong way**. Meaning is retrieved from the demonstrations at answer time,
-  not stored in the codeword.
+- **Not in the codeword token.** The **single-layer L18** demonstration transplant, harm-context pair,
+  moves the model's reported meaning **+84% of the baseline→ceiling span, 95% CI [+57%, +105%]**;
+  transplanting the *query codeword* moves it the **wrong way** (−0.58 to −0.81). Meaning is retrieved
+  from the demonstrations at answer time, not stored in the codeword.
+  ⚠ **Arm-selection exposure, disclosed:** this is one arm of ~130 in the pilot, and it is not
+  uniform — in the *same* context pair the **all-layer** demonstration transplant moves the readout
+  strongly the **wrong way** (−0.76, CI [−1.49, −0.21]). "Transplanting the demonstrations moves the
+  meaning +84%" is true of the L18 window, not of demonstration transplants in general.
   ⚠ Revision 1's "[+23%, +135%]" was a **chimera** — one arm's lower bound welded to another's. The
   interval above is a paired bootstrap over families; the old delta-method interval was too *wide*
   (it propagated the span as if baseline and ceiling were independent, when they correlate +0.63).
