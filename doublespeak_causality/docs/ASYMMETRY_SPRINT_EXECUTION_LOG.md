@@ -10663,3 +10663,9 @@ Diff unchanged.
 ### 00:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 01:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 01:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 02:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits.
+*(Their `c1a06af5` audit reports "a third dead guard" — a guard whose failure branch cannot execute.
+That is the same defect class as the GPU-probe guard fixed here on 2026-08-14: a check made
+unreachable under `set -e` by a command substitution. Third independent instance on this branch.
+Their trees, not §20's; the two §20 runners were fixed then and remain fixed.)*
+Diff unchanged.
