@@ -4343,3 +4343,38 @@ tokens that asymmetry is now a *measured property of the arms* rather than an ar
 
 **Judges queued** for all six (selecting by content + `DONE.json`, never by mtime — the bug that made a
 driver report "complete" after judging half its arms).
+
+## ✅ A4-4 RESOLVED PROPERLY — the genuine 4-draw band is 6× wider, and it weakens two of my claims
+
+Retraction #7 withdrew the "4-draw band" because all four draws were the same generations. The rebuilt band
+uses four verified-independent draws (4 distinct completion sets, 81–85% pairwise disagreement):
+
+| | fake band (n=1 wearing an n=4 label) | **real band** |
+|---|---|---|
+| draws | — | −0.0551, −0.0097, +0.0046, +0.0120 |
+| mean | −0.0366 | **−0.0120** |
+| **between-draw sd** | **0.0049** | **0.0301 — 6× larger** |
+| `+0.25` vs band | t=−3.23, **p=0.0014** | t=−2.5, df=7, **p=0.0433** |
+| `−0.25` vs band | p=0.070 (no) | p=0.168 (no) |
+
+### Two of my statements have to change
+1. ⛔ **"Random directions at α=0.25 reliably suppress ASR by ≈−0.037" is WRONG.** That was the n=1
+   artifact. Across four genuine draws the band mean is **−0.012 with sd 0.030, spanning −0.055 to +0.012**
+   — a norm-matched random perturbation has **no reliable effect on ASR at all**; it can suppress or
+   slightly raise it depending on the draw.
+2. ⚠ **"+0.25 clears the band" survives but is now marginal**: p=0.0433 instead of 0.0014, a ~30× weaker
+   p-value, on 4 draws. It should be quoted as *"clears a 4-draw band at p≈0.04"*, not as strong evidence.
+
+### And it partially rescues arm B from one of the audit's objections
+The audit noted arm B's contrast was inflated because "the controls sit below baseline" (≈0.035 of B's
+advantage was the control falling). With the real band that suppression is **−0.012, not −0.035**, so
+**that inflation was itself an artifact of the fake band** — roughly two thirds of it disappears. Arm B's
+problem remains the one the audit identified as primary: **every control is an `add` while arm B is a
+`project_out`**, and the like-for-like `projctrl` run is now complete and queued for judging.
+
+**The `−0.25` verdict is unchanged across both bands** (does not clear), which is the one thing here that
+did not move.
+
+**Status:** `projctrl`, `len_base/A/C/F/Fctrl` all generated and gate-passed; judging in sequence
+(`len_base` at 527/960). The sign test still fires on the additive arms, correctly — that verdict was never
+about the projection arm.
