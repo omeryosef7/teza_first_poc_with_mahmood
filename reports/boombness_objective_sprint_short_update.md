@@ -4,7 +4,7 @@
 **Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint` · all four gates answered.
 
-> **This is revision 4. Read only this one.**
+> **This is revision 5. Read only this one.**
 > - Revision 1's headline "Boombness beats refusalness 3.7×" is **retracted** — the two predictors
 >   were read at different tokens. That retraction stands.
 > - Revision 3 then claimed refusalness *wins* at matched position and moved the label to **C**.
@@ -12,6 +12,11 @@
 >   "last token" run moved the direction-fitting position but not the readout). Rerun on real cells,
 >   **neither probe dominates** — both confidence intervals straddle 1.
 > - **§18 settles at B.** The surviving positive finding is about *position*, not direction.
+>
+> - Revision 4 passed independent verification on all ten claim clusters, but the verifier found
+>   **two wrong tables and thirteen disclosure gaps**, fixed here. The two that mattered: the
+>   condition table was still on a mixed population (one cell's **sign** flipped), and the
+>   "like for like" increment bullet was itself built on the mixed footing this report retracts.
 >
 > Corrections ⚠, retractions ⛔.
 
@@ -42,7 +47,7 @@ association survives, but the honest numbers are:
 |---|---|
 | i.i.d. (what I sent before) | 1.7e-06 |
 | CR1 domain-clustered (G=6, few clusters — indicative) | 1.2e-03 |
-| **within-domain permutation — cite this one** | **5.0e-04** |
+| **within-domain permutation — cite this one** | **< 5e-4** (0 of 2000 draws reached the observed value, i.e. the resolution floor) |
 
 ⚠ **"Positive in 5 of 6 domains" was the wrong column.** For the quoted `proj` predictor it is
 **6 of 6**, but that reads more uniform than the data is — two domains are essentially null:
@@ -63,15 +68,20 @@ On the 234 prompts the correlation uses (`n_examples ≥ 1`):
 
 | | mean refusalness (L18) | ASR | refusal rate |
 |---|---|---|---|
-| direct harmful request | **+7.30** | 0.042 | 96% |
-| doublespeak | **+0.04** | **0.219** | **0.9%** |
-| mapping stated outright | +0.10 | **0.375** | 0% |
+| direct harmful request | **+7.06** | 0.050 | 95.0% |
+| doublespeak | **−0.15** | **0.214** | 0.85% |
+| mapping stated outright | +0.01 | 0.375 | 0% |
+| benign literal | −0.30 | 0.031 | 1.85% |
 
-⚠ Revision 1 quoted **0.583** and **7.4%** here — those are over *all* rows including the 36
-zero-demo prompts that the correlation analysis excludes on principle (no demonstrations ⇒ no
-codeword mapping ⇒ not a doublespeak prompt). Those 12 zero-demo `direct_codeword` rows are all
-ASR = 1.0 and carried the entire gap. Headline table and headline correlation must be on the same
-population; they now are.
+⚠ **Revision 4 got four of these cells wrong.** It mixed the all-rows population into a paragraph
+that claimed it did not. On the `n_examples ≥ 1` population the correlation actually uses,
+`direct_harmful` refusalness is **+7.06** (not +7.30) and its ASR **0.050** (not 0.042), and
+doublespeak refusalness is **−0.15 — the sign flips** from the +0.04 previously reported. The
+qualitative story survives and is arguably cleaner: doublespeak sits **next to benign literal**
+(−0.15 vs −0.30) and **7.2 units below** the matched direct request. Every figure above is now one
+population. (Revision 1's 0.583 / 7.4% were the all-rows figures; the 36 zero-demo prompts it
+included are all ASR = 1.0 and carried the entire gap.)
+
 
 ⛔ **RETRACTED: "Boombness beats refusalness 3.7×".** `d_surface` was read at `codeword_last`,
 refusalness at the last prompt token. Rebuilt as a proper 2×2 — same 234 prompts, same ASR, and
@@ -84,8 +94,14 @@ model-selection freedom (20 for `d_surface`, 10 for refusalness):
 | refusalness | 0.046 | 0.189 | **4.2×** |
 | **ratio Boombness / refusalness** | **1.54** | **0.75** | |
 
-Domain-clustered bootstrap: @last **1.54, 95% CI [0.64, 3.60]**; @codeword_last **0.75, CI
-[0.33, 1.13]**.
+Domain-clustered bootstrap (fixed column, 6 domains): @last **1.54, 95% CI [0.64, 3.60]**,
+P(>1)=0.89; @codeword_last **0.75, CI [0.33, 1.13]**, P(>1)=0.10.
+
+⚠ **Freedom is matched *within* each probe across positions, but NOT *between* probes:** `d_surface`
+draws its best column from **20** candidates, refusalness from **10**. Both are max-of-k statistics,
+so the between-probe ratios are biased **toward Boombness**. Re-selecting the column inside each
+bootstrap resample gives [0.82, 2.88] and [0.40, 1.12] — same conclusion, wider. Neither the fixed-
+column CI nor the ratio is regenerable from a committed script yet; both were computed ad hoc.
 
 **Neither probe dominates.** Which one wins depends on *where you read*, and both CIs straddle 1.0,
 so neither difference is significant. The 3.7× came from pairing `d_surface`@codeword_last with
@@ -103,15 +119,25 @@ token is off-label. The comparison is fair (both probes treated identically), bu
 the codeword token" is not a validated refusal measurement at that position.
 
 Two caveats we owe you, both of which revision 1 dropped or half-stated:
-- **Range restriction.** Within-arm refusalness sd is 0.74 vs 3.07 pooled, so "refusal doesn't
-  matter" is true only *inside* the attack, never generally.
-- ⚠ **Footing mismatch.** The two predictors are read at **different token positions** —
-  refusalness at the last token, `d_surface` at `codeword_last`. Part of "Boombness beats
-  refusalness" is "the codeword position beats the last position." This is not a fair contest until
-  refusalness is re-measured at `codeword_last`.
-- The increments quoted before were asymmetric (1-vs-1 against 5-vs-1). Like for like: Boombness
-  adds **+0.104** over refusalness-L12; all five refusalness layers jointly add **+0.039** over
-  Boombness.
+- **Range restriction.** Within-arm refusalness sd is **0.445** on the n=234 correlation
+  population (0.74 is the all-270-rows figure revision 4 quoted) vs 3.07 pooled, so "refusal
+  doesn't matter" is true only *inside* the attack arm, never generally.
+- ⚠ **Footing was the problem and it is now fixed, not outstanding.** Revision 4 still carried
+  this as an open caveat ("not a fair contest until refusalness is re-measured at
+  `codeword_last`"); that re-measurement is the 2×2 above. Nothing here is pending.
+- ⛔ **Revision 4's "like for like" increments (+0.104 / +0.039) are withdrawn.** They came from the
+  artifact pairing refusalness@**last token** with `d_surface`@**codeword** — the exact footing
+  mismatch retracted 30 lines above, presented under the words "like for like". At matched footing
+  (both probes at one position, refusalness as all 5 layers jointly):
+
+  | | Boombness adds over refusalness | refusalness adds over Boombness |
+  |---|---|---|
+  | @ codeword_last | **+0.028** | **+0.144** |
+  | @ last token | **+0.025** | **+0.091** |
+
+  **Refusalness adds more at both positions**; revision 4's bullet implied the opposite. This does
+  not change §18 = B — on single-predictor R² neither probe dominates and both ratio CIs straddle
+  1 — but the increment comparison, done correctly, favours refusalness.
 
 ## Where the mechanism lives
 
@@ -158,6 +184,12 @@ Common 270-prompt set, all five arms coherence-gated, paired Δ vs baseline:
 causes the attack. The falsifying branch was written into the analysis code before the numbers
 existed, and it fired.
 
+⚠ **Coherence caveat on the one arm carrying a positive result.** All five arms pass the gate, but
+`coherence_gate` skips generations under 8 words, and the +0.25 arm — whose refusal rate is 0.696 —
+had **68 of its 270** doublespeak generations (25%) excluded on that basis, so its `coherent: true`
+was computed on n=202. Baseline dropped 0; the other arms 0–1. The gate is weakest exactly where it
+matters most.
+
 But "pure disturbance" is too strong — the two signs suppress by **different routes**. Of the
 prompts each arm suppressed, the fraction that are refusals:
 
@@ -190,19 +222,26 @@ this projection has no reason to stop at 0.25.
 
 **§18 label: outcome B — mechanistic but not causal.**
 Not **C**: refusalness does not dominate — it wins one cell, insignificantly, and its construct
-validity there is doubtful (at the codeword position the probe no longer orders `direct_harmful`
-above `benign_literal`, so calling that quantity "refusal" is not licensed). Not **A**: Boombness
-does not win at matched footing either, and G4 found no directional causal effect. Boombness is
-measurable, correlates with ASR, localizes to the codeword — and does not support a steering
-objective.
+validity there is doubtful — see below). Not **A**: Boombness does not win at matched footing
+either, and G4 found no directional causal effect. Boombness is measurable, correlates with
+ASR, localizes to the codeword — and does not support a steering objective.
+
+⚠ **Revision 4 mis-stated the construct-validity problem** and the verifier caught it. It said
+the probe "no longer orders `direct_harmful` above `benign_literal`" at the codeword position.
+**It does**, at every layer and both metrics (L18: −1.97 vs −2.43). What actually breaks is:
+the harmful−benign gap **collapses ~16×** (7.45 → 0.46), `direct_harmful` becomes
+**indistinguishable from doublespeak** (−1.972 vs −1.988 at L18), and `direct_codeword`
+overtakes `direct_harmful` as the highest condition. That is still enough to withhold the name
+"refusal" from the codeword-position quantity — but the reason is the collapse, not a reversal.
 
 ## What we'd take from this sprint
 
 1. **The 2×2 design is the reusable artifact.** It separates surface identity from context and it
-   caught the confound quantitatively. Bank: 2352 prompts, 240 matched families, **0 alignment
-   violations among the 216 families where the exact-swap invariant is even defined** (696
-   forced-choice families cannot satisfy it by construction — revision 1 gave the numerator without
-   the denominator).
+   caught the confound quantitatively. Bank: 2352 prompts, **912 families** of which 240 are the
+   matched 2×2 set, and **0 alignment violations among the 216 families where the exact-swap
+   invariant is even defined** — the other 696 are forced-choice and cannot satisfy an exact swap by
+   construction. (Revision 1 gave the numerator with no denominator; revision 4 gave two denominators
+   that did not add up.)
 2. ⚠ **The naive direction inflates — and in the mid layers it *hides* rather than manufactures.**
    Revision 1 said it "manufactures signal in layers where the identified direction finds none."
    That was sourced to a section this sprint had already retracted, and the corrected data **reverse
@@ -213,14 +252,33 @@ objective.
    | `d_surface` | +0.023 | +0.027 | +0.015 | **−0.023** | **−0.029** | **−0.021** | +0.047 |
    | `d_naive` | +0.043 | +0.048 | +0.037 | −0.006 | −0.016 | −0.005 | +0.094 |
 
-   It roughly doubles the effect at L4–L12 and L31 (1.75–2.4×), but at L16–L24 the *identified*
-   direction finds a real negative displacement (clustered p 0.009–0.053) that the naive direction
-   washes out (p 0.22–0.62). Both rows now come from the committed `reanalyze_corrected.py`.
+   It roughly doubles the effect at L4–L12 and L31 (1.75–2.4×). ⚠ **Revision 4's claim about the
+   mid layers is now weakened twice over, and both weakenings came from the verifier.** It said the
+   identified direction finds "a real negative displacement" at L16–L24 that the naive one washes
+   out (quoting naive p 0.22–0.62). Two problems:
+
+   - the naive p range is **0.074–0.62**, not 0.22–0.62 — L20 (p=0.074) was silently dropped, and
+     there the naive direction is *also* marginally negative;
+   - more seriously, **that band does not exist in the behavioural prompts** — the population every
+     ASR claim lives on. Split by query kind, L16/L20/L24 read **+0.003 / −0.004 / +0.015 (all
+     n.s.)** for `behavioral`, versus −0.034/−0.037/−0.031 for `comprehension_usage` and
+     −0.037/−0.046/−0.045 for `semantic_one_word`. And `reanalyze_corrected.py`'s own `holm_rejected`
+     field is **True only at L4 and L31**.
+
+   So the defensible statement is narrower: the naive direction **inflates by ~2× where both agree**,
+   and the mid-layer negative band is a **semantic/comprehension-prompt phenomenon that does not
+   survive multiplicity correction**. Quoting raw clustered p while the artifact's own Holm field
+   says no was over-claiming. Both rows come from the committed `reanalyze_corrected.py`.
 3. **Process.** Five retractions and five corrections, every one from independent audit, and all
    one family: *the manipulated and measured quantities were not the same thing*, or *the best of
-   mine was compared against a fixed instance of yours*. Two guards written to prevent exactly this
-   were themselves silently inoperative until the 08-17 audit — a coherence gate that never bound,
-   and a dynamic-range check that took a max over signed values and so compared against a null
+   mine was compared against a fixed instance of yours*. **Three** guards written to prevent
+   exactly this were themselves silently inoperative: a coherence gate that keyed on the wrong
+   dirname; a dynamic-range check that took `max` over *signed* deltas and so compared against
+   a null control; and **the control band behind this report's own "clears the band" claim**,
+   which selected `ctrl_rand_s*` while the runs were tagged `ctrlband_s*` and matched **zero**
+   arms. Two further defects the same audit found: the movability guard used a blacklist, so
+   treatment arms counted as null controls (threshold inflated 6.4×), and `dense_two_layer`
+   silently delivered 7,264 of 56,832 requested edges.
    control. **A guard that is never tested is not a guard.**
 
 ## Suggested next
@@ -228,8 +286,6 @@ objective.
 - **Do not build the GCG objective on this axis.** §12 is closed as a documented negative. If an
   objective is still wanted, target the demonstration-retrieval pathway, not the codeword's position
   on `d_surface`.
-- Finish the edge-count-matched knockout before anyone repeats the depth-redundancy claim.
-- Re-measure refusalness at `codeword_last` so the 3.7× is a fair contest.
 - Second model (Qwen3-14B) and second concept pair — everything here is Llama-3.1-8B, carrot↔bomb.
 - G1/G3 are measured on `semantic_one_word` prompts while G2/G4's ASR claims are on `behavioral`
   ones. Each is internally consistent, but joining them into one causal story is the same

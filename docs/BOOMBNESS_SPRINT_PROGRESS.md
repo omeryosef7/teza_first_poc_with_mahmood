@@ -3116,3 +3116,35 @@ committed artifacts and, specifically, to confirm the `lastpos` run really read 
 (the prior one did not) and that the corrected group-demeaned permutation p is the one reported.
 
 The §15 full report is being written in parallel and will not be sent until that verification lands.
+
+
+## ⚠ CORRECTION C7 — the L16–L24 negative band is a QUERY-KIND effect and fails Holm
+
+The final verifier found that the mid-layer negative band, which §4 and §8 both lean on, is **absent
+in the behavioural prompts** — the only population the ASR claims live on. From
+`reanalyze_d_surface_cos.json`'s own `by_query_kind` block (cluster-robust t):
+
+| L | behavioral | comprehension_usage | semantic_one_word |
+|---|---|---|---|
+| 16 | **+0.0027 (t=+0.3)** | −0.0344 (t=−4.1) | −0.0372 (t=−3.4) |
+| 18 | **+0.0004 (t=+0.0)** | −0.0364 (t=−4.4) | −0.0434 (t=−3.7) |
+| 20 | **−0.0041 (t=−0.6)** | −0.0374 (t=−4.6) | −0.0464 (t=−4.2) |
+| 24 | **+0.0151 (t=+1.5)** | −0.0314 (t=−3.5) | −0.0454 (t=−3.6) |
+| 31 | **+0.1327 (t=+9.8)** | +0.0001 (t=+0.0) | +0.0090 (t=+1.9) |
+
+And the artifact's **own `holm_rejected` field is True only at L4 and L31** — L16–L24 are all False.
+So quoting raw clustered p (0.009–0.053) as "a real negative displacement" was over-claiming against
+a multiplicity correction the same file computes.
+
+**What this changes:**
+- §4's confound statement narrows to "the naive direction inflates ~2× where both agree". The
+  "attenuates a real negative effect at L16–L24" half is a **semantic/comprehension** phenomenon.
+- §8's dose-response keeps its structure but must be **labelled by query kind**: the L16–L24
+  dose-dependent negative band is not a behavioural-prompt effect.
+- It sharpens the last open caveat rather than adding a new one: G1/G3 run on `semantic_one_word`
+  while G2/G4 run on `behavioral`, and the query-kind split does not merely risk a bad join — **it
+  changes the sign of a reported effect.** For behavioural prompts the picture is simpler: early
+  positive band (L8 +0.048 t=+2.1, L12 +0.036 t=+2.2), no mid-layer band, and a large L31 effect
+  (+0.133, t=+9.8).
+- Also corrected: the naive-direction p range is **0.074–0.62**, not 0.22–0.62; L20 was dropped from
+  the range I quoted, and there the naive direction is also marginally negative.
