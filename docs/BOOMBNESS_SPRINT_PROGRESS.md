@@ -4411,3 +4411,24 @@ truncation was high, and the arms differed a lot in truncation (0.30 for `+0.25`
 512-token set is the internally consistent one and is what the final report should quote.
 
 **Judging:** `len_base` done, `len_A` 346/960, then `len_C`, `len_F`, `len_Fctrl`, `projctrl`.
+
+### Leg 1 of the interaction survives the length-fair rerun essentially unchanged
+
+`len_A` judged. "Adding Boombness suppresses ASR, via refusal" at matched budget:
+
+| | n | ASR base → arm | Δ score | t_cl | p_cl | refusal |
+|---|---|---|---|---|---|---|
+| @192 (as originally reported) | 270 | 0.2185 → 0.0815 | −0.1144 | −5.99 | 0.0019 | 0.074 → **0.696** |
+| **@512 (length-fair)** | **420** | 0.2429 → **0.0881** | **−0.1274** | −5.35 | **0.0031** | 0.057 → **0.676** |
+
+Nearly identical, on a **larger prompt set** (420 rather than 270, since the 512 runs used the current bank
+rather than the pre-expansion one). So the suppression-via-refusal leg does not depend on the token budget,
+and it is the most stable finding in the intervention cluster — it has now held across two budgets, two
+prompt-set sizes, and the judge re-test floor.
+
+That matters for the interaction: leg 1 is solid, so if `len_F` also holds, the superadditivity rests on two
+independently robust legs rather than on one fragile measurement.
+
+**Still judging:** `len_C` 145/960, then `len_F` (where the pre-registered prediction is ≥0.474),
+`len_Fctrl` (the composed control that separates "two directions interact" from "two perturbations break
+termination"), and `projctrl` (the projection-type control arm B has never had).
