@@ -3148,3 +3148,45 @@ a multiplicity correction the same file computes.
   (+0.133, t=+9.8).
 - Also corrected: the naive-direction p range is **0.074–0.62**, not 0.22–0.62; L20 was dropped from
   the range I quoted, and there the naive direction is also marginally negative.
+
+## Audit 6 (final verification) — all 10 claim clusters certified numerically; **15 gaps found and fixed**
+
+The verifier re-derived every standing claim from committed artifacts. **All ten clusters reproduce**,
+including the three checks most likely to have been faked: the `lastpos` readout (2352/2352 at
+`seq_len-1`), the knockout destination (72/72, `dst_mode: both`), and the cross-bank-regeneration join
+(0/960 `prompt_sha16` mismatches, all 234 ids present in all five sources — the B5 hazard was real
+but did not bite). It then found fifteen problems in revision 4, which was about to be sent.
+
+### The two that were outright wrong
+| # | problem | fix |
+|---|---|---|
+| 1 | The **"like for like" increment bullet** (+0.104 / +0.039) was itself built on the mixed footing the report retracts 30 lines earlier — refusalness@last vs `d_surface`@codeword. | Withdrawn. At matched footing **refusalness adds more at both positions**: +0.144 vs +0.028 @codeword, +0.091 vs +0.025 @last. Revision 4's bullet pointed the wrong way. |
+| 2 | The **condition table** mixed populations *inside the paragraph claiming it no longer did*. Four of nine cells wrong, and **doublespeak refusalness flipped sign** (+0.04 → **−0.15**). | Recomputed on `n_examples ≥ 1`: harmful +7.06 / ASR 0.050 / 95.0%; doublespeak −0.15 / 0.214 / 0.85%; benign −0.30. The story survives and is cleaner. |
+
+### Correction C7, the most scientifically significant (recorded separately above)
+The L16–L24 negative band is **absent in behavioural prompts** and **fails the artifact's own Holm
+field**. §4 and §8 both narrowed.
+
+### The rest, all applied to both documents
+3. **Three** dead guards, not two — the third is the control band behind this report's own "clears the band" claim. Also added: the movability blacklist (threshold inflated 6.4× by a treatment arm) and `dense_two_layer`'s silent 87% shortfall.
+4. **Between-probe selection freedom is not matched** (20 vs 10 candidate columns), biasing the ratios toward Boombness. Disclosed, with the re-selecting bootstrap ([0.82, 2.88] and [0.40, 1.12]).
+5. **G1's +84% is one arm of ~130**, and the all-layer variant of the same transplant moves the readout the *wrong* way (−0.76, CI [−1.49, −0.21]). Now named as the single-layer L18 window.
+6. **The construct-validity sentence was wrong.** The probe *does* still order `direct_harmful` above `benign_literal` at the codeword position. What actually breaks: the gap **collapses ~16×** (7.45 → 0.46), `direct_harmful` becomes indistinguishable from doublespeak, and `direct_codeword` overtakes it. Still enough to withhold the name "refusal"; the reason is the collapse, not a reversal.
+7. **The +0.25 arm's coherence verdict was computed on 202/270 rows** — 68 short generations skipped, on the one arm carrying a positive result.
+8. **The "positive control" changes sign between runs** (+3.534 vs −1.135) and recovers ≈ −31% of the deletion span. Flagged; not to be cited as validating anything.
+9. **G3 mixed units and signs** — raw log-odds vs percent-of-ceiling have opposite signs, so the subsampled arm's +0.089 is **−0.77%** of span. Matched-arm CIs added (±8% of ceiling).
+10. p = 5.0e-04 is the **1/2001 resolution floor** → now `< 5e-4`.
+11. "Shuffled controls at chance" → per-layer **0.354–0.716**; means ≈0.52 with ±0.2 scatter.
+12. Role null now shown at **all three** tested layers (p 0.60 / 0.97 / 0.75), not the most favourable; "spread" relabelled as the **sd** of style means (range is 9.3%); ASR half described as **suggestive, not established**, on an unbalanced omnibus.
+13. **Bank arithmetic** now states all three denominators: 912 families, 240 matched, 216 checkable.
+14. **Gate table** rows for G1 and G4 still carried the retracted chimera CI and the retracted "2–3× the controls" wording. Both rewritten.
+15. Stale "suggested next" items that were already done have been removed; the range-restriction sd corrected to **0.445** on the correlation population.
+
+### Two provenance fixes the verifier forced
+- **`analyze_position.py` is new and committed** — the headline position finding had no producer, and its CIs existed only in prose. The script matches freedom within probe, discloses the between-probe asymmetry, reports both bootstrap variants, and **verifies that every run read where it claims to.** It **refused on first use**: the legacy `@last` refusalness run carries no `readout_position`, so that cell's footing rested on reading the code. Job 761697 reruns it.
+- **`g2_analysis.json` is quarantined** as `g2_analysis_MIXED_FOOTING_SUPERSEDED.json` with an explanatory field. It had the most canonical-looking filename in the directory while pairing refusalness@last with a codeword representation *and* carrying a pre-demeaning permutation p.
+
+### What the verifier said positively, worth recording
+The **position finding is stated at its least favourable framing**: on best columns it is 2.0×/4.2×,
+but on *median* columns it is 12.6× (`d_surface`) and 51× (refusalness). The headline understates its
+own positive result.
