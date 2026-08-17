@@ -33,7 +33,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P4.1 | §7.1 | Token-level Boombness per occurrence × layer | DONE | 8472 occurrence rows, per-occurrence × per-layer, run `full_20260816_185942_1008673` |
 | P4.2 | §7.1 | Occurrence × layer heatmaps | DONE | `analysis/plots/occurrence_x_layer_*.png` for all four 2×2 cells |
 | P4.3 | §7.1 | Later-carrot-more-bomb-like test | RETRACTED | "two-humped / null carry band" invalidated by the tick-8 audit |
-| P4.4 | §8 | Example-count sweep | PARTIAL | n_examples × layer surface in `reanalyze_corrected.py`; §8 sweep plots not written up |
+| P4.4 | §8 | Example-count sweep | **DONE (08-17)** | Full n_examples×layer dose-response written up with cluster-robust t: L4–L12 positive and strictly monotone in demo count (L8 +0.0138→+0.0449, 4/4 steps); L16–L24 negative with dose-dependent magnitude saturating at k=8 (L20 −0.051); **L31 FLAT across a 16× dose change** (+0.044 to +0.050, t=+5.9..+10.2) — one demonstration achieves the whole output-layer effect. `reanalyze_d_surface_cos.json` |
 | P5.1 | §4 | ~600-prompt bank | DONE | 1752-row bank (`bank_content_sha16` 59ad8c8c44f7c3fa) |
 | P5.2 | §9 | Generations + evaluation | DONE | `base_20260816_203355_3985444` (660 gens) + judge, null_frac 0.0000 |
 | P5.3 | §9 | Prompt-level Boombness | DONE | `analyze_g2.py`, 100% coverage, committed and reproducible |
@@ -3057,3 +3057,48 @@ rest on the projections rather than on these probes.
 
 P3.3/P3.4/P3.5 are closed on that basis: the original regimes are uninformative by construction, the
 new ones are informative but bounded, and neither changes a gate verdict.
+
+## §8 (P4.4) — the demonstration-count dose-response. Three layer bands, and only one of them is dose-dependent.
+
+The quantity is the **C − A** contrast on `d_surface|L|cos`: how much further along the Boombness
+axis the token sits in **doublespeak** (C) than in **literal** use (A), with the surface word held
+constant at `carrot` and demonstration count varied. Cluster-robust t over 6 domains, n=36 per cell.
+
+| L | k=1 | k=2 | k=4 | k=8 | k=16 | monotone? |
+|---|---|---|---|---|---|---|
+| 0 | +0.0016 | +0.0000 | −0.0014 | −0.0022 | −0.0027 | — (≈0 throughout) |
+| **4** | +0.0092 | +0.0141 | +0.0225 | +0.0307 | **+0.0384** | **4/4 increasing** |
+| **8** | +0.0138 | +0.0169 | +0.0244 | +0.0359 | **+0.0449** | **4/4 increasing** |
+| **12** | +0.0087 | +0.0114 | +0.0124 | +0.0178 | **+0.0269** | **4/4 increasing** |
+| 16 | −0.0011 | −0.0082 | −0.0316 | **−0.0421** | −0.0319 | 4/4 *decreasing* to k=8 |
+| 18 | +0.0006 | −0.0103 | −0.0347 | **−0.0483** | −0.0396 | 4/4 *decreasing* to k=8 |
+| 20 | −0.0019 | −0.0152 | −0.0366 | **−0.0507** | −0.0420 | 4/4 *decreasing* to k=8 |
+| 24 | +0.0054 | −0.0062 | −0.0240 | **−0.0419** | −0.0361 | 4/4 *decreasing* to k=8 |
+| 28 | +0.0172 | +0.0095 | +0.0002 | −0.0159 | −0.0118 | sign flip in dose |
+| **31** | +0.0485 | +0.0457 | +0.0485 | +0.0438 | +0.0499 | **FLAT — dose-independent** |
+
+### Three bands, three behaviours
+1. **L4–L12: positive and strictly dose-dependent.** Every step increases, 4/4, at all three layers.
+   L8 grows **+0.0138 → +0.0449 (3.3×)** from one demonstration to sixteen. More demonstrations
+   ⇒ the codeword sits further along the Boombness axis. This is the band where a "the model
+   accumulates the mapping from examples" story is actually supported.
+2. **L16–L24: negative, and the *magnitude* is dose-dependent, saturating at k=8.** L20 goes
+   −0.002 → **−0.051** at k=8 and then back to −0.042 at k=16. So the mid-band displacement is not
+   noise — it grows with evidence and then saturates — and it runs **opposite in sign** to the
+   early band.
+3. **L31: flat.** +0.0485 / +0.0457 / +0.0485 / +0.0438 / +0.0499 across a 16× change in
+   demonstration count, at t = +5.9 to +10.2. **One demonstration achieves the entire output-layer
+   effect**; fifteen more add nothing.
+
+### Why this matters for the sprint's conclusions
+- It gives the earlier "two humps" observation a proper account: **two bands of opposite sign that
+  respond to demonstration count differently.** The retracted tick-7 claim called the mid band null;
+  it is not null, it is negative *and dose-dependent*, which is a stronger statement than either the
+  original claim or its retraction.
+- **The output-layer effect saturates at k=1 while the mid-layer effects scale to k=8–16.** So the
+  quantity that reaches the output is not a simple readout of the quantity that accumulates in the
+  middle. That is consistent with G4's directional null: pushing on the axis mid-stack is not the
+  same as moving what the output layer uses.
+- Scale caveat, stated: these are cosines in the 0.01–0.05 range. The **sign structure and the dose
+  response** are the findings; the magnitudes are small and should not be quoted as "the
+  representation moves a lot".
