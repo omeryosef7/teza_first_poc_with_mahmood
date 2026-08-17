@@ -2880,3 +2880,23 @@ with ASR, localizes to the codeword — and does not support a steering objectiv
 
 `outputs/boombness/position_2x2.json` now holds the freedom-matched table and replaces the
 phantom-cell version.
+
+### Tick 40 — a self-inflicted skip, caught by not trusting "complete"
+
+The control-band driver printed **"control band judging complete"** having judged **2 of 4** arms.
+Cause: my own cleanup. Last tick I wrote an `ABORTED.json` marker into the two empty run dirs left by
+the cancelled jobs — which **updated their mtime**, so the driver's `ls -1dt … | head -1` selected
+the *empty* dir over the real 960-generation one and logged `SKIP (no gens)`.
+
+Two things worth keeping from this:
+1. **Selecting a run by mtime is fragile**, because any bookkeeping touch reorders it. The rerun
+   selects by **content** — has a non-empty `gens.jsonl`, has no `ABORTED.json` — which is what the
+   choice actually depends on. Same class as the coherence-gate bug: matching on an incidental
+   property (a filename, a timestamp) rather than the recorded fact.
+2. **A driver that reports "complete" while skipping most of its work is a reporting bug**, not just
+   an operational one. It printed `SKIP` per arm, but the final line said complete, and a summary
+   line that does not know what it skipped will be believed. If it had been trusted, the band would
+   have been built from 2 draws and quietly failed the ≥3 threshold — reading as "not enough draws"
+   rather than "the driver lost half your data".
+
+Seeds 20260819/20260820 are judging now. The band is still **not** reportable until all four land.
