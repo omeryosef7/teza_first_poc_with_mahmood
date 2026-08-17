@@ -2900,3 +2900,36 @@ Two things worth keeping from this:
    rather than "the driver lost half your data".
 
 Seeds 20260819/20260820 are judging now. The band is still **not** reportable until all four land.
+
+### Tick 41 — the band block runs for the first time, and testing it caught an over-correction
+
+The control-band block had **never executed** (audit B1: its selector never matched an arm name), so
+before trusting it on the final data I ran it on the 3 draws already judged. Two things came out.
+
+**1. My fix to the band's statistics over-corrected.** The original used `sd/√k` with a z=2 cutoff,
+which the audit correctly called too permissive. I replaced it with the predictive spread
+`sd·√(1+1/k)` and `t(df=k−1)` — and `df=k−1` is *as wrong in the conservative direction*. The
+combined variance here is dominated by the arm's prompt-level term (0.0235 vs a band term of
+0.0058), and **that** term carries ~269 df, not 2. Pooling at df=2 demands t > 4.30 for a quantity
+whose uncertainty is almost entirely well-estimated. Now Welch–Satterthwaite, which weights each
+component's df by its share of the variance: **df ≈ 168 here, not 2.** The verdict flips on this:
+
+| arm | vs band | t | df | p | verdict |
+|---|---|---|---|---|---|
+| **+0.25** | −0.0770 ± 0.0244 | −3.2 | 168 | **0.0019** | **clears the band** |
+| −0.25 | −0.0367 ± 0.0209 | −1.8 | 124 | 0.082 | does NOT clear |
+
+**2. The band itself is remarkably tight.** Three independent random directions at the same dose
+give −0.0343, −0.0338, −0.0440 — a between-draw sd of **0.0058**. Generic perturbation at this dose
+produces a very reproducible ~−0.037 suppression, which is what makes the +0.25 arm's additional
+−0.077 a real excess rather than draw-to-draw luck.
+
+**This confirms C3 from a proper band rather than a single draw:** "the axis is not inert" is
+established for **+0.25** and **not established** for **−0.25**. Same split as the paired contrasts
+gave, now with direction-level variance actually estimated.
+
+Fourth draw still judging (544/960); the band will be re-run on all four before anything is quoted.
+
+**Worth stating plainly:** I got this statistic wrong twice in opposite directions, and only caught
+it by running the block against real numbers instead of reading it. The dead guards in this sprint
+share that cause — none of them was ever executed against a case whose answer was known.

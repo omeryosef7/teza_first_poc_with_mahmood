@@ -218,20 +218,32 @@ def main() -> int:
             # sd*sqrt(1+1/k), not sd/sqrt(k) — the latter understates direction-level noise by
             # sqrt(k) and makes "clears the band" far too easy. And with k draws the cutoff is a
             # t quantile with df=k-1 (4.30 at k=3), not the normal 1.96.
-            se = math.sqrt(r["paired_delta_sem"] ** 2 + (bsd ** 2) * (1.0 + 1.0 / k))
+            # WELCH-SATTERTHWAITE df. Using df=k-1 (my first correction) is as wrong in the
+            # conservative direction as sd/sqrt(k) was in the permissive one: the combined variance
+            # here is DOMINATED by the arm's prompt-level term (~0.023 vs a band term of ~0.006),
+            # and that term carries ~n_prompts-1 df, not k-1. Pooling them at df=2 demands t>4.30
+            # for a quantity whose uncertainty is almost entirely well-estimated. Welch weights each
+            # component's df by its share of the variance, giving df~166 here rather than 2.
+            v_arm = r["paired_delta_sem"] ** 2
+            v_band = (bsd ** 2) * (1.0 + 1.0 / k)
+            se = math.sqrt(v_arm + v_band)
             z = diff / se if se else float("nan")
+            df_arm, df_band = max(len(ids) - 1, 1), max(k - 1, 1)
+            denom = (v_arm ** 2) / df_arm + (v_band ** 2) / df_band
+            df_w = ((v_arm + v_band) ** 2 / denom) if denom > 0 else float("nan")
             try:
                 from scipy import stats as _sst
-                p_band = 2 * _sst.t.sf(abs(z), df=max(k - 1, 1))
+                p_band = 2 * _sst.t.sf(abs(z), df=max(df_w, 1.0))
             except Exception:
                 p_band = float("nan")
             clears = math.isfinite(p_band) and p_band < 0.05
             verdict = ("clears the band" if clears else
                        "DOES NOT clear the band — indistinguishable from a random direction")
             print(f"  {r['arm']:24s} vs band: {diff:>+.4f} ± {se:.4f}  t={z:>+5.1f} "
-                  f"(df={max(k-1,1)}, p={p_band:.3f})   {verdict}")
+                  f"(df={df_w:.0f}, p={p_band:.4f})   {verdict}")
             report_band["vs_steering"][r["arm"]] = {"diff": diff, "se": se, "t": z,
-                                                    "p": p_band, "df": max(k - 1, 1),
+                                                    "p": p_band, "df_welch": df_w,
+                                                    "var_arm": v_arm, "var_band": v_band,
                                                     "clears_band": bool(clears)}
     else:
         report_band = {"n_draws": len(band),
