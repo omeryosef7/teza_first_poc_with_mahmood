@@ -53,7 +53,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P8.2 | §12.2 | Boombness − refusal objective | TODO (gated) | |
 | P8.3 | §12.5 | Baseline / refusal-only comparison | TODO (gated) | |
 | P8.4 | §12.5 | Universality + held-out transfer | TODO (gated) | |
-| P8.5 | §15 | Final reports | TODO | |
+| P8.5 | §15 | Final reports | PARTIAL | `reports/boombness_objective_sprint_short_update.md` written; full report pending G4 |
 
 ---
 
