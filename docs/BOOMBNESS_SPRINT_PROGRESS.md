@@ -3207,3 +3207,38 @@ two of this sprint's five retractions were about. The cheap `fixed_column` varia
 been quoting.
 
 Nothing is sent until it finishes. Both reports already carry every audit-6 correction.
+
+
+## §19 answered directly, and Q2 gets a REPLACEMENT result with the control it lacked
+
+The plan's §19 requires eleven questions answered directly; the full report now has a dedicated section
+doing that. Checking them one by one surfaced a genuine gap: **Q2 ("does the final `carrot` become more
+`bomb`-like than earlier ones?") had no current answer** — its phase row (P4.3) was RETRACTED and
+nothing replaced it.
+
+Computed properly as a within-prompt paired contrast (same prompt, same surface word, only the position
+differs), domain-clustered over 6 domains, n=246 doublespeak behavioural prompts:
+
+| L | 4 | 8 | 12 | 16 | 20 | 24 | 31 |
+|---|---|---|---|---|---|---|---|
+| Δ(final − earlier), doublespeak | −0.025 | −0.082 | −0.090 | **−0.154** | −0.123 | −0.119 | −0.080 |
+| t_clustered | −5.0 | −6.2 | −7.1 | **−10.5** | −8.3 | −6.3 | −3.7 |
+| p_clustered | 0.004 | 0.002 | 0.001 | **0.0001** | 0.0004 | 0.001 | 0.014 |
+
+**The answer is NO — the final occurrence is LESS on the concept axis, not more**, at every layer.
+
+**And the control is what makes it interpretable.** The same comparison in `benign_literal` — where
+there is no bomb meaning at all — gives the **same sign and comparable magnitude** (L16 −0.105,
+L31 −0.131, all p < 0.004, n=162). There is no consistent doublespeak-specific excess: at some layers
+doublespeak is more negative, at others benign is. **So this is a POSITION effect, not a semantic one:**
+the last occurrence of a word sits differently on the axis than earlier occurrences regardless of what
+it means.
+
+That control is precisely what the retracted P4.3 claim lacked — it read a within-prompt gradient as
+evidence of accumulating concept content without checking whether a prompt with no concept content
+shows the same gradient. It does.
+
+This also connects to the sprint's surviving positive finding: **position keeps turning out to matter
+more than meaning** on this axis — the predictor×position 2×2 (2–4× effects), and now the
+within-prompt occurrence comparison. Both say the codeword's *place* carries more of the measurable
+signal than its *sense* does.

@@ -436,6 +436,94 @@ rows and duplicating two others (recovered from git).
 
 ---
 
+## §19 — the eleven questions, answered directly
+
+The plan asks these to be answered directly, so they are, each with its status and its caveat.
+
+**1. Does Natural Doublespeak create the same kind of internal `bomb` representation as Direct prompts?**
+**Partly, and much less than the model's own behaviour suggests.** On the identified axis the doublespeak
+codeword moves only a few percent toward the concept (C−A ≈ +0.015 to +0.027 at L4–L12), while the
+model's *reported meaning* of that codeword travels **59%** of the way from literal to direct. So the
+semantics move far more than the representation. It is not the same representation, and the gap between
+"what the model says the word means" and "where the token sits on the axis" is the sprint's most robust
+qualitative finding.
+
+**2. Does the final `carrot` become more `bomb`-like than earlier `carrot`s?**
+**NO — it becomes LESS so, and the effect is positional rather than semantic.** Within-prompt paired
+(same prompt, same word, only position differs), domain-clustered, n=246 doublespeak prompts:
+Δ(final − earlier) is **negative at every layer** (L16 **−0.154**, t_cl = −10.5, p = 0.0001; L8 −0.082,
+p = 0.0016; L31 −0.080, p = 0.014). **The control is what settles the interpretation:** the same
+comparison in `benign_literal` — where there is no bomb meaning at all — gives effects of the **same
+sign and comparable size** (L16 −0.105, L31 −0.131, all p < 0.004). So the last occurrence of a word
+simply sits differently on the axis than earlier occurrences, regardless of meaning. There is no
+consistent doublespeak-specific excess. ⛔ The earlier "later-carrot-more-bomb-like" claim (P4.3) stays
+retracted; this is its replacement, computed with the control it lacked.
+
+**3. How many examples are needed before Boombness rises?**
+**One, for the output layer; eight to sixteen for the middle.** L31 is **flat** across a 16× dose change
+(+0.0485 → +0.0499, t = +5.9…+10.2) — one demonstration achieves the whole output-layer effect. L4–L12
+grow strictly monotonically (L8 +0.0138 → +0.0449, 3.3×). The mid-layer bands keep scaling to k=8 and
+then saturate. ⚠ Pooled over query kinds; see C7.
+
+**4. Does Boombness vary enough across prompts to support optimization?**
+**It varies, but the usable dose window is narrow enough to be a problem.** Within-arm sd is non-trivial
+and the correlation with ASR is real. But steering at α=1 destroys generation (55% trigram repeats,
+100% truncated) and the judge scores the degenerate loop as harmful — an artifact we nearly reported. An
+optimizer maximizing this projection has no reason to stop at 0.25.
+
+**5. Does Boombness predict ASR?**
+**Yes, modestly.** ρ = **+0.307** (`d_surface|L12|proj`), **+0.302** norm-partialled, n = 234, 6/6
+domains positive though two are essentially null, **p < 5e-4** (within-domain permutation; the i.i.d.
+1.7e-06 is withdrawn as pseudo-replication).
+
+**6. Does Boombness predict ASR better than refusalness?**
+**No.** ⛔ The 3.7× is retracted — it compared the two probes at *different tokens*. At matched footing
+neither dominates: ratio **1.54** [0.64, 3.60] @last and **0.75** [0.33, 1.13] @codeword_last, both CIs
+straddling 1. ⚠ And the between-probe selection freedom is not matched (20 vs 10 candidate columns),
+which biases those ratios toward Boombness.
+
+**7. Does Boombness add predictive power beyond refusalness?**
+**A little, and less than refusalness adds beyond it.** At matched footing Boombness adds **+0.028**
+(@codeword) and **+0.025** (@last) in R²; refusalness adds **+0.144** and **+0.091** the other way. An
+earlier draft had this backwards from a mixed-footing artifact.
+
+**8. Do user-like / CoT-like framings increase Boombness?**
+**No — and this is a tight null, not an underpowered one.** Across six role styles with content, domain,
+demo count and query held fixed: `role → Boombness` **F = 0.175, p = 0.972** at L12 (and p = 0.60/0.75
+at L8/L31), with the sd of style means at **3.6%** of the within-style sd. Whether role framing changes
+*ASR* is unresolved (F = 1.94, p = 0.087; largest pair p ≈ 0.105 Bonferroni). `role_style` is a
+categorical proxy — no Userness/CoTness probe was fitted.
+
+**9. Can we surgically remove Boombness without destroying comprehension?**
+**No — it is massively redundant, so there is nothing "surgical" to remove.** Cutting **6.25%** of
+demo→query edges does nothing *however distributed across depth*; cutting 100% recovers 84% of the
+deletion ceiling. Every localized knockout (top-k, bottom-k, random, same-head — 16 edges, ~0.03%) reads
+zero. ⚠ The converse test is impossible by construction: a layer holds only ~3,648 edges, so any cut
+above ~7.3k must span layers.
+
+**10. Can we turn Boombness into a useful GCG objective?**
+**No, and §12 was therefore not built.** Both signs of `d_surface` suppress ASR, so ASR does not follow
+the axis. Only **+0.25** clears a 4-draw random-control band (p = 0.0014) and it does so by **triggering
+refusal** (90.1% of its suppressed prompts); **−0.25** is indistinguishable from a random perturbation
+(p = 0.070). Adding concept-ness triggers refusal; removing it just damages the model.
+
+**11. What exactly should Matan/Mahmood take from this sprint?**
+Four things, in order of durability:
+1. **The 2×2 identification design** — it separates surface identity from context and quantifies the
+   confound (~2× inflation) instead of arguing about it. Reusable for any codeword/concept pair.
+2. **The localization result** — the ASR-predictive state sits at the **codeword token**, 2–4× more than
+   at the final prompt token (11–50× on median columns), for a concept probe *and* a refusal probe. This
+   is the finding worth following.
+3. **A documented negative on the objective**, with the specific reason: correlation without
+   sign-following intervention. Do not build on this axis; target the demonstration-retrieval pathway.
+4. **The failure catalogue** — five retractions, three guards that never executed, and four transferable
+   rules: test guards against cases they should fail; address things by identity not by
+   filename/tag/mtime/line-number; resampling *rows* cannot rescue a comparison whose arms sit in
+   different *places*; and when correcting an error verify the *measured thing* changed, not just the
+   knob you turned.
+
+---
+
 ## Appendix — committed artifacts
 
 | file | contents |
