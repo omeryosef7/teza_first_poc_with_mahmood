@@ -10660,3 +10660,4 @@ Fourth programme-level retraction I have seen on this branch, and the same lesso
 relearning: an unchecked positional/scope assumption produced a headline that reversed. Nothing to
 act on here; noted because it is the recurring failure mode across all three workstreams.)*
 Diff unchanged.
+### 00:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
