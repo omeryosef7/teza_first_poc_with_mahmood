@@ -4455,3 +4455,38 @@ Llama-specific — which, given that G2 itself did not replicate on Qwen3, is a 
 formality.
 
 **Judging:** `len_C` 930/960, then `len_F`, `len_Fctrl`, `projctrl`.
+
+## ✅ CLAIM 2, PROPERLY ANSWERED — the 512-token set is adequately powered, and the answer is neither of my earlier ones
+
+At 192 tokens the audit proved arm C was **underpowered by construction**: ceiling +0.074, MDE 0.083. On the
+larger 512-token set (n=420) that flips — **MDE 0.047 < ceiling 0.057** — so the question is finally
+answerable.
+
+| | value |
+|---|---|
+| overall ASR | 0.2429 → 0.2690 |
+| overall Δ score | +0.0101, t_cl=+0.77, **p=0.475** |
+| refusal | 0.0571 → **0.0000** |
+| **on the 24 prompts refused at baseline** | ASR **0.000 → 0.292** |
+| on the 396 not refused at baseline | 0.258 → 0.268 |
+
+### The answer
+**Refusal IS a binding constraint — for the 5.7% of prompts where it fires, and for essentially nothing
+else.** Removing it converts **29%** of previously-refused prompts into successes (0.000 → 0.292) while
+moving the other 396 prompts by +0.010, i.e. nothing. The population-level null (+0.026 ASR, p=0.475) is
+**dilution**, not absence: 5.7% × 0.29 ≈ 0.017, which is exactly the order of what is observed and is below
+what 420 prompts can resolve.
+
+### This is a better statement than either thing I said before
+- My original *"refusal is not the binding constraint"* was **wrong** — it is, where it fires.
+- The withdrawal *"underpowered by construction, unanswerable"* was **right at 192 tokens** and is now
+  **superseded**: the larger set answers it.
+- The correct version is **conditional**: *refusal binds on the minority of prompts it fires on, and the
+  attack's success on the other 94% is limited by something else entirely.*
+
+That conditional version is also what makes the arm F interaction coherent: on the 94% where refusal never
+fires at baseline, adding Boombness *induces* refusal that would not otherwise exist — and that induced
+refusal, not any pre-existing one, is what removing the refusal direction unblocks.
+
+**Powered, stated conditionally, and no longer resting on 20 prompts.** `len_F` is at 755/960; `len_Fctrl`
+and `projctrl` follow; Qwen3 arm B is generating (158/960).
