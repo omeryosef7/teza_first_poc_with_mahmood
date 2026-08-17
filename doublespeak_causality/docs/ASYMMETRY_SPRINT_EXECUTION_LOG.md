@@ -10670,3 +10670,9 @@ unreachable under `set -e` by a command substitution. Third independent instance
 Their trees, not §20's; the two §20 runners were fixed then and remain fixed.)*
 Diff unchanged.
 ### 02:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 03:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits.
+*(Their tick 40: "the control-band driver reported complete while skipping half its arms" — a
+success-reported-on-partial-work failure, the same hazard §20.7's shard bookkeeping guarded against
+with explicit `ran=N skipped=N` accounting and the half-launched-set warnings. Their driver, not
+§20's.)*
+Diff unchanged.
