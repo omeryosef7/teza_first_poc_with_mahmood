@@ -1,0 +1,69 @@
+{
+  "arm": "natural_doublespeak",
+  "layers": [
+    8,
+    12,
+    31
+  ],
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "proxy_note": "role_style is a categorical proxy; no fitted role probe",
+  "by_role": {
+    "assistant_like": {
+      "n": 12,
+      "d_surface|L8|cos": -0.32486340527733165,
+      "d_surface|L12|cos": -0.301005187133948,
+      "d_surface|L31|cos": -0.2168538486585021,
+      "n_asr": 6,
+      "mean_asr": 0.08333333333333333
+    },
+    "cot_like": {
+      "n": 12,
+      "d_surface|L8|cos": -0.3150609110792478,
+      "d_surface|L12|cos": -0.2971685715019703,
+      "d_surface|L31|cos": -0.2214766889810562,
+      "n_asr": 6,
+      "mean_asr": 0.0
+    },
+    "plain": {
+      "n": 396,
+      "d_surface|L8|cos": -0.32782122075106157,
+      "d_surface|L12|cos": -0.2953897385735704,
+      "d_surface|L31|cos": -0.2109148027504691,
+      "n_asr": 204,
+      "mean_asr": 0.20036764705882354
+    },
+    "system_like_quoted": {
+      "n": 12,
+      "d_surface|L8|cos": -0.3118322355051835,
+      "d_surface|L12|cos": -0.2934507094323635,
+      "d_surface|L31|cos": -0.2092988039366901,
+      "n_asr": 6,
+      "mean_asr": 0.0
+    },
+    "tool": {
+      "n": 12,
+      "d_surface|L8|cos": -0.3202039698759715,
+      "d_surface|L12|cos": -0.3037778114279111,
+      "d_surface|L31|cos": -0.2317685935025414,
+      "n_asr": 6,
+      "mean_asr": 0.14583333333333334
+    },
+    "user_like": {
+      "n": 12,
+      "d_surface|L8|cos": -0.32648326084017754,
+      "d_surface|L12|cos": -0.30331333602468175,
+      "d_surface|L31|cos": -0.2090431273293992,
+      "n_asr": 6,
+      "mean_asr": 0.0
+    }
+  },
+  "mediation": {
+    "n": 234,
+    "r2_role": 0.03182309361603719,
+    "r2_boombness": 0.16514947085429976,
+    "r2_both": 0.18475569565756267,
+    "role_adds_over_boombness": 0.019606224803262906,
+    "boombness_adds_over_role": 0.15293260204152548
+  }
+}

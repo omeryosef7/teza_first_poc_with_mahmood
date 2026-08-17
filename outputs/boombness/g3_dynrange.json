@@ -1,0 +1,71 @@
+{
+  "G3": {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/dynrange_20260817_000454_3064437",
+    "readout": "semantic_logodds",
+    "arms": {
+      "all_demo": {
+        "delta_mean": -0.09289995829264323,
+        "delta_sem": 0.16651876848239577,
+        "n": 6,
+        "mean_edges_cut": 256.0
+      },
+      "all_layers_demo": {
+        "delta_mean": -0.7837745348612467,
+        "delta_sem": 0.9357329821146512,
+        "n": 6,
+        "mean_edges_cut": 4096.0
+      },
+      "bottomk_demo": {
+        "delta_mean": 0.0003558794657389323,
+        "delta_sem": 0.00022041686673661878,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "no_demo_text": {
+        "delta_mean": -11.508744875590006,
+        "delta_sem": 1.5837315560227085,
+        "n": 6,
+        "mean_edges_cut": -1.0
+      },
+      "none": {
+        "delta_mean": 0.0,
+        "delta_sem": 0.0,
+        "n": 6,
+        "mean_edges_cut": 0.0
+      },
+      "positive_control": {
+        "delta_mean": -1.1350285212198894,
+        "delta_sem": 0.5366285383228242,
+        "n": 6,
+        "mean_edges_cut": 7264.0
+      },
+      "random_demo": {
+        "delta_mean": -0.018123308817545574,
+        "delta_sem": 0.02307824973730525,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "random_nondemo": {
+        "delta_mean": -0.004185040791829427,
+        "delta_sem": 0.005501231150262711,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "same_head_random": {
+        "delta_mean": -0.010957082112630209,
+        "delta_sem": 0.008432508974358328,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "topk_demo": {
+        "delta_mean": -0.024843851725260418,
+        "delta_sem": 0.08875250202303464,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      }
+    },
+    "positive_control_delta": -1.1350285212198894,
+    "largest_non_control_delta": 0.0003558794657389323,
+    "dynamic_range_established": true
+  }
+}

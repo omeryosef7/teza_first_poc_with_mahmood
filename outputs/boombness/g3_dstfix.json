@@ -1,0 +1,71 @@
+{
+  "G3": {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/dstfix_20260817_003501_3067690",
+    "readout": "semantic_logodds",
+    "arms": {
+      "all_demo": {
+        "delta_mean": -0.008153279622395834,
+        "delta_sem": 0.4513276329109293,
+        "n": 6,
+        "mean_edges_cut": 3552.0
+      },
+      "all_layers_demo": {
+        "delta_mean": -9.707863648732504,
+        "delta_sem": 0.8983219243395302,
+        "n": 6,
+        "mean_edges_cut": 56832.0
+      },
+      "bottomk_demo": {
+        "delta_mean": -4.0690104166666664e-05,
+        "delta_sem": 0.000508209793102062,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "no_demo_text": {
+        "delta_mean": -11.508744875590006,
+        "delta_sem": 1.5837315560227085,
+        "n": 6,
+        "mean_edges_cut": -1.0
+      },
+      "none": {
+        "delta_mean": 0.0,
+        "delta_sem": 0.0,
+        "n": 6,
+        "mean_edges_cut": 0.0
+      },
+      "positive_control": {
+        "delta_mean": 3.5343610445658364,
+        "delta_sem": 0.7398562108028659,
+        "n": 6,
+        "mean_edges_cut": 7200.0
+      },
+      "random_demo": {
+        "delta_mean": -0.048070271809895836,
+        "delta_sem": 0.050298299231746266,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "random_nondemo": {
+        "delta_mean": 0.031033992767333984,
+        "delta_sem": 0.16234374788978762,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "same_head_random": {
+        "delta_mean": -0.012019952138264975,
+        "delta_sem": 0.005258573552476973,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      },
+      "topk_demo": {
+        "delta_mean": -0.07816108067830403,
+        "delta_sem": 0.14090184927848176,
+        "n": 6,
+        "mean_edges_cut": 16.0
+      }
+    },
+    "positive_control_delta": 3.5343610445658364,
+    "largest_non_control_delta": 0.031033992767333984,
+    "dynamic_range_established": true
+  }
+}
