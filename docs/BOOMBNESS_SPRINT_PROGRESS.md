@@ -4097,3 +4097,37 @@ gate-failing arm scored as a result — **this number is provisional and is not 
 length-fair: `len_base`, `len_C`, `len_F`. If the interaction survives at matched completion, it is the
 sprint's headline causal result and §12.2 ("Boombness **minus** refusal" — an objective the plan itself
 specified and I had closed as gate-not-met) is vindicated in exactly the form the plan wrote it.
+
+### Tick 61 — the length-fair rerun is working, and it exposes a SECOND length issue
+
+Measured-object check on partial data (doublespeak rows only), rather than assuming the bigger budget did
+its job:
+
+| run | budget | truncated_frac | median words |
+|---|---|---|---|
+| original baseline | 192 | **0.522** | 135 |
+| arm F (gate-failed) | 192 | **0.995** | 136 |
+| `len_base` | 512 | **0.000** | 140 |
+| `len_C` | 512 | **0.000** | 174 |
+| `len_F` | 512 | **0.018** | **287** |
+
+**The cap was distorting both arms, not just arm F.** The original baseline was itself 52% truncated on
+the doublespeak population, so the earlier comparison was truncated-vs-truncated at very different rates.
+At 512 tokens essentially everything completes.
+
+**But a second, subtler length issue survives and must be handled explicitly.** Arm F still writes
+**~2× longer** answers than baseline (287 vs 140 median words) — only now that is a *genuine property of
+the intervention* rather than an artifact of where we cut it off. StrongReject scores content, so a longer
+*complete* answer can still score higher for reasons that are not "more harmful intent".
+
+**So when the trio lands, the interaction claim gets two tests, not one:**
+1. the raw ASR comparison at matched budget (all arms completing), and
+2. **a length-conditioned comparison** — does arm F's advantage survive when generation length is
+   controlled for? If the whole effect is explained by output length, that is a very different and much
+   weaker claim than "removing refusal unmasks a Boombness capability channel".
+
+Recording this now, before the numbers exist, so the second test cannot be quietly skipped if the first
+one looks good.
+
+Also running: band draw judges (1 of 4 at 803/960) for the genuine 4-draw random-control band that
+replaces the n=1 band retracted in #7.
