@@ -373,8 +373,16 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
             run.log_row(rec)
 
         if cache_final_reps:
+            # BUG FIXED 2026-08-17. This indexed `last[-1]` (the final codeword occurrence)
+            # UNCONDITIONALLY, so a `--position last` run cached codeword-position vectors while its
+            # metadata recorded position="last". Three shipped caches were mislabelled that way — and
+            # the mislabel was introduced by the phantom-cell fix itself, which threaded `position`
+            # into the readout and missed the cache. Fifth instance of the one-of-two-paths shape.
+            # No reported number was affected (all six probes runs consume codeword_last extracts),
+            # but the cache must agree with the readout it claims to summarise.
+            cache_pos = (len(ids) - 1) if position == "last" else last[-1]
             cache[row["prompt_id"]] = torch.stack(
-                [hs[L + 1, last[-1], :] for L in layers], dim=0).half()
+                [hs[L + 1, cache_pos, :] for L in layers], dim=0).half()
         ledger.ok()
         n_scored += 1
         if n_scored % 100 == 0:

@@ -3944,3 +3944,64 @@ matched, the dynamic-range check that compared against a null control, and `--en
 only one of two paths. The pattern is now unmistakable: **I keep verifying that a fix was applied rather
 than that it changed the measured object.** Every remaining guard in this codebase should be assumed
 inert until someone constructs its failure case.
+
+## ★ §0.3 ANSWERED — removing Boombness **RAISES** ASR. The sign is opposite to the hypothesis.
+
+Arm B (`d_surface:project_out:8-8:1.0`) is the first intervention to reach the ASR question with every
+precondition green: coherence **OK**, comprehension **unchanged** (Δ +0.088, p=0.681), ledger 960/960/0.
+Common 270-prompt set, all arms coherence-gated:
+
+| arm | ASR | 95% CI | refusal | paired Δ vs baseline |
+|---|---|---|---|---|
+| baseline | 0.219 | [0.173, 0.272] | 0.074 | — |
+| **arm B — remove Boombness (project_out)** | **0.300** | [0.248, 0.357] | **0.074** | **+0.0736 ± 0.0248** |
+| random +0.25 | 0.178 | [0.137, 0.228] | 0.085 | −0.0352 |
+| orthogonal +0.25 | 0.189 | [0.147, 0.240] | 0.093 | −0.0306 |
+| add Boombness +0.25 | 0.081 | [0.054, 0.120] | **0.696** | −0.1144 |
+
+Domain-clustered contrasts (6 domains) — and the clustering matters, so both are stated:
+
+| contrast | Δ | t_cl | **p_cl** |
+|---|---|---|---|
+| arm B − **random** control | **+0.1088** | +3.15 | **0.025** |
+| arm B − **orthogonal** control | **+0.1042** | +3.37 | **0.020** |
+| arm B − add-Boombness(+0.25) | +0.1880 | +6.20 | **0.0016** |
+| arm B − baseline | +0.0736 | +1.89 | **0.117 — not significant** |
+
+### The answer to §0.3, stated plainly
+**No — surgical removal does not reduce ASR. It INCREASES it.** And the increase is significant against
+both **norm-matched perturbation controls** (p=0.020–0.025), which themselves *lower* ASR slightly, while
+the bare vs-baseline contrast is **p=0.117** under domain clustering (n=6 clusters is few; the naive
+z is +2.97). So the directional effect is visible **only against controls**, and that is how it must be
+quoted.
+
+### Why this is the sprint's first genuinely causal result
+Every precondition the plan demanded is satisfied *simultaneously*, which no earlier arm managed:
+coherence preserved, comprehension preserved (p=0.68), refusal **unchanged** (0.074 → 0.074), and a
+directional ASR change that exceeds norm-matched controls. The α=1 arm was degenerate; −0.25 degrades
+comprehension; +0.25 confounds with a refusal spike.
+
+### And it inverts the sprint's guiding hypothesis
+The plan assumed doublespeak works by *smuggling concept content in*, so **more** Boombness should mean a
+stronger attack. Every arm now says the reverse, coherently:
+
+| manipulation | concept-ness at codeword | refusal | ASR |
+|---|---|---|---|
+| **+0.25** (add) | higher | **0.074 → 0.696** | **0.219 → 0.081** |
+| **project_out** (remove) | lower | 0.074 → 0.074 | **0.219 → 0.300** |
+
+**Boombness at the codeword behaves as a DETECTION signal for the safety mechanism, not as a driver of
+compliance.** Raising it makes the request legible and refusal fires; removing it makes the request less
+legible and the attack succeeds more. That is why the correlation was positive within the attack arm and
+yet steering "the wrong way" — the correlation was reading a *detectability* gradient.
+
+### Consequence for §12, which reopens with the sign flipped
+An objective built on this axis should **MINIMISE** the projection, not maximise it. The plan's §12.1
+("pure Boombness objective", maximise) is the wrong sign; the runnable version is a *minimisation*
+objective, and `project_out` is its idealised limit. **This is a new, testable direction the sprint did
+not have an hour ago.**
+
+⚠ **Required before anyone builds on this:** the vs-baseline contrast is p=0.117 clustered, so this needs
+(a) replication on a second concept pair, (b) a projection dose–response (α<1 partial removal), and
+(c) the same arm on Qwen3 — especially given G2 did not replicate there. It is a strong, clean signal,
+not yet a settled fact.
