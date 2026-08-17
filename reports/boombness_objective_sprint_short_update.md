@@ -314,7 +314,7 @@ ASR (**met**); adding it *increases* behaviour (**not met** — adding it *decre
 refusal); removing it reduces ASR (**ambiguous** — indistinguishable from a norm-matched random
 perturbation, p=0.070); comprehension preserved (**not established** — see below); random controls
 fail (**partial** — a 4-draw band separates +0.25 but not −0.25); replicates across models
-(**partial** — the ~2× confound, the L31 effect and the token-level result replicate on Qwen3-14B; the
+(**partial** — the ~2× confound, the L31 effect ⚠(depth-mismatched — see C9) and the token-level result replicate on Qwen3-14B; the
 mid-layer band does not). **Two met, three partial, one no.**
 
 **The limits a reader should carry:**

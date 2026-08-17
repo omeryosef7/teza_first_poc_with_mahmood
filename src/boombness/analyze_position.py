@@ -39,7 +39,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 
 
 def _load(run: str, prefix: str, final_occurrence: bool, keep: set) -> Dict[str, Dict[str, float]]:
@@ -97,7 +97,20 @@ def main() -> int:
                     help="equalize BETWEEN-probe selection freedom by using the same number of "
                          "candidate columns for each probe (audit item: 20 vs 10 biases the ratio)")
     ap.add_argument("--out", default="outputs/boombness/position_2x2.json")
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.judge:
+        require_done(args.judge, allow_partial=args.allow_partial)
+    if args.extract_codeword:
+        require_done(args.extract_codeword, allow_partial=args.allow_partial)
+    if args.extract_last:
+        require_done(args.extract_last, allow_partial=args.allow_partial)
+    if args.refusalness_codeword:
+        require_done(args.refusalness_codeword, allow_partial=args.allow_partial)
+    if args.refusalness_last:
+        require_done(args.refusalness_last, allow_partial=args.allow_partial)
 
     J = read_jsonl(os.path.join(args.judge, "results.jsonl"))
     asr = {r["prompt_id"]: r["strongreject_score"] for r in J
@@ -126,6 +139,15 @@ def main() -> int:
     groups = sorted(set(cl))
     gidx = {g: [i for i, c in enumerate(cl) if c == g] for g in groups}
     print(f"[pos] n={len(keys)} prompts, {len(groups)} {args.cluster_by} clusters")
+    # A cluster bootstrap over ONE cluster resamples the same rows every draw, giving a ZERO-WIDTH
+    # interval and P(ratio>1) of exactly 0 or 1 — manufactured significance that would flip the
+    # report's central hedge ("both CIs straddle 1.0") into a false certainty. Refuse rather than
+    # degrade.
+    if len(groups) < 3:
+        raise SystemExit(
+            f"[pos] REFUSING: only {len(groups)} {args.cluster_by} cluster(s) "
+            f"({groups}) — a cluster bootstrap needs >=3 or it returns a degenerate interval that "
+            f"looks like precision. Widen the population or pass a different --cluster-by.")
 
     def cols_both(probe: str) -> List[str]:
         a = set().union(*[set(data[(probe, "codeword_last")][p]) for p in keys])

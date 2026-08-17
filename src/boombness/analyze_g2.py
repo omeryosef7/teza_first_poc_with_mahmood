@@ -35,7 +35,7 @@ import sys
 from typing import Dict, List, Optional, Sequence
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 
 
 def spearman(x, y):
@@ -97,7 +97,18 @@ def main() -> int:
                          "decides the §18 outcome label (A: Boombness is the story; C: refusal "
                          "suppression is the story and Boombness is a correlate)")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.judge:
+        require_done(args.judge, allow_partial=args.allow_partial)
+    if args.extract:
+        require_done(args.extract, allow_partial=args.allow_partial)
+    if args.score:
+        require_done(args.score, allow_partial=args.allow_partial)
+    if args.refusalness:
+        require_done(args.refusalness, allow_partial=args.allow_partial)
 
     J = read_jsonl(os.path.join(args.judge, "results.jsonl"))
     E = read_jsonl(os.path.join(args.extract, "results.jsonl"))
@@ -227,6 +238,18 @@ def main() -> int:
     # ("positive in 5 of 6 domains") without any committed script producing it — the exact
     # provenance failure that caused retraction R2.
     # ---------------------------------------------------------------------------------------
+    # The clustered block is the guard installed for RETRACTION #1 (pseudo-replication). It was
+    # reachable only via a truthy --cluster-by, so a one-character typo would silently republish the
+    # WITHDRAWN i.i.d. p as the only inference in the file. It now refuses instead.
+    if args.cluster_by and args.cluster_by not in (meta[kept[0]].keys() if kept else {}):
+        raise SystemExit(
+            f"[G2] REFUSING: --cluster-by {args.cluster_by!r} is not a field on the judged rows "
+            f"(available e.g. domain/split/bank_block). Clustered inference is MANDATORY here — the "
+            f"i.i.d. p was withdrawn as pseudo-replication (R1). Pass a real field, or "
+            f"--cluster-by '' to deliberately publish i.i.d. inference only.")
+    if not args.cluster_by:
+        print("[G2] WARNING: clustering DISABLED — the i.i.d. p below was WITHDRAWN as "
+              "pseudo-replication in retraction R1 and must not be reported alone.")
     if args.cluster_by:
         import numpy as _np
         from scipy import stats as _st

@@ -516,7 +516,7 @@ The diagnostic `last_layer_tied_vs_raw_relnorm` came back at **mean 0.653, max 0
 (post-final-norm) and the true (raw block) last-layer vectors differ by ~65% of the vector norm.
 They are not nearly the same vector. Everything previously computed at L31 was a different quantity.
 
-**And the L31 effect survived it, larger:** `C−A` went from +0.112 (contaminated) to **+0.133**
+**And the L31 effect ⚠(depth-mismatched — see C9) survived it, larger:** `C−A` went from +0.112 (contaminated) to **+0.133**
 (corrected). So the late-layer rise is real, not a norm artifact — a good outcome for a check that
 could equally have destroyed the headline.
 
@@ -3374,7 +3374,7 @@ which is also the layer with the largest effect on both (+0.047 / +0.026) and th
 that is robust to model, to multiplicity, and to demonstration count.
 
 **Consequence for §13 criterion 6 ("replicates across models"):** it moves from **NO** toward
-**PARTIAL** — the methodological confound and the L31 effect replicate; the mid-layer structure does
+**PARTIAL** — the methodological confound and the L31 effect ⚠(depth-mismatched — see C9) replicate; the mid-layer structure does
 not. The ASR-side replication (G2 + the position effect) is still generating on job 761818.
 
 ## §14 REPLICATION RESULT #2 — the token-level result replicates on Qwen3, **including its control**
@@ -3732,3 +3732,37 @@ clean two-outcome test, and the outcomes are recorded here before the judge fini
 
 Judging now. Also running: 762187 (arm C ASR), 762188 (arm F ASR), and the Qwen3 judge (§14's
 behavioural half) at 250/960.
+
+## ⚠ C9 — the cross-model "L31 replicates" claim is DEPTH-MISMATCHED. Rerun launched.
+
+The mid-session sweep checked something I never did: **the two models do not have the same number of
+layers.**
+
+| model | `num_hidden_layers` | L31 is… |
+|---|---|---|
+| Llama-3.1-8B-Instruct | **32** | 31/32 = **97% depth — the final block** |
+| Qwen3-14B | **40** | 31/40 = **78% depth — a mid-late block** |
+
+I ran Qwen3 with `--layers ...,28,31`, stopping at 31 because that is Llama's last layer. So the
+claim *"the L31 effect replicates on Qwen3"* — and the framing of L31 as the layer both models agree
+on under Holm — compared **the final layer of one model against a mid-late layer of the other.** The
+depth-matched comparison to Llama L31 is Qwen3 **L39** (39/40 = 97.5%), which was never extracted.
+
+**What this does and does not touch:**
+- ⛔ **Withdrawn pending the rerun:** "the L31 effect replicates across models", and the claim that L31
+  is the layer both models' Holm sets agree on (the index agrees; the *depth* does not).
+- ✅ **Unaffected:** the ~2× naive-direction inflation (median 1.74 on Qwen3) holds at **every** layer
+  tested, so it does not depend on which layer is final. The token-level occurrence result likewise
+  replicates across all tested layers.
+- ✅ **Unaffected:** every Llama-only L31 statement — §8's dose-independence, the Holm survival on
+  Llama — since those never involved Qwen3.
+
+**Rerun launched (762199):** Qwen3 extraction extended to `--layers 4,8,11,12,16,18,20,24,28,31,34,36,38,39`
+with logit-lens layers to 39, thinking-off to match. Once it lands the comparison will be stated in
+**relative depth** (Llama 31/32 vs Qwen3 39/40) rather than by raw index, which is the framing that
+should have been used from the start.
+
+**Why I missed it:** I treated the layer index as a portable coordinate because both models are
+"transformer decoders", and never checked `num_hidden_layers`. Same family as the sprint's other
+errors — an implicit assumption of comparability between two things that only *look* like the same
+quantity.

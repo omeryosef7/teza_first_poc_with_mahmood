@@ -191,7 +191,6 @@ def main() -> int:
     # SELF-CHECK on the rendering the flag actually produces. The flag was silently inert once
     # already; a claim about thinking mode must be verified against the rendered prompt, not against
     # the argument having been parsed.
-    _THINK_PROBE = None
     seed_everything(args.seed)
 
     dc, pc = ds(), pair()

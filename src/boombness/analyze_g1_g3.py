@@ -29,7 +29,7 @@ import sys
 from typing import Dict, List, Optional, Sequence
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 
 
 def mean_sem(xs: Sequence[float]):
@@ -240,7 +240,14 @@ def main() -> int:
     ap.add_argument("--g1-run", default=None)
     ap.add_argument("--g3-run", default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.g1:
+        require_done(args.g1, allow_partial=args.allow_partial)
+    if args.g3:
+        require_done(args.g3, allow_partial=args.allow_partial)
     report: Dict[str, object] = {}
 
     if args.g1_run:

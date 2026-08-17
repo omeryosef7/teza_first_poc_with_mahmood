@@ -31,7 +31,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 from coherence_gate import assess  # noqa: E402
 
 
@@ -58,7 +58,12 @@ def main() -> int:
     ap.add_argument("--out", default=None)
     ap.add_argument("--allow-missing-coherence", action="store_true",
                     help="report an arm whose coherence was never assessed (default: refuse)")
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.baseline:
+        require_done(args.baseline, allow_partial=args.allow_partial)
 
     def load(d):
         return {r["prompt_id"]: r for r in read_jsonl(os.path.join(d, "results.jsonl"))

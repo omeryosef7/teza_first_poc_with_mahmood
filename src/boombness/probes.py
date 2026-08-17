@@ -50,7 +50,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA_DIR, FailureLedger, RunDir, read_jsonl, seed_everything  # noqa: E402
+from common import DATA_DIR, FailureLedger, RunDir, read_jsonl, seed_everything, require_done  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 
@@ -303,7 +303,12 @@ def main() -> int:
                          "then saturates at this n/d ratio — see fit_probe)")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="probe")
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.run:
+        require_done(args.run, allow_partial=args.allow_partial)
     seed_everything(args.seed)
 
     cache_path = os.path.join(args.run, "cache", "final_occurrence_reps.pt")

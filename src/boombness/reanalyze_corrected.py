@@ -38,7 +38,7 @@ import sys
 from typing import Dict, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 
 
 def paired_by_family(rows: List[Dict], col: str, hi_cell: str, lo_cell: str
@@ -115,7 +115,12 @@ def main() -> int:
     ap.add_argument("--hi", default="C")
     ap.add_argument("--lo", default="A")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.run:
+        require_done(args.run, allow_partial=args.allow_partial)
 
     rows = read_jsonl(os.path.join(args.run, "results.jsonl"))
     fin = [r for r in rows if r.get("is_final_occurrence") and r["bank_block"] == "core2x2"

@@ -306,6 +306,46 @@ def _jsonable(obj: Any, _d: int = 0) -> Any:
     return repr(obj)[:400]
 
 
+
+def require_done(run_dir: str, allow_partial: bool = False) -> Dict[str, Any]:
+    """Refuse to analyse a run that never finished. Returns the DONE payload.
+
+    ADDED 2026-08-17 after the mid-session sweep found that NO analyzer checked this. The
+    completeness invariant was written only on the PRODUCER side (`RunDir.finish` writes DONE.json)
+    and never read on the CONSUMER side, so every analysis script would happily compute a headline
+    number over a truncated run. At the moment the sweep ran there were SEVEN such directories on
+    disk — including two stale-dead ones from hours earlier that look full-sized (4002 and 724 rows)
+    and would not announce themselves as partial.
+
+    This is the same shape as the sprint's three dead guards and its four one-of-two-paths bugs: an
+    invariant asserted at one end of a contract and never checked at the other. `allow_partial`
+    exists so that deliberately inspecting a running job stays possible, but it must be asked for.
+    """
+    d = os.path.join(run_dir, "DONE.json")
+    if os.path.exists(d):
+        try:
+            with open(d) as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    if os.path.exists(os.path.join(run_dir, "ABORTED.json")):
+        raise SystemExit(f"[require_done] {run_dir} is marked ABORTED — it holds no usable data.")
+    n = 0
+    rp = os.path.join(run_dir, "results.jsonl")
+    if os.path.exists(rp):
+        with open(rp) as f:
+            n = sum(1 for _ in f)
+    if allow_partial:
+        print(f"[require_done] WARNING: {os.path.basename(run_dir)} has NO DONE.json "
+              f"({n} rows) — analysing a PARTIAL run because --allow-partial was passed. "
+              f"Nothing computed from it may be reported.")
+        return {}
+    raise SystemExit(
+        f"[require_done] REFUSING: {run_dir} has no DONE.json, so the run did not finish and its "
+        f"{n} rows are a truncated prefix of unknown length. Any number computed from it would be "
+        f"over partial data with no failure accounting. Wait for the run, or pass --allow-partial "
+        f"to inspect it deliberately (its output must not be reported).")
+
 def read_jsonl(path: str) -> List[Dict[str, Any]]:
     out = []
     with open(path) as f:

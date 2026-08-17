@@ -407,7 +407,11 @@ def main() -> int:
                          "models: their default is thinking-ON, which for a matched comparison "
                          "against a non-thinking model must be turned OFF.")
     ap.add_argument("--position", default="codeword_last",
-                    choices=["codeword_last", "following", "last"],
+                    choices=["codeword_last", "last"],   # "following" removed 2026-08-17: it was an
+                    # ACCEPTED choice that stage_score silently ignored, so fit and score
+                    # would have read DIFFERENT tokens — the same one-of-two-paths shape as
+                    # the phantom cell. No committed run used it. Re-add only with a
+                    # matching branch in stage_score AND a per-row assertion.
                     help="'last' (final prompt token) added 2026-08-17 to complete the "
                          "position x predictor comparison. The sprint compared d_surface at "
                          "`codeword_last` against refusalness at the last token and declared "

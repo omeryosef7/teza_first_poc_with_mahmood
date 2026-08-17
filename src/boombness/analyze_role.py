@@ -33,7 +33,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import read_jsonl, require_done  # noqa: E402
 
 
 def main() -> int:
@@ -43,7 +43,14 @@ def main() -> int:
     ap.add_argument("--arm", default="natural_doublespeak")
     ap.add_argument("--layers", default="8,12,31")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--allow-partial", action="store_true",
+                    help="analyse a run with no DONE.json (output must not be reported)")
+
     args = ap.parse_args()
+    if args.extract:
+        require_done(args.extract, allow_partial=args.allow_partial)
+    if args.judge:
+        require_done(args.judge, allow_partial=args.allow_partial)
     layers = [int(x) for x in args.layers.split(",")]
 
     E = [r for r in read_jsonl(os.path.join(args.extract, "results.jsonl"))

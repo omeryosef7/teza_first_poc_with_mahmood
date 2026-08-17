@@ -208,7 +208,7 @@ def main() -> int:
                     help="which source positions count as 'the demonstrations'. 'codeword' = the "
                          "demonstration CODEWORD occurrences only (the original scope). 'block' = "
                          "EVERY token of the demonstration block. The G3 result motivates this: "
-                         "cutting all query->demo-codeword edges at every layer recovered only ~7% "
+                         "cutting all query->demo-codeword edges at every layer recovered only ~7%% "
                          "of the effect of deleting the demonstrations, which suggests the mapping "
                          "is carried by the PREDICATES ('exploded', 'defused') rather than by the "
                          "repeated codeword. 'block' is the direct test of that.")

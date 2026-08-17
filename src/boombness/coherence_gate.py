@@ -114,6 +114,12 @@ def assess(run_dir: str, condition: Optional[str] = None,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("runs", nargs="+", help="score_behavior run dirs")
+    ap.add_argument("--condition", default=None,
+                    help="restrict the statistic to ONE condition. The module docstring already warns "
+                         "that pooling every condition is the wrong denominator when reporting on one "
+                         "arm of one condition, but the CLI could not express it — so "
+                         "coherence_steering.json records coherent=True for an arm that is DEGENERATE "
+                         "on the natural_doublespeak population every reported ASR uses.")
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
@@ -122,7 +128,7 @@ def main() -> int:
     report = []
     bad = 0
     for r in args.runs:
-        a = assess(r)
+        a = assess(r, condition=args.condition)
         report.append(a)
         tr = a["truncated_frac"]
         print(f"{os.path.basename(r)[:46]:46s} {a['uniq_word_ratio']:>7.3f} "
