@@ -4432,3 +4432,26 @@ independently robust legs rather than on one fragile measurement.
 **Still judging:** `len_C` 145/960, then `len_F` (where the pre-registered prediction is ≥0.474),
 `len_Fctrl` (the composed control that separates "two directions interact" from "two perturbations break
 termination"), and `projctrl` (the projection-type control arm B has never had).
+
+### Tick 68 — the §0.3 arm launched on Qwen3, at MATCHED DEPTH this time
+
+Arm B (`d_surface:project_out`) is the one causal arm that needs **no refusal direction**, so unlike arms C
+and F it can be run on the second model without the circularity problem that made me decline to fit Qwen3
+refusal directions. Job **763120**.
+
+**Applying the C9 lesson rather than repeating it.** Llama's arm B was at **L8 = 8/32 = 25% depth**. The raw
+index 8 on Qwen3 would be 8/40 = **20%** — the same mistake that made "the L31 effect replicates" a
+final-layer-vs-mid-layer comparison. The depth match is L10/40 = 25%; the nearest *fitted* layer is **L11
+(27.5%)**, so the arm runs at L11 and the comparison will be stated in relative depth.
+
+This is the replication the §0.3 finding most needs: it is currently a **single-model, p=0.117-vs-baseline**
+result whose only significant comparators are of the wrong intervention type. A second model cannot fix the
+control-type problem (that is what `projctrl` is for), but it can say whether the *direction* of the effect
+is a property of Llama or of the phenomenon.
+
+**Prediction, recorded now:** if removing the concept component genuinely reduces detectability, Qwen3's arm
+B should also show **higher** ASR than its baseline. If it shows lower or nothing, then §0.3's sign is
+Llama-specific — which, given that G2 itself did not replicate on Qwen3, is a live possibility rather than a
+formality.
+
+**Judging:** `len_C` 930/960, then `len_F`, `len_Fctrl`, `projctrl`.
