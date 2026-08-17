@@ -91,7 +91,41 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict])
     """
     if not spec:
         return []
+    # COMPOSED arms (plan §10.4 C/E/F) recurse and concatenate their hooks.
+    if "composed" in spec:
+        out = []
+        for sub in spec["composed"]:
+            out.extend(make_intervention(dc, pc, lm, sub, payload))
+        return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
+    # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
+    # Refusal is this sprint's CONCLUSION — the §18=B/C call turns on it — and until now it was only
+    # ever MEASURED, never manipulated, which the plan-coverage sweep called the single largest hole
+    # in §10. These are the HOUSE directions fitted independently of this bank
+    # (refusal_direction_llama_L*.pt), not a diff-of-means over cells A and B: fitting a "refusal"
+    # direction on B−A would make it a reparameterisation of d_naive and the comparison circular.
+    # Only layers 12/14/16/18/20 exist, so a band outside those yields no hooks and the caller's
+    # existing "produced no hooks" guard fires.
+    if name == "refusalness":
+        import refusalness as _rf
+        rdirs = _rf.load_refusal_dirs(sorted(set(band)))
+        if not rdirs:
+            raise SystemExit(f"no refusal directions at layers {sorted(set(band))}; "
+                             f"available are 12/14/16/18/20")
+        ctxs = []
+        for L, v in rdirs.items():
+            d = (v / v.norm()).to(torch.float32)
+            if mode == "project_out":
+                ctxs.append(pc.AllPositionProjectOut(lm.model, L, d, alpha=alpha))
+            elif mode == "add":
+                # dosed in units of the refusal direction's own norm, recorded so it is not
+                # confused with the gap-unit dosing used for d_surface
+                ctxs.append(pc.AllPositionAdd(lm.model, L, d, alpha=alpha * float(v.norm())))
+            else:
+                raise SystemExit(f"unknown intervention mode {mode!r}")
+        if not ctxs:
+            raise SystemExit(f"refusalness/{mode} produced no hooks over layers {band}")
+        return ctxs
     # Norm-matched controls are DERIVED from d_surface with a fixed seed, using the same house
     # helpers aggressive_patching uses, so a steering arm and its control are matched in
     # magnitude by construction rather than by hand.
@@ -228,10 +262,19 @@ def main() -> int:
     spec = None
     payload = None
     if args.intervene:
-        name, mode, band_s, alpha_s = args.intervene.split(":")
-        lo, hi = (int(x) for x in band_s.split("-"))
-        spec = {"direction": name, "mode": mode, "layers": list(range(lo, hi + 1)),
-                "alpha": float(alpha_s)}
+        # MULTI-SPEC, added 2026-08-17 for plan §10.4. The plan mandates six arms, three of which
+        # COMPOSE two manipulations at once — most importantly arm F, "add Boombness AND remove
+        # refusalness", which is the direct test of whether the §18=B verdict is a CEILING EFFECT of
+        # refusal rather than a property of Boombness. One `--intervene` string could only ever
+        # express one manipulation, so arms C/E/F were unrunnable and were silently skipped. Specs
+        # are now joined with "+" and every hook is applied simultaneously.
+        specs = []
+        for part in args.intervene.split("+"):
+            name, mode, band_s, alpha_s = part.split(":")
+            lo, hi = (int(x) for x in band_s.split("-"))
+            specs.append({"direction": name, "mode": mode,
+                          "layers": list(range(lo, hi + 1)), "alpha": float(alpha_s)})
+        spec = specs[0] if len(specs) == 1 else {"composed": specs}
         if not args.fit_dir:
             raise SystemExit("--intervene requires --fit-dir")
         # Cross-fit is not meaningful for an intervention applied to every row, so the
@@ -240,7 +283,7 @@ def main() -> int:
         if not os.path.exists(p):
             p = os.path.join(args.fit_dir, "directions_fit_heldout.pt")
         payload = torch.load(p, map_location="cpu", weights_only=False)
-        run.note(intervention=spec, intervention_direction_file=p,
+        run.note(intervention=spec, intervention_specs=specs, intervention_direction_file=p,
                  dose_unit="gap (alpha=1 == one diff-of-means) for mode=add")
         print(f"[score] intervention {spec} from {os.path.basename(p)}")
 

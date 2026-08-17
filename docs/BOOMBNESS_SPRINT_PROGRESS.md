@@ -3630,3 +3630,40 @@ ASR *while* preserving comprehension? Comprehension: preserved. ASR: **launched 
 If ASR drops, §0.3 is met and the sprint has a genuine causal result it did not have an hour ago. If it
 does not, that is a cleaner negative than anything G4 produced, because the comprehension confound is
 already excluded.
+
+## §10.4 arms C and F are now RUNNABLE — refusal becomes a manipulable object for the first time
+
+The coverage sweep called arm C "the single largest hole in §10", and the reason is sharp: **refusal is
+this sprint's conclusion** — the §18 B-vs-C call turns entirely on it — and it had only ever been
+**measured, never manipulated**. Two code gaps made the plan's arms unrunnable, so they had been silently
+skipped rather than declined:
+
+1. **`--intervene` could express only ONE manipulation.** Three of the plan's six §10.4 arms compose
+   two at once. Specs now join with `+` and all hooks apply simultaneously.
+2. **The refusal direction was not a manipulable direction at all.** `make_intervention` only knew the
+   fitted `d_*` payload plus the random/orthogonal controls. It now accepts `refusalness`, loading the
+   **house directions fitted independently of this bank** (`refusal_direction_llama_L*.pt`) at layers
+   12/14/16/18/20.
+
+**Why the independence matters, and why I did not take the easy route.** The obvious way to get a
+refusal direction from material already here is a diff-of-means over cells `direct_harmful` and
+`benign_literal`. But those are cells **B and A of the very 2×2 the sprint's directions come from**, so
+such a direction is — up to the context term — a reparameterisation of `d_naive`, the confounded
+direction this sprint spent its first week discrediting. Manipulating it and comparing against
+`d_surface` would be circular. The house directions were fitted elsewhere, which is what makes them a
+real rival.
+
+**Launched** (forward-only comprehension + semantic first, so the §2.6 control exists for these arms too):
+- **762181 — arm C:** `refusalness:project_out:18-18:1.0` — remove refusalness.
+- **762182 — arm F:** `d_surface:add:8-8:0.25+refusalness:project_out:18-18:1.0` — **add Boombness AND
+  remove refusalness.**
+
+**Arm F is the one that matters.** §18=B says Boombness is "mechanistic but not causal". Arm F tests the
+alternative that B is a **ceiling effect of refusal**: if adding Boombness does nothing while refusal is
+intact, but *does* something once refusal is projected out, then Boombness has a behavioural effect that
+refusal was masking — and the label is wrong. If it still does nothing, B is a property of Boombness
+rather than an artifact of the refusal ceiling, which is a materially stronger version of the current
+conclusion. Either way the label stops resting on an untested assumption.
+
+Also queued behind: `projout_beh` (762169), the ASR half of arm B, whose comprehension is already known
+to be preserved.
