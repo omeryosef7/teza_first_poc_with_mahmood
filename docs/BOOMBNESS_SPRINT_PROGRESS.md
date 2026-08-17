@@ -3307,3 +3307,28 @@ is a real property of how these models handle a demonstrated codeword, `d_surfac
 markedly more ASR-predictive at the codeword token than at the final prompt token. If it is
 Llama-specific, that is a limit on the sprint's one surviving positive finding and will be reported as
 such.
+
+### Tick 49 — Qwen3 extraction is sane in flight; and a deliberate decision NOT to fit Qwen refusal directions
+
+In-flight numeric check on the Qwen3 `codeword_last` extract (1905 final-occurrence rows so far):
+10 `d_surface` cos columns, all non-degenerate (L4 mean −0.443 sd 0.471 → L18 −0.084 sd 0.264),
+**0 rows at `seq_len-1`** as required for a codeword readout, `hnorm|L12` ≈ 101 (plausible for a 14B
+hidden size). The fit is producing a real direction, not a collapsed one, so the run is worth waiting
+for.
+
+**Decision: I am NOT fitting refusal directions for Qwen3, and the reason is circularity, not effort.**
+Completing the refusalness half of the position 2×2 on a second model would require a Qwen3 refusal
+direction, and the obvious way to get one from material already here is a diff-of-means over the bank's
+`direct_harmful` vs `benign_literal` cells. But those are **cells B and A of the very 2×2 the sprint's
+directions are built from**. A "refusal" direction fitted on B−A is, up to the context term, the naive
+`d_naive` direction this sprint spent its first week showing is confounded — and comparing it against
+`d_surface` as a rival predictor would be comparing a direction to a reparameterization of itself.
+
+The Llama refusalness numbers come from **house directions fitted independently of this bank**
+(`refusal_direction_llama_L*.pt`), which is what makes them a real rival. Manufacturing a same-bank
+substitute for Qwen3 would produce a number that looks like a replication and is not one.
+
+So the second-model replication is scoped to **`d_surface` only** — G2's correlation and the position
+effect — and the report will say that the refusalness comparison is Llama-only because no independent
+refusal direction exists for Qwen3 in this repo. That is a genuine limit on §13 criterion 6, and it
+stays scored **partial** rather than being talked up.
