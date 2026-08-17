@@ -35,6 +35,12 @@ d_surface = ½[(B−C) + (E−A)]     the surface-word effect, context matched  
 d_context = ½[(C−A) + (B−E)]     what the naive direction mostly measures
 ```
 
+⛔ **SINGLE-MODEL as of 2026-08-17.** The correlation below is robust *in Llama* (survives dropping any
+domain, 6/6 domains positive) but **does not replicate on Qwen3-14B**: there the pooled ρ is a similar
++0.364, yet dropping one domain (`game_manual`) collapses it to **+0.015**, only 3/6 domains are
+positive, and the domain-clustered p is **0.206**. The matching pooled figure was a coincidence, not a
+replication. Read every number in this section as Llama-3.1-8B-specific.
+
 On the corrected direction, **Boombness predicts attack success within the doublespeak arm**:
 Spearman **ρ = +0.307** at L12 (`d_surface|L12|proj`), **+0.302 after partialling out the
 residual-stream norm**, n = 234, 100% prompt coverage.

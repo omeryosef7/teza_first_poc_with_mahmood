@@ -3766,3 +3766,57 @@ should have been used from the start.
 "transformer decoders", and never checked `num_hidden_layers`. Same family as the sprint's other
 errors — an implicit assumption of comparability between two things that only *look* like the same
 quantity.
+
+## ⛔ §14 RESULT — **G2 DOES NOT REPLICATE on Qwen3-14B.** The pooled ρ agrees; the structure does not.
+
+The second model's behavioural half is in (960 generations, thinking-off verified; 960/960 judged;
+`require_done` vetted all three inputs). At first glance it replicates — and that first glance is wrong.
+
+| | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| n | 234 | 384 |
+| pooled ρ (`d_surface|L12|proj`) | **+0.307** | **+0.364** |
+| p, i.i.d. | 1.7e-06 | 1.9e-13 |
+| p, **CR1 domain-clustered** | **1.2e-03** | **0.206 — NOT significant** |
+| p, within-domain permutation | <5e-4 | 5.0e-03 |
+| per-domain positive | **6 / 6** | **3 / 6** |
+| median per-domain ρ | **+0.282** | **+0.044** |
+
+### Leave-one-domain-out settles it
+| dropped domain | Llama ρ | Qwen3 ρ |
+|---|---|---|
+| city_bridge | +0.309 | +0.438 |
+| farm_storage | +0.284 | +0.407 |
+| **game_manual** | +0.254 | **+0.015 ← COLLAPSES** |
+| instructional | +0.329 | +0.397 |
+| lab_safety | +0.327 | +0.386 |
+| news_report | +0.320 | +0.415 |
+
+On Llama the association survives dropping any domain (0.254–0.329). **On Qwen3, removing
+`game_manual` takes the pooled ρ from +0.364 to +0.015** — one domain of six carries the whole thing,
+and three of the other five are *negative* (−0.182, −0.126, −0.071).
+
+**So the matching pooled ρ was a coincidence, and quoting it as replication would have been a Simpson's-
+paradox artifact of exactly the kind this sprint retracted twice.** It is also why the CR1 clustered p
+(0.206), which treats domains as the unit, disagrees so sharply with the i.i.d. p (1.9e-13): the
+i.i.d. figure is counting 384 prompts as 384 independent observations of an effect that exists in one
+domain.
+
+### What this does to the sprint's standing claims
+| claim | replicates on Qwen3? |
+|---|---|
+| the 2×2 confound: naive direction inflates ~2× | **YES** — median 1.74, at every layer |
+| token-level: final occurrence is *lower*, positionally not semantically | **YES**, control included |
+| **G2: Boombness predicts ASR** | **NO** — pooled only, carried by 1 of 6 domains |
+| L31 effect | **withdrawn** (C9: depth-mismatched, rerun 762199 in flight) |
+| mid-layer negative band | **NO** (already known) |
+
+**G2 was the sprint's main positive correlational result, and it is now single-model.** The honest
+statement is: *Boombness predicts attack success in Llama-3.1-8B robustly across domains; in Qwen3-14B
+the same measurement is not a domain-general association.* The methodological contribution — the 2×2 and
+the confound it quantifies — is what replicates, which is consistent with it being the sturdiest thing
+here all along.
+
+**§13 criterion 6 ("replicates across prompt families or models") stays scored NO for the causal claim
+and becomes PARTIAL overall**: the design and two structural findings port; the headline correlation does
+not. Both reports will carry this table.
