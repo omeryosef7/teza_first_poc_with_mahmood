@@ -1,0 +1,80 @@
+[
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/len_base_20260817_210621_4078908",
+    "n_scored": 420,
+    "n_considered": 420,
+    "n_dropped_short": 0,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.002380952380952381,
+    "uniq_word_ratio": 0.6582160589830754,
+    "trigram_repeat": 0.026550503365339123,
+    "top_word_frac": 0.0956952855795609,
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/len_A_20260817_221624_3713162",
+    "n_scored": 306,
+    "n_considered": 420,
+    "n_dropped_short": 114,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.004761904761904762,
+    "uniq_word_ratio": 0.7959264000362455,
+    "trigram_repeat": 0.02010512744050483,
+    "top_word_frac": 0.08946515148197474,
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/len_C_20260817_210621_4078907",
+    "n_scored": 420,
+    "n_considered": 420,
+    "n_dropped_short": 0,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.004761904761904762,
+    "uniq_word_ratio": 0.6382326047229067,
+    "trigram_repeat": 0.026195310132310308,
+    "top_word_frac": 0.09644074843182394,
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/len_F_20260817_210621_4078906",
+    "n_scored": 419,
+    "n_considered": 420,
+    "n_dropped_short": 1,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.02142857142857143,
+    "uniq_word_ratio": 0.5578915239187092,
+    "trigram_repeat": 0.06057831225294887,
+    "top_word_frac": 0.07914828207706069,
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/len_Fctrl_20260817_221624_3713161",
+    "n_scored": 420,
+    "n_considered": 420,
+    "n_dropped_short": 0,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.004761904761904762,
+    "uniq_word_ratio": 0.6517877544837585,
+    "trigram_repeat": 0.024179578321155897,
+    "top_word_frac": 0.09598552154201999,
+    "failures": [],
+    "coherent": true
+  },
+  {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/projctrl_20260817_221624_692142",
+    "n_scored": 420,
+    "n_considered": 420,
+    "n_dropped_short": 0,
+    "condition": "natural_doublespeak",
+    "truncated_frac": 0.5047619047619047,
+    "uniq_word_ratio": 0.6745638202455714,
+    "trigram_repeat": 0.02129993706155401,
+    "top_word_frac": 0.09661237030897785,
+    "failures": [],
+    "coherent": true
+  }
+]

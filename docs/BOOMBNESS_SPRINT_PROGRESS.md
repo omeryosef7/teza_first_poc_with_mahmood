@@ -4307,3 +4307,39 @@ re-judge of itself.
 
 `len_base` + `len_C` complete; `len_F` 897/960, `len_A` 814/960, `projctrl` 872/960, `len_Fctrl` 560/960;
 3 of 4 band draws judged.
+
+## The length-fair trio + both missing controls are COMPLETE and ALL PASS the gate
+
+At `--max-new 512`, on the doublespeak population:
+
+| run | trunc | median words | uniq | 3gram | verdict |
+|---|---|---|---|---|---|
+| `len_base` | 0.002 | 146 | 0.658 | 0.027 | **OK** |
+| `len_A` (+0.25 add) | 0.005 | **19** | 0.796 | 0.020 | **OK** |
+| `len_C` (−refusal) | 0.005 | 152 | 0.638 | 0.026 | **OK** |
+| `len_F` (both) | **0.021** | **260** | 0.558 | 0.061 | **OK** |
+| **`len_Fctrl`** (random add − refusal) | 0.005 | **145** | 0.652 | 0.024 | **OK** |
+| `projctrl` (random project_out) | 0.505 | 137 | 0.675 | 0.021 | OK (192 budget, matches arm B) |
+
+**Arm F's non-termination is fixed**: 0.995 → **0.021** truncated. Every arm now completes, so the
+comparison is length-fair in the sense that mattered.
+
+### The composed control already refutes one competing explanation, before any judging
+The audit's strongest objection was that arm F applies **two** perturbations where the others apply one, so
+"two specific directions interact" was not separable from "two simultaneous perturbations break termination
+into a verbose mode the rubric rewards".
+
+`len_Fctrl` is that control — **`random:add:8-8:0.25` + `refusalness:project_out:18-18:1.0`**, identical in
+structure to arm F with `d_surface` swapped for a norm-matched random direction. Its output length is
+**145 median words, indistinguishable from baseline's 146**, while arm F's is **260**.
+
+**So the length inflation is specific to `d_surface`, not a generic consequence of composing two
+interventions.** The "two perturbations break termination" competitor is refuted on the length axis. Whether
+it is also refuted on ASR depends on the judge, which is running.
+
+Note also `len_A`'s median is **19 words** — the +0.25 arm produces short refusals, which is exactly why the
+audit was right that the old F-vs-A contrast compared a capped essay against a 22-token refusal. At 512
+tokens that asymmetry is now a *measured property of the arms* rather than an artifact of the cap.
+
+**Judges queued** for all six (selecting by content + `DONE.json`, never by mtime — the bug that made a
+driver report "complete" after judging half its arms).
