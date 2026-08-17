@@ -48,7 +48,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P7.1 | §11 | Role-style variants | DONE | role_style axis in the bank (6 styles) |
 | P7.2 | §11 | Role framing → Boombness | PARTIAL | Boombness flat across 6 role styles (spread 0.016 at L8); ASR side underpowered at n=6/style |
 | P7.3 | §11 | Userness/CoTness probes (if feasible) | IN PROGRESS | adopting the role-confusion codebase (`third_party/prompt_injection_role_confusion`) rather than reimplementing |
-| P7.4 | §11 | Boombness + role predicts ASR | RUNNING | bank expanded to 72 behavioural rows/style; jobs 761148 (extract, 2352 rows) + 761149 (base generation, 960 behavioural) launched 08-17. The standing `role_analysis.json` still reads the PRE-expansion extract (n=12/style, n=6 ASR) and its ASR column must not be quoted until these land. |
+| P7.4 | §11 | Boombness + role predicts ASR | **DONE (08-17), powered** | 72 extract + 36 ASR rows per style. `role → Boombness(L12)` F=0.175 **p=0.972** — a tight null, style-mean spread is 3.6% of within-style sd. `role → ASR` F=1.94 p=0.087, largest pair 0.035 vs 0.233 (MW p=0.007 uncorrected, ~0.105 Bonferroni) = suggestive, NOT established. Answer is (c)-leaning, not the (b) I predicted at tick 35. |
 | P8.1 | §12.1 | Boombness GCG objective | IN PROGRESS | steering test at α∈{0.10,0.25} — jobs 760859/760860 |
 | P8.2 | §12.2 | Boombness − refusal objective | **CLOSED — gate not met** | G4 found no directional causal support for `d_surface`; an objective maximizing this projection is not justified. Documented negative, deliberately not run. |
 | P8.3 | §12.5 | Baseline / refusal-only comparison | **CLOSED — gate not met** | conditional on P8.2. |
@@ -2627,3 +2627,44 @@ arms into a band, reports the **between-draw** sd, and tests each steering arm a
 combining prompt-level and between-draw error. Below 3 draws it refuses to express the comparison
 rather than printing a supported-looking number. Regression-checked — every previously reported
 figure reproduces unchanged. Four control judges are queued behind the §11 judge (869/960).
+
+## §11 (P7.4) ANSWERED — powered. Role framing does not move the axis; its effect on ASR is **not established**.
+
+`fullrole` extract (72 rows/style, was 12) + `baserole` judge (36 ASR rows/style, was 6), 6 styles
+with demonstration content, domain, demo count and final query held FIXED:
+
+| style | n_rep | Boombness L12 | n_asr | ASR |
+|---|---|---|---|---|
+| system_like_quoted | 72 | −0.2807 | 36 | **0.035** |
+| assistant_like | 72 | −0.2876 | 36 | 0.160 |
+| tool | 72 | −0.2858 | 36 | 0.163 |
+| cot_like | 72 | −0.2820 | 36 | 0.177 |
+| plain | 456 | −0.2909 | 204 | 0.195 |
+| user_like | 72 | −0.2888 | 36 | **0.233** |
+
+**Boombness is flat, and it is a TIGHT null, not an underpowered one.** `role → Boombness(L12)`:
+**F = 0.175, p = 0.972**. The spread of the style means is **3.6%** of the within-style sd. Role
+framing does not move the concept axis, and the design has the resolution to say so.
+
+**⚠ I have to correct my own tick-35 speculation.** I wrote there that if the flatness survived the
+powered rerun, §11's answer would be **(b) role → ASR directly, Boombness unmoved**. It did not
+fully survive. `role → ASR`: **F = 1.94, p = 0.087** — the omnibus does not clear 0.05. The largest
+pairwise gap (`system_like_quoted` 0.035 vs `user_like` 0.233, a 6.6× ratio) has Mann-Whitney
+**p = 0.007 uncorrected**, which over 15 pairwise comparisons is **p ≈ 0.105 Bonferroni**. So the
+ASR half is **suggestive and not established**.
+
+**§11's answer is therefore (c)-leaning, not (b):** role framing definitively does not change
+Boombness, and whether it changes ASR is unresolved at n=36/style. The mediation is consistent —
+role adds only **+0.023** R² over Boombness, Boombness adds **+0.158** over role — but that
+comparison inherits the position caveat from RETRACTION #5 and should not be read as "Boombness
+beats role" in any strong sense.
+
+**Why it matters anyway:** this is the cleanest dissociation in the sprint that runs the *other*
+way. Every earlier dissociation was "the representation moves less than the behaviour". Here the
+representation does not move *at all* across six framings, under a design that holds content
+constant — which is exactly the constancy the Role-Confusion codebase's `render_single_message`
+was ported for. Combined with outcome C, the picture is consistent: what varies with framing is not
+the concept axis.
+
+Caveat retained from the script: `role_style` is a **categorical proxy**; no Userness/CoTness probe
+has been fitted on this model, so this is not a measured role signal.
