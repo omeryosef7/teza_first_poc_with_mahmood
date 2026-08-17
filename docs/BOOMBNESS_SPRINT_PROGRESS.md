@@ -3577,3 +3577,56 @@ largest and where both survive Holm. So the L31 result does not depend on this a
 buried. The position effect stays reported — it is 2.0×/4.2× and consistent across two probes — but
 "the codeword token carries more ASR-predictive signal" must be qualified with "and the direction is
 also far better determined there, which this design cannot separate from it."
+
+## §2.6 COMPREHENSION CONTROL — the result exonerates one claim and INDICTS another
+
+The mandatory control the coverage sweep found missing across the whole sprint. Readout is
+`comprehension_logodds` = log p("coded") − log p("literal") on `comprehension_usage` rows;
+positive = the model still reports the codeword as meaning the coded thing. 60 doublespeak prompts
+with ≥1 demonstration, common to all arms, domain-clustered over 6 domains:
+
+| arm | mean logodds | paired Δ vs baseline | t_cl | p | frac still "coded" |
+|---|---|---|---|---|---|
+| baseline | +0.704 | — | — | — | 0.683 |
+| **`d_surface` +0.25** | **+1.347** | **+0.643** | +4.57 | **0.006** | 0.733 |
+| **`d_surface` −0.25** | **−0.088** | **−0.792** | −2.77 | **0.040** | **0.500** |
+| `random` +0.25 | +1.769 | +1.065 | +6.67 | 0.001 | 0.800 |
+| **`d_surface` project_out** | +0.792 | +0.088 | +0.44 | 0.681 | 0.683 |
+
+### 1. The G4 headline is EXONERATED — and it survives the test that could have killed it
+`+0.25` **improves** comprehension (+0.643, p=0.006). So when its ASR fell 0.219 → 0.081, the model
+understood the codeword mapping **better**, not worse. The alternative reading the missing control left
+open — *"the intervention broke comprehension and the refusal is downstream of confusion"* — is
+**excluded**. It also makes the refusal story internally coherent: more concept-ness at the codeword →
+better recognition of what is being asked → more refusal (0.074 → 0.696).
+
+### 2. The −0.25 arm is INDICTED, and this is exactly what §2.6 exists to catch
+`−0.25` **degrades** comprehension to **−0.088** (below zero: the model now prefers "literal"), with
+only **50%** of prompts still reporting the coded reading, down from 68%. So its ASR suppression
+(0.219 → 0.148) is **at least partly confusion, not mechanism** — and it must not be described as
+"removing concept-ness reduces attack success". This is the third independent line on which the two
+signs differ, and all three agree:
+
+| | +0.25 | −0.25 |
+|---|---|---|
+| clears the 4-draw random band | **yes** (p=0.0014) | no (p=0.070) |
+| suppresses via refusal | **90.1%** | 0.0% |
+| comprehension | **improves** (+0.64) | **degrades** (−0.79) |
+
+### 3. Specificity caveat, stated because it cuts against me
+The `random` control raises comprehension **more** than `+0.25` does (+1.065 vs +0.643). So the
+comprehension *gain* is not specific to `d_surface` — a norm-matched perturbation at this dose does it
+too. What is specific is the **sign asymmetry**: only the negative `d_surface` step degrades
+comprehension, and no control does.
+
+### 4. `project_out` — §10.4 arm B, never run before — PRESERVES comprehension exactly
+Δ = **+0.088, p = 0.681**, frac coded unchanged at 0.683. Projecting `d_surface` out of L8 leaves the
+model's grasp of the mapping intact. **This is the surgical condition the plan actually asked for**, and
+the board's earlier claim that §10.3/§10.4-B was "covered by the additive arms" was wrong — an additive
+−0.25 step is not a projection removal, and the two behave differently on precisely this measure.
+
+**So the plan's central question (§0.3) is now live for the first time:** does surgical removal reduce
+ASR *while* preserving comprehension? Comprehension: preserved. ASR: **launched now** (`projout_beh`).
+If ASR drops, §0.3 is met and the sprint has a genuine causal result it did not have an hour ago. If it
+does not, that is a cleaner negative than anything G4 produced, because the comprehension confound is
+already excluded.
