@@ -3332,3 +3332,47 @@ So the second-model replication is scoped to **`d_surface` only** — G2's corre
 effect — and the report will say that the refusalness comparison is Llama-only because no independent
 refusal direction exists for Qwen3 in this repo. That is a genuine limit on §13 criterion 6, and it
 stays scored **partial** rather than being talked up.
+
+## §14 REPLICATION RESULT #1 — the 2×2 confound REPLICATES on Qwen3-14B; the mid-layer band does NOT
+
+Same bank (sha `71bea179345ed118`, tokenization audit clean on both tokenizers), same script
+(`reanalyze_corrected.py`), same C−A contrast, cluster-robust over 6 domains. Qwen3 `lastpos` extract
+verified by the self-check: **2352/2352 rows at `seq_len-1`**.
+
+| L | Llama `d_surface` | Llama `d_naive` | ratio | Qwen3 `d_surface` | Qwen3 `d_naive` | ratio |
+|---|---|---|---|---|---|---|
+| 4 | +0.0230 | +0.0427 | **+1.86** | +0.0057 | +0.0085 | **+1.50** |
+| 8 | +0.0272 | +0.0476 | **+1.75** | +0.0210 | +0.0411 | **+1.96** |
+| 12 | +0.0154 | +0.0374 | **+2.42** | +0.0255 | +0.0503 | **+1.98** |
+| 16 | **−0.0230** | −0.0063 | +0.27 | **+0.0229** | +0.0396 | **+1.73** |
+| 18 | **−0.0265** | −0.0106 | +0.40 | **+0.0232** | +0.0388 | **+1.67** |
+| 20 | **−0.0293** | −0.0160 | +0.55 | **+0.0219** | +0.0370 | **+1.69** |
+| 24 | **−0.0206** | −0.0045 | +0.22 | **+0.0254** | +0.0441 | **+1.74** |
+| 31 | +0.0473 | +0.0941 | **+1.99** | +0.0260 | +0.0504 | **+1.94** |
+
+### 1. The sprint's most reusable claim REPLICATES
+**The naive direction inflates the effect by ~2× on both models** — Qwen3 ratio 1.50–1.98 with a
+**median of 1.74, at every single layer**, against Llama's 1.75–2.42 where the two agree. This is
+takeaway #1 (the 2×2 design separates surface from context and quantifies the confound), and it is now
+a two-model result rather than a one-model one. It is the strongest thing the sprint has.
+
+### 2. The mid-layer negative band is **Llama-specific**, and that is now doubly established
+On Llama, L16–L24 `d_surface` is **negative** (−0.021 to −0.029). On Qwen3 the same layers are
+**positive** (+0.022 to +0.025) and the naive direction inflates there exactly as it does everywhere
+else. **The sign reversal does not replicate.**
+
+This is the second independent reason to have narrowed that claim. C7 already showed it was absent in
+the **behavioural prompts** (present only in semantic/comprehension); now it is also absent on a
+**second model**. Both were found after I had written it into a report, and each on its own would have
+been sufficient to retract it. Whatever the mid-band reversal is, it is a property of
+Llama-3.1-8B on semantic probe prompts, not of doublespeak.
+
+### 3. What survives multiplicity on BOTH models: L31
+`holm_rejected` is `{4, 31}` on Llama and `{8, 31}` on Qwen3 — the two models agree only on **L31**,
+which is also the layer with the largest effect on both (+0.047 / +0.026) and the dose-independent one
+(§8: flat across a 16× demonstration change). The final-layer effect is the representational finding
+that is robust to model, to multiplicity, and to demonstration count.
+
+**Consequence for §13 criterion 6 ("replicates across models"):** it moves from **NO** toward
+**PARTIAL** — the methodological confound and the L31 effect replicate; the mid-layer structure does
+not. The ASR-side replication (G2 + the position effect) is still generating on job 761818.
