@@ -2140,3 +2140,14 @@ damage.
 That is the condition under which the sign test is meaningful, and it now holds. Judges running for
 the sign-flip arm and both controls; `analyze_steering.py` produces the verdict on the intersected
 prompt set as soon as they land.
+
+### 2026-08-17 — Tick 33 (two of three steering judges done; NOT reading them yet)
+
+`steer_neg_a025` and `ctrl_orth_a025` finished (960 generations each, 420 in the doublespeak arm).
+Raw per-arm numbers exist, but **they are on a different prompt population than the baseline and the
+α=+0.25 arm** (960-row bank vs 660-row bank), so reading them side by side is precisely the mistake
+`analyze_steering.py` was written to prevent. Recording that I have seen them and am not
+interpreting them until the intersected comparison runs.
+
+`ctrl_rand_a025` at 928/960. The verdict comes from the script, on the common prompt set, with the
+sign branches fixed in code before the numbers arrived.
