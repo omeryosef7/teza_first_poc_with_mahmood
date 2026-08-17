@@ -3190,3 +3190,20 @@ field**. §4 and §8 both narrowed.
 The **position finding is stated at its least favourable framing**: on best columns it is 2.0×/4.2×,
 but on *median* columns it is 12.6× (`d_surface`) and 51× (refusalness). The headline understates its
 own positive result.
+
+### Tick 47 — the provenance guard's demanded rerun landed, and the headline table is regenerating
+
+Job 761697 completed: `refusalness --position last`, **960 rows, `readout_position == "last"` on all
+of them, and `readout_token_index == seq_len-1` on all of them.** So the `@last` cell's footing is now
+evidenced by an artifact rather than by reading `refusalness.py`. That was the one thing
+`analyze_position.py` refused to accept on its first run, and it is the guard doing exactly what the
+three dead guards never did — declining to proceed on unverifiable input.
+
+`analyze_position.py` is now regenerating `position_2x2.json` with **all four cells
+provenance-checked**. It is slower than expected because the honest version of the interval is
+expensive: the `reselect` bootstrap re-argmaxes over every candidate column inside each of 4000
+resamples (≈240k regressions), which is the variant that includes the model-selection variance that
+two of this sprint's five retractions were about. The cheap `fixed_column` variant is the one I had
+been quoting.
+
+Nothing is sent until it finishes. Both reports already carry every audit-6 correction.
