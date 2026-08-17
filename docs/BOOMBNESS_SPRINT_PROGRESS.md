@@ -2448,3 +2448,39 @@ Holm is correct textbook step-down and conservative over correlated columns (no 
 R3 do not leak. The 3.7× survives nested CV with selection inside the fold (3.65) and
 leave-one-domain-out (+0.089 vs −0.067) — the most robust number in the sprint. The 59% semantic
 dissociation reproduces exactly, and its clustered t (13.5) ≈ naive t (13.3).
+
+## B4a RESOLVED — the depth framing was wrong; the redundancy is in the EDGE SET
+
+Job 761188, same 6 families, all arms on one run:
+
+| arm | edges | layers | edges/layer | Δ readout |
+|---|---|---|---|---|
+| `no_demo_text` (ceiling) | — | — | — | **−11.509** |
+| `all_layers_demo` | 56,832 | 32 | 1,776 | **−9.708** |
+| `dense_two_layer` | 7,264 | 2 | 3,632 | +0.496 |
+| `positive_control` | 7,200 | 2 | 3,600 | +3.534 |
+| `subsampled_all_layers_demo` | **3,552** | **32** | 111 | **+0.089** |
+| `all_demo` | **3,552** | **2** | 1,776 | **−0.008** |
+
+**The matched comparison is the last two rows, and it kills the depth reading.** At an identical
+3,552 edges, spreading them over 32 layers instead of 2 changes the readout by **+0.10 log-odds** —
+i.e. nothing, and in the wrong direction. **Layer spread is not the operative variable.** My
+"distributed across depth, which is why every localized knockout reads zero" was wrong about the
+mechanism.
+
+**The other direction cannot be tested, and that is structural, not an oversight.** `dense_two_layer`
+was meant to put 56,832 edges at 2 layers; it saturated at 7,264 because with `seq_len=114` and 32
+heads a layer physically holds only ~3,648 edges. **Any cut above ~7.3k edges necessarily involves
+more layers**, so edge count and layer spread cannot be decoupled upward. Identification here is
+one-sided by construction — stated rather than hidden.
+
+**What the data do support**, and it is a cleaner claim than the one it replaces: the demonstration
+influence is carried by a **large, massively redundant edge set**. Removing **6.25%** of the demo
+edges (3,552 of 56,832) does essentially nothing *regardless of how those edges are distributed over
+depth*; removing 100% recovers 84% of the deletion ceiling. That is why every localized knockout —
+top-k, bottom-k, random, same-head — reads zero: they are all removing ~0.03% of a redundant set.
+The redundancy is in the **number of edges**, not specifically in their spread across layers.
+
+Phase board and the short update are updated accordingly. This is the third claim this sprint whose
+*mechanism* was wrong while its *observation* held, and the pattern is the same each time: a
+comparison that moved two things at once.

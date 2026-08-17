@@ -94,15 +94,19 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
   (it propagated the span as if baseline and ceiling were independent, when they correlate +0.63).
   **n = 8 families drawn from only 2 domains** — the effective number of independent units is closer
   to 2 than to 8, and this is a pilot.
-- ⚠ **Attention-carried — but "distributed across depth" is NOT identified, and I over-claimed it.**
-  Cutting query→demo attention at all 32 layers recovers **84%** (CI [62%, 110%]) of the effect of
-  deleting the demonstrations; the same cut at 2 layers recovers **0.07%** (CI [−6.7%, +8.2%]).
-  But the 32-layer arm also cuts **16× more edges** (56,832 vs 3,552) — layer spread and edge count
-  move together perfectly, so a plain total-edge threshold explains every number equally well. Worse
-  for my reading: at *fixed* 2 layers, going from 3,552 to 7,200 edges *does* move the readout
-  (+3.53), so "two layers can't move it" is false. **An edge-count-matched arm is running now**
-  (3,552 edges spread over all 32 layers): if it recovers ~84%, depth-redundancy is real; if not, it
-  was edge count all along.
+- ⚠ **Attention-carried and massively redundant — but the redundancy is in the EDGE SET, not in
+  depth. I had this wrong and the matched experiment corrected it.** Cutting query→demo attention at
+  all 32 layers recovers **84%** (CI [62%, 110%]) of the effect of deleting the demonstrations; the
+  same cut at 2 layers recovers **0.07%** (CI [−6.7%, +8.2%]). I read that as depth-distribution,
+  but the 32-layer arm also cut **16× more edges**, so the comparison moved two things at once. The
+  matched arm settles it: **3,552 edges spread over 32 layers moves the readout +0.09 — the same
+  nothing as 3,552 edges at 2 layers (−0.01).** Layer spread is not the operative variable.
+  What is true: removing **6.25%** of the demo edges does nothing *however they are distributed*,
+  while removing 100% recovers 84%. That is why every localized knockout (top-k, bottom-k, random,
+  same-head) reads zero — each removes ~0.03% of a hugely redundant set.
+  The converse test is impossible by construction: at seq_len 114 × 32 heads a layer holds only
+  ~3,648 edges, so any cut above ~7.3k edges *must* involve more layers. Identification is one-sided
+  and we say so.
 - **Semantics move far more than the representation.** The model's reported meaning of the codeword
   travels **59%** of the way from literal to direct (paired, n=60, monotone in demo count:
   +7.6 → +16.8), while the token's position on the concept axis moves only a few percent. This one
