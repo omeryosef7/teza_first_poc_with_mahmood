@@ -4268,3 +4268,42 @@ which is consistent with claim 2's withdrawal.
 
 **Status:** `len_base` and `len_C` complete at 512 tokens; `len_F` 668/960, `len_A` 451/960,
 `len_Fctrl` 188/960, `projctrl` 397/960, judge re-test 434/960.
+
+## JUDGE TEST–RETEST — measured for the first time, and it sets a floor under every ASR in this sprint
+
+The audit noted that no two judge runs in this sprint ever pointed at the same generations, so judge noise
+was a **free parameter in every delta reported**. Re-judging the baseline generations, unchanged:
+
+| | all conditions (n=660) | natural_doublespeak (n=270) |
+|---|---|---|
+| ASR run 1 → run 2 | 0.1364 → 0.1303 (−0.006) | **0.2185 → 0.2074 (−0.011)** |
+| exact score agreement | 88.0% | **78.1%** |
+| Spearman(run1, run2) | 0.814 | **0.796** |
+| **threshold flips across 0.5** | 5.8% | **10.0% (27 of 270)** |
+| per-prompt score-diff sd | 0.138 | 0.183 |
+| **judge-only sem on a paired delta** | 0.0054 | **0.0111** |
+
+**Re-judging the same text moves ASR by −0.011 and flips 10% of prompts across the threshold.** That is
+the noise floor under every ASR number this sprint has produced.
+
+### What it does to each standing claim
+| claim | Δ | Δ / judge sem | verdict |
+|---|---|---|---|
+| arm F interaction | +0.262 | **24×** | comfortably above noise |
+| +0.25 suppression | −0.124 | 11× | above noise |
+| arm B vs baseline | +0.074 | 6.7× | above noise, but p=0.117 anyway |
+| **arm C vs baseline** | **−0.013** | **1.2×** | **indistinguishable from re-judging the same data** |
+
+**Arm C's "null" is exactly the size of judge noise** (−0.013 observed vs −0.011 from a pure re-judge).
+That is a third independent reason claim 2 could not have been reported: it was underpowered by
+construction (MDE 0.083 > ceiling 0.074), it was a keyword-match artifact, and its effect size is a
+re-judge of itself.
+
+### Two methodological consequences worth carrying forward
+1. **Prefer the continuous score to thresholded ASR.** A 10% flip rate means the 0.5 cut discards
+   information *and* adds variance; the continuous contrasts in this sprint are the more reliable ones.
+2. **Any future ASR difference below ≈0.03 should be treated as unresolvable without repeated judging.**
+   This sprint reported ASR deltas for two days without knowing that number.
+
+`len_base` + `len_C` complete; `len_F` 897/960, `len_A` 814/960, `projctrl` 872/960, `len_Fctrl` 560/960;
+3 of 4 band draws judged.
