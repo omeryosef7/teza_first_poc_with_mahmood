@@ -64,8 +64,8 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS (direction robust; magnitude restated with intervals). The lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout strongly toward the donor (95% CI +23% to +135% of span); transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED (3rd attempt, corrected destination). Cutting query→demo-BLOCK attention at ALL layers recovers 84% of the demonstration-deletion ceiling (−9.708 vs −11.509); the same cut at 2 layers recovers 0.1%. The retrieval is attention-carried but DISTRIBUTED and REDUNDANT over depth. Dynamic range established; controls at 0.** ~~RETRACTED AGAIN — the knockout cut edges into the codeword token while the readout reads the last token, 9 positions away, so every arm was measuring an indirect path. Rerunning with the corrected destination (job 760816).** ~~RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
-| G4 (§12) | Is Boombness a usable GCG objective? | **REOPENED — the G2 negative was an artifact; the objective is viable and untested.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
-| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | pending | |
+| G4 (§12) | Is Boombness a usable GCG objective? | **NO — steering is a documented NEGATIVE. Both signs of `d_surface` at a coherent dose SUPPRESS ASR (paired Δ −0.114 and −0.074 vs −0.035/−0.031 for norm-matched controls), so the effect is disturbance, not direction. The axis is not inert (2–3× the controls) and refusal responds directionally (0.696 vs 0.067), but ASR does not follow the sign — which is what an objective needs.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
+| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **B — mechanistic but not causal.** Boombness is measurable and predicts ASR within the attack arm (ρ=+0.307 at L12, norm-controlled, Holm), beats refusalness there (3.7×), and localizes to distributed attention retrieval from the demonstrations — but steering it does not move ASR in a sign-following way, so it is not a usable GCG objective. Between arms the story is C-shaped (refusal collapses 96%→7%). | 2026-08-17 |
 
 ---
 
@@ -2151,3 +2151,55 @@ interpreting them until the intersected comparison runs.
 
 `ctrl_rand_a025` at 928/960. The verdict comes from the script, on the common prompt set, with the
 sign branches fixed in code before the numbers arrived.
+
+---
+
+## ✅ GATE G4 — NEGATIVE. Steering does not support a directional causal claim.
+
+`analyze_steering.py`, **common prompt set = 270** (every arm intersected on `prompt_id`; the
+post-expansion arms cover 64.3% of their own 420 and 100% of the common set). All intervened arms
+passed the coherence gate. Paired Δ(StrongReject) against the same baseline prompts:
+
+| arm | ASR | 95% CI | refusal | **paired Δscore** |
+|---|---|---|---|---|
+| baseline | 0.219 | [0.173, 0.272] | 0.074 | — |
+| `d_surface` **+0.25** | 0.081 | [0.054, 0.120] | **0.696** | **−0.1144 ± 0.0235** |
+| `d_surface` **−0.25** | 0.148 | [0.111, 0.195] | 0.067 | **−0.0741 ± 0.0198** |
+| `random` +0.25 | 0.178 | [0.137, 0.228] | 0.085 | −0.0352 ± 0.0177 |
+| `orthogonal` +0.25 | 0.189 | [0.147, 0.240] | 0.093 | −0.0306 ± 0.0179 |
+
+**BOTH SIGNS SUPPRESS ASR.** The verdict the script prints is the one that was fixed in code before
+the numbers existed:
+
+> BOTH SIGNS SUPPRESS → the effect is DISTURBANCE, not direction. No mechanistic reading of the
+> axis is available from this.
+
+So the α=+0.25 result — ASR 0.219 → 0.081, a 63% reduction — **is not evidence that Boombness
+causes the attack.** Pushing the codeword *away* from the concept suppresses the attack too.
+
+### Two things that are nevertheless real, and worth keeping
+
+1. **The axis is not inert.** `d_surface` perturbation suppresses ~2–3× more than a norm-matched
+   perturbation at the same dose (Δ −0.114 / −0.074 vs −0.035 / −0.031, and the control Δs are
+   themselves ~2σ). The attack is *more* sensitive to displacement along this axis than to
+   displacement in general — it is just not sensitive to the **sign**.
+2. **Refusal responds directionally even though ASR does not.** `+0.25` drives refusal to **0.696**
+   while `−0.25` leaves it at **0.067** and the controls at 0.085/0.093 — a ~10× asymmetry that
+   *does* track the sign. So the two signs suppress the attack by **different routes**: adding
+   concept-ness triggers refusal, removing it does not. That asymmetry is a single arm each and is
+   flagged as suggestive, not established.
+
+### §18 outcome label
+
+This is the plan's **outcome B — mechanistic but not causal**: Boombness is measurable, predicts ASR
+within the attack arm (ρ=+0.307 at L12, norm-controlled), and its manipulation moves behaviour — but
+**not in a way whose sign follows the axis**, which is what a causal reading requires and what a GCG
+objective would need.
+
+**Consequence for §12:** an objective maximizing `⟨h, d_surface⟩` has no directional causal support.
+The correlation is real; the intervention says the model's attack-success is destabilized by
+movement along this axis rather than driven by position on it. Building the optimizer on the
+correlation alone would have produced a result that this experiment says is not there.
+
+**This is the gate working exactly as the plan intended** — §12 is explicitly conditional on the
+earlier gates, and this is the condition failing.
