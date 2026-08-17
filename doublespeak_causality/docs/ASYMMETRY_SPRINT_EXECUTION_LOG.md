@@ -10603,3 +10603,7 @@ workstream, but the recurrence is worth noting: it has now cost three separate s
 Diff unchanged.
 ### 21:15 — idle. Controller OK (header verified), queue empty (boombness steering arms all finished). No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 21:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 22:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+*(Their `2670d02e` closes boombness G4 as a negative — steering does not support a directional
+causal claim. Same shape as §20's own arc: a representation that decodes and correlates, but does
+not drive behaviour under intervention. Independent workstream, converging conclusion.)*
