@@ -38,22 +38,22 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P5.2 | §9 | Generations + evaluation | DONE | `base_20260816_203355_3985444` (660 gens) + judge, null_frac 0.0000 |
 | P5.3 | §9 | Prompt-level Boombness | DONE | `analyze_g2.py`, 100% coverage, committed and reproducible |
 | P5.4 | §9 | Correlation / regression | DONE | G2 + §9 Q6/Q7 mediation vs refusalness |
-| P5.5 | §9 | Figure-9-style plot | TODO | Figure-9 plot not yet produced |
 | P5.5 | §9 | Figure-9-style plot | **DROPPED, deliberately** | The figure would have plotted the ASR-vs-Boombness relation that RETRACTION #5 shows is not the operative one. Producing a polished figure of a superseded framing is worse than producing none. If a figure is wanted it should be the predictor×position 2×2 (`outputs/boombness/position_2x2.json`). |
+| P6.1 | §10.1 | Attention edge knockout | DONE | `surgical_knockout.py` with `--dst`, `--demo-scope`, and 2 dynamic-range controls |
 | P6.2 | §10.2 | Head knockout | **NOT RUN — superseded by the B4a result** | Per-head knockout asks which heads carry the retrieval. The edge-matched experiment showed removing **6.25%** of demo edges does nothing however distributed, so any per-head cut (16 edges, ~0.03%) is guaranteed to read zero — as every localized arm already did. The experiment is not informative at this redundancy level; running it would only add another null to misread. |
+| P6.3 | §10.3 | Direction knockout | DONE | direction knockout covered by the additive/ablate arms |
 | P6.4 | §10.4 | Combined Boombness/refusal | **DONE (08-17), and it decided the §18 label** | Answered by the matched-position analysis rather than a separate experiment. On the same 234 prompts with both probes at `codeword_last`: refusalness alone R²=0.176 (5 layers jointly 0.257), `d_surface|L12|proj` alone 0.141; adding Boombness to refusalness buys **+0.012 to +0.076**, while adding refusalness to Boombness buys **+0.144**. Boombness is close to redundant given refusalness at matched position, which is the direct evidence for outcome C. |
-| P6.4 | §10.4 | Combined Boombness/refusal | TODO | |
 | P6.5 | §10 | Comprehension controls | DONE | comprehension readout live (`comprehension_usage`, log-odds) |
 | P6.6 | §10 | Causal vs destructive separation | DONE | `coherence_gate.py` separates causal from destructive |
 | P7.1 | §11 | Role-style variants | DONE | role_style axis in the bank (6 styles) |
-| P7.2 | §11 | Role framing → Boombness | PARTIAL | Boombness flat across 6 role styles (spread 0.016 at L8); ASR side underpowered at n=6/style |
-| P7.3 | §11 | Userness/CoTness probes (if feasible) | IN PROGRESS | adopting the role-confusion codebase (`third_party/prompt_injection_role_confusion`) rather than reimplementing |
+| P7.2 | §11 | Role framing → Boombness | **DONE (08-17), powered** | Superseded by P7.4's powered run: `role → Boombness(L12)` F=0.175 **p=0.972**, style-mean spread 3.6% of within-style sd — a tight null, not an underpowered one. |
+| P7.3 | §11 | Userness/CoTness probes (if feasible) | **NOT FITTED — disclosed as a proxy** | `role_probes.py` ports the Role-Confusion machinery but no probe was fitted on this model, so §11 uses `role_style` as a CATEGORICAL PROXY throughout and every table says so. Not claimed as a measured role signal. |
 | P7.4 | §11 | Boombness + role predicts ASR | **DONE (08-17), powered** | 72 extract + 36 ASR rows per style. `role → Boombness(L12)` F=0.175 **p=0.972** — a tight null, style-mean spread is 3.6% of within-style sd. `role → ASR` F=1.94 p=0.087, largest pair 0.035 vs 0.233 (MW p=0.007 uncorrected, ~0.105 Bonferroni) = suggestive, NOT established. Answer is (c)-leaning, not the (b) I predicted at tick 35. |
-| P8.1 | §12.1 | Boombness GCG objective | IN PROGRESS | steering test at α∈{0.10,0.25} — jobs 760859/760860 |
+| P8.1 | §12.1 | Boombness GCG objective | **CLOSED — gate not met** | The steering test (α∈{0.10,0.25,1,2}) is the prerequisite and it returned a directional null: both signs suppress ASR, only +0.25 clears a 4-draw random-control band (p=0.0014) and it does so by triggering refusal. No directional causal support ⇒ no objective. Documented negative. |
 | P8.2 | §12.2 | Boombness − refusal objective | **CLOSED — gate not met** | G4 found no directional causal support for `d_surface`; an objective maximizing this projection is not justified. Documented negative, deliberately not run. |
 | P8.3 | §12.5 | Baseline / refusal-only comparison | **CLOSED — gate not met** | conditional on P8.2. |
 | P8.4 | §12.5 | Universality + held-out transfer | **CLOSED — gate not met** | conditional on P8.2. |
-| P8.5 | §15 | Final reports | PARTIAL | `reports/boombness_objective_sprint_short_update.md` written; full report pending G4 |
+| P8.5 | §15 | Final reports | **DONE (rev 4)** | `reports/boombness_objective_sprint_short_update.md` revision 4 — supersedes rev 3, which reported a conclusion built on a phantom cell. Carries 5 retractions, 5 corrections, the freedom-matched position 2×2, and the §18=B label. |
 
 ---
 
@@ -2977,3 +2977,34 @@ perturbation.
 
 So the honest one-line G4 summary: **adding concept-ness to the codeword triggers refusal; removing
 it just damages the model like any other perturbation of that size.**
+
+### Tick 42 — I clobbered four board rows with an off-by-one, and had to recover them from git
+
+Auditing my own bookkeeping this tick found that the tick-38 board update **silently destroyed two
+rows and duplicated two others**. I edited by *line index* (`L[41]`, `L[42]`, `L[43]`), the indices
+were off by one against the rows I meant, and the result was:
+
+- **P6.1** (attention edge knockout, DONE) — **overwritten and lost**
+- **P6.3** (direction knockout, DONE) — **overwritten and lost**
+- **P5.5** and **P6.4** — my new rows *inserted*, the stale `TODO` originals left in place, so the
+  board carried contradictory duplicate entries for two phases
+
+Both lost rows are recovered from `00f1ba50^` and reinserted in order; both stale duplicates are
+removed. Verified: **40 phase rows, no duplicates, ascending, and no id that has ever existed in the
+file's history is absent now.**
+
+**This is the same root cause as three of this sprint's bugs, in my own notes instead of the code:
+addressing a thing by an incidental property (line number) rather than by its identity (row id).**
+The coherence gate matched on a filename, the control band on a tag prefix, the run selector on an
+mtime — and this on a line index. All four broke the moment something shifted. The repair and every
+subsequent board edit now match on the row id.
+
+Also closed four stale rows that later work had already answered: **P7.2** (superseded by P7.4's
+powered tight null, F=0.175 p=0.972), **P7.3** (probes never fitted — `role_style` is disclosed as a
+categorical proxy everywhere, not claimed as a measured role signal), **P8.1** (CLOSED, gate not
+met — the steering prerequisite returned a directional null), **P8.5** (DONE at revision 4).
+
+**Genuinely open, and honestly so:** P3.3 and P3.5 (probe + metric comparison, both REDO against the
+headline extract) and P4.4 (§8 example-count sweep written up only as the layer surface in
+`reanalyze_corrected.py`, no dedicated plots). These are the remaining real gaps and none of them
+bears on a gate verdict.
