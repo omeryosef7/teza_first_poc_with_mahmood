@@ -367,21 +367,39 @@
       "r2_both": 0.16217163165511883,
       "delta_boombness_over_refusal": 0.027959497264913202,
       "r2_boombness_only": 0.11520078035499626,
-      "delta_refusal_over_boombness": 0.046970851300122574
+      "delta_refusal_over_boombness": 0.046970851300122574,
+      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L12_vs_d_surface|L12|proj": {
       "r2_refusal_only": 0.13421213439020563,
       "r2_both": 0.17294041799940996,
       "delta_boombness_over_refusal": 0.03872828360920433,
       "r2_boombness_only": 0.14110547945959884,
-      "delta_refusal_over_boombness": 0.03183493853981112
+      "delta_refusal_over_boombness": 0.03183493853981112,
+      "r2_refusal_joint_plus_boombness": 0.2847490777385797,
+      "delta_refusal_JOINT_over_boombness": 0.14364359827898088,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L12_vs_d_surface|L31|cos": {
       "r2_refusal_only": 0.13421213439020563,
       "r2_both": 0.1754389069967628,
       "delta_boombness_over_refusal": 0.04122677260655716,
       "r2_boombness_only": 0.1349798387044554,
-      "delta_refusal_over_boombness": 0.04045906829230739
+      "delta_refusal_over_boombness": 0.04045906829230739,
+      "r2_refusal_joint_plus_boombness": 0.26927736619369813,
+      "delta_refusal_JOINT_over_boombness": 0.13429752748924273,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "refusalness_L14_vs_asr": {
       "spearman": 0.3512696794745768,
@@ -392,21 +410,39 @@
       "r2_both": 0.17792928539838615,
       "delta_boombness_over_refusal": 0.013928361715175752,
       "r2_boombness_only": 0.11520078035499626,
-      "delta_refusal_over_boombness": 0.06272850504338989
+      "delta_refusal_over_boombness": 0.06272850504338989,
+      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L14_vs_d_surface|L12|proj": {
       "r2_refusal_only": 0.1640009236832104,
       "r2_both": 0.19410409854861777,
       "delta_boombness_over_refusal": 0.030103174865407367,
       "r2_boombness_only": 0.14110547945959884,
-      "delta_refusal_over_boombness": 0.05299861908901893
+      "delta_refusal_over_boombness": 0.05299861908901893,
+      "r2_refusal_joint_plus_boombness": 0.2847490777385797,
+      "delta_refusal_JOINT_over_boombness": 0.14364359827898088,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L14_vs_d_surface|L31|cos": {
       "r2_refusal_only": 0.1640009236832104,
       "r2_both": 0.18662588885147136,
       "delta_boombness_over_refusal": 0.022624965168260958,
       "r2_boombness_only": 0.1349798387044554,
-      "delta_refusal_over_boombness": 0.051646050147015954
+      "delta_refusal_over_boombness": 0.051646050147015954,
+      "r2_refusal_joint_plus_boombness": 0.26927736619369813,
+      "delta_refusal_JOINT_over_boombness": 0.13429752748924273,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "refusalness_L16_vs_asr": {
       "spearman": 0.36601039598416524,
@@ -417,21 +453,39 @@
       "r2_both": 0.1754897879855858,
       "delta_boombness_over_refusal": 0.04417746653544041,
       "r2_boombness_only": 0.11520078035499626,
-      "delta_refusal_over_boombness": 0.06028900763058953
+      "delta_refusal_over_boombness": 0.06028900763058953,
+      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L16_vs_d_surface|L12|proj": {
       "r2_refusal_only": 0.13131232145014538,
       "r2_both": 0.2070400001687709,
       "delta_boombness_over_refusal": 0.07572767871862551,
       "r2_boombness_only": 0.14110547945959884,
-      "delta_refusal_over_boombness": 0.06593452070917205
+      "delta_refusal_over_boombness": 0.06593452070917205,
+      "r2_refusal_joint_plus_boombness": 0.2847490777385797,
+      "delta_refusal_JOINT_over_boombness": 0.14364359827898088,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L16_vs_d_surface|L31|cos": {
       "r2_refusal_only": 0.13131232145014538,
       "r2_both": 0.19380204915853483,
       "delta_boombness_over_refusal": 0.06248972770838945,
       "r2_boombness_only": 0.1349798387044554,
-      "delta_refusal_over_boombness": 0.05882221045407943
+      "delta_refusal_over_boombness": 0.05882221045407943,
+      "r2_refusal_joint_plus_boombness": 0.26927736619369813,
+      "delta_refusal_JOINT_over_boombness": 0.13429752748924273,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "refusalness_L18_vs_asr": {
       "spearman": 0.40481731419719286,
@@ -442,21 +496,39 @@
       "r2_both": 0.20633546934199243,
       "delta_boombness_over_refusal": 0.04164137566908399,
       "r2_boombness_only": 0.11520078035499626,
-      "delta_refusal_over_boombness": 0.09113468898699617
+      "delta_refusal_over_boombness": 0.09113468898699617,
+      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L18_vs_d_surface|L12|proj": {
       "r2_refusal_only": 0.16469409367290844,
       "r2_both": 0.24029252169966064,
       "delta_boombness_over_refusal": 0.0755984280267522,
       "r2_boombness_only": 0.14110547945959884,
-      "delta_refusal_over_boombness": 0.0991870422400618
+      "delta_refusal_over_boombness": 0.0991870422400618,
+      "r2_refusal_joint_plus_boombness": 0.2847490777385797,
+      "delta_refusal_JOINT_over_boombness": 0.14364359827898088,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L18_vs_d_surface|L31|cos": {
       "r2_refusal_only": 0.16469409367290844,
       "r2_both": 0.22282783073365708,
       "delta_boombness_over_refusal": 0.05813373706074865,
       "r2_boombness_only": 0.1349798387044554,
-      "delta_refusal_over_boombness": 0.08784799202920168
+      "delta_refusal_over_boombness": 0.08784799202920168,
+      "r2_refusal_joint_plus_boombness": 0.26927736619369813,
+      "delta_refusal_JOINT_over_boombness": 0.13429752748924273,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "refusalness_L20_vs_asr": {
       "spearman": 0.4198010705414287,
@@ -467,21 +539,39 @@
       "r2_both": 0.22166849436729563,
       "delta_boombness_over_refusal": 0.04574033273067735,
       "r2_boombness_only": 0.11520078035499626,
-      "delta_refusal_over_boombness": 0.10646771401229937
+      "delta_refusal_over_boombness": 0.10646771401229937,
+      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L20_vs_d_surface|L12|proj": {
       "r2_refusal_only": 0.17592816163661829,
       "r2_both": 0.25023092828750004,
       "delta_boombness_over_refusal": 0.07430276665088176,
       "r2_boombness_only": 0.14110547945959884,
-      "delta_refusal_over_boombness": 0.1091254488279012
+      "delta_refusal_over_boombness": 0.1091254488279012,
+      "r2_refusal_joint_plus_boombness": 0.2847490777385797,
+      "delta_refusal_JOINT_over_boombness": 0.14364359827898088,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     },
     "L20_vs_d_surface|L31|cos": {
       "r2_refusal_only": 0.17592816163661829,
       "r2_both": 0.22875334286520255,
       "delta_boombness_over_refusal": 0.05282518122858426,
       "r2_boombness_only": 0.1349798387044554,
-      "delta_refusal_over_boombness": 0.09377350416074715
+      "delta_refusal_over_boombness": 0.09377350416074715,
+      "r2_refusal_joint_plus_boombness": 0.26927736619369813,
+      "delta_refusal_JOINT_over_boombness": 0.13429752748924273,
+      "n_refusal_cols_single": 1,
+      "n_refusal_cols_joint": 5,
+      "n_boombness_cols": 1,
+      "asymmetry_note": "delta_refusal_over_boombness is 1-vs-1; delta_refusal_JOINT_over_boombness is n_refusal_cols_joint-vs-1. Do not quote them as a symmetric pair."
     }
   }
 }

@@ -410,10 +410,31 @@ def main() -> int:
                           f"(Boombness adds {r2-r1:+.4f}) | {name}-only {rb:.4f} "
                           f"(this refusal layer adds {r2-rb:+.4f}; ALL refusal layers jointly add "
                           f"{add_joint:+.4f})")
+                    # PERSIST THE JOINT COMPARISON, not just the single-layer one (audit 18.8/19.7).
+                    # `add_joint` — how much ALL refusalness layers add over Boombness — was
+                    # print-only, so the numbers the §18 label actually turns on existed in a
+                    # terminal scrollback and in prose, and NOT in any artifact. That is the same
+                    # "nothing in the repo regenerates this" failure that caused RETRACTION #2,
+                    # sitting under the label itself. The asymmetry is also recorded explicitly:
+                    # `delta_refusal_over_boombness` is 1 refusal column vs 1 Boombness column,
+                    # while `add_joint` is 5 refusal columns vs 1 — those two are NOT a symmetric
+                    # pair and were once quoted as if they were.
                     med[f"L{RL}_vs_{name}"] = {"r2_refusal_only": r1, "r2_both": r2,
                                                "delta_boombness_over_refusal": r2 - r1,
                                                "r2_boombness_only": rb,
-                                               "delta_refusal_over_boombness": r2 - rb}
+                                               "delta_refusal_over_boombness": r2 - rb,
+                                               "r2_refusal_joint_plus_boombness":
+                                                   (rb + add_joint) if add_joint == add_joint else None,
+                                               "delta_refusal_JOINT_over_boombness": add_joint,
+                                               "n_refusal_cols_single": 1,
+                                               "n_refusal_cols_joint":
+                                                   (int(R_all.shape[1]) if R_all is not None else 0),
+                                               "n_boombness_cols": 1,
+                                               "asymmetry_note":
+                                                   "delta_refusal_over_boombness is 1-vs-1; "
+                                                   "delta_refusal_JOINT_over_boombness is "
+                                                   "n_refusal_cols_joint-vs-1. Do not quote them as a "
+                                                   "symmetric pair."}
             report["mediation"] = med
 
     out = args.out or os.path.join(args.judge, "g2_analysis.json")

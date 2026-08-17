@@ -296,6 +296,49 @@ overtakes `direct_harmful` as the highest condition. That is still enough to wit
    silently delivered 7,264 of 56,832 requested edges.
    control. **A guard that is never tested is not a guard.**
 
+---
+
+## Limitations and safety scope
+
+*(§13 requires this section in **every** report; the plan-coverage sweep found the short update had
+none — only the full report did. Finding 13.1.)*
+
+**Dual-use scope.** This characterises why a known jailbreak family works. It produces no operational
+harmful instructions; harmful content is benchmark material behind project abstractions and all harm
+labels are automated (StrongReject rubric via `gpt-4o-mini`). No completion text appears in this
+report, in any commit message, or in any analysis artifact. Only the local open-weight model was
+attacked — the API is used as a *judge*, never as a target.
+
+**We do NOT claim to have found the mechanism.** Against plan §13's six criteria: Boombness predicts
+ASR (**met**); adding it *increases* behaviour (**not met** — adding it *decreases* ASR by triggering
+refusal); removing it reduces ASR (**ambiguous** — indistinguishable from a norm-matched random
+perturbation, p=0.070); comprehension preserved (**not established** — see below); random controls
+fail (**partial** — a 4-draw band separates +0.25 but not −0.25); replicates across models
+(**partial** — the ~2× confound, the L31 effect and the token-level result replicate on Qwen3-14B; the
+mid-layer band does not). **Two met, three partial, one no.**
+
+**The limits a reader should carry:**
+- **One concept pair (carrot↔bomb), one judge.** Two models for the representational findings only.
+- ⚠ **The §2.6 comprehension control under intervention was missing for the whole sprint** and is
+  running now. Until it lands, "the +0.25 arm suppresses ASR by triggering refusal" does not exclude
+  "the intervention damaged the model's grasp of the mapping". `coherence_gate` checked for degenerate
+  *text*, which is weaker and different.
+- ⚠ **The position finding has an estimation-quality confound (C8):** the direction is 13× (Llama) and
+  41× (Qwen3) better *separated* at the codeword token than at the last token, so "carries more signal"
+  and "is better estimated" are not separated by this design. The L31 result is unaffected (gaps
+  converge to 1.1×).
+- **G1 is a pilot**: n=8 families from **2 domains**, and its headline is one arm of ~130 — the
+  all-layer variant of the same transplant goes the *opposite* way.
+- **G3's identification is one-sided by construction** (a layer holds only ~3,648 edges).
+- **G1/G3 run on `semantic_one_word` prompts; G2/G4's ASR claims on `behavioral` ones** — and this is
+  not merely a join hazard: it changes the **sign** of a reported effect (C7).
+- **"Refusalness at the codeword token" is off-label** — that direction was fitted for a last-token
+  readout and its condition ordering degrades badly there.
+- **Reproducibility caveat:** every run recorded `git_dirty = True`, so the recorded commit does not
+  pin the exact code that ran; model/tokenizer *revisions* were never recorded; and 53 of 68 finished
+  runs predate `bank_content_sha16`, so they cannot be tied to a bank version by artifact alone (the
+  bank was regenerated 1464 → 1752 → 2352 rows).
+
 ## Suggested next
 
 - **Do not build the GCG objective on this axis.** §12 is closed as a documented negative. If an
