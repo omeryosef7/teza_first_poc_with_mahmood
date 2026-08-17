@@ -2771,3 +2771,65 @@ the fix and not the *thing being measured*.** I checked that the last-position r
 directions (it did, freshly, at `position=last` — recorded in `summary.json`) and took that as
 evidence the readout had moved. Fitting and reading are two different positions, and only one of
 them changed.
+
+## Audit 5, part 2 — the new analysis code. **A THIRD dead guard, plus two more.**
+
+The second auditor went after everything written in the last few hours. Confirmed and fixed:
+
+### ☠ B1 — the CONTROL BAND never fired. **Third dead guard this sprint.**
+The band selected arms by `startswith("ctrl_rand_s")`, but arm names come from the **judge** dir
+basename and the real runs are tagged `ctrlband_s<seed>`. **Zero arms ever matched.** The block took
+its "<3 draws" branch every time and printed "only 0 draw(s)", while the `ctrlband_*` runs sat in
+`ctrls` looking used. Fixed to accept both prefixes **and to print the arm names it did see** when
+nothing matches, so an empty band can never again read as "the band was checked".
+
+### ☠ C2/C3 — the movability guard used a blacklist and passed vacuously
+`NULLABLE` was a *blacklist*, so every arm not named in it counted as a null control — including the
+treatment arms added the same day. On the real edgematch run the threshold came from
+**`dense_two_layer` (0.496)** instead of `topk_demo` (0.078): inflated **6.4×**, and made the
+threshold depend on the effect under test. Worse, with an empty list the threshold collapsed to
+`3 × 0.0`, so floating-point noise certified `readout_movable=True` — the same vacuous-pass shape as
+the two guards already retracted. Now a **whitelist**, and an empty whitelist yields
+`readout_movable=None` / `null_claims_interpretable=False`: movability with no null control is
+**undefined, not passing**.
+
+### ☠ F2 — `dense_two_layer` silently under-delivered by 87%
+It requested 16× the demo edges at 2 layers and **silently truncated** when the pool ran out:
+7,264 delivered of 56,832 needed. It now raises rather than quietly cutting 13% of target. My
+tick-36 write-up did state the arm saturated and called the converse test impossible by
+construction — **that reporting was correct** — but the code would have let a future run repeat it
+silently. F1: the subsample fraction was hardcoded `//16`, correct only at exactly 2 chosen layers;
+under the script's own default (4 layers) it silently produced **half** the intended edges while
+still being labelled edge-count-matched. Now computed from `num_layers / len(chosen_layers)`.
+
+### D3 — `readout_position` was recorded on every row and **read by nothing**
+This is the RETRACTION #5 bug class left live: `analyze_g2.py` joined refusalness to the
+representation on `prompt_id` with **no check that the two probes were measured at the same token**,
+so the footing mismatch could be regenerated silently forever. `analyze_g2.py` now **refuses** when
+the declared positions differ, and warns loudly when a pre-2026-08-17 run carries no position field.
+**I tested it against a case it should fail** — a fixture with the position relabelled — and it
+refused with the right message; on the legacy run it warned. Testing a guard against a failing case
+is exactly the discipline the three dead guards lacked.
+
+### A3 — the "CITE THIS ONE" permutation p was not a within-domain statistic
+It permuted within domain but computed the slope from an **intercept-only** design. Within-group
+shuffling preserves each group's mean of Y, so the between-domain component survived every draw and
+the null was not centred on zero (null mean +0.100 vs observed +0.307 — a third of the statistic was
+a fixed between-domain offset). Size stayed nominal, so nothing was falsely rejected, but power
+depends on the **sign** of the between-domain slope (0.000 in the adverse case). Now group-demeans X
+and Y first. **Re-ran: p is unchanged at 5.0e-04** (the 1/2001 resolution floor — 0 of 2000
+permutations reached the observed value), so the headline survives with the correct statistic.
+
+### B3 — the band's standard error was the SE of the band *mean*
+`sd/√k` answers "where is the average random direction", but the question is whether an arm differs
+from **one typical** random direction, which needs `sd·√(1+1/k)`. That understated direction-level
+noise by √k and made "clears the band" too easy; the cutoff was also a normal z=2 where k=3 draws
+need t(df=2)=4.30. Both fixed.
+
+### Clean on inspection
+`common.py note_bank()` (hashes content, records an explicit error on failure); the CR1 sandwich;
+the within-domain permutation *indexing*; `_paired_boot_frac` (resamples families, preserves the
+triple); `refusalness.py` `pos` definedness; `rng.permutation` usage across knockout arms.
+
+**Running:** 761457 (`--position last` rerun with the readout actually moved, plus the new per-row
+position assertion) and control-band judging (2 of 4 arms judged).

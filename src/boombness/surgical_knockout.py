@@ -95,7 +95,8 @@ def semantic_logodds(lm, ids: List[int], c_ids: Sequence[int], w_ids: Sequence[i
 
 def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
                all_positions: Sequence[int], k: int, arm: str, rng,
-               dsts_global: Sequence[int] = ()) -> Dict[int, List[Tuple[int, int]]]:
+               dsts_global: Sequence[int] = (), n_model_layers: int = 32,
+               n_chosen_layers: int = 2) -> Dict[int, List[Tuple[int, int]]]:
     """Return {layer: [(head, src), ...]} for one arm. Every arm returns exactly k edges."""
     out: Dict[int, List[Tuple[int, int]]] = {}
     demo = set(demo_positions)
@@ -129,11 +130,29 @@ def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
         #                               reach all_layers_demo's total at concentrated depth.
         #                               If this recovers ~84%, it was EDGE COUNT all along.
         if arm == "subsampled_all_layers_demo":
-            n_keep = max(1, len(cand_demo) // 16)
+            # BUG FIXED 2026-08-17 (audit F1): the 1/16 was HARDCODED and is only correct when
+            # num_layers/len(chosen_layers) == 16, i.e. exactly 2 chosen layers on a 32-layer model.
+            # Under the script's own default --layers (4 layers) it silently produced HALF the
+            # intended edges while still being labelled "edge-count-matched" — an arm whose entire
+            # purpose is the edge-count match.
+            n_keep = max(1, (len(cand_demo) * n_chosen_layers) // n_model_layers)
             out[L] = [cand_demo[i] for i in rng.permutation(len(cand_demo))[:n_keep]]
             continue
         if arm == "dense_two_layer":
-            need = 16 * len(cand_demo)
+            # BUG FIXED 2026-08-17 (audit F2). This asked for 16x the demo edges at the chosen
+            # layers and SILENTLY TRUNCATED when the pool ran out — on the real run it delivered
+            # 7,264 of a needed 56,832 (87% short) while still being reported as the layer-matched
+            # dense arm. Two layers physically cannot hold 32 layers' worth of edges, so the arm is
+            # INFEASIBLE at this layer count and must say so rather than quietly under-deliver:
+            # an 8x-short arm licenses no conclusion about the edge-count-vs-depth tie.
+            need = (n_model_layers // max(n_chosen_layers, 1)) * len(cand_demo)
+            avail = len(cand_demo) + len(cand_non)
+            if need > avail:
+                raise ValueError(
+                    f"dense_two_layer INFEASIBLE at layer {L}: needs {need} edges but only {avail} "
+                    f"exist there ({len(cand_demo)} demo + {len(cand_non)} non-demo). Two layers "
+                    f"cannot match an all-layer cut's edge count; widen --layers for this arm "
+                    f"instead of silently cutting {100*avail/need:.0f}% of the target.")
             extra = [cand_non[i] for i in rng.permutation(len(cand_non))[:max(0, need - len(cand_demo))]]
             out[L] = cand_demo + extra
             continue
@@ -315,7 +334,8 @@ def main() -> int:
                 # (for the subsampled arm the edges are drawn at random, so also irrelevant).
                 dom_arm = {L: dom["D_dir"][layers[0]] for L in arm_layers}
             edges = pick_edges(dom_arm, demo_pos, list(range(len(ids))),
-                               args.topk, arm, rng, dsts_global=dsts)
+                               args.topk, arm, rng, dsts_global=dsts,
+                               n_model_layers=lm.num_layers, n_chosen_layers=len(layers))
             n_cut = sum(len(v) for v in edges.values())
             if n_cut == 0:
                 ledger.fail(f"arm_{arm}:no_edges", row["prompt_id"])

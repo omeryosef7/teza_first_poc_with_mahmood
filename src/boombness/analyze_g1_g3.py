@@ -189,17 +189,34 @@ def g3(run: str, readout: str = "semantic_logodds") -> Dict:
     # is the deletion CEILING the percentages are taken as a fraction OF, not an arm awaiting
     # validation — so `dynamic_range_established=False` here must NOT be read as "G3 is invalid".
     # Movability is established, overwhelmingly, by no_demo_text itself.
-    NULLABLE = {"none", "positive_control", "no_demo_text", "all_layers_demo", "all_demo"}
+    # BUG FIXED 2026-08-17 (audit C2/C3). This was a BLACKLIST, so every arm not named in it counted
+    # as a "null control" — including the treatment arms `dense_two_layer` and
+    # `subsampled_all_layers_demo` added the same day. On the real edgematch run that set the
+    # threshold from `dense_two_layer` (0.496) instead of `topk_demo` (0.078), inflating it 6.4x and
+    # making it depend on the very effect under test. And when the list came back EMPTY the
+    # threshold collapsed to `3 * 0.0`, so floating-point noise certified the readout as movable —
+    # the same vacuous-pass shape as the two dead guards already retracted. Whitelist now, and an
+    # empty whitelist is UNDEFINED rather than automatically passing.
+    NULL_CTRLS = ("topk_demo", "bottomk_demo", "random_demo", "random_nondemo", "same_head_random")
     null_ctrls = [abs(v["delta_mean"]) for k, v in out["arms"].items()
-                  if k not in NULLABLE and math.isfinite(v.get("delta_mean", float("nan")))]
-    biggest_null_ctrl = max(null_ctrls) if null_ctrls else float("nan")
-    movers = [(k, v["delta_mean"]) for k, v in out["arms"].items()
-              if k not in ("none",) and math.isfinite(v.get("delta_mean", float("nan")))
-              and abs(v["delta_mean"]) > 3 * (biggest_null_ctrl if null_ctrls else 0.0)]
-    out["readout_movable"] = bool(movers)
-    out["readout_movable_by"] = sorted(k for k, _ in movers)
-    out["largest_null_control_abs"] = biggest_null_ctrl
-    out["null_claims_interpretable"] = out["readout_movable"]
+                  if k in NULL_CTRLS and math.isfinite(v.get("delta_mean", float("nan")))]
+    if not null_ctrls:
+        out["readout_movable"] = None
+        out["readout_movable_by"] = []
+        out["largest_null_control_abs"] = None
+        out["null_claims_interpretable"] = False
+        out["movability_note"] = ("no null-control arm present, so movability is UNDEFINED — "
+                                  "not passing. A null in any arm is uninterpretable here.")
+    else:
+        biggest_null_ctrl = max(null_ctrls)
+        movers = [(k, v["delta_mean"]) for k, v in out["arms"].items()
+                  if k not in ("none",) + NULL_CTRLS
+                  and math.isfinite(v.get("delta_mean", float("nan")))
+                  and abs(v["delta_mean"]) > 3 * biggest_null_ctrl]
+        out["readout_movable"] = bool(movers)
+        out["readout_movable_by"] = sorted(k for k, _ in movers)
+        out["largest_null_control_abs"] = biggest_null_ctrl
+        out["null_claims_interpretable"] = out["readout_movable"]
 
     # EDGE-COUNT CONFOUND (audit B4a). `all_demo` and `all_layers_demo` cut the SAME per-layer edge
     # set; the only difference is the layer set, so edge count and layer spread move together by

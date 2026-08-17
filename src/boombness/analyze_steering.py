@@ -186,7 +186,17 @@ def main() -> int:
     # random/orthogonal same-draw finding. Arms named `ctrl_rand_s<seed>` are independent draws of
     # the SAME control condition, so the honest comparator is the BETWEEN-DRAW spread, not one
     # draw's prompt-level SEM. A steering arm has to clear the band, not the point.
-    band = [r for r in rows if r["arm"].startswith("ctrl_rand_s")]
+    # BUG FIXED 2026-08-17 (audit B1). This selected `ctrl_rand_s*`, but arm names come from the
+    # JUDGE dir basename and the real runs are tagged `ctrlband_s<seed>`. ZERO arms ever matched and
+    # the band silently reported "0 draws" while the `ctrlband_*` runs sat in `ctrls` looking used.
+    # That is the THIRD guard this sprint that never executed. A guard that cannot fire is worse
+    # than no guard, because it reads as a check that passed.
+    BAND_PREFIXES = ("ctrl_rand_s", "ctrlband_s")
+    band = [r for r in rows if r["arm"].startswith(BAND_PREFIXES)]
+    if not band:
+        print(f"\n[steer] control band: NO arms matched {BAND_PREFIXES}. Arms present: "
+              f"{[r['arm'] for r in rows]}. If you passed band draws, their names do not match — "
+              f"do not read the absence of a band as 'the band was checked'.")
     if len(band) >= 3:
         ds_ = [r["paired_delta_mean"] for r in band]
         k = len(ds_)
@@ -203,14 +213,26 @@ def main() -> int:
             if not r["arm"].startswith("steer"):
                 continue
             diff = r["paired_delta_mean"] - bm
-            # combine the steering arm's prompt-level SEM with the band's between-draw SEM
-            se = math.sqrt(r["paired_delta_sem"] ** 2 + bse ** 2)
+            # PREDICTIVE spread, not the SE of the band mean (audit B3). The question is whether the
+            # arm differs from ONE typical random direction, so the relevant scale is
+            # sd*sqrt(1+1/k), not sd/sqrt(k) — the latter understates direction-level noise by
+            # sqrt(k) and makes "clears the band" far too easy. And with k draws the cutoff is a
+            # t quantile with df=k-1 (4.30 at k=3), not the normal 1.96.
+            se = math.sqrt(r["paired_delta_sem"] ** 2 + (bsd ** 2) * (1.0 + 1.0 / k))
             z = diff / se if se else float("nan")
-            verdict = ("clears the band" if abs(z) >= 2 else
+            try:
+                from scipy import stats as _sst
+                p_band = 2 * _sst.t.sf(abs(z), df=max(k - 1, 1))
+            except Exception:
+                p_band = float("nan")
+            clears = math.isfinite(p_band) and p_band < 0.05
+            verdict = ("clears the band" if clears else
                        "DOES NOT clear the band — indistinguishable from a random direction")
-            print(f"  {r['arm']:24s} vs band: {diff:>+.4f} ± {se:.4f}  z={z:>+5.1f}   {verdict}")
-            report_band["vs_steering"][r["arm"]] = {"diff": diff, "se": se, "z": z,
-                                                    "clears_band": bool(abs(z) >= 2)}
+            print(f"  {r['arm']:24s} vs band: {diff:>+.4f} ± {se:.4f}  t={z:>+5.1f} "
+                  f"(df={max(k-1,1)}, p={p_band:.3f})   {verdict}")
+            report_band["vs_steering"][r["arm"]] = {"diff": diff, "se": se, "t": z,
+                                                    "p": p_band, "df": max(k - 1, 1),
+                                                    "clears_band": bool(clears)}
     else:
         report_band = {"n_draws": len(band),
                        "note": "fewer than 3 independent control draws; between-draw variance "

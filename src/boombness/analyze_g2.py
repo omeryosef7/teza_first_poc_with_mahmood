@@ -85,6 +85,9 @@ def main() -> int:
                          "(audit B1b); empty string disables")
     ap.add_argument("--headline-predictor", default="d_surface|L12|proj",
                     help="the predictor the write-up quotes; clustered inference is run on it")
+    ap.add_argument("--extract-position", default="codeword_last",
+                    help="token position the EXTRACT run read at; refusalness must match it "
+                         "(audit D3 / RETRACTION #5)")
     ap.add_argument("--min-examples", type=int, default=1,
                     help="drop n_examples<this; 0-demo prompts establish no mapping and are not "
                          "doublespeak prompts (audit finding 3)")
@@ -255,17 +258,32 @@ def main() -> int:
             se_cl = math.sqrt(max(V[1, 1], 0.0))
             t_cl = beta[1] / se_cl if se_cl else float("nan")
             p_cl = 2 * _st.t.sf(abs(t_cl), df=max(Gn - 1, 1))
-            # within-domain permutation
+            # WITHIN-DOMAIN permutation, on the GROUP-DEMEANED slope (audit A3).
+            # The previous statistic was the total slope from an intercept-only design. Shuffling
+            # within a group preserves that group's mean of Y exactly, so the BETWEEN-domain
+            # component survived every permutation draw and the null was not centred on zero
+            # (null mean +0.100 against an observed +0.307 — a third of the statistic was a fixed
+            # between-domain offset). Size stayed nominal so nothing was falsely rejected, but the
+            # quantity was not the one the label "within-domain" promised, and its power depends on
+            # the SIGN of the between-domain slope (0.000 in the adverse case). Demeaning X and Y
+            # within domain makes the statistic actually within-domain.
+            Xw, Yw = X.copy(), Y.copy()
+            for g in groups:
+                gi = [i for i in range(n) if G[i] == g]
+                Xw[gi] = Xw[gi] - Xw[gi].mean()
+                Yw[gi] = Yw[gi] - Yw[gi].mean()
+            Aw = _np.column_stack([_np.ones(n), Xw])
+            bw, *_ = _np.linalg.lstsq(Aw, Yw, rcond=None)
             rng = _np.random.default_rng(20260817)
-            obs = abs(beta[1])
+            obs = abs(bw[1])
             cnt = 0
             NPERM = 2000
             byg = {g: [i for i in range(n) if G[i] == g] for g in groups}
             for _ in range(NPERM):
-                Yp = Y.copy()
+                Yp = Yw.copy()
                 for g, idx in byg.items():
-                    Yp[idx] = Y[rng.permutation(idx)]
-                bp, *_ = _np.linalg.lstsq(A, Yp, rcond=None)
+                    Yp[idx] = Yw[rng.permutation(idx)]
+                bp, *_ = _np.linalg.lstsq(Aw, Yp, rcond=None)
                 if abs(bp[1]) >= obs:
                     cnt += 1
             p_perm = (cnt + 1) / (NPERM + 1)
@@ -279,6 +297,7 @@ def main() -> int:
             report["clustered_inference"] = {
                 "predictor": headline, "cluster_by": args.cluster_by, "n": n, "n_clusters": Gn,
                 "rho": r_naive, "p_iid": p_naive, "p_cr1": p_cl, "p_within_domain_perm": p_perm,
+                "within_domain_slope": float(bw[1]), "total_slope": float(beta[1]),
                 "n_perm": NPERM}
             per = {}
             for g in groups:
@@ -308,6 +327,29 @@ def main() -> int:
         refus = {r["prompt_id"]: r for r in R if r["prompt_id"] in asr}
         rk = [p for p in kept if p in refus]
         print(f"\n[G2] refusalness joined on prompt_id for {len(rk)}/{len(kept)} analysed prompts")
+        # POSITION-MATCH ASSERTION (audit D3, 2026-08-17). RETRACTION #5 happened because
+        # `d_surface` was read at `codeword_last` while refusalness was read at the last prompt
+        # token, and NOTHING in the join checked. `refusalness.py` records `readout_position` on
+        # every row and no script has ever read it. A comparison of two probes at two different
+        # tokens is not a comparison, so this now refuses rather than warns.
+        rpos = {r.get("readout_position") for r in R if r.get("prompt_id") in asr}
+        epos = args.extract_position
+        if rpos - {None}:
+            if len(rpos - {None}) > 1:
+                raise SystemExit(f"[G2] refusalness rows mix readout positions {rpos} — "
+                                 f"a single run must use one position")
+            rp = (rpos - {None}).pop()
+            if rp != epos:
+                raise SystemExit(
+                    f"[G2] REFUSING: refusalness was read at '{rp}' but the representation at "
+                    f"'{epos}'. Comparing them is the footing mismatch that caused RETRACTION #5. "
+                    f"Re-run refusalness.py with --position {epos}, or pass "
+                    f"--extract-position {rp} if that is genuinely what you want to compare.")
+            print(f"[G2] position match OK: both probes read at '{rp}'")
+        else:
+            print("[G2] WARNING: refusalness rows carry no `readout_position` field (pre-2026-08-17 "
+                  "run) — the position match CANNOT be verified. Treat any Boombness-vs-refusalness "
+                  "ratio from this run as unfooted.")
         if rk:
             import numpy as np
             from sklearn.linear_model import LinearRegression
