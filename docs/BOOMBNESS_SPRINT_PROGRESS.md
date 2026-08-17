@@ -3272,3 +3272,38 @@ subtoken ids) with the reason it mattered — an earlier bank produced 890/5808 
 which puts the embedding of `rot` rather than `carrot` at the readout position — and **exact
 reproduction commands** for every main run, including the three refusals that are load-bearing and will
 stop a reader with wrong inputs.
+
+## §14 SECOND-MODEL REPLICATION — launched on Qwen3-14B (plan requirement, not a nice-to-have)
+
+§14 asks for replication on "one additional open-weight chat model if available". I had been carrying
+this as a *suggested next step*, which was wrong — it is in the plan, and one of the six §13 criteria
+for claiming a mechanism is **"replicates across prompt families or models"**, which I scored **NO**
+partly because of this gap.
+
+**Scope, and why it is partial by necessity.** Refusal directions exist in this repo **only for
+Llama** (`refusal_direction_llama_L*.pt`), so the refusalness half of the position 2×2 cannot be
+replicated without first fitting refusal directions for Qwen3. What *can* be replicated — and is the
+part that is actually ours — is:
+1. **G2**: does `d_surface` predict ASR on a second model?
+2. **The position effect for `d_surface`**: is the codeword-token localization model-specific?
+
+**The mandatory §2.4 gate first, before any GPU spend.** The bank's targets must be single-token on
+the new tokenizer or every per-token comparison is measuring a different vector. Checked:
+
+| model | ` carrot` | ` bomb` | bare `carrot` |
+|---|---|---|---|
+| Llama-3.1-8B | **1 tok** | **1 tok** | 2 tok (`car`+`rot`) |
+| **Qwen3-14B** | **1 tok** | **1 tok** | 2 tok (`car`+`rot`) |
+| Phi-4-mini-reasoning | 1 tok | 1 tok | 2 tok |
+
+Full audit on Qwen3: **2352 ok, 0 bad, 0 ambiguous, 0 token-alignment violations** across the same 216
+checkable families. The leading-space form the bank was regenerated to guarantee transfers to Qwen3
+unchanged — so the bank is reusable and the comparison is legitimate. (Had bare `carrot` been the
+form, this would have failed on all three models.)
+
+**Launched:** 761816 (extract @codeword_last), 761817 (extract @last), 761818 (behavioural generation).
+Judge follows. Prediction stated in advance so it cannot be fitted afterwards: if the position effect
+is a real property of how these models handle a demonstrated codeword, `d_surface` should again be
+markedly more ASR-predictive at the codeword token than at the final prompt token. If it is
+Llama-specific, that is a limit on the sprint's one surviving positive finding and will be reported as
+such.
