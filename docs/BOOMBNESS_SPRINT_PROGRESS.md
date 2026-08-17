@@ -4228,3 +4228,43 @@ suggestive, not causal.)
 **Judge test–retest was never measured anywhere in this sprint** — no two judge runs point at the same gens
 dir, and gpt-4o-mini at temp 0 is not deterministic, so judge noise is a free parameter in every delta
 reported. A re-judge of the baseline gens is running now.
+
+## The mechanism cut, done on a PRE-treatment stratifier — and it resolves the puzzle
+
+The audit's best find was to stop conditioning on `refused`, which is perfectly coupled to the score. But
+its cut conditioned on whether the **treated** arm refused — that is **post-treatment, i.e. a collider**.
+The clean version stratifies on whether the **baseline** refused, which is fixed before any intervention:
+
+| arm | ASR among the **250 never refused at baseline** | Δ vs baseline | t_cl | p_cl |
+|---|---|---|---|---|
+| baseline | 0.236 | — | — | — |
+| +0.25 add Boombness | 0.088 | **−0.124** | −5.77 | **0.0022** |
+| arm B — remove Boombness | 0.324 | +0.080 | +1.85 | 0.123 |
+| arm C — remove refusalness | 0.236 | −0.019 | −1.06 | 0.337 |
+| **arm F — both** | **0.508** | **+0.262** | +6.69 | **0.0011** |
+
+**Every verdict survives on the clean stratum**, including the two withdrawals: arm B remains p=0.123, arm C
+remains null, and **the interaction holds at +0.262, p=0.0011**.
+
+### And it resolves what looked like a contradiction
+On these 250 prompts the model **never refused at baseline**, so "refusal was masking a Boombness effect"
+looks impossible — there was no refusal to mask. The resolution is that the masking is **induced by the
+treatment, not present at baseline**:
+
+1. adding Boombness **creates** refusal where there was none (refusal 0.074 → **0.696** overall);
+2. that induced refusal is what drives ASR down (0.236 → 0.088 on this stratum);
+3. projecting out the refusal direction removes the *capacity* to refuse, so the same addition instead
+   raises ASR to **0.508**.
+
+So the two-channel reading is not "refusal was already suppressing Boombness"; it is **"adding Boombness
+trips a refusal that would not otherwise have fired, and that trip is what hides its effect on the
+output."** That is a sharper and more falsifiable statement than the one I wrote earlier, and it is now
+identified on a stratum where refusal plays no baseline role at all.
+
+⚠ **Still not sufficient for the mechanism claim.** The composed dose control (`len_Fctrl`) is the test that
+separates this from "two simultaneous perturbations break termination", and it is running. The 20
+baseline-refused prompts behave as the power analysis predicts (arm C 0.100, arm F 0.050 — tiny, noisy),
+which is consistent with claim 2's withdrawal.
+
+**Status:** `len_base` and `len_C` complete at 512 tokens; `len_F` 668/960, `len_A` 451/960,
+`len_Fctrl` 188/960, `projctrl` 397/960, judge re-test 434/960.
