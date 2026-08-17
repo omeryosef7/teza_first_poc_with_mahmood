@@ -3,10 +3,11 @@
 **Author:** Omer · **Date:** 2026-08-17 · **Branch:** `behavioral-causality-sprint`
 **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md` (20 sections)
 **Execution log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` (phase board, gate table, 5 retractions, 5 corrections, 5 audits)
-**Summary for collaborators:** `reports/boombness_objective_sprint_short_update.md` (revision 4)
+**Summary for collaborators:** `reports/boombness_objective_sprint_short_update.md` (revision 5)
+**Status:** every claim below re-derived by an independent verifier; the 15 gaps it found are fixed and marked ⚠.
 
 **Model:** `meta-llama/Llama-3.1-8B-Instruct`, bfloat16. **Concept pair:** carrot ↔ bomb.
-**Bank:** 2352 prompts, 240 matched 2×2 families, content sha `71bea179345ed118`.
+**Bank:** 2352 prompts, 912 families (240 matched 2×2), content sha `71bea179345ed118`.
 **Judge:** StrongReject rubric via `gpt-4o-mini`, threshold 0.5, continuous score always persisted.
 
 ---
@@ -23,8 +24,8 @@ requires — returned a directional null, and the plan made §12 explicitly cond
 
 | gate | question | verdict |
 |---|---|---|
-| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** Transplanting demo states moves the semantic readout +84% of span, CI [+57%, +105%]; transplanting the query codeword moves it the *wrong way*. |
-| **G2** (§9) | Does Boombness predict attack success? | **Yes, modestly.** ρ = +0.307 at L12, +0.302 norm-partialled, n=234, 6/6 domains positive (two near-null), **p = 5.0e-04** (within-domain permutation). |
+| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The **single-layer L18** demo transplant moves the semantic readout +84% of span, CI [+57%, +105%] (n=8 families, **2 domains**); the query-codeword transplant moves it the *wrong way*. ⚠ One arm of ~130 — the all-layer variant goes the wrong way too (−0.76). |
+| **G2** (§9) | Does Boombness predict attack success? | **Yes, modestly.** ρ = +0.307 at L12, +0.302 norm-partialled, n=234, 6/6 domains positive (two essentially null), **p < 5e-4** (within-domain permutation, at its resolution floor). |
 | **G3** (§10) | Can it be removed surgically? | **No — it is massively redundant.** Cutting 6.25% of demo→query edges does nothing *however distributed*; cutting 100% recovers 84% of the deletion ceiling. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR, so ASR does not follow the axis. Only `+0.25` exceeds a 4-draw random-control band, and it does so by **triggering refusal**. |
 | **FINAL** (§18) | outcome label | **B — mechanistic but not causal.** |
@@ -68,14 +69,22 @@ d_naive   = B−A = d_surface + d_context
 | `d_naive` | +0.043 | +0.048 | +0.037 | −0.006 | −0.016 | −0.005 | +0.094 |
 | p_clustered | 0.000 | 0.003 | 0.001 | 0.437 | 0.074 | 0.623 | 0.000 |
 
-The naive direction **roughly doubles** the effect where both agree (1.75–2.4× at L4/L8/L12/L31),
-and at **L16–L24 it washes out a real negative displacement** that the identified direction detects.
-Both rows come from the committed `reanalyze_corrected.py`.
+The naive direction **roughly doubles** the effect where both agree (1.75–2.4× at L4/L8/L12/L31).
 
-**Bank integrity:** 240 matched families, all target occurrences single-token in both arms,
-**0 alignment violations among the 216 families where the exact-swap invariant is defined** (696
-forced-choice families cannot satisfy it by construction — the numerator is meaningless without that
-denominator).
+⚠ **The mid-layer half of this claim is weaker than it looks, and both weakenings came from the final
+verifier.** (a) The naive p range is **0.074–0.62**, not 0.22–0.62 — at L20 the naive direction is
+*also* marginally negative. (b) More seriously, **the L16–L24 negative band does not exist in the
+behavioural prompts**, the population every ASR claim lives on: split by query kind those layers read
+**+0.003 / −0.004 / +0.015 (all n.s.)** for `behavioral` versus ≈−0.035 for `comprehension_usage` and
+≈−0.045 for `semantic_one_word`. And `reanalyze_corrected.py`'s own `holm_rejected` field is **True
+only at L4 and L31**. So the defensible claim is that the naive direction inflates ~2× where both
+agree; the mid-band attenuation is a semantic/comprehension-prompt effect that does not survive
+multiplicity correction.
+
+**Bank integrity:** **912 families** total, of which 240 are the matched 2×2 set; all target
+occurrences single-token in both arms; **0 alignment violations among the 216 families where the
+exact-swap invariant is defined** — the other 696 are forced-choice and cannot satisfy an exact swap
+by construction. (Three different denominators, so all three are stated.)
 
 ---
 
@@ -97,6 +106,13 @@ baseline and ceiling were independent when they correlate +0.63 within family. A
 interval of "+23% to +135%" was a **chimera** (one arm's lower bound welded to another's) and is
 withdrawn.
 
+⚠ **Arm-selection exposure.** +84% is **one arm of ~130** in this pilot, and the result is not uniform
+across windows: in the *same* context pair, `transplant|demos_only|**all**` moves the readout strongly
+the **wrong way** (−0.76, CI [−1.49, −0.21]). "Transplanting the demonstrations moves the meaning
++84%" is a statement about the **single-layer L18 window**, not about demonstration transplants in
+general. The direction of G1 (demonstrations, not the codeword) is robust; the magnitude is
+window-specific.
+
 ### G3: the retrieval is attention-carried and massively redundant — and the redundancy is in the EDGE SET, not depth
 6 families, semantic readout, `--dst both --demo-scope block`:
 
@@ -105,8 +121,14 @@ withdrawn.
 | `no_demo_text` (delete the demos) | — | — | −11.509 | 100% (definition) |
 | `all_layers_demo` | 56,832 | 32 | −9.708 | **84%**, CI [62%, 110%] |
 | `all_demo` | 3,552 | 2 | −0.008 | **0.07%**, CI [−6.7%, +8.2%] |
-| **`subsampled_all_layers_demo`** | **3,552** | **32** | **+0.089** | ≈0 |
+| **`subsampled_all_layers_demo`** | **3,552** | **32** | **+0.089** | **−0.77%**, CI [−3.1%, +2.0%] |
 | top-k / bottom-k / random / non-demo / same-head | 16 | 2 | ≈0 | ≈0 |
+
+⚠ **Units and signs differ between the last two columns** — the percentages are fractions of the
+deletion ceiling (which is itself negative), so a **positive** raw Δ maps to a **negative** percentage.
+`subsampled_all_layers_demo`'s +0.089 log-odds is −0.77% of span, not +0.089%. The two matched arms
+bound the null at roughly **±8% of the ceiling** (CIs [−3.1%,+2.0%] and [−6.7%,+8.2%]), which is worth
+stating so the matched null is not read as tighter than it is.
 
 **The matched arm is the decisive one and it corrected my own claim.** I first read the 84%-vs-0.07%
 contrast as *depth* distribution. But the 32-layer arm also cuts **16× more edges**, so the
@@ -125,7 +147,16 @@ and layer spread cannot be decoupled upward. `dense_two_layer` attempted it and 
 **Movability, restated:** the dynamic-range guard now compares on magnitude against a whitelist of
 true null controls (largest 0.078). `readout_movable = True` via `no_demo_text` (−11.5), so nulls here
 are interpretable. The separate `dynamic_range_established=False` reflects that the positive control
-(+3.53) does not dominate `no_demo_text`, and must **not** be read as "G3 invalid".
+does not dominate `no_demo_text`, and must **not** be read as "G3 invalid".
+
+⚠ **The "positive control" does not behave like one, and the name should probably go.** It is
+**+3.534** in `g3_dstfix`/`g3_edgematch` but **−1.135** in `g3_dynrange` — it changes **sign** between
+two runs of the same design — and it recovers roughly **−31%** of the deletion span, i.e. it moves
+*opposite* to the effect it is meant to bracket. Anyone opening those artifacts will also find
+`dynamic_range_established: false` and `edge_count_confound.identified: false`; both are definitional
+(the first compares against the deletion ceiling rather than an arm, the second predates the matched
+arm being added) but neither is self-explanatory in the file. Do not cite the positive control as
+validating anything until its intended direction is pinned down.
 
 ### §7: semantics move far more than the representation
 The model's *reported meaning* of the codeword travels **59%** of the way from literal to direct
@@ -137,7 +168,9 @@ moves a few percent. Domain-clustered t (13.5) ≈ naive t (13.3); bootstrap CI 
 ## 3. Does Boombness predict attack success? (§9) — G2
 
 **ρ = +0.307** for `d_surface|L12|proj`, **+0.302** after partialling out the residual-stream norm,
-n = 234 (`n_examples ≥ 1`), 100% prompt coverage.
+n = 234. "100% coverage" means all 270 judged doublespeak rows had a representation row — it does not
+mean nothing was dropped: 36 zero-demo prompts are excluded on principle (no demonstrations ⇒ no
+codeword mapping), leaving 234.
 
 **Inference, corrected.** The 234 prompts are 6 domains × 39 and the predictor is strongly clustered
 by domain (ICC ≈ 0.45). The i.i.d. p originally reported was overstated by ~3.5 orders of magnitude:
@@ -146,7 +179,7 @@ by domain (ICC ≈ 0.45). The i.i.d. p originally reported was overstated by ~3.
 |---|---|
 | i.i.d. (withdrawn) | 1.7e-06 |
 | CR1 domain-clustered (G=6, few clusters — indicative) | 1.2e-03 |
-| **within-domain permutation, group-demeaned — cite this** | **5.0e-04** |
+| **within-domain permutation, group-demeaned — cite this** | **< 5e-4** (resolution floor: 0 of 2000 draws reached the observed value) |
 
 Per-domain: **6 of 6 positive**, but two are essentially null (`lab_safety` +0.020, `news_report`
 +0.062), so "positive in 6/6" reads more uniform than the data is.
@@ -156,13 +189,15 @@ On the 234-prompt population:
 
 | | refusalness (L18) | ASR | refusal rate |
 |---|---|---|---|
-| direct harmful request | **+7.30** | 0.042 | 96% |
-| doublespeak | **+0.04** | **0.219** | 0.9% |
-| mapping stated outright | +0.10 | 0.375 | 0% |
+| direct harmful request | **+7.06** | 0.050 | 95.0% |
+| doublespeak | **−0.15** | **0.214** | 0.85% |
+| mapping stated outright | +0.01 | 0.375 | 0% |
+| benign literal | −0.30 | 0.031 | 1.85% |
 
-To the refusal direction a doublespeak prompt looks **benign** while the matched direct request sits
-at +7.30. (Both figures are on the `n_examples ≥ 1` population; quoting 0.583/7.4% mixes in 36
-zero-demo rows that are all ASR=1.0 and carried the entire gap.)
+To the refusal direction a doublespeak prompt looks **benign** — it sits at −0.15, next to
+`benign_literal`'s −0.30 and **7.2 units below** the matched direct request. Every figure above is on
+the `n_examples ≥ 1` population; an earlier draft mixed the all-rows numbers in and had the
+doublespeak cell at **+0.04**, i.e. the wrong sign.
 
 ### ⛔ The "Boombness beats refusalness 3.7×" claim is retracted
 It compared `d_surface`@`codeword_last` against refusalness@last-token — different tokens. Rebuilt as
@@ -176,6 +211,20 @@ a freedom-matched 2×2 (columns available at **both** positions: 20 for `d_surfa
 
 **Neither probe dominates** — which wins depends on where you read, and both domain-clustered CIs
 straddle 1.0. The 3.7× was the most favourable of four possible cross-position pairings.
+
+⚠ **Two things about the freedom in that table.** (a) It is matched *within* each probe across
+positions but **not between probes**: `d_surface` draws its best column from 20 candidates,
+refusalness from 10, and both are max-of-k statistics, so the ratios are biased **toward Boombness**.
+Re-selecting the column inside each bootstrap resample gives [0.82, 2.88] and [0.40, 1.12] — same
+conclusion, wider. (b) On **incremental** R² at matched footing, refusalness wins at both positions:
+
+| | Boombness adds over refusalness | refusalness adds over Boombness |
+|---|---|---|
+| @ codeword_last | +0.028 | **+0.144** |
+| @ last token | +0.025 | **+0.091** |
+
+An earlier draft quoted +0.104 / +0.039 here; those came from the mixed-footing artifact and pointed
+the other way.
 
 **What replaces it is a position finding:** both probes are 2–4× more predictive of ASR at the
 **codeword token** than at the final prompt token — a larger factor than any difference between the
@@ -223,6 +272,11 @@ So: **adding concept-ness to the codeword triggers refusal; removing it just dam
 any other perturbation of that size.** "Pure disturbance" is too strong, and so is "axis-magnitude
 effect at both signs" — only the positive sign exceeds a norm-matched perturbation.
 
+⚠ **Coherence caveat on the arm carrying the only positive G4 result.** All five arms pass the gate,
+but `coherence_gate` skips generations under 8 words, and the +0.25 arm — refusal rate 0.696 — had
+**68 of its 270** doublespeak generations (25%) excluded on that basis, so `coherent: true` was
+computed on n=202. Baseline dropped 0; the others 0–1. The gate is weakest exactly where it matters.
+
 **A near-miss worth recording:** an arm at α=1 showed ASR 0.219 → 0.759 and was an **artifact** — the
 intervention broke generation (55% of trigrams repeated, 100% truncated) and the judge scored the
 degenerate loop as harmful. It was caught by the coherence gate only after being written down. **The
@@ -245,12 +299,14 @@ Six role styles with demonstration content, domain, demo count and final query h
 | plain | −0.2909 | 0.195 |
 | user_like | −0.2888 | **0.233** |
 
-**Boombness is flat, and it is a tight null:** `role → Boombness(L12)` **F = 0.175, p = 0.972**, with
-the style-mean spread at **3.6%** of the within-style sd. The design has the resolution to say so.
+**Boombness is flat, and it is a tight null:** `role → Boombness` gives **F = 0.175, p = 0.972** at
+L12, and **p = 0.60 (L8) / 0.75 (L31)** — so the null holds across all three tested layers, not just
+the most favourable one. The **sd of the six style means** is 3.6% of the pooled within-style sd (the
+*range* is 9.3% — "spread" should not be read as range). The design has the resolution to say so.
 
-**The ASR half is not established:** `role → ASR` F = 1.94, **p = 0.087**; the largest pair
-(0.035 vs 0.233, a 6.6× ratio) is MW p = 0.007 uncorrected ≈ **0.105 Bonferroni** over 15
-comparisons. So §11's answer is **(c)-leaning** — role definitively does not change Boombness, and
+**The ASR half is suggestive but not established:** `role → ASR` F = 1.94, **p = 0.087** on an
+unbalanced omnibus (`plain` n=204 vs 36 each); the largest pair (0.035 vs 0.233, a 6.6× ratio) is
+MW p = 0.007 uncorrected ≈ **0.105 Bonferroni** over 15 comparisons. So §11's answer is **(c)-leaning** — role definitively does not change Boombness, and
 whether it changes ASR is unresolved at this n. (I predicted (b) before the powered run; the data
 did not support it.)
 
@@ -276,6 +332,14 @@ readout of the quantity accumulating mid-stack — independently consistent with
 This also gives the retracted "two humps" observation a proper account: two bands of **opposite
 sign** responding differently to dose. The mid band is not null; it is negative *and* dose-dependent.
 
+⚠ **This table is POOLED over three query kinds, and the mid-layer band is not a behavioural-prompt
+effect** (correction C7). Split out, L16/L20/L24 read **+0.003 / −0.004 / +0.015 (all n.s.)** for
+`behavioral` versus ≈−0.035 for `comprehension_usage` and ≈−0.045 for `semantic_one_word`. For the
+behavioural prompts — the population all ASR claims live on — the picture is simpler: **early positive
+band (L8 +0.048 t=+2.1, L12 +0.036 t=+2.2), no mid-layer band, and a large L31 effect (+0.133,
+t=+9.8)**. The pooled negative band also fails the artifact's own Holm correction, which rejects only
+L4 and L31.
+
 **Scale caveat:** these are cosines in the 0.01–0.05 range. The sign structure and the dose response
 are the findings; the magnitudes are small.
 
@@ -297,9 +361,15 @@ near chance. `d3_hard_negative` is affected too: its C-vs-E test set is also car
 | 12 | 0.982 | 0.571 | 0.985 | 0.408 |
 | 31 | 0.983 | 0.657 | 0.979 | 0.594 |
 
+⚠ **"Shuffled controls at chance" is too clean a description.** Per layer they span **0.354–0.657**
+(d5) and **0.350–0.716** (d6); the *means* are ≈0.52 but the scatter is ±0.2 at n=432. The lift over
+shuffle is large and the conclusion holds — the description does not.
+
 A length/position confound was suspected (A/E average 137.9 tokens vs 129.6 for B/C, tracking
-context) and **refuted**: `seq_len` alone gives AUROC 0.472 and `token_pos` alone 0.473, and the
-per-family direction is inconsistent (42/72).
+context) and **refuted**: on the full cell populations `seq_len` alone gives AUROC **0.430** (d5) /
+0.437 (d6) and `token_pos` **0.454** / 0.475 — chance-level, though `seq_len` is a little further from
+0.5 than the "~0.47" quoted earlier, in the unhelpful direction. The per-family direction is also
+inconsistent (A's codeword is later in only 42/72 families).
 
 **What they establish:** with surface held constant, the codeword token carries strong information
 about which context preceded it — a probe-side confirmation of G1's retrieval story.
