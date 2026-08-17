@@ -39,9 +39,9 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P5.3 | §9 | Prompt-level Boombness | DONE | `analyze_g2.py`, 100% coverage, committed and reproducible |
 | P5.4 | §9 | Correlation / regression | DONE | G2 + §9 Q6/Q7 mediation vs refusalness |
 | P5.5 | §9 | Figure-9-style plot | TODO | Figure-9 plot not yet produced |
-| P6.1 | §10.1 | Attention edge knockout | DONE | `surgical_knockout.py` with `--dst`, `--demo-scope`, and 2 dynamic-range controls |
-| P6.2 | §10.2 | Head knockout | TODO | |
-| P6.3 | §10.3 | Direction knockout | DONE | direction knockout covered by the additive/ablate arms |
+| P5.5 | §9 | Figure-9-style plot | **DROPPED, deliberately** | The figure would have plotted the ASR-vs-Boombness relation that RETRACTION #5 shows is not the operative one. Producing a polished figure of a superseded framing is worse than producing none. If a figure is wanted it should be the predictor×position 2×2 (`outputs/boombness/position_2x2.json`). |
+| P6.2 | §10.2 | Head knockout | **NOT RUN — superseded by the B4a result** | Per-head knockout asks which heads carry the retrieval. The edge-matched experiment showed removing **6.25%** of demo edges does nothing however distributed, so any per-head cut (16 edges, ~0.03%) is guaranteed to read zero — as every localized arm already did. The experiment is not informative at this redundancy level; running it would only add another null to misread. |
+| P6.4 | §10.4 | Combined Boombness/refusal | **DONE (08-17), and it decided the §18 label** | Answered by the matched-position analysis rather than a separate experiment. On the same 234 prompts with both probes at `codeword_last`: refusalness alone R²=0.176 (5 layers jointly 0.257), `d_surface|L12|proj` alone 0.141; adding Boombness to refusalness buys **+0.012 to +0.076**, while adding refusalness to Boombness buys **+0.144**. Boombness is close to redundant given refusalness at matched position, which is the direct evidence for outcome C. |
 | P6.4 | §10.4 | Combined Boombness/refusal | TODO | |
 | P6.5 | §10 | Comprehension controls | DONE | comprehension readout live (`comprehension_usage`, log-odds) |
 | P6.6 | §10 | Causal vs destructive separation | DONE | `coherence_gate.py` separates causal from destructive |
@@ -2604,3 +2604,26 @@ benign. That guard behaved correctly, unlike the two that were found inoperative
 
 Control draws 3–4 (`761258`/`761259`) still running; with draws 1–2 that will give the 4-draw
 control band the G4 "not inert" claim needs (audit A4-4).
+
+### Tick 38 — 2026-08-17
+
+**Three board rows closed, two of them by deciding NOT to run the experiment.** With §18 at C, some
+planned work no longer produces information and saying so is better than quietly leaving it TODO:
+
+- **P6.4 is DONE and it is what decided the label.** It needed no separate experiment — the
+  matched-position analysis answers it directly. Both probes at `codeword_last`: refusalness alone
+  R²=0.176 (0.257 jointly) vs Boombness 0.141; **adding Boombness to refusalness buys +0.012–0.076,
+  adding refusalness to Boombness buys +0.144.** Boombness is close to redundant given refusalness.
+- **P6.2 (head knockout) NOT RUN — superseded.** It asks which heads carry retrieval, but B4a showed
+  removing 6.25% of demo edges does nothing *however distributed*. A per-head cut is 16 edges
+  (~0.03%) and is therefore *guaranteed* to read zero, exactly as every localized arm already did.
+  Running it would manufacture one more null with an obvious misreading attached.
+- **P5.5 (Figure-9 plot) DROPPED.** It would plot the ASR-vs-Boombness relation that RETRACTION #5
+  shows is not the operative one. A polished figure of a superseded framing is worse than no figure.
+  If one is wanted, the honest figure is the predictor×position 2×2.
+
+**Control band implemented** (audit A4-4): `analyze_steering.py` now aggregates `ctrl_rand_s<seed>`
+arms into a band, reports the **between-draw** sd, and tests each steering arm against it by
+combining prompt-level and between-draw error. Below 3 draws it refuses to express the comparison
+rather than printing a supported-looking number. Regression-checked — every previously reported
+figure reproduces unchanged. Four control judges are queued behind the §11 judge (869/960).
