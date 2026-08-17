@@ -3530,3 +3530,50 @@ or check threaded into one of two paths that must agree — `stage_score`'s miss
 `readout_position` written but never read, `dc.generate`'s missing `enable_thinking`, and now a guard
 that validated the path that was already correct. **The lesson generalises: verify the OUTPUT of the
 thing you claim to have changed, never the input you passed.**
+
+## ⚠ C8 — a limitation I found in the POSITION finding itself, while recomputing on the thinking-off extract
+
+### First, the recomputation: results #1 and #2 are unchanged, and there is a reason
+Recomputed on the thinking-**off** Qwen3 extract, the confound table is identical to the thinking-on
+one to the 4th decimal (ratios min 1.51 / max 1.98 / **median 1.74** either way; `holm_rejected` `{8, 31}`
+either way). **Causal masking explains it:** the empty `<think></think>` block is appended to the
+*assistant prefix*, which comes **after** the codeword, and a suffix cannot change the representation at
+an earlier position. Verified directly — `@codeword_last` cosines are invariant (L8 −0.3291 → −0.3290,
+L31 −0.2130 → −0.2129) despite `seq_len` moving 104.29 → 108.29.
+
+That also **predicted** the `@last` readout must differ, and it does, dramatically (thinking-ON L20
++0.982 / L31 +0.967 vs thinking-off −0.043 / −0.124). The thinking-ON `@last` extract is therefore
+**unusable** — its final token is the `<think>` control token — and it was never used for anything.
+
+### Now the limitation, which is mine and which weakens the position claim
+Checking the fitted **gaps** (the diff-of-means effect size, i.e. how well-determined the direction is
+at that position) exposes an asymmetry the position 2×2 does not control for:
+
+| | @codeword_last | @last | ratio |
+|---|---|---|---|
+| Llama L8 | 6.05 | **0.53** | **11×** |
+| Llama L12 | 7.17 | 1.46 | 5× |
+| Llama L31 | 45.8 | 40.1 | 1.1× |
+| Qwen3 L8 | 74.1 | **2.36** | **31×** |
+| Qwen3 L12 | 98.0 | 4.27 | 23× |
+| Qwen3 L31 | 468 | 390 | 1.2× |
+
+At the columns the 2×2 actually reports (`L12|proj` @codeword, `L8|proj` @last), the direction is
+**13× (Llama) and 41× (Qwen3) better separated at the codeword position.**
+
+**Why this matters.** A low R² at `@last` admits two readings that the design does not separate:
+1. the position genuinely carries less ASR-relevant information (**the claim**), or
+2. the direction is *worse estimated* there, so the predictor is attenuated by measurement noise (**an artifact**).
+
+There is a defensible argument that (2) *is* (1) — the gap is small precisely because the final prompt
+token, a constant template token across all cells, does not separate the conditions — so low
+separability is itself the information-content statement. But that argument needs making, not
+assuming, and it is not what the report currently says.
+
+**What is NOT affected:** the gaps converge at L31 (1.1× and 1.2×), where both models' effects are
+largest and where both survive Holm. So the L31 result does not depend on this asymmetry at all.
+
+**Action:** both reports get this caveat next to the position table, stated as a limitation rather than
+buried. The position effect stays reported — it is 2.0×/4.2× and consistent across two probes — but
+"the codeword token carries more ASR-predictive signal" must be qualified with "and the direction is
+also far better determined there, which this design cannot separate from it."
