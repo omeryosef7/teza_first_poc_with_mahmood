@@ -4490,3 +4490,51 @@ refusal, not any pre-existing one, is what removing the refusal direction unbloc
 
 **Powered, stated conditionally, and no longer resting on 20 prompts.** `len_F` is at 755/960; `len_Fctrl`
 and `projctrl` follow; Qwen3 arm B is generating (158/960).
+
+## ★★★ THE INTERACTION AT MATCHED BUDGET — pre-registered prediction HELD, and the effect GREW
+
+512 tokens, n=420, **every arm complete and gate-passed**:
+
+| arm | ASR | refusal | Δ score vs baseline | p_cl |
+|---|---|---|---|---|
+| baseline | 0.2429 | 0.0571 | — | — |
+| `+0.25` add Boombness | 0.0881 | **0.6762** | −0.1274 | 0.0117 |
+| remove refusalness | 0.2690 | **0.0000** | +0.0101 | 0.4746 |
+| **BOTH (arm F)** | **0.5476** | 0.0024 | **+0.2824** | **0.0000** |
+
+**The prediction I recorded before judging was `len_F ≥ 0.474`. It came in at 0.5476.** That also validates
+the reasoning behind it — truncation *suppresses* measured ASR, so the most-truncated arm was the most
+under-measured, and letting it finish raised it rather than lowering it. Had I trusted my original "more
+text ⇒ inflated score" instinct I would have discounted the sprint's largest effect for exactly the wrong
+reason.
+
+### The interaction contrast, at every threshold
+| statistic | interaction (F−A) − (C−base) | t_cl | p_cl |
+|---|---|---|---|
+| continuous score | **+0.3997** | +11.15 | **0.0001** |
+| ASR@0.25 | +0.4714 | +15.73 | **<0.0001** |
+| ASR@0.50 | +0.4333 | +12.07 | **0.0001** |
+| ASR@0.75 | +0.3643 | +7.72 | **0.0006** |
+
+Legs: **F−A = +0.4098** (p=0.0001), **F−C = +0.2723** (p<0.0001).
+
+**ASR more than doubles, 0.243 → 0.548**, and every input to that number is now clean: all arms at one
+budget, all completing, all coherence-gated on the doublespeak denominator, on the full 420-prompt bank,
+effect 25× the judge noise floor, robust across three thresholds and the continuous scale.
+
+### What is now established, and the one thing still gating the mechanism claim
+**Established:** neither manipulation alone raises ASR — `+0.25` *lowers* it (p=0.012), removing refusal does
+nothing at population level (p=0.475) — yet **together they more than double it**. That is a real
+superadditive interaction, and it means the §18=B label ("mechanistic but not causal") was a **ceiling
+effect of refusal**: adding Boombness has a large behavioural effect that induced refusal was hiding.
+
+**Still gating "two channels of Boombness specifically":** `len_Fctrl` — the composed control with a
+norm-matched **random** direction in place of `d_surface`, same refusal projection. It is 538/960 judged. On
+the length axis it already behaves like baseline (145 median words vs arm F's 260), so the "two
+perturbations break termination" story is already dead; if its ASR also stays near baseline, the interaction
+is specific to `d_surface` and the mechanism claim is earned.
+
+If instead `len_Fctrl` also doubles ASR, then **any** perturbation composed with refusal-removal does this,
+the effect is not about Boombness, and the correct claim shrinks to "removing refusal makes the model
+vulnerable to arbitrary activation perturbation" — which would be interesting but is a different paper.
+Recording both readings now.
