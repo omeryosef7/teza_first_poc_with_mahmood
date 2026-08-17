@@ -3820,3 +3820,65 @@ here all along.
 **§13 criterion 6 ("replicates across prompt families or models") stays scored NO for the causal claim
 and becomes PARTIAL overall**: the design and two structural findings port; the headline correlation does
 not. Both reports will carry this table.
+
+## ✅ C9 RESOLVED — at matched DEPTH the final-layer effect replicates cleanly (better than I had claimed)
+
+Job 762199 extracted Qwen3 to its true final layers. The depth-matched comparison:
+
+| | layer | relative depth | `d_surface` (C−A) | Holm |
+|---|---|---|---|---|
+| **Llama-3.1-8B** | L31 | 31/32 = **97%** | **+0.0473** | **True** |
+| **Qwen3-14B** | **L39** | 39/40 = **98%** | **+0.0521** | **True** |
+| Qwen3-14B | L31 | 31/40 = 78% | +0.0261 | True |
+
+**The effect replicates at matched depth, and my error had UNDERSTATED it.** Comparing Llama's final
+layer to Qwen3's 78%-depth layer gave +0.047 vs +0.026 (about half); comparing final to final gives
+**+0.047 vs +0.052 — nearly identical, both Holm-significant.** The withdrawn claim comes back stronger
+than it was, stated in relative depth this time.
+
+The Qwen3 depth profile also shows why the index mattered: `d_surface` runs +0.021…+0.026 across the
+middle (L8–L31) and then rises to **+0.052 at L39**, so the final-layer spike is a real feature that
+stopping at L31 simply missed. The ~2× naive inflation holds throughout (1.51–1.98, median ~1.8).
+
+**Restated claim:** *the final-layer effect is the sprint's most robust representational finding — it is
+the largest effect in both models, survives Holm in both, is dose-independent (§8), and replicates at
+matched relative depth (97% vs 98%).*
+
+## ⛔ C10 — the comprehension story is NOT axis-specific. My specificity claim FAILS.
+
+I said: *"only the negative `d_surface` step degrades comprehension, and no control does."* That claim
+had never been tested, because **no negative random control existed**. I ran one (762200):
+
+| arm | Δ comprehension | p | frac coded |
+|---|---|---|---|
+| `d_surface` **+0.25** | +0.643 | 0.006 | 0.733 |
+| **random +0.25** | **+1.065** | 0.001 | 0.800 |
+| `d_surface` **−0.25** | −0.792 | 0.040 | 0.500 |
+| **random −0.25** | **−1.470** | 0.004 | **0.383** |
+| **`project_out`** | **+0.088** | **0.681** | 0.683 |
+
+**The pattern is driven by the SIGN OF THE DOSE, not by the axis.** A positive step raises p(coded) and a
+negative step lowers it — for `d_surface` *and* for a norm-matched random direction — and the random
+control moves comprehension **further in both directions** (+1.07 vs +0.64; −1.47 vs −0.79). The paired
+contrast is +0.678 (t_cl=+3.38, **p=0.020**) in the direction of `d_surface` perturbing comprehension
+**LESS** than random.
+
+### What this retracts, and what survives
+- ⛔ **Retracted:** "the sign asymmetry in comprehension is specific to `d_surface`", and the
+  three-line agreement table whose third row was "comprehension: improves / degrades". Comprehension
+  does **not** discriminate `d_surface` from a random perturbation, so that table has **two** lines
+  (band clearance z=−3.2 vs −1.8; refusal route 90.1% vs 0.0%), not three.
+- ✅ **Survives:** the +0.25 exoneration, in its narrow and originally intended form — comprehension did
+  **not** degrade under +0.25, so "the ASR drop is confusion" is still excluded for that arm. That was
+  always the load-bearing claim; the specificity gloss I added on top of it was not.
+- ✅ **Strengthened:** `project_out` (arm B) is now the *only* intervention of five that leaves
+  comprehension unchanged (+0.088, p=0.681) while all four additive arms move it by 0.6–1.5. That makes
+  it the genuinely surgical condition, and makes its pending ASR the cleanest test in the sprint.
+
+### A near-miss worth recording
+The first run of this test returned **byte-identical numbers for `comp_rand` and `comp_rand_neg`**, which
+is impossible for two different doses. Cause: my analysis globbed `comp_rand_*`, which also matches
+`comp_rand_neg_*`, and `sorted()[-1]` picked the *neg* directory — **I compared the control against
+itself** and briefly "confirmed" the opposite conclusion. Caught only because identical values are
+implausible. Fixed by matching `<tag>_2026*`. This is the *fifth* instance of the sprint's signature bug:
+selecting a thing by an incidental property (here a name prefix) rather than by identity.
