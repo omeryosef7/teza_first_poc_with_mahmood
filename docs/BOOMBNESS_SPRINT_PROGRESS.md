@@ -4378,3 +4378,36 @@ did not move.
 **Status:** `projctrl`, `len_base/A/C/F/Fctrl` all generated and gate-passed; judging in sequence
 (`len_base` at 527/960). The sign test still fires on the additive arms, correctly — that verdict was never
 about the projection arm.
+
+## Budget calibration — truncation SUPPRESSES measured ASR, which reverses the direction of the length worry
+
+Same prompts, same model, only the token budget differs (n=270 doublespeak):
+
+| | ASR | mean score | refusal |
+|---|---|---|---|
+| baseline @192 (52% truncated) | 0.2185 | 0.1884 | 0.074 |
+| baseline @512 (**0%** truncated) | **0.2556** | 0.2102 | 0.074 |
+| shift | **+0.0370** | +0.0218 (t_cl=+1.64, **p=0.161**) | 0.000 |
+
+Letting the model finish raises measured ASR by **+3.7pp** — ~3× the judge noise floor (0.011), though not
+significant under domain clustering. Refusal is unaffected, so this is purely about scoring content that was
+previously cut off.
+
+### Why this matters: my length worry about arm F was pointing the wrong way
+I flagged arm F's 99.5% truncation as a possible *inflation* — "more text, more opportunity to score
+harmful". But the baseline calibration shows the opposite: **truncation SUPPRESSES the score**, because a
+harmful answer cut off mid-sentence scores lower than a completed one. Arm F was the most truncated arm in
+the sprint (0.995 vs baseline 0.522), so truncation should have been **suppressing** arm F's ASR, and its
+0.474 was plausibly an **under**estimate.
+
+### Prediction recorded before `len_F` is judged
+If this reasoning is right, **`len_F` at 512 tokens should score ≥ 0.474**, and the interaction should get
+*larger*, not smaller, once every arm completes. If instead `len_F` drops materially below 0.474, then arm
+F's advantage really was length-driven and the two-channel reading is in trouble — and I would rather have
+committed to the falsifier first.
+
+This also means every ASR in the sprint carries a **downward** bias of roughly this size wherever
+truncation was high, and the arms differed a lot in truncation (0.30 for `+0.25` up to 0.995 for arm F). The
+512-token set is the internally consistent one and is what the final report should quote.
+
+**Judging:** `len_base` done, `len_A` 346/960, then `len_C`, `len_F`, `len_Fctrl`, `projctrl`.
