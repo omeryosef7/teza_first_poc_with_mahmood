@@ -97,10 +97,21 @@ model-selection freedom (20 for `d_surface`, 10 for refusalness):
 Domain-clustered bootstrap (fixed column, 6 domains): @last **1.54, 95% CI [0.64, 3.60]**,
 P(>1)=0.89; @codeword_last **0.75, CI [0.33, 1.13]**, P(>1)=0.10.
 
+**This table is now regenerable.** `src/boombness/analyze_position.py` produces it from a committed
+command, records the run paths, and **verifies that each of the four cells actually read where it
+claims to** — the check that caught the phantom cell. It refused to run until the `@last` refusalness
+cell had an artifact recording its position (job 761697), rather than accepting the source code as
+evidence.
+
+**Stated at its least favourable framing, deliberately.** The 2.0×/4.2× above uses each probe's *best*
+column. On *median* columns the position effect is far larger — `d_surface` 0.0076 → 0.0847 (**11×**)
+and refusalness 0.0033 → 0.1643 (**50×**) — so the localization finding is stronger than the headline
+number suggests. The best-column version is quoted because it is the conservative one.
+
 ⚠ **Freedom is matched *within* each probe across positions, but NOT *between* probes:** `d_surface`
 draws its best column from **20** candidates, refusalness from **10**. Both are max-of-k statistics,
 so the between-probe ratios are biased **toward Boombness**. Re-selecting the column inside each
-bootstrap resample gives [0.82, 2.88] and [0.40, 1.12] — same conclusion, wider. Neither the fixed-
+bootstrap resample gives [0.84, 2.88] and [0.38, 1.12] — same conclusion, wider. Neither the fixed-
 column CI nor the ratio is regenerable from a committed script yet; both were computed ad hoc.
 
 **Neither probe dominates.** Which one wins depends on *where you read*, and both CIs straddle 1.0,

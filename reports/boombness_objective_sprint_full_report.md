@@ -212,10 +212,21 @@ a freedom-matched 2×2 (columns available at **both** positions: 20 for `d_surfa
 **Neither probe dominates** — which wins depends on where you read, and both domain-clustered CIs
 straddle 1.0. The 3.7× was the most favourable of four possible cross-position pairings.
 
+**This table is now regenerable.** `src/boombness/analyze_position.py` produces it from a committed
+command, records the run paths, and **verifies that each of the four cells actually read where it
+claims to** — the check that caught the phantom cell. It refused to run until the `@last` refusalness
+cell had an artifact recording its position (job 761697), rather than accepting the source code as
+evidence.
+
+**Stated at its least favourable framing, deliberately.** The 2.0×/4.2× above uses each probe's *best*
+column. On *median* columns the position effect is far larger — `d_surface` 0.0076 → 0.0847 (**11×**)
+and refusalness 0.0033 → 0.1643 (**50×**) — so the localization finding is stronger than the headline
+number suggests. The best-column version is quoted because it is the conservative one.
+
 ⚠ **Two things about the freedom in that table.** (a) It is matched *within* each probe across
 positions but **not between probes**: `d_surface` draws its best column from 20 candidates,
 refusalness from 10, and both are max-of-k statistics, so the ratios are biased **toward Boombness**.
-Re-selecting the column inside each bootstrap resample gives [0.82, 2.88] and [0.40, 1.12] — same
+Re-selecting the column inside each bootstrap resample gives [0.84, 2.88] and [0.38, 1.12] — same
 conclusion, wider. (b) On **incremental** R² at matched footing, refusalness wins at both positions:
 
 | | Boombness adds over refusalness | refusalness adds over Boombness |
