@@ -78,7 +78,8 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> 
     return out
 
 
-def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict]):
+def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
+                      control_seed: int = 20260816):
     """Return a list of context managers implementing --intervene, or [].
 
     DOSE UNITS. `estimate_directions` stores UNIT vectors and keeps the effect size in `gap`, so
@@ -126,14 +127,22 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict])
         if not ctxs:
             raise SystemExit(f"refusalness/{mode} produced no hooks over layers {band}")
         return ctxs
-    # Norm-matched controls are DERIVED from d_surface with a fixed seed, using the same house
-    # helpers aggressive_patching uses, so a steering arm and its control are matched in
-    # magnitude by construction rather than by hand.
+    # Norm-matched controls are DERIVED from d_surface, using the same house helpers
+    # aggressive_patching uses, so a steering arm and its control are matched in magnitude by
+    # construction rather than by hand.
+    #
+    # BUG FIXED 2026-08-17. The seed here was the LITERAL 20260816 + L, so `--seed` did not reach
+    # the control direction at all. Four runs launched as "independent draws" with seeds
+    # 20260817..20260820 therefore drew the SAME direction, and because generation is greedy they
+    # produced BYTE-IDENTICAL completions (sha e4a15fcb x4; the only differing field was `arm`).
+    # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
+    # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
+    # names a draw actually selects one.
     if name in ("random", "orthogonal"):
         import signals as _sg
         base = payload["d_surface"]
         maker = _sg.random_control_direction if name == "random" else _sg.orthogonal_control_direction
-        dmap = {L: maker(v, seed=20260816 + L) for L, v in base.items()}
+        dmap = {L: maker(v, seed=int(control_seed) + L) for L, v in base.items()}
         gaps = (payload.get("gap") or {}).get("d_surface", {})
     else:
         dmap = payload[name] if name in payload else None
@@ -325,7 +334,8 @@ def main() -> int:
             continue
 
         try:
-            ctxs = make_intervention(dc, pc, lm, spec, payload)
+            ctxs = make_intervention(dc, pc, lm, spec, payload,
+                                     control_seed=args.seed)
             import contextlib
             with contextlib.ExitStack() as st:
                 for c in ctxs:

@@ -3882,3 +3882,65 @@ is impossible for two different doses. Cause: my analysis globbed `comp_rand_*`,
 itself** and briefly "confirmed" the opposite conclusion. Caught only because identical values are
 implausible. Fixed by matching `<tag>_2026*`. This is the *fifth* instance of the sprint's signature bug:
 selecting a thing by an incidental property (here a name prefix) rather than by identity.
+
+## ⛔ RETRACTION #6 — the §11 "role framing does not move Boombness" TIGHT NULL is WRONG, and inverted
+
+The recompute found that my arithmetic was right and my **error term** was wrong.
+
+| analysis | L12 result |
+|---|---|
+| naive one-way ANOVA (as reported) | F(5,810)=**0.175**, p=**0.972** — reproduces exactly |
+| blocked on domain | F=0.178, p=0.971 (domain is balanced — a red herring) |
+| blocked on **query_kind** | F=**2.81**, p=**0.016** — already breaks the null |
+| **paired within-stem** (the design is perfectly crossed: 72 complete 6-style stems) | **F(5,355)=20.30, p=8.1e-18**, permutation p<5e-5, **11/15 pairwise differences survive Bonferroni** |
+
+**And the "3.6% of the within-style sd" statistic is a variance-decomposition error.** The denominator I
+used (0.1098) is almost entirely *between-stem* variance — different domains, demo counts, query kinds —
+which the paired design removes. The correct within-stem residual sd is **0.0082**, a **14× smaller**
+error term. Against it the style-mean spread is **53.1%, not 3.6%.**
+
+**A worse structural problem underneath it.** In that 816-row pool, `plain` and the five role styles
+occupy **disjoint `bank_block`s**: `plain` is effectively *the rest of the bank* (240 core2x2 + 72
+consistency + 72 families + 48 strength + 24 position rows), carrying four query kinds and
+`n_examples ∈ {1,2,4,8,16}`, while each role style has 72 rows, two query kinds and `n_examples ∈ {2,4,8}`.
+Family-id overlap between the matched-plain arm and the role arm is **zero**. So the report's sentence
+that content, domain, demo count and query were *"held fixed"* is **FALSE for the analysis I ran** — it is
+true only inside the 72 complete stems, which is exactly the analysis I did not do.
+
+### Corrected §11 answer
+**Role framing DOES move Boombness — systematically and reliably, but by a small amount.** Within-stem
+F=20.30 (p=8e-18) with 11/15 pairwise gaps surviving Bonferroni; largest pairwise gap **0.0116**, which
+is **4.1% of the grand mean** at L12. So the honest statement is *"a small, highly reliable effect"*, not
+*"a tight null"* — the opposite of what both reports say. §19 Q8 ("do user-like/CoT-like framings increase
+Boombness?") flips from **No** to **Yes, by a little, reliably.**
+
+## ⛔ RETRACTION #7 — the "4-draw random-control band" was n=1. My own fix to an audit finding was a no-op.
+
+Audit item A4-4 said "more than a random direction" rested on a single draw. I launched four seeds
+(20260817–20260820), reported a band of mean −0.0366 with between-draw sd 0.0049, and concluded
+**"+0.25 clears the band, t=−3.23, p=0.0014"**. Verified today:
+
+| the four "independent draws" | completions sha256 |
+|---|---|
+| s20260817 / s20260818 / s20260819 / s20260820 | **e4a15fcb ×4 — identical** |
+
+The only field differing between the four runs is `arm`, the label. Cause:
+`make_intervention` seeded the control direction from the **literal** `20260816 + L`, so `--seed` never
+reached it; the direction was identical, generation is greedy, and the completions came out byte-for-byte
+the same. **The "between-draw sd" of 0.0049 was judge noise on ONE generation set**, and the band was
+n=1 wearing an n=4 label.
+
+⛔ **Withdrawn:** the 4-draw band, the p=0.0014 "clears the band" verdict, and the claim that A4-4 was
+resolved. The earlier *paired contrasts* against the two original single-draw controls are unaffected
+(+0.25 vs random z=−3.6; −0.25 z≈−2.1) — but those were always single-draw, which is what A4-4 objected
+to in the first place.
+
+**Fixed:** `--seed` now reaches the control direction (`control_seed`), proven by construction —
+cos(seed17, seed18) = **+0.019**, where before it was exactly 1.0. Four genuinely independent draws
+relaunched with seeds 20260901–04.
+
+**This is the fourth "fix that did nothing" in this sprint** — after the coherence gate that never
+matched, the dynamic-range check that compared against a null control, and `--enable-thinking` reaching
+only one of two paths. The pattern is now unmistakable: **I keep verifying that a fix was applied rather
+than that it changed the measured object.** Every remaining guard in this codebase should be assumed
+inert until someone constructs its failure case.
