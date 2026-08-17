@@ -10619,3 +10619,37 @@ on the shared FS. The randtok floor plan already lives under `doublespeak_causal
 past submission was exposed.)*
 
 Diff unchanged.
+## 2026-08-17 23:15 — the >30 min PENDING monitor fired on **boombness** jobs. **Not cancelling them.**
+
+*(Wall clock 01:55 UTC.)* The monitor reported:
+
+```
+STALE PENDING: job 761184 (boomb) PD 33m (Resources) - cancel and resubmit with a directed nodelist
+STALE PENDING: job 761185 (boomb) PD 33m (Priority)  - cancel and resubmit with a directed nodelist
+```
+
+Both are **boombness** jobs, submitted by the concurrent session at 04:21:19. **Neither is mine, and
+I am not cancelling them.**
+
+The monitor watches the *account*, not this sprint, so it fires on all three programmes. The
+standing rule — *"resubmit anything PENDING >30 min with a directed config"* — is an instruction
+about **§20's own submissions**. Applying it to another session's jobs would mean destroying work
+whose config and intent I do not know, mid-debugging (they are actively iterating on that launch
+path — `adc959d8` fixed an argsfile location minutes earlier, and 761192 failed after it). The same
+reasoning has governed every cross-session decision this sprint: I declined to launch the D3
+comparators, declined to resubmit their failed `probe_extract`, and declined to touch their
+cancellations.
+
+**For their benefit, since they read this branch:** 761184 is blocked on `Resources` and 761185 on
+`Priority`, both submitted 04:21:19, with three sibling `boomb` jobs occupying n-802/n-803. If those
+two are wanted sooner, a directed nodelist away from the two nodes their own siblings are saturating
+is the obvious move — but that is their call.
+
+**Scope note added to the rule:** the >30 min resubmit rule applies to jobs **this sprint
+submitted**. For anything else the correct action is to surface it, not to act on it.
+
+### Design-vs-inventory diff
+Unchanged. §20.1–§20.5, §20.7 complete/traced/verified; D3 resolved; §20.8 route promising and
+unproven; six owed items, all decisions. **Zero §20 jobs queued**, so the rule has no §20 subject.
+
+---
