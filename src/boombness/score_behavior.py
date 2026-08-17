@@ -154,6 +154,10 @@ def main() -> int:
     args = ap.parse_args()
     global ENABLE_THINKING
     ENABLE_THINKING = dc_parse_thinking(args.enable_thinking)
+    # SELF-CHECK on the rendering the flag actually produces. The flag was silently inert once
+    # already; a claim about thinking mode must be verified against the rendered prompt, not against
+    # the argument having been parsed.
+    _THINK_PROBE = None
     seed_everything(args.seed)
 
     dc, pc = ds(), pair()
@@ -189,6 +193,27 @@ def main() -> int:
 
     model_id = args.model or dc.PRIMARY_MODEL
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation="sdpa")
+
+    # SELF-CHECK that --enable-thinking actually changed the RENDERING, not just the argparse
+    # namespace. It was silently inert once: the flag reached the readout templating and not
+    # `dc.generate`, which templates internally, so a "thinking-off" run was byte-identical in
+    # structure to a thinking-on one. A claim about thinking mode must be verified against the
+    # rendered prompt.
+    if ENABLE_THINKING is not None:
+        _probe = rows[0]["full_prompt"]
+        _on = dc.apply_template(lm.tokenizer, _probe, enable_thinking=True)
+        _off = dc.apply_template(lm.tokenizer, _probe, enable_thinking=False)
+        if _on == _off:
+            raise SystemExit(
+                "[score] REFUSING: --enable-thinking was requested but this tokenizer's template "
+                "renders identically for True and False, so the flag cannot do anything. Either the "
+                "model does not support thinking mode or the template ignores the kwarg.")
+        _want = _off if ENABLE_THINKING is False else _on
+        _got = dc.apply_template(lm.tokenizer, _probe, enable_thinking=ENABLE_THINKING)
+        if _got != _want:
+            raise SystemExit("[score] REFUSING: enable_thinking did not propagate into apply_template")
+        print(f"[score] enable_thinking={ENABLE_THINKING} VERIFIED against the rendered prompt "
+              f"(len {len(_got)} vs {len(_on if ENABLE_THINKING is False else _off)} for the other mode)")
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="sdpa", num_layers=lm.num_layers)
@@ -279,8 +304,15 @@ def main() -> int:
                     if args.no_generate:
                         counts["behavioral_skipped"] += 1
                     else:
+                        # BUG FIXED 2026-08-17. `dc.generate` does its OWN templating when
+                        # templated=True, and it takes its own `enable_thinking` kwarg. Threading the
+                        # flag into the READOUT templating at line ~235 and not into here meant
+                        # --enable-thinking false changed nothing about generation: the thinking-off
+                        # run was byte-identical in structure to the thinking-on one (both 100%
+                        # opening <think> at index 0, medians 157 vs 156 words). Same shape as the
+                        # phantom-cell bug — a flag threaded into one of two paths that must agree.
                         g = dc.generate(lm, row["full_prompt"], max_new_tokens=args.max_new,
-                                        templated=True)
+                                        templated=True, enable_thinking=ENABLE_THINKING)
                         # ds_common.generate returns {"completion", "n_new_tokens",
                         # "stop_reason", ...}. The first draft read g["text"], which does not
                         # exist, and every behavioural row died with KeyError - caught loudly by

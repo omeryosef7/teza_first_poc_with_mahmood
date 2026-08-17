@@ -3458,3 +3458,37 @@ thinking-ON extract. They are internally consistent — every Qwen3 row shares o
 *within-model* contrasts (C−A; final-vs-earlier occurrence) — so they are not invalidated. But they will
 be **recomputed on the thinking-off extract** so that every Qwen3 number in the report comes from one
 prompt rendering. If either changes materially, the change gets reported.
+
+## ☠ AND THE FIX WAS ITSELF INERT — `--enable-thinking` never reached the generation path
+
+I relaunched with `--enable-thinking false` and checked the output instead of assuming. The thinking-off
+run was **structurally identical** to the thinking-on one:
+
+| | thinking-ON run | "thinking-OFF" run |
+|---|---|---|
+| generations starting with `<think>` at index 0 | 724 / 724 | **112 / 112** |
+| median words | 156 | **157** |
+
+**Cause.** `score_behavior.py` templates the prompt **twice, by two different routes**: once for the
+readout (`dc.apply_template`, which I patched) and once inside `dc.generate(..., templated=True)`, which
+does its *own* templating and takes its *own* `enable_thinking` kwarg (`ds_common.py:997-1006`). I
+threaded the flag into the first and not the second, so the argument parsed, appeared in `config.json`
+as `"enable_thinking": "false"`, and **did nothing**.
+
+**This is the phantom-cell bug again, exactly:** a flag threaded into one of two paths that must agree,
+where the un-threaded path is the one that decides the measurement. Third time this shape has appeared
+(`stage_score` position; `readout_position` unread by the analysis; now `dc.generate`).
+
+**What told me the extraction was fine.** The same check that condemned generation exonerated
+extraction: mean `seq_len` moved **104.29 → 108.29**, exactly **+4 tokens**, which is the empty
+`<think>\n\n</think>\n\n` block the template injects when thinking is off. So the extract runs
+(762113/762114) are correct and were kept; only generation was relaunched.
+
+**The guard that now prevents it.** `score_behavior.py` renders a probe prompt **both ways at startup**
+and refuses to run unless (a) the two renderings differ at all — otherwise the flag cannot possibly do
+anything on this tokenizer — and (b) the rendering it actually gets back matches the mode requested. A
+claim about thinking mode is now verified against **the rendered prompt**, not against argparse having
+accepted the string. That is the discipline the three dead guards lacked, applied at the point of
+failure rather than after it.
+
+Job **762143** is the relaunch.
