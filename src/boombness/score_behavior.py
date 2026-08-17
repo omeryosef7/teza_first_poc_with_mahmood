@@ -35,6 +35,9 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, FailureLedger, RunDir, ds, pair, read_jsonl, seed_everything  # noqa: E402
 import signals as sg  # noqa: E402
+from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
+
+ENABLE_THINKING = None   # None = model default; see --enable-thinking
 from extract_boombness import resolve_occurrences  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
@@ -130,6 +133,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--bank", default=DEFAULT_BANK)
     ap.add_argument("--model", default=None)
+    ap.add_argument("--enable-thinking", default=None, choices=[None, "true", "false"],
+                    help="explicitly set the chat template's thinking mode. REQUIRED for Qwen3-class "
+                         "models: with thinking ON and a 192-token budget, 100%% of generations opened "
+                         "a <think> block and only 7.6%% closed it, i.e. 92%% were truncated reasoning "
+                         "traces with NO answer — judging those scores the wrong object entirely.")
     ap.add_argument("--query-kinds", default="semantic_one_word,comprehension_usage,behavioral")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--max-new", type=int, default=192)
@@ -144,6 +152,8 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
     args = ap.parse_args()
+    global ENABLE_THINKING
+    ENABLE_THINKING = dc_parse_thinking(args.enable_thinking)
     seed_everything(args.seed)
 
     dc, pc = ds(), pair()
@@ -222,7 +232,8 @@ def main() -> int:
     counts = collections.Counter()
 
     for i, row in enumerate(rows):
-        templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
+        templated = dc.apply_template(lm.tokenizer, row["full_prompt"],
+                                      enable_thinking=ENABLE_THINKING)
         base = {k: row.get(k) for k in
                 ("prompt_id", "prompt_sha16", "family_id", "condition", "cell", "domain", "split",
                  "bank_block", "query_kind", "n_examples", "strength", "consistency",

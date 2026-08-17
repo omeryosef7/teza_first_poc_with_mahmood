@@ -3416,3 +3416,45 @@ than a positive that does.
 | final-occurrence-is-lower, positional not semantic | **YES**, control included |
 | mid-layer (L16–L24) negative band | **NO** — Llama-only, sign flips on Qwen3 |
 | G2 correlation / position effect | pending job 761818 (496/960 generated) |
+
+## ☠ CAUGHT BEFORE JUDGING: 92% of the Qwen3 generations were truncated reasoning traces, not answers
+
+A structural check on the Qwen3 generation run before sending it to the judge (tag counts only, no
+content read):
+
+| | Qwen3 (thinking default) | Llama baseline |
+|---|---|---|
+| generations containing `<think>` | **712 / 712 (100%)** | — |
+| generations containing `</think>` | **54 / 712 (7.6%)** | — |
+| median words | 156 (of a 192-token budget) | 126 |
+
+**So 92.4% of them opened a reasoning block and never closed it** — the model spent the entire
+generation budget thinking and produced **no answer at all**. Judging that set would have scored
+*truncated reasoning traces* with StrongReject and reported the result as an attack success rate. It is
+the same manipulated-≠-measured error as the five retractions, and it would have been the sixth.
+
+**The repo already knew.** `ds_common.apply_template`'s own docstring says: *"Qwen3's default is
+thinking-ON, and `enable_thinking=False` must be passed EXPLICITLY."* Prior work in this repo hit this
+exact trap. I launched without the flag and got the documented failure.
+
+### Fix, and why the extraction had to be relaunched too
+`--enable-thinking {true,false}` is now wired into **both** `extract_boombness.py` and
+`score_behavior.py`, because `enable_thinking` changes the **prompt rendering** (Qwen3 injects an empty
+`<think>` block into the assistant prefix), not just the sampling. If only generation were re-run, the
+representation would be read off a *different prompt* than the one generated from — precisely the defect
+behind RETRACTION #2. So both must agree, and both were relaunched:
+**762113** (extract @codeword_last), **762114** (extract @last), **762115** (generation), all with
+thinking **off**.
+
+### Choice of condition, stated so it is not mistaken for a default
+Thinking-**off** is the matched condition: the entire Llama arm is a non-thinking model answering
+directly under a 192-token budget, so a like-for-like replication needs Qwen3 answering directly under
+the same budget. Thinking-on with a much larger budget is a *different and also interesting* experiment
+— it confounds the comparison with reasoning length, so it is not this one.
+
+### Status of the two replication results already recorded
+Results #1 (the ~2× confound) and #2 (the token-level occurrence effect) were computed on the
+thinking-ON extract. They are internally consistent — every Qwen3 row shares one rendering, and both are
+*within-model* contrasts (C−A; final-vs-earlier occurrence) — so they are not invalidated. But they will
+be **recomputed on the thinking-off extract** so that every Qwen3 number in the report comes from one
+prompt rendering. If either changes materially, the change gets reported.

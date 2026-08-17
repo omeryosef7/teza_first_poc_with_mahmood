@@ -39,6 +39,7 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, FailureLedger, OUT_ROOT, RunDir, ds, read_jsonl, seed_everything  # noqa: E402
 import signals as sg  # noqa: E402
+from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 CORE_2X2 = ("benign_literal", "direct_harmful", "natural_doublespeak", "concept_in_benign_ctx")
@@ -50,6 +51,15 @@ CORE_2X2_CELLS = ("A", "B", "C", "E")
 # --------------------------------------------------------------------------- #
 # Occurrence resolution
 # --------------------------------------------------------------------------- #
+# THINKING-MODE TEMPLATE (set from --enable-thinking; 2026-08-17).
+# `ds_common.apply_template` warns that "Qwen3's default is thinking-ON, and enable_thinking=False
+# must be passed EXPLICITLY". It changes the PROMPT rendering (an empty <think> block is added to the
+# assistant prefix), so it affects extraction as well as generation — the two must agree or the
+# representation is read off a different prompt than the one generated from, which is the exact
+# manipulated-vs-measured error this sprint retracted five times.
+ENABLE_THINKING = None   # None = model default
+
+
 def resolve_occurrences(dc, tok, row: Dict) -> Tuple[str, List[int], List[int], List[int], List[int]]:
     """Return (templated_text, input_ids, last_idx_per_occurrence, following_idx, n_subtokens).
 
@@ -62,7 +72,8 @@ def resolve_occurrences(dc, tok, row: Dict) -> Tuple[str, List[int], List[int], 
     Raises ValueError with a specific reason if the occurrences cannot be resolved or do not
     match the character-level count the generator recorded.
     """
-    templated = dc.apply_template(tok, row["full_prompt"])
+    templated = dc.apply_template(tok, row["full_prompt"],
+                                  enable_thinking=ENABLE_THINKING)
     ids = tok(templated, add_special_tokens=False)["input_ids"]
     hit = dc.find_word_occurrences_in_text(tok, templated, row["target_surface"],
                                            add_special_tokens=False)
@@ -390,6 +401,11 @@ def main() -> int:
     ap.add_argument("--logit-lens-layers", default="",
                     help="comma list of BLOCK indices; default = every 4th layer + last")
     ap.add_argument("--directions", default="d_surface,d_context,d_inter,d_naive")
+    ap.add_argument("--enable-thinking", default=None,
+                    choices=[None, "true", "false"],
+                    help="explicitly set the chat template's thinking mode. REQUIRED for Qwen3-class "
+                         "models: their default is thinking-ON, which for a matched comparison "
+                         "against a non-thinking model must be turned OFF.")
     ap.add_argument("--position", default="codeword_last",
                     choices=["codeword_last", "following", "last"],
                     help="'last' (final prompt token) added 2026-08-17 to complete the "
@@ -407,6 +423,8 @@ def main() -> int:
     ap.add_argument("--tag", default="run")
     ap.add_argument("--no-cache-reps", action="store_true")
     args = ap.parse_args()
+    global ENABLE_THINKING
+    ENABLE_THINKING = dc_parse_thinking(args.enable_thinking)
     seed_everything(args.seed)
 
     dc = ds()
