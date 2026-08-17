@@ -3667,3 +3667,34 @@ conclusion. Either way the label stops resting on an untested assumption.
 
 Also queued behind: `projout_beh` (762169), the ASR half of arm B, whose comprehension is already known
 to be preserved.
+
+## §10.4 arms C and F — comprehension intact, so their ASR will be interpretable
+
+Comprehension under intervention, same 60 doublespeak prompts, domain-clustered:
+
+| arm | manipulation | mean | Δ vs baseline | p | frac coded |
+|---|---|---|---|---|---|
+| baseline | — | +0.704 | — | — | 0.683 |
+| `comp_pos` | add Boombness +0.25 | +1.347 | +0.643 | 0.006 | 0.733 |
+| `comp_neg` | add Boombness −0.25 | **−0.088** | **−0.792** | 0.040 | **0.500** |
+| `comp_projout` | **arm B** remove Boombness | +0.792 | +0.088 | 0.681 | 0.683 |
+| `c104_C` | **arm C** remove refusalness | +0.911 | +0.207 | 0.001 | 0.717 |
+| `c104_F` | **arm F** add Boombness AND remove refusalness | +1.567 | +0.863 | 0.002 | 0.783 |
+
+**Every arm except `−0.25` preserves or improves comprehension.** So for arms B, C and F the §2.6
+precondition is satisfied *before* their ASR is measured — any ASR change they produce cannot be
+dismissed as the model having stopped understanding the prompt. That is the position the whole sprint
+lacked until today, and it is the difference between "ASR dropped" and "ASR dropped for a reason".
+
+`−0.25` remains the exception and remains disqualified: comprehension goes **below zero** (the model
+prefers "literal"), so its ASR suppression is partly confusion.
+
+**ASR launched:** 762187 (arm C), 762188 (arm F). Also running: 762169 (arm B ASR).
+**§14:** the Qwen3 thinking-off generations are complete and the judge is running — that is the
+behavioural half of the second-model replication.
+
+### What arm F decides
+If **adding Boombness with refusal removed** raises ASR above arm C alone, then Boombness *does* have a
+behavioural effect and refusal was masking it — **§18 = B is a ceiling artifact and §12 reopens.**
+If arm F ≈ arm C, then Boombness has no behavioural effect even with the ceiling lifted, and B becomes a
+much stronger claim than it is today. The prediction is recorded here before the numbers exist.
