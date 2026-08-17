@@ -165,6 +165,45 @@ moves a few percent. Domain-clustered t (13.5) ≈ naive t (13.3); bootstrap CI 
 
 ---
 
+## 2b. Token-level Boombness, kept separate from prompt-level (§7)
+
+The plan insists these not be merged, and the reason turns out to be load-bearing: the token-level
+result **inverts** the intuition the prompt-level one invites.
+
+### Does the final codeword occurrence become more concept-like than earlier ones? **No — less.**
+Within-prompt paired contrast: same prompt, same surface word, only the occurrence position differs.
+Domain-clustered over 6 domains, n=246 doublespeak behavioural prompts with ≥2 occurrences:
+
+| L | 4 | 8 | 12 | 16 | 20 | 24 | 31 |
+|---|---|---|---|---|---|---|---|
+| Δ(final − earlier) | −0.025 | −0.082 | −0.090 | **−0.154** | −0.123 | −0.119 | −0.080 |
+| t_clustered | −5.0 | −6.2 | −7.1 | **−10.5** | −8.3 | −6.3 | −3.7 |
+| p_clustered | 0.004 | 0.002 | 0.001 | **0.0001** | 0.0004 | 0.001 | 0.014 |
+
+### And the control is what makes it interpretable
+The identical comparison in `benign_literal` — where there is **no** concept meaning at all — gives the
+**same sign and comparable magnitude** (n=162: L16 −0.105, L31 −0.131, all p < 0.004). At some layers
+doublespeak is more negative, at others benign is; there is **no consistent doublespeak-specific
+excess**.
+
+**So this is a POSITION effect, not a semantic one:** the last occurrence of a word sits differently on
+the axis than earlier occurrences regardless of what it means. ⛔ The earlier
+"later-carrot-is-more-bomb-like" claim is retracted, and this is its replacement — computed with the
+control the retracted version lacked. That claim read a within-prompt gradient as accumulating concept
+content without asking whether a prompt containing no concept content shows the same gradient. It does.
+
+**Why keeping the levels separate mattered.** Prompt-level Boombness *rises* with demonstrations
+(L8 +0.0138 → +0.0449 over k=1→16) and correlates with ASR. Token-level, the final occurrence is
+*lower* than earlier ones. Merged, those two would have been reported as one incoherent trend or —
+worse — the prompt-level rise would have been narrated as "the codeword accumulates bombness as the
+prompt proceeds", which the token-level data directly contradicts.
+
+This is the third independent place position beat meaning on this axis: the predictor×position 2×2
+(2–4×), the surface-matched probes (context decodable at the codeword from block 0), and now the
+within-prompt occurrence comparison.
+
+---
+
 ## 3. Does Boombness predict attack success? (§9) — G2
 
 **ρ = +0.307** for `d_surface|L12|proj`, **+0.302** after partialling out the residual-stream norm,
@@ -436,6 +475,29 @@ rows and duplicating two others (recovered from git).
 
 ---
 
+## §15.5 Tokenization audit (plan §2.4 — mandatory)
+
+`tokenization_audit/audit_20260817_013432_3151000`, 2352/2352 rows, 0 failures:
+
+| check | result |
+|---|---|
+| target occurrences that are a **single** token | **2352 / 2352** |
+| tokenization flagged ambiguous | **0** |
+| `tokenization_ok` | **True on every row** |
+| distinct subtoken ids used | 2 — `[75294]` (` carrot`, 1776 rows) and `[13054]` (` bomb`, 576 rows) |
+
+**Why this mattered.** An earlier bank quoted the target as `"{W}"` and placed demonstrations
+sentence-initially, which produced **890 of 5808** two-subtoken occurrences (`car`+`rot`,
+`Car`+`rot`). A two-subtoken occurrence puts a *different vector* at `codeword_last` — the embedding of
+`rot`, not of `carrot` — so any per-token comparison silently mixed two different quantities. The bank
+was regenerated to force the leading-space whole-word form; the variant table in the audit summary
+records that `carrot` alone is 2 tokens while ` carrot` is 1, which is exactly the trap.
+
+**Alignment:** 0 violations among the **216** of 912 families where the exact-swap invariant is defined
+(the other 696 are forced-choice and cannot satisfy it by construction).
+
+---
+
 ## §19 — the eleven questions, answered directly
 
 The plan asks these to be answered directly, so they are, each with its status and its caveat.
@@ -521,6 +583,117 @@ Four things, in order of durability:
    filename/tag/mtime/line-number; resampling *rows* cannot rescue a comparison whose arms sit in
    different *places*; and when correcting an error verify the *measured thing* changed, not just the
    knob you turned.
+
+---
+
+## Limitations and safety scope
+
+**Dual-use scope.** This work studies *why* a known jailbreak family works, in order to characterize it.
+It produces no operational harmful instructions. All harmful content is benchmark material behind
+project abstractions, and harm labels are automated (StrongReject rubric via `gpt-4o-mini`).
+
+**What is stored.** Judge scores, refusal flags, and scalar degeneracy statistics. Raw generations stay
+in local run directories under `outputs/` (git-ignored) and **no completion text appears in any report,
+commit message, or analysis artifact**. Every subagent audit in this sprint was explicitly restricted to
+numeric fields and source code for the same reason.
+
+**Attack targets.** Only the local open-weight model (`Llama-3.1-8B-Instruct`). No proprietary or
+hosted model was attacked; the only API use is the *judge*, which evaluates rather than generates.
+
+### We do NOT claim to have found the mechanism. Plan §13's six criteria, scored honestly:
+
+| # | criterion | met? |
+|---|---|---|
+| 1 | Boombness predicts ASR across prompts | **YES** — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive (2 near-null) |
+| 2 | Adding Boombness increases behaviour or relevant internal scores | **NO** — adding it (+0.25) *decreases* ASR by triggering refusal |
+| 3 | Removing Boombness reduces ASR | **AMBIGUOUS** — −0.25 does reduce ASR, but indistinguishably from a norm-matched random perturbation (p=0.070) |
+| 4 | Comprehension is preserved | **PARTIAL** — coherence-gated, but the +0.25 arm's verdict rests on 202/270 rows |
+| 5 | Random controls fail | **PARTIAL** — a 4-draw band separates +0.25 (p=0.0014) but not −0.25 |
+| 6 | Replicates across prompt families or models | **NO** — one model, one concept pair, and C7 shows a headline band that does **not** replicate across query kinds |
+
+**Two of six met, three partial, one no. So the correct description is a documented correlational
+finding with a directional null — not a mechanism.** The §18 label is B for exactly this reason, and
+§12's objective was not built.
+
+### Specific limits a reader should carry
+- **One model, one concept pair, one judge.** Llama-3.1-8B, carrot↔bomb, StrongReject/`gpt-4o-mini`.
+- **G1 is a pilot**: n=8 families from **2 domains**, and its headline is one arm of ~130.
+- **G3's identification is one-sided by construction** (a layer holds only ~3,648 edges).
+- **G1/G3 run on `semantic_one_word` prompts; G2/G4's ASR claims run on `behavioral` ones.** C7 showed
+  this is not merely a join hazard — it changes the sign of a reported effect.
+- **"Refusalness at the codeword token" is off-label** — the direction was fitted for a last-token
+  readout and its condition ordering degrades badly there.
+
+---
+
+## Exact commands to reproduce the main runs
+
+All GPU stages go through one wrapper. **Argsfiles must live on the shared filesystem** — `/tmp` is
+node-local and the job dies in 3 seconds (this cost a launch cycle; see the tick log).
+
+```bash
+AD=$PWD/outputs/boombness/argsfiles          # shared FS, NOT /tmp
+BANK=$PWD/data/boombness_prompts/boombness_prompt_bank.jsonl   # sha 71bea179345ed118
+
+# 1. prompt bank + mandatory audits
+python src/boombness/prompt_families.py --out "$BANK"
+sbatch --export=ALL,BOOMB_SCRIPT=tokenization_audit.py,BOOMB_ARGSFILE=$AD/tokaudit.txt        src/boombness/slurm/run_boombness.sh
+
+# 2. extraction — BOTH readout positions (the 2x2 needs both; --position last was once wired
+#    into stage_fit only, producing a phantom cell)
+printf -- '--bank %s --stage both --layers all --position codeword_last --tag full\n'  "$BANK" > $AD/x_cw.txt
+printf -- '--bank %s --stage both --layers all --position last          --tag lastpos\n' "$BANK" > $AD/x_last.txt
+for f in x_cw x_last; do sbatch --export=ALL,BOOMB_SCRIPT=extract_boombness.py,BOOMB_ARGSFILE=$AD/$f.txt        src/boombness/slurm/run_boombness.sh; done
+
+# 3. behaviour + judge  (judge refuses to start without OPENAI_API_KEY, by design)
+printf -- '--bank %s --query-kinds behavioral --arm base --tag base\n' "$BANK" > $AD/base.txt
+sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$AD/base.txt src/boombness/slurm/run_boombness.sh
+set -a; source .env; set +a
+python src/boombness/judge_boombness.py --gens <GENS_DIR> --bank "$BANK" --tag base
+
+# 4. refusalness at BOTH positions (matched footing — the 3.7x retraction)
+for POS in codeword_last last; do
+  printf -- '--bank %s --layers 12,14,16,18,20 --query-kind behavioral --position %s --tag %s\n' \
+    "$BANK" "$POS" "$POS" > $AD/ref_$POS.txt
+  sbatch --export=ALL,BOOMB_SCRIPT=refusalness.py,BOOMB_ARGSFILE=$AD/ref_$POS.txt src/boombness/slurm/run_boombness.sh
+done
+
+# 5. G1 / G3 / G4
+sbatch --export=ALL,BOOMB_SCRIPT=aggressive_patching.py,BOOMB_ARGSFILE=$AD/g1.txt src/boombness/slurm/run_boombness.sh
+printf -- '--bank %s --fit-dir <FIT> --layers 8,18 --topk 8 --n-families 6 --n-examples 4 \
+--query-kind semantic_one_word --dst both --demo-scope block --tag edgematch\n' "$BANK" > $AD/g3.txt
+sbatch --export=ALL,BOOMB_SCRIPT=surgical_knockout.py,BOOMB_ARGSFILE=$AD/g3.txt src/boombness/slurm/run_boombness.sh
+# steering + a >=3-draw random-control band (one draw cannot support "more than a random direction")
+for S in 20260817 20260818 20260819 20260820; do
+  printf -- '--bank %s --query-kinds behavioral --fit-dir <FIT> --intervene random:add:8-8:0.25 \
+--arm ctrl_rand_s%s --seed %s --tag ctrl_rand_s%s\n' "$BANK" "$S" "$S" "$S" > $AD/ctrl_$S.txt
+  sbatch --export=ALL,BOOMB_SCRIPT=score_behavior.py,BOOMB_ARGSFILE=$AD/ctrl_$S.txt src/boombness/slurm/run_boombness.sh
+done
+
+# 6. ANALYSIS — all CPU, all committed, every gate-bearing number comes from here
+PY=<conda-env>/bin/python     # needs scipy/sklearn; the login shell has neither
+$PY src/boombness/analyze_g2.py --judge <JUDGE> --extract <EXTRACT_CW> --score <GENS> \
+    --refusalness <REFUSAL_CW> --extract-position codeword_last --cluster-by domain \
+    --out outputs/boombness/g2_analysis_cwpos.json
+$PY src/boombness/analyze_position.py --judge <JUDGE> \
+    --extract-codeword <EXTRACT_CW> --extract-last <EXTRACT_LAST> \
+    --refusalness-codeword <REFUSAL_CW> --refusalness-last <REFUSAL_LAST> \
+    --out outputs/boombness/position_2x2.json
+$PY src/boombness/analyze_g1_g3.py --g1 <PATCH_RUN> --g3 <KNOCKOUT_RUN> --out outputs/boombness/g1_g3_analysis.json
+$PY src/boombness/analyze_steering.py --baseline <JUDGE_BASE> --arms <JUDGE_ARMS...> \
+    --out outputs/boombness/steering_analysis.json
+$PY src/boombness/analyze_role.py --extract <EXTRACT_ROLE> --judge <JUDGE_ROLE> \
+    --out outputs/boombness/role_analysis.json
+$PY src/boombness/reanalyze_corrected.py --run <EXTRACT_CW> --metric d_surface|cos \
+    --out outputs/boombness/reanalyze_d_surface_cos.json
+$PY src/boombness/probes.py --run <EXTRACT_CW> \
+    --regimes d5_surface_matched_codeword,d6_surface_matched_concept --tag surfmatch
+```
+
+**Three refusals are load-bearing and will stop you if inputs are wrong** — this is intended:
+`analyze_g2.py` refuses when the two probes' readout positions disagree; `analyze_position.py` refuses
+unless every run's readout position is verifiable *from its artifact*; `analyze_steering.py` refuses to
+report an arm whose coherence was never assessed.
 
 ---
 

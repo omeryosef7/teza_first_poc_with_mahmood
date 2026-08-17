@@ -3242,3 +3242,33 @@ This also connects to the sprint's surviving positive finding: **position keeps 
 more than meaning** on this axis — the predictor×position 2×2 (2–4× effects), and now the
 within-prompt occurrence comparison. Both say the codeword's *place* carries more of the measurable
 signal than its *sense* does.
+
+### Tick 48 — three hard plan requirements were unmet. Fixed.
+
+Auditing the report against the plan's own §13/§15 text rather than against my memory of it found three
+requirements I had not satisfied. None is cosmetic:
+
+1. **§15 specifies the exact path `reports/boombness_objective_sprint_report.md`.** I had written
+   `..._full_report.md`. Renamed (via `git mv`, so history follows) and all references updated.
+2. **§13 requires a verbatim `Limitations and safety scope` section in every report — I had none.**
+   Now present, and it does the thing that section exists for: it scores §13's **six "we found the
+   mechanism" criteria explicitly** — **2 met, 3 partial, 1 no** — and states plainly that the correct
+   description is a documented correlational finding with a directional null, **not a mechanism**. It
+   also records the dual-use scope, that no completion text appears in any report or commit, and that
+   only the local open-weight model was attacked (the API is used as a judge, never as a target).
+3. **§15 requires 18 numbered contents.** Checked all 18 by keyword: 17 present, **item 8
+   (token-level Boombness) missing as its own section** — the Q2 result existed only inside the §19
+   answers. Added as §2b, which the plan explicitly wants kept separate from prompt-level.
+
+**And keeping them separate turned out to matter.** Prompt-level Boombness *rises* with demonstrations
+(L8 +0.0138 → +0.0449 over k=1→16); token-level, the final occurrence is *lower* on the axis than
+earlier ones (−0.154 at L16, p=0.0001) — and the benign control shows the same, so it is positional.
+Merged, those two become either one incoherent trend or, worse, a narration like "the codeword
+accumulates bombness as the prompt proceeds" that the token-level data directly contradicts. The plan
+was right to insist on the separation.
+
+Also added **§15.5, the mandatory tokenization audit** (2352/2352 single-token, 0 ambiguous, 2 distinct
+subtoken ids) with the reason it mattered — an earlier bank produced 890/5808 two-subtoken occurrences,
+which puts the embedding of `rot` rather than `carrot` at the readout position — and **exact
+reproduction commands** for every main run, including the three refusals that are load-bearing and will
+stop a reader with wrong inputs.
