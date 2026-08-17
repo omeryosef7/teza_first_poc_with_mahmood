@@ -395,6 +395,7 @@ def main() -> int:
 
     model_id = args.model or dc.PRIMARY_MODEL
     lm = dc.load_model(model_id, dtype=getattr(torch, args.dtype), attn_implementation="sdpa")
+    run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="sdpa", num_layers=lm.num_layers)
 

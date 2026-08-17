@@ -2484,3 +2484,27 @@ The redundancy is in the **number of edges**, not specifically in their spread a
 Phase board and the short update are updated accordingly. This is the third claim this sprint whose
 *mechanism* was wrong while its *observation* held, and the pattern is the same each time: a
 comparison that moved two things at once.
+
+### Tick 36 — 2026-08-17
+
+Advanced the two audit follow-ups that do not depend on the running jobs.
+
+**B5 provenance, fixed at the source.** `RunDir.note_bank()` now records the prompt bank's **content
+hash** (`bank_content_sha16` + row count), not just its path, and it is wired into all six entry
+points that consume a bank (extract, score_behavior, refusalness, surgical_knockout,
+aggressive_patching, judge). The bank at the recorded path has been regenerated three times this
+sprint (1464 → 1752 → 2352 rows), the phase board cited 1752-row evidence for runs that consumed
+1464, and R1's stated root cause was joining across bank regenerations via a `prompt_id` that does
+not hash prompt text. Nothing has gone wrong yet **only because the four headline runs happen to
+agree at 1464** — which is luck, not a control. Current bank: `71bea179345ed118`, 2352 rows.
+
+**The 3.7× fair-contest measurement is running (job 761192).** `refusalness.py` read the residual
+stream at the **last prompt token** while `d_surface` is read at `codeword_last`, so part of
+"Boombness beats refusalness 3.7×" was "the codeword position beats the last position" — the caveat
+C2 itself called disqualifying, and which revision 1 of the update dropped. `--position
+codeword_last` puts both predictors on the same token. Note this can only *weaken* my own headline:
+if the gap collapses at matched position, the 3.7× goes, and that is the point of running it.
+
+Still running: 761178 (base generation, 960 behavioural rows for §11), 761179/761180 (control
+draws 1–2 of 4). Pending: 761184/761185 (control draws 3–4) and 761192. Watch the pending ones
+against the 30-minute rule.

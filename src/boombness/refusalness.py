@@ -76,6 +76,14 @@ def main() -> int:
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="base")
+    ap.add_argument("--position", default="last", choices=["last", "codeword_last"],
+                    help="token position to read refusalness at. FAIR-CONTEST FIX (audit A4/B2, "
+                         "2026-08-17): the sprint compared refusalness against d_surface as "
+                         "predictors of ASR, but refusalness was read at the LAST prompt token "
+                         "while d_surface is read at `codeword_last`. Part of 'Boombness beats "
+                         "refusalness 3.7x' was therefore 'the codeword position beats the last "
+                         "position' — a footing mismatch, not a result. `codeword_last` puts both "
+                         "predictors at the same token so the contest is decidable.")
     args = ap.parse_args()
     seed_everything(args.seed)
 
@@ -89,6 +97,7 @@ def main() -> int:
     ledger = FailureLedger()
     lm = dc.load_model(args.model or dc.PRIMARY_MODEL, dtype=getattr(torch, args.dtype),
                        attn_implementation="sdpa")
+    run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="sdpa",
                    refusal_direction_source=REFUSAL_GLOB,
@@ -99,8 +108,17 @@ def main() -> int:
     units = {L: (v / v.norm()) for L, v in dirs.items()}
     for i, row in enumerate(rows):
         try:
-            templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
-            ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
+            if args.position == "codeword_last":
+                templated, ids, last_idx, _foll, _nsub = resolve_occurrences(
+                    dc, lm.tokenizer, row)
+                if not last_idx:
+                    ledger.fail("no_occurrence", row["prompt_id"])
+                    continue
+                pos = last_idx[-1]           # final occurrence, same as extract_boombness
+            else:
+                templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
+                ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
+                pos = len(ids) - 1
             t = torch.tensor([ids], device=lm.model.device)
             out = lm.model(input_ids=t, output_hidden_states=True, use_cache=False)
         except Exception as e:
@@ -111,8 +129,10 @@ def main() -> int:
                                         "strength", "consistency", "example_position",
                                         "role_style", "query_kind")}
         rec["seq_len"] = len(ids)
+        rec["readout_position"] = args.position
+        rec["readout_token_index"] = int(pos)
         for L, u in units.items():
-            h = out.hidden_states[L + 1][0, -1, :].float().cpu()   # final prompt token
+            h = out.hidden_states[L + 1][0, pos, :].float().cpu()
             rec[f"refusalness|L{L}|cos"] = float(torch.dot(h / h.norm(), u))
             rec[f"refusalness|L{L}|proj"] = float(torch.dot(h, u))
         run.log_row(rec)

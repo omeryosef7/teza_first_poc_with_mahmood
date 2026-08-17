@@ -211,6 +211,7 @@ def main() -> int:
     # eager is MANDATORY: under SDPA the 4-D mask is ignored and every knockout silently no-ops.
     lm = dc.load_model(args.model or dc.PRIMARY_MODEL, dtype=torch.float32,
                        attn_implementation="eager")
+    run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="eager", num_layers=lm.num_layers,
                    note="eager required: AttentionKnockout is a no-op under SDPA")

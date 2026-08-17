@@ -209,6 +209,32 @@ class RunDir:
     def note(self, **kw) -> None:
         self._extra_meta.update(kw)
 
+    def note_bank(self, bank_path: str) -> None:
+        """Record the CONTENT hash of the prompt bank, not just its path.
+
+        PROVENANCE FIX (audit B5, 2026-08-17). Runs recorded a bank path and a row count, but the
+        bank at that path has been regenerated three times this sprint (1464 -> 1752 -> 2352 rows).
+        The phase board ended up citing 1752-row evidence for runs that had actually consumed 1464,
+        and re-running any upstream job today would silently consume a different bank. Retraction
+        R1's stated root cause was joining across bank regenerations via a `prompt_id` that does not
+        hash prompt text; nothing has gone wrong yet only because the four headline runs happen to
+        agree. A content hash makes a mismatched join detectable instead of invisible.
+        """
+        import hashlib
+        h, n = hashlib.sha256(), 0
+        try:
+            with open(bank_path, "rb") as f:
+                for line in f:
+                    h.update(line)
+                    n += 1
+        except OSError as e:
+            self._extra_meta.update({"bank_path": bank_path, "bank_content_sha16": None,
+                                     "bank_hash_error": str(e)})
+            return
+        self._extra_meta.update({"bank_path": os.path.abspath(bank_path),
+                                 "bank_content_sha16": h.hexdigest()[:16],
+                                 "bank_n_rows": n})
+
     def finish(self, summary: Optional[Dict[str, Any]] = None,
                ledger: Optional[FailureLedger] = None) -> str:
         """Write metadata.json + summary.json + DONE.json. Ledger is MANDATORY (plan §2.2)."""

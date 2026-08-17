@@ -111,6 +111,7 @@ def main() -> int:
             meta_by_id[r["prompt_id"]] = r
 
     run = RunDir("judge", args, tag=args.tag)
+    run.note_bank(args.bank)
     ledger = FailureLedger()
     n_null = 0
     scored: List[Dict] = []
