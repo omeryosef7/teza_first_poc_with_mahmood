@@ -2668,3 +2668,39 @@ the concept axis.
 
 Caveat retained from the script: `role_style` is a **categorical proxy**; no Userness/CoTness probe
 has been fitted on this model, so this is not a measured role signal.
+
+### Retraction #5 — selection-fairness check (done before the audit reported, because it could have *over*-supported the retraction)
+
+Refusalness's R² was a **best-of-5-layers** figure while `d_surface` was quoted at a fixed L12.
+Selection inflates the winner, and here that asymmetry favours **refusalness** — i.e. it would make
+my own retraction look better than it deserves. Checked, both probes @ `codeword_last`, n=234:
+
+| refusalness layer | R² |
+|---|---|
+| L12 | 0.1342 |
+| L14 | 0.1640 |
+| L16 | **0.1313** (worst) |
+| L18 (canonical) | 0.1647 |
+| L20 | **0.1759** (best-of-5) |
+
+| comparison | refusal | Boombness | ratio B/R |
+|---|---|---|---|
+| best-of-5 refusal vs best-of-3 Boombness | 0.1759 | 0.1411 | **0.80** |
+| **fixed canonical L18** vs best-of-3 Boombness | 0.1647 | 0.1411 | **0.86** |
+| refusalness' WORST layer vs best-of-3 Boombness | 0.1313 | 0.1411 | 1.07 |
+
+**The retraction survives.** Against refusalness at **L18 — the canonical layer used everywhere else
+in this repo and fixed long before this analysis** — Boombness still loses (0.86). Only by picking
+refusalness's *worst* layer does Boombness edge ahead at 1.07, which is both cherry-picking and
+inside the noise.
+
+What matters most: **3.7× is not recoverable under any layer choice.** It would require refusalness
+R² ≈ 0.038, and that value occurs only at the *wrong position*. The original ratio was a position
+artifact, not a layer-selection artifact.
+
+Noted separately: `d_surface` also enjoys a selection advantage the earlier audit flagged (~20
+candidate columns vs refusalness's 5), and it is **refit** at each position (`stage=both`,
+`fit_dir=None`, fresh `directions_fit_*.pt` written at `position=last`) while refusalness reads one
+fixed direction at both positions. So `d_surface` got the better-fitted comparator at both cells
+and still lost at both. The asymmetries run *against* Boombness, which makes the conclusion
+conservative.
