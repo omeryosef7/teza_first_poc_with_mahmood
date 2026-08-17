@@ -4131,3 +4131,27 @@ one looks good.
 
 Also running: band draw judges (1 of 4 at 803/960) for the genuine 4-draw random-control band that
 replaces the n=1 band retracted in #7.
+
+### Tick 62 — 4-hourly audit, pointed at the claims that are NOT yet in a report
+
+Independent audit launched against the four new intervention claims (arms B / C / F and the interaction),
+deliberately before any of them reaches a document. Its brief includes five specific attacks I want run
+against my own reasoning:
+
+1. **Re-derive every number** (ASR, refusal, paired deltas, clustered p) from the judge dirs, and confirm
+   the arms really share one 270-prompt set and one baseline.
+2. **Is the interaction threshold luck?** ASR is a 0.5 cut on a continuous StrongReject score. Recompute
+   every contrast on the continuous score and at 0.25 / 0.75, plus per-arm quantiles. If arm F merely
+   shifts mass across 0.5, "more than double" is an artifact of where the threshold sits.
+3. **Length**, quantitatively — regress score on length within arm, compare at matched length strata, and
+   do the same for arm B (which I did *not* flag for length, and should have checked symmetrically).
+4. **Is arm C's null underpowered rather than real?** Only ~20 of 270 prompts were refused at baseline, so
+   only those can move. What change was even detectable, and what happened to those 20 specifically? "Refusal
+   is not the binding constraint" may be a ceiling artifact of there being nothing left to remove.
+5. **Does the L18 refusal projection do something other than remove refusal?** If it makes the model
+   verbose or rambling in a way the judge rewards, the "capability channel" story has a mundane competitor.
+
+Point 5 is the one I most expect to bite, and point 4 is the one where I think my own wording outran the
+evidence. Recording that before the answer arrives.
+
+Meanwhile: `len_base`/`len_C`/`len_F` at 804/625/462 of 960; band draw 1 of 4 judged.
