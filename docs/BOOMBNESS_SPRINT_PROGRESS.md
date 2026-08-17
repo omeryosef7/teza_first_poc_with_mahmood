@@ -2508,3 +2508,43 @@ if the gap collapses at matched position, the 3.7× goes, and that is the point 
 Still running: 761178 (base generation, 960 behavioural rows for §11), 761179/761180 (control
 draws 1–2 of 4). Pending: 761184/761185 (control draws 3–4) and 761192. Watch the pending ones
 against the 30-minute rule.
+
+## ⛔ RETRACTION #5 — "Boombness beats refusalness 3.7× within the attack" was a POSITION ARTIFACT
+
+The comparison read the two predictors at **different tokens**: `d_surface` at `codeword_last`,
+refusalness at the **last prompt token**. C2 flagged this as "a footing mismatch, not a fair
+contest" and I still shipped the 3.7× — twice. Job 761263 re-measured refusalness at
+`codeword_last`, 960/960 rows, same 234 analysed prompts, same ASR, same script:
+
+| | refusalness @ last token | refusalness @ **codeword_last** |
+|---|---|---|
+| best single-layer R² | 0.0386 | **0.1759** |
+| all-layers joint R² | 0.0725 | **0.2565** |
+| `d_surface|L12|proj` R² (unchanged) | 0.1411 | 0.1411 |
+| **ratio Boombness / refusalness** | **3.66** | **0.80** |
+
+**The ratio inverts.** At matched position refusalness is the *better* single predictor
+(ρ = +0.405 at L18, p = 1.2e-10, vs Boombness +0.307), Boombness adds only **+0.038 to +0.076**
+over it, and all five refusalness layers jointly add **+0.144** over Boombness. The entire 3.7×
+was the codeword position beating the last position, not Boombness beating refusalness.
+
+**This was called "the most robust number in the sprint"** — it survived nested CV with selection
+inside the fold, and leave-one-domain-out. Both of those resample *rows*. **No amount of
+resampling fixes a comparison whose two arms are measured at different places.** That is the
+lesson: robustness checks test the estimate, not the contrast.
+
+### What this does to the §18 label
+§9 Q6 asked whether Boombness predicts ASR better than refusalness. The answer is now **no**. That
+pushes the outcome from **B (mechanistic but not causal)** toward **C (refusal-suppression is the
+story and Boombness is a correlate)** — which is also what G4 said from the intervention side:
+`+d_surface` suppressed ASR by *triggering refusal* 90% of the time. The two independent lines now
+agree, and they agree against my headline.
+
+**Label pending one more cell.** The comparison is still only half-matched: I have `d_surface` at
+`codeword_last` only. Job 761268 extracts it at the **last token** so the 2×2 (predictor × position)
+is complete. If `d_surface@last` collapses the way refusalness@last did, then *position* is the
+dominant factor for both and neither predictor is special; if it holds up, refusalness genuinely
+wins at both positions. Either way the 3.7× is dead — I am running this to find out which
+replacement claim is true, not to rescue it.
+
+Short update revision 3 goes out once 761268 lands. Revision 2 is **withdrawn** on this point.

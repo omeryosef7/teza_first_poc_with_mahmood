@@ -165,7 +165,12 @@ def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
         except ValueError as e:
             ledger.fail(f"fit:{e}", row["prompt_id"])
             continue
-        pos = last[-1] if position == "codeword_last" else following[-1]
+        if position == "codeword_last":
+            pos = last[-1]
+        elif position == "last":
+            pos = len(ids) - 1          # final prompt token, matching refusalness' default
+        else:
+            pos = following[-1]
         diag: Dict[str, float] = {}
         hs = forward_hidden(lm, ids, _diag=diag)
         if "last_layer_tied_vs_raw_relnorm" in diag:
@@ -363,7 +368,14 @@ def main() -> int:
     ap.add_argument("--logit-lens-layers", default="",
                     help="comma list of BLOCK indices; default = every 4th layer + last")
     ap.add_argument("--directions", default="d_surface,d_context,d_inter,d_naive")
-    ap.add_argument("--position", default="codeword_last", choices=["codeword_last", "following"])
+    ap.add_argument("--position", default="codeword_last",
+                    choices=["codeword_last", "following", "last"],
+                    help="'last' (final prompt token) added 2026-08-17 to complete the "
+                         "position x predictor comparison. The sprint compared d_surface at "
+                         "`codeword_last` against refusalness at the last token and declared "
+                         "Boombness the better ASR predictor by 3.7x; at MATCHED position that "
+                         "ratio inverted to 0.80. Measuring d_surface at `last` too is what makes "
+                         "the comparison a 2x2 instead of two half-matched cells.")
     ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"],
                     help="which token ids stand for the words in the logit lens; 'primary' is "
                          "the single leading-space whole-word token per side (symmetric)")

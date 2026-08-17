@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import traceback
 import glob
 import json
 import os
@@ -39,6 +40,7 @@ import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA_DIR, FailureLedger, REPO_ROOT, RunDir, ds, read_jsonl, seed_everything  # noqa: E402
+from extract_boombness import resolve_occurrences  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 REFUSAL_GLOB = os.path.join(REPO_ROOT, "doublespeak_causality", "outputs", "stage_gcg_full",
@@ -106,6 +108,7 @@ def main() -> int:
                         "predictor and not a restatement of the observed refusal")
 
     units = {L: (v / v.norm()) for L, v in dirs.items()}
+    first_error, n_failed = None, 0
     for i, row in enumerate(rows):
         try:
             if args.position == "codeword_last":
@@ -123,6 +126,21 @@ def main() -> int:
             out = lm.model(input_ids=t, output_hidden_states=True, use_cache=False)
         except Exception as e:
             ledger.fail(f"forward:{type(e).__name__}", row["prompt_id"])
+            # FAIL FAST AND LOUDLY. A run where EVERY row fails previously logged nothing, wrote no
+            # results.jsonl, and then died 30 lines later on a FileNotFoundError reading the file it
+            # never wrote — three steps removed from the actual cause, with the reason discarded.
+            # A systematically broken run must announce itself on the first row, not be inferred.
+            if first_error is None:
+                first_error = f"{type(e).__name__}: {e}"
+                print(f"[refusal] FIRST FAILURE on row {i} ({row.get('prompt_id')}): "
+                      f"{first_error}", flush=True)
+                traceback.print_exc()
+            n_failed += 1
+            if n_failed >= 20 and ledger.succeeded == 0:
+                raise SystemExit(
+                    f"[refusal] ABORTING: the first {n_failed} rows ALL failed and none "
+                    f"succeeded. This is a broken configuration, not a bad subset.\n"
+                    f"  first error: {first_error}")
             continue
         rec = {k: row.get(k) for k in ("prompt_id", "prompt_sha16", "family_id", "condition",
                                         "cell", "domain", "split", "bank_block", "n_examples",

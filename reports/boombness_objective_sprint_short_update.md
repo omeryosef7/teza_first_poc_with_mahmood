@@ -67,10 +67,22 @@ codeword mapping ⇒ not a doublespeak prompt). Those 12 zero-demo `direct_codew
 ASR = 1.0 and carried the entire gap. Headline table and headline correlation must be on the same
 population; they now are.
 
-*Within* the doublespeak arm, refusalness explains little and Boombness explains ~3.7× more
-(R² 0.141 vs 0.039). That ratio is the **most robust number in the sprint** — it is 1 column vs
-1 column (not a dimensionality artifact), and it survives nested CV with selection inside each fold
-(0.081 vs 0.022, ratio 3.65) and leave-one-domain-out (+0.089 vs −0.067).
+⛔ **RETRACTED (this replaces revision 2's claim).** I reported that within the doublespeak arm
+Boombness explains ~3.7× more than refusalness (R² 0.141 vs 0.039) and called it the sprint's most
+robust number. **It was a position artifact.** The two predictors were read at different tokens —
+`d_surface` at `codeword_last`, refusalness at the last prompt token. Re-measured at the same token:
+
+| | refusalness @ last | refusalness @ **codeword_last** |
+|---|---|---|
+| best single-layer R² | 0.039 | **0.176** |
+| all-layers joint R² | 0.073 | **0.257** |
+| `d_surface|L12|proj` R² | 0.141 | 0.141 |
+| **ratio** | **3.66** | **0.80** |
+
+At matched position **refusalness is the better predictor** (ρ = +0.405 at L18, p = 1.2e-10, vs
+Boombness +0.307); Boombness adds only +0.04–0.08 over it, while refusalness jointly adds +0.14 over
+Boombness. The 3.7× survived nested CV and leave-one-domain-out — but those resample *rows*, and no
+resampling fixes a contrast whose arms sit at different positions.
 
 Two caveats we owe you, both of which revision 1 dropped or half-stated:
 - **Range restriction.** Within-arm refusalness sd is 0.74 vs 3.07 pooled, so "refusal doesn't
