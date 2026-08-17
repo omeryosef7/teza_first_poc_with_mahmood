@@ -10653,3 +10653,4 @@ Unchanged. §20.1–§20.5, §20.7 complete/traced/verified; D3 resolved; §20.8
 unproven; six owed items, all decisions. **Zero §20 jobs queued**, so the rule has no §20 subject.
 
 ---
+### 23:45 — idle. Account 5/6, all boombness (3 R, 2 PD — the two the monitor keeps flagging; see 23:15, not mine to cancel). No new asymmetry artifacts, no §20 commits. Diff unchanged.
