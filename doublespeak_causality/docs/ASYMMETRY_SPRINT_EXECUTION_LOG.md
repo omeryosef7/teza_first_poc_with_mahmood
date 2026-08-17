@@ -10654,3 +10654,9 @@ unproven; six owed items, all decisions. **Zero §20 jobs queued**, so the rule 
 
 ---
 ### 23:45 — idle. Account 5/6, all boombness (3 R, 2 PD — the two the monitor keeps flagging; see 23:15, not mine to cancel). No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 2026-08-18 00:15 — idle. Controller OK (header verified). Queue: 2 boombness jobs (theirs); the two stale-PD jobs were cancelled by them, resolving the monitor alerts. No new asymmetry artifacts, no §20 commits.
+*(Their `0a126d2e` is a retraction — a 3.7× ratio that was a position artifact and inverts to 0.80.
+Fourth programme-level retraction I have seen on this branch, and the same lesson §20 kept
+relearning: an unchecked positional/scope assumption produced a headline that reversed. Nothing to
+act on here; noted because it is the recurring failure mode across all three workstreams.)*
+Diff unchanged.
