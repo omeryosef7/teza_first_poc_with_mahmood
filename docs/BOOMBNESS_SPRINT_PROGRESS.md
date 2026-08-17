@@ -4005,3 +4005,49 @@ not have an hour ago.**
 (a) replication on a second concept pair, (b) a projection dose–response (α<1 partial removal), and
 (c) the same arm on Qwen3 — especially given G2 did not replicate there. It is a strong, clean signal,
 not yet a settled fact.
+
+## ★ ARM C — removing refusal ENTIRELY does not help the attack. Refusal is not the binding constraint.
+
+| arm | ASR | refusal | Δ vs baseline | t_cl | p_cl |
+|---|---|---|---|---|---|
+| baseline | 0.219 | 0.074 | — | — | — |
+| **arm C — remove refusalness** | **0.226** | **0.000** | **−0.013** | −0.86 | **0.431** |
+| arm B — remove Boombness | 0.300 | 0.074 | +0.074 | +1.89 | 0.117 |
+| add Boombness +0.25 | 0.081 | 0.696 | −0.114 | −5.99 | 0.0019 |
+| random +0.25 | 0.178 | 0.085 | −0.035 | −3.33 | 0.021 |
+
+**The manipulation worked and the behaviour did not follow.** Projecting out the refusal direction drives
+the refusal rate from 0.074 to **exactly 0.000** — every keyword refusal is gone — and ASR moves by
+**−0.013 (p=0.431), i.e. not at all.**
+
+### Why this matters more than it looks
+The doublespeak attack has *already* suppressed refusal to 7.4%. So there was almost nothing left for arm
+C to remove, and removing it buys nothing: **refusal is not the binding constraint on attack success
+inside this arm.** That is a direct measurement of something the sprint had only ever inferred from
+between-arm comparisons.
+
+### And it reorders the two candidate explanations
+| contrast | Δ | t_cl | p_cl |
+|---|---|---|---|
+| **arm C − arm B** (remove refusal vs remove Boombness) | **−0.087** | −2.84 | **0.036** |
+
+**Removing Boombness helps the attack significantly MORE than removing refusal entirely does.** Within
+the doublespeak arm, the concept-detectability axis is doing more work than the refusal direction.
+
+**Consequence for §18.** Outcome **C** ("ASR is mainly explained by refusal suppression") is now
+*directly* contradicted for the within-arm case: refusal can be driven to zero with no ASR gain. The
+between-arm story (direct 96% refusal → doublespeak 7%) still stands — refusal suppression is how the
+attack *gets started* — but it does not explain variation in success *once inside* the attack. Label C is
+weakened by a manipulation, not by a ratio contest.
+
+### Arm F is the discriminating test, and the prediction is recorded before its judge finishes
+Arm F = **add Boombness AND remove refusalness**. The +0.25 arm's ASR collapse (0.219 → 0.081) was
+attributed to *triggering refusal* (90.1% of its suppressed prompts were refusals). Arm F removes that
+route:
+- **If the suppression really was refusal:** with refusal projected out, arm F's ASR should return to
+  ≈ baseline or above (0.22–0.30).
+- **If suppression works by some other route:** arm F's ASR should stay low (≈ 0.08) even with refusal
+  gone — and the refusal explanation of the +0.25 arm would be wrong.
+
+Arm F's judge is at 381/960. Four genuinely independent control-band draws (verified: 4 distinct
+completion sets, 81–85% pairwise disagreement) are queued behind it.
