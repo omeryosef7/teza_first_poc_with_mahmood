@@ -62,7 +62,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | Gate | Question | Verdict | Date |
 |---|---|---|---|
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS (direction robust; magnitude restated with intervals). The lever is the DEMONSTRATION block, not the codeword token. Transplanting demos moves the semantic readout strongly toward the donor (95% CI +23% to +135% of span); transplanting the query token moves it −76% (wrong way). Controls pass.** | 2026-08-16 |
-| G2 (§9) | Does prompt-level Boombness predict ASR? | **RETRACTED AND REVERSED — see RETRACTION #2. YES: `d_surface` L8 proj rho=+0.342 (p=8e-08, Holm), 100% coverage, better than the semantic readout (+0.249). The earlier negative came from reading the predictor off the wrong prompt.** ~~SPLIT VERDICT. Representation Boombness (`d_surface`, L4–L20): NO — |ρ|≤0.10, all p>0.15 within the doublespeak arm, and Δ R²=+0.004 beyond semantic. Semantic log-odds: YES — ρ=+0.418, p=9e-10. The plan's proposed GCG objective is a documented negative; the semantic pathway is the viable one.** | 2026-08-16 |
+| G2 (§9) | Does prompt-level Boombness predict ASR? | **YES, with corrected inference: `d_surface|L12|proj`, rho=+0.307, norm-partial +0.302, n=234, 100% coverage, 6/6 domains positive (2 essentially null). p = 5.0e-04 within-domain permutation / 1.2e-03 CR1-clustered — NOT the i.i.d. 1.7e-06.** ⛔ Two earlier verdicts superseded: ~~L8 proj rho=+0.342, p=8e-08~~ (C1: L8 is the most norm-contaminated layer, norm-free +0.172 fails Holm) and ~~the original negative~~ (R2: predictor read off the wrong prompt). | 2026-08-17 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED (3rd attempt, corrected destination). Cutting query→demo-BLOCK attention at ALL layers recovers 84% of the demonstration-deletion ceiling (−9.708 vs −11.509); the same cut at 2 layers recovers 0.1%. The retrieval is attention-carried but DISTRIBUTED and REDUNDANT over depth. Dynamic range established; controls at 0.** ~~RETRACTED AGAIN — the knockout cut edges into the codeword token while the readout reads the last token, 9 positions away, so every arm was measuring an indirect path. Rerunning with the corrected destination (job 760816).** ~~RESOLVED. Dynamic range established (`no_demo_text` = −11.5 log-odds). Cutting every query→demo-codeword edge at every layer recovers only −0.78, ~7% of the ceiling, so ~93% of the demonstrations' influence does NOT flow through attention to the codeword tokens. Likely carried by the predicates instead.** ~~UNRESOLVED — the null is uninterpretable: the positive control established no dynamic range (it moved the readout LESS than the arm it validates). Needs a real dynamic-range control before any §10 conclusion.** ~~Attention-edge route: NO EFFECT to remove — cutting every query→demo edge at L8/L18 moves the readout ≈0, while replacing the same positions' states moves it +71–84%. The demonstration influence is indirect/multi-hop, not a one-hop attention path. Machinery verified (total mask-out 0.945→0.000; per-head composition bit-identical).** | 2026-08-16 (partial: 2 layers, codeword positions only) |
 | G4 (§12) | Is Boombness a usable GCG objective? | **NO — steering is a documented NEGATIVE. Both signs of `d_surface` at a coherent dose SUPPRESS ASR (paired Δ −0.114 and −0.074 vs −0.035/−0.031 for norm-matched controls), so the effect is disturbance, not direction. The axis is not inert (2–3× the controls) and refusal responds directionally (0.696 vs 0.067), but ASR does not follow the sign — which is what an objective needs.** ~~Representation Boombness: NO, on G2 evidence — it does not predict ASR at the layers an objective would target. Semantic/retrieval objective: untested, and now the recommended direction.** | 2026-08-16 (provisional) |
 | FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **B — mechanistic but not causal.** Boombness is measurable and predicts ASR within the attack arm (ρ=+0.307 at L12, norm-controlled, Holm), beats refusalness there (3.7×), and localizes to distributed attention retrieval from the demonstrations — but steering it does not move ASR in a sign-following way, so it is not a usable GCG objective. Between arms the story is C-shaped (refusal collapses 96%→7%). | 2026-08-17 |
@@ -1461,7 +1461,7 @@ A doublespeak prompt is, to the refusal direction, **indistinguishable from a be
 −0.15) while the matched direct request sits at +7.30. That is what the ASR table's 95.8% → 7.4%
 refusal collapse looks like in representation space.
 
-### Within the attack arm, refusalness explains almost nothing and Boombness explains 14× more
+### Within the attack arm, refusalness explains almost nothing and ⛔ RETRACTED (C2) — see the correction below. ~~Boombness explains 14× more~~
 
 n = 234 doublespeak prompts, `n_examples ≥ 1`, 100% coverage. R² against the continuous
 StrongReject score:
@@ -1477,7 +1477,7 @@ StrongReject score:
 Same picture at every refusal layer tested (L12/16/18/20): refusalness-only R² ranges 0.0013–0.0386,
 Boombness-only 0.115–0.141, and refusalness contributes ≤+0.008 on top of Boombness.
 
-**Plan §9 Q6 — does Boombness predict ASR better than refusalness? YES, by ~40×** in explained
+**Plan §9 Q6 — does Boombness predict ASR better than refusalness? ⛔ RETRACTED (C2): ~~YES, by ~40×~~. The real figure is ~3.7× (R² 0.141 vs 0.039), and it carries a footing caveat — the two predictors are read at different token positions.** In explained
 variance. **Q7 — does it add beyond refusalness? YES (+0.138); the converse is +0.0005.**
 
 ### The two-level reading, which is what I think is actually true
@@ -2347,3 +2347,104 @@ on the CLI, which would nullify the script's nodelist).
 
 Recorded as a new memory (`feedback_slurm_argsfile_shared_fs`) since the scratchpad is the correct
 default for every other temp file and this breaks only when a path crosses into a compute job.
+
+## Audit 4, part 2 — standing claims. **RETRACTION #4 + three corrections + two dead guards.**
+
+### ⛔ RETRACTION #4 — "the naive direction manufactures signal where the identified one finds none"
+Short-update takeaway 2 was sourced entirely to the **Tick-7 section, which this sprint had already
+retracted** (R1: "treat the Tick-7 section as superseded"). Its evidence was the L16–L20 "null
+band", and R1 killed exactly that quantity. I then carried the conclusion into a collaborator-facing
+report anyway. That is the worst failure mode in this log: not a wrong number, but a **retracted
+number laundered into a summary**, where the retraction does not travel with it.
+
+Re-derived from the committed `reanalyze_corrected.py` (`--metric d_naive|cos`, clustered p):
+
+| L | 4 | 8 | 12 | 16 | 20 | 24 | 31 |
+|---|---|---|---|---|---|---|---|
+| `d_surface` | +0.023 | +0.027 | +0.015 | **−0.023** | **−0.029** | **−0.021** | +0.047 |
+| p_clustered | 0.002 | 0.022 | 0.043 | **0.028** | **0.009** | 0.053 | 0.000 |
+| `d_naive` | +0.043 | +0.048 | +0.037 | −0.006 | −0.016 | −0.005 | +0.094 |
+| p_clustered | 0.000 | 0.003 | 0.001 | 0.437 | 0.074 | 0.623 | 0.000 |
+
+"Roughly doubles" **survives** (1.75–2.4× at L4/L8/L12/L31). The rest is **reversed**: in the mid
+band the *identified* direction finds a real negative displacement and the *naive* one is null, so
+`d_naive` **attenuates a real effect** there — it does not manufacture a spurious one. Corrected in
+revision 2 of the short update.
+
+### C4 — the headline p-value ignored domain clustering (audit B1b)
+`analyze_g2.py` had no clustering anywhere, re-introducing **the exact defect R1 named as its own
+root cause** (pseudo-replication). The 234 prompts are 6 domains × 39 and ICC(predictor|domain)
+≈ 0.45. Now computed by the committed script (`--cluster-by domain`):
+
+| inference | p |
+|---|---|
+| i.i.d. (as reported) | 1.7e-06 |
+| CR1 domain-clustered (G=6) | 1.2e-03 |
+| **within-domain permutation — the one to cite** | **5.0e-04** |
+
+The association survives — within-domain permutation destroys all between-domain signal and still
+returns 5e-04, and domain fixed effects give ρ=+0.250 — so this is not a domain confound. But
+**2.6e-06 was overstated by ~3.5 orders of magnitude** and is withdrawn.
+
+### C5 — "positive in 5 of 6 domains" was the wrong column, and unsourced (audit B1c)
+It is the `cos` column; the quoted predictor is `proj`, which is **6 of 6** — but two domains are
+essentially null (`lab_safety` +0.020, `news_report` +0.062), so "5/6" and "6/6" both read as more
+uniform than the data is. No committed script produced it, which is the same provenance failure as
+R2. `analyze_g2.py` now emits the per-domain table.
+
+### C6 — population mismatch between the headline table and the headline correlation (audit B2c)
+The ASR table quoted `direct_codeword` **0.583** and doublespeak refusal **7.4%** over all 270 rows,
+while the correlation uses the 234 with `n_examples ≥ 1`. On the same population those are **0.375**
+and **0.9%** — the 12 zero-demo rows are all ASR=1.0 and carried the entire gap. Corrected.
+
+Also corrected: the two mediation increments were quoted as a symmetric pair but were **1-vs-1
+against 5-vs-1**; like for like, Boombness adds +0.104 and refusalness-joint adds +0.039. And the
+**footing caveat C2 itself flagged as disqualifying was dropped on the way into the summary** —
+refusalness is read at the last token, `d_surface` at `codeword_last`, so part of "Boombness beats
+refusalness" is "the codeword position beats the last position". Restored.
+
+### ☠ TWO GUARDS WERE SILENTLY INOPERATIVE
+1. **The coherence gate never bound** (A4-1, fixed earlier this tick).
+2. **The dynamic-range guard took `max` over SIGNED deltas** (`analyze_g1_g3.py`), so with every
+   real arm negative it returned `random_nondemo` **+0.031** — a null control — as "the largest
+   effect", and certified |3.53| > 3×|0.031| = True. Fixed to compare on magnitude. It now reports
+   `dynamic_range_established=False`, and I restated what the guard is *for*: the question it
+   protects is whether a **null** is interpretable, which needs only proof the readout is movable —
+   established overwhelmingly by `no_demo_text` (−11.5) vs the largest null control (0.078). So
+   `readout_movable=True`, `null_claims_interpretable=True`. The `False` must not be read as
+   "G3 invalid".
+
+Both guards were written *specifically* to prevent this sprint's earlier failures, and both passed
+vacuously for days. **A guard that is never tested against a case it should fail is not a guard.**
+
+### B4a — the depth-redundancy claim is NOT identified. **Downgraded; decisive arm running.**
+`all_demo` (2 layers) and `all_layers_demo` (32 layers) cut the *same per-layer edge set*, so layer
+spread and total edge count move together by exactly **16×** (3,552 vs 56,832). A pure edge-count
+threshold explains every number equally well. And the data actively support that competitor: at
+**fixed** 2 layers, 3,552 edges → Δ −0.008 but 7,200 edges → Δ **+3.53**, so "two layers cannot move
+the readout" is **false**. Job 761188 runs the two arms that break the tie: `subsampled_all_layers_demo`
+(3,552 edges over all 32 layers) and `dense_two_layer` (56,832 edges at 2 layers).
+
+### B4b/B3a/B3b — over-precision and a fabricated interval
+- "84% vs 0.1%" implies a 1000-fold separation; bootstrapped at n=6 it is **[62%, 110%]** vs
+  **[−6.7%, +8.2%]** — the two-layer arm cannot exclude recovering 8%.
+- **The G1 interval "+23% to +135%" was a chimera**: L8's lower bound welded to L18's upper bound.
+  No arm has it.
+- The delta-method CI was too **wide**, not too narrow — it propagated the span as if the endpoints
+  were independent when they correlate **+0.63** within family, and used z=1.96 at n=8. A paired
+  bootstrap over families now gives L18 **[+57%, +105%]** and L8 **[+54%, +88%]**, and reports that
+  the 8 families come from only **2 domains**.
+
+### B5 — provenance: no run records a bank content hash
+Runs record a bank *path* and row count, but the bank at that path has been regenerated three times
+(1464 → 1752 → 2352 rows). The phase board cited 1752-row evidence for runs that actually used 1464.
+Nothing is currently wrong — the four headline runs agree at 1464 — but that is luck, and it is the
+same "join across bank regenerations" hazard R1 named. `RunDir` should record `bank_content_sha16`.
+Also: "0 alignment violations" is over the **216** families where the exact-swap invariant is
+defined, not all 912; the numerator was quoted without its denominator. Corrected.
+
+### Verified clean
+Holm is correct textbook step-down and conservative over correlated columns (no inflation). R2 and
+R3 do not leak. The 3.7× survives nested CV with selection inside the fold (3.65) and
+leave-one-domain-out (+0.089 vs −0.067) — the most robust number in the sprint. The 59% semantic
+dissociation reproduces exactly, and its clustered t (13.5) ≈ naive t (13.3).

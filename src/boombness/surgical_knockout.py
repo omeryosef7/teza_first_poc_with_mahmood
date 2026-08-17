@@ -55,7 +55,9 @@ from extract_boombness import resolve_occurrences  # noqa: E402
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
 ARMS = ("none", "topk_demo", "bottomk_demo", "random_demo", "random_nondemo",
         "same_head_random", "all_demo", "positive_control",
-        "all_layers_demo", "no_demo_text")
+        "all_layers_demo", "no_demo_text",
+        # edge-count-matched pair added 2026-08-17 to identify depth-redundancy vs edge count
+        "subsampled_all_layers_demo", "dense_two_layer")
 
 # THE TWO DYNAMIC-RANGE CONTROLS THE FIRST VERSION LACKED.
 # `positive_control` (block every pre-query key at the CHOSEN layers) turned out to move the
@@ -114,6 +116,26 @@ def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
             continue
         if arm == "all_demo":
             out[L] = cand_demo
+            continue
+        # EDGE-COUNT-MATCHED ARMS (audit B4a, 2026-08-17). `all_demo` (2 layers) and
+        # `all_layers_demo` (32 layers) cut the SAME per-layer edge set, so layer spread and total
+        # edge count move together by exactly 16x and the "distributed across depth" reading is not
+        # identified: a plain total-edge threshold between 3552 and 56832 explains the data equally
+        # well. These two arms break the tie by holding one factor fixed while moving the other.
+        #   subsampled_all_layers_demo: 1/16 of the demo edges per layer, over ALL 32 layers
+        #                               -> ~3552 total, same as all_demo, but spread over depth.
+        #                               If this recovers ~84%, depth-redundancy is REAL.
+        #   dense_two_layer:            all demo edges PLUS non-demo edges at 2 layers only, to
+        #                               reach all_layers_demo's total at concentrated depth.
+        #                               If this recovers ~84%, it was EDGE COUNT all along.
+        if arm == "subsampled_all_layers_demo":
+            n_keep = max(1, len(cand_demo) // 16)
+            out[L] = [cand_demo[i] for i in rng.permutation(len(cand_demo))[:n_keep]]
+            continue
+        if arm == "dense_two_layer":
+            need = 16 * len(cand_demo)
+            extra = [cand_non[i] for i in rng.permutation(len(cand_non))[:max(0, need - len(cand_demo))]]
+            out[L] = cand_demo + extra
             continue
         if not cand_demo:
             out[L] = []
@@ -283,11 +305,13 @@ def main() -> int:
                              "seq_len_used": len(ids2), "semantic_logodds": val})
                 n += 1
                 continue
-            arm_layers = list(range(lm.num_layers)) if arm == "all_layers_demo" else layers
+            ALL_LAYER_ARMS = ("all_layers_demo", "subsampled_all_layers_demo")
+            arm_layers = list(range(lm.num_layers)) if arm in ALL_LAYER_ARMS else layers
             dom_arm = dom["D_dir"]
-            if arm == "all_layers_demo":
+            if arm in ALL_LAYER_ARMS:
                 # D_dir was only computed at `layers`; for an all-layer cut we need an edge set
-                # per layer, and the ranking is irrelevant because every demo edge is cut.
+                # per layer, and the ranking is irrelevant because every demo edge is cut
+                # (for the subsampled arm the edges are drawn at random, so also irrelevant).
                 dom_arm = {L: dom["D_dir"][layers[0]] for L in arm_layers}
             edges = pick_edges(dom_arm, demo_pos, list(range(len(ids))),
                                args.topk, arm, rng, dsts_global=dsts)

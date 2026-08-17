@@ -1,0 +1,485 @@
+{
+  "arm": "natural_doublespeak",
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+  "score": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/base_20260816_203355_3985444",
+  "n_judged_in_arm": 270,
+  "n_with_representation": 270,
+  "n_analysed": 234,
+  "n_zero_demo_excluded": 36,
+  "min_examples": 1,
+  "representation_query_kinds": {
+    "behavioral": 270
+  },
+  "predictors": [
+    {
+      "name": "d_surface|L8|proj",
+      "spearman": 0.34200203308752913,
+      "p": 8.036715817268842e-08,
+      "sd": 0.45609060014805375,
+      "partial_given_hnorm": 0.1722177423348767,
+      "partial_p": 0.00828884173046471,
+      "hnorm_vs_asr": -0.31536521774839615,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L12|proj",
+      "spearman": 0.306667780204175,
+      "p": 1.7381137500164314e-06,
+      "sd": 0.46602429160104486,
+      "partial_given_hnorm": 0.3016657305928492,
+      "partial_p": 2.6037134946553157e-06,
+      "hnorm_vs_asr": -0.05891554337824199,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L11|cos",
+      "spearman": 0.30546251294725774,
+      "p": 1.9171978998033978e-06,
+      "sd": 0.052150360257535854,
+      "partial_given_hnorm": 0.2654908386747633,
+      "partial_p": 3.8963295380585835e-05,
+      "hnorm_vs_asr": 0.17676883088885242,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L31|cos",
+      "spearman": 0.3051037954990041,
+      "p": 1.973812255404309e-06,
+      "sd": 0.0807690645914481,
+      "partial_given_hnorm": 0.25551853089256277,
+      "partial_p": 7.699046636453325e-05,
+      "hnorm_vs_asr": 0.2039337904840461,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L12|cos",
+      "spearman": 0.30423095532361166,
+      "p": 2.118308279049047e-06,
+      "sd": 0.051311464904971134,
+      "partial_given_hnorm": 0.3173953998125674,
+      "partial_p": 7.121872192104184e-07,
+      "hnorm_vs_asr": -0.05891554337824199,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L8|cos",
+      "spearman": 0.2924592975632496,
+      "p": 5.372843184353792e-06,
+      "sd": 0.06142513191574591,
+      "partial_given_hnorm": 0.18176887085623203,
+      "partial_p": 0.005288578274263692,
+      "hnorm_vs_asr": -0.31536521774839615,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L11|proj",
+      "spearman": 0.28126544364054684,
+      "p": 1.253917329704387e-05,
+      "sd": 0.41354744618426875,
+      "partial_given_hnorm": 0.26140536491952365,
+      "partial_p": 5.167312454716152e-05,
+      "hnorm_vs_asr": 0.17676883088885242,
+      "holm_rejected": true
+    },
+    {
+      "name": "logit_lens|L31",
+      "spearman": 0.2790479276130584,
+      "p": 1.4768218006926925e-05,
+      "sd": 3.0631311630212483,
+      "partial_given_hnorm": 0.2596365606796834,
+      "partial_p": 5.83082143392527e-05,
+      "hnorm_vs_asr": 0.2039337904840461,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L4|proj",
+      "spearman": 0.27470336810506674,
+      "p": 2.02670293378328e-05,
+      "sd": 0.13039547089594167,
+      "partial_given_hnorm": 0.23406850967032478,
+      "partial_p": 0.0003042109552519041,
+      "hnorm_vs_asr": -0.16302714831495407,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L31|proj",
+      "spearman": 0.27256099533186473,
+      "p": 2.3644118680862663e-05,
+      "sd": 4.286281765408989,
+      "partial_given_hnorm": 0.2870091934858294,
+      "partial_p": 8.154018938154347e-06,
+      "hnorm_vs_asr": 0.2039337904840461,
+      "holm_rejected": true
+    },
+    {
+      "name": "logit_lens|L28",
+      "spearman": 0.254914056426495,
+      "p": 8.016531317619504e-05,
+      "sd": 3.5992410544139455,
+      "partial_given_hnorm": 0.22512298802821762,
+      "partial_p": 0.0005206005700321556,
+      "hnorm_vs_asr": 0.14623169358792593,
+      "holm_rejected": true
+    },
+    {
+      "name": "semantic_logodds (n=162, OTHER prompt)",
+      "spearman": 0.24857762479955667,
+      "p": 0.001424730422348145,
+      "sd": 5.639265416990828,
+      "partial_given_hnorm": NaN,
+      "partial_p": NaN,
+      "hnorm_vs_asr": NaN,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L4|cos",
+      "spearman": 0.23814106298029722,
+      "p": 0.00023656575145779104,
+      "sd": 0.028448090866153436,
+      "partial_given_hnorm": 0.2360521772386665,
+      "partial_p": 0.00026928370310379696,
+      "hnorm_vs_asr": -0.16302714831495407,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L28|proj",
+      "spearman": 0.22954294459927335,
+      "p": 0.00040025974616996515,
+      "sd": 2.3279877009257564,
+      "partial_given_hnorm": 0.18770860156279814,
+      "partial_p": 0.003955716629812489,
+      "hnorm_vs_asr": 0.14623169358792593,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L28|cos",
+      "spearman": 0.22857779602514466,
+      "p": 0.00042408953780854466,
+      "sd": 0.06842429184781235,
+      "partial_given_hnorm": 0.17852365647728385,
+      "partial_p": 0.00617586778901173,
+      "hnorm_vs_asr": 0.14623169358792593,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L16|proj",
+      "spearman": 0.2197418958828192,
+      "p": 0.0007121178337705847,
+      "sd": 0.6112747442497248,
+      "partial_given_hnorm": 0.20460555816696754,
+      "partial_p": 0.0016526196379828201,
+      "hnorm_vs_asr": -0.1308004167789307,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L24|proj",
+      "spearman": 0.21353912202596453,
+      "p": 0.0010125228073970805,
+      "sd": 1.6460613411926255,
+      "partial_given_hnorm": 0.20961705205482145,
+      "partial_p": 0.0012585829350802932,
+      "hnorm_vs_asr": 0.04734018702278739,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L24|cos",
+      "spearman": 0.19890590390477783,
+      "p": 0.002235752166420353,
+      "sd": 0.06534882594303236,
+      "partial_given_hnorm": 0.1950607660176376,
+      "partial_p": 0.0027290499182050887,
+      "hnorm_vs_asr": 0.04734018702278739,
+      "holm_rejected": true
+    },
+    {
+      "name": "logit_lens|L24",
+      "spearman": 0.19869930600373276,
+      "p": 0.0022600390771533307,
+      "sd": 3.528088590909676,
+      "partial_given_hnorm": 0.19611720521317083,
+      "partial_p": 0.002584509385977153,
+      "hnorm_vs_asr": 0.04734018702278739,
+      "holm_rejected": true
+    },
+    {
+      "name": "logit_lens|L8",
+      "spearman": -0.18787290510061017,
+      "p": 0.003923597125852049,
+      "sd": 1.2116496270708832,
+      "partial_given_hnorm": -0.21601717614954613,
+      "partial_p": 0.0008807364519333842,
+      "hnorm_vs_asr": -0.31536521774839615,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L16|cos",
+      "spearman": 0.1827963356341825,
+      "p": 0.005032521789054291,
+      "sd": 0.05098512202067204,
+      "partial_given_hnorm": 0.1912334332112794,
+      "partial_p": 0.003316226925334894,
+      "hnorm_vs_asr": -0.1308004167789307,
+      "holm_rejected": true
+    },
+    {
+      "name": "d_surface|L18|proj",
+      "spearman": 0.17052749782746235,
+      "p": 0.008954862635748538,
+      "sd": 0.6577078211548459,
+      "partial_given_hnorm": 0.1685024911202015,
+      "partial_p": 0.009814997050516243,
+      "hnorm_vs_asr": 0.031619716179776616,
+      "holm_rejected": false
+    },
+    {
+      "name": "d_surface|L18|cos",
+      "spearman": 0.16814909598407388,
+      "p": 0.009972379880714042,
+      "sd": 0.048620774692769965,
+      "partial_given_hnorm": 0.17828351496937633,
+      "partial_p": 0.00624653741929329,
+      "hnorm_vs_asr": 0.031619716179776616,
+      "holm_rejected": false
+    },
+    {
+      "name": "logit_lens|L12",
+      "spearman": -0.16579406141957387,
+      "p": 0.011079401548603372,
+      "sd": 1.1572952833538506,
+      "partial_given_hnorm": -0.18631192612207598,
+      "partial_p": 0.004238477567101792,
+      "hnorm_vs_asr": -0.05891554337824199,
+      "holm_rejected": false
+    },
+    {
+      "name": "d_surface|L20|proj",
+      "spearman": 0.1260202438772838,
+      "p": 0.05421715951669548,
+      "sd": 0.7269733188133896,
+      "partial_given_hnorm": 0.1246821600663362,
+      "partial_p": 0.05684575881408171,
+      "hnorm_vs_asr": 0.018623511560229462,
+      "holm_rejected": false
+    },
+    {
+      "name": "d_surface|L20|cos",
+      "spearman": 0.12329948303605068,
+      "p": 0.05967175100381846,
+      "sd": 0.04361575647874305,
+      "partial_given_hnorm": 0.12886524520858822,
+      "partial_p": 0.0489622812726092,
+      "hnorm_vs_asr": 0.018623511560229462,
+      "holm_rejected": false
+    },
+    {
+      "name": "logit_lens|L20",
+      "spearman": 0.07616650591105849,
+      "p": 0.2458164586498517,
+      "sd": 1.3176337263094797,
+      "partial_given_hnorm": 0.07416113150729377,
+      "partial_p": 0.2585062240326519,
+      "hnorm_vs_asr": 0.018623511560229462,
+      "holm_rejected": false
+    },
+    {
+      "name": "logit_lens|L16",
+      "spearman": 0.07360310268584805,
+      "p": 0.2621161998703823,
+      "sd": 0.7466485812792558,
+      "partial_given_hnorm": 0.05911170722523282,
+      "partial_p": 0.3680242310575778,
+      "hnorm_vs_asr": -0.1308004167789307,
+      "holm_rejected": false
+    },
+    {
+      "name": "logit_lens|L4",
+      "spearman": -0.0279761151495427,
+      "p": 0.6702944611257804,
+      "sd": 0.6301132541833975,
+      "partial_given_hnorm": 0.018145418492082063,
+      "partial_p": 0.7824652290127158,
+      "hnorm_vs_asr": -0.16302714831495407,
+      "holm_rejected": false
+    }
+  ],
+  "clustered_inference": {
+    "predictor": "d_surface|L12|proj",
+    "cluster_by": "domain",
+    "n": 234,
+    "n_clusters": 6,
+    "rho": 0.306667780204175,
+    "p_iid": 1.7381137500164314e-06,
+    "p_cr1": 0.0011691638192428055,
+    "p_within_domain_perm": 0.0004997501249375312,
+    "n_perm": 2000
+  },
+  "per_cluster": {
+    "city_bridge": {
+      "n": 39,
+      "rho": 0.3444155161018329,
+      "p": 0.03178779071510513
+    },
+    "farm_storage": {
+      "n": 39,
+      "rho": 0.4095315067019522,
+      "p": 0.009626376298876633
+    },
+    "game_manual": {
+      "n": 39,
+      "rho": 0.32959709995265646,
+      "p": 0.04046069674873677
+    },
+    "instructional": {
+      "n": 39,
+      "rho": 0.2344078242650269,
+      "p": 0.15090306636956724
+    },
+    "lab_safety": {
+      "n": 39,
+      "rho": 0.020058587103924632,
+      "p": 0.903530787933747
+    },
+    "news_report": {
+      "n": 39,
+      "rho": 0.062404588311914685,
+      "p": 0.7058725574204969
+    }
+  },
+  "mediation": {
+    "n": 234,
+    "refusalness_best_layer": 12,
+    "refusalness_best_r2": 0.03857478214880672,
+    "refusalness_joint_r2": 0.07246094833479466,
+    "refusalness_L12_sd_within_arm": 0.10504255992344173,
+    "refusalness_L14_sd_within_arm": 0.15045518411597394,
+    "refusalness_L16_sd_within_arm": 0.25061084477054163,
+    "refusalness_L18_sd_within_arm": 0.444186309987903,
+    "refusalness_L20_sd_within_arm": 0.5453276489229167,
+    "refusalness_L12_vs_asr": {
+      "spearman": 0.16698121947094846,
+      "p": 0.010508489828803586
+    },
+    "L12_vs_d_surface|L8|proj": {
+      "r2_refusal_only": 0.03857478214880672,
+      "r2_both": 0.12260057827760074,
+      "delta_boombness_over_refusal": 0.08402579612879402,
+      "r2_boombness_only": 0.11520078035499626,
+      "delta_refusal_over_boombness": 0.0073997979226044786
+    },
+    "L12_vs_d_surface|L12|proj": {
+      "r2_refusal_only": 0.03857478214880672,
+      "r2_both": 0.14296364892547686,
+      "delta_boombness_over_refusal": 0.10438886677667014,
+      "r2_boombness_only": 0.14110547945959884,
+      "delta_refusal_over_boombness": 0.0018581694658780235
+    },
+    "L12_vs_d_surface|L31|cos": {
+      "r2_refusal_only": 0.03857478214880672,
+      "r2_both": 0.14307592016162407,
+      "delta_boombness_over_refusal": 0.10450113801281735,
+      "r2_boombness_only": 0.1349798387044554,
+      "delta_refusal_over_boombness": 0.008096081457168669
+    },
+    "refusalness_L14_vs_asr": {
+      "spearman": 0.08531399272570155,
+      "p": 0.1934513407579376
+    },
+    "L14_vs_d_surface|L8|proj": {
+      "r2_refusal_only": 0.0003391680872016911,
+      "r2_both": 0.11861529134652427,
+      "delta_boombness_over_refusal": 0.11827612325932257,
+      "r2_boombness_only": 0.11520078035499626,
+      "delta_refusal_over_boombness": 0.003414510991528008
+    },
+    "L14_vs_d_surface|L12|proj": {
+      "r2_refusal_only": 0.0003391680872016911,
+      "r2_both": 0.14805712461945653,
+      "delta_boombness_over_refusal": 0.14771795653225483,
+      "r2_boombness_only": 0.14110547945959884,
+      "delta_refusal_over_boombness": 0.006951645159857689
+    },
+    "L14_vs_d_surface|L31|cos": {
+      "r2_refusal_only": 0.0003391680872016911,
+      "r2_both": 0.14388295358010472,
+      "delta_boombness_over_refusal": 0.14354378549290303,
+      "r2_boombness_only": 0.1349798387044554,
+      "delta_refusal_over_boombness": 0.00890311487564932
+    },
+    "refusalness_L16_vs_asr": {
+      "spearman": 0.12341340795854165,
+      "p": 0.05943460987603387
+    },
+    "L16_vs_d_surface|L8|proj": {
+      "r2_refusal_only": 0.005166242826716516,
+      "r2_both": 0.11777861949123747,
+      "delta_boombness_over_refusal": 0.11261237666452095,
+      "r2_boombness_only": 0.11520078035499626,
+      "delta_refusal_over_boombness": 0.002577839136241211
+    },
+    "L16_vs_d_surface|L12|proj": {
+      "r2_refusal_only": 0.005166242826716516,
+      "r2_both": 0.14528411475287384,
+      "delta_boombness_over_refusal": 0.14011787192615732,
+      "r2_boombness_only": 0.14110547945959884,
+      "delta_refusal_over_boombness": 0.0041786352932750015
+    },
+    "L16_vs_d_surface|L31|cos": {
+      "r2_refusal_only": 0.005166242826716516,
+      "r2_both": 0.1416691449728753,
+      "delta_boombness_over_refusal": 0.1365029021461588,
+      "r2_boombness_only": 0.1349798387044554,
+      "delta_refusal_over_boombness": 0.006689306268419903
+    },
+    "refusalness_L18_vs_asr": {
+      "spearman": 0.13357317412324946,
+      "p": 0.04120195910464364
+    },
+    "L18_vs_d_surface|L8|proj": {
+      "r2_refusal_only": 0.0032457557953687877,
+      "r2_both": 0.11556282235523463,
+      "delta_boombness_over_refusal": 0.11231706655986584,
+      "r2_boombness_only": 0.11520078035499626,
+      "delta_refusal_over_boombness": 0.00036204200023837174
+    },
+    "L18_vs_d_surface|L12|proj": {
+      "r2_refusal_only": 0.0032457557953687877,
+      "r2_both": 0.14164566014460134,
+      "delta_boombness_over_refusal": 0.13839990434923255,
+      "r2_boombness_only": 0.14110547945959884,
+      "delta_refusal_over_boombness": 0.0005401806850025004
+    },
+    "L18_vs_d_surface|L31|cos": {
+      "r2_refusal_only": 0.0032457557953687877,
+      "r2_both": 0.13825186094258468,
+      "delta_boombness_over_refusal": 0.1350061051472159,
+      "r2_boombness_only": 0.1349798387044554,
+      "delta_refusal_over_boombness": 0.0032720222381292796
+    },
+    "refusalness_L20_vs_asr": {
+      "spearman": 0.10306291141942339,
+      "p": 0.1158794692689762
+    },
+    "L20_vs_d_surface|L8|proj": {
+      "r2_refusal_only": 0.0012747707918258078,
+      "r2_both": 0.1154164797341184,
+      "delta_boombness_over_refusal": 0.11414170894229259,
+      "r2_boombness_only": 0.11520078035499626,
+      "delta_refusal_over_boombness": 0.00021569937912213621
+    },
+    "L20_vs_d_surface|L12|proj": {
+      "r2_refusal_only": 0.0012747707918258078,
+      "r2_both": 0.14118918831258676,
+      "delta_boombness_over_refusal": 0.13991441752076095,
+      "r2_boombness_only": 0.14110547945959884,
+      "delta_refusal_over_boombness": 8.370885298791819e-05
+    },
+    "L20_vs_d_surface|L31|cos": {
+      "r2_refusal_only": 0.0012747707918258078,
+      "r2_both": 0.13600945810860066,
+      "delta_boombness_over_refusal": 0.13473468731677485,
+      "r2_boombness_only": 0.1349798387044554,
+      "delta_refusal_over_boombness": 0.0010296194041452544
+    }
+  }
+}

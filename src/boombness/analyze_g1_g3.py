@@ -43,6 +43,49 @@ def mean_sem(xs: Sequence[float]):
     return m, sd / math.sqrt(len(xs)), len(xs)
 
 
+def _paired_boot_frac(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20000,
+                      seed: int = 20260817) -> Dict:
+    """Percentile CI for frac_of_span, resampling FAMILIES with replacement.
+
+    Preserves the within-family pairing of (baseline, ceiling, arm) that the delta method throws
+    away. Also reports how many DOMAINS the families came from — the G1 pilot's 8 families are
+    drawn from only 2, so "n=8" overstates the number of independent units and no interval here
+    should be read as if it had 8.
+    """
+    import random as _r
+    fam = {}
+    for r in h:
+        pid = r.get("recipient_prompt_id")
+        if pid is None:
+            continue
+        f = fam.setdefault(pid, {"dom": r.get("domain")})
+        if r["intervention"] == "none":
+            f["b"] = r[readout]
+        elif r["intervention"] == "donor_ceiling":
+            f["c"] = r[readout]
+        elif (r["intervention"] == iv and r.get("scope") == scope and r.get("window") == win
+              and r.get("direction", "") == dname and r.get("alpha", 0.0) == alpha):
+            f["a"] = r[readout]
+    fams = [v for v in fam.values() if {"b", "c", "a"} <= set(v)]
+    ndom = len({v.get("dom") for v in fams})
+    if len(fams) < 3:
+        return {"ci": [float("nan")] * 2, "n_families": len(fams), "n_domains": ndom}
+    rng = _r.Random(seed)
+    out = []
+    for _ in range(n_boot):
+        s = [fams[rng.randrange(len(fams))] for _ in range(len(fams))]
+        b = sum(x["b"] for x in s) / len(s)
+        c = sum(x["c"] for x in s) / len(s)
+        a = sum(x["a"] for x in s) / len(s)
+        if abs(c - b) > 1e-9:
+            out.append((a - b) / (c - b))
+    if len(out) < 100:
+        return {"ci": [float("nan")] * 2, "n_families": len(fams), "n_domains": ndom}
+    out.sort()
+    return {"ci": [out[int(0.025 * len(out))], out[int(0.975 * len(out))]],
+            "n_families": len(fams), "n_domains": ndom}
+
+
 def g1(run: str, readout: str = "semantic_logodds") -> Dict:
     rows = read_jsonl(os.path.join(run, "results.jsonl"))
     out: Dict[str, object] = {"run": os.path.abspath(run), "readout": readout, "pairs": {}}
@@ -82,10 +125,23 @@ def g1(run: str, readout: str = "semantic_logodds") -> Dict:
                             else:
                                 fs = float("nan")
                             key = f"{iv}|{scope}|{win}" + (f"|{dname}|a={alpha}" if dname else "")
+                            # PAIRED BOOTSTRAP over families (audit B3b). The delta method above
+                            # propagates the span as if baseline and ceiling were INDEPENDENT, but
+                            # the design is paired within family and they correlate ~+0.63, so the
+                            # delta-method interval is too WIDE. It also used z=1.96 at n=8. The
+                            # bootstrap resamples whole families, preserving the pairing.
+                            boot = _paired_boot_frac(h, readout, iv, scope, win, dname, alpha)
                             arms[key] = {"mean": m, "sem": s, "n": n,
                                          "frac_of_span": frac, "frac_sem": fs,
-                                         "frac_ci95": [frac - 1.96 * fs, frac + 1.96 * fs]
-                                         if math.isfinite(fs) else [float("nan")] * 2}
+                                         "frac_ci95_deltamethod":
+                                             [frac - 1.96 * fs, frac + 1.96 * fs]
+                                             if math.isfinite(fs) else [float("nan")] * 2,
+                                         "frac_ci95_paired_boot": boot["ci"],
+                                         "n_families": boot["n_families"],
+                                         "n_domains": boot["n_domains"],
+                                         "frac_ci95": boot["ci"] if boot["ci"][0] == boot["ci"][0]
+                                         else ([frac - 1.96 * fs, frac + 1.96 * fs]
+                                               if math.isfinite(fs) else [float("nan")] * 2)}
         out["pairs"][pair] = {
             "baseline": {"mean": b_m, "sem": b_s, "n": b_n},
             "donor_ceiling": {"mean": c_m, "sem": c_s, "n": c_n},
@@ -106,14 +162,59 @@ def g3(run: str, readout: str = "semantic_logodds") -> Dict:
         m, s, n = mean_sem(d)
         ec, _, _ = mean_sem([r.get("n_edges_cut", 0) for r in ss])
         out["arms"][arm] = {"delta_mean": m, "delta_sem": s, "n": n, "mean_edges_cut": ec}
+    # BUG FIXED 2026-08-17 (independent audit, B4c). This `max` was taken over the SIGNED deltas.
+    # Every real arm here is negative, so it returned `random_nondemo` = +0.031 — a NULL CONTROL —
+    # as "the largest non-control effect", and the guard then certified |3.53| > 3*|0.031| = True.
+    # The guard exists precisely to stop a null being reported when the positive control does not
+    # dominate, and it has been passing VACUOUSLY. Compared on magnitude it is |3.53| > 3*|11.51|
+    # = False, which is the correct and much less comfortable answer: `no_demo_text` moves the
+    # readout ~3x MORE than the positive control does, so this design does not establish that the
+    # positive control bounds the achievable range.
     pc = out["arms"].get("positive_control", {}).get("delta_mean", float("nan"))
-    biggest_other = max((v["delta_mean"] for k, v in out["arms"].items()
-                         if k not in ("none", "positive_control")
-                         and math.isfinite(v.get("delta_mean", float("nan")))), default=float("nan"))
+    cands = [(k, v["delta_mean"]) for k, v in out["arms"].items()
+             if k not in ("none", "positive_control")
+             and math.isfinite(v.get("delta_mean", float("nan")))]
+    biggest_other, biggest_arm = float("nan"), None
+    if cands:
+        biggest_arm, biggest_other = max(cands, key=lambda kv: abs(kv[1]))
     out["positive_control_delta"] = pc
     out["largest_non_control_delta"] = biggest_other
+    out["largest_non_control_arm"] = biggest_arm
     out["dynamic_range_established"] = bool(
         math.isfinite(pc) and math.isfinite(biggest_other) and abs(pc) > 3 * abs(biggest_other))
+
+    # WHAT THE GUARD IS ACTUALLY FOR, restated 2026-08-17. The question it protects is "is a NULL in
+    # some arm interpretable?", and that needs only one thing: proof the readout is MOVABLE at all.
+    # Comparing the positive control against `no_demo_text` answers a different question — that arm
+    # is the deletion CEILING the percentages are taken as a fraction OF, not an arm awaiting
+    # validation — so `dynamic_range_established=False` here must NOT be read as "G3 is invalid".
+    # Movability is established, overwhelmingly, by no_demo_text itself.
+    NULLABLE = {"none", "positive_control", "no_demo_text", "all_layers_demo", "all_demo"}
+    null_ctrls = [abs(v["delta_mean"]) for k, v in out["arms"].items()
+                  if k not in NULLABLE and math.isfinite(v.get("delta_mean", float("nan")))]
+    biggest_null_ctrl = max(null_ctrls) if null_ctrls else float("nan")
+    movers = [(k, v["delta_mean"]) for k, v in out["arms"].items()
+              if k not in ("none",) and math.isfinite(v.get("delta_mean", float("nan")))
+              and abs(v["delta_mean"]) > 3 * (biggest_null_ctrl if null_ctrls else 0.0)]
+    out["readout_movable"] = bool(movers)
+    out["readout_movable_by"] = sorted(k for k, _ in movers)
+    out["largest_null_control_abs"] = biggest_null_ctrl
+    out["null_claims_interpretable"] = out["readout_movable"]
+
+    # EDGE-COUNT CONFOUND (audit B4a). `all_demo` and `all_layers_demo` cut the SAME per-layer edge
+    # set; the only difference is the layer set, so edge count and layer spread move together by
+    # exactly 16x. Nothing here separates "redundant across depth" from "a total-edge threshold".
+    # Report the ratio so no reader can quote the depth claim without seeing the confound.
+    a2 = out["arms"].get("all_demo", {})
+    a32 = out["arms"].get("all_layers_demo", {})
+    if a2 and a32 and a2.get("mean_edges_cut"):
+        out["edge_count_confound"] = {
+            "two_layer_edges": a2["mean_edges_cut"], "all_layer_edges": a32["mean_edges_cut"],
+            "edge_ratio": a32["mean_edges_cut"] / a2["mean_edges_cut"],
+            "identified": False,
+            "note": "layer spread and edge count are perfectly confounded; a depth-redundancy "
+                    "reading is NOT identified without an edge-count-matched arm "
+                    "(subsampled_all_layers_demo) or a layer-matched dense arm (dense_two_layer)."}
     return out
 
 

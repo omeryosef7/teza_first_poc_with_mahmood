@@ -80,6 +80,11 @@ def main() -> int:
     ap.add_argument("--extract", required=True)
     ap.add_argument("--score", required=True, help="score_behavior run (for semantic log-odds)")
     ap.add_argument("--arm", default="natural_doublespeak")
+    ap.add_argument("--cluster-by", default="domain",
+                    help="cluster variable for CR1 + within-cluster permutation inference "
+                         "(audit B1b); empty string disables")
+    ap.add_argument("--headline-predictor", default="d_surface|L12|proj",
+                    help="the predictor the write-up quotes; clustered inference is run on it")
     ap.add_argument("--min-examples", type=int, default=1,
                     help="drop n_examples<this; 0-demo prompts establish no mapping and are not "
                          "doublespeak prompts (audit finding 3)")
@@ -203,6 +208,91 @@ def main() -> int:
                              "partial_given_hnorm": rp, "partial_p": pp_, "hnorm_vs_asr": rn,
                              "holm_rejected": bool(rej.get(n.split(" ")[0], False))}
                             for n, r, p, sd, rp, pp_, rn in rows]
+
+    # ---------------------------------------------------------------------------------------
+    # CLUSTERED INFERENCE (audit B1b, 2026-08-17). Every p-value above treats the prompts as
+    # i.i.d., but they are 6 domains x 39, and the PREDICTOR is strongly clustered by domain
+    # (ICC ~ 0.45). Retraction R1's stated root cause was pseudo-replication, and this script
+    # re-introduced it. The headline p was overstated by ~3.5 orders of magnitude.
+    #
+    # Two defensible alternatives are reported and BOTH are printed, because with G=6 clusters a
+    # cluster-robust sandwich is itself unreliable (the usual rule of thumb wants 30-50 clusters):
+    #   * CR1 domain-clustered p on the rank-rank slope;
+    #   * a WITHIN-DOMAIN permutation p, which destroys all between-domain signal and is exact-ish
+    #     under the null of no within-domain association. This is the one to cite.
+    # Also reported: the per-domain rho table, which was previously quoted in the write-up
+    # ("positive in 5 of 6 domains") without any committed script producing it — the exact
+    # provenance failure that caused retraction R2.
+    # ---------------------------------------------------------------------------------------
+    if args.cluster_by:
+        import numpy as _np
+        from scipy import stats as _st
+        cl = [meta[k].get(args.cluster_by) for k in kept]
+        headline = args.headline_predictor
+        _pp = headline.split("|")          # e.g. d_surface|L12|proj -> (12, "proj")
+        _hl = (int(_pp[1].lstrip("L")), _pp[2])
+        xs = [rep[k].get(_hl) for k in kept]
+        ys = [asr[k] for k in kept]
+        ok = [i for i in range(len(kept))
+              if xs[i] is not None and ys[i] is not None and cl[i] is not None]
+        if len(ok) > 10 and len({cl[i] for i in ok}) > 1:
+            X = _st.rankdata([xs[i] for i in ok]); Y = _st.rankdata([ys[i] for i in ok])
+            G = [cl[i] for i in ok]
+            X = (X - X.mean()) / X.std(ddof=0); Y = (Y - Y.mean()) / Y.std(ddof=0)
+            n = len(X); A = _np.column_stack([_np.ones(n), X])
+            beta, *_ = _np.linalg.lstsq(A, Y, rcond=None)
+            resid = Y - A @ beta
+            bread = _np.linalg.inv(A.T @ A)
+            meat = _np.zeros((2, 2))
+            groups = sorted(set(G))
+            for g in groups:
+                idx = [i for i in range(n) if G[i] == g]
+                sg_ = A[idx].T @ resid[idx]
+                meat += _np.outer(sg_, sg_)
+            Gn = len(groups)
+            cr1 = (Gn / max(Gn - 1, 1)) * ((n - 1) / max(n - 2, 1))
+            V = bread @ (cr1 * meat) @ bread
+            se_cl = math.sqrt(max(V[1, 1], 0.0))
+            t_cl = beta[1] / se_cl if se_cl else float("nan")
+            p_cl = 2 * _st.t.sf(abs(t_cl), df=max(Gn - 1, 1))
+            # within-domain permutation
+            rng = _np.random.default_rng(20260817)
+            obs = abs(beta[1])
+            cnt = 0
+            NPERM = 2000
+            byg = {g: [i for i in range(n) if G[i] == g] for g in groups}
+            for _ in range(NPERM):
+                Yp = Y.copy()
+                for g, idx in byg.items():
+                    Yp[idx] = Y[rng.permutation(idx)]
+                bp, *_ = _np.linalg.lstsq(A, Yp, rcond=None)
+                if abs(bp[1]) >= obs:
+                    cnt += 1
+            p_perm = (cnt + 1) / (NPERM + 1)
+            r_naive, p_naive = spearman([xs[i] for i in ok], [ys[i] for i in ok])
+            print(f"\n[G2] CLUSTERED INFERENCE for {headline} (cluster={args.cluster_by}, "
+                  f"G={Gn}, n={n})")
+            print(f"  rho                       {r_naive:+.4f}")
+            print(f"  p, i.i.d. (as reported)   {p_naive:.2e}   <-- OVERSTATED: prompts are not independent")
+            print(f"  p, CR1 domain-clustered   {p_cl:.2e}   (G={Gn} clusters is few; treat as indicative)")
+            print(f"  p, within-domain permut.  {p_perm:.2e}   <-- CITE THIS ONE")
+            report["clustered_inference"] = {
+                "predictor": headline, "cluster_by": args.cluster_by, "n": n, "n_clusters": Gn,
+                "rho": r_naive, "p_iid": p_naive, "p_cr1": p_cl, "p_within_domain_perm": p_perm,
+                "n_perm": NPERM}
+            per = {}
+            for g in groups:
+                idx = byg[g]
+                if len(idx) > 3:
+                    rg, pg = spearman([xs[ok[i]] for i in idx], [ys[ok[i]] for i in idx])
+                    per[str(g)] = {"n": len(idx), "rho": rg, "p": pg}
+            report["per_cluster"] = per
+            npos = sum(1 for v in per.values() if v["rho"] > 0)
+            print(f"\n[G2] PER-{args.cluster_by.upper()} rho for {headline} "
+                  f"({npos} of {len(per)} positive):")
+            for g, v in sorted(per.items(), key=lambda kv: -kv[1]["rho"]):
+                near = "   <-- essentially null" if abs(v["rho"]) < 0.1 else ""
+                print(f"  {g:20s} n={v['n']:>4d}  rho={v['rho']:+.3f}  p={v['p']:.3f}{near}")
 
     if zero:
         yz = [asr[p] for p in zero]
