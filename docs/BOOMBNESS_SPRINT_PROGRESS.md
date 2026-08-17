@@ -48,11 +48,11 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P7.1 | §11 | Role-style variants | DONE | role_style axis in the bank (6 styles) |
 | P7.2 | §11 | Role framing → Boombness | PARTIAL | Boombness flat across 6 role styles (spread 0.016 at L8); ASR side underpowered at n=6/style |
 | P7.3 | §11 | Userness/CoTness probes (if feasible) | IN PROGRESS | adopting the role-confusion codebase (`third_party/prompt_injection_role_confusion`) rather than reimplementing |
-| P7.4 | §11 | Boombness + role predicts ASR | BLOCKED | needs ≥20 rows per role style — currently 12 (extract) / 6 (ASR) |
+| P7.4 | §11 | Boombness + role predicts ASR | RUNNING | bank expanded to 72 behavioural rows/style; jobs 761148 (extract, 2352 rows) + 761149 (base generation, 960 behavioural) launched 08-17. The standing `role_analysis.json` still reads the PRE-expansion extract (n=12/style, n=6 ASR) and its ASR column must not be quoted until these land. |
 | P8.1 | §12.1 | Boombness GCG objective | IN PROGRESS | steering test at α∈{0.10,0.25} — jobs 760859/760860 |
-| P8.2 | §12.2 | Boombness − refusal objective | TODO (gated) | |
-| P8.3 | §12.5 | Baseline / refusal-only comparison | TODO (gated) | |
-| P8.4 | §12.5 | Universality + held-out transfer | TODO (gated) | |
+| P8.2 | §12.2 | Boombness − refusal objective | **CLOSED — gate not met** | G4 found no directional causal support for `d_surface`; an objective maximizing this projection is not justified. Documented negative, deliberately not run. |
+| P8.3 | §12.5 | Baseline / refusal-only comparison | **CLOSED — gate not met** | conditional on P8.2. |
+| P8.4 | §12.5 | Universality + held-out transfer | **CLOSED — gate not met** | conditional on P8.2. |
 | P8.5 | §15 | Final reports | PARTIAL | `reports/boombness_objective_sprint_short_update.md` written; full report pending G4 |
 
 ---
@@ -2203,3 +2203,36 @@ correlation alone would have produced a result that this experiment says is not 
 
 **This is the gate working exactly as the plan intended** — §12 is explicitly conditional on the
 earlier gates, and this is the condition failing.
+
+
+### Tick 35 — 2026-08-17
+
+All four gates are answered and the queue is empty, so this tick did three things.
+
+**Closed §12 as a documented negative.** P8.2/8.3/8.4 were gated on a directional causal result that
+G4 did not deliver. They are marked CLOSED — gate not met rather than TODO: not running them is the
+finding, and the plan made them conditional precisely so this decision would be forced by data.
+
+**Unblocked P7.4.** `role_analysis.json` was still reading the pre-expansion extract — 12 extract
+rows and 6 judged rows per role style, which is why §11 was marked BLOCKED. The expanded bank has
+72 behavioural rows per style, so jobs 761148 (extract, 2352 rows) and 761149 (base generation, 960
+behavioural) went out. Worth flagging what the underpowered table already hints: Boombness is
+**flat** across role styles (L12 cos −0.293 to −0.304 across all six) while mean ASR ranges 0.00 to
+0.20. If that survives the powered rerun it is §11's answer (b) — role framing moves behaviour
+without moving the axis — which is consistent with G4's negative and, unlike G4, is a positive
+claim. It is NOT quotable yet at n=6.
+
+**Fourth audit launched** against the claims that will appear in the final report rather than the
+ones already retracted. Two auditors: one trying to refute the G4 conclusion itself (is the −0.25
+arm the true negation of the same direction; are the controls norm-matched **in gap units**, since
+a dosing mismatch would make "2–3× the controls" an artifact of dose rather than of axis; is the
+sign-test's arm-name string matching mislabelling `pos`/`neg`); one on retraction leakage plus
+re-derivation of the four headline numbers, pointed at three specific fairness problems I suspect
+in my own work — whether the 3.7× is an R² ratio between models of **different dimensionality**
+(several Boombness layer columns vs one refusalness column), whether the G1 CI of +23% to +135% is
+a ratio with a noisy denominator at n=8, and whether G3's 84%-vs-0.1% is confounded by **edge
+count** (56832 vs 3552 vs 16) rather than by layer spread.
+
+**The full report is deliberately not written yet.** Two of those checks can change sentences in it,
+and writing the final document before the audit that could invalidate it is the exact ordering that
+produced retractions R1–R3.

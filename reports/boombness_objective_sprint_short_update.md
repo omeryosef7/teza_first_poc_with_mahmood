@@ -2,7 +2,7 @@
 
 **For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-17
 **Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
-**Branch:** `behavioral-causality-sprint` · one gate (G4) still resolving.
+**Branch:** `behavioral-causality-sprint` · all four gates answered.
 
 ---
 
@@ -53,24 +53,32 @@ pooled 3.07), so "refusal doesn't matter" is true only *inside* the attack, neve
   travels **59%** of the way from literal to direct (paired, n=60, monotone in demo count:
   +7.6 → +16.8), while the token's position on the concept axis moves only a few percent.
 
-## What we cannot say yet
+## G4 — RESOLVED, and it is a negative
 
-**G4 (is this a usable GCG objective) is unresolved.** Steering `d_surface` at L8:
+Steering `d_surface` at L8, common 270-prompt set, all arms coherence-gated, paired Δ vs baseline:
 
-| dose | ASR | note |
-|---|---|---|
-| baseline | 0.219 | |
-| α=0.10 | 0.241 | indistinguishable from baseline |
-| α=0.25 | **0.082** | refusal 7% → 70% |
-| α=1.0 | (0.759) | **model degenerate** — 55% of trigrams repeated |
+| arm | ASR | refusal | paired Δscore |
+|---|---|---|---|
+| baseline | 0.219 | 0.074 | — |
+| **+0.25** | 0.081 | **0.696** | **−0.114 ± 0.024** |
+| **−0.25** | 0.148 | 0.067 | **−0.074 ± 0.020** |
+| random +0.25 | 0.178 | 0.085 | −0.035 ± 0.018 |
+| orthogonal +0.25 | 0.189 | 0.093 | −0.031 ± 0.018 |
 
-The α=1 arm looked like a 3.5× ASR win and is an artifact: the intervention broke generation and the
-judge scored the loop as harmful. **We nearly reported it.** The usable dose window is narrow, which
-itself matters for §12 — an optimizer maximizing this projection has no reason to stop at 0.25 and
-will find the degenerate regime.
+**Both signs suppress ASR**, so the eye-catching +0.25 result (63% reduction) is **not** evidence
+that Boombness causes the attack. The falsifying branch was written into the analysis code before
+these numbers existed, and it fired.
 
-Sign-flip and norm-matched controls at α=0.25 are judging now. If both signs suppress ASR, the
-α=0.25 effect is disturbance, not direction.
+Two things do survive: the axis is **not inert** (2–3× the norm-matched controls), and **refusal
+follows the sign** even though ASR does not (0.696 vs 0.067) — so the two signs suppress by
+different routes. That asymmetry is one arm each; suggestive, not established.
+
+Separately, an earlier arm at α=1 showed ASR 0.219 → 0.759 and was an **artifact**: the intervention
+broke generation (55% of trigrams repeated) and the judge scored the loop as harmful. **We nearly
+reported it.** The usable dose window is narrow, which matters for §12 — an optimizer maximizing
+this projection has no reason to stop at 0.25 and will find the degenerate regime.
+
+**§18 label: outcome B — mechanistic but not causal.**
 
 ## What we'd take from this sprint
 
@@ -86,7 +94,7 @@ Sign-flip and norm-matched controls at α=0.25 are judging now. If both signs su
 
 ## Suggested next
 
-- Finish G4 (controls landing), then decide §12 on the sign test rather than the correlation.
+- **Do not build the GCG objective on this axis.** G4 says the correlation has no directional causal support; §12 as specified is a documented negative. If an objective is still wanted, target the *demonstration-retrieval* pathway G1/G3 localized, not the codeword's position on d_surface.
 - Second model (Qwen3-14B) and second concept pair — everything here is Llama-3.1-8B, carrot↔bomb.
 - The distributed-retrieval result deserves a proper layer sweep: where between 2 and 32 layers does
   it appear, and is it graded or threshold?
