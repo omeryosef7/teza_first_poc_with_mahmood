@@ -166,10 +166,22 @@ prompts each arm suppressed, the fraction that are refusals:
 | **0.901** | **0.000** | 0.000 | 0.042 |
 
 `+α` is a refusal trigger; `−α` is generic degradation indistinguishable from a norm-matched
-control. So: **ASR does not follow the sign** (which is what kills the attack objective), while
-**refusal does**. "The axis is not inert" is solid for +0.25 (z = −3.6) and weak for −0.25 (~2σ);
-revision 1 blended these into one "2–3×" and overstated the negative arm. Each control is still a
-single random draw — four more are running to turn that into a proper band.
+control. So: **ASR does not follow the sign** (which kills the attack objective), while **refusal
+does**.
+
+The control band is now **four independent random draws** (not the single draw revision 1 leaned on).
+They land within 0.010 of each other — band mean **−0.0366, between-draw sd 0.0049** — so generic
+perturbation at this dose is highly reproducible. Against that band:
+
+| arm | diff vs band | t | p | verdict |
+|---|---|---|---|---|
+| **+0.25** | −0.0778 ± 0.0241 | −3.23 | **0.0014** | **clears the band** |
+| −0.25 | −0.0375 ± 0.0206 | −1.82 | 0.070 | **does not clear** |
+
+So "the axis is not inert" holds for **+0.25 only**. The −0.25 arm sits essentially *on* the band —
+revision 1's blended "2–3× the controls" overstated it. One line: **adding concept-ness to the
+codeword triggers refusal; removing it just damages the model like any other perturbation of that
+size.**
 
 Separately, an earlier arm at α=1 showed ASR 0.219 → 0.759 and was an **artifact**: the intervention
 broke generation (55% of trigrams repeated) and the judge scored the loop as harmful. **We nearly

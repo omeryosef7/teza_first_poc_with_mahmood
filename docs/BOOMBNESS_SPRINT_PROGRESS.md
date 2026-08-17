@@ -2933,3 +2933,47 @@ Fourth draw still judging (544/960); the band will be re-run on all four before 
 **Worth stating plainly:** I got this statistic wrong twice in opposite directions, and only caught
 it by running the block against real numbers instead of reading it. The dead guards in this sprint
 share that cause — none of them was ever executed against a case whose answer was known.
+
+## A4-4 RESOLVED — the random-control band, 4 independent draws. G4's "not inert" claim splits by sign.
+
+All four draws judged (960 rows each), common 270-prompt set, every arm coherence-gated:
+
+| draw | paired Δ |
+|---|---|
+| s20260819 | −0.0440 |
+| s20260817 | −0.0343 |
+| s20260820 | −0.0343 |
+| s20260818 | −0.0338 |
+| **band mean** | **−0.0366**, between-draw sd **0.0049** |
+
+| arm | diff vs band | t | df (Welch) | p | verdict |
+|---|---|---|---|---|---|
+| **`d_surface` +0.25** | **−0.0778 ± 0.0241** | −3.23 | 235 | **0.0014** | **clears the band** |
+| `d_surface` −0.25 | −0.0375 ± 0.0206 | −1.82 | 203 | 0.070 | **does NOT clear** |
+
+**The claim "d_surface is not inert" is established for +0.25 and NOT established for −0.25.**
+That is the same split the paired contrasts showed, now with direction-level variance genuinely
+estimated instead of assumed from one draw — which is what audit A4-4 asked for.
+
+Two things the band makes visible that a single draw could not:
+
+**1. Generic perturbation at this dose is extremely reproducible.** Four independent random
+directions land within 0.010 of each other (sd 0.0049), and the band contributes only ~5% of the
+comparison's variance (`var_band` 0.000031 vs `var_arm` 0.000551). So the earlier worry — that
+"more than a random direction" rested on a lucky draw — resolves in favour of the claim: random
+directions at α=0.25 reliably suppress by ≈ −0.037, and +0.25 suppresses by more than twice that.
+
+**2. It does not rescue the negative arm.** −0.25 sits at −0.0375 against a band mean of −0.0366 —
+essentially **on** the band. The "axis-magnitude effect at both signs" reading from the original G4
+write-up is therefore **half wrong**: only the positive sign exceeds a norm-matched random
+perturbation.
+
+### Net effect on the G4 statement
+- **Both signs suppress ASR** → no directional causal claim, no attack objective. *(unchanged)*
+- **+0.25 suppresses more than a random direction** (p=0.0014 vs a 4-draw band) and does so by
+  **triggering refusal** (90.1% of its suppressed prompts). *(strengthened)*
+- **−0.25 is indistinguishable from a random perturbation** (p=0.070) and suppresses via generic
+  degradation (0% refusals, matching the controls). *(this is the correction)*
+
+So the honest one-line G4 summary: **adding concept-ness to the codeword triggers refusal; removing
+it just damages the model like any other perturbation of that size.**
