@@ -4051,3 +4051,49 @@ route:
 
 Arm F's judge is at 381/960. Four genuinely independent control-band draws (verified: 4 distinct
 completion sets, 81–85% pairwise disagreement) are queued behind it.
+
+## ★★ ARM F — the interaction is huge, and my own coherence gate says DO NOT REPORT IT YET
+
+Arm F = **add Boombness AND remove refusalness**. The prediction was recorded before the judge finished.
+
+| arm | ASR | refusal | Δ vs baseline | p_cl |
+|---|---|---|---|---|
+| baseline | 0.219 | 0.074 | — | — |
+| add Boombness +0.25 | 0.081 | 0.696 | −0.114 | 0.0019 |
+| arm C — remove refusalness | 0.226 | **0.000** | −0.013 | 0.431 |
+| arm B — remove Boombness | 0.300 | 0.074 | +0.074 | 0.117 |
+| **arm F — BOTH** | **0.474** | 0.004 | **+0.245** | **0.0010** |
+
+| discriminating contrast | Δ | t_cl | p_cl |
+|---|---|---|---|
+| arm F − (+0.25 alone) | **+0.359** | +9.54 | **0.0002** |
+| arm F − (arm C alone) | **+0.258** | +8.74 | **0.0003** |
+
+**This is a genuine interaction, and it is the outcome my recorded prediction called "the label is wrong".**
+Neither manipulation alone raises ASR — `+0.25` *lowers* it, removing refusal does *nothing* — but the two
+together take ASR from 0.219 to **0.474**, more than double. So **§18 = B was a CEILING EFFECT of
+refusal**: adding Boombness does have a large behavioural effect, and refusal was masking it.
+
+It also resolves Boombness into **two opposing roles**, which is why every earlier arm looked contradictory:
+1. **a detection signal** — more concept-ness makes the request legible, refusal fires (0.074 → 0.696), ASR falls;
+2. **a capability signal** — more concept-ness supplies the content that makes a completion actually harmful, which shows up the moment refusal is out of the way.
+
+With refusal live, channel 1 dominates. With refusal removed, channel 2 is unmasked. That reconciles the
+positive within-arm correlation, the suppressive steering, and arm B all at once.
+
+### ⛔ But it is NOT reportable, because the coherence gate fails it
+On the doublespeak population: `uniq 0.654`, `trigram 0.021`, `top_word 0.079` — all healthy, so this is
+**not** the α=1 gibberish failure — but **`truncated_frac = 0.995`** against baseline's 0.43. Arm F's
+generations essentially never emit EOS within the 192-token budget.
+
+**That is a length confound, not a mechanism**: longer text has more opportunity to contain scoreable
+harmful content, so part of 0.474 may be "more text" rather than "more harmful". Projecting out the refusal
+direction at L18 plausibly disrupts EOS emission.
+
+**By the rule this sprint already learned the hard way** — the retracted α=1 "3.5× ASR" was exactly a
+gate-failing arm scored as a result — **this number is provisional and is not going in a report.**
+
+**Relaunched as a matched trio at `--max-new 512`** so every arm can finish and the comparison is
+length-fair: `len_base`, `len_C`, `len_F`. If the interaction survives at matched completion, it is the
+sprint's headline causal result and §12.2 ("Boombness **minus** refusal" — an objective the plan itself
+specified and I had closed as gate-not-met) is vindicated in exactly the form the plan wrote it.
