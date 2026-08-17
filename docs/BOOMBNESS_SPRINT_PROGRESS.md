@@ -2328,3 +2328,22 @@ is the fair test; not run, and the limitation is now stated rather than papered 
 - Intersection genuinely covers baseline; 0 null scores, 0 duplicate ids, and `prompt_sha16`
   identical across arms for all shared rows.
 - `refused` is one code path for all arms; every refused row has StrongReject exactly 0.0.
+
+
+### Tick 35b — launch failure worth recording
+
+All six jobs (761148/761149/761172–5) **FAILED in 3–7 seconds**. Cause: I wrote the argsfiles into
+the session scratchpad under `/tmp`, which is **node-local** — the file exists on the login node and
+not on `n-802`. The wrapper's guard printed `ERROR argsfile not found: ...` and exited 1, so nothing
+ran with empty arguments; the failure was loud, which is the only reason it cost seconds rather than a
+silent bad run.
+
+Worth noting *how* it presented: the jobs vanished from `squeue` within seconds, which looks exactly
+like "they finished". `sacct --starttime now-40minutes` showed `FAILED / 00:00:03`. Relaunched with
+argsfiles under `outputs/boombness/argsfiles/` (shared filesystem) — all six started immediately.
+Then four had landed on `n-803`, against the house cap of ~2 model-loading jobs per node, so two
+were cancelled and resubmitted onto `n-805,t-806` via a **reduced `--nodelist`** (never `--exclude`
+on the CLI, which would nullify the script's nodelist).
+
+Recorded as a new memory (`feedback_slurm_argsfile_shared_fs`) since the scratchpad is the correct
+default for every other temp file and this breaks only when a path crosses into a compute job.
