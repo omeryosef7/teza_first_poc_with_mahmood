@@ -800,3 +800,26 @@ point estimate (+0.084) is unchanged from the original; only the honest interval
 bank-artifact explanation is excluded on a properly-powered external set. If it does not, the claim
 that `d_surface` is causal off-bank has no support and must be withdrawn outright rather than
 suspended. **This is now the single most consequential open number in the sprint.**
+
+## Staged and ready — the G1 / G3 re-runs (E2, E3, E9)
+
+The Phase-1 workflow has landed both C-6 ports and the T3 fix; confirmed by inspection:
+`aggressive_patching.py` and `surgical_knockout.py` both call `signals.string_option_readout`, both
+default `--readout-ids whole_answer --answer-prefix "Answer:"` with a `--min-option-mass` gate, and
+`surgical_knockout` now sets `rank_dst = readout_pos` under `--dst readout`. Argsfiles are staged and
+grep-verified; they are **not launched yet** because the workflow is still editing those files and a
+run started now would use pre-verification code.
+
+| argsfile | what it settles |
+|---|---|
+| `args_g1wa_smoke.txt` | house rule: 2 families before the sweep |
+| `args_g1wa_sow.txt` | **G1 re-run, `semantic_one_word`** — same prompts as the original, so this isolates the *readout* change alone. Also **α=0.25 added** (E9): the original swept 0.5/1/2/4, and 0.25 is the dose every §12 behavioural claim rests on. |
+| `args_g1wa_sfc.txt` | **G1 on `semantic_forced_choice`** — the 288 rows built to fix exactly this problem and **never scored by any run** (C-5). Running both separates "the readout was wrong" from "the prompt framing was wrong". |
+| `args_g3wa_smoke.txt` / `args_g3wa_readout.txt` | **G3 re-run with `--dst readout`**, the ranking destination retraction #3 called fatal. Also `--n-families 24`, because the audit showed the runs labelled "6 families" were **3 domains × 2 splits** — `--n-families` counted prompts, not families. |
+
+**Prediction, recorded before the runs so it cannot be adjusted afterwards.** G1's *direction* should
+survive on any readout — the query-codeword arm moves the wrong way by −71% of span, far outside what
+an instrument artifact plausibly produces. G1's *magnitudes* should move, and the old readout's bias
+was **toward the concept** (four single-token variants against the codeword's zero capitalised form),
+so the corrected `demos_only|L18` figure should come in **at or below +68%**, not above. G3 is the
+genuinely open one: its top-k/bottom-k null was measured at the wrong token, so it could go either way.
