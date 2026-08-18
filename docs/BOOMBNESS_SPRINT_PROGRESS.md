@@ -4716,3 +4716,32 @@ effect** — which is a model-dependence finding rather than a failure, and woul
 
 Judges queued. `q3_projctrl` — the control that decides whether the Qwen3 effect is real or projection
 fragility — is at 596/960.
+
+### Tick 74 — 4-hourly audit, now pointed at the 512-token result that is IN the report
+
+Audit 8 examined the **192-token** version and blocked it on a coherence failure. What is now in revision 7
+of both reports is the **512-token rerun** — different data, and it has not been independently attacked. So
+the audit targets the new numbers, with these instructions:
+
+1. **Reproduce all five arms** from the judge dirs, comparing `prompt_sha16` row-for-row (not just ids) and
+   confirming balanced domains.
+2. **Attack `len_Fctrl`, because it is now the load-bearing piece.** The specificity claim rests entirely on
+   the random composition doing nothing. The auditor is told explicitly that this sprint recently found a
+   control whose random seed was hardcoded, making four "independent" draws byte-identical — and asked to
+   verify that this control's direction really differs from `d_surface` and that its dose is genuinely
+   norm-matched in **gap units**, not a different effective magnitude.
+3. **Per-domain and leave-one-domain-out on the interaction** — if one stratum carries it, "more than
+   double" is misleading, which is exactly how G2 failed to replicate.
+4. **Length again, properly** — regression within/across arms, matched strata, and an explicit statement of
+   whether common support exists.
+5. **Refusal coupling** — redo the contrasts on the pre-treatment stratum, since `refused` and score are
+   mechanically coupled.
+6. **Every effect expressed in units of the measured judge-noise floor** (0.0111), naming any that are not
+   safely above it.
+7. Whether the **"capability channel"** is established or merely *consistent* — the part of the mechanism
+   story I am least sure survives scrutiny.
+
+Point 2 is where I expect trouble: the specificity claim is a single control arm, and the last time a
+control carried this much weight it turned out to be one draw wearing four labels.
+
+**Still running:** `len_B` judge 711/960, `len_Bctrl` queued, `q3_projctrl` 899/960.
