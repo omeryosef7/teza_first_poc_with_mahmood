@@ -10749,3 +10749,4 @@ consequence for §20: if an unblocking decision ever needs GPU, "wait for a free
 not resolve on its own, and the right move would be to coordinate rather than queue behind them
 indefinitely. Nothing to do now — §20 has no submittable work.)*
 Diff unchanged.
+### 10:45 — idle. Controller OK (header verified). Queue: 3 boombness jobs (theirs, all n-801). No new asymmetry artifacts, no §20 commits. Diff unchanged.
