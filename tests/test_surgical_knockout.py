@@ -1000,3 +1000,65 @@ class TestAnswerPrefixGuards(unittest.TestCase):
         rc, rec = run_main(sk, overrides={"resolve_occurrences": no_occ})
         self.assertEqual(rec.rows, [])
         self.assertEqual(rec.summary["_ledger"]["failure_reasons"]["no_codeword_occurrence"], 2)
+
+
+# --------------------------------------------------------------------------------------------- #
+# --skip-arms (2026-08-19). `dense_two_layer` is structurally INFEASIBLE below 16 chosen layers:
+# pick_edges raises rather than truncating, which is right, but it also killed the whole G3 re-run
+# because the arm is a module constant with no way to exclude it. The flag exists so an infeasible
+# arm can be dropped DELIBERATELY -- never silently, which is the defect it replaces (the pre-fix
+# code delivered 7,264 of 56,832 edges, 87% short, while still labelling the arm edge-count-matched).
+# --------------------------------------------------------------------------------------------- #
+import subprocess as _sp
+import sys as _sys
+import os as _os
+
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+_SK = _os.path.join(_ROOT, "src", "boombness", "surgical_knockout.py")
+
+
+def _cli(*extra):
+    """Run the CLI far enough to hit argument validation, without a GPU."""
+    return _sp.run([_sys.executable, _SK, "--fit-dir", "/nonexistent", *extra],
+                   capture_output=True, text=True, cwd=_ROOT)
+
+
+def test_skip_arms_without_a_reason_is_REFUSED():
+    """THE GUARD. An arm may not vanish without a recorded reason."""
+    r = _cli("--skip-arms", "dense_two_layer")
+    assert r.returncode != 0
+    assert "requires --skip-arms-reason" in (r.stdout + r.stderr)
+
+
+def test_skip_arms_rejects_an_arm_name_that_does_not_exist():
+    """Addressed by identity: a typo must not silently skip nothing and report success."""
+    r = _cli("--skip-arms", "dense_two_layers", "--skip-arms-reason", "typo on purpose")
+    out = r.stdout + r.stderr
+    assert r.returncode != 0
+    assert "do not exist" in out and "dense_two_layers" in out
+
+
+def test_skip_arms_with_a_reason_passes_validation():
+    """The negative case: a valid skip must NOT be refused by the guard itself, or the guard is
+    merely a different dead guard. It fails later, on the nonexistent --fit-dir, not on the flag."""
+    r = _cli("--skip-arms", "dense_two_layer", "--skip-arms-reason", "infeasible below 16 layers")
+    out = r.stdout + r.stderr
+    assert "requires --skip-arms-reason" not in out
+    assert "do not exist" not in out
+
+
+def test_dense_two_layer_infeasibility_is_raised_not_truncated():
+    """The condition that motivated the flag: pick_edges must RAISE, never under-deliver."""
+    import numpy as np
+    rng = np.random.default_rng(0)
+    nh, T = 4, 40
+    D = {8: np.zeros((nh, T))}
+    demo_pos = list(range(5, 15))
+    import pytest
+    with pytest.raises(ValueError) as e:
+        sk.pick_edges(D, demo_pos, list(range(T)), 8, "dense_two_layer", rng,
+                      dsts_global=[T - 1], n_model_layers=32, n_chosen_layers=2)
+    msg = str(e.value)
+    assert "INFEASIBLE" in msg
+    assert "widen --layers" in msg          # it must say what to do
+    assert "silently" in msg                # and name the defect it replaces

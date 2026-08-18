@@ -965,3 +965,72 @@ selected over ~20 layers and it survives being told so.
 Per-domain rho ranges **0.020 (lab_safety) to 0.410 (farm_storage)** across the 6 clusters — a wide
 spread, which is precisely why the inference is domain-clustered and why `p_iid_pooled_rho` is now
 explicitly marked WITHDRAWN as a sole basis inside the artifact.
+
+## The G1/G3 re-runs surfaced two instrument findings before producing a single number
+
+### ★ G1: the whole-answer readout works — and the CEILING does not
+
+`g1wa_smoke` (2 families) shows the C-6 port doing exactly what it promised. Option mass by arm:
+
+| arm | n | median option mass | frac > 1% | gate |
+|---|---|---|---|---|
+| `none` (baseline) | 4 | 0.0885 | 1.000 | OK |
+| `transplant` | 80 | **0.1536** | 0.925 | OK |
+| `add` | 208 | 0.0972 | 1.000 | OK |
+| `add_control_band` | 16 | 0.1489 | 1.000 | OK |
+| **`donor_ceiling`** | 4 | **0.0071** | **0.250** | ⛔ **BELOW GATE** |
+
+Against the old readout's median of **5.6e-06**, the live arms are a genuine forced choice at last.
+**But the `donor_ceiling` arm is not**, and it is the one that matters most for G1's headline: every
+number G1 reports is `frac_of_span = (arm − baseline) / (ceiling − baseline)`, so **the ceiling is the
+denominator of the entire claim.**
+
+Decoding what the model actually wants to say at that position (`top1_id`, now recorded per row —
+token ids, decoded through the tokenizer, no prompt text read):
+
+| arm | top-1 tokens |
+|---|---|
+| `none` (baseline) | ` Bomb` ✓, ` Evidence`, ` Tops`, ` Vegetable` |
+| **`donor_ceiling`** | **` Explos`**(ive), **` Squ`**(ash), **` F`** |
+
+**On the donor prompt the model answers with a synonym or a category word, not the option word.**
+` Explos…` for *bomb*, ` Squ…`/` Vegetable` for *carrot*. Both are semantically correct and both fall
+outside the option set `{' bomb',' Bomb'} / {' carrot',' Carrot'}`, so the ceiling captures **0.4–2%**
+of the donor's answer probability.
+
+This is a **different** defect from C-5, which was about capitalisation and multi-token codewords and
+which the whole-answer readout fixed. This one is lexical substitution, and no readout built from the
+two literal surface forms can see it. Note the ceiling's `semantic_logodds` is *high* (+2.3 to +13.4),
+i.e. the model does prefer bomb over carrot there — the **ratio** is meaningful even when both options
+sit in a 0.4% slice. So this may not invalidate `frac_of_span`; it does mean the span's upper anchor
+is estimated from a tail. **n=4 in the smoke — to be quantified at n=48 in the full run** (766659 /
+766660, `semantic_one_word` and `semantic_forced_choice`), which writes its data even when the gate
+fires. Recorded now, before the numbers, so the finding cannot be shaped by them.
+
+### G3: `dense_two_layer` is structurally infeasible, and the old code met that by truncating 87%
+
+The G3 smoke died on a guard a Phase-1 verifier added:
+
+```
+dense_two_layer INFEASIBLE at layer 8: needs 30720 edges but only 3840 exist there
+(1920 demo + 1920 non-demo). Two layers cannot match an all-layer cut's edge count;
+widen --layers instead of silently cutting 12% of the target.
+```
+
+The code comment records what the pre-2026-08-17 version did instead: **"on the real run it delivered
+7,264 of a needed 56,832 (87% short) while still being reported as the layer-matched dense arm."**
+`dense_two_layer` exists to break the tie between *depth redundancy* and *edge count* — and it was
+8× short, so it broke nothing.
+
+It cannot be fixed by widening `--layers`: feasibility needs `n_chosen ≥ 16`, at which point it is not
+a two-layer arm. **The arm is structurally infeasible for its stated purpose.** The tie is instead
+broken from the other side by `subsampled_all_layers_demo` (same total edge count, spread over all 32
+layers), which *is* feasible.
+
+Added `--skip-arms` / `--skip-arms-reason` to `surgical_knockout.py`: an arm may be dropped
+**deliberately**, never silently. The reason is **mandatory**, unknown arm names are refused (by
+identity, so a typo cannot skip nothing and report success), skipped arms are charged to the
+`FailureLedger` and named in `summary.json`, and the completeness check no longer demands them.
+Validation runs **before the model load**, so a bad flag costs nothing and is testable without a GPU —
+the first version validated after the load and could not be tested at all. Four tests, 60 passing in
+`tests/test_surgical_knockout.py`.

@@ -623,8 +623,33 @@ def main() -> int:
     ap.add_argument("--allow-tail-readout", action="store_true",
                     help="exit 0 despite a failed tail gate (the run is then NOT reportable and "
                          "says so in summary.json)")
+    ap.add_argument("--skip-arms", default="",
+                    help="comma list of ARMS to skip. REQUIRES --skip-arms-reason. Exists because "
+                         "`dense_two_layer` is structurally infeasible below 16 chosen layers and "
+                         "the old code met that by silently truncating to 13%% of its target while "
+                         "still reporting the arm as edge-count-matched. A skipped arm is counted "
+                         "in the FailureLedger and named with its reason in summary.json; it is "
+                         "never absent-and-unexplained.")
+    ap.add_argument("--skip-arms-reason", default="",
+                    help="why. Mandatory whenever --skip-arms is non-empty.")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
+
+    # --- deliberate arm skipping: validated BEFORE any model load ----------------------------- #
+    # Argument validation runs first on purpose. Placed after the model load, a bad --skip-arms
+    # would cost a weight load and a GPU allocation before saying so, and could not be tested
+    # without one.
+    skip_arms = tuple(a.strip() for a in args.skip_arms.split(",") if a.strip())
+    _unknown = [a for a in skip_arms if a not in ARMS]
+    if _unknown:
+        raise SystemExit(f"[knockout] --skip-arms names arms that do not exist: {_unknown}. "
+                         f"Known arms: {list(ARMS)}")
+    if skip_arms and not args.skip_arms_reason.strip():
+        raise SystemExit("[knockout] --skip-arms requires --skip-arms-reason. An arm that vanishes "
+                         "without a recorded reason is indistinguishable from an arm that was "
+                         "silently truncated, which is the defect this flag exists to replace.")
+    if skip_arms:
+        print(f"[knockout] SKIPPING arms {list(skip_arms)}: {args.skip_arms_reason}")
     # Same shell-safe-empty rule as score_behavior.main(); see normalize_answer_prefix.
     answer_prefix = normalize_answer_prefix(args.answer_prefix)
     args.answer_prefix = answer_prefix
@@ -726,6 +751,8 @@ def main() -> int:
                            "charged to the FailureLedger as readout_ids:* below"}
         first_variants = None
     run.note(readout_ids=id_meta, layers=layers, topk=args.topk, arms=list(ARMS),
+             arms_skipped=list(skip_arms), arms_skipped_reason=args.skip_arms_reason or None,
+             arms_run=[a for a in ARMS if a not in skip_arms],
              demo_scope=args.demo_scope, family_accounting=family_accounting,
              direction_splits_available=sorted(fitted),
              direction_payload_verdicts=verdicts,
@@ -867,6 +894,15 @@ def main() -> int:
             run.log_row({**base, "arm": arm, **extra, **rec})
 
         for arm in ARMS:
+            if arm in skip_arms:
+                # DELIBERATE, REASONED, AND RECORDED. `dense_two_layer` is structurally infeasible
+                # below 16 chosen layers (see pick_edges), and the pre-2026-08-17 code met that by
+                # SILENTLY TRUNCATING to 13% of the target while still labelling the arm
+                # edge-count-matched. Refusing outright is right; but refusing the whole RUN because
+                # one arm is infeasible would block G3 entirely, so an arm may be skipped -- only
+                # with a reason, only counted, and only surfaced in summary.json.
+                ledger.fail(f"arm_{arm}:skipped_by_request", row["prompt_id"])
+                continue
             if arm == "none":
                 _emit(arm, _read(ctx, ids), n_edges_cut=0)
                 n += 1
@@ -948,7 +984,8 @@ def main() -> int:
     NON_KNOCKOUT_ARMS = ("none", "no_demo_text")
     rows_by_arm = {a: len(option_mass_by_arm.get(a, ())) for a in ARMS}
     cutting_arms_with_rows = sorted(a for a in ARMS
-                                    if a not in NON_KNOCKOUT_ARMS and rows_by_arm[a])
+                                    if a not in NON_KNOCKOUT_ARMS and a not in skip_arms
+                                    and rows_by_arm[a])
     coverage_fail: List[str] = []
     if not cutting_arms_with_rows:
         coverage_fail.append(
