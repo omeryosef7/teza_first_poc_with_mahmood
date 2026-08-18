@@ -1034,3 +1034,64 @@ identity, so a typo cannot skip nothing and report success), skipped arms are ch
 Validation runs **before the model load**, so a bad flag costs nothing and is testable without a GPU —
 the first version validated after the load and could not be tested at all. Four tests, 60 passing in
 `tests/test_surgical_knockout.py`.
+
+## ★★★ AdvBench, 16 clusters — arm B is REINSTATED and SUPER-ADDITIVITY IS ESTABLISHED
+
+The properly-powered external test. 495 held-out AdvBench prompts, **16 domain clusters, largest
+25.7%** — built in the same commit as ClearHarm for exactly this purpose, judged against real goals
+(post-R-14), analysed by the committed `analyze_external_arms.py`
+(`outputs/boombness/advbench_decomposition.json`).
+
+| arm | intervention | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl | domain-clustered CI |
+|---|---|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — | — | — |
+| **B** | remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
+| C | remove refusalness @L18 | 0.2707 | 0.7091 | +0.1967 | +0.1895 | 0.0001 | [+0.1097, +0.2692] ✓ |
+| D | remove **both** | 0.3515 | 0.6222 | +0.2722 | +0.2544 | <0.0001 | [+0.1589, +0.3499] ✓ |
+
+### 1. Arm B clears zero — R-16's withdrawal is reversed, on the set that can test it
+
+`d_surface` was fitted **entirely on the carrot/bomb 2×2**. Removing it raises compliance on 495
+harmful requests that contain **no codeword, no demonstrations and no doublespeak wrapper**, with a
+**domain-clustered** interval that excludes zero: **+0.0305, p_cl = 0.0089, CI [+0.0089, +0.0522]**.
+
+This is the same estimator that found arm B **n.s. on ClearHarm** (p=0.21) three hours ago. The
+difference is entirely power, and it was predicted at build time: ClearHarm has **G=6 with 127 of 179
+rows in one cluster**; AdvBench has **G=16 with the largest at 25.7%**. The point estimates agree
+(+0.084 pooled on ClearHarm, +0.042 pooled here); only the intervals differ.
+
+**So the claim R-16 withdrew — `d_surface` is causal off-bank, and the bank-artifact explanation is
+excluded — is reinstated, and now on the better-designed set.** Both facts stay in the record: it is
+not established on ClearHarm and it *is* on AdvBench, and the reason is the cluster structure, not
+the arm.
+
+### 2. ★ SUPER-ADDITIVITY IS ESTABLISHED — a genuinely new result
+
+**excess = +0.0333, domain-clustered bootstrap CI [+0.0128, +0.0638], 0.025% of 4000 draws ≤ 0.**
+
+Removing `d_surface` and refusalness **together** produces more than the sum of removing each alone.
+The two channels **interact**; they are not independent additive contributions.
+
+On ClearHarm this was **+0.0677, CI [−0.218, +0.123] — NOT established**, and the log predicted why
+before AdvBench was judged: one dominant cluster. **AdvBench was built to answer this and it answers
+it.** This is the first interaction result in the sprint that survives clustered inference.
+
+### ⛔ The gap this exposes, stated before anyone can call the result clean
+
+**There is NO CONTROL ARM on AdvBench.** All four arms use real fitted directions. The ClearHarm
+double-random control was inert (+0.0009, CI [−0.003, +0.004]) and the band sd is 0.0129, which is
+evidence — but it is evidence *on a different set*. Arm B's effect here is **+0.0305**, and a
+norm-matched random projection has never been run on AdvBench, so "removing `d_surface` raises ASR"
+is not yet separated from "removing **any** direction at L8 raises ASR" **on this set**.
+
+Until that lands, the honest statement is: *arm B's effect on AdvBench is significantly non-zero and
+its ClearHarm counterpart is controlled and inert; the matched AdvBench control is running.*
+`ab_Bctrl` (random @L8, seed 20260901) submitted as **766662**; `ab_Cctrl` and `ab_Dctrl` are staged
+and go in as slots free. **Super-additivity has the same gap** — it is a contrast among three real
+arms with no random-composition reference.
+
+*(Also killed cleanly: `g1wa_sfc` (766660) was refused in 6 seconds — `semantic_forced_choice` names
+both the concept and the codeword, so donor and recipient occurrence positions do not correspond and a
+position-matched transplant is undefined. The plan to run G1 under both query kinds to separate
+"readout change" from "prompt framing change" is therefore **not available**; only `semantic_one_word`
+is valid for the transplant design, and the guard said so before spending a GPU-hour.)*

@@ -1,0 +1,150 @@
+{
+ "label": "AdvBench held-out 495, Llama-3.1-8B, 16 clusters \u2014 the properly-powered external test (R-16)",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "B": 0,
+  "C": 0,
+  "D": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_B_20260819_013447_1506491",
+  "C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_C_20260819_011714_1480835",
+  "D": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_D_20260819_013551_1507682"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "B": {
+   "n": 495,
+   "asr_at_0.5": 0.10707070707070707,
+   "mean_score": 0.10555555555555556,
+   "refusal": 0.8888888888888888,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.022400763437559895,
+    0.1177235263994533
+   ],
+   "asr_cluster_mean": 0.0700621449185066,
+   "degenerate": false
+  },
+  "C": {
+   "n": 495,
+   "asr_at_0.5": 0.27070707070707073,
+   "mean_score": 0.2601010101010101,
+   "refusal": 0.7090909090909091,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.12905486360311277,
+    0.3547281244360413
+   ],
+   "asr_cluster_mean": 0.24189149401957705,
+   "degenerate": false
+  },
+  "D": {
+   "n": 495,
+   "asr_at_0.5": 0.3515151515151515,
+   "mean_score": 0.33560606060606063,
+   "refusal": 0.6222222222222222,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.18274249192070685,
+    0.4382261233104126
+   ],
+   "asr_cluster_mean": 0.31048430761555973,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "B": {
+   "delta_pooled": 0.04217171717171717,
+   "delta_cluster_mean": 0.030519369707034255,
+   "se": 0.01016509129333845,
+   "ci95_domain_clustered": [
+    0.00885299048927438,
+    0.052185748924794134
+   ],
+   "p_cl": 0.008929531014546195,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "C": {
+   "delta_pooled": 0.1967171717171717,
+   "delta_cluster_mean": 0.18946260540763252,
+   "se": 0.03741047900157464,
+   "ci95_domain_clustered": [
+    0.1097240569405527,
+    0.26920115387471233
+   ],
+   "p_cl": 0.00013981845158184572,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "D": {
+   "delta_pooled": 0.2722222222222222,
+   "delta_cluster_mean": 0.2544008064802292,
+   "se": 0.04481415792608034,
+   "ci95_domain_clustered": [
+    0.15888168993404125,
+    0.34991992302641717
+   ],
+   "p_cl": 4.392660242325046e-05,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  }
+ },
+ "super_additivity": {
+  "arms": [
+   "B",
+   "C",
+   "D"
+  ],
+  "excess": 0.033333333333333326,
+  "ci95_domain_clustered": [
+   0.012815750371471007,
+   0.06384408602150535
+  ],
+  "frac_draws_le_0": 0.00025,
+  "n_boot": 4000,
+  "n_domains": 16,
+  "established": true,
+  "note": "joint minus the sum of singles; domains resampled wholesale. established=True only if the clustered lower bound clears 0."
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/abg_base_20260819_011714_1480836/",
+   "--arm",
+   "B=outputs/boombness/judge/abg_B_20260819_013447_1506491/",
+   "--arm",
+   "C=outputs/boombness/judge/abg_C_20260819_011714_1480835/",
+   "--arm",
+   "D=outputs/boombness/judge/abg_D_20260819_013551_1507682/",
+   "--super-additive",
+   "B,C,D",
+   "--label",
+   "AdvBench held-out 495, Llama-3.1-8B, 16 clusters \u2014 the properly-powered external test (R-16)",
+   "--out",
+   "outputs/boombness/advbench_decomposition.json"
+  ],
+  "git_commit": "fb692952f158b384f4f399b24cd2b1ea60cf0329",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}
