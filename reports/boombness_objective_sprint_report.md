@@ -772,7 +772,7 @@ hashes — and the decomposition artifact will be regenerated against them.
 makes it the one artifact that cannot be falsified by inspecting its own reported value. Only the
 generations reveal it. That is now a standing check.)*
 
-## 8. Process — five retractions, five corrections, three dead guards
+## 8. Process — fifteen retractions, ten corrections, six dead guards
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
 *the manipulated and the measured quantity were not the same thing*, or *the best of mine was
@@ -804,6 +804,99 @@ rows and duplicating two others (recovered from git).
 - **A robustness check that resamples *rows* cannot rescue a comparison whose arms sit in different *places*.** The 3.7× survived nested CV and leave-one-domain-out, and was still an artifact.
 - **When correcting an error, verify the measured thing changed — not just the knob you turned.** The first attempt at the position fix moved the direction-fitting position and left the readout where it was, producing a phantom cell that briefly flipped the sprint's conclusion.
 - **A summary that does not know what it skipped will be believed.** A driver reported "complete" having judged 2 of 4 arms.
+
+---
+
+## 8b. Negative results (plan §15 item 14)
+
+Listed because they are the deliverable too, and because several cost more compute than the positive
+findings did. Nothing here is a failed experiment; each is an answer.
+
+| # | question | answer | where |
+|---|---|---|---|
+| N1 | Does a **pure Boombness objective** — maximise the axis — increase attack success? | **No.** Steering the axis suppresses ASR at **both** signs. The objective as specified in plan §12.1 is dead, and this is the single most consequential negative result in the sprint: it is why §12 was not built. | §4 (G4) |
+| N2 | Does Boombness's correlation with ASR **replicate on a second model**? | **No.** ρ≈+0.307 at L12 on Llama-3.1-8B does not carry to Qwen3-14B. | §3 (G2) |
+| N3 | Does the codeword's **final** occurrence become more concept-like than earlier ones? | **No — less.** The opposite of the natural hypothesis, and the control is what makes it readable. | §2b |
+| N4 | Do the three Boombness metrics (probe / direction / logit-lens) agree? | **No.** They disagree in **sign** about ASR at L12, and `common_all_three` covers only **72 of 270** rows. They agree far better on comprehension. | §7b |
+| N5 | Is the meaning stored **in the codeword token**? | **No.** Transplanting the query codeword moves the readout the **wrong way** (−71% of span). This negative is what makes G1 positive. | §2 (G1) |
+| N6 | Does the §10.4 projection result replicate on Qwen3-14B? | **No**, and informatively: on Qwen3 the same intervention raises judged harmfulness on **benign** prompts too, so it does not isolate an attack-related quantity there. ⚠ The published comparison also has a **length confound** (Llama 512 vs Qwen3 192 tokens); a matched-length Qwen3 arm is running. | ★ second causal result |
+| N7 | Is the §10.4 effect **harm-general** rather than doublespeak-specific? | **Not established, and the data cannot answer it.** Only 1 of 6 condition cells is distinguishable from zero (R-15); the two other harmful cells have intervals spanning ±0.2 at n=72 and n=36. | §R-15 |
+| N8 | Is the ClearHarm joint arm **super-additive** in its two components? | **Not established.** +0.0922 with a domain-clustered CI of [−0.147, +0.133]; 127 of 179 rows sit in one cluster, so the set cannot resolve it. AdvBench (16 clusters) is the right test. ⚠ Currently also blocked by R-14. | §7c |
+| N9 | Is `d_surface` "concept-ness" **off-bank**? | **Not licensed.** The 2×2 named the direction from a contrast that does not exist in a prompt with no codeword. Its off-bank behaviour needs its own interpretation. | §7c |
+| N10 | Do the probe splits **leak** across families? | **No** — the critique's leakage finding is refuted against a real K=20 null (max excess 0.021 against a 0.05 tolerance). A single reused permutation had been mistaken for a null distribution. | C-8 |
+| N11 | Is `n_examples` a **confound** for the Boombness↔ASR correlation? | **No.** It predicts ASR (ρ=+0.206) but is essentially uncorrelated with Boombness at `codeword_last` (ρ=−0.034); the partial ρ retains **99.9%** of the raw coefficient. | C-9 |
+
+**Two of these (N10, N11) are negatives against the external critique rather than against the sprint** —
+the critique is authoritative on what is broken but is not itself above verification, and re-derivation
+overturned two of its claims and found three more it had missed.
+
+---
+
+## 8c. Failure modes (plan §15 item 15)
+
+Not a list of bugs. These are the **recurring shapes**; each one bit this project more than once, which
+is the reason for writing them down rather than the individual fixes.
+
+**FM1 — The dead guard.** A guard whose condition can never be true. **Six** so far: the coherence gate
+(keyed on a dirname while arms were named from judge tags); the dynamic-range check (`max` over *signed*
+deltas certified a null control as the largest effect); the control-band selector (matched `ctrl_rand_s*`
+against runs tagged `ctrlband_s*` — **zero** arms ever matched); a phase-board edit addressing rows by
+line index; `probes`' own leakage guard (at K=1 the z-score is `excess/NaN`, yielding `leak=False`, so a
+run whose stopping rule was never evaluable wrote `DONE.json` and exited 0 — **shipped while fixing dead
+guards**); and `analyze_g9`'s role-identifiability gate, which tests family overlap on a `family_id`
+string that *embeds the style name*, so overlap is 0 by construction and the gate would refuse even a
+correct design. **Countermeasure, now mandatory: every guard ships with a test that fails the pre-fix
+code.** Five of the six matched on an incidental property — a filename, a tag prefix, an mtime, a line
+number — rather than on identity.
+
+**FM2 — The one-of-two-paths miss.** A fix applied to the single-spec path and dropped on the composed or
+recursive path. Three occurrences, most recently **R-12**: `score_behavior.py:123` recursed into composed
+arms without passing `control_seed`, so a three-draw "control band" was one draw stated three times — and
+it re-created retraction #7, whose fake band reported an almost identical sd. **Countermeasure: when a
+parameter is threaded, grep for every call site of the function that consumes it, and test the composed
+path explicitly.**
+
+**FM3 — The unfalsifiable-by-inspection artifact.** Some artifacts cannot be checked by looking at their
+own values. A **control band** is the clearest case: its entire purpose is to measure draw-to-draw
+variance, so a fake one looks *better* than a real one. Both times the tell was arms agreeing to four
+decimals. **R-14 is the same shape one level up:** an ASR table cannot be falsified by reading its
+numbers, because a judge given no goal still returns a plausible *ordering* that tracks the refusal rate.
+Only the goal string — an input nobody printed — revealed it. **Countermeasure: check the input, not the
+output, for any artifact whose value is what you are trying to establish.**
+
+**FM4 — The mismatched footing.** Comparing the best of one arm against a fixed instance of another, or
+two probes read at different tokens, or two increments with different degrees of freedom. This produced
+retraction R5 (the "3.7×") and then produced **R-13** *inside the paragraph announcing R5's retraction* —
+a table labelled "at matched footing" that gave refusalness 5 predictors against Boombness's 1.
+**Countermeasure: state the degrees of freedom and the selection freedom of both arms, in the table.**
+
+**FM5 — The instrument that cannot represent the answer.** The `semantic_logodds` readout scored two
+single tokens at a position where the model emits neither, with the options holding a median **5.6e-06**
+of next-token mass; worse, the model capitalises, and the capitalised codeword is multi-token
+(`Carrot` = ` Car` + `rot`) while the concept has four single-token variants — so the instrument was
+biased 4-ids-to-1 *toward the concept* and structurally could not represent the model's preferred
+spelling of the codeword. The fix the external critique recommended (sum `full_word_ids`) would have
+preserved the bias with a larger constant. **Countermeasure: before trusting a forced-choice readout,
+decode what the model actually wants to say at that position, and verify the options hold a material
+share of the mass.**
+
+**FM6 — The silent failure.** A dropped row, a swallowed exception, an unhandled branch. `score_behavior`'s
+query-kind dispatch had no `else`, so an unhandled kind counted as a success with no output. R-14 is the
+most expensive instance: the pre-fix `make_goal` returned a bare string, so an empty goal was recorded as
+`judge_status: "ok"`. **Countermeasure: every drop is counted with a reason in `summary.json` via
+`FailureLedger`; a status is returned beside every value that can be degenerate.**
+
+**FM7 — Robustness checks that test the wrong thing.** The 3.7× survived nested cross-validation *with
+selection inside the fold* and leave-one-domain-out, and was still an artifact. Both resample **rows**;
+the defect was in **where** the two arms were measured. **Countermeasure: resampling cannot repair a
+contrast whose arms sit in different places — check the design before checking the estimate.**
+
+**FM8 — The deliverable drifting from the evidence.** The sprint's own diagnosis of session 1: it
+self-caught seven retractions, which is more than most published work manages, and still shipped a report
+that stated its conclusion both ways and cited a `§0.3` that did not exist. **Countermeasure, now the
+standing bar: every number in the report must be regenerable by a committed script from a committed
+artifact. If the script and the artifact cannot both be named, the number does not go in.** R-13 was found
+by applying exactly this test — its published pair exists in no artifact, in any commit.
 
 ---
 
