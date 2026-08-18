@@ -4802,3 +4802,44 @@ survive; the magnitude does not, and length may itself be a mediator.
 But **"§12.2 is vindicated / should be built" is downgraded to "reopened, worth building as an
 experiment"**, because the arm-F gain is **not conditional on the doublespeak mapping** and **does not
 transfer to explicitly harmful requests** — which is precisely what an attack objective would need.
+
+## ⛔ SELF-CAUGHT: the Qwen3 §0.3 "replication" is NOT a jailbreak result. Same failure mode as retraction #8.
+
+Retraction #8 taught that an intervention effect must be checked **across conditions**, because arm F's gain
+turned out to appear where the doublespeak mapping is never taught. I applied that check to the Qwen3 arm-B
+result **before writing it into a report**, and it fails the same way — worse, in fact:
+
+| condition | base ASR | arm B ASR | Δ score |
+|---|---|---|---|
+| **`benign_literal`** | **0.003** | **0.259** | **+0.2218** |
+| `benign_remap` (mapping never taught) | 0.000 | 0.500 | +0.4653 |
+| `concept_in_benign_ctx` | 0.028 | 0.347 | +0.2604 |
+| `natural_doublespeak` | 0.160 | 0.526 | +0.3354 |
+| `direct_codeword` | 0.167 | 0.444 | +0.0486 |
+| `direct_harmful` | 0.014 | 0.125 | +0.1111 |
+
+**Projecting `d_surface` out at L11 raises judged harmfulness on `benign_literal` prompts from 0.003 to
+0.259.** Those prompts contain no harmful request at all. An intervention that makes a model produce
+judge-flagged content *from benign inputs* is not demonstrating anything about doublespeak — it is a
+**generic disruption of the model that the rubric scores as harmful**.
+
+### What this retracts
+⛔ **The Qwen3 §0.3 result is withdrawn as a replication of "removing Boombness helps the attack".** The
++0.335 on doublespeak is real as a number, but it sits inside a **prompt-independent** effect of the same
+size or larger on conditions with no attack in them. It cannot support the causal reading I was about to
+give it — and it was the strongest-looking evidence for claim 1.
+
+### Why this matters beyond this one arm
+This is the **second** result in two ticks where a large, highly significant, 6/6-domain effect turned out to
+be prompt-independent. Both were caught by the same check — *does the effect appear where the phenomenon
+under study is absent?* — and neither would have been caught by any amount of clustering, bootstrapping, or
+threshold robustness. **That check is now mandatory for every intervention claim in this sprint**, and its
+absence is why claim 1 looked strong an hour ago.
+
+It also re-frames the Llama picture: arm B there was +0.074 (p=0.117) on doublespeak. Given Qwen3, the right
+next question is not "is Llama's effect significant" but "is Llama's effect *also* present on benign
+prompts" — i.e. the same cross-condition check, which the `len_B` judge (complete) and `len_Bctrl`
+(421/960) will answer.
+
+**Standard added to the analysis protocol:** no intervention result is reportable as an attack finding until
+its effect on `benign_literal` and `benign_remap` is stated alongside it.
