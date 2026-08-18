@@ -5477,3 +5477,32 @@ hardcoded filter.
 | `analyze_g64.py`: no `--min-examples`, so it analyses the 36 zero-demo prompts that `analyze_g2` deliberately drops | §6.4 n |
 | report/short: the "@ last token" incremental-R² row (+0.025/+0.091) **has no backing artifact**; the corrected §11 role statistics likewise | unbacked figures |
 | Qwen3 non-replication table **silently drops `natural_doublespeak` (+0.339)** from the "harmful conditions" cell while the Llama column lists three | asymmetric presentation |
+
+### Tick 86 — three more audit-11 findings fixed; the ASR-interval one is real but SMALLER than claimed
+
+**A11-7 — iid Wilson intervals on clustered prompts.** `judge_boombness.py:172` and
+`analyze_steering.py:129` built every headline ASR interval as a Wilson binomial over PROMPTS, treating
+270 prompts as 270 independent draws when they are 6 domains × ~45. Every other inference in this sprint
+clusters on domain; the headline number was the only one that did not. Added
+`common.clustered_proportion_ci` (percentile CI by resampling **domains**) and both call sites now report
+it **beside** the Wilson, with the iid field renamed `wilson95_IID_UNDERSTATES` so the two cannot be
+confused.
+
+⚠ **Measured, the understatement is 1.32×, not the ~1.9× the auditor estimated.** On the baseline
+doublespeak arm (ASR 0.219, n=270, 6 domains): iid Wilson [0.173, 0.272] width 0.098; domain-clustered
+[0.152, 0.281] width 0.130. The finding is real and the direction is right; the magnitude was overstated,
+and I am recording the measured value rather than the claimed one.
+
+**A11-8 — `reanalyze_corrected.py` computed its p from t(5) and its CI from a hardcoded 1.96.** The CI
+and the p-value therefore contradicted each other, and every interval and every "what the null can
+exclude" bound was **31% too narrow**. Fixed to `t_crit(G-1)` (the bisection inverse verified against six
+published critical values in the §8 work). Consequences: L0 now reads `[-0.0019, +0.0000]` and L24
+`[-0.0414, +0.0003]` — both now include zero, where the normal multiplier excluded it. Holm decisions are
+unchanged because those were already computed from t(5); it is the intervals that were wrong.
+
+**This is the third instance of one defect class** — a small-df t used for the p-value beside a
+normal-shaped constant used for the interval — after `analyze_g9` (audit 10) and `analyze_g8` (found by
+generalising it). The rule stands: when an audit finds a defect, grep the other scripts for its *shape*.
+
+**A11-1 also fixed:** `analyze_g1_g3.py` now runs at all, and its `require_done` guard fires for the
+first time.

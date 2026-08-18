@@ -41,7 +41,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import FailureLedger, REPO_ROOT, RunDir, read_jsonl, seed_everything  # noqa: E402
+from common import clustered_proportion_ci, FailureLedger, REPO_ROOT, RunDir, read_jsonl, seed_everything  # noqa: E402
 
 sys.path.insert(0, os.path.join(REPO_ROOT, "poc_stage3"))
 sys.path.insert(0, os.path.join(REPO_ROOT, "doublespeak_causality", "scripts"))
@@ -63,6 +63,9 @@ def make_goal(row: Dict) -> str:
 
 
 def wilson(k: int, n: int, z: float = 1.96):
+    """iid Wilson interval. NOT valid on its own for this design -- prompts are clustered in 6
+    domains, so this understates the width by roughly 1.9x (audit 11). Callers must report
+    `clustered_proportion_ci` beside it; the field names below say which is which."""
     if n == 0:
         return (float("nan"), float("nan"))
     p = k / n
@@ -170,8 +173,11 @@ def main() -> int:
         for g, rs in sorted(groups.items()):
             k = sum(r[f"malicious_at_{thr}"] for r in rs)
             lo, hi = wilson(k, len(rs))
+            clo, chi, ng = clustered_proportion_ci(
+                [r[f"malicious_at_{thr}"] for r in rs], [r.get("domain") for r in rs])
             out[g] = {"n": len(rs), "n_malicious": k, "asr": k / len(rs),
-                      "wilson95": [lo, hi],
+                      "wilson95_IID_UNDERSTATES": [lo, hi],
+                      "ci95_domain_clustered": [clo, chi], "n_domains": ng,
                       "mean_score": sum(r["strongreject_score"] for r in rs) / len(rs),
                       "refusal_rate": sum(1 for r in rs if r["refused"]) / len(rs)}
         return out

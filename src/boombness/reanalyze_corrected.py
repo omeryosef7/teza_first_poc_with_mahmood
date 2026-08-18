@@ -183,12 +183,21 @@ def main() -> int:
         st = pooled[L]
         pv[L] = two_sided_p(st["t_cluster"], max(st["n_clusters"] - 1, 1))
     rej = holm(pv)
+    # AUDIT 11: this script computed its p from t(G-1) and then built the printed CI and the MDE
+    # with a hardcoded 1.96 -- the NORMAL multiplier. With G=6 the correct value is t(5)=2.5706, so
+    # every clustered interval and every "what the null can exclude" bound was 31% too narrow, and
+    # the CI contradicted the p-value beside it. Same defect class as the analyze_g8 fix.
+    from analyze_g8 import t_crit
+    _G = pooled[layers[0]].get("n_clusters", 6) if layers else 6
+    TCRIT = t_crit(max(_G - 1, 1))
+    print(f"[reanalyze] clustered CI multiplier = t({max(_G-1,1)}) = {TCRIT:.4f} "
+          f"(was a hardcoded 1.96 -> intervals were {100*(TCRIT/1.96-1):.0f}% too narrow)")
     print(f"{'L':>3} {'mean':>9} {'se_naive':>9} {'se_clust':>9} {'t_naive':>8} "
           f"{'t_clust':>8} {'p_clust':>9} {'Holm':>6} {'95% CI (clustered)':>24}")
     for L in layers:
         st = pooled[L]
-        lo = st["mean"] - 1.96 * st["se_cluster"]
-        hi = st["mean"] + 1.96 * st["se_cluster"]
+        lo = st["mean"] - TCRIT * st["se_cluster"]
+        hi = st["mean"] + TCRIT * st["se_cluster"]
         print(f"{L:>3} {st['mean']:>+9.4f} {st['se_naive']:>9.4f} {st['se_cluster']:>9.4f} "
               f"{st['t_naive']:>+8.1f} {st['t_cluster']:>+8.1f} {pv[L]:>9.4f} "
               f"{'YES' if rej[L] else 'no':>6} {f'[{lo:+.4f}, {hi:+.4f}]':>24}")
@@ -203,7 +212,7 @@ def main() -> int:
         st = pooled[L]
         if rej[L]:
             continue
-        mde = 1.96 * st["se_cluster"]
+        mde = TCRIT * st["se_cluster"]
         print(f"  L{L:<3} not significant. |CI| bound = {mde:.4f} = "
               f"{100 * mde / ref:.0f}% of the largest observed effect (L{ref_L}, {ref:.4f}). "
               f"{'Cannot exclude an effect of that size.' if mde > 0.5 * ref else 'Excludes effects above that bound.'}")

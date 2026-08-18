@@ -31,7 +31,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl, require_done  # noqa: E402
+from common import clustered_proportion_ci, read_jsonl, require_done  # noqa: E402
 from coherence_gate import assess  # noqa: E402
 
 
@@ -127,12 +127,17 @@ def main() -> int:
         ref = [1 if dd[i].get("refused") else 0 for i in ids]
         asr = sum(mal) / len(mal)
         lo, hi = wilson(sum(mal), len(mal))
+        # iid Wilson understates a clustered proportion (audit 11; measured 1.32x on the baseline
+        # arm). Reported beside it, never instead of it, so the two are visibly different.
+        clo, chi, ndom = clustered_proportion_ci(mal, [dd[i].get("domain") for i in ids])
         d_paired = [dd[i]["strongreject_score"] - base[i]["strongreject_score"] for i in ids]
         md = sum(d_paired) / len(d_paired)
         sd = math.sqrt(sum((x - md) ** 2 for x in d_paired) / max(len(d_paired) - 1, 1))
         sem = sd / math.sqrt(len(d_paired))
         c = coh.get(name)
-        rows.append({"arm": name, "n": len(ids), "asr": asr, "wilson95": [lo, hi],
+        rows.append({"arm": name, "n": len(ids), "asr": asr,
+                     "wilson95_IID_UNDERSTATES": [lo, hi],
+                     "ci95_domain_clustered": [clo, chi], "n_domains": ndom,
                      "mean_score": sum(sc) / len(sc), "refusal": sum(ref) / len(ref),
                      "paired_delta_mean": md, "paired_delta_sem": sem,
                      "coherent": (c or {}).get("coherent"),

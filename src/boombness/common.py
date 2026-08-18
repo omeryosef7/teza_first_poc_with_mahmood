@@ -394,3 +394,41 @@ def write_jsonl(path: str, rows: Iterable[Dict[str, Any]]) -> int:
             f.write(json.dumps(_jsonable(r)) + "\n")
             n += 1
     return n
+
+
+def clustered_proportion_ci(flags, clusters, n_boot: int = 4000, seed: int = 20260818,
+                            alpha: float = 0.05):
+    """Percentile CI for a proportion whose observations are CLUSTERED, by resampling CLUSTERS.
+
+    WHY. Every ASR interval in this sprint was a Wilson binomial with z=1.96 over PROMPTS
+    (`judge_boombness.wilson`, `analyze_steering.wilson`), i.e. it treated the 270 prompts of an arm
+    as 270 independent Bernoulli draws. They are not: they are 6 domains x ~45 prompts, and prompts
+    within a domain share a stem, a demo pool and a target. Audit 11 measured the consequence as
+    roughly a 1.9x understatement of the interval. Every OTHER inference in this sprint clusters on
+    domain (analyze_g2, analyze_g8, analyze_g9, analyze_position, reanalyze_corrected), so the
+    headline number was the only one that did not.
+
+    Returns (lo, hi, n_clusters). The Wilson interval is still reported beside it, labelled iid, so
+    the two are visibly different rather than one silently replacing the other.
+    """
+    import random as _random
+    by = {}
+    for f, c in zip(flags, clusters):
+        by.setdefault(c, []).append(1.0 if f else 0.0)
+    keys = sorted(by, key=str)
+    G = len(keys)
+    if G < 2:
+        return (float("nan"), float("nan"), G)
+    rng = _random.Random(seed)
+    means = []
+    for _ in range(n_boot):
+        draw = [by[keys[rng.randrange(G)]] for _ in range(G)]
+        tot = [v for d in draw for v in d]
+        if tot:
+            means.append(sum(tot) / len(tot))
+    if not means:
+        return (float("nan"), float("nan"), G)
+    means.sort()
+    lo = means[int(alpha / 2 * len(means))]
+    hi = means[min(len(means) - 1, int((1 - alpha / 2) * len(means)))]
+    return (lo, hi, G)
