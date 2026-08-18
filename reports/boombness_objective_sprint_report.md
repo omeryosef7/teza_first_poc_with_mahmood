@@ -709,7 +709,7 @@ StrongReject rubric at the same threshold (`clearharm_decomposition.json`, n=179
 | arm | intervention | ASR | refusal rate |
 |---|---|---|---|
 | baseline | — | 0.1006 | 0.877 |
-| **B** | remove `d_surface` @L8 | **0.2067** | 0.760 |
+| **B** ⛔ | remove `d_surface` @L8 | **0.2067** *(withdrawn — empty goal)* | 0.760 |
 | **C** | remove refusalness @L18 | **0.3408** | 0.615 |
 | **D** | remove **both** | **0.5419** | 0.447 |
 | Dctrl | two norm-matched **random** directions, same layers | 0.1117 | 0.872 |
@@ -1340,8 +1340,9 @@ n=960 — the deltas reproduce the original exactly):
 | `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
 | `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
 
-**Only one of the six cells is distinguishable from zero, and it is `natural_doublespeak`.** The two
-other "harmful" cells — precisely the ones that carried "it generalises across three attack types" —
+⛔ **Only one of the six cells is distinguishable from zero, and it is `natural_doublespeak`**, so the
+earlier profile reading is **withdrawn**. The two other "harmful" cells — precisely the ones that
+previously carried the generalisation claim —
 have intervals spanning **±0.2**, roughly six times the effect they were cited to demonstrate.
 
 ⛔ **The "clean split" was a power artifact.** `natural_doublespeak` has **420** prompts against 72 and

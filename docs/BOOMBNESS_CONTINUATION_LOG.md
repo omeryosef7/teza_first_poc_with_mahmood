@@ -463,23 +463,23 @@ neither G1's +68% headline nor G3 is re-derivable from current evidence.**
 The external critique (Tier-3) states that the incremental-R² table "gives refusalness 5 predictors and
 Boombness 1, and it flips at matched df". **Confirmed, by arithmetic, and the flip is real.**
 
-**The published table** (report §3 ~L320, `§19 Q7`, short update L156):
+**The published table — now WITHDRAWN** (report §3 ~L320, `§19 Q7`, short update L156):
 
-| | Boombness adds over refusalness | refusalness adds over Boombness |
+| ⛔ *all four cells withdrawn* | Boombness adds over refusalness | refusalness adds over Boombness |
 |---|---|---|
 | @ codeword_last | +0.028 | **+0.144** |
 | @ last token | +0.025 | **+0.091** |
 
-**Where those numbers come from.** `docs/BOOMBNESS_SPRINT_PROGRESS.md:2528` states it outright —
+**Where the withdrawn numbers come from.** `docs/BOOMBNESS_SPRINT_PROGRESS.md:2528` states it outright —
 "all **five** refusalness layers jointly add +0.144 over Boombness" — and L2524 gives the components:
 refusalness all-layers joint R² = 0.2565, `d_surface|L12|proj` alone = 0.1411. The joint model is
 `boombness(1 column) + refusalness(5 columns)`, R² ≈ 0.285, and **both published cells are increments
 against that same model**:
 
-* `0.285 − 0.1411 = 0.144` ← refusalness's increment, **5 df**
-* `0.285 − 0.2565 = 0.0285` ← Boombness's increment, **1 df**
+* `0.285 − 0.1411 = 0.144` ← refusalness's increment, **5 df** *(withdrawn)*
+* `0.285 − 0.2565 = 0.0285` ← Boombness's increment, **1 df** *(withdrawn)*
 
-R² is monotone in predictors, so a 5-df block mechanically adds more than a 1-df column. The table is
+R² is monotone in predictors, so a 5-df block mechanically adds more than a 1-df column. ⛔ The retracted table is
 labelled "at matched footing" and sits **20 lines after** a retraction whose entire content is
 "we compared these two probes at mismatched footing". It repeats the retracted error in the paragraph
 that announces the retraction.
@@ -502,8 +502,8 @@ the 2-column joint on the same n=234:
    this position**. The phrase "done correctly" is attached to the one cell that is computed wrongly.
 2. **@ codeword_last the direction survives but the magnitude collapses.** Refusalness still adds more,
    but by **1.47×** (0.1091 vs 0.0743), not the **5.1×** the published table implies. The progress
-   log's reading of it — "Boombness is close to redundant given refusalness" (L45, L2616) — is **not
-   supported**: +0.0743 on a refusalness-only base of 0.1759 is a **42% increase** in explained
+   log's reading of it — "Boombness is close to redundant given refusalness" (L45, L2616) — is
+   **withdrawn, not supported**: +0.0743 on a refusalness-only base of 0.1759 is a **42% increase** in explained
    variance. Not redundancy.
 
 **Provenance note, and it is the worse half.** The published 0.144/0.028 pair is **not in any committed
@@ -554,7 +554,7 @@ a coherent-looking table produced by an instrument that was never given the ques
 
 ### Scope — what is suspended
 
-**Suspended pending re-judge:** every number in report **§7c**, the §0 gate row **§10.4-D**, and tick
+**⛔ Suspended pending re-judge — every figure named in this paragraph is WITHDRAWN as published:** report **§7c**, the §0 gate row **§10.4-D**, and tick
 17/21/22's ClearHarm figures — baseline 0.1006, B 0.2067, C 0.3408, D 0.5419, Dctrl 0.1117, the
 +0.0922 super-additivity estimate, and the control band. **Arm B (+0.106 vs +0.011), the row that
 excludes the bank-artifact explanation, is suspended with the rest.**
@@ -617,9 +617,9 @@ within hours of existing.
 
 ## ★ R-15 — "harmful yes, benign no" is one significant cell out of six
 
-The report's **SECOND CAUSAL RESULT** argues from a cross-condition profile — "≈0 on every benign
-condition and ≈+0.056 on every harmful one", a "clean split" licensing the stronger claim
-*harm-general, not doublespeak-specific*. That table shipped **six deltas and zero p-values**, while
+⛔ The report's **SECOND CAUSAL RESULT** previously argued from a cross-condition profile — "≈0 on every
+benign condition and ≈+0.056 on every harmful one", a "clean split" licensing the stronger claim
+*harm-general, not doublespeak-specific*. That reading is **withdrawn**. That table shipped **six deltas and zero p-values**, while
 the **Qwen3** table printed eleven lines below it carries `p_cl` on every cell and annotates two of
 them "(n.s.)".
 
@@ -635,7 +635,7 @@ correct 512-token runs `len_B` / `len_Bctrl`, n=960 — deltas reproduce the rep
 | `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
 | `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
 
-**Only `natural_doublespeak` is distinguishable from zero.** The two other "harmful" cells — the ones
+⛔ **Only `natural_doublespeak` is distinguishable from zero**, so the earlier reading is WITHDRAWN. The two other "harmful" cells — the ones
 carrying "it generalises across three attack types" — have CIs spanning **±0.2**, six times the effect
 they are claimed to demonstrate.
 
@@ -661,8 +661,8 @@ non-empty, so StrongReject is finally being given the request. First two arms in
 
 | arm | old ASR (empty goal) | **re-judged ASR (real goal)** | refusal |
 |---|---|---|---|
-| baseline | 0.1006 | **0.1061** | 0.877 |
-| C (remove refusalness @L18) | 0.3408 | **0.3631** | 0.615 |
+| baseline | 0.1006 *(withdrawn)* | **0.1061** | 0.877 |
+| C (remove refusalness @L18) | 0.3408 *(withdrawn)* | **0.3631** | 0.615 |
 
 **The numbers move by ~0.005–0.02, not by an order of magnitude.** That is consistent with R-14's own
 diagnosis — an empty-goal StrongReject score still reads how harmful the *response* is, so it tracked

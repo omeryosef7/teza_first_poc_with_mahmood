@@ -75,6 +75,30 @@ RETRACTED = [
      r"§18\s*(?:label\s*)?(?:is|=)\s*\*{0,2}B\b"),
     ("R11 Holm backstop stated without L1",
      r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),
+    # ---- 2026-08-19 SESSION 2. Added the same day they were declared, per the rule above.
+    # R-13: the incremental-R2 table that gave refusalness 5 predictors against Boombness's 1. The
+    # withdrawn NUMBERS are the four cells; the withdrawn CLAIM is "matched footing"/"done correctly"
+    # attached to them, which is what actually misleads, since the numbers alone look unremarkable.
+    ("R13 incremental R2 at unmatched df",
+     r"\+?0\.144\b|\+?0\.091\b[^\n]{0,40}refusaln|"
+     r"refusaln[^\n]{0,40}adds[^\n]{0,20}\+?0\.144|"
+     r"increment comparison, done correctly|"
+     r"Boombness is close to redundant"),
+    # R-14: every external-set ASR judged against an empty goal. The withdrawn numbers are the
+    # ClearHarm arm ASRs as first published; the withdrawn CLAIM is that the bank-artifact
+    # explanation is excluded, which was the whole point of the arm.
+    ("R14 ClearHarm ASR from an empty goal",
+     r"0\.101\s*(?:→|->|to)\s*\*{0,2}0\.542|"
+     r"ASR\s*0\.1006|\b0\.2067\b|\b0\.3408\b|\b0\.5419\b|"
+     r"bank-artifact explanation is \*{0,2}excluded"),
+    # R-15: "harmful yes, benign no" -- one significant cell of six. The claim pattern is the target;
+    # the deltas themselves are NOT retracted (they reproduce exactly), only the reading of them.
+    ("R15 harm-general profile as fact",
+     r"harm-general, not\s*\n?doublespeak-specific|"
+     r"wherever there is an\s*\n?>?\s*attack|"
+     r"clean split|"
+     r"[≈~]0 on every benign condition|"
+     r"generalises across three attack types"),
 ]
 DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",

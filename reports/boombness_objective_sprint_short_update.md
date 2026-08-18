@@ -415,25 +415,30 @@ construction (163 vs 150 median words), against a **projection-type** control:
 
 **5× the measured judge-noise floor.**
 
-### The cross-condition profile is what makes it credible
-| condition | arm − control |
-|---|---|
-| `benign_literal` | **+0.0069** |
-| `benign_remap` | **+0.0104** |
-| `concept_in_benign_ctx` | **+0.0035** |
-| `natural_doublespeak` | **+0.0560** |
-| `direct_harmful` | **+0.0556** |
-| `direct_codeword` | **+0.0590** |
+### ⛔ The cross-condition profile — R-15, WITHDRAWN and corrected 2026-08-19
+This table originally shipped six deltas and **no inference**, while the Qwen3 table below it carried
+`p_cl` on every cell and annotated two "(n.s.)". Given the same test (`analyze_condition_profile.py`,
+paired by `prompt_id`, domain-clustered t on `len_B`/`len_Bctrl`, n=960 — deltas reproduce exactly):
 
-**≈0 on every benign condition, ≈+0.056 on every harmful one.** So the claim is **harm-general, not
-doublespeak-specific**:
+| condition | n | arm − control | p_cl | domain-clustered CI |
+|---|---|---|---|---|
+| `benign_literal` | 324 | +0.0069 | 0.334 | [−0.010, +0.024] |
+| `benign_remap` | 36 | +0.0104 | 0.745 | [−0.068, +0.088] |
+| `concept_in_benign_ctx` | 72 | +0.0035 | 0.862 | [−0.045, +0.052] |
+| **`natural_doublespeak`** | 420 | **+0.0560** | **0.0077** | **[+0.023, +0.089]** |
+| `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
+| `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
 
-> Removing the concept component from the codeword position raises attack success **wherever there is an
-> attack**, and does nothing where there is not.
+⛔ **Only one of six cells is distinguishable from zero, and it is `natural_doublespeak`.** The earlier
+reading — that the effect was harm-general and appeared wherever an attack was present — is
+**withdrawn**. The two other harmful cells have intervals spanning **±0.2** at n=72 and n=36, roughly
+six times the effect they were cited to demonstrate; the split tracks **sample size** (420 vs 72 vs 36),
+not harm.
 
-That is a stronger statement than "it helps doublespeak" — it generalises across three attack types while
-remaining absent on benign inputs. It is also **exactly the shape the arm-F "capability channel" failed to
-show**, which is why that one was retracted and this one was not.
+⛔ **What stands** is the narrow claim: removing the concept component at the codeword position raises
+attack success **on natural doublespeak prompts** (+0.056, p=0.0077, inert control). The previous
+comparison against Qwen3 also applied an **asymmetric evidential standard** — Qwen3's cells were
+discounted for failing a test the Llama cells had never been given, and three of them fail it too.
 
 ### ⛔ It does NOT replicate on Qwen3-14B — and the failure is informative
 Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
