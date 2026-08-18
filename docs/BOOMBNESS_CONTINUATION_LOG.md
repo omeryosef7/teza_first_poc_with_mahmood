@@ -930,3 +930,38 @@ directions.
 arm B's problem is R-16 — its **domain-clustered** interval [−0.067, +0.235] includes zero at G=6.
 A tight control band and an underpowered arm are different facts and the report must not let the first
 stand in for the second.
+
+## Plan §9's named outputs finally exist (6 of the 12 missing artifacts)
+
+`correlation_summary.json`, `regression_summary.md` and all **four** §9 plots were required by the plan
+and had never been produced. `src/boombness/summarize_section9.py` produces all six from committed
+artifacts, in `outputs/boombness/section9/`.
+
+**It computes no statistic** — `analyze_g2` / `analyze_g9` own the inference and this consolidates
+their artifacts. The one thing it does compute is the row-level join the plots need, and it **refuses
+to write anything** unless that join reproduces `g2_analysis_cwpos.json` first. It does, bit-identically:
+**n=234, rho=0.306667780204175**. A plot drawn from a join that disagrees with the inference is a plot
+of a different dataset, and this project has already shipped one phantom cell from exactly that.
+
+The four models plan §9 names, now in one table:
+
+| model | R² @ codeword_last | R² @ last token |
+|---|---|---|
+| `ASR ~ boombness` | 0.1411 | 0.0066 |
+| `ASR ~ refusalness` | 0.1759 | 0.0013 |
+| `ASR ~ boombness + refusalness` | 0.2502 | 0.0066 |
+| `ASR ~ boombness + refusalness + n_examples` | 0.2541 | 0.0496 |
+
+**`ASR ~ boombness + role_style` is reported as REFUSED, not fitted.** The plan permits role-style "as a
+temporary proxy, explicitly labelled as a proxy" — but labelling an unidentifiable term does not make it
+identifiable, and `role_style` is confounded with `family_id` in the bank as generated. Refusing is the
+honest reading of the plan's intent, and it is recorded rather than silently skipped.
+
+**G2 survives the T5/T6 fixes.** The regenerated `g2_analysis_cwpos.json` still gives rho_pooled
+**0.3067** and within-domain **0.2618**, and now carries the multiplicity correction the layer selection
+never had: **maxT family-wise p = 0.0015**, `holm_rejected_within_domain = True`. The headline was
+selected over ~20 layers and it survives being told so.
+
+Per-domain rho ranges **0.020 (lab_safety) to 0.410 (farm_storage)** across the 6 clusters — a wide
+spread, which is precisely why the inference is domain-clustered and why `p_iid_pooled_rho` is now
+explicitly marked WITHDRAWN as a sole basis inside the artifact.

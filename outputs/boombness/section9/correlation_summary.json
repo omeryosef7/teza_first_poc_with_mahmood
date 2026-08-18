@@ -1,0 +1,166 @@
+{
+ "what": "plan \u00a79 consolidated correlation summary",
+ "headline_predictor": "d_surface|L12|proj",
+ "arm": "natural_doublespeak",
+ "join_check": {
+  "n": 234,
+  "rho": 0.306667780204175,
+  "p_iid": 1.7381137500164314e-06,
+  "expected_n": 234,
+  "expected_rho": 0.306667780204175,
+  "reproduces_g2_artifact": true
+ },
+ "llama": {
+  "codeword_last": {
+   "n": 234,
+   "rho_pooled": 0.306667780204175,
+   "rho_within_domain": 0.26178047909981317,
+   "p_perm_within_domain_rho": 0.0004997501249375312,
+   "p_iid_pooled_rho": 1.7381137500164314e-06,
+   "layer_selection_maxT_family_p": 0.0014992503748125937,
+   "per_cluster_rho": {
+    "city_bridge": 0.3444155161018329,
+    "farm_storage": 0.4095315067019522,
+    "game_manual": 0.32959709995265646,
+    "instructional": 0.2344078242650269,
+    "lab_safety": 0.020058587103924632,
+    "news_report": 0.062404588311914685
+   }
+  },
+  "last": {
+   "n": 234,
+   "rho_pooled": 0.08598293650135368,
+   "rho_within_domain": 0.1476706280131548,
+   "p_perm_within_domain_rho": 0.02348825587206397
+  }
+ },
+ "qwen3": {
+  "rho_pooled": 0.3638023338654771,
+  "rho_within_domain": 0.14383263971513432,
+  "p_perm_within_domain_rho": 0.004997501249375313,
+  "n": 384
+ },
+ "incremental_r2": {
+  "codeword_last": {
+   "refusalness_over_boombness": 0.1091254488279012,
+   "boombness_over_refusalness": 0.07430276665088187,
+   "n_examples_over_boombness+refusalness": 0.0039030683774800012,
+   "boombness_over_refusalness+n_examples": 0.21873975717299354
+  },
+  "last": {
+   "refusalness_over_boombness": 4.494961112211371e-07,
+   "boombness_over_refusalness": 0.005292648333431016,
+   "n_examples_over_boombness+refusalness": 0.043062339915276415,
+   "boombness_over_refusalness+n_examples": 0.014235519548546849
+  }
+ },
+ "regression_models": {
+  "codeword_last": {
+   "boombness_only": {
+    "r2": 0.14110547945959895,
+    "n": 234
+   },
+   "refusalness_only": {
+    "r2": 0.17592816163661829,
+    "n": 234
+   },
+   "boombness+refusalness": {
+    "r2": 0.25023092828750015,
+    "n": 234
+   },
+   "n_examples_only": {
+    "r2": 0.03539423949198661,
+    "n": 234
+   },
+   "boombness+n_examples": {
+    "r2": 0.16560156381388258,
+    "n": 234
+   },
+   "boombness+refusalness+n_examples": {
+    "r2": 0.25413399666498016,
+    "n": 234
+   },
+   "boombness+refusalness+n_examples_linear": {
+    "r2": 0.25658373177071914,
+    "n": 234
+   },
+   "boombness+role+refusalness (crossed subset)": {
+    "r2": 0.16219145102007893,
+    "n": 36
+   }
+  },
+  "last": {
+   "boombness_only": {
+    "r2": 0.006566969629145825,
+    "n": 234
+   },
+   "refusalness_only": {
+    "r2": 0.0012747707918260298,
+    "n": 234
+   },
+   "boombness+refusalness": {
+    "r2": 0.006567419125257046,
+    "n": 234
+   },
+   "n_examples_only": {
+    "r2": 0.03539423949198661,
+    "n": 234
+   },
+   "boombness+n_examples": {
+    "r2": 0.04887941311229904,
+    "n": 234
+   },
+   "boombness+refusalness+n_examples": {
+    "r2": 0.04962975904053346,
+    "n": 234
+   },
+   "boombness+refusalness+n_examples_linear": {
+    "r2": 0.04510880294466835,
+    "n": 234
+   },
+   "boombness+role+refusalness (crossed subset)": {
+    "r2": 0.15576939581916105,
+    "n": 36
+   }
+  }
+ },
+ "sources": {
+  "g2_cwpos": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/g2_analysis_cwpos.json",
+  "g2_lastpos": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/g2_analysis_lastpos.json",
+  "g9_cwpos": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/g9_three_predictor_cwpos.json",
+  "g9_lastpos": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/g9_three_predictor_lastpos.json",
+  "g2_qwen3": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/qwen3_g2_analysis.json",
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673"
+ },
+ "plots": [
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section9/plots/boombness_vs_asr_scatter.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section9/plots/boombness_vs_asr_binned.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section9/plots/boombness_by_condition.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section9/plots/asr_by_condition.png"
+ ],
+ "provenance": {
+  "argv": [
+   "src/boombness/summarize_section9.py",
+   "--judge",
+   "outputs/boombness/judge/base_20260816_210948_3024689",
+   "--extract",
+   "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+   "--g2-cwpos",
+   "outputs/boombness/g2_analysis_cwpos.json",
+   "--g2-lastpos",
+   "outputs/boombness/g2_analysis_lastpos.json",
+   "--g9-cwpos",
+   "outputs/boombness/g9_three_predictor_cwpos.json",
+   "--g9-lastpos",
+   "outputs/boombness/g9_three_predictor_lastpos.json",
+   "--g2-qwen3",
+   "outputs/boombness/qwen3_g2_analysis.json",
+   "--outdir",
+   "outputs/boombness/section9"
+  ],
+  "git_commit": "14d87bf6271a61f7728db1865b24074ad041d4c7",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}
