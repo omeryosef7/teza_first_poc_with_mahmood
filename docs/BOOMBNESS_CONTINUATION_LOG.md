@@ -823,3 +823,81 @@ an instrument artifact plausibly produces. G1's *magnitudes* should move, and th
 was **toward the concept** (four single-token variants against the codeword's zero capitalised form),
 so the corrected `demos_only|L18` figure should come in **at or below +68%**, not above. G3 is the
 genuinely open one: its top-k/bottom-k null was measured at the wrong token, so it could go either way.
+
+## Phase-1 workflow COMPLETE — 14 agents, 0 errors, all 7 verifiers INCOMPLETE
+
+Every verifier returned **INCOMPLETE** and fixed further defects in the patch it was checking. That is
+7 of 7, after 3 of 3 in session 1 — the base rate for "a fix is complete as submitted" in this project
+is now **0 of 10**. Suite: **584 passed, 6 failed** (the same six pre-existing
+`module_imports_without_torch` checks in legacy GCG/reinforce files, untouched). Test count went
+**338 → 584**.
+
+**C-6 and T3 are in.** `aggressive_patching.py` and `surgical_knockout.py` both call
+`signals.string_option_readout`, both default to `--readout-ids whole_answer --answer-prefix "Answer:"`
+with a fatal `--min-option-mass` gate, and `surgical_knockout` sets `rank_dst = readout_pos`.
+
+### Two things the agents found that the brief did not ask for
+
+**A new bug class — the batched readout under a patch.** `signals.string_option_readout` batches its
+option variants into a single forward, while `ds_common.LayerPatch._hook` writes `hidden[0,p,:]` and
+`pair_common.ComponentOutSwap._hook` writes `h[bi,...]` with `bi=0`. Calling the helper naively under
+a patch would have scored the **concept** variants patched and the **codeword** variants *unpatched* —
+turning `semantic_logodds` into a patched-vs-unpatched comparison rather than a concept-vs-codeword
+one. Pinned to `max_batch=1` and demonstrated behaviourally against the real `LayerPatch`. This would
+have silently corrupted the entire G1 re-run.
+
+**T9b — a live second instance of the fake-band defect.** `between_draw_band` already returned
+`sd=None` at n=1, so T9 "as stated" was fixed. But a 1-draw cell was still **emitted with
+`intervention="add_control_band"`** — a single observation carrying a band's name, which is retraction
+#7 and R-12 verbatim — and `summary.json`'s `control_draws_underpowered` was a pure function of the
+*requested* `--n-control-draws`, so a run that asked for 12 and achieved 1 reported "not underpowered".
+
+### ★ An open question the verifier could not settle, now settled: the 1464 → 2352 bank join is BENIGN
+
+The `silent_failures` verifier flagged that `extract_boombness/full_20260816_185942_1008673` was fitted
+over a **1464-row** bank and is consumed by **72** committed runs, **28** of which are `score_behavior`
+runs over the **2352-row** bank — *"the R1 cross-regeneration join shape, detectable from metadata
+alone. Whether it is benign is a question I cannot settle without reading prompt text."*
+
+It is settleable without reading prompt text, because the fit records **content-derived** fields.
+
+1. All 1464 fit `prompt_id`s are present in the current bank, **0 missing**. Not sufficient on its own:
+   `prompt_families.py:350` computes `prompt_id = sha256(family|condition)`, which is **metadata-derived,
+   not content-derived**, so an ID match does not pin the text. (The fit rows carry no `prompt_sha16`.)
+2. The bank's git history shows the content **did** change: `ab679b02` (2026-08-16 19:00:02) rewrote
+   **1102 of 1464** prompts relative to `50f7133f` (18:46:49). The fit run started at **18:59:42** —
+   *twenty seconds before that commit* — so which content it read was genuinely ambiguous.
+3. Settled with `seq_len`, which the fit records per row and which is a pure function of the prompt
+   text under a fixed tokenizer and template:
+
+| candidate bank content | `seq_len` agrees | disagrees |
+|---|---|---|
+| `50f7133f` (pre) | 441 | **1023** |
+| **`ab679b02` (post)** | **1464** | **0** |
+
+**The fit read the post-regeneration content, which is byte-identical to the corresponding rows in
+today's 2352-row bank.** The bank grew by **addition**; the shared 1464 rows never changed. So the
+28 cross-bank joins are directions fitted on a **strict, content-identical subset** and applied more
+broadly — a legitimate design, not a contamination. **No number is affected, and `comp_projout` (R-6)
+and `band2_*` (R-12) are cleared of this particular worry.**
+
+*What remains a real defect* is that this took a tokenizer and a git bisect to establish, because the
+fit records `n_bank_rows` and a bank **path** but no bank **content hash** — exactly the gap
+`bank_content_sha16` / `compare_bank_hashes` was supposed to close, and exactly why storing two
+different functions under one key mattered.
+
+### Correction to my own G3 re-run plan
+
+I had staged G3 at `--dst readout`. The verifier is right that the comparable configuration is
+**`--dst both`** — it ranks at `readout_pos` (the T3 fix) while cutting the same destination set the
+original cut, so the re-run isolates the ranking change instead of confounding it with a narrower
+intervention. Restaged as `args_g3wa_block.txt` and `args_g3wa_codeword.txt`, both at `--dst both`,
+because `block` is the scope G3's claim rests on and `codeword` is the scope the original "~7%" came
+from. Every G3 number in the sprint changes and **none can be recomputed from committed artifacts** —
+all three effects (ranking destination, cross-fitting, readout) require forward passes.
+
+### Also flagged: a second G1 artifact nobody had marked
+
+`outputs/boombness/g1_g3_analysis.json`'s G1 block comes from a **different** aggressive_patching run
+(`pilot_20260816_210506_1142800`), also `readout: semantic_logodds`, and is invalidated by C-6 on
+identical grounds. It must be marked pending re-derivation alongside `g1_stratified.json`.

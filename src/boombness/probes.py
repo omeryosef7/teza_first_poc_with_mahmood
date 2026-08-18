@@ -76,6 +76,48 @@ per-layer permutation p was the raw fraction `(draws >= real).mean()`, which pri
 draws; it is add-one smoothed to (1 + #{draw >= real}) / (K + 1) and ships with its resolution
 floor 1/(K+1).
 
+TWO MORE HOLES IN THE SAME GUARD, FOUND ON THE T9 VERIFICATION PASS (2026-08-19)
+-------------------------------------------------------------------------------
+(iii) THE K=1 FIX HAD LANDED ON ONE OF TWO PATHS. Suppressing `sd` and `se` at K = 1 does not stop
+the null being *presented* as a band: `min`, `max` and the empirical `quantiles` were still computed
+unconditionally, and `np.quantile` of a one-element array returns that element, so a single draw
+published `q0.05 == q0.5 == q0.95 == min == max == the draw`. `main` then republished that as
+`null_quantiles` / `null_min` / `null_max` in `paired_vs_shuffled` and derived the boolean
+`above_null_q95` from it — which for a 1-draw null is a claim about a 95th percentile that does not
+exist. Every band-shaped key is now withheld (`{}` / NaN) unless K >= 2, the per-layer record carries
+`is_band` and `band_suppressed_reason`, and `above_null_q95` is `None` rather than `False`. This is
+the one-of-two-paths bug class that has now hit this repo four times: the fix went to the numeric
+half of the band and not to the quantile half.
+
+(iv) THE STOPPING RULE COULD STILL PASS VACUOUSLY. `rule_enforceable` was `not undecidable_layers`,
+and an EMPTY null has no undecidable layers — so a regime whose pool is empty on the supplied bank
+(e.g. `d6_surface_matched_concept` against a bank with no B/E rows) produced `per_layer == {}` in
+both arms, computed nothing at all, and still collected `rule_enforceable: True, leak: False` and an
+exit code of 0. `check_leakage` now reports `n_layers_checked` / `no_layers_evaluated` and requires
+at least one layer AND no undecidable layer before it will call the rule enforceable. Structurally
+the same defect as (i) one level up: there the rule could not be evaluated, here there was nothing
+to evaluate it on, and both exited 0 with a clean-looking verdict.
+
+TWO MORE, FOUND WHEN (iii)/(iv) WERE VERIFIED (2026-08-19, adversarial pass)
+---------------------------------------------------------------------------
+(v) THE ZERO-LAYER FIX WAS ITSELF ONE OF TWO PATHS. (iv) closed "a regime that evaluated no
+layers"; it did not close "a run that evaluated no REGIMES". `undecidable` is accumulated inside
+the regime loop, so with `--regimes ""` the loop body never runs, `undecidable` is empty, the
+banner never fires and `main` returns 0 — while the summary.json the same run writes says
+`leak_check.rule_enforceable: False`. The exit code contradicted the artifact. The banner condition
+is now `undecidable or not leak_checks`, and the summary carries `n_regimes_evaluated` /
+`no_regimes_evaluated`. Fifth appearance of the one-of-two-paths class, and the second time the
+SAME fix has been applied at one level and missed at the level above it.
+
+(vi) `--layers` DROPPED UNCACHED LAYERS SILENTLY. `want = [L for L in want if L in layer_index]`
+turned `--layers 0,4,8,99,777` into a three-layer analysis with no message, no FailureLedger entry
+and no summary field — and then reported `n_layers_checked: 3`, the field (iv) added to prove the
+stopping rule had something to run on. Three of five is indistinguishable from three of three in
+that field, so a typo quietly shrank the scope of the check that exists to prove the scope was not
+empty. Requested-but-uncached layers are now a hard `SystemExit`, and `summary["layers_requested"]`
+records the request next to `summary["layers"]`. The default path derives the layer list FROM the
+cache and cannot trip it.
+
 LAYER SELECTION MUST NOT BE DONE ON THE TEST SET (fixed 2026-08-18, external critique T6b)
 ------------------------------------------------------------------------------------------
 `best_layer_by_auroc` used to be `argmax` of the per-layer TEST AUROC over the ~9-10 scanned layers,
@@ -415,19 +457,43 @@ def shuffled_null_distribution(
         if not vals:
             continue
         a = np.asarray(vals, dtype=float)
-        per_layer[L] = {
+        # A BAND NEEDS TWO DRAWS, AND THAT APPLIES TO EVERY BAND-SHAPED KEY (2026-08-19).
+        # The 2026-08-18 T9b fix suppressed `sd`/`se` at K = 1 but left `min`, `max` and the
+        # empirical `quantiles` computed unconditionally. `np.quantile` of a one-element array
+        # returns that element, so K = 1 emitted q0.05 == q0.5 == q0.95 == min == max == the single
+        # draw: a full band-shaped payload manufactured from one point, which is verbatim the defect
+        # T9 names. Downstream `main` then published it as `null_quantiles` / `null_min` /
+        # `null_max` and derived the boolean `above_null_q95` from it. The fix had landed on one of
+        # the two paths (sd/se) and not the other (quantiles/min/max) — the one-of-two-paths shape
+        # that has now hit this repo four times. `is_band` states the fact explicitly instead of
+        # leaving a reader to infer it from a NaN.
+        is_band = bool(a.size >= 2)
+        rec = {
             "n_draws": int(a.size),
+            "is_band": is_band,
             "mean": float(a.mean()),
-            "sd": float(a.std(ddof=1)) if a.size > 1 else float("nan"),
-            "se": float(a.std(ddof=1) / math.sqrt(a.size)) if a.size > 1 else float("nan"),
-            "min": float(a.min()), "max": float(a.max()),
-            "quantiles": {f"q{q:g}": float(np.quantile(a, q)) for q in quantiles},
+            "sd": float(a.std(ddof=1)) if is_band else float("nan"),
+            "se": float(a.std(ddof=1) / math.sqrt(a.size)) if is_band else float("nan"),
+            "min": float(a.min()) if is_band else float("nan"),
+            "max": float(a.max()) if is_band else float("nan"),
+            "quantiles": ({f"q{q:g}": float(np.quantile(a, q)) for q in quantiles}
+                          if is_band else {}),
             "draws": [float(v) for v in a],
         }
+        if not is_band:
+            rec["band_suppressed_reason"] = (
+                f"K={a.size}: one draw is a point, not a band. sd/se/min/max/quantiles are "
+                "withheld rather than computed from a single permutation.")
+        per_layer[L] = rec
+    no_band = sorted(L for L, v in per_layer.items() if not v["is_band"])
     return {"regime": regime, "n_draws": n_draws, "requested_draws": n_draws,
             "quantiles_used": [float(q) for q in quantiles], "per_layer": per_layer,
+            "is_band": bool(per_layer) and not no_band,
+            "layers_without_band": no_band,
             "single_draw_note": "mean/sd/quantiles are over independent permutations; a single "
-                                "draw (the pre-2026-08-18 behaviour) is a point, not a band."}
+                                "draw (the pre-2026-08-18 behaviour) is a point, not a band. "
+                                "Layers listed in layers_without_band have every band-shaped key "
+                                "(sd, se, min, max, quantiles) withheld, not estimated."}
 
 
 def check_leakage(null_dist: Dict, tol: float = 0.05, z_crit: float = 2.0) -> Dict:
@@ -454,23 +520,43 @@ def check_leakage(null_dist: Dict, tol: float = 0.05, z_crit: float = 2.0) -> Di
     for L, v in sorted(null_dist.get("per_layer", {}).items()):
         excess = v["mean"] - 0.5
         se = v.get("se", float("nan"))
-        decidable = bool(isinstance(se, float) and se == se and se > 0)
+        # `is_band` is the null's own statement about whether it has a spread at all; `se > 0` is
+        # the numeric consequence. Both are required, so a null that forgets to suppress one of the
+        # two cannot buy a decidable verdict with the other.
+        has_band = bool(v.get("is_band", True))
+        decidable = bool(has_band and isinstance(se, float) and se == se and se > 0)
         z = (excess / se) if decidable else float("nan")
         leak = bool(decidable and excess > tol and z > z_crit)
         rows.append({"layer": L, "null_mean": v["mean"], "null_sd": v["sd"], "null_se": se,
                      "excess_over_chance": float(excess), "z": float(z), "n_draws": v["n_draws"],
-                     "decidable": decidable, "leak": leak})
+                     "is_band": has_band, "decidable": decidable, "leak": leak})
         if leak:
             layers_flagged.append(L)
         if not decidable:
             undecidable.append(L)
+    # A RULE EVALUATED OVER ZERO LAYERS IS NOT A PASSING RULE (2026-08-19).
+    # The 2026-08-18 version derived `rule_enforceable` from `not undecidable`, and an EMPTY null
+    # has an empty `undecidable` list — so `check_leakage({"per_layer": {}})` returned
+    # `rule_enforceable=True, leak=False` and `main` exited 0. That is reachable: any regime whose
+    # pool is empty on the supplied bank (e.g. `d6_surface_matched_concept` on a bank with no B/E
+    # rows) produces `per_layer == {}` in both the real and the null arm, so the regime computes
+    # NOTHING and still collects a clean stopping-rule verdict. Same vacuous-guard shape as the K=1
+    # hole this function was written to close, one level up: there the rule could not be evaluated,
+    # here there was nothing to evaluate it on.
+    n_checked = len(rows)
     return {"regime": null_dist.get("regime"), "tol": float(tol), "z_crit": float(z_crit),
             "n_draws": null_dist.get("n_draws"), "layers_flagged": layers_flagged,
             "leak": bool(layers_flagged),
+            "n_layers_checked": n_checked,
+            "no_layers_evaluated": n_checked == 0,
             "undecidable_layers": undecidable,
-            "rule_enforceable": not undecidable,
+            "rule_enforceable": bool(n_checked) and not undecidable,
+            "unenforceable_reason": (
+                "no layer produced a null at all — the regime evaluated nothing" if not n_checked
+                else (f"layers {undecidable} have no between-draw spread" if undecidable else None)),
             "undecidable_note": "a layer with NaN/zero null se (K=1, i.e. no between-draw spread) "
-                                "cannot be tested against the stopping rule; it is NOT a pass",
+                                "cannot be tested against the stopping rule; it is NOT a pass, and "
+                                "neither is a check that ran over zero layers",
             "per_layer": rows}
 
 
@@ -600,9 +686,23 @@ def main() -> int:
         raise SystemExit(f"no cached reps at {cache_path} (rerun extract without --no-cache-reps)")
     layers, reps = load_reps(cache_path)
     layer_index = {L: i for i, L in enumerate(layers)}
-    want = ([int(x) for x in args.layers.split(",") if x.strip()]
-            if args.layers else [L for L in layers if L % 2 == 0 or L == layers[-1]])
-    want = [L for L in want if L in layer_index]
+    # A LAYER THE CACHE DOES NOT HAVE IS NOT A LAYER TO DROP QUIETLY (2026-08-19 verification pass).
+    # This used to be a bare `want = [L for L in want if L in layer_index]`: `--layers 0,4,8,99`
+    # analysed three layers, said so nowhere, wrote no FailureLedger entry, and then reported
+    # `n_layers_checked: 3` — the field added on 2026-08-19 to prove the stopping rule ran over
+    # something. Three checked layers out of five asked for looks identical to three out of three
+    # in that field, so a typo in --layers silently shrinks the scope of the very check that exists
+    # to prove the scope was not empty. The default path (no --layers) derives `want` FROM the
+    # cached layer list and so can never trip this.
+    want_requested = ([int(x) for x in args.layers.split(",") if x.strip()]
+                      if args.layers else [L for L in layers if L % 2 == 0 or L == layers[-1]])
+    want = [L for L in want_requested if L in layer_index]
+    absent_layers = [L for L in want_requested if L not in layer_index]
+    if absent_layers:
+        raise SystemExit(f"requested layers {absent_layers} are not in the rep cache "
+                         f"(cached: {layers}); refusing to analyse a silently reduced layer set")
+    if not want:
+        raise SystemExit(f"no layers to analyse (requested {want_requested}, cached {layers})")
 
     bank = read_jsonl(args.bank)
     table = build_table(bank, reps)
@@ -677,6 +777,10 @@ def main() -> int:
                          "auroc_shuffled": b, "auroc_lift": a - b,
                          "null_mean": b, "null_sd": nd["sd"], "null_se": nd["se"],
                          "null_n_draws": nd["n_draws"], "null_quantiles": nd["quantiles"],
+                         # `null_quantiles` is {} and null_min/null_max are NaN when K < 2 (see
+                         # shuffled_null_distribution): a band-shaped key computed from one draw is
+                         # the T9 defect itself, so it is withheld rather than filled in.
+                         "null_is_band": nd["is_band"],
                          "null_min": nd["min"], "null_max": nd["max"],
                          # One-sided empirical p: how often a shuffled draw matched the real
                          # number. ADD-ONE SMOOTHED (fixed during the 2026-08-18 verification pass
@@ -693,7 +797,12 @@ def main() -> int:
                          "z_vs_null": (float((a - b) / nd["sd"])
                                        if isinstance(nd["sd"], float) and nd["sd"] == nd["sd"]
                                        and nd["sd"] > 0 else float("nan")),
-                         "above_null_q95": bool(a > nd["quantiles"].get("q0.95", float("inf"))),
+                         # None, not False, when there is no band: "the real AUROC did not beat
+                         # the null's 95th percentile" is a claim, and a 1-draw null has no 95th
+                         # percentile to beat. `bool(a > inf)` used to publish that claim as False.
+                         "above_null_q95": (bool(a > nd["quantiles"]["q0.95"])
+                                            if nd["is_band"] and "q0.95" in nd["quantiles"]
+                                            else None),
                          "saturation_frac": rl.get("saturation_frac"),
                          "p_C_minus_p_A": rl.get("p_C_minus_p_A"),
                          "margin_C_minus_A": rl.get("margin_C_minus_A"),
@@ -714,6 +823,11 @@ def main() -> int:
                      "n_layers_considered": len(paired),
                      "auroc_nested_selection": nested.get("auroc_nested"),
                      "nested_selected_layers": nested.get("selected_layers"),
+                     # T6: fold-to-fold disagreement IS the evidence that the selected-on-test
+                     # argmax was noise, so the flag travels with the number in BOTH artifacts,
+                     # not only in summary.json.
+                     "nested_selection_is_stable": nested.get("selection_is_stable"),
+                     "nested_n_layers_considered": nested.get("n_layers_considered"),
                      "null_draws": args.null_draws,
                      "leak_check": lk,
                      "paired_vs_shuffled": paired})
@@ -729,7 +843,7 @@ def main() -> int:
             # The full layer profile is printed in full, every layer, precisely so the peak is read
             # as a peak in a profile and not as "the" result.
             mark = " <-max(test)" if L == best else ""
-            q95 = v["null_quantiles"].get("q0.95", float("nan"))
+            q95 = v["null_quantiles"].get("q0.95", float("nan"))   # {} when K < 2 -> prints nan
             sd = v["null_sd"]
             print(f"    {L:>3} {v['auroc_real']:>7.4f} {v['null_mean']:>7.4f} "
                   f"{sd:>7.4f} {q95:>6.3f} {v['p_perm_ge_real']:>6.3f} "
@@ -749,7 +863,10 @@ def main() -> int:
 
     summary = {
         "run_scored": os.path.abspath(args.run), "bank": args.bank,
-        "n_labellable_prompts": len(table), "layers": want, "n_folds": args.folds,
+        "n_labellable_prompts": len(table), "layers": want,
+        # The layer set ASKED FOR, next to the layer set analysed, so `n_layers_checked`
+        # below is readable as a fraction of the request rather than as a bare count.
+        "layers_requested": want_requested, "n_folds": args.folds,
         "cells": dict(collections.Counter(r["cell"] for r in table)),
         "domains": sorted({r["domain"] for r in table}),
         "results": results,
@@ -757,7 +874,11 @@ def main() -> int:
         "leak_check": {"tol": args.leak_tol, "z_crit": args.leak_z,
                        "regimes_flagged": leaked,
                        "regimes_undecidable": undecidable,
-                       "rule_enforceable": not undecidable,
+                       "regimes_with_no_layers": [rg for rg, v in leak_checks.items()
+                                                  if v["no_layers_evaluated"]],
+                       "n_regimes_evaluated": len(leak_checks),
+                       "no_regimes_evaluated": not leak_checks,
+                       "rule_enforceable": bool(leak_checks) and not undecidable,
                        "by_regime": leak_checks,
                        "rule": "shuffled-label AUROC meaningfully above 0.5 means the split is "
                                "leaking; tested on the mean of --null-draws independent shuffles"},
@@ -804,13 +925,32 @@ def main() -> int:
     # dead-guard shape this commit exists to remove. K < 2 now fails the run unless it is explicitly
     # asked for with --allow-leak (the single-draw mode is a reproduction of the pre-fix behaviour
     # and its output must not be reported either).
-    if undecidable:
+    # ... AND NEITHER IS A RULE THAT NEVER GOT A REGIME (2026-08-19 verification pass).
+    # `undecidable` is built inside the regime loop, so with zero regimes it is empty and this
+    # banner never fired: `--regimes ""` wrote DONE.json, recorded `rule_enforceable: False` in its
+    # own summary.json, and returned 0 — the exit code contradicting the artifact. That is the
+    # SAME vacuous-pass shape as `check_leakage` over zero layers, one level further up: the
+    # zero-layer fix landed on the per-regime path and was dropped on the no-regime path. The
+    # condition is on `leak_checks` (did any regime produce a verdict) rather than on the parsed
+    # --regimes string, so a regime that raises before it can register also lands here.
+    if undecidable or not leak_checks:
         banner = "=" * 78
         print(banner)
-        print("STOPPING RULE COULD NOT BE EVALUATED — THE NULL HAS NO BETWEEN-DRAW SPREAD")
+        print("STOPPING RULE COULD NOT BE EVALUATED")
+        if not leak_checks:
+            print("  NO REGIME WAS EVALUATED AT ALL — the run analysed nothing, so there is no "
+                  "stopping-rule verdict to pass.")
         for rg in undecidable:
-            print(f"  {rg}: layers {leak_checks[rg]['undecidable_layers']} have NaN/zero null se "
-                  f"at K={args.null_draws}. Re-run with --null-draws >= 20.")
+            lkr = leak_checks[rg]
+            if lkr["no_layers_evaluated"]:
+                # Added 2026-08-19: this branch used to print "layers []" and, before
+                # check_leakage counted its rows, never ran at all — a regime that evaluated zero
+                # layers reported rule_enforceable=True and the run exited 0.
+                print(f"  {rg}: NO LAYER produced a null at all — the regime's pool is empty on "
+                      f"this bank, so nothing was computed and nothing was checked.")
+            else:
+                print(f"  {rg}: layers {lkr['undecidable_layers']} have NaN/zero null se "
+                      f"at K={args.null_draws}. Re-run with --null-draws >= 20.")
         print("An unevaluated stopping rule is NOT a passing stopping rule.")
         print(banner)
         if not args.allow_leak:

@@ -115,7 +115,23 @@ def assess(run_dir: str, condition: Optional[str] = None,
     """
     gens = os.path.join(run_dir, "gens.jsonl")
     res = os.path.join(run_dir, "results.jsonl")
-    rows = [json.loads(l) for l in open(gens)]
+    # A MALFORMED LINE IS NOT A MISSING LINE (silent-failure audit, 2026-08-19).
+    # This was `[json.loads(l) for l in open(gens)]`, which dies on the truncated final line a
+    # killed job leaves behind -- a traceback in the middle of a multi-run batch, with no count of
+    # what was readable and, because `--out` is written after the loop, no artifact at all. Rows
+    # are now parsed one at a time; unparseable ones are COUNTED with a reason and, being evidence
+    # that the population is incomplete, fail the verdict rather than shrinking the denominator.
+    rows: List[Dict] = []
+    n_malformed = 0
+    with open(gens) as fh:
+        for line in fh:
+            if not line.strip():
+                continue
+            try:
+                rows.append(json.loads(line))
+            except (ValueError, TypeError):
+                n_malformed += 1
+    n_rows_in_file = len(rows)
     if condition is not None:
         rows = [r for r in rows if r.get("condition") == condition]
     if keep_ids is not None:
@@ -123,19 +139,40 @@ def assess(run_dir: str, condition: Optional[str] = None,
     n_considered = len(rows)
     stats = [degeneracy(r.get("generation", "")) for r in rows]
     stats = [s for s in stats if s]
+    # THE TRUNCATION CRITERION COULD SILENTLY NOT RUN (silent-failure audit, 2026-08-19).
+    # `trunc` stayed None whenever results.jsonl was absent, or present but with no `generation`
+    # readout row surviving the same condition/keep_ids filter -- and the check below is written
+    # `if trunc is not None and trunc > MAX`, so the arm was certified on three criteria instead of
+    # four with nothing in the artifact saying which. Truncation is not a minor one: the steering
+    # catastrophe this module was written for ran at truncated_frac 1.00, and a filter that matches
+    # zero result rows while matching gens rows is itself a join failure between two files of the
+    # same run. Both states are now recorded, and the join failure is fatal to the verdict.
     trunc = None
-    if os.path.exists(res):
+    trunc_status = "applied"
+    n_trunc_rows = 0
+    if not os.path.exists(res):
+        trunc_status = "skipped:no_results_jsonl"
+    else:
         g = [r for r in read_jsonl(res) if r.get("readout") == "generation"]
+        n_gen_rows_in_results = len(g)
         if condition is not None:
             g = [r for r in g if r.get("condition") == condition]
         if keep_ids is not None:
             g = [r for r in g if r.get("prompt_id") in keep_ids]
+        n_trunc_rows = len(g)
         if g:
             trunc = sum(1 for r in g if r.get("gen_truncated")) / len(g)
+        elif n_gen_rows_in_results == 0:
+            trunc_status = "skipped:results_jsonl_has_no_generation_readout_rows"
+        else:
+            trunc_status = "unmatched:population_present_in_gens_absent_from_results"
     out = {"run": os.path.abspath(run_dir), "n_scored": len(stats),
            "n_considered": n_considered, "n_dropped_short": n_considered - len(stats),
+           "n_rows_in_gens_file": n_rows_in_file, "n_malformed_gens_lines": n_malformed,
            "scorable_frac": (len(stats) / n_considered) if n_considered else 0.0,
            "condition": condition, "truncated_frac": trunc,
+           "truncation_check": {"status": trunc_status, "n_rows": n_trunc_rows,
+                                "max_truncated_frac": MAX_TRUNCATED_FRAC},
            "sample_thresholds": {"min_scorable_frac": min_scorable_frac,
                                  "min_scored_rows": min_scored_rows,
                                  "min_words_scorable": 8}}
@@ -169,6 +206,35 @@ def assess(run_dir: str, condition: Optional[str] = None,
         fails.append(f"top_word_frac {out['top_word_frac']:.3f} > {MAX_TOP_WORD_FRAC}")
     if trunc is not None and trunc > MAX_TRUNCATED_FRAC:
         fails.append(f"truncated_frac {trunc:.3f} > {MAX_TRUNCATED_FRAC}")
+    if n_malformed:
+        fails.append(f"{n_malformed} unparseable line(s) in gens.jsonl: the population is "
+                     f"incomplete by an unknown amount, so no ratio computed over the rest "
+                     f"describes the arm")
+    if trunc_status.startswith("unmatched:"):
+        fails.append(f"truncation check {trunc_status}: {n_considered} generation(s) match this "
+                     f"population in gens.jsonl but 0 match it in results.jsonl — the two files "
+                     f"of the same run do not join, so `gen_truncated` was never evaluated")
+    # A SKIPPED CRITERION IS RECORDED, NOT INFERRED FROM A NULL. `truncated_frac: null` used to be
+    # the only trace, and it reads identically to "no truncation". `checks_applied` /
+    # `checks_skipped` say which of the four criteria the verdict actually rests on.
+    # THE RATIO CRITERIA ARE ONLY "APPLIED" WHEN THEY ARE NUMBERS (verifier fix, 2026-08-19).
+    # The first version of these two fields listed uniq_word_ratio / trigram_repeat /
+    # top_word_frac as APPLIED unconditionally. When no generation is long enough to score,
+    # `stats` is empty and all three are nan, so `nan < MIN` and `nan > MAX` are both False and
+    # not one of them can contribute a failure -- the exact IEEE-754 hole the sample gate ten
+    # lines above exists to plug, and the field whose entire job is to say what the verdict rests
+    # on asserted it rested on three inert comparisons. The verdict is False in that state
+    # anyway (the sample gate fires), so no committed verdict flips; the provenance was wrong.
+    ratios_live = bool(stats)
+    out["checks_applied"] = ["sample"] + \
+                            (["uniq_word_ratio", "trigram_repeat", "top_word_frac"]
+                             if ratios_live else []) + \
+                            (["truncated_frac"] if trunc is not None else [])
+    out["checks_skipped"] = (
+        [] if ratios_live else
+        ["uniq_word_ratio/trigram_repeat/top_word_frac (0 scorable generations; every ratio is "
+         "nan and nan satisfies every threshold)"]) + \
+        ([] if trunc is not None else [f"truncated_frac ({trunc_status})"])
     out["failures"] = fails
     out["coherent"] = not fails
     return out
@@ -196,9 +262,23 @@ def main() -> int:
     report = []
     bad = 0
     for r in args.runs:
-        a = assess(r, condition=args.condition,
-                   min_scorable_frac=args.min_scorable_frac,
-                   min_scored_rows=args.min_scored_rows)
+        # ONE UNREADABLE RUN USED TO TAKE THE WHOLE BATCH WITH IT (silent-failure audit,
+        # 2026-08-19). `assess` raises FileNotFoundError on a run dir with no gens.jsonl -- a
+        # mistyped path, or a job that died before generating. Because `--out` is written AFTER
+        # this loop, the batch then produced NO artifact at all, and the runs after the failing one
+        # were never assessed. An unassessable run is now a NON-COHERENT run with a reason, which
+        # is both louder (it is in the artifact, not only in a traceback) and safer (`--strict`
+        # still exits non-zero, and nothing can read the absence as a pass).
+        try:
+            a = assess(r, condition=args.condition,
+                       min_scorable_frac=args.min_scorable_frac,
+                       min_scored_rows=args.min_scored_rows)
+        except Exception as e:                       # noqa: BLE001 - reason is recorded, not hidden
+            a = {"run": os.path.abspath(r), "coherent": False, "n_scored": 0, "n_considered": 0,
+                 "scorable_frac": 0.0, "condition": args.condition, "truncated_frac": None,
+                 "uniq_word_ratio": float("nan"), "trigram_repeat": float("nan"),
+                 "top_word_frac": float("nan"), "checks_applied": [], "checks_skipped": ["all"],
+                 "failures": [f"UNASSESSABLE: {type(e).__name__}: {e}"]}
         report.append(a)
         tr = a["truncated_frac"]
         print(f"{os.path.basename(r)[:46]:46s} {a['uniq_word_ratio']:>7.3f} "

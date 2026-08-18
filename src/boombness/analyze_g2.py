@@ -36,6 +36,33 @@ under unambiguous names -- `rho_pooled` and `rho_within_domain` -- every p key n
 quantity the citable p tests. Names match analyze_g64.py exactly so the three scripts agree. NEITHER
 ESTIMATE WAS PROMOTED OR DEMOTED; only the pairing became legible.
 
+LAYER SELECTION (audit T6, 2026-08-18). `--headline-predictor` names ONE column out of the family
+this script scans in full -- 28 columns on the default `--layers` (10 layers x {cos, proj} of
+`d_surface`, plus `logit_lens` wherever the extract wrote it). The headline's rho and its "cite this
+one" permutation p were reported as if the column had been prespecified, and the family size was
+recorded nowhere, which is the hole C-4 opened in `reanalyze_corrected` one file over (there, once
+the family was written down, the corrected answer CHANGED). `report["layer_selection"]` now records
+the family and its size `m`, and gives every member four inferential numbers: the marginal
+within-domain permutation p (valid only for a prespecified column); `p_perm_maxT_family`, the same
+permutation with the maximum taken over all `m` columns on SHARED draws (single-step
+Westfall-Young, the correlation-aware analogue of Bonferroni); `p_perm_maxT_stepdown_family`, its
+free step-down refinement, WHICH IS THE ONE TO CITE FOR A CHOSEN COLUMN; and Holm over the marginal
+p-values with `m` recorded. `report["holm_family"]` does the same for the i.i.d. pooled table, via
+the house `reanalyze_corrected.holm_table`.
+
+WHAT IT DID TO THE PUBLISHED NUMBERS. Nothing moved on the headline itself -- rho_pooled +0.30667
+and rho_within_domain +0.26178 are bit-identical to the pre-fix code on all three artifacts -- but
+the citable p for `d_surface|L12|proj` at `codeword_last` goes 5.0e-04 -> 1.5e-03 once the m=28
+scan is paid for, and it still clears Holm at m=28. The `lastpos` artifact does NOT survive: its
+0.0235 becomes 0.191 step-down and Holm rejects nothing, which is exactly the "significant p for a
+quantity never reported as an estimate" the critique flagged in that file.
+
+Alongside the correction, the COST of selecting is measured rather than assumed (the C-8 precedent:
+for `probes`, nested selection moved AUROC by 0.0012-0.0018 and changed nothing -- but that was
+measured). `nested_selection` re-picks the argmax on all clusters but one and scores it on the
+held-out cluster; `fixed_headline_heldout` repeats that without re-picking, so the gap between them
+separates the price of choosing from ordinary out-of-sample shrinkage.
+
 Outputs a JSON report and prints the table, so the numbers in the log are traceable to a command.
 """
 from __future__ import annotations
@@ -95,30 +122,304 @@ def rank_corr_pair(x, y, clusters) -> Dict[str, float]:
     so the estimate and its p-value cannot drift apart.
     """
     import numpy as _np
-    from scipy import stats as _st
-    X = _st.rankdata(_np.asarray(x, dtype=float))
-    Y = _st.rankdata(_np.asarray(y, dtype=float))
-    X = (X - X.mean()) / (X.std(ddof=0) or 1.0)
-    Y = (Y - Y.mean()) / (Y.std(ddof=0) or 1.0)
+    X = std_ranks(x)
+    Y = std_ranks(y)
     rho_pooled = float(_np.dot(X, Y) / len(X))
-    Xw, Yw = X.copy(), Y.copy()
-    for g in sorted(set(clusters)):
-        gi = [i for i in range(len(X)) if clusters[i] == g]
-        Xw[gi] = Xw[gi] - Xw[gi].mean()
-        Yw[gi] = Yw[gi] - Yw[gi].mean()
+    Xw, Yw = demean_by_cluster(X, clusters), demean_by_cluster(Y, clusters)
     dxx, dyy = float(_np.dot(Xw, Xw)), float(_np.dot(Yw, Yw))
     rho_w = (float(_np.dot(Xw, Yw)) / math.sqrt(dxx * dyy)) if dxx > 0 and dyy > 0 else float("nan")
     return {"rho_pooled": rho_pooled, "rho_within_domain": rho_w,
             "p_estimand_of_within_domain_permutation": "rho_within_domain"}
 
 
-def holm(pvals: Dict[str, float], alpha: float = 0.05) -> Dict[str, bool]:
-    items = sorted(pvals.items(), key=lambda kv: kv[1])
-    m, out, ok = len(items), {}, True
-    for i, (k, p) in enumerate(items):
-        ok = ok and (p <= alpha / (m - i))
-        out[k] = ok
+# --------------------------------------------------------------------------------------------- #
+# LAYER-FAMILY SELECTION (audit T6, 2026-08-18)
+#
+# `--headline-predictor` names ONE column out of a family this script scans in full: with the
+# default `--layers`, 10 layers x {cos, proj} of `d_surface` plus `logit_lens` wherever it exists
+# = 28 columns, all correlated with each other. The headline's rho and its "cite this one"
+# within-domain permutation p were reported as though the column had been prespecified, and the
+# family size was recorded NOWHERE -- the exact hole C-4 opened for `reanalyze_corrected`'s Holm
+# family, one file over.
+#
+# Two corrections are computed here, and both are reported rather than one being chosen:
+#
+#   * `p_perm_maxT_family` / `p_perm_maxT_stepdown_family` -- max-statistic (Westfall-Young)
+#     permutation p-values, single-step and free step-down. Each of the SAME within-cluster draws
+#     that produces the marginal p also yields max_j |rho_j|, so the adjusted p for column j is
+#     P(max |rho^perm| >= |rho_j^obs|), over the whole family (single-step) or over the columns no
+#     larger than j in the observed ordering (step-down). Because the draws are shared across
+#     columns they use the family's real correlation structure rather than assuming independence,
+#     which for 28 near-collinear layer columns is far less conservative than Bonferroni. This is
+#     the honest "would the BEST column have looked this good by chance?" answer, it controls FWER
+#     over the family, and the step-down version is the one to cite for a chosen column.
+#   * Holm over the same marginal permutation p-values, with the family size `m` recorded. Holm is
+#     step-down but correlation-blind while single-step maxT is correlation-aware but not
+#     step-down, so NEITHER DOMINATES THE OTHER and they can disagree (they do on the Qwen3
+#     artifact). Both control FWER; both are reported rather than one being chosen.
+#
+# The permutation permutes y WITHIN CLUSTER on the group-demeaned ranks -- the identical footing as
+# `p_perm_within_domain_rho` in `clustered_inference`, so the marginal p of the headline column
+# here and the headline p there are the same estimand (they differ only by the draw seed).
+# --------------------------------------------------------------------------------------------- #
+def std_ranks(v):
+    """ranks -> standardise. Shared by `rank_corr_pair` and the family permutation so the point
+    estimate and the p-value cannot be computed on two different pipelines (audit T5's shape)."""
+    import numpy as _np
+    from scipy import stats as _st
+    X = _st.rankdata(_np.asarray(v, dtype=float))
+    return (X - X.mean()) / (X.std(ddof=0) or 1.0)
+
+
+def demean_by_cluster(arr, clusters):
+    """Subtract each cluster's mean. Returns a new array; `arr` is not modified."""
+    import numpy as _np
+    out = _np.array(arr, dtype=float, copy=True)
+    for g in sorted(set(clusters), key=repr):
+        gi = [i for i in range(len(out)) if clusters[i] == g]
+        out[gi] = out[gi] - out[gi].mean()
     return out
+
+
+def family_within_domain_perm(cols: Dict[str, Sequence[float]], y, clusters,
+                              n_perm: int = 2000, seed: int = 20260819) -> Dict[str, object]:
+    """Joint within-cluster permutation over an ENTIRE predictor family (audit T6).
+
+    `cols` maps predictor name -> that predictor's values, every column read on the SAME rows in
+    the SAME order as `y` and `clusters`. One set of `n_perm` draws is shared by all columns, which
+    is what makes the max-statistic adjustment valid under the family's own correlation structure.
+
+    Returns per column: `rho_pooled`, `rho_within_domain`, the marginal within-domain permutation p
+    (`p_perm_within_domain_rho`, the same estimand `clustered_inference` cites), and
+    `p_perm_maxT_family` -- the selection-adjusted p. Plus the family metadata (`m`, `n_perm`,
+    `seed`, the argmax column) that C-4 established must be recorded rather than inferred.
+    """
+    import numpy as _np
+    names = list(cols)
+    if not names:
+        return {"m": 0, "n": 0, "per_predictor": {}}
+    n = len(y)
+    for nm in names:
+        if len(cols[nm]) != n:
+            raise ValueError(f"family column {nm!r} has {len(cols[nm])} rows, y has {n} — every "
+                             "family column must be read on the same rows in the same order")
+    Xs = _np.column_stack([std_ranks(cols[nm]) for nm in names])
+    Ys = std_ranks(y)
+    Xw = _np.column_stack([demean_by_cluster(Xs[:, j], clusters) for j in range(len(names))])
+    Yw = demean_by_cluster(Ys, clusters)
+    rho_pooled = (Xs.T @ Ys) / n
+    ssx = (Xw * Xw).sum(axis=0)
+    ssy = float(Yw @ Yw)
+    # NO SILENT NaN COLUMNS. A predictor with no within-cluster variation left (constant, or
+    # constant inside every cluster) has an undefined within-domain correlation. Dropping it
+    # quietly would shrink the family without saying so -- and the family size is the whole point
+    # of this block -- while carrying it as NaN would poison the max statistic.
+    dead = [names[j] for j in range(len(names)) if not (ssx[j] > 0)]
+    if dead or not (ssy > 0):
+        raise ValueError(
+            "no within-cluster variation left for %s -- an undefined within-domain correlation "
+            "cannot be a member of a max-statistic family" % (dead or ["the target y"],))
+    denom = _np.sqrt(ssx * ssy)
+    obs = (Xw.T @ Yw) / denom
+    aobs = _np.abs(obs)
+
+    rng = _np.random.default_rng(seed)
+    by_g: Dict[object, List[int]] = collections.OrderedDict()
+    for i, g in enumerate(clusters):
+        by_g.setdefault(g, []).append(i)
+    groups = [_np.asarray(v, dtype=int) for v in by_g.values()]
+    R = _np.empty((n_perm, len(names)), dtype=float)
+    for b in range(n_perm):
+        Yp = Yw.copy()
+        for gi in groups:
+            Yp[gi] = Yw[rng.permutation(gi)]
+        R[b] = _np.abs((Xw.T @ Yp) / denom)
+
+    # (1) MARGINAL: the p a prespecified column would get. Same estimand and same footing as
+    #     `clustered_inference.p_perm_within_domain_rho`, differing only in the draw seed.
+    p_marg = ((R >= aobs).sum(axis=0) + 1) / (n_perm + 1)
+    # (2) SINGLE-STEP maxT (Westfall-Young): P(max over the whole family >= this column's |rho|).
+    #     The correlation-aware analogue of Bonferroni.
+    p_max = ((R.max(axis=1)[:, None] >= aobs).sum(axis=0) + 1) / (n_perm + 1)
+    # (3) FREE STEP-DOWN maxT: the same draws, but each column is compared against the max over
+    #     only the columns no LARGER than it in the observed ordering, then the adjusted p-values
+    #     are made monotone. Uniformly at least as powerful as (2) and, unlike Holm, it knows the
+    #     family is near-collinear. This is the one to cite for a chosen column.
+    order = _np.argsort(-aobs, kind="stable")
+    Rord, tord = R[:, order], aobs[order]
+    Q = _np.maximum.accumulate(Rord[:, ::-1], axis=1)[:, ::-1]
+    p_sd = ((Q >= tord).sum(axis=0) + 1) / (n_perm + 1)
+    p_sd = _np.maximum.accumulate(p_sd)
+    p_step = _np.empty_like(p_sd)
+    p_step[order] = p_sd
+
+    import reanalyze_corrected as _rc          # house Holm, which records the family size m
+    holm_tab = _rc.holm_table({nm: float(p_marg[j]) for j, nm in enumerate(names)},
+                              m=len(names))
+    per = {}
+    for j, nm in enumerate(names):
+        per[nm] = {"rho_pooled": float(rho_pooled[j]),
+                   "rho_within_domain": float(obs[j]),
+                   "p_perm_within_domain_rho": float(p_marg[j]),
+                   "p_perm_maxT_family": float(p_max[j]),
+                   "p_perm_maxT_stepdown_family": float(p_step[j]),
+                   "holm_rejected_within_domain": bool(holm_tab[nm]["rejected"]),
+                   "holm_thr": float(holm_tab[nm]["thr"]),
+                   "holm_rank": int(holm_tab[nm]["rank"])}
+    jbest = int(_np.argmax(aobs))
+    return {"m": len(names), "n": n, "n_clusters": len(groups), "n_perm": n_perm, "seed": seed,
+            "family": names, "per_predictor": per,
+            "argmax_predictor": names[jbest],
+            "argmax_rho_within_domain": float(obs[jbest]),
+            "p_floor": 1.0 / (n_perm + 1)}
+
+
+def heldout_layer_selection(cols: Dict[str, Sequence[float]], y, clusters
+                            ) -> Dict[str, object]:
+    """Leave-one-CLUSTER-out nested selection: what does the selected column buy out of sample?
+
+    The critique (T6) asks for a corrected p and/or a held-out selection. C-8 set the precedent for
+    the second half: for `probes`, nested selection was found to move AUROC by 0.0012-0.0018 and to
+    change no conclusion -- MEASURED, not assumed. This is the same measurement for G2's layer
+    scan. For each cluster g the argmax |rho_within| is chosen on the OTHER clusters only and then
+    evaluated on g (where "within-domain" and "pooled" coincide, g being a single cluster). The
+    n-weighted mean of those held-out rhos is compared with the in-sample argmax, and the gap is
+    the selection cost.
+
+    `selection_is_stable` is the same diagnostic C-8 used: if the folds do not agree on a column,
+    the argmax was noise.
+    """
+    import numpy as _np
+    names = list(cols)
+    n = len(y)
+    groups = sorted(set(clusters), key=repr)
+    if len(groups) < 2 or not names:
+        return {"available": False,
+                "reason": f"need >=2 clusters and >=1 column; got {len(groups)} and {len(names)}"}
+    folds = []
+    for g in groups:
+        tr = [i for i in range(n) if clusters[i] != g]
+        te = [i for i in range(n) if clusters[i] == g]
+        if len(te) < 4 or len(tr) < 4:
+            folds.append({"cluster": str(g), "n_test": len(te), "skipped": True,
+                          "reason": "fewer than 4 rows on one side"})
+            continue
+        tr_cl = [clusters[i] for i in tr]
+        best, best_abs = None, -1.0
+        for nm in names:
+            rw = rank_corr_pair([cols[nm][i] for i in tr], [y[i] for i in tr],
+                                tr_cl)["rho_within_domain"]
+            if rw == rw and abs(rw) > best_abs:
+                best, best_abs = nm, abs(rw)
+        # NO SILENT NaN FOLD (verifier, 2026-08-19). Two ways this fold can fail to produce a
+        # number, both of which the first version of this function carried straight into the
+        # weighted mean: (a) EVERY column has an undefined within-cluster rho on the selection
+        # folds, so there is no argmax to carry over -- the old code then did `cols[None]` and
+        # died with a bare KeyError; (b) the HELD-OUT cluster has no variation in y (a domain
+        # where every prompt scored the same is entirely plausible here) or in x, so the held-out
+        # Spearman is NaN. In case (b) the old code appended `heldout_rho: nan`, the fold counted
+        # as used, and every downstream number -- the weighted mean, `selection_cost_abs_rho` --
+        # came out NaN while `available: True` and `selection_is_stable: True` were still
+        # reported. `family_within_domain_perm` refuses exactly this condition for the family;
+        # refusing it there and averaging it here is the one-of-two-paths class (R-12).
+        if best is None:
+            folds.append({"cluster": str(g), "n_test": len(te), "skipped": True,
+                          "reason": "no column had a defined within-cluster rho on the "
+                                    "selection folds, so there was no argmax to hold out"})
+            continue
+        r_sel, _ = spearman([cols[best][i] for i in te], [y[i] for i in te])
+        if r_sel != r_sel:
+            folds.append({"cluster": str(g), "n_test": len(te), "skipped": True,
+                          "selected_on_other_clusters": best,
+                          "reason": "held-out rho is undefined (no variation in y or in the "
+                                    "selected column inside the held-out cluster)"})
+            continue
+        folds.append({"cluster": str(g), "n_test": len(te), "skipped": False,
+                      "selected_on_other_clusters": best,
+                      "selected_rho_in_selection_folds": float(best_abs),
+                      "heldout_rho": float(r_sel)})
+    used = [f for f in folds if not f.get("skipped")]
+    n_undef = sum(1 for f in folds if f.get("skipped") and "undefined" in f.get("reason", ""))
+    if not used:
+        return {"available": False, "reason": "every fold was skipped", "folds": folds,
+                "n_folds_skipped": len(folds), "n_folds_undefined": n_undef}
+    wsum = sum(f["n_test"] for f in used)
+    heldout = sum(f["heldout_rho"] * f["n_test"] for f in used) / wsum
+    in_sample = max((abs(rank_corr_pair(cols[nm], y, clusters)["rho_within_domain"])
+                     for nm in names), default=float("nan"))
+    picks = sorted({f["selected_on_other_clusters"] for f in used})
+    return {"available": True, "n_folds": len(used), "folds": folds,
+            "n_folds_skipped": len(folds) - len(used), "n_folds_undefined": n_undef,
+            "in_sample_argmax_abs_rho_within_domain": float(in_sample),
+            "heldout_selected_rho_weighted_mean": float(heldout),
+            "selection_cost_abs_rho": float(in_sample - abs(heldout)),
+            "distinct_columns_selected": picks,
+            # stability is a statement about the folds that ACTUALLY produced a held-out number.
+            "selection_is_stable": len(picks) == 1 and len(used) == len(folds)}
+
+
+def heldout_fixed_column(col: Sequence[float], y, clusters) -> Dict[str, object]:
+    """The same leave-one-cluster-out evaluation for a column that is FIXED across folds.
+
+    The contrast that isolates selection: `heldout_layer_selection` re-chooses per fold, this does
+    not, so the difference between the two held-out means is the part of the gap attributable to
+    choosing the column rather than to out-of-sample shrinkage generally.
+
+    SAME AVAILABILITY CONTRACT AS `heldout_layer_selection` (verifier, 2026-08-19). The first
+    version of this function had no minimum-cluster guard while its sibling did, so on the
+    supported `--cluster-by ''` path -- one pseudo-cluster, nothing held out -- it evaluated the
+    column on ALL the rows and published the result as `heldout_rho_weighted_mean`. On the real
+    G2 inputs that field came out at +0.30666778020417, digit for digit the IN-SAMPLE
+    `rho_within_domain` printed six lines above it, under a note promising a held-out number.
+    A guard applied to one of two sibling paths and dropped on the other is the class that caused
+    R-12; both paths now answer `available` and neither reports a mean it did not hold out.
+    """
+    n = len(y)
+    groups = sorted(set(clusters), key=repr)
+    if len(groups) < 2:
+        return {"available": False,
+                "reason": f"need >=2 clusters to hold one out; got {len(groups)}. With clustering "
+                          f"disabled every row is in one pseudo-cluster, so evaluating on 'the "
+                          f"held-out cluster' would be evaluating in sample.",
+                "folds": [], "heldout_rho_weighted_mean": None}
+    per, wsum, acc = [], 0, 0.0
+    for g in groups:
+        te = [i for i in range(n) if clusters[i] == g]
+        if len(te) < 4:
+            per.append({"cluster": str(g), "n_test": len(te), "skipped": True,
+                        "reason": "fewer than 4 rows in the held-out cluster"})
+            continue
+        r, _ = spearman([col[i] for i in te], [y[i] for i in te])
+        if r != r:
+            per.append({"cluster": str(g), "n_test": len(te), "skipped": True,
+                        "reason": "held-out rho is undefined (no variation in y or in the column "
+                                  "inside the held-out cluster)"})
+            continue
+        per.append({"cluster": str(g), "n_test": len(te), "skipped": False, "heldout_rho": float(r)})
+        acc += float(r) * len(te)
+        wsum += len(te)
+    used = [f for f in per if not f.get("skipped")]
+    n_undef = sum(1 for f in per if f.get("skipped") and "undefined" in f.get("reason", ""))
+    if not wsum:
+        return {"available": False, "reason": "every fold was skipped", "folds": per,
+                "n_folds": 0, "n_folds_skipped": len(per), "n_folds_undefined": n_undef,
+                "heldout_rho_weighted_mean": None}
+    return {"available": True, "folds": per, "n_folds": len(used),
+            "n_folds_skipped": len(per) - len(used), "n_folds_undefined": n_undef,
+            "heldout_rho_weighted_mean": acc / wsum}
+
+
+def holm(pvals: Dict[str, float], alpha: float = 0.05, m: Optional[int] = None) -> Dict[str, bool]:
+    """Delegates to the house Holm (`reanalyze_corrected.holm_table`), which records the family
+    size `m` alongside each decision.
+
+    This used to be a private re-implementation. It gave the same decisions, but it could not be
+    told what the family WAS -- exactly the gap C-4 found one file over, where writing the family
+    size down changed which layers were rejected. Two implementations of one correction is how they
+    drift apart, so there is now one.
+    """
+    import reanalyze_corrected as _rc
+    return {k: bool(v["rejected"]) for k, v in _rc.holm_table(pvals, alpha, m).items()}
 
 
 def main() -> int:
@@ -143,6 +444,15 @@ def main() -> int:
                     help="refusalness run dir; enables the §9 Q6/Q7 mediation analysis that "
                          "decides the §18 outcome label (A: Boombness is the story; C: refusal "
                          "suppression is the story and Boombness is a correlate)")
+    ap.add_argument("--family-n-perm", type=int, default=2000,
+                    help="permutation draws for the layer-family selection test (audit T6). The "
+                         "adjusted-p floor is 1/(n+1), so this must exceed m/alpha for any "
+                         "family member to be rejectable at all: 2000 supports m up to 100 at "
+                         "alpha=0.05.")
+    ap.add_argument("--family-seed", type=int, default=20260819,
+                    help="seed for the family permutation. Deliberately NOT the clustered block's "
+                         "20260817, so the two p-values are visibly independent draws of the same "
+                         "estimand rather than one number reported twice (R-12's shape).")
     ap.add_argument("--out", default=None)
     ap.add_argument("--allow-partial", action="store_true",
                     help="analyse a run with no DONE.json (output must not be reported)")
@@ -231,22 +541,42 @@ def main() -> int:
         except Exception:
             return None
 
+    inputs = {"judge": os.path.abspath(args.judge), "extract": os.path.abspath(args.extract),
+              "score": os.path.abspath(args.score),
+              "refusalness": (os.path.abspath(args.refusalness) if args.refusalness else None)}
     report: Dict[str, object] = {
         "provenance": {"argv": sys.argv, "git_commit": _git("rev-parse", "HEAD"),
                        "git_dirty": bool(_git("status", "--porcelain")),
                        "python": sys.executable,
-                       "refusalness": (os.path.abspath(args.refusalness)
-                                       if args.refusalness else None)},
-        "arm": args.arm, "judge": os.path.abspath(args.judge),
-        "extract": os.path.abspath(args.extract), "score": os.path.abspath(args.score),
+                       # EVERY input path in ONE place (C-10 follow-through). `refusalness` was the
+                       # hole the audit named, but judge/extract/score sat outside `provenance`
+                       # entirely, so "does this artifact record its inputs?" had two answers
+                       # depending on where you looked. Mirrors analyze_g64.py's `provenance.inputs`
+                       # so the two artifacts are read the same way. The three top-level keys are
+                       # kept for the consumers that already read them.
+                       "inputs": dict(inputs),
+                       "refusalness": inputs["refusalness"]},
+        "arm": args.arm, "judge": inputs["judge"],
+        "extract": inputs["extract"], "score": inputs["score"],
         "n_judged_in_arm": n_arm_total, "n_with_representation": len(keys),
         "n_analysed": len(kept), "n_zero_demo_excluded": len(zero),
         "min_examples": args.min_examples,
+        # The knobs that DEFINE the selection family and the joins, recorded as data rather than
+        # left to be parsed back out of argv (audit T6: the family is a claim, not a CLI detail).
+        "layers": layers, "headline_predictor": args.headline_predictor,
+        "cluster_by": args.cluster_by or None, "extract_position": args.extract_position,
         "representation_query_kinds": dict(qk_seen),
     }
 
     rows = []
     pv = {}
+    # THE SELECTION FAMILY (audit T6). Every column this loop scans is a column the headline could
+    # have been -- that IS the family, and it must be recorded rather than reconstructed later from
+    # `--layers`, because a column is dropped whenever any analysed row lacks it. Captured here, in
+    # the one loop that decides membership, so the recorded family cannot disagree with the scanned
+    # one. `semantic_logodds` is deliberately NOT a member: it is read on a different prompt and a
+    # smaller row set, so it shares no permutation draws with these.
+    family_cols: Dict[str, List[float]] = collections.OrderedDict()
     for L in layers:
         for stat in ("cos", "proj", "ll"):
             xs = [rep[p].get((L, stat)) for p in kept]
@@ -256,6 +586,7 @@ def main() -> int:
                 continue
             r, p = spearman(xs, y)
             name = f"d_surface|L{L}|{stat}" if stat != "ll" else f"logit_lens|L{L}"
+            family_cols[name] = list(xs)
             hn = [rep[pp].get((L, "hnorm")) for pp in kept]
             if all(v is not None for v in hn):
                 rp, pp_ = rank_partial(xs, y, hn)
@@ -274,7 +605,14 @@ def main() -> int:
                      float("nan"), float("nan"), float("nan")))
         pv["semantic_logodds"] = p
 
-    rej = holm(pv)
+    # House Holm (`reanalyze_corrected.holm_table`), not the local one: it records the family size
+    # `m`, the rank and the threshold that produced each decision. C-4 is the precedent -- a Holm
+    # whose family size was never recorded, one file over, and the correction turned out to change
+    # which layers were rejected. `m` defaults to len(pv), which is the honest family here because
+    # every one of these p-values was actually computed.
+    import reanalyze_corrected as _rc
+    holm_tab = _rc.holm_table(pv)
+    rej = {k: bool(v["rejected"]) for k, v in holm_tab.items()}
     rows.sort(key=lambda t: -abs(t[1]))
     print(f"\n{'predictor':38s} {'rho':>8s} {'p':>9s} {'Holm':>5s} "
           f"{'rho|hnorm':>10s} {'p':>9s} {'hnorm~y':>8s}  norm-share")
@@ -290,9 +628,27 @@ def main() -> int:
     # (audit T5). The estimand is stated anyway so no reader has to reconstruct it from the code.
     report["predictors"] = [{"name": n, "spearman": r, "p": p, "sd": sd,
                              "estimand": "rho_pooled", "p_estimand": "rho_pooled (i.i.d.)",
-                             "partial_given_hnorm": rp, "partial_p": pp_, "hnorm_vs_asr": rn,
-                             "holm_rejected": bool(rej.get(n.split(" ")[0], False))}
+                             "partial_given_hnorm": rp, "partial_p": pp_,
+                             "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
+                             "hnorm_vs_asr": rn,
+                             "holm_rejected": bool(rej.get(n.split(" ")[0], False)),
+                             "holm_m": (holm_tab.get(n.split(" ")[0], {}) or {}).get("m"),
+                             "holm_rank": (holm_tab.get(n.split(" ")[0], {}) or {}).get("rank"),
+                             "holm_thr": (holm_tab.get(n.split(" ")[0], {}) or {}).get("thr")}
                             for n, r, p, sd, rp, pp_, rn in rows]
+    report["holm_family"] = {
+        "m": len(pv), "alpha": 0.05, "members": sorted(pv),
+        "estimand": "rho_pooled",
+        "p_estimand": "rho_pooled (i.i.d.) -- these are the i.i.d. pooled Spearman p-values, "
+                      "WITHDRAWN as the sole inference in retraction R1. The multiplicity "
+                      "correction for the citable within-domain estimand is in "
+                      "`layer_selection`, not here.",
+        "rule": ("every predictor this run actually tested: the d_surface/logit_lens columns "
+                 "present on all analysed rows for --layers, plus semantic_logodds. Recorded "
+                 "because C-4 showed a Holm whose family size lives only in the code is a Holm "
+                 "nobody can check."),
+        "n_rows_per_member": {"layer_columns": len(kept), "semantic_logodds": len(sem_keys)},
+        "members_are_not_all_on_the_same_rows": bool(sem_keys) and len(sem_keys) != len(kept)}
 
     # ---------------------------------------------------------------------------------------
     # CLUSTERED INFERENCE (audit B1b, 2026-08-17). Every p-value above treats the prompts as
@@ -437,6 +793,163 @@ def main() -> int:
             for g, v in sorted(per.items(), key=lambda kv: -kv[1]["rho"]):
                 near = "   <-- essentially null" if abs(v["rho"]) < 0.1 else ""
                 print(f"  {g:20s} n={v['n']:>4d}  rho={v['rho']:+.3f}  p={v['p']:.3f}{near}")
+
+    # ---------------------------------------------------------------------------------------
+    # LAYER SELECTION, REPORTED HONESTLY (audit T6, 2026-08-18)
+    #
+    # The block above quotes ONE column. This one says what it was chosen out of, and what its
+    # numbers look like once that choice is paid for. Three things, none of which existed before:
+    #
+    #   * the FAMILY and its size `m`, recorded in the artifact. C-4's lesson, applied before it
+    #     bites: a multiplicity correction whose family size lives only in the code is a
+    #     correction nobody can check, and when C-4's was finally checked it changed the answer.
+    #   * `p_perm_maxT_family` -- the same within-domain permutation, run jointly over all `m`
+    #     columns on SHARED draws, giving each column a p for "would the BEST of the m have looked
+    #     this good under the null?". Plus Holm over the marginal permutation p-values, so both
+    #     the correlation-aware and the independence-assuming corrections are on the record.
+    #   * a leave-one-cluster-out NESTED selection, which measures the cost of selecting rather
+    #     than assuming it (the C-8 precedent: for `probes`, nested selection moved AUROC by
+    #     0.0012-0.0018 and changed no conclusion -- but that was measured, not asserted).
+    #
+    # This runs whether or not --cluster-by is set: with clustering disabled every row is placed in
+    # one pseudo-cluster, which makes the within-cluster demeaning global and the permutation the
+    # ordinary i.i.d. one. ONE code path, deliberately -- the "one-of-two-paths" bug class has hit
+    # this repo three times (most recently R-12), always where a fix landed on the single path and
+    # missed the composed one.
+    # ---------------------------------------------------------------------------------------
+    if args.headline_predictor not in family_cols:
+        raise SystemExit(
+            f"[G2] REFUSING: --headline-predictor {args.headline_predictor!r} is not one of the "
+            f"{len(family_cols)} columns this run scanned "
+            f"({', '.join(list(family_cols)[:6])}{'...' if len(family_cols) > 6 else ''}). The "
+            f"clustered block would have silently analysed whatever subset of rows happened to "
+            f"carry it. Name a column in --layers, or widen --layers.")
+    sel_clusters = ([meta[k].get(args.cluster_by) for k in kept] if args.cluster_by
+                    else ["_no_clustering"] * len(kept))
+    sel_ok = [i for i in range(len(kept)) if sel_clusters[i] is not None]
+    sel_cols = collections.OrderedDict(
+        (nm, [v[i] for i in sel_ok]) for nm, v in family_cols.items())
+    sel_y = [y[i] for i in sel_ok]
+    sel_cl = [sel_clusters[i] for i in sel_ok]
+    fam = family_within_domain_perm(sel_cols, sel_y, sel_cl,
+                                    n_perm=args.family_n_perm, seed=args.family_seed)
+    hl_name = args.headline_predictor
+    hl = fam["per_predictor"][hl_name]
+    # DRIFT GUARD. The family's point estimate for the headline column and `clustered_inference`'s
+    # `rho_within_domain` are the same quantity on the same rows; if they ever stop agreeing, one
+    # of the two pipelines has changed and the adjusted p would be adjusting a different number
+    # than the one printed above -- audit T5's defect, re-entering through the selection block.
+    ci_prev = report.get("clustered_inference")
+    if ci_prev:
+        # The n-mismatch branch used to be the guard's OFF switch: `if ci_prev["n"] == fam["n"]`
+        # meant that the one condition proving the two pipelines had selected different rows --
+        # and therefore that the adjusted p adjusts a rho computed on a different sample than the
+        # one printed above -- silently disabled the check. A guard that stands down exactly when
+        # it should fire is a dead guard; both pipelines filter `cluster is not None` on the same
+        # `kept` rows, so a mismatch is a bug, not a configuration (verifier, 2026-08-19).
+        if ci_prev.get("n") != fam["n"]:
+            raise SystemExit(
+                f"[G2] REFUSING: clustered_inference analysed {ci_prev.get('n')} rows but the "
+                f"selection family analysed {fam['n']} for the same headline {hl_name} on the "
+                f"same --cluster-by. The selection-adjusted p would be adjusting a rho estimated "
+                f"on a different sample than the one printed above.")
+        drift = abs(float(ci_prev["rho_within_domain"]) - hl["rho_within_domain"])
+        if not (drift < 1e-9):
+            raise SystemExit(
+                f"[G2] REFUSING: the selection family computes rho_within_domain="
+                f"{hl['rho_within_domain']:+.10f} for {hl_name} but clustered_inference reports "
+                f"{ci_prev['rho_within_domain']:+.10f} on the same {fam['n']} rows (drift "
+                f"{drift:.3e}). Two pipelines for one estimand is how T5 happened.")
+    nested = heldout_layer_selection(sel_cols, sel_y, sel_cl)
+    fixed = heldout_fixed_column(sel_cols[hl_name], sel_y, sel_cl)
+    argmax_name = fam["argmax_predictor"]
+    print(f"\n[G2] LAYER SELECTION (family m={fam['m']}, n={fam['n']}, "
+          f"{fam['n_clusters']} cluster(s), {fam['n_perm']} shared draws)")
+    print(f"  headline {hl_name}")
+    print(f"    rho_within_domain          {hl['rho_within_domain']:+.4f}")
+    print(f"    p_perm_within_domain_rho   {hl['p_perm_within_domain_rho']:.2e}   "
+          f"<-- MARGINAL: as if this column had been prespecified")
+    print(f"    p_perm_maxT_family         {hl['p_perm_maxT_family']:.2e}   "
+          f"<-- SELECTION-ADJUSTED (single-step) over the m={fam['m']} columns actually scanned")
+    print(f"    p_perm_maxT_stepdown       {hl['p_perm_maxT_stepdown_family']:.2e}   "
+          f"<-- SELECTION-ADJUSTED (free step-down); CITE THIS ONE for a CHOSEN column")
+    print(f"    holm over the family       rejected={hl['holm_rejected_within_domain']} "
+          f"(rank {hl['holm_rank']}, thr {hl['holm_thr']:.2e}, m={fam['m']})")
+    if argmax_name != hl_name:
+        am = fam["per_predictor"][argmax_name]
+        print(f"  NOTE: the headline is NOT the family argmax. |rho_within| is largest at "
+              f"{argmax_name} ({am['rho_within_domain']:+.4f} vs {hl['rho_within_domain']:+.4f}).")
+    if nested.get("available"):
+        print(f"  nested (leave-one-{args.cluster_by or 'cluster'}-out) selection over the same "
+              f"family:")
+        print(f"    in-sample argmax |rho_within|      "
+              f"{nested['in_sample_argmax_abs_rho_within_domain']:+.4f}")
+        print(f"    held-out rho of the fold-selected  "
+              f"{nested['heldout_selected_rho_weighted_mean']:+.4f}")
+        _fx = fixed.get("heldout_rho_weighted_mean")
+        print("    held-out rho of the FIXED headline " +
+              (f"{_fx:+.4f}" if _fx is not None else f"n/a ({fixed.get('reason')})"))
+        print(f"    selection cost (|rho| units)       "
+              f"{nested['selection_cost_abs_rho']:+.4f}   "
+              f"selection_is_stable={nested['selection_is_stable']} "
+              f"({len(nested['distinct_columns_selected'])} distinct column(s) picked)")
+    report["layer_selection"] = {
+        "headline_predictor": hl_name,
+        "headline": hl,
+        "cluster_by": args.cluster_by or None,
+        "clustering_disabled": not bool(args.cluster_by),
+        "family_rule": (
+            "every predictor column the scan loop evaluated on all analysed rows: "
+            "d_surface|L*|{cos,proj} and logit_lens|L* for the layers given by --layers, minus "
+            "any column missing on some analysed row. semantic_logodds is EXCLUDED because it is "
+            "read on a different prompt and a smaller row set, so it cannot share draws."),
+        "layers_scanned": layers,
+        "m": fam["m"], "family": fam["family"], "n": fam["n"], "n_clusters": fam["n_clusters"],
+        "n_perm": fam["n_perm"], "seed": fam["seed"], "p_floor": fam["p_floor"],
+        "argmax_predictor": argmax_name,
+        "argmax_rho_within_domain": fam["argmax_rho_within_domain"],
+        "headline_is_family_argmax": argmax_name == hl_name,
+        "per_predictor": fam["per_predictor"],
+        "nested_selection": nested,
+        "fixed_headline_heldout": fixed,
+        # `p_perm_within_domain_rho` now appears TWICE in this artifact under one name, with two
+        # different values, because the two blocks draw their permutations from different seeds
+        # (20260817 there, --family-seed here). That is the shape C-10 was raised about --
+        # "does this artifact record X?" having two answers depending on where you looked -- so
+        # the relationship is written down rather than left for a reader to trip over.
+        "marginal_p_cross_reference": {
+            "same_estimand": "rho_within_domain",
+            "this_block": hl["p_perm_within_domain_rho"],
+            "clustered_inference": (report.get("clustered_inference") or {}).get(
+                "p_perm_within_domain_rho"),
+            "seed_here": args.family_seed,
+            "seed_clustered_inference": 20260817,
+            "note": ("Two INDEPENDENT permutation draws of the same marginal quantity on the same "
+                     "rows, not two quantities and not one number reported twice; they differ by "
+                     "Monte-Carlo error only (n_perm draws => se ~ sqrt(p(1-p)/n_perm)). Neither "
+                     "is the citable number for a CHOSEN column: that is "
+                     "p_perm_maxT_stepdown_family."),
+        },
+        "p_estimand": "rho_within_domain",
+        "estimand_note": (
+            "Every p here is a p-value for rho_within_domain, NEVER for rho_pooled. "
+            "p_perm_within_domain_rho is the MARGINAL within-domain permutation p -- valid only "
+            "for a column named before the data were seen; it is the number the pre-2026-08-18 "
+            "artifact published for a column chosen out of m. p_perm_maxT_family is single-step "
+            "Westfall-Young over the same shared draws (the correlation-aware analogue of "
+            "Bonferroni). p_perm_maxT_stepdown_family is the free step-down version, which is "
+            "uniformly at least as powerful and is THE ONE TO CITE for a chosen column. Holm over "
+            "the marginal p-values is reported too: it is step-down but correlation-blind, so "
+            "neither it nor single-step maxT dominates the other and they can disagree (on the "
+            "Qwen3 artifact Holm rejects at m=28 while single-step maxT gives 0.061). All three "
+            "control the family-wise error rate over the m columns."),
+        "nested_selection_note": (
+            "leave-one-cluster-out: the column is re-chosen by argmax |rho_within_domain| on the "
+            "other clusters and evaluated on the held-out one, so no cluster contributes to both "
+            "choosing and scoring. `fixed_headline_heldout` repeats the evaluation WITHOUT "
+            "re-choosing, so the gap between the two isolates the cost of selection from ordinary "
+            "out-of-sample shrinkage."),
+    }
 
     if zero:
         yz = [asr[p] for p in zero]

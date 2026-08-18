@@ -110,6 +110,61 @@ def build_role_conditions(model_prefix: str, segments: Sequence[Tuple[str, str]]
     return out
 
 
+#: The conditions the triad is DEFINED by. The check below asserts these by NAME rather than by
+#: counting how many conditions happened to be handed to it: "there are three of them and no two
+#: collide" is an incidental property, "untagged, tagged and user_tagged are all present and no two
+#: collide" is the identity of the contrast. `cot_tagged` / `tool_tagged` are extra arms and are
+#: still checked for content and distinctness, they are just not required to exist.
+TRIAD_CONDITIONS = ("untagged", "tagged", "user_tagged")
+
+
+def check_triad_varies_only_markup(conds: Dict[str, str],
+                                   contents: Sequence[str],
+                                   required: Sequence[str] = TRIAD_CONDITIONS) -> Dict[str, object]:
+    """The triad's own validity condition, as a CHECK rather than as a sentence.
+
+    THREE things must hold for `build_role_conditions` to mean anything, and until 2026-08-19 the
+    selftest checked none of them properly:
+
+      0. the named conditions the triad is a contrast BETWEEN actually exist;
+      1. every condition carries ALL the content (the triad varies markup, never text);
+      2. the conditions are PAIRWISE distinct — if two of them coincide, the "same content,
+         different role tag" contrast is not a contrast at that pair.
+
+    (2) was written `conds["untagged"] != conds["tagged"] != conds["user_tagged"]`. Python chains
+    that into `(a != b) and (b != c)`, which says NOTHING about `a != c`: with a renderer that
+    returns its content unchanged, `untagged == user_tagged` and the assertion still passes. A guard
+    that cannot fail the case it exists to catch is not a guard, and this repo has now shipped five
+    of those. Returns a verdict dict instead of asserting so the failure can be inspected, counted
+    and tested.
+
+    (0) IS THE HOLE THE 2026-08-19 REWRITE OPENED AND THE VERIFICATION PASS CLOSED. The first
+    version of this function derived `ok` from `all(content_complete.values()) and not collisions`,
+    and BOTH of those are vacuously true over an empty mapping: `check_triad_varies_only_markup({},
+    contents)` returned `ok: True`, and so did a `conds` that had simply lost `user_tagged`. That is
+    the same vacuous-pass shape as `probes.check_leakage` over zero layers — a verdict from a check
+    that ran over nothing — and here it was a REGRESSION as well: the chained assertion it replaced
+    at least raised `KeyError` on a missing `user_tagged`, so the rewrite turned a loud failure into
+    a silent pass. The required names are now part of the verdict.
+    """
+    missing = {name: [c for c in contents if c not in text] for name, text in conds.items()}
+    content_ok = {name: not miss for name, miss in missing.items()}
+    names = sorted(conds)
+    collisions = [(a, b) for i, a in enumerate(names) for b in names[i + 1:]
+                  if conds[a] == conds[b]]
+    missing_conditions = [n for n in required if n not in conds]
+    return {"ok": (not missing_conditions) and all(content_ok.values()) and not collisions,
+            "required_conditions": list(required),
+            "missing_conditions": missing_conditions,
+            "content_complete": content_ok,
+            "missing_content": {k: v for k, v in missing.items() if v},
+            "colliding_pairs": collisions,
+            "n_conditions": len(conds),
+            "note": "pairwise distinctness is checked over ALL pairs; a chained `a != b != c` "
+                    "never tested the (a, c) pair. The required conditions are checked by NAME: "
+                    "an empty or truncated mapping passes every pairwise test vacuously."}
+
+
 # --------------------------------------------------------------------------- #
 # Probe training — their fit_lr / get_probe_result on sklearn
 # --------------------------------------------------------------------------- #
@@ -191,11 +246,16 @@ def main() -> int:
         conds = build_role_conditions(args.model_prefix, segs)
         print(f"role conditions built: {sorted(conds)}")
         contents = [c for _, c in segs]
-        for name, text in conds.items():
-            ok = all(c in text for c in contents)
-            print(f"  {name:12s} len={len(text):4d} contains-all-content={ok}")
-            assert ok, f"{name} lost content — the triad must vary ONLY the role markup"
-        assert conds["untagged"] != conds["tagged"] != conds["user_tagged"]
+        verdict = check_triad_varies_only_markup(conds, contents)
+        for name, text in sorted(conds.items()):
+            print(f"  {name:12s} len={len(text):4d} "
+                  f"contains-all-content={verdict['content_complete'][name]}")
+        if not verdict["ok"]:
+            print(f"  TRIAD INVALID: missing_conditions={verdict['missing_conditions']} "
+                  f"missing_content={verdict['missing_content']} "
+                  f"colliding_pairs={verdict['colliding_pairs']}")
+            return 1
+        print(f"  pairwise-distinct over all {verdict['n_conditions']} conditions: OK")
         print("\nSKIP_FIRST_N =", SKIP_FIRST_N, " C =", DEFAULT_C,
               "  (their values, kept for comparability)")
         print("selftest OK")

@@ -32,6 +32,31 @@ story):
 
 Every arm cuts the SAME NUMBER of edges except `all_demo` and `none`, which is what makes them
 comparable; the count is recorded per row so that can be checked rather than assumed.
+
+THE READOUT — CORRECTION C-6, 2026-08-19. Every published G3 number was computed with
+`semantic_logodds` below: `log p(concept) - log p(codeword)` over ONE leading-space token id per
+side, at the last prompt token, with no forced answer position. That instrument is invalid, and
+not by a little:
+
+  * the two options together held a MEDIAN 5.6e-06 of the next-token mass (0 of 516 rows above
+    1%), so every G3 verdict was an ordering inside a tail the model was never going to emit;
+  * the model CAPITALISES a forced answer, and the capitalised codeword is MULTI-TOKEN
+    (` Car` is the first subtoken of ` Carrot`), so no single-next-token readout can represent
+    the model's preferred spelling of the codeword at all. Adding id variants makes it worse,
+    not better: `bomb` has four single-token variants on Llama-3.1-8B and `carrot` exactly one.
+
+This module now uses `signals.string_option_readout` — the SAME helper, called the SAME way as
+`score_behavior.py --readout-ids whole_answer --answer-prefix "Answer:"` — which teacher-forces
+each option's whole surface form over an identically-built variant set (2 per option, one rule).
+On §4b that took the option mass from 1.7e-04 to 0.541, a 3,200x change, and flipped the sign of
+the headline. `option_mass` is recorded PER ROW and gated per arm (see `option_mass_gate`).
+
+Consequences for the destinations, which are what makes this module different from a scorer:
+the whole-answer readout reads log-probabilities at the last CONTEXT position AND at every
+answer token after it, and the context now ends with the answer prefix rather than with the
+prompt. So both the ranking destination and the knockout's query set move — see
+`choose_destinations` (T3) and `readout_query_positions` (C-6b). Cutting into the old position
+while scoring at the new one is exactly the defect retraction #3 was declared for.
 """
 from __future__ import annotations
 
@@ -47,7 +72,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA_DIR, FailureLedger, RunDir, ds, pair, read_jsonl, seed_everything  # noqa: E402
+from common import (DATA_DIR, FailureLedger, RunDir, ds, pair, read_jsonl,  # noqa: E402
+                    seed_everything, validate_direction_payload)
 import signals as sg  # noqa: E402
 from dominance import dominance_at  # noqa: E402
 from extract_boombness import resolve_occurrences  # noqa: E402
@@ -291,15 +317,170 @@ def demo_source_bound(dsts: Sequence[int]) -> int:
     return max(dsts)
 
 
+def normalize_answer_prefix(raw: str) -> str:
+    """Shell-safe empty prefix, byte-identical to score_behavior.main()'s rule.
+
+    The SLURM wrapper word-splits its args deliberately, so a quoted empty argument cannot
+    survive the round trip: `--answer-prefix ""` silently swallows the NEXT flag. The three
+    spellings below therefore mean "no prefix" here exactly as they do there. Kept as a named
+    function so the two scripts can be shown to agree rather than assumed to.
+    """
+    return "" if str(raw).strip().lower() in ("none", "''", '""') else str(raw)
+
+
+def readout_query_positions(dsts: Sequence[int], ctx_len: int,
+                            max_answer_tokens: int) -> List[int]:
+    """Every position the WHOLE-ANSWER readout reads a next-token distribution at.
+
+    DEFECT C-6b — the destination set that T3 fixed is still incomplete once the readout stops
+    being a single next token. `string_option_readout` teacher-forces `context + variant`, so
+    the scored log-probabilities come from positions
+
+        ctx_len-1                       -> predicts the variant's FIRST token
+        ctx_len .. ctx_len+m-2          -> predict its remaining tokens
+
+    Cutting attention only into `ctx_len-1` (which is what `query_positions=dsts` does) leaves
+    every later answer token free to re-read the demonstration block directly, so a "cut the
+    edges that carry the meaning" arm can be undone one token later by the very edges it cut.
+    That is T3's failure mode — intervention and measurement at different tokens — displaced by
+    one position rather than by nine. The knockout's query set must therefore span the whole
+    answer window. Positions past the end of a shorter variant are simply skipped by
+    `AttentionKnockout` (`qp >= am.shape[2]: continue`), so one generous range is correct for
+    every variant and the arms stay edge-count-matched (the blocked KEY set is unchanged).
+
+    THE WINDOW IS ADDED BY IDENTITY, NOT BY MODE. It is appended only when the readout
+    destination `ctx_len-1` is actually one of `dsts`. `--dst codeword` exists to reproduce the
+    retracted pre-T3 behaviour exactly; silently widening ITS query set to the answer window
+    would make the reproduction arm a different intervention wearing the old flag's name — the
+    one-of-two-paths shape, inverted. `readout` and `both` both contain the readout destination
+    and both get the window.
+    """
+    if ctx_len <= 0:
+        raise ValueError("ctx_len must be positive")
+    d = sorted(set(int(x) for x in dsts))
+    if (ctx_len - 1) not in d:
+        return d
+    m = max(1, int(max_answer_tokens))
+    return sorted(set(d) | set(range(ctx_len - 1, ctx_len - 1 + m)))
+
+
+def option_mass_gate(mass_by_arm: Dict[str, Sequence[float]], min_mass: float,
+                     fatal_arms: Sequence[str] = ("none",)) -> Tuple[Dict[str, dict], List[str]]:
+    """Per-ARM option-mass summary + the list of FATAL failures. C-6 / plan §2.2.
+
+    Same statistic and same threshold as score_behavior's tail gate, keyed per ARM instead of
+    per (readout, query_kind) — and fatal on `fatal_arms` ONLY, which is the whole design point:
+
+      * The baseline arm `none` measures the INSTRUMENT. If the options hold a 1e-5 tail there,
+        every delta in the run is an ordering inside noise and nothing is reportable. Fatal.
+      * `positive_control` is DESIGNED to destroy the readout, and `all_demo` / `no_demo_text`
+        may legitimately do the same. Their mass collapsing is the RESULT, not an instrument
+        failure. A gate that fired on them would condemn the run for succeeding — which is the
+        mistake this project already made once (2026-08-18: a semantic dip on one arm destroyed
+        a healthy comprehension readout on the same run).
+
+    Every arm still gets a `reportable` flag so an intervention arm's collapse is visible in
+    summary.json rather than inferable from the code.
+    """
+    summary: Dict[str, dict] = {}
+    fatal: List[str] = []
+    fatal_set = set(fatal_arms)
+    unusable: set = set()
+    for arm in sorted(mass_by_arm):
+        raw = [float(x) for x in mass_by_arm[arm] if x is not None]
+        # VERIFIER FIX 2026-08-19 (defect V-3): NaN SHORT-CIRCUIT, the dead-guard shape.
+        # `med >= min_mass` and `med < min_mass` are NOT complements: a NaN median makes BOTH
+        # False, so the per-arm verdict said `reportable: False` while `fatal` stayed empty and
+        # the run-level verdict said PASS / reportable: true -- two contradictory answers from one
+        # statistic, with the permissive one deciding. `option_mass` is exp(logsumexp(...)) over
+        # logits that a knockout can drive to -inf, so NaN is reachable, and it is exactly the
+        # kind of arm whose collapse must not be read as health. The verdict is now computed ONCE
+        # and the fatal list is derived from it, so the two can never disagree again.
+        vals = [x for x in raw if math.isfinite(x)]
+        n_nonfinite = len(raw) - len(vals)
+        if not vals:
+            if n_nonfinite:
+                # SEEN but unusable — a different failure from "never ran", and it must not be
+                # reported as both. `unusable` keeps the `missing` check below honest.
+                unusable.add(arm)
+                if arm in fatal_set:
+                    fatal.append(f"{arm}: every recorded option mass is non-finite "
+                                 f"({n_nonfinite} values) — the readout produced no usable number")
+            continue
+        v = sorted(vals)
+        med = v[len(v) // 2]
+        reportable = math.isfinite(med) and med >= min_mass and n_nonfinite == 0
+        summary[arm] = {"n": len(v), "median": med, "p10": v[int(0.10 * len(v))],
+                        "p90": v[int(0.90 * len(v))], "max": v[-1], "min": v[0],
+                        "n_nonfinite": n_nonfinite,
+                        "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v),
+                        "reportable": reportable,
+                        "gates_the_run": arm in fatal_set}
+        if arm in fatal_set and not reportable:
+            fatal.append(f"{arm}: median option mass {med:.4g} < {min_mass}" if med < min_mass
+                         else f"{arm}: {n_nonfinite} non-finite option mass value(s) recorded")
+    missing = [a for a in fatal_set if a not in summary and a not in unusable]
+    if missing:
+        # A gate that never saw its own arm has not passed; it has not run. Five dead guards.
+        fatal.append(f"no option mass recorded for gating arm(s) {sorted(missing)} — the gate "
+                     f"was never evaluated, which is not the same as passing it")
+    return summary, fatal
+
+
 @torch.no_grad()
 def semantic_logodds(lm, ids: List[int], c_ids: Sequence[int], w_ids: Sequence[int]) -> float:
-    """The readout that G1 was decided on: log p(concept) - log p(codeword) at the answer position."""
+    """LEGACY single-next-token readout — INVALID, reachable only via `--readout-ids primary`.
+
+    RETAINED, NOT USED BY DEFAULT (correction C-6, 2026-08-18/19). This is
+    `log p(concept) - log p(codeword)` over ONE leading-space token id per side at the last
+    prompt position. Measured on the committed baseline, the two options together hold a MEDIAN
+    5.6e-06 of the next-token mass, and decoding what the model actually wants there shows two
+    compounding reasons it cannot be repaired by adding ids:
+
+      1. the model CAPITALISES its forced answer (` Car`, ` Bomb`, ` Literal`), and
+      2. the capitalised codeword is MULTI-TOKEN — ` Car` is the first subtoken of ` Carrot`,
+         which `readout_ids` rejects by design because `car` is a generic English word. On
+         Llama-3.1-8B `bomb` has four single-token variants and `carrot` exactly one, so the
+         concept side is structurally advantaged in every number this function ever produced.
+
+    G3's entire attention-edge result was computed with it. It is kept so the old number can be
+    reproduced deliberately, and `--readout-ids primary` marks the run NOT reportable in
+    summary.json rather than letting it look like a normal run.
+    """
     t = torch.tensor([ids], device=lm.model.device)
     logits = lm.model(input_ids=t, use_cache=False).logits[0, -1, :].float().cpu()
     lp = torch.log_softmax(logits, dim=-1)
     ci = torch.tensor(sorted(set(c_ids)), dtype=torch.long)
     wi = torch.tensor(sorted(set(w_ids)), dtype=torch.long)
     return float(lp[ci].logsumexp(0) - lp[wi].logsumexp(0))
+
+
+def semantic_readout(lm, mode: str, *, context: str, ids: Sequence[int],
+                     variants: Dict[str, Sequence[str]], c_ids: Sequence[int],
+                     w_ids: Sequence[int], max_batch: int = 1) -> Dict[str, float]:
+    """Dispatch the semantic readout. `whole_answer` is the house instrument (C-5/C-6).
+
+    `whole_answer` delegates to `signals.string_option_readout` — the SAME helper, called the
+    SAME way as `score_behavior.py --readout-ids whole_answer --answer-prefix "Answer:"`, so
+    G3's readout and §4b's readout are literally one function rather than two that agree by
+    inspection.
+
+    `max_batch=1` IS LOAD-BEARING, not a performance choice: `pair_common.AttentionKnockout`
+    raises `NotImplementedError` on batch>1 (it edits row 0 of the mask only), so batching the
+    variants would make every knocked-out arm crash while the baseline arm succeeded. It is
+    also held at 1 for the UNINTERVENED arm on purpose — a padded batch and an unpadded single
+    sequence are not guaranteed to produce bit-identical logits, and the baseline is the
+    reference every delta is taken against.
+    """
+    if mode == "whole_answer":
+        rec = dict(sg.string_option_readout(lm, context, dict(variants), max_batch=max_batch))
+        rec["semantic_logodds"] = float(rec["logp_concept"] - rec["logp_codeword"])
+        rec["readout_mode"] = "whole_answer"
+        return rec
+    if mode == "primary":
+        return {"semantic_logodds": semantic_logodds(lm, list(ids), c_ids, w_ids),
+                "option_mass": None, "readout_mode": "primary"}
+    raise ValueError(f"unknown readout mode {mode!r}")
 
 
 def pick_edges(D_dir: Dict[int, torch.Tensor], demo_positions: Sequence[int],
@@ -421,8 +602,32 @@ def main() -> int:
                          "of the effect of deleting the demonstrations, which suggests the mapping "
                          "is carried by the PREDICATES ('exploded', 'defused') rather than by the "
                          "repeated codeword. 'block' is the direct test of that.")
+    ap.add_argument("--readout-ids", default="whole_answer",
+                    choices=["primary", "whole_answer"],
+                    help="CORRECTION C-6 (2026-08-19). `whole_answer` (default) teacher-forces "
+                         "each option's WHOLE surface form via signals.string_option_readout and "
+                         "logsumexps over an identically-built variant set, exactly as "
+                         "score_behavior.py does. `primary` reproduces the pre-C-6 "
+                         "single-next-token readout that carried every published G3 number and "
+                         "that cannot represent the model's preferred spelling of the codeword "
+                         "(the capitalised form is multi-token); a `primary` run is marked NOT "
+                         "REPORTABLE in summary.json.")
+    ap.add_argument("--answer-prefix", default="Answer:",
+                    help='assistant-side text appended before the readout position so the next '
+                         'token is the answer word rather than a preamble. Pass "" (or none) to '
+                         'reproduce the pre-2026-08-18 position, which scored a ~1e-5 tail.')
+    ap.add_argument("--min-option-mass", type=float, default=0.05,
+                    help="the run is NOT reportable if the BASELINE arm's median option mass is "
+                         "below this. A forced choice decided inside a 1e-5 tail is not a forced "
+                         "choice. Intervention arms are exempt by design — see option_mass_gate.")
+    ap.add_argument("--allow-tail-readout", action="store_true",
+                    help="exit 0 despite a failed tail gate (the run is then NOT reportable and "
+                         "says so in summary.json)")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
+    # Same shell-safe-empty rule as score_behavior.main(); see normalize_answer_prefix.
+    answer_prefix = normalize_answer_prefix(args.answer_prefix)
+    args.answer_prefix = answer_prefix
     seed_everything(args.seed)
 
     import numpy as np
@@ -449,36 +654,126 @@ def main() -> int:
                    attn_implementation="eager", num_layers=lm.num_layers,
                    note="eager required: AttentionKnockout is a no-op under SDPA")
 
+    layers = [int(x) for x in args.layers.split(",")]
+
     # T7: load EVERY available fit so each row can be ranked with the direction
     # fitted on the OTHER split (cross-fit). The old code loaded exactly one.
     fitted: Dict[str, dict] = {}
+    verdicts: Dict[str, dict] = {}
     for split in ("dev", "heldout"):
         p = os.path.join(args.fit_dir, f"directions_fit_{split}.pt")
         if os.path.exists(p):
-            fitted[split] = torch.load(p, map_location="cpu", weights_only=False)
+            payload = torch.load(p, map_location="cpu", weights_only=False)
+            # T8: `--fit-dir` consumers never read payload["meta"], so a direction fitted on
+            # another MODEL (plausible cosines, no arithmetic complaint) or at another position
+            # passed every guard in the repo. surgical_knockout is one of the three named
+            # consumers. `position` is deliberately not checked here: this module does not read
+            # h at a position, it uses d_surface as a projection direction for dominance.
+            verdicts[split] = validate_direction_payload(
+                payload, path=p, model=lm.model_id, layers=layers, strict=True)
+            fitted[split] = payload
             run.note(**{f"direction_file_{split}": p})
     if not fitted:
         raise SystemExit(f"no directions_fit_*.pt under {args.fit_dir}")
 
-    layers = [int(x) for x in args.layers.split(",")]
     d_surface_by_split = {
         sp: {L: pl["d_surface"][L] for L in layers if L in pl["d_surface"]}
         for sp, pl in fitted.items()
     }
-    c_ids, w_ids, id_meta = sg.readout_id_pair(lm.tokenizer, rows[0]["concept"], rows[0]["codeword"])
+    # READOUT IDS AND ANSWER VARIANTS ARE PER (concept, codeword), NOT PER rows[0].
+    # Pre-2026-08-19 both were built once from `rows[0]` and reused for every row. That is
+    # inert on today's bank only because all 12 eligible rows share one pair
+    # (`family_accounting["n_concept_codeword_pairs"] == 1`), which is an incidental property
+    # of the bank, not a contract — the same shape as the absolute-position-index bug class
+    # this repo has been hit by twice. Cached per pair so the cost is unchanged.
+    _readout_cache: Dict[Tuple[str, str], dict] = {}
+
+    def readout_for(row: dict) -> dict:
+        key = (str(row["concept"]), str(row["codeword"]))
+        if key not in _readout_cache:
+            concept, codeword = key
+            # `whole_answer` is a SCORING mode, not an id-selection mode, so the id pair is
+            # still built under `primary` -- its metadata is the evidence that motivated
+            # whole_answer and is worth recording. Same call shape as score_behavior.py:391.
+            ci, wi, meta = sg.readout_id_pair(lm.tokenizer, concept, codeword, mode="primary")
+            variants = {"concept": sg.answer_variants(concept, True),
+                        "codeword": sg.answer_variants(codeword, True)}
+            n_tok = [len(lm.tokenizer(v, add_special_tokens=False)["input_ids"])
+                     for vs in variants.values() for v in vs]
+            _readout_cache[key] = {"c_ids": ci, "w_ids": wi, "id_meta": meta,
+                                   "variants": variants,
+                                   "max_answer_tokens": max(n_tok) if n_tok else 1}
+        return _readout_cache[key]
+
+    # VERIFIER FIX 2026-08-19 (defect V-1). `readout_for` CAN RAISE, and moving it into the row
+    # loop turned a deterministic start-up failure into a mid-run abort. `signals.readout_ids`
+    # raises ValueError for any word whose leading-space form is not a single token, and
+    # `readout_id_pair` raises when the two options share an id. Pre-C-6 that call happened ONCE,
+    # on rows[0], before any GPU work; the C-6 patch made it per (concept, codeword) inside the
+    # loop while leaving it unguarded, so one bad pair anywhere in the bank killed main() with an
+    # uncaught ValueError AFTER the run directory existed -- no summary.json, no DONE.json, no
+    # FailureLedger, and every completed row's forward passes discarded. That is the exact shape
+    # of the abandoned `blockscope_20260817_003144_3066731` directory (config.json + RUNMETA.json
+    # and nothing else) and it violates plan §2.2: a malformed row is COUNTED, never fatal.
+    # Both call sites are guarded, and by the same rule, because guarding only the loop would
+    # leave rows[0] fatal while every other row was ledgered -- the one-of-two-paths shape.
+    try:
+        r0 = readout_for(rows[0])
+        id_meta, first_variants = r0["id_meta"], r0["variants"]
+    except Exception as e:                                    # noqa: BLE001 - reason is recorded
+        id_meta = {"error": f"{type(e).__name__}: {str(e)[:200]}",
+                   "note": "readout ids for rows[0] could not be built; every affected row is "
+                           "charged to the FailureLedger as readout_ids:* below"}
+        first_variants = None
     run.note(readout_ids=id_meta, layers=layers, topk=args.topk, arms=list(ARMS),
              demo_scope=args.demo_scope, family_accounting=family_accounting,
-             direction_splits_available=sorted(fitted))
+             direction_splits_available=sorted(fitted),
+             direction_payload_verdicts=verdicts,
+             readout_mode=args.readout_ids, answer_prefix=answer_prefix,
+             min_option_mass=args.min_option_mass,
+             semantic_variants_first_pair=first_variants,
+             readout_note=("whole_answer: signals.string_option_readout, called exactly as "
+                           "score_behavior.py --readout-ids whole_answer --answer-prefix "
+                           "'Answer:' (correction C-6)"))
     print(f"[knockout] {len(rows)} prompts / {family_accounting['n_families_selected']} families "
           f"over {family_accounting['n_domains_selected']} domain(s), "
           f"layers={layers}, k={args.topk} edges/layer/arm")
 
     n = 0
+    option_mass_by_arm: Dict[str, List[float]] = collections.defaultdict(list)
+    source_truncation: Dict[str, int] = collections.Counter()
+    truncated_ids: List[str] = []
     for row in rows:
         try:
-            _, ids, last, _, _ = resolve_occurrences(dc, lm.tokenizer, row)
+            templated, prompt_ids, last, _, _ = resolve_occurrences(dc, lm.tokenizer, row)
         except ValueError as e:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
+            continue
+        if not last:
+            # No resolved codeword occurrence => no `--dst codeword`, no demo-codeword scope.
+            # This used to be an IndexError on `last[-1]`, i.e. it killed the whole run instead
+            # of costing one row (the exact shape that killed 179/179 ClearHarm rows).
+            ledger.fail("no_codeword_occurrence", row["prompt_id"])
+            continue
+        try:
+            rd = readout_for(row)
+        except Exception as e:                                # noqa: BLE001 - reason is recorded
+            # See the guard on rows[0] above: an unbuildable readout is a COUNTED row failure,
+            # not an abort. Reason carries the exception type so a multi-token codeword
+            # (ValueError from signals.readout_ids) is distinguishable in summary.json from a
+            # shared-id pair or a tokenizer fault.
+            ledger.fail(f"readout_ids:{type(e).__name__}:{str(e)[:60]}", row["prompt_id"])
+            continue
+        # C-6: the readout is taken AFTER the answer prefix, so the CONTEXT the model is scored
+        # on -- and hence the position the readout reads -- is prompt+prefix, not prompt. The
+        # concatenation is re-tokenised (as score_behavior does) rather than having the prefix's
+        # own ids appended, and the guard below refuses the row if that re-tokenisation disturbs
+        # any PROMPT token: every demo and codeword position in this module is an ABSOLUTE index
+        # into the prompt's ids, and this repo has been hit twice by absolute indices that moved.
+        ctx = templated + answer_prefix
+        ids = lm.tokenizer(ctx, add_special_tokens=False)["input_ids"]
+        if list(ids[:len(prompt_ids)]) != list(prompt_ids):
+            ledger.fail("answer_prefix_retokenizes_prompt", row["prompt_id"])
             continue
         # The destination MUST be the position the readout reads, or the intervention and the
         # measurement are about different tokens (see --dst).
@@ -486,6 +781,10 @@ def main() -> int:
         # T3: `dst` is the RANKING/reporting destination and must be the token the
         # readout actually reads (see choose_destinations); `dsts` is what gets cut.
         dsts, dst = choose_destinations(args.dst, last[-1], readout_pos)
+        # C-6b: with a whole-answer readout the scored positions run past the context, so the
+        # knockout's QUERY set must span the answer window too (see readout_query_positions).
+        qpos = (readout_query_positions(dsts, len(ids), rd["max_answer_tokens"])
+                if args.readout_ids == "whole_answer" else list(dsts))
         # T7: cross-fit the ranking direction on the row's own split.
         fit_split, is_self_fit = choose_direction_split(sorted(fitted), row.get("split"))
         d_surface = d_surface_by_split[fit_split]
@@ -499,7 +798,10 @@ def main() -> int:
             if not blk:
                 ledger.fail("no_demo_block", row["prompt_id"])
                 continue
-            templated = dc.apply_template(lm.tokenizer, row["full_prompt"])
+            # `templated` comes from resolve_occurrences, which is what `prompt_ids` was
+            # tokenised from. Re-templating here (the pre-2026-08-19 code did) is a second
+            # path that can disagree with the first — extract_boombness.resolve_occurrences
+            # takes an `enable_thinking` argument this call did not pass.
             ci = templated.find(blk)
             if ci < 0:
                 ledger.fail("demo_block_not_found_in_templated", row["prompt_id"])
@@ -514,8 +816,21 @@ def main() -> int:
             # LAST destination being cut into (causality only forbids sources at or
             # after the query position), which is `max(dsts)`.
             src_bound = demo_source_bound(dsts)
-            demo_pos = [i for i, (a, b) in enumerate(enc["offset_mapping"])
-                        if a >= lo and b <= hi and b > a and i < src_bound]
+            in_block = [i for i, (a, b) in enumerate(enc["offset_mapping"])
+                        if a >= lo and b <= hi and b > a]
+            demo_pos = [i for i in in_block if i < src_bound]
+            n_dropped = len(in_block) - len(demo_pos)
+            if n_dropped:
+                # NOT a silent truncation any more (plan §2.2). Causality forbids a source at or
+                # after the LAST destination, so these tokens genuinely CANNOT be cut and the row
+                # is not a failure -- charging the FailureLedger here would mark a succeeding row
+                # failed and break `n_attempted == n_succeeded + n_failed`. It is counted in its
+                # own block instead, so an arm labelled "all demo edges" can never again be short
+                # of the block by an amount nobody recorded.
+                source_truncation["n_demo_tokens_after_last_dst"] += n_dropped
+                source_truncation["n_rows_truncated"] += 1
+                if len(truncated_ids) < 10:
+                    truncated_ids.append(str(row["prompt_id"]))
         if not demo_pos:
             ledger.fail(f"no_demo_positions:{args.demo_scope}", row["prompt_id"])
             continue
@@ -534,12 +849,26 @@ def main() -> int:
                      "codeword_last_pos": last[-1],
                      "directions_fitted_on": fit_split, "is_self_fit": is_self_fit,
                      "n_demo_positions": len(demo_pos), "seq_len": len(ids),
-                     "demo_scope": args.demo_scope})
+                     "demo_scope": args.demo_scope,
+                     # C-6 provenance, per row: which instrument produced semantic_logodds,
+                     # where it was read, and how wide the knocked-out query window was.
+                     "readout_mode": args.readout_ids, "answer_prefix": answer_prefix,
+                     "prompt_len": len(prompt_ids), "ctx_len": len(ids),
+                     "max_answer_tokens": rd["max_answer_tokens"],
+                     "query_positions": qpos, "n_query_positions": len(qpos)})
+
+        def _read(context: str, tok_ids: Sequence[int]) -> Dict[str, float]:
+            """One readout, same instrument for every arm (C-6). max_batch=1: see semantic_readout."""
+            return semantic_readout(lm, args.readout_ids, context=context, ids=tok_ids,
+                                    variants=rd["variants"], c_ids=rd["c_ids"], w_ids=rd["w_ids"])
+
+        def _emit(arm: str, rec: Dict[str, float], **extra) -> None:
+            option_mass_by_arm[arm].append(rec.get("option_mass"))
+            run.log_row({**base, "arm": arm, **extra, **rec})
 
         for arm in ARMS:
             if arm == "none":
-                val = semantic_logodds(lm, ids, c_ids, w_ids)
-                run.log_row({**base, "arm": arm, "n_edges_cut": 0, "semantic_logodds": val})
+                _emit(arm, _read(ctx, ids), n_edges_cut=0)
                 n += 1
                 continue
             if arm == "no_demo_text":
@@ -549,10 +878,9 @@ def main() -> int:
                     ledger.fail("no_demo_text:missing_query", row["prompt_id"])
                     continue
                 t2 = dc.apply_template(lm.tokenizer, q)
-                ids2 = lm.tokenizer(t2, add_special_tokens=False)["input_ids"]
-                val = semantic_logodds(lm, ids2, c_ids, w_ids)
-                run.log_row({**base, "arm": arm, "n_edges_cut": -1,
-                             "seq_len_used": len(ids2), "semantic_logodds": val})
+                ctx2 = t2 + answer_prefix
+                ids2 = lm.tokenizer(ctx2, add_special_tokens=False)["input_ids"]
+                _emit(arm, _read(ctx2, ids2), n_edges_cut=-1, seq_len_used=len(ids2))
                 n += 1
                 continue
             ALL_LAYER_ARMS = ("all_layers_demo", "subsampled_all_layers_demo")
@@ -564,7 +892,7 @@ def main() -> int:
                 # (for the subsampled arm the edges are drawn at random, so also irrelevant).
                 dom_arm = {L: dom["D_dir"][layers[0]] for L in arm_layers}
             edges = pick_edges(dom_arm, demo_pos, list(range(len(ids))),
-                               args.topk, arm, rng, dsts_global=dsts,
+                               args.topk, arm, rng, dsts_global=qpos,
                                n_model_layers=lm.num_layers, n_chosen_layers=len(layers))
             n_cut = sum(len(v) for v in edges.values())
             if n_cut == 0:
@@ -581,30 +909,119 @@ def main() -> int:
                             by_head[h].append(s)
                         for h, srcs in by_head.items():
                             st.enter_context(pc.AttentionKnockout(
-                                lm.model, [L], query_positions=dsts,
+                                lm.model, [L], query_positions=qpos,
                                 blocked_keys=sorted(set(srcs)), heads=[h]))
-                    val = semantic_logodds(lm, ids, c_ids, w_ids)
+                    rec = _read(ctx, ids)
             except Exception as e:
                 ledger.fail(f"knockout_{arm}:{type(e).__name__}:{str(e)[:60]}", row["prompt_id"])
                 continue
-            run.log_row({**base, "arm": arm, "n_edges_cut": n_cut, "semantic_logodds": val})
+            _emit(arm, rec, n_edges_cut=n_cut)
             n += 1
         ledger.ok()
+
+    # THE TAIL GATE (C-6), computed BEFORE finish so its verdict is written into summary.json,
+    # and enforced AFTER finish so a failure never destroys the evidence that documents it.
+    mass_summary, tail_fail = ({}, []) if args.readout_ids != "whole_answer" else option_mass_gate(
+        option_mass_by_arm, args.min_option_mass, fatal_arms=("none",))
+    for arm in sorted(mass_summary):
+        m = mass_summary[arm]
+        print(f"[knockout] option mass {arm}: median={m['median']:.4g} p90={m['p90']:.4g} "
+              f"max={m['max']:.4g} frac>1%={m['frac_above_1pct']:.3f} "
+              f"{'OK' if m['reportable'] else 'BELOW GATE'}"
+              f"{'' if m['gates_the_run'] else '  (not gated: intervention arm)'}")
+
+    # THE ARM-COVERAGE GATE — VERIFIER FIX 2026-08-19 (defect V-4).
+    # The mass gate watches the INSTRUMENT; nothing watched the INTERVENTION. Every arm that
+    # enters `AttentionKnockout` is wrapped in `except Exception -> ledger.fail`, and `none` /
+    # `no_demo_text` are the two arms that never touch it — so a fault in the knockout itself
+    # kills all ten cutting arms while the two uncut arms sail through, and the run still wrote
+    # `option_mass_gate: PASS`, `reportable: true`, exit 0. Reproduced: with the knockout raising
+    # on construction the run finished rc=0 / reportable=true carrying rows for `none` and
+    # `no_demo_text` only. That is not a hypothetical fault mode for the FIRST C-6 run: C-6 made
+    # the readout pass an explicit 2-D `attention_mask` into the forward, and `AttentionKnockout`
+    # REFUSES anything but a 4-D additive mask (`RuntimeError`) and any batch > 1
+    # (`NotImplementedError`) — a combination this repo has never executed on a GPU.
+    # Addressed BY IDENTITY (the two arm names that skip the knockout), not by a row-count
+    # threshold or a name prefix. Deliberately requires only that SOME cutting arm survived:
+    # `dense_two_layer` is legitimately INFEASIBLE at >2 chosen layers and must not, alone,
+    # condemn a run.
+    NON_KNOCKOUT_ARMS = ("none", "no_demo_text")
+    rows_by_arm = {a: len(option_mass_by_arm.get(a, ())) for a in ARMS}
+    cutting_arms_with_rows = sorted(a for a in ARMS
+                                    if a not in NON_KNOCKOUT_ARMS and rows_by_arm[a])
+    coverage_fail: List[str] = []
+    if not cutting_arms_with_rows:
+        coverage_fail.append(
+            "no arm that CUTS ATTENTION EDGES produced a single row: every one of "
+            f"{sorted(set(ARMS) - set(NON_KNOCKOUT_ARMS))} failed. The knockout did not run, so "
+            "nothing in this directory is evidence about attention edges — see the FailureLedger "
+            "for the per-arm reason (a 4-D-mask RuntimeError or a batch>1 NotImplementedError "
+            "from AttentionKnockout is the expected cause).")
+    arm_coverage = {"rows_by_arm": rows_by_arm,
+                    "non_knockout_arms": list(NON_KNOCKOUT_ARMS),
+                    "cutting_arms_with_rows": cutting_arms_with_rows,
+                    "verdict": "PASS" if not coverage_fail else "FAILED — " + coverage_fail[0]}
+    for c in coverage_fail:
+        print(f"[knockout] ARM COVERAGE: {c}", file=sys.stderr)
+
+    gate_fail = list(tail_fail) + coverage_fail
+    reportable = (args.readout_ids == "whole_answer") and not gate_fail
 
     run.finish(summary={"model": lm.model_id, "n_rows": n, "arms": list(ARMS),
                         "family_accounting": family_accounting,
                         "direction_splits_available": sorted(fitted),
+                        "direction_payload_verdicts": verdicts,
                         "cross_fit_note": "edge ranking uses the direction fitted on the OTHER "
                                           "split; per-row is_self_fit flags any residual "
                                           "in-sample row",
                         "positive_control_note": "positive_control blocks every pre-query key in "
                                                  "every head; if its delta is small the knockout "
                                                  "is not firing and all other arms are void",
+                        "readout_mode": args.readout_ids,
+                        "answer_prefix": answer_prefix,
+                        "option_mass": mass_summary,
+                        "option_mass_gate": ("PASS" if not tail_fail else
+                                             "FAILED — NOT REPORTABLE: " + "; ".join(tail_fail)),
+                        "arm_coverage": arm_coverage,
+                        "reportable": reportable,
+                        # V-4: the note now names the ACTUAL reason(s). It previously hard-coded
+                        # "baseline option mass below --min-option-mass" for every whole_answer
+                        # failure, which would have mislabelled a knockout that never fired as a
+                        # tail readout — the wrong diagnosis printed with full confidence.
+                        "reportable_note": (
+                            "" if reportable else
+                            "; ".join(
+                                ([] if args.readout_ids == "whole_answer" else
+                                 ["readout_mode=primary is the pre-C-6 single-next-token "
+                                  "instrument: the option pair holds a median ~5.6e-06 of "
+                                  "next-token mass and the capitalised codeword is multi-token, "
+                                  "so this run reproduces the retracted G3 number and is NOT "
+                                  "reportable"]) + list(gate_fail))),
+                        "source_truncation": {**dict(source_truncation),
+                                              "example_prompt_ids": truncated_ids,
+                                              "note": "demonstration tokens at or after the last "
+                                                      "destination cannot be cut (causal mask); "
+                                                      "counted, never silently dropped"},
                         "layers": layers, "topk": args.topk,
                         "condition": args.condition, "query_kind": args.query_kind},
                ledger=ledger)
     print(f"[knockout] {n} rows -> {run.path}")
     print(f"[knockout] failures: {ledger.as_dict()['failure_reasons']}")
+    if args.readout_ids != "whole_answer":
+        print("[knockout] readout_mode=primary — this run reproduces the RETRACTED pre-C-6 "
+              "readout and is NOT reportable.", file=sys.stderr)
+    # `--allow-tail-readout` accepts a TAIL READOUT deliberately. It does NOT, and must not,
+    # accept a knockout that never ran: there is no deliberate version of that (V-4).
+    hard_fail = (list(tail_fail) if not args.allow_tail_readout else []) + coverage_fail
+    if hard_fail:
+        print("[knockout] GATE FAILED — the run is written and every arm's numbers are on "
+              "disk, but the run is NOT reportable:", file=sys.stderr)
+        for t in hard_fail:
+            print(f"  - {t}", file=sys.stderr)
+        if tail_fail:
+            print(f"[knockout] readout position is after answer_prefix={answer_prefix!r}. "
+                  f"Pass --allow-tail-readout to accept deliberately.", file=sys.stderr)
+        return 4
     return 0
 
 

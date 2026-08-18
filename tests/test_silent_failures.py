@@ -293,8 +293,16 @@ class _Run:
         self.notes.update(kw)
 
 
-def _score_with(mod, fit_layers, score_layers):
-    """Drive `stage_score` on a fake model whose fit covers only `fit_layers`."""
+def _score_with(mod, mp, fit_layers, score_layers):
+    """Drive `stage_score` on a fake model whose fit covers only `fit_layers`.
+
+    STUBS GO THROUGH `monkeypatch` (2026-08-19). `mod.sg` is the SHARED `signals` module object,
+    so the bare `mod.sg.readout_id_pair = ...` this helper used to do was a process-global
+    mutation that outlived the test: in a full-suite run it left `signals.readout_id_pair`
+    stubbed and failed 8 tests in `tests/test_patching_readout.py` that pass in isolation. A test
+    file that breaks other test files is the same never-checked-at-the-other-end shape this suite
+    exists to catch.
+    """
     rows = [{"prompt_id": "p1", "prompt_sha16": "s", "family_id": "f", "condition": "c",
              "cell": "C", "domain": "d", "split": "dev", "bank_block": "b",
              "query_kind": "behavioral", "n_examples": 1, "strength": 1, "consistency": 1,
@@ -305,19 +313,22 @@ def _score_with(mod, fit_layers, score_layers):
                "d_surface": {L: torch.ones(4) for L in fit_layers},
                "meta": {"position": "codeword_last", "model": "fake/Model"}}
     run, ledger = _Run(), common.FailureLedger()
-    mod.forward_hidden = lambda lm, ids, _diag=None: torch.ones(_LM.num_layers + 1, 5, 4)
-    mod.sg.readout_id_pair = lambda tok, c, w, mode="primary": (
-        [1], [2], {"concept": {"full_word_pieces": []}, "codeword": {"full_word_pieces": []}})
+    mp.setattr(mod, "forward_hidden",
+               lambda lm, ids, _diag=None: torch.ones(_LM.num_layers + 1, 5, 4))
+    mp.setattr(mod.sg, "readout_id_pair",
+               lambda tok, c, w, mode="primary": (
+                   [1], [2], {"concept": {"full_word_pieces": []},
+                              "codeword": {"full_word_pieces": []}}))
     out = mod.stage_score(_LM(), _DC(), rows, list(score_layers), {"dev": payload}, run, ledger,
                           ["d_surface"], [], cache_final_reps=False)
     return out, run, ledger
 
 
-def test_t8b_head_reports_a_clean_run_with_a_missing_metric(old_extract):
+def test_t8b_head_reports_a_clean_run_with_a_missing_metric(old_extract, monkeypatch):
     """THE DEFECT, executed. The fit covers 2 of 4 scored layers; the pre-fix stage_score writes
     the row, calls ledger.ok(), reports n_failed = 0 — and results.jsonl simply has no
     `d_surface|L2|cos` / `|L3|cos` key at all. Nothing in the run says so."""
-    out, run, ledger = _score_with(old_extract, [0, 1], [0, 1, 2, 3])
+    out, run, ledger = _score_with(old_extract, monkeypatch, [0, 1], [0, 1, 2, 3])
     assert ledger.as_dict()["n_failed"] == 0
     assert out["n_scored_rows"] == 1
     rec = run.rows[0]
@@ -326,9 +337,9 @@ def test_t8b_head_reports_a_clean_run_with_a_missing_metric(old_extract):
         "pre-fix summary already reports coverage; this fixture is not the pre-fix module"
 
 
-def test_t8b_coverage_is_counted_and_visible():
+def test_t8b_coverage_is_counted_and_visible(monkeypatch):
     """Same input through the fixed module: the missing layers are a NUMBER in the summary."""
-    out, run, ledger = _score_with(extract_boombness, [0, 1], [0, 1, 2, 3])
+    out, run, ledger = _score_with(extract_boombness, monkeypatch, [0, 1], [0, 1, 2, 3])
     cov = out["direction_layer_coverage"]["d_surface"]
     assert cov["n_layers_requested"] == 4
     assert cov["n_layers_with_no_direction"] == 2
@@ -342,8 +353,8 @@ def test_t8b_coverage_is_counted_and_visible():
     assert "d_surface|L2|cos" not in run.rows[0]
 
 
-def test_t8b_full_coverage_reports_zero_missing():
-    out, _, _ = _score_with(extract_boombness, [0, 1, 2, 3], [0, 1, 2, 3])
+def test_t8b_full_coverage_reports_zero_missing(monkeypatch):
+    out, _, _ = _score_with(extract_boombness, monkeypatch, [0, 1, 2, 3], [0, 1, 2, 3])
     assert out["n_missing_direction_layer_cells"] == 0
     assert out["direction_layer_coverage"]["d_surface"]["n_layers_with_no_direction"] == 0
 

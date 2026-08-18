@@ -63,6 +63,27 @@ compares 6 styled prompts against 204 reference prompts of DIFFERENT content, wh
 family-set-swap coefficient this gate exists to refuse (retraction #6). The role model is therefore
 fitted on the CROSSED SUBSET only -- the rows whose masked content stem appears under both the style
 and the reference.
+
+--------------------------------------------------------------------------------------------------
+C-10 -- HOW TO REGENERATE THE PUBLISHED ARTIFACTS.
+
+Before 2026-08-19 no committed invocation of this script existed anywhere: not in the progress log,
+not in a Makefile, not in scripts/. The two published artifacts were reproducible only because they
+happen to echo their three input directories as separate keys, and nothing recorded the flags or
+the commit. `provenance{argv, git_commit, git_dirty, python}` closes half of that; the other half
+is that the canonical argv must itself live in a COMMITTED place, which is `CANONICAL_RUNS` below.
+
+`CANONICAL_RUNS` is keyed by the artifact BASENAME -- the identity of the thing produced -- and not
+by position in a list, by launch order, or by any other incidental property. Each entry stores the
+argv TAIL (everything after the script path), so it is independent of how the interpreter was
+invoked. `tests/test_estimand.py` asserts that every committed artifact's own `provenance.argv`
+still matches its entry, so the record and the artifacts cannot drift apart: change the canonical
+invocation without regenerating, or regenerate with a different invocation, and the test goes red.
+
+To regenerate both from a clean checkout:
+
+    PY=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
+    $PY src/boombness/analyze_g9.py --print-canonical | sh -e
 """
 from __future__ import annotations
 
@@ -83,6 +104,48 @@ from common import read_jsonl, require_done  # noqa: E402
 from analyze_g11 import stem  # noqa: E402
 from analyze_g64 import (spearman, rank_partial, rho_within_domain,  # noqa: E402
                          rank_partial_within_domain, perm_p_partial)
+
+
+# ------------------------------------------------------- C-10: the committed invocation --- #
+# Keyed by the artifact BASENAME, i.e. by the IDENTITY of the thing produced. Not by list
+# position, not by launch order, not by mtime -- addressing by an incidental property is the bug
+# class that produced all six dead guards in this project.
+#
+# The value is the argv TAIL: everything after the script path, exactly as `provenance.argv[1:]`
+# records it. Defaults (`--arm`, `--boombness-col`, `--refusalness-col`, `--cluster-by`,
+# `--min-examples`) are deliberately NOT spelled out here, because the published artifacts did not
+# pass them; spelling them out would make the record disagree with the artifacts it claims to
+# regenerate the moment a default changes, which is the failure this record exists to prevent.
+# `tests/test_estimand.py::test_canonical_runs_match_the_committed_artifact_provenance` pins that.
+CANONICAL_RUNS: Dict[str, List[str]] = {
+    "g9_three_predictor_cwpos.json": [
+        "--judge", "outputs/boombness/judge/base_20260816_210948_3024689",
+        "--extract", "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+        "--refusalness", "outputs/boombness/refusalness/cwpos_20260817_050713_304734",
+        "--position", "codeword_last",
+        "--out", "outputs/boombness/g9_three_predictor_cwpos.json",
+    ],
+    "g9_three_predictor_lastpos.json": [
+        "--judge", "outputs/boombness/judge/base_20260816_210948_3024689",
+        "--extract", "outputs/boombness/extract_boombness/lastpos_20260817_071318_453596",
+        "--refusalness", "outputs/boombness/refusalness/lastpos_20260817_120828_1414147",
+        "--position", "last",
+        "--out", "outputs/boombness/g9_three_predictor_lastpos.json",
+    ],
+}
+
+CANONICAL_PYTHON = "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+CANONICAL_SCRIPT = "src/boombness/analyze_g9.py"
+
+
+def canonical_commands() -> str:
+    """The committed, runnable regeneration recipe. Pipe to `sh -e` from the repo root."""
+    import shlex
+    out = ["# regenerates every published analyze_g9 artifact; run from the repo root"]
+    for name in sorted(CANONICAL_RUNS):
+        out.append(" ".join(shlex.quote(v) for v in
+                            [CANONICAL_PYTHON, CANONICAL_SCRIPT, *CANONICAL_RUNS[name]]))
+    return "\n".join(out)
 
 
 # ---------------------------------------------------------------------------- least squares --- #
@@ -388,20 +451,51 @@ def crossed_subset(meta: Dict[str, dict], keys: List[str], ident: Dict) -> List[
     return keep
 
 
-def main() -> int:
+def build_parser(required: bool = True) -> argparse.ArgumentParser:
+    """The ONE definition of this script's command line.
+
+    `required` is relaxed only for the `--print-canonical` pre-pass in `main()`. It is a
+    parameter rather than a second, hand-copied parser so that the pre-pass resolves option
+    ABBREVIATIONS with exactly the same rules as the real parse -- `--print-can` is the flag,
+    `--p` is ambiguous with `--position` and must stay an error. A separately-written pre-parser
+    got both of those wrong.
+    """
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--judge", required=True)
-    ap.add_argument("--extract", required=True)
-    ap.add_argument("--refusalness", required=True)
+    ap.add_argument("--print-canonical", action="store_true",
+                    help="print the committed regeneration commands and exit")
+    ap.add_argument("--judge", required=required)
+    ap.add_argument("--extract", required=required)
+    ap.add_argument("--refusalness", required=required)
     ap.add_argument("--arm", default="natural_doublespeak")
     ap.add_argument("--boombness-col", default="d_surface|L12|proj")
     ap.add_argument("--refusalness-col", default="refusalness|L20|proj")
-    ap.add_argument("--position", required=True, choices=["codeword_last", "last"],
+    ap.add_argument("--position", required=required, choices=["codeword_last", "last"],
                     help="asserted readout position; BOTH inputs must have been read here")
     ap.add_argument("--cluster-by", default="domain")
     ap.add_argument("--min-examples", type=int, default=1)
-    ap.add_argument("--out", required=True)
-    args = ap.parse_args()
+    ap.add_argument("--out", required=required)
+    return ap
+
+
+def main() -> int:
+    # C-10. `--print-canonical` must be answerable WITHOUT the required flags, otherwise the only
+    # way to learn the canonical invocation is to already know it -- hence the pre-pass.
+    #
+    # ONE-OF-TWO-PATHS (the bug class behind R-12). The first version of this matched the flag with
+    # `"--print-canonical" in sys.argv[1:]`, i.e. by its EXACT SPELLING, which is an incidental
+    # property: argparse accepts any unambiguous prefix, so `--print-can` set
+    # `args.print_canonical = True` on the parsed path where NOTHING read it -- with the required
+    # flags supplied the script ran the whole analysis and overwrote `--out`, and without them it
+    # died with a "required arguments" error that never mentions the flag that was asked for.
+    # Both paths are handled now, and both go through `build_parser`, so neither can drift from
+    # the other or go dead.
+    if build_parser(required=False).parse_known_args()[0].print_canonical:
+        print(canonical_commands())
+        return 0
+    args = build_parser().parse_args()
+    if args.print_canonical:            # the second path; kept live so it cannot become a no-op
+        print(canonical_commands())
+        return 0
 
     for d in (args.judge, args.extract, args.refusalness):
         require_done(d)

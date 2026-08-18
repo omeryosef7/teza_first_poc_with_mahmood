@@ -43,6 +43,208 @@ import signals as sg  # noqa: E402
 from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
+
+
+# --------------------------------------------------------------------------- #
+# Fit-payload IDENTITY (defect T8, second half — 2026-08-19)
+# --------------------------------------------------------------------------- #
+# `common.validate_direction_payload` closed three quarters of T8: it compares the payload's own
+# `meta` against the consuming run's MODEL, POSITION and LAYER SET. Two identity fields it cannot
+# check, because nothing ever WROTE them into the payload:
+#
+#   BANK.  A direction is a difference of cell means over a specific set of prompts. The bank has
+#          been regenerated three times this sprint (1464 -> 1752 -> 2352 rows) and retraction R1's
+#          stated root cause is joining across regenerations by `prompt_id`. A d_surface fitted on
+#          the 1464-row bank, consumed by a score run over the 2352-row bank, is a cross-bank join
+#          wearing the same file name — and `--fit-dir` is precisely the flag that carries it
+#          across runs. `common.compare_bank_hashes` was written for this comparison in the same
+#          commit that split `bank_content_sha16` into two names, and had NO caller anywhere in the
+#          repo: the fifth guard this sprint shipped without a live call site.
+#   DTYPE. The direction tensors are always float32 (`estimate_directions` casts), so the payload's
+#          dtype says nothing. What matters is the dtype of the ACTIVATIONS the cell means were
+#          taken from: a d fitted from bfloat16 residuals and applied to float32 residuals is a
+#          different measurement, and every cosine moves silently.
+#
+# Both are checked HERE rather than in `common.validate_direction_payload` only because this agent
+# does not own `common.py`. They belong in the shared validator so `score_behavior`,
+# `aggressive_patching` and `surgical_knockout` inherit them instead of growing a fourth copy —
+# reported as a cross-file dependency, NOT worked around by editing that file.
+#
+# BACKWARD COMPATIBILITY IS NOT AGREEMENT. Every payload committed before today has no
+# `bank_rows_sha16` and no `fit_dtype` in its meta. An absent field is recorded in
+# `unknown_identity` and is NOT fatal — but it is never counted as a match either, which is the
+# rule `compare_bank_hashes` already states: "an old artifact that predates the rows hash must not
+# be able to certify a join it never recorded."
+def validate_fit_identity(payload: Dict, path: str, *, model, position: str,
+                          layers: Sequence[int], bank_meta: Optional[Dict] = None,
+                          dtype: Optional[str] = None, strict: bool = True,
+                          allow_cross_bank: bool = False) -> Dict:
+    """`common.validate_direction_payload` plus the BANK and DTYPE the payload was fitted under.
+
+    Returns the merged verdict dict. Raises SystemExit when `strict` and anything MISMATCHES
+    (never merely because something is unrecorded).
+    """
+    v = validate_direction_payload(payload, path=path, model=model, position=position,
+                                   layers=list(layers), strict=False)
+    v.setdefault("problems", [])
+    v["unknown_identity"] = []
+    meta = payload.get("meta") if isinstance(payload, dict) else None
+    if not isinstance(meta, dict):
+        # The base validator has already recorded "no meta block"; nothing further is checkable.
+        if strict and v["problems"]:
+            raise SystemExit(f"[validate_fit_identity] REFUSING {path or 'payload'}: "
+                             + " | ".join(v["problems"]))
+        return v
+
+    bank_meta = bank_meta or {}
+    v.setdefault("problems_nonfatal", [])
+    v["cross_bank_fit"] = False
+
+    # THREE BANK FACTS, AND THEY ARE NOT INDEPENDENT (verifier fix, 2026-08-19).
+    #
+    # (1) The first version downgraded a `bank_file_sha16` MISMATCH to non-fatal
+    #     UNCONDITIONALLY, on the stated ground that "same prompts, different bytes is a
+    #     re-serialisation". That ground is `bank_rows_sha16` AGREEING, and the code never
+    #     checked whether it had. On an EXTERNAL bank (plan 14 / ClearHarm / AdvBench) the rows
+    #     hash is None on BOTH sides by construction -- those files carry no per-row
+    #     `prompt_sha16` and `note_bank` correctly refuses to invent one -- so the only fatal
+    #     bank check was permanently unavailable on exactly the banks now in flight, and
+    #     `fit on ClearHarm -> score on AdvBench` passed strict=True with an empty problems list.
+    #     The downgrade now REQUIRES a rows hash that was compared and agreed.
+    #
+    # (2) `note_bank` hashes the bank FILE and `--limit` truncates the rows AFTER it, so a
+    #     `--limit 24` fit over the 2352-row bank stamps the FULL bank's hashes and a later full
+    #     score run was certified `checked: bank_rows_sha16` against a fit built from 24 of 2352
+    #     prompts. outputs/boombness/extract_boombness/smoke_20260816_183101_1000604 and
+    #     smoke_20260816_183822_1001753 are both `limit: 24` on that bank. Only the row COUNT can
+    #     see it -- and it is fatal ONLY when nothing else says the banks differ, because two
+    #     different banks are *expected* to have different row counts (see 3).
+    #
+    # (3) APPLYING A FIT ACROSS BANKS IS A REAL WORKFLOW, NOT ONLY A BUG. The 2x2 direction is
+    #     deliberately applied to other prompt sets: `roleblk_20260818_114425_1408585` is a
+    #     committed `--stage score --fit-dir <2x2 fit> --bank role_style_block.jsonl` run (720
+    #     rows against a 1464-row fit), and 44 committed score_behavior/knockout runs apply that
+    #     same fit to the ClearHarm (179), AdvBench (495) and 2352-row banks. A guard that made
+    #     that fatal with no way to say "yes, on purpose" would be routed around with a bypass
+    #     hack the first time someone re-fits -- which is how a guard becomes decoration. So a
+    #     bank-identity mismatch is FATAL BY DEFAULT and expressible: `--allow-cross-bank-fit`
+    #     turns it into a recorded, printed, counted `cross_bank_fit`. It downgrades NOTHING
+    #     else -- not the model, not the position, not the dtype, and not (2).
+    rows_a, rows_b = meta.get("bank_rows_sha16"), bank_meta.get("bank_rows_sha16")
+    rows_checked = bool(rows_a and rows_b)
+    rows_agree = rows_checked and rows_a == rows_b
+    bank_mismatches: List[str] = []
+    if rows_checked:
+        v["checked"].append("bank_rows_sha16")
+        if not rows_agree:
+            bank_mismatches.append(
+                f"bank_rows_sha16: directions were FITTED on bank {rows_a} but this run reads bank "
+                f"{rows_b} ({bank_meta.get('bank_path')}) -- a direction is a difference of cell "
+                f"means over a specific prompt set, and joining across bank regenerations by "
+                f"prompt_id is retraction R1's stated root cause")
+    else:
+        v["unknown_identity"].append("bank_rows_sha16")
+
+    file_a, file_b = meta.get("bank_file_sha16"), bank_meta.get("bank_file_sha16")
+    if file_a and file_b:
+        v["checked"].append("bank_file_sha16")
+        if file_a != file_b:
+            msg = (f"bank_file_sha16: directions were FITTED on bank file {file_a} but this run "
+                   f"reads bank file {file_b} ({bank_meta.get('bank_path')})")
+            if rows_agree:
+                # Same prompts (the rows hash was COMPARED and AGREED), different file bytes: a
+                # re-serialisation is not a different bank. Recorded, not fatal.
+                v["problems_nonfatal"].append(
+                    msg + " -- but bank_rows_sha16 was compared and AGREES, so this is a "
+                          "re-serialisation of the same prompt set, not a different bank")
+            else:
+                bank_mismatches.append(
+                    msg + " -- and bank_rows_sha16 could not certify these are the same prompts "
+                          f"(rows hashes: fit={rows_a!r}, run={rows_b!r}), so nothing establishes "
+                          f"that this is the same bank")
+    else:
+        v["unknown_identity"].append("bank_file_sha16")
+
+    v["bank_identity_mismatch"] = bool(bank_mismatches)
+    if bank_mismatches:
+        if allow_cross_bank:
+            v["cross_bank_fit"] = True
+            v["problems_nonfatal"].extend(
+                m + " [DECLARED via --allow-cross-bank-fit: applying a direction to a different "
+                    "prompt set is a real analysis; it is recorded here so no reader can mistake "
+                    "it for a same-bank measurement]" for m in bank_mismatches)
+        else:
+            v["problems"].extend(
+                m + " (if this is deliberate -- applying the 2x2 direction to another prompt set "
+                    "-- say so with --allow-cross-bank-fit, which records it instead of hiding "
+                    "it)" for m in bank_mismatches)
+
+    n_a, n_b = meta.get("n_bank_rows_used"), bank_meta.get("n_bank_rows_used")
+    if n_a is not None and n_b is not None:
+        v["checked"].append("n_bank_rows_used")
+        if int(n_a) != int(n_b):
+            msg = (f"n_bank_rows_used: directions were FITTED over {n_a} bank row(s) but this run "
+                   f"reads {n_b}")
+            if v["bank_identity_mismatch"]:
+                # Two different banks are expected to differ in size; the size is not the finding,
+                # the bank identity above is.
+                v["problems_nonfatal"].append(
+                    msg + " -- expected, because the bank identity already differs")
+            else:
+                v["problems"].append(
+                    msg + " -- and NOTHING says the banks differ, so this is the same bank read "
+                          "twice at different lengths: `--limit` truncates the rows AFTER "
+                          "note_bank hashes the file, so the bank hashes cannot see it")
+    else:
+        v["unknown_identity"].append("n_bank_rows_used")
+
+    a, b = meta.get("fit_dtype"), (str(dtype) if dtype is not None else None)
+    if a and b:
+        v["checked"].append("fit_dtype")
+        if str(a) != b:
+            v["problems"].append(
+                f"fit_dtype: the cell means were taken from {a} activations but this run reads "
+                f"{b} activations -- the stored direction is float32 either way, so nothing about "
+                f"the arithmetic complains while every cosine moves")
+    else:
+        v["unknown_identity"].append("fit_dtype")
+
+    v["n_unknown_identity_fields"] = len(v["unknown_identity"])
+    v["n_nonfatal_identity_problems"] = len(v["problems_nonfatal"])
+    if strict and v["problems"]:
+        raise SystemExit(f"[validate_fit_identity] REFUSING {path or 'payload'}: "
+                         + " | ".join(v["problems"]))
+    return v
+
+
+def read_run_bank_meta(run, bank_path: Optional[str]) -> Dict:
+    """The bank identity `RunDir.note_bank` recorded, read back off the run -- or a hard stop.
+
+    WHY THIS IS NOT AN INLINE `getattr(run, "_extra_meta", {}).get(k)` (verifier fix, 2026-08-19).
+    `_extra_meta` is a PRIVATE attribute of a class in a file this module does not own. The inline
+    form defaulted to `{}` on any of: the attribute being renamed, `note_bank` not having been
+    called, or `note_bank` having failed. Every one of those produced `None` for every hash, which
+    `validate_fit_identity` then reports as `unknown_identity` -- i.e. the whole T8 identity guard
+    would degrade to "nothing recorded, nothing checked" and say so only in a field nobody diffs.
+    That is the sprint's dead-guard shape keyed on an incidental property (an attribute name).
+    A run that was given a `--bank` and cannot produce its recorded path stops here instead.
+    """
+    meta = getattr(run, "_extra_meta", None)
+    if not isinstance(meta, dict):
+        raise SystemExit(
+            "[extract] RunDir exposes no `_extra_meta` mapping, so the bank hashes note_bank "
+            "recorded cannot be read back. The T8 identity stamp would silently become 'unknown' "
+            "on every field. Fix the accessor rather than shipping an unverifiable fit dir.")
+    out = {k: meta.get(k) for k in ("bank_path", "bank_file_sha16", "bank_rows_sha16",
+                                    "bank_n_rows")}
+    if bank_path and out["bank_path"] is None:
+        raise SystemExit(
+            f"[extract] note_bank recorded no bank_path for {bank_path!r} "
+            f"(keys present: {sorted(meta)[:12]}). Refusing to stamp or check a fit payload whose "
+            f"bank identity is unrecoverable.")
+    return out
+
+
 CORE_2X2 = ("benign_literal", "direct_harmful", "natural_doublespeak", "concept_in_benign_ctx")
 COND_TO_CELL = {"benign_literal": "A", "direct_harmful": "B",
                 "natural_doublespeak": "C", "concept_in_benign_ctx": "E"}
@@ -182,7 +384,8 @@ def dc_layers(lm):
 # Stage: fit
 # --------------------------------------------------------------------------- #
 def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
-              ledger: FailureLedger, position: str = "codeword_last") -> Dict[str, Dict]:
+              ledger: FailureLedger, position: str = "codeword_last",
+              fit_identity: Optional[Dict] = None) -> Dict[str, Dict]:
     """Estimate the 2x2 directions per split, averaging every cell over THE SAME families.
 
     The identification argument behind d_surface = 1/2[(B-C)+(E-A)] is that the two differences
@@ -209,6 +412,18 @@ def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
             _, ids, last, following, _ = resolve_occurrences(dc, lm.tokenizer, row)
         except ValueError as e:
             ledger.fail(f"fit:{e}", row["prompt_id"])
+            continue
+        # NO OCCURRENCE, NO POSITION TO FIT AT (silent-failure audit, 2026-08-19).
+        # `resolve_occurrences` returns EMPTY occurrence lists, without raising, for a row whose
+        # `target_surface` is the empty string -- the shape that plan 14's external harmful sets
+        # (ClearHarm/AdvBench) have by construction, and the shape the 2026-08-18 fix deliberately
+        # made non-fatal there. Its own docstring says "callers that need a target POSITION
+        # (extract_boombness's own stages) must check `last` themselves"; neither stage did. Here
+        # the consequence was an IndexError on `last[-1]` that kills the whole fit with a
+        # traceback carrying no prompt_id; in `stage_score` it was silent (see there). Counted with
+        # a reason at both, so the run says which rows had nothing to read.
+        if position != "last" and not last:
+            ledger.fail(f"fit:no_occurrence_at_position:{position}", row["prompt_id"])
             continue
         if position == "codeword_last":
             pos = last[-1]
@@ -264,7 +479,15 @@ def stage_fit(lm, dc, rows: List[Dict], layers: List[int], run: RunDir,
                 means, n_per_cell={c: len(common_sorted) for c in CORE_2X2_CELLS},
                 meta={"split_fitted_on": split, "position": position, "model": lm.model_id,
                       "n_families_common": len(common_sorted), "family_set_sha16": fam_hash,
-                      "n_cell_family_entries_dropped": n_dropped})
+                      "n_cell_family_entries_dropped": n_dropped,
+                      # T8 identity (2026-08-19): WHICH BANK and WHICH ACTIVATION DTYPE these cell
+                      # means came from. Without them a consumer can only check model/position/
+                      # layers, and the two remaining ways to build a phantom cell -- fit on the
+                      # 1464-row bank and score the 2352-row one, or fit in bf16 and score in fp32
+                      # -- stay invisible. See validate_fit_identity above.
+                      "fit_layers": list(layers),
+                      "layer_convention": sg.LAYER_CONVENTION,
+                      **(fit_identity or {})})
         except ValueError as e:
             ledger.fail(f"fit_directions:{e}", split)
             continue
@@ -345,6 +568,19 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
     # the artifact rather than something discovered by a reader who happens to grep for a column.
     cov_present: Dict[str, Dict[int, int]] = {n: {L: 0 for L in layers} for n in dir_names}
     cov_missing: Dict[str, Dict[int, int]] = {n: {L: 0 for L in layers} for n in dir_names}
+    # CROSS-FIT COVERAGE (silent-failure audit, 2026-08-19).
+    # `_cross_fit_split`'s docstring promises "the caller records `is_self_fit` on every row and the
+    # run summary COUNTS THEM, so no consumer can mistake a self-fit number for a cross-fit one".
+    # The per-row flag was written; the count never was. A `--stage score --fit-dir X` run where X
+    # holds only `directions_fit_dev.pt` silently self-fits every dev row, and the summary's
+    # `splits_fitted: ["dev"]` is the only trace -- one that says which splits were FITTED, not how
+    # many rows were scored against their OWN text. It has already happened twice on this
+    # checkout: extract_boombness/smoke_20260816_183101 and smoke_20260816_183822 fitted `dev`
+    # alone, so 24/24 of their rows are self-fit and nothing in either summary says so.
+    n_self_fit = n_cross_fit = 0
+    self_fit_by_split: Dict[str, int] = collections.defaultdict(int)
+    # Rows that resolve cleanly but have NO occurrence to read at the requested position.
+    n_no_occurrence = 0
     for row in rows:
         try:
             _, ids, last, following, n_sub = resolve_occurrences(dc, tok, row)
@@ -355,6 +591,21 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
         payload = fitted.get(fit_split)
         if payload is None:
             ledger.fail("score:no_fitted_directions", row["prompt_id"])
+            continue
+
+        # NO OCCURRENCE, NO ROW -- AND THE OLD CODE STILL CALLED IT A SUCCESS.
+        # (silent-failure audit, 2026-08-19.) For `--position codeword_last` the loop below
+        # iterates `zip(last, following, n_sub)`. `resolve_occurrences` returns those three lists
+        # EMPTY, without raising, for a row whose `target_surface` is the empty string -- exactly
+        # what plan 14's external harmful banks look like. The loop body then never executed, no
+        # record was ever logged, and control fell through to `ledger.ok()` and `n_scored += 1`.
+        # A whole bank of such rows produces `n_scored_rows: 179`, `n_failed: 0`, DONE.json, and a
+        # results.jsonl with ZERO rows in it. That is the same failure that killed ClearHarm arms
+        # 764745-747 (`COMPLETED 0:0`), one layer further in: there the count check raised, here
+        # nothing did. Counted with a reason, so the ledger sees it.
+        if position != "last" and not last:
+            ledger.fail(f"score:no_occurrence_at_position:{position}", row["prompt_id"])
+            n_no_occurrence += 1
             continue
 
         hs = forward_hidden(lm, ids)
@@ -433,6 +684,11 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
             cache_pos = (len(ids) - 1) if position == "last" else last[-1]
             cache[row["prompt_id"]] = torch.stack(
                 [hs[L + 1, cache_pos, :] for L in layers], dim=0).half()
+        if is_self_fit:
+            n_self_fit += 1
+            self_fit_by_split[str(row["split"])] += 1
+        else:
+            n_cross_fit += 1
         ledger.ok()
         n_scored += 1
         if n_scored % 100 == 0:
@@ -475,7 +731,20 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
                     "dtype": "float16", "reps": cache},
                    os.path.join(run.cache, "final_occurrence_reps.pt"))
         print(f"[score] cached {len(cache)} final-occurrence rep stacks")
+    if n_self_fit:
+        print(f"[score] SELF-FIT WARNING: {n_self_fit}/{n_self_fit + n_cross_fit} rows were scored "
+              f"against directions fitted on their OWN split {dict(self_fit_by_split)} — an "
+              f"in-sample cosine is inflated by fit and the §6.4 sanity check passes trivially on "
+              f"it. summary.json['cross_fit'] carries the count.")
     return {"n_scored_rows": n_scored,
+            "cross_fit": {"n_self_fit_rows": n_self_fit, "n_cross_fit_rows": n_cross_fit,
+                          "self_fit_frac": (n_self_fit / (n_self_fit + n_cross_fit))
+                                           if (n_self_fit + n_cross_fit) else 0.0,
+                          "self_fit_rows_by_split": dict(self_fit_by_split),
+                          "note": "a self-fit row's Boombness is read off a direction fitted on "
+                                  "the very same text; the per-row `is_self_fit` flag has always "
+                                  "been written, but nothing counted it until 2026-08-19"},
+            "n_rows_with_no_occurrence_at_position": n_no_occurrence,
             "direction_layer_coverage": coverage,
             "n_missing_direction_layer_cells": total_missing_cells,
             "coverage_note": "a (direction, layer) with n_layers_with_no_direction > 0 has NO "
@@ -519,6 +788,15 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
     ap.add_argument("--no-cache-reps", action="store_true")
+    ap.add_argument("--allow-cross-bank-fit", action="store_true",
+                    help="declare that the --fit-dir directions were fitted on a DIFFERENT bank "
+                         "than this run scores. That is a real analysis -- the committed run "
+                         "roleblk_20260818_114425 applies the 2x2 fit to role_style_block.jsonl, "
+                         "and 44 committed runs apply it to ClearHarm/AdvBench -- but it is not "
+                         "the default, because 'fit on the 1464-row bank, score the 2352-row "
+                         "bank' is the same shape and is a phantom cell. Declaring it records "
+                         "`cross_bank_fit` in summary.json instead of hiding it. It does NOT "
+                         "relax the model, position, dtype or same-bank row-count checks.")
     args = ap.parse_args()
     global ENABLE_THINKING
     ENABLE_THINKING = dc_parse_thinking(args.enable_thinking)
@@ -547,16 +825,38 @@ def main() -> int:
                  else sorted(set(list(range(0, lm.num_layers, 4)) + [lm.num_layers - 1])))
     run.note(layers=layers, logit_lens_layers=ll_layers, bank=args.bank, n_bank_rows=len(rows))
 
+    # THE BANK AND DTYPE THIS RUN IS ACTUALLY USING (defect T8 identity, 2026-08-19).
+    # `run.note_bank` has already hashed the bank two ways; those hashes are what a fit payload
+    # must be stamped with and what a consumed payload is checked against. Read back off the run
+    # rather than recomputed, so there is ONE hashing implementation in play and this file cannot
+    # drift from `common.rows_sha16` the way `bank_content_sha16` drifted (defect T11).
+    run_bank_meta = read_run_bank_meta(run, args.bank)
+    # `n_bank_rows_used` is len(rows) AFTER --limit, i.e. the prompt set this process actually has
+    # in play. It is the only one of these fields that a `--limit` run does not share with a full
+    # run over the same file. See validate_fit_identity.
+    run_bank_meta["n_bank_rows_used"] = len(rows)
+    run_bank_meta["bank_limit"] = int(args.limit or 0)
+    fit_identity = {"fit_dtype": str(lm.dtype),
+                    **{k: v for k, v in run_bank_meta.items() if k != "bank_n_rows"}}
+
     fitted: Dict[str, Dict] = {}
     summary_fit_validation: Dict[str, Dict] = {}
     if args.stage in ("fit", "both"):
-        fitted = stage_fit(lm, dc, rows, layers, run, ledger, position=args.position)
+        fitted = stage_fit(lm, dc, rows, layers, run, ledger, position=args.position,
+                           fit_identity=fit_identity)
         # A --stage both run fits and scores in one process, so a mismatch here would be a bug in
         # THIS file rather than a mis-wired job. Validated anyway: the check costs nothing and a
         # silently self-inconsistent payload is exactly what T8 was.
         summary_fit_validation = {
-            sp: validate_direction_payload(pl, path=f"<in-process:{sp}>", model=lm.model_id,
-                                           position=args.position, layers=layers, strict=True)
+            sp: validate_fit_identity(pl, path=f"<in-process:{sp}>", model=lm.model_id,
+                                      position=args.position, layers=layers,
+                                      bank_meta=run_bank_meta, dtype=str(lm.dtype), strict=True,
+                                      # ONE-OF-TWO-PATHS: the flag is threaded through BOTH
+                                      # consumer sites. It is structurally inert here (a
+                                      # --stage both run fits and scores the same rows in one
+                                      # process), and passing it anyway is what keeps the two
+                                      # call sites from drifting apart again.
+                                      allow_cross_bank=args.allow_cross_bank_fit)
             for sp, pl in fitted.items()}
     if args.stage == "score":
         src = args.fit_dir
@@ -577,20 +877,49 @@ def main() -> int:
             p = os.path.join(src, f"directions_fit_{split}.pt")
             if os.path.exists(p):
                 payload = torch.load(p, map_location="cpu", weights_only=False)
-                fit_validation[split] = validate_direction_payload(
+                fit_validation[split] = validate_fit_identity(
                     payload, path=p, model=lm.model_id, position=args.position, layers=layers,
-                    strict=True)
+                    bank_meta=run_bank_meta, dtype=str(lm.dtype), strict=True,
+                    allow_cross_bank=args.allow_cross_bank_fit)
                 fitted[split] = payload
         if not fitted:
             raise SystemExit(f"no directions_fit_*.pt under {src}")
         run.note(fit_dir=src, fit_dir_validation=fit_validation)
         summary_fit_validation = fit_validation
+        n_nonfatal = sum(v.get("n_nonfatal_identity_problems", 0) for v in fit_validation.values())
+        if n_nonfatal:
+            # Non-fatal is not silent. These are real MISMATCHES that were downgraded because
+            # something stronger certified the join; if they are never printed the downgrade is
+            # indistinguishable from agreement, which is the state T8 was.
+            for sp, v in fit_validation.items():
+                for m in v.get("problems_nonfatal", []):
+                    print(f"[extract] fit identity NON-FATAL MISMATCH ({sp}): {m}")
+        n_unknown = sum(v.get("n_unknown_identity_fields", 0) for v in fit_validation.values())
+        if n_unknown:
+            print(f"[extract] {n_unknown} identity field(s) across {len(fit_validation)} fit "
+                  f"payload(s) are UNRECORDED (a fit dir written before 2026-08-19 stamps no bank "
+                  f"hash and no activation dtype). They are reported as `unknown_identity` in "
+                  f"summary.json, NOT as agreement: an artifact that never recorded a field cannot "
+                  f"certify it matches.")
 
     summary: Dict[str, object] = {"model": lm.model_id, "n_bank_rows": len(rows),
                                   "layers": layers, "logit_lens_layers": ll_layers,
                                   "splits_fitted": sorted(fitted),
                                   "position": args.position,
-                                  "fit_dir_validation": summary_fit_validation}
+                                  "fit_dir_validation": summary_fit_validation,
+                                  "fit_identity_unknown_fields": sum(
+                                      v.get("n_unknown_identity_fields", 0)
+                                      for v in summary_fit_validation.values()),
+                                  "fit_identity_nonfatal_problems": sum(
+                                      v.get("n_nonfatal_identity_problems", 0)
+                                      for v in summary_fit_validation.values()),
+                                  "cross_bank_fit": any(
+                                      v.get("cross_bank_fit") for v in
+                                      summary_fit_validation.values()),
+                                  "cross_bank_fit_declared": bool(args.allow_cross_bank_fit),
+                                  "bank_file_sha16": run_bank_meta["bank_file_sha16"],
+                                  "bank_rows_sha16": run_bank_meta["bank_rows_sha16"],
+                                  "activation_dtype": str(lm.dtype)}
     if args.stage in ("score", "both"):
         if not fitted:
             raise SystemExit("nothing fitted; cannot score")
