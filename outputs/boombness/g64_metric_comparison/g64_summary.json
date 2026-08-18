@@ -1,0 +1,31 @@
+{
+  "plan_section": "6.4",
+  "arm": "natural_doublespeak",
+  "layers": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    31
+  ],
+  "headline_layer": 12,
+  "probe_regime": "d5_surface_matched_codeword",
+  "n_judged": 270,
+  "n_with_extract": 270,
+  "metrics_present": [
+    "direction_boombness",
+    "logit_lens_boombness",
+    "probe_boombness"
+  ],
+  "deliverables": [
+    "correlation_table.csv",
+    "metric_vs_asr.png",
+    "metric_by_layer.png",
+    "metric_by_carrot_occurrence.png"
+  ],
+  "role_style": "eta^2 reported but NOT IDENTIFIED (collinear with bank_block, \u00a79)"
+}

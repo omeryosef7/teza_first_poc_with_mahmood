@@ -207,7 +207,17 @@ def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]
 def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
                layers: Sequence[int], layer_index: Dict[int, int], n_folds: int,
                seed: int, shuffle_labels: bool = False, C: float = 1.0,
-               n_components: int = 64) -> Dict:
+               n_components: int = 64, emit_scores: Optional[dict] = None) -> Dict:
+    """`emit_scores`, when a dict, collects OUT-OF-FOLD per-prompt margins keyed by
+    (regime, layer, prompt_id). Plan §6.4 asks for `probe_boombness` as a third metric alongside
+    `logit_lens_boombness` and `direction_boombness`, compared against ASR / refusal /
+    comprehension / n_examples / role-style. That comparison needs a PER-PROMPT score, and this
+    module previously emitted only per-regime aggregates, so `probe_boombness` was simply absent
+    from the §6.4 table. The margin is used (not the probability) for the reason given below: the
+    sigmoid saturates and cannot resolve a shift between two same-surface cells.
+
+    These are out-of-fold scores from domain-grouped folds, so a prompt is always scored by a probe
+    that never saw its domain."""
     train_pool, eval_pool = regime_rows(table, regime)
     folds = domain_folds(train_pool, n_folds, seed)
     per_layer: Dict[int, Dict] = {}
@@ -243,6 +253,13 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             m_all.extend(np.asarray(m_te).ravel().tolist())
             cell_all.extend(r["cell"] for r in te)
             cond_all.extend(r["condition"] for r in te)
+            if emit_scores is not None and not shuffle_labels:
+                for r, mv, pv in zip(te, np.asarray(m_te).ravel().tolist(), p_te.tolist()):
+                    emit_scores[(regime, L, r["prompt_id"])] = {
+                        "regime": regime, "layer": L, "prompt_id": r["prompt_id"],
+                        "cell": r["cell"], "condition": r["condition"], "domain": r["domain"],
+                        "probe_margin": float(mv), "probe_p_concept": float(pv),
+                        "label": int(regime_label(regime, r))}
 
         if not y_all:
             continue
@@ -298,6 +315,9 @@ def main() -> int:
     ap.add_argument("--regimes", default="d1_simple,d2_aligned,d3_hard_negative,d4_heldout_ds,"
                                     "d5_surface_matched_codeword,d6_surface_matched_concept")
     ap.add_argument("--C", type=float, default=1.0, help="L2 inverse strength")
+    ap.add_argument("--emit-scores", action="store_true",
+                    help="also write probe_scores.jsonl with OUT-OF-FOLD per-prompt margins, "
+                         "which is what plan §6.4's three-way metric comparison needs")
     ap.add_argument("--pca", type=int, default=64,
                     help="PCA components fit on the TRAIN fold only; 0 disables (and the probe "
                          "then saturates at this n/d ratio — see fit_probe)")
@@ -337,9 +357,11 @@ def main() -> int:
           f"{args.folds}-fold over domains, {missing} missing reps")
 
     results: Dict[str, Dict] = {}
+    score_sink = {} if args.emit_scores else None
     for regime in [r.strip() for r in args.regimes.split(",") if r.strip()]:
         real = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
-                          shuffle_labels=False, C=args.C, n_components=args.pca)
+                          shuffle_labels=False, C=args.C, n_components=args.pca,
+                          emit_scores=score_sink)
         shuf = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
                           shuffle_labels=True, C=args.C, n_components=args.pca)
         results[regime] = real
@@ -398,6 +420,14 @@ def main() -> int:
         "note": "d4_heldout_ds is the generalization test: cell C is removed from training and "
                 "then scored. p_C_minus_p_A is the learned-probe analogue of the C-A contrast.",
     }
+    if score_sink is not None:
+        sp = run.p("probe_scores.jsonl")
+        with open(sp, "w") as f:
+            for rec in score_sink.values():
+                f.write(json.dumps(rec) + "\n")
+        print(f"[probes] wrote {len(score_sink)} out-of-fold per-prompt scores -> {sp}")
+        summary["probe_scores_rows"] = len(score_sink)
+
     run.finish(summary=summary, ledger=ledger)
     print(f"[probe] -> {run.path}")
     return 0

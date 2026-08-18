@@ -5255,3 +5255,62 @@ empirical interaction stands; the mechanism remains unknown and the deliverable 
 
 Also answered the plan's headline question directly: **"can we reduce ASR by removing Boombness?" — No.**
 Removing it *raises* ASR (+0.026). The reduction comes from *adding* it, via refusal.
+
+## §6.4 CLOSED — three-way metric comparison; the BEST-looking metric is the one that fails the control
+
+`src/boombness/analyze_g64.py`, outputs in `outputs/boombness/g64_metric_comparison/`.
+
+**Three of the four named deliverables did not exist** (`metric_vs_asr.png`,
+`metric_by_carrot_occurrence.png`, `correlation_table.csv`; only `metric_by_layer.png` was present, in an
+unrelated run dir). **That is the third plan-mandated deliverable set found missing**, after §5.4's
+`decision_gate.md` and §10.4's `causal_claims.md`. All four now exist.
+
+**`probe_boombness` did not exist as a metric at all.** `probes.py` emitted only per-regime aggregate
+AUROC, so the plan's three-way comparison had never been possible. Added `probes.py --emit-scores`, which
+writes out-of-fold per-prompt margins from the domain-grouped folds (7776 rows). The margin is used, not
+the probability — the sigmoid saturates and cannot resolve a shift between two same-surface cells.
+
+### The result, and the control that reverses it
+
+Spearman ρ against the StrongReject score on `natural_doublespeak`, L12, within-domain permutation:
+
+| metric | raw ρ | ρ partialling out `n_examples` | p (partial) |
+|---|---|---|---|
+| `logit_lens_boombness` | −0.068 | −0.045 | 0.563 |
+| **`direction_boombness`** | +0.372 | **+0.286** | **0.0005** |
+| `probe_boombness` | **+0.440** | +0.147 | **0.259** |
+
+**The probe is the best raw predictor and the worst real one.** It correlates **ρ=+0.631 with
+`n_examples`** (p=5e-4) — demonstration count is itself an ASR driver, so most of the probe's apparent
+advantage is that it is partly a demo-counter. Partialling `n_examples` out drops it from +0.440 to +0.147,
+**not significant**. `direction_boombness` is nearly uncorrelated with demo count (ρ=−0.046) and survives
+the same control at +0.286, p=0.0005.
+
+**So `d_surface` is the metric of record for §6.4**, and the trained probe — despite the higher headline
+number — is not. This is the fourth time in this sprint the largest effect was the wrong answer, and the
+deciding check was again a control rather than a bigger n.
+
+Logit-lens is null at L12 and only becomes an ASR correlate late (+0.359 at L31), where it converges with
+the direction — consistent with the late layers reading out the answer rather than the concept.
+
+### Two things checked and found NOT to be bugs
+
+- **`auroc_real = 1.000` at "layer 0" in d1–d4** is already documented in `probes.py` as the stupid-probe
+  problem, and the cache stores `hs[L+1]`, so probe layer 0 is **block 0's output, not the embedding** —
+  the embedding is never in the cache at all. d5/d6 reach 0.974/0.985 there, which is a real
+  post-attention result, not an embedding leak.
+- **PCA leakage: none.** The scaler→PCA→logreg pipeline is fit on the training fold only.
+- I hypothesised the surface-matched regimes were separable by **position** (the absolute-position bug
+  class that has hit this repo twice). **Checked and false:** AUROC from `token_pos` alone is 0.504 (d5)
+  and 0.527 (d6), i.e. chance. Recorded because the hypothesis was wrong, not because it was right.
+
+**Note on the probe's flat depth profile:** AUROC on the surface-matched regimes is 0.974 at block 0 and
+0.985 at block 4, then flat to block 31. The doublespeak context is linearly decodable at the codeword
+token after a **single** transformer block and does not sharpen with depth.
+
+### Tick 83 — jobs preempted twice
+
+763594/763595 (arm D + double-random control) were preempted off n-805 and requeued (`Restarts=1`), then
+again onto n-802, each time restarting from zero with a fresh run dir. The earlier partial dirs are
+orphaned; `require_done` refuses them, so no analysis can pick them up. This is normal `killable`-partition
+behaviour, recorded so the wall-clock is not mistaken for a hang.
