@@ -34,11 +34,12 @@ removing `d_surface` **alone** raises attack success by **+0.0305 (p_cl=0.0089, 
 `d_surface` was fitted entirely on the carrot/bomb 2×2, so this **excludes the prompt-bank artifact
 explanation** — the most serious threat to every late finding here.
 
+A norm-matched **random** projection at the same layer is **inert** (−0.0062, p_cl=0.539, CI
+[−0.027, +0.015]), so the effect is specific to this direction rather than to removing any direction.
+
 **And the two channels interact.** Removing `d_surface` and refusalness together exceeds the sum of
 removing each alone by **+0.0333, CI [+0.0128, +0.0638]** — the sprint's first interaction result to
-survive clustered inference. ⚠ **The AdvBench control arms are still running**, so on that set these
-are contrasts among real directions with no random-projection reference yet; ClearHarm's matched
-double-random control is inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129.
+survive clustered inference. ⚠ Super-additivity's own random-composition control is still judging.
 
 **On ClearHarm (179 prompts, 6 clusters, 127 in one) arm B is NOT significant** (+0.084, p_cl=0.21).
 That is a power difference, not a disagreement — the point estimates agree and only the intervals
@@ -756,6 +757,7 @@ against real goals (post-R-14), analysed by the same committed `analyze_external
 |---|---|---|---|---|---|---|---|
 | baseline | — | 0.0646 | 0.9313 | — | — | — | — |
 | **B** | remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
+| **Bctrl** | remove a **random** direction @L8 | 0.0626 | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert |
 | **C** | remove refusalness @L18 | **0.2707** | 0.7091 | +0.1967 | +0.1895 | 0.0001 | [+0.1097, +0.2692] ✓ |
 | **D** | remove **both** | **0.3515** | 0.6222 | +0.2722 | +0.2544 | <0.0001 | [+0.1589, +0.3499] ✓ |
 
@@ -787,17 +789,51 @@ On ClearHarm the same quantity was **+0.0677, CI [−0.218, +0.123] — not esta
 recorded *why* before AdvBench was judged: one cluster holding 71% of the rows. That prediction is now
 checked rather than asserted.
 
-#### ⛔ The gap, stated before the result can be called clean
+#### ✅ The control is inert — arm B is `d_surface`-specific
 
-**There is no control arm on AdvBench.** All four arms above use real fitted directions. ClearHarm's
-double-random control was inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129 —
-which is evidence, on a *different set*. Arm B's effect here is **+0.0305**, and no norm-matched random
-projection has yet been run on AdvBench, so on **this** set "removing `d_surface` raises ASR" is not
-yet separated from "removing **any** direction at L8 raises ASR". **Super-additivity carries the same
-gap** — it is a contrast among three real arms with no random-composition reference.
+A norm-matched **random** projection at the same layer and seed moves ASR by **−0.0062**
+(p_cl=0.539, CI [−0.027, +0.015]) — flat, and if anything slightly negative, against arm B's
+**+0.0305**. So the effect is not "removing any direction at L8"; it is this direction.
 
-Until those land the honest statement is: *arm B's AdvBench effect is significantly non-zero, and its
-ClearHarm counterpart is controlled and inert.* `ab_Bctrl`, `ab_Cctrl`, `ab_Dctrl` are running.
+⚠ **Super-additivity still carries the gap.** It is a contrast among three *real* arms, and its
+random-composition reference (`ab_Cctrl`, `ab_Dctrl`) is still judging. ClearHarm's double-random
+control is inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129, which is
+evidence on a different set.
+### ★ Cross-model: Qwen3-14B uses a DIFFERENT channel, and `d_surface` replicates where the correlation did not
+
+ClearHarm 179, Qwen3-14B, `d_surface`@L11 + refusalness@L20 (the established Qwen3 depths), at
+**`max_new 512` — length-matched to the Llama runs**. That matching matters on its own: the published
+Llama-vs-Qwen3 non-replication elsewhere in this report compares a **512**-token Llama run against a
+**192**-token Qwen3 run, and the sprint's own log records that halving the budget roughly halves the
+Llama effect. `outputs/boombness/clearharm_decomposition_qwen3.json`.
+
+| arm | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl |
+|---|---|---|---|---|---|
+| baseline | 0.1341 | 0.7486 | — | — | — |
+| **B** — remove `d_surface` @L11 | **0.2793** | 0.5642 | **+0.1306** | +0.0416 | 0.181 |
+| **C** — remove refusalness @L20 | **0.1285** | 0.7207 | **−0.0042** | −0.0120 | 0.287 |
+| D — remove both | 0.2793 | 0.5475 | +0.1201 | +0.0557 | 0.081 |
+| Dctrl — double random | 0.1285 | 0.7039 | −0.0084 | −0.0100 | 0.358 |
+
+**The channel that carries the effect is reversed between the two models.** On Llama, refusalness is
+the large mover (+0.240 pooled) and `d_surface` the small one (+0.083). On Qwen3 it is the other way
+round: `d_surface` takes ASR from **0.134 to 0.279** and refusal from 0.749 to 0.564, while removing
+refusalness does **nothing** (−0.004, indistinguishable from the double-random control at −0.008).
+**D equals B to four decimal places** — on Qwen3 the entire joint effect is the `d_surface` channel.
+
+**`d_surface` removal raises external-set attack success in both models** (Llama +0.083 pooled, Qwen3
++0.131). This is worth separating from G2 explicitly: the **correlational** Boombness↔ASR relationship
+is Llama-specific and does not replicate; the **causal intervention on `d_surface`** does. Those are
+different claims about different quantities and the sprint should stop treating "does not replicate"
+as a property of the direction.
+
+⚠ **Not established under clustering, and the reason is already known.** Qwen3's arm B is +0.0416
+cluster-mean, p_cl=0.181 — the *identical* 6-clusters-with-one-at-71% limitation that made Llama's
+ClearHarm arm B non-significant before AdvBench settled it. The matching experiment (Qwen3 × AdvBench,
+16 clusters) is running: `q3ab_base`, `q3ab_B`, `q3ab_Bctrl`. On the pooled estimate Qwen3's effect is
+*larger* than Llama's, so it should clear zero comfortably at 16 clusters; if it does not, the pooled
+ClearHarm effect was carried by the one dominant cluster and that will be said here.
+
 ### ⚠ Super-additivity on ClearHarm alone — NOT established, and that is the expected result
 
 On ClearHarm the joint arm exceeds the sum of the singles by **+0.0677**, domain-clustered CI
