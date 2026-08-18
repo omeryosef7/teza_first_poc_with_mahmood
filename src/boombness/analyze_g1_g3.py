@@ -170,6 +170,12 @@ def g1(run: str, readout: str = "semantic_logodds") -> Dict:
                                              [frac - 1.96 * fs, frac + 1.96 * fs]
                                              if math.isfinite(fs) else [float("nan")] * 2,
                                          "frac_ci95_paired_boot": boot["ci"],
+                                         # A11-12: keep BOTH so the clustering fix is auditable
+                                         "frac_ci95_family_level_UNDERSTATES":
+                                             boot.get("ci_family_level_UNDERSTATES"),
+                                         "boot_width_ratio_domain_over_family":
+                                             boot.get("width_ratio_domain_over_family"),
+                                         "bootstrap_unit": boot.get("bootstrap_unit"),
                                          "n_families": boot["n_families"],
                                          "n_domains": boot["n_domains"],
                                          "frac_ci95": boot["ci"] if boot["ci"][0] == boot["ci"][0]

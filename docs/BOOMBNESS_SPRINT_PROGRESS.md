@@ -5682,3 +5682,37 @@ ratio, so the difference the fix makes is visible rather than silently swapped i
 
 The stratified rerun (`g1strat`, 764238) is analysed with this: `family_accounting` confirms
 **24 families / 24 eligible / 6 domains** per pair, against the pilot's 8 across 2.
+
+## ★ G1 REPLICATES on a properly stratified sample — and the point estimate shrinks, as arm selection predicts
+
+The G1 pilot's headline was flagged twice: its 8 families came from **2 of 6 domains** (because the
+sample was the alphabetical head of a domain-prefixed list, A11-10) and its interval bootstrapped
+**families** when the cluster is the **domain** (A11-12). Both fixed; rerun `g1strat` (764238) uses
+**24 families / 24 eligible / 6 domains** per pair. `analyze_g1_g3.py` produced this — the script had
+crashed on **every** invocation until this session, so this is its first real output.
+
+`transplant | demos_only`, fraction of the baseline→ceiling span, `semantic_logodds`:
+
+| arm | pilot (8 fam, **2 domains**) | stratified (24 fam, **6 domains**) | domain-clustered 95% CI |
+|---|---|---|---|
+| **harm ctx, L18** | +0.839 | **+0.681** | **[+0.499, +0.945]** |
+| harm ctx, L8 | +0.708 | +0.751 | — |
+| **harm ctx, all layers** | **−0.764** | **−0.951** | — |
+| benign ctx, L18 | +0.821 | +0.726 | — |
+| benign ctx, L8 | +0.772 | +0.838 | — |
+| benign ctx, all layers | +0.690 | +0.762 | — |
+
+**Everything qualitative replicates.** The demonstration-block transplant moves the readout most of the
+way to the donor ceiling at a single layer, and the **all-layer variant still reverses** in the harmful
+context (−0.951, more strongly than the pilot's −0.764). §5.4's conclusion — *the lever is the
+demonstration block, not the codeword token* — stands on 6 domains.
+
+⚠ **The headline point estimate fell from +0.839 to +0.681**, and that is what arm selection predicts:
+the pilot's figure was the largest of ~130 arms, so some of it was selection. The honest headline is
+**+68% of span with a domain-clustered interval of [+50%, +95%]** on 24 families across all 6 domains —
+weaker than advertised, and now properly bounded. The interval excludes zero, so the finding survives;
+the *magnitude* claim from the pilot does not.
+
+**Known Issue #7 ("G1 is a pilot, n=8 from 2 domains, headline is arm-selected") is now partly retired:**
+the domain problem is fixed and the arm replicates. What remains is that this is still one arm of many,
+and the estimate shrank on replication — which is the honest description of a selected effect.
