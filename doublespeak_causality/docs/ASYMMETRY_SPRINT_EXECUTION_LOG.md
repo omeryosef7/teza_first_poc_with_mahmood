@@ -10741,3 +10741,4 @@ Diff unchanged.
 ### 08:15 — idle. Controller OK (header verified). Queue: 1 boombness job (theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 08:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 09:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 09:45 — idle. Controller OK (header verified). Queue: 4 boombness jobs (2 R, 2 PD at 0:00 — no >30 min trigger; theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
