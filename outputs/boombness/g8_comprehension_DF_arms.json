@@ -1,0 +1,715 @@
+{
+  "plan_section": "8",
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/base_20260816_203355_3985444",
+  "levels": [
+    0,
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "conditions": [
+    "benign_literal",
+    "concept_in_benign_ctx",
+    "direct_harmful",
+    "natural_doublespeak"
+  ],
+  "balanced_cell_grid": true,
+  "cell_counts": [
+    12
+  ],
+  "cluster_by": "domain",
+  "curve": {
+    "benign_literal": {
+      "0": {
+        "n_clusters": 6,
+        "n_effective": 1,
+        "mean": -0.375,
+        "se": 0.0,
+        "ci": null,
+        "p_vs_0": null,
+        "degenerate": true,
+        "degenerate_reason": "between-cluster SD is exactly 0"
+      },
+      "1": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -3.7682290077209473,
+        "se": 0.704297833739717,
+        "ci": [
+          -5.57868422600821,
+          -1.9577737894336844
+        ],
+        "p_vs_0": 0.0030633456091482846,
+        "degenerate": false
+      },
+      "2": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -4.257812420527141,
+        "se": 0.6908034775480058,
+        "ci": [
+          -6.033579291904424,
+          -2.4820455491498574
+        ],
+        "p_vs_0": 0.0016362415911426876,
+        "degenerate": false
+      },
+      "4": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -5.0546875,
+        "se": 0.4408124603848008,
+        "ci": [
+          -6.187832003586033,
+          -3.921542996413967
+        ],
+        "p_vs_0": 8.837886154171216e-05,
+        "degenerate": false
+      },
+      "8": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -5.3828125,
+        "se": 0.5245712224740476,
+        "ci": [
+          -6.731265755987789,
+          -4.034359244012211
+        ],
+        "p_vs_0": 0.00015103366151270335,
+        "degenerate": false
+      },
+      "16": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -6.489583492279053,
+        "se": 0.5265674192134276,
+        "ci": [
+          -7.843168135345444,
+          -5.135998849212662
+        ],
+        "p_vs_0": 6.227766075940723e-05,
+        "degenerate": false
+      },
+      "slope_log2": {
+        "n_clusters": 6,
+        "n_effective": null,
+        "mean": -0.8466217705643361,
+        "se": 0.1835836669697518,
+        "ci": [
+          -1.31853861019575,
+          -0.37470493093292223
+        ],
+        "p_vs_0": 0.005778996187678677,
+        "degenerate": false
+      }
+    },
+    "concept_in_benign_ctx": {
+      "0": {
+        "n_clusters": 6,
+        "n_effective": 1,
+        "mean": 2.84375,
+        "se": 0.0,
+        "ci": null,
+        "p_vs_0": null,
+        "degenerate": true,
+        "degenerate_reason": "between-cluster SD is exactly 0"
+      },
+      "1": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 0.3541666666666667,
+        "se": 0.6649922005077287,
+        "ci": [
+          -1.3552502047963788,
+          2.0635835381297123
+        ],
+        "p_vs_0": 0.6171282502624615,
+        "degenerate": false
+      },
+      "2": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 1.8072917064030964,
+        "se": 0.5817967198354919,
+        "ci": [
+          0.31173562636289165,
+          3.3028477864433015
+        ],
+        "p_vs_0": 0.026659298035601547,
+        "degenerate": false
+      },
+      "4": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 1.53125003973643,
+        "se": 0.6251432145464823,
+        "ci": [
+          -0.07573175224622553,
+          3.1382318317190854
+        ],
+        "p_vs_0": 0.05797640658440999,
+        "degenerate": false
+      },
+      "8": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 1.1354166666666667,
+        "se": 0.6542960328560087,
+        "ci": [
+          -0.546504830519978,
+          2.8173381638533117
+        ],
+        "p_vs_0": 0.14320509653495314,
+        "degenerate": false
+      },
+      "16": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 0.23177083333333334,
+        "se": 0.54713411520153,
+        "ci": [
+          -1.1746821848590672,
+          1.6382238515257337
+        ],
+        "p_vs_0": 0.6894560261761009,
+        "degenerate": false
+      },
+      "slope_log2": {
+        "n_clusters": 6,
+        "n_effective": null,
+        "mean": -0.16311601966754855,
+        "se": 0.19438609076183225,
+        "ci": [
+          -0.6628013736796984,
+          0.33656933434460123
+        ],
+        "p_vs_0": 0.4396581139838674,
+        "degenerate": false
+      }
+    },
+    "direct_harmful": {
+      "0": {
+        "n_clusters": 6,
+        "n_effective": 1,
+        "mean": 2.84375,
+        "se": 0.0,
+        "ci": null,
+        "p_vs_0": null,
+        "degenerate": true,
+        "degenerate_reason": "between-cluster SD is exactly 0"
+      },
+      "1": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -2.1770830949147544,
+        "se": 0.7509288973894822,
+        "ci": [
+          -4.107407278396368,
+          -0.24675891143314055
+        ],
+        "p_vs_0": 0.03382272646776144,
+        "degenerate": false
+      },
+      "2": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -2.2864582538604736,
+        "se": 0.8061315088001317,
+        "ci": [
+          -4.358685267513832,
+          -0.21423124020711537
+        ],
+        "p_vs_0": 0.03640280617865784,
+        "degenerate": false
+      },
+      "4": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -2.916666825612386,
+        "se": 1.0628191326079888,
+        "ci": [
+          -5.648730382458119,
+          -0.18460326876665345
+        ],
+        "p_vs_0": 0.040585352290021894,
+        "degenerate": false
+      },
+      "8": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -3.640625,
+        "se": 1.1085898042859077,
+        "ci": [
+          -6.490345814065731,
+          -0.7909041859342691
+        ],
+        "p_vs_0": 0.02185741232339615,
+        "degenerate": false
+      },
+      "16": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -4.231770674387614,
+        "se": 1.2906250261317576,
+        "ci": [
+          -7.549427923175782,
+          -0.9141134255994467
+        ],
+        "p_vs_0": 0.021982345020383553,
+        "degenerate": false
+      },
+      "slope_log2": {
+        "n_clusters": 6,
+        "n_effective": null,
+        "mean": -0.7095534362816188,
+        "se": 0.3661711915060909,
+        "ci": [
+          -1.6508264498994123,
+          0.23171957733617454
+        ],
+        "p_vs_0": 0.11038657178426593,
+        "degenerate": false
+      }
+    },
+    "natural_doublespeak": {
+      "0": {
+        "n_clusters": 6,
+        "n_effective": 1,
+        "mean": -0.375,
+        "se": 0.0,
+        "ci": null,
+        "p_vs_0": null,
+        "degenerate": true,
+        "degenerate_reason": "between-cluster SD is exactly 0"
+      },
+      "1": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": -0.4791666666666667,
+        "se": 0.28317244206392056,
+        "ci": [
+          -1.2070846025881299,
+          0.24875126925479646
+        ],
+        "p_vs_0": 0.15140371916914871,
+        "degenerate": false
+      },
+      "2": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 0.6875,
+        "se": 0.6431226716835082,
+        "ci": [
+          -0.9656994579136435,
+          2.3406994579136438
+        ],
+        "p_vs_0": 0.33393763613020805,
+        "degenerate": false
+      },
+      "4": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 1.3125,
+        "se": 0.6356898319935596,
+        "ci": [
+          -0.3215927352194867,
+          2.946592735219487
+        ],
+        "p_vs_0": 0.09387189447252221,
+        "degenerate": false
+      },
+      "8": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 1.1145833333333333,
+        "se": 0.47404417720761477,
+        "ci": [
+          -0.10398601788433792,
+          2.3331526845510044
+        ],
+        "p_vs_0": 0.06546064951978789,
+        "degenerate": false
+      },
+      "16": {
+        "n_clusters": 6,
+        "n_effective": 12,
+        "mean": 0.8854166666666666,
+        "se": 0.49854388667843924,
+        "ci": [
+          -0.3961311926950012,
+          2.1669645260283343
+        ],
+        "p_vs_0": 0.1358922921499135,
+        "degenerate": false
+      },
+      "slope_log2": {
+        "n_clusters": 6,
+        "n_effective": null,
+        "mean": 0.3700723568289457,
+        "se": 0.04282280633098512,
+        "ci": [
+          0.25999282872366875,
+          0.4801518849342226
+        ],
+        "p_vs_0": 0.00034266972295775023,
+        "degenerate": false
+      }
+    }
+  },
+  "arms": {
+    "D": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/compD_20260818_150016_3849691",
+      "n_paired": 288,
+      "delta_by_n_examples": {
+        "0": {
+          "n_clusters": 6,
+          "n_effective": 2,
+          "mean": -0.421875,
+          "se": 0.0,
+          "ci": null,
+          "p_vs_0": null,
+          "degenerate": true,
+          "degenerate_reason": "between-cluster SD is exactly 0"
+        },
+        "1": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.5266926387945811,
+          "se": 0.1188613532578559,
+          "ci": [
+            0.2211498031511328,
+            0.8322354744380294
+          ],
+          "p_vs_0": 0.00682076734543572,
+          "degenerate": false
+        },
+        "2": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.4928385416666667,
+          "se": 0.09829175889017987,
+          "ci": [
+            0.24017153167111338,
+            0.74550555166222
+          ],
+          "p_vs_0": 0.0040557211981960516,
+          "degenerate": false
+        },
+        "4": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.4010416964689891,
+          "se": 0.07558139901853989,
+          "ci": [
+            0.206753525040171,
+            0.5953298678978072
+          ],
+          "p_vs_0": 0.0031761505654589253,
+          "degenerate": false
+        },
+        "8": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.4199218650658925,
+          "se": 0.10276605583104223,
+          "ci": [
+            0.15575330862692838,
+            0.6840904215048567
+          ],
+          "p_vs_0": 0.009482120634314785,
+          "degenerate": false
+        },
+        "16": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.38085933526357013,
+          "se": 0.08086815573674719,
+          "ci": [
+            0.17298112304551555,
+            0.5887375474816248
+          ],
+          "p_vs_0": 0.005291355600636771,
+          "degenerate": false
+        }
+      }
+    },
+    "Dctrl": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/compDctrl_20260818_150016_3849692",
+      "n_paired": 288,
+      "delta_by_n_examples": {
+        "0": {
+          "n_clusters": 6,
+          "n_effective": 2,
+          "mean": 0.0625,
+          "se": 0.0,
+          "ci": null,
+          "p_vs_0": null,
+          "degenerate": true,
+          "degenerate_reason": "between-cluster SD is exactly 0"
+        },
+        "1": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": -0.08463557561238606,
+          "se": 0.029416687537164452,
+          "ci": [
+            -0.16025357825992417,
+            -0.009017572964847953
+          ],
+          "p_vs_0": 0.03470430434421838,
+          "degenerate": false
+        },
+        "2": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": -0.09765629967053731,
+          "se": 0.010384085983194118,
+          "ci": [
+            -0.12434944247859142,
+            -0.0709631568624832
+          ],
+          "p_vs_0": 0.00022930875099155484,
+          "degenerate": false
+        },
+        "4": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": -0.08789055546124776,
+          "se": 0.022949536808379727,
+          "ci": [
+            -0.1468842179170686,
+            -0.02889689300542691
+          ],
+          "p_vs_0": 0.012251035640815342,
+          "degenerate": false
+        },
+        "8": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": -0.1204427182674408,
+          "se": 0.012451776373532128,
+          "ci": [
+            -0.1524510284346115,
+            -0.08843440810027009
+          ],
+          "p_vs_0": 0.00020047830183154663,
+          "degenerate": false
+        },
+        "16": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": -0.13476568460464478,
+          "se": 0.01600289682215837,
+          "ci": [
+            -0.17590244049320042,
+            -0.09362892871608913
+          ],
+          "p_vs_0": 0.0003871940356600769,
+          "degenerate": false
+        }
+      }
+    },
+    "F": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/compF_20260818_150952_3852347",
+      "n_paired": 288,
+      "delta_by_n_examples": {
+        "0": {
+          "n_clusters": 6,
+          "n_effective": 2,
+          "mean": 0.28125,
+          "se": 0.0,
+          "ci": null,
+          "p_vs_0": null,
+          "degenerate": true,
+          "degenerate_reason": "between-cluster SD is exactly 0"
+        },
+        "1": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.6653644541899363,
+          "se": 0.24793804621055837,
+          "ci": [
+            0.02801941623864246,
+            1.30270949214123
+          ],
+          "p_vs_0": 0.04363205516203347,
+          "degenerate": false
+        },
+        "2": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.4342447022596995,
+          "se": 0.03905487545760454,
+          "ci": [
+            0.33385094881545696,
+            0.5346384557039421
+          ],
+          "p_vs_0": 0.00010258579029463873,
+          "degenerate": false
+        },
+        "4": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.17513027787208557,
+          "se": 0.19469013080693712,
+          "ci": [
+            -0.325336635957316,
+            0.6755971917014871
+          ],
+          "p_vs_0": 0.40959702535593495,
+          "degenerate": false
+        },
+        "8": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.2604167064030965,
+          "se": 0.1378216980719544,
+          "ci": [
+            -0.0938652472168191,
+            0.6146986600230121
+          ],
+          "p_vs_0": 0.11743253325302787,
+          "degenerate": false
+        },
+        "16": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 0.7682291567325592,
+          "se": 0.11674685332903045,
+          "ci": [
+            0.46812181619759774,
+            1.0683364972675207
+          ],
+          "p_vs_0": 0.0012167478847167046,
+          "degenerate": false
+        }
+      }
+    },
+    "Fctrl": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/compFctrl_20260818_150952_3852348",
+      "n_paired": 288,
+      "delta_by_n_examples": {
+        "0": {
+          "n_clusters": 6,
+          "n_effective": 2,
+          "mean": 0.109375,
+          "se": 0.0,
+          "ci": null,
+          "p_vs_0": null,
+          "degenerate": true,
+          "degenerate_reason": "between-cluster SD is exactly 0"
+        },
+        "1": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 1.1158853272596996,
+          "se": 0.08073545211632795,
+          "ci": [
+            0.9083482405578175,
+            1.3234224139615818
+          ],
+          "p_vs_0": 3.56018958696631e-05,
+          "degenerate": false
+        },
+        "2": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 1.365885357062022,
+          "se": 0.14027611977979373,
+          "ci": [
+            1.0052941115829503,
+            1.7264766025410936
+          ],
+          "p_vs_0": 0.00019421579752454794,
+          "degenerate": false
+        },
+        "4": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 1.8346354365348816,
+          "se": 0.17878414698819917,
+          "ci": [
+            1.3750561557878065,
+            2.2942147172819567
+          ],
+          "p_vs_0": 0.0001510069573582442,
+          "degenerate": false
+        },
+        "8": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 2.0820312599341073,
+          "se": 0.26119155938648386,
+          "ci": [
+            1.4106169817544516,
+            2.753445538113763
+          ],
+          "p_vs_0": 0.0005012867578860076,
+          "degenerate": false
+        },
+        "16": {
+          "n_clusters": 6,
+          "n_effective": 48,
+          "mean": 2.2558593650658927,
+          "se": 0.2792950461873521,
+          "ci": [
+            1.5379085925542961,
+            2.9738101375774892
+          ],
+          "p_vs_0": 0.0004712527238398004,
+          "degenerate": false
+        }
+      }
+    }
+  },
+  "degenerate_levels": [
+    0
+  ],
+  "effective_n_by_level": {
+    "0": {
+      "benign_literal": 1,
+      "concept_in_benign_ctx": 1,
+      "direct_harmful": 1,
+      "natural_doublespeak": 1
+    },
+    "1": {
+      "benign_literal": 12,
+      "concept_in_benign_ctx": 12,
+      "direct_harmful": 12,
+      "natural_doublespeak": 12
+    },
+    "2": {
+      "benign_literal": 12,
+      "concept_in_benign_ctx": 12,
+      "direct_harmful": 12,
+      "natural_doublespeak": 12
+    },
+    "4": {
+      "benign_literal": 12,
+      "concept_in_benign_ctx": 12,
+      "direct_harmful": 12,
+      "natural_doublespeak": 12
+    },
+    "8": {
+      "benign_literal": 12,
+      "concept_in_benign_ctx": 12,
+      "direct_harmful": 12,
+      "natural_doublespeak": 12
+    },
+    "16": {
+      "benign_literal": 12,
+      "concept_in_benign_ctx": 12,
+      "direct_harmful": 12,
+      "natural_doublespeak": 12
+    }
+  },
+  "trend_fitted_on_levels": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ]
+}

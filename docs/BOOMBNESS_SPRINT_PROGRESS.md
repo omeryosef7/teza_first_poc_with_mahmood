@@ -5828,3 +5828,63 @@ the guard fires when a 5120-d direction is requested with `expect_dim=4096`.
 **The error message found the bug.** The first version failed with "no directions matched
 …qwen3_L*.pt" *and listed what was actually available* — which is what revealed the two-folder split. A
 bare "file not found" would have sent me looking in the wrong place.
+
+## ★★★ §2.6 SATISFIED FOR ARM D — it raises attack success WITHOUT damaging comprehension, and its control does the opposite
+
+`outputs/boombness/g8_comprehension_DF_arms.json`. Jobs 764414–764417.
+
+Plan §2.6 makes a comprehension control **mandatory** before any causal claim, and §5.4's decision gate
+recorded that **no intervened arm in §5, §10 or §12 had ever carried one**. Arm D — the sprint's strongest
+causal result — is now the first arm to be tested and to pass.
+
+Paired comprehension deltas vs the unintervened baseline, domain-clustered t(5), degenerate n=0 level
+excluded:
+
+| n_examples | 1 | 2 | 4 | 8 | 16 |
+|---|---|---|---|---|---|
+| **D (remove both)** | **+0.527** | **+0.493** | **+0.401** | **+0.420** | **+0.381** |
+| | p=0.007 | p=0.004 | p=0.003 | p=0.010 | p=0.005 |
+| **Dctrl (double random)** | **−0.085** | **−0.098** | **−0.088** | **−0.120** | **−0.135** |
+| | p=0.035 | p=0.0002 | p=0.012 | p=0.0002 | p=0.0004 |
+
+**Arm D IMPROVES comprehension at every demonstration count; its matched control DEGRADES it.** The
+signs are opposite and both are significant.
+
+### Why this matters for the headline claim
+
+Arm D takes `direct_harmful` ASR from **0.042 → 0.723** with an inert control. The obvious alternative —
+*the double projection broke the model's grasp of the mapping, so it complies with everything* — is now
+**excluded**, and excluded in the strongest available form: the intervention that raises ASR **increases**
+the model's preference for the coded reading, while the norm-matched double-random control that does
+**not** raise ASR is the one that degrades comprehension.
+
+So arm D is: large, coherent (gated per population), controlled (inert matched double-random), clean on
+benign prompts (+0.003), **and comprehension-preserving**. That is the full §2.6 checklist, and it is the
+first time in this sprint any arm has cleared it.
+
+### Arm F — same pattern as §8, and it again defeats attribution
+
+| n_examples | 1 | 2 | 4 | 8 | 16 |
+|---|---|---|---|---|---|
+| F (add boomb + remove refusal) | +0.665 | +0.434 | +0.175 n.s. | +0.260 n.s. | +0.768 |
+| **Fctrl (random + remove refusal)** | **+1.116** | **+1.366** | **+1.835** | **+2.082** | **+2.256** |
+
+The **random** composition moves comprehension **2–10× more** than arm F at every level. This reproduces
+§8's finding on a new pair of arms: the comprehension readout is more sensitive to a generic activation
+perturbation than to `d_surface`, so **no comprehension change under arm F may be attributed to the
+Boombness axis**. Arm F's behavioural result stands; its comprehension story remains unattributable.
+
+### Tick 90 — the Qwen3 control was impossible at L25, and fixing it also settled the depth choice
+
+764434 (`q3_Dctrl`) failed: `random/project_out produced no hooks over layers [25]`. The random control is
+**derived from `d_surface`**, so it needs a fitted direction at that layer — and the Qwen3 fit provides
+`[4,8,11,12,16,18,20,24,28,31,34,36,38,39]`. **L25 is not fitted**, so no matched control can exist there.
+
+This resolves the depth ambiguity recorded last tick rather than leaving it open. Llama's refusalness L18
+is 56.25% of 32; Qwen3 **L20 = 50%** and **L25 = 62.5%** are equidistant from it — but only **L20** is a
+fitted layer *and* has a house refusal direction. L20 is therefore strictly better: same depth match, and
+it actually supports the matched control. Cancelled the L25 arms and relaunched the complete set
+(`q3_C20`, `q3_D20`, `q3_D20ctrl`, jobs 764538–764540) at L20.
+
+**Note the ordering:** arm D at L25 would have run fine on its own and produced a publishable-looking
+number with **no matched control possible**. The control failing is what caught it.
