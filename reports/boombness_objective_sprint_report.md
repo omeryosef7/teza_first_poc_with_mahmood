@@ -610,17 +610,31 @@ at L8/L31), with the sd of style means at **3.6%** of the within-style sd. Wheth
 categorical proxy — no Userness/CoTness probe was fitted.
 
 **9. Can we surgically remove Boombness without destroying comprehension?**
-**No — it is massively redundant, so there is nothing "surgical" to remove.** Cutting **6.25%** of
-demo→query edges does nothing *however distributed across depth*; cutting 100% recovers 84% of the
-deletion ceiling. Every localized knockout (top-k, bottom-k, random, same-head — 16 edges, ~0.03%) reads
-zero. ⚠ The converse test is impossible by construction: a layer holds only ~3,648 edges, so any cut
-above ~7.3k must span layers.
+⚠ **UPDATED — the answer depends on which instrument you use, and the two disagree.**
+- **By attention-edge knockout: no.** The retrieval is massively redundant — cutting 6.25% of demo→query
+  edges does nothing *however distributed across depth*, while cutting 100% recovers 84% of the deletion
+  ceiling. Every localized knockout (16 edges, ~0.03%) reads zero. The converse test is impossible by
+  construction (a layer holds only ~3,648 edges).
+- **By direction projection: YES, and it is measurable.** `project_out d_surface` at L8 leaves comprehension
+  **statistically unchanged** (Δ +0.088, p=0.681 — the only one of five arms that does) and coherence intact,
+  while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
+  *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
+  to **raise** attack success, not lower it.
+⚠ Single-model: this does not replicate on Qwen3-14B (see §14).
 
 **10. Can we turn Boombness into a useful GCG objective?**
-**No, and §12 was therefore not built.** Both signs of `d_surface` suppress ASR, so ASR does not follow
-the axis. Only **+0.25** clears a 4-draw random-control band (p = 0.0014) and it does so by **triggering
-refusal** (90.1% of its suppressed prompts); **−0.25** is indistinguishable from a random perturbation
-(p = 0.070). Adding concept-ness triggers refusal; removing it just damages the model.
+⛔ **UPDATED — my earlier "no" was reached by faulty reasoning, and the honest answer is "not as §12.1
+specifies; §12.2 is reopened".**
+- **§12.1 (maximise Boombness alone): still NO** — but for a *demonstrated* reason rather than the one I
+  gave. Adding `+0.25` alone drives refusal 0.057 → **0.676** and ASR *down* to 0.088. My original reason
+  ("no directional causal support") was **wrong**: there is directional support, it was masked by refusal.
+- **§12.2 (Boombness MINUS refusal): reopened, worth building as an experiment.** Composing the two takes
+  ASR 0.243 → **0.548** (p<0.0001), where neither manipulation alone raises it. ⚠ But **not vindicated**:
+  the gain is *not conditional on the doublespeak mapping* (+0.267 where the mapping is never taught,
+  largest at zero demonstrations) and **does not transfer to explicitly harmful prompts** (+0.000), which is
+  what an attack objective would require.
+- The 4-draw band figure quoted earlier (p=0.0014) was **retracted** — those four "draws" were one draw
+  wearing four labels; on a genuine 4-draw band it is p=0.043.
 
 **11. What exactly should Matan/Mahmood take from this sprint?**
 Four things, in order of durability:
@@ -659,10 +673,10 @@ hosted model was attacked; the only API use is the *judge*, which evaluates rath
 |---|---|---|
 | 1 | Boombness predicts ASR across prompts | **YES IN LLAMA ONLY** — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
 | 2 | Adding Boombness increases behaviour or relevant internal scores | **NO** — adding it (+0.25) *decreases* ASR by triggering refusal |
-| 3 | Removing Boombness reduces ASR | **NO — it RAISES it.** The projection arm increases ASR 0.219 → 0.300 (vs controls, clustered p=0.020/0.025) with comprehension preserved. The −0.25 additive arm lowers ASR but degrades comprehension, so it is disqualified. |
+| 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now controlled.** `project_out` beats an inert projection-type control by +0.056 (p=0.0077) on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
 | 4 | Comprehension is preserved | **NOW MEASURED (§2.6).** project_out: preserved (p=0.681). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **PARTIAL** — a 4-draw band separates +0.25 (p=0.0014) but not −0.25 |
-| 6 | Replicates across prompt families or models | **NO** — one model, one concept pair, and C7 shows a headline band that does **not** replicate across query kinds |
+| 6 | Replicates across prompt families or models | **PARTIAL, and mostly NO for the causal claims.** Replicates: the ~2× confound (median 1.74 on Qwen3), the token-level positional result, the final-layer effect at matched depth (Llama L31 +0.047 vs Qwen3 L39 +0.052). Does NOT replicate: **G2's correlation** (1 of 6 domains on Qwen3) and **the projection causal result** (mirror-image condition profile). Across *prompt families* the projection result replicates well — it holds on all three harmful conditions. |
 
 **Two of six met, three partial, one no. So the correct description is a documented correlational
 finding with a directional null — not a mechanism.** The §18 label is B for exactly this reason, and
