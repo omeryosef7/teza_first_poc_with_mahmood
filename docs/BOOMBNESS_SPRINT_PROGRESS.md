@@ -5039,3 +5039,44 @@ now caught, and the deliverables sweep is clean.
 retracted *claims* I have enumerated. It cannot catch an arbitrary paraphrase of a retracted result. Each
 new retraction must add its own pattern — the script is a ratchet against regression, not a proof of
 absence.
+
+## §9 CLOSED — the 3-predictor model is fitted, role is NOT identifiable, and the result bears on C8
+
+`src/boombness/analyze_g9.py`, artifacts `outputs/boombness/g9_three_predictor_{cwpos,lastpos}.json`.
+This was on the incomplete list as "never fitted" since the mid-session sanity check.
+
+**Role cannot enter the model, and the script refuses to pretend otherwise.** `role_style` is perfectly
+collinear with `bank_block`: all five non-plain styles live in block `role_style`, each with **zero family
+overlap** with `plain` (n=6 each, 30 total vs 204 plain). A role coefficient here is a family-set
+coefficient wearing a role label. The raw contrast is tempting — non-plain ASR ≈0.067 vs plain 0.235 — and
+reporting it would be **exactly the retraction-#6 failure repeated**, so `role_identifiability` is computed
+and the term is dropped, with the descriptive means kept and labelled descriptive.
+
+**The identified 2-predictor model, at the codeword token (n=234, 6 domain clusters, CR1):**
+
+| model | R² | boombness | refusalness |
+|---|---|---|---|
+| boombness only | 0.1411 | +0.1179 (p<1e-4) | — |
+| refusalness only | 0.1759 | — | +0.1317 (p<1e-4) |
+| **both** | **0.2502** | **+0.0889 (p<1e-4)** | **+0.1077 (p<1e-4)** |
+
+Both survive jointly. Refusalness adds +0.109 R² over boombness; boombness adds +0.074 over refusalness.
+Neither is redundant, and **refusalness is the stronger single predictor** — consistent with the corrected
+position analysis, not with the retracted "Boombness beats refusalness" claim.
+
+**The same fit at the `last` token is a flat null for BOTH:** R²=0.0066, boombness p=0.43, refusalness
+p=0.99.
+
+**Why that matters for correction C8.** C8 warns the position finding may be an *estimation-quality*
+confound — `d_surface` is far better separated at the codeword token, so "carries more signal" and "is
+better estimated" are not separated. That story makes a prediction: **refusalness should behave the other
+way round**, because it was fitted for a last-token readout and is off-label at the codeword (known issue
+#8). It does not. Refusalness dies at `last` too.
+
+And the null is **not** the mechanical one: refusalness at `last` has the **largest variance of all four
+cells** (sd 0.954 vs 0.532 at codeword). It has plenty to work with and predicts nothing.
+
+⚠ **Not a clean elimination of C8, and I am not claiming one.** Decomposing that variance: **41% of it
+sits between `n_examples` levels** (ρ=−0.275 with demo count), i.e. a substantial share is a
+demonstration-count artifact rather than prompt-specific refusal signal. The remaining ~59% is within-level
+and still predicts nothing, so the weakening is real but partial. C8 is **downgraded, not withdrawn**.

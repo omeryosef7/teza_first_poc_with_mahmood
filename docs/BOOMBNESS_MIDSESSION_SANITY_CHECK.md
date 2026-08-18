@@ -58,7 +58,7 @@ deliberate refusals (position mismatch, unverifiable readout position, missing c
 | §14 Qwen3 ASR replication | generation done (960, thinking-off verified); **judge running** |
 | §10.4 arms D/E | not run |
 | Userness/CoTness probes (§11) | machinery ported, **never fitted** — `role_style` used as a disclosed proxy |
-| 3-predictor regression ASR ~ boombness + role + refusalness (§9) | never fitted |
+| 3-predictor regression ASR ~ boombness + role + refusalness (§9) | **DONE** (`analyze_g9.py`) — 2-predictor model fitted (joint R²=0.250, both p<1e-4); **role dropped as unidentifiable** (collinear with `bank_block`, zero family overlap with `plain`) |
 | comprehension by `n_examples` (§8) | not aggregated |
 | `probe_boombness` in the §6.4 three-way metric comparison | absent |
 | model/tokenizer **revision** pinning | never recorded (see Risks) |
@@ -100,9 +100,13 @@ without the comprehension caveat.*
 2. **§18 = B may be a refusal ceiling effect.** Never tested until now. Arm F is the test. Until it
    returns, "Boombness is mechanistic but not causal" rests on an untested assumption that refusal is
    not masking a Boombness effect.
-3. **The position finding has an estimation-quality confound (C8).** The direction is 13× (Llama) /
-   41× (Qwen3) better *separated* at the codeword token, so "carries more signal" and "is better
-   estimated" are not separated by the design. L31 is unaffected (gaps converge to 1.1×).
+3. **The position finding has an estimation-quality confound (C8) — now DOWNGRADED, not withdrawn.**
+   The direction is 13× (Llama) / 41× (Qwen3) better *separated* at the codeword token, so "carries
+   more signal" and "is better estimated" are not separated by the design. L31 is unaffected (gaps
+   converge to 1.1×). **§9 evidence against it:** refusalness, which is fitted for a last-token
+   readout, should by that story do *better* at `last` — instead it is a flat null there (p=0.99)
+   despite having the largest variance of any cell (sd 0.954). Partial caveat: 41% of that variance
+   is between-`n_examples`, so it is not all prompt-specific signal.
 4. **Reproducibility is weaker than the report implied.** Every run recorded `git_dirty = True`, so the
    recorded commit does not pin the code that ran; **model and tokenizer revisions were never
    recorded**; 53 of 68 finished runs predate `bank_content_sha16` and cannot be tied to a bank version
