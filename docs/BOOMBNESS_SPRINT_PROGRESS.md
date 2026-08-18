@@ -4745,3 +4745,60 @@ Point 2 is where I expect trouble: the specificity claim is a single control arm
 control carried this much weight it turned out to be one draw wearing four labels.
 
 **Still running:** `len_B` judge 711/960, `len_Bctrl` queued, `q3_projctrl` 899/960.
+
+## ⛔ RETRACTION #8 — the MECHANISM story is refuted. The empirical result survives; my explanation of it does not.
+
+Audit 9 reproduced every headline number to 4 dp, verified one prompt set by `prompt_sha16` row-for-row,
+confirmed the control is genuinely norm-matched (both arms dosed `0.25 × 6.0549 = 1.5137`; control vector
+cos with `d_surface` = **−0.00048**), and could not break the core result: **F−C = +0.272 and F−Fctrl =
++0.315 at 24–28× the judge-noise floor**, robust to leave-one-domain-out (+0.369…+0.421), to every design
+stratum, to dropping all degenerate/truncated rows (+0.271, p<1e-5), and to pre-treatment stratification.
+**The headline is not retracted.**
+
+But four things I wrote are wrong, and two of them are the *interpretation*.
+
+### ⛔ 1. "The random composition does nothing" — TRUE ONLY ON DOUBLESPEAK. It reverses elsewhere.
+| condition | Fctrl − base | F − Fctrl | refusal: base → F → Fctrl |
+|---|---|---|---|
+| `natural_doublespeak` | −0.032 (p=0.116) | **+0.315** | 0.057 → 0.002 → 0.000 |
+| **`direct_harmful`** | **+0.389 (p=0.008)** | **−0.389** | **0.96 → 0.96 → 0.54** |
+| **`concept_in_benign_ctx`** | **+0.203 (p=0.002)** | **−0.205** | — |
+
+**On explicitly harmful requests the RANDOM composition is a substantially better jailbreak than `d_surface`
+is** — it cuts refusal 0.96→0.54 and raises ASR 0.04→0.46, while arm F stays exactly at baseline. My
+specificity claim is only valid *within the doublespeak condition*, and it **inverts** where harm is explicit.
+
+### ⛔ 2. The "capability channel" is REFUTED as stated
+Two independent lines kill it:
+- **The gain does not require the doublespeak mapping.** F−base is **+0.267 on `benign_remap`** (n=36) —
+  a condition where carrot→bomb is **never taught** (0.000 → 0.267). And within doublespeak the gain is
+  **largest at `n_examples = 0`** (+0.361, *no demonstrations at all*) and smallest at `n_examples = 2`.
+- **It is absent exactly where a capability channel should be most visible**: `direct_harmful`, +0.000.
+
+So the effect is better described as **a prompt-independent injection of concept-relevant content by the L8
+steering vector** than as *the doublespeak attack succeeding*. (The auditor checked the obvious alternative —
+that the vector just makes the model say "bomb" — and refuted it: mean "bomb" mentions are base 0.47 vs
+**F 0.29**, and on `benign_remap` arm F writes "bomb" zero times while scoring 0.267.)
+
+### ⚠ 3. The +0.3997 interaction is ~45% a mechanical artifact
+Arm A refuses on **284/420** rows, every one scored exactly 0.0 by construction. On the 136 rows where A did
+**not** refuse, **A−base = +0.094 (positive!)** and the interaction falls from +0.400 to **+0.222**. So
+"adding Boombness alone lowers ASR" is a statement about *induced refusal*, not about score. **The
+refusal-free contrasts F−C = +0.272 and F−Fctrl = +0.315 are the numbers that carry the claim.**
+
+### ⚠ 4. "Truncation / length: dead" — overstated; length eats a quarter to a half
+Coarsened exact matching on 25-word bins: **F−Fctrl falls +0.3146 → +0.2334** (bootstrap CI [0.149, 0.310]);
+**F−base falls +0.2824 → +0.150**. Common support covers only ~27% of control rows. Sign and significance
+survive; the magnitude does not, and length may itself be a mediator.
+
+### Two smaller corrections
+- **`C−base = +0.0101` is 0.9× the judge-noise sem** → must read *"not measurable to ±0.03"*, **not** "does
+  nothing". My "removing refusal does nothing at population level" was never resolvable.
+- The judge-noise floor was measured on **192-token, n=270** text, i.e. the shortest arm; "25× the floor"
+  uses the most favourable available floor.
+
+### What this does to §12.2
+**"§18 = B was a ceiling effect of refusal" stands** — refusal 0.057 → 0.676 under arm A is unambiguous.
+But **"§12.2 is vindicated / should be built" is downgraded to "reopened, worth building as an
+experiment"**, because the arm-F gain is **not conditional on the doublespeak mapping** and **does not
+transfer to explicitly harmful requests** — which is precisely what an attack objective would need.
