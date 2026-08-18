@@ -30,7 +30,7 @@ number does not go in.
 | §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
 | §8/§9 | 9 of 12 named plots | NOT STARTED | |
 | §5.2 | alpha sweep dose 0.25 | NOT STARTED | the dose every behavioural claim rests on was never swept |
-| §14 | ClearHarm arm | **★ RESULT IN — decomposition running** | ASR 0.101 → **0.542**, control +0.011, `clearharm_arm_D.json`. Arms B/C + 3 band draws: 764773–777 |
+| §14 | ClearHarm arm | **★ DECOMPOSED** | B +0.105 / C +0.233 / D +0.430 vs random +0.013–0.018. AdvBench replication 765111–114 |
 | §4.1 | strength / consistency / example_position | NOT STARTED | generated, confounded, unanalysed — decide analyse-or-delete |
 
 ## Gate table
@@ -207,6 +207,42 @@ readouts, matched to the arms already judged:
 | F / Fctrl | add-Boombness + remove-refusal, and control | §10.4's other composed arm |
 | ±0.25, random, project_out | §12 steering arms | report §4b's four original verdicts |
 
+### ★ The session's main new result — plan §14, ClearHarm
+
+179 external harmful prompts. **No codeword, no demonstrations, no doublespeak wrapper.** All arms
+coherence-gated individually, 100% coverage of the common set, 6 category clusters.
+
+| arm | intervention | ASR | paired Δscore | refusal |
+|---|---|---|---|---|
+| baseline | — | 0.101 | — | 0.877 |
+| **B** | remove `d_surface` (L8) | **0.207** | **+0.1047 ± 0.0238** | 0.760 |
+| **C** | remove refusal (L18) | **0.341** | +0.2325 ± 0.0328 | 0.615 |
+| **D** | remove both | **0.542** | +0.4295 ± 0.0362 | 0.447 |
+| Dctrl | double random | 0.112 | +0.0126 ± 0.0107 | 0.872 |
+| band draw 1 | double random | 0.117 | +0.0182 ± 0.0097 | 0.872 |
+
+**Arm B is the load-bearing row.** `d_surface` was fitted on the carrot/bomb 2×2, and removing it
+raises compliance on harmful requests containing **no codeword at all**, against random directions at
++0.013/+0.018. The direction is not arbitrary and the effect is not a property of the prompt bank —
+which was the most serious threat to every late finding in this sprint.
+
+**It is also not the refusal direction under another name.** cos(`d_surface`, refusal) = **0.019 at
+L18**, 0.13 at L12 — near-orthogonal. *Caveat:* arm B acts at **L8**, where no house refusal direction
+exists, so the cosine is measured only where both are fitted.
+
+**NOT established — super-additivity.** The joint exceeds the sum of singles by **+0.0922**, but the
+domain-clustered bootstrap CI is **[−0.1474, +0.1332]** with 21% of draws ≤ 0. This is the ClearHarm
+cluster imbalance doing precisely what `external_bank.py` warned it would: 127 of 179 rows sit in one
+category, so the domain bootstrap is dominated by it. **AdvBench heldout** (16 clusters, largest 26%)
+is the set that can actually test it, it was built in the same commit for exactly this reason, and
+arms 765111–114 are running it.
+
+**What this does and does not license.** It licenses: "removing this direction causally raises
+compliance on harmful requests generally, and it is a distinct channel from refusal". It does **not**
+license calling `d_surface` "concept-ness" off-bank — the 2×2 named it from a contrast that does not
+exist in a prompt with no codeword. Its off-bank behaviour is a new fact that needs its own
+interpretation, not an extension of the old one.
+
 ## Unverified-fix register
 
 Seven of nine workflow agents were killed by a session limit mid-task. Four left **complete, parsing,
@@ -307,3 +343,8 @@ git_dirty, python}`; the recovered refusalness paths reproduce every mediation n
 | 18 | 2026-08-18 | wrote report **§7b**, the metric comparison (plan §15 item 7) that appeared in neither report | three metrics disagree in **sign** about ASR at L12; all three agree on comprehension |
 | 19 | 2026-08-18 | rewrote report §0: one conclusion, retraction table R-6…R-11, `§0.3` resolved, G1 → +68%, interpreter path fixed | the gate table no longer contradicts the body |
 | 20 | 2026-08-18 | added the five new retractions to `retraction_sweep.py` **the same day they were declared** | it immediately caught **4 unqualified stale claims** the old list called clean; all fixed, sweep clean over 4 files |
+| 21 | 2026-08-18 | ClearHarm **decomposition**: B/C/D + a judged band draw | arm B alone is **+0.105** vs random +0.013 — `d_surface` is causal off-bank |
+| 22 | 2026-08-18 | super-additivity test, domain-clustered bootstrap | **+0.0922, CI [−0.147, +0.133] — NOT established**; the one-dominant-cluster problem, as predicted |
+| 23 | 2026-08-18 | cos(`d_surface`, refusal) = 0.019 @L18 | the two arms are **not** the same channel |
+| 24 | 2026-08-18 | launched AdvBench replication (765111–114) + judged band draws 2/3 | 16 clusters is the design that can test super-additivity |
+| 25 | 2026-08-18 | §4b whole-answer re-runs 765052–765055 running | unblocks R-6, arm D's comprehension control, and G1 |
