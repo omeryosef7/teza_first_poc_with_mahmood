@@ -394,3 +394,66 @@ variance. No other composed control in the sprint carried a band claim. Band rel
 | 26 | 2026-08-18 | §4b re-run: `project_out` comprehension **+0.2795 (p=0.0010)**, semantic **+2.4073** | **R-6 resolved in the sprint's favour**; `d_surface` confirmed to do what its name claims |
 | 27 | 2026-08-18 | tail gate fired on arm D and destroyed a healthy comprehension readout | restructured: per-`query_kind`, **after** `finish()`, exit 4 |
 | 28 | 2026-08-18 | caught the band draws returning byte-identical generations | **R-12** — composed recursion dropped the seed; retraction #7 re-created |
+
+---
+
+# Session 2 — opened 2026-08-19
+
+**How session 1 ended.** Not at a stopping point: it died between tick 28 and its harvest. At the
+moment it stopped, **seven GPU runs had COMPLETED and none had been judged** — the four AdvBench
+replication arms (765111–114, launched at tick 24 to test super-additivity on 16 clusters, which the
+ClearHarm cluster imbalance could not) and the three relaunched control-band draws (765210–212, the
+R-12 fix). The scientific question tick 22 left open was therefore answerable from artifacts already
+on disk. That is the first thing this session did.
+
+## Inherited-state audit (before touching anything)
+
+| check | result |
+|---|---|
+| SLURM queue | **empty** — nothing was still running, so nothing was lost by the session ending |
+| `ab_base/B/C/D` | all 4 `DONE.json`, `option_mass_gate: PASS`, `n_bank_rows` 495 |
+| `ctrlband_s2026090{1,2,3}` (19:09–19:14) | all 3 `DONE.json`, `n_bank_rows` 179 |
+| judged? | **none of the 7** — no judge run references `ab_*` or the 19:09 band dirs |
+| **R-12 fix worked?** | **YES** — the 3 band draws have *distinct* `gens.jsonl` sha256 (`61249763…`, `3b962119…`, `485698e9…`). The pre-fix draws were byte-identical; these are not. |
+| AdvBench arms genuinely distinct? | **YES** — 4 distinct gens sha256, and `config.args.intervene` differs per arm as designed |
+| `arm: base` in all 4 summaries | **not a defect.** `--arm` is the prompt-construction label; the intervention is recorded separately in `args.intervene`. Verified per-arm. |
+| 765053 / 765177 FAILED | **both are guards working.** 765053: the `--min-option-mass` gate refused a semantic readout at median mass 0.03743 < 0.05. 765177: the tail gate flagged `semantic_one_word` at 0.01205 and exited non-zero *after* writing the run. Two of the six dead guards this project shipped now have live successors that have actually fired. |
+
+**Arms as specified (confirmed from `config.args.intervene`, not from the tag):**
+
+| tag | intervene | seed |
+|---|---|---|
+| `ab_base` | *(none)* | 20260816 |
+| `ab_B` | `d_surface:project_out:8-8:1.0` | 20260816 |
+| `ab_C` | `refusalness:project_out:18-18:1.0` | 20260816 |
+| `ab_D` | `d_surface:project_out:8-8:1.0+refusalness:project_out:18-18:1.0` | 20260816 |
+| `ctrlband_s2026090{1,2,3}` | `random:project_out:8-8:1.0+random:project_out:18-18:1.0` | **20260901 / 02 / 03 — distinct** |
+
+## Tick log (session 2)
+
+| # | action | outcome |
+|---|---|---|
+| 29 | inherited-state audit: queue, DONE flags, gens sha256, per-arm `intervene`, the two FAILED jobs | 7 runs complete and unharvested; **R-12 fix confirmed by distinct sha256**; both "failures" are guards firing correctly |
+| 30 | launched judging of all 7 (3 parallel API streams; judging is OpenAI-bound, not GPU-bound, so it does not touch the 6-job SLURM cap) | `judge_ab_s1/s2/band_fix` |
+| 31 | fanned out 7 fix agents over disjoint modules + 7 adversarial verifiers | see the Phase-1 close table below |
+
+## Phase-1 close — what session 2 dispatched
+
+Session 1's defect table left these open. Ownership is disjoint by file so the agents cannot collide.
+
+| agent | files owned | defects |
+|---|---|---|
+| `aggressive_patching` | `aggressive_patching.py` | **C-6 (G1 readout port)**, T10 verify, T9 verify |
+| `surgical_knockout` | `surgical_knockout.py` | **T3 verify (G3)**, T7a cross-fitting, T7b family truncation, **C-6** |
+| `analyze_g2` | `analyze_g2.py` | T5 estimand, T6 layer selection, C-10 provenance |
+| `analyze_g9` | `analyze_g9.py` | T5 estimand, **the 6th dead guard** (role-identifiability), T4 knock-on, C-10 |
+| `probes` | `probes.py`, `role_probes.py` | T9 verify, T6 nested selection default, the K=1/NaN dead guard + `p_perm` floor |
+| `common` | `common.py` | **`seed` + `tokenizer_revision` (plan §2.1 — absent from all 145+130 files)**, `bank_content_sha16` rename + the comparison that never existed, `finish()` guard, scipy audit |
+| `silent_failures` | `extract_boombness.py`, `judge_boombness.py`, `coherence_gate.py`, `prompt_families.py` | **T8 `--fit-dir` meta validation**, the never-started silent-failure group, `bank_content_sha16` half, `--max-null-frac` abort |
+
+**C-6 is the load-bearing one.** Session 1 fixed the readout in `score_behavior.py` and proved the fix
+(5,300×/3,200× more option mass), but never ported it to the two scripts that carry **G1** and **G3**.
+Confirmed still open at session-2 start: `signals.string_option_readout` exists at `signals.py:428`,
+and both `aggressive_patching.py:~437` and `surgical_knockout.py:~295` still compute
+`semantic_logodds` from the invalid single-next-token tail. **Until that port lands and re-runs,
+neither G1's +68% headline nor G3 is re-derivable from current evidence.**
