@@ -4691,3 +4691,28 @@ never been run.
 
 **Still open before any of this is final:** `q3_projctrl` (280/960), the Qwen3 projection control, and
 `len_B`/`len_Bctrl` (676/758 of 960), the Llama 512-token matched pair. Claim 1 stands or falls on those.
+
+### Tick 73 — the Llama matched pair for claim 1 is generated, gate-passed, and length-matched
+
+| run | ledger | trunc | median words | uniq | 3gram | verdict |
+|---|---|---|---|---|---|---|
+| `len_B` (project_out `d_surface`) | 960/960/0 | **0.002** | 163 | 0.636 | 0.033 | **OK** |
+| `len_Bctrl` (project_out RANDOM) | 960/960/0 | **0.002** | 150 | 0.655 | 0.027 | **OK** |
+
+Both complete, both gate-passed, and — unlike arm F, whose 260-vs-146 word gap needed a separate argument —
+**these two are naturally length-matched** (163 vs 150 median words). So whatever this pair shows, the
+length confound does not arise for it at all. That is worth noting because claim 1 has been contested on
+control-type and on power, but a length objection would have been the third and is now pre-empted.
+
+At 192 tokens this pair gave arm B 0.300 vs control 0.204, contrast **+0.090, p=0.102** — the right ordering
+without significance. The 512-token version is the one that decides it, for two reasons recorded earlier:
+the 192 run was **58.5% truncated**, and the calibration showed truncation **suppresses** measured ASR by
+~3.7pp, so arm B was plausibly measured under suppression exactly as arm F was.
+
+**Both outcomes are already committed to:** if the advantage over the projection control clears at matched
+budget, claim 1 returns as a controlled result on Llama and joins the strong Qwen3 replication (+0.335,
+p=0.0002, 6/6 domains). If it does not clear, claim 1 is a **genuine Llama null alongside a large Qwen3
+effect** — which is a model-dependence finding rather than a failure, and would be reported as one.
+
+Judges queued. `q3_projctrl` — the control that decides whether the Qwen3 effect is real or projection
+fragility — is at 596/960.
