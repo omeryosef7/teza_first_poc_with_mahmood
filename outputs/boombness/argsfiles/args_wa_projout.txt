@@ -1,0 +1,1 @@
+--query-kinds comprehension_usage,semantic_one_word,semantic_forced_choice --no-generate --readout-ids whole_answer --arm base --tag wa_projout --fit-dir /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673 --intervene d_surface:project_out:8-8:1.0
