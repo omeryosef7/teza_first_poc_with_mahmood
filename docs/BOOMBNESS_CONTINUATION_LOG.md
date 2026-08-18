@@ -1216,3 +1216,53 @@ tick.
 **@Omer — the reversible half is done and committed. If you would rather I delete the 192 rows
 outright, say so and I will; it costs a bank regeneration and a re-hash of the join for every
 committed run, which is why I did not do it unilaterally.**
+
+## G3 smoke passes — and the whole-answer readout changes the picture by three orders of magnitude
+
+`g3wa_smoke2` (766664) COMPLETED with `dense_two_layer` skipped exactly as designed:
+`failures: {'arm_dense_two_layer:skipped_by_request': 2}` — counted in the FailureLedger, named in
+`summary.json`, reason recorded. Not absent-and-unexplained.
+
+Option mass per arm on the corrected readout, against the old readout's median of **5.6e-06**:
+
+| arm | median option mass | gate |
+|---|---|---|
+| `none` (baseline) | **0.5504** | OK |
+| `topk_demo` | 0.5743 | OK |
+| `bottomk_demo` | 0.5503 | OK |
+| `random_demo` / `random_nondemo` / `same_head_random` | 0.549–0.552 | OK |
+| `subsampled_all_layers_demo` | 0.5776 | OK |
+| `all_demo` | 0.6243 | OK |
+| `positive_control` | 0.4989 | OK |
+| `no_demo_text` | 0.1242 | OK |
+| **`all_layers_demo`** | **0.0165** | ⛔ **BELOW GATE** |
+
+**G3's arms are a genuine forced choice for the first time** — ~55% of the answer probability sits on
+the two options, against 0.00056% before.
+
+### ⚠ And `all_layers_demo` is the exception, which is the arm the headline rests on
+
+`all_layers_demo` — cutting every demonstration edge at all 32 layers — drops option mass to **0.0165**,
+33× below every other arm. This is the arm the report's G3 table reports as recovering **84%** of the
+deletion ceiling.
+
+The reading is not obviously "the instrument failed": cutting *all* demonstration influence plausibly
+leaves the model unable to answer with **either** option, in which case low option mass is a **finding
+about the intervention** rather than a defect of the readout — which is exactly why the gate treats
+intervened arms as non-fatal and reports `reportable` per bucket instead. But it does mean the
+recovered-fraction for that arm is computed where the model is not choosing between the two options,
+and that has to be said next to the number. **n=2 in the smoke; the full runs (766667 `--demo-scope
+block`, 766668 `--demo-scope codeword`, both `--dst both`, 24 families) will settle it at n=24.**
+
+Recorded before the full-run numbers arrive, so the caveat cannot be tuned to them.
+
+## In flight
+
+| job / stream | what |
+|---|---|
+| 766659 | `g1wa_sow` — G1 re-run, whole-answer readout, **α=0.25 added** (E9) |
+| 766665 / 766666 | `ab_Dctrl` / `ab_Cctrl` — the missing AdvBench controls |
+| 766667 / 766668 | `g3wa_block` / `g3wa_codeword` — G3 re-run at `--dst both` (E3) |
+| `judge_q3ch_s1/s2` | Qwen3 ClearHarm base / B / C / Dctrl |
+| `judge_q3ch_D` | Qwen3 ClearHarm arm D (766488 completed) |
+| `judge_ab_Bctrl` | the AdvBench control for arm B (766662 completed) |
