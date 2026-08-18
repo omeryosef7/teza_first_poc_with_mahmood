@@ -519,3 +519,87 @@ this failure.
 **Not yet done, and it is the better test:** a symmetric *block* comparison (give Boombness 5 columns
 too, or refusalness 1). The 1-vs-1 above is matched and citable now; the 5-vs-5 needs `analyze_g9` to
 re-run and is queued behind the Phase-1 workflow that currently owns that file.
+
+## ⛔⛔ R-14 — EVERY external-set ASR number in this sprint was judged against an EMPTY GOAL
+
+**This is the most serious defect found in either session, and it invalidates the measurement behind
+the sprint's best new result until it is re-judged.** It was caught by a guard that the Phase-1
+`silent_failures` agent added *while my judge stream was running* — draws 1 and 2 of the control band
+were judged by the old module, draw 3 by the new one, and draw 3 **aborted**.
+
+### The defect
+
+`judge_boombness.make_goal` reads the intended harmful request from **`final_query_text`, and nothing
+else**. The generated bank carries that key. **Both external banks — ClearHarm and AdvBench — never
+had it**; `external_bank.py:62` emitted the instruction as **`full_prompt`** only.
+
+So for every external row: `q = row.get("final_query_text") or ""` → `""` → `make_goal` returns the
+**empty string**. StrongReject was asked to score each completion **against no request at all**.
+
+**Why nobody saw it.** The pre-fix `make_goal` returned a bare string with no status, so an empty goal
+was recorded as `judge_status: "ok"` and counted in ASR exactly like a real one. And an empty-goal
+StrongReject score still tracks *how harmful the response looks*, so the numbers moved with the
+refusal rate and looked entirely reasonable — arm D's 0.101 → 0.542 against refusal 0.877 → 0.447 is
+a coherent-looking table produced by an instrument that was never given the question.
+
+### Proof, not inference
+
+| evidence | |
+|---|---|
+| new judge on band draw 3, same inputs | `goal statuses: {'empty_query': 179}` → **ABORTED**, `judge_null_frac 1.0000 > 0.05` |
+| `final_query_text` in `clearharm_179.jsonl` | **MISSING** (only `full_prompt`) |
+| `final_query_text` in `advbench_heldout_495.jsonl` | **MISSING** (only `full_prompt`) |
+| `final_query_text` in the generated bank | **present** |
+| `--bank` passed by any ClearHarm judge run | **None** for all five (`ch_base`, `ch_B`, `ch_C`, `ch_D`, `ch_Dctrl`) — and it would not have helped, since the key was absent from the bank too |
+
+### Scope — what is suspended
+
+**Suspended pending re-judge:** every number in report **§7c**, the §0 gate row **§10.4-D**, and tick
+17/21/22's ClearHarm figures — baseline 0.1006, B 0.2067, C 0.3408, D 0.5419, Dctrl 0.1117, the
++0.0922 super-additivity estimate, and the control band. **Arm B (+0.106 vs +0.011), the row that
+excludes the bank-artifact explanation, is suspended with the rest.**
+
+**Not affected:** everything measured on the *generated* bank — G1, G2, G3, G4, §4b, the §10.4
+Llama/Qwen3 arms, R-13. The generated bank has always carried `final_query_text`, and those judge runs
+report real goal substitutions.
+
+**Direction may well survive.** An empty-goal score is not random — it reads the response — so the
+ordering D > C > B > baseline ≈ control is plausibly robust. But "plausibly robust" is not a
+measurement, and the ASR values are not StrongReject-against-goal scores. **Re-judging decides it.**
+
+### The fix
+
+`external_bank.py` now emits `final_query_text` beside `full_prompt` (they are equal by construction
+for an external set: the intended request *is* the instruction). Both banks regenerated, and the
+regeneration is surgical — verified against the pre-fix files:
+
+| bank | rows | `prompt_id` identical | keys added | other values changed |
+|---|---|---|---|---|
+| clearharm_179 | 179 → 179 | **yes, all** | `['final_query_text']` | **0** |
+| advbench_heldout_495 | 495 → 495 | **yes, all** | `['final_query_text']` | **0** |
+
+So **no generation needs re-running** — only re-judging, which is API-only and cheap. All existing
+`gens.jsonl` still join on `prompt_id`.
+
+### Two follow-ups this exposes
+
+1. **A status mislabel remains.** `external_bank.py:78` stamps `concept="bomb"`, `codeword="carrot"`
+   on external rows because `score_behavior` reads them off row 0 to build the readout option sets.
+   With the goal now non-empty, `make_goal` will run the carrot→bomb substitution on external
+   instructions. Measured: **0 of 179 and 0 of 495** contain "carrot", so the goal string is correct
+   verbatim — but the *status* will come back `noop_codeword_absent` ("SUSPECT") for ~97% of rows
+   instead of the correct `no_codeword_metadata`. The judge should recognise these rows by
+   **`bank_block == "external"`** — by identity, per the house rule, not by guessing from an absent
+   substitution. That is a `judge_boombness.py` change and is queued behind the Phase-1 workflow which
+   currently owns that file.
+2. **The AdvBench judging launched this session was killed mid-flight** and must be redone against the
+   fixed bank. Nothing was lost but API time; the generations are intact and unchanged.
+
+### The lesson, which is the same one twice
+
+Retraction #7 and R-12 were both "a control band that could not be falsified by looking at its own
+value". R-14 is the same shape one level up: **an ASR table cannot be falsified by looking at its own
+numbers**, because a broken judge still returns a plausible ordering. Only the *goal string* — the
+input nobody printed — reveals it. The sprint's own house rule says a guard untested against a case it
+should fail is not a guard; here the guard did not exist at all until Phase 1 added it, and it fired
+within hours of existing.

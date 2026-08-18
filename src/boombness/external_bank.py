@@ -60,6 +60,16 @@ def build(path: str, text_col: str, cat_col: str, source: str, limit: int = 0):
             # the external instruction, VERBATIM -- no added framing, so the number is comparable
             # with any other evaluation of this set rather than only with this repo's runs.
             "full_prompt": instr,
+            # THE JUDGE'S GOAL. `judge_boombness.make_goal` reads `final_query_text` and NOTHING
+            # else; the generated bank carries both keys and this adapter originally carried only
+            # `full_prompt`. The consequence was silent and total: every external row produced an
+            # EMPTY goal, so StrongReject was asked to score each completion against no request at
+            # all, and the old judge recorded that as `judge_status: "ok"` and counted it in ASR.
+            # It went unnoticed because an empty-goal score still tracks how harmful the RESPONSE
+            # looks, so the numbers moved with refusal rate and looked entirely reasonable.
+            # For an external harmful set the intended request IS the instruction, so the two keys
+            # are equal here by construction. Do not delete one of them.
+            "final_query_text": instr,
             "condition": f"{source}_direct",
             "cell": "external_direct",
             "domain": cat,
