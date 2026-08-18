@@ -4978,3 +4978,30 @@ removing the concept component causes judge-flagged output on prompts that conta
 
 **All queued work is complete.** Every intervention arm the plan specifies has now been run, controlled,
 gated, judged, and cross-condition checked.
+
+### Tick 79 — §19 and the §13 scorecard brought current; a retracted p-value was still sitting in a criterion
+
+All queues empty, all 40 board rows resolved, so this tick was completeness work on the two plan-mandated
+sections whose answers the causal results had changed underneath.
+
+**§19 Q9 now has a two-part answer, because the two instruments genuinely disagree.** By attention-edge
+knockout, surgical removal is impossible (redundancy: 6.25% of edges does nothing, 100% recovers 84%). By
+**direction projection it is possible and measured** — `project_out` is the only arm of five leaving
+comprehension statistically unchanged (p=0.681) while beating an inert control by +0.056 on harmful
+conditions. A comprehension-preserving surgical removal *does* exist; it is not an edge cut, and it **raises**
+attack success.
+
+**§19 Q10 corrected.** My "no" was right for §12.1 but reached by reasoning that was wrong (I said there was
+no directional causal support; there was, masked by refusal). §12.2 is reopened but explicitly **not**
+vindicated, because the gain does not depend on the doublespeak mapping and does not transfer to explicit
+harm.
+
+**And criterion 5 of the §13 scorecard was still quoting p=0.0014** — a number retraction #7 withdrew, from
+the band whose four "independent draws" were byte-identical. That is the third time a retracted figure has
+been found still sitting in a document after the retraction was recorded elsewhere. **Recording the pattern:
+retracting a number in the log does not remove it from the places it was already copied to** — every
+retraction needs a grep for the figure across all documents, not just an entry in the audit table.
+
+Scorecard now: 1 YES-in-Llama-only, 2 YES-once-refusal-removed, 3 NO-it-raises, 4 measured-but-not-axis-
+specific, 5 YES-for-projection/PARTIAL-for-additive, 6 PARTIAL-mostly-no-for-causal. **Still not a mechanism
+claim**, and the report says so.
