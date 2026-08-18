@@ -500,6 +500,98 @@ projection question, which is why the conclusions rest on the 2×2 projections.
 
 ---
 
+## 7b. Which Boombness metric? The three-way comparison (plan §6.4 / §15 item 7) — added 2026-08-18
+
+**This section was missing.** Plan §15 requires it as report item 7, §6.4 was run and closed, and
+grepping this report for "metric comparison", "probe_boombness", "direction_boombness" or
+"logit_lens" previously returned zero hits. The answer is unflattering, which is the reason it
+belongs here rather than the reason to omit it.
+
+Script `src/boombness/analyze_g64.py`; artifact `outputs/boombness/g64_metric_comparison/`
+(`correlation_table.csv`, `g64_summary.json`, 3 plots). All numbers below are from that CSV.
+
+### The coverage problem comes first
+
+| population | n |
+|---|---|
+| judged (ASR available) | 270 |
+| with extraction (logit-lens + direction) | 270 |
+| with a probe score at the headline layer | **72** |
+| **common to all three** | **72 of 270 (27%)** |
+
+`probe_boombness` is out-of-fold margins from the `d5_surface_matched_codeword` regime, whose rep
+cache was built on a **1464-row** version of the bank against today's 2352, and whose regime is
+hardcoded to the `core2x2` block. So the three metrics are **not** computed on the same prompts
+unless they are restricted to the common 72 — which `--common-subset` now does by default. Every
+number in this section is on those 72. An earlier comparison that put probe (n=72) beside direction
+(n=270) as if like-for-like is **retraction #9**.
+
+### The three metrics disagree about ASR — including in sign
+
+Spearman ρ against the continuous StrongReject score, n=72, 6 domains. `ρ_within` is the
+within-domain estimate the permutation p actually tests; `ρ_pooled` is the raw pooled value. (They
+were adjacent and unlabelled until 2026-08-18; see the estimand note in the process section.)
+
+| layer | logit_lens ρ_within | direction ρ_within | probe ρ_within |
+|---|---|---|---|
+| 0 | **+0.274** (p=0.005) | +0.185 (0.099) | **+0.215** (0.034) |
+| 4 | −0.211 (0.086) | **+0.324** (0.008) | +0.145 (0.243) |
+| 8 | −0.171 (0.154) | **+0.297** (0.015) | +0.087 (0.455) |
+| **12** | **−0.026** (0.818) | +0.228 (0.076) | **+0.284** (0.010) |
+| 16 | −0.176 (0.093) | −0.151 (0.196) | +0.202 (0.075) |
+| 20 | **−0.296** (0.006) | −0.184 (0.127) | +0.186 (0.100) |
+| 24 | −0.074 (0.538) | −0.185 (0.120) | +0.132 (0.233) |
+| 28 | +0.068 (0.580) | −0.141 (0.256) | +0.123 (0.248) |
+| 31 | +0.139 (0.217) | +0.149 (0.210) | +0.082 (0.412) |
+
+**There is no layer at which all three agree.** At L12 — the layer this report headlines for G2 —
+they read **−0.026, +0.228, +0.284**: one of the three has the opposite sign, and it is the
+logit-lens metric, the most direct readout of "does this token look like *bomb* to the unembedding".
+Each metric's strongest ASR association is at a different layer and, for logit_lens, in the opposite
+direction: logit_lens peaks **negative** at L20 (−0.296), direction peaks **positive** at L4
+(+0.324), probe peaks at L12 (+0.284).
+
+**Multiplicity:** this is 27 metric×layer cells per target, uncorrected. At Holm m=27 only p≤0.0019
+survives the first step, so **none of the ASR cells above is individually safe** — the smallest is
+p=0.005. Read the table as a disagreement map, not as nine findings.
+
+### On comprehension the three agree much better
+
+Same 72 prompts, target = the §2.6 comprehension log-odds:
+
+| layer | logit_lens | direction | probe |
+|---|---|---|---|
+| 4 | +0.214 (0.084) | **+0.316** (0.008) | **+0.442** (0.0005) |
+| 8 | −0.123 (0.351) | **+0.336** (0.004) | **+0.473** (0.0005) |
+| **12** | −0.156 (0.198) | **+0.361** (0.003) | **+0.462** (0.0005) |
+| 16 | −0.273 (0.027) | +0.098 (0.429) | **+0.375** (0.002) |
+| 31 | **+0.437** (0.001) | +0.127 (0.319) | **+0.396** (0.0005) |
+
+`probe_boombness` is positive and significant at **every** layer tested, and survives Holm at m=27.
+`direction_boombness` is positive and significant through the early-mid stack.
+
+### What this section concludes
+
+1. **The axis predicts comprehension far better than it predicts attack success.** That is the
+   cleanest statement §6.4 supports, and it is consistent with — and independent evidence for — the
+   report's overall position that Boombness is a representational quantity whose behavioural
+   consequences are mediated by something else (refusal).
+2. **"Boombness" is not one quantity.** Three reasonable operationalisations of the same construct
+   disagree in sign about ASR at the sprint's own headline layer. Any claim of the form "Boombness
+   predicts X" must name the metric and the layer, and G2's ρ=+0.307 should be read as a statement
+   about `direction_boombness` at L12 specifically.
+3. **The probe is the strongest metric on both targets but covers 27% of the population.** Fixing
+   that means re-fitting the probe on the current 2352-row bank and lifting the `core2x2` hardcode
+   in `probes.py:199` — not done, and the honest reason the probe is not promoted to the headline.
+
+### ⚠ Carried caveat, added 2026-08-18
+
+`logit_lens_boombness` and the comprehension target are both computed from single-token readouts
+that the whole-answer diagnostic has since shown are measured in the far tail of the next-token
+distribution (see the readout note in the process section). The comparison above is internally
+consistent — all three metrics are scored the same way — but the **comprehension column will move**
+when §4b is re-scored with the corrected readout. This section will be regenerated at that point.
+
 ## 8. Process — five retractions, five corrections, three dead guards
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
