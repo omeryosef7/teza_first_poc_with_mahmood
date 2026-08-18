@@ -12,10 +12,18 @@
     28,
     31
   ],
+  "common_subset": true,
+  "coverage": {
+    "judged": 270,
+    "with_extract": 270,
+    "with_probe_at_headline": 72,
+    "common_all_three": 72
+  },
+  "coverage_caveat": "probe_boombness comes from a rep cache built on a 1464-row bank version; the bank is now 2352 rows. Without --common-subset the three metrics are computed on different populations and are NOT comparable.",
   "headline_layer": 12,
   "probe_regime": "d5_surface_matched_codeword",
   "n_judged": 270,
-  "n_with_extract": 270,
+  "n_with_extract": 72,
   "metrics_present": [
     "direction_boombness",
     "logit_lens_boombness",

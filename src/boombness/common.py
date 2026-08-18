@@ -307,6 +307,16 @@ def _jsonable(obj: Any, _d: int = 0) -> Any:
 
 
 
+def _ledger_counts(run_dir: str) -> Dict[str, Any]:
+    """Read the failure-ledger counts out of summary.json, if present. Best-effort by design:
+    a run whose summary is unreadable is not thereby declared empty."""
+    try:
+        with open(os.path.join(run_dir, "summary.json")) as f:
+            return (json.load(f) or {}).get("failures") or {}
+    except Exception:
+        return {}
+
+
 def require_done(run_dir: str, allow_partial: bool = False) -> Dict[str, Any]:
     """Refuse to analyse a run that never finished. Returns the DONE payload.
 
@@ -325,9 +335,29 @@ def require_done(run_dir: str, allow_partial: bool = False) -> Dict[str, Any]:
     if os.path.exists(d):
         try:
             with open(d) as f:
-                return json.load(f)
+                payload = json.load(f)
         except Exception:
-            return {}
+            payload = {}
+        # A FINISHED run is not necessarily a run that PRODUCED anything. `finish()` writes
+        # DONE.json whenever the ledger is present, including when every unit failed, so a run
+        # with n_succeeded = 0 was indistinguishable from a complete one to this function --
+        # the same assert-at-one-end/never-check-at-the-other shape this guard exists to close.
+        # Found 2026-08-18 by a tokenization_audit run that could not load the tokenizer (401 on
+        # a gated repo), recorded n_attempted=1 / n_succeeded=0, wrote NO results.jsonl, and still
+        # presented as DONE. §2.4 is a mandatory gate, so that run would have passed it vacuously.
+        led = _ledger_counts(run_dir)
+        if led and led.get("n_attempted", 0) > 0 and led.get("n_succeeded", 0) == 0:
+            if allow_partial:
+                print(f"[require_done] WARNING: {os.path.basename(run_dir)} finished but "
+                      f"0/{led['n_attempted']} units succeeded; continuing only because "
+                      f"--allow-partial was passed. Nothing from it may be reported.")
+                return payload
+            raise SystemExit(
+                f"[require_done] REFUSING: {run_dir} has DONE.json but its failure ledger records "
+                f"0 of {led['n_attempted']} units succeeded "
+                f"(reasons: {led.get('failure_reasons')}). The run finished; it produced nothing. "
+                f"Pass --allow-partial only to inspect it, never to report from it.")
+        return payload
     if os.path.exists(os.path.join(run_dir, "ABORTED.json")):
         raise SystemExit(f"[require_done] {run_dir} is marked ABORTED — it holds no usable data.")
     n = 0

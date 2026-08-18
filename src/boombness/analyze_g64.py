@@ -153,6 +153,12 @@ def main() -> int:
     ap.add_argument("--arm", default="natural_doublespeak")
     ap.add_argument("--layers", default="0,4,8,12,16,20,24,28,31")
     ap.add_argument("--headline-layer", type=int, default=12)
+    ap.add_argument("--common-subset", dest="common", action="store_true", default=True,
+                    help="restrict EVERY metric to prompts that carry ALL THREE (default). "
+                         "Without it the metrics are compared on different populations, which is "
+                         "how the first run of this script reported probe rho=+0.440 on n=72 "
+                         "beside direction rho=+0.372 on n=270 as if they were like-for-like.")
+    ap.add_argument("--no-common-subset", dest="common", action="store_false")
     ap.add_argument("--outdir", required=True)
     args = ap.parse_args()
 
@@ -186,8 +192,31 @@ def main() -> int:
         "direction_boombness":  lambda L, p: erow[p].get(f"d_surface|L{L}|proj"),
         "probe_boombness":      lambda L, p: prow.get(L, {}).get(p),
     }
+    # ---- COMMON SUBSET: the three metrics must be read on the SAME prompts ------------------ #
+    # The rep cache behind `probe_boombness` was built from a 1464-row bank version; the bank is now
+    # 2352 rows, so 888 rows have no cached rep and the probe covers only a fraction of the judged
+    # population -- and that fraction is not random (whole bank_blocks are absent: strength,
+    # consistency, position, role_style, families; only core2x2 survives).
+    hl = args.headline_layer
+    have_all = [p for p in sorted(erow)
+                if erow[p].get(f"ll|L{hl}|boombness") is not None
+                and erow[p].get(f"d_surface|L{hl}|proj") is not None
+                and prow.get(hl, {}).get(p) is not None]
+    cov = {"judged": len(asr), "with_extract": len(erow), "with_probe_at_headline":
+           sum(1 for p in erow if prow.get(hl, {}).get(p) is not None),
+           "common_all_three": len(have_all)}
     print(f"[G6.4] arm={args.arm}  judged={len(asr)}  with-extract={len(erow)}  "
           f"probe-regime={args.probe_regime}")
+    print(f"[G6.4] coverage: {cov}")
+    if args.common:
+        if len(have_all) < 30:
+            raise SystemExit(f"[G6.4] only {len(have_all)} prompts carry all three metrics — "
+                             "too few for a like-for-like comparison")
+        keep = set(have_all)
+        erow = {p: r for p, r in erow.items() if p in keep}
+        print(f"[G6.4] COMMON-SUBSET mode: all metrics restricted to {len(erow)} prompts "
+              f"({len(set(meta[p].get('bank_block') for p in erow))} bank_block(s), "
+              f"{len(set(meta[p].get('domain') for p in erow))} domains)")
 
     rows_csv = []
     per_layer_metric = collections.defaultdict(dict)   # metric -> layer -> rho vs ASR
@@ -311,6 +340,11 @@ def main() -> int:
     plt.close(fig)
 
     summary = {"plan_section": "6.4", "arm": args.arm, "layers": layers,
+               "common_subset": bool(args.common), "coverage": cov,
+               "coverage_caveat": (
+                   "probe_boombness comes from a rep cache built on a 1464-row bank version; the "
+                   "bank is now 2352 rows. Without --common-subset the three metrics are computed "
+                   "on different populations and are NOT comparable."),
                "headline_layer": L, "probe_regime": args.probe_regime,
                "n_judged": len(asr), "n_with_extract": len(erow),
                "metrics_present": sorted(per_layer_metric),

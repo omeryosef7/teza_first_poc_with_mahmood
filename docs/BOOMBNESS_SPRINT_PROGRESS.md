@@ -5286,9 +5286,10 @@ advantage is that it is partly a demo-counter. Partialling `n_examples` out drop
 **not significant**. `direction_boombness` is nearly uncorrelated with demo count (ρ=−0.046) and survives
 the same control at +0.286, p=0.0005.
 
-**So `d_surface` is the metric of record for §6.4**, and the trained probe — despite the higher headline
-number — is not. This is the fourth time in this sprint the largest effect was the wrong answer, and the
-deciding check was again a control rather than a bigger n.
+⛔ **The paragraph that stood here — "`d_surface` is the metric of record for §6.4" — is RETRACTED
+(#9). It compared metrics measured on DIFFERENT POPULATIONS.** See correction C12 below. The
+like-for-like result is that on the 72 prompts carrying all three metrics, **no metric survives the
+`n_examples` control**.
 
 Logit-lens is null at L12 and only becomes an ASR correlate late (+0.359 at L31), where it converges with
 the direction — consistent with the late layers reading out the answer rather than the concept.
@@ -5360,3 +5361,50 @@ Filtered bank `data/boombness_prompts/role_style_block.jsonl`, sha16 `71ad78fec4
 This finally makes §11's main question answerable as posed: *does a more user-like or CoT-like presentation
 increase final-carrot Boombness, or does it only increase ASR independently?* — with content held constant
 and n=72 per style.
+
+
+## ⛔ RETRACTION #9 / CORRECTION C12 — §6.4's three metrics were compared on different populations
+
+Found by the mid-session sanity check, one tick after §6.4 was written up. The §6.4 table I published
+compared `direction_boombness` (**n=270**) against `probe_boombness` (**n=72**) as though they were
+like-for-like. They are not.
+
+**Root cause.** `probe_boombness` is read from the representation cache of extract run
+`full_20260816_185942_1008673`, whose summary records **`n_bank_rows: 1464`**. The bank was later
+regenerated to **2352** rows (commit 82bc1a3c, "give the role block real power"), so **888 bank rows have
+no cached rep** and the probe covers a minority of the judged population. The shortfall is **not random** —
+whole `bank_block`s are absent from the probe's population (strength 48, consistency 36, position 12,
+role_style 30, families 72 of the judged doublespeak prompts); only `core2x2` survives.
+
+**The artifact was honest; my prose was not.** `correlation_table.csv` recorded `n=270` / `n=270` / `n=72`
+per row all along. I read the ρ column across rows without reading the n column.
+
+**Corrected, like-for-like on the 72 prompts that carry all three metrics** (1 bank_block, 6 domains):
+
+| metric | n | raw ρ | p | ρ ∣ `n_examples` | p |
+|---|---|---|---|---|---|
+| `logit_lens_boombness` | 72 | −0.210 | 0.150 | −0.012 | 0.944 |
+| `direction_boombness` | 72 | +0.217 | 0.145 | **+0.009** | **0.943** |
+| `probe_boombness` | 72 | +0.440 | 0.001 | +0.147 | 0.259 |
+
+**On a common population, NO metric predicts ASR once demonstration count is partialled out.** The
++0.286 (p=0.0005) I reported for `direction_boombness` holds only on the full n=270 population, where it
+is not comparable to the probe. Both statements are now in the report; neither is a three-way comparison
+at full power.
+
+**What survives from the §6.4 tick:** the ρ=+0.631 between `probe_boombness` and `n_examples`, the
+existence of all four named deliverables, and the three checked-and-cleared hypotheses (block-0 vs
+embedding, PCA leakage, positional shortcut). What does not survive is the ranking of the three metrics.
+
+`analyze_g64.py` now defaults to **`--common-subset`**: every metric is restricted to prompts carrying all
+three, coverage counts are printed and persisted, and the script raises if fewer than 30 prompts qualify.
+The un-restricted mode still exists behind `--no-common-subset` but the artifact records which was used.
+
+**Fix in flight: job 763924** re-runs `extract_boombness --stage both` over the **current 2352-row bank**,
+which restores full cache coverage and makes the three-way comparison possible at full power. §6.4 will be
+recomputed on it.
+
+### Blast radius, checked rather than assumed
+`analyze_g2` and `analyze_g9` are **unaffected**: both join the judged behavioural population to the same
+extract run and get **270 of 270** coverage, because the judged prompts all predate the bank expansion.
+Only the probe — which needs cached reps across the A/C cells of *every* block — is short.
