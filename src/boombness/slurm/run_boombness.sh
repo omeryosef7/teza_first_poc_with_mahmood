@@ -54,6 +54,20 @@ export PYTHONUNBUFFERED=1
 if [ -n "$BOOMB_ARGSFILE" ]; then
   if [ ! -f "$BOOMB_ARGSFILE" ]; then echo "ERROR argsfile not found: $BOOMB_ARGSFILE"; exit 1; fi
   BOOMB_ARGS="$(cat "$BOOMB_ARGSFILE")"
+  # QUOTE GUARD (2026-08-19). BOOMB_ARGS is deliberately word-split into flags below, so quote
+  # characters in the file are NOT grouping -- they are literal argv characters, and any value
+  # containing a space is silently torn into separate arguments. That killed job 766661 in five
+  # seconds: a --skip-arms-reason written as "a long sentence" arrived as ["a] plus eight stray
+  # positional args, and argparse rejected the run AFTER the node and GPU were allocated.
+  # Refuse here instead: a multi-word value must be joined (underscores) by the caller.
+  case "$BOOMB_ARGS" in
+    *\"*|*\'*)
+      echo "ERROR argsfile contains a quote character: $BOOMB_ARGSFILE"
+      echo "  BOOMB_ARGS is word-split, so quotes do not group -- they become literal argv chars"
+      echo "  and any value with a space is torn apart. Join multi-word values with underscores."
+      grep -o "[\"'][^\"']*[\"']" "$BOOMB_ARGSFILE" | head -3
+      exit 1 ;;
+  esac
 fi
 
 echo "=== boombness: $BOOMB_SCRIPT ==="; date; hostname

@@ -1095,3 +1095,50 @@ both the concept and the codeword, so donor and recipient occurrence positions d
 position-matched transplant is undefined. The plan to run G1 under both query kinds to separate
 "readout change" from "prompt framing change" is therefore **not available**; only `semantic_one_word`
 is valid for the transplant design, and the guard said so before spending a GPU-hour.)*
+
+## A new instance of the house argsfile trap — and a guard so it cannot recur
+
+Job **766661 died in five seconds**. The `--skip-arms-reason` I had just added was written into the
+argsfile as a quoted sentence:
+
+```
+--skip-arms dense_two_layer --skip-arms-reason "dense_two_layer is structurally infeasible below ..."
+```
+
+`run_boombness.sh` deliberately word-splits `$BOOMB_ARGS` into flags (`# shellcheck disable=SC2086`).
+Quotes in the file are therefore **not grouping** — they are literal argv characters — so the reason
+arrived as `["dense_two_layer]` plus a dozen stray positional arguments and argparse rejected the run
+**after** the node and GPU were allocated.
+
+This is the same family as the wrapper's two documented traps (`--export` truncating comma lists;
+argsfiles on node-local `/tmp`), and my own note two hours earlier said *"build argsfiles with printf
+and grep them back"* — I did grep them back, and the grep showed the quotes sitting there looking
+correct.
+
+**Guard added to `run_boombness.sh`:** an argsfile containing `"` or `'` is **refused before the
+model load**, with a message saying why and printing the offending values. Tested both directions —
+a quoted argsfile is REFUSED, the real one is ACCEPTED. Multi-word values must now be joined with
+underscores by the caller, which is what the G3 argsfiles do.
+
+*This is the seventh guard this project has added, and the third added after the defect it prevents
+had already fired. The pattern worth noting: every one of them was cheap, and every one of them was
+only written after something died.*
+
+## Qwen3-14B ClearHarm — 4 of 5 arms generated, judging
+
+`q3ch_base`, `q3ch_B`, `q3ch_C`, `q3ch_Dctrl` are DONE (179/179, gate PASS, zero failures);
+`q3ch_D` is still on GPU (766488). All at **`max_new 512`**, matching the Llama ClearHarm runs — which
+also settles the audit's length-confound complaint, since the published Llama-vs-Qwen3 non-replication
+compared a **512**-token Llama run against a **192**-token Qwen3 run and the sprint's own log records
+that halving the budget roughly halves the Llama effect.
+
+Judging launched against the fixed bank. Once `q3ch_D` lands, the cross-model decomposition runs
+through the same committed `analyze_external_arms.py` as Llama, so the two models are compared by one
+estimator rather than two write-ups.
+
+## AdvBench controls in flight
+
+`ab_Bctrl` (766662), `ab_Dctrl` (766665), `ab_Cctrl` (766666) — norm-matched random projections at the
+same layers and seed 20260901. These close the gap flagged in the AdvBench section above: until they
+land, arm B's +0.0305 and the established super-additivity are contrasts among real arms with no
+random-direction reference **on that set**.
