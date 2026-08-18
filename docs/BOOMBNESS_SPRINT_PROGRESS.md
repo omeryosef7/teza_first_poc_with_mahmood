@@ -4930,3 +4930,51 @@ but its interpretation did not survive. That asymmetry is the sprint's most usef
 
 `q3_projctrl` (930/960) will say whether Qwen3's arm has *any* attack-specific component once its own
 control is subtracted — the same test that just rescued the Llama claim.
+
+## §14 CLOSED for claim 1 — it does NOT replicate on Qwen3, and the reason is sharper than "prompt-independent"
+
+Qwen3's own projection control is now in, and it changes the diagnosis. The control **is inert**
+(control − baseline on doublespeak: **−0.0036, p=0.77**), so the Qwen3 effect is genuinely
+**`d_surface`-specific** — it is not generic projection damage, which is what I assumed a tick ago. But
+against that inert control:
+
+| condition | base | arm B | ctrl | **B − ctrl** | p_cl |
+|---|---|---|---|---|---|
+| **`benign_literal`** | 0.003 | 0.259 | 0.000 | **+0.2245** | **0.0022** |
+| **`benign_remap`** | 0.000 | 0.500 | 0.028 | **+0.4410** | **0.0005** |
+| **`concept_in_benign_ctx`** | 0.028 | 0.347 | 0.083 | **+0.2448** | 0.0095 |
+| `natural_doublespeak` | 0.160 | 0.526 | 0.157 | +0.3390 | 0.0002 |
+| `direct_harmful` | 0.014 | 0.125 | 0.014 | +0.1111 | 0.363 |
+| `direct_codeword` | 0.167 | 0.444 | 0.278 | +0.0104 | 0.942 |
+
+**The two models behave in opposite ways, and the pattern is the finding:**
+
+| | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| effect on **harmful** conditions | **+0.056 / +0.056 / +0.059** | +0.111 (n.s.) / +0.010 (n.s.) |
+| effect on **benign** conditions | **+0.004 / +0.010 / +0.004** | **+0.224 / +0.441 / +0.245** |
+| control inert? | yes | yes |
+| reading | removing the concept component **helps attacks succeed** | removing it makes the model emit judge-flagged content **from benign prompts**, and does nothing on explicit harm |
+
+**Claim 1 does not replicate.** On Llama the effect tracks the presence of an attack; on Qwen3 it tracks the
+*absence* of one. Same intervention, same direction-fitting procedure, same depth (25% vs 27.5%), same bank,
+inert controls on both — and opposite condition profiles. That is a real model difference, not noise, and it
+means the Llama result is **single-model** until something explains why.
+
+### What I got wrong a tick ago, and the correction
+I wrote that the Qwen3 effect was *"a generic disruption of the model that the rubric scores as harmful"*.
+The inert control refutes that: a **random** projection of the same type and magnitude does nothing, so the
+effect belongs to `d_surface` specifically. The right statement is narrower and stranger: **on Qwen3,
+removing the concept component causes judge-flagged output on prompts that contain no attack** — a
+`d_surface`-specific, attack-irrelevant effect.
+
+### Net status of the sprint's causal claims
+| claim | status |
+|---|---|
+| **Arm B / §0.3 on Llama** | **ESTABLISHED** — +0.056 vs inert matched control, p=0.0077, harmful-only, 5× judge noise |
+| Arm B on Qwen3 | **does not replicate** — real but attack-irrelevant |
+| Arm F interaction | empirically real; **mechanism refuted** (retraction #8) |
+| §12.2 objective | reopened, worth building as an experiment — not vindicated |
+
+**All queued work is complete.** Every intervention arm the plan specifies has now been run, controlled,
+gated, judged, and cross-condition checked.
