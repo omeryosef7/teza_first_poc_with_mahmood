@@ -1142,3 +1142,77 @@ estimator rather than two write-ups.
 same layers and seed 20260901. These close the gap flagged in the AdvBench section above: until they
 land, arm B's +0.0305 and the established super-additivity are contrasts among real arms with no
 random-direction reference **on that set**.
+
+## ★ Plan §4.1's designed variance — resolved, and the data makes the decision
+
+The handoff framed this as a choice: *"Either fix the generator and analyse them, or delete them from
+the bank and say so. Generated-confounded-unexamined is the worst of the three states."* Measuring the
+bank first turns it into a decision the data makes, and produces a **third, better option**.
+
+### 1. They are already isolated — nothing is contaminated
+
+| `bank_block` | rows | non-default levels |
+|---|---|---|
+| `core2x2` | 1152 | **none — all default** |
+| `role_style` | 720 | none |
+| `families` / `extra_conditions` | 144 / 144 | none |
+| **`strength`** | **96** | aggressive / medium / strong / weak (24 each) |
+| **`consistency`** | **72** | conflicting / irrelevant / mixed (24 each) |
+| **`position`** | **24** | far / distributed (12 each) |
+
+The designed variance lives in **three dedicated blocks totalling 192 of 2352 rows**, and `core2x2` —
+which every main analysis filters on — contains **only** all-default rows. So they have never
+contaminated a single published number. "Unexamined" was accurate; "contaminating" was never a risk.
+
+### 2. They cannot support inference, and now that is measured rather than asserted
+
+**Behavioural** rows — the only ones on which ASR could ever be computed:
+
+| block | behavioural rows | levels | rows per level | rows per domain per level |
+|---|---|---|---|---|
+| `position` | **12** | 2 | **6** | **1** |
+| `consistency` | 36 | 3 | 12 | 2 |
+| `strength` | 48 | 4 | 12 | 2 |
+
+**Compare against R-15, established three hours ago on this same design:** a **36-row** condition cell
+had a domain-clustered CI of **[−0.068, +0.088]** and a **72-row** cell **[−0.087, +0.198]** — both
+declared uninformative, and both *larger* than every comparison available here. The `position` factor
+would be **6 rows against 6**, one per domain per level, which cannot produce a between-cluster
+variance estimate at all.
+
+### 3. And they are confounded exactly as the handoff described — measured
+
+| factor | level | prompt chars (median) | `n_target_occurrences` (mean) | `n_examples` (mean) |
+|---|---|---|---|---|
+| **position** | `near` (default) | **413** | 5.97 | 4.80 |
+| | `far` / `distributed` | **777** | 5.00 | 4.00 |
+| **consistency** | `consistent` (default) | 412 | 5.98 | 4.76 |
+| | **`conflicting`** | 591 | **8.00** | 6.00 |
+| | `mixed` / `irrelevant` | 586 / 518 | 7.00 / **1.00** | 6.00 |
+| **strength** | `none` (default) | 416 | 6.02 | **4.91** |
+| | weak / medium / strong / aggressive | 274–390 | 4.00–6.00 | **2.00** |
+
+Every non-default level differs from its default in **prompt length, codeword-occurrence count, and
+number of demonstrations simultaneously**. `strength` moves `n_examples` from 4.91 to 2.00 — and
+`n_examples` is a *known* ASR predictor (ρ=+0.206, C-9). Any "effect of strength" would be
+substantially an effect of demonstration count.
+
+### 4. Resolution — the third option, and it is the honest one
+
+Not "analyse" (the design cannot carry it, and doing so would manufacture exactly the underpowered,
+confounded cells R-15 just retracted) and not "delete" (the rows are already isolated, and deleting
+them changes the bank hash and breaks the join for ~130 committed runs **for no analytical gain**).
+
+**Documented, measured, and explicitly excluded — with the regeneration named as future work.**
+That converts *generated-confounded-unexamined* into *generated-confounded-documented-and-excluded*,
+which is a legitimate state: a reader can see the rows exist, why they are not analysed, and what it
+would take to make them analysable.
+
+**What it would take** is already **E8** in report §9b: balanced levels at ≥120 behavioural rows each,
+with prompt length, `n_target_occurrences` and `n_examples` matched across levels by construction.
+That is a generator change plus a fresh extraction plus fresh behavioural runs — a project, not a
+tick.
+
+**@Omer — the reversible half is done and committed. If you would rather I delete the 192 rows
+outright, say so and I will; it costs a bank regeneration and a re-hash of the join for every
+committed run, which is why I did not do it unilaterally.**
