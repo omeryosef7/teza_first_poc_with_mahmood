@@ -94,9 +94,69 @@ the explanation does not.
   comprehension ~3× more than `d_surface`** at every demonstration count, so the §2.6 comprehension
   readout cannot attribute anything to this axis (corrections C10, and §8).
 
-## Pending
+## Arm D — LANDED, and it is the strongest causal result in the sprint
 
-Arm D (remove both) and its double-random control are running as 763594 / 763595. D is the arm that
-distinguishes "the two directions act independently" from "removing Boombness matters only once refusal is
-out of the way": if D ≈ C, Boombness removal contributes nothing even with refusal suppressed. **This file
-will be updated with D when the judge lands, whichever way it falls.**
+Jobs 763594 (arm D) / 763595 (double-random control) completed and were judged. Every population below
+passed `coherence_gate.py` **on that population specifically** — including `direct_harmful` under arm D
+(uniq 0.637, trigram 0.047, truncated 0.01), so the numbers are compliance, not degenerate text.
+
+| arm | `natural_doublespeak` (n=420) | `direct_harmful` (n=72) | `concept_in_benign_ctx` (n=72) | `benign_literal` (n=324) |
+|---|---|---|---|---|
+| baseline ASR | 0.243 | 0.042 | 0.042 | 0.015 |
+| B remove boombness | +0.026 | +0.056 | +0.014 | +0.000 |
+| C remove refusalness | +0.026 | +0.167 | +0.139 | −0.003 |
+| **D remove BOTH** | **+0.093** | **+0.681** | **+0.194** | **+0.003** |
+| **D control (double random)** | **+0.010** | **+0.000** | **+0.000** | **−0.009** |
+
+**Removing both directions takes explicit-harm ASR from 0.042 to 0.723**, while the matched
+double-projection random control moves it by **exactly 0.000** and benign prompts move by **+0.003**. The
+control is the same *operation type* at the same two layers — the mismatch that weakened arm B does not
+apply here.
+
+Domain-clustered paired tests on the doublespeak population (G=6, t(5)):
+
+| contrast | mean | 95% CI | p |
+|---|---|---|---|
+| **D − Dctrl** (controlled effect) | **+0.0935** | [+0.0246, +0.1623] | **0.0175** |
+| D − baseline | +0.0893 | [+0.0416, +0.1370] | 0.0048 |
+| **D − (B + C − baseline)** (super-additivity) | +0.0414 | [−0.0004, +0.0831] | **0.0514** |
+| Dctrl − baseline (should be null) | −0.0042 | [−0.0320, +0.0236] | 0.7158 |
+
+**Super-additivity is suggestive but NOT established** — p=0.0514 and the interval's lower bound is
+−0.0004. Removing both plausibly does more than the sum of removing each, and this design cannot yet say
+so.
+
+### The plan's key question, now answerable with the full A–G matrix
+
+> *"Can we reduce ASR by removing Boombness while preserving comprehension, or can we produce the
+> opposite direction by adding Boombness while manipulating refusal?"*
+
+Neither removal **reduces** ASR — every removal arm *raises* it. The two composite arms raise it by
+**opposite routes**, and this is the sharpest thing §10.4 produced:
+
+| | `natural_doublespeak` | `direct_harmful` |
+|---|---|---|
+| **F** = add Boombness + remove refusalness | **+0.305** | **+0.000** |
+| **D** = remove Boombness + remove refusalness | +0.093 | **+0.681** |
+| F control (random + remove refusal) | −0.024 | +0.417 |
+| D control (double random) | +0.010 | +0.000 |
+
+**F is doublespeak-specific and inert on explicit harm; D is the reverse.** Adding `d_surface` blocks the
+refusal-removal gain on explicit harm (F +0.000 where C alone gives +0.167); removing it releases that
+gain in full (D +0.681). Both have inert matched controls in their own cell. So `d_surface` is not a
+"harmfulness" direction in either arm — it **gates** whether refusal suppression converts into
+compliance, with the sign of the gate depending on whether the harm is stated or coded.
+
+### What may and may not be claimed — updated
+
+**Supported:** the D result (harm-general, large, coherent, inert matched control, clean on benign);
+the F result (doublespeak-specific, inert matched control in its cell); the D/F route asymmetry.
+
+**NOT supported:** super-additivity (p=0.0514); any claim that `d_surface` carries harmfulness (refuted
+in both directions); any comprehension-based attribution (§8: a random direction perturbs comprehension
+~3× more than `d_surface`); and any claim that removing Boombness *reduces* attack success — it does the
+opposite in every cell measured.
+
+**Safety note.** This is an ablation on a locally-hosted open-weights model, run to characterise a
+mechanism. No completion text is reproduced in this file or in any report, and the judge is used only to
+score, never to generate.

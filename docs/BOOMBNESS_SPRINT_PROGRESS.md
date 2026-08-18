@@ -5593,3 +5593,48 @@ were indistinguishable on disk. `summary.json` now carries `family_accounting` (
 **Rerun launched (764238):** the G1 pilot with domain-stratified sampling and **24 families (4 per
 domain across all 6)** instead of 8 across 2. This is the run that replaces the "+57% to +105%" interval;
 that figure stays flagged until it lands.
+
+## ★★★ §10.4 COMPLETE — arm D lands, and the D/F route asymmetry is the sprint's sharpest causal result
+
+Arm D (remove BOTH directions) and its double-random control finished and were judged. **The plan's A–G
+matrix is now complete.** `causal_claims.md` updated with the full table.
+
+**Every population was coherence-gated on that population specifically**, including `direct_harmful`
+under arm D (uniq 0.637, trigram 0.047, truncated 0.01) — the numbers below are compliance, not
+degenerate text.
+
+| arm | doublespeak (420) | direct_harmful (72) | concept_in_benign (72) | benign_literal (324) |
+|---|---|---|---|---|
+| baseline | 0.243 | 0.042 | 0.042 | 0.015 |
+| **D remove BOTH** | **+0.093** | **+0.681** | +0.194 | +0.003 |
+| **D control (double random)** | +0.010 | **+0.000** | +0.000 | −0.009 |
+| F add boomb + remove refusal | +0.305 | **+0.000** | +0.000 | +0.019 |
+| F control (random + remove refusal) | −0.024 | +0.417 | +0.236 | −0.009 |
+
+Domain-clustered paired tests (G=6, t(5)): **D − Dctrl = +0.0935, CI [+0.025, +0.162], p=0.0175**;
+Dctrl − baseline = −0.004, p=0.716 (control properly inert).
+
+⚠ **Super-additivity is NOT established.** D − (B+C−baseline) = +0.0414, CI **[−0.0004, +0.0831]**,
+**p=0.0514**. The interval's lower bound touches zero. Removing both plausibly exceeds the sum of
+removing each, and this design cannot say so. Recorded at the boundary rather than rounded into a claim.
+
+### The finding: `d_surface` GATES refusal suppression, and the gate's sign flips with the harm type
+
+| | doublespeak | direct_harmful |
+|---|---|---|
+| **F** = **add** Boombness + remove refusalness | **+0.305** | **+0.000** |
+| **D** = **remove** Boombness + remove refusalness | +0.093 | **+0.681** |
+
+Both composites remove the same refusal direction. They differ only in the sign of the `d_surface` term,
+and their effects are **mirror images across the harm type**, each with an inert matched control in its
+own cell. Removing refusal alone (arm C) gives +0.167 on explicit harm; **adding** `d_surface` cancels
+that to +0.000, **removing** it releases +0.681.
+
+So `d_surface` is not a harmfulness direction — that was refuted in both directions already (retraction
+#8, and the arm-B condition pattern). It behaves as a **gate on whether refusal suppression converts into
+compliance**, and which sign opens the gate depends on whether the harm is *stated* or *coded*.
+
+**The plan's key question is answered in the negative, unambiguously:** no removal arm *reduces* ASR.
+Every one raises it. The only arm that lowers ASR is E (add Boombness, −0.155), and it does so by driving
+refusal from 0.057 to 0.676 — refusal suppression running backwards, not the removal of a harm
+representation.
