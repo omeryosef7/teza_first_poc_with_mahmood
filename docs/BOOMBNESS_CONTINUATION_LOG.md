@@ -1266,3 +1266,77 @@ Recorded before the full-run numbers arrive, so the caveat cannot be tuned to th
 | `judge_q3ch_s1/s2` | Qwen3 ClearHarm base / B / C / Dctrl |
 | `judge_q3ch_D` | Qwen3 ClearHarm arm D (766488 completed) |
 | `judge_ab_Bctrl` | the AdvBench control for arm B (766662 completed) |
+
+## ✅ The AdvBench control lands — arm B is `d_surface`-specific, and the headline gap is closed
+
+`ab_Bctrl` — a **norm-matched random projection at the same layer (L8), same seed** — judged against
+the fixed bank:
+
+| arm | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl | domain-clustered CI |
+|---|---|---|---|---|---|---|
+| baseline | 0.0646 | 0.9313 | — | — | — | — |
+| **B** — remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
+| **Bctrl** — remove a **random** direction @L8 | **0.0626** | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert |
+
+**The control is dead flat and slightly negative.** So arm B's effect is specific to `d_surface`, not
+to "removing any direction at L8", and it holds on 495 external harmful prompts that contain no
+codeword, no demonstrations and no doublespeak wrapper, over 16 domain clusters.
+
+**The caveat written into §0, the gate table and §7c three ticks ago is now discharged for arm B.**
+`ab_Cctrl` and `ab_Dctrl` are judging; until they land, super-additivity keeps its own version of the
+caveat, since it is a contrast among three real arms.
+
+## ★ Qwen3-14B ClearHarm — the two models use DIFFERENT channels, and that is the finding
+
+Length-matched at `max_new 512` (which also removes the audit's length confound: the published
+Llama-vs-Qwen3 non-replication compared 512 against 192 tokens). `d_surface`@L11 + refusalness@L20,
+the established Qwen3 depths. `outputs/boombness/clearharm_decomposition_qwen3.json`.
+
+| arm | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl |
+|---|---|---|---|---|---|
+| baseline | 0.1341 | 0.7486 | — | — | — |
+| **B** — remove `d_surface` @L11 | **0.2793** | 0.5642 | **+0.1306** | +0.0416 | 0.181 |
+| **C** — remove refusalness @L20 | **0.1285** | 0.7207 | **−0.0042** | −0.0120 | 0.287 |
+| D — remove both | 0.2793 | 0.5475 | +0.1201 | +0.0557 | 0.081 |
+| Dctrl — double random | 0.1285 | 0.7039 | −0.0084 | −0.0100 | 0.358 |
+
+### Three things worth stating
+
+**1. The channel that matters is reversed between models.** On Llama, refusalness is the big mover
+(C: +0.240 pooled) and `d_surface` the small one (B: +0.083). On **Qwen3 it is the exact opposite**:
+`d_surface` moves ASR from 0.134 to **0.279** (+0.131 pooled, and refusal 0.749 → 0.564), while
+removing refusalness does **nothing at all** (−0.004, indistinguishable from the double-random control
+at −0.008). **D equals B to four decimals (0.2793 both)** — on Qwen3 the entire joint effect is the
+`d_surface` channel and refusalness contributes zero.
+
+**2. `d_surface` removal raises external-set ASR in BOTH models.** Llama +0.083 pooled, Qwen3 +0.131
+pooled. That is a **cross-model replication of the `d_surface` causal effect** — and it is the
+opposite of G2, where the *correlational* Boombness↔ASR relationship did not replicate. Worth stating
+plainly: the correlation is Llama-specific; the causal intervention is not.
+
+**3. It is n.s. under clustering, for the same reason as before, and the fix is already running.**
+Qwen3's ClearHarm arm B is +0.0416 cluster-mean, p_cl=0.181 — **the identical 6-clusters-with-one-at-71%
+problem that made Llama's ClearHarm arm B n.s. before AdvBench settled it.** So the obvious experiment
+is Qwen3 × AdvBench (16 clusters), and it is launched: `q3ab_base` (766674), `q3ab_B` (766675),
+`q3ab_Bctrl` (766676). **If arm B clears zero there, `d_surface`'s causal role replicates across two
+models on a properly-powered external set**, which would be the strongest claim in the sprint.
+
+*Prediction recorded before the run:* on the pooled estimate Qwen3's effect is **larger** than Llama's
+(+0.131 vs +0.083), so with 16 clusters instead of 6 it should clear zero comfortably. If it does not,
+the ClearHarm pooled effect was carried by the one dominant cluster and that must be said.
+
+## G3 re-run: honest under-delivery, and a fix
+
+`g3wa_block` / `g3wa_codeword` (766667/766668) completed — **12 families, not the 24 requested**, and
+the run said so rather than pretending:
+
+```
+family_accounting = {requested_n_families: 24, n_families_eligible: 12,
+                     n_families_selected: 12, effective_G: 12,
+                     selection: "round_robin_over_domains_split_balanced"}
+```
+
+Only 12 families exist under `--n-examples 4` (6 domains × 2 splits). **This is the T7b fix working**:
+the pre-fix code counted prompts rather than families and would have reported "24" for the same data.
+Relaunched at `--n-examples 4,8`, which doubles eligibility to 24 families — `g3wa_block24` (766672),
+`g3wa_codeword24` (766673). The 12-family runs are kept; they are valid, just half the power.
