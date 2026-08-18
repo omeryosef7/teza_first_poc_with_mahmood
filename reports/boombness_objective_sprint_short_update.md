@@ -269,9 +269,16 @@ overtakes `direct_harmful` as the highest condition. That is still enough to wit
 
 ## ★ The sprint's first clean causal result — and it runs the OTHER way
 
-`project_out` on `d_surface` at L8 removes the concept component by projection. It is the only
-intervention here that reaches the ASR question with **every** precondition green: coherence OK,
-comprehension **unchanged** (Δ +0.088, p=0.681), ledger 960/960/0, refusal **unchanged**.
+`project_out` on `d_surface` at L8 removes the concept component by projection.
+
+⛔ **CORRECTED 2026-08-18 (R-6).** This was previously described as the only intervention reaching the
+ASR question with **every** precondition green, citing comprehension **unchanged** at Δ +0.088,
+p=0.681. That comprehension verdict is **withdrawn**: the readout scored `' literal'`/`' coded'` at a
+position where the model emits neither, and the pair held a median **4.4e-05** of the next-token mass
+(0 of 288 rows above 1%), so the p is an ordering inside a tail rather than a measurement. The
+remaining preconditions are unaffected and still green: coherence OK, ledger 960/960/0, refusal
+unchanged. The readout has been rebuilt as a whole-answer forced choice (median mass now **0.297**)
+and the re-run is outstanding.
 
 | arm | ASR | refusal | paired Δ vs baseline |
 |---|---|---|---|

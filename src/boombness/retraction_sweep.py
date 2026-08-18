@@ -57,11 +57,32 @@ RETRACTED = [
     ("C9  depth-mismatched L31 claim",       r"L31 effect replicates"),
     ("G1  chimera CI",                       r"\+23%\s*to\s*\+?135%"),
     ("superseded arm-F value",               r"arm F[^\n]{0,80}0\.474|0\.474[^\n]{0,40}arm F"),
+    # ---- 2026-08-18 CONTINUATION SESSION. Five new retractions/corrections, added the SAME DAY
+    # they were declared. A sweep whose pattern list lags its own retraction table reports "clean"
+    # for precisely the claims most likely to be stale, which is worse than not running it at all:
+    # it converts an unchecked document into a checked-looking one.
+    ("R6  §2.6 verdicts from a 1e-5 tail",
+     r"only arm that leaves comprehension unchanged|"
+     r"comprehension (?:is )?preserved \(p\s*=\s*0\.68|p\s*=\s*0\.681"),
+    ("R7  G3 edge null ranked at the retracted token",
+     r"6\.25\s*%[^\n]{0,60}(?:does nothing|no effect)|however distributed|"
+     r"cutting 100%[^\n]{0,40}84%"),
+    ("R8  G1 superseded +84% on n=8 / 2 domains",
+     r"\+?84%\s*of span|CI\s*\[\+?57%,\s*\+?105%\]|"
+     r"n\s*=\s*8\s*families[^\n]{0,40}2\s*\*{0,2}domains"),
+    ("R9  §18=B asserted as a settled label",
+     r"outcome\s+B\b[^\n]{0,60}mechanistic but not causal|"
+     r"§18\s*(?:label\s*)?(?:is|=)\s*\*{0,2}B\b"),
+    ("R11 Holm backstop stated without L1",
+     r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),
 ]
 DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",
     "reports/boombness_objective_sprint_short_update.md",
     "docs/BOOMBNESS_MIDSESSION_SANITY_CHECK.md",
+    # added 2026-08-18: the continuation log is the LIVE board, so a retracted figure asserted there
+    # unqualified misleads exactly the reader this sweep exists to protect.
+    "docs/BOOMBNESS_CONTINUATION_LOG.md",
 ]
 # KNOWN LIMITATION (found 2026-08-18). A paragraph is exempted if it contains ANY marker word, but a
 # paragraph can legitimately contain "corrected"/"was" while still ASSERTING a retracted claim in a

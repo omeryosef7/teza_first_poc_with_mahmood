@@ -14,27 +14,65 @@
 
 ## 0. What the sprint set out to do, and what it found
 
-The plan proposed building a GCG attack objective out of "Boombness" — the degree to which a
-codeword token's representation sits on a concept axis — on the hypothesis that doublespeak
-jailbreaks work by smuggling concept content into a benign-looking token.
+**Rewritten 2026-08-18.** The previous head stated the sprint's conclusion in two incompatible ways —
+the gate table and four passages said "not causal, §12 was not built, do not build the objective",
+while two sections added later said that verdict was withdrawn and §12 reopened, with no marker on
+either. A gate table is the part of a report a reader trusts to be current, so the withdrawn verdicts
+have been moved out of it into the retraction table below and the conclusion is stated once, here.
 
-**The answer is no, and the sprint's value is in *why* not.** Four gates were pre-registered. The
-first three produced positive mechanistic findings. The fourth — the one the objective actually
-requires — returned a directional null, and the plan made §12 explicitly conditional on it.
+### The conclusion, stated once
+
+**The objective as specified — steer a "Boombness" axis to make a codeword's representation more
+concept-like, and optimise a GCG suffix against it — was not built, and should not be.** G4 is a
+directional null: *both* signs of `d_surface` suppress attack success, so ASR does not follow the
+axis, and the one arm that clears a random-control band does so by triggering refusal.
+
+**But the sprint's late intervention results are real, and one of them now survives an external
+dataset.** Projecting out `d_surface` *together with* the refusal direction takes attack success from
+**0.101 to 0.542** on 179 ClearHarm prompts — an external harmful set carrying no doublespeak wrapper
+at all — against a norm-matched double-random control at +0.011. That rules out the prompt-bank
+artifact explanation, which was the most serious threat to the finding.
+
+**What it does not yet establish is the part the objective would need.** That arm removes the
+*refusal* direction as well, and refusal removal alone raises ASR on direct harmful prompts. Until
+the decomposition lands, none of it is a claim about `d_surface`.
+
+### Current gate table
+
+Every row here is current as of 2026-08-18. Superseded verdicts are in the retraction table, never
+here.
 
 | gate | question | verdict |
 |---|---|---|
-| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The **single-layer L18** demo transplant moves the semantic readout +84% of span, CI [+57%, +105%] (n=8 families, **2 domains**); the query-codeword transplant moves it the *wrong way*. ⚠ One arm of ~130 — the all-layer variant goes the wrong way too (−0.76). |
-| **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only — does NOT replicate on Qwen3-14B** (there the pooled ρ is +0.364 but collapses to +0.015 when one of six domains is dropped; 3/6 domains positive; clustered p=0.206). In Llama: **modestly.** ρ = +0.307 at L12, +0.302 norm-partialled, n=234, 6/6 domains positive (two essentially null), **p < 5e-4** (within-domain permutation, at its resolution floor). |
-| **G3** (§10) | Can it be removed surgically? | **No — it is massively redundant.** Cutting 6.25% of demo→query edges does nothing *however distributed*; cutting 100% recovers 84% of the deletion ceiling. |
-| **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR, so ASR does not follow the axis. Only `+0.25` exceeds a 4-draw random-control band, and it does so by **triggering refusal**. |
-| **§0.3 / §10.4-B** | Does surgical REMOVAL reduce ASR without destroying comprehension? | **NO — removal RAISES ASR** (0.219 → 0.300; vs norm-matched controls +0.104/+0.109, clustered p=0.020/0.025; vs baseline alone p=0.117). Comprehension preserved (p=0.68), refusal unchanged, coherence OK. **The sign is opposite to the hypothesis.** |
-| **FINAL** (§18) | outcome label | **B — mechanistic but not causal** for the *additive* axis; but see §0.3 above — the *projection* arm gives a directional effect against controls, so this label is under active revision. |
+| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The single-layer L18 demonstration transplant moves the semantic readout **+68% of span, CI [+50%, +95%]**, on **24 families across 6 domains** (`g1_stratified.json`); the query-codeword transplant moves it the *wrong way*. ⚠ **Under re-derivation** — see R-8. |
+| **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
+| **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
+| **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, and it generalises off the bank.** ClearHarm 0.101 → **0.542**, control +0.011, all arms coherence-gated (`clearharm_arm_D.json`). **Decomposition pending** — the refusal-only and `d_surface`-only arms are running. |
+| **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
+| **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
-**§12 was therefore not built.** That is a decision forced by data, recorded as a documented
-negative rather than left as an unfinished row.
+### Retraction and correction table
 
----
+Verdicts and numbers this report previously asserted and no longer does. Nothing in this table
+appears in the gate table above.
+
+| id | what was asserted | status | why |
+|---|---|---|---|
+| R-6 | "`project_out` is the only arm that leaves comprehension unchanged (p=0.681)", and every other §4b verdict | **WITHDRAWN** | The readout scored `' literal'`/`' coded'` at a position where the model emits neither. Median mass on the option pair: **4.4e-05**, with **0/288** rows above 1%. Every verdict was an ordering inside that tail. Rebuilt as a whole-answer forced choice (median mass now **0.297**); re-run outstanding. |
+| R-7 | G3: "cutting 6.25% of demo→query edges does nothing however distributed" | **WITHDRAWN** | The edge *ranking* was computed at the final codeword occurrence, the destination retraction #3 already called fatal, while the readout is ~9 tokens later. The null cannot distinguish "these edges don't matter" from "ranked at the wrong token". Fixed; re-run outstanding. |
+| R-8 | G1: "+84% of span, CI [+57%, +105%], n=8 families, 2 domains" | **SUPERSEDED** by +68% on 24 families / 6 domains (`g1_stratified.json`). Additionally **under re-derivation**: `semantic_logodds` is computed by the same defective readout as R-6 (`aggressive_patching.py:439`), and the codeword has **no capitalised single-token form** while the concept has four, so the readout is structurally biased toward the concept. |
+| R-9 | "§18 = B, mechanistic but not causal" as a settled label | **WITHDRAWN**, and not replaced — see the FINAL row above. |
+| R-10 | The §6.4 metric comparison, presented as probe (n=72) beside direction (n=270) | **RETRACTED**; on the common 72 no metric predicts ASR once `n_examples` is partialled out. §7b. |
+| R-11 | "the mid-band attenuation does not survive multiplicity correction … `holm_rejected` True only at L4 and L31" | **CORRECTED** to **L1, L4 and L31** at the honest family (m=32, all layers actually tested). The conclusion is unchanged — none of the three is in the L16–L24 mid-band — and the backstop is *stronger*, not weaker. |
+
+### Where "§0.3" pointed
+
+Two passages cited "§0.3, above" as the causal evidence. **No section 0.3 has ever existed.** The
+result intended is the `project_out` arm of §10.4, reported in *"Second causal result — removing the
+concept component helps attacks, on Llama"* near the end of this document. Both citations now point
+there. The gate-table row that carried the `§0.3` label is now **§10.4-D**, and its numbers are the
+ClearHarm ones rather than the superseded 192-token bank run.
 
 ## 1. The methodological contribution: the 2×2 identification design (§3–§4)
 
@@ -143,9 +181,14 @@ contrast as *depth* distribution. But the 32-layer arm also cuts **16× more edg
 comparison moved two things at once. At an identical 3,552 edges, spreading over 32 layers instead of
 2 changes the readout by **+0.10 log-odds — nothing.** **Layer spread is not the operative variable.**
 
-What is true: removing **6.25%** of demo edges does nothing *however distributed*; removing 100%
-recovers 84%. That is why every localized knockout — top-k, bottom-k, random, same-head — reads zero:
-each removes ~0.03% of a hugely redundant set.
+⛔ **RETRACTED 2026-08-18 (R-7) — do not quote the paragraph below.** What was true: removing
+**6.25%** of demo edges does nothing *however distributed*; removing 100% recovers 84%. That was the
+basis for saying every localized knockout — top-k, bottom-k, random, same-head — reads zero because
+each removes ~0.03% of a hugely redundant set. The **ranking** that defines top-k / bottom-k /
+same-head was computed at the final codeword occurrence, ~9 tokens before the readout — the
+destination retraction #3 already called fatal. So the null cannot distinguish "these edges do not
+matter" from "the edges were ranked at the wrong token". `surgical_knockout.py:271` is fixed and the
+re-run is outstanding; until it lands, **G3 is not established in either direction**.
 
 **Identification limit, stated rather than hidden:** the converse arm is *impossible*. At seq_len 114
 × 32 heads a layer holds only ~3,648 edges, so any cut above ~7.3k **must** span layers. Edge count
@@ -386,7 +429,10 @@ with ≥1 demonstration, common to all arms, domain-clustered over 6 domains:
 
 **What survives as genuinely distinctive: `project_out` is the only one of five arms that leaves
 comprehension unchanged** while all four additive arms move it by 0.6–1.5. That is what makes it the
-surgical condition, and it is why its ASR result (§0.3, above) is the sprint's cleanest causal test.
+surgical condition, and it is why its ASR result (the §10.4 `project_out` arm, reported under
+"Second causal result" below — this passage previously cited a §0.3 that does not exist) was
+called the sprint's cleanest causal test. ⚠ That description is **withdrawn**: its comprehension
+control is R-6, the readout measuring a 1e-5 tail.
 
 ---
 
@@ -726,12 +772,15 @@ categorical proxy — no Userness/CoTness probe was fitted.
 
 **9. Can we surgically remove Boombness without destroying comprehension?**
 ⚠ **UPDATED — the answer depends on which instrument you use, and the two disagree.**
-- **By attention-edge knockout: no.** The retrieval is massively redundant — cutting 6.25% of demo→query
-  edges does nothing *however distributed across depth*, while cutting 100% recovers 84% of the deletion
-  ceiling. Every localized knockout (16 edges, ~0.03%) reads zero. The converse test is impossible by
-  construction (a layer holds only ~3,648 edges).
-- **By direction projection: YES, and it is measurable.** `project_out d_surface` at L8 leaves comprehension
-  **statistically unchanged** (Δ +0.088, p=0.681 — the only one of five arms that does) and coherence intact,
+- **By attention-edge knockout: ⛔ WITHDRAWN (R-7), previously "no".** The claim was that the retrieval
+  is massively redundant — cutting 6.25% of demo→query edges doing nothing *however distributed across
+  depth*, while cutting 100% recovers 84% of the deletion ceiling, with every localized knockout
+  (16 edges, ~0.03%) reading zero. The edge **ranking** was measured at the wrong token, so that null
+  is uninterpretable. Fixed; re-run outstanding.
+- **By direction projection: the ASR effect stands; the comprehension half is ⛔ WITHDRAWN (R-6).**
+  `project_out d_surface` at L8 was reported to leave comprehension **statistically unchanged**
+  (Δ +0.088, p=0.681 — "the only one of five arms that does"). That p is a log-odds between two tokens
+  holding a median 4.4e-05 of the next-token mass, so it is not evidence either way. Coherence intact,
   while beating an inert projection control by **+0.056, p=0.0077**, on harmful conditions only. So a
   *surgical removal that preserves comprehension* does exist — it just is not an edge cut, and its effect is
   to **raise** attack success, not lower it.
@@ -853,7 +902,8 @@ for S in 20260817 20260818 20260819 20260820; do
 done
 
 # 6. ANALYSIS — all CPU, all committed, every gate-bearing number comes from here
-PY=<conda-env>/bin/python     # needs scipy/sklearn; the login shell has neither
+PY=/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python
+# scipy 1.17.1, sklearn 1.9.0, torch 2.7.1+cu126. The login shell has NONE of these.
 $PY src/boombness/analyze_g2.py --judge <JUDGE> --extract <EXTRACT_CW> --score <GENS> \
     --refusalness <REFUSAL_CW> --extract-position codeword_last --cluster-by domain \
     --out outputs/boombness/g2_analysis_cwpos.json
