@@ -48,7 +48,7 @@ here.
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
 | **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
-| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | ⛔ **SUSPENDED (R-14)** — the ClearHarm/AdvBench figures that answered this were judged against an **empty goal** (`external_bank.py` never emitted `final_query_text`), so they are not measurements. Generations are intact and the bank is fixed; **re-judging is pending**. On the *generated* bank the arm is unaffected and still raises ASR. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes — re-judged and domain-clustered** (§7c): ClearHarm 0.106 → **0.514**, p_cl=0.020, against a control inert to ±0.004. ⛔ But **removing `d_surface` alone is n.s.** (+0.084, p_cl=0.21, R-16), so the *off-bank* `d_surface` claim is **withdrawn** and now rests on AdvBench (16 clusters), which is judging. Super-additivity **not established**. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
@@ -667,112 +667,117 @@ distribution (see the readout note in the process section). The comparison above
 consistent — all three metrics are scored the same way — but the **comprehension column will move**
 when §4b is re-scored with the corrected readout. This section will be regenerated at that point.
 
-## 7c. ClearHarm — the external-set decomposition (plan §14) — added 2026-08-18, extended 2026-08-19
+## 7c. ClearHarm — the external-set decomposition (plan §14) — added 2026-08-18, re-derived 2026-08-19
 
-> ## ⛔ THIS SECTION IS SUSPENDED — R-14, 2026-08-19
->
-> **Every ASR number below was judged against an EMPTY GOAL and is not currently a measurement.**
-> `judge_boombness.make_goal` reads the intended harmful request from `final_query_text`;
-> `external_bank.py` emitted the instruction only as `full_prompt`, so **both external banks lacked
-> that key entirely** and StrongReject was asked to score each completion **against no request at
-> all**. The pre-fix judge recorded that as `judge_status: "ok"` and counted it in ASR.
->
-> It looked right because an empty-goal score still reads how harmful the *response* is, so the
-> numbers tracked the refusal rate. A guard added during the Phase-1 audit caught it: re-judged with
-> the current module, the same inputs return `goal statuses: {'empty_query': 179}` and **abort**.
->
-> **Suspended:** every figure in this section, including **arm B**, the row that carries the
-> exclusion of the bank-artifact explanation. **Not affected:** everything measured on the generated
-> bank (G1–G4, §4b, §10.4), which has always carried `final_query_text`.
->
-> **The fix is cheap and is in.** `external_bank.py` now emits `final_query_text`; both banks were
-> regenerated with **every `prompt_id` preserved and no other value changed**, so no generation needs
-> re-running — only re-judging. Until that lands, **nothing in this section may be cited.** The
-> ordering may well survive; an ordering that may survive is not a result.
-
-
-This is the section that answers the question every other causal result in this sprint was exposed to:
+This is the section that answers the question every other causal result in this sprint is exposed to:
 **is any of this a property of our own prompt bank?** Every ASR number in §§3–7 comes from the bank
-that `prompt_families.py` generated. The report already concedes that the largest arm-F gain appeared
-in `benign_remap` (+0.267) — the condition where the codeword mapping is **never taught** — which is
-the signature of a bank artifact rather than a mechanism.
+`prompt_families.py` generated, and the largest arm-F gain appeared in `benign_remap` — the condition
+where the mapping is **never taught** — which is the signature of a bank artifact rather than a
+mechanism. ClearHarm is 179 external harmful prompts with **no codeword, no demonstrations and no
+doublespeak wrapper**. Nothing our generator produced.
 
-**ClearHarm is the discriminating test.** 179 external harmful prompts, already integrated in this repo
-(`data/clearharm/`, `scripts/build_clearharm_manifests.py`) and asked for by plan §14. They carry
-**no codeword, no demonstrations, and no doublespeak wrapper at all**. Nothing our generator produced.
+> **⛔ Two corrections landed on this section within a day of it being written. Read them first.**
+>
+> **R-14 — the original numbers were judged against an EMPTY GOAL.** `judge_boombness.make_goal` reads
+> the request from `final_query_text`; `external_bank.py` emitted the instruction only as
+> `full_prompt`, so **both external banks lacked that key** and StrongReject scored every completion
+> against no request at all. The pre-fix judge recorded that as `judge_status: "ok"`. It looked right
+> because an empty-goal score still reads how harmful the *response* is, so the values tracked the
+> refusal rate. Fixed, banks regenerated with **every `prompt_id` preserved and no other value
+> changed**, and **all arms re-judged** — the table below is the re-judged one. Every arm moved by
+> ≤0.03 and the ordering held, so R-14's cost was measurement validity, not the conclusion.
+>
+> **R-16 — arm B was significant only under an iid interval.** See below; it is the more consequential
+> of the two.
 
-### The decomposition
+### The decomposition, re-judged and domain-clustered
 
-All arms coherence-gated individually, 100% coverage of the common set, judged with the same
-StrongReject rubric at the same threshold (`clearharm_decomposition.json`, n=179):
+`outputs/boombness/clearharm_decomposition_regoal.json`, produced by
+`src/boombness/analyze_external_arms.py` — the first version of these numbers that a committed script
+regenerates from committed artifacts. All arms coherence-gated, 100% coverage, n=179, **G=6 domains**.
 
-| arm | intervention | ASR | refusal rate |
-|---|---|---|---|
-| baseline | — | 0.1006 | 0.877 |
-| **B** ⛔ | remove `d_surface` @L8 | **0.2067** *(withdrawn — empty goal)* | 0.760 |
-| **C** | remove refusalness @L18 | **0.3408** | 0.615 |
-| **D** | remove **both** | **0.5419** | 0.447 |
-| Dctrl | two norm-matched **random** directions, same layers | 0.1117 | 0.872 |
+| arm | intervention | ASR@0.5 | Δ pooled | Δ cluster-mean | p_cl | domain-clustered CI |
+|---|---|---|---|---|---|---|
+| baseline | — | 0.1061 | — | — | — | — |
+| **B** | remove `d_surface` @L8 | 0.1899 | +0.0831 | +0.0843 | **0.2102** | **[−0.067, +0.235]** ⛔ **n.s.** |
+| **C** | remove refusalness @L18 | 0.3631 | +0.2402 | +0.3941 | **0.0410** | [+0.024, +0.764] ✓ |
+| **D** | remove **both** | 0.5140 | +0.3911 | +0.4603 | **0.0200** | [+0.109, +0.812] ✓ |
+| Dctrl | two norm-matched **random** directions | 0.1061 | −0.0007 | +0.0009 | 0.530 | [−0.003, +0.004] — inert |
 
-### Arm B is the load-bearing row
+*(`Δ pooled` weights prompts equally; `Δ cluster-mean` weights domains equally and is the estimand the
+interval belongs to. They come apart on this set because 127 of 179 rows are in one category.)*
 
-`d_surface` was fitted **entirely on the carrot/bomb 2×2** — a contrast between a codeword surface form
-and a concept. Removing it raises compliance on harmful requests that **contain no codeword at all**,
-from 0.1006 to 0.2067, against norm-matched random directions that move ASR by +0.011.
+### ⛔ R-16 — the row that carried the argument does not survive clustering
 
-That excludes the bank-artifact explanation, which was the most serious threat to every late finding
-in this sprint. It is also the first ASR figure in the whole sprint measured on a set the bank did not
-generate.
+An earlier draft of this section called arm B **"the load-bearing row"** and reported it as
+**+0.1047 ± 0.0238**, concluding that `d_surface` is causal off-bank and that the bank-artifact
+explanation was therefore **excluded**. That ± is an **iid SEM**:
 
-**It is not the refusal direction under another name.** cos(`d_surface`, refusalness) = **0.019 at
-L18** and 0.13 at L12 — near-orthogonal. The two arms move refusal rate by different amounts (B: 0.877
-→ 0.760; C: 0.877 → 0.615) and compose. *Caveat, stated because it matters:* arm B acts at **L8**,
-where no house refusal direction has been fitted, so the cosine is measured only at the layers where
-both directions exist.
+| arm | iid SEM | t (iid) | clustered SEM | t (clustered, G=6) |
+|---|---|---|---|---|
+| **B** | 0.0241 | **3.45** | 0.0587 | **1.44** |
+| C | 0.0337 | 7.13 | 0.1440 | 2.74 |
+| D | 0.0362 | 10.80 | 0.1368 | 3.36 |
 
-### What this licenses, and what it does not
+Under the domain clustering this design requires, arm B's t falls from **3.45 to 1.44**. **And the same
+table already used clustered inference where it produced a negative answer** — super-additivity was
+reported with a domain-clustered bootstrap and called "NOT established", while arm B beside it was
+reported iid. Clustered inference for the claim that failed, iid for the claim that passed. That is the
+same asymmetric-standard defect as R-13 and R-15, and this is its third instance.
 
-**Licensed:** "removing this direction causally raises compliance on harmful requests generally, and it
-is a distinct channel from refusal."
+**Withdrawn:** "arm B is the load-bearing row", "`d_surface` is causal off-bank", and "the
+bank-artifact explanation is excluded". **All three rested on arm B.**
 
-**Not licensed:** calling `d_surface` "concept-ness" *off-bank*. The 2×2 named the direction from a
-contrast — codeword surface vs concept — that **does not exist in a prompt with no codeword**. Its
-off-bank behaviour is a new fact that needs its own interpretation, not an extension of the old name.
-Naming it from the fitting contrast and then using the name to explain behaviour in a setting where
-that contrast is absent would be exactly the circularity this sprint has already retracted twice.
+**Still standing:** removing **refusalness**, and removing **both**, raise attack success on an external
+harmful set carrying no doublespeak wrapper, against a control inert to within **±0.004**. Both survive
+clustering. Neither isolates `d_surface`, so neither answers the bank-artifact question.
+
+**This is an underpowered result, not a null one — and it was predicted at build time.**
+`external_bank.py` warned when generating the set that **127 of 179 rows sit in one category**. The
+point estimate is unchanged; only the honest interval is wide.
+
+### The test that can settle it is running
+
+**AdvBench held-out — 495 prompts, 16 clusters, largest 25.7%** — was built in the same commit for
+exactly this reason. Its four arms are generated and judging. If arm B clears zero there under the same
+clustered estimator, the bank-artifact explanation is excluded on a properly-powered external set; if
+it does not, the off-bank `d_surface` claim must be **withdrawn outright** rather than left suspended.
+**It is the single most consequential open number in the sprint.**
 
 ### ⚠ NOT established — super-additivity
 
-The joint arm exceeds the sum of the singles by **+0.0922** (D − baseline = 0.4413 versus
-B + C increments = 0.1061 + 0.2402 = 0.3463). Tempting, and **not supported**: the domain-clustered
-bootstrap CI is **[−0.1474, +0.1332]**, with 21% of draws at or below zero.
+The joint arm exceeds the sum of the singles by **+0.0677**, domain-clustered CI **[−0.218, +0.123]**,
+28% of draws ≤ 0. Unchanged in kind by the re-judge. ClearHarm cannot resolve it for the same
+one-dominant-cluster reason; AdvBench can.
 
-The reason is a design limitation that `external_bank.py` warned about in advance: **127 of ClearHarm's
-179 rows sit in a single category**, so a domain-clustered bootstrap is dominated by one cluster and
-cannot resolve an effect of this size. **AdvBench held-out (495 prompts, 16 clusters, largest 26%)** was
-built in the same commit for precisely this test; its four arms are generated and judging at the time of
-writing. Super-additivity is **an open question**, not a finding.
+### What this licenses, and what it does not
 
-### ⚠ The control *band* is pending regeneration (R-12)
+**Licensed:** "removing the refusal direction — and removing it together with `d_surface` — causally
+raises compliance on harmful requests that our generator never produced."
 
-`clearharm_decomposition.json` as committed reports a 3-draw control band with between-draw
-sd = 0.0048. **That band is not real.** `score_behavior.py:123` recursed into composed arms without
-passing `control_seed`, so all three "draws" fell back to the same default seed — two of the three
-recorded ASRs are identical to eighteen significant figures (0.018156424581005588). This is retraction
-**R-12**, and it re-created retraction #7 exactly (whose fake band reported sd 0.0049). Both times the
-tell was arms agreeing to four decimals.
+**Not licensed, on this set:** any claim about `d_surface` **alone** off-bank. And even if AdvBench
+rescues arm B, calling `d_surface` "concept-ness" off-bank would remain unlicensed: the 2×2 named the
+direction from a codeword-vs-concept contrast that **does not exist in a prompt with no codeword**. Its
+off-bank behaviour is a new fact needing its own interpretation, not an extension of the old name.
 
-**Scope of the damage is narrow and worth stating precisely.** Arms B, C and D use real fitted
-directions and are untouched. `Dctrl` remains a valid *single* control, so **arm B (+0.106) against
-control (+0.011) stands**. What was never established is the draw-to-draw variance of the control. The
-band has been re-run with the seed correctly threaded — the three new draws have distinct generation
-hashes — and the decomposition artifact will be regenerated against them.
+*(cos(`d_surface`, refusalness) = **0.019 @L18**, 0.13 @L12 — near-orthogonal, so the two arms are not
+the same channel under another name. Caveat: arm B acts at **L8**, where no house refusal direction is
+fitted, so the cosine is measured only where both exist.)*
 
-*(A control band is the one artifact whose entire purpose is to measure draw-to-draw variance, which
-makes it the one artifact that cannot be falsified by inspecting its own reported value. Only the
-generations reveal it. That is now a standing check.)*
+### ⚠ The control *band* is still pending (R-12)
 
-## 8. Process — fifteen retractions, ten corrections, six dead guards
+The published band — 3 draws, between-draw sd 0.0048 — **was one draw stated three times**;
+`score_behavior.py:123` recursed into composed arms without passing `control_seed`. The three re-seeded
+draws now have distinct generations and are being re-judged. `Dctrl` remains a valid *single* control
+and is inert to ±0.004, which is what the arm comparisons above rest on; what is not yet established is
+the draw-to-draw variance.
+
+`analyze_external_arms.py` now **refuses** to report a band whose draws share a generation hash, and
+that guard was itself dead on first writing — it fingerprinted judge *scores*, and StrongReject is not
+bitwise deterministic, so three re-judgings of one identical generation set produced three "distinct"
+draws. Run against the real R-12 band it now refuses correctly.
+
+## 8. Process — sixteen retractions, ten corrections, seven dead guards
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
 *the manipulated and the measured quantity were not the same thing*, or *the best of mine was
