@@ -298,7 +298,7 @@ L8, gap-unit dosing (α=1 = one diff-of-means), common 270-prompt set, all arms 
 | baseline | 0.219 | [0.173, 0.272] | 0.074 | — |
 | **+0.25** | 0.081 | [0.054, 0.120] | **0.696** | **−0.1144 ± 0.0235** |
 | **−0.25** | 0.148 | [0.111, 0.195] | 0.067 | **−0.0741 ± 0.0198** |
-| random ×4 (band) | — | — | 0.085 | **−0.0366**, between-draw sd 0.0049 |
+| random ×4 (band) | — | — | 0.085 | ⛔ **−0.0366 / sd 0.0049 RETRACTED (#7)** — those four "draws" were byte-identical. Genuine 4-draw band: **−0.0120, between-draw sd 0.0301** |
 | orthogonal | 0.189 | [0.147, 0.240] | 0.093 | −0.0306 ± 0.0179 |
 
 **Both signs suppress ASR**, so mean ASR does not follow the sign of the axis. The falsifying branch
@@ -603,10 +603,12 @@ earlier draft had this backwards from a mixed-footing artifact.
 ⛔ **RETRACTED — the answer is YES, by a little (retraction #6).** I reported a tight null; the paired
 within-stem test gives F(5,355)=20.30, p=8.1e-18 with 11/15 pairwise gaps surviving Bonferroni, and the
 "3.6%" statistic used a between-stem denominator where the within-stem residual was correct (53%). The
-effect is **small but reliable** — largest pairwise gap 4.1% of the grand mean. Across six role styles with content, domain,
-demo count and query held fixed: `role → Boombness` **F = 0.175, p = 0.972** at L12 (and p = 0.60/0.75
-at L8/L31), with the sd of style means at **3.6%** of the within-style sd. Whether role framing changes
-*ASR* is unresolved (F = 1.94, p = 0.087; largest pair p ≈ 0.105 Bonferroni). `role_style` is a
+effect is **small but reliable** — largest pairwise gap 4.1% of the grand mean. The naive one-way test that produced
+"F = 0.175, p = 0.972" pooled across design cells and used a between-stem denominator; the paired
+within-stem test on the perfectly-crossed design gives **F(5,355) = 20.30, p = 8.1e-18**. The claim that
+content, domain, demo count and query were "held fixed" was **false for that pooled analysis** — `plain`
+and the five role styles occupy disjoint `bank_block`s with zero family overlap. Whether role framing
+changes *ASR* remains unresolved (F = 1.94, p = 0.087; largest pair ≈ 0.105 Bonferroni). `role_style` is a
 categorical proxy — no Userness/CoTness probe was fitted.
 
 **9. Can we surgically remove Boombness without destroying comprehension?**

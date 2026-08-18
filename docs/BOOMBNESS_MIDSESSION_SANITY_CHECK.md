@@ -111,7 +111,9 @@ without the comprehension caveat.*
    artifact's own Holm field, and the sign flips on Qwen3. Two independent reasons; narrowed in both
    reports.
 6. **No fitted role probe.** §11's conclusions rest on `role_style` as a categorical proxy. The
-   Boombness null there is tight (F=0.175, p=0.972) but it is a null about a *proxy*.
+   ⛔ The "tight null" (F=0.175, p=0.972) is **RETRACTED (#6)** — wrong error term. The paired within-stem
+   test gives F(5,355)=20.30, p=8.1e-18: role framing **does** move Boombness, reliably but by ~4% of the
+   grand mean. And it is still a claim about a *proxy*, since no role probe was ever fitted.
 7. **G1 is a pilot and its headline is arm-selected.** n=8 families from **2 domains**; the +84% is one
    arm of ~130, and the all-layer variant of the same transplant goes the *opposite* way (−0.76).
 8. **"Refusalness at the codeword token" is off-label.** Fitted for a last-token readout; its condition

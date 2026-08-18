@@ -227,8 +227,10 @@ control. So: **ASR does not follow the sign** (which kills the attack objective)
 does**.
 
 The control band is now **four independent random draws** (not the single draw revision 1 leaned on).
-They land within 0.010 of each other — band mean **−0.0366, between-draw sd 0.0049** — so generic
-perturbation at this dose is highly reproducible. Against that band:
+⛔ **The figures once quoted here (band mean −0.0366, sd 0.0049) are RETRACTED (#7): those four "draws"
+were byte-identical — one draw wearing four labels.** On a genuine 4-draw band the mean is **−0.0120 with
+between-draw sd 0.0301, six times wider**, spanning −0.055 to +0.012 — so a norm-matched random
+perturbation has **no reliable effect on ASR at all**. Against that real band:
 
 | arm | diff vs band | t | p | verdict |
 |---|---|---|---|---|
