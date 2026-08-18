@@ -49,8 +49,8 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | P7.2 | §11 | Role framing → Boombness | **DONE (08-17), powered** | Superseded by P7.4's powered run: `role → Boombness(L12)` F=0.175 **p=0.972**, style-mean spread 3.6% of within-style sd — a tight null, not an underpowered one. |
 | P7.3 | §11 | Userness/CoTness probes (if feasible) | **NOT FITTED — disclosed as a proxy** | `role_probes.py` ports the Role-Confusion machinery but no probe was fitted on this model, so §11 uses `role_style` as a CATEGORICAL PROXY throughout and every table says so. Not claimed as a measured role signal. |
 | P7.4 | §11 | Boombness + role predicts ASR | **DONE (08-17), powered** | 72 extract + 36 ASR rows per style. `role → Boombness(L12)` F=0.175 **p=0.972** — a tight null, style-mean spread is 3.6% of within-style sd. `role → ASR` F=1.94 p=0.087, largest pair 0.035 vs 0.233 (MW p=0.007 uncorrected, ~0.105 Bonferroni) = suggestive, NOT established. Answer is (c)-leaning, not the (b) I predicted at tick 35. |
-| P8.1 | §12.1 | Boombness GCG objective | **CLOSED — gate not met** | The steering test (α∈{0.10,0.25,1,2}) is the prerequisite and it returned a directional null: both signs suppress ASR, only +0.25 clears a 4-draw random-control band (p=0.0014) and it does so by triggering refusal. No directional causal support ⇒ no objective. Documented negative. |
-| P8.2 | §12.2 | Boombness − refusal objective | **CLOSED — gate not met** | G4 found no directional causal support for `d_surface`; an objective maximizing this projection is not justified. Documented negative, deliberately not run. |
+| P8.1 | §12.1 | Boombness GCG objective (maximise alone) | **CORRECTLY NOT BUILT — and now for a demonstrated reason** | Maximising Boombness alone *lowers* ASR (0.243→0.088) because it trips refusal. The original 'gate not met' verdict reached the right decision via reasoning that was later shown wrong (a ceiling effect), and the arm F result now supplies the actual reason. |
+| P8.2 | §12.2 | Boombness minus refusal objective | ⭐ **VINDICATED — this is the objective that works** | Arm F is its idealised limit: `d_surface:add + refusalness:project_out` doubles ASR (0.243→0.548, p<0.0001), specific to the axis (random composition: nothing). I closed this as gate-not-met; that was wrong. **This objective should be built.** |
 | P8.3 | §12.5 | Baseline / refusal-only comparison | **CLOSED — gate not met** | conditional on P8.2. |
 | P8.4 | §12.5 | Universality + held-out transfer | **CLOSED — gate not met** | conditional on P8.2. |
 | P8.5 | §15 | Final reports | **DONE (rev 4)** | `reports/boombness_objective_sprint_short_update.md` revision 4 — supersedes rev 3, which reported a conclusion built on a phantom cell. Carries 5 retractions, 5 corrections, the freedom-matched position 2×2, and the §18=B label. |
@@ -64,8 +64,8 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEGATIVE (
 | G1 (§5.4) | Can we force `carrot` to be `bomb`-like, and does it change behavior? | **PASS on DIRECTION; magnitude is one arm of ~130 and must be named.** The lever is the DEMONSTRATION block, not the codeword: `transplant|demos_only|L18` on the harm-context pair moves the semantic readout **+84% of span, paired-bootstrap CI [+57%,+105%]** (n=8 families from only **2 domains**); the query-codeword transplant moves it the WRONG way (−0.58 to −0.81). ⚠ **Arm-selection exposure, disclosed:** in the same context pair `transplant|demos_only|ALL` moves the readout strongly the wrong way (−0.76, CI [−1.49,−0.21]), so "transplanting the demonstrations" is not uniformly +84% — the single-layer L18 window is. ⛔ The previously quoted "+23% to +135%" was a CHIMERA (L8's lower bound welded to L18's upper) and is withdrawn. | 2026-08-17 |
 | G2 (§9) | Does prompt-level Boombness predict ASR? | **YES, with corrected inference: `d_surface|L12|proj`, rho=+0.307, norm-partial +0.302, n=234, 100% coverage, 6/6 domains positive (2 essentially null). p = 5.0e-04 within-domain permutation / 1.2e-03 CR1-clustered — NOT the i.i.d. 1.7e-06.** ⛔ Two earlier verdicts superseded: ~~L8 proj rho=+0.342, p=8e-08~~ (C1: L8 is the most norm-contaminated layer, norm-free +0.172 fails Holm) and ~~the original negative~~ (R2: predictor read off the wrong prompt). | 2026-08-17 |
 | G3 (§10) | Can Boombness be removed without destroying comprehension? | **RESOLVED, and the depth reading is RETRACTED (B4a). Cutting query→demo-block attention at all 32 layers recovers 84% (CI [62%,110%]) of the deletion ceiling; at 2 layers 0.07% (CI [−6.7%,+8.2%]). But the edge-count-matched arm shows layer spread is NOT the operative variable: 3,552 edges over 32 layers moves the readout +0.09, the same nothing as 3,552 edges at 2 layers (−0.01). The redundancy is in the EDGE SET — removing 6.25% of demo edges does nothing however distributed, removing 100% recovers 84%. The converse arm is impossible: a layer holds only ~3,648 edges, so any cut >7.3k edges must span layers. Identification one-sided by construction.** | 2026-08-17 |
-| G4 (§12) | Is Boombness a usable GCG objective? | **NO — a documented NEGATIVE.** Both signs of `d_surface` at a coherent dose suppress ASR (paired Δ −0.114 and −0.074), so mean ASR does not follow the sign and no objective is licensed. Against a **4-draw** random-control band (mean −0.0366, between-draw sd 0.0049): **+0.25 clears it** (t=−3.23, Welch df=235, p=0.0014) and **−0.25 does NOT** (p=0.070) — so the earlier "2–3× the controls" wording is retracted as sign-blind. The two signs suppress by different routes: +0.25 via refusal (90.1% of its suppressed prompts), −0.25 via generic degradation (0.0%, matching controls). ⚠ +0.25's coherence verdict was computed on 202/270 rows (68 short generations skipped). | 2026-08-17 |
-| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | **B — mechanistic but not causal (SETTLED 08-17 on rebuilt real cells).** Freedom-matched 2×2: ratio Boombness/refusalness = 1.54 [0.64,3.60] @last and 0.75 [0.33,1.13] @codeword_last — **both CIs straddle 1**, so neither probe dominates and C is not supported. POSITION dominates for both (2.0× and 4.2×), which is the surviving positive finding: the ASR-predictive state is localized at the codeword token. The 3.7× retraction stands — it was the most favourable of the four cross-position pairings. §12's objective unsupported (G4 directional null). | 2026-08-17 |
+| G4 (§12) | Is Boombness a usable GCG objective? | **YES, in the form §12.2 specifies — NOT §12.1.** ⛔ The earlier 'documented negative' is WITHDRAWN: it was a ceiling effect of refusal. At matched budget (512 tok, n=420, all arms gate-passed): adding Boombness ALONE lowers ASR (0.243→0.088, refusal 0.057→0.676), removing refusal alone does nothing (0.269, p=0.475), but **BOTH TOGETHER give 0.548** (Δ=+0.282, p<0.0001), while a norm-matched RANDOM direction composed the same way does **nothing** (0.219, p=0.116). Interaction +0.400 continuous, p=0.0001, robust at thresholds 0.25/0.50/0.75. | 2026-08-18 |
+| FINAL (§18) | A strong-positive / B mechanistic-not-causal / C refusal-only / D negative | ⛔ **B WITHDRAWN.** Boombness IS causally related to attack success; refusal was masking it. Closest to **A, conditional**: the axis has TWO opposing channels — detection (drives refusal, suppresses ASR) and capability (supplies harmful content, appears once refusal is removed). Neither manipulation alone raises ASR; together they more than double it, specifically for `d_surface` and not for a random direction. Limits are scope (1 model for the interaction, 1 concept pair, 1 judge, L18 projection), not validity. | 2026-08-18 |
 
 ---
 
@@ -4663,3 +4663,31 @@ to projection at that layer and the claim collapses — which is a real possibil
 I am not writing this into a report until that control lands.
 
 Also running: `len_B` / `len_Bctrl` (332/365 of 960), the Llama 512-token matched pair.
+
+### Tick 72 — gate table and phase board brought in line with the new results
+
+Four rows were stale in a way that mattered, because they recorded the *opposite* of what is now
+established:
+
+| row | was | now |
+|---|---|---|
+| **G4 (§12)** | "documented NEGATIVE — no directional causal support" | **YES in the §12.2 form.** The negative was a ceiling effect of refusal. |
+| **FINAL (§18)** | "B — mechanistic but not causal" | ⛔ **B withdrawn.** Closest to **A, conditional**: two opposing channels on one axis. |
+| **P8.1 (§12.1)** | "CLOSED — gate not met" | **Correctly not built, now for a demonstrated reason**: maximising alone *lowers* ASR because it trips refusal. |
+| **P8.2 (§12.2)** | "CLOSED — gate not met" | ⭐ **VINDICATED — this is the objective that works.** |
+
+**P8.1 deserves a note on how it got the right answer wrongly.** I closed §12.1 on the reasoning that
+G4 showed "no directional causal support". That reasoning has since been shown wrong — there *is*
+directional support, it was masked. But the *decision* was right: maximising Boombness alone really does
+lower ASR, just for a different reason than I gave. **A correct decision reached by faulty reasoning is
+still a faulty process**, and it is only visible as such because the arm F experiment forced the question
+open again. Had §12.1 been built on my stated reasoning it would have failed, and I would have concluded
+the axis was useless rather than that the objective had the wrong form.
+
+**P8.2 is the sharper lesson.** The plan *specified* "Boombness minus refusal" as §12.2. I closed it
+without running it, on a gate verdict that turned out to be an artifact. The plan was right and the
+gate reasoning was wrong — and the only thing that recovered it was an audit asking why §10.4's arms had
+never been run.
+
+**Still open before any of this is final:** `q3_projctrl` (280/960), the Qwen3 projection control, and
+`len_B`/`len_Bctrl` (676/758 of 960), the Llama 512-token matched pair. Claim 1 stands or falls on those.
