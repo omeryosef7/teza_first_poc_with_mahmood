@@ -5061,7 +5061,9 @@ and the term is dropped, with the descriptive means kept and labelled descriptiv
 |---|---|---|---|
 | boombness only | 0.1411 | +0.1179 (p=5.0e-4) | — |
 | refusalness only | 0.1759 | — | +0.1317 (p=5.9e-4) |
-| **both** | **0.2502** | **+0.0889 (p=3.8e-5, perm p=0.0065)** | **+0.1077 (p=9.9e-4, perm p=5.0e-4)** |
+| **both** | **0.2502** | **+0.0889 (p=3.8e-5, perm p=0.0115)** | **+0.1077 (p=9.9e-4, perm p=0.0010)** |
+
+*(permutation p's updated 2026-08-18 after audit 11 found the within-domain permutation was not group-demeaned — A11-3. boombness 0.0065→0.0115, refusalness 0.0005→0.0010; both still clear, so §9's conclusion is unchanged. The same fix moved a §6.4 p from 0.150 to 0.818, so it is not always cosmetic.)*
 
 The outcome is the **continuous StrongReject score**, not binary ASR@0.5. Both survive jointly. Refusalness adds +0.109 R² over boombness; boombness adds +0.074 over refusalness.
 Neither is redundant, and **refusalness is the stronger single predictor** — consistent with the corrected
