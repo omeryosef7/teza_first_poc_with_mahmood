@@ -87,6 +87,19 @@ def resolve_occurrences(dc, tok, row: Dict, enable_thinking="__module__"
     templated = dc.apply_template(tok, row["full_prompt"],
                                   enable_thinking=_et)
     ids = tok(templated, add_special_tokens=False)["input_ids"]
+    # A ROW WITH NO TARGET WORD HAS NOTHING TO RESOLVE, and must say so BEFORE the search.
+    # First attempt at supporting external harmful sets (plan §14) only narrowed the `not last`
+    # raise below. That was the wrong one of two paths: `target_surface` is the EMPTY STRING on
+    # such rows, and an empty needle matches at every token, so `last` came back with 24-33 hits
+    # and the COUNT-MISMATCH check above it fired instead --
+    #     resolve:occurrence_count_mismatch:text=0,tokens=27
+    # killing 179/179 rows in all three ClearHarm arms (jobs 764745-747) while SLURM reported
+    # COMPLETED 0:0. The FailureLedger is the only reason that was visible at all: `counts: {}`
+    # with an itemised reason per row, which is exactly what plan §2.2 mandates it for.
+    if not row.get("target_surface"):
+        if row["n_target_occurrences"] not in (0, None):
+            raise ValueError(f"no_target_surface_but_expected:{row['n_target_occurrences']}")
+        return templated, ids, [], [], []
     hit = dc.find_word_occurrences_in_text(tok, templated, row["target_surface"],
                                            add_special_tokens=False)
     last = list(hit.last_idx)

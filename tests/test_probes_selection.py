@@ -211,3 +211,116 @@ def _argparser():
     if "ap" not in holder:
         pytest.fail("could not capture the argument parser")
     return holder["ap"]
+
+
+# --------------------------------------------------------------------- verification pass 2026-08-18
+# The four tests below were added when the fix above was VERIFIED rather than written. They exist
+# because the original guard had never been executed: `test_leak_exits_nonzero_by_default` only
+# asserted that two CLI flags exist, so `main()` — the only place `shuffled_null_distribution`,
+# `check_leakage`, the paired table, the printout and the non-zero exit are actually wired together
+# — had never run once. Two real defects were sitting in that unexecuted path (K=1 silently passing
+# the stopping rule; a permutation p that printed 0.0000 from 20 draws), and neither could have been
+# caught by a test of the pieces.
+
+def _fake_run(tmpdir):
+    """A complete, minimal `extract_boombness` run dir + bank so `main()` can be driven end to end.
+
+    Pure-noise reps again: the honest AUROC is 0.5 everywhere, so a clean run must NOT flag a leak
+    and the stopping rule can be forced to fire only by moving its threshold.
+    """
+    import json
+    import torch
+    rng = np.random.RandomState(3)
+    run = os.path.join(tmpdir, "fakerun")
+    os.makedirs(os.path.join(run, "cache"), exist_ok=True)
+    layers = [0, 4, 8]
+    bank, reps = [], {}
+    for d in range(6):
+        for j in range(12):
+            pid = f"d{d}_{j}"
+            bank.append({"prompt_id": pid, "cell": "C" if j % 2 == 0 else "A", "condition": "cond",
+                         "domain": f"dom{d}", "split": "dev", "family_id": f"d{d}_f{j // 4}",
+                         "n_examples": 4, "bank_block": "core2x2", "query_kind": "q"})
+            reps[pid] = torch.tensor(rng.randn(len(layers), 24), dtype=torch.float32)
+    torch.save({"layers": layers, "reps": reps}, os.path.join(run, "cache", "final_occurrence_reps.pt"))
+    with open(os.path.join(run, "DONE.json"), "w") as f:
+        json.dump({"ok": True}, f)
+    bank_path = os.path.join(tmpdir, "bank.jsonl")
+    with open(bank_path, "w") as f:
+        for r in bank:
+            f.write(json.dumps(r) + "\n")
+    return run, bank_path
+
+
+def _run_main(tmpdir, extra):
+    import functools
+    import common
+    run, bank_path = _fake_run(tmpdir)
+    saved_rundir, saved_argv = probes.RunDir, sys.argv
+    probes.RunDir = functools.partial(common.RunDir, out_root=os.path.join(tmpdir, "out"))
+    try:
+        sys.argv = ["probes.py", "--run", run, "--bank", bank_path, "--layers", "0,4,8",
+                    "--folds", "3", "--regimes", REGIME, "--pca", "8",
+                    "--tag", f"t{len(extra)}{abs(hash(tuple(extra))) % 10000}"] + extra
+        return probes.main()
+    finally:
+        probes.RunDir, sys.argv = saved_rundir, saved_argv
+
+
+def test_main_runs_end_to_end_and_exits_clean_on_a_clean_null(tmp_path):
+    """The whole wiring, once: null distribution -> paired table -> printout -> summary -> exit 0.
+
+    On pure noise the null mean sits at chance, so a correct run must exit 0 AND must record a
+    stopping-rule verdict that was actually evaluated (`rule_enforceable` True)."""
+    assert _run_main(str(tmp_path), ["--null-draws", "6"]) == 0
+    import glob
+    import json
+    summ = glob.glob(os.path.join(str(tmp_path), "out", "probes", "*", "summary.json"))
+    assert len(summ) == 1, "main() did not write exactly one summary.json"
+    s = json.load(open(summ[0]))
+    assert s["leak_check"]["rule_enforceable"] is True
+    assert s["leak_check"]["regimes_flagged"] == []
+    assert s["null_draws"] == 6
+    nested = s["results"][REGIME]["nested_layer_selection"]
+    assert not math.isnan(nested["auroc_nested"])
+    assert REGIME + "_null_distribution" in s["results"]
+    assert REGIME + "_shuffled" not in s["results"], "the bare single-draw key is still emitted"
+
+
+def test_main_exits_nonzero_when_the_stopping_rule_actually_fires(tmp_path):
+    """Executes the abort path, not just its CLI flags. The thresholds are moved rather than the
+    data, because a leak that big cannot be manufactured out of noise; what is under test is that a
+    fired rule reaches a non-zero exit code after the artifacts are on disk."""
+    rc = _run_main(str(tmp_path), ["--null-draws", "6", "--leak-tol", "-1", "--leak-z", "-1"])
+    assert rc == 2, f"stopping rule fired but main() returned {rc}"
+
+
+def test_single_draw_null_cannot_silently_pass_the_stopping_rule(tmp_path):
+    """K=1 has no between-draw spread, so `se` is NaN and the rule is UNDECIDABLE.
+
+    The first version of this fix let that case return `leak = False` and exit 0 — a clean verdict
+    on a check that never ran, inside the very commit that existed to stop exactly that. """
+    nd = {"regime": "r", "n_draws": 1, "per_layer": {
+        8: {"mean": 0.63, "sd": float("nan"), "se": float("nan"), "min": 0.63, "max": 0.63,
+            "n_draws": 1, "quantiles": {}, "draws": [0.63]}}}
+    lk = probes.check_leakage(nd, tol=0.05)
+    assert lk["rule_enforceable"] is False, "a null with no spread is reported as a passing check"
+    assert lk["undecidable_layers"] == [8]
+    assert _run_main(str(tmp_path), ["--null-draws", "1"]) != 0, (
+        "--null-draws 1 exits 0, certifying a stopping rule that could not be evaluated")
+
+
+def test_permutation_p_cannot_be_reported_as_zero(tmp_path):
+    """An empirical p from K permutations has a floor of 1/(K+1); 0.0000 is not a value K=20 can
+    license. Checked on the artifact main() writes, so the smoothing is verified where it is
+    published rather than where it is computed."""
+    import glob
+    import json
+    assert _run_main(str(tmp_path), ["--null-draws", "6"]) == 0
+    s = json.load(open(glob.glob(os.path.join(str(tmp_path), "out", "probes", "*", "summary.json"))[0]))
+    paired = s["results"][REGIME]["paired_vs_shuffled"]
+    assert paired, "no paired real-vs-null table was written"
+    for L, v in paired.items():
+        assert v["p_perm_ge_real"] >= v["p_perm_resolution"] > 0, (
+            f"L{L} reports p_perm={v['p_perm_ge_real']} below its own resolution floor")
+        assert v["p_perm_resolution"] == pytest.approx(1.0 / (v["null_n_draws"] + 1))

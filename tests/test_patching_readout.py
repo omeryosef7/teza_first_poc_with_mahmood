@@ -37,20 +37,66 @@ READOUT_LAYERS = [8, 12, 16, 18, 20, 24, 28, 31]
 
 
 # --------------------------------------------------------------------------- #
-# The pre-fix module, imported live so "this test fails against HEAD" is checkable
+# The pre-fix module, imported live so "this test fails against the old code" is checkable
 # --------------------------------------------------------------------------- #
-@pytest.fixture(scope="module")
-def head_module(tmp_path_factory):
+TARGET = "src/boombness/aggressive_patching.py"
+
+
+def _git(*args):
+    return subprocess.run(["git", *args], cwd=REPO, check=True,
+                          capture_output=True, text=True).stdout
+
+
+def _rev_before(marker):
+    """Parent of the OLDEST commit that introduced `marker` into the target file.
+
+    REVIEW FIX (2026-08-18): this fixture used to export `HEAD:<target>` and call the result "the
+    pre-fix module". That was true only for the few minutes between writing the fix and committing
+    it. The T9a/T10 fix is now IN HEAD, so every "FAILS AGAINST HEAD" test here was asserting a
+    property of the FIXED file, and two of them (`test_t10_head_module_has_no_flag_helpers`,
+    `test_t9a_head_builds_exactly_one_control_vector_per_layer`) failed the moment the fix landed
+    -- i.e. the regression suite's own claim that it fails against the defect became unverifiable
+    at exactly the point it started to matter. Pin the revision by CONTENT instead: find the first
+    commit that added the marker string to this file and take its parent. That stays correct as
+    history grows, and it fails loudly (rather than silently comparing the file to itself) if the
+    marker is ever renamed.
+    """
+    shas = _git("log", "--format=%H", "-S", marker, "--", TARGET).split()
+    assert shas, f"no commit in the history of {TARGET} introduces {marker!r}"
+    return shas[-1] + "^"
+
+
+def _module_at(dest_dir, rev, modname):
     import importlib.util
-    d = tmp_path_factory.mktemp("head")
-    src = os.path.join(str(d), "old_aggressive_patching.py")
+    src = os.path.join(str(dest_dir), modname + ".py")
     with open(src, "w") as fh:
-        subprocess.run(["git", "show", "HEAD:src/boombness/aggressive_patching.py"],
-                       cwd=REPO, check=True, stdout=fh)
-    spec = importlib.util.spec_from_file_location("old_aggressive_patching", src)
+        subprocess.run(["git", "show", f"{rev}:{TARGET}"], cwd=REPO, check=True, stdout=fh)
+    spec = importlib.util.spec_from_file_location(modname, src)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+@pytest.fixture(scope="module")
+def head_module(tmp_path_factory):
+    """The module as it stood BEFORE the T9a/T10 fix (parent of the commit that added the flag)."""
+    d = tmp_path_factory.mktemp("prefix_t10")
+    return _module_at(d, _rev_before("readout_window_flags"), "old_aggressive_patching")
+
+
+@pytest.fixture(scope="module")
+def t10a_module(tmp_path_factory):
+    """The module as it stood after the layer-only T10 fix but before the T10b position fix.
+
+    This is the version T10b is a regression test against: it has `readout_window_flags`, but the
+    function is a pure layer predicate with no notion of which POSITIONS were patched.
+    """
+    d = tmp_path_factory.mktemp("prefix_t10b")
+    rev = _rev_before("readout_tautological")
+    mod = _module_at(d, rev, "t10a_aggressive_patching")
+    if hasattr(mod, "readout_window_flags"):
+        return mod
+    pytest.skip("T10b's baseline revision predates the T10 fix entirely")
 
 
 @pytest.fixture(scope="module")
@@ -130,7 +176,11 @@ def test_t10_per_layer_flags_line_up_with_the_metric_columns():
     assert per["boombness|L18|inside_patched_window"] is True
     assert per["boombness|L20|inside_patched_window"] is True
     assert per["boombness|L24|inside_patched_window"] is False
-    assert set(per) == {f"boombness|L{R}|inside_patched_window" for R in READOUT_LAYERS}
+    # T10b added a `|tautological` companion to each column; positions were not supplied here, so
+    # it is None (unknown) rather than False.
+    assert set(per) == ({f"boombness|L{R}|inside_patched_window" for R in READOUT_LAYERS}
+                        | {f"boombness|L{R}|tautological" for R in READOUT_LAYERS})
+    assert all(per[f"boombness|L{R}|tautological"] is None for R in READOUT_LAYERS)
 
 
 def test_t10_readout_layer_zero_does_not_crash_the_sweep():
@@ -249,3 +299,100 @@ def test_t9a_band_ignores_non_numeric_and_boolean_columns():
     band = ap.between_draw_band(recs)
     assert "flag" not in band and "name" not in band
     assert band["m"] == 1.5
+
+
+# --------------------------------------------------------------------------- #
+# T10b -- the layer-only flag over-flagged, because a patch also has a POSITION extent
+# --------------------------------------------------------------------------- #
+def test_t10b_demo_only_scopes_are_not_tautological_in_the_committed_run(rows):
+    """THE T10b DEFECT, measured on the artifact. `readout_inside_patched_window` is True for all
+    five scopes at an in-window readout layer, but only the scopes that actually patch `probe_pos`
+    (the last/query occurrence) reproduce the donor ceiling. Counting in-window
+    `boombness|L*|proj` transplant cells on the committed run: query_only 1200/1200 and all
+    1200/1200 tie the ceiling bit-for-bit; demos_only / first_demo / last_demo tie it 0/1200 each.
+    A layer-only flag therefore condemns 3600 of 6000 cells that are ordinary evidence."""
+    import collections
+    meta = os.path.join(os.path.dirname(ARTIFACT), "metadata.json")
+    with open(meta) as fh:
+        m = json.load(fh)
+    windows, readout = m["windows"], m["readout_layers"]
+    key = lambda r: (r["pair"], r["family_id"], r["recipient_prompt_id"])   # noqa: E731
+    ceiling = {key(r): r for r in rows if r["intervention"] == "donor_ceiling"}
+    tally = collections.defaultdict(lambda: [0, 0])
+    for r in rows:
+        if r["intervention"] != "transplant":
+            continue
+        wl = set(windows[r["window"]])
+        for R in readout:
+            if R not in wl:
+                continue
+            k = f"boombness|L{R}|proj"
+            t = tally[r["scope"]]
+            t[0] += 1
+            t[1] += (r[k] == ceiling[key(r)][k])
+    assert {s: tuple(v) for s, v in tally.items()} == {
+        "query_only": (1200, 1200),
+        "all": (1200, 1200),
+        "demos_only": (1200, 0),
+        "first_demo": (1200, 0),
+        "last_demo": (1200, 0),
+    }
+
+
+def test_t10b_flags_distinguish_layer_overlap_from_an_overwritten_readout():
+    """FAILS AGAINST THE T10a MODULE (no `readout_tautological` key at all). Same window, same
+    readout layers, two different position sets: only the one containing the probe is a tautology."""
+    hit = ap.readout_window_flags(ds_common, [18], READOUT_LAYERS,
+                                  patched_positions=[11, 12], probe_pos=12)
+    miss = ap.readout_window_flags(ds_common, [18], READOUT_LAYERS,
+                                   patched_positions=[3, 4], probe_pos=12)
+    for f in (hit, miss):
+        assert f["readout_inside_patched_window"] is True, "the LAYER predicate is unchanged"
+    assert hit["readout_probe_pos_patched"] is True and hit["readout_tautological"] is True
+    assert hit["readout_layers_tautological"] == [18]
+    assert miss["readout_probe_pos_patched"] is False and miss["readout_tautological"] is False
+    assert miss["readout_layers_tautological"] == []
+
+
+def test_t10b_unknown_positions_report_none_not_false():
+    """'Not asked' must never render as 'clean'. A caller that has not been updated gets None."""
+    f = ap.readout_window_flags(ds_common, [18], READOUT_LAYERS)
+    assert f["readout_tautological"] is None and f["readout_probe_pos_patched"] is None
+    per = ap.per_layer_inside_flags(READOUT_LAYERS, f["readout_layers_inside_window"],
+                                    f["readout_layers_tautological"])
+    assert per["boombness|L18|inside_patched_window"] is True
+    assert per["boombness|L18|tautological"] is None
+
+
+def test_t10b_per_layer_tautology_flags_track_the_position_test():
+    f = ap.readout_window_flags(ds_common, [16, 18], READOUT_LAYERS,
+                                patched_positions=[7], probe_pos=7)
+    per = ap.per_layer_inside_flags(READOUT_LAYERS, f["readout_layers_inside_window"],
+                                    f["readout_layers_tautological"])
+    assert per["boombness|L16|tautological"] is True
+    assert per["boombness|L18|tautological"] is True
+    assert per["boombness|L20|tautological"] is False
+    assert set(per) == ({f"boombness|L{R}|inside_patched_window" for R in READOUT_LAYERS}
+                        | {f"boombness|L{R}|tautological" for R in READOUT_LAYERS})
+
+
+def test_t10b_prior_module_had_no_position_notion(t10a_module):
+    """Explicit statement of the gap: the layer-only version cannot even be ASKED the question."""
+    import inspect
+    sig = inspect.signature(t10a_module.readout_window_flags)
+    assert "patched_positions" not in sig.parameters
+    flags = t10a_module.readout_window_flags(ds_common, [18], READOUT_LAYERS)
+    assert "readout_tautological" not in flags
+    assert flags["readout_inside_patched_window"] is True     # ... for EVERY scope, which is the bug
+
+
+def test_t10b_scope_positions_decide_the_flag_via_select_positions():
+    """The position set the flag is computed from must be the one the patch actually uses."""
+    last = [4, 9, 14, 21]          # occurrences; the query occurrence is the last
+    probe = last[-1]
+    for scope, taut in (("query_only", True), ("all", True), ("demos_only", False),
+                        ("first_demo", False), ("last_demo", False)):
+        pos = ap.select_positions(last, scope)
+        f = ap.readout_window_flags(ds_common, [18], READOUT_LAYERS,
+                                    patched_positions=pos, probe_pos=probe)
+        assert f["readout_tautological"] is taut, scope

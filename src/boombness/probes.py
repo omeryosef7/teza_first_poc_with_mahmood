@@ -67,6 +67,15 @@ chance) using the null mean and a one-sided z on its standard error, records the
 NON-ZERO with a loud banner unless `--allow-leak` is passed. `--allow-leak` is for deliberately
 diagnosing a leak, never for reporting through one.
 
+Two holes in that guard were found and closed when it was verified on 2026-08-18 (the guard had
+never been executed end-to-end when it was written; four earlier guards in this sprint shipped the
+same way). (i) At K = 1 the null has no between-draw spread, `se` is NaN, and the check silently
+returned `leak = False` — a clean verdict on a rule that had not run. The check now reports
+`rule_enforceable` / `undecidable_layers` and `main` exits 3 on an unevaluable rule. (ii) The
+per-layer permutation p was the raw fraction `(draws >= real).mean()`, which prints 0.0000 from 20
+draws; it is add-one smoothed to (1 + #{draw >= real}) / (K + 1) and ships with its resolution
+floor 1/(K+1).
+
 LAYER SELECTION MUST NOT BE DONE ON THE TEST SET (fixed 2026-08-18, external critique T6b)
 ------------------------------------------------------------------------------------------
 `best_layer_by_auroc` used to be `argmax` of the per-layer TEST AUROC over the ~9-10 scanned layers,
@@ -430,21 +439,39 @@ def check_leakage(null_dist: Dict, tol: float = 0.05, z_crit: float = 2.0) -> Di
     uninformative. A layer is flagged only when BOTH the effect (mean - 0.5 > tol) and the
     significance (z > z_crit) fire, so K large enough to make se tiny cannot flag a 0.505 null and
     a single wild draw cannot flag anything at all.
+
+    UNDECIDABLE IS NOT CLEAN (added 2026-08-18 during the verification pass of this same fix).
+    The first version of this function computed `z = excess / se` and, when `se` was NaN — which is
+    exactly what `shuffled_null_distribution` returns for K = 1, the single-draw mode the CLI help
+    still advertises as "reproduces the pre-2026-08-18 control" — silently produced `leak = False`.
+    So `--null-draws 1` would have written DONE.json, exited 0 and reported a clean stopping-rule
+    verdict that had never been evaluated: a brand-new dead guard, shipped inside the commit whose
+    whole purpose was to stop this module asserting an unchecked rule. A layer whose null has no
+    measurable spread is now recorded as UNDECIDABLE, not as passing, and `rule_enforceable` is
+    False for the whole check so the caller can refuse to report through it.
     """
-    layers_flagged, rows = [], []
+    layers_flagged, undecidable, rows = [], [], []
     for L, v in sorted(null_dist.get("per_layer", {}).items()):
         excess = v["mean"] - 0.5
         se = v.get("se", float("nan"))
-        z = (excess / se) if (isinstance(se, float) and se == se and se > 0) else float("nan")
-        leak = bool(excess > tol and (z == z and z > z_crit))
+        decidable = bool(isinstance(se, float) and se == se and se > 0)
+        z = (excess / se) if decidable else float("nan")
+        leak = bool(decidable and excess > tol and z > z_crit)
         rows.append({"layer": L, "null_mean": v["mean"], "null_sd": v["sd"], "null_se": se,
                      "excess_over_chance": float(excess), "z": float(z), "n_draws": v["n_draws"],
-                     "leak": leak})
+                     "decidable": decidable, "leak": leak})
         if leak:
             layers_flagged.append(L)
+        if not decidable:
+            undecidable.append(L)
     return {"regime": null_dist.get("regime"), "tol": float(tol), "z_crit": float(z_crit),
             "n_draws": null_dist.get("n_draws"), "layers_flagged": layers_flagged,
-            "leak": bool(layers_flagged), "per_layer": rows}
+            "leak": bool(layers_flagged),
+            "undecidable_layers": undecidable,
+            "rule_enforceable": not undecidable,
+            "undecidable_note": "a layer with NaN/zero null se (K=1, i.e. no between-draw spread) "
+                                "cannot be tested against the stopping rule; it is NOT a pass",
+            "per_layer": rows}
 
 
 def _fit_score(regime: str, reps: Dict[str, np.ndarray], li: int, tr: List[Dict],
@@ -545,14 +572,16 @@ def main() -> int:
     ap.add_argument("--null-draws", type=int, default=20,
                     help="K independent label shuffles used to build the null DISTRIBUTION "
                          "(mean/sd/quantiles). K=1 reproduces the pre-2026-08-18 single-draw "
-                         "control, which is a point and not a band — see the module docstring.")
+                         "control, which is a point and not a band — see the module docstring — "
+                         "and, because a point has no spread to test the stopping rule against, "
+                         "K<2 now exits 3 unless --allow-leak is passed.")
     ap.add_argument("--leak-tol", type=float, default=0.05,
                     help="stopping rule: null-mean AUROC may not exceed 0.5 by more than this")
     ap.add_argument("--leak-z", type=float, default=2.0,
                     help="one-sided z on the null mean's standard error required to call a leak")
     ap.add_argument("--allow-leak", action="store_true",
-                    help="do not exit non-zero when the stopping rule fires (diagnosis only; "
-                         "output must not be reported)")
+                    help="do not exit non-zero when the stopping rule fires OR cannot be "
+                         "evaluated (diagnosis only; output must not be reported)")
     ap.add_argument("--inner-folds", type=int, default=2,
                     help="inner group-k-fold used to SELECT the layer without touching the test "
                          "fold (see nested_layer_selection)")
@@ -594,6 +623,7 @@ def main() -> int:
     results: Dict[str, Dict] = {}
     leak_checks: Dict[str, Dict] = {}
     leaked: List[str] = []
+    undecidable: List[str] = []
     score_sink = {} if args.emit_scores else None
     for regime in [r.strip() for r in args.regimes.split(",") if r.strip()]:
         real = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
@@ -619,6 +649,8 @@ def main() -> int:
         # STOPPING RULE, ENFORCED.
         lk = check_leakage(null, tol=args.leak_tol, z_crit=args.leak_z)
         leak_checks[regime] = lk
+        if not lk["rule_enforceable"]:
+            undecidable.append(regime)
         if lk["leak"]:
             leaked.append(regime)
 
@@ -646,8 +678,18 @@ def main() -> int:
                          "null_mean": b, "null_sd": nd["sd"], "null_se": nd["se"],
                          "null_n_draws": nd["n_draws"], "null_quantiles": nd["quantiles"],
                          "null_min": nd["min"], "null_max": nd["max"],
-                         # One-sided empirical p: how often a shuffled draw matched the real number.
-                         "p_perm_ge_real": float((draws >= a).mean()),
+                         # One-sided empirical p: how often a shuffled draw matched the real
+                         # number. ADD-ONE SMOOTHED (fixed during the 2026-08-18 verification pass
+                         # of this commit): the raw fraction `(draws >= a).mean()` reports p =
+                         # 0.0000 whenever no permutation beats the real AUROC, and a p of exactly
+                         # zero is not a thing K = 20 permutations can license. The observed
+                         # statistic is itself a draw from the null under H0, so the correct
+                         # estimator is (1 + #{draw >= real}) / (K + 1), whose floor 1/(K+1) is
+                         # reported next to it as `p_perm_resolution`. The raw count is kept so the
+                         # smoothing is visible rather than baked in.
+                         "p_perm_ge_real": float((1 + int((draws >= a).sum())) / (draws.size + 1)),
+                         "n_draws_ge_real": int((draws >= a).sum()),
+                         "p_perm_resolution": float(1.0 / (draws.size + 1)),
                          "z_vs_null": (float((a - b) / nd["sd"])
                                        if isinstance(nd["sd"], float) and nd["sd"] == nd["sd"]
                                        and nd["sd"] > 0 else float("nan")),
@@ -713,7 +755,10 @@ def main() -> int:
         "results": results,
         "null_draws": args.null_draws,
         "leak_check": {"tol": args.leak_tol, "z_crit": args.leak_z,
-                       "regimes_flagged": leaked, "by_regime": leak_checks,
+                       "regimes_flagged": leaked,
+                       "regimes_undecidable": undecidable,
+                       "rule_enforceable": not undecidable,
+                       "by_regime": leak_checks,
                        "rule": "shuffled-label AUROC meaningfully above 0.5 means the split is "
                                "leaking; tested on the mean of --null-draws independent shuffles"},
         "note": "d4_heldout_ds is the generalization test: cell C is removed from training and "
@@ -750,6 +795,26 @@ def main() -> int:
         print(banner)
         if not args.allow_leak:
             return 2
+        print("[probe] --allow-leak set: exiting 0 anyway. Output must not be reported.")
+
+    # A STOPPING RULE THAT CANNOT BE EVALUATED IS NOT A PASS (added 2026-08-18, verification pass).
+    # With --null-draws 1 the null has no between-draw spread, so `se` is NaN and `check_leakage`
+    # can decide nothing. The first version of this guard let that case fall through the `if leaked`
+    # branch and return 0 — a clean exit certifying a rule that never ran, which is precisely the
+    # dead-guard shape this commit exists to remove. K < 2 now fails the run unless it is explicitly
+    # asked for with --allow-leak (the single-draw mode is a reproduction of the pre-fix behaviour
+    # and its output must not be reported either).
+    if undecidable:
+        banner = "=" * 78
+        print(banner)
+        print("STOPPING RULE COULD NOT BE EVALUATED — THE NULL HAS NO BETWEEN-DRAW SPREAD")
+        for rg in undecidable:
+            print(f"  {rg}: layers {leak_checks[rg]['undecidable_layers']} have NaN/zero null se "
+                  f"at K={args.null_draws}. Re-run with --null-draws >= 20.")
+        print("An unevaluated stopping rule is NOT a passing stopping rule.")
+        print(banner)
+        if not args.allow_leak:
+            return 3
         print("[probe] --allow-leak set: exiting 0 anyway. Output must not be reported.")
     return 0
 
