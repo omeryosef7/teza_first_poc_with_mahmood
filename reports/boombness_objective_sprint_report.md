@@ -27,15 +27,22 @@ concept-like, and optimise a GCG suffix against it — was not built, and should
 directional null: *both* signs of `d_surface` suppress attack success, so ASR does not follow the
 axis, and the one arm that clears a random-control band does so by triggering refusal.
 
-**But the sprint's late intervention results are real, and one of them now survives an external
-dataset.** Projecting out `d_surface` *together with* the refusal direction takes attack success from
-**0.101 to 0.542** on 179 ClearHarm prompts — an external harmful set carrying no doublespeak wrapper
-at all — against a norm-matched double-random control at +0.011. That rules out the prompt-bank
-artifact explanation, which was the most serious threat to the finding.
+**But the sprint's late intervention results are real, they survive two external datasets, and the
+decomposition now separates them.** On **AdvBench held-out — 495 prompts, 16 domain clusters** —
+removing `d_surface` **alone** raises attack success by **+0.0305 (p_cl=0.0089, CI [+0.0089,
++0.0522])** on harmful requests carrying no codeword, no demonstrations and no doublespeak wrapper.
+`d_surface` was fitted entirely on the carrot/bomb 2×2, so this **excludes the prompt-bank artifact
+explanation** — the most serious threat to every late finding here.
 
-**What it does not yet establish is the part the objective would need.** That arm removes the
-*refusal* direction as well, and refusal removal alone raises ASR on direct harmful prompts. Until
-the decomposition lands, none of it is a claim about `d_surface`.
+**And the two channels interact.** Removing `d_surface` and refusalness together exceeds the sum of
+removing each alone by **+0.0333, CI [+0.0128, +0.0638]** — the sprint's first interaction result to
+survive clustered inference. ⚠ **The AdvBench control arms are still running**, so on that set these
+are contrasts among real directions with no random-projection reference yet; ClearHarm's matched
+double-random control is inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129.
+
+**On ClearHarm (179 prompts, 6 clusters, 127 in one) arm B is NOT significant** (+0.084, p_cl=0.21).
+That is a power difference, not a disagreement — the point estimates agree and only the intervals
+differ. Both results are reported; neither is dropped.
 
 ### Current gate table
 
@@ -48,7 +55,9 @@ here.
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
 | **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
-| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes — re-judged and domain-clustered** (§7c): ClearHarm 0.106 → **0.514**, p_cl=0.020, against a control inert to ±0.004. ⛔ But **removing `d_surface` alone is n.s.** (+0.084, p_cl=0.21, R-16), so the *off-bank* `d_surface` claim is **withdrawn** and now rests on AdvBench (16 clusters), which is judging. Super-additivity **not established**. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
+| **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
+| **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench** — +0.0333, CI **[+0.0128, +0.0638]**, 1/4000 draws ≤ 0. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. ⚠ Same missing-control caveat. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
@@ -736,19 +745,65 @@ clustering. Neither isolates `d_surface`, so neither answers the bank-artifact q
 `external_bank.py` warned when generating the set that **127 of 179 rows sit in one category**. The
 point estimate is unchanged; only the honest interval is wide.
 
-### The test that can settle it is running
+### ★★★ AdvBench settles it — arm B is reinstated, and super-additivity is ESTABLISHED
 
-**AdvBench held-out — 495 prompts, 16 clusters, largest 25.7%** — was built in the same commit for
-exactly this reason. Its four arms are generated and judging. If arm B clears zero there under the same
-clustered estimator, the bank-artifact explanation is excluded on a properly-powered external set; if
-it does not, the off-bank `d_surface` claim must be **withdrawn outright** rather than left suspended.
-**It is the single most consequential open number in the sprint.**
+**AdvBench held-out: 495 prompts, 16 domain clusters, largest 25.7%** — built in the same commit as
+ClearHarm precisely because ClearHarm's cluster structure could not resolve these questions. Judged
+against real goals (post-R-14), analysed by the same committed `analyze_external_arms.py`
+(`outputs/boombness/advbench_decomposition.json`).
 
-### ⚠ NOT established — super-additivity
+| arm | intervention | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl | domain-clustered CI |
+|---|---|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — | — | — |
+| **B** | remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
+| **C** | remove refusalness @L18 | **0.2707** | 0.7091 | +0.1967 | +0.1895 | 0.0001 | [+0.1097, +0.2692] ✓ |
+| **D** | remove **both** | **0.3515** | 0.6222 | +0.2722 | +0.2544 | <0.0001 | [+0.1589, +0.3499] ✓ |
 
-The joint arm exceeds the sum of the singles by **+0.0677**, domain-clustered CI **[−0.218, +0.123]**,
-28% of draws ≤ 0. Unchanged in kind by the re-judge. ClearHarm cannot resolve it for the same
-one-dominant-cluster reason; AdvBench can.
+#### Arm B clears zero — R-16's withdrawal is reversed
+
+`d_surface` was fitted **entirely on the carrot/bomb 2×2**. Removing it raises compliance on 495
+harmful requests carrying **no codeword, no demonstrations and no doublespeak wrapper**, with a
+domain-clustered interval that excludes zero.
+
+This is the **same estimator** that found arm B non-significant on ClearHarm (p=0.21). The difference
+is power, and it was predicted at build time: ClearHarm is **G=6 with 127 of 179 rows in one cluster**,
+AdvBench is **G=16 with the largest at 25.7%**. The point estimates agree (+0.084 pooled on ClearHarm,
++0.042 here); only the intervals differ. **Both facts belong in the record** — not established on
+ClearHarm, established on AdvBench, and the reason is the cluster structure rather than the arm.
+
+So the claim R-16 withdrew is reinstated on the better-designed set: **`d_surface` is causal off-bank,
+and the prompt-bank-artifact explanation for the sprint's late causal results is excluded.**
+
+#### ★ Super-additivity is established — the sprint's first surviving interaction
+
+**excess = +0.0333, domain-clustered bootstrap CI [+0.0128, +0.0638]; 1 of 4000 resamples ≤ 0.**
+
+Removing `d_surface` and refusalness **together** does more than the sum of removing each alone. The
+two channels **interact** rather than contributing independently — which is a stronger statement than
+"two separate levers on compliance", and it is the first interaction result in this sprint to survive
+clustered inference.
+
+On ClearHarm the same quantity was **+0.0677, CI [−0.218, +0.123] — not established**, and this report
+recorded *why* before AdvBench was judged: one cluster holding 71% of the rows. That prediction is now
+checked rather than asserted.
+
+#### ⛔ The gap, stated before the result can be called clean
+
+**There is no control arm on AdvBench.** All four arms above use real fitted directions. ClearHarm's
+double-random control was inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129 —
+which is evidence, on a *different set*. Arm B's effect here is **+0.0305**, and no norm-matched random
+projection has yet been run on AdvBench, so on **this** set "removing `d_surface` raises ASR" is not
+yet separated from "removing **any** direction at L8 raises ASR". **Super-additivity carries the same
+gap** — it is a contrast among three real arms with no random-composition reference.
+
+Until those land the honest statement is: *arm B's AdvBench effect is significantly non-zero, and its
+ClearHarm counterpart is controlled and inert.* `ab_Bctrl`, `ab_Cctrl`, `ab_Dctrl` are running.
+### ⚠ Super-additivity on ClearHarm alone — NOT established, and that is the expected result
+
+On ClearHarm the joint arm exceeds the sum of the singles by **+0.0677**, domain-clustered CI
+**[−0.218, +0.123]**, 28% of draws ≤ 0. Unchanged in kind by the re-judge. ClearHarm cannot resolve it
+for the one-dominant-cluster reason above. **AdvBench does** — see the section above, where the same
+quantity is +0.0333 with CI [+0.0128, +0.0638].
 
 ### What this licenses, and what it does not
 
