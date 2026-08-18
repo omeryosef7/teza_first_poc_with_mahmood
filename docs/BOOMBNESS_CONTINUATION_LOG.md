@@ -603,3 +603,53 @@ numbers**, because a broken judge still returns a plausible ordering. Only the *
 input nobody printed — reveals it. The sprint's own house rule says a guard untested against a case it
 should fail is not a guard; here the guard did not exist at all until Phase 1 added it, and it fired
 within hours of existing.
+
+## Tick log (session 2, continued)
+
+| # | action | outcome |
+|---|---|---|
+| 32 | **R-13**: traced the "matched footing" incremental-R² table to its source | it gives refusalness **5 predictors against Boombness's 1**; at matched df the last-token comparison **flips** (refusalness adds 4.5e-07). The published pair is in **no committed artifact**; `g9_three_predictor_cwpos.json` has disagreed with it in all four of its versions. Report + short update corrected. |
+| 33 | G1 headline promoted to the stratified run | +68% CI [+50,+95], **24 families / 6 domains**, replacing the n=8 / 2-domain +84%. Disclosed that the **whole-prompt** transplant is null (+14%, CI [−9,+32]) and flagged the readout as pending re-derivation (C-6). |
+| 34 | wrote report **§7c**, the ClearHarm decomposition | …and suspended it three ticks later (R-14). |
+| 35 | built `analyze_condition_profile.py` and gave the Llama cross-condition table the same test the Qwen3 table already had | see **R-15** below — the "harmful yes, benign no" profile is **one significant cell of six** |
+| 36 | ⛔⛔ **R-14** — external-set ASR judged against an **empty goal** | `external_bank.py` never emitted `final_query_text`. Fixed; both banks regenerated with every `prompt_id` preserved and **0** other values changed, so only re-judging is needed. AdvBench judge streams killed mid-flight. |
+| 37 | launched the **Qwen3-14B ClearHarm replication at `max_new 512`** (766485–489, smoke 766483 clean) | also removes the audit's length confound: the published Llama-vs-Qwen3 non-replication compares a **512**-token Llama run against a **192**-token Qwen3 run |
+
+## ★ R-15 — "harmful yes, benign no" is one significant cell out of six
+
+The report's **SECOND CAUSAL RESULT** argues from a cross-condition profile — "≈0 on every benign
+condition and ≈+0.056 on every harmful one", a "clean split" licensing the stronger claim
+*harm-general, not doublespeak-specific*. That table shipped **six deltas and zero p-values**, while
+the **Qwen3** table printed eleven lines below it carries `p_cl` on every cell and annotates two of
+them "(n.s.)".
+
+Given the same test (`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered t on the
+correct 512-token runs `len_B` / `len_Bctrl`, n=960 — deltas reproduce the report exactly):
+
+| condition | n | Δ | p_cl | domain-clustered CI |
+|---|---|---|---|---|
+| `benign_literal` | 324 | +0.0069 | 0.334 | [−0.010, +0.024] |
+| `benign_remap` | 36 | +0.0104 | 0.745 | [−0.068, +0.088] |
+| `concept_in_benign_ctx` | 72 | +0.0035 | 0.862 | [−0.045, +0.052] |
+| **`natural_doublespeak`** | 420 | **+0.0560** | **0.0077** | **[+0.023, +0.089]** |
+| `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
+| `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
+
+**Only `natural_doublespeak` is distinguishable from zero.** The two other "harmful" cells — the ones
+carrying "it generalises across three attack types" — have CIs spanning **±0.2**, six times the effect
+they are claimed to demonstrate.
+
+**The split is a power artifact, not a mechanism.** `natural_doublespeak` has **420** prompts;
+`direct_harmful` has 72 and `direct_codeword` 36. The only benign cell that is genuinely tight is
+`benign_literal` (n=324, CI ±0.017). The design has power to resolve exactly the two large cells, and
+they are one benign and one doublespeak. Every 36–72-row cell is uninformative in **both** directions,
+so the data cannot distinguish "harm-general" from "doublespeak-specific" at all.
+
+**Consequences.** The established claim is the narrow one: *removing `d_surface` at the codeword
+position raises attack success on natural doublespeak prompts* (+0.056, p=0.0077, control inert). The
+report's stronger reading — "raises attack success **wherever there is an attack**, and does nothing
+where there is not" — is **not supported**, and the sentence calling that "a **stronger** statement" is
+exactly backwards: it is a weaker-evidenced one. The comparison table "✅ harmful yes, benign no" vs
+Qwen3's "⛔ does not replicate" applies an **asymmetric evidential standard** — Qwen3's cells were
+discounted for failing a test the Llama cells were never given, and when given it, three of them fail
+it too.
