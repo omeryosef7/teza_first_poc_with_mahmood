@@ -104,6 +104,12 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]],
     return out
 
 
+# Stride between the sub-specs of a composed arm, so two `random` legs are independent draws rather
+# than the same vector applied at two layers. Large and non-round so it cannot collide with a
+# deliberately chosen seed offset elsewhere (the orthogonal control uses 977_777).
+COMPOSED_SEED_STRIDE = 131_071
+
+
 def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                       control_seed: int = 20260816):
     """Return a list of context managers implementing --intervene, or [].
@@ -119,10 +125,29 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     if not spec:
         return []
     # COMPOSED arms (plan §10.4 C/E/F) recurse and concatenate their hooks.
+    #
+    # BUG FIXED 2026-08-18, and it RE-CREATED A RETRACTED DEFECT. This recursion dropped
+    # `control_seed`, so every sub-spec of a composed arm fell back to the default 20260816 no
+    # matter what `--seed` said. The 2026-08-17 fix recorded ten lines below threaded the seed into
+    # the SINGLE-spec path and missed this one — the same one-of-two-paths shape, for the second
+    # time on the same parameter.
+    #
+    # The consequence is identical to retraction #7. Three ClearHarm control draws launched as
+    # `--seed 20260901/2/3` on a composed `random+random` arm drew the SAME pair of directions and,
+    # because generation is greedy, produced BYTE-IDENTICAL gens.jsonl (sha256 276b6af46eb68a76 ×3).
+    # The resulting "3-draw band, between-draw sd 0.0048" was n=1 — and retraction #7's fake band
+    # reported sd 0.0049. A control band is the one artifact whose entire purpose is to measure
+    # draw-to-draw variance, so a seed that does not reach the draw makes it a number that cannot
+    # be wrong in a detectable way. The tell, both times, was arms agreeing to 4 decimals.
+    #
+    # Each sub-spec gets an OFFSET seed: passing the same `control_seed` to two `random` sub-specs
+    # would compose a vector with itself at two layers, which is a different manipulation from two
+    # independent draws and is not what "double random" means.
     if "composed" in spec:
         out = []
-        for sub in spec["composed"]:
-            out.extend(make_intervention(dc, pc, lm, sub, payload))
+        for i, sub in enumerate(spec["composed"]):
+            out.extend(make_intervention(dc, pc, lm, sub, payload,
+                                         control_seed=int(control_seed) + i * COMPOSED_SEED_STRIDE))
         return out
     name, mode, band, alpha = spec["direction"], spec["mode"], spec["layers"], spec["alpha"]
     # THE REFUSAL DIRECTION AS A MANIPULABLE OBJECT (plan §10.4 arms C and F), added 2026-08-17.
