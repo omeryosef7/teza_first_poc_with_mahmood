@@ -137,27 +137,42 @@ by construction. (Three different denominators, so all three are stated.)
 ## 2. Where the meaning lives (§5, §7, §10) — G1 and G3
 
 ### G1: retrieved from the demonstrations at answer time, not stored in the codeword
-Activation transplant on matched fixed pairs, semantic log-odds readout, n=8 families:
+Activation transplant on matched fixed pairs, semantic log-odds readout. **Headline is the stratified
+run** — `g1_stratified.json`, **24 families across all 6 domains**, harm-context pair, bootstrap
+resampling **domains** (families drawn wholesale with their domain):
 
-| arm | Δ readout | % of baseline→ceiling span | paired-bootstrap CI |
-|---|---|---|---|
-| transplant demonstrations (L18) | — | **+84%** | **[+57%, +105%]** |
-| transplant demonstrations (L8) | — | +71% | [+54%, +88%] |
-| transplant query codeword | — | moves the **wrong way** | — |
+| arm | % of baseline→ceiling span | domain-clustered CI |
+|---|---|---|
+| **transplant demonstrations, L18** (`demos_only`) | **+68%** | **[+50%, +95%]** |
+| transplant demonstrations, L12 (`demos_only`) | +58% | [+30%, +100%] |
+| transplant first demonstration only, L18 | +29% | [+13%, +49%] |
+| transplant last demonstration only, L18 | +7% | [+2%, +13%] |
+| transplant **query codeword**, L18 | **−71%** — the **wrong way** | [−105%, −56%] |
 
-**Caveats that travel with this:** n=8 families drawn from only **2 domains**, so the effective number
-of independent units is nearer 2 than 8. The interval is a paired bootstrap over families; the
-delta-method interval originally reported was *too wide* because it propagated the span as if
-baseline and ceiling were independent when they correlate +0.63 within family. An earlier quoted
-interval of "+23% to +135%" was a **chimera** (one arm's lower bound welded to another's) and is
-withdrawn.
+**The direction is the finding and it is unambiguous:** transplanting the *demonstrations* moves the
+model's reported meaning most of the way to the donor's; transplanting the *query codeword* moves it
+**backwards**. The meaning is retrieved from the demonstrations at answer time.
 
-⚠ **Arm-selection exposure.** +84% is **one arm of ~130** in this pilot, and the result is not uniform
-across windows: in the *same* context pair, `transplant|demos_only|**all**` moves the readout strongly
-the **wrong way** (−0.76, CI [−1.49, −0.21]). "Transplanting the demonstrations moves the meaning
-+84%" is a statement about the **single-layer L18 window**, not about demonstration transplants in
-general. The direction of G1 (demonstrations, not the codeword) is robust; the magnitude is
-window-specific.
+⛔ **R-8 — the earlier "+84%, CI [+57%, +105%]" headline is superseded.** It came from a pilot of
+**n=8 families in only 2 domains**, so its effective number of independent units was nearer 2 than 8.
+The stratified re-run at 24 families / 6 domains gives **+68%**. An interval of "+23% to +135%" quoted
+before that was a **chimera** (one arm's lower bound welded to another's) and is withdrawn.
+
+⚠ **Arm-selection exposure, and it bites here.** This is one arm of ~130. In the stratified data the
+*whole-prompt* transplant `transplant|all|L18` — which an earlier draft treated as interchangeable
+with the demonstration arm — is **null on the harm-context pair**: +14%, CI **[−9%, +32%]**. The G1
+claim is specific to transplanting the **demonstration block** at a **single-layer L18 window**, not
+to demonstration transplants in general and not to whole-prompt transplants at all.
+
+⚠ **Under re-derivation (C-6).** Every number in this table is a `semantic_logodds` computed by
+`aggressive_patching.py` with the **single-next-token tail readout** that R-6 retracted elsewhere: the
+two options hold a median **5.6e-06** of next-token mass, the model capitalises its answer, and the
+capitalised codeword is **multi-token** (`Carrot` = ` Car` + `rot`) while the concept has four
+single-token variants — so the instrument is structurally biased **toward the concept** and cannot
+represent the model's preferred spelling of the codeword. The corrected whole-answer readout is built
+and proven (`signals.string_option_readout`, 3,200× more option mass) but **not yet ported to this
+script**. The *direction* of G1 is not in doubt — the query-codeword arm moves the wrong way on any
+readout — but the **magnitudes in this table are pending re-run** and should not be quoted as final.
 
 ### G3: the retrieval is attention-carried and massively redundant — and the redundancy is in the EDGE SET, not depth
 6 families, semantic readout, `--dst both --demo-scope block`:

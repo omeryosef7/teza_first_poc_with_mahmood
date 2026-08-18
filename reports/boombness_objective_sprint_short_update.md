@@ -170,16 +170,21 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
 ## Where the mechanism lives
 
 - **Not in the codeword token.** The **single-layer L18** demonstration transplant, harm-context pair,
-  moves the model's reported meaning **+84% of the baseline→ceiling span, 95% CI [+57%, +105%]**;
-  transplanting the *query codeword* moves it the **wrong way** (−0.58 to −0.81). Meaning is retrieved
-  from the demonstrations at answer time, not stored in the codeword.
-  ⚠ **Arm-selection exposure, disclosed:** this is one arm of ~130 in the pilot, and it is not
-  uniform — in the *same* context pair the **all-layer** demonstration transplant moves the readout
-  strongly the **wrong way** (−0.76, CI [−1.49, −0.21]). "Transplanting the demonstrations moves the
-  meaning +84%" is true of the L18 window, not of demonstration transplants in general.
-  ⚠ Revision 1's "[+23%, +135%]" was a **chimera** — one arm's lower bound welded to another's. The
-  interval above is a paired bootstrap over families; the old delta-method interval was too *wide*
-  (it propagated the span as if baseline and ceiling were independent, when they correlate +0.63).
+  moves the model's reported meaning **+68% of the baseline→ceiling span, domain-clustered CI
+  [+50%, +95%]**, on **24 families across all 6 domains** (`g1_stratified.json`); transplanting the
+  *query codeword* moves it the **wrong way** (−71%, CI [−105%, −56%]). Meaning is retrieved from the
+  demonstrations at answer time, not stored in the codeword.
+  ⛔ **R-8: the earlier +84%, CI [+57%, +105%] is superseded** — it was a pilot of n=8 families in
+  only **2 domains** (effective independent units nearer 2 than 8). Revision 1's "[+23%, +135%]" was a
+  **chimera** — one arm's lower bound welded to another's.
+  ⚠ **Arm-selection exposure, disclosed:** this is one arm of ~130. In the stratified data the
+  **whole-prompt** transplant is **null** on this pair (+14%, CI [−9%, +32%]). The claim is specific to
+  transplanting the **demonstration block** at the L18 window.
+  ⚠ **Magnitudes pending re-derivation (C-6):** this readout is the single-next-token tail readout
+  retracted elsewhere — it is structurally biased toward the concept, since the codeword has **no
+  capitalised single-token form** and the concept has four. The corrected whole-answer readout exists
+  and is proven but is not yet ported to `aggressive_patching.py`. The **direction** is safe; the
+  **numbers are not final**.
   **n = 8 families drawn from only 2 domains** — the effective number of independent units is closer
   to 2 than to 8, and this is a pilot.
 - ⚠ **Attention-carried and massively redundant — but the redundancy is in the EDGE SET, not in
