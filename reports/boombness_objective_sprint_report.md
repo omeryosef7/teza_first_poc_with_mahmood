@@ -48,7 +48,7 @@ here.
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
 | **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
-| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, and it generalises off the bank.** ClearHarm 0.101 → **0.542**, control +0.011, all arms coherence-gated. **Decomposed** (§7c): removing `d_surface` *alone* is +0.106 and removing refusal *alone* is +0.240, against a random-direction control of +0.011 — so the effect is not the refusal direction under another name (cos = 0.019 @L18). **Super-additivity is NOT established** (+0.092, CI [−0.147, +0.133]); AdvBench, 16 clusters, is the test and is judging. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | ⛔ **SUSPENDED (R-14)** — the ClearHarm/AdvBench figures that answered this were judged against an **empty goal** (`external_bank.py` never emitted `final_query_text`), so they are not measurements. Generations are intact and the bank is fixed; **re-judging is pending**. On the *generated* bank the arm is unaffected and still raises ASR. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
@@ -668,6 +668,28 @@ consistent — all three metrics are scored the same way — but the **comprehen
 when §4b is re-scored with the corrected readout. This section will be regenerated at that point.
 
 ## 7c. ClearHarm — the external-set decomposition (plan §14) — added 2026-08-18, extended 2026-08-19
+
+> ## ⛔ THIS SECTION IS SUSPENDED — R-14, 2026-08-19
+>
+> **Every ASR number below was judged against an EMPTY GOAL and is not currently a measurement.**
+> `judge_boombness.make_goal` reads the intended harmful request from `final_query_text`;
+> `external_bank.py` emitted the instruction only as `full_prompt`, so **both external banks lacked
+> that key entirely** and StrongReject was asked to score each completion **against no request at
+> all**. The pre-fix judge recorded that as `judge_status: "ok"` and counted it in ASR.
+>
+> It looked right because an empty-goal score still reads how harmful the *response* is, so the
+> numbers tracked the refusal rate. A guard added during the Phase-1 audit caught it: re-judged with
+> the current module, the same inputs return `goal statuses: {'empty_query': 179}` and **abort**.
+>
+> **Suspended:** every figure in this section, including **arm B**, the row that carries the
+> exclusion of the bank-artifact explanation. **Not affected:** everything measured on the generated
+> bank (G1–G4, §4b, §10.4), which has always carried `final_query_text`.
+>
+> **The fix is cheap and is in.** `external_bank.py` now emits `final_query_text`; both banks were
+> regenerated with **every `prompt_id` preserved and no other value changed**, so no generation needs
+> re-running — only re-judging. Until that lands, **nothing in this section may be cited.** The
+> ordering may well survive; an ordering that may survive is not a result.
+
 
 This is the section that answers the question every other causal result in this sprint was exposed to:
 **is any of this a property of our own prompt bank?** Every ASR number in §§3–7 comes from the bank
