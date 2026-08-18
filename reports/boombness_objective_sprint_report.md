@@ -911,6 +911,84 @@ by applying exactly this test — its published pair exists in no artifact, in a
 
 ---
 
+## 9b. Recommended next experiments (plan §15 item 16)
+
+Ordered by *evidence bought per GPU-hour*, not by ambition. The first three are blocking — they decide
+whether existing claims stand — and none of them needs new generation.
+
+### Blocking: re-derive what is currently suspended
+
+**E1 — Re-judge every external-set arm against a real goal (R-14).** *Cost: API only, no GPU.* Both
+banks now emit `final_query_text`, regenerated with **every `prompt_id` preserved and no other value
+changed**, so all existing `gens.jsonl` still join. This decides §7c, the §10.4-D gate row, and whether
+the bank-artifact explanation is actually excluded. **Until it lands, the sprint's best new result has
+no measurement behind it.** Highest value per unit cost by a wide margin.
+
+**E2 — Port the whole-answer readout to `aggressive_patching` and `surgical_knockout`, then re-run G1
+and G3 (C-6).** *Cost: two GPU sweeps.* `signals.string_option_readout` is built and proven (3,200×
+more option mass) but lives only in `score_behavior`. Until it is ported, **G1's +68% headline and all
+of G3 rest on an instrument that cannot represent the model's preferred spelling of the codeword.** The
+*direction* of G1 is safe on any readout; the magnitudes are not.
+
+**E3 — Rank G3's attention edges at `readout_pos` (T3).** *Cost: one GPU sweep.* The knockout was fixed
+after retraction #3; the **edge ranking** was not, so G3's top-k/bottom-k null cannot distinguish "these
+edges don't matter" from "they were ranked at the wrong token". Fix `:239` (cross-fitting, ~54% of rows
+currently scored in-sample, which advantages the targeted arm and not the controls) and `:225` (family
+head-truncation on a domain-prefixed sorted list) in the same pass.
+
+### High value: the questions the current design cannot answer
+
+**E4 — Power the cross-condition profile (R-15).** The "harm-general vs doublespeak-specific" question is
+open *only because* `direct_harmful` has 72 prompts and `direct_codeword` has 36 against
+`natural_doublespeak`'s 420. Generating those two conditions to n≈400 each is cheap, needs no new
+mechanism, and converts the sprint's most-contested interpretive claim into a measurement. **This is the
+best new-evidence-per-hour experiment available.**
+
+**E5 — Finish AdvBench super-additivity on 16 clusters.** Generations exist (495 × 4 arms). ClearHarm
+cannot resolve it — 127 of 179 rows sit in one cluster. AdvBench's largest cluster is 25.7%. Blocked on
+E1 only.
+
+**E6 — A second concept pair.** Every claim in this sprint is carrot↔bomb. A second pair is the cheapest
+test of whether `d_surface` is a *concept-surface* direction or a carrot-detector. **Plan §2.4's
+tokenization audit is mandatory here and is real work**: the current bank forces single-token by
+construction, and the R-14/C-5 experience shows a pair whose capitalised form is multi-token silently
+breaks the readout. Pick the pair *after* auditing, not before.
+
+**E7 — Matched-length cross-model replication.** The published Llama-vs-Qwen3 non-replication compares a
+**512**-token Llama run against a **192**-token Qwen3 run, and the sprint's own log records that halving
+the budget roughly halves the Llama effect. A Qwen3 arm at 512 is running; until it lands, "does not
+replicate" is confounded with "was given a quarter of the tokens".
+
+### Worth doing, lower priority
+
+**E8 — Decide plan §4.1's designed variance.** `strength`, `consistency` and `example_position` were
+generated exactly as specified and are analysed by **nothing**, and they are confounded as built: `near`
+gets 0 filler sentences while `far`/`distributed` get 6 (403 vs 792 chars); `conflicting` leaves the
+demonstrations consistent and appends a counter-mapping sentence carrying an **extra codeword
+occurrence in the closest-to-query position**; `strong`/`aggressive` inject the literal concept token
+into a codeword-surface prompt. Either fix the generator and analyse them, or delete them from the bank
+and say so. **Generated-confounded-unexamined is the worst of the three states** and it is currently the
+one we are in.
+
+**E9 — The §5.2 alpha sweep at α=0.25.** The additive sweep ran α ∈ {0.5, 1, 2, 4}; **0.25 — the dose
+every behavioural claim in §12 rests on — was never swept in the G1 design.** One arm, cheap, closes a
+gap between the two halves of the report.
+
+**E10 — Give the judge a bank-identity check that can actually run.** `compare_bank_hashes` exists and
+now has a caller, but the external banks ship no `*_meta.json`, so every external judge run prints
+`BANK IDENTITY UNCHECKABLE`. Writing the meta file is a few lines and converts a warning into a real
+guard — one that would have caught R-14's sibling (a bank from a different regeneration joining
+perfectly and silently, the stated root cause of retraction R1).
+
+### Explicitly NOT recommended
+
+**Building the GCG Boombness objective (plan §12).** Outcome B stands: steering the axis suppresses ASR
+at **both** signs, so there is no gradient to follow. The `project_out` results are a different
+intervention (removing a component, not maximising it) and do **not** reinstate the objective. Revisit
+only if E2 changes G1's sign or E4 shows the effect is genuinely harm-general.
+
+---
+
 ## §15.5 Tokenization audit (plan §2.4 — mandatory)
 
 `tokenization_audit/audit_20260817_013432_3151000`, 2352/2352 rows, 0 failures:
