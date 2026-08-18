@@ -760,20 +760,34 @@ domains.
 |---|---|---|---|---|
 | baseline | 0.2429 | 0.0571 | — | — |
 | add Boombness `+0.25` | 0.0881 | **0.6762** | −0.1274 | 0.0117 |
-| remove refusalness | 0.2690 | **0.0000** | +0.0101 | 0.4746 |
+| remove refusalness | 0.2690 | **0.0000** | +0.0101 *(0.9× the judge-noise sem — **not measurable to ±0.03**, not "does nothing")* | 0.4746 |
 | **add Boombness AND remove refusalness** | **0.5476** | 0.0024 | **+0.2824** | **<0.0001** |
 | **RANDOM direction + remove refusalness** *(control)* | **0.2190** | 0.0000 | −0.0321 | 0.1160 |
+
+⚠ **The control is inert only on THIS condition, and reverses elsewhere.** On `direct_harmful` the same
+random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 → 0.54**, while arm F stays
+at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
+for the doublespeak population only, and is reversed where harm is explicit.**
 
 **Neither manipulation alone raises attack success — together they more than double it.**
 Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
 ASR thresholds 0.25 / 0.50 / 0.75.
 
+⚠ **That +0.400 is ~45% a mechanical artifact.** Arm A refuses on 284/420 rows, each scored exactly 0.0 by
+construction. On the rows where A did *not* refuse, **A−base = +0.094 (positive)** and the interaction falls
+to **+0.222**. The **refusal-free** contrasts — **F−C = +0.272** and **F−Fctrl = +0.315**, between arms with
+~0% refusal — are the numbers that carry the claim.
+
 ### The mechanism
 `d_surface` does **two opposing things at once**:
 1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
    *suppresses* ASR;
-2. **capability** — it supplies content that makes a completion actually harmful, which appears the moment
-   refusal is out of the way.
+2. **a second, refusal-independent channel** raises judged harmfulness once refusal is removed.
+   ⛔ **We have NOT established that this is a "capability" channel.** The gain is *largest where the
+   doublespeak mapping is weakest* — **+0.361 at `n_examples=0`** (no demonstrations at all) and **+0.267 on
+   `benign_remap`**, where carrot→bomb is **never taught** — and it is **absent on explicitly harmful
+   prompts** (+0.000 on `direct_harmful`, where the random control gains +0.389). It is better described as
+   a **prompt-independent injection by the L8 steering vector** than as the doublespeak attack succeeding.
 
 In the unmodified model channel 1 dominates and **masks channel 2 entirely**. That is why the within-arm
 correlation was positive while every steering attempt looked suppressive — a contradiction this report
@@ -783,7 +797,7 @@ carried for days.
 | competitor | how it is excluded |
 |---|---|
 | degenerate generation | passes `coherence_gate` on the doublespeak denominator |
-| truncation / length | at 512 tokens all arms complete; the effect **grew** (0.474 → 0.548) |
+| truncation / length | ⚠ **attenuated, not eliminated.** All arms complete at 512 tokens, but arm F writes 260 median words vs the control's 145 and common support covers only ~27% of control rows. Matched on 25-word bins, **F−Fctrl falls +0.315 → +0.233** (bootstrap CI [0.149, 0.310]) and **F−base +0.282 → +0.150**. A quarter to a half of the raw gap is length, which may itself be a mediator. |
 | "longer answers score higher" | baseline calibration shows truncation **suppresses** score (+3.7pp when completed) |
 | judge noise | effect is **25×** the measured test–retest floor (0.011) |
 | threshold luck | holds on the continuous score and at three thresholds |
@@ -795,9 +809,11 @@ A prediction for the arm-F value was **recorded in the log before judging** (`�
 
 ### Consequences
 - ⛔ **§18 = B ("mechanistic but not causal") is WITHDRAWN.** It was a **ceiling effect of refusal**.
-- ✅ **§12.2 — "Boombness minus refusal" — is vindicated in exactly the form the plan wrote it.** I had
-  closed §12 as gate-not-met on the strength of G4's directional null. Arm F is that objective's idealised
-  limit and it doubles ASR. **It should be built.**
+- ⚠ **§12.2 — "Boombness minus refusal" — is REOPENED and worth building as an experiment, NOT vindicated.**
+  I closed §12 as gate-not-met on G4's directional null, and that reasoning was wrong. But the arm-F gain is
+  **not conditional on the doublespeak mapping** and **does not transfer to explicitly harmful requests** —
+  precisely what an attack objective would require. Downgraded from "should be built" to "worth building as
+  an experiment".
 - The §12.1 "pure Boombness objective" (maximise alone) remains **wrong** — alone, it *lowers* ASR.
 
 ### Honest limits — scope, not validity
