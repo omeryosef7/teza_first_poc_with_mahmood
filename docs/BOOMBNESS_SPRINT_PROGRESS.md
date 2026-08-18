@@ -5005,3 +5005,37 @@ retraction needs a grep for the figure across all documents, not just an entry i
 Scorecard now: 1 YES-in-Llama-only, 2 YES-once-refusal-removed, 3 NO-it-raises, 4 measured-but-not-axis-
 specific, 5 YES-for-projection/PARTIAL-for-additive, 6 PARTIAL-mostly-no-for-causal. **Still not a mechanism
 claim**, and the report says so.
+
+### Tick 80 — the retraction-grep rule is now a committed script, and testing it exposed two flaws in my own check
+
+Last tick I wrote the rule ("every retraction needs a grep for the figure across all documents") and then
+executed it once by hand, finding **four** figures still asserted as fact. A rule executed by hand once is
+not a rule. It is now `src/boombness/retraction_sweep.py`, run as part of the tick.
+
+Building it properly found two defects in the hand version:
+
+**1. It was line-scoped, so it reported false positives.** The two "remaining hits" I flagged last tick
+(`report:395`, `report:607`) are **confirmed false positives** — both sit inside a retraction paragraph
+whose `⛔ RETRACTED` marker is on the *preceding* line, which a line-by-line regex cannot see. Markdown
+context is a paragraph, so the script scopes to the blank-line-delimited block. No document change was
+needed for either.
+
+**2. Scope matters as much as the pattern.** Run across all 110 `*.md` it produced **32 hits, almost all
+spurious**: legacy GCG / stage-4 logs where `0.474` is an unrelated quantity, and — worse — the early
+entries of *this log*, which are supposed to contain the original claim as originally stated. A retraction
+here is a later entry, not an edit to history; sweeping the journal flags the historical record as a
+defect. Default scope is now the three deliverables (both reports + the sanity check), with the exclusions
+documented in the module docstring rather than left implicit.
+
+**The check was then tested against reinjected regressions**, because a checker that has only ever printed
+"clean" is untested. All four figures that were genuinely stale on 08-17 were reinjected into a scratch
+file; the first version caught **3 of 4**. The miss is the informative one: the stalest sentence in the
+short update — *"the band is highly reproducible across four independent draws"* — asserts the retracted
+result **without quoting any number**, so a figure-matching regex slides straight past it. Added claim-level
+patterns (`four independent draws`, `tight null`, `capability channel`) alongside the figure patterns; 4/4
+now caught, and the deliverables sweep is clean.
+
+**Known limitation, stated rather than papered over:** this catches retracted *figures* and the specific
+retracted *claims* I have enumerated. It cannot catch an arbitrary paraphrase of a retracted result. Each
+new retraction must add its own pattern — the script is a ratchet against regression, not a proof of
+absence.

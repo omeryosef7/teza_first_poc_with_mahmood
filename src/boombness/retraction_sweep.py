@@ -1,0 +1,110 @@
+"""retraction_sweep.py — find retracted figures still stated as fact in the deliverables.
+
+WHY THIS EXISTS. Retracting a number in the progress log does NOT remove it from the documents it was
+already copied into. That happened four times in this sprint before anyone noticed, and three of those
+were found only after the retraction had been recorded elsewhere:
+  * the §19 role answer kept the pooled F=0.175 as fact underneath its own retraction paragraph;
+  * the steering table kept the fake band's mean/sd as a row;
+  * the short update asserted that band as "highly reproducible" in prose;
+  * the known-issues list still called the role null "tight".
+
+PARAGRAPH SCOPE, NOT LINE SCOPE. The first version of this check was line-based and produced two false
+positives, because a `⛔ RETRACTED` marker sits on the line *above* the figure it retracts. Markdown
+context is a paragraph, so the scope here is the blank-line-delimited block.
+
+SCOPE = THE DELIVERABLES ONLY. Default paths are the two reports plus the sanity check. Deliberately
+NOT swept:
+  * `docs/BOOMBNESS_SPRINT_PROGRESS.md` — an append-only journal. Its early entries are SUPPOSED to
+    contain the original claim as originally stated; a retraction there is a later entry, not an edit
+    to history. Sweeping it flags the historical record as a defect.
+  * every other `docs/*.md` — legacy GCG / stage-4 logs where a bare number like `0.474` is an
+    unrelated quantity. That produced 20+ false positives on the first run.
+
+Exit code is 1 if any unqualified occurrence is found, so this can gate a commit.
+"""
+from __future__ import annotations
+import argparse, glob, re, sys
+
+# (label, regex) for every figure this sprint has retracted or superseded.
+RETRACTED = [
+    ("R4  naive 'manufactures signal'",      r"manufactures signal"),
+    ("R5  3.7x Boombness-beats-refusalness", r"(?:3\.7|3\.66)\s*[×x][^\n]{0,60}(?:refusal|better|more)|(?:beats|outperforms)[^\\n]{0,40}refusaln"),
+    ("R6  role 'tight null'",                r"F\s*=\s*0\.175|p\s*=\s*0\.972|sd of style means at \*\*3\.6%"),
+    ("R7  fake 4-draw control band",         r"sd\s*0\.0049|between-draw sd \*\*0\.0049"),
+    # CLAIM patterns, not figure patterns. The 08-17 sweep missed the stalest sentence in the short
+    # update -- "the band is highly reproducible across four independent draws" -- because it asserted
+    # the retracted result without quoting any number. Paraphrase cannot be caught in general; the
+    # specific retracted CLAIM can be, and that is what actually misleads a reader.
+    ("R7  4-draw band asserted as prose",    r"(?:four|4)\s+independent\s+draws|"
+                                             r"reproducib[^\n]{0,40}(?:four|4)\s+draws"),
+    ("R6  role null called tight (prose)",   r"tight null|null is tight"),
+    ("R8  capability channel as prose",      r"capability channel"),
+    ("R8  'capability channel' as fact",     r"supplies content that makes a completion actually harmful"),
+    ("C2  refusalness ratio 40x/14x",        r"(?:Boombness|boombness)[^\n]{0,60}\b40\s*[×x]|14\s*[×x]\s*more"),
+    ("C3  sign-blind '2-3x the controls'",   r"2[–-]3\s*[×x]\s*the\s*controls"),
+    ("C6  wrong-population figures",         r"refusal rate[^|\n]*0\.583|\+7\.30\s*pp"),
+    ("C9  depth-mismatched L31 claim",       r"L31 effect replicates"),
+    ("G1  chimera CI",                       r"\+23%\s*to\s*\+?135%"),
+    ("superseded arm-F value",               r"arm F[^\n]{0,80}0\.474|0\.474[^\n]{0,40}arm F"),
+]
+DELIVERABLES = [
+    "reports/boombness_objective_sprint_report.md",
+    "reports/boombness_objective_sprint_short_update.md",
+    "docs/BOOMBNESS_MIDSESSION_SANITY_CHECK.md",
+]
+MARKER = re.compile(
+    r"retract|withdraw|supersed|⛔|previously|earlier|revision \d|was\b|fake|not reportable|"
+    r"instead of|rather than|naive one-way|no longer|corrected", re.I)
+
+
+def sweep(paths):
+    bad = []
+    for f in paths:
+        try:
+            text = open(f, encoding="utf-8").read()
+        except OSError:
+            continue
+        # paragraph = blank-line-delimited block; track starting line number
+        line_no, para, start = 1, [], 1
+        blocks = []
+        for line in text.split("\n"):
+            if line.strip() == "":
+                if para:
+                    blocks.append((start, "\n".join(para))); para = []
+                start = line_no + 1
+            else:
+                if not para:
+                    start = line_no
+                para.append(line)
+            line_no += 1
+        if para:
+            blocks.append((start, "\n".join(para)))
+        for ln, block in blocks:
+            if MARKER.search(block):
+                continue                      # the paragraph marks it as retracted -> fine
+            for label, pat in RETRACTED:
+                m = re.search(pat, block)
+                if m:
+                    # report the offending LINE, not the paragraph head, or the output is unreadable
+                    off = block[:m.start()].count("\n")
+                    bad.append((f, ln + off, label, block.split("\n")[off].strip()[:120]))
+    return bad
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--paths", nargs="*", default=DELIVERABLES,
+                    help="default = the deliverables only; see the module docstring for what is "
+                         "deliberately excluded and why")
+    args = ap.parse_args()
+    bad = sweep(args.paths)
+    for f, ln, label, snippet in bad:
+        print(f"  UNQUALIFIED  {f}:{ln}  [{label}]\n      {snippet}")
+    print(f"\n[sweep] {len(args.paths)} file(s); {len(bad)} unqualified occurrence(s) of a retracted figure")
+    if not bad:
+        print("[sweep] clean — every retracted figure appears only inside a paragraph that marks it as such")
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
