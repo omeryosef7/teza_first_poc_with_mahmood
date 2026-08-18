@@ -181,6 +181,32 @@ Both unfixed scripts are currently held by verification agents, so the port wait
 to land rather than racing it. Until then **G1 and G3 rest on a readout that cannot represent the
 model's preferred spelling of the codeword**, and neither is re-derivable from current evidence.
 
+**C-7 — the §2.6 result the previous session called its cleanest causal claim is computed with the
+broken readout, so it is not yet evidence.** The prior session's headline was
+"★★★ §2.6 SATISFIED FOR ARM D — it raises attack success WITHOUT damaging comprehension, and its
+control does the opposite" (`outputs/boombness/g8_comprehension_DF_arms.json`, arm D
++0.38…+0.53 at every demo count, double-random control −0.08…−0.13). Every one of those numbers is a
+`comprehension_logodds` — a log-ratio of two probabilities that together hold a **median 4.4e-05** of
+the next-token mass. The ordering inside that tail may well survive the corrected readout; it may
+not. Until §4b is re-scored with `--readout-ids whole_answer`, **arm D has no comprehension control**,
+and per the plan's §2.6 rule that means it cannot be called non-destructive.
+
+Consequently arm D is deliberately **NOT** written into the report yet, even though the critique
+correctly notes it is missing from both. Writing numbers that are queued for re-derivation is the
+exact failure this log exists to prevent.
+
+### §4b re-run queue (blocked on GPU)
+All at `--readout-ids whole_answer --answer-prefix Answer:`, comprehension + semantic forward
+readouts, matched to the arms already judged:
+
+| arm | intervention | why |
+|---|---|---|
+| baseline | — | the paired reference for every delta |
+| D | `d_surface:project_out:8-8 + refusalness:project_out:18-18` | the headline causal arm |
+| Dctrl | `random:project_out:8-8 + random:project_out:18-18` | its matched double-random control |
+| F / Fctrl | add-Boombness + remove-refusal, and control | §10.4's other composed arm |
+| ±0.25, random, project_out | §12 steering arms | report §4b's four original verdicts |
+
 ## Unverified-fix register
 
 Seven of nine workflow agents were killed by a session limit mid-task. Four left **complete, parsing,
