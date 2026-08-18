@@ -901,3 +901,32 @@ all three effects (ranking destination, cross-fitting, readout) require forward 
 `outputs/boombness/g1_g3_analysis.json`'s G1 block comes from a **different** aggressive_patching run
 (`pilot_20260816_210506_1142800`), also `readout: semantic_logodds`, and is invalidated by C-6 on
 identical grounds. It must be marked pending re-derivation alongside `g1_stratified.json`.
+
+## ✅ R-12 CLOSED — the ClearHarm control band is real, and the fake one understated variance 2.7×
+
+Three re-seeded draws, re-judged against a real goal, run through `analyze_external_arms.py` whose
+band guard **accepted** them on the primary (generation-level) check:
+
+| draw | seed | source gens sha16 | ASR@0.5 |
+|---|---|---|---|
+| 1 | 20260901 | `61249763c34b4840` | 0.0950 |
+| 2 | 20260902 | `3b962119cfc6c1f9` | 0.0950 |
+| 3 | 20260903 | `485698e92ca55ba9` | 0.1173 |
+
+**Band mean 0.1024, between-draw sd 0.0129, sem 0.0074**, against a baseline of **0.1061**. The
+control is genuinely inert — the band straddles the baseline.
+
+**The retracted band reported sd 0.0048. The true value is 0.0129 — 2.7× larger.** That is the cost of
+R-12 stated precisely: not a wrong ASR, but a **fake precision**. And it is the second time this exact
+number was fabricated (retraction #7's fake band reported 0.0049), which is why the guard now lives in
+a committed script with a test rather than in a reviewer's attention.
+
+Note draws 1 and 2 return the *same* ASR (0.0950) despite different generations — 17/179 either way.
+Under the old score-level fingerprint that coincidence plus judge noise is exactly the pattern that
+would have been mistaken for a repeated draw, or missed as one. The generation hash settles it in both
+directions.
+
+**This does not rescue arm B.** The band bears on whether the *control* is inert (it is, to ±0.013);
+arm B's problem is R-16 — its **domain-clustered** interval [−0.067, +0.235] includes zero at G=6.
+A tight control band and an underpowered arm are different facts and the report must not let the first
+stand in for the second.

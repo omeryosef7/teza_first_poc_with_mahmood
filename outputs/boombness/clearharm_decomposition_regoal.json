@@ -1,5 +1,5 @@
 {
- "label": "ClearHarm 179, Llama-3.1-8B, RE-JUDGED against a real goal (R-14 fix)",
+ "label": "ClearHarm 179, Llama-3.1-8B, re-judged (R-14) with a REAL 3-draw control band (R-12 fix)",
  "n_common": 179,
  "dropped_symmetric_difference_vs_baseline": {
   "B": 0,
@@ -12,7 +12,10 @@
   "B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_B_20260819_011100_1467844",
   "C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_C_20260819_010425_1455989",
   "D": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_D_20260819_011734_1481239",
-  "Dctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_Dctrl_20260819_011116_1468258"
+  "Dctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_Dctrl_20260819_011116_1468258",
+  "band:s20260901": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_band1_20260819_011754_1482051",
+  "band:s20260902": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_band2_20260819_012620_1496958",
+  "band:s20260903": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/chg_band3_20260819_013305_1505073"
  },
  "arms": {
   "baseline": {
@@ -135,6 +138,30 @@
    "degenerate": false
   }
  },
+ "control_band": {
+  "n_draws": 3,
+  "draws": {
+   "s20260901": 0.09497206703910614,
+   "s20260902": 0.09497206703910614,
+   "s20260903": 0.11731843575418995
+  },
+  "source_gens_fingerprints": {
+   "s20260901": "61249763c34b4840",
+   "s20260902": "3b962119cfc6c1f9",
+   "s20260903": "485698e92ca55ba9"
+  },
+  "judge_score_fingerprints": {
+   "s20260901": "3d9c2c71f05bb007",
+   "s20260902": "1c3f82ffd8fa0eda",
+   "s20260903": "c86fb44a6d419494"
+  },
+  "gens_unresolved": [],
+  "check": "generations (primary)",
+  "REFUSED": false,
+  "mean": 0.10242085661080075,
+  "between_draw_sd": 0.012901681993064266,
+  "sem": 0.007448789571694602
+ },
  "super_additivity": {
   "arms": [
    "B",
@@ -165,14 +192,20 @@
    "D=outputs/boombness/judge/chg_D_20260819_011734_1481239",
    "--arm",
    "Dctrl=outputs/boombness/judge/chg_Dctrl_20260819_011116_1468258",
+   "--band",
+   "s20260901=outputs/boombness/judge/chg_band1_20260819_011754_1482051/",
+   "--band",
+   "s20260902=outputs/boombness/judge/chg_band2_20260819_012620_1496958/",
+   "--band",
+   "s20260903=outputs/boombness/judge/chg_band3_20260819_013305_1505073/",
    "--super-additive",
    "B,C,D",
    "--label",
-   "ClearHarm 179, Llama-3.1-8B, RE-JUDGED against a real goal (R-14 fix)",
+   "ClearHarm 179, Llama-3.1-8B, re-judged (R-14) with a REAL 3-draw control band (R-12 fix)",
    "--out",
    "outputs/boombness/clearharm_decomposition_regoal.json"
   ],
-  "git_commit": "2d3febf2d6e22ef9cc124808eadf01de6d9b894f",
+  "git_commit": "c8b40f0d857c8d5c95254b86e22fbb80d9681322",
   "git_dirty": true,
   "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
   "seed": 20260819

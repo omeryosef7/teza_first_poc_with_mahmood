@@ -764,13 +764,26 @@ off-bank behaviour is a new fact needing its own interpretation, not an extensio
 the same channel under another name. Caveat: arm B acts at **L8**, where no house refusal direction is
 fitted, so the cosine is measured only where both exist.)*
 
-### ⚠ The control *band* is still pending (R-12)
+### ✅ The control band, resolved (R-12 closed)
 
 The published band — 3 draws, between-draw sd 0.0048 — **was one draw stated three times**;
-`score_behavior.py:123` recursed into composed arms without passing `control_seed`. The three re-seeded
-draws now have distinct generations and are being re-judged. `Dctrl` remains a valid *single* control
-and is inert to ±0.004, which is what the arm comparisons above rest on; what is not yet established is
-the draw-to-draw variance.
+`score_behavior.py:123` recursed into composed arms without passing `control_seed`. Re-seeded,
+re-judged, and accepted by the band guard on distinct generation hashes:
+
+| draw | seed | gens sha16 | ASR@0.5 |
+|---|---|---|---|
+| 1 | 20260901 | `61249763c34b4840` | 0.0950 |
+| 2 | 20260902 | `3b962119cfc6c1f9` | 0.0950 |
+| 3 | 20260903 | `485698e92ca55ba9` | 0.1173 |
+
+**Band mean 0.1024, between-draw sd 0.0129**, against baseline 0.1061 — the control is inert and the
+band straddles the baseline. ⛔ **The retracted band's sd 0.0048 understated draw-to-draw variance by
+2.7×**; the defect was fake precision, not a wrong ASR. It was the second fabrication of this same
+statistic (retraction #7 reported 0.0049), which is why the check now lives in a committed script with
+a test rather than in a reviewer's attention.
+
+**This does not rescue arm B.** An inert control and an underpowered arm are different facts: arm B's
+problem is R-16, its domain-clustered interval, not the control.
 
 `analyze_external_arms.py` now **refuses** to report a band whose draws share a generation hash, and
 that guard was itself dead on first writing — it fingerprinted judge *scores*, and StrongReject is not
