@@ -442,7 +442,7 @@ def main() -> int:
                     rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
                     rec["semantic_margin_p_diff"] = rec["p_concept"] - rec["p_codeword"]
                     run.log_row({**base, "readout": "semantic", **rec})
-                    option_mass["semantic"].append(rec["option_mass"])
+                    option_mass[f"semantic/{row['query_kind']}"].append(rec["option_mass"])
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "comprehension_usage":
@@ -450,7 +450,7 @@ def main() -> int:
                     rec["comprehension_logodds"] = rec["logp_coded"] - rec["logp_literal"]
                     rec["comprehension_margin_p_diff"] = rec["p_coded"] - rec["p_literal"]
                     run.log_row({**base, "readout": "comprehension", **rec})
-                    option_mass["comprehension"].append(rec["option_mass"])
+                    option_mass[f"comprehension/{row['query_kind']}"].append(rec["option_mass"])
                     counts["comprehension"] += 1
 
                 elif row["query_kind"] == "behavioral":
@@ -543,19 +543,14 @@ def main() -> int:
         med = v[len(v) // 2]
         mass_summary[kind] = {"n": len(v), "median": med, "p10": v[int(0.10 * len(v))],
                               "p90": v[int(0.90 * len(v))], "max": v[-1],
-                              "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v)}
+                              "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v),
+                              "reportable": med >= args.min_option_mass}
         print(f"[score] option mass {kind}: median={med:.4g} "
               f"p90={mass_summary[kind]['p90']:.4g} max={v[-1]:.4g} "
-              f"frac>1%={mass_summary[kind]['frac_above_1pct']:.3f}")
+              f"frac>1%={mass_summary[kind]['frac_above_1pct']:.3f} "
+              f"{'OK' if med >= args.min_option_mass else 'BELOW GATE'}")
         if med < args.min_option_mass:
             tail_fail.append(f"{kind}: median option mass {med:.4g} < {args.min_option_mass}")
-    if tail_fail and not args.allow_tail_readout:
-        raise SystemExit(
-            "[score] REFUSING: the answer options are not what the model is about to say — "
-            + "; ".join(tail_fail)
-            + f". The readout position is after answer_prefix={args.answer_prefix!r}. Either supply "
-              "a forcing prefix or pass --allow-tail-readout, in which case the run is NOT "
-              "reportable as a comprehension or semantic result.")
 
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
                         "option_mass": mass_summary,
@@ -569,6 +564,24 @@ def main() -> int:
                ledger=ledger)
     print(f"[score] {dict(counts)} -> {run.path}")
     print(f"[score] failures: {ledger.as_dict()['failure_reasons']}")
+
+    # THE TAIL GATE FIRES *AFTER* run.finish(), DELIBERATELY. The first version raised before it,
+    # and on arm D (job 765053) that destroyed the entire run -- including a perfectly healthy
+    # comprehension readout at median 0.334 -- because the SEMANTIC readout dipped to 0.037. Two
+    # lessons, both already paid for in this project: a gate placed above finish() throws away the
+    # evidence that documents the failure, and a gate keyed on too coarse a bucket condemns data it
+    # never examined. The mass is now keyed per (readout, query_kind), each kind carries its own
+    # `reportable` flag in summary.json, and the process still exits NON-ZERO so no caller can
+    # mistake this for success -- DONE.json plus a row count is not proof, which is exactly how two
+    # judge crashes and three ClearHarm arms passed as COMPLETED earlier in this sprint.
+    if tail_fail and not args.allow_tail_readout:
+        print("[score] TAIL GATE FAILED — the run is written and its healthy readouts are usable, "
+              "but these are NOT reportable:", file=sys.stderr)
+        for t in tail_fail:
+            print(f"  - {t}", file=sys.stderr)
+        print(f"[score] readout position is after answer_prefix={args.answer_prefix!r}. "
+              f"Pass --allow-tail-readout to accept deliberately.", file=sys.stderr)
+        return 4
     return 0
 
 
