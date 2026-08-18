@@ -48,7 +48,7 @@ here.
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
 | **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
-| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, and it generalises off the bank.** ClearHarm 0.101 → **0.542**, control +0.011, all arms coherence-gated (`clearharm_arm_D.json`). **Decomposition pending** — the refusal-only and `d_surface`-only arms are running. |
+| **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, and it generalises off the bank.** ClearHarm 0.101 → **0.542**, control +0.011, all arms coherence-gated. **Decomposed** (§7c): removing `d_surface` *alone* is +0.106 and removing refusal *alone* is +0.240, against a random-direction control of +0.011 — so the effect is not the refusal direction under another name (cos = 0.019 @L18). **Super-additivity is NOT established** (+0.092, CI [−0.147, +0.133]); AdvBench, 16 clusters, is the test and is judging. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
@@ -666,6 +666,89 @@ that the whole-answer diagnostic has since shown are measured in the far tail of
 distribution (see the readout note in the process section). The comparison above is internally
 consistent — all three metrics are scored the same way — but the **comprehension column will move**
 when §4b is re-scored with the corrected readout. This section will be regenerated at that point.
+
+## 7c. ClearHarm — the external-set decomposition (plan §14) — added 2026-08-18, extended 2026-08-19
+
+This is the section that answers the question every other causal result in this sprint was exposed to:
+**is any of this a property of our own prompt bank?** Every ASR number in §§3–7 comes from the bank
+that `prompt_families.py` generated. The report already concedes that the largest arm-F gain appeared
+in `benign_remap` (+0.267) — the condition where the codeword mapping is **never taught** — which is
+the signature of a bank artifact rather than a mechanism.
+
+**ClearHarm is the discriminating test.** 179 external harmful prompts, already integrated in this repo
+(`data/clearharm/`, `scripts/build_clearharm_manifests.py`) and asked for by plan §14. They carry
+**no codeword, no demonstrations, and no doublespeak wrapper at all**. Nothing our generator produced.
+
+### The decomposition
+
+All arms coherence-gated individually, 100% coverage of the common set, judged with the same
+StrongReject rubric at the same threshold (`clearharm_decomposition.json`, n=179):
+
+| arm | intervention | ASR | refusal rate |
+|---|---|---|---|
+| baseline | — | 0.1006 | 0.877 |
+| **B** | remove `d_surface` @L8 | **0.2067** | 0.760 |
+| **C** | remove refusalness @L18 | **0.3408** | 0.615 |
+| **D** | remove **both** | **0.5419** | 0.447 |
+| Dctrl | two norm-matched **random** directions, same layers | 0.1117 | 0.872 |
+
+### Arm B is the load-bearing row
+
+`d_surface` was fitted **entirely on the carrot/bomb 2×2** — a contrast between a codeword surface form
+and a concept. Removing it raises compliance on harmful requests that **contain no codeword at all**,
+from 0.1006 to 0.2067, against norm-matched random directions that move ASR by +0.011.
+
+That excludes the bank-artifact explanation, which was the most serious threat to every late finding
+in this sprint. It is also the first ASR figure in the whole sprint measured on a set the bank did not
+generate.
+
+**It is not the refusal direction under another name.** cos(`d_surface`, refusalness) = **0.019 at
+L18** and 0.13 at L12 — near-orthogonal. The two arms move refusal rate by different amounts (B: 0.877
+→ 0.760; C: 0.877 → 0.615) and compose. *Caveat, stated because it matters:* arm B acts at **L8**,
+where no house refusal direction has been fitted, so the cosine is measured only at the layers where
+both directions exist.
+
+### What this licenses, and what it does not
+
+**Licensed:** "removing this direction causally raises compliance on harmful requests generally, and it
+is a distinct channel from refusal."
+
+**Not licensed:** calling `d_surface` "concept-ness" *off-bank*. The 2×2 named the direction from a
+contrast — codeword surface vs concept — that **does not exist in a prompt with no codeword**. Its
+off-bank behaviour is a new fact that needs its own interpretation, not an extension of the old name.
+Naming it from the fitting contrast and then using the name to explain behaviour in a setting where
+that contrast is absent would be exactly the circularity this sprint has already retracted twice.
+
+### ⚠ NOT established — super-additivity
+
+The joint arm exceeds the sum of the singles by **+0.0922** (D − baseline = 0.4413 versus
+B + C increments = 0.1061 + 0.2402 = 0.3463). Tempting, and **not supported**: the domain-clustered
+bootstrap CI is **[−0.1474, +0.1332]**, with 21% of draws at or below zero.
+
+The reason is a design limitation that `external_bank.py` warned about in advance: **127 of ClearHarm's
+179 rows sit in a single category**, so a domain-clustered bootstrap is dominated by one cluster and
+cannot resolve an effect of this size. **AdvBench held-out (495 prompts, 16 clusters, largest 26%)** was
+built in the same commit for precisely this test; its four arms are generated and judging at the time of
+writing. Super-additivity is **an open question**, not a finding.
+
+### ⚠ The control *band* is pending regeneration (R-12)
+
+`clearharm_decomposition.json` as committed reports a 3-draw control band with between-draw
+sd = 0.0048. **That band is not real.** `score_behavior.py:123` recursed into composed arms without
+passing `control_seed`, so all three "draws" fell back to the same default seed — two of the three
+recorded ASRs are identical to eighteen significant figures (0.018156424581005588). This is retraction
+**R-12**, and it re-created retraction #7 exactly (whose fake band reported sd 0.0049). Both times the
+tell was arms agreeing to four decimals.
+
+**Scope of the damage is narrow and worth stating precisely.** Arms B, C and D use real fitted
+directions and are untouched. `Dctrl` remains a valid *single* control, so **arm B (+0.106) against
+control (+0.011) stands**. What was never established is the draw-to-draw variance of the control. The
+band has been re-run with the seed correctly threaded — the three new draws have distinct generation
+hashes — and the decomposition artifact will be regenerated against them.
+
+*(A control band is the one artifact whose entire purpose is to measure draw-to-draw variance, which
+makes it the one artifact that cannot be falsified by inspecting its own reported value. Only the
+generations reveal it. That is now a standing check.)*
 
 ## 8. Process — five retractions, five corrections, three dead guards
 
