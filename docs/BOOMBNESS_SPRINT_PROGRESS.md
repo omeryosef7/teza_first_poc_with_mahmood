@@ -5220,3 +5220,38 @@ bisection inverse of the already-verified `t_sf`, checked against six published 
 **Counting rule, since this keeps happening:** when an audit finds a defect, the next step is not to fix
 that instance — it is to grep the other scripts for the same shape. C11a was found in one script and was
 latent in a second.
+
+### Tick 82 — §10.4's last arm launched, and its mandatory deliverable existed only as a plan line
+
+**Arm D was the only missing arm.** Checking every judge run against the plan's A–G list: A=`len_base`,
+B=`len_B`, C=`len_C`, E=`len_A`, F=`len_F`, G=`len_Bctrl`/`len_Fctrl` all exist and are DONE. **D (remove
+both) had never been run.** Submitted as 763594, with its control 763595.
+
+**The control is a DOUBLE random projection** (`random:project_out:8-8 + random:project_out:18-18`), not a
+single one. Arm D applies two projections; matching it against a one-projection control would repeat the
+control-mismatch this sprint already had to correct for arm B, where every control was an `add` while the
+arm was a `project_out`. Both jobs are on n-805 — 2 per node, at the contention cap.
+
+**`causal_claims.md` did not exist.** Plan §10.4 names it as a required output
+(`outputs/boombness/surgical_knockout/<run_id>/causal_claims.md`). **This is the second plan-mandated
+deliverable found missing**, after §5.4's `decision_gate.md`. Now written, organised around which controls
+passed, with arm D marked RUNNING rather than omitted.
+
+**Writing it surfaced a sharper version of the retraction-#8 reversal.** Running every arm across all four
+conditions on common prompts:
+
+| condition (n) | baseline | F | F control (random) | C (remove refusal only) |
+|---|---|---|---|---|
+| `natural_doublespeak` (420) | 0.243 | **+0.305** | −0.024 | +0.026 |
+| `direct_harmful` (72) | 0.042 | **+0.000** | **+0.417** | +0.167 |
+| `concept_in_benign_ctx` (72) | 0.042 | **+0.000** | **+0.236** | +0.139 |
+| `benign_literal` (324) | 0.015 | +0.019 | −0.009 | −0.003 |
+
+The new fact is the **+0.000 in the `direct_harmful` F cell against +0.167 for C alone**: adding
+`d_surface` does not merely fail to help on explicit harm, it **cancels the gain that removing refusal
+produces by itself**. Together with arm E (adding `d_surface` drives refusal 0.057 → 0.676) this says the
+axis behaves as a refusal *trigger* on explicit harm and as an enabler only in the doublespeak cell. The
+empirical interaction stands; the mechanism remains unknown and the deliverable says so.
+
+Also answered the plan's headline question directly: **"can we reduce ASR by removing Boombness?" — No.**
+Removing it *raises* ASR (+0.026). The reduction comes from *adding* it, via refusal.
