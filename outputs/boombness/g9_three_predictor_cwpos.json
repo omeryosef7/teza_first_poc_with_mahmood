@@ -2,6 +2,9 @@
   "plan_section": "9",
   "arm": "natural_doublespeak",
   "position": "codeword_last",
+  "outcome": "strongreject_score (continuous [0,1], NOT binary ASR@0.5)",
+  "min_examples": 1,
+  "inference": "CR1 sandwich, t(G-1) reference, plus within-domain permutation",
   "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
   "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
   "refusalness": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/refusalness/cwpos_20260817_050713_304734",
@@ -28,17 +31,61 @@
       "tool": 6,
       "user_like": 6
     },
-    "family_overlap_with_reference": {
-      "assistant_like": 0,
-      "cot_like": 0,
-      "system_like_quoted": 0,
-      "tool": 0,
-      "user_like": 0
+    "per_style": {
+      "assistant_like": {
+        "n": 6,
+        "family_overlap_with_reference": 0,
+        "shares_block_with_reference": false,
+        "blocks": [
+          "role_style"
+        ],
+        "identified": false,
+        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+      },
+      "cot_like": {
+        "n": 6,
+        "family_overlap_with_reference": 0,
+        "shares_block_with_reference": false,
+        "blocks": [
+          "role_style"
+        ],
+        "identified": false,
+        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+      },
+      "system_like_quoted": {
+        "n": 6,
+        "family_overlap_with_reference": 0,
+        "shares_block_with_reference": false,
+        "blocks": [
+          "role_style"
+        ],
+        "identified": false,
+        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+      },
+      "tool": {
+        "n": 6,
+        "family_overlap_with_reference": 0,
+        "shares_block_with_reference": false,
+        "blocks": [
+          "role_style"
+        ],
+        "identified": false,
+        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+      },
+      "user_like": {
+        "n": 6,
+        "family_overlap_with_reference": 0,
+        "shares_block_with_reference": false,
+        "blocks": [
+          "role_style"
+        ],
+        "identified": false,
+        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+      }
     },
-    "each_nonreference_style_in_a_single_block": true,
-    "any_block_shared_with_reference": false,
+    "identified_styles": [],
     "identified": false,
-    "reason": "role_style is collinear with bank_block and the family sets are disjoint: every non-reference style has zero families in common with the reference, so a role coefficient is a family-set coefficient. Not fitted."
+    "reason": "no role style is identified against the reference 'plain': zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
   },
   "models": {
     "boombness_only": {
@@ -49,12 +96,18 @@
         "intercept": {
           "beta": 0.18055555555555558,
           "se_cr1": 0.017513098251762282,
-          "p_cr1": 0.0
+          "t": 10.309743767776036,
+          "p_cr1": 0.00014765701528589328,
+          "p_cr1_normal_ANTICONSERVATIVE": 6.3670849793578e-25,
+          "reference": "t(df=5)"
         },
         "boombness": {
           "beta": 0.11793150211918245,
           "se_cr1": 0.014726565450265853,
-          "p_cr1": 1.1102230246251565e-15
+          "t": 8.008079176197427,
+          "p_cr1": 0.0004905792437771419,
+          "p_cr1_normal_ANTICONSERVATIVE": 1.1651388707739556e-15,
+          "reference": "t(df=5)"
         }
       }
     },
@@ -66,12 +119,18 @@
         "intercept": {
           "beta": 0.18055555555555558,
           "se_cr1": 0.034185412086294366,
-          "p_cr1": 1.2802204718553867e-07
+          "t": 5.281655084331835,
+          "p_cr1": 0.0032405322119730923,
+          "p_cr1_normal_ANTICONSERVATIVE": 1.2802204708069296e-07,
+          "reference": "t(df=5)"
         },
         "refusalness": {
           "beta": 0.13168174504536295,
           "se_cr1": 0.017123195504223098,
-          "p_cr1": 1.4654943925052066e-14
+          "t": 7.690255303858806,
+          "p_cr1": 0.0005928866206231468,
+          "p_cr1_normal_ANTICONSERVATIVE": 1.4684171468247156e-14,
+          "reference": "t(df=5)"
         }
       }
     },
@@ -83,17 +142,28 @@
         "intercept": {
           "beta": 0.1805555555555556,
           "se_cr1": 0.015894186257025936,
-          "p_cr1": 0.0
+          "t": 11.359848980990897,
+          "p_cr1": 9.247889310984714e-05,
+          "p_cr1_normal_ANTICONSERVATIVE": 6.625907872584292e-30,
+          "reference": "t(df=5)"
         },
         "boombness": {
           "beta": 0.0888733163727787,
           "se_cr1": 0.006522790281580974,
-          "p_cr1": 0.0
+          "t": 13.625045806506883,
+          "p_cr1": 3.8182990327244575e-05,
+          "p_cr1_normal_ANTICONSERVATIVE": 2.8423188201354127e-42,
+          "reference": "t(df=5)",
+          "p_within_domain_perm": 0.006496751624187906
         },
         "refusalness": {
           "beta": 0.10770402051096449,
           "se_cr1": 0.01563857464934991,
-          "p_cr1": 5.695000027117203e-12
+          "t": 6.887073977387173,
+          "p_cr1": 0.0009878990770723153,
+          "p_cr1_normal_ANTICONSERVATIVE": 5.695161014968867e-12,
+          "reference": "t(df=5)",
+          "p_within_domain_perm": 0.0004997501249375312
         }
       }
     }

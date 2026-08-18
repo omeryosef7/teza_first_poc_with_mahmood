@@ -58,7 +58,7 @@ deliberate refusals (position mismatch, unverifiable readout position, missing c
 | §14 Qwen3 ASR replication | generation done (960, thinking-off verified); **judge running** |
 | §10.4 arms D/E | not run |
 | Userness/CoTness probes (§11) | machinery ported, **never fitted** — `role_style` used as a disclosed proxy |
-| 3-predictor regression ASR ~ boombness + role + refusalness (§9) | **DONE** (`analyze_g9.py`) — 2-predictor model fitted (joint R²=0.250, both p<1e-4); **role dropped as unidentifiable** (collinear with `bank_block`, zero family overlap with `plain`) |
+| 3-predictor regression ASR ~ boombness + role + refusalness (§9) | **DONE** (`analyze_g9.py`) — 2-predictor model fitted (joint R²=0.250 of the **continuous** StrongReject score; boombness p=3.8e-5, refusalness p=9.9e-4 under t(5) — see correction C11); **role dropped as unidentifiable** (collinear with `bank_block`, zero family overlap with `plain`) |
 | comprehension by `n_examples` (§8) | **DONE** (`analyze_g8.py`) — doublespeak +0.370/doubling p=0.0003; n=0 level found degenerate (1 prompt × 12) and excluded, which removed 2 of 4 apparent trends; **random control moves comprehension ~3× more than `d_surface`** |
 | `probe_boombness` in the §6.4 three-way metric comparison | absent |
 | model/tokenizer **revision** pinning | never recorded (see Risks) |
@@ -123,9 +123,10 @@ without the comprehension caveat.*
 8. **"Refusalness at the codeword token" is off-label.** Fitted for a last-token readout; its condition
    ordering degrades badly there (harmful−benign gap collapses ~16×). This is why outcome C is not
    claimed.
-9. **Four bugs of one shape, so assume a fifth exists.** A flag or check threaded into one of two paths
+9. **FIVE bugs of one shape, so assume a sixth exists.** A flag or check threaded into one of two paths
    that must agree: `stage_score` missing `position`; `readout_position` written but never read;
-   `dc.generate` missing `enable_thinking`; and a guard that validated the already-correct path. Three
-   separate guards were also found never to have executed at all.
+   `dc.generate` missing `enable_thinking`; and a guard that validated the already-correct path; audit 10 added a fifth
+   (§9's position guard gated on a field `extract_boombness.py` never emits). **Four** separate
+   guards have now been found never to have executed at all.
 10. **Qwen3 ASR replication is not yet judged**, so §14's behavioural half is unknown; only the
     representational findings have replicated so far.

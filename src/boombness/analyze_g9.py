@@ -106,38 +106,110 @@ def z(xs: Sequence[float]) -> List[float]:
 def norm_cdf(x): return 0.5 * (1 + math.erf(x / math.sqrt(2)))
 
 
+def t_sf_2sided(t: float, df: int) -> float:
+    """Two-sided Student-t tail. Audit 10 finding 1: g9 originally used a NORMAL reference with
+    G=6 clusters, which is badly anticonservative and disagreed with analyze_g2.py:283 (t, df=G-1).
+    That inflated the reported significance by up to 37 orders of magnitude -- the joint refusalness
+    term was published as p<1e-4 when the repo's own standard gives 9.9e-4."""
+    from analyze_g8 import t_sf          # verified against 5 published critical values
+    return t_sf(abs(t), df)
+
+
+def perm_p_within_cluster(xcols, y, clusters, target_idx, n_perm=2000, seed=20260818):
+    """Within-cluster permutation of the target predictor, holding the others fixed.
+
+    analyze_g2.py marks its within-domain permutation p as the citable one because a CR1 sandwich on
+    6 clusters is itself unreliable. g9 had no such check; this supplies it so the two scripts make
+    inference the same way.
+    """
+    import random
+    rng = random.Random(seed)
+    n = len(y)
+    def fit_t(cols):
+        X = [[1.0] + [c[i] for c in cols] for i in range(n)]
+        beta, _, resid = ols(X, y)
+        se, _ = cr1_se(X, resid, clusters, len(beta))
+        j = target_idx + 1
+        return abs(beta[j] / se[j]) if se[j] and not math.isnan(se[j]) else 0.0
+    obs = fit_t(xcols)
+    by = collections.defaultdict(list)
+    for i, g in enumerate(clusters):
+        by[g].append(i)
+    hits = 0
+    for _ in range(n_perm):
+        permuted = list(xcols[target_idx])
+        for idx in by.values():
+            vals = [permuted[i] for i in idx]
+            rng.shuffle(vals)
+            for i, v in zip(idx, vals):
+                permuted[i] = v
+        cols = list(xcols); cols[target_idx] = permuted
+        if fit_t(cols) >= obs:
+            hits += 1
+    return (hits + 1) / (n_perm + 1)
+
+
 # ------------------------------------------------------------------ role identifiability --- #
 def role_identifiability(meta: Dict[str, dict], keys: List[str]) -> Dict:
-    """Can a role coefficient mean anything here? Checked, not assumed.
+    """Can a role coefficient mean anything here? Decided PER STYLE, not globally.
 
-    Two ways role fails to be identified, both present in this bank:
-      * every non-plain style sits in its own `bank_block`, so role == block;
-      * the family sets are disjoint, so role is also a family-set swap.
+    AUDIT 10 FINDING 5 rewrote this. The first version had four defects, none of which changed the
+    reported numbers (both artifacts came out `identified: false`) but any of which could have:
+
+      * it decided identification GLOBALLY and then added a dummy for EVERY style, so one
+        overlapping style could admit a second style whose families are disjoint -- i.e. it would
+        fit precisely the family-set-swap coefficient this gate exists to refuse;
+      * it used OR (`shared_block or overlap>0`). Family disjointness is fatal on its own and
+        block-sharing does not repair it, so the two conditions must BOTH hold. `block_pure` --
+        the variable encoding "role == block" from the docstring -- was computed and never used;
+      * with no `plain` style the reference fell to `styles[0]` alphabetically, which could report
+        an identified contrast as unidentified;
+      * `sorted(byfam)` raised TypeError if any row had `role_style = None`, and a single-style
+        input returned a `reason` asserting a collinearity that was never tested.
     """
-    byfam = collections.defaultdict(set)
-    byblock = collections.defaultdict(set)
-    for p in keys:
-        r = meta[p]
+    byfam: Dict[object, set] = collections.defaultdict(set)
+    byblock: Dict[object, set] = collections.defaultdict(set)
+    for p_ in keys:
+        r = meta[p_]
         byfam[r.get("role_style")].add(r.get("family_id"))
         byblock[r.get("role_style")].add(r.get("bank_block"))
-    styles = sorted(byfam)
-    ref = "plain" if "plain" in byfam else styles[0]
-    overlap = {s: len(byfam[s] & byfam[ref]) for s in styles if s != ref}
-    block_pure = all(len(byblock[s]) == 1 for s in styles if s != ref)
-    shared_block = any(byblock[s] & byblock[ref] for s in styles if s != ref)
-    counts = {s: sum(1 for p in keys if meta[p].get("role_style") == s) for s in styles}
-    identified = (any(v > 0 for v in overlap.values()) or shared_block) and len(styles) > 1
+    # None-safe ordering (finding 5d): missing role_style sorts as the empty string
+    styles = sorted(byfam, key=lambda v: (v is None, str(v)))
+    counts = {str(s): sum(1 for p_ in keys if meta[p_].get("role_style") == s) for s in styles}
+
+    if len(styles) < 2:
+        return {"reference_style": (str(styles[0]) if styles else None), "styles": [str(s) for s in styles],
+                "n_by_style": counts, "per_style": {}, "identified_styles": [], "identified": False,
+                "reason": f"only {len(styles)} role style present; no contrast exists to identify."}
+
+    # reference = the largest stratum, not alphabetical (finding 5c)
+    ref = max(styles, key=lambda s: counts[str(s)])
+
+    per_style = {}
+    for s in styles:
+        if s == ref:
+            continue
+        overlap = len(byfam[s] & byfam[ref])
+        shares_block = bool(byblock[s] & byblock[ref])
+        ok = overlap > 0 and shares_block          # AND, not OR (finding 5b)
+        why = []
+        if overlap == 0:
+            why.append("zero family overlap with the reference (role is a family-set swap)")
+        if not shares_block:
+            why.append("no bank_block shared with the reference (role is collinear with block)")
+        per_style[str(s)] = {"n": counts[str(s)], "family_overlap_with_reference": overlap,
+                             "shares_block_with_reference": shares_block,
+                             "blocks": sorted(str(b) for b in byblock[s]),
+                             "identified": ok, "reason": "identified" if ok else "; ".join(why)}
+
+    ident_styles = [k for k, v in per_style.items() if v["identified"]]
     return {
-        "reference_style": ref, "styles": styles, "n_by_style": counts,
-        "family_overlap_with_reference": overlap,
-        "each_nonreference_style_in_a_single_block": block_pure,
-        "any_block_shared_with_reference": shared_block,
-        "identified": identified,
-        "reason": (
-            "identified" if identified else
-            "role_style is collinear with bank_block and the family sets are disjoint: every "
-            "non-reference style has zero families in common with the reference, so a role "
-            "coefficient is a family-set coefficient. Not fitted."),
+        "reference_style": str(ref), "styles": [str(s) for s in styles], "n_by_style": counts,
+        "per_style": per_style, "identified_styles": ident_styles,
+        "identified": bool(ident_styles),
+        "reason": ("identified for: " + ", ".join(ident_styles)) if ident_styles else
+                  ("no role style is identified against the reference "
+                   f"{ref!r}: " + "; ".join(sorted({v['reason'] for v in per_style.values()}))),
     }
 
 
@@ -173,17 +245,49 @@ def main() -> int:
                 "comparison INVERTS with position, so a mixed-footing fit is not interpretable.")
         return dict(seen)
 
+    # AUDIT 10 FINDING 2: this is the CONTINUOUS strongreject score in [0,1], not a binary ASR
+    # indicator. The fitted intercept equals mean(score)=0.1806, not ASR@0.5=0.219. R^2 below is
+    # therefore R^2 of the continuous score. `outcome` is recorded in the artifact so no reader has
+    # to infer it.
     asr = {r["prompt_id"]: r["strongreject_score"] for r in J
            if r.get("strongreject_score") is not None and r.get("condition") == args.arm}
     meta = {r["prompt_id"]: r for r in J if r["prompt_id"] in asr}
 
     erows = [r for r in E if r.get("is_final_occurrence") and r["prompt_id"] in asr]
     rrows = [r for r in R if r["prompt_id"] in asr]
-    # refusalness runs predate readout_position in some cases; only guard what carries it
-    if any("readout_position" in r for r in erows):
-        pos_of([r for r in erows if "readout_position" in r], "extract")
+    # AUDIT 10 FINDING 3: the extract rows do NOT carry `readout_position` (extract_boombness.py
+    # emits token_pos/seq_len instead), so the original `if any(...)` gate never fired on that side
+    # and the docstring's "BOTH inputs" promise was decorative. Guard on what extract DOES emit,
+    # and fall back to the run-level config, so a mixed-footing fit cannot pass silently -- that is
+    # the failure that produced g2_analysis_MIXED_FOOTING_SUPERSEDED.json.
+    ecfg = json.load(open(os.path.join(args.extract, "config.json")))
+    epos = (ecfg.get("args", ecfg) or {}).get("position")
+    if epos != args.position:
+        raise SystemExit(f"[G9] extract run was configured with position={epos!r} but "
+                         f"--position {args.position} was asserted")
+    n_checked = 0
+    for r in erows:
+        if r.get("token_pos") is None or r.get("seq_len") is None:
+            continue
+        n_checked += 1
+        if args.position == "last" and r["token_pos"] != r["seq_len"] - 1:
+            raise SystemExit(f"[G9] extract row {r['prompt_id']} has token_pos={r['token_pos']} "
+                             f"but seq_len-1={r['seq_len']-1}; --position last is not satisfied")
+        if args.position == "codeword_last" and r["token_pos"] == r["seq_len"] - 1:
+            raise SystemExit(f"[G9] extract row {r['prompt_id']} reads the FINAL token while "
+                             f"--position codeword_last was asserted")
+    if n_checked == 0:
+        raise SystemExit("[G9] no extract row carries token_pos/seq_len — the position claim cannot "
+                         "be verified, and an unverifiable position is exactly what the phantom-cell "
+                         "bug looked like. Refusing.")
+    print(f"[G9] position guard: verified {n_checked} extract rows at {args.position}")
     if any("readout_position" in r for r in rrows):
         pos_of([r for r in rrows if "readout_position" in r], "refusalness")
+    else:
+        rcfg = json.load(open(os.path.join(args.refusalness, "config.json")))
+        rpos = (rcfg.get("args", rcfg) or {}).get("position")
+        if rpos != args.position:
+            raise SystemExit(f"[G9] refusalness run position={rpos!r} != {args.position}")
 
     qk = collections.Counter(r.get("query_kind") for r in erows)
     if set(qk) - {"behavioral"}:
@@ -218,11 +322,10 @@ def main() -> int:
     role_terms: List[List[float]] = []
     role_names: List[str] = []
     if ident["identified"]:
-        ref = ident["reference_style"]
-        for s in ident["styles"]:
-            if s == ref:
-                continue
-            role_terms.append([1.0 if meta[p].get("role_style") == s else 0.0 for p in keys])
+        # ONLY the styles that individually passed; rows of unidentified styles are dropped so an
+        # unidentified stratum cannot leak into the reference category either.
+        for s in ident["identified_styles"]:
+            role_terms.append([1.0 if str(meta[p].get("role_style")) == s else 0.0 for p in keys])
             role_names.append(f"role[{s}]")
         specs.append(("boombness+role+refusalness", [xb] + role_terms + [xr],
                       ["boombness"] + role_names + ["refusalness"]))
@@ -238,12 +341,25 @@ def main() -> int:
         terms = {}
         for a, lab in enumerate(["intercept"] + labels):
             t = beta[a] / se[a] if se[a] and not math.isnan(se[a]) else float("nan")
-            terms[lab] = {"beta": beta[a], "se_cr1": se[a],
-                          "p_cr1": (2 * (1 - norm_cdf(abs(t))) if not math.isnan(t) else None)}
+            terms[lab] = {
+                "beta": beta[a], "se_cr1": se[a], "t": t if not math.isnan(t) else None,
+                # t(G-1), NOT normal -- see t_sf_2sided. `p_cr1_normal_ANTICONSERVATIVE` is kept
+                # only so the superseded value is visible next to the correct one.
+                "p_cr1": (t_sf_2sided(t, max(G - 1, 1)) if not math.isnan(t) else None),
+                "p_cr1_normal_ANTICONSERVATIVE": (math.erfc(abs(t) / math.sqrt(2))
+                                                  if not math.isnan(t) else None),
+                "reference": f"t(df={max(G-1,1)})"}
         models[name] = {"r2": r2, "n": len(keys), "n_clusters": G, "terms": terms}
         print(f"  {name:28s} R2={r2:.4f}  " + "  ".join(
             f"{k}={v['beta']:+.4f}(p={v['p_cr1']:.4f})" for k, v in terms.items()
             if k != "intercept" and v["p_cr1"] is not None))
+
+    # within-domain permutation on the JOINT model, the inference analyze_g2 marks as citable
+    if "boombness+refusalness" in models and "error" not in models["boombness+refusalness"]:
+        for i, lab in enumerate(["boombness", "refusalness"]):
+            pp = perm_p_within_cluster([xb, xr], y, clusters, i)
+            models["boombness+refusalness"]["terms"][lab]["p_within_domain_perm"] = pp
+            print(f"  perm[{lab}] within-domain p = {pp:.4f}")
 
     # incremental R2 — what each predictor adds over the other
     inc = {}
@@ -268,6 +384,9 @@ def main() -> int:
 
     out = {
         "plan_section": "9", "arm": args.arm, "position": args.position,
+        "outcome": "strongreject_score (continuous [0,1], NOT binary ASR@0.5)",
+        "min_examples": args.min_examples,
+        "inference": "CR1 sandwich, t(G-1) reference, plus within-domain permutation",
         "judge": os.path.abspath(args.judge), "extract": os.path.abspath(args.extract),
         "refusalness": os.path.abspath(args.refusalness),
         "boombness_col": args.boombness_col, "refusalness_col": args.refusalness_col,

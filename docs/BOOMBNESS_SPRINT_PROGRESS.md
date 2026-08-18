@@ -5054,18 +5054,22 @@ and the term is dropped, with the descriptive means kept and labelled descriptiv
 
 **The identified 2-predictor model, at the codeword token (n=234, 6 domain clusters, CR1):**
 
+⛔ **The p-values first published here were WRONG — see correction C11 below.** Corrected table
+(CR1 with a **t(5)** reference, plus the within-domain permutation `analyze_g2` marks as citable):
+
 | model | R² | boombness | refusalness |
 |---|---|---|---|
-| boombness only | 0.1411 | +0.1179 (p<1e-4) | — |
-| refusalness only | 0.1759 | — | +0.1317 (p<1e-4) |
-| **both** | **0.2502** | **+0.0889 (p<1e-4)** | **+0.1077 (p<1e-4)** |
+| boombness only | 0.1411 | +0.1179 (p=5.0e-4) | — |
+| refusalness only | 0.1759 | — | +0.1317 (p=5.9e-4) |
+| **both** | **0.2502** | **+0.0889 (p=3.8e-5, perm p=0.0065)** | **+0.1077 (p=9.9e-4, perm p=5.0e-4)** |
 
-Both survive jointly. Refusalness adds +0.109 R² over boombness; boombness adds +0.074 over refusalness.
+The outcome is the **continuous StrongReject score**, not binary ASR@0.5. Both survive jointly. Refusalness adds +0.109 R² over boombness; boombness adds +0.074 over refusalness.
 Neither is redundant, and **refusalness is the stronger single predictor** — consistent with the corrected
 position analysis, not with the retracted "Boombness beats refusalness" claim.
 
-**The same fit at the `last` token is a flat null for BOTH:** R²=0.0066, boombness p=0.43, refusalness
-p=0.99.
+**The same fit at the `last` token is a flat null for BOTH:** R²=0.0066, boombness p=0.45
+(perm 0.57), refusalness p=0.77 (perm 0.99). This half is robust to the correction — the wrong
+reference distribution only ever inflated significance, so a null gets *more* null.
 
 **Why that matters for correction C8.** C8 warns the position finding may be an *estimation-quality*
 confound — `d_surface` is far better separated at the codeword token, so "carries more signal" and "is
@@ -5142,3 +5146,54 @@ statistic (p=0.040) quoted in Known Issue #1, which is a different metric and re
 
 **Disclosure:** `p_coded` sits between 1e-7 and 2e-4 in every cell, so this is a relative preference
 between two low-probability continuations. Directions are interpretable; absolute magnitudes are not.
+
+
+## ⛔ CORRECTION C11 — audit 10: §9's p-values used a NORMAL reference on 6 clusters, and the outcome was mislabelled
+
+Audit 10 (independent, scoped to `src/boombness/*.py` + `outputs/boombness/*.json`; it never read
+generations or prompt text) checked `analyze_g9.py` — written and published in the same tick, which is
+exactly when nothing has reviewed it yet. It verified the OLS solver, the matrix inverse, the CR1 sandwich,
+the standardization and the incremental-R² labels as **correct** (300 synthetic designs each, agreement to
+1e-8 against numpy), and found three result-affecting defects.
+
+**C11a — RESULT-AFFECTING, and I published the wrong number.** `analyze_g9.py` used `norm_cdf` as the
+reference for every CR1 t-ratio. With **G=6 clusters** that is badly anticonservative, and it contradicted
+this repo's own audited script: `analyze_g2.py:283` uses `t.sf(df=G-1)` and its comment says a CR1 sandwich
+on 6 clusters "is itself unreliable (the rule of thumb wants 30–50 clusters)", marking the permutation p as
+the citable one. The gap is up to **37 orders of magnitude**:
+
+| term | t | published (normal) | correct t(5) |
+|---|---|---|---|
+| joint boombness | 13.63 | 2.8e-42 | **3.8e-05** |
+| joint refusalness | 6.89 | 5.7e-12 | **9.9e-04** |
+
+So last tick's "**both p<1e-4**" is **false for refusalness** (9.9e-4). Betas, R², signs and every
+conclusion are unaffected; only the p-values were. Fixed: t(G-1) reference, the superseded normal value
+retained in the artifact as `p_cr1_normal_ANTICONSERVATIVE` so the wrong number stays visible next to the
+right one, and a **within-domain permutation** added to match g2 (boombness 0.0065, refusalness 5.0e-4).
+
+**C11b — RESULT-AFFECTING (labelling).** The regressand is `strongreject_score`, the **continuous** judge
+score, not binary ASR@0.5. The auditor pinned this from the artifact alone: the fitted intercept 0.180556
+equals the n-weighted mean score exactly, not ASR@0.5 = 0.219. I wrote "R² of ASR". The artifact now
+records `outcome` explicitly and the text above is corrected.
+
+**C11c — RESULT-AFFECTING (a guard that could not fire).** The position check gated on
+`if any("readout_position" in r ...)`, but `extract_boombness.py` does not emit that field (it writes
+`token_pos`/`seq_len`), so the guard fired on the refusalness side only and the docstring's "BOTH inputs"
+promise was **decorative** — a mixed-footing fit could have passed silently, which is the failure that
+produced `g2_analysis_MIXED_FOOTING_SUPERSEDED.json`. **This is the fourth guard in this sprint found never
+to have executed.** Fixed to assert on the fields extract does emit plus the run-level config; it now
+prints `verified 270 extract rows` and both reruns pass it.
+
+**C11d — LATENT, no number changed.** `role_identifiability()` was wrong in four ways: it decided
+identification globally then fitted a dummy for *every* style (so one overlapping style could admit a
+disjoint one — precisely the coefficient the gate exists to refuse); it used OR where family-disjointness
+is fatal on its own, leaving the `block_pure` variable computed and unused; it picked the reference
+alphabetically when no `plain` existed; and it raised `TypeError` on a `None` role_style. Rewritten to
+decide **per style** with AND logic and a largest-stratum reference, and unit-tested against all five of
+the auditor's counterexamples — all now behave correctly. Both artifacts still come out `identified: false`
+for the same substantive reason, so §9's conclusion is unchanged.
+
+**Verified clean by this audit:** `ols()`, `_inv()`, the CR1 sandwich and its finite-sample correction
+(Stata's CR1 exactly), z-scoring, intercept handling, incremental-R² labels, and full internal consistency
+of both artifacts — nothing is reported that the code cannot compute.
