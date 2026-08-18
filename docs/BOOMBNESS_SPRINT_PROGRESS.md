@@ -5314,3 +5314,49 @@ token after a **single** transformer block and does not sharpen with depth.
 again onto n-802, each time restarting from zero with a fresh run dir. The earlier partial dirs are
 orphaned; `require_done` refuses them, so no analysis can pick them up. This is normal `killable`-partition
 behaviour, recorded so the wall-clock is not mistaken for a hang.
+
+### Tick 84 — §11 unblocked: the role block IS a proper crossed design, and my first test said the opposite
+
+Working toward §11 I ran the plan's own Role-Confusion requirement as a check — *"use identical neutral
+text snippets wrapped in different role tags/styles; keep content identical across role conditions"* — and
+the first answer was alarming: **zero family stems shared by all five role styles**, 36 each, 180 disjoint.
+Taken at face value that would mean the entire role block is confounded, every role comparison also a
+content comparison.
+
+**It was an artifact of my own test.** `family_id` **embeds the style name**
+(`farm_storage|dev|slot0|n2|none|consistent|near|tool|behavioral`), so stems that are identical in content
+look disjoint in string form. Masking the style token out:
+
+| check | result |
+|---|---|
+| stems shared by all 5 styles | **72 of 72** |
+| cells present in all 5 styles | **144 of 144** |
+| `final_query_text` byte-identical across styles | **144 / 144** |
+| `demo_block` byte-identical across styles | **144 / 144** |
+| `n_chars` differs across styles | yes (243–327) — the wrapper is applied in `full_prompt` |
+| same `target_surface`, same `n_examples` | yes |
+
+So the role block **does** satisfy the plan's methodology: identical neutral content, different role
+wrapper, fully crossed over 144 cells × 5 styles.
+
+**This refines §9 rather than contradicting it.** §9 found role *unidentified* — correctly, because it used
+`plain` as the reference, and `plain` shares no families with any role style. Among the five role styles
+themselves, with content held byte-identical, **role IS identified**. The §9 gate is right; its reference
+choice was what made role unidentifiable, and the rewritten per-style gate (correction C11d) already picks
+the largest stratum as reference, which is `plain` here.
+
+**The real §11 gap is coverage, not design.** The bank holds 720 role rows (360 behavioral), but the
+existing runs cover only a fraction: the extract run has **120 of 720**, and the judge has **60 of 360**
+behavioral rows (12 per style). Every role claim so far rests on 6 prompts per style per condition.
+Launched to close it:
+
+- **763891** — `extract_boombness --stage score --fit-dir <full>` on the full 720-row role block, so
+  Boombness is read against the SAME directions rather than refitted on role rows.
+- **763892** — `score_behavior --query-kinds behavioral` on the same block, for ASR and refusal at 72 rows
+  per style instead of 12.
+
+Filtered bank `data/boombness_prompts/role_style_block.jsonl`, sha16 `71ad78fec42eda71`, 720 rows.
+
+This finally makes §11's main question answerable as posed: *does a more user-like or CoT-like presentation
+increase final-carrot Boombness, or does it only increase ASR independently?* — with content held constant
+and n=72 per style.
