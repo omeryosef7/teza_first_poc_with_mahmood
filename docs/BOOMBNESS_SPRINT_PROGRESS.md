@@ -4538,3 +4538,56 @@ If instead `len_Fctrl` also doubles ASR, then **any** perturbation composed with
 the effect is not about Boombness, and the correct claim shrinks to "removing refusal makes the model
 vulnerable to arbitrary activation perturbation" — which would be interesting but is a different paper.
 Recording both readings now.
+
+## ★★★★ SPECIFICITY TEST PASSED — the interaction is `d_surface`-specific. The mechanism claim is earned.
+
+The composed control the audit demanded — **`random:add:8-8:0.25` + `refusalness:project_out:18-18:1.0`**,
+structurally identical to arm F with a norm-matched random direction swapped in for `d_surface`:
+
+| arm | ASR | refusal | Δ score vs baseline | p_cl |
+|---|---|---|---|---|
+| baseline | 0.2429 | 0.0571 | — | — |
+| `+0.25 d_surface` alone | 0.0881 | 0.6762 | −0.1274 | 0.0117 |
+| remove refusalness alone | 0.2690 | 0.0000 | +0.0101 | 0.4746 |
+| **`d_surface` + remove refusalness** | **0.5476** | 0.0024 | **+0.2824** | **<0.0001** |
+| **RANDOM + remove refusalness** | **0.2190** | 0.0000 | −0.0321 | 0.1160 |
+
+**Arm F − random control = +0.3146, t_cl=+12.92, p<0.0001.**
+The random composition does **nothing** (0.219 vs baseline 0.243, p=0.116); it does not even beat
+refusal-removal alone (−0.042, p=0.065). Only the `d_surface` composition doubles ASR.
+
+### Every competing explanation is now closed
+| competitor | status |
+|---|---|
+| "the arm was degenerate" | dead — passes the coherence gate on the doublespeak denominator |
+| "it was truncation/length" | dead — at 512 tokens all arms complete; the effect **grew** |
+| "more text scores higher" | dead — truncation *suppresses* score (baseline calibration, +3.7pp when completed) |
+| "judge noise" | dead — effect is **25×** the measured re-test floor |
+| "threshold luck" | dead — holds at 0.25 / 0.50 / 0.75 and on the continuous score |
+| **"any two perturbations composed do this"** | **dead — the random composition does nothing (p=0.116)** |
+| "it's a domain artifact" | dead — domain-clustered throughout, G=6 |
+
+### The finding, stated precisely
+**Boombness has a large causal effect on attack success, and refusal was hiding it.**
+- Adding Boombness with refusal intact → refusal fires (0.057 → 0.676) → ASR *falls* to 0.088.
+- Adding Boombness with refusal projected out → ASR **more than doubles** to 0.548.
+- Adding a *random* direction with refusal projected out → **nothing** (0.219).
+- Removing refusal alone → nothing at population level (0.269, p=0.475).
+
+So the two channels are real and **specific to this axis**: `d_surface` simultaneously (1) makes the request
+legible to the refusal mechanism and (2) supplies content that makes a completion actually harmful. In the
+unmodified model channel 1 dominates and masks channel 2 entirely — which is exactly why the correlation was
+positive while every steering attempt looked suppressive.
+
+### Consequences
+- **§18 = B is WRONG and is withdrawn.** It was a ceiling effect of refusal, as the pre-registered arm-F
+  prediction said it would be if this pattern appeared. Boombness is causally related to attack success.
+- **§12.2 — "Boombness MINUS refusal" — is vindicated in exactly the form the plan specified.** The plan
+  wrote that objective; I closed it as gate-not-met on the strength of G4's directional null; arm F is its
+  idealised limit and it doubles ASR. That objective should be built.
+- **§0.3's projection result is a separate claim** and still carries its own caveats (p=0.117 vs baseline,
+  wrong-type controls). `projctrl` (265/960) and the Qwen3 replication (697/960 generating) address it.
+
+**This is the sprint's headline result and the first one where I cannot name a remaining confound.** The
+honest limits are scope, not validity: one model, one concept pair, one judge, and a refusal direction
+projected at a single layer.
