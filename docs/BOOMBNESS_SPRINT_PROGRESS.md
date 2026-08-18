@@ -5752,3 +5752,37 @@ Storing both intervals side by side, across 26 `demos_only` arms of the stratifi
 Both are now persisted (`frac_ci95_paired_boot` = domain-clustered and citable;
 `frac_ci95_family_level_UNDERSTATES` beside it) with `boot_width_ratio_domain_over_family`, so the fix is
 auditable rather than silently applied.
+
+## ⚠ SELF-INFLICTED: my own A11-7 fix crashed both judge jobs, and it took a "why is the queue empty?" to find it
+
+Two of today's SLURM jobs are recorded **FAILED** — 764075 (`rolebeh` judge) and 764155 (`len_D` judge) —
+i.e. the runs behind **§11's answer** and **§10.4's arm D**, the two largest claims of the session. I had
+read `DONE.json` and full row counts and called both clean. `sacct` says otherwise, and I only looked
+because the queue state was questioned.
+
+**Cause: my own fix, one tick earlier.** A11-7 renamed the summary field `wilson95` →
+`wilson95_IID_UNDERSTATES` so an iid interval could not be mistaken for a clustered one. I threaded the
+rename into the **writer** and not into the **reader** at `judge_boombness.py:203`, so every judge run
+since then dies with `KeyError: 'wilson95'`. **That is the same one-of-two-paths shape this log has
+recorded six times — and this instance is mine, introduced while fixing an audit finding.**
+
+**Data impact: none.** `run.finish()` is at line 199, above the crash at 203, so `results.jsonl`,
+`summary.json` and `DONE.json` were fully written. Row counts are complete (360/360, 960/960).
+
+**Real impact: a safety gate never executed.** The crash sits **above** the `null_frac > max_null_frac`
+abort check at line 207 — the gate that refuses a judge run with too many null judgements. It did not run
+on either job. Checked by hand afterwards: **null_frac = 0.0000 on all three runs**, so it would have
+passed and both claims stand. But I verified that *after* publishing them, not before.
+
+**Fixed:** the reader now accepts either key and prints the clustered interval beside the iid one, so the
+distinction is visible at the console too. Regression-tested against a real summary.
+
+**Three lessons, recorded because they keep recurring:**
+1. `DONE.json` + full row counts is **not** proof a job succeeded — `sacct` state is a separate check I
+   was not making. Added to the tick routine.
+2. A rename is a two-path edit. The previous entry in this log states *"a guard added without re-running
+   the script it guards is not a guard"*; the same applies to a **field rename**, and I broke it the very
+   next tick.
+3. Everything above line `run.finish()` is durable; everything below it is not. Putting a **safety gate
+   below the write** means any later crash silently skips it. The `null_frac` gate should run *before*
+   `finish()`, not after — logged as an open item.

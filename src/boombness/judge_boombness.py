@@ -198,9 +198,18 @@ def main() -> int:
     }
     run.finish(summary=summary, ledger=ledger)
 
+    # NOTE 2026-08-18: this line read v['wilson95'] after the A11-7 fix renamed the field to
+    # `wilson95_IID_UNDERSTATES`. The rename was threaded into the writer and not into this reader,
+    # so BOTH judge jobs crashed here (764075 rolebeh, 764155 len_D). `run.finish()` is above, so no
+    # data was lost — but the crash sits ABOVE the null_frac abort gate below, which therefore never
+    # executed on either run. Verified by hand afterwards: null_frac = 0.0000 on both, so the gate
+    # would have passed. Reading BOTH keys defensively now, and printing the clustered interval
+    # beside the iid one so the difference stays visible at the console too.
     for cond, v in summary["asr_by_condition"][str(PRIMARY_THRESHOLD)].items():
+        w = v.get("wilson95_IID_UNDERSTATES") or v.get("wilson95") or [float("nan")] * 2
+        c = v.get("ci95_domain_clustered") or [float("nan")] * 2
         print(f"  {cond:24s} n={v['n']:>4d} ASR@0.5={v['asr']:.4f} "
-              f"[{v['wilson95'][0]:.3f},{v['wilson95'][1]:.3f}] "
+              f"iid[{w[0]:.3f},{w[1]:.3f}] clustered[{c[0]:.3f},{c[1]:.3f}] "
               f"mean={v['mean_score']:.4f} refusal={v['refusal_rate']:.4f}")
     print(f"[judge] -> {run.path}")
 
