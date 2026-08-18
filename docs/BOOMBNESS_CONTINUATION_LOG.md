@@ -1340,3 +1340,57 @@ Only 12 families exist under `--n-examples 4` (6 domains × 2 splits). **This is
 the pre-fix code counted prompts rather than families and would have reported "24" for the same data.
 Relaunched at `--n-examples 4,8`, which doubles eligibility to 24 families — `g3wa_block24` (766672),
 `g3wa_codeword24` (766673). The 12-family runs are kept; they are valid, just half the power.
+
+---
+
+# CURRENT PHASE BOARD — supersedes the board at the top of this file (2026-08-19 02:35)
+
+The board in the header is session 1's and is stale. This is the live one.
+
+| plan § | subject | status | evidence |
+|---|---|---|---|
+| — | **Phase 1 — fix what is broken** | **DONE** | 14-agent workflow, 7/7 verifiers INCOMPLETE, suite 338 → 584 tests |
+| 1.1 | `t_sf` scipy-backed | **DONE — verified** | exactly 1 of 726 artifacts corrupted (C-2) |
+| 1.2 | comprehension readout | **DONE — verified** | whole-answer readout, 3,200–5,300× more option mass |
+| 1.3 | `analyze_steering` | **DONE — artifact replaced** | intervals were 1.03–1.69× too narrow |
+| 1.4 | `surgical_knockout` dst / cross-fit / families | **CODE DONE; re-run in flight** | 766672/766673 at 24 families |
+| 1.5 | Tier-2 remainder (T5–T10) | **DONE — all verified** | incl. T8 `validate_direction_payload`, silent-failure group |
+| **C-6** | whole-answer readout ported to G1 + G3 | **DONE; re-runs in flight** | 766659 (G1), 766672/3 (G3) |
+| §5 | **G1** | **RE-RUN IN FLIGHT** | 766659, `whole_answer`, **α=0.25 added** (E9). ⚠ donor-ceiling instrument problem found |
+| §6.4 | metric comparison | **DONE** | report §7b |
+| §8 | demo-count dose-response | DONE (report §6) | 5 plots still missing |
+| §9 | correlation + regression + 4 plots | **DONE** | `outputs/boombness/section9/`, join verified bit-identical |
+| §10 | **G3** | **RE-RUN IN FLIGHT** | `--dst both`, `dense_two_layer` ledgered as skipped |
+| §11 | role framing | DONE | report §5 |
+| §12 | **G4 / the objective** | **DONE — outcome B stands** | both signs suppress ASR; do not build it |
+| §13 | "found the mechanism"? | **NO** | six criteria, not all met |
+| **§14** | **external sets** | **★ DONE — the sprint's best result** | AdvBench arm B +0.0305 p=0.0089 w/ inert control; **super-additivity ESTABLISHED**; Qwen3 channel reversal |
+| §15 | report items 2/6/7/14/15/16 | **PARTIAL** | 7 ✅, 14 ✅ (§8b), 15 ✅ (§8c), 16 ✅ (§9b); **2 and 6 outstanding** (6 blocked on the G1 re-run) |
+| §4.1 | designed variance | **RESOLVED — documented + excluded** | N12; isolated in 3 blocks, underpowered, triple-confounded |
+| §2.1 | `seed` + `tokenizer_revision` | **DONE (forward-only)** | recorded by `common.RunDir` from now on |
+| Phase 4 | rewrite the deliverable | **SUBSTANTIALLY DONE** | one conclusion, retraction table, §0.3 resolved, G1 → +68%, R-13/14/15/16 applied, sweep clean |
+
+## Retraction / correction ledger — this session
+
+| id | what | status |
+|---|---|---|
+| R-12 | ClearHarm control band was one draw stated 3× | **CLOSED** — real band sd 0.0129, fake one understated 2.7× |
+| R-13 | "matched footing" incremental R² gave refusalness 5 predictors vs 1 | **applied** to report + short update |
+| R-14 | **every external ASR judged against an EMPTY GOAL** | **CLOSED** — banks fixed, all arms re-judged, ≤0.03 movement |
+| R-15 | "harmful yes, benign no" is 1 significant cell of 6 | **applied**; the split tracks sample size |
+| R-16 | ClearHarm arm B significant only under an iid SEM | **applied — and then REVERSED on AdvBench**, which is the right outcome and both halves are recorded |
+
+## Guards added this session (each with a test that fails the pre-fix case)
+
+1. `analyze_external_arms` band guard — fingerprints **generations**, not judge scores *(was dead on first writing; caught by running it against the real R-12 band)*
+2. `--skip-arms` / `--skip-arms-reason` — an arm may never vanish unexplained
+3. argsfile **quote guard** in `run_boombness.sh` — refuses before the model load
+4. `summarize_section9` — **refuses to draw** unless its join reproduces the committed inference
+
+## Open
+
+* `ab_Cctrl` / `ab_Dctrl` judging → discharges the super-additivity control caveat
+* **Qwen3 × AdvBench** (766674–676) → does `d_surface` replicate causally at 16 clusters?
+* G1 (766659) and G3 (766672/3) re-runs → the last two suspended headline claims
+* Report §15 items **2** ("what was implemented") and **6** (aggressive-patching results, blocked on G1)
+* §8's five plots
