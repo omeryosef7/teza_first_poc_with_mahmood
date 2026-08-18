@@ -1,0 +1,138 @@
+{
+  "plan_section": "9",
+  "arm": "natural_doublespeak",
+  "position": "codeword_last",
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+  "refusalness": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/refusalness/cwpos_20260817_050713_304734",
+  "boombness_col": "d_surface|L12|proj",
+  "refusalness_col": "refusalness|L20|proj",
+  "cluster_by": "domain",
+  "n": 234,
+  "n_clusters": 6,
+  "role_identifiability": {
+    "reference_style": "plain",
+    "styles": [
+      "assistant_like",
+      "cot_like",
+      "plain",
+      "system_like_quoted",
+      "tool",
+      "user_like"
+    ],
+    "n_by_style": {
+      "assistant_like": 6,
+      "cot_like": 6,
+      "plain": 204,
+      "system_like_quoted": 6,
+      "tool": 6,
+      "user_like": 6
+    },
+    "family_overlap_with_reference": {
+      "assistant_like": 0,
+      "cot_like": 0,
+      "system_like_quoted": 0,
+      "tool": 0,
+      "user_like": 0
+    },
+    "each_nonreference_style_in_a_single_block": true,
+    "any_block_shared_with_reference": false,
+    "identified": false,
+    "reason": "role_style is collinear with bank_block and the family sets are disjoint: every non-reference style has zero families in common with the reference, so a role coefficient is a family-set coefficient. Not fitted."
+  },
+  "models": {
+    "boombness_only": {
+      "r2": 0.14110547945959895,
+      "n": 234,
+      "n_clusters": 6,
+      "terms": {
+        "intercept": {
+          "beta": 0.18055555555555558,
+          "se_cr1": 0.017513098251762282,
+          "p_cr1": 0.0
+        },
+        "boombness": {
+          "beta": 0.11793150211918245,
+          "se_cr1": 0.014726565450265853,
+          "p_cr1": 1.1102230246251565e-15
+        }
+      }
+    },
+    "refusalness_only": {
+      "r2": 0.17592816163661829,
+      "n": 234,
+      "n_clusters": 6,
+      "terms": {
+        "intercept": {
+          "beta": 0.18055555555555558,
+          "se_cr1": 0.034185412086294366,
+          "p_cr1": 1.2802204718553867e-07
+        },
+        "refusalness": {
+          "beta": 0.13168174504536295,
+          "se_cr1": 0.017123195504223098,
+          "p_cr1": 1.4654943925052066e-14
+        }
+      }
+    },
+    "boombness+refusalness": {
+      "r2": 0.25023092828750015,
+      "n": 234,
+      "n_clusters": 6,
+      "terms": {
+        "intercept": {
+          "beta": 0.1805555555555556,
+          "se_cr1": 0.015894186257025936,
+          "p_cr1": 0.0
+        },
+        "boombness": {
+          "beta": 0.0888733163727787,
+          "se_cr1": 0.006522790281580974,
+          "p_cr1": 0.0
+        },
+        "refusalness": {
+          "beta": 0.10770402051096449,
+          "se_cr1": 0.01563857464934991,
+          "p_cr1": 5.695000027117203e-12
+        }
+      }
+    }
+  },
+  "incremental_r2": {
+    "refusalness_over_boombness": 0.1091254488279012,
+    "boombness_over_refusalness": 0.07430276665088187
+  },
+  "role_descriptive_only": {
+    "assistant_like": {
+      "n": 6,
+      "mean_score": 0.08333333333333333,
+      "asr_at_0.5": 0.16666666666666666
+    },
+    "cot_like": {
+      "n": 6,
+      "mean_score": 0.0,
+      "asr_at_0.5": 0.0
+    },
+    "plain": {
+      "n": 204,
+      "mean_score": 0.20036764705882354,
+      "asr_at_0.5": 0.23529411764705882
+    },
+    "system_like_quoted": {
+      "n": 6,
+      "mean_score": 0.0,
+      "asr_at_0.5": 0.0
+    },
+    "tool": {
+      "n": 6,
+      "mean_score": 0.14583333333333334,
+      "asr_at_0.5": 0.16666666666666666
+    },
+    "user_like": {
+      "n": 6,
+      "mean_score": 0.0,
+      "asr_at_0.5": 0.0
+    }
+  },
+  "caveat": "Role is NOT in the fitted model when role_identifiability.identified is false. The descriptive role means are a family-set contrast, not a role effect, and must not be reported as one (this is the retraction-#6 failure mode)."
+}
