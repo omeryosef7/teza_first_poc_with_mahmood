@@ -4591,3 +4591,37 @@ positive while every steering attempt looked suppressive.
 **This is the sprint's headline result and the first one where I cannot name a remaining confound.** The
 honest limits are scope, not validity: one model, one concept pair, one judge, and a refusal direction
 projected at a single layer.
+
+## CLAIM 1 RESOLVED — the like-for-like control exists now, and the claim still does NOT clear
+
+The audit's primary objection to "removing Boombness raises ASR" was that **every control in the sprint was
+an `add` while arm B is a `project_out`**. That control now exists (`projctrl` = `random:project_out:8-8:1.0`):
+
+| arm | ASR | Δ vs baseline | p_cl |
+|---|---|---|---|
+| baseline | 0.2185 | — | — |
+| **arm B — project_out `d_surface`** | 0.3000 | +0.0736 | 0.1167 |
+| **project_out RANDOM** *(the control that never existed)* | 0.2037 | −0.0167 | 0.2928 |
+| random ADD *(wrong type, used previously)* | 0.1778 | −0.0352 | 0.0207 |
+
+**arm B − projection control = +0.0903, t_cl=+2.00, p=0.1018.** Numerically the ordering is right
+(0.300 vs 0.204) but it **does not clear α=0.05 with G=6 domain clusters**.
+
+### The honest verdict, and why it changed shape
+Claim 1 stays **not established** — but for a *different and better* reason than before. Previously it was
+unreportable because its only significant comparator was of the wrong intervention type. Now the right
+comparator exists, behaves correctly (a random projection does **nothing**: −0.017, p=0.293), and arm B
+still fails to reach significance against it.
+
+Note also that the old `add` control's −0.035 (p=0.021) was doing real work in inflating the original
+contrast — the correct-type control sits at −0.017, half as far below baseline. Both facts pushed the
+original number the same way.
+
+### One thing left to check before this is final
+Arm B was measured at **192 tokens with 58.5% truncation**, and the baseline calibration showed truncation
+**suppresses** ASR by ~3.7pp. So arm B may be measured under suppression exactly as arm F was — and arm F's
+effect *grew* when it was allowed to finish. **Launched:** `len_B` and `len_Bctrl` at 512 tokens, the
+matched pair. If arm B's advantage over its projection control clears at matched budget, claim 1 comes back;
+if not, it is a genuine null and I will report it as one.
+
+`q3_projout` (the Qwen3 replication) is 619/960 judged.
