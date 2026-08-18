@@ -23,7 +23,32 @@ rather than a shrug:
   (4) A NULL NEEDS AN INTERVAL, NOT p>0.05. Every "no effect" layer gets a confidence interval
       and an explicit statement of the smallest effect the data could exclude.
 
-  (5) MULTIPLICITY. 32 layers were tested. Holm-corrected significance is reported.
+  (5) MULTIPLICITY. Holm-corrected significance is reported, over an EXPLICIT family.
+
+      AUDIT T6c: this docstring used to say flatly "32 layers were tested", while `pv` was built
+      only over the ~10 layers that happen to be on the command line (`--layers`, default
+      0,4,8,12,16,18,20,24,28,31). Code and prose therefore disagreed about m, and the JSON recorded
+      neither m nor the rule that produced it, so a reader could not tell which family the
+      `holm_rejected` flags belonged to. The consequence is not cosmetic: at m=10 the smallest two
+      p-values clear their thresholds, and the report cites "holm_rejected True only at L4 and L31"
+      TWICE as its multiplicity backstop for the mid-band claims.
+
+      WHAT THE HONEST FAMILY IS. Not the command line. The extract writes every direction/statistic
+      at ALL 32 layers (results.jsonl carries d_surface|L0..L31|cos), the whole profile was looked
+      at, and the displayed subset is visibly data-dependent: 0,4,8,...,28 is a stride-4 grid, but
+      L18 was added off-grid and L31 kept, i.e. layers were promoted into the table after the
+      profile had been seen. A family that is chosen after looking is not a family. So the default
+      rule here is `--holm-family available`: the family is every layer for which the requested
+      metric column exists in results.jsonl, all of them are actually tested, and Holm runs over
+      that full p-vector. `--holm-family displayed` reproduces the old, smaller family for
+      comparison; both are always printed side by side and both are written to the JSON along with
+      `holm_m` and `holm_family_rule`, so the sensitivity of any conclusion to this choice is on the
+      record instead of buried in a default argument.
+
+      Note that "m=32" is NOT the same as "rank the 10 displayed p-values but divide by 32". The
+      audit note used the latter (L4 at rank 2 -> alpha/31 = 0.001613 < p = 0.001631, so L4 drops).
+      The former is the defensible correction, and it is more powerful, because the 22 layers that
+      were never displayed contribute their own p-values to the step-down. Both are reported.
 
 Nothing here re-runs the model; it reads an extract run's results.jsonl.
 """
@@ -34,6 +59,7 @@ import collections
 import json
 import math
 import os
+import re
 import sys
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -85,16 +111,52 @@ def cluster_robust(diffs: List[Tuple[str, str, int, float]]) -> Dict[str, float]
             "t_cluster": mean / se_cluster if se_cluster and se_cluster > 0 else float("nan")}
 
 
-def holm(pvals: Dict[int, float], alpha: float = 0.05) -> Dict[int, bool]:
+def holm_table(pvals: Dict[int, float], alpha: float = 0.05, m: Optional[int] = None
+               ) -> Dict[int, Dict[str, object]]:
+    """Holm step-down, returning the threshold and rank that produced each decision.
+
+    `m` is the FAMILY SIZE and defaults to the number of p-values supplied. It is exposed because
+    the family is a claim about which hypotheses were tested, not a property of the dict that
+    happens to be in hand (audit T6c: the family here is every layer present in results.jsonl, not
+    the subset that reached the printed table). Passing m > len(pvals) reproduces the conservative
+    "corrected as if the untested members had been tested and had missed" reading; it is supported
+    so the two readings can be printed together, but it is not the default and it is not the
+    defensible correction -- if the other hypotheses are testable, test them.
+    """
     items = sorted(pvals.items(), key=lambda kv: kv[1])
-    m = len(items)
-    out, prev_reject = {}, True
+    if m is None:
+        m = len(items)
+    if m < len(items):
+        raise ValueError(f"Holm family size m={m} is smaller than the {len(items)} p-values given")
+    out: Dict[int, Dict[str, object]] = {}
+    prev_reject = True
     for i, (k, p) in enumerate(items):
         thr = alpha / (m - i)
-        rej = prev_reject and (p <= thr)
-        out[k] = rej
+        rej = bool(prev_reject and (p <= thr))
+        out[k] = {"p": p, "rank": i + 1, "thr": thr, "rejected": rej, "m": m}
         prev_reject = rej
     return out
+
+
+def holm(pvals: Dict[int, float], alpha: float = 0.05, m: Optional[int] = None) -> Dict[int, bool]:
+    return {k: bool(v["rejected"]) for k, v in holm_table(pvals, alpha, m).items()}
+
+
+def available_layers(rows: Sequence[Dict], metric: str, stat: str) -> List[int]:
+    """Every layer index for which `metric|L*|stat` exists in the rows.
+
+    This is the honest Holm family (audit T6c): the extract wrote all of these, so all of them are
+    testable, and any one of them could have been the layer the table ended up quoting. Scans a few
+    rows rather than one, because a column is only guaranteed present on rows where it was computed.
+    """
+    pat = re.compile(rf"^{re.escape(metric)}\|L(\d+)\|{re.escape(stat)}$")
+    found = set()
+    for r in rows[:200]:
+        for k in r:
+            mm = pat.match(k)
+            if mm:
+                found.add(int(mm.group(1)))
+    return sorted(found)
 
 
 def two_sided_p(t: float, df: int) -> float:
@@ -115,6 +177,12 @@ def main() -> int:
     ap.add_argument("--hi", default="C")
     ap.add_argument("--lo", default="A")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--holm-family", default="available", choices=["available", "displayed"],
+                    help="which set of layers the Holm correction is taken over. 'available' (the "
+                         "default) = every layer with a column for --metric in results.jsonl, all "
+                         "of them actually tested; 'displayed' = only the --layers subset, which is "
+                         "the pre-audit behaviour and is only honest if that subset was fixed in "
+                         "advance. Both are always printed and both go in the JSON.")
     ap.add_argument("--allow-partial", action="store_true",
                     help="analyse a run with no DONE.json (output must not be reported)")
 
@@ -178,11 +246,31 @@ def main() -> int:
 
     # ---- (3)(4)(5) inference on the pooled profile ---------------------------- #
     print("\n=== INFERENCE ON THE POOLED PROFILE (naive vs domain-clustered, Holm over layers) ===")
-    pv = {}
-    for L in layers:
-        st = pooled[L]
-        pv[L] = two_sided_p(st["t_cluster"], max(st["n_clusters"] - 1, 1))
-    rej = holm(pv)
+    pooled_all: Dict[int, Dict] = dict(pooled)
+
+    def p_for(L: int) -> float:
+        st = pooled_all.get(L)
+        if st is None:
+            st = cluster_robust(paired_by_family(fin, col(L), args.hi, args.lo))
+            pooled_all[L] = st
+        return two_sided_p(st["t_cluster"], max(st["n_clusters"] - 1, 1))
+    # AUDIT T6c: the family is every layer the extract actually wrote for this metric, not the
+    # --layers subset that reached the table. See the module docstring for why the displayed subset
+    # cannot be treated as pre-registered (L18 is off the stride-4 grid).
+    avail_layers = available_layers(fin, metric, stat)
+    pv = {L: p_for(L) for L in layers}                       # displayed family
+    pv_all = {L: p_for(L) for L in avail_layers}             # available family
+    m_disp, m_avail = len(pv), len(pv_all)
+    tab_disp = holm_table(pv, m=m_disp)
+    tab_avail = holm_table(pv_all, m=m_avail)
+    # The reading the audit note used: rank only the displayed p-values, but divide by the full m.
+    tab_disp_m_avail = holm_table(pv, m=m_avail)
+    chosen = args.holm_family
+    rej = {L: bool((tab_disp if chosen == "displayed" else tab_avail)[L]["rejected"]) for L in layers}
+    print(f"[reanalyze] Holm family rule = '{chosen}': m = "
+          f"{m_disp if chosen == 'displayed' else m_avail} "
+          f"(displayed layers m={m_disp}; layers available for {args.metric} in results.jsonl "
+          f"m={m_avail})")
     # AUDIT 11: this script computed its p from t(G-1) and then built the printed CI and the MDE
     # with a hardcoded 1.96 -- the NORMAL multiplier. With G=6 the correct value is t(5)=2.5706, so
     # every clustered interval and every "what the null can exclude" bound was 31% too narrow, and
@@ -201,8 +289,45 @@ def main() -> int:
         print(f"{L:>3} {st['mean']:>+9.4f} {st['se_naive']:>9.4f} {st['se_cluster']:>9.4f} "
               f"{st['t_naive']:>+8.1f} {st['t_cluster']:>+8.1f} {pv[L]:>9.4f} "
               f"{'YES' if rej[L] else 'no':>6} {f'[{lo:+.4f}, {hi:+.4f}]':>24}")
+    # ---- (5) Holm sensitivity: the same p-vector under both families ---------- #
+    print(f"\n=== HOLM SENSITIVITY: does the decision depend on the family? "
+          f"(m={m_disp} displayed vs m={m_avail} available) ===")
+    print(f"{'L':>3} {'p_clust':>10} | {'thr@m=' + str(m_disp):>12} {'rej':>4} | "
+          f"{'thr@m=' + str(m_avail):>12} {'rej':>4} | {'thr@m=' + str(m_avail) + ' (disp-rank)':>22} {'rej':>4}")
+    for L in layers:
+        a, b, c = tab_disp[L], tab_avail[L], tab_disp_m_avail[L]
+        print(f"{L:>3} {pv[L]:>10.6f} | {a['thr']:>12.6f} {'YES' if a['rejected'] else 'no':>4} | "
+              f"{b['thr']:>12.6f} {'YES' if b['rejected'] else 'no':>4} | "
+              f"{c['thr']:>22.6f} {'YES' if c['rejected'] else 'no':>4}")
+    surv_d = [L for L in layers if tab_disp[L]["rejected"]]
+    surv_a = [L for L in avail_layers if tab_avail[L]["rejected"]]
+    surv_c = [L for L in layers if tab_disp_m_avail[L]["rejected"]]
+    print(f"  rejected @ m={m_disp} (displayed family): {surv_d}")
+    print(f"  rejected @ m={m_avail} (available family, all tested): {surv_a}")
+    print(f"  rejected @ m={m_avail} with only the displayed p-values ranked: {surv_c}")
+
     report["holm_rejected"] = {str(L): bool(rej[L]) for L in layers}
     report["p_clustered"] = {str(L): pv[L] for L in layers}
+    report["holm_family_rule"] = chosen
+    report["holm_m"] = m_avail if chosen == "available" else m_disp
+    report["holm_family_layers"] = (avail_layers if chosen == "available" else list(layers))
+    report["holm_family_rule_doc"] = (
+        "'available' = every layer with a %s|L*|%s column in results.jsonl, each one actually "
+        "tested and entered into the step-down; 'displayed' = only the --layers subset. The "
+        "displayed subset is not pre-registered (L18 is off the stride-4 grid), so 'available' is "
+        "the default." % (metric, stat))
+    report["p_clustered_all_layers"] = {str(L): pv_all[L] for L in avail_layers}
+    report["holm_detail"] = {
+        "displayed_family": {str(L): tab_disp[L] for L in layers},
+        "available_family": {str(L): tab_avail[L] for L in avail_layers},
+        "displayed_pvalues_scaled_to_available_m": {str(L): tab_disp_m_avail[L] for L in layers},
+    }
+    report["holm_rejected_by_family"] = {
+        f"m={m_disp}_displayed": [int(L) for L in surv_d],
+        f"m={m_avail}_available": [int(L) for L in surv_a],
+        f"m={m_avail}_displayed_pvalues_only": [int(L) for L in surv_c],
+    }
+    report["pooled_all_layers"] = {str(L): pooled_all[L] for L in avail_layers}
 
     # ---- what a "null" layer can actually exclude ----------------------------- #
     print("\n=== WHAT THE 'NULL' LAYERS CAN EXCLUDE (plan: a null needs an interval) ===")

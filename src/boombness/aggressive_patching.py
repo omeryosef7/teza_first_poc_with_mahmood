@@ -33,6 +33,49 @@ READOUTS (plan §5.3) — all forward-only unless --generate:
   comprehension           the same next-token readout on the `comprehension_usage` query
   generation/ASR          only with --generate, on a subset, judged downstream
 
+TWO DEFECTS FOUND IN THE 2026-08-18 AUDIT, BOTH FIXED HERE
+----------------------------------------------------------
+T9a  THE CONTROL "CI" WAS A SINGLE DRAW DRESSED UP AS A BAND. The `random` and `orthogonal`
+     control directions were built once per layer as `seed=args.seed + L`, i.e. ONE vector per
+     layer reused across every family and every domain. The domain bootstrap downstream then
+     resampled that one vector 24 times, so the interval it printed contained prompt- and
+     domain-level variance and exactly ZERO direction-level variance: the quantity the control
+     is supposed to bound (how much a random axis of this norm moves the readout) was never
+     varied at all. Retraction #7 established the same failure for the G4 steering band, where
+     the BETWEEN-DRAW sd was 0.0301 — larger than several effects that had been called
+     "outside the control band" — and the conclusion was never propagated to this module.
+     FIX: `--n-control-draws` (default 12) independent draws per control family, each row
+     tagged with `control_draw`/`n_control_draws`, plus an explicit per-cell band row
+     (`intervention="add_control_band"`) carrying the mean AND the between-draw sd under
+     `between_draw_sd|<metric>`. Draw 0 keeps the historical seed (`args.seed + L`) so the old
+     numbers reappear as one member of the new band rather than being silently replaced.
+
+T10  READOUT LAYERS OVERLAPPED THE PATCHED WINDOW, MAKING THE PLAN's OWN §5.3 METRIC
+     TAUTOLOGICAL. The default readout layers {8,12,16,18,20,24,28,31} intersect the patched
+     windows (the singletons L8/L12/L18/L24, every band, `write_carry_8-21`, and `all`). At a
+     readout layer INSIDE the patched window, BlockCapture — correctly, after the (a)/(b) fix
+     below — reports the value the intervention has just written. There is zero propagation:
+     for `transplant` the captured vector IS the donor's, so the "direction projection score"
+     equals the donor ceiling by construction; for `add` it is h + alpha*d, so the projection
+     moves by exactly alpha*<d,d_surface> whether or not the model does anything with it.
+     Measured on the committed run outputs/boombness/aggressive_patching/
+     g1strat_20260818_133953_3374345: `boombness|L18|proj` under `transplant|query_only|L18`
+     equals the donor-ceiling value BIT-FOR-BIT on all 48/48 recipient prompts, and the same
+     holds for all 1200 in-window cells of `transplant|scope=all`. Across that run 30960 of
+     55680 emitted readout cells (55.6%) sit inside their own patched window, touching 6720 of
+     6960 intervention rows. Nothing in the artifact flagged it. `semantic_logodds` — the
+     statistic the headlines actually use — reads the LM head at the final position and is NOT
+     affected; only the `boombness|L*|{cos,proj}` and `ll|L*|boombness` families are.
+     FIX: the rule is not restated here. `ds_common.patch_layer_sweep(R)` is the house single
+     source of truth for it (it exists because defects C1/C3 were the same bug) and returns the
+     patch layers that are valid for a readout at R, namely [0 .. R-1]; this module calls it and
+     derives the flags from its answer. Every emitted row now carries
+     `readout_inside_patched_window` (row-level bool) plus `readout_layers_inside_window`,
+     `readout_layers_valid` and a per-layer `boombness|L{R}|inside_patched_window`, so old
+     artifacts can be filtered by re-deriving the flag and new ones are self-describing. The
+     values are still emitted, not dropped: a tautological cell is a useful positive control
+     for "the patch actually landed", it just is not evidence of propagation.
+
 Responsible handling: forward-only by default; generations (when enabled) are written to a
 separate gens.jsonl and never echoed to stdout.
 """
@@ -101,6 +144,144 @@ def select_positions(last_idx: List[int], scope: str) -> List[int]:
     if scope == "last_demo":
         return demos[-1:]
     raise ValueError(f"unknown scope {scope!r}")
+
+
+# --------------------------------------------------------------------------- #
+# T10 guard: a readout layer may not sit inside the layers being patched
+# --------------------------------------------------------------------------- #
+#: Control families that are drawn at random and must therefore be REPLICATED (T9a). Everything
+#: else in `directions` is a fitted, deterministic vector for which one "draw" is all there is.
+STOCHASTIC_CONTROLS = ("random", "orthogonal")
+#: Stride between the per-draw seed bases. Large and prime so that base_k + L never collides with
+#: base_j + L' for any layer pair we use; draw 0 keeps the historical base (= args.seed).
+CONTROL_DRAW_SEED_STRIDE = 1_000_003
+
+
+def control_draw_name(family: str, k: int) -> str:
+    """Name of the k-th draw of a stochastic control family, e.g. random -> 'random#3'."""
+    return f"{family}#{k}"
+
+
+def split_direction_name(dname: str) -> Tuple[str, Optional[int]]:
+    """Inverse of `control_draw_name`. Returns (family, draw_index or None)."""
+    if "#" in dname:
+        fam, _, k = dname.partition("#")
+        return fam, int(k)
+    return dname, None
+
+
+def expand_add_directions(spec: str, n_draws: int) -> List[str]:
+    """Turn the --add-directions spec into concrete direction names, replicating the controls.
+
+    T9a: `random` and `orthogonal` become `random#0..#K-1` / `orthogonal#0..#K-1`; the fitted
+    directions pass through unchanged because there is nothing stochastic to replicate about them.
+    Pre-fix this function did not exist and the spec was used verbatim, which is what made the
+    control a single draw.
+    """
+    out: List[str] = []
+    for dname in spec.split(","):
+        dname = dname.strip()
+        if not dname:
+            continue
+        if dname in STOCHASTIC_CONTROLS:
+            out.extend(control_draw_name(dname, k) for k in range(max(1, int(n_draws))))
+        else:
+            out.append(dname)
+    return out
+
+
+def build_control_directions(sg_mod, d_surface: Dict[int, "torch.Tensor"], seed: int,
+                             n_draws: int) -> Dict[str, Dict[int, "torch.Tensor"]]:
+    """K independent draws of each stochastic control, per layer (T9a).
+
+    Draw k uses seed base `seed + k*CONTROL_DRAW_SEED_STRIDE`, so draw 0 is bit-identical to the
+    single pre-fix vector (`seed + L`) and the committed numbers reappear as one member of the
+    band instead of being quietly replaced by a different single draw.
+    """
+    out: Dict[str, Dict[int, "torch.Tensor"]] = {}
+    for k in range(max(1, int(n_draws))):
+        base_seed = seed + k * CONTROL_DRAW_SEED_STRIDE
+        out[control_draw_name("random", k)] = {
+            L: sg_mod.random_control_direction(v, seed=base_seed + L) for L, v in d_surface.items()}
+        out[control_draw_name("orthogonal", k)] = {
+            L: sg_mod.orthogonal_control_direction(v, seed=base_seed + L)
+            for L, v in d_surface.items()}
+    return out
+
+
+def readout_window_flags(dc, wlayers: Sequence[int],
+                         readout_layers: Sequence[int]) -> Dict[str, object]:
+    """Flags recording, per row, which readout layers are compromised by this patch window.
+
+    THE RULE IS NOT REIMPLEMENTED HERE. `ds_common.patch_layer_sweep(R)` is the house single
+    source of truth (written for defects C1/C3, which were this same bug in the patchscope and
+    activation-patching drivers): a LayerPatch at L edits hidden_states[L+1] and a readout at R
+    reads hidden_states[R+1], so the only patch layers that leave R measurable are [0 .. R-1] and
+    the sweep must stop at R-1. We ask it for that list and classify each readout layer against it:
+
+      inside  : R is itself patched -> the captured vector IS what we just wrote (zero
+                propagation, tautological: transplant reproduces the donor ceiling exactly,
+                `add` moves the projection by exactly alpha*<d, d_surface>).
+      valid   : every patched layer is in patch_layer_sweep(R) -> the whole intervention is
+                strictly upstream of R and the readout measures real propagation.
+      neither : the window straddles R or lies entirely above it. Layers above R cannot affect
+                a readout at R at all, so such a cell is a guaranteed null by construction and
+                is no more interpretable than an `inside` one — it is simply not `valid`.
+
+    R=0 is a legitimate readout layer for which no valid patch window exists at all;
+    patch_layer_sweep raises there, so we treat it as "no valid layers" rather than crashing a
+    16-hour sweep over a flag.
+    """
+    ws = set(int(x) for x in wlayers)
+    inside, valid = [], []
+    for R in readout_layers:
+        R = int(R)
+        try:
+            allowed = set(dc.patch_layer_sweep(R))
+        except AssertionError:
+            allowed = set()
+        if R in ws:
+            inside.append(R)
+        if ws and ws <= allowed:
+            valid.append(R)
+    return {
+        "readout_inside_patched_window": bool(inside),
+        "readout_layers_inside_window": inside,
+        "readout_layers_valid": valid,
+        "n_readout_layers_inside_window": len(inside),
+    }
+
+
+def per_layer_inside_flags(readout_layers: Sequence[int],
+                           inside: Sequence[int]) -> Dict[str, bool]:
+    """Per-metric companion flags so a single readout column can be filtered on its own."""
+    ins = set(int(x) for x in inside)
+    return {f"boombness|L{int(R)}|inside_patched_window": int(R) in ins for R in readout_layers}
+
+
+def between_draw_band(recs: Sequence[Dict[str, float]]) -> Dict[str, float]:
+    """Mean and BETWEEN-DRAW sd of every numeric readout key across independent control draws.
+
+    This is the number T9a says must exist and be stated. With one draw it is undefined, and the
+    pre-fix code had exactly one draw per layer for the whole run — so the "control band" the
+    bootstrap printed was a band over prompts and domains around a single fixed vector. sd is the
+    sample sd (ddof=1); with n<2 it is reported as None rather than 0.0, because 0.0 would read
+    as "no direction-level variance" instead of "not measured".
+    """
+    keys = [k for k in recs[0] if all(isinstance(r.get(k), (int, float)) and
+                                      not isinstance(r.get(k), bool) for r in recs)]
+    out: Dict[str, float] = {}
+    n = len(recs)
+    for k in keys:
+        vals = [float(r[k]) for r in recs]
+        m = sum(vals) / n
+        out[k] = m
+        if n >= 2:
+            var = sum((v - m) ** 2 for v in vals) / (n - 1)
+            out[f"between_draw_sd|{k}"] = var ** 0.5
+        else:
+            out[f"between_draw_sd|{k}"] = None
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -238,7 +419,16 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         n_examples=recip["n_examples"], query_kind=recip["query_kind"],
         n_occurrences=len(r_last), seq_len=len(r_ids), probe_pos=probe_pos,
         layer_convention=sg.LAYER_CONVENTION,
+        readout_layers=list(readout_layers),
     )
+
+    # T10: resolve the readout/window overlap ONCE per window, from ds_common.patch_layer_sweep.
+    # "" is the no-window case (baseline / donor ceiling): nothing is patched, so nothing is
+    # compromised, but the flag is still emitted so every row is self-describing.
+    wflags = {wn: readout_window_flags(dc, wl, readout_layers) for wn, wl in windows.items()}
+    wflags[""] = readout_window_flags(dc, [], readout_layers)
+    for wn, f in wflags.items():
+        f.update(per_layer_inside_flags(readout_layers, f["readout_layers_inside_window"]))
 
     n = 0
     # -- baseline (no intervention) ------------------------------------------ #
@@ -246,7 +436,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "none", "scope": "", "window": "", "alpha": 0.0,
-                 "direction": "", **rec})
+                 "direction": "", **wflags[""], **rec})
     n += 1
 
     # -- donor ceiling: what the readout looks like on the donor prompt itself - #
@@ -254,7 +444,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec = readout(lm, d_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "donor_ceiling", "scope": "", "window": "", "alpha": 0.0,
-                 "direction": "", **rec})
+                 "direction": "", **wflags[""], **rec})
     n += 1
 
     # -- self-swap no-op assertion (the house invariant, checked live) --------- #
@@ -266,7 +456,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec_self = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "self_swap_noop_check", "scope": "all", "window": "all",
-                 "alpha": 0.0, "direction": "", **rec_self})
+                 "alpha": 0.0, "direction": "", **wflags["all"], **rec_self})
     n += 1
 
     # -- 5.1 transplants ------------------------------------------------------ #
@@ -288,10 +478,15 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                     continue
                 run.log_row({**base, "intervention": "transplant", "scope": scope,
                              "window": wname, "n_positions": len(pos), "alpha": 0.0,
-                             "direction": "", **rec})
+                             "direction": "", **wflags[wname], **rec})
                 n += 1
 
     # -- 5.2 additive direction ----------------------------------------------- #
+    # T9a: the stochastic controls arrive here as several independent draws (random#0, random#1,
+    # ...). Each draw is logged as its own row so nothing is hidden, and the draws for one cell
+    # are additionally collapsed into a single `add_control_band` row that states the mean and
+    # the between-draw sd. `band[(scope, window, alpha, family)] -> [rec per draw]`.
+    band: Dict[Tuple[str, str, float, str], List[Dict[str, float]]] = collections.defaultdict(list)
     for dname in add_dirs:
         dmap = directions.get(dname)
         if dmap is None:
@@ -328,12 +523,29 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                         ledger.fail(f"add:{type(e).__name__}", recip["prompt_id"])
                         continue
                     eff = [round(a, 4) for (_, _, _, a) in patches]
+                    fam_name, draw = split_direction_name(dname)
                     run.log_row({**base, "intervention": "add", "scope": scope, "window": wname,
-                                 "n_positions": len(pos), "alpha": alpha, "direction": dname,
+                                 "n_positions": len(pos), "alpha": alpha,
+                                 # `direction` stays the FAMILY name so every downstream filter
+                                 # written against the pre-fix artifacts (direction == "random")
+                                 # keeps selecting the right rows; the draw index is a new column.
+                                 "direction": fam_name, "direction_draw_name": dname,
+                                 "control_draw": draw, "is_control_draw": draw is not None,
                                  "dose_unit": dose_unit,
                                  "effective_alpha_min": min(eff), "effective_alpha_max": max(eff),
-                                 **rec})
+                                 **wflags[wname], **rec})
                     n += 1
+                    if draw is not None:
+                        band[(scope, wname, float(alpha), fam_name)].append(rec)
+
+    # -- T9a control band: one row per cell, across the independent draws ------ #
+    for (scope, wname, alpha, fam_name), recs in sorted(band.items(), key=lambda kv: str(kv[0])):
+        agg = between_draw_band(recs)
+        run.log_row({**base, "intervention": "add_control_band", "scope": scope, "window": wname,
+                     "alpha": alpha, "direction": fam_name, "control_draw": None,
+                     "is_control_draw": True, "n_control_draws": len(recs),
+                     "dose_unit": dose_unit, **wflags[wname], **agg})
+        n += 1
     ledger.ok()
     return n
 
@@ -353,6 +565,14 @@ def main() -> int:
     ap.add_argument("--scopes", default=",".join(SCOPES))
     ap.add_argument("--alphas", default="0.25,0.5,1,2,4,8")
     ap.add_argument("--add-directions", default="d_surface,d_context,d_naive,random,orthogonal")
+    ap.add_argument("--n-control-draws", type=int, default=12,
+                    help="T9a: independent draws of each stochastic control direction "
+                         "(random, orthogonal). The pre-fix code used ONE vector per layer for "
+                         "the entire run, so the control interval the bootstrap reported "
+                         "contained prompt/domain variance and no direction variance at all. "
+                         "Draw 0 reproduces the historical seed. Fewer than 10 draws gives a "
+                         "between-draw sd too noisy to bound anything; the run still proceeds "
+                         "but records `control_draws_underpowered` in its summary.")
     ap.add_argument("--readout-layers", default="")
     ap.add_argument("--singletons", default="8,9,10,14,15,16,17,18,19,20,21")
     ap.add_argument("--no-transplant", action="store_true")
@@ -413,11 +633,36 @@ def main() -> int:
     windows = build_windows(lm.num_layers, [int(x) for x in args.singletons.split(",") if x.strip()])
     alphas = [float(x) for x in args.alphas.split(",") if x.strip()]
 
+    # T9a: expand the stochastic control families requested on the command line into K named
+    # draws. Anything that is not a stochastic control passes through untouched.
+    n_control_draws = max(1, int(args.n_control_draws))
+    add_dirs = expand_add_directions(args.add_directions, n_control_draws)
+    control_underpowered = (n_control_draws < 10 and
+                            any(d in args.add_directions for d in STOCHASTIC_CONTROLS))
+    if control_underpowered:
+        print(f"[patch] WARNING (T9a): --n-control-draws={n_control_draws} < 10; the between-draw "
+              f"sd this run reports is itself too noisy to be used as a control band.")
+
+    # T10: state the readout/window overlap in the run metadata BEFORE any rows are written, so a
+    # reader of the artifact does not have to re-derive it. The rule comes from
+    # ds_common.patch_layer_sweep; see readout_window_flags.
+    overlap = {wn: readout_window_flags(dc, wl, readout_layers) for wn, wl in windows.items()}
+    n_bad = sum(1 for f in overlap.values() if f["readout_inside_patched_window"])
+    print(f"[patch] T10 readout guard: {n_bad}/{len(windows)} windows contain at least one "
+          f"readout layer; those cells are flagged readout_inside_patched_window=True and are "
+          f"tautological (zero propagation), not evidence of an effect.")
+
     concept_ids, codeword_ids, id_meta = sg.readout_id_pair(
         lm.tokenizer, rows[0]["concept"], rows[0]["codeword"], mode=args.readout_ids)
     run.note(readout_layers=readout_layers, windows={k: v for k, v in windows.items()},
              alphas=alphas, concept_token_ids=concept_ids, codeword_token_ids=codeword_ids,
-             readout_ids=id_meta, fit_dir=args.fit_dir)
+             readout_ids=id_meta, fit_dir=args.fit_dir,
+             n_control_draws=n_control_draws, add_directions_expanded=add_dirs,
+             control_draw_seed_stride=CONTROL_DRAW_SEED_STRIDE,
+             control_draws_underpowered=control_underpowered,
+             readout_window_overlap={wn: {k: v for k, v in f.items()
+                                          if not k.startswith("boombness|")}
+                                     for wn, f in overlap.items()})
     print(f"[patch] model={lm.model_id} readout_layers={readout_layers} windows={len(windows)}")
 
     total = 0
@@ -458,10 +703,15 @@ def main() -> int:
             dirs: Dict[str, Dict[int, torch.Tensor]] = {
                 k: payload[k] for k in ("d_surface", "d_context", "d_naive", "d_inter")
             }
-            dirs["random"] = {L: sg.random_control_direction(v, seed=args.seed + L)
-                              for L, v in payload["d_surface"].items()}
-            dirs["orthogonal"] = {L: sg.orthogonal_control_direction(v, seed=args.seed + L)
-                                  for L, v in payload["d_surface"].items()}
+            # T9a: K INDEPENDENT draws per stochastic control family, not one. Draw k uses seed
+            # base (args.seed + k*CONTROL_DRAW_SEED_STRIDE), so draw 0 is bit-identical to the
+            # pre-fix single vector and the old numbers survive as one member of the new band.
+            # The draws are deliberately the SAME across families and domains: a control draw is
+            # a fixed axis whose effect we want measured over the whole bank, and the quantity
+            # T9a says was missing is the variance BETWEEN axes, which only per-draw replication
+            # can produce.
+            dirs.update(build_control_directions(sg, payload["d_surface"], args.seed,
+                                                 n_control_draws))
             # Dose scale, per direction and per layer. estimate_directions stores UNIT vectors
             # and keeps the effect size in `gap`, so `h += alpha * d_unit` would treat alpha as
             # an absolute residual-space magnitude. The measured gaps are ||d_surface|| ~ 8.6 at
@@ -481,7 +731,7 @@ def main() -> int:
                               args.scopes.split(","), alphas, dirs, readout_layers,
                               concept_ids, codeword_ids, run, ledger, pair_name,
                               do_transplant=not args.no_transplant,
-                              add_dirs=args.add_directions.split(","),
+                              add_dirs=add_dirs,
                               scales=scales, dose_unit=args.dose_unit)
             print(f"  {fam[:60]} -> {total} rows")
 
@@ -489,6 +739,11 @@ def main() -> int:
                         "scopes_requested": args.scopes.split(","),
                 "family_accounting": family_accounting, "alphas": alphas,
                         "readout_layers": readout_layers, "windows": sorted(windows),
+                        "n_control_draws": n_control_draws,
+                        "control_draws_underpowered": control_underpowered,
+                        "windows_with_readout_inside": sorted(
+                            wn for wn, f in overlap.items()
+                            if f["readout_inside_patched_window"]),
                         "query_kind": args.query_kind}, ledger=ledger)
     print(f"[patch] {total} rows -> {run.path}")
     print(f"[patch] failures: {ledger.as_dict()['failure_reasons']}")

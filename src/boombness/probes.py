@@ -35,6 +35,53 @@ split is reported with every metric.
 
 CONTROLS (plan §2.5). Every regime is also run with SHUFFLED LABELS; a shuffled-label AUROC
 meaningfully above 0.5 means the split is leaking and the real number cannot be trusted.
+
+THE NULL IS A DISTRIBUTION, NOT A DRAW (fixed 2026-08-18, external critique T9b)
+-------------------------------------------------------------------------------
+Until this fix the shuffled control drew ONE permutation per layer — `rng = RandomState(seed + L)`
+inside the fold loop, which additionally re-seeded identically in every fold, so all folds of a
+layer shared one permutation stream — and the single resulting AUROC was printed in a column headed
+`shuf` next to the real number, i.e. presented as if it were a null BAND. It is a point. It carries
+no draw-to-draw variance, so `auroc_lift = real - shuffled` inherited the full sampling noise of one
+coin flip and every comparison against it understated the null's spread. This project had already
+paid for this lesson once: the G4 steering band (retraction #7) measured a BETWEEN-DRAW sd of 0.0301
+and the lesson was never propagated here.
+
+The observable consequence is on the record. In `outputs/boombness/probes/g64full_20260818_120453_4183330/summary.json`
+the single-draw shuffled AUROCs for `d5_surface_matched_codeword` are 0.5829 (L8), 0.6302 (L24),
+0.5763 (L28) and 0.5812 (L31) — read by the external critique as a violation of this module's own
+stopping rule at exactly those four layers. Those numbers are real, but one draw cannot distinguish
+"the split leaks" from "a permutation happened to land 0.13 above chance", which is entirely ordinary
+for a pooled AUROC over ~200 out-of-fold rows. The fix is to draw K >= 20 INDEPENDENT permutations
+(seed derived from (seed, draw, layer, fold) so no two folds and no two draws share a stream) and to
+report mean / sd / empirical quantiles / K, and to test the stopping rule against the null MEAN with
+its standard error rather than against one draw. `--null-draws` sets K.
+
+THE STOPPING RULE IS NOW ENFORCED IN CODE (2026-08-18)
+------------------------------------------------------
+The paragraph above states a stopping rule and, until this fix, nothing checked it: a run whose
+shuffled control sat at 0.67 wrote DONE.json and printed its headline exactly like a clean one.
+`check_leakage` now evaluates every (regime, layer) against `--leak-tol` (default 0.05 AUROC above
+chance) using the null mean and a one-sided z on its standard error, records the verdict in
+`summary.json["leak_check"]`, and — after the artifacts are written, so the evidence survives — exits
+NON-ZERO with a loud banner unless `--allow-leak` is passed. `--allow-leak` is for deliberately
+diagnosing a leak, never for reporting through one.
+
+LAYER SELECTION MUST NOT BE DONE ON THE TEST SET (fixed 2026-08-18, external critique T6b)
+------------------------------------------------------------------------------------------
+`best_layer_by_auroc` used to be `argmax` of the per-layer TEST AUROC over the ~9-10 scanned layers,
+and that layer's test AUROC was then reported as the result. That is selection on the outcome: the
+maximum of ten noisy estimates is biased upward by an amount nobody had quantified, and the same
+critique flags the identical shape in `g2_analysis_cwpos.json`. The keys are therefore renamed to
+`best_layer_by_auroc_SELECTED_ON_TEST` / `best_layer_by_lift_SELECTED_ON_TEST` and carry
+`n_layers_considered` so a reader can discount them, and they are NO LONGER the headline.
+
+The headline is `nested_layer_selection`: for each outer domain fold the layer is chosen by an INNER
+group-k-fold over the outer-training domains only, a probe is refit at that layer on the full outer
+training set, and it is scored on the held-out fold. Pooling those out-of-fold predictions gives an
+AUROC for the procedure "pick a layer, then apply it", with no test-set information in the choice.
+The per-fold selected layers are reported too: disagreement between folds is itself the evidence
+that the argmax was noise.
 """
 from __future__ import annotations
 
@@ -204,10 +251,24 @@ def regime_rows(table: List[Dict], regime: str) -> Tuple[List[Dict], List[Dict]]
     raise ValueError(f"unknown regime {regime!r}")
 
 
+def shuffle_rng(seed: int, draw: int, layer: int, fold_idx: int) -> np.random.RandomState:
+    """One INDEPENDENT permutation stream per (draw, layer, fold).
+
+    The pre-fix code did `np.random.RandomState(seed + L)` INSIDE the fold loop, which means (a)
+    every fold of a layer replayed the same stream and (b) there was only ever one draw, so the
+    shuffled control had no draw-to-draw variance to report. Deriving the state from a SeedSequence
+    over all four coordinates keeps the run reproducible while making the K draws genuinely
+    independent of each other, of the layer, and of the fold.
+    """
+    ss = np.random.SeedSequence([int(seed), int(draw), int(layer), int(fold_idx)])
+    return np.random.RandomState(int(ss.generate_state(1)[0]))
+
+
 def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
                layers: Sequence[int], layer_index: Dict[int, int], n_folds: int,
                seed: int, shuffle_labels: bool = False, C: float = 1.0,
-               n_components: int = 64, emit_scores: Optional[dict] = None) -> Dict:
+               n_components: int = 64, emit_scores: Optional[dict] = None,
+               null_draw: int = 0) -> Dict:
     """`emit_scores`, when a dict, collects OUT-OF-FOLD per-prompt margins keyed by
     (regime, layer, prompt_id). Plan §6.4 asks for `probe_boombness` as a third metric alongside
     `logit_lens_boombness` and `direction_boombness`, compared against ASR / refusal /
@@ -225,7 +286,7 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
     for L in layers:
         li = layer_index[L]
         y_all, p_all, m_all, cell_all, cond_all = [], [], [], [], []
-        for tr_domains, te_domains in folds:
+        for fold_idx, (tr_domains, te_domains) in enumerate(folds):
             tr = [r for r in train_pool if r["domain"] in tr_domains]
             te = [r for r in eval_pool if r["domain"] in te_domains]
             if not tr or not te:
@@ -233,8 +294,8 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             X_tr = np.stack([reps[r["prompt_id"]][li] for r in tr])
             y_tr = np.array([regime_label(regime, r) for r in tr])
             if shuffle_labels:
-                rng = np.random.RandomState(seed + L)
-                y_tr = rng.permutation(y_tr)
+                # T9b fix: independent per (draw, layer, fold) — see shuffle_rng.
+                y_tr = shuffle_rng(seed, null_draw, L, fold_idx).permutation(y_tr)
             if len(set(y_tr.tolist())) < 2:
                 continue
             clf = fit_probe(X_tr, y_tr, seed, C=C, n_components=n_components)
@@ -295,15 +356,175 @@ def run_regime(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
             rec["recall_C"] = by_cell["C"]["recall_at_0.5"]
         per_layer[L] = rec
 
+    # SELECTED ON TEST — deliberately named so it cannot be quoted as a clean estimate.
+    # This is the argmax of the per-layer TEST AUROC over `n_layers_considered` layers, i.e. the
+    # maximum of that many noisy estimates, and it is upward-biased by an amount this function
+    # cannot measure. It is retained because the full layer profile in `per_layer` is the honest
+    # report and a reader wants to know where its peak is; the headline number is produced by
+    # `nested_layer_selection` instead. See the module docstring (T6b).
     best = None
-    if per_layer:
-        cand = {L: v for L, v in per_layer.items() if not math.isnan(v.get("auroc", float("nan")))}
-        if cand:
-            best = max(cand, key=lambda L: cand[L]["auroc"])
+    cand = {L: v for L, v in per_layer.items()
+            if not math.isnan(v.get("auroc", float("nan")))} if per_layer else {}
+    if cand:
+        best = max(cand, key=lambda L: cand[L]["auroc"])
     return {"regime": regime, "shuffled_labels": shuffle_labels, "C": C,
-            "n_components": n_components,
+            "n_components": n_components, "null_draw": null_draw if shuffle_labels else None,
             "n_train_pool": len(train_pool), "n_eval_pool": len(eval_pool),
-            "n_folds": len(folds), "per_layer": per_layer, "best_layer_by_auroc": best}
+            "n_folds": len(folds), "per_layer": per_layer,
+            "best_layer_by_auroc_SELECTED_ON_TEST": best,
+            "n_layers_considered": len(cand),
+            "selection_warning": (
+                "best_layer_by_auroc_SELECTED_ON_TEST is the argmax of the TEST AUROC over "
+                f"{len(cand)} layers with no validation split; it is optimistically biased and is "
+                "NOT the headline. Use nested_layer_selection.")}
+
+
+def shuffled_null_distribution(
+        regime: str, table: List[Dict], reps: Dict[str, np.ndarray], layers: Sequence[int],
+        layer_index: Dict[int, int], n_folds: int, seed: int, C: float = 1.0,
+        n_components: int = 64, n_draws: int = 20,
+        quantiles: Sequence[float] = (0.05, 0.5, 0.95)) -> Dict:
+    """K INDEPENDENT shuffled-label runs -> a per-layer null DISTRIBUTION (T9b fix).
+
+    Returns {"n_draws", "per_layer": {L: {mean, sd, se, quantiles, draws, ...}}, "draws": [...]}.
+    `sd` is the between-draw sd — the quantity the single-draw control could not produce and the
+    quantity retraction #7 (G4 steering band, between-draw sd 0.0301) says must be reported. `se`
+    is sd/sqrt(K), the uncertainty on the null MEAN, which is what the leakage test uses: a leak
+    displaces the whole null, a lucky permutation displaces one draw.
+    """
+    if n_draws < 1:
+        raise ValueError("n_draws must be >= 1")
+    per_draw: List[Dict] = []
+    for d in range(n_draws):
+        per_draw.append(run_regime(regime, table, reps, layers, layer_index, n_folds, seed,
+                                   shuffle_labels=True, C=C, n_components=n_components,
+                                   null_draw=d))
+    per_layer: Dict[int, Dict] = {}
+    for L in layers:
+        vals = [dr["per_layer"][L]["auroc"] for dr in per_draw
+                if L in dr["per_layer"] and not math.isnan(dr["per_layer"][L].get("auroc", float("nan")))]
+        if not vals:
+            continue
+        a = np.asarray(vals, dtype=float)
+        per_layer[L] = {
+            "n_draws": int(a.size),
+            "mean": float(a.mean()),
+            "sd": float(a.std(ddof=1)) if a.size > 1 else float("nan"),
+            "se": float(a.std(ddof=1) / math.sqrt(a.size)) if a.size > 1 else float("nan"),
+            "min": float(a.min()), "max": float(a.max()),
+            "quantiles": {f"q{q:g}": float(np.quantile(a, q)) for q in quantiles},
+            "draws": [float(v) for v in a],
+        }
+    return {"regime": regime, "n_draws": n_draws, "requested_draws": n_draws,
+            "quantiles_used": [float(q) for q in quantiles], "per_layer": per_layer,
+            "single_draw_note": "mean/sd/quantiles are over independent permutations; a single "
+                                "draw (the pre-2026-08-18 behaviour) is a point, not a band."}
+
+
+def check_leakage(null_dist: Dict, tol: float = 0.05, z_crit: float = 2.0) -> Dict:
+    """Enforce this module's own stopping rule: shuffled AUROC must not sit above chance.
+
+    Pre-fix, the rule existed only as a sentence in the docstring; a run could post a shuffled
+    control of 0.67 and still write DONE.json. It is tested on the null MEAN (over K draws) with a
+    one-sided z on the mean's standard error, because a single draw above 0.5 is expected and
+    uninformative. A layer is flagged only when BOTH the effect (mean - 0.5 > tol) and the
+    significance (z > z_crit) fire, so K large enough to make se tiny cannot flag a 0.505 null and
+    a single wild draw cannot flag anything at all.
+    """
+    layers_flagged, rows = [], []
+    for L, v in sorted(null_dist.get("per_layer", {}).items()):
+        excess = v["mean"] - 0.5
+        se = v.get("se", float("nan"))
+        z = (excess / se) if (isinstance(se, float) and se == se and se > 0) else float("nan")
+        leak = bool(excess > tol and (z == z and z > z_crit))
+        rows.append({"layer": L, "null_mean": v["mean"], "null_sd": v["sd"], "null_se": se,
+                     "excess_over_chance": float(excess), "z": float(z), "n_draws": v["n_draws"],
+                     "leak": leak})
+        if leak:
+            layers_flagged.append(L)
+    return {"regime": null_dist.get("regime"), "tol": float(tol), "z_crit": float(z_crit),
+            "n_draws": null_dist.get("n_draws"), "layers_flagged": layers_flagged,
+            "leak": bool(layers_flagged), "per_layer": rows}
+
+
+def _fit_score(regime: str, reps: Dict[str, np.ndarray], li: int, tr: List[Dict],
+               te: List[Dict], seed: int, C: float, n_components: int):
+    """Fit on `tr`, return (y_true, p_pos) on `te`. None if the fold is degenerate."""
+    if not tr or not te:
+        return None
+    y_tr = np.array([regime_label(regime, r) for r in tr])
+    if len(set(y_tr.tolist())) < 2:
+        return None
+    X_tr = np.stack([reps[r["prompt_id"]][li] for r in tr])
+    clf = fit_probe(X_tr, y_tr, seed, C=C, n_components=n_components)
+    X_te = np.stack([reps[r["prompt_id"]][li] for r in te])
+    return np.array([regime_label(regime, r) for r in te]), clf.predict_proba(X_te)[:, 1]
+
+
+def nested_layer_selection(regime: str, table: List[Dict], reps: Dict[str, np.ndarray],
+                           layers: Sequence[int], layer_index: Dict[int, int], n_folds: int,
+                           seed: int, C: float = 1.0, n_components: int = 64,
+                           inner_folds: int = 2) -> Dict:
+    """HONEST layer selection (T6b fix): choose the layer INSIDE the training folds.
+
+    For each outer domain fold: run an inner group-k-fold over the outer-TRAINING domains only,
+    score every candidate layer there, take the inner argmax, refit at that layer on the whole outer
+    training set, and predict the held-out fold. Pooling those predictions gives the AUROC of the
+    PROCEDURE "select a layer, then apply it" — the number `best_layer_by_auroc` was standing in for
+    while quietly reading the answer off the test set.
+
+    `selected_layers` is reported per outer fold on purpose: if the folds disagree, the argmax was
+    noise and the selected-on-test peak was a coin toss dressed as a finding.
+    """
+    train_pool, eval_pool = regime_rows(table, regime)
+    outer = domain_folds(train_pool, n_folds, seed)
+    y_all, p_all, picks, fold_rows = [], [], [], []
+    for oi, (tr_domains, te_domains) in enumerate(outer):
+        tr_rows = [r for r in train_pool if r["domain"] in tr_domains]
+        te_rows = [r for r in eval_pool if r["domain"] in te_domains]
+        if not tr_rows or not te_rows:
+            continue
+        inner = domain_folds(tr_rows, inner_folds, seed + 1000 + oi)
+        inner_auroc: Dict[int, float] = {}
+        for L in layers:
+            li = layer_index[L]
+            iy, ip = [], []
+            for itr_d, ite_d in inner:
+                itr = [r for r in tr_rows if r["domain"] in itr_d]
+                ite = [r for r in eval_pool if r["domain"] in ite_d and r["domain"] in tr_domains]
+                got = _fit_score(regime, reps, li, itr, ite, seed, C, n_components)
+                if got is None:
+                    continue
+                iy.extend(got[0].tolist()); ip.extend(got[1].tolist())
+            if iy and len(set(iy)) > 1:
+                inner_auroc[L] = score_metrics(np.array(iy), np.array(ip))["auroc"]
+        cand = {L: v for L, v in inner_auroc.items() if not math.isnan(v)}
+        if not cand:
+            continue
+        L_sel = max(cand, key=lambda L: cand[L])
+        got = _fit_score(regime, reps, layer_index[L_sel], tr_rows, te_rows, seed, C, n_components)
+        if got is None:
+            continue
+        y_all.extend(got[0].tolist()); p_all.extend(got[1].tolist())
+        picks.append(L_sel)
+        fold_rows.append({"outer_fold": oi, "test_domains": te_domains, "selected_layer": L_sel,
+                          "inner_auroc_at_selected": float(cand[L_sel]),
+                          "inner_auroc_profile": {int(k): float(v) for k, v in sorted(cand.items())},
+                          "n_test": len(te_rows)})
+    out = {"regime": regime, "n_outer_folds": len(outer), "inner_folds": inner_folds,
+           "n_layers_considered": len(list(layers)),
+           "selected_layers": picks,
+           "selection_is_stable": bool(picks) and len(set(picks)) == 1,
+           "folds": fold_rows,
+           "note": "AUROC of the procedure (select layer on inner folds, apply to held-out fold). "
+                   "No test-set information enters the layer choice."}
+    if y_all and len(set(y_all)) > 1:
+        out["pooled"] = score_metrics(np.array(y_all), np.array(p_all))
+        out["auroc_nested"] = out["pooled"]["auroc"]
+    else:
+        out["pooled"] = None
+        out["auroc_nested"] = float("nan")
+    return out
 
 
 def main() -> int:
@@ -321,6 +542,20 @@ def main() -> int:
     ap.add_argument("--pca", type=int, default=64,
                     help="PCA components fit on the TRAIN fold only; 0 disables (and the probe "
                          "then saturates at this n/d ratio — see fit_probe)")
+    ap.add_argument("--null-draws", type=int, default=20,
+                    help="K independent label shuffles used to build the null DISTRIBUTION "
+                         "(mean/sd/quantiles). K=1 reproduces the pre-2026-08-18 single-draw "
+                         "control, which is a point and not a band — see the module docstring.")
+    ap.add_argument("--leak-tol", type=float, default=0.05,
+                    help="stopping rule: null-mean AUROC may not exceed 0.5 by more than this")
+    ap.add_argument("--leak-z", type=float, default=2.0,
+                    help="one-sided z on the null mean's standard error required to call a leak")
+    ap.add_argument("--allow-leak", action="store_true",
+                    help="do not exit non-zero when the stopping rule fires (diagnosis only; "
+                         "output must not be reported)")
+    ap.add_argument("--inner-folds", type=int, default=2,
+                    help="inner group-k-fold used to SELECT the layer without touching the test "
+                         "fold (see nested_layer_selection)")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="probe")
     ap.add_argument("--allow-partial", action="store_true",
@@ -357,15 +592,35 @@ def main() -> int:
           f"{args.folds}-fold over domains, {missing} missing reps")
 
     results: Dict[str, Dict] = {}
+    leak_checks: Dict[str, Dict] = {}
+    leaked: List[str] = []
     score_sink = {} if args.emit_scores else None
     for regime in [r.strip() for r in args.regimes.split(",") if r.strip()]:
         real = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
                           shuffle_labels=False, C=args.C, n_components=args.pca,
                           emit_scores=score_sink)
+        null = shuffled_null_distribution(regime, table, reps, want, layer_index, args.folds,
+                                          args.seed, C=args.C, n_components=args.pca,
+                                          n_draws=args.null_draws)
+        # Kept for continuity with the pre-fix artifacts: draw 0 of the same family. It is ONE
+        # point of the distribution above and must never be quoted as the control on its own.
         shuf = run_regime(regime, table, reps, want, layer_index, args.folds, args.seed,
-                          shuffle_labels=True, C=args.C, n_components=args.pca)
+                          shuffle_labels=True, C=args.C, n_components=args.pca, null_draw=0)
         results[regime] = real
-        results[regime + "_shuffled"] = shuf
+        results[regime + "_shuffled_single_draw_DO_NOT_QUOTE"] = shuf
+        results[regime + "_null_distribution"] = null
+
+        # HONEST layer selection (T6b): the layer is chosen inside the training folds.
+        nested = nested_layer_selection(regime, table, reps, want, layer_index, args.folds,
+                                        args.seed, C=args.C, n_components=args.pca,
+                                        inner_folds=args.inner_folds)
+        real["nested_layer_selection"] = nested
+
+        # STOPPING RULE, ENFORCED.
+        lk = check_leakage(null, tol=args.leak_tol, z_crit=args.leak_z)
+        leak_checks[regime] = lk
+        if lk["leak"]:
+            leaked.append(regime)
 
         # PER-LAYER, REAL vs SHUFFLED AT THE SAME LAYER.
         # The pilot reported argmax-over-layers for the real arm and argmax-over-layers for the
@@ -375,14 +630,28 @@ def main() -> int:
         # per-layer difference, and the headline layer is chosen on THAT.
         paired = {}
         for L in real["per_layer"]:
-            if L not in shuf["per_layer"]:
+            if L not in null["per_layer"]:
                 continue
             a = real["per_layer"][L].get("auroc")
-            b = shuf["per_layer"][L].get("auroc")
-            if a is None or b is None or math.isnan(a) or math.isnan(b):
+            nd = null["per_layer"][L]
+            b = nd["mean"]
+            if a is None or math.isnan(a) or math.isnan(b):
                 continue
+            draws = np.asarray(nd["draws"], dtype=float)
             rl = real["per_layer"][L]
-            paired[L] = {"auroc_real": a, "auroc_shuffled": b, "auroc_lift": a - b,
+            paired[L] = {"auroc_real": a,
+                         # The null as a DISTRIBUTION (T9b). `auroc_shuffled` is now the MEAN of K
+                         # draws, not one draw, and it never travels without sd/quantiles/K.
+                         "auroc_shuffled": b, "auroc_lift": a - b,
+                         "null_mean": b, "null_sd": nd["sd"], "null_se": nd["se"],
+                         "null_n_draws": nd["n_draws"], "null_quantiles": nd["quantiles"],
+                         "null_min": nd["min"], "null_max": nd["max"],
+                         # One-sided empirical p: how often a shuffled draw matched the real number.
+                         "p_perm_ge_real": float((draws >= a).mean()),
+                         "z_vs_null": (float((a - b) / nd["sd"])
+                                       if isinstance(nd["sd"], float) and nd["sd"] == nd["sd"]
+                                       and nd["sd"] > 0 else float("nan")),
+                         "above_null_q95": bool(a > nd["quantiles"].get("q0.95", float("inf"))),
                          "saturation_frac": rl.get("saturation_frac"),
                          "p_C_minus_p_A": rl.get("p_C_minus_p_A"),
                          "margin_C_minus_A": rl.get("margin_C_minus_A"),
@@ -390,26 +659,51 @@ def main() -> int:
                          "margin_C_minus_E": rl.get("margin_C_minus_E"),
                          "recall_E": rl.get("recall_E"), "recall_C": rl.get("recall_C")}
         real["paired_vs_shuffled"] = paired
+        # STILL SELECTED ON TEST — the lift is computed from test-fold AUROCs, so its argmax is a
+        # maximum over `len(paired)` noisy estimates exactly like the plain AUROC argmax was. It is
+        # named accordingly and reported next to `n_layers_considered`; the headline is `nested`.
         best = max(paired, key=lambda L: paired[L]["auroc_lift"]) if paired else None
-        real["best_layer_by_lift"] = best
+        real["best_layer_by_lift_SELECTED_ON_TEST"] = best
+        real["n_layers_considered"] = len(paired)
 
         run.log_row({"regime": regime, "C": args.C, "n_components": args.pca,
                      "n_train_pool": real["n_train_pool"], "n_eval_pool": real["n_eval_pool"],
-                     "best_layer_by_lift": best, "paired_vs_shuffled": paired})
+                     "best_layer_by_lift_SELECTED_ON_TEST": best,
+                     "n_layers_considered": len(paired),
+                     "auroc_nested_selection": nested.get("auroc_nested"),
+                     "nested_selected_layers": nested.get("selected_layers"),
+                     "null_draws": args.null_draws,
+                     "leak_check": lk,
+                     "paired_vs_shuffled": paired})
 
-        print(f"  {regime}")
-        print(f"    {'L':>3} {'AUROC':>7} {'shuf':>7} {'sat':>5} "
-              f"{'margC-A':>9} {'fracC':>7} {'margC-E':>9} {'recE':>5} {'recC':>5}")
+        print(f"  {regime}   [null: {args.null_draws} independent shuffles]")
+        print(f"    {'L':>3} {'AUROC':>7} {'null_mu':>7} {'null_sd':>7} {'q95':>6} {'p_perm':>6} "
+              f"{'sat':>5} {'margC-A':>9} {'fracC':>7} {'margC-E':>9} {'recE':>5} {'recC':>5}")
         for L in sorted(paired):
             v = paired[L]
             def f(k, w, p=4):
                 x = v.get(k)
                 return f"{x:>+{w}.{p}f}" if isinstance(x, float) and not math.isnan(x) else " " * (w - 1) + "-"
-            mark = " <-" if L == best else ""
-            print(f"    {L:>3} {v['auroc_real']:>7.4f} {v['auroc_shuffled']:>7.4f} "
+            # The full layer profile is printed in full, every layer, precisely so the peak is read
+            # as a peak in a profile and not as "the" result.
+            mark = " <-max(test)" if L == best else ""
+            q95 = v["null_quantiles"].get("q0.95", float("nan"))
+            sd = v["null_sd"]
+            print(f"    {L:>3} {v['auroc_real']:>7.4f} {v['null_mean']:>7.4f} "
+                  f"{sd:>7.4f} {q95:>6.3f} {v['p_perm_ge_real']:>6.3f} "
                   f"{v['saturation_frac']:>5.2f} {f('margin_C_minus_A', 9)} "
                   f"{f('margin_frac_C', 7, 3)} {f('margin_C_minus_E', 9)} "
                   f"{f('recall_E', 5, 2)} {f('recall_C', 5, 2)}{mark}")
+        print(f"    max-AUROC layer SELECTED ON TEST over {len(paired)} layers "
+              f"(biased, not the headline): L={real['best_layer_by_auroc_SELECTED_ON_TEST']}, "
+              f"max-lift layer L={best}")
+        print(f"    HEADLINE nested (layer chosen on inner folds): "
+              f"AUROC={nested.get('auroc_nested'):.4f} "
+              f"selected_layers={nested.get('selected_layers')} "
+              f"stable={nested.get('selection_is_stable')}")
+        if lk["leak"]:
+            print(f"    !! STOPPING RULE VIOLATED at layers {lk['layers_flagged']} "
+                  f"(null mean > 0.5 + {args.leak_tol})")
 
     summary = {
         "run_scored": os.path.abspath(args.run), "bank": args.bank,
@@ -417,8 +711,17 @@ def main() -> int:
         "cells": dict(collections.Counter(r["cell"] for r in table)),
         "domains": sorted({r["domain"] for r in table}),
         "results": results,
+        "null_draws": args.null_draws,
+        "leak_check": {"tol": args.leak_tol, "z_crit": args.leak_z,
+                       "regimes_flagged": leaked, "by_regime": leak_checks,
+                       "rule": "shuffled-label AUROC meaningfully above 0.5 means the split is "
+                               "leaking; tested on the mean of --null-draws independent shuffles"},
         "note": "d4_heldout_ds is the generalization test: cell C is removed from training and "
                 "then scored. p_C_minus_p_A is the learned-probe analogue of the C-A contrast.",
+        "headline_note": "The headline per regime is results[<regime>]['nested_layer_selection']"
+                         "['auroc_nested'] — the layer is selected on inner training folds. Keys "
+                         "ending in _SELECTED_ON_TEST are argmaxes over n_layers_considered test "
+                         "AUROCs and are optimistically biased.",
     }
     if score_sink is not None:
         sp = run.p("probe_scores.jsonl")
@@ -430,6 +733,24 @@ def main() -> int:
 
     run.finish(summary=summary, ledger=ledger)
     print(f"[probe] -> {run.path}")
+
+    # STOPPING RULE, ENFORCED — after finish(), so the evidence is on disk before we abort.
+    if leaked:
+        banner = "=" * 78
+        print(banner)
+        print("STOPPING RULE VIOLATED — SHUFFLED-LABEL CONTROL IS ABOVE CHANCE")
+        for rg in leaked:
+            for row in leak_checks[rg]["per_layer"]:
+                if row["leak"]:
+                    print(f"  {rg} L{row['layer']}: null mean AUROC {row['null_mean']:.4f} "
+                          f"(sd {row['null_sd']:.4f}, se {row['null_se']:.4f}, "
+                          f"z={row['z']:.2f}, K={row['n_draws']}) "
+                          f"exceeds 0.5 + {args.leak_tol}")
+        print("The split is leaking; the real AUROCs in this run CANNOT be reported.")
+        print(banner)
+        if not args.allow_leak:
+            return 2
+        print("[probe] --allow-leak set: exiting 0 anyway. Output must not be reported.")
     return 0
 
 

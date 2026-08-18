@@ -12,6 +12,30 @@
     28,
     31
   ],
+  "provenance": {
+    "argv": [
+      "src/boombness/analyze_g64.py",
+      "--extract",
+      "outputs/boombness/extract_boombness/full2352_20260818_115332_1410155",
+      "--judge",
+      "outputs/boombness/judge/base_20260816_210948_3024689",
+      "--comprehension",
+      "outputs/boombness/score_behavior/base_20260816_203355_3985444",
+      "--probe-scores",
+      "outputs/boombness/probes/g64full_20260818_120453_4183330",
+      "--outdir",
+      "outputs/boombness/g64_metric_comparison"
+    ],
+    "git_commit": "6101cdcfa195118f748b2ecddd9842e11b1c380d",
+    "git_dirty": true,
+    "inputs": {
+      "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full2352_20260818_115332_1410155",
+      "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+      "comprehension": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/base_20260816_203355_3985444",
+      "probe_scores": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/probes/g64full_20260818_120453_4183330"
+    },
+    "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+  },
   "common_subset": true,
   "coverage": {
     "judged": 270,
@@ -35,5 +59,12 @@
     "metric_by_layer.png",
     "metric_by_carrot_occurrence.png"
   ],
-  "role_style": "eta^2 reported but NOT IDENTIFIED (collinear with bank_block, \u00a79)"
+  "role_style": "eta^2 reported but NOT IDENTIFIED (collinear with bank_block, \u00a79)",
+  "estimand_note": "correlation_table.csv reports TWO point estimates per row. `rho_pooled` is the raw pooled Spearman. `rho_within_domain` is the Spearman after demeaning x and y within domain. The permutation p, `p_perm_within_domain_rho`, tests `rho_within_domain` ONLY -- it is NOT a p-value for `rho_pooled`. Likewise `p_perm_within_domain_partial` tests `rho_partial_n_examples_within_domain`, not the pooled partial. Before 2026-08-18 the file printed only the pooled rho next to the within-domain p with no label, and the p column is not monotone in |rho_pooled|, so ranking metrics by that pair inverted the ordering.",
+  "columns_renamed_2026_08_18": {
+    "spearman_rho": "rho_pooled",
+    "p_within_domain_perm": "p_perm_within_domain_rho",
+    "rho_partial_n_examples": "rho_partial_n_examples_pooled",
+    "p_partial": "p_perm_within_domain_partial"
+  }
 }

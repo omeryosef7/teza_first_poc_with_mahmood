@@ -19,6 +19,19 @@ pseudo-replication -- the failure this sprint recorded as retraction R1 -- so th
 computed and reported alongside, explicitly labelled, but the permutation one is the citable one.
 This matches analyze_g2.py.
 
+ESTIMAND PAIRING (audit T5, 2026-08-18). The table used to carry a column `spearman_rho` -- the RAW
+POOLED Spearman -- with `p_within_domain_perm` in the very next column. Those are two different
+quantities: the permutation demeans x and y within domain first, so its p tests the WITHIN-DOMAIN
+correlation, not the pooled one. Nothing in the header said so, so a reader read the p as the p of
+the rho beside it. It is not cosmetic: in the published table the p column is NOT MONOTONE in |pooled
+rho| -- `logit_lens_boombness` at L12 vs ASR is rho_pooled=-0.2098 with p=0.818, while
+`direction_boombness` at L24 is rho_pooled=+0.0884 with p=0.120, so the row with 2.4x the |rho|
+carries the far LARGER p and a reader ranking metrics by that pair gets the ordering backwards. The table now
+reports BOTH point estimates -- `rho_pooled` and `rho_within_domain` -- with the permutation p named
+`p_perm_within_domain_rho` and a `p_estimand` column naming the quantity it tests, and the same for
+the partial (`rho_partial_n_examples_pooled` / `rho_partial_n_examples_within_domain` /
+`p_perm_within_domain_partial`). Neither estimate was promoted or demoted; only the pairing changed.
+
 ROLE-STYLE is reported as eta^2 (between-style variance share) rather than a correlation, because
 it is categorical; and it is flagged NOT IDENTIFIED, because §9 established that `role_style` is
 perfectly collinear with `bank_block` with zero family overlap, so any role association is a
@@ -79,6 +92,15 @@ def _demean_within(v, domains):
     return out
 
 
+def rho_within_domain(x, y, domains) -> float:
+    """The point estimate `perm_p_within_domain` actually tests: Spearman on group-demeaned x,y.
+
+    Added by audit T5. It existed only inside the permutation function as a local `obs`, so the
+    table could report a pooled rho beside a within-domain p and no one could see the gap.
+    """
+    return spearman(_demean_within(x, domains), _demean_within(y, domains))
+
+
 def perm_p_within_domain(x, y, domains, n_perm=2000, seed=20260818) -> float:
     """Permute x WITHIN each domain, on the GROUP-DEMEANED vectors.
 
@@ -108,6 +130,12 @@ def perm_p_within_domain(x, y, domains, n_perm=2000, seed=20260818) -> float:
         if abs(spearman(xp, yw)) >= obs:
             hits += 1
     return (hits + 1) / (n_perm + 1)
+
+
+def rank_partial_within_domain(x, y, z, domains) -> float:
+    """The point estimate `perm_p_partial` tests: the rank partial on group-demeaned vectors."""
+    return rank_partial(_demean_within(x, domains), _demean_within(y, domains),
+                        _demean_within(z, domains))
 
 
 def rank_partial(x, y, z) -> float:
@@ -272,20 +300,30 @@ def main() -> int:
             cpids = [p for p in pids if p in comp]
             for tname, ys in targets.items():
                 rho = spearman(xs, ys)
+                rho_w = rho_within_domain(xs, ys, doms)
                 pp = perm_p_within_domain(xs, ys, doms)
                 nex = [float(meta[p].get("n_examples") or 0) for p in pids]
+                # `p_perm_within_domain_rho` belongs to `rho_within_domain`, NOT to `rho_pooled`
+                # (audit T5). Both estimates are kept because they answer different questions.
                 rec = {"layer": L, "metric": mname, "target": tname, "n": len(pids),
-                       "spearman_rho": round(rho, 6),
-                       "p_within_domain_perm": round(pp, 6),
-                       "rho_partial_n_examples": "", "p_partial": "",
+                       "rho_pooled": round(rho, 6),
+                       "rho_within_domain": round(rho_w, 6),
+                       "p_perm_within_domain_rho": round(pp, 6),
+                       "p_estimand": "rho_within_domain",
+                       "rho_partial_n_examples_pooled": "",
+                       "rho_partial_n_examples_within_domain": "",
+                       "p_perm_within_domain_partial": "",
                        "n_domains": len(set(doms)), "identified": "yes"}
                 if tname == "asr_score":
                     rp = rank_partial(xs, ys, nex)
-                    rec["rho_partial_n_examples"] = round(rp, 6)
+                    rec["rho_partial_n_examples_pooled"] = round(rp, 6)
+                    rec["rho_partial_n_examples_within_domain"] = round(
+                        rank_partial_within_domain(xs, ys, nex, doms), 6)
                     # The partial permutation refits the partial 2000x, so it runs only at the
                     # headline layer; elsewhere the partial rho is reported without a p.
                     if L == args.headline_layer:
-                        rec["p_partial"] = round(perm_p_partial(xs, ys, nex, doms), 6)
+                        rec["p_perm_within_domain_partial"] = round(
+                            perm_p_partial(xs, ys, nex, doms), 6)
                     per_layer_metric[mname][L] = rho
                     per_layer_partial[mname][L] = rp
                 rows_csv.append(rec)
@@ -296,17 +334,28 @@ def main() -> int:
                 yc = [comp[p] for p in cpids]
                 dc = [meta[p].get("domain") for p in cpids]
                 rows_csv.append({"layer": L, "metric": mname, "target": "comprehension",
-                                 "n": len(cpids), "spearman_rho": round(spearman(xc, yc), 6),
-                                 "p_within_domain_perm": round(perm_p_within_domain(xc, yc, dc), 6),
-                                 "rho_partial_n_examples": "", "p_partial": "",
+                                 "n": len(cpids), "rho_pooled": round(spearman(xc, yc), 6),
+                                 "rho_within_domain": round(rho_within_domain(xc, yc, dc), 6),
+                                 "p_perm_within_domain_rho":
+                                     round(perm_p_within_domain(xc, yc, dc), 6),
+                                 "p_estimand": "rho_within_domain",
+                                 "rho_partial_n_examples_pooled": "",
+                                 "rho_partial_n_examples_within_domain": "",
+                                 "p_perm_within_domain_partial": "",
                                  "n_domains": len(set(dc)), "identified": "yes"})
             # role style: categorical, and NOT identified (see §9)
+            # eta^2 is not a rho at all; it goes in `rho_pooled` only as the row's single point
+            # estimate, and carries no p (audit T5: `p_estimand` says so explicitly).
             rows_csv.append({"layer": L, "metric": mname, "target": "role_style_eta2",
                              "n": len(pids),
-                             "spearman_rho": round(eta_squared(xs, [meta[p].get("role_style")
-                                                                   for p in pids]), 6),
-                             "p_within_domain_perm": "", "rho_partial_n_examples": "",
-                             "p_partial": "",
+                             "rho_pooled": round(eta_squared(xs, [meta[p].get("role_style")
+                                                                 for p in pids]), 6),
+                             "rho_within_domain": "",
+                             "p_perm_within_domain_rho": "",
+                             "p_estimand": "none (statistic is eta^2, not a correlation)",
+                             "rho_partial_n_examples_pooled": "",
+                             "rho_partial_n_examples_within_domain": "",
+                             "p_perm_within_domain_partial": "",
                              "n_domains": len(set(doms)),
                              "identified": "NO - role_style is collinear with bank_block (§9)"})
 
@@ -319,9 +368,13 @@ def main() -> int:
 
     csv_path = os.path.join(args.outdir, "correlation_table.csv")
     with open(csv_path, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["layer", "metric", "target", "n", "spearman_rho",
-                                          "p_within_domain_perm", "rho_partial_n_examples",
-                                          "p_partial", "n_domains", "identified"])
+        w = csv.DictWriter(f, fieldnames=["layer", "metric", "target", "n",
+                                          "rho_pooled", "rho_within_domain",
+                                          "p_perm_within_domain_rho", "p_estimand",
+                                          "rho_partial_n_examples_pooled",
+                                          "rho_partial_n_examples_within_domain",
+                                          "p_perm_within_domain_partial",
+                                          "n_domains", "identified"])
         w.writeheader()
         w.writerows(rows_csv)
     print(f"[G6.4] wrote {csv_path} ({len(rows_csv)} rows)")
@@ -383,7 +436,30 @@ def main() -> int:
     fig.savefig(os.path.join(args.outdir, "metric_by_carrot_occurrence.png"), dpi=140)
     plt.close(fig)
 
+    # PROVENANCE (added 2026-08-18). The first version of this summary recorded no input paths and
+    # no argv, so `g64_summary.json` could not regenerate itself: reproducing §6.4 required guessing
+    # which of 16 extract runs, 20+ judge runs and 2 probe-score runs had been used. That is the
+    # same "no script regenerates this" failure the report blames for an earlier retraction, and the
+    # external critique caught it for §11's role statistics without noticing §6.4 had it too. The
+    # standing rule is that every published number must be regenerable by a committed script from a
+    # committed artifact; a script that does not record its inputs cannot satisfy it.
+    import subprocess as _sp
+    def _git(*a):
+        try:
+            return _sp.check_output(["git", *a], stderr=_sp.DEVNULL).decode().strip()
+        except Exception:
+            return None
+    provenance = {
+        "argv": sys.argv,
+        "git_commit": _git("rev-parse", "HEAD"),
+        "git_dirty": bool(_git("status", "--porcelain")),
+        "inputs": {"extract": os.path.abspath(args.extract), "judge": os.path.abspath(args.judge),
+                   "comprehension": os.path.abspath(args.comprehension),
+                   "probe_scores": os.path.abspath(args.probe_scores)},
+        "python": sys.executable,
+    }
     summary = {"plan_section": "6.4", "arm": args.arm, "layers": layers,
+               "provenance": provenance,
                "common_subset": bool(args.common), "coverage": cov,
                "coverage_caveat": (
                    "probe_boombness comes from a rep cache built on a 1464-row bank version; the "
@@ -394,7 +470,22 @@ def main() -> int:
                "metrics_present": sorted(per_layer_metric),
                "deliverables": ["correlation_table.csv", "metric_vs_asr.png",
                                 "metric_by_layer.png", "metric_by_carrot_occurrence.png"],
-               "role_style": "eta^2 reported but NOT IDENTIFIED (collinear with bank_block, §9)"}
+               "role_style": "eta^2 reported but NOT IDENTIFIED (collinear with bank_block, §9)",
+               "estimand_note": (
+                   "correlation_table.csv reports TWO point estimates per row. `rho_pooled` is the "
+                   "raw pooled Spearman. `rho_within_domain` is the Spearman after demeaning x and "
+                   "y within domain. The permutation p, `p_perm_within_domain_rho`, tests "
+                   "`rho_within_domain` ONLY -- it is NOT a p-value for `rho_pooled`. Likewise "
+                   "`p_perm_within_domain_partial` tests "
+                   "`rho_partial_n_examples_within_domain`, not the pooled partial. Before "
+                   "2026-08-18 the file printed only the pooled rho next to the within-domain p "
+                   "with no label, and the p column is not monotone in |rho_pooled|, so ranking "
+                   "metrics by that pair inverted the ordering."),
+               "columns_renamed_2026_08_18": {
+                   "spearman_rho": "rho_pooled",
+                   "p_within_domain_perm": "p_perm_within_domain_rho",
+                   "rho_partial_n_examples": "rho_partial_n_examples_pooled",
+                   "p_partial": "p_perm_within_domain_partial"}}
     with open(os.path.join(args.outdir, "g64_summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
     print(f"[G6.4] wrote 3 plots + summary to {args.outdir}")

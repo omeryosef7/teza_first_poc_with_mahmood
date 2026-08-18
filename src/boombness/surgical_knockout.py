@@ -82,6 +82,159 @@ ARMS = ("none", "topk_demo", "bottomk_demo", "random_demo", "random_nondemo",
 # intervention produces, so this arm is now mandatory rather than optional.
 
 
+# ---------------------------------------------------------------------------
+# PURE SELECTION LOGIC. Factored out of main() on 2026-08-18 so the three
+# selection defects below (T3/T7/T7b) are testable without a GPU or a model.
+# ---------------------------------------------------------------------------
+
+
+def choose_destinations(dst_mode: str, last_codeword_pos: int,
+                        readout_pos: int) -> Tuple[List[int], int]:
+    """Return (destinations_to_cut_into, destination_to_RANK_at).
+
+    DEFECT T3, FIXED 2026-08-18. The previous code was::
+
+        dsts = sorted({last[-1], readout_pos})
+        dst  = dsts[0]                        # for ranking/reporting
+
+    Under `--dst both` — the mode every reported G3 run used — `last[-1]` is the
+    final codeword occurrence and `readout_pos` the last token, typically ~9
+    tokens later, so `dsts[0]` is ALWAYS the codeword position. The knockout
+    itself was already fixed to cut into both destinations (query_positions=dsts),
+    but the RANKING was not: `dominance_at(..., dst=dst)` therefore scored how
+    much Boombness flowed into token ~104 while the readout is at ~113. Since
+    that ranking is what defines topk_demo / bottomk_demo / same_head_random,
+    the entire "surgical, not ablate-everything" claim was ordered at the wrong
+    token — exactly the destination this project already retracted (retraction
+    #3) as fatal to all of §10. Observable consequence: the near-null
+    topk-vs-bottomk contrast (-0.078 vs -0.00004) could not distinguish "the
+    ranking is real and these edges do not matter" from "the ranking was
+    measured at a token the readout does not read". Ranking now happens at
+    `readout_pos` whenever the readout is among the destinations.
+    """
+    if dst_mode == "readout":
+        dsts = [readout_pos]
+    elif dst_mode == "codeword":
+        dsts = [last_codeword_pos]
+    elif dst_mode == "both":
+        dsts = sorted({last_codeword_pos, readout_pos})
+    else:
+        raise ValueError(f"unknown dst mode {dst_mode!r}")
+    rank_dst = last_codeword_pos if dst_mode == "codeword" else readout_pos
+    return dsts, rank_dst
+
+
+def choose_direction_split(available: Sequence[str], row_split: Optional[str]) -> Tuple[str, bool]:
+    """Pick which fitted-direction split to rank a row with. Returns (split, is_self_fit).
+
+    DEFECT T7, FIXED 2026-08-18. The previous code took the FIRST of
+    ('dev', 'heldout') that existed on disk, `break`-ed, and then used that one
+    direction for every row regardless of `row['split']`. 1272 of the bank's
+    2352 rows are dev, so ~54% of rows had their edge ranking chosen IN-SAMPLE,
+    while the all_demo / random_demo / random_nondemo control arms are
+    direction-independent by construction. That handed an in-sample advantage
+    to precisely the targeted arm of the G3 contrast, and because no
+    `is_self_fit` field was emitted the affected rows could not even be filtered
+    post hoc. Directions are now cross-fitted per row (score a dev row with the
+    heldout fit and vice versa), falling back to the row's own split only when
+    the other file is absent — and that residual case is flagged row-wise via
+    `is_self_fit` so it is auditable rather than invisible.
+    """
+    avail = list(available)
+    if not avail:
+        raise ValueError("no fitted directions available")
+    other = {"dev": "heldout", "heldout": "dev"}.get(str(row_split))
+    if other in avail:
+        return other, False
+    if str(row_split) in avail:
+        return str(row_split), True
+    # Row split unknown / not one of dev|heldout: fall back deterministically and
+    # mark it self-fit-unknown-conservatively (True) so it is never silently
+    # counted as a clean cross-fit row.
+    pick = sorted(avail)[0]
+    return pick, True
+
+
+def select_families(rows: Sequence[dict], n_families: int) -> Tuple[List[dict], dict]:
+    """Select `n_families` DISTINCT families, round-robin over domains.
+
+    DEFECT T7b, FIXED 2026-08-18 (two bugs in one line, `rows[:args.n_families]`).
+
+      (a) HEAD-TRUNCATION OF A DOMAIN-PREFIXED SORTED LIST. `family_id` carries
+          its domain as a prefix and the bank is domain-ordered, so slicing the
+          head selects whole domains in alphabetical order. This is the same
+          defect already fixed in aggressive_patching (round-robin over domains,
+          audit A11-10) and never ported here.
+      (b) --n-families COUNTED PROMPTS, NOT FAMILIES. With
+          `--n-families 6 --n-examples 4,8` the slice returned 6 ROWS, which is
+          3 families x 2 example-counts, drawn from the first 3 alphabetical
+          domains. G3's reported "n=6 families" was therefore 3 domains x 2
+          splits: effective G = 3, and the interval treated 3 independent units
+          as 6.
+
+    Now: families are the unit, all matching rows of a selected family are kept,
+    and `family_accounting` records what was requested vs what was selected so
+    the effective G can never again be inferable only by reading the code.
+    """
+    by_family: Dict[str, List[dict]] = collections.OrderedDict()
+    for r in rows:
+        by_family.setdefault(str(r["family_id"]), []).append(r)
+    by_dom: Dict[str, List[str]] = collections.defaultdict(list)
+    for fam in sorted(by_family):
+        by_dom[str(by_family[fam][0].get("domain"))].append(fam)
+    doms = sorted(by_dom)
+    want = min(int(n_families), len(by_family))
+    fams: List[str] = []
+    i = 0
+    while len(fams) < want:
+        d = doms[i % len(doms)]
+        if by_dom[d]:
+            fams.append(by_dom[d].pop(0))
+        elif all(not by_dom[x] for x in doms):
+            break
+        i += 1
+    fams_set = set(fams)
+    sel = [r for r in rows if str(r["family_id"]) in fams_set]
+    head_fams = sorted({str(r["family_id"]) for r in list(rows)[:int(n_families)]})
+    acct = {
+        "unit": "family",
+        "requested_n_families": int(n_families),
+        "n_families_eligible": len(by_family),
+        "n_families_selected": len(fams),
+        "n_rows_selected": len(sel),
+        "effective_G": len(fams),
+        "selection": "round_robin_over_domains",
+        "families_selected": sorted(fams),
+        "domains_selected": sorted({str(r.get("domain")) for r in sel}),
+        "n_domains_selected": len({str(r.get("domain")) for r in sel}),
+        "families_per_domain": {d: sorted(f for f in fams
+                                          if str(by_family[f][0].get("domain")) == d)
+                                for d in sorted({str(by_family[f][0].get("domain")) for f in fams})},
+        "rows_per_split": dict(collections.Counter(str(r.get("split")) for r in sel)),
+        "rows_per_n_examples": dict(collections.Counter(int(r["n_examples"]) for r in sel)),
+        "prior_head_truncation_would_give": {
+            "n_rows": min(int(n_families), len(list(rows))),
+            "n_families": len(head_fams),
+            "n_domains": len({str(r.get("domain")) for r in list(rows)[:int(n_families)]}),
+        },
+        "note": "pre-2026-08-18 this was rows[:n_families]: PROMPTS not families, "
+                "head-truncated off a domain-prefixed sorted bank",
+    }
+    return sel, acct
+
+
+def demo_source_bound(dsts: Sequence[int]) -> int:
+    """Exclusive upper bound on demonstration SOURCE positions (defect T3b).
+
+    Pre-fix this bound was the ranking destination `dst`, which under --dst both was the
+    final CODEWORD occurrence: every demonstration-block token between the codeword and the
+    readout was silently dropped from the candidate edge set, so arms labelled "all demo
+    edges" were missing a suffix of the block. Causality only forbids sources at or after the
+    query position, so the bound is the LAST destination being cut into.
+    """
+    return max(dsts)
+
+
 @torch.no_grad()
 def semantic_logodds(lm, ids: List[int], c_ids: Sequence[int], w_ids: Sequence[int]) -> float:
     """The readout that G1 was decided on: log p(concept) - log p(codeword) at the answer position."""
@@ -220,9 +373,14 @@ def main() -> int:
     rng = np.random.default_rng(args.seed)
     dc, pc = ds(), pair()
     want_n = {int(x) for x in args.n_examples.split(",")}
-    rows = [r for r in read_jsonl(args.bank)
-            if r["query_kind"] == args.query_kind and r["condition"] == args.condition
-            and r["n_examples"] in want_n and r["bank_block"] == "core2x2"][:args.n_families]
+    eligible_rows = [r for r in read_jsonl(args.bank)
+                     if r["query_kind"] == args.query_kind and r["condition"] == args.condition
+                     and r["n_examples"] in want_n and r["bank_block"] == "core2x2"]
+    # T7b: `--n-families` now counts DISTINCT families and the sample is drawn
+    # round-robin over domains (see select_families).
+    rows, family_accounting = select_families(eligible_rows, args.n_families)
+    if not rows:
+        raise SystemExit("no bank rows matched the selection filters")
 
     run = RunDir("surgical_knockout", args, tag=args.tag)
     ledger = FailureLedger()
@@ -235,22 +393,29 @@ def main() -> int:
                    attn_implementation="eager", num_layers=lm.num_layers,
                    note="eager required: AttentionKnockout is a no-op under SDPA")
 
-    payload = None
+    # T7: load EVERY available fit so each row can be ranked with the direction
+    # fitted on the OTHER split (cross-fit). The old code loaded exactly one.
+    fitted: Dict[str, dict] = {}
     for split in ("dev", "heldout"):
         p = os.path.join(args.fit_dir, f"directions_fit_{split}.pt")
         if os.path.exists(p):
-            payload = torch.load(p, map_location="cpu", weights_only=False)
-            run.note(direction_file=p)
-            break
-    if payload is None:
+            fitted[split] = torch.load(p, map_location="cpu", weights_only=False)
+            run.note(**{f"direction_file_{split}": p})
+    if not fitted:
         raise SystemExit(f"no directions_fit_*.pt under {args.fit_dir}")
 
     layers = [int(x) for x in args.layers.split(",")]
-    d_surface = {L: payload["d_surface"][L] for L in layers if L in payload["d_surface"]}
+    d_surface_by_split = {
+        sp: {L: pl["d_surface"][L] for L in layers if L in pl["d_surface"]}
+        for sp, pl in fitted.items()
+    }
     c_ids, w_ids, id_meta = sg.readout_id_pair(lm.tokenizer, rows[0]["concept"], rows[0]["codeword"])
     run.note(readout_ids=id_meta, layers=layers, topk=args.topk, arms=list(ARMS),
-             demo_scope=args.demo_scope)
-    print(f"[knockout] {len(rows)} prompts, layers={layers}, k={args.topk} edges/layer/arm")
+             demo_scope=args.demo_scope, family_accounting=family_accounting,
+             direction_splits_available=sorted(fitted))
+    print(f"[knockout] {len(rows)} prompts / {family_accounting['n_families_selected']} families "
+          f"over {family_accounting['n_domains_selected']} domain(s), "
+          f"layers={layers}, k={args.topk} edges/layer/arm")
 
     n = 0
     for row in rows:
@@ -262,13 +427,12 @@ def main() -> int:
         # The destination MUST be the position the readout reads, or the intervention and the
         # measurement are about different tokens (see --dst).
         readout_pos = len(ids) - 1
-        if args.dst == "readout":
-            dsts = [readout_pos]
-        elif args.dst == "codeword":
-            dsts = [last[-1]]
-        else:
-            dsts = sorted({last[-1], readout_pos})
-        dst = dsts[0]                        # for ranking/reporting
+        # T3: `dst` is the RANKING/reporting destination and must be the token the
+        # readout actually reads (see choose_destinations); `dsts` is what gets cut.
+        dsts, dst = choose_destinations(args.dst, last[-1], readout_pos)
+        # T7: cross-fit the ranking direction on the row's own split.
+        fit_split, is_self_fit = choose_direction_split(sorted(fitted), row.get("split"))
+        d_surface = d_surface_by_split[fit_split]
         if args.demo_scope == "codeword":
             demo_pos = last[:-1]             # the demonstration codeword occurrences
         else:
@@ -286,8 +450,16 @@ def main() -> int:
                 continue
             enc = lm.tokenizer(templated, add_special_tokens=False, return_offsets_mapping=True)
             lo, hi = ci, ci + len(blk)
+            # DEFECT T3b, FIXED 2026-08-18. This filtered `i < dst` while `dst` was
+            # the FINAL CODEWORD occurrence under --dst both, so every demonstration
+            # token lying between the codeword and the readout was silently dropped
+            # from the candidate edge set — the arms were then labelled "all demo
+            # edges" while missing a suffix of the block. The bound must be the
+            # LAST destination being cut into (causality only forbids sources at or
+            # after the query position), which is `max(dsts)`.
+            src_bound = demo_source_bound(dsts)
             demo_pos = [i for i, (a, b) in enumerate(enc["offset_mapping"])
-                        if a >= lo and b <= hi and b > a and i < dst]
+                        if a >= lo and b <= hi and b > a and i < src_bound]
         if not demo_pos:
             ledger.fail(f"no_demo_positions:{args.demo_scope}", row["prompt_id"])
             continue
@@ -302,7 +474,9 @@ def main() -> int:
         base = {k: row[k] for k in ("prompt_id", "prompt_sha16", "family_id", "condition",
                                     "cell", "domain", "split", "n_examples", "query_kind")}
         base.update({"dst": dst, "dsts": dsts, "readout_pos": readout_pos,
-                     "dst_mode": args.dst,
+                     "dst_mode": args.dst, "rank_dst": dst,
+                     "codeword_last_pos": last[-1],
+                     "directions_fitted_on": fit_split, "is_self_fit": is_self_fit,
                      "n_demo_positions": len(demo_pos), "seq_len": len(ids),
                      "demo_scope": args.demo_scope})
 
@@ -362,6 +536,11 @@ def main() -> int:
         ledger.ok()
 
     run.finish(summary={"model": lm.model_id, "n_rows": n, "arms": list(ARMS),
+                        "family_accounting": family_accounting,
+                        "direction_splits_available": sorted(fitted),
+                        "cross_fit_note": "edge ranking uses the direction fitted on the OTHER "
+                                          "split; per-row is_self_fit flags any residual "
+                                          "in-sample row",
                         "positive_control_note": "positive_control blocks every pre-query key in "
                                                  "every head; if its delta is small the knockout "
                                                  "is not firing and all other arms are void",

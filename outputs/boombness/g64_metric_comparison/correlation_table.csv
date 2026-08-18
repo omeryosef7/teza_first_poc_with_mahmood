@@ -1,136 +1,136 @@
-layer,metric,target,n,spearman_rho,p_within_domain_perm,rho_partial_n_examples,p_partial,n_domains,identified
-0,logit_lens_boombness,asr_score,72,0.276386,0.004998,-0.105374,,6,yes
-0,logit_lens_boombness,refusal,72,-0.487465,0.001,,,6,yes
-0,logit_lens_boombness,n_examples,72,0.853909,0.0005,,,6,yes
-0,logit_lens_boombness,comprehension,72,0.33185,0.003498,,,6,yes
-0,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-0,direction_boombness,asr_score,72,0.250493,0.098951,0.419246,,6,yes
-0,direction_boombness,refusal,72,0.515307,0.0005,,,6,yes
-0,direction_boombness,n_examples,72,-0.259587,0.045477,,,6,yes
-0,direction_boombness,comprehension,72,0.00329,0.185407,,,6,yes
-0,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-0,probe_boombness,asr_score,72,0.187716,0.033983,-0.128683,,6,yes
-0,probe_boombness,refusal,72,-0.469539,0.0005,,,6,yes
-0,probe_boombness,n_examples,72,0.728409,0.0005,,,6,yes
-0,probe_boombness,comprehension,72,0.09721,0.003498,,,6,yes
-0,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-4,logit_lens_boombness,asr_score,72,-0.172582,0.086457,-0.275022,,6,yes
-4,logit_lens_boombness,refusal,72,-0.275907,0.105947,,,6,yes
-4,logit_lens_boombness,n_examples,72,0.402658,0.001,,,6,yes
-4,logit_lens_boombness,comprehension,72,0.023298,0.083958,,,6,yes
-4,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-4,direction_boombness,asr_score,72,0.391256,0.007996,0.126729,,6,yes
-4,direction_boombness,refusal,72,-0.500102,0.001,,,6,yes
-4,direction_boombness,n_examples,72,0.867638,0.0005,,,6,yes
-4,direction_boombness,comprehension,72,0.408415,0.007996,,,6,yes
-4,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-4,probe_boombness,asr_score,72,0.28763,0.242879,0.009843,,6,yes
-4,probe_boombness,refusal,72,-0.526965,0.0005,,,6,yes
-4,probe_boombness,n_examples,72,0.511178,0.0005,,,6,yes
-4,probe_boombness,comprehension,72,0.298273,0.0005,,,6,yes
-4,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-8,logit_lens_boombness,asr_score,72,-0.180449,0.153923,-0.091691,,6,yes
-8,logit_lens_boombness,refusal,72,-0.152323,0.189905,,,6,yes
-8,logit_lens_boombness,n_examples,72,-0.17885,0.036482,,,6,yes
-8,logit_lens_boombness,comprehension,72,-0.050919,0.350825,,,6,yes
-8,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-8,direction_boombness,asr_score,72,0.402765,0.014993,0.168869,,6,yes
-8,direction_boombness,refusal,72,-0.50686,0.002499,,,6,yes
-8,direction_boombness,n_examples,72,0.715723,0.0005,,,6,yes
-8,direction_boombness,comprehension,72,0.480516,0.004498,,,6,yes
-8,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-8,probe_boombness,asr_score,72,0.196846,0.454773,-0.087967,,6,yes
-8,probe_boombness,refusal,72,-0.516831,0.0005,,,6,yes
-8,probe_boombness,n_examples,72,0.432505,0.001,,,6,yes
-8,probe_boombness,comprehension,72,0.340204,0.0005,,,6,yes
-8,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-12,logit_lens_boombness,asr_score,72,-0.209762,0.818091,-0.01191,0.129935,6,yes
-12,logit_lens_boombness,refusal,72,0.33511,0.002499,,,6,yes
-12,logit_lens_boombness,n_examples,72,-0.451832,0.0005,,,6,yes
-12,logit_lens_boombness,comprehension,72,-0.114309,0.197901,,,6,yes
-12,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-12,direction_boombness,asr_score,72,0.216666,0.076462,0.009408,0.394803,6,yes
-12,direction_boombness,refusal,72,-0.483206,0.003998,,,6,yes
-12,direction_boombness,n_examples,72,0.379787,0.001,,,6,yes
-12,direction_boombness,comprehension,72,0.527992,0.002999,,,6,yes
-12,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-12,probe_boombness,asr_score,72,0.426208,0.009995,0.094696,0.645177,6,yes
-12,probe_boombness,refusal,72,-0.501634,0.001,,,6,yes
-12,probe_boombness,n_examples,72,0.612362,0.0005,,,6,yes
-12,probe_boombness,comprehension,72,0.484412,0.0005,,,6,yes
-12,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-16,logit_lens_boombness,asr_score,72,-0.208328,0.092954,0.11959,,6,yes
-16,logit_lens_boombness,refusal,72,0.496774,0.0005,,,6,yes
-16,logit_lens_boombness,n_examples,72,-0.733883,0.0005,,,6,yes
-16,logit_lens_boombness,comprehension,72,-0.219246,0.027486,,,6,yes
-16,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-16,direction_boombness,asr_score,72,-0.042821,0.195902,0.073381,,6,yes
-16,direction_boombness,refusal,72,0.084477,0.369315,,,6,yes
-16,direction_boombness,n_examples,72,-0.35238,0.001,,,6,yes
-16,direction_boombness,comprehension,72,0.296079,0.429285,,,6,yes
-16,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-16,probe_boombness,asr_score,72,0.292474,0.074963,0.011983,,6,yes
-16,probe_boombness,refusal,72,-0.488118,0.001499,,,6,yes
-16,probe_boombness,n_examples,72,0.533488,0.0005,,,6,yes
-16,probe_boombness,comprehension,72,0.523566,0.001999,,,6,yes
-16,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-20,logit_lens_boombness,asr_score,72,-0.29056,0.005997,-0.025202,,6,yes
-20,logit_lens_boombness,refusal,72,0.470512,0.0005,,,6,yes
-20,logit_lens_boombness,n_examples,72,-0.670694,0.0005,,,6,yes
-20,logit_lens_boombness,comprehension,72,-0.285637,0.027986,,,6,yes
-20,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-20,direction_boombness,asr_score,72,-0.132422,0.127436,0.012976,,6,yes
-20,direction_boombness,refusal,72,0.202744,0.05997,,,6,yes
-20,direction_boombness,n_examples,72,-0.387618,0.001999,,,6,yes
-20,direction_boombness,comprehension,72,0.303562,0.487256,,,6,yes
-20,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-20,probe_boombness,asr_score,72,0.273516,0.10045,-0.006324,,6,yes
-20,probe_boombness,refusal,72,-0.481362,0.001999,,,6,yes
-20,probe_boombness,n_examples,72,0.490433,0.0005,,,6,yes
-20,probe_boombness,comprehension,72,0.517053,0.002499,,,6,yes
-20,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-24,logit_lens_boombness,asr_score,72,-0.020188,0.538231,-0.185461,,6,yes
-24,logit_lens_boombness,refusal,72,-0.268266,0.067466,,,6,yes
-24,logit_lens_boombness,n_examples,72,0.210234,0.049975,,,6,yes
-24,logit_lens_boombness,comprehension,72,0.05819,0.384308,,,6,yes
-24,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-24,direction_boombness,asr_score,72,0.088437,0.11994,0.017583,,6,yes
-24,direction_boombness,refusal,72,-0.020274,0.986507,,,6,yes
-24,direction_boombness,n_examples,72,0.049725,0.741629,,,6,yes
-24,direction_boombness,comprehension,72,0.341701,0.536232,,,6,yes
-24,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-24,probe_boombness,asr_score,72,0.204718,0.232884,-0.093999,,6,yes
-24,probe_boombness,refusal,72,-0.477984,0.001499,,,6,yes
-24,probe_boombness,n_examples,72,0.493956,0.0005,,,6,yes
-24,probe_boombness,comprehension,72,0.518246,0.001499,,,6,yes
-24,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-28,logit_lens_boombness,asr_score,72,0.151653,0.58021,-0.129615,,6,yes
-28,logit_lens_boombness,refusal,72,-0.368966,0.073963,,,6,yes
-28,logit_lens_boombness,n_examples,72,0.490866,0.0005,,,6,yes
-28,logit_lens_boombness,comprehension,72,0.183493,0.008996,,,6,yes
-28,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-28,direction_boombness,asr_score,72,0.132283,0.255872,-0.026926,,6,yes
-28,direction_boombness,refusal,72,-0.25174,0.216892,,,6,yes
-28,direction_boombness,n_examples,72,0.264676,0.05947,,,6,yes
-28,direction_boombness,comprehension,72,0.364568,0.548726,,,6,yes
-28,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-28,probe_boombness,asr_score,72,0.131308,0.248376,-0.137244,,6,yes
-28,probe_boombness,refusal,72,-0.442515,0.001999,,,6,yes
-28,probe_boombness,n_examples,72,0.513135,0.0005,,,6,yes
-28,probe_boombness,comprehension,72,0.32684,0.0005,,,6,yes
-28,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-31,logit_lens_boombness,asr_score,72,0.212964,0.216892,-0.102155,,6,yes
-31,logit_lens_boombness,refusal,72,-0.47052,0.001,,,6,yes
-31,logit_lens_boombness,n_examples,72,0.645995,0.0005,,,6,yes
-31,logit_lens_boombness,comprehension,72,0.317564,0.001,,,6,yes
-31,logit_lens_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-31,direction_boombness,asr_score,72,0.2764,0.209895,0.073673,,6,yes
-31,direction_boombness,refusal,72,-0.321011,0.049475,,,6,yes
-31,direction_boombness,n_examples,72,0.503512,0.0005,,,6,yes
-31,direction_boombness,comprehension,72,0.241895,0.318841,,,6,yes
-31,direction_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
-31,probe_boombness,asr_score,72,0.075273,0.411794,-0.214704,,6,yes
-31,probe_boombness,refusal,72,-0.520209,0.001,,,6,yes
-31,probe_boombness,n_examples,72,0.538968,0.0005,,,6,yes
-31,probe_boombness,comprehension,72,0.301207,0.0005,,,6,yes
-31,probe_boombness,role_style_eta2,72,0.0,,,,6,NO - role_style is collinear with bank_block (§9)
+layer,metric,target,n,rho_pooled,rho_within_domain,p_perm_within_domain_rho,p_estimand,rho_partial_n_examples_pooled,rho_partial_n_examples_within_domain,p_perm_within_domain_partial,n_domains,identified
+0,logit_lens_boombness,asr_score,72,0.276386,0.274302,0.004998,rho_within_domain,-0.105374,-0.022098,,6,yes
+0,logit_lens_boombness,refusal,72,-0.487465,-0.412745,0.001,rho_within_domain,,,,6,yes
+0,logit_lens_boombness,n_examples,72,0.853909,0.951531,0.0005,rho_within_domain,,,,6,yes
+0,logit_lens_boombness,comprehension,72,0.33185,0.342982,0.003498,rho_within_domain,,,,6,yes
+0,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+0,direction_boombness,asr_score,72,0.250493,0.184694,0.098951,rho_within_domain,0.419246,0.300673,,6,yes
+0,direction_boombness,refusal,72,0.515307,0.449623,0.0005,rho_within_domain,,,,6,yes
+0,direction_boombness,n_examples,72,-0.259587,-0.250832,0.045477,rho_within_domain,,,,6,yes
+0,direction_boombness,comprehension,72,0.00329,-0.157307,0.185407,rho_within_domain,,,,6,yes
+0,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+0,probe_boombness,asr_score,72,0.187716,0.214841,0.033983,rho_within_domain,-0.128683,-0.098727,,6,yes
+0,probe_boombness,refusal,72,-0.469539,-0.364486,0.0005,rho_within_domain,,,,6,yes
+0,probe_boombness,n_examples,72,0.728409,0.839015,0.0005,rho_within_domain,,,,6,yes
+0,probe_boombness,comprehension,72,0.09721,0.34486,0.003498,rho_within_domain,,,,6,yes
+0,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+4,logit_lens_boombness,asr_score,72,-0.172582,-0.210723,0.086457,rho_within_domain,-0.275022,-0.392735,,6,yes
+4,logit_lens_boombness,refusal,72,-0.275907,-0.208451,0.105947,rho_within_domain,,,,6,yes
+4,logit_lens_boombness,n_examples,72,0.402658,0.414623,0.001,rho_within_domain,,,,6,yes
+4,logit_lens_boombness,comprehension,72,0.023298,0.214074,0.083958,rho_within_domain,,,,6,yes
+4,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+4,direction_boombness,asr_score,72,0.391256,0.323569,0.007996,rho_within_domain,0.126729,0.153121,,6,yes
+4,direction_boombness,refusal,72,-0.500102,-0.404455,0.001,rho_within_domain,,,,6,yes
+4,direction_boombness,n_examples,72,0.867638,0.935629,0.0005,rho_within_domain,,,,6,yes
+4,direction_boombness,comprehension,72,0.408415,0.316415,0.007996,rho_within_domain,,,,6,yes
+4,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+4,probe_boombness,asr_score,72,0.28763,0.145142,0.242879,rho_within_domain,0.009843,-0.039562,,6,yes
+4,probe_boombness,refusal,72,-0.526965,-0.431529,0.0005,rho_within_domain,,,,6,yes
+4,probe_boombness,n_examples,72,0.511178,0.549821,0.0005,rho_within_domain,,,,6,yes
+4,probe_boombness,comprehension,72,0.298273,0.44152,0.0005,rho_within_domain,,,,6,yes
+4,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+8,logit_lens_boombness,asr_score,72,-0.180449,-0.170967,0.153923,rho_within_domain,-0.091691,-0.115723,,6,yes
+8,logit_lens_boombness,refusal,72,-0.152323,-0.147139,0.189905,rho_within_domain,,,,6,yes
+8,logit_lens_boombness,n_examples,72,-0.17885,-0.263366,0.036482,rho_within_domain,,,,6,yes
+8,logit_lens_boombness,comprehension,72,-0.050919,-0.123401,0.350825,rho_within_domain,,,,6,yes
+8,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+8,direction_boombness,asr_score,72,0.402765,0.29693,0.014993,rho_within_domain,0.168869,0.104178,,6,yes
+8,direction_boombness,refusal,72,-0.50686,-0.37317,0.002499,rho_within_domain,,,,6,yes
+8,direction_boombness,n_examples,72,0.715723,0.857366,0.0005,rho_within_domain,,,,6,yes
+8,direction_boombness,comprehension,72,0.480516,0.336145,0.004498,rho_within_domain,,,,6,yes
+8,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+8,probe_boombness,asr_score,72,0.196846,0.087098,0.454773,rho_within_domain,-0.087967,-0.069144,,6,yes
+8,probe_boombness,refusal,72,-0.516831,-0.43236,0.0005,rho_within_domain,,,,6,yes
+8,probe_boombness,n_examples,72,0.432505,0.398767,0.001,rho_within_domain,,,,6,yes
+8,probe_boombness,comprehension,72,0.340204,0.472539,0.0005,rho_within_domain,,,,6,yes
+8,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+12,logit_lens_boombness,asr_score,72,-0.209762,-0.025592,0.818091,rho_within_domain,-0.01191,0.174535,0.129935,6,yes
+12,logit_lens_boombness,refusal,72,0.33511,0.368481,0.002499,rho_within_domain,,,,6,yes
+12,logit_lens_boombness,n_examples,72,-0.451832,-0.533385,0.0005,rho_within_domain,,,,6,yes
+12,logit_lens_boombness,comprehension,72,-0.114309,-0.155594,0.197901,rho_within_domain,,,,6,yes
+12,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+12,direction_boombness,asr_score,72,0.216666,0.228466,0.076462,rho_within_domain,0.009408,0.107671,0.394803,6,yes
+12,direction_boombness,refusal,72,-0.483206,-0.314831,0.003998,rho_within_domain,,,,6,yes
+12,direction_boombness,n_examples,72,0.379787,0.410487,0.001,rho_within_domain,,,,6,yes
+12,direction_boombness,comprehension,72,0.527992,0.361181,0.002999,rho_within_domain,,,,6,yes
+12,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+12,probe_boombness,asr_score,72,0.426208,0.28419,0.009995,rho_within_domain,0.094696,0.054433,0.645177,6,yes
+12,probe_boombness,refusal,72,-0.501634,-0.431608,0.001,rho_within_domain,,,,6,yes
+12,probe_boombness,n_examples,72,0.612362,0.633175,0.0005,rho_within_domain,,,,6,yes
+12,probe_boombness,comprehension,72,0.484412,0.462086,0.0005,rho_within_domain,,,,6,yes
+12,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+16,logit_lens_boombness,asr_score,72,-0.208328,-0.176328,0.092954,rho_within_domain,0.11959,0.04703,,6,yes
+16,logit_lens_boombness,refusal,72,0.496774,0.385528,0.0005,rho_within_domain,,,,6,yes
+16,logit_lens_boombness,n_examples,72,-0.733883,-0.704006,0.0005,rho_within_domain,,,,6,yes
+16,logit_lens_boombness,comprehension,72,-0.219246,-0.273013,0.027486,rho_within_domain,,,,6,yes
+16,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+16,direction_boombness,asr_score,72,-0.042821,-0.150896,0.195902,rho_within_domain,0.073381,-0.029646,,6,yes
+16,direction_boombness,refusal,72,0.084477,0.091127,0.369315,rho_within_domain,,,,6,yes
+16,direction_boombness,n_examples,72,-0.35238,-0.419096,0.001,rho_within_domain,,,,6,yes
+16,direction_boombness,comprehension,72,0.296079,0.097635,0.429285,rho_within_domain,,,,6,yes
+16,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+16,probe_boombness,asr_score,72,0.292474,0.202053,0.074963,rho_within_domain,0.011983,0.003444,,6,yes
+16,probe_boombness,refusal,72,-0.488118,-0.413493,0.001499,rho_within_domain,,,,6,yes
+16,probe_boombness,n_examples,72,0.533488,0.533385,0.0005,rho_within_domain,,,,6,yes
+16,probe_boombness,comprehension,72,0.523566,0.375429,0.001999,rho_within_domain,,,,6,yes
+16,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+20,logit_lens_boombness,asr_score,72,-0.29056,-0.295845,0.005997,rho_within_domain,-0.025202,-0.082392,,6,yes
+20,logit_lens_boombness,refusal,72,0.470512,0.405542,0.0005,rho_within_domain,,,,6,yes
+20,logit_lens_boombness,n_examples,72,-0.670694,-0.714963,0.0005,rho_within_domain,,,,6,yes
+20,logit_lens_boombness,comprehension,72,-0.285637,-0.26999,0.027986,rho_within_domain,,,,6,yes
+20,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+20,direction_boombness,asr_score,72,-0.132422,-0.183729,0.127436,rho_within_domain,0.012976,-0.08303,,6,yes
+20,direction_boombness,refusal,72,0.202744,0.219037,0.05997,rho_within_domain,,,,6,yes
+20,direction_boombness,n_examples,72,-0.387618,-0.395226,0.001999,rho_within_domain,,,,6,yes
+20,direction_boombness,comprehension,72,0.303562,0.084048,0.487256,rho_within_domain,,,,6,yes
+20,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+20,probe_boombness,asr_score,72,0.273516,0.186385,0.10045,rho_within_domain,-0.006324,-0.021986,,6,yes
+20,probe_boombness,refusal,72,-0.481362,-0.393162,0.001999,rho_within_domain,,,,6,yes
+20,probe_boombness,n_examples,72,0.490433,0.484469,0.0005,rho_within_domain,,,,6,yes
+20,probe_boombness,comprehension,72,0.517053,0.360699,0.002499,rho_within_domain,,,,6,yes
+20,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+24,logit_lens_boombness,asr_score,72,-0.020188,-0.073729,0.538231,rho_within_domain,-0.185461,-0.165119,,6,yes
+24,logit_lens_boombness,refusal,72,-0.268266,-0.219051,0.067466,rho_within_domain,,,,6,yes
+24,logit_lens_boombness,n_examples,72,0.210234,0.235781,0.049975,rho_within_domain,,,,6,yes
+24,logit_lens_boombness,comprehension,72,0.05819,0.107708,0.384308,rho_within_domain,,,,6,yes
+24,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+24,direction_boombness,asr_score,72,0.088437,-0.185127,0.11994,rho_within_domain,0.017583,-0.199086,,6,yes
+24,direction_boombness,refusal,72,-0.020274,-0.002057,0.986507,rho_within_domain,,,,6,yes
+24,direction_boombness,n_examples,72,0.049725,0.040305,0.741629,rho_within_domain,,,,6,yes
+24,direction_boombness,comprehension,72,0.341701,0.07797,0.536232,rho_within_domain,,,,6,yes
+24,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+24,probe_boombness,asr_score,72,0.204718,0.132055,0.232884,rho_within_domain,-0.093999,-0.081006,,6,yes
+24,probe_boombness,refusal,72,-0.477984,-0.403723,0.001499,rho_within_domain,,,,6,yes
+24,probe_boombness,n_examples,72,0.493956,0.476642,0.0005,rho_within_domain,,,,6,yes
+24,probe_boombness,comprehension,72,0.518246,0.38876,0.001499,rho_within_domain,,,,6,yes
+24,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+28,logit_lens_boombness,asr_score,72,0.151653,0.068384,0.58021,rho_within_domain,-0.129615,-0.051552,,6,yes
+28,logit_lens_boombness,refusal,72,-0.368966,-0.22518,0.073963,rho_within_domain,,,,6,yes
+28,logit_lens_boombness,n_examples,72,0.490866,0.440839,0.0005,rho_within_domain,,,,6,yes
+28,logit_lens_boombness,comprehension,72,0.183493,0.300899,0.008996,rho_within_domain,,,,6,yes
+28,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+28,direction_boombness,asr_score,72,0.132283,-0.140556,0.255872,rho_within_domain,-0.026926,-0.229037,,6,yes
+28,direction_boombness,refusal,72,-0.25174,-0.133882,0.216892,rho_within_domain,,,,6,yes
+28,direction_boombness,n_examples,72,0.264676,0.216005,0.05947,rho_within_domain,,,,6,yes
+28,direction_boombness,comprehension,72,0.364568,0.072535,0.548726,rho_within_domain,,,,6,yes
+28,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+28,probe_boombness,asr_score,72,0.131308,0.122764,0.248376,rho_within_domain,-0.137244,-0.10914,,6,yes
+28,probe_boombness,refusal,72,-0.442515,-0.380307,0.001999,rho_within_domain,,,,6,yes
+28,probe_boombness,n_examples,72,0.513135,0.518906,0.0005,rho_within_domain,,,,6,yes
+28,probe_boombness,comprehension,72,0.32684,0.398601,0.0005,rho_within_domain,,,,6,yes
+28,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+31,logit_lens_boombness,asr_score,72,0.212964,0.139016,0.216892,rho_within_domain,-0.102155,-0.072395,,6,yes
+31,logit_lens_boombness,refusal,72,-0.47052,-0.402935,0.001,rho_within_domain,,,,6,yes
+31,logit_lens_boombness,n_examples,72,0.645995,0.706555,0.0005,rho_within_domain,,,,6,yes
+31,logit_lens_boombness,comprehension,72,0.317564,0.437246,0.001,rho_within_domain,,,,6,yes
+31,logit_lens_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+31,direction_boombness,asr_score,72,0.2764,0.148615,0.209895,rho_within_domain,0.073673,-0.05398,,6,yes
+31,direction_boombness,refusal,72,-0.321011,-0.219512,0.049475,rho_within_domain,,,,6,yes
+31,direction_boombness,n_examples,72,0.503512,0.527881,0.0005,rho_within_domain,,,,6,yes
+31,direction_boombness,comprehension,72,0.241895,0.127222,0.318841,rho_within_domain,,,,6,yes
+31,direction_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)
+31,probe_boombness,asr_score,72,0.075273,0.082453,0.411794,rho_within_domain,-0.214704,-0.154367,,6,yes
+31,probe_boombness,refusal,72,-0.520209,-0.438886,0.001,rho_within_domain,,,,6,yes
+31,probe_boombness,n_examples,72,0.538968,0.540038,0.0005,rho_within_domain,,,,6,yes
+31,probe_boombness,comprehension,72,0.301207,0.396044,0.0005,rho_within_domain,,,,6,yes
+31,probe_boombness,role_style_eta2,72,0.0,,,"none (statistic is eta^2, not a correlation)",,,,6,NO - role_style is collinear with bank_block (§9)

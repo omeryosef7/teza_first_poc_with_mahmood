@@ -49,7 +49,8 @@ COMPREHENSION_WORDS = ("literal", "coded")
 
 
 @torch.no_grad()
-def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> Dict[str, float]:
+def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]],
+                       answer_prefix: str = "") -> Dict[str, float]:
     """LOG-probability mass on each id group at the next-token position (plus the raw p).
 
     THE STATISTIC MUST BE A LOG-ODDS, NOT A DIFFERENCE OF PROBABILITIES. A safety-tuned chat
@@ -65,16 +66,41 @@ def next_token_readout(lm, templated: str, groups: Dict[str, Sequence[int]]) -> 
     Log-probs come straight from `log_softmax`, so nothing is computed by exponentiating and
     re-logging a denormal.
     """
-    ids = lm.tokenizer(templated, add_special_tokens=False)["input_ids"]
+    # FORCED ANSWER POSITION (added 2026-08-18). Without a prefix the readout sits immediately
+    # after the assistant header, where a safety-tuned chat model opens with a preamble, not with
+    # the bare answer word -- so the scored ids are not what the model is about to emit and the
+    # whole comparison lives in the far tail. The repo had ALREADY measured this and acted on it
+    # only for `semantic_forced_choice` (see prompt_families.QUERY_KINDS: as_is 1.4e-2 -> forced
+    # 0.979 on the direct arm): naming the candidates and forcing the answer slot concentrates the
+    # mass. Appending an assistant-side "Answer:" does the second half of that for EVERY forward
+    # readout, and it keeps the arms exactly symmetric: after "Answer:" the model's next token is
+    # the LEADING-SPACE form, which is precisely `readout_ids(...)["primary_id"]` -- one id per
+    # option, one per arm. Scoring the full_word variant union would NOT be symmetric ("literal"
+    # has 4 single-token variants against "coded"'s 2; "bomb" has 4 against "carrot"'s 1), and
+    # since the scorer aggregates by logsumexp, more variants can only raise a score.
+    ids = lm.tokenizer(templated + answer_prefix, add_special_tokens=False)["input_ids"]
     t = torch.tensor([ids], device=lm.model.device)
     logits = lm.model(input_ids=t, use_cache=False).logits[0, -1, :].float().cpu()
     lp = torch.log_softmax(logits, dim=-1)
     out = {}
+    all_ids = set()
     for name, g in groups.items():
         idx = torch.tensor(sorted(set(g)), dtype=torch.long)
         lse = float(lp[idx].logsumexp(0))
         out[f"logp_{name}"] = lse
         out[f"p_{name}"] = float(torch.tensor(lse).exp())
+        all_ids |= set(g)
+    # OPTION MASS -- the statistic whose absence let a broken readout ship (external critique
+    # finding 1, 2026-08-18). A log-odds between two options is a valid decision margin ONLY if
+    # the two options are plausibly what comes next. On the committed baseline the pair held a
+    # MEDIAN 4.4e-05 of next-token mass for comprehension and 5.6e-06 for semantic, with 0 of 288
+    # and 0 of 516 rows above 1% -- i.e. every published forced-choice verdict was an ordering
+    # inside a 1e-5 tail, and an intervention that destroyed the answer while leaving the tail
+    # ordered would have been certified "comprehension preserved". Recording it per row makes that
+    # condition measurable; `--min-option-mass` below makes it fatal instead of invisible.
+    idx = torch.tensor(sorted(all_ids), dtype=torch.long)
+    out["option_mass"] = float(lp[idx].logsumexp(0).exp())
+    out["top1_id"] = int(lp.argmax())
     return out
 
 
@@ -194,10 +220,27 @@ def main() -> int:
                     help='e.g. "d_surface:project_out:8-21:1.0" or "d_surface:add:8-21:2.0"')
     ap.add_argument("--arm", default="base", help="label written on every row")
     ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"])
+    ap.add_argument("--answer-prefix", default="Answer:",
+                    help='assistant-side text appended before the forward readout position, so the '
+                         'next token is the answer word rather than a preamble. Pass "" to reproduce '
+                         'the pre-2026-08-18 behaviour, which scored a ~1e-5 tail. Does NOT affect '
+                         'generation.')
+    ap.add_argument("--min-option-mass", type=float, default=0.05,
+                    help="refuse to finish if the MEDIAN next-token mass on the answer options is "
+                         "below this. A forced choice decided inside a 1e-5 tail is not a forced "
+                         "choice; it is an ordering of two things the model was never going to say.")
+    ap.add_argument("--allow-tail-readout", action="store_true",
+                    help="override --min-option-mass deliberately (the run is then NOT reportable "
+                         "as a comprehension or semantic result, and says so in summary.json)")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="run")
     args = ap.parse_args()
+    # SHELL-SAFE EMPTY. The SLURM wrapper word-splits BOOMB_ARGS deliberately, so an empty quoted
+    # argument cannot survive the round trip -- `--answer-prefix ""` silently becomes the NEXT flag.
+    # The pre-2026-08-18 behaviour therefore has to be reachable by a literal sentinel.
+    if args.answer_prefix.strip().lower() in ("none", "''", '""'):
+        args.answer_prefix = ""
     global ENABLE_THINKING
     ENABLE_THINKING = dc_parse_thinking(args.enable_thinking)
     # SELF-CHECK on the rendering the flag actually produces. The flag was silently inert once
@@ -266,6 +309,12 @@ def main() -> int:
         # precisely the bug it was written for: the flag reached `apply_template` and NOT
         # `dc.generate`, which templates internally. Verifying the readout path proves nothing about
         # the generation path. So the real check is on generated OUTPUT and lives in the loop below.
+    run.note(answer_prefix=args.answer_prefix,
+             answer_prefix_rationale=(
+                 "forward readouts are scored at the token after this text. Empty reproduces the "
+                 "pre-2026-08-18 behaviour, in which the options held a median 4.4e-05 (comprehension) "
+                 "/ 5.6e-06 (semantic) of next-token mass on the committed baseline."),
+             min_option_mass=args.min_option_mass)
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
                    attn_implementation="sdpa", num_layers=lm.num_layers)
@@ -312,6 +361,7 @@ def main() -> int:
     print(f"[score] readout ids ({args.readout_ids}): concept={c_ids} codeword={w_ids} "
           f"comprehension={comp_ids}")
 
+    option_mass = collections.defaultdict(list)
     gens_path = run.p("gens.jsonl")
     gens_fh = open(gens_path, "a")
     n_gen = 0
@@ -345,22 +395,30 @@ def main() -> int:
                 for c in ctxs:
                     st.enter_context(c)
 
-                if row["query_kind"] in ("semantic_one_word",):
+                if row["query_kind"] in ("semantic_one_word", "semantic_forced_choice"):
+                    # semantic_forced_choice was generated into the bank (288 rows) specifically to
+                    # fix the tail problem and was then NEVER SCORED BY ANY RUN -- it was not in
+                    # this dispatch, and the dispatch had no `else`, so asking for it produced
+                    # counts={}, n_failed=0 and a DONE.json indistinguishable from a real run.
                     rec = next_token_readout(lm, templated,
-                                             {"concept": c_ids, "codeword": w_ids})
+                                             {"concept": c_ids, "codeword": w_ids},
+                                             answer_prefix=args.answer_prefix)
                     # log-odds is the primary; the probability difference is kept only as a
                     # diagnostic, and is meaningless when both terms are in the tail.
                     rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
                     rec["semantic_margin_p_diff"] = rec["p_concept"] - rec["p_codeword"]
                     run.log_row({**base, "readout": "semantic", **rec})
+                    option_mass["semantic"].append(rec["option_mass"])
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "comprehension_usage":
                     rec = next_token_readout(lm, templated,
-                                             {w: comp_ids[w] for w in COMPREHENSION_WORDS})
+                                             {w: comp_ids[w] for w in COMPREHENSION_WORDS},
+                                             answer_prefix=args.answer_prefix)
                     rec["comprehension_logodds"] = rec["logp_coded"] - rec["logp_literal"]
                     rec["comprehension_margin_p_diff"] = rec["p_coded"] - rec["p_literal"]
                     run.log_row({**base, "readout": "comprehension", **rec})
+                    option_mass["comprehension"].append(rec["option_mass"])
                     counts["comprehension"] += 1
 
                 elif row["query_kind"] == "behavioral":
@@ -422,6 +480,16 @@ def main() -> int:
                                      "gen_empty": len(text.strip()) == 0})
                         n_gen += 1
                         counts["behavioral"] += 1
+                else:
+                    # NO SILENT PASS. The dispatch had no `else`, so an unhandled query_kind fell
+                    # straight through to ledger.ok(): `--query-kinds semantic_forced_choice`
+                    # produced counts={}, n_failed=0 and a DONE.json indistinguishable from a
+                    # complete run, and require_done accepted it. That is how 288 forced-choice
+                    # rows -- the framing built specifically to fix the tail readout -- were
+                    # generated into the bank and never scored by anything.
+                    raise ValueError(f"unhandled query_kind {row['query_kind']!r}; supported: "
+                                     f"semantic_one_word, semantic_forced_choice, "
+                                     f"comprehension_usage, behavioral")
             ledger.ok()
         except Exception as e:
             ledger.fail(f"{row['query_kind']}:{type(e).__name__}:{str(e)[:80]}", row["prompt_id"])
@@ -431,7 +499,37 @@ def main() -> int:
             print(f"[score] {i+1}/{len(rows)} rows  {dict(counts)}")
 
     gens_fh.close()
+    # THE TAIL GATE. A forced choice decided inside a 1e-5 tail is not a forced choice, and the
+    # sprint published §2.6 verdicts from exactly that for two months without noticing, because the
+    # quantity was never recorded. It is recorded now and it is FATAL by default.
+    mass_summary = {}
+    tail_fail = []
+    for kind, vals in sorted(option_mass.items()):
+        if not vals:
+            continue
+        v = sorted(vals)
+        med = v[len(v) // 2]
+        mass_summary[kind] = {"n": len(v), "median": med, "p10": v[int(0.10 * len(v))],
+                              "p90": v[int(0.90 * len(v))], "max": v[-1],
+                              "frac_above_1pct": sum(1 for m in v if m > 0.01) / len(v)}
+        print(f"[score] option mass {kind}: median={med:.4g} "
+              f"p90={mass_summary[kind]['p90']:.4g} max={v[-1]:.4g} "
+              f"frac>1%={mass_summary[kind]['frac_above_1pct']:.3f}")
+        if med < args.min_option_mass:
+            tail_fail.append(f"{kind}: median option mass {med:.4g} < {args.min_option_mass}")
+    if tail_fail and not args.allow_tail_readout:
+        raise SystemExit(
+            "[score] REFUSING: the answer options are not what the model is about to say — "
+            + "; ".join(tail_fail)
+            + f". The readout position is after answer_prefix={args.answer_prefix!r}. Either supply "
+              "a forcing prefix or pass --allow-tail-readout, in which case the run is NOT "
+              "reportable as a comprehension or semantic result.")
+
     run.finish(summary={"model": lm.model_id, "arm": args.arm, "n_bank_rows": len(rows),
+                        "option_mass": mass_summary,
+                        "option_mass_gate": ("PASS" if not tail_fail else
+                                             "OVERRIDDEN — NOT REPORTABLE: " + "; ".join(tail_fail)),
+                        "answer_prefix": args.answer_prefix,
                         "counts": dict(counts), "n_generations": n_gen,
                         "gens_path": gens_path if n_gen else None,
                         "intervention": spec,

@@ -62,8 +62,15 @@ def main() -> int:
                     help="analyse a run with no DONE.json (output must not be reported)")
 
     args = ap.parse_args()
-    if args.baseline:
-        require_done(args.baseline, allow_partial=args.allow_partial)
+    # COMPLETENESS, ON EVERY ARM. BUG FIXED 2026-08-18 (independent audit, defect T2b).
+    # b093e50d added `require_done` "across all analyzers" but here it was applied to
+    # `--baseline` ONLY, so every INTERVENTION arm — the arms that carry the G4 claim — could be a
+    # truncated or stale-dead run and this script would still compute its ASR, its paired delta and
+    # its place in the control band without a word. That is precisely the one-of-two-paths shape
+    # `require_done` was introduced to close, reproduced inside the guard's own call site: the
+    # arm nobody checks is the arm whose number gets quoted.
+    for _d in [args.baseline] + list(args.arms):
+        require_done(_d, allow_partial=args.allow_partial)
 
     def load(d):
         return {r["prompt_id"]: r for r in read_jsonl(os.path.join(d, "results.jsonl"))
@@ -138,6 +145,10 @@ def main() -> int:
         rows.append({"arm": name, "n": len(ids), "asr": asr,
                      "wilson95_IID_UNDERSTATES": [lo, hi],
                      "ci95_domain_clustered": [clo, chi], "n_domains": ndom,
+                     # recorded so the understatement is a NUMBER in the artifact and not a claim
+                     # in a docstring: how many times wider the honest interval is than the iid one
+                     "ci_width_ratio_clustered_over_iid": (
+                         ((chi - clo) / (hi - lo)) if (hi - lo) > 0 else float("nan")),
                      "mean_score": sum(sc) / len(sc), "refusal": sum(ref) / len(ref),
                      "paired_delta_mean": md, "paired_delta_sem": sem,
                      "coherent": (c or {}).get("coherent"),
@@ -145,13 +156,28 @@ def main() -> int:
                      "coherence_dropped_short": (c or {}).get("n_dropped_short"),
                      "coherence_failures": (c or {}).get("failures")})
 
-    print(f"\n{'arm':22s} {'ASR':>7s} {'95% CI':>16s} {'refusal':>8s} "
-          f"{'paired Δscore':>14s} {'coh':>5s}")
+    # BUG FIXED 2026-08-18 (independent audit, defect T2). Commit accfa714 renamed the iid interval
+    # to `wilson95_IID_UNDERSTATES` in the row dict above but left this loop reading `r['wilson95']`.
+    # `rows` always contains the baseline arm, so the very first iteration raised an UNCONDITIONAL
+    # KeyError — before the coherence gate, before the paired contrasts, before the control band,
+    # before the sign test and before any JSON was written. Consequence: accfa714 ("clustered ASR
+    # intervals") had NEVER ONCE EXECUTED, and the committed outputs/boombness/steering_analysis.json
+    # was still the PRE-FIX file while the report cited it as current evidence for the G4 table.
+    # This is the sprint's recurring shape again — a correction that reads as applied because it is
+    # committed, but that no run ever reached.
+    #
+    # The printed CLUSTERED interval is now the headline one and is labelled as such; the iid Wilson
+    # is printed BESIDE it, explicitly marked, and must never stand in for the clustered interval.
+    print(f"\n{'arm':22s} {'ASR':>7s} {'95% CI (domain-clustered)':>26s} "
+          f"{'iid Wilson (UNDERSTATES)':>25s} {'refusal':>8s} {'paired Δscore':>14s} {'coh':>5s}")
     for r in rows:
-        ci = f"[{r['wilson95'][0]:.3f},{r['wilson95'][1]:.3f}]"
+        cl = r["ci95_domain_clustered"]
+        iid = r["wilson95_IID_UNDERSTATES"]
+        ci_cl = f"[{cl[0]:.3f},{cl[1]:.3f}] G={r['n_domains']}"
+        ci_iid = f"[{iid[0]:.3f},{iid[1]:.3f}]"
         coh_s = "-" if r["coherent"] is None else ("OK" if r["coherent"] else "FAIL")
         star = "" if r["coherent"] is not False else "   <-- NOT REPORTABLE (degenerate)"
-        print(f"{r['arm']:22s} {r['asr']:>7.3f} {ci:>16s} {r['refusal']:>8.3f} "
+        print(f"{r['arm']:22s} {r['asr']:>7.3f} {ci_cl:>26s} {ci_iid:>25s} {r['refusal']:>8.3f} "
               f"{r['paired_delta_mean']:>+9.4f}±{r['paired_delta_sem']:.4f} {coh_s:>5s}{star}")
 
     # A MISSING gate is now FATAL. Previously `coherent is None` (never computed) passed the
