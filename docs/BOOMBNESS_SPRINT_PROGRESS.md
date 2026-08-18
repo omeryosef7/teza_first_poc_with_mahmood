@@ -4843,3 +4843,41 @@ prompts" — i.e. the same cross-condition check, which the `len_B` judge (compl
 
 **Standard added to the analysis protocol:** no intervention result is reportable as an attack finding until
 its effect on `benign_literal` and `benign_remap` is stated alongside it.
+
+## ★ THE REVERSAL — the SMALL effect is the real one. Llama arm B passes the check Qwen3 failed.
+
+Same intervention, same check, opposite outcomes:
+
+| | Llama arm B | Qwen3 arm B |
+|---|---|---|
+| doublespeak Δ score | **+0.0378, t_cl=+5.12, p=0.0037** | +0.3354, p=0.0002 |
+| domains positive | **6/6** (0.018–0.064, tight) | 6/6 |
+| **`benign_literal`** | **+0.0023 — zero** | **+0.2218** |
+| **`benign_remap`** (mapping never taught) | **+0.0243** | **+0.4653** |
+| `concept_in_benign_ctx` | +0.0122 | +0.2604 |
+| verdict | **condition-specific** | **prompt-independent → WITHDRAWN** |
+
+**On Llama, projecting out `d_surface` leaves benign prompts untouched (+0.002) and moves only the
+doublespeak arm (+0.038).** That is what a mechanism-specific intervention is supposed to look like. On
+Qwen3 the same manipulation moved everything, including prompts containing no harmful request.
+
+### Two things worth stating plainly
+1. **The effect got smaller and more credible at the same time.** At 192 tokens it was +0.0736 with
+   p=0.117; at 512 it is **+0.0378 with p=0.0037** — half the size, twenty times more significant, because
+   the per-domain spread collapsed (0.018–0.064 vs a much noisier 192-token estimate). Truncation was adding
+   variance, not just bias.
+2. **I spent two ticks treating the Qwen3 result as the strong replication and the Llama result as the weak
+   one.** It is the reverse: the large effect was contaminated and the small one is clean. Effect size was
+   actively misleading here, and the only thing that separated them was asking *"does it also happen where
+   there is no attack?"*
+
+### What is still required before claim 1 can be stated
+`len_Bctrl` (the projection-type control, 421/960 judged) — because a +0.038 effect that is condition-
+specific still has to beat a *random projection* of the same type. On Llama at 192 the random projection did
+nothing (−0.017, p=0.293), which is encouraging, but the 512-token version is the one that matters and it is
+not in yet.
+
+**Claim 1 currently reads:** *"On Llama, removing the concept component raises doublespeak ASR by a small
+but reliable amount (+0.038 score, p=0.0037, 6/6 domains) without affecting benign prompts (+0.002). The
+same manipulation on Qwen3 produces a much larger effect that is NOT attack-specific and is therefore not a
+replication. Pending the matched projection control."*
