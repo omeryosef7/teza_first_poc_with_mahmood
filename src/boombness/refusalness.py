@@ -43,14 +43,51 @@ from common import DATA_DIR, FailureLedger, REPO_ROOT, RunDir, ds, read_jsonl, s
 from extract_boombness import resolve_occurrences  # noqa: E402
 
 DEFAULT_BANK = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
-REFUSAL_GLOB = os.path.join(REPO_ROOT, "doublespeak_causality", "outputs", "stage_gcg_full",
-                            "refusal_direction_llama_L*.pt")
+# TWO house folders hold refusal directions and they are NOT interchangeable:
+#   doublespeak_causality/outputs/stage_gcg_full/  -> refusal_direction_llama_L{12..20}.pt   (4096-d)
+#   outputs/stage_gcg_full/                        -> refusal_direction_qwen3_L{20,25,28}.pt (5120-d)
+#                                                     refusal_direction_gemma4_L{25,31}.pt
+# Searched in order; the first root holding a match for the model family wins.
+_REFUSAL_DIRS = [
+    os.path.join(REPO_ROOT, "doublespeak_causality", "outputs", "stage_gcg_full"),
+    os.path.join(REPO_ROOT, "outputs", "stage_gcg_full"),
+    os.path.join(REPO_ROOT, "doublespeak_causality", "outputs", "refusal_qwen3"),
+]
+_REFUSAL_DIR = _REFUSAL_DIRS[0]          # kept for the llama default below
+REFUSAL_GLOB = os.path.join(_REFUSAL_DIR, "refusal_direction_llama_L*.pt")
+
+# The house refusal directions are PER MODEL and live side by side in one folder:
+#   refusal_direction_llama_L{12,14,16,18,20}.pt   (4096-d, Llama-3.1-8B)
+#   refusal_direction_qwen3_L{20,25,28}.pt         (5120-d, Qwen3-14B)
+#   refusal_direction_gemma4_L{25,31}.pt
+# The glob above was HARDCODED to llama. Nothing checked the model, so a Qwen3 run would have loaded
+# Llama's 4096-d vector into a 5120-d residual stream. Found 2026-08-18 while preparing the §14
+# second-model arms, BEFORE any such job was submitted -- so no run is affected. `model_key` selects
+# the family and `expect_dim` makes a mismatch a hard failure instead of a shape surprise.
+_MODEL_KEYS = (("llama", "llama"), ("qwen", "qwen3"), ("gemma", "gemma4"))
 
 
-def load_refusal_dirs(layers: Optional[Sequence[int]] = None) -> Dict[int, torch.Tensor]:
-    """Load the house refusal directions, keyed by block layer."""
+def refusal_glob_for(model_id: Optional[str]) -> str:
+    key = "llama"
+    if model_id:
+        low = model_id.lower()
+        for needle, k in _MODEL_KEYS:
+            if needle in low:
+                key = k
+                break
+    for root in _REFUSAL_DIRS:
+        cand = os.path.join(root, f"refusal_direction_{key}_L*.pt")
+        if glob.glob(cand):
+            return cand
+    return os.path.join(_REFUSAL_DIR, f"refusal_direction_{key}_L*.pt")
+
+
+def load_refusal_dirs(layers: Optional[Sequence[int]] = None, model_id: Optional[str] = None,
+                      expect_dim: Optional[int] = None) -> Dict[int, torch.Tensor]:
+    """Load the house refusal directions for THIS model, keyed by block layer."""
+    pattern = refusal_glob_for(model_id) if model_id else REFUSAL_GLOB
     out: Dict[int, torch.Tensor] = {}
-    for p in sorted(glob.glob(REFUSAL_GLOB)):
+    for p in sorted(glob.glob(pattern)):
         base = os.path.basename(p)
         try:
             L = int(base.split("_L")[-1].split(".")[0])
@@ -63,7 +100,17 @@ def load_refusal_dirs(layers: Optional[Sequence[int]] = None) -> Dict[int, torch
             v = v.get("direction", next(iter(v.values())))
         out[L] = v.float().reshape(-1)
     if not out:
-        raise SystemExit(f"no refusal directions matched {REFUSAL_GLOB}")
+        raise SystemExit(
+            f"no refusal directions matched {pattern} — available across "
+            f"{_REFUSAL_DIRS}: "
+            f"{sorted({os.path.basename(x) for r in _REFUSAL_DIRS for x in glob.glob(os.path.join(r, 'refusal_direction_*.pt'))})}")
+    if expect_dim is not None:
+        bad = {L: tuple(v.shape) for L, v in out.items() if v.numel() != expect_dim}
+        if bad:
+            raise SystemExit(
+                f"refusal direction dimension mismatch for model {model_id!r}: expected {expect_dim}, "
+                f"got {bad} from {pattern}. A direction fitted on a DIFFERENT model was about to be "
+                f"projected out of this one.")
     return out
 
 

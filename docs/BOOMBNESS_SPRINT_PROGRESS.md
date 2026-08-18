@@ -5786,3 +5786,45 @@ distinction is visible at the console too. Regression-tested against a real summ
 3. Everything above line `run.finish()` is durable; everything below it is not. Putting a **safety gate
    below the write** means any later crash silently skips it. The `null_frac` gate should run *before*
    `finish()`, not after — logged as an open item.
+
+### Tick 89 — queue refilled to the cap; found a model-hardcoded refusal direction BEFORE it could run
+
+Queue is now at **7/7**: four §2.6 comprehension controls (764414–764417) and three §14 Qwen3 arms
+(764433–764435).
+
+**§2.6 comprehension controls for arms D and F — the gap that mattered most.** Arms D and F carried
+`--query-kinds behavioral` only, so the sprint's strongest causal claim (arm D, +0.681 on explicit harm)
+had **no comprehension control**. Without it the alternative reading — *the intervention destroyed the
+model's grasp of the mapping and it now complies with everything* — is not excluded. Plan §2.6 makes this
+mandatory and §5.4's decision gate already flagged it as the largest hole in §5/§10/§12. Launched for
+D, Dctrl, F and Fctrl.
+
+**§14 Qwen3 arms C / D / Dctrl.** The second model had only arm B. Arm D is now the headline causal
+result and was single-model. Depth-matched: `d_surface` at **L11** (the same relative depth the existing
+Qwen3 arm B uses for Llama's L8) and refusalness at **L25**.
+
+⚠ **Depth caveat, stated up front:** Llama's refusalness L18 is 56.25% of 32 layers. Qwen3's available
+house directions are L20 (50%), L25 (62.5%), L28 (70%) of 40 — **L20 and L25 are equidistant** from the
+target. L25 was chosen; the comparison is therefore depth-approximate, exactly the ambiguity that produced
+correction C9. If arm D fails to replicate, L20 must be run before calling it a non-replication.
+
+### A model-hardcoded direction, caught before any job used it
+
+`refusalness.py` hardcoded `REFUSAL_GLOB` to `refusal_direction_llama_L*.pt`, and **nothing checked the
+model**. A Qwen3 arm C/D/F would have loaded Llama's **4096-d** direction into Qwen3's **5120-d**
+residual stream. Found while preparing these jobs — **before submission**, so no run is affected.
+
+Fixed three ways:
+1. `refusal_glob_for(model_id)` selects the family (llama / qwen3 / gemma4);
+2. the loader searches **both** house folders — the llama directions live under
+   `doublespeak_causality/outputs/stage_gcg_full/` while the qwen3 and gemma4 ones live under
+   `outputs/stage_gcg_full/`, a split nothing in the code knew about;
+3. `expect_dim` makes a width mismatch a **hard failure**, and `score_behavior` passes the model's own
+   `hidden_size`.
+
+Verified: llama → L{12,14,16,18,20} @ 4096, qwen3 → L{20,25,28} @ 5120, gemma4 → L{25,31} @ 2560, and
+the guard fires when a 5120-d direction is requested with `expect_dim=4096`.
+
+**The error message found the bug.** The first version failed with "no directions matched
+…qwen3_L*.pt" *and listed what was actually available* — which is what revealed the two-folder split. A
+bare "file not found" would have sent me looking in the wrong place.

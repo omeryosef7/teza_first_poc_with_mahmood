@@ -109,7 +109,10 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # existing "produced no hooks" guard fires.
     if name == "refusalness":
         import refusalness as _rf
-        rdirs = _rf.load_refusal_dirs(sorted(set(band)))
+        # pass the model so the per-model direction file is chosen, and assert the width
+        _hd = int(getattr(lm.model.config, "hidden_size", 0)) or None
+        rdirs = _rf.load_refusal_dirs(sorted(set(band)), model_id=getattr(lm, "model_id", None),
+                                      expect_dim=_hd)
         if not rdirs:
             raise SystemExit(f"no refusal directions at layers {sorted(set(band))}; "
                              f"available are 12/14/16/18/20")
