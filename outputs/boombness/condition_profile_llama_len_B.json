@@ -1,0 +1,110 @@
+{
+ "label": "Llama-3.1-8B 512tok project_out d_surface vs random-projection control (report SECOND CAUSAL RESULT)",
+ "n_common": 960,
+ "dropped_unpaired": {
+  "arm_only": 0,
+  "ctrl_only": 0
+ },
+ "dropped_judge_not_ok": 0,
+ "conditions": {
+  "benign_literal": {
+   "n_pairs": 324,
+   "n_domains": 6,
+   "delta": 0.006944444444444444,
+   "se": 0.0064924950518403185,
+   "ci95_domain_clustered": [
+    -0.009745045403774931,
+    0.02363393429266382
+   ],
+   "p_cl": 0.3336887188091007,
+   "degenerate": false,
+   "degenerate_reason": null
+  },
+  "benign_remap": {
+   "n_pairs": 36,
+   "n_domains": 6,
+   "delta": 0.01041666666666667,
+   "se": 0.03030993450388222,
+   "ci95_domain_clustered": [
+    -0.06749750040833935,
+    0.08833083374167269
+   ],
+   "p_cl": 0.7450733854412455,
+   "degenerate": false,
+   "degenerate_reason": null
+  },
+  "concept_in_benign_ctx": {
+   "n_pairs": 72,
+   "n_domains": 6,
+   "delta": 0.0034722222222222216,
+   "se": 0.018954644533272474,
+   "ci95_domain_clustered": [
+    -0.04525224271595117,
+    0.05219668716039562
+   ],
+   "p_cl": 0.8618488154751502,
+   "degenerate": false,
+   "degenerate_reason": null
+  },
+  "direct_codeword": {
+   "n_pairs": 36,
+   "n_domains": 6,
+   "delta": 0.05902777777777778,
+   "se": 0.07001501712816181,
+   "ci95_domain_clustered": [
+    -0.12095155347364042,
+    0.239007109029196
+   ],
+   "p_cl": 0.4376475404144115,
+   "degenerate": false,
+   "degenerate_reason": null
+  },
+  "direct_harmful": {
+   "n_pairs": 72,
+   "n_domains": 6,
+   "delta": 0.05555555555555555,
+   "se": 0.05555555555555556,
+   "ci95_domain_clustered": [
+    -0.08725454642423972,
+    0.19836565753535082
+   ],
+   "p_cl": 0.3632174676491228,
+   "degenerate": false,
+   "degenerate_reason": null
+  },
+  "natural_doublespeak": {
+   "n_pairs": 420,
+   "n_domains": 6,
+   "delta": 0.05595238095238095,
+   "se": 0.013021981241917554,
+   "ci95_domain_clustered": [
+    0.022478312507910866,
+    0.08942644939685103
+   ],
+   "p_cl": 0.0077391845717218405,
+   "degenerate": false,
+   "degenerate_reason": null
+  }
+ },
+ "runs": {
+  "arm": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/len_B_20260818_053417_3961475",
+  "control": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/len_Bctrl_20260818_061458_3980626"
+ },
+ "estimator": "paired by prompt_id, differenced arm-control, aggregated to DOMAIN cluster means, t(G-1) on the cluster means (analyze_g8.cluster_mean_ci)",
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_condition_profile.py",
+   "--arm",
+   "outputs/boombness/judge/len_B_20260818_053417_3961475",
+   "--control",
+   "outputs/boombness/judge/len_Bctrl_20260818_061458_3980626",
+   "--label",
+   "Llama-3.1-8B 512tok project_out d_surface vs random-projection control (report SECOND CAUSAL RESULT)",
+   "--out",
+   "outputs/boombness/condition_profile_llama_len_B.json"
+  ],
+  "git_commit": "d58d26e557bfc9fceec4f0ead3d4a20e832ef1d6",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}

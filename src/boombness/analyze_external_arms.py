@@ -132,13 +132,26 @@ def arm_stats(rows: Dict[str, dict], common: List[str]) -> dict:
 
 
 def paired_delta(arm: Dict[str, dict], base: Dict[str, dict], common: List[str]) -> dict:
+    """Paired per-prompt delta, reported BOTH ways because on an imbalanced set they differ a lot.
+
+    `delta_pooled` weights every PROMPT equally; `delta_cluster_mean` weights every DOMAIN equally
+    and is the estimand the clustered interval belongs to. On ClearHarm — 127 of 179 rows in one
+    category — these come apart badly (e.g. arm C: pooled +0.240 vs cluster-mean +0.394), because
+    the five small domains carry as much weight as the large one. Reporting only the cluster mean
+    invites a reader to compare it against a pooled ASR difference and conclude the numbers do not
+    add up; reporting only the pooled one hides that the inference is clustered. Both, named.
+    """
+    diffs = {p: float(arm[p].get(SCORE) or 0.0) - float(base[p].get(SCORE) or 0.0) for p in common}
     byd = collections.defaultdict(list)
     for p in common:
-        byd[arm[p].get("domain")].append(float(arm[p].get(SCORE) or 0.0)
-                                         - float(base[p].get(SCORE) or 0.0))
+        byd[arm[p].get("domain")].append(diffs[p])
     cl = cluster_mean_ci({k: v for k, v in byd.items() if v})
-    return {"delta_score": cl["mean"], "se": cl["se"], "ci95_domain_clustered": cl["ci"],
+    return {"delta_pooled": st.mean(list(diffs.values())) if diffs else float("nan"),
+            "delta_cluster_mean": cl["mean"],
+            "se": cl["se"], "ci95_domain_clustered": cl["ci"],
             "p_cl": cl["p_vs_0"], "n_domains": cl["n_clusters"],
+            "estimand_note": ("ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to "
+                              "delta_pooled. They are different quantities on an imbalanced set."),
             "degenerate": cl.get("degenerate", False)}
 
 
@@ -293,16 +306,20 @@ def main() -> int:
         json.dump(res, f, indent=1)
 
     print(f"[ext] {a.label}  n_common={res['n_common']}")
-    print(f"{'arm':<12}{'ASR@0.5':>9}{'refusal':>9}{'Δscore':>10}{'p_cl':>9}   clustered CI on Δ")
+    print(f"{'arm':<10}{'ASR@0.5':>9}{'refusal':>9}{'Δpooled':>10}{'Δclust':>10}{'p_cl':>9}"
+          f"   clustered CI on Δclust")
     for k in ["baseline"] + list(loaded):
-        s = res["arms"][k]
+        st_ = res["arms"][k]
         d = res["paired_vs_baseline"].get(k)
         ci = (d or {}).get("ci95_domain_clustered")
-        print("%-12s%9.4f%9.4f%10s%9s   %s" % (
-            k, s["asr_at_0.5"], s["refusal"],
-            "—" if not d else "%+.4f" % d["delta_score"],
+        sig = "" if not d or d["p_cl"] is None else (
+            "  ***" if d["p_cl"] < 0.01 else "  *" if d["p_cl"] < 0.05 else "  n.s.")
+        print("%-10s%9.4f%9.4f%10s%10s%9s   %s%s" % (
+            k, st_["asr_at_0.5"], st_["refusal"],
+            "—" if not d else "%+.4f" % d["delta_pooled"],
+            "—" if not d else "%+.4f" % d["delta_cluster_mean"],
             "—" if not d or d["p_cl"] is None else "%.4f" % d["p_cl"],
-            "—" if not ci else "[%+.4f, %+.4f]" % (ci[0], ci[1])))
+            "—" if not ci else "[%+.4f, %+.4f]" % (ci[0], ci[1]), sig))
     if "super_additivity" in res:
         sa = res["super_additivity"]
         print("[ext] super-additivity %s: %+.4f  CI [%+.4f, %+.4f]  frac<=0 %.3f  -> %s"

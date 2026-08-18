@@ -744,3 +744,59 @@ not sufficient if the *synthetic* failing case is easier than the real one. The 
 identical scores; reality supplied identical generations with different scores. **Test the guard
 against the historical defect itself, not a reconstruction of it** — the artifact of the original
 failure is still on disk and is the only faithful fixture.
+
+## ★★ R-16 — ClearHarm arm B, the load-bearing row, is NOT significant under domain clustering
+
+The R-14 re-judge is complete for ClearHarm. **§7c's structure survives** — every arm moved by ≤0.03
+and the ordering is intact — but running the arms through a *committed* analyzer with the clustering
+the design requires changes the verdict on the one row that mattered most.
+
+| arm | ASR (old, empty goal) | **ASR (re-judged)** | Δ pooled | **Δ cluster-mean** | **p_cl** | domain-clustered CI |
+|---|---|---|---|---|---|---|
+| baseline | 0.1006 | **0.1061** | — | — | — | — |
+| **B** — remove `d_surface` @L8 | 0.2067 | **0.1899** | +0.0831 | **+0.0843** | **0.2102** | **[−0.067, +0.235]** ⛔ n.s. |
+| C — remove refusalness @L18 | 0.3408 | **0.3631** | +0.2402 | +0.3941 | **0.0410** | [+0.024, +0.764] ✓ |
+| D — remove both | 0.5419 | **0.5140** | +0.3911 | +0.4603 | **0.0200** | [+0.109, +0.812] ✓ |
+| Dctrl — double random | 0.1117 | **0.1061** | −0.0007 | +0.0009 | 0.530 | [−0.003, +0.004] — inert ✓ |
+
+`outputs/boombness/clearharm_decomposition_regoal.json`, produced by
+`src/boombness/analyze_external_arms.py` with full provenance — the first time these numbers have been
+regenerable at all.
+
+### It is the estimator, and the estimator was inconsistent within one table
+
+| arm | iid SEM | t (iid) | **clustered SEM** | **t (clustered, G=6)** |
+|---|---|---|---|---|
+| **B** | 0.0241 | **3.45** | 0.0587 | **1.44** |
+| C | 0.0337 | 7.13 | 0.1440 | 2.74 |
+| D | 0.0362 | 10.80 | 0.1368 | 3.36 |
+
+**The published "+0.1047 ± 0.0238" is the iid SEM** — my re-judged iid SEM is **0.0241**, matching to
+three decimals. Under domain clustering arm B's t falls from 3.45 to **1.44**.
+
+**And the same table already used clustered inference where it produced a negative answer.** §7c
+reported super-additivity with a "domain-clustered bootstrap CI [−0.1474, +0.1332] — NOT established"
+while reporting arm B with an iid interval. Clustered inference for the claim that failed, iid
+inference for the claim that passed, in one table. That is the **same asymmetric-standard defect as
+R-15**, and it is now the third instance (R-13 was the first).
+
+### What this does to the ClearHarm conclusion
+
+**Withdrawn:** "arm B is the load-bearing row … `d_surface` is causal off-bank … the bank-artifact
+explanation is excluded". **That exclusion rested entirely on arm B, and arm B is not established on
+ClearHarm.**
+
+**Still standing on ClearHarm:** removing **refusalness** (C) and removing **both** (D) raise attack
+success on an external harmful set with no doublespeak wrapper, against a control that is inert to
+within ±0.004. Those survive clustering. But neither isolates `d_surface`, so neither answers the
+bank-artifact question.
+
+**Not a null result — an underpowered one, exactly as predicted.** `external_bank.py` warned at build
+time that **127 of ClearHarm's 179 rows sit in one category**, so G=6 with one dominant cluster. The
+point estimate (+0.084) is unchanged from the original; only the honest interval is wide.
+
+**AdvBench is the test, it is judging now, and it was built for precisely this.** 495 prompts,
+**16 clusters**, largest 25.7%. If arm B clears zero there under the same clustered estimator, the
+bank-artifact explanation is excluded on a properly-powered external set. If it does not, the claim
+that `d_surface` is causal off-bank has no support and must be withdrawn outright rather than
+suspended. **This is now the single most consequential open number in the sprint.**
