@@ -44,18 +44,43 @@ COL = "comprehension_logodds"
 
 
 def t_sf(t: float, df: int) -> float:
-    """Two-sided survival for Student-t via the regularized incomplete beta (no scipy in this env)."""
-    x = df / (df + t * t)
-    return _betainc(df / 2.0, 0.5, x)
+    """Two-sided survival for Student-t. scipy-backed; the hand-rolled fallback is exact.
+
+    HISTORY (external critique 2026-08-18, finding 4). The first version was a Lentz continued
+    fraction for the regularized incomplete beta that OMITTED the symmetry transform
+    `I_x(a,b) = 1 - I_{1-x}(b,a)`, required whenever `x > (a+1)/(a+b+2)`. Since `x = df/(df+t^2)`,
+    small |t| pushes x toward 1 and out of the CF's convergence region.
+
+    The critique stated the error covers "all |t| < 1.69 at df=5". Re-derived here against
+    `scipy.stats.t`, that is the region where convergence is not *guaranteed* (t < 1.464 at df=5),
+    but with 200 Lentz iterations the CF in fact still converged to <1e-6 relative error down to
+    |t| ~= 0.08. The real damaged region is |t| <~ 0.08 (df=5); see `test_t_sf.py`. So the defect is
+    genuine and always anticonservative, but far narrower than reported -- it can only have
+    corrupted p-values that were already deep nulls. The one published casualty is
+    g9_three_predictor_lastpos.json's refusalness term (t=0.01138: published 0.7656, true 0.9914).
+
+    Fixed here by delegating to scipy, which every analysis run has (the *login* shell does not,
+    which is what motivated the hand-rolled version). The fallback below now carries the symmetry
+    transform so it is correct even without scipy.
+    """
+    try:
+        from scipy import stats as _st
+        return float(2.0 * _st.t.sf(abs(float(t)), df))
+    except ImportError:
+        x = df / (df + t * t)
+        return _betainc(df / 2.0, 0.5, x)
 
 
 def _betainc(a: float, b: float, x: float) -> float:
+    """Regularized incomplete beta I_x(a,b), WITH the symmetry transform the first version lacked."""
     if x <= 0: return 0.0
     if x >= 1: return 1.0
+    if x > (a + 1.0) / (a + b + 2.0):
+        return 1.0 - _betainc(b, a, 1.0 - x)
     lbeta = math.lgamma(a) + math.lgamma(b) - math.lgamma(a + b)
     front = math.exp(math.log(x) * a + math.log(1 - x) * b - lbeta) / a
     f, c, d = 1.0, 1.0, 0.0
-    for i in range(200):
+    for i in range(400):
         m = i // 2
         if i == 0: num = 1.0
         elif i % 2 == 0: num = (m * (b - m) * x) / ((a + 2 * m - 1) * (a + 2 * m))
@@ -64,27 +89,30 @@ def _betainc(a: float, b: float, x: float) -> float:
         d = 1e-30 if abs(d) < 1e-30 else 1.0 / d
         c = 1.0 + num / (1e-30 if abs(c) < 1e-30 else c)
         f *= c * d
-        if abs(1 - c * d) < 1e-10: break
+        if abs(1 - c * d) < 1e-12: break
     return front * (f - 1)
 
 
 def t_crit(df: int, alpha: float = 0.05) -> float:
-    """Two-sided t critical value, obtained by inverting `t_sf` by bisection.
+    """Two-sided t critical value. scipy-backed, bisection fallback.
 
     The first version hardcoded `2.571 if G==6 else 2.776 if G==5 else 2.0`. The 2.0 fallback is the
-    NORMAL value and is wrong for every other df -- at df=3 the truth is 3.182 and at df=2 it is
-    4.303, so a 3- or 4-cluster CI would have come out less than half its correct width. No number in
-    this sprint is affected (G=6 throughout), but it is the same defect audit 10 found in
-    analyze_g9.py: a normal-shaped reference standing in for a small-df t. Computed now, not tabled.
+    NORMAL value and is wrong for every other df -- at df=3 the truth is 3.182. No number in this
+    sprint is affected (G=6 throughout), but it is the same defect class: a normal-shaped reference
+    standing in for a small-df t.
     """
-    lo, hi = 0.0, 200.0
-    for _ in range(200):
-        mid = (lo + hi) / 2
-        if t_sf(mid, df) > alpha:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
+    try:
+        from scipy import stats as _st
+        return float(_st.t.ppf(1.0 - alpha / 2.0, df))
+    except ImportError:
+        lo, hi = 0.0, 200.0
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            if t_sf(mid, df) > alpha:
+                lo = mid
+            else:
+                hi = mid
+        return (lo + hi) / 2
 
 
 def cluster_mean_ci(vals_by_cluster: Dict[str, List[float]], alpha=0.05, n_effective=None):
