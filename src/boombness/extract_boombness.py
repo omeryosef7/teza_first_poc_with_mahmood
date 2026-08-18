@@ -60,7 +60,8 @@ CORE_2X2_CELLS = ("A", "B", "C", "E")
 ENABLE_THINKING = None   # None = model default
 
 
-def resolve_occurrences(dc, tok, row: Dict) -> Tuple[str, List[int], List[int], List[int], List[int]]:
+def resolve_occurrences(dc, tok, row: Dict, enable_thinking="__module__"
+                        ) -> Tuple[str, List[int], List[int], List[int], List[int]]:
     """Return (templated_text, input_ids, last_idx_per_occurrence, following_idx, n_subtokens).
 
     `n_subtokens` per occurrence is returned and recorded because the tokenization audit
@@ -72,8 +73,19 @@ def resolve_occurrences(dc, tok, row: Dict) -> Tuple[str, List[int], List[int], 
     Raises ValueError with a specific reason if the occurrences cannot be resolved or do not
     match the character-level count the generator recorded.
     """
+    # AUDIT 11 (A11-9): this templated with the MODULE-LEVEL ENABLE_THINKING, which only
+    # extract_boombness's own main() ever sets. score_behavior.py has its OWN global and calls this
+    # as a pre-flight gate, so on a `--enable-thinking false` run the gate validated a thinking-ON
+    # template while the readout and dc.generate used thinking-OFF. Sixth instance of the
+    # one-of-two-paths shape. Callers now pass the mode explicitly.
+    #
+    # VERIFIED INERT for the three committed thinking-off runs (q3_projout, q3_projctrl,
+    # qwen3nt_base): all 960/960 succeeded with ZERO resolve failures, because enable_thinking
+    # injects `<think></think>` into the ASSISTANT prefix, after the user content where the target
+    # occurrences live. No reported number changes; the guard now checks what it claims to.
+    _et = ENABLE_THINKING if enable_thinking == "__module__" else enable_thinking
     templated = dc.apply_template(tok, row["full_prompt"],
-                                  enable_thinking=ENABLE_THINKING)
+                                  enable_thinking=_et)
     ids = tok(templated, add_special_tokens=False)["input_ids"]
     hit = dc.find_word_occurrences_in_text(tok, templated, row["target_surface"],
                                            add_special_tokens=False)

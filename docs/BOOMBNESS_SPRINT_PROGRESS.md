@@ -5562,3 +5562,34 @@ This is the same dissociation the sprint keeps finding — the representation mo
 not — and it is the **fifth** time the deciding check was *"does the effect appear where the phenomenon
 under study is absent?"* rather than a bigger n. It also retires the §11 hypothesis I recorded earlier:
 prediction (b) (user-like framing raises both) is refuted on both halves.
+
+### Tick 87 — three more audit-11 findings closed; one was real-but-inert, verified rather than argued
+
+**A11-9 — the thinking-mode mismatch (the SIXTH one-of-two-paths bug).** `resolve_occurrences` lives in
+`extract_boombness.py` and templated with **that module's** `ENABLE_THINKING`, which only
+`extract_boombness.main()` ever sets. `score_behavior.py` keeps its **own** global and calls
+`resolve_occurrences` as a pre-flight gate, so on a `--enable-thinking false` run the gate validated a
+thinking-**ON** template while the readout (line 319) and `dc.generate` (line 374) used thinking-**OFF**.
+
+⚠ **Verified INERT, empirically, not by argument.** All three committed thinking-off runs
+(`q3_projout`, `q3_projctrl`, `qwen3nt_base`) show **960/960 succeeded with ZERO resolve failures**,
+because `enable_thinking` injects `<think></think>` into the *assistant* prefix — after the user content
+where the target occurrences live — so occurrence resolution is unchanged. **No reported number moves.**
+The auditor rated it result-affecting; the measured answer is that it is not. Fixed anyway: the mode is
+now an explicit parameter and the caller passes its own, so the guard checks what it claims to. (Also
+note the return value was always discarded — this call is a gate, not a readout.)
+
+**A11-10 — G1's family sample was the alphabetical head of a domain-prefixed list.** `family_id` is
+prefixed by domain and the list is sorted, so `[:n_families]` selected **whole domains in alphabetical
+order**: the committed pilot's 8 families come from **2 of 6 domains**, which is why its bootstrap treats
+2 domains as 8 independent units. Replaced with a **round-robin over domains**, and the run now prints
+both the stratified domain count and what head-truncation would have given, so the difference is visible
+rather than implicit.
+
+**A11-11 — the truncation was never recorded.** A run over 8 of 40 eligible families and one over 8 of 8
+were indistinguishable on disk. `summary.json` now carries `family_accounting` (`n_eligible`, `n_used`,
+`n_domains` per pair) and `scopes_requested` is renamed so it can no longer be read as "scopes that ran".
+
+**Rerun launched (764238):** the G1 pilot with domain-stratified sampling and **24 families (4 per
+domain across all 6)** instead of 8 across 2. This is the run that replaces the "+57% to +105%" interval;
+that figure stays flagged until it lands.

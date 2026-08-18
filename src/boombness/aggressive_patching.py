@@ -421,10 +421,34 @@ def main() -> int:
     print(f"[patch] model={lm.model_id} readout_layers={readout_layers} windows={len(windows)}")
 
     total = 0
+    family_accounting = []          # A11-11: the truncation was never recorded anywhere
     for pair_name, (donor_cond, recip_cond) in PAIRS.items():
-        fams = [f for f, d in sorted(by_family.items())
-                if donor_cond in d and recip_cond in d][:args.n_families]
-        print(f"[patch] pair={pair_name} families={len(fams)}")
+        eligible = [f for f, d in sorted(by_family.items())
+                    if donor_cond in d and recip_cond in d]
+        # AUDIT 11 (A11-10): this was `eligible[:n_families]`. `family_id` is PREFIXED BY DOMAIN and
+        # the list is sorted, so a plain head-truncation selects whole domains in alphabetical order
+        # -- the committed G1 pilot's 8 families came from 2 of 6 domains, and the reported interval
+        # ("+57% to +105%") therefore treats 2 domains as 8 independent units. Round-robin over
+        # domains instead, so a truncated sample spans the domain space.
+        by_dom = collections.defaultdict(list)
+        for f in eligible:
+            by_dom[by_family[f][recip_cond].get("domain")].append(f)
+        fams, doms = [], sorted(by_dom, key=str)
+        i = 0
+        while len(fams) < min(args.n_families, len(eligible)):
+            d = doms[i % len(doms)]
+            if by_dom[d]:
+                fams.append(by_dom[d].pop(0))
+            elif all(not by_dom[x] for x in doms):
+                break
+            i += 1
+        n_dom_used = len({by_family[f][recip_cond].get("domain") for f in fams})
+        print(f"[patch] pair={pair_name} families={len(fams)} of {len(eligible)} eligible, "
+              f"spanning {n_dom_used} domain(s) (round-robin; head-truncation gave "
+              f"{len({by_family[f][recip_cond].get('domain') for f in eligible[:args.n_families]})})")
+        ledger_note = {"pair": pair_name, "n_eligible": len(eligible), "n_used": len(fams),
+                       "n_domains": n_dom_used}
+        family_accounting.append(ledger_note)
         for fam in fams:
             recip = by_family[fam][recip_cond]
             donor = by_family[fam][donor_cond]
@@ -462,7 +486,8 @@ def main() -> int:
             print(f"  {fam[:60]} -> {total} rows")
 
     run.finish(summary={"model": lm.model_id, "n_rows": total, "pairs": list(PAIRS),
-                        "scopes": args.scopes.split(","), "alphas": alphas,
+                        "scopes_requested": args.scopes.split(","),
+                "family_accounting": family_accounting, "alphas": alphas,
                         "readout_layers": readout_layers, "windows": sorted(windows),
                         "query_kind": args.query_kind}, ledger=ledger)
     print(f"[patch] {total} rows -> {run.path}")

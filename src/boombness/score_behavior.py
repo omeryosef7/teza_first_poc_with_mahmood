@@ -328,7 +328,8 @@ def main() -> int:
         # cannot be resolved is one whose bank metadata disagrees with the tokenizer, and it
         # must not be silently scored (plan §2.2).
         try:
-            resolve_occurrences(dc, lm.tokenizer, row)
+            # pass OUR thinking mode; the callee's module global is a different variable (A11-9)
+            resolve_occurrences(dc, lm.tokenizer, row, enable_thinking=ENABLE_THINKING)
         except ValueError as e:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
