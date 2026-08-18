@@ -22,10 +22,10 @@ number does not go in.
 |---|---|---|---|
 | — | Phase 0 orient + this log | **DONE** | this file |
 | — | Phase 1.1 `t_sf` | **DONE — verified** | see defect T4 |
-| — | Phase 1.2 comprehension readout | **IN PROGRESS** | blocks every "non-destructive" claim |
-| — | Phase 1.3 `analyze_steering` | NOT STARTED | |
-| — | Phase 1.4 `surgical_knockout` dst | NOT STARTED | G3 not established until done |
-| — | Phase 1.5 Tier-2 remainder | NOT STARTED | |
+| — | Phase 1.2 comprehension readout | **FIXED, smoke running** | jobs 764702/764703 measure prefix vs no-prefix |
+| — | Phase 1.3 `analyze_steering` | **DONE — artifact replaced** | no G4 conclusion changes; intervals were 1.03–1.69× too narrow |
+| — | Phase 1.4 `surgical_knockout` dst | **code fixed, UNVERIFIED; GPU re-run pending** | G3 not established until re-run |
+| — | Phase 1.5 Tier-2 remainder | **PARTIAL** | T5 done for g64 only; T6/T9/T10 landed unverified; T8 + silent-failures NOT STARTED |
 | §15 | missing report sections 2/6/7/14/15/16 | NOT STARTED | item 7 (metric comparison) is the substantive one |
 | §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
 | §8/§9 | 9 of 12 named plots | NOT STARTED | |
@@ -50,16 +50,16 @@ recomputed and diffed). `refuted` means I checked and the finding does not hold 
 
 | id | tier | file:line | finding | status | note |
 |---|---|---|---|---|---|
-| T1 | 1 | `score_behavior.py:308` | comprehension readout scores leading-space tokens the model never emits | **open** | **scope is wider than the critique states — see C-1 below** |
-| T2 | 1 | `analyze_steering.py:151` | unconditional `KeyError: 'wilson95'`; committed artifact is pre-fix | open | |
-| T3 | 1 | `surgical_knockout.py:271` | edge ranking still at the retracted destination token | open | G3 headline not established |
+| T1 | 1 | `score_behavior.py:308` | comprehension readout scores leading-space tokens the model never emits | **fixed — smoke running** | scope wider than reported (C-1). Fix = forced answer position + fatal `--min-option-mass` gate + per-row `option_mass` |
+| T2 | 1 | `analyze_steering.py:151` | unconditional `KeyError`; committed artifact is pre-fix | **VERIFIED FIXED** | re-run: all point estimates bit-identical, intervals 1.03–1.69× wider. `require_done` now covers the arms too |
+| T3 | 1 | `surgical_knockout.py:271` | edge ranking still at the retracted destination token | **code fixed, unverified** | needs a GPU re-run before G3 is established |
 | T4 | 2 | `analyze_g8.py:52` | `t_sf` continued fraction omits the symmetry transform | **VERIFIED FIXED** | **partly refuted as stated — see C-2** |
-| T5 | 2 | `analyze_g64/g2/g9` | permutation p tests a different estimand than the ρ beside it | open | |
-| T6 | 2 | `g2` / `probes:393` / `reanalyze_corrected:185` | uncorrected layer selection; Holm family is 10 not 32 | open | |
+| T5 | 2 | `analyze_g64/g2/g9` | permutation p tests a different estimand than the ρ beside it | **PARTIAL** | `analyze_g64` done + re-run (135/135 pooled ρ bit-identical). `analyze_g2:322` and `analyze_g9:376` still carry the unlabelled pairing |
+| T6 | 2 | `g2` / `probes:393` / `reanalyze_corrected:185` | uncorrected layer selection; Holm family is 10 not 32 | **code fixed, unverified** | agent concluded the family IS 32 and the code was wrong; needs my re-check |
 | T7 | 2 | `surgical_knockout.py:239,225` | cross-fitting abandoned for ~54% of rows; family head-truncation | open | |
 | T8 | 2 | `extract_boombness.py:484` + 3 | `--fit-dir` consumers never validate `payload["meta"]` | open | latent: all 63 runs currently match |
-| T9 | 2 | `aggressive_patching.py:461`, `probes.py:236` | single-draw controls presented as bands | open | |
-| T10 | 2 | `aggressive_patching.py:188` | readout layers overlap patched windows → tautological | open | `semantic_logodds` unaffected |
+| T9 | 2 | `aggressive_patching.py:461`, `probes.py:236` | single-draw controls presented as bands | **code fixed, unverified** | re-runs pending (both need GPU) |
+| T10 | 2 | `aggressive_patching.py:188` | readout layers overlap patched windows → tautological | **code fixed, unverified** | `semantic_logodds` unaffected, so G1 headline does not depend on it |
 | T11–T17 | 3 | reports | report states its conclusion both ways; `§0.3` dangling; G1 headline superseded | open | Phase 4 |
 | T18+ | 4 | various | plan sections not done or not reported | open | Phases 2–3 |
 
@@ -105,9 +105,35 @@ occurrence might not have been harmless — but "every clustered p in the sprint
 the artifacts show, and the recommended-order item 1 rationale ("it touches every clustered p") is
 overstated.
 
+**C-3 — §6.4 could not regenerate itself, and the critique missed it here.** The critique names the
+"no script regenerates this" provenance failure for §11's role statistics. `g64_summary.json` had the
+same defect and was not flagged: it recorded **no input paths and no argv**, so reproducing §6.4 meant
+guessing among 16 extract runs, 20+ judge runs and 2 probe-score runs. Reconstructed inputs reproduce
+`coverage 270/270/72/72` exactly, which confirms the reconstruction; `analyze_g64.py` now records
+argv, resolved input paths, git commit and dirty flag.
+
+## Unverified-fix register
+
+Seven of nine workflow agents were killed by a session limit mid-task. Four left **complete, parsing,
+test-backed edits but never reported and were never adversarially verified** (their verifier stage
+died too). 50 tests pass across the new files, which is evidence but not verification — the tests were
+written by the same agent that wrote the fix.
+
+| file | tests | status |
+|---|---|---|
+| `analyze_steering.py` | `test_analyze_steering.py` | **verified by me** — re-ran, diffed every field |
+| `reanalyze_corrected.py` | `test_holm.py` | agent reported; **needs my re-check of the m=32 argument** |
+| `probes.py` | `test_probes_selection.py` | **unverified** |
+| `aggressive_patching.py` | `test_patching_readout.py` | **unverified** |
+| `surgical_knockout.py` | `test_surgical_knockout.py` | **unverified** |
+| `analyze_g64.py` | — | **verified by me** — re-ran, diffed all 135 rows |
+
+Never started: the silent-failure group (`extract_boombness`, `judge_boombness`, `coherence_gate`,
+`common`, `prompt_families`) and the `analyze_g2` / `analyze_g9` half of T5.
+
 ## Retraction / correction log (this session)
 
-*(none yet — C-1 and C-2 above are corrections to the critique, not to the sprint's own claims)*
+*(none yet — C-1/C-2/C-3 are corrections to the critique, not to the sprint's own claims)*
 
 ## Tick log
 
@@ -116,3 +142,7 @@ overstated.
 | 1 | 2026-08-18 | Phase 0: read plan + critique; resolved analysis interpreter; opened this log | — |
 | 2 | 2026-08-18 | Phase 1.1: `t_sf`/`_betainc`/`t_crit` → scipy-backed, symmetry transform added to fallback; `tests/test_boombness_stats.py` (4 tests, each fails pre-fix code) | 1 of 726 artifacts corrupted; no conclusion changes |
 | 3 | 2026-08-18 | measured the option-pair mass for **both** readouts on the committed baseline | T1 is wider than reported: `semantic` is 5.6e-06 median (C-1) |
+| 4 | 2026-08-18 | fanned out 9 agents over the disjoint Tier-2 files | **7 killed by a session limit**; 2 completed; 4 left unreported but test-backed edits (see register above) |
+| 5 | 2026-08-18 | Phase 1.2: forced answer position, per-row `option_mass`, fatal `--min-option-mass`, `else` branch on the query-kind dispatch, `semantic_forced_choice` wired in | smoke 764702 (prefix) / 764703 (no prefix) submitted |
+| 6 | 2026-08-18 | Phase 1.3: verified + re-ran `analyze_steering`, replaced the committed artifact | every estimate bit-identical; intervals 1.03–1.69× too narrow; commit `accfa714` had never executed |
+| 7 | 2026-08-18 | re-ran `analyze_g64` after the T5 rename; added provenance | 135/135 pooled ρ bit-identical; coverage reproduces 270/270/72/72 (C-3) |
