@@ -5716,3 +5716,39 @@ the *magnitude* claim from the pilot does not.
 **Known Issue #7 ("G1 is a pilot, n=8 from 2 domains, headline is arm-selected") is now partly retired:**
 the domain problem is fixed and the arm replicates. What remains is that this is still one arm of many,
 and the estimate shrank on replication — which is the honest description of a selected effect.
+
+## ⚠ PROCESS FINDING — the commit that ADDED a guard is the commit that BROKE the script
+
+Traced after the G1 rerun. `analyze_g1_g3.py` crashed on **every** invocation
+(`AttributeError: 'Namespace' object has no attribute 'g1'`). `git log -L` on that line pins the origin
+exactly:
+
+| when | commit | what |
+|---|---|---|
+| 2026-08-17 **04:33** | 66225405 | `g1_g3_analysis.json` last written — by a working version |
+| 2026-08-17 **19:04** | **b093e50d** | *"sanity sweep: add require_done across all analyzers, **fix three unsafe guards**"* — **introduced the crash** |
+| 2026-08-18 ~13:00 | (audit 11 fix) | crash found by an independent audit and fixed |
+
+The commit that added `require_done` to this analyzer **read `args.g1` where argparse defines
+`args.g1_run`**, so from that moment the script could not start. Three consequences, all of one shape:
+
+1. **The guard never executed once** — it was added and immediately made unreachable.
+2. **The script was dead for ~19 hours** and nothing could regenerate or re-verify the G1 numbers.
+3. The commit message claims to *fix three unsafe guards* while creating a fourth failure.
+
+The published G1 figures are **not invalid** — they predate the break by 14½ hours and came from a
+working version. But for 19 hours the repo contained an analyzer that looked hardened and could not run.
+
+**Rule, added to the working practice:** *a guard added without re-running the script it guards is not a
+guard.* Every future commit that adds a check must execute the script once, on real inputs, in the same
+commit. This is the fifth dead-guard instance in the sprint and the first where the guard did not merely
+fail to fire — it **prevented the script from running at all**, which is strictly worse than having no
+guard, because the repo reads as more careful than it is.
+
+### Quantifying A11-12's clustering fix
+Storing both intervals side by side, across 26 `demos_only` arms of the stratified run:
+**the family-level bootstrap understated the interval by a median 1.69×** (range 1.14–2.01×). So the
+"+57% to +105%" style intervals in the pilot were roughly 40% narrower than the domain-clustered truth.
+Both are now persisted (`frac_ci95_paired_boot` = domain-clustered and citable;
+`frac_ci95_family_level_UNDERSTATES` beside it) with `boot_width_ratio_domain_over_family`, so the fix is
+auditable rather than silently applied.
