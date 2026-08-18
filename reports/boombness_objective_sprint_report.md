@@ -892,15 +892,31 @@ show**, which is why that one was retracted and this one was not.
 Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
 both models** — and mirror-image condition profiles:
 
-| | Llama-3.1-8B | Qwen3-14B |
+| condition | Llama-3.1-8B | Qwen3-14B |
 |---|---|---|
-| harmful conditions | **+0.056 / +0.056 / +0.059** | +0.111 (n.s.) / +0.010 (n.s.) |
-| benign conditions | **+0.004 / +0.010 / +0.004** | **+0.224 / +0.441 / +0.245** |
+| `natural_doublespeak` (attack) | +0.056 | **+0.339** |
+| `direct_harmful` | +0.056 | +0.111 (n.s.) |
+| `direct_codeword` | +0.059 | +0.010 (n.s.) |
+| `benign_literal` | +0.004 | **+0.224** |
+| `concept_in_benign_ctx` | +0.010 | **+0.245** |
+| `benign_remap` | +0.004 | **+0.441** |
 
-On Llama the effect tracks the **presence** of an attack; on Qwen3 it tracks the **absence** of one. The
-Qwen3 effect is real and `d_surface`-specific (its random-projection control is inert, −0.004, p=0.77) but
-it raises judged harmfulness on prompts containing **no attack at all**. **This result is therefore
-single-model.**
+⛔ **This table previously showed only TWO Qwen3 values in a "harmful conditions" row against THREE
+Llama values, silently omitting `natural_doublespeak = +0.339` — the LARGEST Qwen3 effect of all.**
+Found 2026-08-18 by an independent audit and verified against the judge artifacts. Every condition is
+now listed on its own row so a column cannot hide one.
+
+**The omission inverted the conclusion.** With `natural_doublespeak` restored, Qwen3 is elevated on
+**five of six** conditions, attack and benign alike — this is a **broad elevation of judged
+harmfulness**, not a profile that "tracks the absence of an attack" as the previous text claimed.
+The only near-null is `direct_codeword` (+0.010). The contrast with Llama still stands and is
+if anything sharper: on Llama the effect is confined to harmful conditions (+0.056 vs +0.004 benign);
+on Qwen3 it is everywhere, including on prompts containing no attack. **The result remains
+single-model**, and for the corrected reason: Qwen3's projection does not isolate an attack-related
+quantity at all.
+
+The Qwen3 effect is real and `d_surface`-specific (its random-projection control is inert, −0.004,
+p=0.77), but it raises judged harmfulness nearly everywhere.
 
 ### Why the small result outlived the large one
 | | arm F interaction | this result |

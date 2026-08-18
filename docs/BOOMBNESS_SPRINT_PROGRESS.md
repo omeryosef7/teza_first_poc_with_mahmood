@@ -5638,3 +5638,47 @@ compliance**, and which sign opens the gate depends on whether the harm is *stat
 Every one raises it. The only arm that lowers ASR is E (add Boombness, −0.155), and it does so by driving
 refusal from 0.057 to 0.676 — refusal suppression running backwards, not the removal of a harm
 representation.
+
+## ⛔ CORRECTION C14 — the Qwen3 non-replication table hid its own largest number, and that inverted the conclusion
+
+Audit-11 finding, verified against the judge artifacts. The comparison table in **both reports** read:
+
+| | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| harmful conditions | +0.056 / +0.056 / +0.059 | +0.111 (n.s.) / **+0.010 (n.s.)** |
+
+**Three values in the Llama column, two in the Qwen3 column.** The missing one is
+`natural_doublespeak = +0.339` — **the largest Qwen3 effect of any condition**, dropped from the very
+row where it belonged. Recomputed from `q3_projout` vs `q3_projctrl` on common prompts:
+
+| condition | Llama | Qwen3 |
+|---|---|---|
+| `natural_doublespeak` (attack) | +0.056 | **+0.339** |
+| `direct_harmful` | +0.056 | +0.111 |
+| `direct_codeword` | +0.059 | +0.010 |
+| `benign_literal` | +0.004 | +0.224 |
+| `concept_in_benign_ctx` | +0.010 | +0.245 |
+| `benign_remap` | +0.004 | **+0.441** |
+
+**The omission inverted the stated conclusion.** The text claimed "on Qwen3 it tracks the **absence** of
+an attack". With the missing cell restored, Qwen3 is elevated on **five of six** conditions — attack and
+benign alike — so it is a **broad elevation of judged harmfulness**, not absence-tracking. The only
+near-null is `direct_codeword`.
+
+The Llama/Qwen3 contrast survives and is sharper: on Llama the effect is confined to harmful conditions
+(+0.056 vs +0.004 benign); on Qwen3 it is everywhere. The result stays **single-model**, for the
+corrected reason — Qwen3's projection isolates no attack-related quantity at all.
+
+**Both reports now list every condition on its own row**, so a column can no longer hide one. That is the
+structural fix: the defect was possible only because two counts were compressed into one cell.
+
+### Tick 88 — also fixed A11-12: G1's bootstrap resampled families when the cluster is the domain
+
+`_paired_boot_frac` drew FAMILIES with replacement and merely *reported* `n_domains` alongside. Families
+in a domain share a stem, a demo pool and a target, so the old pilot's interval treated **2 domains as 8
+independent units**. Now resamples **domains** (taking each drawn domain's families wholesale) and
+returns BOTH intervals — `ci` (clustered, citable) and `ci_family_level_UNDERSTATES` — plus their width
+ratio, so the difference the fix makes is visible rather than silently swapped in.
+
+The stratified rerun (`g1strat`, 764238) is analysed with this: `family_accounting` confirms
+**24 families / 24 eligible / 6 domains** per pair, against the pilot's 8 across 2.

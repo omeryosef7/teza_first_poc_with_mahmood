@@ -45,12 +45,18 @@ def mean_sem(xs: Sequence[float]):
 
 def _paired_boot_frac(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20000,
                       seed: int = 20260817) -> Dict:
-    """Percentile CI for frac_of_span, resampling FAMILIES with replacement.
+    """Percentile CI for frac_of_span. Resamples the CLUSTER — the domain — not the family.
 
-    Preserves the within-family pairing of (baseline, ceiling, arm) that the delta method throws
-    away. Also reports how many DOMAINS the families came from — the G1 pilot's 8 families are
-    drawn from only 2, so "n=8" overstates the number of independent units and no interval here
-    should be read as if it had 8.
+    Preserves the within-family pairing of (baseline, ceiling, arm) that the delta method throws away.
+
+    AUDIT 11 (A11-12): this originally resampled FAMILIES, and merely *reported* n_domains alongside.
+    Families within a domain share a stem, a demo pool and a target, so a family-level bootstrap on
+    the old pilot treated 2 domains as 8 independent units and the published "+57% to +105%" was not
+    an 8-unit interval. The sprint's own standard elsewhere (analyze_g2, analyze_g8, analyze_g9,
+    reanalyze_corrected, analyze_position) is to cluster on the domain, so this now does too:
+    resample DOMAINS with replacement, taking each drawn domain's families wholesale. Both intervals
+    are returned — `ci` (clustered, citable) and `ci_family_level_UNDERSTATES` — so the difference the
+    fix makes is visible rather than silently swapped in.
     """
     import random as _r
     fam = {}
@@ -71,6 +77,25 @@ def _paired_boot_frac(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20
     if len(fams) < 3:
         return {"ci": [float("nan")] * 2, "n_families": len(fams), "n_domains": ndom}
     rng = _r.Random(seed)
+    by_dom: Dict[object, List[Dict]] = {}
+    for v in fams:
+        by_dom.setdefault(v.get("dom"), []).append(v)
+    dom_keys = sorted(by_dom, key=str)
+
+    def _frac(sample):
+        b = sum(x["b"] for x in sample) / len(sample)
+        c = sum(x["c"] for x in sample) / len(sample)
+        a = sum(x["a"] for x in sample) / len(sample)
+        return (a - b) / (c - b) if abs(c - b) > 1e-9 else None
+
+    out_dom = []
+    for _ in range(n_boot):
+        drawn = []
+        for _ in range(len(dom_keys)):
+            drawn.extend(by_dom[dom_keys[rng.randrange(len(dom_keys))]])
+        v = _frac(drawn)
+        if v is not None:
+            out_dom.append(v)
     out = []
     for _ in range(n_boot):
         s = [fams[rng.randrange(len(fams))] for _ in range(len(fams))]
@@ -79,11 +104,19 @@ def _paired_boot_frac(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20
         a = sum(x["a"] for x in s) / len(s)
         if abs(c - b) > 1e-9:
             out.append((a - b) / (c - b))
-    if len(out) < 100:
+    if len(out) < 100 or len(out_dom) < 100:
         return {"ci": [float("nan")] * 2, "n_families": len(fams), "n_domains": ndom}
     out.sort()
-    return {"ci": [out[int(0.025 * len(out))], out[int(0.975 * len(out))]],
-            "n_families": len(fams), "n_domains": ndom}
+    out_dom.sort()
+    fam_ci = [out[int(0.025 * len(out))], out[int(0.975 * len(out))]]
+    dom_ci = [out_dom[int(0.025 * len(out_dom))], out_dom[int(0.975 * len(out_dom))]]
+    return {"ci": dom_ci,                      # citable: the cluster is the domain
+            "ci_family_level_UNDERSTATES": fam_ci,
+            "width_ratio_domain_over_family": (
+                (dom_ci[1] - dom_ci[0]) / (fam_ci[1] - fam_ci[0])
+                if abs(fam_ci[1] - fam_ci[0]) > 1e-12 else float("nan")),
+            "n_families": len(fams), "n_domains": ndom,
+            "bootstrap_unit": "domain (families drawn wholesale with their domain)"}
 
 
 def g1(run: str, readout: str = "semantic_logodds") -> Dict:
