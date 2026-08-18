@@ -4625,3 +4625,41 @@ matched pair. If arm B's advantage over its projection control clears at matched
 if not, it is a genuine null and I will report it as one.
 
 `q3_projout` (the Qwen3 replication) is 619/960 judged.
+
+## ★★ §0.3 REPLICATES ON QWEN3 — and it is FAR stronger there than on Llama
+
+`project_out d_surface` at **L11 (27.5% depth ≈ Llama's L8 at 25%)**, thinking-off, gate-passed
+(uniq 0.705, trigram 0.008, trunc 0.49), ledger 960/960/0, n=420:
+
+| model | baseline ASR | arm B ASR | Δ score | t_cl | p_cl | domains positive |
+|---|---|---|---|---|---|---|
+| Llama-3.1-8B | 0.2185 | 0.3000 | +0.0736 | +1.89 | 0.117 | — |
+| **Qwen3-14B** | **0.1595** | **0.5262** | **+0.3354** | **+10.06** | **0.0002** | **6/6** |
+
+Per-domain Δ on Qwen3: +0.238, +0.275, +0.288, +0.378, +0.380, +0.454 — **every domain positive**, none
+near zero. Refusal is essentially unchanged (0.0167 → 0.0095), so this is not a refusal effect.
+
+**Removing the concept component more than TRIPLES attack success on Qwen3** (0.16 → 0.53), where on Llama
+the same manipulation produced a non-significant +0.07.
+
+### What this does to claim 1
+The prediction was recorded before the run: *"if removing the concept component genuinely reduces
+detectability, Qwen3's arm B should also show higher ASR; if lower or nothing, the sign is Llama-specific."*
+**The direction replicated, and far more strongly than the original.**
+
+This is the reverse of the G2 situation — there the correlation looked identical across models and fell apart
+on inspection; here the *intervention* is weak on one model and overwhelming on the other, in the same
+direction, in every domain. A single-model null is a much weaker basis for withdrawal than a single-model
+positive is for assertion, so **claim 1 is no longer a null** — it is a **model-dependent effect** whose
+Llama estimate is the weak one.
+
+### ⚠ The control it now urgently needs
+Qwen3 has **no projection control yet** — the exact gap that made claim 1 unreportable on Llama in the first
+place. `q3_projctrl` (`random:project_out:11-11:1.0`) is **launched**. On Llama the random projection did
+nothing (−0.017, p=0.293); if Qwen3's behaves the same, this becomes the sprint's second fully-controlled
+causal result. If instead a random projection at L11 also triples Qwen3's ASR, then Qwen3 is simply fragile
+to projection at that layer and the claim collapses — which is a real possibility given how large +0.335 is.
+
+I am not writing this into a report until that control lands.
+
+Also running: `len_B` / `len_Bctrl` (332/365 of 960), the Llama 512-token matched pair.
