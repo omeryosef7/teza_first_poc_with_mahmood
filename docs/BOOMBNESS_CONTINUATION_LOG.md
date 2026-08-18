@@ -216,15 +216,68 @@ written by the same agent that wrote the fix.
 
 | file | tests | status |
 |---|---|---|
-| `analyze_steering.py` | `test_analyze_steering.py` | **verified by me** — re-ran, diffed every field |
-| `reanalyze_corrected.py` | `test_holm.py` | **verified by me** — re-ran both family rules, artifact committed (C-4) |
-| `probes.py` | `test_probes_selection.py` | **unverified** |
-| `aggressive_patching.py` | `test_patching_readout.py` | **unverified** |
-| `surgical_knockout.py` | `test_surgical_knockout.py` | **unverified** |
-| `analyze_g64.py` | — | **verified by me** — re-ran, diffed all 135 rows |
+| `analyze_steering.py` | `test_analyze_steering.py` | **verified** — re-ran, diffed every field |
+| `reanalyze_corrected.py` | `test_holm.py` | **verified** — both family rules, artifact committed (C-4) |
+| `probes.py` | `test_probes_selection.py` | **VERIFIED — verdict INCOMPLETE, further defects fixed** |
+| `aggressive_patching.py` | `test_patching_readout.py` | **VERIFIED — verdict INCOMPLETE, further defects fixed** |
+| `surgical_knockout.py` | `test_surgical_knockout.py` | **VERIFIED — verdict INCOMPLETE, further defects fixed** |
+| `analyze_g64.py` | — | **verified** — re-ran, diffed all 135 rows |
+| `analyze_g2/g9`, `common`, `extract_boombness`, `judge_boombness`, `coherence_gate`, `prompt_families` | `test_estimand.py`, `test_silent_failures.py` | **completed** (the two groups killed by the session limit) |
+
+All three verifiers returned **INCOMPLETE** and found real defects in the patch they were checking.
+Suite: **338 passed, 6 failed**, all six pre-existing `module_imports_without_torch` checks in legacy
+GCG/reinforce files untouched by this session.
+
+**The most instructive one:** `probes`' new leakage guard was **itself a dead guard**. At `K=1` the
+z-score is `excess/se` with `se = NaN`, which yields `leak = False` — so a run whose stopping rule was
+never evaluable wrote `DONE.json` and exited 0, precisely the failure the commit existed to remove.
+The whole of `probes.main()` had never executed under test, which is why both this and a
+`p_perm = 0.0000` (an empirical p from K draws with no `1/(K+1)` floor) survived. **Fifth dead guard,
+and the first one this project shipped *while fixing* dead guards.**
 
 Never started: the silent-failure group (`extract_boombness`, `judge_boombness`, `coherence_gate`,
 `common`, `prompt_families`) and the `analyze_g2` / `analyze_g9` half of T5.
+
+**C-8 — the probe-leakage finding is REFUTED.** The critique states that `probes`' own stopping rule
+("shuffled AUROC meaningfully above 0.5 means the split is leaking") is violated at layers
+8/24/28/31. Those four values are real, but the object they were compared against was a **single
+permutation reused across every fold** — not a draw from the null. Against K=20 independent draws on
+the same data (`extract_boombness/full2352_...`, regime d5):
+
+| layer | single draw | null mean | null sd | max of 20 | z | flagged? |
+|---|---|---|---|---|---|---|
+| 8 | 0.5829 | 0.4933 | 0.0571 | 0.6206 | −0.52 | **no** |
+| 24 | 0.6302 | 0.5148 | 0.0638 | 0.6578 | 1.04 | **no** |
+| 28 | 0.5763 | 0.5103 | 0.0577 | 0.5943 | 0.80 | **no** |
+| 31 | 0.5812 | 0.5214 | 0.0615 | 0.6767 | 1.55 | **no** |
+
+No layer is flagged (max excess 0.021 against a 0.05 tolerance). **The splits are not leaking.**
+Separately, the selection-on-test bias the critique flags at `probes.py:393` is real but now
+*measured* rather than assumed: nested selection moves d5 from 0.9855 to 0.9843 and d6 from 0.9849 to
+0.9831 — **0.0012–0.0018 AUROC**. No conclusion changes, and `selection_is_stable=False` confirms the
+argmax was noise.
+
+**C-9 — plan §9 decision question 5 is ANSWERED, and G2 survives it.** Open since the plan was
+written; `n_examples` had only ever been a filter. Added as a regressor with the same CR1 +
+within-domain permutation inference:
+
+| position | boombness β before | after | retained |
+|---|---|---|---|
+| `codeword_last` (headline) | +0.08887 | **+0.08879** | **99.9%** |
+| `last` | +0.0253 | **+0.0414** | grows 1.63× |
+
+Partial ρ(boombness, ASR │ n_examples) = **+0.2705** pooled / +0.2643 within-domain (perm p=0.0015)
+against a raw +0.3067. The reason it is not a confound is measurable: `n_examples` predicts ASR
+(ρ=+0.206) but is essentially **uncorrelated with boombness at `codeword_last`** (ρ=−0.034). At the
+last-token position it correlates −0.185 and acted as a **suppressor**, not a confound. **G2 is
+defended against the dose-response confound the critique raised.**
+
+**C-10 — two provenance holes worse than §6.4's.** `analyze_g2.py` never recorded its
+`--refusalness` directory, yet `g2_analysis_cwpos.json` ships a full `mediation` section computed
+from it, and the only invocation in the progress log omits the flag entirely. And **no committed
+invocation of `analyze_g9.py` exists anywhere** — its inputs were reconstructible only because the
+artifact happens to echo them as separate keys. Both scripts now record `provenance{argv, git_commit,
+git_dirty, python}`; the recovered refusalness paths reproduce every mediation number.
 
 ## Retraction / correction log (this session)
 
@@ -246,3 +299,7 @@ Never started: the silent-failure group (`extract_boombness`, `judge_boombness`,
 | 10 | 2026-08-18 | decoded the argmax next token — found the capitalisation + multi-token-codeword asymmetry | **C-5**: the critique's recommended fix would not have worked; built whole-answer scoring instead |
 | 11 | 2026-08-18 | first whole-answer smoke (764743) **FAILED** — `readout_id_pair` did not know the new mode | my own one-of-two-paths slip; died loudly, fixed, resubmitted as 764744 |
 | 12 | 2026-08-18 | Phase 3: built `external_bank.py`; generated ClearHarm 179 + AdvBench 495; launched base/D/Dctrl (764745–747) | first ASR in this sprint from a set the bank did not generate |
+| 13 | 2026-08-18 | ClearHarm arms died **179/179 with COMPLETED 0:0** — empty `target_surface` matches every token | my own one-of-two-paths fix; the FailureLedger is the only reason it was visible. Relaunched 764754–756 |
+| 14 | 2026-08-18 | verification workflow returned: 3× INCOMPLETE + 2 completed groups | C-8 (probe leakage refuted), C-9 (§9 Q5 answered, G2 survives), C-10 (provenance) |
+| 15 | 2026-08-18 | pinned three self-invalidating tests that loaded the pre-fix module via `git show HEAD:` | committing a fix turned its own tests red with no regression |
+| 16 | 2026-08-18 | ClearHarm base + control judged 179/179; arm D judging | first external-set ASR in the sprint |
