@@ -357,8 +357,15 @@ def main() -> int:
     codeword = rows[0]["codeword"]
     # Symmetric, validated readout ids (signals.readout_ids): one whole-word token per side.
     # readout_id_pair itself raises on overlap or on a multi-token leading-space form.
-    c_ids, w_ids, id_meta = sg.readout_id_pair(lm.tokenizer, concept, codeword,
-                                               mode=args.readout_ids)
+    # `whole_answer` is a SCORING mode, not an id-selection mode, so the id pair is still built
+    # under `primary` -- its metadata (which variants are single-token, which first-ids were
+    # rejected) is exactly the evidence that motivated whole_answer and is worth recording on every
+    # run. Threading the new mode into the scorer and not into this call is the sixth-plus instance
+    # of this project's one-of-two-paths shape; it died loudly here rather than silently, which is
+    # what the explicit `unknown readout id mode` raise in signals.readout_id_pair is for.
+    c_ids, w_ids, id_meta = sg.readout_id_pair(
+        lm.tokenizer, concept, codeword,
+        mode=("primary" if args.readout_ids == "whole_answer" else args.readout_ids))
     comp_meta = {w: sg.readout_ids(lm.tokenizer, w) for w in COMPREHENSION_WORDS}
     comp_ids = {w: [comp_meta[w]["primary_id"]] for w in COMPREHENSION_WORDS}
     # WHOLE-ANSWER variant sets. Built by one rule for every option, so the count is equal by

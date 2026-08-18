@@ -93,8 +93,16 @@ def resolve_occurrences(dc, tok, row: Dict, enable_thinking="__module__"
     if len(last) != row["n_target_occurrences"]:
         raise ValueError(f"occurrence_count_mismatch:text={row['n_target_occurrences']},"
                          f"tokens={len(last)}")
-    if not last:
+    if not last and row["n_target_occurrences"] != 0:
         raise ValueError("no_target_occurrence")
+    # A row that DECLARES zero occurrences and has zero is not a failure -- the metadata and the
+    # tokenizer AGREE, which is the only thing this gate exists to check (the count comparison
+    # above does that work). The unconditional raise was correct while every row came from the
+    # sprint's own generator, where the codeword is always present; it made an EXTERNAL harmful set
+    # (plan §14 / ClearHarm) unscoreable, because those prompts carry no codeword at all and every
+    # row would have died in the pre-flight gate with `no_target_occurrence`. Callers that need a
+    # target POSITION (extract_boombness's own stages) must check `last` themselves; callers using
+    # this purely as a metadata-vs-tokenizer gate (score_behavior) now pass such rows.
     if max(last) >= len(ids):
         raise ValueError(f"occurrence_index_out_of_range:{max(last)}>={len(ids)}")
     following = [i + 1 if i + 1 < len(ids) else i for i in last]

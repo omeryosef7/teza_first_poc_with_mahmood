@@ -44,11 +44,17 @@ T9a  THE CONTROL "CI" WAS A SINGLE DRAW DRESSED UP AS A BAND. The `random` and `
      varied at all. Retraction #7 established the same failure for the G4 steering band, where
      the BETWEEN-DRAW sd was 0.0301 — larger than several effects that had been called
      "outside the control band" — and the conclusion was never propagated to this module.
-     FIX: `--n-control-draws` (default 12) independent draws per control family, each row
-     tagged with `control_draw`/`n_control_draws`, plus an explicit per-cell band row
+     FIX: `--n-control-draws` (default 12) independent draws per control family, each per-draw
+     row tagged with `control_draw` / `direction_draw_name` / `is_control_draw` (the run-level
+     count lives in metadata, in the summary, and on the band row as `n_control_draws`; it is
+     NOT on the per-draw rows), plus an explicit per-cell band row
      (`intervention="add_control_band"`) carrying the mean AND the between-draw sd under
      `between_draw_sd|<metric>`. Draw 0 keeps the historical seed (`args.seed + L`) so the old
-     numbers reappear as one member of the new band rather than being silently replaced.
+     numbers reappear as one member of the new band rather than being silently replaced. BOTH
+     stochastic families are replicated, not just `random`: draw k of `random` uses seed base
+     `seed + k*CONTROL_DRAW_SEED_STRIDE` and draw k of `orthogonal` the same base shifted by
+     `signals.ORTHOGONAL_SEED_OFFSET`, and for STRIDE=1000003, OFFSET=977777 and layer depths
+     under 1000 no (draw, layer) seed of one family collides with the other's.
 
 T10  READOUT LAYERS OVERLAPPED THE PATCHED WINDOW, MAKING THE PLAN's OWN §5.3 METRIC
      TAUTOLOGICAL. The default readout layers {8,12,16,18,20,24,28,31} intersect the patched
@@ -75,6 +81,27 @@ T10  READOUT LAYERS OVERLAPPED THE PATCHED WINDOW, MAKING THE PLAN's OWN §5.3 M
      artifacts can be filtered by re-deriving the flag and new ones are self-describing. The
      values are still emitted, not dropped: a tautological cell is a useful positive control
      for "the patch actually landed", it just is not evidence of propagation.
+
+T10b THE FIRST T10 FIX WAS LAYER-ONLY AND THEREFORE OVER-FLAGGED (found while reviewing the T10
+     patch, same day). A patch has a POSITION extent as well as a layer extent, and the readout
+     has exactly ONE position: `probe_pos` = the last (== query) occurrence. The first fix tested
+     only "is R a patched layer", so it marked the three demo-only scopes (`demos_only`,
+     `first_demo`, `last_demo`) as compromised even though those scopes never touch `probe_pos`
+     (`select_positions` gives them `r_last[:-1]` slices) and their in-window cells are ordinary
+     evidence. Measured on the same committed run, over its 6000 in-window transplant
+     `boombness|L*|proj` cells: the 2400 from scope in {query_only, all} tie the donor ceiling
+     2400/2400 bit-for-bit, while the 3600 from the demo-only scopes tie it 0/3600 (240 of them
+     tie the BASELINE instead -- the singleton windows, where a patch at exactly L==R at some
+     other position cannot reach the probe position inside block R at all: a guaranteed null, so
+     also uninterpretable, but for the opposite reason). The layer-only flag was thus wrong on
+     3600 of 6000 cells, always in the conservative direction: it would have discarded real
+     evidence, and there is no cell for which it is False while the cell is tautological.
+     FIX: `readout_window_flags` now also takes the patched positions and the probe position and
+     emits `readout_probe_pos_patched` and `readout_tautological` (= inside AND probe patched),
+     with a per-layer companion `boombness|L{R}|tautological`. `readout_inside_patched_window` is
+     unchanged and retained as the pure LAYER predicate. Flags are cached per (scope, window)
+     rather than per window. A caller that supplies no positions gets None -- never False -- so
+     "not asked" cannot be misread as "clean".
 
 Responsible handling: forward-only by default; generations (when enabled) are written to a
 separate gens.jsonl and never echoed to stdout.
@@ -210,7 +237,9 @@ def build_control_directions(sg_mod, d_surface: Dict[int, "torch.Tensor"], seed:
 
 
 def readout_window_flags(dc, wlayers: Sequence[int],
-                         readout_layers: Sequence[int]) -> Dict[str, object]:
+                         readout_layers: Sequence[int],
+                         patched_positions: Optional[Sequence[int]] = None,
+                         probe_pos: Optional[int] = None) -> Dict[str, object]:
     """Flags recording, per row, which readout layers are compromised by this patch window.
 
     THE RULE IS NOT REIMPLEMENTED HERE. `ds_common.patch_layer_sweep(R)` is the house single
@@ -231,6 +260,36 @@ def readout_window_flags(dc, wlayers: Sequence[int],
     R=0 is a legitimate readout layer for which no valid patch window exists at all;
     patch_layer_sweep raises there, so we treat it as "no valid layers" rather than crashing a
     16-hour sweep over a flag.
+
+    T10b (2026-08-18 review of the T10 fix): THE LAYER TEST ALONE OVER-FLAGS, because the patch
+    also has a POSITION extent and the readout has exactly one position. `readout` projects the
+    captured hidden state at `probe_pos` == the LAST occurrence == the query occurrence
+    (see `select_positions`), while a patch touches only `select_positions(r_last, scope)`. The
+    demo-only scopes (`demos_only`, `first_demo`, `last_demo`) never contain the probe position,
+    so at a readout layer R inside such a window the captured vector was NOT written by the
+    intervention and the cell is ordinary evidence, not a tautology. Measured on the committed run
+    g1strat_20260818_133953_3374345, per scope, over its 1200 in-window `boombness|L*|proj`
+    transplant cells (48 prompts x the windows containing that readout layer):
+
+        scope=query_only  1200/1200 tie the donor ceiling bit-for-bit   -> tautological
+        scope=all         1200/1200 tie the donor ceiling bit-for-bit   -> tautological
+        scope=demos_only     0/1200 tie the ceiling (240 tie BASELINE)  -> NOT tautological
+        scope=first_demo     0/1200 tie the ceiling (240 tie BASELINE)  -> NOT tautological
+        scope=last_demo      0/1200 tie the ceiling (240 tie BASELINE)  -> NOT tautological
+
+    (the 240 baseline ties are the SINGLETON windows: a patch at exactly L==R at some other
+    position cannot reach the probe position within block R at all, so that cell is a guaranteed
+    null rather than a tautology -- also uninterpretable, but for the opposite reason.)
+
+    So `readout_inside_patched_window` is kept as the LAYER predicate it has always been, and the
+    conjunction the analyst actually wants is emitted alongside it:
+
+      readout_probe_pos_patched : the readout position is one of the patched positions.
+      readout_tautological      : R is patched AND at the readout position -> the captured vector
+                                  IS what the intervention wrote. This is the flag to filter on.
+
+    When positions are not supplied both are reported as None (unknown) rather than False, so a
+    caller that has not been updated cannot silently read "not tautological" out of "not asked".
     """
     ws = set(int(x) for x in wlayers)
     inside, valid = [], []
@@ -244,19 +303,41 @@ def readout_window_flags(dc, wlayers: Sequence[int],
             inside.append(R)
         if ws and ws <= allowed:
             valid.append(R)
+    if patched_positions is None or probe_pos is None:
+        probe_patched = None
+        tautological = None
+        taut_layers = None
+    else:
+        probe_patched = int(probe_pos) in {int(x) for x in patched_positions}
+        taut_layers = inside if probe_patched else []
+        tautological = bool(taut_layers)
     return {
         "readout_inside_patched_window": bool(inside),
         "readout_layers_inside_window": inside,
         "readout_layers_valid": valid,
         "n_readout_layers_inside_window": len(inside),
+        "readout_probe_pos_patched": probe_patched,
+        "readout_tautological": tautological,
+        "readout_layers_tautological": taut_layers,
     }
 
 
 def per_layer_inside_flags(readout_layers: Sequence[int],
-                           inside: Sequence[int]) -> Dict[str, bool]:
-    """Per-metric companion flags so a single readout column can be filtered on its own."""
+                           inside: Sequence[int],
+                           tautological: Optional[Sequence[int]] = None) -> Dict[str, object]:
+    """Per-metric companion flags so a single readout column can be filtered on its own.
+
+    T10b: `inside_patched_window` is the LAYER predicate; `tautological` is the conjunction with
+    the position predicate (see readout_window_flags) and is the one to filter on. It is None when
+    the caller did not supply positions, never False, so "not asked" cannot read as "clean".
+    """
     ins = set(int(x) for x in inside)
-    return {f"boombness|L{int(R)}|inside_patched_window": int(R) in ins for R in readout_layers}
+    out: Dict[str, object] = {
+        f"boombness|L{int(R)}|inside_patched_window": int(R) in ins for R in readout_layers}
+    taut = None if tautological is None else {int(x) for x in tautological}
+    for R in readout_layers:
+        out[f"boombness|L{int(R)}|tautological"] = None if taut is None else (int(R) in taut)
+    return out
 
 
 def between_draw_band(recs: Sequence[Dict[str, float]]) -> Dict[str, float]:
@@ -422,13 +503,27 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         readout_layers=list(readout_layers),
     )
 
-    # T10: resolve the readout/window overlap ONCE per window, from ds_common.patch_layer_sweep.
-    # "" is the no-window case (baseline / donor ceiling): nothing is patched, so nothing is
-    # compromised, but the flag is still emitted so every row is self-describing.
-    wflags = {wn: readout_window_flags(dc, wl, readout_layers) for wn, wl in windows.items()}
-    wflags[""] = readout_window_flags(dc, [], readout_layers)
-    for wn, f in wflags.items():
-        f.update(per_layer_inside_flags(readout_layers, f["readout_layers_inside_window"]))
+    # T10: resolve the readout/window overlap from ds_common.patch_layer_sweep. T10b: the overlap
+    # is a function of the SCOPE as well as the window -- a patch that never touches `probe_pos`
+    # cannot overwrite the readout however many readout layers it spans -- so the flags are cached
+    # per (scope, window) and the positions of that scope are handed to the helper.
+    # scope "" / window "" is the no-intervention case (baseline / donor ceiling): nothing is
+    # patched, so nothing is compromised, but the flags are still emitted so every row is
+    # self-describing.
+    _wf_cache: Dict[Tuple[str, str], Dict[str, object]] = {}
+
+    def wf(scope: str, wname: str) -> Dict[str, object]:
+        hit = _wf_cache.get((scope, wname))
+        if hit is None:
+            wl = windows.get(wname, []) if wname else []
+            pos = select_positions(r_last, scope) if scope else []
+            hit = readout_window_flags(dc, wl, readout_layers,
+                                       patched_positions=pos, probe_pos=probe_pos)
+            hit.update(per_layer_inside_flags(readout_layers,
+                                              hit["readout_layers_inside_window"],
+                                              hit["readout_layers_tautological"]))
+            _wf_cache[(scope, wname)] = hit
+        return hit
 
     n = 0
     # -- baseline (no intervention) ------------------------------------------ #
@@ -436,7 +531,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "none", "scope": "", "window": "", "alpha": 0.0,
-                 "direction": "", **wflags[""], **rec})
+                 "direction": "", **wf("", ""), **rec})
     n += 1
 
     # -- donor ceiling: what the readout looks like on the donor prompt itself - #
@@ -444,7 +539,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec = readout(lm, d_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "donor_ceiling", "scope": "", "window": "", "alpha": 0.0,
-                 "direction": "", **wflags[""], **rec})
+                 "direction": "", **wf("", ""), **rec})
     n += 1
 
     # -- self-swap no-op assertion (the house invariant, checked live) --------- #
@@ -456,7 +551,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         cap = st.enter_context(BlockCapture(lm.model, readout_layers))
         rec_self = readout(lm, r_ids, cap, concept_ids, codeword_ids, readout_layers, d_surface, probe_pos)
     run.log_row({**base, "intervention": "self_swap_noop_check", "scope": "all", "window": "all",
-                 "alpha": 0.0, "direction": "", **wflags["all"], **rec_self})
+                 "alpha": 0.0, "direction": "", **wf("all", "all"), **rec_self})
     n += 1
 
     # -- 5.1 transplants ------------------------------------------------------ #
@@ -478,7 +573,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                     continue
                 run.log_row({**base, "intervention": "transplant", "scope": scope,
                              "window": wname, "n_positions": len(pos), "alpha": 0.0,
-                             "direction": "", **wflags[wname], **rec})
+                             "direction": "", **wf(scope, wname), **rec})
                 n += 1
 
     # -- 5.2 additive direction ----------------------------------------------- #
@@ -533,7 +628,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
                                  "control_draw": draw, "is_control_draw": draw is not None,
                                  "dose_unit": dose_unit,
                                  "effective_alpha_min": min(eff), "effective_alpha_max": max(eff),
-                                 **wflags[wname], **rec})
+                                 **wf(scope, wname), **rec})
                     n += 1
                     if draw is not None:
                         band[(scope, wname, float(alpha), fam_name)].append(rec)
@@ -544,7 +639,7 @@ def run_pair(lm, dc, pc, donor: Dict, recip: Dict, windows: Dict[str, List[int]]
         run.log_row({**base, "intervention": "add_control_band", "scope": scope, "window": wname,
                      "alpha": alpha, "direction": fam_name, "control_draw": None,
                      "is_control_draw": True, "n_control_draws": len(recs),
-                     "dose_unit": dose_unit, **wflags[wname], **agg})
+                     "dose_unit": dose_unit, **wf(scope, wname), **agg})
         n += 1
     ledger.ok()
     return n

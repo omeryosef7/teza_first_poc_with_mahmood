@@ -156,25 +156,60 @@ def choose_direction_split(available: Sequence[str], row_split: Optional[str]) -
 
 
 def select_families(rows: Sequence[dict], n_families: int) -> Tuple[List[dict], dict]:
-    """Select `n_families` DISTINCT families, round-robin over domains.
+    """Select `n_families` DISTINCT families, round-robin over domain AND split.
 
-    DEFECT T7b, FIXED 2026-08-18 (two bugs in one line, `rows[:args.n_families]`).
+    DEFECT T7b, FIXED 2026-08-18; the fix itself CORRECTED 2026-08-18 (below).
 
-      (a) HEAD-TRUNCATION OF A DOMAIN-PREFIXED SORTED LIST. `family_id` carries
-          its domain as a prefix and the bank is domain-ordered, so slicing the
-          head selects whole domains in alphabetical order. This is the same
-          defect already fixed in aggressive_patching (round-robin over domains,
-          audit A11-10) and never ported here.
-      (b) --n-families COUNTED PROMPTS, NOT FAMILIES. With
-          `--n-families 6 --n-examples 4,8` the slice returned 6 ROWS, which is
-          3 families x 2 example-counts, drawn from the first 3 alphabetical
-          domains. G3's reported "n=6 families" was therefore 3 domains x 2
-          splits: effective G = 3, and the interval treated 3 independent units
-          as 6.
+      (a) HEAD-TRUNCATION OF A DOMAIN-PREFIXED SORTED LIST — REAL, and the one
+          thing that actually changed which prompts were measured. `family_id`
+          carries its domain as a prefix and the bank is domain-ordered, so
+          `rows[:n]` selects whole domains in alphabetical order. Recomputed
+          from the bank on 2026-08-18 for the exact filter every reported G3 run
+          used (query_kind=semantic_one_word, condition=natural_doublespeak,
+          bank_block=core2x2, n_examples=4): the eligible pool is 12 rows over
+          **6 domains**, and `rows[:6]` drew from only **3** of them. Same defect
+          already fixed in aggressive_patching (audit A11-10), never ported here.
 
-    Now: families are the unit, all matching rows of a selected family are kept,
-    and `family_accounting` records what was requested vs what was selected so
-    the effective G can never again be inferable only by reading the code.
+      (b) "--n-families COUNTED PROMPTS, NOT FAMILIES" — CLAIMED ON 2026-08-18
+          AND **REFUTED** THE SAME DAY. The original note asserted that
+          `--n-families 6` yielded "3 families x 2 example-counts ... effective
+          G = 3". That is false on this bank. `family_id` is 1:1 with eligible
+          rows here: the pool holds 12 rows / 12 distinct families at
+          n_examples=4 (24 / 24 at n_examples=4,8), so `rows[:6]` returned 6
+          rows AND 6 distinct families. Measured directly on the committed
+          artifacts: dstfix and edgematch each carry 6 distinct `family_id`s
+          over 3 domains. Effective G was **6, not 3**. Counting families rather
+          than rows is still the right contract — it is a no-op on today's bank
+          but stops silently mis-sizing G the moment a family gains a second
+          eligible row — it just was not a live defect, and no G3 interval needs
+          rescaling on account of (b).
+
+    SPLIT COLLAPSE INTRODUCED BY THE (a) FIX, CAUGHT AND REPAIRED 2026-08-18.
+    The first round-robin popped `by_dom[d].pop(0)`, i.e. the alphabetically
+    first family of each domain. On this bank every domain holds exactly two
+    eligible families, one dev and one heldout, and the dev one sorts first in
+    all six domains — so the "fixed" selector returned **6 dev families and 0
+    heldout**, where the pre-fix head-truncation had returned a balanced 3 dev /
+    3 heldout (and the committed 60-row runs were 30/30). Stratifying on domain
+    while de-stratifying on split is not an improvement: it deletes the held-out
+    half of the sample outright, and it interacts badly with the T7 cross-fit
+    (every row would take the heldout-fitted direction, leaving no dev-fitted
+    row to compare against). Selection is now round-robin over domains that
+    picks, within each domain, the family whose SPLIT is currently least
+    represented, so the sample is balanced on both axes at once: 6 families / 6
+    domains / 3 dev / 3 heldout.
+
+    Families are the unit, all matching rows of a selected family are kept, and
+    `family_accounting` records requested vs selected plus the full
+    domain/family/split breakdown, so the effective G can never again be
+    inferable only by reading the code.
+
+    A CAVEAT `effective_G` CANNOT EXPRESS, recorded so nobody reads 6 as six
+    independent semantic units: all 12 eligible rows share ONE (concept,
+    codeword) pair. The families differ in domain dressing only, so the clusters
+    have a common semantic cause and G=6 is an upper bound on the real number of
+    independent units. `n_concept_codeword_pairs` is emitted for exactly this
+    reason.
     """
     by_family: Dict[str, List[dict]] = collections.OrderedDict()
     for r in rows:
@@ -184,12 +219,20 @@ def select_families(rows: Sequence[dict], n_families: int) -> Tuple[List[dict], 
         by_dom[str(by_family[fam][0].get("domain"))].append(fam)
     doms = sorted(by_dom)
     want = min(int(n_families), len(by_family))
+    fam_split = {f: str(by_family[f][0].get("split")) for f in by_family}
+    split_counts: Dict[str, int] = collections.Counter()
     fams: List[str] = []
     i = 0
     while len(fams) < want:
         d = doms[i % len(doms)]
         if by_dom[d]:
-            fams.append(by_dom[d].pop(0))
+            # Within the domain take the family whose split is least represented so far;
+            # ties break alphabetically so the whole selection stays deterministic. This is
+            # what keeps the domain round-robin from silently collapsing onto one split.
+            pick = min(by_dom[d], key=lambda f: (split_counts[fam_split[f]], f))
+            by_dom[d].remove(pick)
+            fams.append(pick)
+            split_counts[fam_split[pick]] += 1
         elif all(not by_dom[x] for x in doms):
             break
         i += 1
@@ -203,7 +246,7 @@ def select_families(rows: Sequence[dict], n_families: int) -> Tuple[List[dict], 
         "n_families_selected": len(fams),
         "n_rows_selected": len(sel),
         "effective_G": len(fams),
-        "selection": "round_robin_over_domains",
+        "selection": "round_robin_over_domains_split_balanced",
         "families_selected": sorted(fams),
         "domains_selected": sorted({str(r.get("domain")) for r in sel}),
         "n_domains_selected": len({str(r.get("domain")) for r in sel}),
@@ -217,8 +260,21 @@ def select_families(rows: Sequence[dict], n_families: int) -> Tuple[List[dict], 
             "n_families": len(head_fams),
             "n_domains": len({str(r.get("domain")) for r in list(rows)[:int(n_families)]}),
         },
-        "note": "pre-2026-08-18 this was rows[:n_families]: PROMPTS not families, "
-                "head-truncated off a domain-prefixed sorted bank",
+        "families_per_split": {sp: sorted(f for f in fams if fam_split[f] == sp)
+                               for sp in sorted({fam_split[f] for f in fams})},
+        # All eligible families may share a single (concept, codeword) pair, in which case
+        # effective_G overstates the number of independent semantic units. Emitted so the
+        # reader of a results dir can see that without re-deriving it from the bank.
+        "n_concept_codeword_pairs": len({(str(r.get("concept")), str(r.get("codeword")))
+                                         for r in sel}),
+        "prior_head_truncation_would_give_splits": dict(collections.Counter(
+            str(r.get("split")) for r in list(rows)[:int(n_families)])),
+        "note": "pre-2026-08-18 this was rows[:n_families]: head-truncated off a "
+                "domain-prefixed sorted bank (real defect). The 'counted PROMPTS not "
+                "families' half of the claim was refuted on 2026-08-18: family_id is 1:1 "
+                "with eligible rows on this bank, so effective G was 6, not 3. The first "
+                "round-robin fix then collapsed the sample to 6 dev / 0 heldout; selection "
+                "is now balanced on domain and split simultaneously.",
     }
     return sel, acct
 

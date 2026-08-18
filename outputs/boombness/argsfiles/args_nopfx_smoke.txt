@@ -1,0 +1,1 @@
+--query-kinds semantic_one_word,comprehension_usage,semantic_forced_choice --no-generate --limit 36 --answer-prefix none --arm base --tag nopfx_smoke --allow-tail-readout
