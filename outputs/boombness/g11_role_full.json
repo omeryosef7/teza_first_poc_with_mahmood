@@ -1,0 +1,139 @@
+{
+  "plan_section": "11",
+  "condition": "natural_doublespeak",
+  "styles": [
+    "assistant_like",
+    "cot_like",
+    "system_like_quoted",
+    "tool",
+    "user_like"
+  ],
+  "boombness_col": "d_surface|L12|proj",
+  "n_prompts": 180,
+  "n_stems_total": 36,
+  "n_stems_crossed": 36,
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/roleblk_20260818_114425_1408585",
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/rolebeh_20260818_124509_3812615",
+  "identifiability": "role is identified AMONG these styles (content byte-identical within stem); it is NOT identified against `plain`, which shares no families with any role style (\u00a79)",
+  "per_style_within_stem": {
+    "assistant_like": {
+      "boombness": {
+        "mean": -0.049024433559841527,
+        "se": 0.019723888227722683,
+        "ci": [
+          -0.09972630236608875,
+          0.0016774352464056924
+        ],
+        "p": 0.05546352132822847,
+        "n_clusters": 6
+      },
+      "asr_score": {
+        "mean": -0.03125,
+        "se": 0.035822834379247034,
+        "ci": [
+          -0.12333552735619581,
+          0.06083552735619581
+        ],
+        "p": 0.42292350666463346,
+        "n_clusters": 6
+      }
+    },
+    "cot_like": {
+      "boombness": {
+        "mean": -0.004388932387034046,
+        "se": 0.03515731707568559,
+        "ci": [
+          -0.09476369305139509,
+          0.08598582827732701
+        ],
+        "p": 0.905516421161773,
+        "n_clusters": 6
+      },
+      "asr_score": {
+        "mean": 0.027777777777777776,
+        "se": 0.03635070091195112,
+        "ci": [
+          -0.06566467369902593,
+          0.12122022925458148
+        ],
+        "p": 0.4792608566997471,
+        "n_clusters": 6
+      }
+    },
+    "system_like_quoted": {
+      "boombness": {
+        "mean": 0.01504103607601595,
+        "se": 0.020533740516640753,
+        "ci": [
+          -0.03774262431367018,
+          0.06782469646570208
+        ],
+        "p": 0.49673994306534935,
+        "n_clusters": 6
+      },
+      "asr_score": {
+        "mean": -0.04861111111111111,
+        "se": 0.03918537772129413,
+        "ci": [
+          -0.14934033130390317,
+          0.052118109081680956
+        ],
+        "p": 0.26980927776107805,
+        "n_clusters": 6
+      }
+    },
+    "tool": {
+      "boombness": {
+        "mean": 0.08001831107669412,
+        "se": 0.024676138727698704,
+        "ci": [
+          0.01658627708970216,
+          0.1434503450636861
+        ],
+        "p": 0.02287950916375734,
+        "n_clusters": 6
+      },
+      "asr_score": {
+        "mean": -0.006944444444444443,
+        "se": 0.032572331665440483,
+        "ci": [
+          -0.09067428856785209,
+          0.0767853996789632
+        ],
+        "p": 0.8395907809146035,
+        "n_clusters": 6
+      }
+    },
+    "user_like": {
+      "boombness": {
+        "mean": -0.04164598120583423,
+        "se": 0.03087470023917314,
+        "ci": [
+          -0.12101192482127865,
+          0.03771996240961018
+        ],
+        "p": 0.23524647543649432,
+        "n_clusters": 6
+      },
+      "asr_score": {
+        "mean": 0.059027777777777776,
+        "se": 0.03664798556099656,
+        "ci": [
+          -0.035178868217874804,
+          0.15323442377343036
+        ],
+        "p": 0.16816770114619814,
+        "n_clusters": 6
+      }
+    }
+  },
+  "omnibus_perm_p": {
+    "boombness": 0.0004997501249375312,
+    "asr_score": 0.3633183408295852
+  },
+  "style_level_corr_boombness_vs_asr": {
+    "pearson_r": -0.25715984673595316,
+    "n_styles": 5,
+    "caveat": "n=5 style means; descriptive only"
+  }
+}

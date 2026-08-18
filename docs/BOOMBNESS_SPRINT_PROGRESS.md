@@ -5506,3 +5506,59 @@ generalising it). The rule stands: when an audit finds a defect, grep the other 
 
 **A11-1 also fixed:** `analyze_g1_g3.py` now runs at all, and its `require_done` guard fires for the
 first time.
+
+## §11 ANSWERED — role framing moves the Boombness READOUT but not ASR, and the effect is NOT doublespeak-specific
+
+`src/boombness/analyze_g11.py`, artifacts `outputs/boombness/g11_role_full{,_benign}.json`.
+First time this question could be answered as posed: every prior role claim rested on **6 prompts per
+style per condition**; the full-coverage runs (roleblk 720/720, rolebeh 360/360) give **36 per style per
+condition** over 6 domains — a 6× increase.
+
+**The design is 100% crossed in this join:** 36 of 36 content stems present in all 5 styles, with
+`final_query_text` and `demo_block` byte-identical across styles. Every comparison below is
+**within content stem** — same demonstrations, same final query, only the role wrapper differs — so
+prompt difficulty cancels by construction. Inference: cluster = domain (G=6), t(5) reference, and the
+omnibus permutes **style labels within stem** on within-stem demeaned values.
+
+### The plan's main question: *does a user-like / CoT-like presentation raise final-carrot Boombness, or only ASR?*
+
+| | `natural_doublespeak` | `benign_literal` |
+|---|---|---|
+| **Boombness omnibus** | **p = 0.0005** | **p = 0.0005** |
+| **ASR omnibus** | p = 0.363 | p = 1.000 |
+
+**Answer: it moves Boombness and NOT ASR.** Role framing reliably shifts the readout (p=5e-4, at 6× the
+power of the retraction-#6 analysis and with content now byte-identical), while attack success is
+untouched. Across the five style means the two deviations do not co-vary in the doublespeak cell
+(r = −0.257, n=5, descriptive).
+
+### ⛔ But the specificity check fails, and that is the finding
+
+The **identical effect appears in `benign_literal`, where no coded mapping is ever taught** — same
+omnibus p (0.0005), and the *same per-style ordering*:
+
+| style | Boombness dev (doublespeak) | Boombness dev (benign) |
+|---|---|---|
+| `tool` | **+0.080** (p=0.023) | **+0.129** (p=0.001) |
+| `system_like_quoted` | +0.015 | −0.018 |
+| `cot_like` | −0.004 | +0.028 |
+| `user_like` | −0.042 | **−0.082** (p=0.009) |
+| `assistant_like` | −0.049 | **−0.057** (p=0.002) |
+
+If role framing were changing *concept-ness*, it would have nothing to work on in the benign cell — the
+codeword means what it says there. It moves just as much, and in the same direction per style. So the
+effect is a **generic response of the `d_surface` readout to the wrapper's surface form**, not an effect
+on the coded meaning. `tool` framing moves the readout most in both conditions; `cot_like` — the framing
+usually assumed to be the strongest jailbreak lever — sits at dead centre and is n.s. in both.
+
+### What may be claimed
+
+- **Supported:** role framing reliably moves the Boombness readout, with content held byte-identical.
+- **Supported:** role framing does **not** move ASR, in either condition.
+- **NOT supported:** that this is about doublespeak, concept-ness, or the coded mapping — refuted by the
+  benign cell.
+
+This is the same dissociation the sprint keeps finding — the representation moves, the behaviour does
+not — and it is the **fifth** time the deciding check was *"does the effect appear where the phenomenon
+under study is absent?"* rather than a bigger n. It also retires the §11 hypothesis I recorded earlier:
+prediction (b) (user-like framing raises both) is refuted on both halves.
