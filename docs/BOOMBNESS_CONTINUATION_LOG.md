@@ -154,7 +154,32 @@ Fixed by scoring the **answer** rather than a token: `signals.string_option_read
 each option's whole surface form and logsumexps over an identically-built variant set (2 per option,
 same rule), so symmetry is a property of the construction rather than of tokenizer luck.
 `P(model answers "Carrot")` = `P(' Car')·P('rot' | ' Car')` is a joint probability, so no length
-normalisation is wanted. **Whether this changes G1 is an open question, to be settled by the re-run.**
+normalisation is wanted. Smoke 764744 confirms the fix works, and by a wide margin:
+
+| readout | original | + forced prefix | **+ whole-answer** |
+|---|---|---|---|
+| comprehension | 5.6e-05 | 0.0268 | **0.297** |
+| semantic | 1.7e-04 | 0.0553 | **0.541** |
+| rows >1% | 0/36 | 36/36 | 36/36 |
+
+**5,300× and 3,200×** over the original. The options now hold 30–54% of the answer probability, i.e.
+it is finally a forced choice. This is consistent with the repo's own 2026-08-16 diagnostic (0.979 on
+the direct arm under a forced framing) that was applied to `semantic_forced_choice` and never
+propagated.
+
+**C-6 — the blast radius is THREE scripts, not one.** The critique scopes the fix to
+"re-run §4b". The same single-token readout at the same unprefixed position also computes
+`semantic_logodds` in:
+
+| script | line | what it carries |
+|---|---|---|
+| `score_behavior.py` | 308 | §2.6 comprehension, report §4b — **fixed** |
+| `aggressive_patching.py` | 439–445 | **G1, the +68%-of-span headline** — not yet fixed |
+| `surgical_knockout.py` | 295 | **G3, the attention-edge result** — not yet fixed |
+
+Both unfixed scripts are currently held by verification agents, so the port waits for that workflow
+to land rather than racing it. Until then **G1 and G3 rest on a readout that cannot represent the
+model's preferred spelling of the codeword**, and neither is re-derivable from current evidence.
 
 ## Unverified-fix register
 
