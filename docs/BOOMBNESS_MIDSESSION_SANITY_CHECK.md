@@ -59,7 +59,7 @@ deliberate refusals (position mismatch, unverifiable readout position, missing c
 | §10.4 arms D/E | not run |
 | Userness/CoTness probes (§11) | machinery ported, **never fitted** — `role_style` used as a disclosed proxy |
 | 3-predictor regression ASR ~ boombness + role + refusalness (§9) | **DONE** (`analyze_g9.py`) — 2-predictor model fitted (joint R²=0.250, both p<1e-4); **role dropped as unidentifiable** (collinear with `bank_block`, zero family overlap with `plain`) |
-| comprehension by `n_examples` (§8) | not aggregated |
+| comprehension by `n_examples` (§8) | **DONE** (`analyze_g8.py`) — doublespeak +0.370/doubling p=0.0003; n=0 level found degenerate (1 prompt × 12) and excluded, which removed 2 of 4 apparent trends; **random control moves comprehension ~3× more than `d_surface`** |
 | `probe_boombness` in the §6.4 three-way metric comparison | absent |
 | model/tokenizer **revision** pinning | never recorded (see Risks) |
 

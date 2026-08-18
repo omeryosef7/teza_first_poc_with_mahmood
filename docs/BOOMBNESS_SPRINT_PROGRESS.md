@@ -5080,3 +5080,65 @@ cells** (sd 0.954 vs 0.532 at codeword). It has plenty to work with and predicts
 sits between `n_examples` levels** (ρ=−0.275 with demo count), i.e. a substantial share is a
 demonstration-count artifact rather than prompt-specific refusal signal. The remaining ~59% is within-level
 and still predicts nothing, so the weakening is real but partial. C8 is **downgraded, not withdrawn**.
+
+## §8 CLOSED — comprehension scales with demonstrations ONLY in doublespeak context; and the random control breaks the §2.6 comprehension story
+
+`src/boombness/analyze_g8.py`, artifact `outputs/boombness/g8_comprehension_by_nexamples.json`.
+Open as "not aggregated" since the mid-session sanity check. Baseline run
+`base_20260816_203355_3985444` (unintervened), 288 comprehension rows, balanced 12 per
+(n_examples × condition), 6 domains, domain-clustered t(5) inference throughout.
+
+### First: the n_examples=0 level is NOT a usable floor, and excluding it changed two results
+
+The plan wanted n=0 as the "mapping never taught" control. It cannot serve: the bank holds **exactly one
+distinct zero-demo prompt per condition, replicated 12×** — `prompt_sha16` has a single unique value while
+`domain` varies, so the apparent 12-per-cell balance is `n_effective = 1`. Its between-domain SD is
+**exactly 0**, and my first version printed that as the confidence interval `[+0.2969, +0.2969]`, which
+reads as an extraordinarily precise estimate rather than as "there was nothing to vary". Both branches also
+sit at ~1e-6 absolute probability, so the log-odds there is a ratio of two near-zero probabilities.
+
+`analyze_g8.py` now computes `n_effective` per cell, returns `ci=None` with a reason instead of a
+zero-width interval, and **excludes degenerate levels from the trend fit**. That exclusion is
+result-affecting — the level was contributing 12 of 72 points from one prompt:
+
+| condition | slope incl. n=0 (WRONG) | slope on n≥1 (reported) |
+|---|---|---|
+| benign_literal | −1.318, p=0.0001 | −0.847, p=0.0058 |
+| concept_in_benign_ctx | −0.428, **p=0.0327** | −0.163, **p=0.4397** |
+| direct_harmful | −1.478, **p=0.0074** | −0.710, **p=0.1104** |
+| natural_doublespeak | +0.403, p=0.0125 | **+0.370, p=0.0003** |
+
+**Two of the four "significant" trends were manufactured by the degenerate level.** The one that
+strengthens is the one the design predicts.
+
+### The result
+
+**Comprehension of the coded mapping rises with demonstration count only in doublespeak context**
+(+0.370 per doubling, CI [+0.260, +0.480], p=0.0003), while in `benign_literal` context it falls
+(−0.847, p=0.0058) — the model learns from the demonstrations that the word is *literal* there. The two
+remaining conditions are null. This is the correct shape and it is the first direct evidence that the
+demonstration block, not the codeword token, is what installs the mapping — converging with §5.4's
+finding that `demos_only` is the lever and `query_only` moves the readout the wrong way.
+
+### ⚠ The random control moves comprehension ~3× MORE than the Boombness axis does
+
+Paired deltas vs baseline, by demonstration count:
+
+| arm | n=1 | n=2 | n=4 | n=8 | n=16 |
+|---|---|---|---|---|---|
+| `d_surface:add:+0.25` | +0.61 (n.s.) | +0.39 | +0.12 (n.s.) | +0.18 (n.s.) | +0.68 |
+| **`random:add:+0.25`** | **+0.99** | **+1.27** | **+1.73** | **+1.94** | **+2.11** |
+| `d_surface:project_out` | +0.43 | +0.43 | +0.32 | +0.33 | +0.28 |
+| `d_surface:add:−0.25` | −0.28 n.s. | −0.36 n.s. | −0.37 n.s. | −0.13 n.s. | −0.12 n.s. |
+
+A **norm-matched random direction** perturbs comprehension more than the Boombness axis at *every* level,
+all p<0.001, and **the gap widens with demonstration count** while the `d_surface` arm's does not. This
+extends correction **C10** ("the comprehension effect is sign-driven, not axis-specific") with the
+demo-count dimension and makes it sharper: the comprehension readout is **more sensitive to a generic
+activation perturbation than to `d_surface` specifically**, so no §2.6 comprehension result may be
+attributed to the Boombness axis. Note also the `−0.25` arm is **not significant at any level** once
+inference is domain-clustered and split by demonstration count — weaker than the pooled coded-fraction
+statistic (p=0.040) quoted in Known Issue #1, which is a different metric and remains as reported.
+
+**Disclosure:** `p_coded` sits between 1e-7 and 2e-4 in every cell, so this is a relative preference
+between two low-probability continuations. Directions are interpretable; absolute magnitudes are not.
