@@ -1154,25 +1154,40 @@ construction (163 vs 150 median words), against a **projection-type** control:
 
 **5× the measured judge-noise floor.**
 
-### The cross-condition profile is what makes it credible
-| condition | arm − control |
-|---|---|
-| `benign_literal` | **+0.0069** |
-| `benign_remap` | **+0.0104** |
-| `concept_in_benign_ctx` | **+0.0035** |
-| `natural_doublespeak` | **+0.0560** |
-| `direct_harmful` | **+0.0556** |
-| `direct_codeword` | **+0.0590** |
+### ⛔ The cross-condition profile — R-15, corrected 2026-08-19
+This table originally shipped **six deltas and no inference**, while the Qwen3 table eleven lines below
+carries `p_cl` on every cell and annotates two of them "(n.s.)". Given the same test
+(`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered t on `len_B` / `len_Bctrl`,
+n=960 — the deltas reproduce the original exactly):
 
-**≈0 on every benign condition, ≈+0.056 on every harmful one.** So the claim is **harm-general, not
-doublespeak-specific**:
+| condition | n | arm − control | p_cl | domain-clustered CI |
+|---|---|---|---|---|
+| `benign_literal` | 324 | +0.0069 | 0.334 | [−0.010, +0.024] |
+| `benign_remap` | 36 | +0.0104 | 0.745 | [−0.068, +0.088] |
+| `concept_in_benign_ctx` | 72 | +0.0035 | 0.862 | [−0.045, +0.052] |
+| **`natural_doublespeak`** | 420 | **+0.0560** | **0.0077** | **[+0.023, +0.089]** |
+| `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
+| `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
 
-> Removing the concept component from the codeword position raises attack success **wherever there is an
-> attack**, and does nothing where there is not.
+**Only one of the six cells is distinguishable from zero, and it is `natural_doublespeak`.** The two
+other "harmful" cells — precisely the ones that carried "it generalises across three attack types" —
+have intervals spanning **±0.2**, roughly six times the effect they were cited to demonstrate.
 
-That is a stronger statement than "it helps doublespeak" — it generalises across three attack types while
-remaining absent on benign inputs. It is also **exactly the shape the arm-F "capability channel" failed to
-show**, which is why that one was retracted and this one was not.
+⛔ **The "clean split" was a power artifact.** `natural_doublespeak` has **420** prompts against 72 and
+36 for the other two harmful conditions. The design can resolve its two large cells and nothing else,
+and those happen to be one benign (`benign_literal`, n=324, CI ±0.017) and one doublespeak. Every
+36–72-row cell is uninformative in **both** directions, so these data **cannot** discriminate
+"harm-general" from "doublespeak-specific".
+
+**What is actually established** is the narrow claim:
+
+> Removing the concept component from the codeword position raises attack success **on natural
+> doublespeak prompts** (+0.056, p=0.0077, against an inert control).
+
+The earlier reading — "wherever there is an attack, and does nothing where there is not" — is
+withdrawn, and describing it as "a *stronger* statement" was backwards: it was a weaker-evidenced one.
+Note also that the Qwen3 comparison below applied an **asymmetric evidential standard** — Qwen3's cells
+were discounted for failing a test the Llama cells had never been given, and three of them fail it too.
 
 ### ⛔ It does NOT replicate on Qwen3-14B — and the failure is informative
 Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
@@ -1209,7 +1224,7 @@ p=0.77), but it raises judged harmfulness nearly everywhere.
 |---|---|---|
 | size | +0.27 to +0.32 | **+0.056** |
 | control | inert on doublespeak only; **reverses** on `direct_harmful` | inert **everywhere** |
-| cross-condition | ⛔ appears where the mapping is never taught | ✅ harmful yes, benign no |
+| cross-condition | ⛔ appears where the mapping is never taught | ⚠ **one significant cell of six** (R-15) — doublespeak only |
 | cross-model | not tested | ⛔ does not replicate |
 | status | real number, **mechanism refuted** | **established, single-model** |
 
