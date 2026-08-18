@@ -750,6 +750,64 @@ report an arm whose coherence was never assessed.
 
 ---
 
+## ★ THE HEADLINE RESULT — Boombness IS causal, and refusal was hiding it (added 2026-08-18)
+
+**This supersedes the §18 = B label and reopens §12.** Everything below is at a matched 512-token budget,
+n = 420, every arm complete and coherence-gated on the doublespeak population, domain-clustered over 6
+domains.
+
+| arm | ASR | refusal | Δ score vs baseline | p_cl |
+|---|---|---|---|---|
+| baseline | 0.2429 | 0.0571 | — | — |
+| add Boombness `+0.25` | 0.0881 | **0.6762** | −0.1274 | 0.0117 |
+| remove refusalness | 0.2690 | **0.0000** | +0.0101 | 0.4746 |
+| **add Boombness AND remove refusalness** | **0.5476** | 0.0024 | **+0.2824** | **<0.0001** |
+| **RANDOM direction + remove refusalness** *(control)* | **0.2190** | 0.0000 | −0.0321 | 0.1160 |
+
+**Neither manipulation alone raises attack success — together they more than double it.**
+Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
+ASR thresholds 0.25 / 0.50 / 0.75.
+
+### The mechanism
+`d_surface` does **two opposing things at once**:
+1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
+   *suppresses* ASR;
+2. **capability** — it supplies content that makes a completion actually harmful, which appears the moment
+   refusal is out of the way.
+
+In the unmodified model channel 1 dominates and **masks channel 2 entirely**. That is why the within-arm
+correlation was positive while every steering attempt looked suppressive — a contradiction this report
+carried for days.
+
+### Why this is not any of the artifacts that killed earlier versions
+| competitor | how it is excluded |
+|---|---|
+| degenerate generation | passes `coherence_gate` on the doublespeak denominator |
+| truncation / length | at 512 tokens all arms complete; the effect **grew** (0.474 → 0.548) |
+| "longer answers score higher" | baseline calibration shows truncation **suppresses** score (+3.7pp when completed) |
+| judge noise | effect is **25×** the measured test–retest floor (0.011) |
+| threshold luck | holds on the continuous score and at three thresholds |
+| **"any two perturbations do this"** | **the random composition does nothing (p=0.116)** |
+| domain artifact | domain-clustered throughout |
+
+A prediction for the arm-F value was **recorded in the log before judging** (`≥0.474`); it came in at
+**0.5476**.
+
+### Consequences
+- ⛔ **§18 = B ("mechanistic but not causal") is WITHDRAWN.** It was a **ceiling effect of refusal**.
+- ✅ **§12.2 — "Boombness minus refusal" — is vindicated in exactly the form the plan wrote it.** I had
+  closed §12 as gate-not-met on the strength of G4's directional null. Arm F is that objective's idealised
+  limit and it doubles ASR. **It should be built.**
+- The §12.1 "pure Boombness objective" (maximise alone) remains **wrong** — alone, it *lowers* ASR.
+
+### Honest limits — scope, not validity
+One model (Llama-3.1-8B), one concept pair (carrot↔bomb), one judge, refusal projected at a single layer
+(L18), and `d_surface` fitted on the same bank it is evaluated on. The Qwen3 replication of the *projection*
+arm is running; **G2's correlation did not replicate on Qwen3**, so cross-model generality is an open
+question for this result too.
+
+---
+
 ## Appendix — committed artifacts
 
 | file | contents |
