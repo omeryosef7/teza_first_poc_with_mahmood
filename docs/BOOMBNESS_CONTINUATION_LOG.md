@@ -22,7 +22,7 @@ number does not go in.
 |---|---|---|---|
 | — | Phase 0 orient + this log | **DONE** | this file |
 | — | Phase 1.1 `t_sf` | **DONE — verified** | see defect T4 |
-| — | Phase 1.2 comprehension readout | **FIXED, smoke running** | jobs 764702/764703 measure prefix vs no-prefix |
+| — | Phase 1.2 comprehension readout | **FIXED TWICE — smoke 764744 running** | forced prefix (476× mass) then whole-answer scoring (the codeword has no capitalized single token) |
 | — | Phase 1.3 `analyze_steering` | **DONE — artifact replaced** | no G4 conclusion changes; intervals were 1.03–1.69× too narrow |
 | — | Phase 1.4 `surgical_knockout` dst | **code fixed, UNVERIFIED; GPU re-run pending** | G3 not established until re-run |
 | — | Phase 1.5 Tier-2 remainder | **PARTIAL** | T5 done for g64 only; T6/T9/T10 landed unverified; T8 + silent-failures NOT STARTED |
@@ -30,7 +30,7 @@ number does not go in.
 | §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
 | §8/§9 | 9 of 12 named plots | NOT STARTED | |
 | §5.2 | alpha sweep dose 0.25 | NOT STARTED | the dose every behavioural claim rests on was never swept |
-| §14 | ClearHarm arm | NOT STARTED | **highest-value new result** — discriminates mechanism from bank artifact |
+| §14 | ClearHarm arm | **LAUNCHED** | jobs 764745 base / 764746 arm D / 764747 control; `external_bank.py` + 179 ClearHarm + 495 AdvBench rows built |
 | §4.1 | strength / consistency / example_position | NOT STARTED | generated, confounded, unanalysed — decide analyse-or-delete |
 
 ## Gate table
@@ -130,6 +130,32 @@ gaining L1. The report's multiplicity backstop is not weakened, it is strengthen
 line has been corrected to "L1, L4 and L31" with the artifact committed. **The real defect stands**:
 code and docstring disagreed, and nothing recorded the family size. Both now do.
 
+**C-5 — T1 is worse again, and the fix the critique recommends would not have worked.** The critique
+proposes "sum `full_word_ids`, minding that the option sets are asymmetric (4 variants for literal,
+2 for coded)". Measured on smoke jobs 764702/764703 (36 prompts), a forced `Answer:` prefix raises
+option mass **476×** on comprehension (5.6e-05 → 0.0268) and **331×** on semantic (1.7e-04 → 0.0553),
+taking rows above 1% of next-token mass from **0/36 to 36/36**. But decoding what the model actually
+wants at that position shows the readout was still wrong:
+
+| readout | argmax next token (with prefix) |
+|---|---|
+| comprehension | `' Literal'` 10/24 · `' Liter'` 6/24 · `' Neither'` 4/24 |
+| semantic | `' Car'` 8/12 · `' Neither'` 3/12 · `' Bomb'` 1/12 |
+
+The model **capitalises**, and the capitalised codeword is **multi-token**: `' Car'` is the first
+subtoken of `' Carrot'`, which `readout_ids` rejects *by design* because `car` is the generic English
+word. On Llama-3.1-8B `bomb` has four single-token variants and `carrot` has exactly **one**. So no
+single-next-token readout can represent the model's preferred spelling of the codeword, and summing
+`full_word_ids` — the critique's recommended fix — gives the concept **four ids against the
+codeword's one**: the same bias with a larger constant. This is a measurement-validity problem in
+`semantic_logodds`, the readout carrying **G1's +68%-of-span headline**.
+
+Fixed by scoring the **answer** rather than a token: `signals.string_option_readout` teacher-forces
+each option's whole surface form and logsumexps over an identically-built variant set (2 per option,
+same rule), so symmetry is a property of the construction rather than of tokenizer luck.
+`P(model answers "Carrot")` = `P(' Car')·P('rot' | ' Car')` is a joint probability, so no length
+normalisation is wanted. **Whether this changes G1 is an open question, to be settled by the re-run.**
+
 ## Unverified-fix register
 
 Seven of nine workflow agents were killed by a session limit mid-task. Four left **complete, parsing,
@@ -165,3 +191,7 @@ Never started: the silent-failure group (`extract_boombness`, `judge_boombness`,
 | 6 | 2026-08-18 | Phase 1.3: verified + re-ran `analyze_steering`, replaced the committed artifact | every estimate bit-identical; intervals 1.03–1.69× too narrow; commit `accfa714` had never executed |
 | 7 | 2026-08-18 | re-ran `analyze_g64` after the T5 rename; added provenance | 135/135 pooled ρ bit-identical; coverage reproduces 270/270/72/72 (C-3) |
 | 8 | 2026-08-18 | verified the Holm fix: re-ran both family rules, wrote `reanalyze_corrected_d_surface_cos.json`, corrected the report line | **critique's consequence refuted** — L4 survives at m=32; L1 added (C-4) |
+| 9 | 2026-08-18 | paired smoke of the forced answer prefix (764702/764703) | 476×/331× more option mass; 0/36 → 36/36 rows above 1% |
+| 10 | 2026-08-18 | decoded the argmax next token — found the capitalisation + multi-token-codeword asymmetry | **C-5**: the critique's recommended fix would not have worked; built whole-answer scoring instead |
+| 11 | 2026-08-18 | first whole-answer smoke (764743) **FAILED** — `readout_id_pair` did not know the new mode | my own one-of-two-paths slip; died loudly, fixed, resubmitted as 764744 |
+| 12 | 2026-08-18 | Phase 3: built `external_bank.py`; generated ClearHarm 179 + AdvBench 495; launched base/D/Dctrl (764745–747) | first ASR in this sprint from a set the bank did not generate |
