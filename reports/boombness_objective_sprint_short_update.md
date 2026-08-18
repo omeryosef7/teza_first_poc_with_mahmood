@@ -4,7 +4,7 @@
 **Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint` · all four gates answered.
 
-> **This is revision 8. Read only this one.**
+> **This is revision 9. Read only this one.**
 > - Revision 1's headline "Boombness beats refusalness 3.7×" is **retracted** — the two predictors
 >   were read at different tokens. That retraction stands.
 > - Revision 3 then claimed refusalness *wins* at matched position and moved the label to **C**.
@@ -371,6 +371,69 @@ One model (Llama-3.1-8B), one concept pair (carrot↔bomb), one judge, refusal p
 (L18), and `d_surface` fitted on the same bank it is evaluated on. The Qwen3 replication of the *projection*
 arm is running; **G2's correlation did not replicate on Qwen3**, so cross-model generality is an open
 question for this result too.
+
+---
+
+## ★ SECOND CAUSAL RESULT — removing the concept component helps attacks, on Llama (added 2026-08-18)
+
+Unlike the interaction above, this one survived every check **including the ones that refuted the
+interaction's mechanism**. Llama-3.1-8B, 512 tokens, n=420, all arms gate-passed and length-matched by
+construction (163 vs 150 median words), against a **projection-type** control:
+
+| contrast | Δ score | t_cl | p_cl |
+|---|---|---|---|
+| `project_out d_surface` − baseline | +0.0378 | +5.12 | **0.0037** |
+| `project_out RANDOM` − baseline | −0.0182 | −1.27 | 0.260 — **inert, as a control should be** |
+| **`d_surface` − RANDOM control** | **+0.0560** | **+4.30** | **0.0077** |
+
+**5× the measured judge-noise floor.**
+
+### The cross-condition profile is what makes it credible
+| condition | arm − control |
+|---|---|
+| `benign_literal` | **+0.0069** |
+| `benign_remap` | **+0.0104** |
+| `concept_in_benign_ctx` | **+0.0035** |
+| `natural_doublespeak` | **+0.0560** |
+| `direct_harmful` | **+0.0556** |
+| `direct_codeword` | **+0.0590** |
+
+**≈0 on every benign condition, ≈+0.056 on every harmful one.** So the claim is **harm-general, not
+doublespeak-specific**:
+
+> Removing the concept component from the codeword position raises attack success **wherever there is an
+> attack**, and does nothing where there is not.
+
+That is a stronger statement than "it helps doublespeak" — it generalises across three attack types while
+remaining absent on benign inputs. It is also **exactly the shape the arm-F "capability channel" failed to
+show**, which is why that one was retracted and this one was not.
+
+### ⛔ It does NOT replicate on Qwen3-14B — and the failure is informative
+Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
+both models** — and mirror-image condition profiles:
+
+| | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| harmful conditions | **+0.056 / +0.056 / +0.059** | +0.111 (n.s.) / +0.010 (n.s.) |
+| benign conditions | **+0.004 / +0.010 / +0.004** | **+0.224 / +0.441 / +0.245** |
+
+On Llama the effect tracks the **presence** of an attack; on Qwen3 it tracks the **absence** of one. The
+Qwen3 effect is real and `d_surface`-specific (its random-projection control is inert, −0.004, p=0.77) but
+it raises judged harmfulness on prompts containing **no attack at all**. **This result is therefore
+single-model.**
+
+### Why the small result outlived the large one
+| | arm F interaction | this result |
+|---|---|---|
+| size | +0.27 to +0.32 | **+0.056** |
+| control | inert on doublespeak only; **reverses** on `direct_harmful` | inert **everywhere** |
+| cross-condition | ⛔ appears where the mapping is never taught | ✅ harmful yes, benign no |
+| cross-model | not tested | ⛔ does not replicate |
+| status | real number, **mechanism refuted** | **established, single-model** |
+
+Effect size was consistently the *worst* predictor of which claim survived. Every large effect in this sprint
+either failed a cross-condition check or lost its interpretation; the surviving causal result is the smallest
+one measured.
 
 ## What we'd take from this sprint
 
