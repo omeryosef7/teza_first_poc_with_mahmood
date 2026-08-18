@@ -653,3 +653,54 @@ exactly backwards: it is a weaker-evidenced one. The comparison table "✅ harmf
 Qwen3's "⛔ does not replicate" applies an **asymmetric evidential standard** — Qwen3's cells were
 discounted for failing a test the Llama cells were never given, and when given it, three of them fail
 it too.
+
+## R-14 — re-judge underway, and the first two arms say the damage is bounded
+
+Re-judging with `--bank` against the fixed banks. The decisive line is **`null_frac=0.0000`**: goals are
+non-empty, so StrongReject is finally being given the request. First two arms in:
+
+| arm | old ASR (empty goal) | **re-judged ASR (real goal)** | refusal |
+|---|---|---|---|
+| baseline | 0.1006 | **0.1061** | 0.877 |
+| C (remove refusalness @L18) | 0.3408 | **0.3631** | 0.615 |
+
+**The numbers move by ~0.005–0.02, not by an order of magnitude.** That is consistent with R-14's own
+diagnosis — an empty-goal StrongReject score still reads how harmful the *response* is, so it tracked
+compliance closely enough to look right. The severity of R-14 for the **final numbers** is therefore
+lower than feared; its severity as a **measurement-validity failure** is unchanged, because "the wrong
+instrument happened to agree" is not a defence, and nobody could have known it agreed without doing
+this re-judge. Arms B, D, Dctrl and the fixed band are still running.
+
+### A second defect, confirmed exactly as predicted
+
+Every re-judged run prints:
+
+```
+goal statuses: {'noop_codeword_absent': 173, 'noop_concept_already_present': 6}
+GOAL WARNING: 173 row(s) carry a codeword and a concept but the codeword never occurred in the
+query ... those rows were judged against the VISIBLE (benign) request. ASR is structurally deflated
+```
+
+**That warning is wrong for this bank, and the goals are correct.** ClearHarm rows have no codeword;
+the visible request *is* the harmful request, so no substitution is wanted and the goal string is right.
+The mislabel comes from `external_bank.py:78` stamping `concept="bomb"`, `codeword="carrot"` onto
+external rows — which it does deliberately, because `score_behavior` reads those keys off row 0 to build
+the forward-readout option sets, and confirmed still needed (the Qwen3 smoke prints them).
+
+So the correct status is `no_codeword_metadata`, which `make_goal` already has and which its own
+docstring calls "CORRECT for plan §14's external harmful banks". The judge must select it by
+**identity — `bank_block == "external"`** — not by inferring from a substitution that did nothing.
+Queued behind the Phase-1 workflow, which owns `judge_boombness.py`.
+
+**Consequence for reading the artifacts:** the ASR values from these re-judged runs are **valid**; the
+`goal_status_counts` field and its warning are **cosmetically wrong** on external banks. Recorded here
+so the next reader does not retract a good number on the strength of a bad label.
+
+### Also found: the bank-identity guard cannot run on external banks
+
+Every external judge run prints `BANK IDENTITY UNCHECKABLE: ['no *_meta.json for the bank']`.
+`compare_bank_hashes` exists and now has a caller, but `external_bank.py` writes no `*_meta.json`, so
+the check that exists specifically to catch "a bank from a different regeneration joined perfectly and
+silently" — the stated root cause of retraction R1 — is inert for exactly the banks this session
+regenerated. Filed as **E10**. Deliberately **not** fixed mid-flight: adding the meta file while judge
+streams are reading the bank would switch `compare_bank_hashes(strict=True)` on underneath them.
