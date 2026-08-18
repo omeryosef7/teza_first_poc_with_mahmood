@@ -37,7 +37,7 @@ number does not go in.
 
 | gate | question | current answer | strength |
 |---|---|---|---|
-| §2.6 | does any intervention preserve comprehension? | **UNKNOWN — the readout is broken** | every §4b verdict sits inside a 1e-5 probability tail |
+| §2.6 | does any intervention preserve comprehension? | **ANSWERED for `project_out`: it IMPROVES it** | Δ +0.2795, p=0.0010, control −0.0041 (p=0.63), on the corrected readout |
 | §13 | may we claim "we found the mechanism"? | **NO** | six criteria, not all met |
 | §12 | build the GCG objective? | **REOPENED, undecided** | the report states this both ways; see Tier-3 |
 
@@ -315,7 +315,50 @@ invocation of `analyze_g9.py` exists anywhere** — its inputs were reconstructi
 artifact happens to echo them as separate keys. Both scripts now record `provenance{argv, git_commit,
 git_dirty, python}`; the recovered refusalness paths reproduce every mediation number.
 
+### ★ R-6 resolved — and it resolves in the sprint's favour
+
+§4b re-run on the whole-answer readout, paired by prompt, domain-clustered
+(`outputs/boombness/section4b_whole_answer.json`):
+
+| arm | comprehension Δ | p | semantic Δ | p |
+|---|---|---|---|---|
+| Dctrl (double random) | −0.0041 [−0.025, +0.016] | 0.63 | +0.0666 | 0.0004 |
+| **`project_out` `d_surface`** | **+0.2795** [+0.175, +0.384] | **0.0010** | **+2.4073** | <1e-4 |
+
+The withdrawn claim was "comprehension unchanged, p=0.681". The corrected answer is not merely
+different, it is **opposite in kind**: removing `d_surface` *increases* the coded reading by +0.28
+log-odds while the norm-matched control is flat.
+
+**The semantic row is the mechanistically important one.** Removing the surface-identity direction
+moves the model **+2.41 log-odds** toward answering with the **concept** rather than the **codeword** —
+the first direct confirmation that `d_surface` does what its name claims, on an instrument that can
+represent both answers (the previous one structurally could not, since `carrot` has no capitalised
+single-token form). Together with the ClearHarm decomposition: `project_out d_surface` raises attack
+success, increases the coded reading, and increases the concept reading, while its control does none
+of the three.
+
 ## Retraction / correction log (this session)
+
+**R-12 (mine) — the ClearHarm control band was n=1.** `score_behavior.py:123` recursed into composed
+arms **without passing `control_seed`**, so every sub-spec fell back to the default 20260816
+regardless of `--seed`. The 2026-08-17 fix threaded the seed into the *single*-spec path and missed
+this one: same parameter, same one-of-two-paths shape, second time.
+
+| `--seed` | draw seeds actually used (pre-fix) |
+|---|---|
+| 20260901 | `[20260824, 20260834, 20260824, 20260834]` |
+| 20260902 | `[20260824, 20260834, 20260824, 20260834]` |
+| 20260903 | `[20260824, 20260834, 20260824, 20260834]` |
+
+Byte-identical `gens.jsonl` across all three (sha256 `276b6af46eb68a76`). The reported
+"3-draw band, between-draw sd **0.0048**" was one draw stated three times — and **retraction #7's
+fake band reported sd 0.0049**. A control band is the one artifact whose entire purpose is to measure
+draw-to-draw variance, which makes it the one artifact that cannot be falsified by looking at its own
+value. Both times the tell was arms agreeing to four decimals.
+
+**Scope:** arms B/C/D use real fitted directions and are unaffected; `Dctrl` remains a valid *single*
+control, so arm B (+0.105) vs control (+0.013) stands. What was not established is the between-draw
+variance. No other composed control in the sprint carried a band claim. Band relaunched 765210–212.
 
 *(none yet — C-1/C-2/C-3 are corrections to the critique, not to the sprint's own claims)*
 
@@ -348,3 +391,6 @@ git_dirty, python}`; the recovered refusalness paths reproduce every mediation n
 | 23 | 2026-08-18 | cos(`d_surface`, refusal) = 0.019 @L18 | the two arms are **not** the same channel |
 | 24 | 2026-08-18 | launched AdvBench replication (765111–114) + judged band draws 2/3 | 16 clusters is the design that can test super-additivity |
 | 25 | 2026-08-18 | §4b whole-answer re-runs 765052–765055 running | unblocks R-6, arm D's comprehension control, and G1 |
+| 26 | 2026-08-18 | §4b re-run: `project_out` comprehension **+0.2795 (p=0.0010)**, semantic **+2.4073** | **R-6 resolved in the sprint's favour**; `d_surface` confirmed to do what its name claims |
+| 27 | 2026-08-18 | tail gate fired on arm D and destroyed a healthy comprehension readout | restructured: per-`query_kind`, **after** `finish()`, exit 4 |
+| 28 | 2026-08-18 | caught the band draws returning byte-identical generations | **R-12** — composed recursion dropped the seed; retraction #7 re-created |
