@@ -4881,3 +4881,52 @@ not in yet.
 but reliable amount (+0.038 score, p=0.0037, 6/6 domains) without affecting benign prompts (+0.002). The
 same manipulation on Qwen3 produces a much larger effect that is NOT attack-specific and is therefore not a
 replication. Pending the matched projection control."*
+
+## ★★ CLAIM 1 ESTABLISHED — and the cross-condition pattern refines it into something better
+
+Llama @512, n=420, every arm complete and gate-passed, against a **projection-type** control:
+
+| contrast | Δ score | t_cl | p_cl |
+|---|---|---|---|
+| arm B (`project_out d_surface`) − baseline | +0.0378 | +5.12 | **0.0037** |
+| control (`project_out RANDOM`) − baseline | −0.0182 | −1.27 | 0.2604 — **inert, as a control should be** |
+| **arm B − CONTROL** | **+0.0560** | **+4.30** | **0.0077** |
+
+**5.0× the judge-noise floor**, control behaves correctly, like-for-like intervention type, length-matched
+by construction (163 vs 150 median words). Every objection raised against this claim over the last several
+ticks — wrong control type, power, length, judge noise — is now answered.
+
+### The cross-condition check does something better than confirm it
+| condition | B − control Δ |
+|---|---|
+| `benign_literal` | **+0.0069** |
+| `benign_remap` | **+0.0104** |
+| `concept_in_benign_ctx` | **+0.0035** |
+| `natural_doublespeak` | **+0.0560** |
+| `direct_harmful` | **+0.0556** |
+| `direct_codeword` | **+0.0590** |
+
+The effect is **~0 on every benign condition and ~+0.056 on every harmful one** — a clean split, not a
+doublespeak-specific effect. So the correct claim is **harm-general, not attack-type-specific**:
+
+> **Removing the concept component from the codeword position raises attack success wherever there is an
+> attack (doublespeak +0.056, direct harmful +0.056, stated-mapping +0.059) and does nothing where there is
+> not (benign +0.004 to +0.010).**
+
+That is a *stronger* result than "it helps doublespeak", because it generalises across three attack types
+while staying absent on benign inputs — and it is exactly the shape that the Qwen3 arm and the arm-F
+"capability channel" both **failed** to show.
+
+### The sprint's two surviving causal results, and how they differ
+| | arm F interaction | arm B (claim 1) |
+|---|---|---|
+| effect | large (+0.272 to +0.315 refusal-clean) | small (+0.056 vs control) |
+| control | random composition inert *on doublespeak only*; **reverses on `direct_harmful`** | random projection inert **everywhere** |
+| cross-condition | ⛔ appears where the mapping is never taught → prompt-independent | ✅ appears on all harmful, none benign |
+| status | empirically real, **mechanism refuted** (retraction #8) | **established, mechanism-consistent** |
+
+**The small, unglamorous result is the one that survived every check.** The large one is real as a number
+but its interpretation did not survive. That asymmetry is the sprint's most useful methodological output.
+
+`q3_projctrl` (930/960) will say whether Qwen3's arm has *any* attack-specific component once its own
+control is subtracted — the same test that just rescued the Llama claim.
