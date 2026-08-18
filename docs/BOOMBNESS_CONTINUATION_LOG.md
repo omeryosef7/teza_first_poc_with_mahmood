@@ -55,7 +55,7 @@ recomputed and diffed). `refuted` means I checked and the finding does not hold 
 | T3 | 1 | `surgical_knockout.py:271` | edge ranking still at the retracted destination token | **code fixed, unverified** | needs a GPU re-run before G3 is established |
 | T4 | 2 | `analyze_g8.py:52` | `t_sf` continued fraction omits the symmetry transform | **VERIFIED FIXED** | **partly refuted as stated — see C-2** |
 | T5 | 2 | `analyze_g64/g2/g9` | permutation p tests a different estimand than the ρ beside it | **PARTIAL** | `analyze_g64` done + re-run (135/135 pooled ρ bit-identical). `analyze_g2:322` and `analyze_g9:376` still carry the unlabelled pairing |
-| T6 | 2 | `g2` / `probes:393` / `reanalyze_corrected:185` | uncorrected layer selection; Holm family is 10 not 32 | **code fixed, unverified** | agent concluded the family IS 32 and the code was wrong; needs my re-check |
+| T6 | 2 | `g2` / `probes:393` / `reanalyze_corrected:185` | uncorrected layer selection; Holm family is 10 not 32 | **PARTIAL — Holm half VERIFIED, consequence REFUTED (C-4)** | `probes` best-layer + `g2` layer selection still open |
 | T7 | 2 | `surgical_knockout.py:239,225` | cross-fitting abandoned for ~54% of rows; family head-truncation | open | |
 | T8 | 2 | `extract_boombness.py:484` + 3 | `--fit-dir` consumers never validate `payload["meta"]` | open | latent: all 63 runs currently match |
 | T9 | 2 | `aggressive_patching.py:461`, `probes.py:236` | single-draw controls presented as bands | **code fixed, unverified** | re-runs pending (both need GPU) |
@@ -112,6 +112,24 @@ guessing among 16 extract runs, 20+ judge runs and 2 probe-score runs. Reconstru
 `coverage 270/270/72/72` exactly, which confirms the reconstruction; `analyze_g64.py` now records
 argv, resolved input paths, git commit and dirty flag.
 
+**C-4 — T6c's consequence is REFUTED; only its code/docstring half stands.** The critique predicted
+that at m=32 "L4's p=0.001631 exceeds the 0.001613 threshold and **stops being rejected**", which
+would have knocked out a backstop the report cites twice. Re-derived from
+`extract_boombness/full_20260816_185942_1008673` with the fixed `holm_table`:
+
+| family rule | m | rejected set |
+|---|---|---|
+| displayed layers (what the code did) | 10 | **[4, 31]** |
+| **available layers, all actually tested** (the honest family) | **32** | **[1, 4, 31]** |
+| the 10 displayed p-values ranked against α/(32−i) | 32 | [31] |
+
+The critique's number is the **third row** — ranking a displayed subset against a larger family's
+thresholds without testing the rest. That is not Holm; a step-down over m hypotheses requires m
+p-values. Done properly the correction is *stricter* and L4 still clears (p=0.001631 vs thr=0.001667),
+gaining L1. The report's multiplicity backstop is not weakened, it is strengthened, and the report
+line has been corrected to "L1, L4 and L31" with the artifact committed. **The real defect stands**:
+code and docstring disagreed, and nothing recorded the family size. Both now do.
+
 ## Unverified-fix register
 
 Seven of nine workflow agents were killed by a session limit mid-task. Four left **complete, parsing,
@@ -122,7 +140,7 @@ written by the same agent that wrote the fix.
 | file | tests | status |
 |---|---|---|
 | `analyze_steering.py` | `test_analyze_steering.py` | **verified by me** — re-ran, diffed every field |
-| `reanalyze_corrected.py` | `test_holm.py` | agent reported; **needs my re-check of the m=32 argument** |
+| `reanalyze_corrected.py` | `test_holm.py` | **verified by me** — re-ran both family rules, artifact committed (C-4) |
 | `probes.py` | `test_probes_selection.py` | **unverified** |
 | `aggressive_patching.py` | `test_patching_readout.py` | **unverified** |
 | `surgical_knockout.py` | `test_surgical_knockout.py` | **unverified** |
@@ -146,3 +164,4 @@ Never started: the silent-failure group (`extract_boombness`, `judge_boombness`,
 | 5 | 2026-08-18 | Phase 1.2: forced answer position, per-row `option_mass`, fatal `--min-option-mass`, `else` branch on the query-kind dispatch, `semantic_forced_choice` wired in | smoke 764702 (prefix) / 764703 (no prefix) submitted |
 | 6 | 2026-08-18 | Phase 1.3: verified + re-ran `analyze_steering`, replaced the committed artifact | every estimate bit-identical; intervals 1.03–1.69× too narrow; commit `accfa714` had never executed |
 | 7 | 2026-08-18 | re-ran `analyze_g64` after the T5 rename; added provenance | 135/135 pooled ρ bit-identical; coverage reproduces 270/270/72/72 (C-3) |
+| 8 | 2026-08-18 | verified the Holm fix: re-ran both family rules, wrote `reanalyze_corrected_d_surface_cos.json`, corrected the report line | **critique's consequence refuted** — L4 survives at m=32; L1 added (C-4) |

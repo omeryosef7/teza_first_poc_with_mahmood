@@ -78,7 +78,14 @@ verifier.** (a) The naive p range is **0.074–0.62**, not 0.22–0.62 — at L2
 behavioural prompts**, the population every ASR claim lives on: split by query kind those layers read
 **+0.003 / −0.004 / +0.015 (all n.s.)** for `behavioral` versus ≈−0.035 for `comprehension_usage` and
 ≈−0.045 for `semantic_one_word`. And `reanalyze_corrected.py`'s own `holm_rejected` field is **True
-only at L4 and L31**. So the defensible claim is that the naive direction inflates ~2× where both
+only at L1, L4 and L31** — none of them in the mid-band. (Corrected 2026-08-18: the file previously
+corrected over the 10 *displayed* layers while its docstring claimed 32. The honest family is every
+layer with a `d_surface|L*|cos` column in `results.jsonl`, all 32, each actually tested and entered
+into the step-down; that rule *adds* L1 and leaves L4 and L31 rejected. The external critique
+predicted L4 would stop being rejected at m=32 — that holds only if the 10 displayed p-values are
+ranked against `alpha/(32-i)` without testing the other 22, which is not Holm. Sensitivity table and
+all three rejection sets are in `outputs/boombness/reanalyze_corrected_d_surface_cos.json`
+under `holm_rejected_by_family`.) So the defensible claim is that the naive direction inflates ~2× where both
 agree; the mid-band attenuation is a semantic/comprehension-prompt effect that does not survive
 multiplicity correction.
 
