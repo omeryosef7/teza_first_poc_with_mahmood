@@ -704,3 +704,43 @@ the check that exists specifically to catch "a bank from a different regeneratio
 silently" — the stated root cause of retraction R1 — is inert for exactly the banks this session
 regenerated. Filed as **E10**. Deliberately **not** fixed mid-flight: adding the meta file while judge
 streams are reading the bank would switch `compare_bank_hashes(strict=True)` on underneath them.
+
+## The seventh dead guard — mine, caught before it shipped
+
+`clearharm_decomposition.json` had **no provenance block and no script that produces it**. It was
+assembled ad hoc, which is the standing bar failing again in the artifact that carries the sprint's
+best new result. Wrote the missing producer, `src/boombness/analyze_external_arms.py`, which is also
+the harvest path for the R-14 re-judge and the AdvBench super-additivity test.
+
+Its control-band guard was **itself a dead guard on the first attempt**, and the way it was caught is
+worth recording because it is a new variant.
+
+* **v1 fingerprinted the judge SCORES.** Unit tests passed, including a negative case.
+* Run against the **actual historical R-12 band** — three draws whose generations are byte-identical —
+  it returned `REFUSED: False, between_draw_sd = 0.0032` and three "distinct" fingerprints.
+* **Why:** StrongReject (gpt-4o-mini) is **not bitwise deterministic even at temperature 0**, so
+  re-judging one identical generation set three times yields three slightly different score vectors.
+  A score-level check therefore reports three distinct draws for a band that has exactly one — it can
+  never fire on the defect it exists to catch.
+
+**Fixed by fingerprinting the artifact whose variance the band actually measures: the generations**,
+resolved by identity through the judge run's own recorded `gens` path. Re-run against the same
+historical band it now prints:
+
+```
+BAND REFUSED: draws are not distinct -- IDENTICAL GENERATIONS: s20260901=s20260902=s20260903 ...
+Note the judge SCORES differ across these draws (StrongReject is not bitwise deterministic),
+so a score-level check would have passed this.
+```
+
+It also **refuses when the source generations cannot be resolved**, rather than falling back to the
+weak check — a silent fallback to a check that cannot fire is the same defect wearing a different hat.
+`tests/test_external_arms.py` (9 tests) pins all of it, including
+`test_source_gens_fingerprint_catches_what_the_score_fingerprint_MISSES`, which asserts the weak check
+fails and the real one holds on the same input.
+
+**The transferable lesson, and it sharpens FM1.** "Test the guard against a case it should fail" is
+not sufficient if the *synthetic* failing case is easier than the real one. The unit test used
+identical scores; reality supplied identical generations with different scores. **Test the guard
+against the historical defect itself, not a reconstruction of it** — the artifact of the original
+failure is still on disk and is the only faithful fixture.
