@@ -10725,3 +10725,9 @@ Diff unchanged.
 ### 02:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 03:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 03:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 04:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits.
+*(Their tick 79 records "retractions must be grepped across documents" — independently the same
+lesson this log reached on 2026-08-16 after my D3 annotation left the synthesis asserting both
+"resolved" and "NOT RUN". Two sessions arriving at it separately suggests it belongs in the
+project's standing practice, not just in one sprint's log.)*
+Diff unchanged.
