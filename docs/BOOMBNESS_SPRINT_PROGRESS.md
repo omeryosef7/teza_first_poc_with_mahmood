@@ -5888,3 +5888,23 @@ it actually supports the matched control. Cancelled the L25 arms and relaunched 
 
 **Note the ordering:** arm D at L25 would have run fine on its own and produced a publishable-looking
 number with **no matched control possible**. The control failing is what caught it.
+
+---
+
+# 2026-08-18 — CONTINUATION SESSION. Canonical log moved.
+
+**This file is no longer the live board.** The continuation session tracks phase status, the
+external critique's 31 defects, the retraction/correction log and the tick log in
+**`docs/BOOMBNESS_CONTINUATION_LOG.md`**. This file is kept for its history; grep it, do not extend it.
+
+Summary of what changed under it, so a reader who lands here is not misled:
+
+| area | status |
+|---|---|
+| the §2.6 / semantic readout | **rebuilt** — every published `comprehension_logodds` and `semantic_logodds` is measured in a ~1e-5 probability tail and is queued for re-derivation |
+| G1 (+68% of span) and G3 | **not currently established** — both are computed from that readout (`aggressive_patching.py:439`, `surgical_knockout.py:295`) |
+| arm D "§2.6 SATISFIED" | **withdrawn pending re-run** — the control is the broken readout |
+| G4 / `steering_analysis.json` | **re-run and replaced**; all estimates identical, intervals were 1.03–1.69× too narrow |
+| Holm "L4 and L31" | **stands, and gains L1** at the honest family m=32 |
+| plan §14 / ClearHarm | **first external-set ASR in the sprint**, running |
+
