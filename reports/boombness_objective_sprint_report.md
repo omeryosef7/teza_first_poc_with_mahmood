@@ -317,15 +317,29 @@ number suggests. The best-column version is quoted because it is the conservativ
 positions but **not between probes**: `d_surface` draws its best column from 20 candidates,
 refusalness from 10, and both are max-of-k statistics, so the ratios are biased **toward Boombness**.
 Re-selecting the column inside each bootstrap resample gives [0.84, 2.88] and [0.38, 1.12] — same
-conclusion, wider. (b) On **incremental** R² at matched footing, refusalness wins at both positions:
+conclusion, wider. (b) On **incremental** R², at **matched degrees of freedom** (one column each,
+from `g9_three_predictor_{cwpos,lastpos}.json`, n=234):
 
 | | Boombness adds over refusalness | refusalness adds over Boombness |
 |---|---|---|
-| @ codeword_last | +0.028 | **+0.144** |
-| @ last token | +0.025 | **+0.091** |
+| @ codeword_last | +0.0743 | **+0.1091** |
+| @ last token | **+0.0053** | +0.0000005 |
 
-An earlier draft quoted +0.104 / +0.039 here; those came from the mixed-footing artifact and pointed
-the other way.
+**Refusalness wins at the codeword token; at the last token it adds nothing at all** (4.5e-07 — the
+joint model does not improve on Boombness alone to seven decimal places). Which probe adds more is a
+*position* fact, not a probe fact — the same lesson this subsection already teaches.
+
+⛔ **Retraction R-13.** Two earlier drafts of this table were wrong in opposite directions. The first
+quoted +0.104 / +0.039 from the mixed-footing artifact. The second quoted **+0.028 / +0.144
+@codeword and +0.025 / +0.091 @last and labelled them "matched footing"** — but those two cells are
+increments against the *same* model, `boombness(1 column) + refusalness(5 columns)`, so refusalness's
+increment carried **5 degrees of freedom against Boombness's 1** and R² is monotone in predictors.
+That table repeated the mismatched-footing error inside the paragraph announcing its retraction. It
+was also never regenerable: the pair 0.144/0.028 appears in no committed artifact, while
+`g9_three_predictor_cwpos.json` has carried the matched-df values in all four of its committed
+versions. At matched df the codeword-position gap is **1.47×**, not the 5.1× implied, and the earlier
+reading "Boombness is close to redundant given refusalness" does not hold — +0.0743 on a
+refusalness-only base of 0.1759 is a **42% increase** in explained variance.
 
 **What replaces it is a position finding:** both probes are 2–4× more predictive of ASR at the
 **codeword token** than at the final prompt token — a larger factor than any difference between the
@@ -754,9 +768,12 @@ straddling 1. ⚠ And the between-probe selection freedom is not matched (20 vs 
 which biases those ratios toward Boombness.
 
 **7. Does Boombness add predictive power beyond refusalness?**
-**A little, and less than refusalness adds beyond it.** At matched footing Boombness adds **+0.028**
-(@codeword) and **+0.025** (@last) in R²; refusalness adds **+0.144** and **+0.091** the other way. An
-earlier draft had this backwards from a mixed-footing artifact.
+**Yes, and which probe adds more depends on where you read.** At matched degrees of freedom (one column
+each, n=234): @codeword_last Boombness adds **+0.0743** and refusalness adds **+0.1091**; @last token
+Boombness adds **+0.0053** and refusalness adds **+0.0000005** — i.e. nothing. ⛔ Two earlier drafts
+were wrong here (R-13): one from a mixed-footing artifact, one from a table labelled "matched footing"
+that in fact gave refusalness 5 predictors against Boombness's 1. Boombness is **not** redundant given
+refusalness — at the codeword token it adds 42% over a refusalness-only base.
 
 **8. Do user-like / CoT-like framings increase Boombness?**
 ⛔ **RETRACTED — the answer is YES, by a little (retraction #6).** I reported a tight null; the paired

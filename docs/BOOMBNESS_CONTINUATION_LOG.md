@@ -457,3 +457,65 @@ Confirmed still open at session-2 start: `signals.string_option_readout` exists 
 and both `aggressive_patching.py:~437` and `surgical_knockout.py:~295` still compute
 `semantic_logodds` from the invalid single-next-token tail. **Until that port lands and re-runs,
 neither G1's +68% headline nor G3 is re-derivable from current evidence.**
+
+## ★ R-13 — the "matched footing" incremental table is the one table in that section whose footing is NOT matched
+
+The external critique (Tier-3) states that the incremental-R² table "gives refusalness 5 predictors and
+Boombness 1, and it flips at matched df". **Confirmed, by arithmetic, and the flip is real.**
+
+**The published table** (report §3 ~L320, `§19 Q7`, short update L156):
+
+| | Boombness adds over refusalness | refusalness adds over Boombness |
+|---|---|---|
+| @ codeword_last | +0.028 | **+0.144** |
+| @ last token | +0.025 | **+0.091** |
+
+**Where those numbers come from.** `docs/BOOMBNESS_SPRINT_PROGRESS.md:2528` states it outright —
+"all **five** refusalness layers jointly add +0.144 over Boombness" — and L2524 gives the components:
+refusalness all-layers joint R² = 0.2565, `d_surface|L12|proj` alone = 0.1411. The joint model is
+`boombness(1 column) + refusalness(5 columns)`, R² ≈ 0.285, and **both published cells are increments
+against that same model**:
+
+* `0.285 − 0.1411 = 0.144` ← refusalness's increment, **5 df**
+* `0.285 − 0.2565 = 0.0285` ← Boombness's increment, **1 df**
+
+R² is monotone in predictors, so a 5-df block mechanically adds more than a 1-df column. The table is
+labelled "at matched footing" and sits **20 lines after** a retraction whose entire content is
+"we compared these two probes at mismatched footing". It repeats the retracted error in the paragraph
+that announces the retraction.
+
+**The matched-df comparison already exists, committed, and has since the artifact was first added.**
+`g9_three_predictor_{cwpos,lastpos}.json` fit `boombness_only` (1 col), `refusalness_only` (1 col) and
+the 2-column joint on the same n=234:
+
+| position | model R² (b / r / joint) | Boombness adds | refusalness adds |
+|---|---|---|---|
+| **@ codeword_last** | 0.1411 / 0.1759 / 0.2502 | **+0.0743** | **+0.1091** |
+| **@ last token** | 0.006567 / 0.001275 / 0.006567 | **+0.00529** | **+4.5e-07** |
+
+**Two conclusions change.**
+
+1. **@ last token the comparison FLIPS.** Refusalness adds **4.5e-07** — nothing, to seven decimal
+   places — over Boombness, while Boombness adds +0.0053 over refusalness. The published "+0.091 the
+   other way" is entirely the 4 extra columns. §19 Q7's "less than refusalness adds beyond it" and the
+   short update's "the increment comparison, **done correctly**, favours refusalness" are **false at
+   this position**. The phrase "done correctly" is attached to the one cell that is computed wrongly.
+2. **@ codeword_last the direction survives but the magnitude collapses.** Refusalness still adds more,
+   but by **1.47×** (0.1091 vs 0.0743), not the **5.1×** the published table implies. The progress
+   log's reading of it — "Boombness is close to redundant given refusalness" (L45, L2616) — is **not
+   supported**: +0.0743 on a refusalness-only base of 0.1759 is a **42% increase** in explained
+   variance. Not redundancy.
+
+**Provenance note, and it is the worse half.** The published 0.144/0.028 pair is **not in any committed
+artifact**, in any commit. `position_2x2.json` — the artifact the report names as the generator of this
+section, and which was built specifically to make the table regenerable — contains **only
+single-predictor R²** and no `incremental_r2` key at all. `g9_three_predictor_cwpos.json` has carried
+0.1091/0.0743 in **all four** of its committed versions (`fe6755e8`, `2aa414a6`, `fb361288`,
+`e42f5fc4`). So the report's numbers were never regenerable, and the artifact that *was* committed
+disagreed with them the whole time. This is the standing bar — "if you cannot name the script and the
+artifact, the number does not go in" — failing in the one section that claims to have fixed exactly
+this failure.
+
+**Not yet done, and it is the better test:** a symmetric *block* comparison (give Boombness 5 columns
+too, or refusalness 1). The 1-vs-1 above is matched and citable now; the 5-vs-5 needs `analyze_g9` to
+re-run and is queued behind the Phase-1 workflow that currently owns that file.

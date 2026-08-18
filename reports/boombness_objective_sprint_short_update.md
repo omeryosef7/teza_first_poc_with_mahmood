@@ -148,17 +148,24 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
   `codeword_last`"); that re-measurement is the 2×2 above. Nothing here is pending.
 - ⛔ **Revision 4's "like for like" increments (+0.104 / +0.039) are withdrawn.** They came from the
   artifact pairing refusalness@**last token** with `d_surface`@**codeword** — the exact footing
-  mismatch retracted 30 lines above, presented under the words "like for like". At matched footing
-  (both probes at one position, refusalness as all 5 layers jointly):
+  mismatch retracted 30 lines above, presented under the words "like for like".
+- ⛔ **R-13: the replacement table was ALSO withdrawn.** It read +0.028 / +0.144 @codeword and
+  +0.025 / +0.091 @last, under the words "at matched footing" — with the parenthetical
+  "*refusalness as all 5 layers jointly*" disclosing, in the same sentence, that the footing was not
+  matched. Both cells are increments against one model, `boombness(1 col) + refusalness(5 cols)`, so
+  refusalness's increment carried **5 df against Boombness's 1**, and R² is monotone in predictors.
+  The pair is in no committed artifact. At **matched degrees of freedom**
+  (`g9_three_predictor_{cwpos,lastpos}.json`, one column each, n=234):
 
   | | Boombness adds over refusalness | refusalness adds over Boombness |
   |---|---|---|
-  | @ codeword_last | **+0.028** | **+0.144** |
-  | @ last token | **+0.025** | **+0.091** |
+  | @ codeword_last | **+0.0743** | **+0.1091** |
+  | @ last token | **+0.0053** | **+0.0000005** |
 
-  **Refusalness adds more at both positions**; revision 4's bullet implied the opposite. This does
-  not change §18 = B — on single-predictor R² neither probe dominates and both ratio CIs straddle
-  1 — but the increment comparison, done correctly, favours refusalness.
+  **The comparison flips with position.** Refusalness adds more at the codeword token — by 1.47×, not
+  the 5.1× implied — and at the last token it adds **nothing** (4.5e-07). This does not change
+  §18 = B, but "the increment comparison, done correctly, favours refusalness" was **wrong**, and
+  Boombness is not redundant: at the codeword token it adds **42%** over a refusalness-only base.
 
 ## Where the mechanism lives
 
