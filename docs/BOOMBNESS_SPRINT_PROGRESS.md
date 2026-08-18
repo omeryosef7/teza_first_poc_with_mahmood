@@ -5408,3 +5408,70 @@ recomputed on it.
 `analyze_g2` and `analyze_g9` are **unaffected**: both join the judged behavioural population to the same
 extract run and get **270 of 270** coverage, because the judged prompts all predate the bank expansion.
 Only the probe — which needs cached reps across the A/C cells of *every* block — is short.
+
+## AUDIT 11 (17-agent independent sweep) — 84 findings; the worst were in MY code and MY documents
+
+Ran as part of the requested mid-session sanity check: 8 audit dimensions, each result-affecting finding
+adversarially re-verified, all scoped to `src/` + scalar JSON (no subagent may read generations or prompt
+text). **84 findings.** This entry records the triage; nothing is hidden.
+
+### Fixed this tick, verified
+
+| # | finding | severity | status |
+|---|---|---|---|
+| A11-1 | **`analyze_g1_g3.py` crashes on EVERY invocation** — argparse defines `--g1-run`/`--g3-run` (→ `args.g1_run`) but the body reads `args.g1`/`args.g3`. Reproduced: `AttributeError` before any analysis runs. The script is unrunnable in every mode, so **its `require_done` guard had never executed once** and its committed artifact cannot be reproduced by it. | RESULT-AFFECTING | **fixed**; `require_done` now actually fires |
+| A11-2 | **§6.4's `comprehension` target was silently absent.** `prompt_id = sha256(family_id + '|' + condition)` and `family_id` ends with the query_kind, so a behavioural id and a `comprehension_usage` id **can never be equal** — the join was **0 of 288** and my `if len(cpids) >= 30` guard skipped a plan-REQUIRED target without a word. Verified: overlap literally 0; the shipped CSV had 4 targets, not 5. | RESULT-AFFECTING | **fixed** — joins on the query-kind-stripped family stem; a missing required target is now **fatal**, not skipped |
+| A11-3 | **The within-domain permutation was not demeaned — in `analyze_g64.py` AND `analyze_g9.py`.** Shuffling inside a group preserves that group's mean, so the between-domain component survived every draw and the statistic was not the within-domain one its name promised. **This is audit A3, which `analyze_g2.py:284` already diagnosed and fixed — I reintroduced it in two new scripts.** | RESULT-AFFECTING | **fixed in both, and both rerun.** It moves p materially: §6.4 logit-lens-vs-ASR went p=0.150 → **0.818** |
+| A11-4 | **Both reports still tabled the RETRACTED control band's derived statistics** (`−0.0778 ± 0.0241, t=−3.23, df=235, p=0.0014`) — in the short update, *directly beneath the paragraph retracting the band they came from*, under the words "Against that real band". Genuine values from `steering_band_real.json`: **diff −0.1023 ± 0.0410, t=−2.49, df_welch 6.6, p=0.043** — an order of magnitude in p and 35× in df. | RESULT-AFFECTING | **fixed in both reports** |
+| A11-5 | **The report asserted "role definitively does not change Boombness" four lines below retraction #6, which says the opposite.** | RESULT-AFFECTING | **fixed** |
+| A11-6 | The first sanity-check doc still stated §6.4's retracted "metric of record" result. | RESULT-AFFECTING | **fixed** |
+
+### My retraction sweep failed twice, and both failures are now recorded in it
+
+A11-4 and A11-5 are the sweep's job and it passed them.
+1. **It enumerated the band's mean and sd but not the t/p/CI computed FROM them.** Rule added: *a
+   retraction must enumerate every number downstream of the withdrawn one.*
+2. **Its paragraph-marker exemption is a heuristic, not a proof.** The §11 sentence sat in a paragraph
+   containing the word "Corrected", so the whole block was exempted while a later sentence asserted the
+   retracted claim. Now documented in the module; claim-level patterns are the real defence because they
+   match the *assertion*, not the number.
+Both new pattern sets were regression-tested by reinjection before being trusted. One over-broad pattern
+(`clears the band`) and one false positive (bare `0.070`, which is also an unrelated cosine) were caught
+and narrowed **by testing the checker against the corrected documents**.
+
+### §6.4 recomputed — full coverage, all 5 targets, demeaned permutation (n=72, L12)
+
+| metric | ρ vs ASR | ρ ∣ `n_examples` | p | vs comprehension | vs refusal |
+|---|---|---|---|---|---|
+| `logit_lens_boombness` | −0.210 | −0.012 | 0.130 | −0.114 n.s. | +0.335 |
+| `direction_boombness` | +0.217 | +0.009 | 0.395 | **+0.528** | −0.483 |
+| `probe_boombness` | +0.426 | +0.095 | 0.645 | +0.484 | −0.502 |
+
+**No Boombness metric predicts ASR independently of demonstration count.** New: `direction_boombness`
+is the strongest *comprehension* correlate (+0.528, p=0.003) — it tracks whether the model understands
+the mapping, not whether the attack lands.
+
+### ⛔ CORRECTION C13 — retraction #9's ROOT CAUSE was wrong
+
+I attributed §6.4's 72-vs-270 population mismatch to the stale 1464-row rep cache and launched job
+763924 to re-extract over the current 2352-row bank. That job finished (2592/2592, cache covers 2352)
+**and the probe still covers only 72 of the 270 judged prompts.** The real cause is `probes.py:199`:
+`d5` is **hardcoded** to `bank_block == "core2x2"`, because that is where surface-matched A/C pairs
+exist. The stale cache was a real, separate defect (now fixed); it was not this one.
+**The retraction stands; my explanation of it did not.** A three-way comparison at n=270 is not possible
+as `d5` is defined — `families` is the only other block with both A and C (72/72) and is excluded by the
+hardcoded filter.
+
+### Confirmed and OUTSTANDING (not yet fixed — listed, not buried)
+
+| finding | why it matters |
+|---|---|
+| `judge_boombness.py:172` + `analyze_steering.py`: headline ASR intervals are **iid Wilson binomials on domain-clustered prompts**, ~1.9× too narrow | every quoted ASR CI |
+| `reanalyze_corrected.py:190`: hardcoded **1.96** CI/MDE beside its own **t(5)** p-value → intervals 31% too narrow | same class as the §8 fix |
+| `analyze_g1_g3.py:75`: G1's citable bootstrap **resamples FAMILIES when the clusters are DOMAINS**, and the reported G1 arm has only **2 domains** | the "+57% to +105%" interval |
+| `aggressive_patching.py:425`: G1's family sample is the **alphabetical head** of the family list → whole domains selected in alphabetical order, no stratification | G1 is a 2-domain result by construction |
+| `analyze_role.py:110`: unadjusted **in-sample** R² increments for a 5-dummy role term, no identifiability gate | §11 role numbers |
+| `score_behavior.py:331`: `resolve_occurrences` templates with `extract_boombness.ENABLE_THINKING` (module global, never set by score_behavior) while readout and generation use the requested mode — **4 committed Qwen3 runs used `--enable-thinking false`** | **the sixth one-of-two-paths bug**, as predicted |
+| `analyze_g64.py`: no `--min-examples`, so it analyses the 36 zero-demo prompts that `analyze_g2` deliberately drops | §6.4 n |
+| report/short: the "@ last token" incremental-R² row (+0.025/+0.091) **has no backing artifact**; the corrected §11 role statistics likewise | unbacked figures |
+| Qwen3 non-replication table **silently drops `natural_doublespeak` (+0.339)** from the "harmful conditions" cell while the Llama column lists three | asymmetric presentation |

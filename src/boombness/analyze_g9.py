@@ -131,10 +131,25 @@ def perm_p_within_cluster(xcols, y, clusters, target_idx, n_perm=2000, seed=2026
         se, _ = cr1_se(X, resid, clusters, len(beta))
         j = target_idx + 1
         return abs(beta[j] / se[j]) if se[j] and not math.isnan(se[j]) else 0.0
-    obs = fit_t(xcols)
+    # AUDIT 2026-08-18: permuting within cluster while fitting on the RAW vectors leaves the
+    # between-cluster component in the statistic, so the null is not centred and the quantity is
+    # not the within-domain one the name promises (analyze_g2.py:284, audit A3 - same bug).
+    # Demean the target predictor and y within cluster first.
     by = collections.defaultdict(list)
     for i, g in enumerate(clusters):
         by[g].append(i)
+
+    def _dm(v):
+        o = list(v)
+        for ii in by.values():
+            m = sum(o[i] for i in ii) / len(ii)
+            for i in ii:
+                o[i] -= m
+        return o
+
+    xcols = [(_dm(c) if k == target_idx else c) for k, c in enumerate(xcols)]
+    y = _dm(y)
+    obs = fit_t(xcols)
     hits = 0
     for _ in range(n_perm):
         permuted = list(xcols[target_idx])

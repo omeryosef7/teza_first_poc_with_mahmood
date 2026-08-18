@@ -66,26 +66,46 @@ def spearman(x: Sequence[float], y: Sequence[float]) -> float:
     return num / den if den else float("nan")
 
 
+def _demean_within(v, domains):
+    """Subtract each domain's mean. Required before a within-domain permutation."""
+    by = collections.defaultdict(list)
+    for i, d in enumerate(domains):
+        by[d].append(i)
+    out = list(v)
+    for idx in by.values():
+        m = st.mean(out[i] for i in idx)
+        for i in idx:
+            out[i] -= m
+    return out
+
+
 def perm_p_within_domain(x, y, domains, n_perm=2000, seed=20260818) -> float:
-    """Permute x WITHIN each domain. Preserves between-domain structure, so a correlation that is
-    really a domain-level confound does not survive."""
+    """Permute x WITHIN each domain, on the GROUP-DEMEANED vectors.
+
+    AUDIT (2026-08-18): the first version permuted within domain but evaluated the correlation on
+    the RAW pooled vectors. Shuffling inside a group preserves that group's mean exactly, so the
+    BETWEEN-domain component of the association survived every draw and the null was not centred on
+    zero - the statistic was not the within-domain one its name promised. This is the identical bug
+    analyze_g2.py:284 diagnosed as audit A3 and fixed; it was reintroduced here. Demeaning x and y
+    within domain first makes the statistic actually within-domain.
+    """
     rng = random.Random(seed)
-    obs = abs(spearman(x, y))
+    xw, yw = _demean_within(x, domains), _demean_within(y, domains)
+    obs = abs(spearman(xw, yw))
     if math.isnan(obs):
         return float("nan")
     idx_by_dom = collections.defaultdict(list)
     for i, d in enumerate(domains):
         idx_by_dom[d].append(i)
     hits = 0
-    xs = list(x)
     for _ in range(n_perm):
-        xp = list(xs)
+        xp = list(xw)
         for idx in idx_by_dom.values():
             vals = [xp[i] for i in idx]
             rng.shuffle(vals)
             for i, v in zip(idx, vals):
                 xp[i] = v
-        if abs(spearman(xp, y)) >= obs:
+        if abs(spearman(xp, yw)) >= obs:
             hits += 1
     return (hits + 1) / (n_perm + 1)
 
@@ -114,6 +134,8 @@ def rank_partial(x, y, z) -> float:
 def perm_p_partial(x, y, z, domains, n_perm=2000, seed=20260818) -> float:
     """Within-domain permutation of x, recomputing the PARTIAL correlation each time."""
     rng = random.Random(seed)
+    # same demeaning fix as perm_p_within_domain
+    x, y, z = (_demean_within(x, domains), _demean_within(y, domains), _demean_within(z, domains))
     obs = abs(rank_partial(x, y, z))
     if math.isnan(obs):
         return float("nan")
@@ -177,8 +199,20 @@ def main() -> int:
     refused = {r["prompt_id"]: (1.0 if r.get("refused") else 0.0) for r in J
                if r["prompt_id"] in asr}
     meta = {r["prompt_id"]: r for r in J if r["prompt_id"] in asr}
-    comp = {r["prompt_id"]: r["comprehension_logodds"] for r in S
-            if r.get("readout") == "comprehension" and r.get("comprehension_logodds") is not None}
+    # `prompt_id` = sha256(family_id + '|' + condition) and `family_id` ENDS WITH the query_kind,
+    # so a behavioural prompt_id and a comprehension_usage prompt_id are never equal. Joining on it
+    # gave 0 of 288 matches and silently dropped `comprehension` -- a plan-§6.4 REQUIRED target --
+    # out of the correlation table entirely. Join on the query-kind-stripped family stem instead.
+    def _stem(fid): return "|".join((fid or "").split("|")[:-1])
+    comp_by_stem = {}
+    for r in S:
+        if r.get("readout") == "comprehension" and r.get("comprehension_logodds") is not None:
+            comp_by_stem[(_stem(r.get("family_id")), r.get("condition"))] = r["comprehension_logodds"]
+    comp = {}
+    for pid, m in meta.items():
+        v = comp_by_stem.get((_stem(m.get("family_id")), m.get("condition")))
+        if v is not None:
+            comp[pid] = v
 
     erow = {r["prompt_id"]: r for r in E if r.get("is_final_occurrence") and r["prompt_id"] in asr}
     prow: Dict[int, Dict[str, float]] = collections.defaultdict(dict)
@@ -219,6 +253,7 @@ def main() -> int:
               f"{len(set(meta[p].get('domain') for p in erow))} domains)")
 
     rows_csv = []
+    missing_targets = set()
     per_layer_metric = collections.defaultdict(dict)   # metric -> layer -> rho vs ASR
     per_layer_partial = collections.defaultdict(dict)  # ... partialling out n_examples
     for L in layers:
@@ -254,6 +289,8 @@ def main() -> int:
                     per_layer_metric[mname][L] = rho
                     per_layer_partial[mname][L] = rp
                 rows_csv.append(rec)
+            if len(cpids) < 30:
+                missing_targets.add(mname)
             if len(cpids) >= 30:
                 xc = [getter(L, p) for p in cpids]
                 yc = [comp[p] for p in cpids]
@@ -272,6 +309,13 @@ def main() -> int:
                              "p_partial": "",
                              "n_domains": len(set(doms)),
                              "identified": "NO - role_style is collinear with bank_block (§9)"})
+
+    if missing_targets:
+        raise SystemExit(
+            f"[G6.4] REFUSING: `comprehension` is a plan-§6.4 REQUIRED target and it could not be "
+            f"joined for {sorted(missing_targets)}. The first version of this script skipped it "
+            f"silently on a `>= 30` guard, so the deliverable shipped without one of its five "
+            f"required targets and nothing said so.")
 
     csv_path = os.path.join(args.outdir, "correlation_table.csv")
     with open(csv_path, "w", newline="") as f:

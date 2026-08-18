@@ -244,10 +244,10 @@ def main() -> int:
                     help="analyse a run with no DONE.json (output must not be reported)")
 
     args = ap.parse_args()
-    if args.g1:
-        require_done(args.g1, allow_partial=args.allow_partial)
-    if args.g3:
-        require_done(args.g3, allow_partial=args.allow_partial)
+    if args.g1_run:
+        require_done(args.g1_run, allow_partial=args.allow_partial)
+    if args.g3_run:
+        require_done(args.g3_run, allow_partial=args.allow_partial)
     report: Dict[str, object] = {}
 
     if args.g1_run:

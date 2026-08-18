@@ -37,6 +37,17 @@ RETRACTED = [
     # specific retracted CLAIM can be, and that is what actually misleads a reader.
     ("R7  4-draw band asserted as prose",    r"(?:four|4)\s+independent\s+draws|"
                                              r"reproducib[^\n]{0,40}(?:four|4)\s+draws"),
+    # The 2026-08-18 audit found the retracted band's DERIVED statistics still tabled as fact in
+    # both reports, one of them directly beneath the paragraph retracting it. My sweep missed them
+    # because I had enumerated the band's mean and sd but not the t/p/CI computed FROM it. A
+    # retraction must enumerate every number downstream of the withdrawn one, not just the headline.
+    # NARROWED after the first version flagged the CORRECTED table: "clears the band" is a
+    # legitimate verdict phrase, not a retracted claim. Match only the withdrawn NUMBERS.
+    ("R7  band-derived t/p/CI",              r"0\.0014|0\.0778\s*±\s*0\.0241|[−-]3\.23|"
+                                             r"[−-]0\.0375\s*±\s*0\.0206"),  # NOT bare 0.070:
+    # that value also appears as an unrelated cosine in the d_surface table -> false positive.
+    ("R9  §6.4 'metric of record'",          r"metric of record|direction_boombness[^\n]{0,40}survives"),
+    ("R6  role 'definitively does not'",     r"role definitively does not change"),
     ("R6  role null called tight (prose)",   r"tight null|null is tight"),
     ("R8  capability channel as prose",      r"capability channel"),
     ("R8  'capability channel' as fact",     r"supplies content that makes a completion actually harmful"),
@@ -52,6 +63,12 @@ DELIVERABLES = [
     "reports/boombness_objective_sprint_short_update.md",
     "docs/BOOMBNESS_MIDSESSION_SANITY_CHECK.md",
 ]
+# KNOWN LIMITATION (found 2026-08-18). A paragraph is exempted if it contains ANY marker word, but a
+# paragraph can legitimately contain "corrected"/"was" while still ASSERTING a retracted claim in a
+# later sentence. That happened in the §11 answer: "role definitively does not change Boombness" sat
+# four lines below its own retraction, inside a paragraph containing "Corrected", so this sweep passed
+# it and an independent audit caught it instead. The exemption is a heuristic, not a proof; claim-level
+# patterns (below) are the defence, because they match the assertion rather than the number.
 MARKER = re.compile(
     r"retract|withdraw|supersed|⛔|previously|earlier|revision \d|was\b|fake|not reportable|"
     r"instead of|rather than|naive one-way|no longer|corrected", re.I)

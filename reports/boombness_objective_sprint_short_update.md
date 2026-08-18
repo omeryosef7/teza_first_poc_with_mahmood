@@ -232,10 +232,16 @@ were byte-identical — one draw wearing four labels.** On a genuine 4-draw band
 between-draw sd 0.0301, six times wider**, spanning −0.055 to +0.012 — so a norm-matched random
 perturbation has **no reliable effect on ASR at all**. Against that real band:
 
+
+⛔ **The table that stood here quoted t/p computed from the RETRACTED band** (p=0.0014 on
+df=235). Those are downstream of retraction #7 and were withdrawn with it — the sweep missed them
+because I had enumerated the band's mean and sd but not the statistics derived FROM it. Against
+the GENUINE 4-draw band (n_draws=4, so the Welch df is ~7, not ~235):
+
 | arm | diff vs band | t | p | verdict |
 |---|---|---|---|---|
-| **+0.25** | −0.0778 ± 0.0241 | −3.23 | **0.0014** | **clears the band** |
-| −0.25 | −0.0375 ± 0.0206 | −1.82 | 0.070 | **does not clear** |
+| **+0.25** | -0.1023 ± 0.0410 | -2.49 | **0.043** | clears the band |
+| −0.25 | -0.0620 ± 0.0391 | -1.59 | **0.168** | does **not** clear |
 
 So "the axis is not inert" holds for **+0.25 only**. The −0.25 arm sits essentially *on* the band —
 revision 1's blended "2–3× the controls" overstated it. One line: **adding concept-ness to the

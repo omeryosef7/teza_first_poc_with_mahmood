@@ -307,10 +307,16 @@ support ⇒ no objective.**
 
 Against a proper 4-draw random-control band (Welch df, not the SE of the band mean):
 
+
+⛔ **The table that stood here quoted t/p computed from the RETRACTED band** (p=0.0014 on
+df=235). Those are downstream of retraction #7 and were withdrawn with it — the sweep missed them
+because I had enumerated the band's mean and sd but not the statistics derived FROM it. Against
+the GENUINE 4-draw band (n_draws=4, so the Welch df is ~7, not ~235):
+
 | arm | diff vs band | t | df | p | verdict |
 |---|---|---|---|---|---|
-| **+0.25** | −0.0778 ± 0.0241 | −3.23 | 235 | **0.0014** | **clears the band** |
-| −0.25 | −0.0375 ± 0.0206 | −1.82 | 203 | 0.070 | does **not** clear |
+| **+0.25** | -0.1023 ± 0.0410 | -2.49 | 6.6 | **0.043** | clears the band |
+| −0.25 | -0.0620 ± 0.0391 | -1.59 | 5.4 | **0.168** | does **not** clear |
 
 **The two signs suppress by different routes** — of the prompts each arm suppressed, the fraction
 that are keyword refusals:
@@ -406,9 +412,17 @@ for the analysis actually run** — true only inside the 72 stems.
 
 **The ASR half is suggestive but not established:** `role → ASR` F = 1.94, **p = 0.087** on an
 unbalanced omnibus (`plain` n=204 vs 36 each); the largest pair (0.035 vs 0.233, a 6.6× ratio) is
-MW p = 0.007 uncorrected ≈ **0.105 Bonferroni** over 15 comparisons. So §11's answer is **(c)-leaning** — role definitively does not change Boombness, and
-whether it changes ASR is unresolved at this n. (I predicted (b) before the powered run; the data
-did not support it.)
+MW p = 0.007 uncorrected ≈ **0.105 Bonferroni** over 15 comparisons.
+
+So §11's answer is: **role DOES move Boombness — reliably, and by ~4% of the grand mean — while whether
+it moves ASR is unresolved at this n.** (I predicted (b) before the powered run; the representational
+half is supported, the behavioural half is not yet.)
+
+⛔ This sentence previously read "role definitively does not change Boombness", **four lines below the
+paragraph retracting exactly that claim** (retraction #6). Caught 2026-08-18 by an independent audit, not
+by my own retraction sweep — the sweep scopes to a paragraph and this paragraph contains the word
+"corrected", which its marker regex reads as retraction context. A marker word in the block is now known
+to be an unreliable exemption; the sweep's own limitation is recorded in `retraction_sweep.py`.
 
 `role_style` is a **categorical proxy**: no Userness/CoTness probe was fitted on this model, so this
 is not a measured role signal.
