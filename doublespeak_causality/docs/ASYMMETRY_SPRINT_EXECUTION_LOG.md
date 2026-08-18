@@ -10742,3 +10742,10 @@ Diff unchanged.
 ### 08:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 09:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 09:45 — idle. Controller OK (header verified). Queue: 4 boombness jobs (2 R, 2 PD at 0:00 — no >30 min trigger; theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 10:15 — idle. Controller OK (header verified). Queue: 2 boombness jobs (theirs). No new asymmetry artifacts, no §20 commits.
+*(Noting for the record: their `7df528c5` says "refill queue to **7/7**" — that session is running to
+a **7-job target**, above the ≤6 this sprint holds itself to. Their call for their workstream. The
+consequence for §20: if an unblocking decision ever needs GPU, "wait for a free slot under 6" may
+not resolve on its own, and the right move would be to coordinate rather than queue behind them
+indefinitely. Nothing to do now — §20 has no submittable work.)*
+Diff unchanged.
