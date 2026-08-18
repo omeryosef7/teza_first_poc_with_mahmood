@@ -5,6 +5,24 @@
   "outcome": "strongreject_score (continuous [0,1], NOT binary ASR@0.5)",
   "min_examples": 1,
   "inference": "CR1 sandwich, t(G-1) reference, plus within-domain permutation",
+  "provenance": {
+    "argv": [
+      "src/boombness/analyze_g9.py",
+      "--judge",
+      "outputs/boombness/judge/base_20260816_210948_3024689",
+      "--extract",
+      "outputs/boombness/extract_boombness/lastpos_20260817_071318_453596",
+      "--refusalness",
+      "outputs/boombness/refusalness/lastpos_20260817_120828_1414147",
+      "--position",
+      "last",
+      "--out",
+      "outputs/boombness/g9_three_predictor_lastpos.json"
+    ],
+    "git_commit": "f6e72a910ddf8c669a318854b0bccd16c6e53bd9",
+    "git_dirty": true,
+    "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+  },
   "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
   "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/lastpos_20260817_071318_453596",
   "refusalness": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/refusalness/lastpos_20260817_120828_1414147",
@@ -34,80 +52,144 @@
     "per_style": {
       "assistant_like": {
         "n": 6,
-        "family_overlap_with_reference": 0,
+        "family_overlap_with_reference": 6,
+        "family_overlap_raw_family_id": 0,
+        "overlap_test": "stem(family_id, role_style) -- style token masked",
         "shares_block_with_reference": false,
+        "block_is_relabel_of_style": true,
         "blocks": [
           "role_style"
         ],
-        "identified": false,
-        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+        "blocks_on_crossed_cells": [
+          "role_style"
+        ],
+        "reference_blocks_on_crossed_cells": [
+          "core2x2"
+        ],
+        "n_crossed_rows": 12,
+        "identified": true,
+        "reason": "identified on style-masked content stems; the shares-block clause was WAIVED because every bank_block involved is style-pure, i.e. the block label carries no information beyond the style itself"
       },
       "cot_like": {
         "n": 6,
-        "family_overlap_with_reference": 0,
+        "family_overlap_with_reference": 6,
+        "family_overlap_raw_family_id": 0,
+        "overlap_test": "stem(family_id, role_style) -- style token masked",
         "shares_block_with_reference": false,
+        "block_is_relabel_of_style": true,
         "blocks": [
           "role_style"
         ],
-        "identified": false,
-        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+        "blocks_on_crossed_cells": [
+          "role_style"
+        ],
+        "reference_blocks_on_crossed_cells": [
+          "core2x2"
+        ],
+        "n_crossed_rows": 12,
+        "identified": true,
+        "reason": "identified on style-masked content stems; the shares-block clause was WAIVED because every bank_block involved is style-pure, i.e. the block label carries no information beyond the style itself"
       },
       "system_like_quoted": {
         "n": 6,
-        "family_overlap_with_reference": 0,
+        "family_overlap_with_reference": 6,
+        "family_overlap_raw_family_id": 0,
+        "overlap_test": "stem(family_id, role_style) -- style token masked",
         "shares_block_with_reference": false,
+        "block_is_relabel_of_style": true,
         "blocks": [
           "role_style"
         ],
-        "identified": false,
-        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+        "blocks_on_crossed_cells": [
+          "role_style"
+        ],
+        "reference_blocks_on_crossed_cells": [
+          "core2x2"
+        ],
+        "n_crossed_rows": 12,
+        "identified": true,
+        "reason": "identified on style-masked content stems; the shares-block clause was WAIVED because every bank_block involved is style-pure, i.e. the block label carries no information beyond the style itself"
       },
       "tool": {
         "n": 6,
-        "family_overlap_with_reference": 0,
+        "family_overlap_with_reference": 6,
+        "family_overlap_raw_family_id": 0,
+        "overlap_test": "stem(family_id, role_style) -- style token masked",
         "shares_block_with_reference": false,
+        "block_is_relabel_of_style": true,
         "blocks": [
           "role_style"
         ],
-        "identified": false,
-        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+        "blocks_on_crossed_cells": [
+          "role_style"
+        ],
+        "reference_blocks_on_crossed_cells": [
+          "core2x2"
+        ],
+        "n_crossed_rows": 12,
+        "identified": true,
+        "reason": "identified on style-masked content stems; the shares-block clause was WAIVED because every bank_block involved is style-pure, i.e. the block label carries no information beyond the style itself"
       },
       "user_like": {
         "n": 6,
-        "family_overlap_with_reference": 0,
+        "family_overlap_with_reference": 6,
+        "family_overlap_raw_family_id": 0,
+        "overlap_test": "stem(family_id, role_style) -- style token masked",
         "shares_block_with_reference": false,
+        "block_is_relabel_of_style": true,
         "blocks": [
           "role_style"
         ],
-        "identified": false,
-        "reason": "zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+        "blocks_on_crossed_cells": [
+          "role_style"
+        ],
+        "reference_blocks_on_crossed_cells": [
+          "core2x2"
+        ],
+        "n_crossed_rows": 12,
+        "identified": true,
+        "reason": "identified on style-masked content stems; the shares-block clause was WAIVED because every bank_block involved is style-pure, i.e. the block label carries no information beyond the style itself"
       }
     },
-    "identified_styles": [],
-    "identified": false,
-    "reason": "no role style is identified against the reference 'plain': zero family overlap with the reference (role is a family-set swap); no bank_block shared with the reference (role is collinear with block)"
+    "identified_styles": [
+      "assistant_like",
+      "cot_like",
+      "system_like_quoted",
+      "tool",
+      "user_like"
+    ],
+    "identified": true,
+    "reason": "identified for: assistant_like, cot_like, system_like_quoted, tool, user_like"
   },
   "models": {
     "boombness_only": {
       "r2": 0.006566969629145825,
       "n": 234,
       "n_clusters": 6,
+      "n_params": 2,
+      "cr1_rank_deficient": false,
       "terms": {
         "intercept": {
-          "beta": 0.18055555555555555,
+          "beta_pooled": 0.18055555555555555,
           "se_cr1": 0.03576253144894868,
           "t": 5.048735317109757,
-          "p_cr1": 0.003937515802133699,
+          "p_cr1_pooled_beta": 0.003937515802152618,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 4.4474441280665347e-07,
-          "reference": "t(df=5)"
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
         },
         "boombness": {
-          "beta": 0.025441364184174427,
+          "beta_pooled": 0.025441364184174427,
           "se_cr1": 0.03241362494982873,
           "t": 0.7848972221883148,
-          "p_cr1": 0.4680543953736268,
+          "p_cr1_pooled_beta": 0.46805439542656135,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 0.4325138308514808,
-          "reference": "t(df=5)"
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
         }
       }
     },
@@ -115,22 +197,30 @@
       "r2": 0.0012747707918260298,
       "n": 234,
       "n_clusters": 6,
+      "n_params": 2,
+      "cr1_rank_deficient": false,
       "terms": {
         "intercept": {
-          "beta": 0.18055555555555555,
+          "beta_pooled": 0.18055555555555555,
           "se_cr1": 0.03227252237758832,
           "t": 5.5947147063082525,
-          "p_cr1": 0.002518667915468891,
+          "p_cr1_pooled_beta": 0.002518667915471503,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 2.2098484449401012e-08,
-          "reference": "t(df=5)"
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
         },
         "refusalness": {
-          "beta": 0.011209182574111456,
+          "beta_pooled": 0.011209182574111456,
           "se_cr1": 0.024163689818652075,
           "t": 0.4638853858097049,
-          "p_cr1": 0.6622248254326614,
+          "p_cr1_pooled_beta": 0.6622248255388862,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 0.6427298637643923,
-          "reference": "t(df=5)"
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
         }
       }
     },
@@ -138,71 +228,406 @@
       "r2": 0.006567419125257046,
       "n": 234,
       "n_clusters": 6,
+      "n_params": 3,
+      "cr1_rank_deficient": false,
       "terms": {
         "intercept": {
-          "beta": 0.18055555555555555,
+          "beta_pooled": 0.18055555555555555,
           "se_cr1": 0.03582571164426992,
           "t": 5.039831653544674,
-          "p_cr1": 0.003967459471247442,
+          "p_cr1_pooled_beta": 0.0039674594712670085,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 4.659415224865044e-07,
-          "reference": "t(df=5)"
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
         },
         "boombness": {
-          "beta": 0.025340216270970238,
+          "beta_pooled": 0.025340216270970238,
           "se_cr1": 0.03081706315635648,
           "t": 0.8222787532478882,
-          "p_cr1": 0.4483409336958309,
+          "p_cr1_pooled_beta": 0.4483409337298767,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 0.4109182661759988,
           "reference": "t(df=5)",
-          "p_within_domain_perm": 0.5662168915542228
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null,
+          "beta_within_domain": 0.06513870250918315,
+          "p_perm_within_domain_beta": 0.0014992503748125937,
+          "p_estimand_perm": "beta_within_domain",
+          "estimand_note": "beta_pooled and beta_within_domain are DIFFERENT quantities. p_perm_within_domain_beta is a p-value for beta_within_domain ONLY; p_cr1_pooled_beta is the one that belongs to beta_pooled."
         },
         "refusalness": {
-          "beta": 0.00023352682095690084,
+          "beta_pooled": 0.00023352682095690084,
           "se_cr1": 0.02051443752639885,
           "t": 0.011383535164266073,
-          "p_cr1": 0.7656066841105736,
+          "p_cr1_pooled_beta": 0.9913576917769514,
+          "p_estimand_cr1": "beta_pooled",
           "p_cr1_normal_ANTICONSERVATIVE": 0.9909174492056975,
           "reference": "t(df=5)",
-          "p_within_domain_perm": 0.9910044977511244
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null,
+          "beta_within_domain": -0.007201028823139873,
+          "p_perm_within_domain_beta": 0.7016491754122939,
+          "p_estimand_perm": "beta_within_domain",
+          "estimand_note": "beta_pooled and beta_within_domain are DIFFERENT quantities. p_perm_within_domain_beta is a p-value for beta_within_domain ONLY; p_cr1_pooled_beta is the one that belongs to beta_pooled."
+        }
+      }
+    },
+    "n_examples_only": {
+      "r2": 0.03539423949198661,
+      "n": 234,
+      "n_clusters": 6,
+      "n_params": 2,
+      "cr1_rank_deficient": false,
+      "terms": {
+        "intercept": {
+          "beta_pooled": 0.18055555555555555,
+          "se_cr1": 0.03240453965497611,
+          "t": 5.571921634375974,
+          "p_cr1_pooled_beta": 0.0025643679386899874,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 2.519447527969616e-08,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "n_examples": {
+          "beta_pooled": 0.05906418061774649,
+          "se_cr1": 0.014720446122338545,
+          "t": 4.012390665804314,
+          "p_cr1_pooled_beta": 0.010197337007611353,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 6.010692015396454e-05,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        }
+      }
+    },
+    "boombness+n_examples": {
+      "r2": 0.04887941311229904,
+      "n": 234,
+      "n_clusters": 6,
+      "n_params": 3,
+      "cr1_rank_deficient": false,
+      "terms": {
+        "intercept": {
+          "beta_pooled": 0.18055555555555555,
+          "se_cr1": 0.03756132992393639,
+          "t": 4.806953212817271,
+          "p_cr1_pooled_beta": 0.004853827888264443,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 1.5324783676984874e-06,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "boombness": {
+          "beta_pooled": 0.03704087122170971,
+          "se_cr1": 0.030242196974406055,
+          "t": 1.2248075512852907,
+          "p_cr1_pooled_beta": 0.27519807256210693,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.2206477391520269,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "n_examples": {
+          "beta_pooled": 0.06561255877068932,
+          "se_cr1": 0.014320079250156447,
+          "t": 4.58185723867223,
+          "p_cr1_pooled_beta": 0.005937425298897727,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 4.6086448610329574e-06,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        }
+      }
+    },
+    "boombness+refusalness+n_examples": {
+      "r2": 0.04962975904053346,
+      "n": 234,
+      "n_clusters": 6,
+      "n_params": 4,
+      "cr1_rank_deficient": false,
+      "terms": {
+        "intercept": {
+          "beta_pooled": 0.18055555555555555,
+          "se_cr1": 0.03823942938379735,
+          "t": 4.721711554410898,
+          "p_cr1_pooled_beta": 0.005234628962904507,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 2.3386819974731153e-06,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "boombness": {
+          "beta_pooled": 0.04142256269351535,
+          "se_cr1": 0.02950232426946959,
+          "t": 1.4040440446375744,
+          "p_cr1_pooled_beta": 0.219268340458914,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.16030573434728562,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null,
+          "beta_within_domain": 0.08760575789948465,
+          "p_perm_within_domain_beta": 0.0004997501249375312,
+          "p_estimand_perm": "beta_within_domain",
+          "estimand_note": "beta_pooled and beta_within_domain are DIFFERENT quantities. p_perm_within_domain_beta is a p-value for beta_within_domain ONLY; p_cr1_pooled_beta is the one that belongs to beta_pooled."
+        },
+        "refusalness": {
+          "beta_pooled": -0.009629655414879871,
+          "se_cr1": 0.02188022256667512,
+          "t": -0.4401077450439836,
+          "p_cr1_pooled_beta": 0.6782332039791801,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.6598590726934115,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null,
+          "beta_within_domain": -0.016047953641434503,
+          "p_perm_within_domain_beta": 0.41829085457271364,
+          "p_estimand_perm": "beta_within_domain",
+          "estimand_note": "beta_pooled and beta_within_domain are DIFFERENT quantities. p_perm_within_domain_beta is a p-value for beta_within_domain ONLY; p_cr1_pooled_beta is the one that belongs to beta_pooled."
+        },
+        "n_examples": {
+          "beta_pooled": 0.06680483842788905,
+          "se_cr1": 0.01479702270799391,
+          "t": 4.5147486589852,
+          "p_cr1_pooled_beta": 0.006313273376031252,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 6.33919029333062e-06,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null,
+          "beta_within_domain": 0.07205997038876649,
+          "p_perm_within_domain_beta": 0.004497751124437781,
+          "p_estimand_perm": "beta_within_domain",
+          "estimand_note": "beta_pooled and beta_within_domain are DIFFERENT quantities. p_perm_within_domain_beta is a p-value for beta_within_domain ONLY; p_cr1_pooled_beta is the one that belongs to beta_pooled."
+        }
+      }
+    },
+    "boombness+refusalness+n_examples_linear": {
+      "r2": 0.04510880294466835,
+      "n": 234,
+      "n_clusters": 6,
+      "n_params": 4,
+      "cr1_rank_deficient": false,
+      "terms": {
+        "intercept": {
+          "beta_pooled": 0.18055555555555555,
+          "se_cr1": 0.03753051441712268,
+          "t": 4.810900099817978,
+          "p_cr1_pooled_beta": 0.004836992800974081,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 1.5025210705017472e-06,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "boombness": {
+          "beta_pooled": 0.036640278428293684,
+          "se_cr1": 0.030415577723498947,
+          "t": 1.20465502123228,
+          "p_cr1_pooled_beta": 0.28224134711243376,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.22833650657147703,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "refusalness": {
+          "beta_pooled": -0.008280913796151434,
+          "se_cr1": 0.023063963773217084,
+          "t": -0.3590412245516794,
+          "p_cr1_pooled_beta": 0.7342280633999925,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.7195642498232595,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        },
+        "n_examples_linear": {
+          "beta_pooled": 0.06257484643136758,
+          "se_cr1": 0.01643984965206833,
+          "t": 3.8062906751397767,
+          "p_cr1_pooled_beta": 0.012547520644885653,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": 0.00014106657914100975,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": false,
+          "cr1_suppressed_reason": null
+        }
+      }
+    },
+    "boombness+role+refusalness (crossed subset)": {
+      "r2": 0.15576939581916105,
+      "n": 36,
+      "n_clusters": 6,
+      "n_params": 8,
+      "cr1_rank_deficient": true,
+      "terms": {
+        "intercept": {
+          "beta_pooled": 0.060771249266905886,
+          "se_cr1": 0.11388014943873759,
+          "t": 0.5336421629794057,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "boombness": {
+          "beta_pooled": -0.034117057693132655,
+          "se_cr1": 0.02737823686240923,
+          "t": -1.2461378672625898,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "role[assistant_like]": {
+          "beta_pooled": 0.02879107489533083,
+          "se_cr1": 0.16600111069927231,
+          "t": 0.1734390497391837,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "role[cot_like]": {
+          "beta_pooled": -0.08120377159021544,
+          "se_cr1": 0.12177163284598748,
+          "t": -0.6668529417924381,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "role[system_like_quoted]": {
+          "beta_pooled": -0.00660975503402236,
+          "se_cr1": 0.1322756025635857,
+          "t": -0.04996957039636247,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "role[tool]": {
+          "beta_pooled": 0.10526051536428187,
+          "se_cr1": 0.18320353028512693,
+          "t": 0.574555060158834,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "role[user_like]": {
+          "beta_pooled": -0.08273153544304952,
+          "se_cr1": 0.11029494521115152,
+          "t": -0.7500936265453155,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
+        },
+        "refusalness": {
+          "beta_pooled": -0.03558776633013472,
+          "se_cr1": 0.03891791975350062,
+          "t": -0.9144313610681527,
+          "p_cr1_pooled_beta": null,
+          "p_estimand_cr1": "beta_pooled",
+          "p_cr1_normal_ANTICONSERVATIVE": null,
+          "reference": "t(df=5)",
+          "cr1_rank_deficient": true,
+          "cr1_suppressed_reason": "G=6 clusters <= k=8 parameters: the CR1 meat matrix is rank deficient, so no p is reported"
         }
       }
     }
   },
   "incremental_r2": {
     "refusalness_over_boombness": 4.494961112211371e-07,
-    "boombness_over_refusalness": 0.005292648333431016
+    "boombness_over_refusalness": 0.005292648333431016,
+    "n_examples_over_boombness+refusalness": 0.043062339915276415,
+    "boombness_over_refusalness+n_examples": 0.014235519548546849
   },
-  "role_descriptive_only": {
-    "assistant_like": {
-      "n": 6,
-      "mean_score": 0.08333333333333333,
-      "asr_at_0.5": 0.16666666666666666
+  "n_examples_control": {
+    "answered": true,
+    "scale": "log2(n_examples)",
+    "levels": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "boombness_before": {
+      "beta_pooled": 0.025340216270970238,
+      "p_cr1_pooled_beta": 0.4483409337298767,
+      "beta_within_domain": 0.06513870250918315,
+      "p_perm_within_domain_beta": 0.0014992503748125937
     },
-    "cot_like": {
-      "n": 6,
-      "mean_score": 0.0,
-      "asr_at_0.5": 0.0
+    "boombness_after": {
+      "beta_pooled": 0.04142256269351535,
+      "p_cr1_pooled_beta": 0.219268340458914,
+      "beta_within_domain": 0.08760575789948465,
+      "p_perm_within_domain_beta": 0.0004997501249375312
     },
-    "plain": {
-      "n": 204,
-      "mean_score": 0.20036764705882354,
-      "asr_at_0.5": 0.23529411764705882
+    "refusalness_before": {
+      "beta_pooled": 0.00023352682095690084,
+      "p_cr1_pooled_beta": 0.9913576917769514,
+      "beta_within_domain": -0.007201028823139873,
+      "p_perm_within_domain_beta": 0.7016491754122939
     },
-    "system_like_quoted": {
-      "n": 6,
-      "mean_score": 0.0,
-      "asr_at_0.5": 0.0
+    "refusalness_after": {
+      "beta_pooled": -0.009629655414879871,
+      "p_cr1_pooled_beta": 0.6782332039791801,
+      "beta_within_domain": -0.016047953641434503,
+      "p_perm_within_domain_beta": 0.41829085457271364
     },
-    "tool": {
-      "n": 6,
-      "mean_score": 0.14583333333333334,
-      "asr_at_0.5": 0.16666666666666666
-    },
-    "user_like": {
-      "n": 6,
-      "mean_score": 0.0,
-      "asr_at_0.5": 0.0
-    }
+    "boombness_beta_retained_fraction_pooled": 1.6346570309650064,
+    "boombness_beta_pooled_linear_scale": 0.036640278428293684,
+    "rho_boombness_vs_n_examples_pooled": -0.18472655442919245,
+    "rho_boombness_vs_n_examples_within_domain": -0.21294311860591492,
+    "rho_n_examples_vs_asr_pooled": 0.20551362943665324,
+    "rho_n_examples_vs_asr_within_domain": 0.1746211603037556,
+    "rho_boombness_vs_asr_pooled": 0.08598293650135366,
+    "rho_partial_n_examples_pooled": 0.10523065672821967,
+    "rho_partial_n_examples_within_domain": 0.15482221375063443,
+    "p_perm_within_domain_partial": 0.022988505747126436,
+    "p_estimand_partial": "rho_partial_n_examples_within_domain",
+    "verdict": "SURVIVES, AND GROWS: controlling for the number of demonstrations makes the boombness coefficient LARGER, i.e. n_examples was acting as a suppressor, not a confound, for this predictor"
   },
-  "caveat": "Role is NOT in the fitted model when role_identifiability.identified is false. The descriptive role means are a family-set contrast, not a role effect, and must not be reported as one (this is the retraction-#6 failure mode)."
+  "role_fit_rows": {
+    "n_crossed": 36,
+    "n_clusters_crossed": 6,
+    "fitted_on": "crossed subset only",
+    "why": "a role dummy fitted over all rows compares the styled prompts against reference prompts of different content, which is the family-set swap the gate exists to refuse (retraction #6)"
+  },
+  "role_descriptive_only": {},
+  "estimand_note": "Every term reports TWO point estimates. `beta_pooled` is the coefficient in the fitted model; `beta_within_domain` is the coefficient after demeaning that predictor and the outcome within cluster. `p_cr1_pooled_beta` belongs to the FIRST, `p_perm_within_domain_beta` to the SECOND. Before 2026-08-18 only `beta` and `p_within_domain_perm` were emitted, side by side, and the p was read as the p of the beta beside it (audit T5, same defect as analyze_g2.py and analyze_g64.py).",
+  "keys_renamed_2026_08_18": {
+    "beta": "beta_pooled",
+    "p_cr1": "p_cr1_pooled_beta",
+    "p_within_domain_perm": "p_perm_within_domain_beta"
+  },
+  "caveat": "Role is NOT in the fitted model when role_identifiability.identified is false. The descriptive role means are a family-set contrast, not a role effect, and must not be reported as one (this is the retraction-#6 failure mode). When it IS identified the role terms are fitted on the crossed subset only, and with G <= k the CR1 p-values are suppressed rather than reported: the omnibus style test on this same crossed design is analyze_g11.py's job and already exists."
 }

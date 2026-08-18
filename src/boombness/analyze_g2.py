@@ -22,6 +22,20 @@ a throwaway shell heredoc and never written down:
 
   (4) THREE OF FIVE COEFFICIENTS DID NOT REPRODUCE. Nothing in the repo could regenerate them.
 
+ESTIMAND PAIRING (audit T5, 2026-08-18). `clustered_inference` used to report a single key `rho` --
+the RAW POOLED Spearman -- and, three keys later, `p_within_domain_perm`. Those are two different
+quantities: the permutation demeans x and y WITHIN DOMAIN first, so its p tests the within-domain
+association and says nothing about the pooled one. Nothing in the key names said so, and every
+consumer of this artifact read the p as the p of the rho beside it. The file even quantified its own
+mismatch and no one noticed: `qwen3_g2_analysis.json` carries rho=+0.3638 next to
+`within_domain_slope`=+0.1381 (2.6x smaller) with the cited p=0.0050 attached to the +0.364 headline,
+and `g2_analysis_lastpos.json` carries a "significant" cited p=0.0235 for a quantity the file never
+reports as an estimate while its reported rho=+0.086 is n.s. Both point estimates are now emitted
+under unambiguous names -- `rho_pooled` and `rho_within_domain` -- every p key names its own estimand
+(`p_iid_pooled_rho`, `p_cr1_pooled_slope`, `p_perm_within_domain_rho`), and `p_estimand` names the
+quantity the citable p tests. Names match analyze_g64.py exactly so the three scripts agree. NEITHER
+ESTIMATE WAS PROMOTED OR DEMOTED; only the pairing became legible.
+
 Outputs a JSON report and prints the table, so the numbers in the log are traceable to a command.
 """
 from __future__ import annotations
@@ -63,6 +77,39 @@ def rank_partial(x, y, z):
     ex, ey = resid(rx, rz), resid(ry, rz)
     r, p = pearsonr(ex, ey)
     return float(r), float(p)
+
+
+def rank_corr_pair(x, y, clusters) -> Dict[str, float]:
+    """BOTH point estimates the clustered block reports, computed side by side (audit T5).
+
+    `rho_pooled` is the ordinary Spearman. `rho_within_domain` is the same rank correlation after
+    each cluster's mean is removed from BOTH variables -- and that, not `rho_pooled`, is the
+    quantity the within-domain permutation p tests. The two can differ in magnitude (2.6x on the
+    qwen3 artifact) and, on data with a Simpson structure, in SIGN. They lived one key apart with no
+    label until 2026-08-18, so every reader paired the within-domain p with the pooled rho.
+
+    This is a module-level function precisely so the pairing is testable: while it was eight inline
+    lines inside `main`, no test could reach it, and the defect survived four audits.
+
+    The pipeline is identical to the permutation's own (ranks -> standardise -> demean by cluster),
+    so the estimate and its p-value cannot drift apart.
+    """
+    import numpy as _np
+    from scipy import stats as _st
+    X = _st.rankdata(_np.asarray(x, dtype=float))
+    Y = _st.rankdata(_np.asarray(y, dtype=float))
+    X = (X - X.mean()) / (X.std(ddof=0) or 1.0)
+    Y = (Y - Y.mean()) / (Y.std(ddof=0) or 1.0)
+    rho_pooled = float(_np.dot(X, Y) / len(X))
+    Xw, Yw = X.copy(), Y.copy()
+    for g in sorted(set(clusters)):
+        gi = [i for i in range(len(X)) if clusters[i] == g]
+        Xw[gi] = Xw[gi] - Xw[gi].mean()
+        Yw[gi] = Yw[gi] - Yw[gi].mean()
+    dxx, dyy = float(_np.dot(Xw, Xw)), float(_np.dot(Yw, Yw))
+    rho_w = (float(_np.dot(Xw, Yw)) / math.sqrt(dxx * dyy)) if dxx > 0 and dyy > 0 else float("nan")
+    return {"rho_pooled": rho_pooled, "rho_within_domain": rho_w,
+            "p_estimand_of_within_domain_permutation": "rho_within_domain"}
 
 
 def holm(pvals: Dict[str, float], alpha: float = 0.05) -> Dict[str, bool]:
@@ -169,7 +216,27 @@ def main() -> int:
         print(f"[G2] WARNING: {n_arm_total - len(keys)} judged prompts have no representation row")
 
     y = [asr[p] for p in kept]
+    # PROVENANCE (2026-08-18). The artifact recorded judge/extract/score but NOT argv, and NOT the
+    # --refusalness directory, even though the mediation block that decides the §18 outcome label
+    # runs off it: `g2_analysis_cwpos.json` shipped a full `mediation` section with no record of
+    # which refusalness run produced it, so this re-run had to recover the path from the G9
+    # artifacts (the position guard then confirmed the match). analyze_g64.py had the same argv gap
+    # and it was closed there in this audit; a script that does not record its inputs cannot satisfy
+    # the standing "every published number is regenerable" rule.
+    import subprocess as _sp
+
+    def _git(*a):
+        try:
+            return _sp.check_output(["git", *a], stderr=_sp.DEVNULL).decode().strip()
+        except Exception:
+            return None
+
     report: Dict[str, object] = {
+        "provenance": {"argv": sys.argv, "git_commit": _git("rev-parse", "HEAD"),
+                       "git_dirty": bool(_git("status", "--porcelain")),
+                       "python": sys.executable,
+                       "refusalness": (os.path.abspath(args.refusalness)
+                                       if args.refusalness else None)},
         "arm": args.arm, "judge": os.path.abspath(args.judge),
         "extract": os.path.abspath(args.extract), "score": os.path.abspath(args.score),
         "n_judged_in_arm": n_arm_total, "n_with_representation": len(keys),
@@ -218,7 +285,11 @@ def main() -> int:
             flag = "  <-- >1/3 of this is the NORM, not the axis"
         print(f"{name:38s} {r:>+8.3f} {p:>9.2e} {str(rej.get(name.split(' ')[0], '')):>5s} "
               f"{rp:>+10.3f} {pp_:>9.2e} {rn:>+8.3f} {100*share:>8.0f}%{flag}")
+    # The `spearman`/`p` pair in this table IS estimand-consistent (both pooled, both i.i.d.) --
+    # unlike the clustered block below, which used to pair a pooled rho with a within-domain p
+    # (audit T5). The estimand is stated anyway so no reader has to reconstruct it from the code.
     report["predictors"] = [{"name": n, "spearman": r, "p": p, "sd": sd,
+                             "estimand": "rho_pooled", "p_estimand": "rho_pooled (i.i.d.)",
                              "partial_given_hnorm": rp, "partial_p": pp_, "hnorm_vs_asr": rn,
                              "holm_rejected": bool(rej.get(n.split(" ")[0], False))}
                             for n, r, p, sd, rp, pp_, rn in rows]
@@ -311,17 +382,48 @@ def main() -> int:
                     cnt += 1
             p_perm = (cnt + 1) / (NPERM + 1)
             r_naive, p_naive = spearman([xs[i] for i in ok], [ys[i] for i in ok])
+            # THE POINT ESTIMATE THE PERMUTATION ACTUALLY TESTS (audit T5). Xw/Yw are the
+            # standardised ranks after within-domain demeaning, so their correlation IS the
+            # within-domain rank correlation, and it is what `p_perm` is a p-value for. It existed
+            # only as the local `bw[1]` slope, under a name (`within_domain_slope`) that did not
+            # read as an alternative to `rho`. Because the within-group permutation preserves each
+            # group's multiset of Yw, sd(Yw) and sd(Xw) are invariant across draws, so |slope| and
+            # |correlation| induce the IDENTICAL permutation p -- reporting the correlation costs
+            # nothing and makes the pair comparable with `rho_pooled` on the same scale.
+            rho_w = rank_corr_pair([xs[i] for i in ok], [ys[i] for i in ok],
+                                   [cl[i] for i in ok])["rho_within_domain"]
             print(f"\n[G2] CLUSTERED INFERENCE for {headline} (cluster={args.cluster_by}, "
                   f"G={Gn}, n={n})")
-            print(f"  rho                       {r_naive:+.4f}")
-            print(f"  p, i.i.d. (as reported)   {p_naive:.2e}   <-- OVERSTATED: prompts are not independent")
-            print(f"  p, CR1 domain-clustered   {p_cl:.2e}   (G={Gn} clusters is few; treat as indicative)")
-            print(f"  p, within-domain permut.  {p_perm:.2e}   <-- CITE THIS ONE")
+            print(f"  rho_pooled                {r_naive:+.4f}   (raw pooled Spearman)")
+            print(f"  rho_within_domain         {rho_w:+.4f}   (rank corr. after demeaning within "
+                  f"{args.cluster_by})")
+            print(f"  p_iid_pooled_rho          {p_naive:.2e}   <-- estimand rho_pooled; OVERSTATED: prompts are not independent")
+            print(f"  p_cr1_pooled_slope        {p_cl:.2e}   <-- estimand: the POOLED rank-rank slope (G={Gn} is few; indicative)")
+            print(f"  p_perm_within_domain_rho  {p_perm:.2e}   <-- CITE THIS ONE, PAIRED WITH rho_within_domain, NOT WITH rho_pooled")
             report["clustered_inference"] = {
                 "predictor": headline, "cluster_by": args.cluster_by, "n": n, "n_clusters": Gn,
-                "rho": r_naive, "p_iid": p_naive, "p_cr1": p_cl, "p_within_domain_perm": p_perm,
+                # two point estimates, named (audit T5) -- same names as analyze_g64.py
+                "rho_pooled": r_naive,
+                "rho_within_domain": rho_w,
+                "p_iid_pooled_rho": p_naive,
+                "p_cr1_pooled_slope": p_cl,
+                "p_perm_within_domain_rho": p_perm,
+                "p_estimand": "rho_within_domain",
+                "p_estimand_by_key": {
+                    "p_iid_pooled_rho": "rho_pooled (assumes i.i.d. prompts; WITHDRAWN as the sole "
+                                        "inference in retraction R1)",
+                    "p_cr1_pooled_slope": "the pooled rank-rank slope (total_slope)",
+                    "p_perm_within_domain_rho": "rho_within_domain / within_domain_slope"},
                 "within_domain_slope": float(bw[1]), "total_slope": float(beta[1]),
-                "n_perm": NPERM}
+                "n_perm": NPERM,
+                "keys_renamed_2026_08_18": {"rho": "rho_pooled", "p_iid": "p_iid_pooled_rho",
+                                            "p_cr1": "p_cr1_pooled_slope",
+                                            "p_within_domain_perm": "p_perm_within_domain_rho"},
+                "estimand_note": (
+                    "rho_pooled and rho_within_domain are DIFFERENT quantities. "
+                    "p_perm_within_domain_rho is a p-value for rho_within_domain ONLY. Quoting it "
+                    "beside rho_pooled -- which is what this artifact did before 2026-08-18 -- "
+                    "attaches a within-domain p to a between+within point estimate.")}
             per = {}
             for g in groups:
                 idx = byg[g]

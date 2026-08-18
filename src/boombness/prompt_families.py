@@ -54,7 +54,7 @@ from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA_DIR, write_jsonl, seed_everything, ds  # noqa: E402
+from common import DATA_DIR, rows_sha16, write_jsonl, seed_everything, ds  # noqa: E402
 from demo_pools import DOMAINS, POOL_PATH, REMAP_SOURCE_WORD, load_pools  # noqa: E402
 
 BANK_PATH = os.path.join(DATA_DIR, "boombness_prompt_bank.jsonl")
@@ -565,12 +565,19 @@ def generate_bank(pools: Dict, codeword: str, concept: str, preset: str = "main"
         violations.append(f"benign_remap collapsed onto benign_literal for {collapsed} "
                           f"prompts with n_examples>0")
 
-    bank_sha16 = hashlib.sha256(
-        "|".join(r["prompt_sha16"] for r in sorted(rows, key=lambda r: r["prompt_id"]))
-        .encode()).hexdigest()[:16]
+    # RENAMED 2026-08-18 (defect T11): this value used to be published as `bank_content_sha16`
+    # -- the identical key that `common.RunDir.note_bank` writes for a COMPLETELY DIFFERENT
+    # function, the sha of the bank's raw file bytes. For the committed 2352-row bank the two
+    # values are 7002854cf834e9f9 (this one, over the per-row prompt hashes) and 71bea179345ed118
+    # (the file bytes); the report header quoted one and the progress log the other as though they
+    # were one identifier, and no code ever compared them, so the "content hash makes a mismatched
+    # join detectable" guarantee in note_bank's docstring was never actually available to anyone.
+    # Distinct names now, one shared implementation (`common.rows_sha16`) so the two ends of the
+    # join cannot drift, and `common.compare_bank_hashes` is the comparison itself.
+    bank_sha16 = rows_sha16((r["prompt_id"], r["prompt_sha16"]) for r in rows)
 
     stats = {
-        "bank_content_sha16": bank_sha16,
+        "bank_rows_sha16": bank_sha16,
         "n_rows": len(rows),
         "n_benign_remap_rows": n_remap,
         "n_benign_remap_identical_to_benign_literal_nonzero_demos": collapsed,

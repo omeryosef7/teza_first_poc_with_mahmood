@@ -25,6 +25,15 @@ import tempfile
 
 import pytest
 
+# PRE-FIX BASELINE, PINNED (2026-08-18). These tests demonstrate the defect by loading the version
+# of the module that had it. They originally used `git show HEAD:...`, which is self-invalidating:
+# the moment the fix is committed, HEAD *contains* the fix and the "this must fail pre-fix"
+# assertions stop holding. That turned three green tests red with no code regression -- a test that
+# silently changes what it asserts as the branch moves is worse than no test. The baseline is now
+# pinned to the commit that introduced the fix, minus one.
+PREFIX_BASELINE = "a8251ffa~1"
+
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(REPO, "src", "boombness")
 DOMAINS = ["d0", "d1", "d2", "d3", "d4", "d5"]
@@ -44,7 +53,7 @@ def _load(path: str, name: str):
 def prefix_module(tmp_path_factory):
     p = tmp_path_factory.mktemp("prefix") / "old_analyze_steering.py"
     with open(p, "w") as f:
-        subprocess.run(["git", "show", "HEAD:src/boombness/analyze_steering.py"],
+        subprocess.run(["git", "show", f"{PREFIX_BASELINE}:src/boombness/analyze_steering.py"],
                        cwd=REPO, stdout=f, check=True)
     return _load(str(p), "old_analyze_steering")
 

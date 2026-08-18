@@ -37,7 +37,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA_DIR, FailureLedger, OUT_ROOT, RunDir, ds, read_jsonl, seed_everything  # noqa: E402
+from common import (DATA_DIR, FailureLedger, OUT_ROOT, RunDir, ds, read_jsonl,  # noqa: E402
+                    seed_everything, validate_direction_payload)
 import signals as sg  # noqa: E402
 from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 
@@ -330,6 +331,20 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
 
     cache: Dict[str, torch.Tensor] = {}
     n_scored = 0
+    # T8b (2026-08-18). PER-LAYER COVERAGE OF THE HEADLINE METRIC.
+    # The inner loop below does `d = payload[name].get(L); if d is None: continue` -- it drops the
+    # column, still writes the row, still calls ledger.ok(), and the run reports n_failed = 0. A
+    # score run whose --layers is wider than the fit's (the Qwen3 depth fit covers 14 of 40 blocks;
+    # `--layers all` against it would ask for 40) therefore produces a results.jsonl in which
+    # `d_surface|L*|cos` SIMPLY DOES NOT EXIST at the missing layers, while every completeness
+    # signal the run emits says it is whole. A missing column is not a zero and it is not a NaN --
+    # it is an absent key, so a downstream `mean()` over the rows that DO have it silently changes
+    # its denominator per layer instead of raising.
+    # Counting is the whole fix: presence and absence are tallied per (direction, layer) and
+    # published in summary.json, so "the metric does not exist at 22 of 32 layers" is a number in
+    # the artifact rather than something discovered by a reader who happens to grep for a column.
+    cov_present: Dict[str, Dict[int, int]] = {n: {L: 0 for L in layers} for n in dir_names}
+    cov_missing: Dict[str, Dict[int, int]] = {n: {L: 0 for L in layers} for n in dir_names}
     for row in rows:
         try:
             _, ids, last, following, n_sub = resolve_occurrences(dc, tok, row)
@@ -381,7 +396,9 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
                 for name in dir_names:
                     d = payload[name].get(L)
                     if d is None:
+                        cov_missing[name][L] += 1
                         continue
+                    cov_present[name][L] += 1
                     s = sg.direction_boombness(h, d)
                     rec[f"{name}|L{L}|cos"] = s["cosine"]
                     rec[f"{name}|L{L}|proj"] = s["projection"]
@@ -421,6 +438,36 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
         if n_scored % 100 == 0:
             print(f"[score] {n_scored}/{len(rows)} rows")
 
+    # --- coverage report (T8b) -------------------------------------------------------------- #
+    coverage: Dict[str, object] = {}
+    total_missing_cells = 0
+    for name in dir_names:
+        missing_layers = sorted(L for L in layers if cov_present[name][L] == 0
+                                and cov_missing[name][L] > 0)
+        partial_layers = sorted(L for L in layers if cov_present[name][L] > 0
+                                and cov_missing[name][L] > 0)
+        n_missing_cells = sum(cov_missing[name].values())
+        total_missing_cells += n_missing_cells
+        coverage[name] = {
+            "n_layers_requested": len(layers),
+            "n_layers_with_no_direction": len(missing_layers),
+            "layers_with_no_direction": missing_layers,
+            "layers_partially_covered": partial_layers,
+            "n_row_layer_cells_written": sum(cov_present[name].values()),
+            "n_row_layer_cells_missing": n_missing_cells,
+            "n_rows_per_covered_layer": {str(L): cov_present[name][L] for L in layers},
+        }
+        if missing_layers:
+            print(f"[score] COVERAGE WARNING: {name} has NO fitted direction at "
+                  f"{len(missing_layers)}/{len(layers)} requested layers {missing_layers[:12]}"
+                  f"{'...' if len(missing_layers) > 12 else ''} — every `{name}|L*|cos` column at "
+                  f"those layers is ABSENT from results.jsonl. This is not a failure of any ROW, "
+                  f"so the failure ledger cannot see it; summary.json['direction_layer_coverage'] "
+                  f"is where it is recorded.")
+    if total_missing_cells:
+        print(f"[score] {total_missing_cells} (row, direction, layer) cells had no direction and "
+              f"were omitted from results.jsonl.")
+
     if cache_final_reps and cache:
         os.makedirs(run.cache, exist_ok=True)
         torch.save({"layers": layers, "layer_convention": sg.LAYER_CONVENTION,
@@ -428,7 +475,12 @@ def stage_score(lm, dc, rows: List[Dict], layers: List[int], fitted: Dict[str, D
                     "dtype": "float16", "reps": cache},
                    os.path.join(run.cache, "final_occurrence_reps.pt"))
         print(f"[score] cached {len(cache)} final-occurrence rep stacks")
-    return {"n_scored_rows": n_scored}
+    return {"n_scored_rows": n_scored,
+            "direction_layer_coverage": coverage,
+            "n_missing_direction_layer_cells": total_missing_cells,
+            "coverage_note": "a (direction, layer) with n_layers_with_no_direction > 0 has NO "
+                             "column in results.jsonl at those layers; the failure ledger counts "
+                             "ROWS and is blind to a missing COLUMN (defect T8b, 2026-08-18)"}
 
 
 def main() -> int:
@@ -496,24 +548,49 @@ def main() -> int:
     run.note(layers=layers, logit_lens_layers=ll_layers, bank=args.bank, n_bank_rows=len(rows))
 
     fitted: Dict[str, Dict] = {}
+    summary_fit_validation: Dict[str, Dict] = {}
     if args.stage in ("fit", "both"):
         fitted = stage_fit(lm, dc, rows, layers, run, ledger, position=args.position)
+        # A --stage both run fits and scores in one process, so a mismatch here would be a bug in
+        # THIS file rather than a mis-wired job. Validated anyway: the check costs nothing and a
+        # silently self-inconsistent payload is exactly what T8 was.
+        summary_fit_validation = {
+            sp: validate_direction_payload(pl, path=f"<in-process:{sp}>", model=lm.model_id,
+                                           position=args.position, layers=layers, strict=True)
+            for sp, pl in fitted.items()}
     if args.stage == "score":
         src = args.fit_dir
         if not src:
             raise SystemExit("--stage score requires --fit-dir")
+        # T8 (2026-08-18). A payload used to be loaded and used without ANYONE reading
+        # `payload["meta"]`, which records the position, the model and the layers the directions
+        # were FITTED on. The 2026-08-17 phantom-cell fix added a per-row assert that the READOUT
+        # index matches --position; that proves where h was read, never where d was fitted, so
+        # "fit at `last`, read at `codeword_last`" -- the original phantom cell -- and the worse
+        # cross-model variant both still walked past every guard in the repo. The same blind load
+        # sits in aggressive_patching.py (~404) and surgical_knockout.py (~240); the validator
+        # lives in common.py so those two can adopt it without a third copy.
+        # LATENT, verified before the fix: of the 70 committed runs carrying a fit_dir, 0 mismatch
+        # on model or position. No committed number changes.
+        fit_validation = {}
         for split in ("dev", "heldout"):
             p = os.path.join(src, f"directions_fit_{split}.pt")
             if os.path.exists(p):
-                fitted[split] = torch.load(p, map_location="cpu", weights_only=False)
+                payload = torch.load(p, map_location="cpu", weights_only=False)
+                fit_validation[split] = validate_direction_payload(
+                    payload, path=p, model=lm.model_id, position=args.position, layers=layers,
+                    strict=True)
+                fitted[split] = payload
         if not fitted:
             raise SystemExit(f"no directions_fit_*.pt under {src}")
-        run.note(fit_dir=src)
+        run.note(fit_dir=src, fit_dir_validation=fit_validation)
+        summary_fit_validation = fit_validation
 
     summary: Dict[str, object] = {"model": lm.model_id, "n_bank_rows": len(rows),
                                   "layers": layers, "logit_lens_layers": ll_layers,
                                   "splits_fitted": sorted(fitted),
-                                  "position": args.position}
+                                  "position": args.position,
+                                  "fit_dir_validation": summary_fit_validation}
     if args.stage in ("score", "both"):
         if not fitted:
             raise SystemExit("nothing fitted; cannot score")

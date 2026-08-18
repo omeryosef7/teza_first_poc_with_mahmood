@@ -29,6 +29,15 @@ sys.path.insert(0, SRC)
 
 import reanalyze_corrected as rc  # noqa: E402
 
+# PRE-FIX BASELINE, PINNED (2026-08-18). These tests demonstrate the defect by loading the version
+# of the module that had it. They originally used `git show HEAD:...`, which is self-invalidating:
+# the moment the fix is committed, HEAD *contains* the fix and the "this must fail pre-fix"
+# assertions stop holding. That turned three green tests red with no code regression -- a test that
+# silently changes what it asserts as the branch moves is worse than no test. The baseline is now
+# pinned to the commit that introduced the fix, minus one.
+PREFIX_BASELINE = "a8251ffa~1"
+
+
 
 # A synthetic p-vector with a hand-checked Holm answer at two family sizes.
 #   sorted: 0.001, 0.004, 0.020, 0.300
@@ -85,7 +94,7 @@ def test_prefix_holm_cannot_express_a_family_size():
     old = os.path.join(os.environ.get("TMPDIR", "/tmp"), "old_reanalyze_corrected_for_test.py")
     repo = os.path.dirname(HERE)
     with open(old, "w") as f:
-        subprocess.run(["git", "show", "HEAD:src/boombness/reanalyze_corrected.py"],
+        subprocess.run(["git", "show", f"{PREFIX_BASELINE}:src/boombness/reanalyze_corrected.py"],
                        cwd=repo, stdout=f, check=True)
     import importlib.util
     spec = importlib.util.spec_from_file_location("old_rc", old)
