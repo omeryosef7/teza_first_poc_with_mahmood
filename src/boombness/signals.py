@@ -384,3 +384,101 @@ def orthogonalize(d: torch.Tensor, against: torch.Tensor) -> torch.Tensor:
     a = _unit(against.float().reshape(-1))
     v = d.float().reshape(-1)
     return v - torch.dot(v, a) * a
+
+
+# --------------------------------------------------------------------------- #
+# Whole-answer forced-choice scoring (added 2026-08-18)
+# --------------------------------------------------------------------------- #
+ANSWER_CASES = ("{w}", "{W}")  # lower and Capitalized; applied identically to every option
+
+
+def answer_variants(word: str, spaced: bool = True) -> List[str]:
+    """The surface strings a forced answer may take, built IDENTICALLY for every option.
+
+    WHY THIS REPLACES SINGLE-TOKEN SCORING. `readout_ids` picks ONE id per word, the leading-space
+    form, precisely so the two arms are symmetric. Measured on the smoke (36 prompts, jobs
+    764702/764703) that id is not what the model emits. With a forced "Answer:" prefix the argmax
+    next token is:
+
+        comprehension   ' Literal' (10/24)   ' Liter' (6/24)   ' Neither' (4/24)
+        semantic        ' Car'     (8/12)    ' Neither' (3/12)  ' Bomb' (1/12)
+
+    Two separate problems, both invisible to a single-id readout:
+      1. THE MODEL CAPITALISES. ' literal' (24016) was scored; ' Literal' (50774) is what it wants.
+      2. THE CAPITALISED CODEWORD IS MULTI-TOKEN. ' Car' is the FIRST SUBTOKEN of ' Carrot', and
+         `readout_ids` rejects it by design because 'car' is the generic English word. So on
+         Llama-3.1-8B `bomb` has four single-token variants (' bomb', 'bomb', ' Bomb', 'Bomb') and
+         `carrot` has exactly one (' carrot'). No single-next-token readout can represent the
+         model's preferred spelling of the codeword, so the concept side is structurally advantaged
+         in every semantic_logodds ever computed -- including the one carrying G1's +68%-of-span
+         headline. Adding variants does not fix it either: summing `full_word_ids` gives the concept
+         four ids against the codeword's one, which is the same bias with a larger constant.
+
+    The fix is to stop scoring a token and score the ANSWER. P(model answers "Carrot") is exactly
+    P(' Car') * P('rot' | ' Car'); that is a joint probability, not a length artefact, so no length
+    normalisation is wanted -- the quantity we need IS the probability of emitting the whole word.
+    Every option gets the same number of surface forms built by the same rule, so symmetry is a
+    property of the construction rather than an accident of the tokenizer.
+    """
+    stem = " " + word if spaced else word
+    return [c.format(w=stem, W=stem[:1] + stem[1:2].upper() + stem[2:] if spaced
+                     else stem[:1].upper() + stem[1:]) for c in ANSWER_CASES]
+
+
+def string_option_readout(lm, context: str, options: Dict[str, Sequence[str]],
+                          max_batch: int = 16) -> Dict[str, float]:
+    """Teacher-forced log P(option | context), summed over each option's surface variants.
+
+    One batched forward over `context + variant` per variant. Returns logp_/p_ per option plus
+    `option_mass` (the total probability the forced answer is any of the options) and `top1_id`,
+    the token the model actually wants next -- the field whose absence let a 1e-5 readout ship.
+    """
+    ctx_ids = lm.tokenizer(context, add_special_tokens=False)["input_ids"]
+    flat: List[Tuple[str, List[int]]] = []
+    for name, variants in options.items():
+        for v in variants:
+            vid = lm.tokenizer(v, add_special_tokens=False)["input_ids"]
+            if vid:
+                flat.append((name, vid))
+    if not flat:
+        raise ValueError("string_option_readout: no scorable variants")
+
+    scores: Dict[str, List[float]] = {name: [] for name in options}
+    top1 = None
+    for s in range(0, len(flat), max_batch):
+        chunk = flat[s:s + max_batch]
+        seqs = [ctx_ids + vid for _, vid in chunk]
+        width = max(len(x) for x in seqs)
+        pad = lm.tokenizer.pad_token_id
+        if pad is None:
+            pad = lm.tokenizer.eos_token_id
+        # LEFT padding would shift the context; pad on the RIGHT and read only real positions.
+        inp = torch.full((len(seqs), width), pad, dtype=torch.long)
+        att = torch.zeros((len(seqs), width), dtype=torch.long)
+        for i, x in enumerate(seqs):
+            inp[i, :len(x)] = torch.tensor(x, dtype=torch.long)
+            att[i, :len(x)] = 1
+        out = lm.model(input_ids=inp.to(lm.model.device),
+                       attention_mask=att.to(lm.model.device), use_cache=False)
+        lp = torch.log_softmax(out.logits.float(), dim=-1).cpu()
+        if top1 is None:
+            top1 = int(lp[0, len(ctx_ids) - 1, :].argmax())
+        for i, (name, vid) in enumerate(chunk):
+            tot = 0.0
+            for j, tid in enumerate(vid):
+                # position predicting token j of the variant is len(ctx)-1+j
+                tot += float(lp[i, len(ctx_ids) - 1 + j, tid])
+            scores[name].append(tot)
+
+    res: Dict[str, float] = {}
+    allv: List[float] = []
+    for name, vals in scores.items():
+        t = torch.tensor(vals)
+        lse = float(t.logsumexp(0))
+        res[f"logp_{name}"] = lse
+        res[f"p_{name}"] = float(math.exp(lse))
+        res[f"n_variants_{name}"] = len(vals)
+        allv.extend(vals)
+    res["option_mass"] = float(torch.tensor(allv).logsumexp(0).exp())
+    res["top1_id"] = top1
+    return res

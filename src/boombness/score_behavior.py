@@ -219,7 +219,13 @@ def main() -> int:
     ap.add_argument("--intervene", default="",
                     help='e.g. "d_surface:project_out:8-21:1.0" or "d_surface:add:8-21:2.0"')
     ap.add_argument("--arm", default="base", help="label written on every row")
-    ap.add_argument("--readout-ids", default="primary", choices=["primary", "full_word"])
+    ap.add_argument("--readout-ids", default="whole_answer",
+                    choices=["primary", "full_word", "whole_answer"],
+                    help="whole_answer (default from 2026-08-18) teacher-forces each option's WHOLE "
+                         "surface form and sums over an identically-built variant set, so a "
+                         "multi-token capitalised codeword is representable and the two arms are "
+                         "symmetric by construction. primary scores one leading-space token per "
+                         "option, which the smoke showed is NOT what the model emits.")
     ap.add_argument("--answer-prefix", default="Answer:",
                     help='assistant-side text appended before the forward readout position, so the '
                          'next token is the answer word rather than a preamble. Pass "" to reproduce '
@@ -355,6 +361,29 @@ def main() -> int:
                                                mode=args.readout_ids)
     comp_meta = {w: sg.readout_ids(lm.tokenizer, w) for w in COMPREHENSION_WORDS}
     comp_ids = {w: [comp_meta[w]["primary_id"]] for w in COMPREHENSION_WORDS}
+    # WHOLE-ANSWER variant sets. Built by one rule for every option, so the count is equal by
+    # construction (2 each) rather than by tokenizer luck -- on Llama-3.1-8B `bomb` has four
+    # single-token variants and `carrot` exactly one, which is the asymmetry that made every
+    # single-token semantic_logodds favour the concept side.
+    spaced = bool(args.answer_prefix) or True
+    sem_variants = {"concept": sg.answer_variants(concept, spaced),
+                    "codeword": sg.answer_variants(codeword, spaced)}
+    comp_variants = {w: sg.answer_variants(w, spaced) for w in COMPREHENSION_WORDS}
+    run.note(readout_mode=args.readout_ids, semantic_variants=sem_variants,
+             comprehension_variants=comp_variants)
+    print(f"[score] whole-answer variants: {sem_variants} {comp_variants}")
+
+    def _semantic(templated):
+        if args.readout_ids == "whole_answer":
+            return sg.string_option_readout(lm, templated + args.answer_prefix, sem_variants)
+        return next_token_readout(lm, templated, {"concept": c_ids, "codeword": w_ids},
+                                  answer_prefix=args.answer_prefix)
+
+    def _comprehension(templated):
+        if args.readout_ids == "whole_answer":
+            return sg.string_option_readout(lm, templated + args.answer_prefix, comp_variants)
+        return next_token_readout(lm, templated, {w: comp_ids[w] for w in COMPREHENSION_WORDS},
+                                  answer_prefix=args.answer_prefix)
     run.note(readout_ids=id_meta, comprehension_readout_ids=comp_meta,
              concept_token_ids=c_ids, codeword_token_ids=w_ids,
              comprehension_token_ids=comp_ids, arm=args.arm)
@@ -400,9 +429,7 @@ def main() -> int:
                     # fix the tail problem and was then NEVER SCORED BY ANY RUN -- it was not in
                     # this dispatch, and the dispatch had no `else`, so asking for it produced
                     # counts={}, n_failed=0 and a DONE.json indistinguishable from a real run.
-                    rec = next_token_readout(lm, templated,
-                                             {"concept": c_ids, "codeword": w_ids},
-                                             answer_prefix=args.answer_prefix)
+                    rec = _semantic(templated)
                     # log-odds is the primary; the probability difference is kept only as a
                     # diagnostic, and is meaningless when both terms are in the tail.
                     rec["semantic_logodds"] = rec["logp_concept"] - rec["logp_codeword"]
@@ -412,9 +439,7 @@ def main() -> int:
                     counts["semantic"] += 1
 
                 elif row["query_kind"] == "comprehension_usage":
-                    rec = next_token_readout(lm, templated,
-                                             {w: comp_ids[w] for w in COMPREHENSION_WORDS},
-                                             answer_prefix=args.answer_prefix)
+                    rec = _comprehension(templated)
                     rec["comprehension_logodds"] = rec["logp_coded"] - rec["logp_literal"]
                     rec["comprehension_margin_p_diff"] = rec["p_coded"] - rec["p_literal"]
                     run.log_row({**base, "readout": "comprehension", **rec})
