@@ -60,7 +60,7 @@ deliberate refusals (position mismatch, unverifiable readout position, missing c
 | Userness/CoTness probes (§11) | machinery ported, **never fitted** — `role_style` used as a disclosed proxy |
 | 3-predictor regression ASR ~ boombness + role + refusalness (§9) | **DONE** (`analyze_g9.py`) — 2-predictor model fitted (joint R²=0.250 of the **continuous** StrongReject score; boombness p=3.8e-5, refusalness p=9.9e-4 under t(5) — see correction C11); **role dropped as unidentifiable** (collinear with `bank_block`, zero family overlap with `plain`) |
 | comprehension by `n_examples` (§8) | **DONE** (`analyze_g8.py`) — doublespeak +0.370/doubling p=0.0003; n=0 level found degenerate (1 prompt × 12) and excluded, which removed 2 of 4 apparent trends; **random control moves comprehension ~3× more than `d_surface`** |
-| `probe_boombness` in the §6.4 three-way metric comparison | absent |
+| `probe_boombness` in the §6.4 three-way metric comparison | **DONE** — `probes.py --emit-scores` adds out-of-fold per-prompt margins; comparison run. Probe has the best raw ρ vs ASR (+0.440) but **fails the `n_examples` control** (+0.147, n.s.); `direction_boombness` survives (+0.286, p=5e-4) and is the metric of record |
 | model/tokenizer **revision** pinning | never recorded (see Risks) |
 
 ---
