@@ -897,6 +897,7 @@ findings did. Nothing here is a failed experiment; each is an answer.
 | N8 | Is the ClearHarm joint arm **super-additive** in its two components? | **Not established.** +0.0922 with a domain-clustered CI of [−0.147, +0.133]; 127 of 179 rows sit in one cluster, so the set cannot resolve it. AdvBench (16 clusters) is the right test. ⚠ Currently also blocked by R-14. | §7c |
 | N9 | Is `d_surface` "concept-ness" **off-bank**? | **Not licensed.** The 2×2 named the direction from a contrast that does not exist in a prompt with no codeword. Its off-bank behaviour needs its own interpretation. | §7c |
 | N10 | Do the probe splits **leak** across families? | **No** — the critique's leakage finding is refuted against a real K=20 null (max excess 0.021 against a 0.05 tolerance). A single reused permutation had been mistaken for a null distribution. | C-8 |
+| N12 | Can plan §4.1's **designed variance** (`strength`, `consistency`, `example_position`) be analysed? | **No, and it is now measured rather than assumed.** The 192 rows sit in three dedicated `bank_block`s (so they have never contaminated a published number — `core2x2` is all-default). But the largest available comparison is **12 behavioural rows per level**, smaller than cells R-15 just declared uninformative, and `position` is **6 vs 6, one row per domain per level**. Every non-default level also moves prompt length, codeword-occurrence count and `n_examples` **simultaneously** — `strength` takes `n_examples` from 4.91 to 2.00, and `n_examples` is a known ASR predictor. Documented and explicitly excluded; regeneration is **E8**. | §9b, E8 |
 | N11 | Is `n_examples` a **confound** for the Boombness↔ASR correlation? | **No.** It predicts ASR (ρ=+0.206) but is essentially uncorrelated with Boombness at `codeword_last` (ρ=−0.034); the partial ρ retains **99.9%** of the raw coefficient. | C-9 |
 
 **Two of these (N10, N11) are negatives against the external critique rather than against the sprint** —
@@ -1226,6 +1227,14 @@ hosted model was attacked; the only API use is the *judge*, which evaluates rath
 **Two of six met, three partial, one no. So the correct description is a documented correlational
 finding with a directional null — not a mechanism.** The §18 label is B for exactly this reason, and
 §12's objective was not built.
+
+### Plan §4.1's designed variance is generated but not analysable
+`strength`, `consistency` and `example_position` were generated exactly as §4.1 specifies and are
+analysed by nothing. That is deliberate and now justified by measurement rather than left implicit —
+see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `consistency` 72,
+`position` 24) which no analysis reads, so they have never contaminated a result; they are simply
+underpowered by an order of magnitude and confounded on three variables at once. Making them usable
+is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
 ### Specific limits a reader should carry
 - **One model, one concept pair, one judge.** Llama-3.1-8B, carrot↔bomb, StrongReject/`gpt-4o-mini`.
