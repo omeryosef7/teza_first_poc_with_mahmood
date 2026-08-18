@@ -5197,3 +5197,26 @@ for the same substantive reason, so §9's conclusion is unchanged.
 **Verified clean by this audit:** `ols()`, `_inv()`, the CR1 sandwich and its finite-sample correction
 (Stata's CR1 exactly), z-scoring, intercept handling, incremental-R² labels, and full internal consistency
 of both artifacts — nothing is reported that the code cannot compute.
+
+### Tick 81 — audit 10's finding generalised: the same defect was latent in §8
+
+Audit 10's C11a is a *class* of defect (a normal-shaped reference standing in for a small-df t), so I
+checked §8 for it immediately rather than waiting for the next audit. `analyze_g8.py` used the correct
+t(G−1) for its p-values, but its **critical value for the CI was a hardcoded lookup** with a
+`else 2.0` fallback — the normal value:
+
+| df | hardcoded fallback | true t crit |
+|---|---|---|
+| 2 | 2.000 | **4.303** |
+| 3 | 2.000 | **3.182** |
+| 9 | 2.000 | **2.262** |
+
+At 3 clusters the interval would have come out **less than half its correct width**. No number in this
+sprint is affected — every analysis clusters on the 6 domains, and the tabled value for G=6 was right —
+but it would have fired silently the first time anyone clustered on something coarser. Replaced with a
+bisection inverse of the already-verified `t_sf`, checked against six published critical values (df=2,3,4,
+5,9,30, all to <0.002). §8 rerun: **all numbers identical**, as they must be.
+
+**Counting rule, since this keeps happening:** when an audit finds a defect, the next step is not to fix
+that instance — it is to grep the other scripts for the same shape. C11a was found in one script and was
+latent in a second.

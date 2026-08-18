@@ -68,6 +68,25 @@ def _betainc(a: float, b: float, x: float) -> float:
     return front * (f - 1)
 
 
+def t_crit(df: int, alpha: float = 0.05) -> float:
+    """Two-sided t critical value, obtained by inverting `t_sf` by bisection.
+
+    The first version hardcoded `2.571 if G==6 else 2.776 if G==5 else 2.0`. The 2.0 fallback is the
+    NORMAL value and is wrong for every other df -- at df=3 the truth is 3.182 and at df=2 it is
+    4.303, so a 3- or 4-cluster CI would have come out less than half its correct width. No number in
+    this sprint is affected (G=6 throughout), but it is the same defect audit 10 found in
+    analyze_g9.py: a normal-shaped reference standing in for a small-df t. Computed now, not tabled.
+    """
+    lo, hi = 0.0, 200.0
+    for _ in range(200):
+        mid = (lo + hi) / 2
+        if t_sf(mid, df) > alpha:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
 def cluster_mean_ci(vals_by_cluster: Dict[str, List[float]], alpha=0.05, n_effective=None):
     """Cluster-level mean +/- t(G-1) SE. The unit of inference is the DOMAIN, not the prompt.
 
@@ -90,7 +109,7 @@ def cluster_mean_ci(vals_by_cluster: Dict[str, List[float]], alpha=0.05, n_effec
                 "degenerate_reason": ("between-cluster SD is exactly 0"
                                       if sd == 0 else f"n_effective={n_effective} distinct prompts")}
     se = sd / math.sqrt(G)
-    tcrit = 2.571 if G == 6 else 2.776 if G == 5 else 2.0
+    tcrit = t_crit(G - 1)
     t = m / se
     return {**base, "mean": m, "se": se, "ci": [m - tcrit * se, m + tcrit * se],
             "p_vs_0": t_sf(abs(t), G - 1), "degenerate": False}
