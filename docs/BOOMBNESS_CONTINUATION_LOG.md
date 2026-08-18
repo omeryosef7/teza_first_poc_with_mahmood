@@ -26,11 +26,11 @@ number does not go in.
 | — | Phase 1.3 `analyze_steering` | **DONE — artifact replaced** | no G4 conclusion changes; intervals were 1.03–1.69× too narrow |
 | — | Phase 1.4 `surgical_knockout` dst | **code fixed, UNVERIFIED; GPU re-run pending** | G3 not established until re-run |
 | — | Phase 1.5 Tier-2 remainder | **PARTIAL** | T5 done for g64 only; T6/T9/T10 landed unverified; T8 + silent-failures NOT STARTED |
-| §15 | missing report sections 2/6/7/14/15/16 | NOT STARTED | item 7 (metric comparison) is the substantive one |
+| §15 | missing report sections 2/6/7/14/15/16 | **PARTIAL** | item 7 (metric comparison) **written** as report §7b; 2/6/14/15/16 outstanding |
 | §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
 | §8/§9 | 9 of 12 named plots | NOT STARTED | |
 | §5.2 | alpha sweep dose 0.25 | NOT STARTED | the dose every behavioural claim rests on was never swept |
-| §14 | ClearHarm arm | **LAUNCHED** | jobs 764745 base / 764746 arm D / 764747 control; `external_bank.py` + 179 ClearHarm + 495 AdvBench rows built |
+| §14 | ClearHarm arm | **★ RESULT IN — decomposition running** | ASR 0.101 → **0.542**, control +0.011, `clearharm_arm_D.json`. Arms B/C + 3 band draws: 764773–777 |
 | §4.1 | strength / consistency / example_position | NOT STARTED | generated, confounded, unanalysed — decide analyse-or-delete |
 
 ## Gate table
@@ -303,3 +303,7 @@ git_dirty, python}`; the recovered refusalness paths reproduce every mediation n
 | 14 | 2026-08-18 | verification workflow returned: 3× INCOMPLETE + 2 completed groups | C-8 (probe leakage refuted), C-9 (§9 Q5 answered, G2 survives), C-10 (provenance) |
 | 15 | 2026-08-18 | pinned three self-invalidating tests that loaded the pre-fix module via `git show HEAD:` | committing a fix turned its own tests red with no regression |
 | 16 | 2026-08-18 | ClearHarm base + control judged 179/179; arm D judging | first external-set ASR in the sprint |
+| 17 | 2026-08-18 | ★ **ClearHarm arm D: 0.101 → 0.542**, double-random control +0.011, refusal 0.877 → 0.447, all arms coherence-gated | the bank-artifact explanation is **excluded**. Decomposition (B/C) + 3-draw band launched |
+| 18 | 2026-08-18 | wrote report **§7b**, the metric comparison (plan §15 item 7) that appeared in neither report | three metrics disagree in **sign** about ASR at L12; all three agree on comprehension |
+| 19 | 2026-08-18 | rewrote report §0: one conclusion, retraction table R-6…R-11, `§0.3` resolved, G1 → +68%, interpreter path fixed | the gate table no longer contradicts the body |
+| 20 | 2026-08-18 | added the five new retractions to `retraction_sweep.py` **the same day they were declared** | it immediately caught **4 unqualified stale claims** the old list called clean; all fixed, sweep clean over 4 files |
