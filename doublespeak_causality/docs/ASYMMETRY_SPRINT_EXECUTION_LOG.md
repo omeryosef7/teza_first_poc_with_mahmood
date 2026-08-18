@@ -10734,3 +10734,4 @@ Diff unchanged.
 ### 04:45 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 05:15 — idle. Controller OK (header verified), queue empty. No new asymmetry artifacts, no §20 commits. Diff unchanged.
 ### 05:45 — idle. Controller OK (header verified). Queue: 2 boombness jobs (theirs). No new asymmetry artifacts, no §20 commits. Diff unchanged.
+### 06:15 — idle. Controller OK (header verified). Queue: 2 boombness jobs (theirs) — note their elapsed times **reset** (26 min → 16/21 min) and they moved n-805 → n-802, i.e. **preempted and requeued** in `killable`. Normal for that partition; theirs to track. No new asymmetry artifacts, no §20 commits. Diff unchanged.
