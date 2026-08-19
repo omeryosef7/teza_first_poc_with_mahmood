@@ -692,7 +692,7 @@ Implement this plan. Document progress in this external markdown file so we can 
 # Progress Log
 
 **Sprint started:** 2026-08-19. **Branch:** `behavioral-causality-sprint`.
-**Current phase:** A complete — **GATE PASSED**. Phase B next.
+**Current phase:** B complete (self-review in flight). Phase C next.
 **Gate status:** all six plan §0 claims reproduce from committed artifacts; 7 discrepancies and 5
 cross-cutting defects documented below before proceeding, per the plan's stop rule.
 
@@ -978,6 +978,211 @@ table is one paragraph — a single marker word in any row exempts every row.
 
 **This sprint will not repair these unilaterally** — they are the previous sprint's deliverables. Logged
 so nothing here inherits them. A row-scoped or claim-scoped sweep is the durable fix.
+
+## Phase B — Occurrence-Resolved Token-Level Boombness
+
+**Status:** runs complete, self-review in flight. Numbers below are **provisional until the independent
+replication returns** (a second agent re-deriving them without touching my code).
+
+### What was built, and how little of it is new
+
+`analyze_boombness.py` already implemented the plan's §7.1 token-level analysis — but it splits
+occurrences only into `{final, earlier}`. The follow-up needs **first-demo / middle-demo / last-demo /
+query**, because G1 (meaning lives in the demo block, not the query token) predicts those four behave
+differently and a two-way split cannot see it. So: **one new file, 330 lines**,
+`src/boombness/followup_token_level.py`, which imports `mean`, `sem`, `cohens_d`, `col`,
+`discover_columns`, `direction_sanity` and the cell constants from `analyze_boombness` rather than
+reimplementing them. No new extraction, no GPU.
+
+**Phase B needed zero GPU time** — the occurrence rows already existed.
+
+### Inputs, and why this extract
+
+| | choice | why |
+|---|---|---|
+| extract | `extract_boombness/full2352_20260818_115332_1410155` (14,016 rows / 2,352 prompts) | It contains **all 960** refusalness prompts. The 1,464-row canonical fit dir contains only **660** of them. The plan (§4 gap 4) required choosing explicitly; this is the choice and the reason. |
+| refusalness | `refusalness/cwpos_20260817_050713_304734` | `codeword_last`, 960 prompts, layers {12,14,16,18,20} |
+| directions | cross-fit throughout — `is_self_fit` is `False` on **all 14,016** rows | plan §2.3 |
+
+### Commands
+
+```
+PY=.../envs/poc_stage2/bin/python
+EX=outputs/boombness/extract_boombness/full2352_20260818_115332_1410155
+RF=outputs/boombness/refusalness/cwpos_20260817_050713_304734
+
+# per query kind, slot-0 clean (R-18 hygiene)
+$PY src/boombness/followup_token_level.py --run $EX --refusalness $RF \
+    --out-dir outputs/boombness_followup/phaseB_<QK>_slot0 \
+    --query-kind <QK> --slot 0 --no-jsonl --strict
+# QK in {behavioral, semantic_one_word, comprehension_usage, semantic_forced_choice}
+
+# behavioral, all slots — the slot1/2 pseudo-replication comparison
+$PY ... --out-dir outputs/boombness_followup/phaseB_behavioral_allslots --query-kind behavioral --no-jsonl --strict
+
+# the full row-level deliverable
+$PY ... --out-dir outputs/boombness_followup --strict
+```
+
+SLURM: **none** — pure CPU. Git commit: see below.
+
+### Outputs
+
+| artifact | size | committed? |
+|---|---|---|
+| `outputs/boombness_followup/token_level_occurrence_readouts.jsonl.gz` | 16.2 MB, **448,512 rows** | no — `outputs/` is gitignored (D-11); path recorded here per plan §2.5 |
+| `outputs/boombness_followup/token_level_dynamics_summary.json` | 190 KB | **yes**, force-added |
+| `phaseB_{behavioral,semantic_one_word,comprehension_usage,semantic_forced_choice}_slot0/` + `phaseB_behavioral_allslots/` | summaries | **yes** |
+
+**Deliberate deviation from the plan, recorded so nobody thinks a metric was dropped.** The plan asks for
+one row per (prompt, occurrence, layer, **metric**). The artifact emits one row per (prompt, occurrence,
+layer) with the metrics as a dict on the row — identical information, ~6× fewer bytes. 448,512 rows
+rather than ~2.7 M.
+
+### Row accounting (plan §2.3 — no silent failures)
+
+Full dump: **attempted 14,016 → kept 14,016 → 0 skips.** Every filtered run reconciles exactly:
+
+| run | attempted | kept | skips |
+|---|---|---|---|
+| behavioral slot0 | 14,016 | 4,680 | `filtered_query_kind` 8,520 + `filtered_family_slot` 816 |
+| semantic_one_word slot0 | 14,016 | 4,680 | `filtered_query_kind` 9,336 |
+| comprehension_usage slot0 | 14,016 | 1,776 | `filtered_query_kind` 12,240 |
+| semantic_forced_choice slot0 | 14,016 | 2,064 | `filtered_query_kind` 11,952 |
+
+### Audits required by plan §4, and their results
+
+| audit | result |
+|---|---|
+| **query vs demo occurrence not confused** | **Enforced, not assumed.** `assign_roles` aborts unless every prompt has exactly one `is_query_occurrence` at the highest `occurrence_index`. Verified across both extracts: `query-not-last: 0`, `multi-query: 0`, `no-query: 0`, on 1,464 and 2,352 prompts. |
+| **`codeword_last` vs `readout_pos` not confused** | Refusalness is joined **prompt-level** and carries an explicit `refusalness_readout_position` field; the summary states it is *not* occurrence-resolved. This is the ~9-token gap that caused three retractions last sprint. |
+| **`query_kind` not stripped from `family_id`** | Checked per row: `family_id` field 9 must equal the `query_kind` column, else the row is skipped with a named reason. **0 rows failed.** |
+| **`family_slot` recovered** | Parsed from `family_id` field 3; a row whose slot is unparseable is skipped by name. **0 failures** across 14,016 rows. |
+| **expected occurrence counts** | `len(rows_for_prompt) == n_occurrences` asserted per prompt. **0 failures.** |
+| **exact `prompt_id` joins** | refusalness matched **816/816** behavioral slot-0 prompts, 0 unmatched. |
+| **no semantic representation joined to behavioural ASR** | **No ASR is joined in Phase B at all.** Representation only. |
+| **direction sanity gate** | `d_surface|cos` separates concept-surface cells {B,E} from codeword-surface {A,C} at **32 of 32 layers**, all runs, `--strict`. |
+
+**Discovered, not assumed:** only `behavioral` prompts have `slot1`/`slot2` (408 rows each). Every other
+query kind is slot-0 only. So R-18's sibling-family pseudo-replication was **structurally confined to the
+behavioural rows** — which is exactly where ASR lives.
+
+Also discovered: there is a **fifth** query kind, `semantic_forced_choice` (2,064 rows), which the plan's
+list did not mention. It was run rather than dropped.
+
+### Findings
+
+Headline condition `natural_doublespeak`, metric `d_surface|proj`, behavioural slot-0. Higher projection
+= more concept-like (the sanity gate fixes the sign: concept cells score above codeword cells at all 32
+layers). All values are negative in absolute terms; **the contrasts are what carry meaning.**
+
+#### Q1 — Does Boombness grow across demo occurrences? **Yes, large and monotone in depth.**
+
+`demo_last − demo_first`, `d_surface|proj`:
+
+| L | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 18 | 24 | 30 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Δ | +0.13 | +0.39 | +0.90 | **+1.10** | +1.07 | **+1.43** | +1.75 | +3.04 | +5.67 | +7.17 |
+| Cohen's d | 2.29 | 2.21 | 2.48 | **2.66** | 2.56 | **2.64** | 2.49 | 1.95 | 1.90 | 1.96 |
+
+The later a codeword sits in the demonstration block, the more concept-like it is — from L2 onward,
+at d ≈ 2–2.7 throughout. This is a **new token-level result**; the previous sprint measured one
+occurrence and could not see it.
+
+#### Q2 — Is the query codeword more or less bomb-like than the demo codewords? **It depends on the query kind, and that dissociation is the interesting part.**
+
+`query − demo_all`, `d_surface|proj`:
+
+| L | 4 | 8 | 12 | 16 | 20 | 30 |
+|---|---|---|---|---|---|---|
+| **behavioral** | −0.20 | **−0.69** (d −1.11) | **−1.04** (d −1.35) | −2.40 | −3.03 | −6.82 |
+| **semantic_one_word** | +0.30 | **+0.68** (d +1.13) | **+0.86** (d +1.13) | +0.62 | −0.14 | +3.00 |
+
+Under the **semantic** probe the query codeword *is* more concept-like mid-stack — which is the paper's
+original observation. Under the **behavioural** prompt, the same codeword in the same bank is markedly
+**less** concept-like than the demo tokens, and the gap widens with depth.
+
+The demo-role numbers are byte-identical across the two query kinds (`demo_first` L6–12 = −3.070 vs
+−3.069), which is the internal control: the demo block is the same text, so only the query differs.
+
+**This corroborates G1 from the representational side, on the rows that matter for ASR.** G1 showed
+transplanting the demo block moves the readout +68.9% while transplanting the query codeword moves it the
+wrong way. Phase B shows why: in behavioural prompts the query codeword never becomes the bomb-like thing
+in the first place.
+
+#### Q3 — Which layer band? **The gradient grows monotonically with depth; it does not peak in L6–L12.**
+
+`d_surface|proj` band means (behavioural, slot-0):
+
+| role | L6–L12 | L14–L21 | late L22–L31 | n |
+|---|---|---|---|---|
+| demo_first | −3.070 | −7.224 | −14.222 | 324 |
+| demo_middle | −2.028 | −4.437 | −8.237 | 966 |
+| demo_last | −1.983 | −4.378 | −7.898 | 294 |
+| demo_all | −2.233 | −4.996 | −9.398 | 1,584 |
+| query | −2.992 | −7.513 | −15.105 | 348 |
+
+⚠ **Note the tension this creates with the causal result, and do not paper over it.** The
+*representational* demo gradient is largest **late** (L22–L31), but the *causal* `project_out` effect on
+external ASR is confined to **L6–L12** and is null from L16 outward. The layers where the signal is
+biggest are not the layers where removing it changes behaviour. That is a Phase E question, and it is
+now sharper than the plan posed it.
+
+#### Q4 — Does `d_surface` differ from `d_naive` and `d_context`? **Yes — and the specificity is strong.**
+
+`demo_last − demo_first`:
+
+| direction | cos with `d_surface` | L8 | L12 |
+|---|---|---|---|
+| `d_surface` | 1.000 | **+1.0971** (d +2.66) | **+1.4342** (d +2.64) |
+| `d_naive` | 0.945 | +1.0048 (d +2.67) | +1.3110 (d +2.78) |
+| `d_context` | 0.188 | **+0.0957** (d +0.35) | **−0.0123** (d −0.03) |
+| `d_inter` | ≤0.24 | **−1.0758** (d −2.90) | −1.3048 (d −2.22) |
+
+The near-collinear sibling reproduces the gradient; the **near-orthogonal `d_context` shows none**
+(d = −0.03 at L12). So the demo-position gradient is not a generic "later tokens drift" artifact — it is
+specific to the surface axis. `d_inter` moves the *opposite* way at d ≈ −2.9, which is informative rather
+than noise.
+
+**This is the token-level analogue of the AdvBench direction-specificity test**, where `d_context` was
+also inert (Δ +0.0045, p 0.399) despite changing 34.9% of generations. Two independent instruments, same
+verdict, same sibling.
+
+#### Q5 — Is refusalness independent at these positions? **Its ordering does not track `d_surface`'s.**
+
+`refusalness|cos` at `codeword_last`, prompt-level, 816 prompts:
+
+| condition | L12 | L14 | L16 | L18 | L20 |
+|---|---|---|---|---|---|
+| direct_harmful | −0.0097 | −0.0123 | −0.1050 | −0.1279 | −0.1599 |
+| concept_in_benign_ctx | **+0.0251** | +0.0205 | −0.0986 | −0.1311 | −0.1563 |
+| natural_doublespeak | −0.0746 | −0.0478 | −0.1068 | −0.1333 | −0.1453 |
+| direct_codeword | −0.0396 | +0.0195 | −0.0521 | −0.0977 | −0.0988 |
+| benign_remap | −0.0812 | −0.0706 | −0.1331 | −0.1496 | −0.1651 |
+| benign_literal | −0.1031 | −0.0999 | −0.1491 | −0.1642 | −0.1802 |
+
+At L12 doublespeak sits between benign_literal and direct_harmful, as expected — but the most
+refusal-positive condition is `concept_in_benign_ctx`, which is **not** the most concept-like on
+`d_surface`. The two orderings come apart. Consistent with the plan's hypothesis 5 (`d_surface` supplies
+evidence the refusal mechanism uses, rather than being the refusal signal), and with the causal
+decomposition where the two channels interact but neither subsumes the other.
+
+⚠ Caveat: refusalness exists **only for `behavioral` prompts** (960 of 2,352). For
+`semantic_one_word` the join matches 0 prompts. Any Phase C/D metric combining Boombness and refusalness
+is therefore restricted to the behavioural rows.
+
+### Known limitations of Phase B, stated before anyone cites it
+
+1. **Descriptive, not inferential.** No domain clustering, no permutation test, no multiplicity
+   correction. Cohen's d and means only. These are **exploratory** numbers; Phase D supplies the
+   inference. Given the sprint's history of iid-where-positive / clustered-where-negative (R-16), that
+   distinction is stated up front rather than in a footnote.
+2. **Logit lens is not available at every layer.** `ll|boombness` returns nan at L18 because the extract
+   computed logit-lens columns only at selected layers. Reported, not silently meaned over.
+3. **`demo_middle` pools heterogeneous positions** — a prompt with 17 occurrences contributes 15 middles.
+   Position-within-block is not yet a covariate.
+4. **The 2,352-row bank is not the 1,464-row probe cache.** Phase C must not join across them (this is
+   the R-10/C-13 defect class).
 
 ## Probe Validation and Leakage Checks
 
