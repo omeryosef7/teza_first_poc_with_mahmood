@@ -2611,3 +2611,46 @@ of everything, so it accumulates the drift from every section. The retraction sw
 because "UNKNOWN" contains no retracted figure to match on; only reading §0 against the body does. That
 is a manual check, it has now paid twice, and it should be run at the end of every session rather than
 at the end of the sprint.
+
+## ★★★ THE SPECIFICITY TEST PASSES — `d_context` perturbs generation as much as `d_surface` and moves behaviour not at all
+
+Arm B's exact intervention at L8 on AdvBench 495, substituting a **sibling direction fitted by the same
+2×2 on the same rows**:
+
+| direction @L8 | cos with `d_surface` | ASR@0.5 | Δ vs baseline | generations changed vs baseline |
+|---|---|---|---|---|
+| baseline | — | 0.0646 | — | — |
+| **`d_surface`** | 1.000 | **0.1071** | **+0.0425** | (the effect) |
+| **`d_context`** | **0.1884** | **0.0646** | **+0.0000** | **173/495 = 34.9%** |
+| `d_naive` | 0.9452 | judging | | |
+
+**`d_context` changes what the model says on more than a third of prompts and changes whether it
+complies on none of them.** Its ASR is *exactly* the baseline — 32/495 either way.
+
+### Why this is a better control than every random projection in this report
+
+A norm-matched random direction answers *"is this better than noise?"* It cannot answer *"is this about
+`d_surface` specifically, or about any direction this bank produces?"* — because a random vector has no
+structure at all, so its inertness is unsurprising and uninformative about structured alternatives.
+
+`d_context` is not noise. It is:
+* fitted by **the same 2×2**, on **the same rows**, by **the same procedure**;
+* a **real** direction with its own meaning — benign vs harmful *context*, holding surface form fixed;
+* **near-orthogonal** to `d_surface` (cos = 0.188 at L8, verified in `direction_cosines.json`);
+* and demonstrably **potent** — 34.9% of generations change, against `d_surface`'s effect being the
+  thing under test.
+
+So the comparison is: same bank, same fit, same layer, same operation, comparable perturbation of the
+text — **and the behavioural effect is +0.0425 for one direction and +0.0000 for the other.**
+
+**This is the same argument L16 makes in the depth dimension** (§7f: the same direction four layers
+away changes 29.5% of generations and compliance on none). Together they bracket the effect on two
+axes: it is specific to **this direction** and to **this band of layers**, and in both cases the
+"control" is a manipulation that demonstrably *does something* — just not to behaviour.
+
+⚠ **`d_naive` is still judging and is the informative remaining case.** At cos = 0.945 it is nearly the
+same direction as `d_surface`, so it *should* reproduce most of the effect. If it does, the result is
+"the effect follows the direction, not the fitting procedure". **If `d_naive` were inert, that would be
+a serious problem** — it would mean the effect depends on the 2×2's controls rather than on the
+direction they estimate, and §7c's interpretation would need rewriting. Recorded before the number
+arrives.
