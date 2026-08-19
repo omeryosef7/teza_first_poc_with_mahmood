@@ -38,6 +38,11 @@ the version it replaces:**
 
 > **Boombness does not predict attack success — and removing the direction it measures causally
 > raises attack success.**
+>
+> **Both halves are now localized to the same layers.** At **L12**, `d_surface`'s projection has a
+> within-domain ρ of **−0.066 (p=0.49, n=108 independent prompts)** with attack success, while
+> *ablating* that direction at L12 raises it by **+0.0322 (p=0.0056)** against an inert matched
+> control — and the effect is a band, L8–L12, null at L4/L18/L24 (§7f).
 
 Those are consistent rather than contradictory: a representation can be causally load-bearing without
 its scalar projection tracking the outcome across prompts. Ablating a direction is not the same
@@ -74,11 +79,12 @@ here.
 | gate | question | verdict |
 |---|---|---|
 | **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token — re-derived on the corrected readout 2026-08-19.** The single-layer L18 demonstration transplant moves the readout **+68.9% of span, CI [+51%, +97%]** (24 families, 6 domains); the **whole-prompt** transplant is **null** (+13%, CI [−17%, +34%]) and the **query-codeword** transplant moves it the **wrong way** (−57%). C-6 discharged: the old readout gave +68.1%, so the instrument defect did not change G1. ⚠ The "% of span" denominator inherits a ceiling measured in a tail (option mass 0.0074). |
-| **G2** (§9) | Does Boombness predict attack success? | ⛔ **RETRACTED (R-18).** `analyze_g2` filtered on `condition` only, so the published n=234 contained **72 sibling families sharing demonstrations** (pseudo-replication) and **72 rows whose codeword readability was experimentally manipulated** (`strength`/`consistency`/`position`). On the **90 independent, unmanipulated prompts** the within-domain ρ — the estimand the artifact itself says to cite — goes from **+0.2618 (p=5e-4)** to **−0.0518 (p=0.658)**. **Not established.** n=90 cannot exclude a small effect, so this is a null, not a proof of absence. |
+| **G2** (§9) | Does Boombness predict attack success? | ⛔ **RETRACTED (R-18) — a null replicated across three independent clean samples.** `analyze_g2` filtered on `condition` only, so the published n=234 was 31% sibling families sharing demonstrations and 31% experimentally-manipulated rows. Within-domain ρ on clean rows: **−0.083** (n=60), **−0.052** (n=90), and **−0.066, p=0.493** (n=108, the powered re-run on a purpose-built block of rows whose demonstrations are disjoint from every existing family). The published **+0.2618 (p=5e-4)** is recoverable only by putting the contaminated rows back. |
 | **G3** (§10) | Can it be removed surgically? | **Established, re-derived 2026-08-19** on 24 families with the ranking at `readout_pos` (R-7 discharged). Cutting **all** demo edges at all layers recovers **75.2%** of the deletion ceiling; **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001); and **6.25% of the edges does nothing however distributed** — the redundancy is in **edge count**, not depth. Codeword-scope cuts move the readout the **wrong way** (+1.33), so the meaning is in the demonstration **block**. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
 | **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
+| **§14-L** | **Where in the network does the effect live?** | **A mid-stack band, L8–L12** (§7f). Arm B is significant at **L8 (+0.0305, p=0.0089)** and **L12 (+0.0322, p=0.0056)** and **null at L4, L18, L24** — +0.0005 at L24. **A matched random-projection control at every depth is inert** (−0.0066 to +0.0007, no depth dependence), so the band is a property of the direction, not of mid-stack projection damage. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
@@ -1193,6 +1199,64 @@ problem is R-16, its domain-clustered interval, not the control.
 that guard was itself dead on first writing — it fingerprinted judge *scores*, and StrongReject is not
 bitwise deterministic, so three re-judgings of one identical generation set produced three "distinct"
 draws. Run against the real R-12 band it now refuses correctly.
+
+## 7f. Where in the network the effect lives — the layer profile (added 2026-08-19)
+
+§7c establishes that removing `d_surface` causally raises attack success on an external harmful set.
+That is a claim about **one intervention at one depth** — L8, because that is where the sprint fitted
+the direction for interventions. It leaves the obvious question unasked: **is L8 special, or would
+removing `d_surface` anywhere do this?**
+
+It matters for interpretation. A flat profile would say the direction carries harm-relevant information
+throughout the residual stream — closer to a generic capability effect. A localized profile says the
+effect lives where the surface/concept contrast is represented, which is the specific mechanistic claim
+§7c implicitly assumes and had not tested.
+
+AdvBench 495, 16 domain clusters, arm B's exact intervention at five depths, **each with its own
+norm-matched random-projection control at the same depth**
+(`outputs/boombness/advbench_layer_profile.json`):
+
+| layer | **arm Δ (clustered)** | **p_cl** | matched control Δ | control p |
+|---|---|---|---|---|
+| L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
+| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
+| L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
+| L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+
+**The effect is a mid-stack band, L8–L12.** Significant at both, and **null at L4, L18 and L24** —
++0.0005 at L24 is nothing. Refusal tracks it: 0.931 → 0.889 / 0.895 inside the band, unchanged outside.
+
+**Every control is inert at every depth**, spanning −0.0066 to +0.0007 with no depth dependence. That
+is the point of running them: "mid-stack random projections are simply more destructive than late ones"
+was a live alternative explanation for a rising curve, and it is now excluded. **The band is a property
+of the direction, not of the depth.**
+
+**L12 is marginally larger than L8** (+0.0322 vs +0.0305), so L8 is not privileged — the sprint picked
+a depth inside the effective band rather than its centre.
+
+### ★ This localizes the sprint's central claim to a specific depth
+
+The two elevated layers are the two the sprint had already selected, for unrelated reasons: **L8** is
+where `d_surface` is fitted and applied in every §7c arm, and **L12** is the `d_surface|L12|proj`
+column that served as "Boombness" throughout. A causal selection and a representational one landing on
+the same band is evidence neither could provide alone.
+
+**And it sharpens R-18 rather than softening it.** L12 is exactly where the *retracted* correlation
+lived. So at one and the same layer:
+
+> `d_surface`'s projection **does not predict** attack success (within-domain ρ = **−0.066**, p = 0.49,
+> n = 108 independent prompts) — and **ablating that direction causally raises it** (+0.0322,
+> p = 0.0056, against an inert matched control).
+
+That is the report's central result, localized. A direction can be causally load-bearing at a depth
+where the scalar you read off it carries no predictive signal, because ablation and regression are
+different operations on different objects.
+
+⚠ **Bounds, not a shape.** Five points bound the band as *≥L8, ≥L12, <L4, <L18*; they do not say whether
+it is a plateau across L8–L12 or peaked between them. `abL{6,10,16,28}_B` are judging to resolve the
+edges; their matched controls are **not yet run** (the SLURM controller has been unreachable since
+08:04), so those four points will be reported as arm-only until controlled.
 
 ## 7d. The arm-F interaction — a real number whose mechanism was refuted (§10.4)
 
