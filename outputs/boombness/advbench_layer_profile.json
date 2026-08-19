@@ -1,5 +1,5 @@
 {
- "label": "AdvBench 495, 16 clusters \u2014 NINE-POINT d_surface layer profile (controls at L4/8/12/18/24)",
+ "label": "AdvBench 495, 16 clusters \u2014 d_surface layer profile, 11 arms + 9 matched controls",
  "n_common": 495,
  "dropped_symmetric_difference_vs_baseline": {
   "L4": 0,
@@ -7,15 +7,21 @@
   "L8": 0,
   "L10": 0,
   "L12": 0,
+  "L13": 0,
+  "L14": 0,
   "L16": 0,
   "L18": 0,
   "L24": 0,
   "L28": 0,
   "c4": 0,
+  "c6": 0,
   "c8": 0,
+  "c10": 0,
   "c12": 0,
+  "c16": 0,
   "c18": 0,
-  "c24": 0
+  "c24": 0,
+  "c28": 0
  },
  "runs": {
   "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
@@ -24,15 +30,21 @@
   "L8": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_B_20260819_013447_1506491",
   "L10": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL10_B_20260819_083136_1669413",
   "L12": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL12_B_20260819_072331_1641327",
+  "L13": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL13_B_20260819_103334_1754334",
+  "L14": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL14_B_20260819_103334_1754335",
   "L16": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL16_B_20260819_081115_1663774",
   "L18": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL18_B_20260819_070329_1634282",
   "L24": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL24_B_20260819_072331_1641284",
   "L28": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL28_B_20260819_083140_1669508",
   "c4": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL4_Bctrl_20260819_073343_1645946",
+  "c6": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL6_Bctrl_20260819_100335_1734757",
   "c8": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Bctrl_20260819_020905_1520524",
+  "c10": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL10_Bctrl_20260819_102528_1749408",
   "c12": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL12_Bctrl_20260819_075341_1658688",
+  "c16": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL16_Bctrl_20260819_100335_1734758",
   "c18": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL18_Bctrl_20260819_073343_1645947",
-  "c24": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL24_Bctrl_20260819_075341_1658708"
+  "c24": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL24_Bctrl_20260819_075341_1658708",
+  "c28": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL28_Bctrl_20260819_102528_1749492"
  },
  "arms": {
   "baseline": {
@@ -113,6 +125,32 @@
    "asr_cluster_mean": 0.07156586320372095,
    "degenerate": false
   },
+  "L13": {
+   "n": 495,
+   "asr_at_0.5": 0.07272727272727272,
+   "mean_score": 0.07146464646464647,
+   "refusal": 0.9252525252525252,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.016916618807503232,
+    0.08954708551530069
+   ],
+   "asr_cluster_mean": 0.053231852161401964,
+   "degenerate": false
+  },
+  "L14": {
+   "n": 495,
+   "asr_at_0.5": 0.0707070707070707,
+   "mean_score": 0.06893939393939394,
+   "refusal": 0.9272727272727272,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.016561246940745816,
+    0.08661298369784759
+   ],
+   "asr_cluster_mean": 0.0515871153192967,
+   "degenerate": false
+  },
   "L16": {
    "n": 495,
    "asr_at_0.5": 0.06464646464646465,
@@ -178,6 +216,19 @@
    "asr_cluster_mean": 0.039481259463440846,
    "degenerate": false
   },
+  "c6": {
+   "n": 495,
+   "asr_at_0.5": 0.06666666666666667,
+   "mean_score": 0.06616161616161616,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.003675097895283065,
+    0.0677531009972786
+   ],
+   "asr_cluster_mean": 0.03571409944628083,
+   "degenerate": false
+  },
   "c8": {
    "n": 495,
    "asr_at_0.5": 0.06262626262626263,
@@ -191,6 +242,19 @@
    "asr_cluster_mean": 0.03310579261003282,
    "degenerate": false
   },
+  "c10": {
+   "n": 495,
+   "asr_at_0.5": 0.06666666666666667,
+   "mean_score": 0.06616161616161616,
+   "refusal": 0.9292929292929293,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.009087703155112967,
+    0.0783594033004739
+   ],
+   "asr_cluster_mean": 0.043723553227793435,
+   "degenerate": false
+  },
   "c12": {
    "n": 495,
    "asr_at_0.5": 0.06464646464646465,
@@ -202,6 +266,19 @@
     0.07247883331932317
    ],
    "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "c16": {
+   "n": 495,
+   "asr_at_0.5": 0.06262626262626263,
+   "mean_score": 0.06212121212121212,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.005545532944155107,
+    0.07157875068860894
+   ],
+   "asr_cluster_mean": 0.038562141816382026,
    "degenerate": false
   },
   "c18": {
@@ -228,6 +305,19 @@
     0.06278139392617582
    ],
    "asr_cluster_mean": 0.03310579261003282,
+   "degenerate": false
+  },
+  "c28": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.010260092891870028,
+    0.07466261851095218
+   ],
+   "asr_cluster_mean": 0.0424613557014111,
    "degenerate": false
   }
  },
@@ -297,6 +387,32 @@
    "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
    "degenerate": false
   },
+  "L13": {
+   "delta_pooled": 0.00808080808080808,
+   "delta_cluster_mean": 0.013750592697961118,
+   "se": 0.007591063533922489,
+   "ci95_domain_clustered": [
+    -0.002429376221733358,
+    0.029930561617655595
+   ],
+   "p_cl": 0.09014460421391515,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L14": {
+   "delta_pooled": 0.005555555555555556,
+   "delta_cluster_mean": 0.011838748002561201,
+   "se": 0.00761901488495451,
+   "ci95_domain_clustered": [
+    -0.00440079781158826,
+    0.02807829381671066
+   ],
+   "p_cl": 0.1410638560383841,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
   "L16": {
    "delta_pooled": 0.0,
    "delta_cluster_mean": 0.0,
@@ -359,6 +475,19 @@
    "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
    "degenerate": false
   },
+  "c6": {
+   "delta_pooled": 0.002777777777777778,
+   "delta_cluster_mean": -0.0033055731453731866,
+   "se": 0.009980133766629222,
+   "ci95_domain_clustered": [
+    -0.024577724726880815,
+    0.017966578436134445
+   ],
+   "p_cl": 0.7450637941661489,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
   "c8": {
    "delta_pooled": -0.0017676767676767678,
    "delta_cluster_mean": -0.006169874748144871,
@@ -372,6 +501,19 @@
    "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
    "degenerate": false
   },
+  "c10": {
+   "delta_pooled": 0.002777777777777778,
+   "delta_cluster_mean": 0.0047149937229104,
+   "se": 0.00393790107284601,
+   "ci95_domain_clustered": [
+    -0.003678443729266582,
+    0.013108431175087382
+   ],
+   "p_cl": 0.24975511527596392,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
   "c12": {
    "delta_pooled": -0.0002525252525252525,
    "delta_cluster_mean": -0.0003496684624948197,
@@ -381,6 +523,19 @@
     0.0005451068879320421
    ],
    "p_cl": 0.4179401810279704,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "c16": {
+   "delta_pooled": -0.0012626262626262627,
+   "delta_cluster_mean": -0.00030789787465484064,
+   "se": 0.0012898478471839016,
+   "ci95_domain_clustered": [
+    -0.003057143482376223,
+    0.0024413477330665415
+   ],
+   "p_cl": 0.8145620349913356,
    "n_domains": 16,
    "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
    "degenerate": false
@@ -410,6 +565,19 @@
    "n_domains": 16,
    "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
    "degenerate": false
+  },
+  "c28": {
+   "delta_pooled": 0.0,
+   "delta_cluster_mean": 0.0029800962379702535,
+   "se": 0.0035392585733017797,
+   "ci95_domain_clustered": [
+    -0.004563654839712366,
+    0.010523847315652873
+   ],
+   "p_cl": 0.41300543709786103,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
   }
  },
  "provenance": {
@@ -417,6 +585,10 @@
    "src/boombness/analyze_external_arms.py",
    "--baseline",
    "outputs/boombness/judge/abg_base_20260819_011714_1480836/",
+   "--label",
+   "AdvBench 495, 16 clusters \u2014 d_surface layer profile, 11 arms + 9 matched controls",
+   "--out",
+   "outputs/boombness/advbench_layer_profile.json",
    "--arm",
    "L4=outputs/boombness/judge/abgL4_B_20260819_070329_1634281/",
    "--arm",
@@ -428,6 +600,10 @@
    "--arm",
    "L12=outputs/boombness/judge/abgL12_B_20260819_072331_1641327/",
    "--arm",
+   "L13=outputs/boombness/judge/abgL13_B_20260819_103334_1754334/",
+   "--arm",
+   "L14=outputs/boombness/judge/abgL14_B_20260819_103334_1754335/",
+   "--arm",
    "L16=outputs/boombness/judge/abgL16_B_20260819_081115_1663774/",
    "--arm",
    "L18=outputs/boombness/judge/abgL18_B_20260819_070329_1634282/",
@@ -438,19 +614,23 @@
    "--arm",
    "c4=outputs/boombness/judge/abgL4_Bctrl_20260819_073343_1645946/",
    "--arm",
+   "c6=outputs/boombness/judge/abgL6_Bctrl_20260819_100335_1734757/",
+   "--arm",
    "c8=outputs/boombness/judge/abg_Bctrl_20260819_020905_1520524/",
    "--arm",
+   "c10=outputs/boombness/judge/abgL10_Bctrl_20260819_102528_1749408/",
+   "--arm",
    "c12=outputs/boombness/judge/abgL12_Bctrl_20260819_075341_1658688/",
+   "--arm",
+   "c16=outputs/boombness/judge/abgL16_Bctrl_20260819_100335_1734758/",
    "--arm",
    "c18=outputs/boombness/judge/abgL18_Bctrl_20260819_073343_1645947/",
    "--arm",
    "c24=outputs/boombness/judge/abgL24_Bctrl_20260819_075341_1658708/",
-   "--label",
-   "AdvBench 495, 16 clusters \u2014 NINE-POINT d_surface layer profile (controls at L4/8/12/18/24)",
-   "--out",
-   "outputs/boombness/advbench_layer_profile.json"
+   "--arm",
+   "c28=outputs/boombness/judge/abgL28_Bctrl_20260819_102528_1749492/"
   ],
-  "git_commit": "02057ae746e3c9a7a8896f7bbb64e54f1bc8890a",
+  "git_commit": "797760376ffa2fd4960858fcfa3b4bd50bb13d55",
   "git_dirty": true,
   "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
   "seed": 20260819

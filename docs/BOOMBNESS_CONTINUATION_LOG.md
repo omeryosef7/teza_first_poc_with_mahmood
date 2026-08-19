@@ -2654,3 +2654,65 @@ same direction as `d_surface`, so it *should* reproduce most of the effect. If i
 a serious problem** — it would mean the effect depends on the 2×2's controls rather than on the
 direction they estimate, and §7c's interpretation would need rewriting. Recorded before the number
 arrives.
+
+## ★★★ THE COMPLETE PROFILE — 11 depths, 9 controls, and my "hard edge" was wrong
+
+`outputs/boombness/advbench_layer_profile.json`. AdvBench 495, 16 clusters, baseline 0.0646.
+
+| layer | **arm Δ** | **p_cl** | matched control Δ | control p |
+|---|---|---|---|---|
+| L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
+| L6 | +0.0159 | 0.0567 | −0.0033 | 0.745 |
+| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L10** | **+0.0223** | **0.0190** ✓ | +0.0047 | 0.250 |
+| **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
+| L13 | +0.0138 | 0.0901 | *(judging)* | |
+| L14 | +0.0118 | 0.1411 | *(judging)* | |
+| L16 | **+0.0000** | — | −0.0003 | 0.815 |
+| L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
+| L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+| L28 | +0.0037 | 0.305 | +0.0030 | 0.413 |
+
+**All nine controls inert, spanning −0.0066 to +0.0047.** No depth dependence in the control at all.
+
+### ⛔ Correcting myself: it is a band with SHOULDERS, not a hard edge
+
+Two ticks ago, with L12 at +0.0322 and L16 at exactly zero and nothing between them, I wrote that the
+profile has *"a hard edge between L12 and L16"*. **L13 and L14 fill that gap and the edge is not
+hard:**
+
+> L12 **+0.0322** (p=0.006) → L13 **+0.0138** (p=0.090) → L14 **+0.0118** (p=0.141) → L16 **+0.0000**
+
+That is a **graded shoulder over three layers**, not a step. The honest description is a band with a
+**core at L8–L12** where the effect is significant, **shoulders at L6 and L13–L14** where it is
+marginal and decaying, and **zero from L16 outward**. Roughly L6–L14 total.
+
+I called it a cliff because I had no points inside the gap. **Four widely-spaced probes made a smooth
+decay look like a step**, which is worth remembering the next time a profile with sparse sampling
+looks sharp.
+
+## ★★ DIRECTION SPECIFICITY — the effect tracks the cosine
+
+`outputs/boombness/advbench_direction_specificity.json`. All four are the **same operation at the same
+layer on the same prompts**; only the direction differs.
+
+| direction @L8 | cos with `d_surface` | ASR | **Δ clustered** | **p_cl** |
+|---|---|---|---|---|
+| `random` | ~0 | 0.0626 | −0.0062 | 0.539 |
+| **`d_context`** | **0.188** | 0.0646 | **+0.0045** | **0.399** |
+| **`d_surface`** | **1.000** | 0.1071 | **+0.0305** | **0.0089** ✓ |
+| **`d_naive`** | **0.945** | **0.1232** | **+0.0449** | **0.0089** ✓ |
+
+**The behavioural effect tracks the cosine with `d_surface`.** Near-zero cosine → no effect; cos 0.945
+→ full effect; cos 1.0 → full effect. That is a dose-response *in direction space*, and it is the
+strongest evidence in the sprint that the effect belongs to a particular direction rather than to the
+act of projecting something out at L8.
+
+**The prediction held.** I recorded: *"`d_naive` at cos 0.945 should reproduce most of the effect … if
+`d_naive` were inert, that would be a serious problem."* It reproduces it and slightly exceeds it
+(+0.0449 vs +0.0305, same p). ⚠ Worth noting `d_naive` is the **less** controlled contrast — the 2×2's
+controls remove variance that is apparently also behaviourally active, so the "cleaner" direction is
+the weaker intervention. That is a caveat for anyone treating `d_surface` as the canonical one.
+
+**And `d_context` is the load-bearing null**: near-orthogonal, fitted by the same 2×2 on the same rows,
+it changes **34.9%** of generations and moves ASR by **+0.0045 (p=0.40)**.
