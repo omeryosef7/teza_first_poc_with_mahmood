@@ -84,7 +84,7 @@ here.
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
 | **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
-| **§14-L** | **Where in the network does the effect live?** | **A mid-stack band, L8–L12** (§7f). Arm B is significant at **L8 (+0.0305, p=0.0089)** and **L12 (+0.0322, p=0.0056)** and **null at L4, L18, L24** — +0.0005 at L24. **A matched random-projection control at every depth is inert** (−0.0066 to +0.0007, no depth dependence), so the band is a property of the direction, not of mid-stack projection damage. |
+| **§14-L** | **Where in the network does the effect live?** | **A contiguous mid-stack band, ~L6–L12, with a hard edge** (§7f). Significant at **L8 (p=0.0089)**, **L10 (p=0.0190)** and **L12 (p=0.0056)**, marginal at L6, and **null from L16 outward** — L16 is exactly baseline. **Matched controls at five depths are all inert** (−0.0066 to +0.0007). And L16 is not a failed intervention: it changes **29.5%** of generations while changing compliance on **none**. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
@@ -1216,16 +1216,35 @@ AdvBench 495, 16 domain clusters, arm B's exact intervention at five depths, **e
 norm-matched random-projection control at the same depth**
 (`outputs/boombness/advbench_layer_profile.json`):
 
-| layer | **arm Δ (clustered)** | **p_cl** | matched control Δ | control p |
-|---|---|---|---|---|
-| L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
-| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
-| **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
-| L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
-| L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+| layer | ASR@0.5 | **arm Δ (clustered)** | **p_cl** | matched control Δ | control p |
+|---|---|---|---|---|---|
+| L4 | 0.0667 | +0.0092 | 0.260 | +0.0007 | 0.288 |
+| L6 | 0.0828 | +0.0159 | 0.0567 *(marginal)* | — | *not run* |
+| **L8** | **0.1071** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L10** | **0.0970** | **+0.0223** | **0.0190** ✓ | — | *not run* |
+| **L12** | **0.1010** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
+| **L16** | **0.0646** | **+0.0000** | — | — | *not run* |
+| L18 | 0.0667 | +0.0037 | 0.305 | −0.0026 | 0.201 |
+| L24 | 0.0646 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+| L28 | 0.0667 | +0.0037 | 0.305 | — | *not run* |
 
-**The effect is a mid-stack band, L8–L12.** Significant at both, and **null at L4, L18 and L24** —
-+0.0005 at L24 is nothing. Refusal tracks it: 0.931 → 0.889 / 0.895 inside the band, unchanged outside.
+**The effect is a contiguous mid-stack band, ~L6–L12, with a hard edge between L12 and L16.** It rises
+out of baseline at L6 (marginal), is significant at **L8, L10 and L12**, and then **stops**: L16 is
+**exactly baseline** and L18/L24/L28 are flat. Refusal tracks it precisely — 0.931 outside, 0.889–0.899
+inside, back to 0.931 at L16. This is not a gradient; it is a bounded region of the residual stream.
+
+### ★ L16 is the most informative point in the profile, and it is not a null
+
+L16's Δ is **exactly zero** — the shape of a failed intervention. It is not one:
+
+> `abL16_B` generations differ from baseline on **146 of 495 prompts (29.5%)**.
+
+**The intervention applied, it changed what the model said on nearly a third of prompts, and it changed
+whether the model complied on none of them.** That excludes the uninteresting reading ("`d_surface`
+isn't present at L16") and gives a stronger one: **at L16 the direction is present, ablating it
+perturbs generation, and the perturbation is behaviourally inert.** A layer where the *same direction*
+under the *same operation* four layers away demonstrably moves the text and not the behaviour is a
+tighter control on the band than any random direction can be.
 
 **Every control is inert at every depth**, spanning −0.0066 to +0.0007 with no depth dependence. That
 is the point of running them: "mid-stack random projections are simply more destructive than late ones"
@@ -1253,10 +1272,10 @@ That is the report's central result, localized. A direction can be causally load
 where the scalar you read off it carries no predictive signal, because ablation and regression are
 different operations on different objects.
 
-⚠ **Bounds, not a shape.** Five points bound the band as *≥L8, ≥L12, <L4, <L18*; they do not say whether
-it is a plateau across L8–L12 or peaked between them. `abL{6,10,16,28}_B` are judging to resolve the
-edges; their matched controls are **not yet run** (the SLURM controller has been unreachable since
-08:04), so those four points will be reported as arm-only until controlled.
+⚠ **The four edge points (L6, L10, L16, L28) have no matched control** — the SLURM controller has been
+unreachable since 08:04 — and are reported as arm-only. The five controlled points already bracket the
+band on both sides (L4 below, L18/L24 above, all controlled and inert), so the band's **existence** does
+not rest on them; its **edges** are currently uncontrolled measurements.
 
 ## 7d. The arm-F interaction — a real number whose mechanism was refuted (§10.4)
 
