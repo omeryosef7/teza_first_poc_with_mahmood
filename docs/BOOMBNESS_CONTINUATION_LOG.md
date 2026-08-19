@@ -2212,3 +2212,44 @@ codeword token, and it explains about 6% of the variance."* That is a much weake
 script that filters by `bank_block` is clean. The three intervention scripts got it right and the five
 correlational ones got it wrong, which is why **all four surviving headline results are causal and none
 are correlational.**
+
+## Layer profile — partial, verified, and pointing the opposite way to my prediction
+
+Two of five layers judged. Against baseline **0.0646**:
+
+| layer | arm-B ASR | mean score |
+|---|---|---|
+| L4 | 0.0667 | 0.0662 |
+| **L8** *(the fitted layer)* | **0.1071** | **0.1056** |
+| L18 | 0.0667 | 0.0657 |
+| L12, L24 | judging | |
+
+**L4 and L18 both land on exactly 0.0667 — the same value as `Dctrl`.** Before reading that as "flat",
+I checked whether the interventions had applied at all, because three arms agreeing to four decimals is
+the R-12 signature:
+
+| arm | `intervene` | gens sha16 |
+|---|---|---|
+| `ab_base` | *(none)* | `1447929b8b1dfb24` |
+| `ab_B` | `d_surface:project_out:8-8` | `1f5e5d70e75f624b` |
+| `abL4_B` | `d_surface:project_out:4-4` | `065d2a1275096079` |
+| `abL12_B` | `d_surface:project_out:12-12` | `177b394ab714690f` |
+| `abL18_B` | `d_surface:project_out:18-18` | `3adf649a1e460277` |
+| `abL24_B` | `d_surface:project_out:24-24` | `1fa8e5173e0782ce` |
+
+**All distinct — the interventions applied.** The identical 0.0667 is a binary-threshold coincidence
+(33/495 either way) and the *mean scores* differ, 0.0662 vs 0.0657. Worth the two minutes: had they
+been identical generations, the whole profile would have been an artifact.
+
+### My recorded prediction is on course to be wrong
+
+I predicted a **"broad, low profile"** — removing `d_surface` helping a little at several depths — and
+said that a sharp peak at L8 *"would be a stronger mechanistic result than anything §7c currently
+claims, and would deserve its own section."* So far L4 and L18 sit **at baseline** while L8 is **+66%
+above it**. If L12 and L24 come in flat too, the profile is **peaked at the fitted layer**, not broad.
+
+⚠ **Not concluding it yet, and the controls are the reason.** A peak is only a peak relative to what a
+*random* direction does at the same depth. `abL{4,12,18,24}_Bctrl` are judging, and the profile will be
+reported as **arm minus its own control at each layer** — never as a raw curve. Extended the sweep to
+**L6, L10, L16, L28** (766990–993) to bracket L8 tightly, because if the peak is real its *width* is
+the interesting quantity and four widely-spaced points cannot resolve it.
