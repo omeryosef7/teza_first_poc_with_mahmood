@@ -545,9 +545,24 @@ versions. At matched df the codeword-position gap is **1.47×**, not the 5.1× i
 reading "Boombness is close to redundant given refusalness" does not hold — +0.0743 on a
 refusalness-only base of 0.1759 is a **42% increase** in explained variance.
 
-**What replaces it is a position finding:** both probes are 2–4× more predictive of ASR at the
-**codeword token** than at the final prompt token — a larger factor than any difference between the
-probes. The attack-relevant state is **localized at the codeword**, consistent with G1 and G3.
+⛔ **What replaced it was a position finding, and that is now half retracted too (R-19).**
+`analyze_position` filters on `condition` with no `bank_block` clause, so its 2×2 was computed over the
+same contaminated row set as G2. Recomputed on the 90 clean rows, same best columns:
+
+| probe | @codeword_last | @last | ratio (full → clean) |
+|---|---|---|---|
+| `d_surface` | 0.0575 | 0.0488 | **2.01× → 1.18×** — gone |
+| `refusalness` | 0.0576 | **0.0007** | 4.15× → 82×, *unstable* |
+
+**`d_surface`'s position effect does not survive** — which is what R-18 implies, since a probe that does
+not predict ASR at all has no ASR-predictive state to localize. **`refusalness` keeps one**, but its
+ratio explodes only because the last-token R² collapses to 0.0007; **a ratio with a vanishing
+denominator is not a magnitude**, and "82×" would be a worse claim than the "4×" it replaces.
+
+**Restated honestly:** on clean rows the only probe with any relationship to ASR is **refusalness**, only
+at the **codeword token**, and it explains about **6%** of the variance. That is a far weaker statement
+than "both probes are 2–4× more predictive at the codeword token", and the earlier version should not
+be quoted.
 
 **Construct-validity caveat:** the refusal direction was fitted for a last-token readout. At the
 codeword position it no longer orders conditions like a refusal probe (`direct_harmful` becomes
@@ -1504,7 +1519,7 @@ by applying exactly this test — its published pair exists in no artifact, in a
 
 1. **The 2×2 design is the reusable artifact** — it separates surface identity from context, and it caught the confound quantitatively rather than rhetorically.
 2. **Do not build the GCG objective on this axis.** G4 is a directional null on two independent lines (the sign test, and the refusal-route split). If an objective is wanted, target the **demonstration-retrieval pathway** G1/G3 localized, not the codeword's position on `d_surface`.
-3. **The localization result is the finding worth following** — the ASR-predictive state sits at the codeword token, ~2–4× more than at the final prompt token, for both a concept probe and a refusal probe.
+3. ⛔ **The localization result is half retracted (R-19).** On clean rows `d_surface`'s position effect is gone (1.18×) and only **refusalness** retains one, at R²≈0.058 — see §3. What is worth following is the *causal* localization in G1/G3 (the demonstration block, not the codeword token), which is computed on `core2x2` rows and is unaffected.
 4. **Re-measure refusalness properly at the codeword position** before any A-vs-C claim: a direction fitted for the last token does not validate there.
 5. **Second model and second concept pair.** Everything here is Llama-3.1-8B, carrot↔bomb, one judge.
 6. **G1/G3 are on `semantic_one_word` prompts while G2/G4's ASR claims are on `behavioral` ones.** Each is internally consistent; joining them into one causal story is the same manipulated-≠-measured pattern one level up. A behavioural-prompt knockout would close it.
@@ -1728,7 +1743,7 @@ The answer is **no**, for the reasons below.
 Four things, in order of durability:
 1. **The 2×2 identification design** — it separates surface identity from context and quantifies the
    confound (~2× inflation) instead of arguing about it. Reusable for any codeword/concept pair.
-2. **The localization result** — the ASR-predictive state sits at the **codeword token**, 2–4× more than
+2. ⛔ **The localization result is half retracted (R-19)** — it was the ASR-predictive state at the **codeword token**, 2–4× more than
    at the final prompt token (11–50× on median columns), for a concept probe *and* a refusal probe. This
    is the finding worth following.
 3. **A documented negative on the objective**, with the specific reason: correlation without
