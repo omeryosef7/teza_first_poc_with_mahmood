@@ -1824,3 +1824,79 @@ headline and obvious in a full arm table, which is why plan §15 asked for one.
 | 14 | negative results | ✅ §8b (N1–N14) |
 | 15 | failure modes | ✅ §8c (FM1–FM8) |
 | 16 | next experiments | ✅ §9b (E1–E11) |
+
+## ⛔⛔ R-18 — G2's correlation is carried by rows that should not be in it, and my own N12 claim was wrong
+
+Found while checking whether **E4** (powering the cross-condition profile by adding demonstration
+`slots`) is sound. It is not — sibling slots take overlapping pool slices — and checking that led here.
+
+### `analyze_g2` filters on `condition`, **not** on `bank_block`
+
+`analyze_g2.py:477` keeps rows where `condition == args.arm`. There is **no `bank_block` filter**. So
+G2's headline n=234 is not 234 core-design prompts. It is:
+
+| `bank_block` | rows in G2's n=234 |
+|---|---|
+| `core2x2` | **60** |
+| `families` (sibling slots 1 and 2) | **72** |
+| `role_style` | 30 |
+| **`strength`** | **24** |
+| **`consistency`** | **36** |
+| **`position`** | **12** |
+
+**Two distinct problems, both material.**
+
+1. **72 rows are sibling families sharing demonstrations.** `family_slot` takes a contiguous pool slice
+   stepping by 3 from a pool of 20, so slot-1 and slot-2 families reuse demonstrations from their
+   slot-0 siblings (at `n_examples=8`, **5 of 8** are shared). That is pseudo-replication — the R1
+   defect class — inside the headline n.
+2. **72 rows come from the three designed-variance blocks** whose levels are confounded (N12). Worse,
+   those blocks exist to **experimentally manipulate** how readable the codeword is — and a
+   manipulation that moves both Boombness and ASR **manufactures** correlation in an otherwise
+   observational statistic.
+
+### ⛔ My N12 claim is FALSE and is corrected
+
+I wrote two ticks ago: *"`core2x2` — which every main analysis filters on — contains only all-default
+rows. So they have never contaminated a single published number."* **They are 31% of G2's headline n.**
+I checked the filter in `surgical_knockout` (which does filter `bank_block == "core2x2"`) and
+generalised it to "every main analysis" without checking `analyze_g2`. That is exactly the
+address-by-assumption error this project keeps retracting.
+
+### What it does to G2
+
+| subset | n | ρ pooled | per-domain mean ± se |
+|---|---|---|---|
+| **ALL 234 — as published** | 234 | **+0.3067** | +0.2334 ± 0.0652 |
+| slot-0 only (no sibling families) | 162 | +0.2761 | +0.2385 ± 0.0803 |
+| no designed-variance blocks | 162 | +0.2396 | +0.1271 ± 0.0701 |
+| **slot-0 AND no designed-variance** | **90** | **+0.0860** | **+0.0252 ± 0.1255** |
+| *(the 144 rows dropped)* | 144 | **+0.4027** | — |
+
+**It is not a small-n artifact.** Against 2,000 random 90-row subsets of the published set — median
+ρ +0.3078, 95% range [+0.144, +0.464] — the clean subset's **+0.0860 sits at the 0.4th percentile**.
+The rows removed carry ρ **+0.403**; the rows kept carry **+0.086**.
+
+### What I claim, and what I do not
+
+**Claimed:** G2's published ρ = +0.307 is computed over a **heterogeneous** row set, and on the 90 rows
+that are neither sibling families nor experimentally-manipulated designed variance, the correlation is
+**+0.086 with a per-domain mean of +0.025 ± 0.126** — indistinguishable from zero.
+
+**NOT claimed:** that G2 is false. The clean subset is n=90 over G=5 domains and is underpowered; a real
+but smaller effect would look like this too. The honest statement is that **G2 is not established on
+the clean subset, and the published figure is inflated by rows that do not belong in an observational
+correlation.**
+
+### Scope — this is not confined to G2
+
+`analyze_g9` uses the same arm filter, so the **incremental-R² table (R-13)**, the **§9 outputs I
+generated this session**, and G2's **mediation** section all inherit the same row set. The §9 join I
+"validated" reproduces `g2_analysis_cwpos.json` bit-identically — which now reads as *both* being built
+on the same unfiltered set, not as either being right. **Validation against a committed artifact
+proves agreement, not correctness**, and I should have said so when I wrote it.
+
+**Gate status:** G2 moves to **UNDER REVIEW**. The re-analysis that settles it is CPU-only — add a
+`bank_block` / `family_slot` filter to `analyze_g2` and `analyze_g9`, re-run, and report both the
+clean and the full estimate. **Not done in this tick because it changes a headline and should not be
+rushed at the end of one.**
