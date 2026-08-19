@@ -2905,3 +2905,19 @@ sweep cannot catch this class — "settles at B" contains no retracted *figure* 
 a human read of every summary against the body. **That check is now worth running before any hand-off,
 not at the end of a sprint**, and it should start with the shortest document, because brevity is what
 makes drift invisible.
+
+## Suite green after E10 — 611 passed, 6 failed (all pre-existing)
+
+`611 passed, 6 skipped, 6 failed` in 151s. **All six failures are the long-standing
+`module_imports_without_torch` checks** in legacy GCG/reinforce files, untouched since session 1 and
+unrelated to this sprint. Test count is up **338 → 611** across the two sessions.
+
+Every one of the six regressions the previous run surfaced is fixed, and each was a guard firing on a
+real change rather than a bug:
+
+| guard | fired because | resolution |
+|---|---|---|
+| bank reproduced bit-identically | the `core2x2_slot3` power block took the bank 2352 → 2736 | expectation **bumped deliberately** to a named constant, with the additivity verification recorded |
+| the two hash functions differ | the same block changed both hardcoded digests | rewritten to assert the **structural** property against the committed meta, which moves with the bank |
+| canonical g9 runs cover every artifact | my own `..._CLEAN.json` had no registered recipe | registered, with its `--slot0-only --require-bank-block` invocation |
+| the recipe regenerates the artifact | adding `row_composition` made the code emit a superset | both g9 artifacts regenerated against current code |
