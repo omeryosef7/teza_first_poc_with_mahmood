@@ -38,8 +38,10 @@ A norm-matched **random** projection at the same layer is **inert** (−0.0062, 
 [−0.027, +0.015]), so the effect is specific to this direction rather than to removing any direction.
 
 **And the two channels interact.** Removing `d_surface` and refusalness together exceeds the sum of
-removing each alone by **+0.0333, CI [+0.0128, +0.0638]** — the sprint's first interaction result to
-survive clustered inference. ⚠ Super-additivity's own random-composition control is still judging.
+removing each alone by **+0.0333, CI [+0.0128, +0.0638]**, and — by a *paired* bootstrap against the
+matched random-projection triple, which is the test that actually answers this — by **+0.0268,
+CI [+0.0029, +0.0584]** beyond what random directions produce. All three controls are inert. ⚠ The
+lower bound is close to zero; this is a real interaction, not a comfortable one.
 
 **On ClearHarm (179 prompts, 6 clusters, 127 in one) arm B is NOT significant** (+0.084, p_cl=0.21).
 That is a power difference, not a disagreement — the point estimates agree and only the intervals
@@ -58,7 +60,7 @@ here.
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
 | **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
-| **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench** — +0.0333, CI **[+0.0128, +0.0638]**, 1/4000 draws ≤ 0. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. ⚠ Same missing-control caveat. |
+| **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
 | **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
 
@@ -773,7 +775,9 @@ against real goals (post-R-14), analysed by the same committed `analyze_external
 |---|---|---|---|---|---|---|---|
 | baseline | — | 0.0646 | 0.9313 | — | — | — | — |
 | **B** | remove `d_surface` @L8 | **0.1071** | 0.8889 | +0.0422 | **+0.0305** | **0.0089** | **[+0.0089, +0.0522]** ✓ |
-| **Bctrl** | remove a **random** direction @L8 | 0.0626 | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert |
+| **Bctrl** | random direction @L8 | 0.0626 | 0.9333 | −0.0018 | **−0.0062** | 0.539 | **[−0.0271, +0.0147]** — inert |
+| **Cctrl** | random direction @L18 | 0.0606 | 0.9354 | −0.0033 | −0.0021 | 0.292 | [−0.0063, +0.0020] — inert |
+| **Dctrl** | two random directions | 0.0667 | 0.9313 | +0.0015 | +0.0031 | 0.330 | [−0.0034, +0.0096] — inert |
 | **C** | remove refusalness @L18 | **0.2707** | 0.7091 | +0.1967 | +0.1895 | 0.0001 | [+0.1097, +0.2692] ✓ |
 | **D** | remove **both** | **0.3515** | 0.6222 | +0.2722 | +0.2544 | <0.0001 | [+0.1589, +0.3499] ✓ |
 
@@ -792,14 +796,28 @@ ClearHarm, established on AdvBench, and the reason is the cluster structure rath
 So the claim R-16 withdrew is reinstated on the better-designed set: **`d_surface` is causal off-bank,
 and the prompt-bank-artifact explanation for the sprint's late causal results is excluded.**
 
-#### ★ Super-additivity is established — the sprint's first surviving interaction
+#### ★ Super-additivity is established — against its own control, by the correct test
 
 **excess = +0.0333, domain-clustered bootstrap CI [+0.0128, +0.0638]; 1 of 4000 resamples ≤ 0.**
 
-Removing `d_surface` and refusalness **together** does more than the sum of removing each alone. The
-two channels **interact** rather than contributing independently — which is a stronger statement than
-"two separate levers on compliance", and it is the first interaction result in this sprint to survive
-clustered inference.
+Removing `d_surface` and refusalness **together** does more than the sum of removing each alone — the
+two channels **interact** rather than contributing independently.
+
+**The tempting argument for this is invalid, so it is not the one used.** Running the same statistic
+on the *control* triple gives **+0.0066, CI [−0.0013, +0.0170]** — not established — and concluding
+"one interval excludes zero, the other does not, therefore the interaction is real" is the
+difference-of-significance fallacy. On this data it is visibly unsafe: **the two intervals overlap**
+in [+0.0128, +0.0170].
+
+The quantity that answers the question is the **difference of the two excesses**, bootstrapped once
+over the same resampled domains so the two are paired:
+
+> **real − control super-additivity = +0.0268, domain-clustered CI [+0.0029, +0.0584]**, 1.5% of 4000
+> draws ≤ 0 — **established against control**.
+
+⚠ **State the margin honestly:** the lower bound is **+0.0029**, roughly 11% of the point estimate.
+This is a real interaction, not a comfortable one, and the naive comparison would have made it look
+far safer than it is.
 
 On ClearHarm the same quantity was **+0.0677, CI [−0.218, +0.123] — not established**, and this report
 recorded *why* before AdvBench was judged: one cluster holding 71% of the rows. That prediction is now
@@ -811,10 +829,9 @@ A norm-matched **random** projection at the same layer and seed moves ASR by **�
 (p_cl=0.539, CI [−0.027, +0.015]) — flat, and if anything slightly negative, against arm B's
 **+0.0305**. So the effect is not "removing any direction at L8"; it is this direction.
 
-⚠ **Super-additivity still carries the gap.** It is a contrast among three *real* arms, and its
-random-composition reference (`ab_Cctrl`, `ab_Dctrl`) is still judging. ClearHarm's double-random
-control is inert (+0.0009, CI [−0.003, +0.004]) with a real 3-draw band sd of 0.0129, which is
-evidence on a different set.
+**All three controls are now in and all three are flat** (−0.006 / −0.002 / +0.003 against real arms
+of +0.031 / +0.190 / +0.254), so the missing-control caveat this section carried is fully discharged —
+for the single arms and, via the paired test below, for super-additivity.
 ### ★ Cross-model: Qwen3-14B uses a DIFFERENT channel, and `d_surface` replicates where the correlation did not
 
 ClearHarm 179, Qwen3-14B, `d_surface`@L11 + refusalness@L20 (the established Qwen3 depths), at
