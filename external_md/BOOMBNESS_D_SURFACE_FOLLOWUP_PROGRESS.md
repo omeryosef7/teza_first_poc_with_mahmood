@@ -1458,6 +1458,69 @@ Dead run dirs, retained as evidence and refused by the loader:
 
 Re-launched correctly as `fu2_*`; judging in progress at tick close.
 
+**Tick 4 (2026-08-19 ~17:45).** All three `fu2_*` judge runs `DONE`, 495 rows each. Analyzed into
+`outputs/boombness_followup/l15_and_refusal_L12.json`.
+
+| arm | intervention | ASR@0.5 | refusal | Δ clustered | p_cl | 95% CI |
+|---|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — | — |
+| L15_B | `d_surface:project_out:15-15:1.0` | 0.0667 | 0.9293 | +0.0047 | 0.2500 | [−0.0037, +0.0130] n.s. |
+| L15_Bctrl | `random:project_out:15-15:1.0` | 0.0667 | 0.9313 | +0.0036 | 0.4137 | [−0.0056, +0.0128] n.s. |
+| L12_C | `refusalness:project_out:12-12:1.0` | 0.0646 | 0.9333 | +0.0028 | 0.4510 | [−0.0049, +0.0106] n.s. |
+
+#### The roll-off is now complete and fully controlled
+
+L12 **+0.0322 (p 0.0056)** → L13 +0.0138 → L14 +0.0118 → **L15 +0.0047** → L16 exactly 0. Monotone,
+five consecutive depths, matched inert control at every one. The handover's "steep four-layer roll-off
+rather than a cliff" is confirmed and extended.
+
+### ✅ NEW FINDING — refusalness is layer-localised too, and NOT in `d_surface`'s band
+
+This began as a discrepancy worth chasing rather than reporting. The committed arm C (remove
+refusalness) raises ASR to **0.2707, Δ +0.1895, p_cl 1.4e-04**. My new L12 refusalness arm moved
+compliance by **+0.0028 (p 0.45)** — a 68× gap. Reading the two `RUNMETA.argv`:
+
+| arm | spec | Δ clustered | p_cl |
+|---|---|---|---|
+| committed arm B | `d_surface:project_out:**8-8**:1.0` | +0.0305 | 0.0089 |
+| committed arm C | `refusalness:project_out:**18-18**:1.0` | **+0.1895** | 1.4e-04 |
+| new arm C | `refusalness:project_out:**12-12**:1.0` | **+0.0028** | 0.4510 |
+
+**The intervention fired — it is not a no-op.** Comparing generations against the baseline run
+prompt-by-prompt: `abR12_C` changed **205 of 495 = 41.4%** of generations (`abL15_B` changed 28.1%).
+So ablating refusalness at L12 is a *potent* edit that leaves compliance alone — the same signature the
+handover reports for L16 `d_surface` (29.5% of generations changed, compliance on none) and for
+`d_context` (34.9% changed, Δ +0.0045).
+
+**Implication for the sprint's central question.** The two channels appear **layer-dissociated**:
+`d_surface`'s causal locus is L6–L12 (peak L8/L12, dead by L16), and refusalness's is at L18 where
+L12 does nothing. If that holds across the profile, then the arm-D interaction — removing both exceeds
+the sum — is an interaction *across depths*, not two effects at one site. That materially reshapes
+Phase F.
+
+⚠ **Not yet established.** This rests on **two** refusalness depths (L12 new, L18 committed), and the
+L12 arm had **no matched random control** when it ran. Recorded as **exploratory**.
+
+### Phase F unblocked in L12–L20 — refusalness layer profile submitted
+
+Blocker F-B1 caps refusalness below L12, but L12/L14/L16/L18/L20 all have real 4096-d Llama directions.
+L12 and L18 exist; the rest are now queued, **each with a matched random control** (the F-1 lesson):
+
+| job | tag | intervention |
+|---|---|---|
+| 767585 / 767586 | `fuR14_C` / `fuR14_Cctrl` | `refusalness` / `random` `:project_out:14-14:1.0` |
+| 767587 / 767588 | `fuR16_C` / `fuR16_Cctrl` | `:16-16:1.0` |
+| 767589 / 767590 | `fuR20_C` / `fuR20_Cctrl` | `:20-20:1.0` |
+| 767591 | `fuR12_Cctrl` | `random:project_out:12-12:1.0` — the control the L12 arm lacked |
+
+All: `--bank advbench_heldout_495.jsonl --fit-dir extract_boombness/full_20260816_185942_1008673
+--query-kinds behavioral --max-new 512 --arm base --dtype bfloat16`, arms `--seed 20260816`, controls
+`--seed 20260901`. Argsfiles `outputs/boombness/argsfiles/args_fuR*.txt`. **Judging must pass
+`--gens <DIR>` and `--bank <external bank>`** or it re-creates R-14.
+
+On completion this yields a five-point refusalness layer profile (L12/14/16/18/20) with matched controls
+at four of five, directly comparable to the nine-point `d_surface` profile.
+
 ### Process
 
 - **IF-4 (self-inflicted, corrected):** during the Phase A fan-out, verification subagents re-ran the
