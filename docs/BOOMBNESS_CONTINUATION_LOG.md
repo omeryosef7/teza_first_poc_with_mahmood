@@ -2567,3 +2567,23 @@ the logit-lens metric as different operationalisations, and finds they disagree 
 compare `d_surface` against `d_naive` — which are the same direction to within cos 0.94, so any result
 that differs between them would be noise rather than a metric distinction. Worth stating in §7b so a
 reader does not read "three metrics" as three independent constructs.
+
+## Edge-sharpness probe launched — where exactly does the band stop?
+
+The nine-point profile puts a boundary somewhere in **L12–L16**: L12 is +0.0322 (p=0.0056) and L16 is
+**exactly 0.0000**. Four layers is a wide gap for a boundary that sharp, and its width is the one
+quantity the current profile cannot report.
+
+Launched **L13, L14, L15 — arms and matched controls together** (767172–177), which is the whole cap.
+Submitting them as pairs rather than arms-first is deliberate: the four edge points from the last round
+had to be reported arm-only because their controls were still queued when the SLURM controller went
+down, and an uncontrolled point in a profile whose entire claim is "significant here, inert there" is
+worth much less than a controlled one.
+
+With L13/14/15 the profile becomes **twelve points spanning L4–L28, every one of them controlled** —
+dense enough to say whether the drop from L12 to L16 is a step or a slope.
+
+## Also judging
+* `abL{6,10,16,28}_Bctrl` — the four edge controls resubmitted after the outage, which retro-fit
+  controls to the points that were arm-only.
+* `abL8_context` — the first half of the direction-specificity test.
