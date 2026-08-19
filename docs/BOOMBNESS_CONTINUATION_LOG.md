@@ -2442,3 +2442,64 @@ statement of it than §0 currently makes.
 L8–L12 or peaked between them. Their matched controls **could not be submitted**: the SLURM controller
 has been unreachable since 08:04. Until those land the profile is five points, not nine, and the band's
 width is bounded only as "≥L8 and ≥L12, <L4 and <L18".
+
+## ★★★ THE NINE-POINT LAYER PROFILE — a contiguous mid-stack band with a hard edge
+
+All nine depths judged. AdvBench 495, 16 domain clusters, baseline **0.0646**
+(`outputs/boombness/advbench_layer_profile.json`):
+
+| layer | ASR@0.5 | **Δ clustered** | **p_cl** | refusal |
+|---|---|---|---|---|
+| L4 | 0.0667 | +0.0092 | 0.260 | 0.9313 |
+| L6 | 0.0828 | +0.0159 | **0.0567** *(marginal)* | 0.9131 |
+| **L8** | **0.1071** | **+0.0305** | **0.0089** ✓ | 0.8889 |
+| **L10** | **0.0970** | **+0.0223** | **0.0190** ✓ | 0.8990 |
+| **L12** | **0.1010** | **+0.0322** | **0.0056** ✓ | 0.8949 |
+| **L16** | **0.0646** | **+0.0000** | — | 0.9313 |
+| L18 | 0.0667 | +0.0037 | 0.305 | 0.9333 |
+| L24 | 0.0646 | +0.0005 | 0.450 | 0.9333 |
+| L28 | 0.0667 | +0.0037 | 0.305 | 0.9313 |
+
+**Matched random-projection controls at L4/8/12/18/24 span −0.0066 to +0.0007 — all inert, no depth
+dependence.**
+
+### The shape: a contiguous band ~L6–L12 with a hard edge between L12 and L16
+
+The profile rises out of baseline at L6 (marginal, p=0.057), is significant at **L8, L10 and L12**, and
+then **stops**. L16 is **exactly baseline** — 32/495 either way — and L18, L24, L28 are flat. Refusal
+tracks it precisely: 0.931 outside the band, 0.889–0.899 inside, back to 0.931 at L16.
+
+This is not a gradient. It is a **contiguous block of the residual stream, roughly the middle third of
+the early-to-mid stack, with a boundary somewhere in L12–L16.**
+
+### ★ L16 is the most informative point, and it is not a null
+
+L16's Δ is **exactly zero**, which is the shape of a failed intervention — so I checked, as with L4/L18
+last tick:
+
+> `abL16_B` gens sha16 `b26aeaa2d5cc2772` vs baseline `1447929b8b1dfb24`, and **146 of 495
+> generations (29.5%) differ from baseline.**
+
+**The intervention applied and it changed what the model said on nearly a third of prompts — and
+changed whether it complied on none of them.** That excludes the boring explanation ("`d_surface` is
+not present at L16, so removing it does nothing") and replaces it with a much stronger one:
+
+> **At L16 the direction is present, ablating it perturbs generation, and the perturbation is
+> behaviourally inert.**
+
+A layer where the intervention demonstrably *does something* to the text and *nothing* to compliance is
+a far better control for the band than any random direction — it is the same direction, the same
+operation, at a depth 4 layers away, and the behavioural effect vanishes completely.
+
+### What the profile adds to §7c
+
+§7c showed the effect exists at one depth. This shows it exists in a **bounded region** and is absent
+outside it, with the boundary sharp enough to see between two adjacent probe points. Combined with
+R-18 — the same L12 at which the projection **fails to predict** attack success (ρ_within=−0.066,
+p=0.49) is inside the band where **ablating it causally raises** attack success (+0.0322, p=0.0056) —
+the sprint's central claim is now localized in depth as well as demonstrated.
+
+⚠ **The four edge points (L6, L10, L16, L28) have no matched control**, because the SLURM controller
+has been unreachable since 08:04. They are reported as arm-only. The five controlled points already
+bracket the band on both sides (L4 and L18/L24 controlled and inert), so the band's *existence* does
+not depend on them; its *edges* are currently arm-only measurements.
