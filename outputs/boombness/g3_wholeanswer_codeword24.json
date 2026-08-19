@@ -1,0 +1,94 @@
+{
+  "G3": {
+    "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/g3wa24_codeword_20260819_023527_2285493",
+    "readout": "semantic_logodds",
+    "arms": {
+      "all_demo": {
+        "delta_mean": -0.10996558020512263,
+        "delta_sem": 0.07859324939169517,
+        "n": 24,
+        "mean_edges_cut": 384.0
+      },
+      "all_layers_demo": {
+        "delta_mean": 1.332202933728695,
+        "delta_sem": 0.35077029337308896,
+        "n": 24,
+        "mean_edges_cut": 6144.0
+      },
+      "bottomk_demo": {
+        "delta_mean": -0.01743917043010394,
+        "delta_sem": 0.008332495218229102,
+        "n": 24,
+        "mean_edges_cut": 16.0
+      },
+      "no_demo_text": {
+        "delta_mean": -17.878933541476727,
+        "delta_sem": 1.0723362138257304,
+        "n": 24,
+        "mean_edges_cut": -1.0
+      },
+      "none": {
+        "delta_mean": 0.0,
+        "delta_sem": 0.0,
+        "n": 24,
+        "mean_edges_cut": 0.0
+      },
+      "positive_control": {
+        "delta_mean": 0.25832821801304817,
+        "delta_sem": 0.3058251363919223,
+        "n": 24,
+        "mean_edges_cut": 8882.666666666666
+      },
+      "random_demo": {
+        "delta_mean": 0.006297588348388672,
+        "delta_sem": 0.0083131282763983,
+        "n": 24,
+        "mean_edges_cut": 16.0
+      },
+      "random_nondemo": {
+        "delta_mean": -0.03736970076958338,
+        "delta_sem": 0.03342549020317292,
+        "n": 24,
+        "mean_edges_cut": 16.0
+      },
+      "same_head_random": {
+        "delta_mean": 0.0126446100572745,
+        "delta_sem": 0.025127397053509335,
+        "n": 24,
+        "mean_edges_cut": 16.0
+      },
+      "subsampled_all_layers_demo": {
+        "delta_mean": 0.12465044980247815,
+        "delta_sem": 0.06154356152797585,
+        "n": 24,
+        "mean_edges_cut": 384.0
+      },
+      "topk_demo": {
+        "delta_mean": -0.005147566397984822,
+        "delta_sem": 0.027771124670018476,
+        "n": 24,
+        "mean_edges_cut": 16.0
+      }
+    },
+    "positive_control_delta": 0.25832821801304817,
+    "largest_non_control_delta": -17.878933541476727,
+    "largest_non_control_arm": "no_demo_text",
+    "dynamic_range_established": false,
+    "readout_movable": true,
+    "readout_movable_by": [
+      "all_layers_demo",
+      "no_demo_text",
+      "positive_control",
+      "subsampled_all_layers_demo"
+    ],
+    "largest_null_control_abs": 0.03736970076958338,
+    "null_claims_interpretable": true,
+    "edge_count_confound": {
+      "two_layer_edges": 384.0,
+      "all_layer_edges": 6144.0,
+      "edge_ratio": 16.0,
+      "identified": false,
+      "note": "layer spread and edge count are perfectly confounded; a depth-redundancy reading is NOT identified without an edge-count-matched arm (subsampled_all_layers_demo) or a layer-matched dense arm (dense_two_layer)."
+    }
+  }
+}

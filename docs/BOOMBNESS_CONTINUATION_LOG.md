@@ -1394,3 +1394,77 @@ The board in the header is session 1's and is stale. This is the live one.
 * G1 (766659) and G3 (766672/3) re-runs → the last two suspended headline claims
 * Report §15 items **2** ("what was implemented") and **6** (aggressive-patching results, blocked on G1)
 * §8's five plots
+
+## ★★ G3 IS RE-ESTABLISHED on the corrected readout — and it is cleaner than the version it replaces
+
+The T3 fix (rank at `readout_pos`, `--dst both`), the cross-fitting fix, the real family count
+(**24/24 eligible, `effective_G=24`**) and the C-6 whole-answer readout, all at once.
+`outputs/boombness/g3_wholeanswer_{block,codeword}24.json`.
+
+### Demo-block scope — the arm G3's claim rests on
+
+| arm | edges cut | Δ readout | sem | fraction of the deletion ceiling |
+|---|---|---|---|---|
+| `no_demo_text` — demonstrations removed from the prompt | — | **−17.879** | 1.072 | **1.000 (the ceiling)** |
+| **`all_layers_demo`** — every demo edge, all 32 layers | **81,707** | **−13.437** | 0.787 | **0.752** |
+| `positive_control` | 8,883 | +0.258 | 0.306 | −0.014 |
+| `all_demo` — every demo edge, **2 layers** | 5,107 | +0.152 | 0.154 | −0.009 |
+| `subsampled_all_layers_demo` — same count, **32 layers** | 5,107 | +0.079 | 0.090 | −0.004 |
+| `topk_demo` | 16 | **+0.020** | 0.017 | −0.001 |
+| `random_demo` | 16 | +0.001 | 0.003 | −0.000 |
+| `bottomk_demo` | 16 | −0.003 | 0.003 | +0.000 |
+| `same_head_random` | 16 | +0.003 | 0.023 | −0.000 |
+| `random_nondemo` | 16 | −0.044 | 0.037 | +0.002 |
+
+**1. The retrieval is attention-carried.** Cutting every demonstration edge at every layer recovers
+**75.2%** of the effect of deleting the demonstrations outright. *(The superseded figure was 84%, on
+the invalid readout.)*
+
+**2. The ranking carries no information — and this time it was measured at the right token.**
+`topk_demo` **+0.020**, `bottomk_demo` **−0.003**, `random_demo` **+0.001** — indistinguishable, with
+sems of 0.017/0.003/0.003. Retraction #3 said the old null could not distinguish *"these edges don't
+matter"* from *"they were ranked at the wrong destination"*. Ranked at `readout_pos`, **the null
+holds**: no 16-edge subset matters, however chosen.
+
+**3. ★ The edge-count-vs-depth tie is BROKEN — and the answer is edge count, not depth.** This is the
+question the `dense_two_layer` arm was built for and could never answer (structurally infeasible, and
+the pre-fix code met that by truncating 87%). It is answerable from the **feasible** side:
+
+| edges | spread | Δ |
+|---|---|---|
+| 5,107 | concentrated at **2 layers** (`all_demo`) | **+0.152** — nothing |
+| 5,107 | spread over **32 layers** (`subsampled_all_layers_demo`) | **+0.079** — nothing |
+| 81,707 | all demo edges, all layers | **−13.437** |
+
+**6.25% of the demonstration edges does nothing *however distributed*.** Concentrating them or
+spreading them over depth makes no difference; only cutting essentially all of them works. The
+redundancy is in the **number of edges**, and the response is close to all-or-nothing.
+
+### ★ Codeword scope — the sharper half, and it corroborates G1 from the attention side
+
+Restricting the cut to edges into the **codeword occurrences inside the demo block**:
+
+| arm | edges | Δ readout | sem |
+|---|---|---|---|
+| **`all_layers_demo`** (codeword scope) | **6,144** | **+1.332** | 0.351 |
+| `subsampled_all_layers_demo` | 384 | +0.125 | 0.062 |
+| `all_demo` | 384 | −0.110 | 0.079 |
+| every 16-edge arm | 16 | −0.037 … +0.013 | — |
+
+**Cutting all attention into the demo-block codeword tokens, at every layer, does not reproduce the
+deletion effect at all — it moves the readout the *wrong way* (+1.33).** Cutting attention into the
+**whole demonstration block** recovers 75%.
+
+So the information is retrieved from the **demonstration block as a whole, not from the codeword
+tokens within it**. That is G1's conclusion — meaning lives in the demonstrations, not in the
+codeword — reached independently from the attention side, on an instrument that can now represent
+both answers.
+
+### On the script's `dynamic_range_established = False`
+
+`analyze_g1_g3` prints "NO DYNAMIC RANGE ESTABLISHED" because `positive_control` (+0.258) does not
+exceed 3× the largest other arm. **That verdict is expected here and the code says so itself**
+(`analyze_g1_g3.py:225-231`): the largest arm is `no_demo_text`, which is the deletion **ceiling** the
+fractions are taken *of*, not an arm awaiting validation — *"Movability is established, overwhelmingly,
+by `no_demo_text` itself."* The guard is doing its job (it refuses to certify vacuously, which is how
+its predecessor died); its False is not a verdict on G3. Left as-is and reported rather than tuned.
