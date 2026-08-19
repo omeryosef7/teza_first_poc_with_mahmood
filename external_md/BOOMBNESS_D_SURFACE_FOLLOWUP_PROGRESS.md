@@ -1791,6 +1791,62 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### Tick 17 — the two coherence failure modes separate cleanly, and the gate's floor tracks refusal
+
+Running the **committed** `coherence_gate.py` across every arm in the sprint settles how to read its
+two kinds of verdict.
+
+| run | uniq | 3-gram | truncated | scorable | verdict |
+|---|---|---|---|---|---|
+| `ab_B` (remove `d_surface`) | 0.816 | 0.014 | 0.10 | 0.602 | **OK** |
+| `ab_C` (remove refusalness) | 0.775 | 0.025 | 0.25 | 0.846 | **OK** |
+| `ab_D` (remove both) | 0.741 | 0.031 | 0.32 | 0.844 | **OK** |
+| `fuF_remS_addR` (arm E) | 0.835 | 0.013 | 0.07 | 0.539 | **OK** |
+| `fuF_addCtrl8` (rand add L8, α=1) | 0.745 | 0.071 | 0.16 | 0.857 | OK |
+| `fuF_addCtrl18` (rand add L18, α=1) | 0.580 | 0.205 | 0.40 | 1.000 | OK (nearest edge) |
+| `fuF25_addS` | 0.873 | 0.005 | 0.01 | **0.331** | ⛔ floor |
+| **`fuF_remS_addR_CTRL`** (768316) | **0.127** | **0.800** | **0.99** | **1.000** | ⛔ **truly broken** |
+
+**All three committed headline arms (B, C, D) are gate-clean**, and so is arm E.
+
+#### The two failure modes are orthogonal, and only one is degeneracy
+
+- **Real degeneracy** looks like 768316: `scorable_frac = 1.000` (every generation is long) with
+  **uniq 0.127, 3-gram repeat 0.800, truncated 0.990**. Long, looping, never emits EOS.
+- **Refusal-induced floor** looks like `fuF25_addS`: **healthy ratios** (uniq 0.873, 3-gram 0.005,
+  truncated 0.01) with a low scorable fraction, because the model answers `"I can't help with that."`
+
+Measured across 8 arms: **Pearson r(scorable_frac, refusal rate) = −0.878.** The floor tracks how much
+the model refuses, almost linearly. So:
+
+> **The gate's ratio thresholds are the degeneracy detector. Its scorable-fraction floor is confounded
+> with refusal rate and must not be read as degeneracy when the ratios are healthy.**
+
+That is a methodological result the previous sprint did not have — its docstring identifies the floor's
+*motivation* (T13) but never separates it from the refusal-increase case it cannot distinguish. It also
+gives the bidirectional `d_surface` result a precise status: **its ratios are clean and its control is
+dose-matched and inert; it fails only the floor, and it fails the floor because it works.**
+
+#### The arm-E control was over-dosed, not the arm
+
+768316 composed `random:project_out:8-8:1.0` **+** `random:add:18-18:1.0`. Exact gaps from the
+canonical fit dir: `gap[d_surface][L8] = 5.926142`, `gap[d_surface][L18] = **14.653462**`. So its add
+leg injected magnitude **14.65** — against arm E's refusalness leg at magnitude **1.0** (RETRACTION
+F-3). Notably `random:add:18-18:1.0` **alone** is gate-clean (uniq 0.580); it is the **composition**
+that breaks generation.
+
+#### Two dose-corrected runs submitted
+
+| job | tag | intervention | why |
+|---|---|---|---|
+| 768488 | `fuF_remS_addR_CTRL2` | `random:project_out:8-8:1.0` + `random:add:18-18:**0.068243**` | 1/14.653462, so the random add injects magnitude **1.0** — matching arm E's refusalness leg exactly |
+| 768489 | `fuF_addR_gapdose` | `refusalness:add:18-18:**14.653462**` | one diff-of-means, the dose F-3 showed was missing. Its matched control is the already-judged, gate-clean `random:add:18-18:1.0` |
+
+768489 is the experiment RETRACTION F-3 says should have been run: refusalness added at a dose
+comparable to the random control it is compared against. If it suppresses ASR while the gap-matched
+random control raises it (+0.0533), the specificity claim is re-earned honestly. If it degenerates,
+that is the answer instead — and either way the α = 1.0 version stays retracted.
+
 ## 4h Code and Output Review — Review #2 (2026-08-20 00:00)
 
 Two adversarial auditors, 299k tokens, 108 tool calls, read-only. **Every number reproduces; two
