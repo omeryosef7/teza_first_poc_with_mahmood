@@ -192,6 +192,51 @@ def super_additivity(base, armB, armC, armD, common, n_boot=4000, seed=20260819)
                      "established=True only if the clustered lower bound clears 0.")}
 
 
+def paired_excess_difference(base, real, ctrl, common, n_boot=4000, seed=20260819) -> dict:
+    """(real super-additivity) minus (control super-additivity), one paired domain bootstrap.
+
+    Both excesses are recomputed inside each resample of domains, so the comparison respects the
+    fact that they are measured on the SAME prompts and share the same baseline. Reporting two
+    independent intervals and eyeballing whether one excludes zero is not this test.
+    """
+    doms = collections.defaultdict(list)
+    for p in common:
+        doms[base[p].get("domain")].append(p)
+    keys = sorted(doms)
+    rB, rC, rD = real
+    cB, cC, cD = ctrl
+
+    def excess(sel, X, Y, Z):
+        def d(arm):
+            return st.mean([float(arm[p].get(SCORE) or 0.0) - float(base[p].get(SCORE) or 0.0)
+                            for p in sel])
+        return d(Z) - (d(X) + d(Y))
+
+    def diff(sel):
+        return excess(sel, rB, rC, rD) - excess(sel, cB, cC, cD)
+
+    point = diff(common)
+    rng = random.Random(seed)
+    draws = []
+    for _ in range(n_boot):
+        sel = []
+        for _ in range(len(keys)):
+            sel.extend(doms[keys[rng.randrange(len(keys))]])
+        if sel:
+            draws.append(diff(sel))
+    draws.sort()
+    lo = draws[int(0.025 * len(draws))]
+    hi = draws[int(0.975 * len(draws)) - 1]
+    return {"excess_real_minus_control": point, "ci95_domain_clustered": [lo, hi],
+            "frac_draws_le_0": sum(1 for x in draws if x <= 0) / len(draws),
+            "n_boot": len(draws), "n_domains": len(keys),
+            "established_against_control": bool(lo > 0),
+            "note": ("paired: both excesses recomputed inside each domain resample. "
+                     "established_against_control=True only if the clustered lower bound of the "
+                     "DIFFERENCE clears 0 -- not merely if one interval excludes 0 and the other "
+                     "does not.")}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--baseline", required=True, help="judge run dir for the no-intervention arm")
@@ -201,6 +246,10 @@ def main() -> int:
                     help="repeatable control draws; >=3 required to report a band")
     ap.add_argument("--super-additive", default="", metavar="B,C,D",
                     help="three arm NAMEs to test joint-vs-sum, e.g. B,C,D")
+    ap.add_argument("--super-additive-control", default="", metavar="Bc,Cc,Dc",
+                    help="the matched control triple. Adds the PAIRED difference of the two "
+                         "excesses -- the test that actually answers 'is the interaction real', "
+                         "as opposed to comparing two independent intervals by eye.")
     ap.add_argument("--label", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=20260819)
@@ -292,6 +341,22 @@ def main() -> int:
         res["super_additivity"] = {"arms": names,
                                    **super_additivity(base, B, C, D, common, seed=a.seed)}
 
+        # ---- versus its OWN control triple, PAIRED ------------------------------------------- #
+        # Running the real triple and the control triple as two separate bootstraps and comparing
+        # "one CI excludes zero, the other does not" is the difference-of-significance fallacy: on
+        # this data the real excess is +0.0333 [+0.0128, +0.0638] and the control's is +0.0066
+        # [-0.0013, +0.0170], and those intervals OVERLAP. The quantity that answers the question is
+        # the DIFFERENCE of the two excesses, bootstrapped ONCE over the same resampled domains so
+        # the two are paired and their correlation is respected.
+        if a.super_additive_control:
+            cnames = [x.strip() for x in a.super_additive_control.split(",")]
+            if len(cnames) != 3 or any(n not in loaded for n in cnames):
+                raise SystemExit(f"[ext] --super-additive-control needs three known arms, got {cnames}")
+            cB, cC, cD = (loaded[n] for n in cnames)
+            res["super_additivity_vs_control"] = {
+                "arms": names, "control_arms": cnames,
+                **paired_excess_difference(base, (B, C, D), (cB, cC, cD), common, seed=a.seed)}
+
     try:
         git = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
         dirty = bool(subprocess.run(["git", "status", "--porcelain"], capture_output=True,
@@ -320,6 +385,14 @@ def main() -> int:
             "—" if not d else "%+.4f" % d["delta_cluster_mean"],
             "—" if not d or d["p_cl"] is None else "%.4f" % d["p_cl"],
             "—" if not ci else "[%+.4f, %+.4f]" % (ci[0], ci[1]), sig))
+    if "super_additivity_vs_control" in res:
+        v = res["super_additivity_vs_control"]
+        print("[ext] super-additivity vs CONTROL triple (paired): %+.4f  CI [%+.4f, %+.4f]  "
+              "frac<=0 %.3f  -> %s"
+              % (v["excess_real_minus_control"], v["ci95_domain_clustered"][0],
+                 v["ci95_domain_clustered"][1], v["frac_draws_le_0"],
+                 "ESTABLISHED against control" if v["established_against_control"]
+                 else "NOT established against control"))
     if "super_additivity" in res:
         sa = res["super_additivity"]
         print("[ext] super-additivity %s: %+.4f  CI [%+.4f, %+.4f]  frac<=0 %.3f  -> %s"

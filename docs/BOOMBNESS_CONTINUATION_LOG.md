@@ -1524,3 +1524,46 @@ returned **zero rows**, and the option-mass gate then reported *"median 0.0000 �
 exactly like an instrument verdict. **A guard that fires because the data was not found is
 indistinguishable from one that fires because the data is bad.** Emptiness is now checked and named
 separately, and it raises rather than reporting a fake measurement.
+
+## ✅ All three AdvBench controls are inert — and super-additivity survives the RIGHT test, narrowly
+
+| arm | ASR@0.5 | Δ cluster-mean | p_cl | domain-clustered CI |
+|---|---|---|---|---|
+| baseline | 0.0646 | — | — | — |
+| **B** `d_surface`@L8 | 0.1071 | **+0.0305** | **0.0089** | [+0.0089, +0.0522] ✓ |
+| **C** refusalness@L18 | 0.2707 | **+0.1895** | 0.0001 | [+0.1097, +0.2692] ✓ |
+| **D** both | 0.3515 | **+0.2544** | <0.0001 | [+0.1589, +0.3499] ✓ |
+| Bctrl random@L8 | 0.0626 | −0.0062 | 0.539 | [−0.0271, +0.0147] — inert |
+| Cctrl random@L18 | 0.0606 | −0.0021 | 0.292 | [−0.0063, +0.0020] — inert |
+| Dctrl double random | 0.0667 | +0.0031 | 0.330 | [−0.0034, +0.0096] — inert |
+
+**Every control is flat.** The three real arms move ASR by +0.031 / +0.190 / +0.254; their matched
+random projections move it by −0.006 / −0.002 / +0.003. The caveat carried in §0, the gate table and
+§7c since this result first landed is now **fully discharged**.
+
+### ★ I nearly committed the difference-of-significance fallacy, and the correct test is tighter
+
+The obvious move was: *real* super-additivity is **+0.0333, CI [+0.0128, +0.0638]** (established);
+run the same statistic on the **control triple** and it is **+0.0066, CI [−0.0013, +0.0170]** (not
+established); conclude the interaction is real.
+
+**That reasoning is wrong, and the numbers show why: the two intervals OVERLAP** in
+[+0.0128, +0.0170]. "One CI excludes zero and the other does not" is not a test of whether they
+differ — it is the classic difference-of-significance error, and this project has already retracted
+three claims (R-13, R-15, R-16) that came from comparing two arms measured on different footings.
+
+The quantity that answers the question is the **difference of the two excesses**, bootstrapped **once**
+over the same resampled domains so the two are paired and their correlation is respected. Implemented
+as `--super-additive-control` in `analyze_external_arms.py`:
+
+**real − control super-additivity = +0.0268, domain-clustered CI [+0.0029, +0.0584], 1.5% of 4000
+draws ≤ 0 → ESTABLISHED against control.**
+
+**It survives — but state the margin honestly.** The lower bound is **+0.0029**, about 11% of the
+point estimate; this is a real interaction, not a comfortable one. The naive comparison would have
+made it look far safer than it is.
+
+**So the claim, at full strength and no further:** on 495 external harmful prompts over 16 domain
+clusters, removing `d_surface` and the refusal direction **together** produces more than the sum of
+removing each alone, by +0.027 [+0.003, +0.058] beyond what a matched random-projection triple
+produces. The two channels interact.
