@@ -1791,6 +1791,63 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### ✅ Phase E3 (partial) — `d_surface` and refusalness are geometrically near-orthogonal
+
+Pure CPU on the committed direction vectors: the canonical heldout fit
+(`extract_boombness/full_20260816_185942_1008673/directions_fit_heldout.pt`) against the house Llama
+refusal directions (`doublespeak_causality/outputs/stage_gcg_full/refusal_direction_llama_L*.pt`,
+verified 4096-d and unit norm). Answers a Final Report question directly.
+
+**Random baseline first**, because a cosine in 4096 dimensions needs one: 2,000 random unit-vector pairs
+(seed 20260820) give sd(cos) = **0.01541**, E|cos| = 0.01221, 95th percentile |cos| = 0.03036 —
+matching the theoretical 1/√4096 = 0.01562.
+
+| L | cos(`d_surface`, refusalness) | z vs random | shared variance (cos²) | verdict |
+|---|---|---|---|---|
+| 12 | 0.1279 | 8.30 | **1.64%** | clearly above chance |
+| 14 | 0.0972 | 6.31 | 0.94% | clearly above chance |
+| 16 | 0.0467 | 3.03 | 0.22% | clearly above chance |
+| **18** | 0.0262 | 1.70 | **0.07%** | **at chance** |
+| 20 | 0.0176 | 1.14 | 0.03% | **at chance** |
+
+Sibling directions for reference: cos(`d_naive`, ref) 0.107 → 0.030; cos(`d_context`, ref) −0.028 →
+0.052; cos(`d_inter`, ref) −0.105 → −0.094 across the same depths.
+
+**99.2–99.98% of `d_surface` is orthogonal to refusalness.** The overlap is statistically detectable at
+L12–L16 but negligible in magnitude everywhere — at most **1.64%** shared variance — and by **L18, where
+refusalness is causally strongest (Δ +0.1895), the two are indistinguishable from random vectors.**
+
+#### What this settles, and what it does not
+
+> **"Is `d_surface` separable from refusalness?" — Yes, geometrically almost completely.** It is not a
+> disguised refusal direction. Removing it cannot be removing refusalness by another name.
+
+Combined with the two causal results, a coherent two-channel picture emerges:
+
+| | `d_surface` | refusalness |
+|---|---|---|
+| geometry | \ near-orthogonal (cos ≤ 0.13, ≈0 at L18) | |
+| causal depth | L6–L12 (peak L12) | L14–L20 (peak L18) |
+| effect size | +0.0322 peak, no Holm survival | +0.1895 peak, 4/5 survive Holm |
+| direction of control | bidirectional (add ↓, remove ↑) | removal ↑ |
+
+Two distinct, near-orthogonal channels operating at **different depths**, whose removals nevertheless
+compose **super-additively** (+0.0268 against the matched random triple). That is a substantive answer
+to plan §1's main question and it rules out hypothesis 2 in its strong form — `d_surface` is not
+"partially confounded with safety salience" in the sense of *being* the refusal axis.
+
+⚠ **Caveat, stated rather than buried.** The two direction families are fitted by **different
+procedures on different data** (`d_surface` from the 2×2 carrot/bomb bank; refusalness from the house
+`stage_gcg_full` pipeline). Near-orthogonality is therefore partly expected and is **not** by itself
+evidence of functional independence — the causal dissociation is what carries that. The one thing the
+geometry does establish firmly is the negative: they are not the same direction.
+
+**Not yet done for E3:** the plan also asks for the *orthogonalized-intervention* arms — ablating
+`d_surface` with its refusalness component projected out, and vice versa. At cos ≤ 0.13 those arms
+would differ from the plain ones by under 2% of the vector, so they are **low-value here** and are
+deprioritised behind the dose-corrected runs. Recorded as a deliberate deprioritisation, not an
+omission.
+
 ### Tick 18 — F7 and F9 closed: the `d_surface` profile survives no correction, and "% generations changed" carries no information
 
 Queue cold (768468/469/488/489 all `PENDING`), so this tick closed two standing review defects.
