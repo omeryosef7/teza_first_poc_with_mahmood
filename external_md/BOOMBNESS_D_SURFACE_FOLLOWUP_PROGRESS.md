@@ -1791,6 +1791,29 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### Tick 15 — the α = 0.25 re-runs are all coherent, and the α = 1.0 prediction held
+
+Tick 14 predicted 768071 (`fuF_remR_addS`, carrying `d_surface:add:8-8:**1.0**`) would fail the same
+gate. **It did**, and by the same margin:
+
+| arm | α on `d_surface:add` | uniq-word | 3-gram repeat | mean words | wall-clock | gate |
+|---|---|---|---|---|---|---|
+| `fuF_remR_addS` | **1.0** | **0.225** | **0.599** | 299 | 2h06 | ⛔ **FAIL** — not judged |
+| `fuF25_addS` | 0.25 | 0.958 | 0.002 | 15 | **4m59** | PASS |
+| `fuF25_addBoth` | 0.25 | 0.963 | 0.001 | 14 | **4m30** | PASS |
+| `fuF25_remR_addS` | 0.25 | 0.840 | 0.023 | 98 | 28m35 | PASS |
+| `fuF25_addCtrl8` | 0.25 | 0.899 | 0.006 | 36 | 10m53 | PASS |
+
+Three `d_surface:add` arms have now failed at α = 1.0 and three have passed at α = 0.25, with no
+overlap — the dose boundary is sharp and reproducible on this axis.
+
+**Wall-clock is a free degeneracy detector.** Every failing arm ran 1h51–2h06; every passing arm ran
+4–29 minutes. The looping arms simply generate to the token cap. Cheap pre-filter for future runs, and
+it agreed with the gate on all six arms tested so far.
+
+Judging launched for the four coherent arms (`n_fuF25_*`). 768316 `fuF_remS_addR_CTRL` — the matched
+composed control that arm E is being held for — is still generating (275/495).
+
 ### ⛔ `d_surface:add` at α = 1.0 is DEGENERATE — the coherence gate caught it before any judge spend
 
 `fuF_addS` and `fuF_addBoth` completed and **failed the gate badly**. They were **not judged**; no ASR
