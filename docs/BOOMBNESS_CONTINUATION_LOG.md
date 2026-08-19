@@ -303,7 +303,7 @@ within-domain permutation inference:
 | `last` | +0.0253 | **+0.0414** | grows 1.63× |
 
 Partial ρ(boombness, ASR │ n_examples) = **+0.2705** pooled / +0.2643 within-domain (perm p=0.0015)
-against a raw +0.3067. The reason it is not a confound is measurable: `n_examples` predicts ASR
+against a raw +0.3067. ⛔ *(All of C-9's figures are computed on the unfiltered 234-row set and are **superseded by R-18** — see below; C-9 was defending a correlation that is not present on the clean rows.)* The reason it is not a confound is measurable: `n_examples` predicts ASR
 (ρ=+0.206) but is essentially **uncorrelated with boombness at `codeword_last`** (ρ=−0.034). At the
 last-token position it correlates −0.185 and acted as a **suppressor**, not a confound. **G2 is
 defended against the dose-response confound the critique raised.**
@@ -1867,7 +1867,7 @@ address-by-assumption error this project keeps retracting.
 
 | subset | n | ρ pooled | per-domain mean ± se |
 |---|---|---|---|
-| **ALL 234 — as published** | 234 | **+0.3067** | +0.2334 ± 0.0652 |
+| **ALL 234 — as published, now WITHDRAWN** | 234 | **+0.3067** | +0.2334 ± 0.0652 |
 | slot-0 only (no sibling families) | 162 | +0.2761 | +0.2385 ± 0.0803 |
 | no designed-variance blocks | 162 | +0.2396 | +0.1271 ± 0.0701 |
 | **slot-0 AND no designed-variance** | **90** | **+0.0860** | **+0.0252 ± 0.1255** |
@@ -1908,11 +1908,11 @@ sibling-slot or designed-variance rows are included. Two runs, same inputs, same
 
 | | n | composition | ρ pooled | **ρ within-domain** | **p_perm (the cited estimand)** |
 |---|---|---|---|---|---|
-| **as published** | 234 | core2x2 60, strength 24, consistency 36, position 12, role_style 30, families 72 · slots {0:162, 1:36, 2:36} | +0.3067 | **+0.2618** | **5.00e-04** |
+| **as published — WITHDRAWN** | 234 | core2x2 60, strength 24, consistency 36, position 12, role_style 30, families 72 · slots {0:162, 1:36, 2:36} | +0.3067 | **+0.2618** | **5.00e-04** |
 | **clean** | **90** | **core2x2 60, role_style 30 · slots {0:90}** | **+0.0860** | **−0.0518** | **0.658** |
 
 **The within-domain correlation — the estimand this project's own artifact says to cite, "PAIRED WITH
-rho_within_domain, NOT WITH rho_pooled" — goes from +0.2618 (p=5e-4) to −0.0518 (p=0.658).** It does
+rho_within_domain, NOT WITH rho_pooled" — goes from a **retracted** +0.2618 (p=5e-4) to −0.0518 (p=0.658).** It does
 not shrink; it crosses zero and becomes a null.
 
 ### G2 as published is withdrawn

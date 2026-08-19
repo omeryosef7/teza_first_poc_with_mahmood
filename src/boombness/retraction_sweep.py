@@ -109,6 +109,12 @@ RETRACTED = [
     # R-17: the cross-model CAUSAL replication claim, made on pooled estimates and withdrawn when
     # Qwen3/AdvBench came back null against a 0.8% baseline. The Llama-only claim is live; only the
     # "both models" phrasing is retracted.
+    # R-18: G2 as published. The retracted objects are the FIGURES and the claim; the clean-set
+    # numbers (-0.0518, +0.0860) are live and must not be flagged.
+    ("R18 G2 rho over the unfiltered 234-row set",
+     r"\+0\.3067|\+?0\.2618|rho\s*=\s*\+?0\.307|"
+     r"n\s*=\s*234[^\n]{0,40}(?:6/6 domains|p\s*<\s*5e-4)|"
+     r"Boombness (?:modestly )?predicts (?:attack success|ASR)"),
     ("R17 cross-model d_surface replication",
      r"raises external-set ASR in \*{0,2}BOTH models|"
      r"cross-model replication of the .{0,20}d_surface.{0,20} causal effect|"
