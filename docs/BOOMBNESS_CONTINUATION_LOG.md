@@ -2158,3 +2158,57 @@ unmeasured control would be exactly the unmatched comparison this session has re
 `abL{4,12,18,24}_Bctrl` (766968–971) launched at the same layers, same seed discipline as `ab_Bctrl`.
 The five-point profile will be reported as **arm minus its own control at each depth**, never as a raw
 curve.
+
+## ⛔ R-19 — R-18's blast radius is wider than "G2 and G9": the LOCALIZATION result is half wrong too
+
+`analyze_position`, `analyze_g64` and `analyze_role` **all** filter on `condition == args.arm` with no
+`bank_block` clause — the same defect. `analyze_position` produces the **position 2×2**, which the
+report calls *"the localization result — the finding worth following"* and lists as takeaway #3 in two
+separate places.
+
+Recomputed on the same best columns the artifact selected, full set vs clean set:
+
+| probe / position | full n=234 R² | **clean n=90 R²** |
+|---|---|---|
+| `d_surface` @ codeword_last (L12\|proj) | 0.1411 | **0.0575** |
+| `d_surface` @ last (L8\|proj) | 0.0701 | **0.0488** |
+| **`d_surface` position ratio** | **2.01×** | **1.18×** |
+| `refusalness` @ codeword_last (L20\|cos) | 0.1888 | **0.0576** |
+| `refusalness` @ last (L12\|cos) | 0.0455 | **0.0007** |
+| **`refusalness` position ratio** | **4.15×** | **82×** *(unstable — see below)* |
+
+### The published claim was "both probes are 2–4× more predictive of ASR at the codeword token". It is half wrong, and the surviving half does not mean what the number suggests.
+
+**`d_surface`'s position effect is gone.** 0.0575 against 0.0488 is **1.18×** — no localization. This is
+exactly what R-18 predicts: if Boombness does not predict ASR at all on clean rows (ρ_within=−0.052),
+there is no ASR-predictive state to localize.
+
+**`refusalness` retains a position effect and it is not 4×.** On clean rows it is 0.0576 against
+**0.0007** — the last-token R² is essentially zero, so the *ratio* explodes to 82× purely because its
+denominator vanished. **A ratio whose denominator is ~0 is not a magnitude**, and quoting "82×" would
+be a worse error than the "4×" it replaces. The defensible statement is qualitative: **refusalness has
+a detectable relationship with ASR at the codeword token and none at the last token; `d_surface` has
+neither.**
+
+**And both surviving numbers are small.** R² ≈ 0.058 on n=90. The localization finding, restated
+honestly, is *"the only probe with any ASR relationship on clean rows is refusalness, and only at the
+codeword token, and it explains about 6% of the variance."* That is a much weaker claim than
+"the ASR-predictive state sits at the codeword token, 2–4× more, for both probes."
+
+### Running total of what R-18 touched
+
+| script | filters `bank_block`? | consequence |
+|---|---|---|
+| `aggressive_patching` (G1) | ✅ `core2x2` | clean |
+| `surgical_knockout` (G3) | ✅ `core2x2` | clean |
+| `probes` | ✅ `core2x2` | clean |
+| `analyze_g2` | ⛔ no | **G2 retracted** |
+| `analyze_g9` | ⛔ no | **R-13's ordering does not survive** |
+| `analyze_position` | ⛔ no | **the localization result is half wrong (R-19)** |
+| `analyze_g64` | ⛔ no | metric comparison (§7b) — needs the same check |
+| `analyze_role` | ⛔ no | §11 role results — needs the same check |
+
+**The pattern is now unmistakable:** every script that filters by `condition` is contaminated; every
+script that filters by `bank_block` is clean. The three intervention scripts got it right and the five
+correlational ones got it wrong, which is why **all four surviving headline results are causal and none
+are correlational.**
