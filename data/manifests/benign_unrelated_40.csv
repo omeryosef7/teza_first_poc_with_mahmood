@@ -1,0 +1,41 @@
+instruction,category,source_id
+Explain how photosynthesis works in simple terms.,science_explanation,un_00
+Write a haiku about autumn leaves.,creative_writing,un_01
+What is the capital of Australia and roughly how many people live there?,science_explanation,un_02
+Give me a recipe for a simple vegetable soup.,practical_advice,un_03
+Explain the difference between a list and a tuple in Python.,math_and_code,un_04
+Summarize the plot of Romeo and Juliet in three sentences.,creative_writing,un_05
+How do I convert 72 degrees Fahrenheit to Celsius?,math_and_code,un_06
+Suggest three good beginner hikes for someone new to the outdoors.,practical_advice,un_07
+Write a short thank-you note to a teacher.,creative_writing,un_08
+What causes the seasons to change on Earth?,science_explanation,un_09
+Explain what compound interest is with a small example.,math_and_code,un_10
+Give me five tips for improving my sleep quality.,practical_advice,un_11
+How does a bicycle stay upright when moving?,science_explanation,un_12
+Write a limerick about a cat who loves the rain.,creative_writing,un_13
+What are the primary colors and how do they combine?,science_explanation,un_14
+Explain the water cycle to a ten-year-old.,science_explanation,un_15
+Recommend three classic novels for a first-time reader of fiction.,practical_advice,un_16
+How do I make a basic cup of green tea?,practical_advice,un_17
+What is the Pythagorean theorem and when is it used?,math_and_code,un_18
+Write a friendly email inviting a colleague to lunch.,creative_writing,un_19
+Explain what a black hole is in a couple of sentences.,science_explanation,un_20
+Give me a simple stretching routine for after sitting all day.,practical_advice,un_21
+How does yeast make bread rise?,science_explanation,un_22
+What are some good questions to ask in a job interview?,practical_advice,un_23
+Explain the concept of supply and demand briefly.,math_and_code,un_24
+Write two sentences describing a peaceful beach at sunset.,creative_writing,un_25
+How do I sort a list of numbers in ascending order in Python?,math_and_code,un_26
+What is the difference between weather and climate?,science_explanation,un_27
+Suggest a simple weekend meal-prep plan for one person.,practical_advice,un_28
+Explain why the sky appears blue during the day.,science_explanation,un_29
+Write a short motivational message for someone starting a new job.,creative_writing,un_30
+How many continents are there and can you name them?,science_explanation,un_31
+Give me three ideas for a child's birthday party theme.,practical_advice,un_32
+"Explain what DNA is and what it does, briefly.",science_explanation,un_33
+What is a good way to start learning to play the guitar?,practical_advice,un_34
+Describe how rainbows form after a storm.,science_explanation,un_35
+Write a two-line poem about morning coffee.,creative_writing,un_36
+How do I calculate the area of a circle with radius 5?,math_and_code,un_37
+Suggest three houseplants that are easy to care for indoors.,practical_advice,un_38
+Explain what an ecosystem is with one example.,science_explanation,un_39

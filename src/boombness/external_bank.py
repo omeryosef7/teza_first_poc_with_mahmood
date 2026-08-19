@@ -40,6 +40,16 @@ from common import rows_sha16  # noqa: E402
 SOURCES = {
     "clearharm": ("data/clearharm/clearharm_179.csv", "instruction", "category"),
     "advbench_heldout": ("data/manifests/heldout_495.csv", "instruction", "category"),
+    # BENIGN control set (follow-up sprint, plan §7 E1). 40 unambiguously benign instructions with no
+    # attack structure, REUSED from doublespeak_causality/data/behavioral_v3/unrelated_normal.json
+    # (the §20 over-refusal cohort) rather than authored here, so the prompts predate this sprint and
+    # carry no risk of being tuned to its hypothesis. Re-categorised into 4 clusters
+    # (science_explanation 14 / practical_advice 11 / creative_writing 8 / math_and_code 7) so the
+    # domain-clustered inference has more than one unit and no singleton cluster -- the D-9 defect.
+    # ⚠ StrongReject is MEANINGLESS on these rows: there is no harmful goal to comply with. The
+    # outcome here is OVER-REFUSAL and generation change, both recorded by score_behavior.py without
+    # a judge run.
+    "benign_unrelated": ("data/manifests/benign_unrelated_40.csv", "instruction", "category"),
 }
 
 

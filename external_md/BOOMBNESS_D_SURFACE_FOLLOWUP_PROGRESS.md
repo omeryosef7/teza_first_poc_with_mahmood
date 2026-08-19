@@ -1791,6 +1791,67 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### Tick 20 — Phase E1's benign arm, built by REUSE rather than authoring
+
+Plan §7 E1 asks for benign technical, benign everyday and ambiguous dual-use categories, which
+AdvBench does not contain. Rather than author prompts — which would reintroduce exactly the
+"sprint's own generator" threat `external_bank.py`'s docstring warns about — I reused the previous
+sprint's §20 over-refusal cohort:
+
+**`doublespeak_causality/data/behavioral_v3/unrelated_normal.json`** — 40 items, meta note *"ordinary
+benign instructions with NO attack structure (no codeword/demos) … All items are unambiguously
+benign."* These **predate this sprint**, so they cannot have been tuned to its hypothesis.
+
+Re-categorised into **4 clusters with no singletons** (the D-9 lesson): `science_explanation` 14,
+`practical_advice` 11, `creative_writing` 8, `math_and_code` 7. Largest cluster holds 35% of rows —
+far better balanced than ClearHarm's 127/31/17/2/1/1.
+
+Covers **two of the plan's three** E1 benign categories: technical (`math_and_code`,
+`science_explanation`) and everyday (`practical_advice`, `creative_writing`). **Ambiguous dual-use has
+no existing source in the repo and is NOT covered** — flagged rather than quietly dropped; it would
+need authoring, and authoring a dual-use set is the piece most vulnerable to being written toward the
+answer, so it is raised for a decision rather than done unilaterally.
+
+**Code added: one `SOURCES` line** in `external_bank.py` plus a 40-row CSV. Bank built with the
+existing adapter, unchanged:
+
+```
+$PY src/boombness/external_bank.py --source benign_unrelated \
+    --out data/boombness_prompts/external/benign_unrelated_40.jsonl
+# -> 40 rows, 4 clusters; largest holds 35.0% of rows
+```
+
+#### ⚠ The outcome measure is over-refusal, NOT ASR — and this arm needs no judge
+
+StrongReject scores compliance with a **harmful goal**. These rows have none, so an ASR number here
+would be meaningless — the same class of error as R-14, where every external completion was scored
+against an empty goal. The measures are **refusal rate** and **generation change**, both recorded by
+`score_behavior.py` directly. **No judge run, no API cost.**
+
+| job | tag | intervention |
+|---|---|---|
+| 768502 | `bng_base` | none |
+| 768503 | `bng_B` | `d_surface:project_out:8-8:1.0` |
+| 768504 | `bng_Bctrl` | `random:project_out:8-8:1.0` (matched) |
+| 768505 | `bng_C` | `refusalness:project_out:18-18:1.0` |
+
+#### What it discriminates
+
+This is the test that separates the sprint's two live readings of `d_surface`:
+
+- If removing `d_surface` leaves benign behaviour **unchanged** while raising harmful compliance, it is
+  a **harm-salience** channel.
+- If it perturbs benign responses too, it is a **general semantic-salience** channel that happens to
+  matter for harm — plan hypotheses 3 and 4.
+
+Phase E1's category result already leans the second way: the effect was **weakest on
+`weapons_explosives`** (+0.0250), the category the direction was fitted on, and strongest on
+misinformation and cyber. A benign perturbation would corroborate that.
+
+⚠ **Power, stated before the result:** n = 40 across 4 clusters is adequate for a descriptive
+over-refusal check (it is what §20 used it for) but **cannot support a clustered causal claim**. A null
+here will be reported as "no detectable over-refusal at n = 40", never as "no effect".
+
 ### ✅ Phase E3 (partial) — `d_surface` and refusalness are geometrically near-orthogonal
 
 Pure CPU on the committed direction vectors: the canonical heldout fit
