@@ -135,26 +135,103 @@ def load_refusalness(path: Optional[str]) -> Dict[str, Dict]:
     return out
 
 
+def _finite(xs):
+    return [x for x in xs if x is not None and isinstance(x, (int, float)) and math.isfinite(x)]
+
+
+def clustered_sem(vals_by_cluster: Dict[str, List[float]]) -> float:
+    """SEM over CLUSTER means, not over rows. Occurrences within a prompt, and prompts within a
+    domain, are not independent draws; a row-level sem understates by ~sqrt(rows/clusters).
+    R-16 was an instance of quoting iid where it gave the friendlier answer."""
+    cm = [sum(v) / len(v) for v in vals_by_cluster.values() if v]
+    return sem(cm)
+
+
 def curve(rows: List[Dict], metric: str, layers: Sequence[int]) -> Dict[str, Dict]:
-    """{layer: {mean, sem, n}} for one already-filtered row set."""
+    """{layer: {mean, sem, sem_by_prompt, sem_by_domain, n}} for one already-filtered row set.
+
+    `n` counts FINITE contributions only — counting before the finite filter would let a NaN row
+    exit the mean while still inflating the reported sample size."""
     out = {}
     for L in layers:
         c = col(metric, L)
-        vs = [r[c] for r in rows if c in r and r[c] is not None]
-        out[str(L)] = {"mean": mean(vs), "sem": sem(vs), "n": len(vs)}
+        vs = _finite([r.get(c) for r in rows if c in r])
+        by_p: Dict[str, List[float]] = collections.defaultdict(list)
+        by_d: Dict[str, List[float]] = collections.defaultdict(list)
+        for r in rows:
+            v = r.get(c)
+            if c in r and v is not None and isinstance(v, (int, float)) and math.isfinite(v):
+                by_p[r["prompt_id"]].append(v)
+                by_d[r["domain"]].append(v)
+        out[str(L)] = {"mean": mean(vs), "sem_rowlevel_UNDERSTATES": sem(vs),
+                       "sem_by_prompt": clustered_sem(by_p), "sem_by_domain": clustered_sem(by_d),
+                       "n_rows": len(vs), "n_prompts": len(by_p), "n_domains": len(by_d)}
     return out
 
 
 def band_mean(rows: List[Dict], metric: str, band: Sequence[int]) -> Dict:
-    """Per-row mean across a layer band, then aggregated. Averaging per row first keeps the
-    unit of analysis the occurrence, not the (occurrence, layer) cell."""
-    per_row = []
+    """Per-row mean across a layer band, then aggregated over rows.
+
+    Records `layers_used` because metrics do NOT all cover the same layers: the logit-lens columns
+    exist at only 9 of 32 depths, so a band that averages 8 layers of `d_surface` averages 2 of
+    `ll|boombness`. Presenting those side by side without saying so is a real defect."""
+    used = [L for L in band if any(col(metric, L) in r for r in rows[:64])]
+    per_row, by_p, by_d = [], collections.defaultdict(list), collections.defaultdict(list)
     for r in rows:
-        vs = [r[col(metric, L)] for L in band
-              if col(metric, L) in r and r[col(metric, L)] is not None]
+        vs = _finite([r.get(col(metric, L)) for L in band if col(metric, L) in r])
         if vs:
-            per_row.append(sum(vs) / len(vs))
-    return {"mean": mean(per_row), "sem": sem(per_row), "n": len(per_row)}
+            v = sum(vs) / len(vs)
+            per_row.append(v)
+            by_p[r["prompt_id"]].append(v)
+            by_d[r["domain"]].append(v)
+    return {"mean": mean(per_row), "sem_rowlevel_UNDERSTATES": sem(per_row),
+            "sem_by_prompt": clustered_sem(by_p), "sem_by_domain": clustered_sem(by_d),
+            "n_rows": len(per_row), "n_prompts": len(by_p), "n_domains": len(by_d),
+            "layers_used": used, "n_layers_used": len(used)}
+
+
+def prompt_weighted_mean(rows: List[Dict], metric: str, L: int) -> float:
+    """Mean of PROMPT means. `demo_all` pools 1-17 rows per prompt while `query` contributes
+    exactly one, so a row-weighted demo_all vs a query mean compares two different units and the
+    long-demo-block prompts dominate. This is the unit-matched version."""
+    c = col(metric, L)
+    by_p: Dict[str, List[float]] = collections.defaultdict(list)
+    for r in rows:
+        v = r.get(c)
+        if c in r and v is not None and isinstance(v, (int, float)) and math.isfinite(v):
+            by_p[r["prompt_id"]].append(v)
+    return mean([sum(v) / len(v) for v in by_p.values() if v])
+
+
+def paired_last_minus_first(rows: List[Dict], metric: str, L: int) -> Dict:
+    """WITHIN-PROMPT last-demo minus first-demo, restricted to prompts with >=2 demos.
+
+    The unpaired form draws demo_first and demo_last from different prompt populations: a prompt
+    with exactly ONE demo contributes a demo_first and no demo_last, and that lone demo is also the
+    demo nearest the query -- the position that drives the effect. Keeping it on one side only
+    inflates the gap. The paired form removes the composition confound entirely."""
+    c = col(metric, L)
+    by_p: Dict[str, Dict[str, float]] = collections.defaultdict(dict)
+    for r in rows:
+        if r.get("is_query_occurrence"):
+            continue
+        v = r.get(c)
+        if v is None or not isinstance(v, (int, float)) or not math.isfinite(v):
+            continue
+        if r.get("is_first_demo"):
+            by_p[r["prompt_id"]]["first"] = v
+        if r.get("is_last_demo"):
+            by_p[r["prompt_id"]]["last"] = v
+    diffs, doms = [], collections.defaultdict(list)
+    dom_of = {r["prompt_id"]: r["domain"] for r in rows}
+    for pid, d in by_p.items():
+        if "first" in d and "last" in d and d["first"] != d["last"]:
+            diffs.append(d["last"] - d["first"])
+            doms[dom_of.get(pid, "?")].append(d["last"] - d["first"])
+    return {"paired_mean": mean(diffs), "sem_by_prompt": sem(diffs),
+            "sem_by_domain": clustered_sem(doms), "n_pairs": len(diffs),
+            "n_domains": len(doms),
+            "per_domain_mean": {k: mean(v) for k, v in sorted(doms.items())}}
 
 
 def main() -> int:
@@ -220,10 +297,18 @@ def main() -> int:
     for r in rows:
         r.update(refus.get(r["prompt_id"], {}))
 
-    layers = sorted(discover_columns(rows).get(metrics[0], []))
+    # Per-metric layer lists. The logit-lens columns exist at only 9 of 32 depths while the
+    # direction columns exist at all 32; taking `layers` from metrics[0] alone would silently
+    # apply one metric's depth coverage to every other metric.
+    disc = discover_columns(rows)
+    metric_layers = {m: sorted(disc.get(m, [])) for m in metrics}
+    layers = metric_layers.get(metrics[0], [])
     if not layers:
         print(f"FATAL: no layers found for metric {metrics[0]}", file=sys.stderr)
         return 2
+    for m, ls in metric_layers.items():
+        if not ls:
+            print(f"WARNING: metric {m} has no columns in this extract", file=sys.stderr)
 
     # ---- the gate that must pass before any curve is read ------------------------------- #
     sanity = direction_sanity(rows, "d_surface|cos", layers)
@@ -235,10 +320,18 @@ def main() -> int:
         "label": "Phase B — occurrence-resolved token-level Boombness",
         "inputs": {"extract_run": os.path.abspath(args.run),
                    "refusalness_run": os.path.abspath(args.refusalness) if args.refusalness else None},
-        "filters": {"query_kind": args.query_kind or "ALL (reported per cell, never pooled)",
-                    "bank_blocks": args.bank_blocks or "ALL",
-                    "family_slot": args.slot or "ALL",
-                    "self_fit": "excluded"},
+        # Stated exactly. An earlier revision claimed query kinds were "never pooled" while the
+        # summary cells pooled them; a false provenance string on disk is worse than none.
+        "filters": {
+            "query_kind": args.query_kind or "ALL — POOLED INTO EVERY SUMMARY CELL",
+            "bank_blocks": args.bank_blocks or "ALL — POOLED",
+            "family_slot": args.slot if args.slot != "" else "ALL — POOLED (slots 1/2 are sibling "
+                                                             "families sharing demonstrations; "
+                                                             "this is the R-18 defect class)",
+            "self_fit": "excluded",
+            "pooling_warning": ("this run pools the axes marked POOLED; only a run with "
+                                "--query-kind and --slot set is safe to quote per-cell")
+            if (not args.query_kind or args.slot == "") else None},
         "row_accounting": dict(ledger),
         "skips": dict(skips),
         "composition": {
@@ -257,6 +350,7 @@ def main() -> int:
         },
         "headline_condition": args.condition,
         "layers": layers,
+        "metric_layers": metric_layers,
         "by_role": {},
         "bands": {},
         "role_contrasts": {},
@@ -269,40 +363,79 @@ def main() -> int:
         summary["bands"][m] = {}
         for role in ROLES:
             rs = [r for r in cond_rows if r["occurrence_role"] == role]
-            summary["by_role"][m][role] = {"n": len(rs), "layers": curve(rs, m, layers)}
-            summary["bands"][m][role] = {b: band_mean(rs, m, [L for L in rng if L in layers])
+            ml = metric_layers[m]
+            summary["by_role"][m][role] = {"n": len(rs), "layers": curve(rs, m, ml)}
+            summary["bands"][m][role] = {b: band_mean(rs, m, [L for L in rng if L in ml])
                                          for b, rng in BANDS.items()}
         # all demo occurrences pooled — the plan's "all demo codewords aggregate"
         rs_demo = [r for r in cond_rows if r["occurrence_role"] != "query"]
-        summary["by_role"][m]["demo_all"] = {"n": len(rs_demo), "layers": curve(rs_demo, m, layers)}
-        summary["bands"][m]["demo_all"] = {b: band_mean(rs_demo, m, [L for L in rng if L in layers])
+        ml = metric_layers[m]
+        summary["by_role"][m]["demo_all"] = {"n": len(rs_demo), "layers": curve(rs_demo, m, ml)}
+        summary["bands"][m]["demo_all"] = {b: band_mean(rs_demo, m, [L for L in rng if L in ml])
                                            for b, rng in BANDS.items()}
 
     # Q1 does Boombness grow across demo occurrences?  Q2 is the query more or less bomb-like?
+    #
+    # THE CONTROL IS NOT OPTIONAL. A repetition gradient that also appears in `benign_literal` --
+    # where no codeword->concept mapping is ever taught and there is nothing to "become" -- is a
+    # general property of repeated tokens, not evidence about doublespeak. So every contrast is
+    # computed for EVERY condition, and the doublespeak-specific quantity is the EXCESS over the
+    # matched control, natural_doublespeak minus benign_literal.
+    CONTROL_COND = "benign_literal"
+    conds = sorted({r["condition"] for r in rows})
     for m in metrics:
-        c = {}
-        for L in layers:
-            cc = col(m, L)
-            g = {role: [r[cc] for r in cond_rows
-                        if r["occurrence_role"] == role and cc in r and r[cc] is not None]
-                 for role in ROLES}
-            g["demo_all"] = [r[cc] for r in cond_rows
-                             if r["occurrence_role"] != "query" and cc in r and r[cc] is not None]
-            c[str(L)] = {
-                "last_minus_first_demo": mean(g["demo_last"]) - mean(g["demo_first"]),
-                "d_last_vs_first_demo": cohens_d(g["demo_last"], g["demo_first"]),
-                "query_minus_demo_all": mean(g["query"]) - mean(g["demo_all"]),
-                "d_query_vs_demo_all": cohens_d(g["query"], g["demo_all"]),
-                "n": {k: len(v) for k, v in g.items()},
-            }
-        summary["role_contrasts"][m] = c
+        ml = metric_layers[m]
+        per_cond = {}
+        for cond in conds:
+            crows = [r for r in rows if r["condition"] == cond]
+            c = {}
+            for L in ml:
+                cc = col(m, L)
+                g = {role: _finite([r.get(cc) for r in crows if r["occurrence_role"] == role])
+                     for role in ROLES}
+                demo_rows = [r for r in crows if not r.get("is_query_occurrence")]
+                q_rows = [r for r in crows if r.get("is_query_occurrence")]
+                g["demo_all"] = _finite([r.get(cc) for r in demo_rows])
+                paired = paired_last_minus_first(crows, m, L)
+                c[str(L)] = {
+                    "last_minus_first_demo_UNPAIRED": mean(g["demo_last"]) - mean(g["demo_first"]),
+                    "d_last_vs_first_UNPAIRED": cohens_d(g["demo_last"], g["demo_first"]),
+                    "last_minus_first_demo_PAIRED": paired["paired_mean"],
+                    "paired_n": paired["n_pairs"],
+                    "paired_sem_by_domain": paired["sem_by_domain"],
+                    "paired_per_domain_mean": paired["per_domain_mean"],
+                    "query_minus_demo_all_ROWWEIGHTED": mean(g["query"]) - mean(g["demo_all"]),
+                    "query_minus_demo_all_PROMPTWEIGHTED": (
+                        prompt_weighted_mean(q_rows, m, L) - prompt_weighted_mean(demo_rows, m, L)),
+                    "d_query_vs_demo_all": cohens_d(g["query"], g["demo_all"]),
+                    "n": {k: len(v) for k, v in g.items()},
+                }
+            per_cond[cond] = c
+        summary["role_contrasts"][m] = per_cond
+
+        # the excess over the matched control -- the only doublespeak-specific quantity here
+        if args.condition in per_cond and CONTROL_COND in per_cond:
+            exc = {}
+            for L in ml:
+                a, b = per_cond[args.condition][str(L)], per_cond[CONTROL_COND][str(L)]
+                exc[str(L)] = {
+                    "paired_last_minus_first_EXCESS": (a["last_minus_first_demo_PAIRED"]
+                                                       - b["last_minus_first_demo_PAIRED"]),
+                    "query_minus_demo_all_EXCESS_promptweighted": (
+                        a["query_minus_demo_all_PROMPTWEIGHTED"]
+                        - b["query_minus_demo_all_PROMPTWEIGHTED"]),
+                    "treated": args.condition, "control": CONTROL_COND,
+                    "n_treated_pairs": a["paired_n"], "n_control_pairs": b["paired_n"],
+                }
+            summary.setdefault("matched_control_excess", {})[m] = exc
 
     # Q4 does d_surface differ from d_naive / d_context?
     for role in ROLES + ["demo_all"]:
         rs = ([r for r in cond_rows if r["occurrence_role"] != "query"] if role == "demo_all"
               else [r for r in cond_rows if r["occurrence_role"] == role])
         summary["direction_comparison"][role] = {
-            m: {b: band_mean(rs, m, [L for L in rng if L in layers]) for b, rng in BANDS.items()}
+            m: {b: band_mean(rs, m, [L for L in rng if L in metric_layers[m]])
+                for b, rng in BANDS.items()}
             for m in metrics}
 
     # Q5 is refusalness independent at these positions?  Prompt-level, stated as such.

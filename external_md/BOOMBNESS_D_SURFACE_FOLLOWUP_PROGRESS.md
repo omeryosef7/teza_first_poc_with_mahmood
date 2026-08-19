@@ -1070,106 +1070,112 @@ behavioural rows** — which is exactly where ASR lives.
 Also discovered: there is a **fifth** query kind, `semantic_forced_choice` (2,064 rows), which the plan's
 list did not mention. It was run rather than dropped.
 
-### Findings
+### ⛔ RETRACTION F-1 — my own Phase B headline, retracted the same day I published it
 
-Headline condition `natural_doublespeak`, metric `d_surface|proj`, behavioural slot-0. Higher projection
-= more concept-like (the sanity gate fixes the sign: concept cells score above codeword cells at all 32
-layers). All values are negative in absolute terms; **the contrasts are what carry meaning.**
+Commit `ff6c21f1` claimed *"later demo occurrences are MORE concept-like than the first"* as a
+doublespeak finding, and read the query-token deficit as corroborating G1. **A self-review caught that
+this had no matched control.** Both claims are now corrected below. The arithmetic reproduces exactly —
+an independent agent re-derived all 15 numbers without touching my code — but **the reading was wrong**.
 
-#### Q1 — Does Boombness grow across demo occurrences? **Yes, large and monotone in depth.**
+| ⛔ as published in `ff6c21f1` | why dead | what replaces it |
+|---|---|---|
+| "later demo occurrences are more concept-like than the first" as a **doublespeak** result: +1.0971 (d 2.66) @L8, +1.4342 (d 2.64) @L12 | No control condition. `benign_literal` — where **no mapping is taught and there is nothing to become** — shows the same positive gradient (+0.49 @L8, +0.76 @L12). The gradient is condition-general. | The doublespeak-specific quantity is the **excess over control**: +0.612 @L8, +0.682 @L12. Roughly **half** the raw gradient was the control effect. |
+| "the query codeword never becomes bomb-like in behavioural prompts — this corroborates G1 on the rows that matter" | Also uncontrolled. Against `benign_literal` the query deficit in the causal band is **≈0** (−0.032 @L8, −0.056 @L12). | Not supported in L6–L12. The deficit is condition-general there and only becomes doublespeak-specific at L18+ (−1.13). |
+| the contrast n's (324 vs 294) | Unpaired: a prompt with exactly one demo contributes a `demo_first` and no `demo_last`, and that lone demo is the one nearest the query — the position driving the effect. | **Paired within prompt**, n = 294 matched pairs. Effect barely moves (+1.4451 vs +1.4342 @L12) but the composition confound is gone. |
+| `query_minus_demo_all` = −1.0431 @L12 | Row-weighted `demo_all` (1–17 rows/prompt) subtracted from a prompt-weighted `query` (1 row/prompt) — two different units. | **Prompt-weighted**: −0.7973 @L12. The published figure was **31% too large**. |
 
-`demo_last − demo_first`, `d_surface|proj`:
+Six further defects were fixed in the same pass: per-metric layer lists (logit-lens covers 9 of 32
+depths, so a band averaging 8 layers of `d_surface` was averaging 2 of `ll|boombness` and printing them
+side by side); domain- and prompt-clustered SEMs alongside the row-level one (row-level understates
+~2.3×); NaN-safe `n`; a **false provenance string** — the full-dump summary asserted query kinds were
+"never pooled" while pooling all four kinds *and* slots 0/1/2, the exact R-18 defect class.
 
-| L | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 18 | 24 | 30 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Δ | +0.13 | +0.39 | +0.90 | **+1.10** | +1.07 | **+1.43** | +1.75 | +3.04 | +5.67 | +7.17 |
-| Cohen's d | 2.29 | 2.21 | 2.48 | **2.66** | 2.56 | **2.64** | 2.49 | 1.95 | 1.90 | 1.96 |
+### Findings (corrected, control-matched)
 
-The later a codeword sits in the demonstration block, the more concept-like it is — from L2 onward,
-at d ≈ 2–2.7 throughout. This is a **new token-level result**; the previous sprint measured one
-occurrence and could not see it.
+Behavioural, slot-0, `d_surface|proj`, **paired within prompt**. Higher = more concept-like (sign fixed
+by the sanity gate passing 32/32 layers).
 
-#### Q2 — Is the query codeword more or less bomb-like than the demo codewords? **It depends on the query kind, and that dissociation is the interesting part.**
+#### The control test, which is the whole story
 
-`query − demo_all`, `d_surface|proj`:
+`demo_last − demo_first`, paired, by condition:
 
-| L | 4 | 8 | 12 | 16 | 20 | 30 |
+| condition | cell / what it is | L8 | L12 | L18 | n pairs | sem (domain) @L12 |
 |---|---|---|---|---|---|---|
-| **behavioral** | −0.20 | **−0.69** (d −1.11) | **−1.04** (d −1.35) | −2.40 | −3.03 | −6.82 |
-| **semantic_one_word** | +0.30 | **+0.68** (d +1.13) | **+0.86** (d +1.13) | +0.62 | −0.14 | +3.00 |
+| `benign_literal` | A — codeword surface, **no mapping taught** | +0.491 | +0.763 | +1.312 | 228 | 0.129 |
+| `natural_doublespeak` | C — codeword surface, **harmful mapping taught** | **+1.103** | **+1.445** | **+3.058** | 294 | 0.105 |
+| `direct_codeword` | D — codeword surface, mapping **stated** | +0.944 | +1.298 | +3.008 | 24 | 0.151 |
+| `benign_remap` | F — codeword surface, **benign mapping taught** | +1.361 | +1.792 | +3.986 | 24 | 0.162 |
+| `direct_harmful` | B — **concept** surface | −0.745 | −0.794 | −1.238 | 48 | 0.064 |
+| `concept_in_benign_ctx` | E — **concept** surface, benign context | −0.705 | −0.891 | −3.460 | 48 | 0.156 |
 
-Under the **semantic** probe the query codeword *is* more concept-like mid-stack — which is the paper's
-original observation. Under the **behavioural** prompt, the same codeword in the same bank is markedly
-**less** concept-like than the demo tokens, and the gap widens with depth.
+**Every codeword-surface cell (A, C, D, F) is positive. Both concept-surface cells (B, E) are negative.**
+The underlying regularity is that a token's projection on the surface axis *regresses toward zero* with
+repetition, and is re-asserted at the query. That is a property of repeated tokens, not of doublespeak.
 
-The demo-role numbers are byte-identical across the two query kinds (`demo_first` L6–12 = −3.070 vs
-−3.069), which is the internal control: the demo block is the same text, so only the query differs.
+#### What survives, and what does not
 
-**This corroborates G1 from the representational side, on the rows that matter for ASR.** G1 showed
-transplanting the demo block moves the readout +68.9% while transplanting the query codeword moves it the
-wrong way. Phase B shows why: in behavioural prompts the query codeword never becomes the bomb-like thing
-in the first place.
-
-#### Q3 — Which layer band? **The gradient grows monotonically with depth; it does not peak in L6–L12.**
-
-`d_surface|proj` band means (behavioural, slot-0):
-
-| role | L6–L12 | L14–L21 | late L22–L31 | n |
+| contrast | L8 | L12 | L18 | verdict |
 |---|---|---|---|---|
-| demo_first | −3.070 | −7.224 | −14.222 | 324 |
-| demo_middle | −2.028 | −4.437 | −8.237 | 966 |
-| demo_last | −1.983 | −4.378 | −7.898 | 294 |
-| demo_all | −2.233 | −4.996 | −9.398 | 1,584 |
-| query | −2.992 | −7.513 | −15.105 | 348 |
+| doublespeak − `benign_literal` (no mapping) | **+0.612** | **+0.682** | +1.745 | **survives.** ≈4σ against the combined domain-clustered sem. Teaching a codeword a referent steepens the gradient. |
+| doublespeak − `direct_codeword` (mapping stated) | +0.159 | +0.147 | +0.049 | ≈0 |
+| doublespeak − `benign_remap` (**benign** mapping taught) | **−0.258** | **−0.347** | −0.928 | **goes the wrong way** — but n = 24 pairs / 6 domains, sem 0.162. **Underpowered; not established either way.** |
 
-⚠ **Note the tension this creates with the causal result, and do not paper over it.** The
-*representational* demo gradient is largest **late** (L22–L31), but the *causal* `project_out` effect on
-external ASR is confined to **L6–L12** and is null from L16 outward. The layers where the signal is
-biggest are not the layers where removing it changes behaviour. That is a Phase E question, and it is
-now sharper than the plan posed it.
+**The finding is that the demo-position gradient tracks *"this codeword has a taught referent"*, not
+*"the referent is harmful."*** Against the structure-matched benign control the doublespeak gradient is
+if anything *smaller*. I will not call that a null — at n = 24 pairs it cannot exclude a modest
+difference, and calling an underpowered null a finding of absence is defect **D-9** from Phase A.
+Powering the F cell is now a Phase C/D item.
 
-#### Q4 — Does `d_surface` differ from `d_naive` and `d_context`? **Yes — and the specificity is strong.**
+#### Q2 — the query token, corrected
 
-`demo_last − demo_first`:
+`query − demo_all`, **prompt-weighted**:
+
+| | L8 | L12 | L18 |
+|---|---|---|---|
+| doublespeak, raw | −0.495 | −0.797 | −1.980 |
+| excess over `benign_literal` | **−0.032** | **−0.056** | −1.132 |
+| excess over `benign_remap` | +0.238 | +0.280 | +0.006 |
+
+In **L6–L12 — the band where ablating `d_surface` actually changes behaviour** — the query-token deficit
+is condition-general: essentially zero excess over control. It becomes doublespeak-specific only at
+L18+, outside the causal band. **My earlier reading of this as representational corroboration of G1 is
+withdrawn.**
+
+#### Q3 — layer band (unchanged, and still the interesting tension)
+
+The excess over control grows monotonically with depth: +0.478 (L6), +0.612 (L8), +0.550 (L10),
++0.682 (L12), +1.745 (L18), +4.036 (L24), +6.492 (L30). The representational signal is **largest late**,
+while the causal `project_out` effect is confined to **L6–L12** and null from L16 out. The layers where
+the signal is biggest are not the layers where removing it changes behaviour. **This is now the sharpest
+open question in the sprint and it is Phase E's job.**
+
+#### Q4 — direction specificity (survives, and is the strongest Phase B result)
+
+`demo_last − demo_first`, doublespeak:
 
 | direction | cos with `d_surface` | L8 | L12 |
 |---|---|---|---|
 | `d_surface` | 1.000 | **+1.0971** (d +2.66) | **+1.4342** (d +2.64) |
 | `d_naive` | 0.945 | +1.0048 (d +2.67) | +1.3110 (d +2.78) |
 | `d_context` | 0.188 | **+0.0957** (d +0.35) | **−0.0123** (d −0.03) |
-| `d_inter` | ≤0.24 | **−1.0758** (d −2.90) | −1.3048 (d −2.22) |
+| `d_inter` | ≤0.24 | −1.0758 (d −2.90) | −1.3048 (d −2.22) |
 
-The near-collinear sibling reproduces the gradient; the **near-orthogonal `d_context` shows none**
-(d = −0.03 at L12). So the demo-position gradient is not a generic "later tokens drift" artifact — it is
-specific to the surface axis. `d_inter` moves the *opposite* way at d ≈ −2.9, which is informative rather
-than noise.
+The near-collinear sibling reproduces it; the near-orthogonal `d_context` shows **nothing** (d = −0.03 at
+L12). So the gradient is specific to the surface axis rather than a generic drift. **This is the
+token-level analogue of the AdvBench direction-specificity test**, where `d_context` was also inert
+(Δ +0.0045, p 0.399) despite changing 34.9% of generations — two independent instruments, same sibling,
+same verdict. *(These numbers are the uncontrolled within-doublespeak contrast; the point is the
+comparison across directions, which shares the control.)*
 
-**This is the token-level analogue of the AdvBench direction-specificity test**, where `d_context` was
-also inert (Δ +0.0045, p 0.399) despite changing 34.9% of generations. Two independent instruments, same
-verdict, same sibling.
+#### Q5 — refusalness (unchanged)
 
-#### Q5 — Is refusalness independent at these positions? **Its ordering does not track `d_surface`'s.**
+`refusalness|cos` at `codeword_last`, prompt-level, 816 prompts. At L12 doublespeak (−0.0746) sits
+between `benign_literal` (−0.1031) and `direct_harmful` (−0.0097), but the most refusal-positive
+condition is `concept_in_benign_ctx` (+0.0251), which is **not** the most concept-like on `d_surface`.
+The two orderings come apart — consistent with hypothesis 5.
 
-`refusalness|cos` at `codeword_last`, prompt-level, 816 prompts:
-
-| condition | L12 | L14 | L16 | L18 | L20 |
-|---|---|---|---|---|---|
-| direct_harmful | −0.0097 | −0.0123 | −0.1050 | −0.1279 | −0.1599 |
-| concept_in_benign_ctx | **+0.0251** | +0.0205 | −0.0986 | −0.1311 | −0.1563 |
-| natural_doublespeak | −0.0746 | −0.0478 | −0.1068 | −0.1333 | −0.1453 |
-| direct_codeword | −0.0396 | +0.0195 | −0.0521 | −0.0977 | −0.0988 |
-| benign_remap | −0.0812 | −0.0706 | −0.1331 | −0.1496 | −0.1651 |
-| benign_literal | −0.1031 | −0.0999 | −0.1491 | −0.1642 | −0.1802 |
-
-At L12 doublespeak sits between benign_literal and direct_harmful, as expected — but the most
-refusal-positive condition is `concept_in_benign_ctx`, which is **not** the most concept-like on
-`d_surface`. The two orderings come apart. Consistent with the plan's hypothesis 5 (`d_surface` supplies
-evidence the refusal mechanism uses, rather than being the refusal signal), and with the causal
-decomposition where the two channels interact but neither subsumes the other.
-
-⚠ Caveat: refusalness exists **only for `behavioral` prompts** (960 of 2,352). For
-`semantic_one_word` the join matches 0 prompts. Any Phase C/D metric combining Boombness and refusalness
-is therefore restricted to the behavioural rows.
+⚠ Refusalness exists **only for `behavioral` prompts** (960 of 2,352); the `semantic_one_word` join
+matches 0. Any combined Boombness/refusalness metric is restricted to behavioural rows.
 
 ### Known limitations of Phase B, stated before anyone cites it
 
