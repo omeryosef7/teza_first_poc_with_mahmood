@@ -19,7 +19,7 @@ it is marked `[unverified]` or corrected in place, and the correction is stated.
 - 0.1 Executive summary
 - 0.2 How to read this document, and which source wins
 - 0.3 Glossary
-- 0.4 ⚠ Arm-letter warning — two incompatible schemes
+- 0.4 ⚠ Arm-letter warning — three letter schemes in one document
 - 0.5 A worked example — one prompt family, all four cells
 - 0.6 Token positions — the ~9-token gap that caused three retractions
 - 0.7 Statistics primer
@@ -89,7 +89,7 @@ what moves behaviour.
 |---|---|---|
 | **G1** | Where does the codeword's meaning live? | **Established.** In the demonstration block, not the codeword token. Transplanting only the demonstrations at a single layer (L18) moves the readout **+68.9% of the available span, CI [+51%, +97%]** (24 families, 6 domains). Transplanting the whole prompt is null (+13%); transplanting the query codeword moves it the *wrong* way (−57%). |
 | **G2** | Does Boombness predict attack success? | ⛔ **RETRACTED.** The published ρ = +0.2618 (p = 5e-4, n = 234) was carried by rows that do not belong in an observational correlation. On clean rows the estimate is null three times over: −0.083 (n=60), −0.052 (n=90), −0.066 (n=108, purpose-built powered replication). |
-| **G3** | Can it be removed surgically? | **Established.** Cutting *all* demonstration→readout attention edges at all layers recovers **75.2%** of the deletion ceiling, but **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001) — the redundancy is in the sheer *edge count*. Codeword-scope cuts move the readout the wrong way (+1.33), corroborating G1 from the attention side. |
+| **G3** | Can it be removed surgically? | **Answered — and the answer is no, not by edge cutting.** Cutting *all* demonstration→readout attention edges at all layers recovers **75.2%** of the deletion ceiling, but **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001) — the redundancy is in the sheer *edge count*. Codeword-scope cuts move the readout the wrong way (+1.33), corroborating G1 from the attention side. |
 | **G4** | Is it a usable optimisation objective? | **No.** *Both* signs of the steering coefficient suppress attack success. The single arm that clears a random-control band does so by triggering refusal. No GCG objective was built. |
 
 ### The result that survives, and why it is the sprint's real contribution
@@ -151,7 +151,7 @@ significance under clustering, so that is a pattern, not an established effect.
 
 ### What the sprint did to itself
 
-Sixteen retractions and ten corrections, most of them self-inflicted and self-caught, including the
+Twenty-three labelled retraction entries — 22 distinct events, since progress-log #9 ≡ ledger-2 R-10 — and fourteen corrections (C1…C14), most of them self-inflicted and self-caught, including the
 retraction of one of the four headline findings (G2) on the sprint's second-to-last day, and the discovery
 that **every external-set attack-success number had been judged against an empty request string** and had
 to be re-scored. A measured judge test–retest noise floor (sem 0.0111 on a paired doublespeak delta) sits
@@ -265,15 +265,53 @@ baseline readout and a ceiling readout, so they are comparable across families.
 **Deletion ceiling.** The knockout analogue: the readout value when the demonstrations are removed from the
 prompt entirely.
 
+**`n_examples`.** The number of demonstration sentences carried by a prompt — the attack's "dose". The
+bank holds prompts at `n_examples ∈ {0, 1, 2, 4, 8, 16}`; `n_examples = 0` is a prompt with no
+demonstrations at all, which is not a doublespeak attack and is excluded from most analyses (getting
+that exclusion wrong is correction C6). §6.2 sweeps this variable; several other analyses partial it out
+as a confound.
+
+**Readout keys, written `d_surface|L12|proj`.** Three fields separated by pipes: the *direction*
+(`d_surface`, `d_naive`, `refusalness`, `logit_lens` …), the *layer* it is read at (`L12`), and the
+*normalisation* — `proj` is the raw component of the hidden state along the direction, `cos` is the
+cosine between them, `dot` the unnormalised inner product. `proj` and `cos` are different numbers and
+are not interchangeable: the confound table in §2.4 is on `cos`, the G2 headline predictor is on `proj`.
+
 **Tick.** The project's unit of work-logging — one entry in the execution log, typically 20–40 minutes,
 written whether or not anything succeeded.
 
 **Arm.** One experimental condition in an intervention run. **Read §0.4 before interpreting any arm
 letter.**
 
+**GCG / MAC.** The discrete-token adversarial-suffix optimisers this sprint existed to serve. **GCG**
+(Greedy Coordinate Gradient) repeatedly swaps single tokens in an appended suffix, guided by gradients, to
+maximise some objective; **MAC** is a related coordinate-search variant. The sprint's goal was to give
+such an optimiser a *representational* objective — maximise Boombness — instead of the usual
+"make the model start its reply with 'Sure, here is'" target. Gate G4 is the question of whether that
+objective would work; it does not (ch. 7), and no optimiser was ever run.
+
+**The nine id namespaces, and how to tell them apart.** This document inherits nine independent
+labelling schemes from the sprint's own logs. They are **not one sequence**, and two pairs of them
+collide on the same numbers. Read this before meeting any id anywhere in the text:
+
+| prefix | what it labels | defined in full at | example |
+|---|---|---|---|
+| `RETRACTION #1` … `#9`, also written `#1`…`#9` | withdrawn claims logged in the session-1 execution log, 08-16 → 08-18 | §12.2 (ledger 1), appendix B.1 | `#7`, the fake 4-draw steering band |
+| `R1` … `R5` | the *same* ledger-1 retractions after the project's report compressed nine entries into five rows. `R1` = `#1` and `R5` = `#5`; the middle rows do not map one-to-one | §12.1 | `R1`, the tick-7 layer profile |
+| `R-6` … `R-19` | withdrawn claims logged in the session-2 continuation log, 08-18 → 08-19. **The numbering restarted at 6 because the report's compressed table already held five rows, so `R-7` is *not* `#7`** — `#7` is the steering band, `R-7` is the attention-edge null | §12.2 (ledger 2), appendix B.2 | `R-18`, the G2 retraction |
+| `C1` … `C14` | **corrections** to the sprint's own claims — a number or an explanation changed, but the claim was not withdrawn | appendix B.3 | `C9`, the depth-mismatched L31 claim |
+| `C-1` … `C-10` | a **disjoint** ledger of corrections *to the external critique* — places where the sprint disagreed with its own reviewer. Not the same series as `C1`–`C14` | appendix B.4 | `C-8`, refuting the probe-leakage finding |
+| `T1` … `T18` | defect ids from the external critique's own 18-row table of 2026-08-18 | appendix B.4 | `T1`, the broken comprehension readout |
+| `N1` … `N16` | numbered **negative results** | §12.8 | `N12`, the unanalysable designed variance |
+| `E1` … `E11` | numbered **open limitations and recommended next experiments** | §13.13 | `E9`, the α = 0.25 steering dose |
+| `FM1` … `FM8` | the eight **recurring failure modes** — shapes of error that bit more than once, not individual bugs | §12.4 | `FM4b`, the heterogeneous row set |
+
+The symbol **⛔** anywhere in this document marks a figure that is retracted or superseded and must not
+be cited; appendix A lists every one of them.
+
 ---
 
-## 0.4 ⚠ Arm-letter warning — two incompatible schemes
+## 0.4 ⚠ Arm-letter warning — three letter schemes in one document
 
 The sprint uses arm letters in two different senses, and a third collision with the prompt-cell letters.
 This is the single most likely way for a reader to misread a table.
@@ -281,12 +319,24 @@ This is the single most likely way for a reader to misread a table.
 | context | A | B | C | D | E | F |
 |---|---|---|---|---|---|---|
 | **prompt cells** (ch. 2, and everywhere the *bank* is described) | `benign_literal` | `direct_harmful` | `natural_doublespeak` | `direct_codeword` | `concept_in_benign_ctx` | `benign_remap` |
-| **on-bank interventions** (§10.4, ch. 8) | **add** `d_surface` | — | remove refusalness | remove `d_surface` | — | remove both |
-| **external-set interventions** (§14, ch. 9, ch. 10) | — | **remove** `d_surface` | remove refusalness | remove both | — | — |
+| **on-bank interventions** (plan §10.4, ch. 8) | **add** `d_surface` | remove `d_surface` | remove refusalness | remove both | — | add `d_surface` **+** remove refusalness |
+| **external-set interventions** (plan §14, ch. 9, ch. 10) | — | remove `d_surface` | remove refusalness | remove both | — | — |
 
-So: **"arm D" means a prompt cell in chapters 1–3, "remove `d_surface`" on-bank in chapter 8, and "remove
-both directions" on the external sets in chapters 9–10.** Every chapter names its scheme on first use.
-When in doubt, the artifact filename disambiguates: `clearharm_*` and `advbench_*` use the external scheme.
+Two things to carry from this table.
+
+1. **B, C and D mean the same three interventions in both intervention schemes** — remove `d_surface`,
+   remove refusalness, remove both. What differs is the *population*: on-bank arms run on the generated
+   Doublespeak bank (n = 420 doublespeak prompts, baseline ASR 0.2429), external arms run on AdvBench or
+   ClearHarm (n = 495 or 179, baseline 0.0646 or 0.1061). The denominators, baselines and effect sizes are
+   not comparable across the two, so never carry a number between them without saying which it came from.
+2. **A and F exist only on-bank**, and both *add* `d_surface` rather than removing it — F is the
+   "add Boombness and remove refusal" arm whose large interaction is discussed in ch. 8.
+
+The genuine collision is with the **prompt-cell** letters: "arm D" is the `direct_codeword` prompt cell in
+chapters 1–3 and "remove both directions" in chapters 8–10, and "arm C" is `natural_doublespeak` (the
+attack cell) in chapters 1–3 and "remove refusalness" in chapters 8–10. Every chapter names its scheme on
+first use. When in doubt, the artifact filename disambiguates: `clearharm_*` and `advbench_*` are the
+external scheme, `len_*` and the `§10.4` tables are on-bank.
 
 ---
 
@@ -386,6 +436,15 @@ only in code is a Holm nobody can check.
 Comparing two predictors' incremental R² is only meaningful if each is given the same number of degrees of
 freedom — a rule this sprint broke and then retracted (R-13, ch. 5).
 
+**`sem`.** Standard error of the mean — the sd of a set of paired per-prompt differences divided by the
+square root of the number of pairs. The judge noise floor quoted throughout, sem = 0.0111, is of this
+kind: it is the sem of the per-prompt score change when the *same* generations are re-judged.
+
+**ICC (intraclass correlation).** The share of a variable's total variance that is between domains
+rather than within them. An ICC near 0.5, as the predictor has here, means half the spread in the data
+is "which domain is this" — which is why treating prompts as independent (pseudo-replication) badly
+overstates significance, and why the clustered estimands above exist.
+
 **Wilson interval.** A binomial proportion interval that behaves near 0 and 1. Used for i.i.d. rates; it
 **understates** uncertainty on clustered data, and artifacts label it `wilson95_IID_UNDERSTATES` for that
 reason.
@@ -412,6 +471,19 @@ noise.
 ## 0.8 Concordance — plan section → report section → chapter here
 
 The project's plan and report are cited by section number throughout the source material. This maps them.
+
+**Reading convention for `§` numbers — apply it everywhere in this document.** A `§` followed by a
+decimal number in the range §0.1–§13.16 (`§0.4`, `§9.5`, `§13.8`) is a section of **this document**.
+Every other `§` points *outside* these pages, to one of the two project documents this handover
+supersedes: the **plan** (`docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`, sections §0–§20) or the **report**
+(`reports/boombness_objective_sprint_report.md`, sections §0–§19 with lettered subsections such as
+`§4b`, `§7b`, `§7c`, `§8b`, `§9b`). Where the sentence does not make the source obvious the text says
+"plan §…" or "report §…". Four collisions are worth memorising, because the like-numbered section here
+will not answer them: **plan §2.6** is the comprehension-control clause ("an intervention that destroys
+comprehension is destructive, not successful"), cited on almost every page; **plan §10.4** is the
+on-bank intervention arm matrix; **plan §12.1 and §12.2** are the two candidate GCG objectives — *not*
+this document's §12.1 and §12.2, which are retraction ledgers; and **plan §18** is the four-way outcome
+taxonomy that produces the label "C, amended".
 
 | plan § | topic | report § | this document |
 |---|---|---|---|
@@ -535,7 +607,12 @@ size of the confound are ch. 2.
 ### 1.5 The intended payoff: a GCG/MAC optimisation objective
 
 The measurement was never the point. Plan §12 specifies turning Boombness into a loss for
-discrete-token attack optimisers — **GCG** and MAC-style variants — with four candidate objectives:
+discrete-token attack optimisers — **GCG** (Greedy Coordinate Gradient: a search that repeatedly swaps
+individual tokens of an adversarial suffix, using the gradient of a differentiable loss to propose
+candidate substitutions) and **MAC**-style variants of the same idea — with four candidate objectives.
+Such an optimiser needs a scalar loss that (i) is computable from the model's internals on any candidate
+suffix and (ii) increases monotonically with attack success; the whole point of gates G1–G4 was to
+establish whether Boombness is such a scalar. The four candidates:
 
 | plan § | objective |
 |---|---|
@@ -557,7 +634,7 @@ latent representation — measurable pre-generation with a controlled linear pro
 the Doublespeak analogue and was explicit that if role probes were not fitted, role style must be used
 only as a labelled experimental condition and "do not pretend we have them". They were not fitted:
 `src/boombness/role_probes.py` exists, but no probe was trained on this model, so §11 ran `role_style`
-as a declared categorical proxy (ch. 11).
+as a declared categorical proxy (ch. 6).
 
 The second input is **arXiv 2506.12880, "Universal Jailbreak Suffixes Are Strong Attention
 Hijackers"** (PDF at the repo root; code at `github.com/matanbt/interp-jailbreak`). The plan treats it
@@ -582,7 +659,7 @@ controls including random-direction, random-position and shuffled-label (§2.5);
 confuse lowered ASR with causal understanding*: if an intervention lowers ASR, check with a
 forced-choice comprehension probe whether the model still understands the prompt, and if not, label the
 intervention **destructive**, not successful. §2.6 is the clause that decided the sprint's headline
-result (ch. 12).
+result (ch. 8).
 
 **The four decision gates, as originally specified.** The plan wrote them as section-level decision
 points — §5.4's `decision_gate.md`, §9's decision questions, §10's `causal_claims.md`, §12's "only
@@ -593,7 +670,7 @@ The sprint named them G1–G4 in the progress log on day one and carried them as
 |---|---|---|---|
 | **G1** | §5.4 | Can we make `carrot` internally more `bomb`-like by force? Does it change behaviour, ASR, refusal? Does it preserve comprehension? Which token positions and which layers/windows matter? Is it promising enough for objective extraction? | Yes on the representation — but the lever is the **demonstration block, not the codeword token**; the query-codeword transplant moves the readout the wrong way (ch. 4) |
 | **G2** | §9 | Does prompt-level Boombness predict ASR, alone and controlling for refusalness, role style and the role-confusion proxy? | ⛔ **Retracted.** The original positive correlation did not survive de-contamination and clustered inference; the powered clean re-run is null (ch. 5) |
-| **G3** | §10 | Can Boombness be removed surgically — by attention edge, head, or direction — without destroying comprehension? | Removal works only *en masse*: the retrieval is attention-carried and massively redundant in edge count, with no small sufficient subset (ch. 6) |
+| **G3** | §10 | Can Boombness be removed surgically — by attention edge, head, or direction — without destroying comprehension? | Removal works only *en masse*: the retrieval is attention-carried and massively redundant in edge count, with no small sufficient subset (ch. 4) |
 | **G4** | §12 | Is the signal good enough to become a GCG objective? | **No.** Steering `d_surface` suppresses ASR at **both** signs, which does not license a Boombness-maximising attack objective; no GCG run was launched (ch. 7) |
 
 Plan **§18** fixed the four-way outcome taxonomy the sprint had to choose from, verbatim:
@@ -650,7 +727,7 @@ The reuse decisions that shaped everything downstream:
 |---|---|---|
 | **Reuse as-is**: the house model loader, chat templating, offset-mapping word→token-span lookup, and the intervention primitives (`LayerPatch` with `replace`/`add`/`project_out`; decode-safe all-position ablators; `AttentionKnockout`, which requires eager attention and batch size 1) | our `doublespeak_causality/` | interventions valid *during generation*, not only at prefill |
 | **Reuse as-is**: the StrongReject judge harness, the probe train/eval split-discipline code that raises on leakage, and the RUNMETA/DONE run-directory contract | our repo | the audit trail plan §2.1 requires (ch. 3) |
-| **Copy the math, not the code**: the `Y@dir` einsum giving per-(layer, head, destination, source) attribution along an arbitrary direction; the `topk(q)→sum` aggregator; the decomposition sanity asserts (`Σ_{h,src} Y == attn`, `embed + Σmlp + ΣY == resid[-1]`) as unit tests | IJ | the attention-edge attribution used for G3 (ch. 6) |
+| **Copy the math, not the code**: the `Y@dir` einsum giving per-(layer, head, destination, source) attribution along an arbitrary direction; the `topk(q)→sum` aggregator; the decomposition sanity asserts (`Σ_{h,src} Y == attn`, `embed + Σmlp + ΣY == resid[-1]`) as unit tests | IJ | the attention-edge attribution used for G3 (ch. 4) |
 | **Copy the analysis protocol**: continuous strength axis, aggregate per group before correlating, Spearman, one row per unit, refusal-only confound control | IJ | the shape of the §9 correlation analysis (ch. 5) |
 | **Explicitly do not reuse**: IJ's `get_model_hidden_states` (materialises all-layer attention decompositions, O(L·H·T²·d) — OOM on 12-demonstration prompts), its `results/`-with-config-in-filename convention, and its dead `calc_sim_with_dir` | IJ | avoided an OOM; kept the run-metadata contract |
 | **Write fresh**: `prompt_families.py` (skeleton-aligned demonstration pools, because the alignment defect lives in demo *generation*, one level above the existing prompt primitive) and `tokenization_audit.py` (plan §2.4 had no existing tool) | — | the aligned bank and its audit (ch. 2) |
@@ -661,20 +738,20 @@ alone — the logit-lens readout scoring the generic token `car` on the codeword
 capitalisation variants tokenize as `car` + `rot`), readouts at a patched layer being read *pre*-patch
 because the framework's own hidden-state capture ran before the patch hook, and an L31 readout taken in
 post-norm coordinates against directions fitted on raw block outputs. Two GPU jobs were cancelled
-mid-run and resubmitted. The full bug ledger is ch. 13.
+mid-run and resubmitted. The full bug ledger is ch. 12.
 
 ### 1.8 Models, datasets, judge
 
 | item | value | source |
 |---|---|---|
 | primary model | `meta-llama/Llama-3.1-8B-Instruct`, bfloat16, SDPA attention (eager only for attention knockout) | plan §14; the majority of run directories under `outputs/boombness/` |
-| second model | `Qwen3-14B` — used for the cross-model replication of G2, of the position effect, and of the external-set interventions | ch. 10 |
+| second model | `Qwen3-14B` — used for the cross-model replication of G2, of the position effect, and of the external-set interventions | ch. 11 |
 | third model | `Phi-4-mini-reasoning` — used **only** as a tokenization check (` carrot` and ` bomb` are 1 token; bare `carrot` is 2). **No Boombness experiment ran on it**, despite the plan's replication clause | `docs/BOOMBNESS_SPRINT_PROGRESS.md:3297`; ch. 13 |
 | generated prompt bank | 2,352 rows / 912 families / 6 domains at the time of the tokenization audit; grown to 2,736 rows / 1,008 families on 08-19 when a 384-row `core2x2_slot3` block was added for the G2 re-test | `outputs/boombness/tokenization_audit/audit_20260817_013432_3151000/summary.json`; `data/boombness_prompts/boombness_prompt_bank.jsonl` + `_meta.json`; counts and blocks are ch. 2 |
 | matched families | **240** families hold all four core cells (A/B/C/E) with `n_examples > 0` in the 2,352-row bank — the same 240 that appear as 336 matched families in the grown bank minus the 96 new `core2x2_slot3` families | ch. 2 |
 | bank integrity | 2,352 ok / 0 bad / 0 ambiguous; codeword and concept single-token; **216** families where the exact-swap invariant is defined, **0 alignment violations**; 696 families skipped | same audit summary |
 | external set 1 | **AdvBench held-out — 495 prompts, 16 categories used as clusters, largest `cyber_hacking_malware` at 127 rows (25.7%)** | `data/boombness_prompts/external/advbench_heldout_495.jsonl` |
-| external set 2 | **ClearHarm — 179 prompts, 6 clusters, 127 of them (70.9%) in one**, `other_uncategorized` — which is why its clustered intervals are wide (ch. 8) | `data/boombness_prompts/external/clearharm_179.jsonl` |
+| external set 2 | **ClearHarm — 179 prompts, 6 clusters, 127 of them (70.9%) in one**, `other_uncategorized` — which is why its clustered intervals are wide (ch. 9) | `data/boombness_prompts/external/clearharm_179.jsonl` |
 | judge | **StrongReject rubric** via OpenAI `gpt-4o-mini`, temperature 0, binarised at threshold **0.5**, continuous score always persisted; falls back to `gpt-3.5-turbo` on a parse failure; runs hard-fail above a 5% null-judgement rate | `outputs/boombness/judge/base_20260816_210948_3024689/summary.json` (`primary_threshold: 0.5`, `judge_null_frac: 0.0`, n = 660); `src/boombness/judge_boombness.py:21` |
 
 **Correction to the report, on the 696.** The report glosses the skipped families as forced-choice —
@@ -691,15 +768,16 @@ audit field name is accurate where the prose is not: `n_families_skipped_incompl
 The chapters run roughly in the order the evidence was produced. **Ch. 2** is the identification design
 — the 2×2 cells, the direction algebra, the prompt bank, and how large the alignment confound actually
 was; read it before any chapter that prints a `d_surface` number. **Ch. 3** is the implementation and
-run-artifact census, including where the report's own counts were wrong. **Ch. 4–7** take the gates in
-order (G1 forcing and transplants, G2 correlation, G3 surgical knockout, G4 steering and the GCG
-objective). **Ch. 8** carries the external-set intervention arms on AdvBench and ClearHarm, which is
-where the sprint's one surviving positive causal result lives and where the newest judged arms are
-reported; **ch. 9** the layer profile, **ch. 10** the cross-model replication, **ch. 11** the secondary
-analyses (role style, example-count sweep, position), **ch. 12** comprehension and the §2.6
-destructive-vs-successful distinction. **Ch. 13** is process: the bug ledger, the retraction ledger and
-the known discrepancies. **Ch. 14** is the chronology, the final §18 label, and what a successor should
-do next.
+run-artifact census, including where the report's own counts were wrong. **Ch. 4** takes G1 and G3
+together (transplants and attention-edge knockout — both ask where the codeword's meaning lives), **ch. 5**
+G2 and its retraction, **ch. 6** the secondary analyses (role style, demonstration-count sweep, probes),
+and **ch. 7** G4, steering and the GCG objective. **Ch. 8** carries the §2.6 comprehension control, the
+destructive-vs-successful distinction and the on-bank intervention arms; **ch. 9** the external-set
+intervention arms on AdvBench and ClearHarm, which is where the sprint's one surviving positive causal
+result lives and where the newest judged arms are reported; **ch. 10** the layer profile and the
+direction-specificity test, **ch. 11** the cross-model replication. **Ch. 12** is process: the bug ledger,
+the retraction ledger and the known discrepancies. **Ch. 13** is the chronology, the final §18 label, and
+what a successor should do next.
 
 Three reading rules apply throughout. Retracted numbers always carry the ⛔ marker and the word
 "retracted" or "superseded"; a number without one is current as of 2026-08-19 10:30. Every Δ printed
@@ -834,8 +912,15 @@ clusters), against −0.0344/−0.0374/−0.0314 for `comprehension_usage` and �
 layers carrying a `d_surface|L*|cos` column, only **L1, L4 and L31** are rejected, none in the mid-band.
 The artifact stores all three rejection sets side by side under `holm_rejected_by_family`:
 `m=10_displayed → [4, 31]`, `m=32_available → [1, 4, 31]`, `m=32_displayed_pvalues_only → [31]`; the
-run's own rule is `holm_m = 32`, `holm_family_rule = available`. The full layer-profile treatment is in
-the layer-profile chapter (ch. 10).
+run's own rule is `holm_m = 32`, `holm_family_rule = available`. The full treatment of this profile is in ch. 6.
+
+⚠ **Two different things are called "the layer profile" in this document, and they must not be
+conflated.** The *representational* profile — mean `d_surface|cos` on the C−A contrast at each depth,
+artifact `reanalyze_corrected_d_surface_cos.json` — is the one above, and it lives in ch. 6; it is what
+RETRACTION #1, C7 and R-11 are all about. The *causal* profile — the change in StrongReject score on
+AdvBench when `d_surface` is projected out at each depth, artifact `advbench_layer_profile.json` — is
+ch. 10. They are measured on different populations with different instruments and they answer different
+questions; a depth that is significant in one need not be significant in the other.
 
 ### 2.5 Families, blocks, slots, and the slot pool arithmetic
 
@@ -910,7 +995,12 @@ not exactly 1 were dropped at pool-build time and the drops are recorded per poo
 `_meta.dropped_for_occurrence_ne_1` (largest: `news_report|benign` 58, `city_bridge|remap` 50,
 `game_manual|benign` 42, `lab_safety|remap` 37).
 
-### 2.7 The sha naming trap (defect T11)
+### 2.7 The sha naming trap
+
+*(Filed in the sprint's internal defect log as T11. The `T1`–`T18` series is the external critique's
+defect table of 2026-08-18, tabulated in appendix B.4; that table collapses T11–T17 into one row and
+does not itemise this defect, so the id is given here for traceability against the logs rather than as
+a pointer into the appendix.)*
 
 Carry this one; other chapters point here.
 
@@ -1167,6 +1257,15 @@ The twelve `analyze_*` modules — `analyze_boombness`, `analyze_condition_profi
 flat JSON directly into `outputs/boombness/`. Those 48 flat JSONs are the numeric ground truth cited
 throughout this document.
 
+⚠ **The `gN` in those names is not always a gate number, and there is no gate above G4.**
+`analyze_g1_g3` and `analyze_g2` are named after the decision gates G1/G3 and G2. But `analyze_g8`,
+`analyze_g9`, `analyze_g11` and `analyze_g64` are named after **plan sections**: plan §8 (the
+demonstration-count dose-response), plan §9 (the ASR-on-Boombness regression), plan §11 (role framing)
+and plan §6.4 (the three-metric comparison). Because gate G2 *is* plan §9, the same question is
+addressed by two differently named scripts — `analyze_g2` for the correlation and `analyze_g9` for the
+regression — and both were contaminated by the same filter defect (R-18, ch. 5). The artifact filenames
+inherit the convention: `g2_*`, `g3_*`, `g8_*`, `g9_*`, `g11_*` and `g64_*` should be read the same way.
+
 ### 3.2 The stage graph
 
 ```
@@ -1304,7 +1403,7 @@ an error. At either split the two directions are close to orthogonal at L18 and 
 ### 3.5 The three Boombness readouts, as instruments
 
 Three distinct readouts were implemented. They do **not** agree with one another; the disagreement and
-its consequences are ch. 12's, and the rebuild of the semantic readout (C-6 / R-6 / R-8) is ch. 8's.
+its consequences are ch. 5's, and the rebuild of the semantic readout (C-6 / R-6 / R-8) is ch. 8's.
 
 1. **logit-lens semantic log-odds** (`signals.logit_lens_boombness`) — project a hidden state through
    the final norm and unembedding, take the log-odds of the concept's token ids against the codeword's.
@@ -1564,7 +1663,7 @@ Two donor→recipient pairs run (`PAIRS`, `aggressive_patching.py:210`):
 `all`. **Windows** (which layers): single layers L8/L12/L18/L24, bands L0-4 … L25-31,
 `write_carry_8-21`, and `all`. Crossing scopes × windows × directions × doses gives **145 arm cells per
 pair** in the 2026-08-16 pilot and the 2026-08-18 stratified run, and **165** in the 2026-08-19
-whole-answer run (the extra 20 are the α = 0.25 dose added as experiment E9, §4A.6).
+whole-answer run (the extra 20 are the α = 0.25 dose added as experiment E9, §4A.5).
 
 Two structural facts constrain the design:
 
@@ -1609,7 +1708,7 @@ agreeing does not discharge it — both normalise by the same span. The ceiling'
 (+2.3 to +13.4), so the model does prefer *bomb* over *carrot* there and the **ratio** stays meaningful.
 **G1's direction and ordering are safe; the absolute percentages inherit a ceiling measured in a tail.**
 Fixing it requires an option set that admits synonyms, which changes what is being measured — filed as
-future work, not patched silently. §4A.5 and §4A.6 repeat the marker rather than assume it is carried.
+future work, not patched silently. §4A.4 and §4A.5 repeat the marker rather than assume it is carried.
 
 ### 4A.3 Pilot → stratified → whole-answer: the estimate shrinks as arm selection predicts
 
@@ -2068,7 +2167,7 @@ and **+0.258** in the final block run. Nothing in §4B.6 or §4B.7 depends on it
 
 **Two guard failures inside G3's own machinery**, both fixed:
 
-* **C2/C3 — the movability guard used a blacklist and passed vacuously.** `NULLABLE` was a *blacklist*,
+* **The movability guard used a blacklist and passed vacuously** (audit items C2/C3 of the G3 audit series — not corrections C2/C3 of the sprint ledger in Appendix B.3).** `NULLABLE` was a *blacklist*,
   so every arm not named in it counted as a null control, **including the treatment arms added the same
   day**. On the edgematch run the movability threshold was taken from `dense_two_layer` (0.4959) instead
   of `topk_demo` (0.0782) — **inflated 6.34×** — making the threshold depend on the effect under test.
@@ -2360,8 +2459,10 @@ Every analysis script in the sprint was checked against the same defect. The pat
 | `analyze_g2` | `condition` only (line 484) | ⛔ **G2 RETRACTED (R-18)** |
 
 **Three analyses retracted, five clean** (three retracted; two checked and survived; three were never
-exposed). The stated pattern: *every script that filters by `condition` was contaminated; every script
-that filters by `bank_block` was clean* — the three intervention scripts got it right and the five
+exposed). The stated pattern, with the one qualification the table above supplies: *every script that
+filters by `bank_block` was clean; every script that filters by `condition` inherited the contaminated
+row set* — though two of those five (`analyze_role`, `analyze_g64`) turn out to be immune to it on their
+own populations. The three intervention scripts got it right and the five
 correlational ones got it wrong, which is why all four surviving headline results are causal and none
 are correlational.
 
@@ -2454,7 +2555,7 @@ Matched degrees of freedom, one column each (`boombness_col = d_surface|L12|proj
 |---|---|---|---|---|---|
 | ⛔ @codeword_last, unfiltered | 234 | 0.14111 / 0.17593 / 0.25023 | +0.07430 | **+0.10913** | `g9_three_predictor_cwpos.json` |
 | ✅ @codeword_last, **clean** | 90 | 0.05751 / 0.05125 / 0.09535 | **+0.04410** | +0.03784 | `g9_three_predictor_cwpos_CLEAN.json` |
-| @last token, unfiltered | 234 | 0.00657 / 0.00127 / 0.00657 | +0.00529 | **4.49e-07** | `g9_three_predictor_lastpos.json` |
+| ⛔ @last token, unfiltered | 234 | 0.00657 / 0.00127 / 0.00657 | +0.00529 | **4.49e-07** | `g9_three_predictor_lastpos.json` |
 
 R-13 fixed the degrees of freedom (5-vs-1 → 1-vs-1) and was right to: at matched df the
 codeword-position gap is 1.47×, not the ~5× implied. **What R-13 did not fix was the rows — which is
@@ -2473,7 +2574,7 @@ retains 96.4% (β_pooled +0.05571 → +0.05370) but the within-domain slope is +
 p = **0.807** — it is now the robustness of a null (`g9_three_predictor_cwpos_CLEAN.json`).
 
 `ASR ~ boombness + role_style` is not fitted at all: `analyze_g9`'s role-identifiability gate refuses
-it because `role_style` is confounded with `family_id` in the bank as generated (ch. 11).
+it because `role_style` is confounded with `family_id` in the bank as generated (ch. 6).
 
 ### 5.10 The three-way metric comparison (report §7b / plan §6.4)
 
@@ -2523,8 +2624,8 @@ threshold 0.05/27 = 0.00185). The table is a disagreement map, not nine findings
 ρ(probe, `n_examples`) = +0.612 pooled / +0.633 within-domain, p = 5e-04 at L12. **On a common
 population, no Boombness metric predicts ASR independently of demonstration count.**
 
-**On comprehension the three agree much better** (target = the §2.6 comprehension log-odds; ch. 11
-carries the readout caveat):
+**On comprehension the three agree much better** (target = the §2.6 comprehension log-odds; ch. 8
+carries the readout caveat — ch. 8):
 
 | layer | logit_lens | direction | probe |
 |---|---|---|---|
@@ -2579,11 +2680,11 @@ reproduced: L4 −0.032, L8 −0.094, L12 −0.109, L16 −0.105, L20 −0.068, 
 computed with the control the retracted version lacked.
 
 **Why the separation mattered.** Prompt-level Boombness *rises* with demonstrations (L8 +0.0138 at
-k = 1 → +0.0449 at k = 16; ch. 11), while token-level the final occurrence is *lower* than earlier
+k = 1 → +0.0449 at k = 16; ch. 6), while token-level the final occurrence is *lower* than earlier
 ones. Merged, these would have been narrated as "the codeword accumulates bombness as the prompt
 proceeds", which the token-level data directly contradicts. This is the third place in the sprint
 where position beat meaning on this axis, alongside the predictor × position 2×2 in §5.8 and the
-surface-matched probes (ch. 11).
+surface-matched probes (ch. 6).
 
 ### 5.12 The between-arm contrast, which R-18 does not touch
 
@@ -2673,7 +2774,8 @@ final-codeword Boombness, or only ASR? Six role styles were generated — `plain
 judge `judge/rolebeh_20260818_124509_3812615`; script `src/boombness/analyze_g11.py`).
 180 joined prompts per condition = 36 content stems × 5 styles, 6 domains, 100% crossed: all 36 stems
 present in all 5 styles with `demo_block` and `final_query_text` byte-identical. `plain` is **excluded**
-by design — it shares no families with any role style, so it is not identifiable against them (ch. 9).
+by design — it shares no families with any role style, so it is not identifiable against them (see the
+identifiability caveat at the end of this section).
 Readout `d_surface|L12|proj`; inference clusters on domain and permutes style labels within stem on
 within-stem demeaned values.
 
@@ -2988,8 +3090,8 @@ plainly that none should be built on this axis.
 
 This chapter is the canonical home for additive steering and its dose–response, for the origin of the
 coherence gate, for the random-control band in both its fake and genuine forms, and for the budget
-calibration. The projection (`project_out`) arms on external sets are ch. 8; the composed
-Boombness-minus-refusal arm on the bank is ch. 12; the aggressive-patching sweep that supplies the
+calibration. The projection (`project_out`) arms on external sets are ch. 9; the composed
+Boombness-minus-refusal arm on the bank is ch. 8; the aggressive-patching sweep that supplies the
 manipulation check is ch. 4.
 
 ### 7.1 The objective that would have been built
@@ -2999,7 +3101,7 @@ Plan §12 named four candidate objectives for a discrete-trigger optimizer (GCG 
 | plan § | objective | fate |
 |---|---|---|
 | 12.1 | maximise `boombness(final_codeword_token)` | **not built** — §7.10 |
-| 12.2 | maximise `boombness − λ·refusalness` | **not built** — §7.10; on-bank realisation is arm F (ch. 12) |
+| 12.2 | maximise `boombness − λ·refusalness` | **not built** — §7.10; on-bank realisation is arm F (ch. 8) |
 | 12.3 | maximise prompt-level aggregate Boombness | not built |
 | 12.4 | `boombness + λ·userness + λ·cotness − λ·refusalness` | not built; no Userness/CoTness probe was ever fitted |
 
@@ -3056,7 +3158,7 @@ at every position and every decode step, so "the axis is not inert" is a claim a
 injection, not about the representation at the token the axis was fitted on. A position-scoped add is
 the fair test and was not run.
 
-### 7.3 The spurious 3.5× ASR, and the origin of the coherence gate
+### 7.3 The spurious 3.47× ASR, and the origin of the coherence gate
 
 The first steering run produced exactly the result the sprint was aiming at:
 
@@ -3069,8 +3171,15 @@ The first steering run produced exactly the result the sprint was aiming at:
 
 Read naively: steering Boombness causally drives the attack while the matched control does nothing.
 **It was an artifact.** Structural degeneracy statistics on the same generations
-(`outputs/boombness/coherence_steering.json`, n_scored = 660 per run, pooled over all four
+(`outputs/boombness/coherence_steering.json`, n_scored = 660 per run except the random α = 1 arm at 656, pooled over all four
 conditions):
+
+Column key, all computed per generation and averaged over the arm: **unique-word ratio** = distinct
+words ÷ total words (low means the text is repeating itself); **3-gram repeat** = fraction of
+three-word windows that have already appeared (high means a loop); **top-word frac** = share of all
+tokens taken by the single most frequent word; **truncated** = fraction of generations that hit the
+token budget without emitting an end-of-sequence token. **verdict** is the coherence gate's own
+pass/fail on the thresholds given below.
 
 | arm | unique-word ratio | 3-gram repeat | top-word frac | truncated | verdict |
 |---|---|---|---|---|---|
@@ -3097,8 +3206,9 @@ until the run passes**. `analyze_steering.py` enforces it: `REFUSING TO REPORT: 
   `coherent is not False` passed it. Fixed 2026-08-17 by resolving the linkage through each judge
   run's recorded `config.json["args"]["gens"]` rather than by filename, and a **missing** gate is now
   fatal (`--allow-missing-coherence` to override deliberately). Catalogued with the other
-  guards-that-never-executed in ch. 13.
-- **An empty arm passed outright** (defect T13): with zero scorable rows every ratio was `nan`, and
+  guards-that-never-executed in ch. 12.
+- **An empty arm passed outright** (logged as defect T13 in the external critique's series; see the note
+  in §2.7 on why the T-ids do not all resolve in appendix B.4's table): with zero scorable rows every ratio was `nan`, and
   `nan < MIN_*` / `nan > MAX_*` are all False in IEEE-754, so `fails` was empty and the verdict was
   "coherent". `MIN_SCORABLE_FRAC = 0.50` and `MIN_SCORED_ROWS = 30` were added, both recorded in the
   output dict so a verdict always names the population it was computed on.
@@ -3152,7 +3262,7 @@ a draw actually selects one.
 The same class of defect recurred later in the external-set analysis (**R-12**: `score_behavior.py`
 recursed into composed arms without passing `control_seed`, turning a three-draw ClearHarm band into
 one draw stated three times, with an almost identical fake sd) — that recurrence and the resulting
-`SEED_LOG` provenance change belong to ch. 8 and ch. 13.
+`SEED_LOG` provenance change belong to ch. 9 and ch. 12.
 
 ### 7.6 The genuine band, six times wider
 
@@ -3165,6 +3275,12 @@ The genuine band is **6.09× wider** and straddles zero. Its four draws land at 
 0.2074, 0.2148 (63, 46, 56, 58 of 270) against the 0.2185 baseline. Tested against it with Welch
 degrees of freedom computed from four draws rather than from the prompt-level SE
 (`steering_band_real.json` → `control_band.vs_steering`):
+
+Column key: **diff vs band** is the arm's paired Δ minus the control band's mean; **SE** combines the
+arm's own error with the band's between-draw sd; **t** is their ratio; **df_welch** is the
+Welch–Satterthwaite degrees of freedom for that unequal-variance comparison — small here because the
+band has only three or four draws, which is exactly why a normal reference would have overstated
+significance; **p** is two-sided against t on those df.
 
 | arm | diff vs band | SE | t | df_welch | **p** | clears band? |
 |---|---|---|---|---|---|---|
@@ -3213,7 +3329,7 @@ repaired by the `MIN_SCORABLE_FRAC = 0.50` floor of §7.3 — 202/270 = 0.748 pa
 
 ### 7.8 The same arm at a matched 512-token budget
 
-The gate fired a second time on the composed arms (ch. 12), and everything affected was re-run at a
+The gate fired a second time on the composed arms (ch. 8), and everything affected was re-run at a
 **512-token** budget. `outputs/boombness/coherence_lenfair.json` records the coherence verdicts (all
 six runs coherent, no threshold failures):
 
@@ -3232,7 +3348,7 @@ of its rows as sub-8-word refusals at the larger budget (114 of 420), reproducin
 at a second budget.
 
 The G4-relevant behavioural rows, recomputed for this document on the common 420-prompt doublespeak
-set (arms C, F and Fctrl are ch. 12's):
+set (arms C, F and Fctrl are ch. 8's):
 
 | arm | ASR@0.5 | count /420 | mean StrongReject | refusal | judge run |
 |---|---|---|---|---|---|
@@ -3310,9 +3426,9 @@ driver of compliance.**
 That inversion briefly reopened §12 in a minimisation form ("the runnable objective is a
 *minimisation*, and `project_out` is its idealised limit"). ⛔ **That reopening is withdrawn.** Removal
 is subtraction, not maximisation — it gives an optimizer nothing to ascend. The off-bank removal
-result is real (AdvBench arm B, ch. 8) but it is the same subtraction, and the composed
+result is real (AdvBench arm B, ch. 9) but it is the same subtraction, and the composed
 Boombness-minus-refusal arm of plan §12.2 gains most where the codeword mapping is **never taught**
-and transfers +0.000 to explicitly harmful prompts (ch. 12), so it lacks both properties an attack
+and transfers +0.000 to explicitly harmful prompts (ch. 8), so it lacks both properties an attack
 objective needs. The report's §19 Q10 answer is **no**, with both prior corrections shown rather than
 left as a live reopening.
 
@@ -3400,7 +3516,7 @@ places, which is why this chapter is the canonical home of the story and three o
 |---|---|---|---|
 | `score_behavior.py` | 308 | §2.6 comprehension, report §4b | fixed first; this chapter |
 | `aggressive_patching.py` | 439–445 | G1, the +68%-of-span headline | ported; re-derived result in ch. 4 |
-| `surgical_knockout.py` | 295 | G3, the attention-edge result | ported; re-derived result in ch. 6 |
+| `surgical_knockout.py` | 295 | G3, the attention-edge result | ported; re-derived result in ch. 4 |
 
 All three now call `signals.string_option_readout` (verified at HEAD). Any number computed on the old
 readout is **instrument-retracted** — not merely uncertain — because the instrument could not represent
@@ -3579,7 +3695,7 @@ one judge-noise unit of score.
 
 ### 8.8 Arm F: the interaction, the pre-registration, and the specificity test
 
-At an earlier **192-token** budget arm F already produced ASR **0.4741 (128/270)** against a baseline
+At an earlier **192-token** budget arm F already produced ASR **0.4741 (128/270)** — ⛔ **superseded** by the 512-token **0.5476** below, and never reported — against a baseline
 **0.2185 (59/270)** on the common doublespeak rows (`judge/b104_F_20260817_201825_3672363` vs
 `judge/base_20260816_210948_3024689`) — and the author refused to report it, because his own coherence
 gate flagged `truncated_frac = 0.995` against baseline's **0.522** at that budget (ch. 7). Arm F
@@ -3668,7 +3784,7 @@ degenerate/truncated rows (+0.271, p<1e-5). Four things around it were retracted
    on much wider support — same sign, same order of magnitude, not the same estimator. The median word
    counts and the raw unmatched contrasts are fully verified.]`
 
-The consequences as they stand on 2026-08-19: **"§18 = B was a ceiling effect of refusal" stands** —
+The consequences as they stand on 2026-08-19 (⛔ the **§18 = B** *label* itself is withdrawn by R-9 and replaced by **"C, amended"** — ch. 13): the *observation* behind it, **"B was a ceiling effect of refusal", stands** —
 refusal 0.0571 → 0.6762 under arm A is unambiguous — but **"§12.2 is reopened and worth building" is
 withdrawn**. An attack objective would need the gain to be conditional on the doublespeak mapping and to
 transfer to explicitly harmful requests, and arm F has neither property. The report's §9b lists building
@@ -3769,10 +3885,10 @@ restored its omitted `natural_doublespeak` cell is in ch. 11; the on-bank result
 |---|---|---|
 | size (continuous Δ) | +0.27 to +0.32 | **+0.056** |
 | control | inert on doublespeak only; **reverses** on `direct_harmful` (+0.389) | inert on **every** condition tested |
-| cross-condition | ⛔ appears where the mapping is never taught (`benign_remap` +0.267, `n_examples=0` +0.361) | ⚠ one significant cell of six (R-15) — doublespeak only |
-| cross-model | not tested | ⛔ does not replicate on Qwen3-14B (ch. 11) |
+| cross-condition | ❌ appears where the mapping is never taught (`benign_remap` +0.267, `n_examples=0` +0.361 — live figures; it is the *mechanism*, not these numbers, that retraction #8 withdrew) | ⚠ one significant cell of six (R-15) — doublespeak only |
+| cross-model | not tested | ❌ does not replicate on Qwen3-14B (ch. 11) — a live negative result (N13), not a retraction |
 | off-bank | not tested | ✅ +0.0305 on AdvBench 495 (ch. 9) |
-| comprehension control (corrected readout) | ⛔ none | ✅ +0.2795, p=0.00099 — and +0.3109 for the composed arm D |
+| comprehension control (corrected readout) | ❌ none (§8.5) | ✅ +0.2795, p=0.00099 — and +0.3109 for the composed arm D |
 | status | real number, **mechanism refuted** (retraction #8) | **established, single-model** |
 
 Effect size was consistently the *worst* predictor of which claim survived. Every large effect in the
@@ -3793,7 +3909,7 @@ the plan's **§14**, which asked for ClearHarm and which the sprint had ignored 
 
 The threat was specific, not generic. On the sprint's own bank the largest gain of the composed on-bank
 arm F appeared in the `benign_remap` condition — the one where the carrot→bomb mapping is **never
-taught** (ch. 13). A causal effect that is largest where the mechanism is absent is the signature of a
+taught** (ch. 8). A causal effect that is largest where the mechanism is absent is the signature of a
 **prompt-bank artifact**: the intervention moves something about *these generated strings*, not about
 doublespeak decoding. `external_bank.py`'s module docstring states this as the reason the module exists.
 
@@ -3845,7 +3961,7 @@ decoding, `max_new_tokens` **512** on every external arm — verified from each 
 ⚠ **Arm-letter collision.** The letters A–F also name the **2×2 bank cells** (A `benign_literal`,
 B `direct_harmful`, C `natural_doublespeak`, E `concept_in_benign_ctx`, D `direct_codeword`,
 F `benign_remap`). In this chapter B/C/D are always **intervention arms** in the plan §10.4 sense, never
-cells; and the same letters on-bank (ch. 8, ch. 13) denote the same interventions at different layers,
+cells; and the same letters on-bank (ch. 7, ch. 8) denote the same interventions at different layers,
 doses and prompt sets, so an on-bank "arm B" number is not comparable with an external one. See the
 front matter's arm-label warning box.
 
@@ -3936,7 +4052,7 @@ p_cl = 0.0089, 61/495) — as it should, at cos 0.945 with `d_surface`. So the s
 in the right direction on both halves: near-collinear reproduces, near-orthogonal does not. The full
 design, the cosine geometry and the caveats belong to **ch. 10**; here it is enough that the effect
 survives the strongest control the sprint ran. cos(`d_surface`, `d_context`) at L8 is 0.1884 on the
-heldout fit, 0.2066 on dev.
+heldout fit. [unverified: no committed artifact records the dev-split cosine; `direction_cosines.json` carries the heldout fit only.]
 
 ### 9.7 The AdvBench arm-B control band
 
@@ -3959,6 +4075,11 @@ straddles the baseline and is an order of magnitude below the arm-B effect.
 
 **Excess** = the joint arm's delta minus the sum of the two single arms' deltas; positive means the two
 channels interact rather than adding independently. On AdvBench:
+
+Column key: **estimate** is the excess defined above; **domain-clustered CI** is the 95% interval from
+resampling whole domains; **draws ≤ 0 (of 4000)** is the one-sided bootstrap p-value stated as the share
+of the 4,000 cluster-bootstrap resamples in which the excess came out at or below zero — so 0.025% means
+one resample in 4,000, and 6.15% means the quantity is not distinguishable from zero.
 
 | quantity | estimate | domain-clustered CI | draws ≤ 0 (of 4000) | artifact |
 |---|---|---|---|---|
@@ -4040,7 +4161,7 @@ cluster versus G = 16 with 25.7%. Both facts belong in the record.
 **+0.067737**, domain-clustered CI **[−0.217949, +0.122587]**, 28.15% of 4000 draws ≤ 0
 (`established: false`). Recomputed on the thresholded flag for this chapter: +0.0670, CI
 [−0.2051, +0.1236], 34.5% of draws ≤ 0 — unchanged in kind. ⛔ The superseded empty-goal analysis gave
-**+0.0922, CI [−0.147, +0.133]**, which is the retracted figure the report's open-questions row **N8**
+**+0.0922, CI [−0.147, +0.133]** *(the point estimate reproduces as 0.42947 − (0.10475 + 0.23254) = 0.09218 from the pre-fix Δ pooled values; [unverified: the interval is in no committed artifact — `clearharm_decomposition.json` carries `super_additivity: null` at HEAD and in the working tree])*, which is the retracted figure the report's open-questions row **N8**
 still quotes at HEAD (with a stale "⚠ Currently also blocked by R-14" note).
 
 ### 9.10 ⛔ R-14 — every external ASR was originally judged against an EMPTY GOAL
@@ -4079,7 +4200,7 @@ clearharm_decomposition.json`) versus re-judged — every pre-fix value here is 
 | D | 0.5419 (97/179) | 0.5140 (92/179) | −0.0279 | +0.42947 | +0.39106 |
 | Dctrl | 0.1117 (20/179) | 0.1061 (19/179) | −0.0056 | +0.01257 | −0.00070 |
 
-Every arm moved by ≤ 0.028 on the thresholded rate, ≤ 0.032 on the continuous mean score and ≤ 0.039 on
+Every arm moved by ≤ 0.028 on the thresholded rate, ≤ 0.033 on the continuous mean score and ≤ 0.039 on
 Δ pooled, and the ordering D > C > B > baseline ≈ control held. R-14's cost was therefore **measurement
 validity, not the conclusion** — but "the wrong instrument happened to agree" is not a defence, and
 nobody could have known it agreed without doing the re-judge.
@@ -4156,7 +4277,7 @@ facts; arm B's problem is R-16, its clustered interval, not the control.
    contradicts AdvBench — it is under-powered, not opposed.
 2. Super-additivity **on ClearHarm** (+0.0677, CI [−0.218, +0.123]).
 3. **That Boombness predicts anything.** This is an *ablation* result. Removing a direction changes
-   behaviour; the sprint's predictive claim (G2) was separately retracted (ch. 6), and a direction can be
+   behaviour; the sprint's predictive claim (G2) was separately retracted (ch. 5), and a direction can be
    causally load-bearing without its scalar projection tracking the outcome across prompts.
 4. **That `d_surface` is the larger channel.** On Llama, refusal is: +0.190 cluster-mean against
    `d_surface`'s +0.031 on AdvBench, a 6× difference. The `d_surface` channel is real, controlled and
@@ -4194,7 +4315,7 @@ facts; arm B's problem is R-16, its clustered interval, not the control.
   `coherent: true` on 147–169 of 179 scorable rows, the remainder dropped as too short to score. Coverage
   is 179/179 and 495/495 and no arm dropped rows relative to baseline anywhere, so nothing in the tables
   above is at risk; the gating claim itself should be re-run or removed. (The gate's rationale and the
-  arm it originally caught are in ch. 4.)
+  arm it originally caught are in ch. 7.)
 - The judge could not verify bank identity on any external run: `bank_join.checked` is `false` with
   `hash_verdict: {"ok": false, "unknown": ["no *_meta.json for the bank"]}`. The external banks are the
   one place where a swapped bank would be hardest to notice, and the fix is queued as forward work
@@ -4231,7 +4352,8 @@ mechanistic claim the off-bank result assumed without testing.
 Arm B's exact intervention (`d_surface:project_out:L-L`), the same AdvBench 495 set, same seed, same
 generation and judging pipeline, repeated at **nine depths**: L4, L6, L8, L10, L12, L16, L18, L24, L28
 of a 32-layer model. **Matched norm-preserving random-projection controls** were run at the same depths
-— five in the committed artifact (L4, L8, L12, L18, L24), two added since (L6, L16; §10.4).
+— five in the committed artifact (L4, L8, L12, L18, L24) and four added since (L6, L16, L10, L28; §10.4),
+so all nine depths are controlled.
 
 Controls at every swept depth, rather than one, exist because random-projection damage can itself vary
 with depth: a rising arm curve against an unmeasured control would be exactly the unmatched comparison
@@ -4299,7 +4421,7 @@ still queued at 2026-08-19 10:55, so these two points are arm-only.
 and applied at — is therefore not privileged: the sprint had picked a point *inside* the effective band
 rather than its centre.
 
-### 10.4 The controls: seven of nine depths, all inert
+### 10.4 The controls: all nine depths, all inert
 
 | control | depth | Δ cluster-mean | domain-clustered 95% CI | p_cl | source |
 |---|---|---|---|---|---|
@@ -4647,7 +4769,7 @@ trap: `ds_common.apply_template`'s docstring states that Qwen3 defaults to think
 The fix required relaunching **extraction as well as generation**, because `enable_thinking` changes
 prompt *rendering* (Qwen3 injects an empty `<think>` block into the assistant prefix), not just
 sampling; reading representations off one rendering while generating from another is the defect behind
-an earlier retraction in this sprint (ch. 13).
+an earlier retraction in this sprint (retraction #2, ch. 5; ledger in ch. 12).
 
 **The fix was then itself inert.** `--enable-thinking false` was threaded into `score_behavior.py`'s
 readout templating (`dc.apply_template`) but not into `dc.generate(..., templated=True)`, which does
@@ -4709,7 +4831,7 @@ contrast, cluster-robust over the 6 domains:
 
 All three values reproduce exactly from those artifacts. The mismatched comparison (+0.047 vs +0.026)
 had **understated** the effect by about half; the matched one is +0.047 vs +0.052. The Qwen3 depth
-profile shows why the index mattered: the pooled mean runs +0.021…+0.026 across L8–L31, +0.036 at L34,
+profile shows why the index mattered: the pooled mean runs +0.021…+0.026 across L8–L24 with a dip to +0.007 at L28 and +0.026 at L31, +0.036 at L34,
 +0.033 at L36, +0.027 at L38, and then +0.052 at L39 — the final-layer spike is a real feature that
 stopping at L31 missed.
 
@@ -4766,7 +4888,7 @@ it is a two-model result.
 **negative** (−0.021 to −0.029); on Qwen3 the same layers are **positive** (+0.022 to +0.025) with
 normal ~1.7× naive inflation. The sign reversal is Llama-specific. This was the second independent
 reason to narrow that claim — correction C7 had already shown the band is absent in the *behavioural*
-prompts and present only in the semantic/comprehension probes (ch. 9).
+prompts and present only in the semantic/comprehension probes (ch. 6).
 
 **(c) The token-level positional result replicates, including its control.** The quantity is
 Δ(final occurrence − mean of earlier occurrences) of the codeword on `d_surface|L|cos`, computed within
@@ -4791,7 +4913,7 @@ benign_literal prompts on Llama, **396 / 312** on Qwen3.) The final occurrence o
 control shows the same sign and comparable magnitude** — at L24 and L31 on Qwen3 the benign effect is
 the larger of the two (−0.0656 vs −0.0649; −0.0861 vs −0.0482). This refutes, on two models, the
 retracted claim that the later `carrot` becomes more `bomb`-like, and confirms the positional
-explanation that replaced it (ch. 6): **the last occurrence of a word sits lower on the axis regardless
+explanation that replaced it (ch. 5): **the last occurrence of a word sits lower on the axis regardless
 of what the word means.** Magnitudes are ~3–5× smaller on Qwen3; the sign and the control pattern
 replicate, the effect size does not. A negative finding replicating *with its control* is the strongest
 form of replication the sprint obtained.
@@ -4848,7 +4970,7 @@ harmfulness on natural doublespeak prompts by **+0.0560 against an inert random-
 The Qwen3 arm at matched relative depth (L11 = 27.5% vs Llama's L8 = 25%) was committed on 08-18 with
 the message *"section 0.3 replicates on Qwen3 and is far stronger there"*. ⛔ **That claim was
 retracted within two ticks, self-caught**, by applying the cross-condition check that an earlier
-retraction (#8, ch. 13) had just made mandatory — *does the effect appear where the phenomenon under
+retraction (#8, ch. 8) had just made mandatory — *does the effect appear where the phenomenon under
 study is absent?* Recomputed here across all six prompt cells from
 `judge/qwen3nt_20260817_182352_3606551` (baseline) and `judge/q3_projout_20260818_033658_3909900`
 (arm B), 960 paired prompts, all `judge_status = ok`:
@@ -4929,7 +5051,7 @@ effect. Arm B's own single-random control at L11 is by contrast at **0.0000** on
 
 The off-bank work uses two external harmful prompt sets: **ClearHarm** (179 prompts, 6 topic domains,
 one holding 71% of rows) and a held-out **AdvBench** slice (495 prompts, 16 topic clusters); their
-construction is ch. 8. The Qwen3 ClearHarm run was **length-matched at `max_new 512`** (verified in the
+construction is ch. 9. The Qwen3 ClearHarm run was **length-matched at `max_new 512`** (verified in the
 generation configs), using `d_surface`@L11 and `refusalness`@L20 — the established Qwen3 depths.
 `outputs/boombness/clearharm_decomposition_qwen3.json`, n = 179 on every arm, 0 rows dropped,
 6 domains:
@@ -5020,7 +5142,7 @@ retraction sits directly beneath it and governs.
 **What survives is Llama-specific and solid:** AdvBench arm B, ASR **0.0646 → 0.1071 = 32 → 53 of 495
 compliant completions**, **Δ cluster-mean +0.0305, p_cl=0.0089, CI [+0.0089, +0.0522]**, against an
 inert matched control (−0.0062, p_cl=0.539) — `advbench_decomposition.json`, verified; the
-direction-specificity arm that separates it from generic projection damage is in ch. 8.
+direction-specificity arm that separates it from generic projection damage is in ch. 10.
 
 **Open, not negative:** whether `d_surface` is causal on Qwen3 at all. Its ClearHarm point estimate is
 large (ASR 24/179 → 50/179, refusal 0.749 → 0.564) and merely under-powered at G=6; AdvBench is a
@@ -5094,7 +5216,7 @@ tracked by git), and **48 top-level analysis JSONs**.
 Over the same window the sprint withdrew more claims than it published. This chapter is the record of
 how that happened: what the checking machinery was, what it caught, what it missed, and — the part that
 transfers to other projects — the shapes the errors kept taking. The two full retraction ledgers, the
-C6–C14 correction table and the external critique's 18-row defect table live in **Appendix A**; what
+C1–C14 correction table and the external critique's 18-row defect table live in **Appendix B**; what
 follows is the compressed ledger plus the analysis.
 
 ### 12.1 Two ledgers with colliding ids, and a headline count that does not reconcile
@@ -5141,7 +5263,7 @@ counters were never re-derived. That is itself an instance of FM8 (§12.4).
 ### 12.2 The compressed retraction ledger
 
 One line per entry; **⛔ marks every row, and every figure in the "claim" column is retracted or
-superseded.** Full narratives, artifact paths and the correction ledgers are in **Appendix A**.
+superseded.** Full narratives, artifact paths and the correction ledgers are in **Appendix B**.
 
 **Ledger 1 (2026-08-16 → 08-18), `docs/BOOMBNESS_SPRINT_PROGRESS.md`:**
 
@@ -5155,7 +5277,7 @@ superseded.** Full narratives, artifact paths and the correction ledgers are in 
 | #6 | ⛔ "role framing does not move Boombness", F(5,810)=0.175, p=0.972 | wrong error term on a perfectly crossed design; `plain` and the role styles sit in disjoint `bank_block`s | **reversed**: within-stem F(5,355)=20.30, p=8.1e-18; effect real but small |
 | #7 | ⛔ a 4-draw steering control band, mean −0.0366, between-draw sd 0.0049 | all four "draws" had byte-identical completions; `make_intervention` seeded from a literal, so `--seed` never reached it | **retracted.** n=1 wearing an n=4 label; every derived statistic withdrawn |
 | #8 | ⛔ the *mechanism* behind the arm-F interaction ("a capability channel") | Audit 9 reproduced every number to 4 dp and refuted the interpretation | **interpretation retracted, empirical result stands** |
-| #9 (= C12, ≡ R-10) | ⛔ §6.4's three-metric comparison, `direction_boombness` (n=270) beside `probe_boombness` (n=72) as like-for-like | probe cache built over a superseded 1464-row bank; root cause later re-diagnosed (C13) as a hardcoded `bank_block` filter in `probes.py:199` | **retracted.** On the common 72 rows no metric predicts ASR net of `n_examples` |
+| #9 (= C12, ≡ R-10) | ⛔ §6.4's three-metric comparison, `direction_boombness` (n=270) beside `probe_boombness` (n=72) as like-for-like | probe cache built over a superseded 1464-row bank; root cause later re-diagnosed (C13) as a hardcoded `bank_block` filter in `probes.py:275` | **retracted.** On the common 72 rows no metric predicts ASR net of `n_examples` |
 
 **Ledger 2 (2026-08-18 → 08-19), continuation log + report §0:**
 
@@ -5174,7 +5296,7 @@ superseded.** Full narratives, artifact paths and the correction ledgers are in 
 | R-16 | ⛔ ClearHarm arm B as the load-bearing causal row | not significant under domain clustering at G=6 (p_cl 0.2102) | **withdrawn on ClearHarm**; C and D survive there |
 | R-16 rev. | — | AdvBench, 495 prompts, 16 clusters | **reinstated off-bank**: arm B clears zero (external-sets chapter) |
 | R-17 | ⛔ "removing `d_surface` raises external ASR in both models", Llama +0.083 / Qwen3 +0.131, both pooled | neither Qwen3 number survives clustering; the prediction was pre-registered and was wrong | **withdrawn.** Cause is a compliance floor — Qwen3 complies with 0.8% of AdvBench (cross-model chapter) |
-| R-18 | ⛔ G2: "Boombness predicts attack success, ρ=+0.307 pooled at L12, n=234, 6/6 domains, p<5e-4" | `analyze_g2.py:477` filtered on `condition` with no `bank_block` filter; 31% of the 234 rows are sibling families sharing demonstrations, 31% had codeword readability experimentally manipulated | **retracted.** On the 90 independent unmanipulated rows ρ within-domain −0.0518, p_perm 0.658; verdict is "not established", not "absent" |
+| R-18 | ⛔ G2: "Boombness predicts attack success, ρ=+0.307 pooled at L12, n=234, 6/6 domains, p<5e-4" | `analyze_g2.py:484` filtered on `condition` with no `bank_block` filter; 31% of the 234 rows are sibling families sharing demonstrations, 31% had codeword readability experimentally manipulated | **retracted.** On the 90 independent unmanipulated rows ρ within-domain −0.0518, p_perm 0.658; verdict is "not established", not "absent" |
 | R-19 | ⛔ "both probes are 2–4× more predictive of ASR at the codeword token than at the last token" | `analyze_position`, `analyze_g64`, `analyze_role` share R-18's `condition`-only filter | **half wrong.** Full-set ratios verified (`d_surface` 2.01×, refusalness 4.15×); on the clean n=90 set the surviving R² is **0.0575** (`g9_three_predictor_cwpos_CLEAN.json`, verified). The clean *last-position* counterpart has no committed artifact, so the "1.18×" ratio is [unverified: no `g9_three_predictor_lastpos_CLEAN.json` exists in any commit] |
 
 The blast-radius audit that followed R-18 produced the sprint's sharpest structural finding: **every
@@ -5212,8 +5334,8 @@ threshold.** Three consequences, all standing:
 
 1. **This is the floor under every ASR number in this document.** Any paired delta smaller than ≈0.011
    on a doublespeak-sized sample is inside judge noise and cannot be interpreted, whatever its
-   clustered p-value says. It is what makes the arm-F interaction credible (+0.262 = **24×** the
-   doublespeak sem) and what killed a claim outright: **arm C vs baseline is −0.013, i.e. 1.2× the sem —
+   clustered p-value says. It is what makes the arm-F interaction credible (F − base = +0.2824 = **25×** the
+   doublespeak sem) and what killed a claim outright: **arm C vs baseline is +0.0101, i.e. 0.9× the sem —
    literally indistinguishable from re-judging the same data.**
 2. **The floor is a variance component that appears in none of the reported intervals.** The cluster
    bootstrap and the CR1 sandwich (see the glossary) resample *prompts and domains*; both condition on
@@ -5241,7 +5363,8 @@ noise-floor reading belongs here:
 Δ and its CI are on the continuous StrongReject score (cluster-mean estimand); the ASR@0.5 column is the
 thresholded rate, shown for scale. Run directories: `judge/abgL8_context_20260819_100335_1734759`,
 `abgL6_Bctrl_20260819_100335_1734757`, `abgL16_Bctrl_20260819_100335_1734758`. The `d_naive` arm (cos
-0.945 with `d_surface` at L8) had not judged at the time of writing.
+0.945 with `d_surface` at L8) judged at 10:52 and reproduces the effect: +0.0449, p_cl 0.0089, 61/495 —
+**4.0× the floor** (§10.7).
 
 The disciplined reading of the specificity row is therefore **not** "`d_context` does nothing" but
 "`d_context`'s effect, if any, is below what one judge pass can resolve" — the point estimate and most of
@@ -5318,6 +5441,12 @@ Audits ran on a roughly 4-hourly cadence, each an independent agent or fan-out s
 `src/boombness/*.py` plus scalar JSON, and **forbidden from reading generations or prompt text** — a
 deliberate restriction, so that an auditor could not talk itself into a conclusion from the outputs.
 
+The id column switches scheme part-way down, and both schemes appear elsewhere in this document. The
+first three audits were logged only by the work-tick they ran in (see *Tick* in §0.3) and are cited as
+"tick-8", "tick-16", "tick-25"; from 08-17 the project began numbering audits in their own series, cited
+as "Audit 4" … "Audit 11". **The two series are unrelated** — Audit 4 is not tick 4 — and there is no
+block labelled Audit 1–3.
+
 | audit | when / scale | what it produced |
 |---|---|---|
 | tick-8 | 08-16, 34 agents, 30 candidates → 25 confirmed, 9 result-corrupting | **retraction #1**; `reanalyze_corrected.py` written |
@@ -5338,7 +5467,10 @@ handed to a *separate* adversarial verifier who is asked to find what the patch 
 * **Session 1 (2026-08-18):** 9 agents, 7 killed by a session limit mid-task; 3 verifiers reported and
   **all 3 returned INCOMPLETE**, each finding real further defects in the patch it was checking. Suite:
   338 passed, 6 failed (six pre-existing `module_imports_without_torch` checks in legacy files).
-* **Phase 1 (2026-08-19):** **14 agents — 7 fix agents over disjoint modules plus 7 adversarial
+* **Phase 1 of the post-critique repair programme (2026-08-19)** — *not* phase 1 of the plan's
+  eight-phase execution order (§1.6), and not the `P1.1` commit tags of day zero; the repair programme's
+  phases 1–4 are the waves in which the external critique's 18-row defect table was worked off, and
+  appendix B.4's status column refers to these: **14 agents — 7 fix agents over disjoint modules plus 7 adversarial
   verifiers — 0 errors, and all 7 verifiers returned INCOMPLETE.** That is 7 of 7 after 3 of 3, so **the
   observed base rate for "a fix is complete as submitted" in this project is 0 of 10.** The test suite
   went **338 → 584 passing**, consistent with the current census of 588 `def test_` definitions across
@@ -5369,7 +5501,7 @@ a load-bearing claim, and none of the three was in the retraction log**: the com
 (`analyze_steering.py:151`, whose committed artifact was therefore pre-fix and whose fix commit had never
 executed), and retraction #3 only half-applied — the edge *ranking* still sitting at the retracted
 destination token (`surgical_knockout.py:271`, → R-7). The 31 confirmed findings became an 18-row defect
-table with statuses `open → fixed → verified`; that table is in **Appendix A**. The G4 re-run is the
+table with statuses `open → fixed → verified`; that table is in **Appendix B.4**. The G4 re-run is the
 clearest picture of what a broken-then-fixed guard costs: all point estimates came back **bit-identical**
 and every interval came back **1.03–1.69× wider**.
 
@@ -5429,9 +5561,10 @@ the positive findings. The load-bearing ones, with their home chapters:
   ASR at **both** signs. This is why the planned GCG objective was never built (steering chapter).
 * **N2 / N15** — the Boombness↔ASR correlation does not replicate on Qwen3-14B, and **G2 itself is
   retracted** by R-18 (within-domain ρ = −0.0518, p_perm 0.658 on 90 clean rows).
-* **N3** — the codeword's final occurrence becomes *less* concept-like, not more (layer-profile chapter).
+* **N3** — the codeword's final occurrence becomes *less* concept-like, not more (§5.11, replicated in §11.5).
 * **N4** — the three Boombness metrics disagree **in sign** about ASR at L12 and share only 72 of 270 rows.
-* **N5** — transplanting the query codeword moves the readout the **wrong way** (−71% of span), which is
+* **N5** — transplanting the query codeword moves the readout the **wrong way** (−57.0% of span on the
+  current whole-answer readout; the superseded ⛔ −71% figure is Appendix A's), which is
   precisely what makes G1 positive.
 * **N13** — the cross-model causal replication is **not established**: Qwen3 complies with only 4/495
   AdvBench prompts, and an intervention cannot be measured against a floor (cross-model chapter).
@@ -5537,7 +5670,7 @@ Work was done in **two sessions**, separated by a hard break:
 | 2 | 08-19 00:25 (`e31aa96e`) → 10:06 (HEAD) | still open | inherited-state audit, AdvBench, layer profile, R-13…R-19, §15 and §18 closed |
 
 Session 1 was structured as numbered "ticks" (see the glossary) with a scheduled independent audit every
-four hours; the pattern that produced the sprint's nineteen retractions is described in the process
+four hours; the pattern that produced the sprint's twenty-two distinct retractions is described in the process
 chapter. Session 2 opened with an inherited-state audit before any new work (§13.5).
 
 ### 13.2 2026-08-16 — bank, instrument, first gate answers, first retraction
@@ -5658,10 +5791,11 @@ they were resubmitted as jobs 767100–103.
 **The outage cost nothing material.** All GPU work submitted beforehand had already completed, and the
 judge streams run on the login node against the OpenAI API, so they were never affected. Its only lasting
 consequence was bookkeeping: for the rest of the morning, four of the nine layer-profile depths were
-**arm-only** measurements. As of 10:30 the L6 and L16 controls have judged and are inert, retro-fitting
-two of the four; L10 and L28 were still judging (§13.14). The five originally controlled depths
-(L4/8/12/18/24, controls spanning −0.0066 to +0.0007) already bracket the band on both sides, so the
-band's *existence* never depended on the edge controls — only the sharpness of its *edges* does.
+**arm-only** measurements. All four resubmitted controls had judged by 10:52 and all four are inert
+(L6 −0.0033, L16 −0.0003, L10 +0.0047, L28 +0.0030), so **the profile is now controlled at all nine
+depths** (§10.4). The five originally controlled depths (L4/8/12/18/24) already bracketed the band on
+both sides, so the band's *existence* never depended on the edge controls — only the sharpness of its
+*edges* did, and that too is now measured (§10.4).
 
 ### 13.7 The parallel non-Boombness workstream
 
@@ -5684,6 +5818,15 @@ accounted for: 273 Boombness commits and 91 idle ticks.
 
 Compressed from the report's gate table: each row carries the verdict, one headline number, and where the
 evidence lives. Superseded verdicts live in the retraction table and never here.
+
+**How to read the id column.** The first four rows are the sprint's four pre-specified decision gates,
+**G1**–**G4**, each tagged with the plan section that specified it. The remaining rows are *not* gates:
+they are the extra decision rows the project's report added as the work went beyond the original four,
+and they are named after the plan section that motivated them. **§10.4-D** is the on-bank arm D (remove
+both directions) taken off-bank; **§14-B** is external-set arm B (remove `d_surface` alone); **§14-L**
+is the depth localisation of that arm; **§14-SA** is the super-additivity of arms B and C; **§2.6** is
+the plan's comprehension control; and **FINAL (§18)** is the plan's four-way outcome label. None of
+these labels points at a section of *this* document.
 
 | gate | question | verdict | headline number | evidence |
 |---|---|---|---|---|
@@ -5896,8 +6039,8 @@ Three problems survive in the deliverables at HEAD and are stated so the next re
    place, but its header still reads *"§18 settles at B"* against the report's settled **C, amended**.
 2. The report's **§8 process table** is headed "sixteen retractions, ten corrections, seven dead guards"
    but enumerates only **R1–R5**; the remaining fourteen (R-6 … R-19) are documented in the §0 retraction
-   table and the continuation log, not in §8. The heading's count is itself stale — **nineteen** numbered
-   retractions exist.
+   table and the continuation log, not in §8. The heading's count is itself stale — **23** labelled
+   retraction entries exist across the two ledgers (**22** distinct events, since #9 ≡ R-10).
 3. The report cites retracted figures as live in three paragraph-form places: **§8b/N2** quotes
    "ρ≈+0.307 at L12 on Llama" (retracted by R-18); **§8b/N5** quotes the G1 query-codeword transplant as
    **−71%** where the current re-derived value is **−57.0%**; and **§19's Q9** still carries "the
@@ -5917,11 +6060,11 @@ meaning is **retrieved from the demonstrations at answer time**, not stored in t
 retrieval is attention-carried with the redundancy in edge *count* (G3). That **removing** `d_surface`
 raises attack success on 495 external harmful prompts with no doublespeak wrapper (32 → 53 of 495,
 Δ_cl +0.0305, p_cl=0.0089), against an inert random control, a null `d_context` arm at the same layer, and
-a hard depth boundary between L12 and L16; that it interacts super-additively with refusal removal
+a steep four-layer roll-off to exactly zero between L12 and L16; that it interacts super-additively with refusal removal
 (+0.0268, CI [+0.0029, +0.0584] beyond a matched random triple); and that the same projection **improves**
 the model's coded reading rather than damaging it (+0.2795, p=0.0010).
 
-**What it retracted.** Nineteen numbered retractions, of which the load-bearing ones are: G2 — Boombness
+**What it retracted.** Twenty-two distinct retractions (23 labelled entries across two ledgers), of which the load-bearing ones are: G2 — Boombness
 does **not** predict attack success (ρ_within −0.066, p=0.493 on 108 independent prompts, against a
 published +0.2618, p=5e-4); "Boombness beats refusalness 3.7×"; every external-set ASR judged against an
 empty goal string; a control band of four byte-identical draws; and half the localization result. The
@@ -5930,7 +6073,7 @@ fits — the label is **C, amended**.
 
 **What it leaves open.** Whether the effect is doublespeak-specific or harm-general (E4). Whether
 `d_surface` is a concept-surface direction or a carrot-detector (E6). Whether it is causal on a second
-model at all (R-17, E11). Whether `d_naive` reproduces the effect, which is judging now. And the mechanism
+model at all (R-17, E11). And the mechanism
 itself: plan §13's six criteria score two met, three partial, one **No** — so this is a documented causal
 channel with a directional null attached, not a mechanism.
 
@@ -5972,16 +6115,16 @@ exemptions are legitimate; the ones that are not are listed in **A.2**.
 | **"`d_naive` manufactures signal where the identified direction finds none"** | progress log; **and laundered into a collaborator-facing summary** | ⛔ **RETRACTED #4.** Sourced entirely to the already-retracted tick-7 section — a retracted number copied forward into a document that did not carry its retraction | **Reversed**: in the mid band the identified direction finds a real *negative* displacement and `d_naive` is null, so `d_naive` **attenuates** a real effect. "Roughly doubles" survives at L4/L8/L12/L31 (1.75–2.4×) |
 | **"Boombness beats refusalness 3.7×"** (and its own predecessor, ⛔ **"40×"**, corrected to 3.7× by C2 before both died) | report §7b; short update; progress log | ⛔ **RETRACTED #5.** The two probes were read at **different tokens** — `d_surface` at `codeword_last`, refusalness at the last prompt token. 3.7× was the most favourable of the four possible cross-position pairings; it survived nested CV and leave-one-domain-out and was still an artifact | At matched position the ratio **inverts to 0.80**: refusalness best-layer R² 0.0386 → **0.1759**, `d_surface` unchanged at **0.1411**. `position_2x2.json` (ch. 5) |
 | **"2–3× the controls"** (steering) | report §4, short update | ⛔ **CORRECTION C3.** Never computed, and sign-dependent — the quantity is a ratio of signed deltas | Recomputed as paired contrasts: `+0.25 − orthogonal` = **−0.0838 ± 0.0230**, z = −3.6 (ch. 7) |
-| **`direct_codeword` ASR 0.583**; doublespeak refusal advantage **+7.30 pp** (7.4%) | report §1 headline ASR table | ⛔ **CORRECTION C6.** Population mismatch: the ASR table used all 270 rows, the headline correlation used the 234 with `n_examples ≥ 1`. The 12 zero-demonstration rows were all ASR = 1.0 and carried the entire gap | `direct_codeword` ASR **0.375**; doublespeak refusal **0.9%** (ch. 2) |
+| **`direct_codeword` ASR 0.583**; doublespeak refusal advantage **+7.30 pp** (7.4%) | report §1 headline ASR table | ⛔ **CORRECTION C6.** Population mismatch: the ASR table used all 270 rows, the headline correlation used the 234 with `n_examples ≥ 1`. The 12 zero-demonstration rows were all ASR = 1.0 and carried the entire gap | `direct_codeword` ASR **0.375**; doublespeak refusal **0.9%** (ch. 5) |
 | **"the L31 effect replicates on Qwen3-14B"** | report §8, cross-model section | ⛔ **CORRECTION C9.** Depth-mismatched: Llama has 32 layers (L31 = 97% depth, the final block), Qwen3-14B has 40 (L31 = 78%, a mid-late block) | Re-run at matched depth, where it **does** replicate cleanly: Llama L31 **+0.047** vs Qwen3 **L39 +0.052** (ch. 11) |
 | **G1 CI "+23% to +135%"** | report §2 | ⛔ **A chimera** (Audit 4 pt 2): L8's lower bound welded to L18's upper bound — two different arms' intervals reported as one | The single-arm interval for `transplant demos_only L18` (ch. 4) |
 | **G1 "+84% of span, CI [+57%, +105%], n = 8 families, 2 domains"** | report §2; §8b; the limitations list | ⛔ **R-8, superseded.** Beaten by the project's own stratified replication; separately, the `semantic_logodds` readout is structurally biased (the concept has 4 single-token variants, the capitalised codeword is multi-token) | **+68%** (`frac_of_span` 0.6808) on **24 families / 6 domains**, `g1_stratified.json`; re-derived on the corrected whole-answer readout it moved to **+68.9 vs +68.1**, i.e. not at all (ch. 4) |
 | **G3 ceiling recovery 84.3%** (exactly `−9.707864 / −11.508745` = **84.35%**) and the edge counts **56,832** (all-layers) / **3,552** (two-layer), from the 6-family run | report §2 / §10; `g3_dstfix.json`, `g3_edgematch.json` | ⛔ **R-7, arithmetic superseded.** The edge *ranking* was still computed at the final codeword occurrence — retraction #3's destination — while the readout sits ≈9 tokens later. The 6-family run also failed its own option-mass check: the `all_layers_demo` arm the 84% rested on has option mass **0.0165**, 33× below every other arm, `reportable = False` | **75.2%** (`−13.436759 / −17.878934`) and **81,707 / 5,107** edges, at 24 families with `--dst both` and ranking at `readout_pos`. `g3_wholeanswer_block24.json` (ch. 4). The *claim* — 6.25% of demonstration edges does nothing however distributed — was **discharged, i.e. re-established**, on 2026-08-19 and is live |
 | **Role framing "does not move Boombness" — a *tight* null**, F(5,810) = **0.175**, p = **0.972**, style spread **3.6%** of the within-style sd; and the prose "role definitively does not change Boombness" | report §5 / §11; the known-issues list ("the null is tight") | ⛔ **RETRACTED #6.** Wrong error term. The design is perfectly crossed (72 complete 6-style stems) but the pooled denominator was almost all *between-stem* variance. `plain` and the role styles also sit in **disjoint `bank_block`s** with zero family-id overlap, so "held fixed" was false | Role framing **does** move Boombness: paired within-stem **F(5,355) = 20.30, p = 8.1e-18**, 11/15 pairwise gaps survive Bonferroni; correct within-stem residual sd **0.0082** (14× smaller), style spread 53.1% of it. Absolutely small (largest gap 0.0116 = 4.1% of the grand mean). `g11_role_full.json` (ch. 6) |
-| **The 4-draw steering control band**: draws −0.0343 / −0.0338 / −0.0440 / −0.0343, mean **−0.0366**, between-draw **sd 0.0049**, and everything derived from it — "+0.25 clears the band, **t = −3.23, p = 0.0014**", **+0.0778 ± 0.0241**, **−0.0375 ± 0.0206**, and the prose "highly reproducible across four independent draws" | report §4 steering table; short update; `steering_analysis.json` → `control_band` | ⛔ **RETRACTION #7.** All four "draws" had **byte-identical completions** (sha256 `e4a15fcb` ×4): `make_intervention` seeded the control from the literal `20260816 + L`, so `--seed` never reached it. The band was **n = 1 wearing an n = 4 label** and the 0.0049 was judge noise on one generation set | Genuine 4-draw band: draws +0.0120 / −0.0551 / −0.0097 / +0.0046, mean **−0.0120**, between-draw **sd 0.0301** (6.1× larger), and the clearance falls to **p = 0.043**. `steering_band_real.json` (ch. 7) |
-| **The ClearHarm 3-draw control band**, between-draw **sd 0.0048** | `clearharm_decomposition.json` → `control_band`; report §7c as first written | ⛔ **R-12.** `score_behavior.py:123` recursed into **composed** arms without passing `control_seed`, so three draws launched at `--seed 20260901/2/3` drew the same direction pair and produced byte-identical `gens.jsonl` (sha256 `276b6af46eb68a76` ×3). Retraction #7 re-created three weeks of code later, in the *composed* branch of the same one-of-two-paths fix | Real band, three **distinct** generation sha256s (`61249763…`, `3b962119…`, `485698e9…`), mean ASR 0.1024, between-draw **sd 0.0129** — the fake band understated draw-to-draw variance **2.7×**. `clearharm_decomposition_regoal.json` (ch. 9) |
+| **The 4-draw steering control band**: draws −0.0343 / −0.0338 / −0.0440 / −0.0343, mean **−0.0366**, between-draw **sd 0.0049**, and everything derived from it — "+0.25 clears the band, **t = −3.23, p = 0.0014**", **−0.0778 ± 0.0241**, **−0.0375 ± 0.0206**, and the prose "highly reproducible across four independent draws" | report §4 steering table; short update; `steering_analysis.json` → `control_band` | ⛔ **RETRACTION #7.** All four "draws" had **byte-identical completions** (sha256 `e4a15fcb` ×4): `make_intervention` seeded the control from the literal `20260816 + L`, so `--seed` never reached it. The band was **n = 1 wearing an n = 4 label** and the 0.0049 was judge noise on one generation set | Genuine 4-draw band: draws +0.0120 / −0.0551 / −0.0097 / +0.0046, mean **−0.0120**, between-draw **sd 0.0301** (6.1× larger), and the clearance falls to **p = 0.043**. `steering_band_real.json` (ch. 7) |
+| **The ClearHarm 3-draw control band**, between-draw **sd 0.0048** | `clearharm_decomposition.json` → `control_band`; report §7c as first written | ⛔ **R-12.** `score_behavior.py:123` recursed into **composed** arms without passing `control_seed`, so three draws launched at `--seed 20260901/2/3` drew the same direction pair and produced byte-identical `gens.jsonl` (sha256 `276b6af46eb68a76` ×3). Retraction #7 re-created a day later, in the *composed* branch of the same one-of-two-paths fix | Real band, three **distinct** generation sha256s (`61249763…`, `3b962119…`, `485698e9…`), mean ASR 0.1024, between-draw **sd 0.0129** — the fake band understated draw-to-draw variance **2.7×**. `clearharm_decomposition_regoal.json` (ch. 9) |
 | **Steering α = 1 gives "3.47× ASR"** — ASR@0.5 **0.2185 → 0.7593** on n = 270 doublespeak rows, with a matched random control at 0.0000 | never published outside the progress log — caught before it reached a report | ⛔ **Retracted as degenerate.** Structural statistics on the same generations: unique-word ratio **0.302**, 3-gram repeat **0.551**, truncated **1.000**. The intervention did not make the model comply; it broke generation and the judge scored a harmful-adjacent loop as success | Nothing replaces it; the arm is unreportable. It produced `coherence_gate.py` (uniq ≥ 0.45, trigram repeat ≤ 0.30, top-word ≤ 0.25, truncated ≤ 0.90) and the rule that no intervention ASR is reportable until the run passes (ch. 7) |
-| **Arm F ASR 0.474** (192-token budget) | progress log; never reported, by the author's own gate | ⛔ **Superseded**, and correctly withheld: `truncated_frac = 0.995` against a 0.43 baseline, so the score was confounded with generation length | **0.5476** at 512 tokens, with the direction of the move pre-registered before judging (ch. 8) |
+| **Arm F ASR 0.474** (192-token budget) | progress log; never reported, by the author's own gate | ⛔ **Superseded**, and correctly withheld: `truncated_frac = 0.995` against a 0.522 baseline (270 doublespeak rows), so the score was confounded with generation length | **0.5476** at 512 tokens, with the direction of the move pre-registered before judging (ch. 8) |
 | **The "capability channel"** mechanism behind the arm-F interaction, and "the random composition does nothing" | report §4/§12 prose; short update | ⛔ **RETRACTION #8.** Audit 9 reproduced every headline number to 4 dp and refuted the *interpretation*: the random composition is a **better** jailbreak than `d_surface` on explicitly harmful prompts (`Fctrl − base` = +0.389, p = 0.008, refusal 0.96 → 0.54), and arm F's gain is **+0.267 on `benign_remap`**, where the codeword→concept mapping is never taught | The **empirical** interaction survives — `F − C` = **+0.272**, `F − Fctrl` = **+0.315** — with no mechanism attached. Also: ≈45% of the +0.3997 interaction is the mechanical effect of arm A refusing on 284/420 rows (ch. 8) |
 | **§6.4's three-metric comparison** — `direction_boombness` (n = 270) quoted beside `probe_boombness` (n = 72) as like-for-like; and the phrase **"metric of record"** | report §6.4 / §7b | ⛔ **RETRACTION #9 = C12 ≈ R-10.** Different populations. The probe reads from a representation cache built over a **1464-row** bank; the bank was later regenerated to 2352 rows, so whole `bank_block`s have no cached representation. The artifact recorded the n's; the prose did not read them. ⚠ Its stated **root cause was itself wrong** (C13): the real cause is `probes.py:199`, where probe regime `d5` is **hardcoded** to `bank_block == "core2x2"` | On the common **72** rows, **no** metric predicts ASR once `n_examples` is partialled out. `g64_metric_comparison/` (ch. 5) |
 | **"the mid-band attenuation does not survive multiplicity correction — `holm_rejected` True only at L4 and L31"** | report §4 / §8 | ⛔ **R-11.** The Holm family size was undocumented and the code and its docstring disagreed | **L1, L4 and L31** at the honest family (m = 32, every layer actually tested). Conclusion unchanged — none is in the L16–L24 mid band. `reanalyze_corrected_d_surface_cos.json` → `holm_rejected_by_family` (ch. 6) |
@@ -5998,7 +6141,7 @@ exemptions are legitimate; the ones that are not are listed in **A.2**.
 | **The LOCALIZATION result: "both probes are 2–4× more predictive of ASR at the codeword token than at the last token"** — listed as takeaway #3 in two places | report §2b, §7b; short update | ⛔ **R-19, half wrong.** `analyze_position`, `analyze_g64` and `analyze_role` share R-18's `condition`-only filter | On the full 234 rows the ratios verify (`d_surface` 0.1411/0.0701 = **2.01×**; refusalness 0.1888/0.0455 = **4.15×**). On the clean 90, `d_surface`'s position effect **disappears** (1.18×) and refusalness's ratio explodes only because its denominator vanishes. The defensible statement is qualitative; the surviving R² is ≈ 0.058 (ch. 5) |
 | **"§18 = B — mechanistic but not causal"**, asserted as a settled outcome label; and "supersedes §18 = B, reopens §12" | report §18 and §13's closing sentence; short update header (revision 9, still stale) | ⛔ **R-9.** B requires interventions that *"do not affect ASR **or** destroy comprehension"* — **both clauses fail**: removing `d_surface` raises external ASR (+0.0305, p_cl = 0.0089, against an inert control) and comprehension *improves* (R-6) | **"C, amended"** (ch. 13) |
 | **Report §13 criterion 1: "Boombness predicts ASR across prompts — YES IN LLAMA ONLY, ρ = +0.307, p < 5e-4 clustered, 6/6 domains positive"** | report §13's six-criteria table — ⚠ **still live at HEAD**, see A.2 | ⛔ **Retracted by R-18** (row above). The verdict, not just the number: there is no Llama-only correlational finding left to be "only in Llama" | Criterion 1 is **not met**. The surviving claim is *causal and off-bank*, not correlational (ch. 9, ch. 13) |
-| **The G1 query-codeword transplant at −71% of span** (−0.7057) | report §8b negative result **N5** — ⚠ **still live at HEAD** | ⛔ **Superseded.** −0.7057 is the **whole-answer** readout's value for that arm; the report quotes it in a sentence whose other numbers are the `semantic_logodds` ones, mixing two readouts in one claim | On the current headline readout the arm is **−57.0%, CI [−102.8%, −40.1%]** (whole-answer column: −70.6%, [−104.8%, −55.9%]). The *direction* — the wrong way — is what makes G1 positive and is unaffected. `g1_stratified.json`, `g1_wholeanswer_sow.json` (ch. 4) |
+| **The G1 query-codeword transplant at −71% of span** (−0.7057) | report §8b negative result **N5** — ⚠ **still live at HEAD** | ⛔ **Superseded.** −0.7057 is the **old stratified single-token** value for that arm (`g1_stratified.json`), quoted in a sentence whose other numbers come from the corrected whole-answer run — two readouts mixed in one claim | On the current headline whole-answer readout the arm is **−57.0%, CI [−102.8%, −40.1%]** (`g1_wholeanswer_sow.json`; the superseded stratified column reads −70.6%, [−104.8%, −55.9%]). The *direction* — the wrong way — is what makes G1 positive and is unaffected. `g1_stratified.json`, `g1_wholeanswer_sow.json` (ch. 4) |
 | **The additive query-only arm `d_surface` α = 0.25 at −71.7%**, read as a mirror of the transplant result | the full arm table, ch. 4 | ⛔ **Not direction-specific**, therefore not evidence: the matched `random` (−146.5%) and `orthogonal` (−135.0%) controls on the same arm move **further** in the same direction | Only the **transplant** query-only arm has a matched no-op control that stays near zero (self-swap \|Δ\| = 6.5e-02 on a span of 8.22 = 0.8%), so that is the arm the report cites (ch. 4) |
 
 *Δ and its CI are on the continuous StrongReject score (cluster-mean estimand); the ASR@0.5 column is
@@ -6211,7 +6354,7 @@ Provenance was one of the critique's findings (C-10) and was added forward, not 
 |---|---|---|---|---|
 | `advbench_decomposition.json` | **The sprint's surviving headline.** AdvBench 495 / 16 clusters, arms baseline/B/C/D/Bctrl/Cctrl/Dctrl, paired-vs-baseline deltas, super-additivity, super-additivity-vs-control | ch. 9 | ✅ | live |
 | `advbench_decomposition_qwen3.json` | Qwen3-14B × AdvBench: baseline 4/495, arm B 7/495, Δ +0.0024, p_cl 0.657 — the artifact behind R-17 | ch. 11 | ✅ | live (it *is* the retraction's evidence) |
-| `advbench_layer_profile.json` | Nine-point `d_surface` layer profile on AdvBench with matched random controls at L4/8/12/18/24; 15 runs | ch. 10 | ✅ | live; four control depths were still judging at drafting (L10, L28 outstanding) |
+| `advbench_layer_profile.json` | Nine-point `d_surface` layer profile on AdvBench with matched random controls at L4/8/12/18/24; 15 runs | ch. 10 | ✅ | live; the four edge-depth controls (L6, L16, L10, L28) landed after this artifact was written and are reported in §10.4 — all nine depths are now controlled |
 | `advbench_superadd_control.json` | The control triple Bctrl/Cctrl/Dctrl re-run through the same super-additivity estimator, so the real excess can be tested against its own control rather than against zero | ch. 9 | ✅ | live |
 | `clearharm_arm_D.json` | ClearHarm arm D alone (baseline / ch_D / ch_Dctrl), the first external decomposition run | ch. 9 | ❌ | ⛔ **pre-R-14** (empty-goal judging) |
 | `clearharm_decomposition.json` | ClearHarm 179 / 6 clusters as first published: ASRs 0.1006 (18/179) / 0.2067 (37/179) / 0.3408 (61/179) / 0.5419 (97/179), `paired_delta_mean` **+0.1047 ± 0.0238**, and the fake 3-draw band (sd 0.0048) | ch. 9 | ❌ | ⛔ **pre-R-14 AND pre-R-12.** Superseded by `_regoal`; retained deliberately so the movement can be measured |
@@ -6260,7 +6403,7 @@ Provenance was one of the critique's findings (C-10) and was added forward, not 
 
 ### C.3 Key run directories
 
-Counts by producer, measured under `outputs/boombness/`: `score_behavior` **133**, `judge` **106**,
+Counts by producer, measured under `outputs/boombness/` at the 10:52 recount (three judge runs later than §3.1's 10:28 census, which reads 103): `score_behavior` **133**, `judge` **106**,
 `extract_boombness` **17**, `surgical_knockout` **17**, `tokenization_audit` **11**,
 `probes` **8**, `aggressive_patching` **7**, `refusalness` **5**, `section8` and `section9` 1 each.
 

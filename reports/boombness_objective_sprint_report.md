@@ -1239,14 +1239,14 @@ norm-matched random-projection control at the same depth**
 | **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
 | **L10** | **+0.0223** | **0.0190** ✓ | +0.0047 | 0.250 |
 | **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
-| L13 | +0.0138 | 0.0901 | *(judging)* | |
-| L14 | +0.0118 | 0.1411 | *(judging)* | |
+| L13 | +0.0138 | 0.0901 | −0.0002 | 0.873 |
+| L14 | +0.0118 | 0.1411 | +0.0001 | 0.935 |
 | **L16** | **+0.0000** | — | −0.0003 | 0.815 |
 | L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
 | L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
 | L28 | +0.0037 | 0.305 | +0.0030 | 0.413 |
 
-**All nine matched controls are inert**, spanning −0.0066 to +0.0047 with no depth dependence at all.
+**All eleven matched controls are inert**, spanning −0.0066 to +0.0047 with no depth dependence at all.
 That is the point of running one at every depth: "mid-stack random projections are simply more
 destructive than late ones" was a live alternative explanation for a rising curve, and it is excluded.
 **The band is a property of the direction, not of the depth.**
