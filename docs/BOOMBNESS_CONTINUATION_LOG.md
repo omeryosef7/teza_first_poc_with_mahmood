@@ -2057,3 +2057,45 @@ clean G2/G9 re-fits follow.
 subsets, both null, both negative. **I expect the enlarged sample to confirm a null.** If it instead
 shows a clear positive correlation, that would mean the clean subsets were unrepresentative in a way I
 have not identified, and I will say so rather than treating it as G2 restored.
+
+## Qwen3 ClearHarm now has a real matched control band — and it does not rescue arm B
+
+Three re-seeded random projections at **L11, matched to arm B** (not the double-random `Dctrl`, which
+was matched to a different intervention — the gap found last tick). Band guard **accepted** them on
+distinct generation hashes:
+
+| draw | ASR | | |
+|---|---|---|---|
+| b1 / b2 / b3 | 0.1285 / 0.1453 / 0.1229 | **mean 0.1322, between-draw sd 0.0116** | baseline **0.1341** |
+
+**The band straddles the baseline** — the control is inert on Qwen3 too, and its draw-to-draw sd
+(0.0116) is close to Llama's (0.0129), so judge/sampling noise is comparable across models.
+
+Arm B remains **+0.1306 pooled but n.s. clustered (p=0.181)**. The control was never the problem;
+**G=6 with one cluster at 71% is**. Unchanged by having a proper control, which is the right outcome:
+a matched control tells you the effect is direction-specific, not that it is significant.
+
+## ★ New experiment launched — is the off-bank `d_surface` effect LAYER-LOCALIZED?
+
+Everything in §7c removes `d_surface` at **L8 only**, because that is where the sprint fitted it. That
+leaves an obvious question the sprint has never asked: **is L8 special, or would removing `d_surface`
+anywhere raise attack success?**
+
+It matters for interpretation. A flat layer profile would say "this direction carries harm-relevant
+information throughout the residual stream" — closer to a generic capability effect. A peaked profile
+at L8 would say the effect is localized where the surface/concept contrast is represented, which is a
+much more specific mechanistic claim and the one §7c implicitly assumes.
+
+Launched `abL{4,12,18,24}_B` (766953–956) — AdvBench 495, arm B's exact intervention at four other
+layers, everything else identical to `ab_B`. With L8 already in hand that gives a **five-point layer
+profile on the properly-powered external set**.
+
+⚠ Note L18 doubles as a check on a possible confound: it is where `refusalness` is projected in arm C,
+so if `d_surface`@L18 behaves like arm C the two directions are less separable at that depth than
+cos = 0.019 suggests.
+
+**Prediction, recorded before the runs:** `d_surface` was fitted at every layer but its cosine with
+refusal is near-zero at L18 and 0.13 at L12, and the L8 effect is small (+0.0305). I expect a **broad,
+low profile** rather than a sharp peak — i.e. removing `d_surface` helps a little at several depths.
+If instead L8 is sharply peaked, that is a stronger mechanistic result than anything §7c currently
+claims, and it would deserve its own section.
