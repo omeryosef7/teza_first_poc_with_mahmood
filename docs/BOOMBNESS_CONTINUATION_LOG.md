@@ -2099,3 +2099,26 @@ refusal is near-zero at L18 and 0.13 at L12, and the L8 effect is small (+0.0305
 low profile** rather than a sharp peak — i.e. removing `d_surface` helps a little at several depths.
 If instead L8 is sharply peaked, that is a stronger mechanistic result than anything §7c currently
 claims, and it would deserve its own section.
+
+## G2's retraction propagated through every deliverable
+
+The gate table alone was not enough — the claim appeared in five more places, each of which would have
+survived a reader who never reached §0:
+
+| location | was | now |
+|---|---|---|
+| report **§3** (the G2 body section) | ρ=+0.307, "predicts attack success" | ⛔ retracted banner at the head, retracted analysis kept below for the record |
+| report **§19 Q5** | "Yes, modestly — in Llama-3.1-8B" | ⛔ retracted; the two clean subsets and the pending power experiment |
+| report **§19 Q7** | "Yes, and which probe adds more depends on where you read" | ⛔ superseded **three times**; neither dominates, on a null |
+| report **N15 / N16** | — | added as negative results |
+| **short update** L48 | "Boombness predicts attack success within the doublespeak arm" | ⛔ retracted in place, before the numbers it introduced |
+
+Each carries the same three facts so none can be read alone: the clean numbers (−0.0518 at n=90,
+−0.0832 at n=60), that this is **a null and not a proof of absence**, and that **G1, G3 and the probes
+are unaffected** because they filter on `bank_block`.
+
+**Q7 is worth noting as a pattern.** It has now been wrong three times in three different ways — a
+mixed-footing artifact, then a 5-df-vs-1-df table, then a correct 1-vs-1 table over a contaminated row
+set. Each correction fixed a real defect and each left a different one in place. The lesson is not
+"check the footing" or "check the df" but that **a comparison has several independent ways to be
+mismatched, and fixing one does not audit the others.**
