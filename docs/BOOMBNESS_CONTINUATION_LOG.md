@@ -2788,3 +2788,35 @@ what they touched and re-assert a clean run afterwards, so a failure cannot leav
 
 *This is the eighth guard this session and the first that protects the deliverable rather than a
 computation.*
+
+## The suite caught six regressions from my own changes — both guards worked
+
+Full run: **600 passed, 13 failed**. Six of the thirteen were **new**, all caused by this session's
+work, and both underlying guards did exactly what they exist to do. (The other seven are the
+long-standing `module_imports_without_torch` checks in legacy GCG/reinforce files, untouched since
+session 1.)
+
+### 1. `test_the_committed_bank_is_still_reproduced_bit_identically` — the guard fired on my bank change
+
+It hardcodes `n_rows == 2352`. The `core2x2_slot3` power block made it 2736, and **the test failed the
+moment the block landed** — which is the entire point of a hardcoded expectation.
+
+**Bumped deliberately to `EXPECTED_BANK_ROWS = 2736`, not loosened.** The comment records why: 384 rows
+at a slot provably disjoint from slot 0, added so G2 could be re-tested on independent prompts, and
+verified additive against the pre-change file (0 old `prompt_id`s missing, 0 old rows altered, 0 of 192
+slot-3/slot-0 pairs sharing a prompt). I also dropped the hardcoded `bank_rows_sha16` literal in favour
+of comparing generation against the committed meta — pinning a hash *and* a row count means every
+legitimate bank change requires editing two magic strings, and the second one gets pasted without
+thought.
+
+### 2. `test_estimand.py` — five failures, and the guard was right twice over
+
+* **`g9_three_predictor_cwpos_CLEAN.json` had no canonical invocation.** `test_canonical_runs_cover_every_committed_g9_artifact` enumerates committed g9 artifacts and refuses any that `CANONICAL_RUNS` cannot regenerate — so the artifact I created two ticks ago to *demonstrate* R-18 was itself unregenerable. Registered, with its `--slot0-only --require-bank-block` recipe and a comment on why both the clean and contaminated fits are canonical.
+* **`g9_three_predictor_lastpos.json` no longer regenerated**, because adding `row_composition` made the current code emit a **superset** of the committed artifact's keys. Regenerated both artifacts so they carry the new field.
+
+**Neither failure was a bug in the code under test.** Both were the committed *artifacts* falling out of
+step with the code that produces them — precisely the drift R-13 and R-18 were made of, caught here in
+minutes instead of weeks because these two tests assert regenerability rather than trusting it.
+
+Suite now: **`test_estimand` + `test_fit_identity_and_ledger`: 84 passed, 2 skipped.**
+`verify_report_numbers.py` still passes 17/17 and `retraction_sweep.py` is clean.

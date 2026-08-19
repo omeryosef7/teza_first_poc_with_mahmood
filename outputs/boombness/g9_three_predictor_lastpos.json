@@ -1,5 +1,24 @@
 {
   "plan_section": "9",
+  "row_composition": {
+    "by_bank_block": {
+      "families": 72,
+      "core2x2": 60,
+      "consistency": 36,
+      "role_style": 30,
+      "strength": 24,
+      "position": 12
+    },
+    "by_family_slot": {
+      "2": 36,
+      "0": 162,
+      "1": 36
+    },
+    "n_analysed": 234,
+    "require_bank_block": null,
+    "slot0_only": false,
+    "note": "R-18. A count is not a description of a sample."
+  },
   "arm": "natural_doublespeak",
   "position": "last",
   "outcome": "strongreject_score (continuous [0,1], NOT binary ASR@0.5)",
@@ -19,7 +38,7 @@
       "--out",
       "outputs/boombness/g9_three_predictor_lastpos.json"
     ],
-    "git_commit": "f6e72a910ddf8c669a318854b0bccd16c6e53bd9",
+    "git_commit": "9cee1f4e9d49bea2baf7b0ee7842190d8f6b748e",
     "git_dirty": true,
     "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
   },

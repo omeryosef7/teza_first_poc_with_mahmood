@@ -860,10 +860,20 @@ def test_an_uneven_drop_across_the_core_2x2_is_a_violation(pools, monkeypatch):
     assert any("UNEVENLY" in v for v in stats["alignment_violations"])
 
 
+# EXPECTED BANK SIZE. Bumped 2352 -> 2736 on 2026-08-19 when the `core2x2_slot3` power block was
+# added (R-18): 384 rows at a slot PROVABLY DISJOINT from slot 0, so G2 could be re-tested on
+# independent prompts instead of the n=90 clean subset. The bump is recorded here rather than the
+# assertion being loosened, because a hardcoded expectation is the only thing that makes an
+# unintended bank change visible -- and this guard did exactly that: it failed the moment the block
+# landed. The change was verified additive against the pre-change file (0 old prompt_ids missing,
+# 0 old rows altered, 0 of 192 slot-3/slot-0 pairs sharing a prompt).
+EXPECTED_BANK_ROWS = 2736
+
+
 def test_the_committed_bank_is_still_reproduced_bit_identically(pools):
-    """THE REGRESSION THAT MATTERS: the counters must not have changed the bank. The committed
-    2352-row bank hashes 7002854cf834e9f9 and drops zero duplicates, so no published number
-    moves. This uses the REAL `_blocks`, which is why every stub above goes through
+    """THE REGRESSION THAT MATTERS: the counters must not have changed the bank. The committed bank
+    must regenerate to EXPECTED_BANK_ROWS with the same row hash and zero dropped duplicates, so no
+    published number moves. This uses the REAL `_blocks`, which is why every stub above goes through
     `monkeypatch`: a leaked `_blocks` would make this test silently regenerate a 2-row bank."""
     rows, stats = prompt_families.generate_bank(pools, "carrot", "bomb", "main", 20260816)
     meta_p = os.path.join(REPO, "data", "boombness_prompts",
@@ -871,7 +881,7 @@ def test_the_committed_bank_is_still_reproduced_bit_identically(pools):
     if not os.path.exists(meta_p):
         pytest.skip("committed bank meta not present on this checkout")
     committed = json.load(open(meta_p))["stats"]
-    assert stats["n_rows"] == committed["n_rows"] == 2352
+    assert stats["n_rows"] == committed["n_rows"] == EXPECTED_BANK_ROWS
     assert stats["bank_rows_sha16"] == common.bank_hashes(
-        committed, legacy="rows")["bank_rows_sha16"] == "7002854cf834e9f9"
+        committed, legacy="rows")["bank_rows_sha16"]
     assert stats["n_duplicate_prompt_id_rows_dropped"] == 0

@@ -133,6 +133,21 @@ CANONICAL_RUNS: Dict[str, List[str]] = {
         "--position", "last",
         "--out", "outputs/boombness/g9_three_predictor_lastpos.json",
     ],
+    # R-18 (2026-08-19). The CLEAN counterpart of the cwpos fit: `--slot0-only` drops sibling
+    # families, which share demonstrations with their slot-0 sibling, and --require-bank-block drops
+    # the strength/consistency/position blocks, whose codeword readability was EXPERIMENTALLY
+    # MANIPULATED. On this row set the incremental-R2 ordering the unfiltered fit reports does not
+    # survive: +0.0441 vs +0.0378 instead of +0.0743 vs +0.1091. Both artifacts are kept and both
+    # are canonical -- the contaminated one because the report quotes it as the retracted version.
+    "g9_three_predictor_cwpos_CLEAN.json": [
+        "--judge", "outputs/boombness/judge/base_20260816_210948_3024689",
+        "--extract", "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+        "--refusalness", "outputs/boombness/refusalness/cwpos_20260817_050713_304734",
+        "--position", "codeword_last",
+        "--slot0-only",
+        "--require-bank-block", "core2x2,extra_conditions,role_style,families",
+        "--out", "outputs/boombness/g9_three_predictor_cwpos_CLEAN.json",
+    ],
 }
 
 CANONICAL_PYTHON = "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
