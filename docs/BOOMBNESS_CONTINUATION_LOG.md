@@ -2352,3 +2352,42 @@ very guard §9 once flagged as dead and then repaired. **§11 stands unchanged.*
 **Three retracted, two survived, three were never exposed.** The audit is now complete: every analysis
 script in the sprint has been checked against this defect, and the answer for each is recorded above
 rather than assumed.
+
+## ★★ R-18 SETTLED — the powered clean estimate confirms the null
+
+The `core2x2_slot3` power block (384 new rows at a slot **provably disjoint** from slot 0) was
+extracted, scored and judged. Clean G2 re-fit on **independent core-design rows only**:
+
+| estimate | n | composition | ρ pooled | **ρ within-domain** | **perm p** |
+|---|---|---|---|---|---|
+| ⛔ as published | 234 | 6 blocks, slots {0,1,2} | +0.3067 | **+0.2618** | **5.0e-04** |
+| clean (slot-0, no manipulated) | 90 | core2x2 60 + role_style 30 | +0.0860 | −0.0518 | 0.658 |
+| clean (core2x2 only) | 60 | core2x2 60 | +0.1062 | −0.0832 | 0.572 |
+| **★ POWERED clean** | **108** | **core2x2 60 + core2x2_slot3 48 · slots {0:60, 3:48}** | +0.1537 | **−0.0660** | **0.493** |
+
+**Three independent clean estimates, at n=60, 90 and 108, all give a within-domain ρ between −0.05 and
+−0.08 with p between 0.49 and 0.66.** The powered one adds 48 rows whose demonstrations are disjoint
+from every existing family — genuinely new information, not more of the same prompts.
+
+### The prediction, scored
+
+Recorded before the run: *"I expect the enlarged sample to confirm a null. If it instead shows a clear
+positive correlation, that would mean the clean subsets were unrepresentative in a way I have not
+identified, and I will say so rather than treating it as G2 restored."*
+
+**It confirmed the null.** −0.0660 (p=0.493) at n=108.
+
+### The verdict, stated at its final strength
+
+**G2 is retracted, and this is no longer "not established at n=90 which cannot exclude a small
+effect".** It is a null replicated across three independent clean samples, the largest of which was
+built specifically to have the power the earlier ones lacked. A small positive effect is still not
+formally excluded — n=108 over 6 domains is not large — but every clean estimate is **negative**, and
+the published +0.2618 is recoverable **only** by including sibling families that share demonstrations
+and rows whose codeword readability was experimentally manipulated.
+
+*(Note `rho_pooled` wanders — +0.086, +0.106, +0.154 across the three clean sets — while
+`rho_within_domain` stays pinned near −0.06. That is the domain confound the sprint's own artifact
+warns about: the pooled figure mixes between-domain and within-domain variation, which is exactly why
+`p_iid_pooled_rho` is marked WITHDRAWN as a sole basis and the within-domain estimand is the one to
+cite. The published headline was a pooled number.)*
