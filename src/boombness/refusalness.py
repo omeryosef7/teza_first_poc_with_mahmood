@@ -85,9 +85,33 @@ def refusal_glob_for(model_id: Optional[str]) -> str:
 def load_refusal_dirs(layers: Optional[Sequence[int]] = None, model_id: Optional[str] = None,
                       expect_dim: Optional[int] = None) -> Dict[int, torch.Tensor]:
     """Load the house refusal directions for THIS model, keyed by block layer."""
-    pattern = refusal_glob_for(model_id) if model_id else REFUSAL_GLOB
+    # BUGFIX 2026-08-19 (follow-up sprint, found by SLURM 767265/767266 failing).
+    # `refusal_glob_for` returns the glob for the FIRST root holding ANY file for this model
+    # family, and never falls through. Root[0] (stage_gcg_full) holds llama L{12,14,16,18,20};
+    # root[2] (refusal_qwen3 -- misnamed, it also holds llama) holds llama L{16,20,24,28,32}.
+    # So a request for L24 or L28 resolved to root[0]'s pattern, matched no requested layer, and
+    # died with "no refusal directions matched" even though the file exists one directory away.
+    # That silently capped every refusalness layer profile at L20.
+    # Fix: search ALL roots and union PER LAYER, first root wins for a layer it actually has.
+    # Root order is preserved, so every previously-resolvable layer resolves to the same file and
+    # no existing number changes.
+    key = "llama"
+    if model_id:
+        low = model_id.lower()
+        for needle, k in _MODEL_KEYS:
+            if needle in low:
+                key = k
+                break
+    patterns = [os.path.join(root, f"refusal_direction_{key}_L*.pt") for root in _REFUSAL_DIRS]
+    pattern = " | ".join(patterns)          # for the error message only
+    seen_paths = []
+    for pat in patterns:
+        for cand in sorted(glob.glob(pat)):
+            seen_paths.append(cand)
+
     out: Dict[int, torch.Tensor] = {}
-    for p in sorted(glob.glob(pattern)):
+    resolved_from: Dict[int, str] = {}
+    for p in seen_paths:
         base = os.path.basename(p)
         try:
             L = int(base.split("_L")[-1].split(".")[0])
@@ -95,15 +119,26 @@ def load_refusal_dirs(layers: Optional[Sequence[int]] = None, model_id: Optional
             continue
         if layers is not None and L not in layers:
             continue
+        if L in out:                         # first root wins for this layer
+            continue
         v = torch.load(p, map_location="cpu", weights_only=True)
         if isinstance(v, dict):
             v = v.get("direction", next(iter(v.values())))
         out[L] = v.float().reshape(-1)
+        resolved_from[L] = p
     if not out:
         raise SystemExit(
             f"no refusal directions matched {pattern} — available across "
             f"{_REFUSAL_DIRS}: "
             f"{sorted({os.path.basename(x) for r in _REFUSAL_DIRS for x in glob.glob(os.path.join(r, 'refusal_direction_*.pt'))})}")
+    if layers is not None:
+        missing = sorted(set(layers) - set(out))
+        if missing:
+            raise SystemExit(
+                f"refusal directions requested for layers {sorted(layers)} but MISSING {missing}. "
+                f"Found {sorted(out)} across {_REFUSAL_DIRS}. A layer profile must not silently "
+                f"run on a subset of the layers it was asked for -- fit the missing direction "
+                f"(doublespeak_causality/build_refusal_direction_llama.py) or drop it explicitly.")
     if expect_dim is not None:
         bad = {L: tuple(v.shape) for L, v in out.items() if v.numel() != expect_dim}
         if bad:

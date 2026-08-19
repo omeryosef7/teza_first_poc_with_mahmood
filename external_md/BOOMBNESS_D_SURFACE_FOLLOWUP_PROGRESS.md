@@ -1256,8 +1256,65 @@ _Not started. Phase E deliverable._
 
 ## d_surface × Refusalness Interaction
 
-_Not started. Phase F deliverable. Note: inherited jobs 767263–767266 (arm C at L8/12/24/28) supply the
-refusalness layer profile this phase needs._
+**Status:** blocked on data, and the blocker is now precisely characterised.
+
+### ⛔ BLOCKER F-B1 — the refusalness layer profile is capped at L20, and it is a data gap, not a bug
+
+Three of the four inherited `arm C` jobs (L8, L24, L28) died with
+`no refusal directions matched .../refusal_direction_llama_L*.pt`. Diagnosed at tick 2:
+
+**Llama-3.1-8B refusal directions exist at exactly five layers — L12, L14, L16, L18, L20** — all in
+`doublespeak_causality/outputs/stage_gcg_full/`, all 4096-d, all verified by loading them.
+
+So a refusalness layer profile cannot presently go below L12 or above L20. **This matters for Phase F**:
+the causal `d_surface` band is L6–L12, and the *lower* half of that band has no refusal direction at all,
+so the interaction cannot yet be measured where the `d_surface` effect is strongest.
+
+### ⚠ LANDMINE F-B2 — five mislabeled direction files that would cross-contaminate models
+
+`doublespeak_causality/outputs/refusal_qwen3/` contains five files named
+`refusal_direction_llama_L{16,20,24,28,32}.pt`. **Every one of them is 5120-dimensional — they are
+Qwen3-14B directions wearing Llama filenames.** (Llama-3.1-8B is 4096-d; Qwen3-14B is 5120-d.)
+Confirmed by loading all fifteen direction files in the repo and printing their dimensions:
+
+| directory | files | true model |
+|---|---|---|
+| `doublespeak_causality/outputs/stage_gcg_full/` | `llama_L{12,14,16,18,20}` | **Llama, 4096-d — correct** |
+| `outputs/stage_gcg_full/` | `qwen3_L{20,25,28}` (5120-d), `gemma4_L{25,31}` (2560-d) | correct |
+| `doublespeak_causality/outputs/refusal_qwen3/` | `llama_L{16,20,24,28,32}` | ⛔ **Qwen3, 5120-d — MISLABELED** |
+
+Note L16 and L20 appear in **both** the first and third directory with *different dimensions*. Any
+resolution order that reached `refusal_qwen3/` first would load a Qwen3 vector for a layer that has a
+perfectly good Llama one. The `expect_dim` guard (added 2026-08-18) is the only thing preventing that;
+it fired correctly during this diagnosis. **Recommend renaming those five files** to
+`refusal_direction_qwen3_L*.pt`. Not done unilaterally — renaming files other runs may reference is the
+user's call.
+
+### Bugfix — `refusal_glob_for` never fell through, and a profile could silently short itself
+
+`src/boombness/refusalness.py`: `refusal_glob_for` returned the glob for the **first root holding any
+file for the model family** and never looked further, so a request for a layer that root lacks died even
+when the file existed elsewhere. Two changes:
+
+1. `load_refusal_dirs` now searches **all** roots and unions **per layer**, first root winning for a
+   layer it actually has. Root order is preserved, so every previously-resolvable layer resolves to the
+   same file and **no existing number changes** — verified: request `[12,14,16,18,20]` still returns all
+   five at 4096-d.
+2. A requested layer that cannot be found is now a **hard failure naming the missing layers**, rather
+   than a profile quietly running on a subset. Verified: request `[24,28]` is refused, request `[8]` is
+   refused.
+
+Ironically the fix does **not** unblock L24/L28 — it makes the files reachable, and the dimension guard
+then correctly refuses them because they are Qwen3. The honest conclusion is F-B1: those directions do
+not exist for Llama.
+
+### To unblock Phase F
+
+`doublespeak_causality/build_refusal_direction_llama.py` exists and can fit the missing layers. Fitting
+Llama refusal directions at **L6, L8, L10** (to cover the causal band) and optionally L24/L28 is the
+prerequisite. **This is GPU work and is not started — see Open Questions.**
+
+**Do NOT resubmit 767263/767265/767266 as-is.** They will fail identically.
 
 ## Better Surgical Patching Results
 
@@ -1289,6 +1346,13 @@ _No reviews yet. First review due 4h after sprint start._
    +0.0039, p_cl 0.208) as closing an open item, but it exists only in an uncommitted working-tree
    rewrite. Re-run it through a committed module, or stop citing it?
 
+4. **Fit the missing Llama refusal directions?** Phase F's interaction experiment needs refusalness in
+   the L6–L12 causal band, and directions exist only at L12–L20. `build_refusal_direction_llama.py` can
+   fit L6/L8/L10 (and L24/L28 if the profile should extend upward). This is GPU work on a queue that is
+   currently slow. **Say the word and I'll launch it.**
+5. **Rename the five mislabeled direction files?** `refusal_qwen3/refusal_direction_llama_L*.pt` are
+   Qwen3 vectors (F-B2). Renaming is the obvious fix but other runs may reference the paths.
+
 ### Standing risks carried into this sprint
 
 - **D-11 is the big one:** `outputs/` is gitignored wholesale; the analysis JSONs are force-added but
@@ -1310,6 +1374,26 @@ phase, update this file, commit and push, record blockers. Every 4h a deeper cod
 
 **Tick 1 (2026-08-19 ~16:10).** All six jobs still `PD (Priority)` — no change since inheritance, so
 nothing to harvest. Phase C probe suite launched instead. No blockers.
+
+**Tick 2 (2026-08-19 ~16:40).** The queue moved, and it produced three failures and two corrections.
+
+| job | arm | state | outcome |
+|---|---|---|---|
+| 767176 | `abL15_B` | **R** (21 min) | running |
+| 767177 | `abL15_Bctrl` | **R** | running |
+| 767263 | `abR8_C` | ⛔ **FAILED** (1:0, 15:23) | no Llama refusal direction at L8 |
+| 767264 | `abR12_C` | **R** | running — L12 direction exists |
+| 767265 | `abR24_C` | ⛔ **FAILED** (1:0, 15:23) | no Llama refusal direction at L24 |
+| 767266 | `abR28_C` | ⛔ **FAILED** (1:0, 15:23) | no Llama refusal direction at L28 |
+
+⚠ **Correction to IF-2.** I recorded 767176/767177 as the L13/L14 matched controls, taking the
+handover's §13.14 at its word. They are not — reading `--tag` out of the job logs, they are
+**`abL15_B` and `abL15_Bctrl`**. **The L13/L14 matched controls are not queued at all**, so L13 and L14
+remain arm-only and nothing currently scheduled will fix that. This is the second time this sprint that
+a handover statement, taken on trust, turned out to be stale (cf. D-2).
+
+Phase C probe suite still running (loading the 592 MB cache; run dir
+`outputs/boombness/probes/fu2352_20260819_161048_1978941` created).
 
 ### Process
 
