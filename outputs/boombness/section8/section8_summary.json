@@ -1,0 +1,274 @@
+{
+ "plan_section": "8",
+ "join_check": {
+  "n": 234,
+  "rho": 0.306667780204175,
+  "p_iid": 1.7381137500164314e-06,
+  "expected_n": 234,
+  "expected_rho": 0.306667780204175,
+  "reproduces_g2_artifact": true
+ },
+ "comprehension_median_option_mass": 0.3155166208744049,
+ "comprehension_plotted": true,
+ "curves": {
+  "boombness": {
+   "0": {
+    "n": 36,
+    "mean": -3.4020780324935913,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "1": {
+    "n": 12,
+    "mean": -3.6694701115290322,
+    "ci": [
+     -3.8577340583411566,
+     -3.481206164716908
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "2": {
+    "n": 36,
+    "mean": -3.664973371558719,
+    "ci": [
+     -3.8341006563129,
+     -3.4958460868045385
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "4": {
+    "n": 120,
+    "mean": -3.5831315676371256,
+    "ci": [
+     -3.9078973285797294,
+     -3.258365806694522
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "8": {
+    "n": 54,
+    "mean": -3.5847985015975103,
+    "ci": [
+     -4.0782201367642426,
+     -3.091376866430778
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "16": {
+    "n": 12,
+    "mean": -3.4512743949890137,
+    "ci": [
+     -4.2795557625429375,
+     -2.62299302743509
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   }
+  },
+  "asr_score": {
+   "0": {
+    "n": 36,
+    "mean": 0.23958333333333331,
+    "ci": [
+     0.19424674874834366,
+     0.28491991791832294
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "1": {
+    "n": 12,
+    "mean": 0.11458333333333333,
+    "ci": [
+     -0.07285492551514795,
+     0.3020215921818146
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "2": {
+    "n": 36,
+    "mean": 0.09375,
+    "ci": [
+     0.008792241525345815,
+     0.1787077584746542
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "4": {
+    "n": 120,
+    "mean": 0.1625,
+    "ci": [
+     0.09522655059378643,
+     0.22977344940621358
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "8": {
+    "n": 54,
+    "mean": 0.2662037037037037,
+    "ci": [
+     0.08243297111497547,
+     0.44997443629243195
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "16": {
+    "n": 12,
+    "mean": 0.3020833333333333,
+    "ci": [
+     0.10567887624977462,
+     0.498487790416892
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   }
+  },
+  "refused": {
+   "0": {
+    "n": 36,
+    "mean": 0.5,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "1": {
+    "n": 12,
+    "mean": 0.0,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "2": {
+    "n": 36,
+    "mean": 0.0,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "4": {
+    "n": 120,
+    "mean": 0.0,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "8": {
+    "n": 54,
+    "mean": 0.018518518518518517,
+    "ci": [
+     -0.029084848808079905,
+     0.06612188584511694
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "16": {
+    "n": 12,
+    "mean": 0.08333333333333333,
+    "ci": [
+     -0.1308818196363596,
+     0.2975484863030262
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   }
+  },
+  "comprehension": {
+   "0": {
+    "n": 48,
+    "mean": 0.1841859221458435,
+    "ci": null,
+    "n_domains": 6,
+    "degenerate": true
+   },
+   "1": {
+    "n": 48,
+    "mean": -2.2365523924430213,
+    "ci": [
+     -3.0432108862927794,
+     -1.4298938985932632
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "2": {
+    "n": 48,
+    "mean": -2.254836774120728,
+    "ci": [
+     -3.3289556024774702,
+     -1.180717945763986
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "4": {
+    "n": 48,
+    "mean": -2.7983726896345615,
+    "ci": [
+     -4.053529219930775,
+     -1.543216159338348
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "8": {
+    "n": 48,
+    "mean": -3.2463643277684846,
+    "ci": [
+     -4.462656999776586,
+     -2.0300716557603833
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   },
+   "16": {
+    "n": 48,
+    "mean": -3.7536704496790967,
+    "ci": [
+     -4.7671823120125865,
+     -2.7401585873456065
+    ],
+    "n_domains": 6,
+    "degenerate": false
+   }
+  },
+  "by_strength": {}
+ },
+ "plots": [
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section8/plots/boombness_vs_n_examples.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section8/plots/asr_vs_n_examples.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section8/plots/refusal_vs_n_examples.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section8/plots/comprehension_vs_n_examples.png",
+  "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/section8/plots/boombness_and_asr_by_strength.png"
+ ],
+ "sources": {
+  "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+  "wa_score": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/wa_base_20260818_184457_3887695"
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/summarize_section8.py",
+   "--judge",
+   "outputs/boombness/judge/base_20260816_210948_3024689",
+   "--extract",
+   "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+   "--wa-score",
+   "outputs/boombness/score_behavior/wa_base_20260818_184457_3887695",
+   "--outdir",
+   "outputs/boombness/section8"
+  ],
+  "git_commit": "559fb7224be40b597fa815fe85e280dbf3f6df85",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}

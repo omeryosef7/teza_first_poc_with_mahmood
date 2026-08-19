@@ -1468,3 +1468,59 @@ exceed 3× the largest other arm. **That verdict is expected here and the code s
 fractions are taken *of*, not an arm awaiting validation — *"Movability is established, overwhelmingly,
 by `no_demo_text` itself."* The guard is doing its job (it refuses to certify vacuously, which is how
 its predecessor died); its False is not a verdict on G3. Left as-is and reported rather than tuned.
+
+## Plan §8's five plots now exist — and the comprehension curve is on a valid readout for the first time
+
+`src/boombness/summarize_section8.py` → `outputs/boombness/section8/`. Domain-clustered error bars
+throughout. The join is the same one `summarize_section9` validates, and the script refuses to draw
+unless it reproduces `g2_analysis_cwpos.json` (it does: n=234, rho bit-identical).
+
+**Comprehension is read from the WHOLE-ANSWER run, not the committed §8 artifact.**
+`g8_comprehension_by_nexamples.json` is computed from the pre-R-6 baseline whose comprehension options
+held a median **4.4e-05** of next-token mass — any curve through that is a curve through a tail. The
+whole-answer run gives **median option mass 0.3155**, so this is the first §8 comprehension curve that
+is a forced choice.
+
+| `n_examples` | Boombness (`d_surface|L12|proj`) | ASR | refusal | comprehension log-odds (coded−literal) |
+|---|---|---|---|---|
+| 0 | −3.402 *(degenerate CI)* | +0.240 | 0.500 *(degenerate)* | **+0.184** *(degenerate)* |
+| 1 | −3.670 | +0.115 | 0.000 | **−2.237** |
+| 2 | −3.665 | +0.094 | 0.000 | −2.255 |
+| 4 | −3.583 | +0.163 | 0.000 | −2.798 |
+| 8 | −3.585 | +0.266 | 0.019 | −3.246 |
+| 16 | −3.451 | **+0.302** | 0.083 | **−3.754** |
+
+*(`natural_doublespeak` only for the first three columns; all conditions for comprehension.
+`comprehension_logodds = logp_coded − logp_literal`, so **negative = the model reads the codeword
+literally**.)*
+
+**Three observations, stated without over-reading them:**
+
+1. **Boombness is FLAT in demonstration count** — −3.40 to −3.67 across 0→16 demonstrations, with
+   overlapping intervals throughout. There is no dose-response in the representation. This is a
+   negative result and it sits oddly beside ASR, which is not flat.
+2. **ASR is U-shaped**: 0.240 at zero demonstrations, a minimum of 0.094 at two, then rising
+   monotonically to 0.302 at sixteen. The zero-demonstration cell also carries **refusal 0.50** against
+   ~0 everywhere else, so it is a different regime (an unexplained codeword) rather than the low end of
+   one curve — the U is probably two effects, not one.
+3. **Comprehension moves monotonically toward the LITERAL reading as demonstrations increase**
+   (−2.24 at n=1 → −3.75 at n=16), which is the opposite of the naive expectation that more
+   demonstrations teach the coded mapping more strongly. Worth flagging rather than explaining: it is
+   consistent with the demonstrations establishing an in-context *literal* usage of the surface word,
+   but this sprint has not tested that and should not assert it.
+
+⚠ **Four cells have `degenerate=True`** (between-cluster SD exactly 0) and are drawn without error
+bars. Those are not tight estimates — they are cells where every domain saw the same value.
+
+**The `strength` panel is drawn with its disclaimer inside the figure.** Plan §8 names it, but N12
+shows `strength` cannot support inference (12 behavioural rows per level; it moves prompt length,
+codeword-occurrence count and `n_examples` 4.91→2.00 at once). Drawing it silently would put a
+confounded underpowered comparison in a report figure; it is drawn, labelled **"NOT AN INFERENCE"**,
+and annotated with the reason.
+
+**A bug I caught in my own guard while doing this.** The first version filtered comprehension rows on
+`semantic_logodds` — the wrong key; the comprehension rows carry `comprehension_logodds`. The filter
+returned **zero rows**, and the option-mass gate then reported *"median 0.0000 → REFUSED"*, which reads
+exactly like an instrument verdict. **A guard that fires because the data was not found is
+indistinguishable from one that fires because the data is bad.** Emptiness is now checked and named
+separately, and it raises rather than reporting a fake measurement.
