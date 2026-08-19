@@ -87,11 +87,16 @@ RETRACTED = [
     # R-13: the incremental-R2 table that gave refusalness 5 predictors against Boombness's 1. The
     # withdrawn NUMBERS are the four cells; the withdrawn CLAIM is "matched footing"/"done correctly"
     # attached to them, which is what actually misleads, since the numbers alone look unremarkable.
+    # NARROWED 2026-08-19 (second time this has been needed -- see R-7). A BARE `0.144` matched a
+    # bootstrap range in an unrelated R-18 paragraph. A retracted-figure pattern must carry enough
+    # context to identify the CLAIM; matching a three-digit number alone guarantees false positives
+    # in a document full of three-digit numbers, and a sweep that flags correct text gets ignored.
     ("R13 incremental R2 at unmatched df",
-     r"\+?0\.144\b|\+?0\.091\b[^\n]{0,40}refusaln|"
-     r"refusaln[^\n]{0,40}adds[^\n]{0,20}\+?0\.144|"
-     r"increment comparison, done correctly|"
-     r"Boombness is close to redundant"),
+     r"(?:refusaln|Boombness)[^\n]{0,60}\+?0\.144|"
+     r"\+?0\.144[^\n]{0,60}(?:refusaln|Boombness|over Boombness)|"
+     r"\|\s*@ codeword_last\s*\|\s*\+?0\.028\s*\|"
+     r"|increment comparison, done correctly"
+     r"|Boombness is close to redundant"),
     # R-14: every external-set ASR judged against an empty goal. The withdrawn numbers are the
     # ClearHarm arm ASRs as first published; the withdrawn CLAIM is that the bank-artifact
     # explanation is excluded, which was the whole point of the arm.
