@@ -2921,3 +2921,46 @@ real change rather than a bug:
 | the two hash functions differ | the same block changed both hardcoded digests | rewritten to assert the **structural** property against the committed meta, which moves with the bank |
 | canonical g9 runs cover every artifact | my own `..._CLEAN.json` had no registered recipe | registered, with its `--slot0-only --require-bank-block` invocation |
 | the recipe regenerates the artifact | adding `row_composition` made the code emit a superset | both g9 artifacts regenerated against current code |
+
+## ★ E6 prep — and the screen shows `carrot` was one of the worst codewords available
+
+GPUs blocked for 3+ hours, so I built the thing E6 needs first: `src/boombness/screen_concept_pairs.py`,
+which screens candidate pairs **before** a bank is generated for them. `tokenization_audit.py` audits a
+bank that already exists — by then the pair is chosen and a bad choice costs a full regeneration.
+
+It screens on the four properties this sprint learned the hard way: single-token bare form (§2.4),
+**single-token capitalised form** (C-5), the capitalised first subtoken not being a common English word
+(the `' Car'` problem), and **symmetric variant counts** between the pair (the bomb-4-vs-carrot-1 bias).
+
+### The retrospective finding: `carrot` was avoidable
+
+| codeword | single-token variants (Llama / Qwen3) | capitalised single-token? |
+|---|---|---|
+| **`carrot`** *(the sprint's choice)* | **1/4** | **✗** |
+| `apple` | **4/4** | ✓ |
+| `basket` | **4/4** | ✓ |
+| `button` | **4/4** | ✓ |
+| `pillow`, `marble`, `candle`, `lantern` | 2/4 | ✓ |
+| `muffin`, `tulip`, `pebble`, `teapot` | 0/4 | ✗ |
+
+**`carrot` scores 1 of 4 on both models, and its capitalised form is multi-token** — which is exactly
+C-5: `' Carrot'` = `' Car'` + `'rot'`, so a next-token forced choice could not represent the model's
+preferred spelling, was biased 4-ids-to-1 toward `bomb`, and had to be replaced by the whole-answer
+readout. **Three of the fifteen candidates score 4/4 on both models.** The defect that cost a readout
+retraction was a one-command check away at the start.
+
+That is not hindsight-scolding — plan §2.4 *did* mandate a tokenization audit, and it ran. What it
+audited was **the bare form on the generated bank**, which `carrot` passes. Nobody thought to check the
+**capitalised** form, because nobody knew until C-5 that the model would answer with one. **The
+screener now encodes what only failure taught.**
+
+### The recommendation for E6
+
+**`apple` ↔ `bomb`.** 27 of 56 clean pairs also have symmetric variant counts; this one is the right
+choice for a specific reason: **it keeps the concept fixed and changes only the codeword**, so a
+replication with it isolates the codeword variable against everything the sprint has already measured
+with `bomb`. `basket ↔ bomb` and `button ↔ bomb` are equally clean and would serve as third and fourth
+pairs if the question becomes "does it hold across codewords generally".
+
+`outputs/boombness/concept_pair_screen.json` records all 25 words, both tokenizers, every variant's
+token ids, and the 56 clean / 27 symmetric pairs.
