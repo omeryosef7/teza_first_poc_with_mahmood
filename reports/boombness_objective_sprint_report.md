@@ -33,8 +33,21 @@ demonstrations with rows whose codeword readability was experimentally manipulat
 independent unmanipulated prompts the within-domain correlation is **−0.052 (p=0.658)** against a
 published **+0.262 (p=5e-4)**.
 
-**The intervention results are unaffected — they are causal, measured on external sets, and they
-survive.** On **AdvBench held-out — 495 prompts, 16 domain clusters** —
+**Taken together with what does survive, that is the sprint's actual result, and it is sharper than
+the version it replaces:**
+
+> **Boombness does not predict attack success — and removing the direction it measures causally
+> raises attack success.**
+
+Those are consistent rather than contradictory: a representation can be causally load-bearing without
+its scalar projection tracking the outcome across prompts. Ablating a direction is not the same
+operation as regressing on its magnitude, and a single projected number is a lossy summary of the
+direction it comes from. But the original objective assumed the two would travel together — maximise
+the axis, get more attack success — and **they do not**: the axis does not predict, the *opposite*
+manipulation moves behaviour, and the objective is dead for both reasons rather than one.
+
+**The intervention results are unaffected — they are causal, measured on external sets, controlled,
+and they survive.** On **AdvBench held-out — 495 prompts, 16 domain clusters** —
 removing `d_surface` **alone** raises attack success by **+0.0305 (p_cl=0.0089, CI [+0.0089,
 +0.0522])** on harmful requests carrying no codeword, no demonstrations and no doublespeak wrapper.
 `d_surface` was fitted entirely on the carrot/bomb 2×2, so this **excludes the prompt-bank artifact
