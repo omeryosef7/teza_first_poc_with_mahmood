@@ -1791,6 +1791,114 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+## 4h Code and Output Review — Review #2 (2026-08-20 00:00)
+
+Two adversarial auditors, 299k tokens, 108 tool calls, read-only. **Every number reproduces; two
+claims do not.** I verified both findings myself before acting.
+
+### Numeric replication — all CONFIRM
+
+The refusalness profile (all five arms and five controls, to 6 dp), `phaseF_composed`, and
+`phaseF_add_alpha025` all reproduce exactly from raw judge rows by an independent implementation.
+The Holm recomputation confirms four of five survive at m = 5. All 21 judge dirs share
+`bank_file_sha16 3113465f938aaa54`, 495 rows, 0 nulls, 0 duplicate `prompt_id`, symmetric difference 0
+vs baseline, and **no two arms have byte-identical generations** — so the retraction-#7/#12 "n = 1
+wearing an n = 4 label" failure mode is absent here.
+
+---
+
+### ⛔ RETRACTION F-3 — the "sign reversal against a matched control" was a 14.8× dose mismatch
+
+**Third F-1-class error this sprint, and the first one that a code bug rather than my analysis caused.**
+
+Tick 13 (commit `e2d11e77`) claimed: *"Against its **matched** control — same layer, same dose, same
+operation — the real refusalness direction moves the opposite way … −0.0644"*, and called it the
+sprint's strongest direction-specificity evidence.
+
+**The doses were not matched.** Verified directly:
+
+| | injected residual magnitude at L18 |
+|---|---|
+| `refusalness:add:18-18:1.0` | **1.0** |
+| `random:add:18-18:1.0` | **14.79** |
+
+`score_behavior.py:178` doses the refusalness branch as `alpha * float(v.norm())` — and the house
+refusal directions are **already unit norm** (I loaded L12/L18/L20: all exactly `1.000000`), so that
+multiply is a **no-op**. The random and `d_surface` branches go through `:221`, `alpha * g`, dosed in
+**gap units** (one diff-of-means). The module's own docstring at `:118-122` states the trap verbatim:
+*"an `add` with a bare alpha injects an absolute residual magnitude unrelated to the natural effect
+size — at L18 the gap is 14.8, so alpha=1 would be ~7% of one diff-of-means."* The gap-unit fix was
+applied to the `d_surface` path and the refusalness path received a no-op instead.
+
+So the −0.0644 "sign reversal" compares a **magnitude-1.0** edit against a **magnitude-14.8** edit.
+It is not evidence of specificity. Corroboration that `F_addR` was simply under-dosed: the direction's
+own validation file records `induce_alpha: 8.0` as the dose that drives refusal to 1.0 — the arm used
+**1/8** of it, and moved ASR by −0.0111 (n.s.).
+
+**Also affected:** `E_removeS_addR` (its refusalness leg is magnitude 1.0), and `addBoth_025` (its
+refusalness leg is magnitude **0.25**, ~1/59 the relative dose of its `d_surface` leg — which is why
+`addBoth` −0.0348 is statistically indistinguishable from `addS` alone −0.0329; the refusalness leg was
+doing almost nothing).
+
+**NOT affected: the bidirectional `d_surface` result.** Both `d_surface:add:8-8:0.25` and
+`random:add:8-8:0.25` go through the same `:221` gap-unit path, injecting an identical
+0.25 × 6.0549 = **1.514**. That pair is genuinely dose-matched.
+
+### ⛔ And my coherence "PASS" verdicts were computed with the wrong statistic
+
+I hand-rolled a gate instead of calling the committed one. `coherence_gate.assess()` applies an
+8-word floor and a **scorable-fraction** check that my version omitted. Running the committed gate:
+
+| arm | uniq | 3-gram | scorable frac | committed verdict |
+|---|---|---|---|---|
+| `fuF25_addS` | 0.873 | 0.005 | **0.331** | ⛔ **DEGENERATE** |
+| `fuF25_addBoth` | 0.877 | 0.004 | **0.301** | ⛔ **DEGENERATE** |
+| `fuF_addR` | 0.864 | 0.006 | **0.475** | ⛔ **DEGENERATE** |
+| `fuF25_addCtrl8` | 0.851 | 0.008 | 0.677 | OK |
+| `fuF25_remR_addS` | 0.772 | 0.033 | 0.701 | OK |
+| *baseline* | 0.841 | 0.010 | **0.541** | OK (barely) |
+
+**My tick 12/15/16 "PASS" tables are withdrawn.** The correct tool was in the repo and I did not use it.
+
+#### But the failure mode is not the one the gate exists for — evidence, not assertion
+
+The gate's stated worry is *raised* ASR from broken text. Here ASR is **lowered**, and the excluded
+short rows are verified refusals, not collapse:
+
+| arm | rows < 8 words | of which refusal-phrased | empty | median words |
+|---|---|---|---|---|
+| baseline | 227 (46%) | **227 (100%)** | 0 | 14 |
+| `fuF25_addS` | 331 (67%) | **330 (100%)** | 0 | 6 |
+| `fuF25_addBoth` | 346 (70%) | **345 (100%)** | 0 | 6 |
+| `fuF_addR` | 260 (53%) | **260 (100%)** | 0 | 6 |
+
+The shortest generations read `"I can't fulfill that request."` / `"I can't help with that."` — clean
+English refusals. **The baseline itself is 46% short and would sit at 0.541, barely above the floor.**
+The arms trip the floor *because the intervention increases refusal*, which is the effect under study.
+
+**Correct disposition, and it is not "wave the gate away":** the arms are not degenerate in the
+broken-generation sense, but they **fail the repo's assessability floor**, and that floor exists
+because this project has been burned by exactly this reasoning before. So:
+
+> **The bidirectional `d_surface` result is DOWNGRADED from "citable" to "strong but gated."** The
+> add arm is dose-matched to an inert control and its suppression is corroborated by refusal rate
+> (0.9313 → 0.9879) and by clean refusal text — but it does not currently clear
+> `coherence_gate.assess()`, and no paper claim should rest on it until it does.
+
+The clean way to clear it is a **length-fair re-run** (the previous sprint's `coherence_lenfair.json`
+did exactly this for arm F), which raises the scorable fraction without changing the intervention.
+
+### Corrections queued
+
+1. **Do not change `score_behavior.py:178` silently** — every committed `refusalness:add` number depends
+   on it. Fix forward: add an explicit `gap`-unit mode for refusalness and re-run, keeping the old
+   spec readable. **Not done unilaterally; it is a scoring primitive under every committed result.**
+2. Re-run `refusalness:add` at a dose comparable to one diff-of-means (the direction's own
+   `induce_alpha` is 8.0) with a **gap-matched** random control.
+3. Length-fair re-run of `addS_025` / `addCtrl8_025` to clear the assessability floor.
+4. Call `coherence_gate.py` — never a hand-rolled statistic — for every future arm.
+
+
 ### ✅ Tick 16 — at α = 0.25 the control IS inert, and `d_surface` shows BIDIRECTIONAL control
 
 **Artifact:** `outputs/boombness_followup/phaseF_add_alpha025.json`. AdvBench 495 / 16 clusters,
@@ -1946,7 +2054,7 @@ This is the same trap as the previous sprint's **RETRACTION #8**, whose finding 
 random composition is a better jailbreak than `d_surface` on explicitly harmful prompts"*. Recorded
 before drawing any conclusion, not after.
 
-#### What survives, and it is a stronger form of specificity than inertness
+#### ⛔ What I claimed survived here is RETRACTED — see RETRACTION F-3
 
 Against its **matched** control — same layer, same dose, same operation — the real refusalness direction
 moves the **opposite way**:
