@@ -1791,6 +1791,77 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### ⚠ Phase F composed interventions — and the `add` controls are NOT inert
+
+**Artifact:** `outputs/boombness_followup/phaseF_composed.json`. AdvBench 495 / 16 clusters,
+Llama-3.1-8B, cluster-mean estimand on the continuous StrongReject score. Interventions at the two
+channels' established peaks (`d_surface` L8, refusalness L18), α = 1.0.
+
+| arm | intervention | ASR@0.5 | refusal | Δ_cl | p_cl | CI |
+|---|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — | — |
+| B_removeS | `d_surface:project_out:8-8` | 0.1071 | 0.8889 | +0.0305 | 0.0089 | [+0.0089, +0.0522] |
+| C_removeR | `refusalness:project_out:18-18` | 0.2707 | 0.7091 | +0.1895 | 0.0001 | [+0.1097, +0.2692] |
+| D_removeBoth | both | 0.3515 | 0.6222 | +0.2544 | 0.0000 | [+0.1589, +0.3499] |
+| **E_removeS_addR** | `d_surface:project_out:8-8` **+** `refusalness:add:18-18` | 0.0889 | 0.9091 | **+0.0211** | 0.0234 | [+0.0033, +0.0389] |
+| **F_addR** | `refusalness:add:18-18` | 0.0485 | 0.9515 | **−0.0111** | 0.2930 | [−0.0327, +0.0106] |
+| ⛔ ctrl_add8 | `random:add:8-8` | 0.1778 | 0.7838 | **+0.0889** | 0.0013 | [+0.0409, +0.1370] |
+| ⛔ ctrl_add18 | `random:add:18-18` | 0.1293 | 0.8768 | **+0.0533** | 0.0036 | [+0.0204, +0.0862] |
+
+#### The control failure, stated first
+
+**Adding a random norm-scaled direction is itself a strong jailbreak.** `random:add` at L8 gives
+**+0.0889 (p 0.0013)** — nearly **3× the effect of removing `d_surface`** at the same layer — and at L18
+**+0.0533 (p 0.0036)**. So **no `add` arm's magnitude may be read against baseline**; the reference has
+to be the matched random add.
+
+This is the same trap as the previous sprint's **RETRACTION #8**, whose finding was literally *"the
+random composition is a better jailbreak than `d_surface` on explicitly harmful prompts"*. Recorded
+before drawing any conclusion, not after.
+
+#### What survives, and it is a stronger form of specificity than inertness
+
+Against its **matched** control — same layer, same dose, same operation — the real refusalness direction
+moves the **opposite way**:
+
+| | Δ_cl |
+|---|---|
+| `refusalness:add:18-18` | **−0.0111** |
+| `random:add:18-18` | **+0.0533** |
+| **difference** | **−0.0644** |
+
+Adding a random vector at L18 *raises* compliance; adding the refusalness vector at the same layer and
+dose *lowers* it (and raises refusal 0.9313 → 0.9515, the highest of any arm). **A sign reversal against
+a matched control is a much stronger specificity result than an inert control**, because it cannot be
+explained by "the edit was large".
+
+#### The load-bearing arm, and why it is not yet reportable
+
+`E_removeS_addR` — remove `d_surface`, restore refusalness — gives **+0.0211** against
+`B_removeS`'s **+0.0305**, i.e. restoring refusalness **cancels about a third** of the `d_surface`
+removal effect (gap −0.0094). That is the direction plan hypothesis 5 predicts: `d_surface` supplies
+evidence the refusal mechanism uses, so putting refusalness back partly undoes the gain.
+
+⚠ **But E has no matched composed control**, and given `ctrl_add8`/`ctrl_add18` are both strongly
+active, the *unmatched* comparison is exactly the error this sprint has already made twice (F-1, F-2).
+**No claim is made from E until its control lands.** Submitted this tick:
+
+| job | tag | intervention |
+|---|---|---|
+| **768316** | `fuF_remS_addR_CTRL` | `random:project_out:8-8:1.0` **+** `random:add:18-18:1.0`, seed 20260901 |
+
+Still generating: 768071 `fuF_remR_addS`, 768072 `fuF_addS`, 768074 `fuF_addBoth` (the three
+`d_surface:add` arms, ~1h29 elapsed at 321–387 of 495).
+
+#### Provisional reading
+
+The removal half of Phase F is clean and controlled (B, C, D, plus the L12–L20 refusalness profile).
+The **addition** half is confounded by a jailbreaking random baseline and can only be read as
+*differences against matched random adds*. On that footing the one arm with a proper control —
+refusalness vs random at L18 — shows a **sign reversal**, which is the sprint's strongest
+direction-specificity evidence to date and stands in contrast to Phase B, where the same kind of test
+**failed** (RETRACTION F-2).
+
 ### ✅ ESTABLISHED — the refusalness layer profile, and a clean crossover with `d_surface`
 
 **Artifact:** `outputs/boombness_followup/refusalness_layer_profile.json`. Model Llama-3.1-8B-Instruct ·

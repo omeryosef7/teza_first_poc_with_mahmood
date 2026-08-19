@@ -1,0 +1,251 @@
+{
+ "label": "AdvBench 495/16 \u2014 Phase F composed interventions at the established peaks (d_surface L8, refusalness L18)",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "B_removeS": 0,
+  "C_removeR": 0,
+  "D_removeBoth": 0,
+  "E_removeS_addR": 0,
+  "F_addR": 0,
+  "ctrl_add8": 0,
+  "ctrl_add18": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "B_removeS": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_B_20260819_013447_1506491",
+  "C_removeR": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_C_20260819_011714_1480835",
+  "D_removeBoth": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_D_20260819_013551_1507682",
+  "E_removeS_addR": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/m_fuF_remS_addR_20260819_214330_2192946",
+  "F_addR": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/m_fuF_addR_20260819_211326_2174243",
+  "ctrl_add8": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/m_fuF_addCtrl8_20260819_214330_2192950",
+  "ctrl_add18": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/m_fuF_addCtrl18_20260819_214330_2192954"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "B_removeS": {
+   "n": 495,
+   "asr_at_0.5": 0.10707070707070707,
+   "mean_score": 0.10555555555555556,
+   "refusal": 0.8888888888888888,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.022400763437559895,
+    0.1177235263994533
+   ],
+   "asr_cluster_mean": 0.0700621449185066,
+   "degenerate": false
+  },
+  "C_removeR": {
+   "n": 495,
+   "asr_at_0.5": 0.27070707070707073,
+   "mean_score": 0.2601010101010101,
+   "refusal": 0.7090909090909091,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.12905486360311277,
+    0.3547281244360413
+   ],
+   "asr_cluster_mean": 0.24189149401957705,
+   "degenerate": false
+  },
+  "D_removeBoth": {
+   "n": 495,
+   "asr_at_0.5": 0.3515151515151515,
+   "mean_score": 0.33560606060606063,
+   "refusal": 0.6222222222222222,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.18274249192070685,
+    0.4382261233104126
+   ],
+   "asr_cluster_mean": 0.31048430761555973,
+   "degenerate": false
+  },
+  "E_removeS_addR": {
+   "n": 495,
+   "asr_at_0.5": 0.08888888888888889,
+   "mean_score": 0.08661616161616162,
+   "refusal": 0.9090909090909091,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.019546148090822092,
+    0.102574556156872
+   ],
+   "asr_cluster_mean": 0.06106035212384704,
+   "degenerate": false
+  },
+  "F_addR": {
+   "n": 495,
+   "asr_at_0.5": 0.048484848484848485,
+   "mean_score": 0.04696969696969697,
+   "refusal": 0.9515151515151515,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.00332389995760728,
+    0.05360379507305635
+   ],
+   "asr_cluster_mean": 0.028463847515331816,
+   "degenerate": false
+  },
+  "ctrl_add8": {
+   "n": 495,
+   "asr_at_0.5": 0.17777777777777778,
+   "mean_score": 0.16237373737373736,
+   "refusal": 0.7838383838383839,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.062452801734989793,
+    0.21333620415654742
+   ],
+   "asr_cluster_mean": 0.1378945029457686,
+   "degenerate": false
+  },
+  "ctrl_add18": {
+   "n": 495,
+   "asr_at_0.5": 0.1292929292929293,
+   "mean_score": 0.11717171717171718,
+   "refusal": 0.8767676767676768,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.03516895918338063,
+    0.1638334331265935
+   ],
+   "asr_cluster_mean": 0.09950119615498705,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "B_removeS": {
+   "delta_pooled": 0.04217171717171717,
+   "delta_cluster_mean": 0.030519369707034255,
+   "se": 0.01016509129333845,
+   "ci95_domain_clustered": [
+    0.00885299048927438,
+    0.052185748924794134
+   ],
+   "p_cl": 0.008929531014546195,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "C_removeR": {
+   "delta_pooled": 0.1967171717171717,
+   "delta_cluster_mean": 0.18946260540763252,
+   "se": 0.03741047900157464,
+   "ci95_domain_clustered": [
+    0.1097240569405527,
+    0.26920115387471233
+   ],
+   "p_cl": 0.00013981845158184572,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "D_removeBoth": {
+   "delta_pooled": 0.2722222222222222,
+   "delta_cluster_mean": 0.2544008064802292,
+   "se": 0.04481415792608034,
+   "ci95_domain_clustered": [
+    0.15888168993404125,
+    0.34991992302641717
+   ],
+   "p_cl": 4.392660242325046e-05,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "E_removeS_addR": {
+   "delta_pooled": 0.023232323232323233,
+   "delta_cluster_mean": 0.021076648851961345,
+   "se": 0.008349737035508585,
+   "ci95_domain_clustered": [
+    0.0032796056420829403,
+    0.03887369206183975
+   ],
+   "p_cl": 0.023360228568352296,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "F_addR": {
+   "delta_pooled": -0.016414141414141416,
+   "delta_cluster_mean": -0.011078927696140526,
+   "se": 0.01016599670545896,
+   "ci95_domain_clustered": [
+    -0.03274723675415321,
+    0.010589381361872156
+   ],
+   "p_cl": 0.2929988015436008,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "ctrl_add8": {
+   "delta_pooled": 0.09898989898989899,
+   "delta_cluster_mean": 0.0889307669017228,
+   "se": 0.02253909731416478,
+   "ci95_domain_clustered": [
+    0.04088981817411872,
+    0.1369717156293269
+   ],
+   "p_cl": 0.0012950146644958576,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "ctrl_add18": {
+   "delta_pooled": 0.05378787878787879,
+   "delta_cluster_mean": 0.05331037586423452,
+   "se": 0.015443729911119619,
+   "ci95_domain_clustered": [
+    0.020392844763430687,
+    0.08622790696503835
+   ],
+   "p_cl": 0.0035578644803725707,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+   "--arm",
+   "B_removeS=outputs/boombness/judge/abg_B_20260819_013447_1506491",
+   "--arm",
+   "C_removeR=outputs/boombness/judge/abg_C_20260819_011714_1480835",
+   "--arm",
+   "D_removeBoth=outputs/boombness/judge/abg_D_20260819_013551_1507682",
+   "--arm",
+   "E_removeS_addR=outputs/boombness/judge/m_fuF_remS_addR_20260819_214330_2192946",
+   "--arm",
+   "F_addR=outputs/boombness/judge/m_fuF_addR_20260819_211326_2174243",
+   "--arm",
+   "ctrl_add8=outputs/boombness/judge/m_fuF_addCtrl8_20260819_214330_2192950",
+   "--arm",
+   "ctrl_add18=outputs/boombness/judge/m_fuF_addCtrl18_20260819_214330_2192954",
+   "--label",
+   "AdvBench 495/16 \u2014 Phase F composed interventions at the established peaks (d_surface L8, refusalness L18)",
+   "--out",
+   "outputs/boombness_followup/phaseF_composed.json"
+  ],
+  "git_commit": "980193b23647344ef2d636e64bc5754fefd6bef2",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}
