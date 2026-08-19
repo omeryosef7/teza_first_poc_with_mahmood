@@ -31,9 +31,11 @@ import csv
 import hashlib
 import json
 import os
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import rows_sha16  # noqa: E402
 
 SOURCES = {
     "clearharm": ("data/clearharm/clearharm_179.csv", "instruction", "category"),
@@ -104,6 +106,44 @@ def main() -> int:
     with open(args.out, "w") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")
+
+    # E10 / the inert bank-identity guard. `judge_boombness` calls `common.compare_bank_hashes`,
+    # which is the check written specifically to catch "a bank from a DIFFERENT regeneration joined
+    # perfectly and silently" -- the stated root cause of retraction R1. It needs a `*_meta.json`
+    # beside the bank. The generated bank has one; these external banks never did, so every external
+    # judge run printed `BANK IDENTITY UNCHECKABLE` and the guard has been inert for exactly the
+    # banks this session regenerated (R-14). Writing it makes the check real.
+    #
+    # Two hashes, because they answer different questions and a single one has already caused a
+    # retraction by being ambiguous (`bank_content_sha16` meant file-bytes in a run metadata and
+    # row-content in a bank meta):
+    #   bank_file_sha16  sha256 of the file BYTES     -- catches "a different file"
+    #   bank_rows_sha16  sha256 over (prompt_id, prompt_sha16) -- catches "same rows, rewritten file"
+    # The rows hash is the one that matters here: adding `final_query_text` (R-14) changed the file
+    # bytes while leaving every row identity intact, and only the rows hash says so.
+    with open(args.out, "rb") as f:
+        file_sha = hashlib.sha256(f.read()).hexdigest()[:16]
+    rows_sha = rows_sha16((r["prompt_id"], r["prompt_sha16"]) for r in rows)
+    meta_path = args.out.replace(".jsonl", "_meta.json")
+    doms_count = {}
+    for r in rows:
+        doms_count[r["domain"]] = doms_count.get(r["domain"], 0) + 1
+    try:
+        git = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                             text=True).stdout.strip()
+    except Exception:
+        git = None
+    with open(meta_path, "w") as f:
+        json.dump({"source": args.source, "source_file": path,
+                   "stats": {"n_rows": len(rows),
+                             "bank_file_sha16": file_sha,
+                             "bank_rows_sha16": rows_sha,
+                             "n_domains": len(doms_count),
+                             "rows_per_domain": doms_count},
+                   "provenance": {"argv": sys.argv, "git_commit": git,
+                                  "python": sys.executable}}, f, indent=1)
+    print(f"[external_bank] meta -> {meta_path}  file_sha16={file_sha} rows_sha16={rows_sha}")
+
     doms = {}
     for r in rows:
         doms[r["domain"]] = doms.get(r["domain"], 0) + 1

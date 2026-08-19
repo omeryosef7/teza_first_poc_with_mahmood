@@ -2820,3 +2820,60 @@ minutes instead of weeks because these two tests assert regenerability rather th
 
 Suite now: **`test_estimand` + `test_fit_identity_and_ledger`: 84 passed, 2 skipped.**
 `verify_report_numbers.py` still passes 17/17 and `retraction_sweep.py` is clean.
+
+## ★ E10 closed — the inert bank-identity guard is now live, and turning it on nearly broke the pipeline
+
+`judge_boombness` calls `common.compare_bank_hashes`, the check written specifically to catch *"a bank
+from a different regeneration joined perfectly and silently"* — retraction **R1**'s stated root cause.
+It needs a `*_meta.json` beside the bank. The generated bank has one; **the external banks never did**,
+so every external judge run this session printed `BANK IDENTITY UNCHECKABLE` and the guard was inert
+for exactly the banks R-14 regenerated.
+
+`external_bank.py` now writes one, with **two** hashes because they answer different questions:
+
+| bank | `bank_file_sha16` (file bytes) | `bank_rows_sha16` (over `prompt_id`,`prompt_sha16`) | n |
+|---|---|---|---|
+| clearharm_179 | `737e305ce05ad5a2` | `64cccaa2b915d3ce` | 179 |
+| advbench_heldout_495 | `3113465f938aaa54` | `81961bb8738a59d5` | 495 |
+
+Regeneration verified byte-identical for the banks themselves (`git diff` empty) — only the meta files
+are new.
+
+### Turning it on immediately produced a mismatch, and the mismatch was RIGHT
+
+Run against a real pre-R-14 run (`ch_B`):
+
+```
+checked : ['bank_file_sha16', 'bank_rows_sha16']
+mismatch: ['bank_file_sha16']          <- file bytes differ
+                                        rows hash AGREES
+```
+
+That is a true and precise report: **R-14's fix added `final_query_text` to every external row, which
+changed the file bytes while leaving every row identity untouched.** The two-hash design says exactly
+that; a single ambiguous `bank_content_sha16` could not.
+
+### ⛔ And under the original rule it would have been FATAL — the guard would have blocked the repair
+
+`compare_bank_hashes(strict=True)` raised on **any** mismatch. So the moment the meta files existed,
+every pre-R-14 generation would have become **permanently unjudgeable against the corrected bank** —
+the guard would have blocked precisely the re-judging that fixed the defect it exists to prevent. I
+found this by running the guard against a real artifact instead of assuming it would behave.
+
+**Severity added:** a **rows** or **row-count** mismatch stays fatal (different prompts — R1). A
+**file-bytes-only** mismatch with row identity intact is **benign**, reported loudly and accepted.
+Four tests pin both directions, including that a rows mismatch still refuses.
+
+### Two more hardcoded-expectation tests fired on the power block, correctly
+
+`test_b_the_two_functions_really_do_differ_on_the_committed_bank` pinned `71bea179345ed118` /
+`7002854cf834e9f9` — the 2352-row bank's digests. The power block changed both.
+
+Rewritten to assert the **structural** property it is actually about (the two functions compute
+different things, and on a bank meta the legacy key means *rows*) against the committed meta, which
+moves with the bank. **Pinning a derived digest makes every legitimate bank change edit a magic string,
+and the magic string gets pasted without thought the second time** — which is how a guard becomes
+decorative. Its legacy-key assertion is now conditional too: `prompt_families` has been fixed to write
+the unambiguous name, so requiring the legacy key would have punished the repair.
+
+**Suite: 88 passed** across `test_common_provenance` + `test_fit_identity_and_ledger`.

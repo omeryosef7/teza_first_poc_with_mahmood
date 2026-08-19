@@ -1082,11 +1082,39 @@ def compare_bank_hashes(run_meta: Dict[str, Any], bank_meta: Dict[str, Any],
     else:
         verdict["checked_weak"] = []
     verdict["ok"] = bool(verdict["checked"]) and not verdict["mismatched"]
-    if strict and verdict["mismatched"]:
+
+    # SEVERITY (2026-08-19). Not every mismatch is the same defect, and treating them alike would
+    # have broken the pipeline the moment the external banks gained a `*_meta.json`.
+    #
+    #   bank_rows_sha16 / bank_n_rows differ -> the run saw DIFFERENT PROMPTS. Fatal: this is
+    #       retraction R1's root cause, joining across regenerations by prompt_id.
+    #   ONLY bank_file_sha16 differs        -> same rows, rewritten file. BENIGN, and it happens
+    #       for a good reason: R-14's fix added `final_query_text` to every external row, which
+    #       changed the file bytes while leaving every row identity untouched (verified: 0 old
+    #       prompt_ids missing, 0 old rows altered). Refusing here would make every pre-R-14
+    #       generation permanently unjudgeable against the corrected bank -- i.e. the guard would
+    #       block exactly the re-judging that fixed the defect it exists to prevent.
+    #
+    # So `strict` refuses on identity, warns on bytes. The two-hash design is what makes the
+    # distinction possible; a single ambiguous `bank_content_sha16` could not express it.
+    FATAL_KEYS = ("bank_rows_sha16", "bank_n_rows")
+    fatal = [k for k in verdict["mismatched"] if k in FATAL_KEYS]
+    benign = [k for k in verdict["mismatched"] if k not in FATAL_KEYS]
+    verdict["mismatched_fatal"] = fatal
+    verdict["mismatched_benign"] = benign
+    if benign and not fatal:
+        verdict["benign_note"] = (
+            "file bytes differ but row identity matches: the bank file was rewritten without "
+            "changing which prompts it contains (e.g. R-14 adding `final_query_text`). The join "
+            "is sound.")
+        print(f"[compare_bank_hashes] NOTE: {benign} differ but row identity matches — "
+              f"the bank file was rewritten without changing which prompts it contains. "
+              f"Join accepted.")
+    if strict and fatal:
         raise SystemExit(
             f"[compare_bank_hashes] REFUSING: the run consumed a DIFFERENT bank than the one it is "
             f"being joined against: "
-            f"{[(k, a.get(k, n_run), b.get(k, n_bank)) for k in verdict['mismatched']]}. This bank "
+            f"{[(k, a.get(k, n_run), b.get(k, n_bank)) for k in fatal]}. This bank "
             f"has been regenerated three times this sprint (1464 -> 1752 -> 2352 rows); joining "
             f"across regenerations by prompt_id is retraction R1's stated root cause.")
     if require_checked and not verdict["checked"]:

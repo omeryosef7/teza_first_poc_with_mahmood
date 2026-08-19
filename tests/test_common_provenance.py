@@ -378,10 +378,31 @@ def test_b_the_two_functions_really_do_differ_on_the_committed_bank():
             r = json.loads(line)
             pairs.append((str(r["prompt_id"]), str(r["prompt_sha16"])))   # ids/hashes only
     file_sha, rows_sha = h.hexdigest()[:16], common.rows_sha16(pairs)
-    assert file_sha != rows_sha
-    assert file_sha == "71bea179345ed118" and rows_sha == "7002854cf834e9f9"
+    # THE POINT OF THIS TEST is that the two functions compute DIFFERENT things from the same file --
+    # that is the defect (`bank_content_sha16` meant file-bytes in a run metadata and row-content in a
+    # bank meta, and nothing compared them). It is NOT about the specific digests.
+    #
+    # An earlier version pinned `file_sha == "71bea179345ed118"` and `rows_sha == "7002854cf834e9f9"`,
+    # which were the 2352-row bank's values. Adding the `core2x2_slot3` power block (R-18) changed
+    # both, and this test failed — correctly, and for a reason that had nothing to do with what it
+    # is testing. Pinning a derived digest makes every legitimate bank change edit a magic string,
+    # and the magic string gets pasted without thought the second time. The structural properties
+    # are asserted instead, against the committed meta, which moves with the bank.
+    assert file_sha != rows_sha, "the two hash functions must not agree, or the distinction is moot"
+    assert len(file_sha) == len(rows_sha) == 16
     stats = json.load(open(BANK_META))["stats"]
-    assert stats[common.LEGACY_BANK_HASH_KEY] == rows_sha
+    assert stats["n_rows"] == len(pairs), "bank meta row count disagrees with the bank file"
+    assert stats.get("bank_rows_sha16", stats.get(common.LEGACY_BANK_HASH_KEY)) == rows_sha, \
+        "the committed bank meta's rows hash does not match the bank on disk"
+    # The legacy key is only present on banks written before `prompt_families` was fixed to emit the
+    # unambiguous name. Assert it WHEN PRESENT (that is the calibration claim: on a bank meta the
+    # legacy value means ROWS), and never require it — requiring it would fail every bank generated
+    # after the fix, i.e. the test would punish the repair.
+    if common.LEGACY_BANK_HASH_KEY in stats:
+        assert stats[common.LEGACY_BANK_HASH_KEY] == rows_sha, \
+            "on a bank meta the legacy key must carry the ROWS hash, not the file hash"
+    else:
+        assert stats["bank_rows_sha16"] == rows_sha
     assert common.bank_hashes(stats, legacy="rows")["bank_rows_sha16"] == rows_sha
     assert common.bank_hashes({common.LEGACY_BANK_HASH_KEY: file_sha},
                               legacy="file")["bank_file_sha16"] == file_sha
@@ -725,3 +746,60 @@ def test_d_return_signature_is_unchanged_for_existing_callers():
     flags, clusters = _clustered(30, [0.3, 0.4, 0.5], seed=1)
     lo, hi, G = common.clustered_proportion_ci(flags, clusters)
     assert G == 3 and 0.0 <= lo <= hi <= 1.0
+
+
+# --------------------------------------------------------------------------------------------- #
+# E10 / severity (2026-08-19). Giving the external banks a `*_meta.json` turned an inert guard live
+# — and immediately produced a `bank_file_sha16` mismatch on every pre-R-14 run, because R-14's fix
+# added `final_query_text` to every external row. Under the original all-mismatches-are-fatal rule
+# that would have made every pre-R-14 generation permanently unjudgeable against the corrected bank:
+# the guard would have blocked exactly the re-judging that fixed the defect it exists to prevent.
+# --------------------------------------------------------------------------------------------- #
+import pytest as _pytest
+
+
+def _run_meta(file_sha, rows_sha, n=179):
+    return {"bank_path": "/x/clearharm_179.jsonl", "bank_file_sha16": file_sha,
+            "bank_rows_sha16": rows_sha, "bank_n_rows": n}
+
+
+def _bank_meta(file_sha, rows_sha, n=179):
+    return {"stats": {"bank_file_sha16": file_sha, "bank_rows_sha16": rows_sha, "n_rows": n}}
+
+
+def test_file_only_mismatch_is_BENIGN_and_does_not_raise_under_strict():
+    """Same rows, rewritten file. Must be accepted, loudly."""
+    v = common.compare_bank_hashes(_run_meta("aaaa111122223333", "rrrr111122223333"),
+                                   _bank_meta("bbbb444455556666", "rrrr111122223333"),
+                                   strict=True)
+    assert v["mismatched_fatal"] == []
+    assert v["mismatched_benign"] == ["bank_file_sha16"]
+    assert "benign_note" in v
+
+
+def test_rows_mismatch_is_FATAL_under_strict():
+    """THE GUARD. Different prompts is retraction R1 and must still refuse."""
+    with _pytest.raises(SystemExit) as e:
+        common.compare_bank_hashes(_run_meta("aaaa111122223333", "rrrr111122223333"),
+                                   _bank_meta("aaaa111122223333", "SSSS999988887777"),
+                                   strict=True)
+    assert "REFUSING" in str(e.value)
+
+
+def test_row_count_mismatch_is_also_FATAL():
+    """n_rows is a weak identity but a difference in it is still a different bank."""
+    with _pytest.raises(SystemExit):
+        common.compare_bank_hashes(_run_meta("aaaa111122223333", "rrrr111122223333", n=179),
+                                   _bank_meta("aaaa111122223333", "rrrr111122223333", n=495),
+                                   strict=True)
+
+
+def test_the_external_banks_now_ship_a_meta_file():
+    """E10: without this the guard is inert for exactly the banks R-14 regenerated."""
+    for name in ("clearharm_179", "advbench_heldout_495"):
+        p = os.path.join(REPO, "data", "boombness_prompts", "external", f"{name}_meta.json")
+        assert os.path.exists(p), f"{name} has no *_meta.json; compare_bank_hashes cannot run"
+        st = json.load(open(p))["stats"]
+        assert st["bank_file_sha16"] and st["bank_rows_sha16"] and st["n_rows"]
+        assert st["bank_file_sha16"] != st["bank_rows_sha16"], \
+            "the two hashes must be computed differently, or the distinction is decorative"

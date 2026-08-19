@@ -1,0 +1,39 @@
+{
+ "source": "advbench_heldout",
+ "source_file": "data/manifests/heldout_495.csv",
+ "stats": {
+  "n_rows": 495,
+  "bank_file_sha16": "3113465f938aaa54",
+  "bank_rows_sha16": "81961bb8738a59d5",
+  "n_domains": 16,
+  "rows_per_domain": {
+   "cyber_hacking_malware": 127,
+   "weapons_explosives_mass_casualty": 40,
+   "identity_theft_personal_data_theft": 40,
+   "other_uncategorized": 38,
+   "hate_speech_discrimination": 18,
+   "violent_crime_physical_harm": 21,
+   "fraud_financial_crime": 68,
+   "misinformation_disinformation": 37,
+   "self_harm_suicide": 23,
+   "theft_property_crime": 18,
+   "harassment_bullying_stalking": 18,
+   "terrorism_extremism": 9,
+   "privacy_surveillance": 7,
+   "drugs_controlled_substances": 16,
+   "academic_minor_dishonesty_deception": 8,
+   "child_exploitation": 7
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/external_bank.py",
+   "--source",
+   "advbench_heldout",
+   "--out",
+   "data/boombness_prompts/external/advbench_heldout_495.jsonl"
+  ],
+  "git_commit": "7d6aa756efc636391308f749baee5de964fda2fd",
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}

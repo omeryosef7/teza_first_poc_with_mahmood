@@ -1,0 +1,29 @@
+{
+ "source": "clearharm",
+ "source_file": "data/clearharm/clearharm_179.csv",
+ "stats": {
+  "n_rows": 179,
+  "bank_file_sha16": "737e305ce05ad5a2",
+  "bank_rows_sha16": "64cccaa2b915d3ce",
+  "n_domains": 6,
+  "rows_per_domain": {
+   "other_uncategorized": 127,
+   "weapons_explosives_mass_casualty": 31,
+   "cyber_hacking_malware": 17,
+   "drugs_controlled_substances": 1,
+   "identity_theft_personal_data_theft": 2,
+   "fraud_financial_crime": 1
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/external_bank.py",
+   "--source",
+   "clearharm",
+   "--out",
+   "data/boombness_prompts/external/clearharm_179.jsonl"
+  ],
+  "git_commit": "7d6aa756efc636391308f749baee5de964fda2fd",
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}
