@@ -186,7 +186,9 @@ def band_mean(rows: List[Dict], metric: str, band: Sequence[int]) -> Dict:
             per_row.append(v)
             by_p[r["prompt_id"]].append(v)
             by_d[r["domain"]].append(v)
-    return {"mean": mean(per_row), "sem_rowlevel_UNDERSTATES": sem(per_row),
+    pw = mean([sum(v) / len(v) for v in by_p.values() if v])
+    return {"mean_ROWWEIGHTED": mean(per_row), "mean_promptweighted": pw,
+            "sem_rowlevel": sem(per_row),
             "sem_by_prompt": clustered_sem(by_p), "sem_by_domain": clustered_sem(by_d),
             "n_rows": len(per_row), "n_prompts": len(by_p), "n_domains": len(by_d),
             "layers_used": used, "n_layers_used": len(used)}
@@ -229,6 +231,7 @@ def excess_vs_control(rows: List[Dict], metric: str, L: int, treated: str, contr
             continue
         key = (r["family_id"], r["prompt_id"])
         d = per[r["condition"]].setdefault(key, {})
+        d["n_demos"] = r.get("n_demo_occurrences", 0)
         if r.get("is_first_demo"):
             d["first"] = v
         if r.get("is_last_demo"):
@@ -239,7 +242,7 @@ def excess_vs_control(rows: List[Dict], metric: str, L: int, treated: str, contr
     def grad(cond):
         out = {}
         for key, d in per[cond].items():
-            if "first" in d and "last" in d and d["first"] != d["last"]:
+            if "first" in d and "last" in d and d.get("n_demos", 0) >= 2:
                 out.setdefault(fam_of[key], []).append((dom_of[key], d["last"] - d["first"]))
         return out
 
@@ -278,6 +281,7 @@ def paired_last_minus_first(rows: List[Dict], metric: str, L: int) -> Dict:
         v = r.get(c)
         if v is None or not isinstance(v, (int, float)) or not math.isfinite(v):
             continue
+        by_p[r["prompt_id"]]["n_demos"] = r.get("n_demo_occurrences", 0)
         if r.get("is_first_demo"):
             by_p[r["prompt_id"]]["first"] = v
         if r.get("is_last_demo"):
@@ -285,7 +289,13 @@ def paired_last_minus_first(rows: List[Dict], metric: str, L: int) -> Dict:
     diffs, doms = [], collections.defaultdict(list)
     dom_of = {r["prompt_id"]: r["domain"] for r in rows}
     for pid, d in by_p.items():
-        if "first" in d and "last" in d and d["first"] != d["last"]:
+        # A8 (review #1): the guard used to be `d["first"] != d["last"]`, using value inequality as a
+        # proxy for "this prompt has >=2 demos". That also dropped genuine multi-demo prompts whose two
+        # values happened to coincide -- 19 of 322,452 pairs, exclusively on ll|boombness, where the
+        # metric is coarse enough to collide. Keying on the recorded demo count instead makes paired_n
+        # stable across layers within a condition, so the excess subtracts two means over a FIXED
+        # prompt set rather than a layer-varying one.
+        if "first" in d and "last" in d and d.get("n_demos", 0) >= 2:
             diffs.append(d["last"] - d["first"])
             doms[dom_of.get(pid, "?")].append(d["last"] - d["first"])
     return {"paired_mean": mean(diffs), "sem_by_prompt": sem(diffs),
