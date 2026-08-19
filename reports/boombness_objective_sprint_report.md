@@ -1031,6 +1031,12 @@ Llama effect. `outputs/boombness/clearharm_decomposition_qwen3.json`.
 | **C** — remove refusalness @L20 | **0.1285** | 0.7207 | **−0.0042** | −0.0120 | 0.287 |
 | D — remove both | 0.2793 | 0.5475 | +0.1201 | +0.0557 | 0.081 |
 | Dctrl — double random | 0.1285 | 0.7039 | −0.0084 | −0.0100 | 0.358 |
+| **Bctrl band** — 3 random draws @L11 | **0.1322 ± 0.0116** | ~0.72 | — | — | inert; straddles baseline |
+
+*(The arm-B control band is matched to arm B — three re-seeded random projections at L11, accepted by
+the band guard on distinct generation hashes. Its between-draw sd of 0.0116 is close to Llama's 0.0129,
+so judge and sampling noise are comparable across models. **The control was never the problem**; G=6
+with one cluster holding 71% of rows is.)*
 
 **The channel that carries the effect is reversed between the two models.** On Llama, refusalness is
 the large mover (+0.240 pooled) and `d_surface` the small one (+0.083). On Qwen3 it is the other way
