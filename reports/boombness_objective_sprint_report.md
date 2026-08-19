@@ -146,6 +146,65 @@ by construction. (Three different denominators, so all three are stated.)
 
 ---
 
+## 1b. What was actually implemented (plan §15 item 2)
+
+Required by the plan and absent from both reports. This is the map a reader needs to check any number
+in this document against the code that produced it.
+
+**36 modules in `src/boombness/`, 32 test files, 584 passing tests, 244 committed run directories.**
+
+### Generation and audit
+| module | what it does |
+|---|---|
+| `prompt_families.py` | the aligned 2×2 generator — 2,352 prompts, 912 families, 6 domains, 7 `bank_block`s. Every family holds the four cells of the identification design. |
+| `demo_pools.py`, `make_manual_review.py` | demonstration pools; the 50-prompt human-review sample |
+| `tokenization_audit.py` | plan §2.4's mandatory audit — single-token codeword by construction, 0 alignment and 0 tokenization violations |
+| `external_bank.py` | plan §14 adapter: ClearHarm (179) and AdvBench held-out (495) into bank schema, with the source's own categories as clusters and the imbalance **reported at build time** rather than discovered later |
+
+### Representation
+| module | what it does |
+|---|---|
+| `signals.py` | readout construction. `string_option_readout` is the **whole-answer** instrument that replaced the single-next-token one (C-6) |
+| `extract_boombness.py` | activation extraction at both readout positions; fits `d_surface` / `d_context` / `d_naive` / `d_inter`; logit-lens Boombness; per-row `is_self_fit`, `is_final_occurrence`, `seq_len`, `token_pos` |
+| `probes.py`, `role_probes.py` | 6 probe regimes, domain group-k-fold, shuffled controls, nested layer selection |
+| `refusalness.py` | the refusal direction at both positions — matched footing for the R-5 retraction |
+
+### Intervention
+| module | what it does |
+|---|---|
+| `aggressive_patching.py` | §5 transplant + additive steering; the G1 design |
+| `surgical_knockout.py` | §10 attention-edge knockout; 11 arms incl. two edge-count-matched ones; `--dst`, `--demo-scope`, `--skip-arms` |
+| `score_behavior.py` | generation under intervention; composed arms; forced answer position; per-row `option_mass` and the tail gate |
+| `dominance.py`, `diagnose_knockout.py` | knockout diagnostics |
+
+### Scoring
+| module | what it does |
+|---|---|
+| `judge_boombness.py` | StrongReject via the house harness, with the **goal** built by mapping the codeword back to the concept — and per-row goal **status**, which is how R-14 was found |
+| `coherence_gate.py` | per-arm coherence, applied individually rather than pooled |
+
+### Analysis (all CPU, all committed, every gate-bearing number comes from here)
+`analyze_g1_g3` · `analyze_g2` · `analyze_g8` · `analyze_g9` · `analyze_g11` · `analyze_g64` ·
+`analyze_position` · `analyze_role` · `analyze_steering` · `analyze_boombness` ·
+`reanalyze_corrected` · `compare_runs` · **`analyze_external_arms`** (the §14 decomposition, incl. the
+paired super-additivity-vs-control test) · **`analyze_condition_profile`** (R-15) ·
+**`summarize_section8`** · **`summarize_section9`** · `retraction_sweep`
+
+### Infrastructure that carries the discipline
+| module | what it enforces |
+|---|---|
+| `common.py` | `RunDir` (refuses `finish()` without a `FailureLedger`), `clustered_proportion_ci`, `validate_direction_payload` (T8), `compare_bank_hashes`, `require_done`, seed + tokenizer revision |
+| `slurm/run_boombness.sh` | one GPU wrapper for every stage. Encodes the house traps: nodelist reduced not `--exclude`; `--export` truncates comma lists; argsfiles on the shared FS; **and now refuses an argsfile containing a quote**, because its args are word-split |
+| `retraction_sweep.py` | scans the deliverables for retracted figures asserted as fact; **exit 1 gates a commit** |
+
+### What the plan asked for and did not get
+* **§4.1's designed variance** (`strength`, `consistency`, `example_position`) — generated into three
+  dedicated `bank_block`s, analysed by nothing, and shown in **N12** to be unable to support inference.
+* **`prompt_level_correlation.py` / `example_count_sweep.py`** as *named* scripts — the work exists as
+  `summarize_section9.py` and `summarize_section8.py`, which read committed artifacts rather than
+  re-running the sweeps. Same outputs, different provenance path, recorded here rather than glossed.
+* **A second concept pair** — every claim in this report is carrot↔bomb (**E6**).
+
 ## 2. Where the meaning lives (§5, §7, §10) — G1 and G3
 
 ### G1: retrieved from the demonstrations at answer time, not stored in the codeword
