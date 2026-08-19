@@ -1112,19 +1112,35 @@ by the sanity gate passing 32/32 layers).
 The underlying regularity is that a token's projection on the surface axis *regresses toward zero* with
 repetition, and is re-asserted at the query. That is a property of repeated tokens, not of doublespeak.
 
-#### What survives, and what does not
+#### What survives, and what does not — **corrected 2026-08-19 19:15** (family-matched, domain-paired)
 
-| contrast | L8 | L12 | L18 | verdict |
-|---|---|---|---|---|
-| doublespeak − `benign_literal` (no mapping) | **+0.612** | **+0.682** | +1.745 | **survives.** ≈4σ against the combined domain-clustered sem. Teaching a codeword a referent steepens the gradient. |
-| doublespeak − `direct_codeword` (mapping stated) | +0.159 | +0.147 | +0.049 | ≈0 |
-| doublespeak − `benign_remap` (**benign** mapping taught) | **−0.258** | **−0.347** | −0.928 | **goes the wrong way** — but n = 24 pairs / 6 domains, sem 0.162. **Underpowered; not established either way.** |
+The tick-6 review found the excess was neither family-matched nor correctly errored (A3 + A4). Both are
+now fixed in `followup_token_level.py`: the excess restricts to the **228 families present in BOTH
+conditions** (66 doublespeak families, 22%, have no `benign_literal` twin and are dropped), and the SEM
+is over **per-domain excesses** rather than quadrature over two conditions' SEMs. Numbers below
+supersede the ones in commit `fef79630`.
 
-**The finding is that the demo-position gradient tracks *"this codeword has a taught referent"*, not
-*"the referent is harmful."*** Against the structure-matched benign control the doublespeak gradient is
-if anything *smaller*. I will not call that a null — at n = 24 pairs it cannot exclude a modest
-difference, and calling an underpowered null a finding of absence is defect **D-9** from Phase A.
-Powering the F cell is now a Phase C/D item.
+| contrast, `d_surface\|proj` | L8 | L12 | L18 |
+|---|---|---|---|
+| excess **as first published** (unmatched families, quadrature SEM) | +0.612 | +0.682 | +1.745 |
+| **excess, family-matched** | **+0.5414** | **+0.6402** | **+1.8719** |
+| domain-paired SEM | 0.1660 | 0.2147 | 0.4564 |
+| **t** (5 df) | **3.26** | **2.98** | **4.10** |
+
+So the doublespeak-specific gradient **survives** family matching — but at t ≈ 3 on 5 df (p ≈ 0.02–0.03),
+not the "about 4 sigma" I claimed. **That claim is corrected.**
+
+And the direction comparison, which is what RETRACTION F-2 was about, is unchanged by the fix — if
+anything sharper:
+
+| direction | L8 excess (t) | L12 excess (t) |
+|---|---|---|
+| `d_surface` | +0.5414 (**3.26**) | +0.6402 (**2.98**) |
+| `d_naive` | +0.6200 (4.24) | +0.7153 (3.32) |
+| `d_context` | +0.4430 (**4.10**) | +0.3764 (2.17) |
+
+At L8 `d_context`'s t (4.10) **exceeds** `d_surface`'s (3.26). There is no sense in which the token-level
+gradient is specific to the surface axis.
 
 #### Q2 — the query token, corrected
 
@@ -1141,13 +1157,25 @@ is condition-general: essentially zero excess over control. It becomes doublespe
 L18+, outside the causal band. **My earlier reading of this as representational corroboration of G1 is
 withdrawn.**
 
-#### Q3 — layer band (unchanged, and still the interesting tension)
+#### Q3 — layer band — **corrected: most of the depth trend was residual norm**
 
-The excess over control grows monotonically with depth: +0.478 (L6), +0.612 (L8), +0.550 (L10),
-+0.682 (L12), +1.745 (L18), +4.036 (L24), +6.492 (L30). The representational signal is **largest late**,
-while the causal `project_out` effect is confined to **L6–L12** and null from L16 out. The layers where
-the signal is biggest are not the layers where removing it changes behaviour. **This is now the sharpest
-open question in the sprint and it is Phase E's job.**
+The 4h review (F6) flagged that the "largest late" reading used unnormalised projections. On the
+**scale-free** `cos` readout, family-matched:
+
+| L | 4 | 6 | **8** | 10 | **12** | 16 | 18 | 24 | 31 |
+|---|---|---|---|---|---|---|---|---|---|
+| `proj` excess | 0.139 | 0.399 | 0.541 | 0.492 | 0.640 | 1.540 | 1.872 | 4.270 | **9.202** |
+| `cos` excess | 0.024 | 0.054 | 0.074 | 0.062 | 0.068 | 0.125 | 0.121 | **0.146** | 0.152 |
+| `cos` t | 2.01 | 2.91 | 3.87 | 3.11 | 2.99 | 4.23 | 4.13 | **4.89** | 3.62 |
+
+**`proj` grows 17.0× from L8 to L31; `cos` grows 2.0×.** The dramatic late rise was overwhelmingly
+**residual-norm growth**, not signal.
+
+A real but much weaker depth trend does survive on the scale-free metric: `cos` excess roughly doubles
+from the L6–L12 band (0.054–0.074) to a peak at L24 (0.146, t = 4.89). So the tension with the causal
+band still exists — the representational peak is at L24 while ablation only changes behaviour at
+L6–L12 — but it is a **2× discrepancy, not a 14× one**. The sprint's "sharpest open question" framing
+was inflated by the readout and is hereby scaled down.
 
 #### Q4 — direction specificity — ⛔ **RETRACTED (F-2), see the 4h review**
 
@@ -1451,10 +1479,10 @@ dissociation for Phase E3 to chase, not a control that "passes".
 | **A1/F10** | `phaseB_behavioral_allslots/…summary.json` at HEAD was still **pre-F-1**: unpaired `last_minus_first 3.0188`, row-weighted `query_minus_demo_all −2.5711`, and the false `"family_slot": "ALL"` string the fix commit claimed to remove. `fef79630` regenerated 5 of 6 summaries and missed it. | **FIXED** — regenerated, committed this tick. |
 | **F1** | Direction-specificity uncontrolled. | **RETRACTED F-2.** |
 | **F2** | Ground-truth table gave arms C/D as "L8". Actual: arm C = `refusalness:project_out:**18-18**`, arm D = `d_surface:8-8` **+** `refusalness:18-18`; Cctrl@18, Dctrl@8+18. Claim 5c's interaction spans **two depths**. | **FIXED** — and it *strengthens* the tick-4 dissociation reading. |
-| **A3** | `matched_control_excess` is **not family-matched**: 28% of doublespeak families have no `benign_literal` twin. Family-matched: L8 **+0.541** (vs +0.612), L12 **+0.640** (vs +0.682). Direction survives, quoted numbers do not. | **OPEN.** |
-| **A4** | The excess block emits **no uncertainty**; my "about 4 sigma" was quadrature, treating 6 domains as independent between conditions when they are paired. Domain-paired t: **4.02 (L8), 3.49 (L12)** on 5 df. Still significant, "4 sigma" overstated. | **OPEN.** |
-| **A2** | `curve()`/`band_mean()` pair a **row-weighted mean** with a **prompt-clustered SEM** for `demo_all`/`demo_middle` — L18 `demo_all` −4.851 (row) vs −5.485 (prompt), a gap ~10× the SEM printed beside it. Fix (c) reached `role_contrasts` only. | **OPEN.** |
-| **F6** | "Representational signal largest late" is mostly **residual-norm growth**: scale-free `cos` excess rises **1.9×** L8→L31 (0.081→0.150) vs `proj`'s **14.5×**, while mean `hnorm` grows 8.2×. | **OPEN — materially weakens the "sharpest open question".** |
+| **A3** | `matched_control_excess` was **not family-matched**: 66 of 294 doublespeak families (22%) have no `benign_literal` twin. | **FIXED tick 7** — restricted to the 228 shared families; L8 +0.5414, L12 +0.6402. |
+| **A4** | The excess block emitted **no uncertainty**; "about 4 sigma" was quadrature over two conditions treated as independent on the same 6 domains. | **FIXED tick 7** — SEM is now over per-domain excesses: **t = 3.26 (L8), 2.98 (L12), 4.10 (L18)** on 5 df. The "4 sigma" claim is corrected. |
+| **A2** | `curve()` paired a **row-weighted mean** with a **prompt-clustered SEM**. | **FIXED tick 7** — `curve()` now emits `mean_ROWWEIGHTED` and `mean_promptweighted` side by side, and the SEM field is renamed `sem_rowlevel` (no longer asserting an understatement that is false for 1-row-per-prompt roles, A6). |
+| **F6** | "Representational signal largest late" is mostly **residual-norm growth**. | **CONFIRMED AND CORRECTED tick 7** — family-matched, `proj` grows **17.0×** L8→L31 while `cos` grows **2.0×**. A real 2× depth trend survives (cos peaks L24, t 4.89); the 14× version does not. Phase B Q3 rewritten. |
 | **F9** | "% of generations changed" does **not** separate signal from noise: random controls change 22.0% / 30.7% / **33.9%** — the last more than `L15_B`'s 28.1%. Carries claims 5e and 5f too. | **OPEN — qualify everywhere.** |
 | **F7** | **No multiplicity correction** on the 11-depth profile though the plan requires it. Over 10 testable depths **Holm rejects nothing** (min adj p 0.0562); BH(0.05) keeps L8 and L12. | **OPEN.** |
 | **F3** | Two Do-Not-Cite **replacement** figures absent from their artifacts: role-framing `F(5,355)=20.30` is **not in `g11_role_full.json`**; "ratio inverts to 0.80" is **0.7472** @codeword_last and **1.5416** @last. | **FIXED** in the ledger. |

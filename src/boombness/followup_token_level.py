@@ -163,7 +163,9 @@ def curve(rows: List[Dict], metric: str, layers: Sequence[int]) -> Dict[str, Dic
             if c in r and v is not None and isinstance(v, (int, float)) and math.isfinite(v):
                 by_p[r["prompt_id"]].append(v)
                 by_d[r["domain"]].append(v)
-        out[str(L)] = {"mean": mean(vs), "sem_rowlevel_UNDERSTATES": sem(vs),
+        pw = mean([sum(v) / len(v) for v in by_p.values() if v])
+        out[str(L)] = {"mean_ROWWEIGHTED": mean(vs), "mean_promptweighted": pw,
+                       "sem_rowlevel": sem(vs),
                        "sem_by_prompt": clustered_sem(by_p), "sem_by_domain": clustered_sem(by_d),
                        "n_rows": len(vs), "n_prompts": len(by_p), "n_domains": len(by_d)}
     return out
@@ -201,6 +203,64 @@ def prompt_weighted_mean(rows: List[Dict], metric: str, L: int) -> float:
         if c in r and v is not None and isinstance(v, (int, float)) and math.isfinite(v):
             by_p[r["prompt_id"]].append(v)
     return mean([sum(v) / len(v) for v in by_p.values() if v])
+
+
+def excess_vs_control(rows: List[Dict], metric: str, L: int, treated: str, control: str) -> Dict:
+    """Treated-minus-control last-minus-first gradient, FAMILY-MATCHED and DOMAIN-PAIRED.
+
+    Two defects this fixes, both found by the 4h review:
+      A3 the previous version subtracted two pooled means over DIFFERENT family sets. 28% of
+         natural_doublespeak families (the strength / consistency / position blocks) have no
+         benign_literal twin, so "excess over the matched control" was not matched at all.
+         family_id carries no condition field, so the same family_id appears in both conditions and
+         the intersection is the correct restriction.
+      A4 the previous version emitted NO uncertainty, so the excess had to be given a SEM by
+         quadrature over the two conditions' domain SEMs -- which treats the 6 domains as
+         independent BETWEEN conditions when they are the same 6 domains. The paired SEM below is
+         over per-domain EXCESSES, which is the right unit."""
+    c = col(metric, L)
+    per = {t: {} for t in (treated, control)}
+    dom_of, fam_of = {}, {}
+    for r in rows:
+        if r["condition"] not in per or r.get("is_query_occurrence"):
+            continue
+        v = r.get(c)
+        if v is None or not isinstance(v, (int, float)) or not math.isfinite(v):
+            continue
+        key = (r["family_id"], r["prompt_id"])
+        d = per[r["condition"]].setdefault(key, {})
+        if r.get("is_first_demo"):
+            d["first"] = v
+        if r.get("is_last_demo"):
+            d["last"] = v
+        dom_of[key] = r["domain"]
+        fam_of[key] = r["family_id"]
+
+    def grad(cond):
+        out = {}
+        for key, d in per[cond].items():
+            if "first" in d and "last" in d and d["first"] != d["last"]:
+                out.setdefault(fam_of[key], []).append((dom_of[key], d["last"] - d["first"]))
+        return out
+
+    gt, gc = grad(treated), grad(control)
+    shared = sorted(set(gt) & set(gc))
+    by_dom: Dict[str, List[float]] = collections.defaultdict(list)
+    for fam in shared:
+        tv = [v for _, v in gt[fam]]
+        cv = [v for _, v in gc[fam]]
+        dm = gt[fam][0][0]
+        by_dom[dm].append(sum(tv) / len(tv) - sum(cv) / len(cv))
+    dom_means = {d: sum(v) / len(v) for d, v in by_dom.items()}
+    vals = list(dom_means.values())
+    return {"excess_family_matched": mean([x for v in by_dom.values() for x in v]),
+            "excess_domain_mean": mean(vals),
+            "sem_domain_paired": sem(vals),
+            "n_families_shared": len(shared),
+            "n_families_treated_only": len(set(gt) - set(gc)),
+            "n_families_control_only": len(set(gc) - set(gt)),
+            "n_domains": len(vals),
+            "per_domain_excess": {k: round(v, 6) for k, v in sorted(dom_means.items())}}
 
 
 def paired_last_minus_first(rows: List[Dict], metric: str, L: int) -> Dict:
@@ -418,9 +478,17 @@ def main() -> int:
             exc = {}
             for L in ml:
                 a, b = per_cond[args.condition][str(L)], per_cond[CONTROL_COND][str(L)]
+                fm = excess_vs_control(rows, m, L, args.condition, CONTROL_COND)
                 exc[str(L)] = {
-                    "paired_last_minus_first_EXCESS": (a["last_minus_first_demo_PAIRED"]
-                                                       - b["last_minus_first_demo_PAIRED"]),
+                    "paired_last_minus_first_EXCESS_UNMATCHED_FAMILIES": (
+                        a["last_minus_first_demo_PAIRED"] - b["last_minus_first_demo_PAIRED"]),
+                    "excess_FAMILY_MATCHED": fm["excess_family_matched"],
+                    "excess_domain_mean": fm["excess_domain_mean"],
+                    "sem_domain_paired": fm["sem_domain_paired"],
+                    "n_families_shared": fm["n_families_shared"],
+                    "n_families_treated_only": fm["n_families_treated_only"],
+                    "n_families_control_only": fm["n_families_control_only"],
+                    "per_domain_excess": fm["per_domain_excess"],
                     "query_minus_demo_all_EXCESS_promptweighted": (
                         a["query_minus_demo_all_PROMPTWEIGHTED"]
                         - b["query_minus_demo_all_PROMPTWEIGHTED"]),
