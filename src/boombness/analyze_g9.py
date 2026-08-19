@@ -89,6 +89,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import re
 import json
 import math
 import os
@@ -473,6 +474,9 @@ def build_parser(required: bool = True) -> argparse.ArgumentParser:
                     help="asserted readout position; BOTH inputs must have been read here")
     ap.add_argument("--cluster-by", default="domain")
     ap.add_argument("--min-examples", type=int, default=1)
+    ap.add_argument("--require-bank-block", default="", help="R-18: keep only these bank_blocks")
+    ap.add_argument("--slot0-only", action="store_true",
+                    help="R-18: drop sibling families (family_slot != 0); they reuse demonstrations")
     ap.add_argument("--out", required=required)
     return ap
 
@@ -568,6 +572,48 @@ def main() -> int:
     keys = [p for p in asr if p in bmb and p in rfs
             and (meta[p].get("n_examples") or 0) >= args.min_examples]
     keys.sort()
+
+    # ---- R-18: ROW PROVENANCE, ported from analyze_g2 --------------------------------------- #
+    # Same defect, same file pair: the filter is `condition == arm` and nothing else, so the
+    # published row set mixed sibling-slot families (which SHARE demonstrations with their slot-0
+    # sibling) with the strength/consistency/position blocks, which experimentally manipulate how
+    # readable the codeword is. On G2 that took within-domain rho from +0.2618 to -0.0518. The
+    # incremental-R2 table this script produces (R-13) was computed over the same mix.
+    def _slot_of(row):
+        v = row.get("family_slot")
+        if v is not None:
+            return v
+        m = re.search(r"\|slot(\d+)\|", row.get("family_id") or "")
+        return int(m.group(1)) if m else None
+
+    blocks = {p: (meta[p].get("bank_block"), _slot_of(meta[p])) for p in keys}
+    if args.require_bank_block:
+        want = {x.strip() for x in args.require_bank_block.split(",") if x.strip()}
+        before = len(keys)
+        keys = [p for p in keys if blocks[p][0] in want]
+        print(f"[G9] --require-bank-block {sorted(want)}: {before} -> {len(keys)} rows")
+    if args.slot0_only:
+        before = len(keys)
+        keys = [p for p in keys if blocks[p][1] in (0, None)]
+        print(f"[G9] --slot0-only: {before} -> {len(keys)} rows (sibling families dropped)")
+    row_composition = {
+        "by_bank_block": dict(collections.Counter(blocks[p][0] for p in keys)),
+        "by_family_slot": dict(collections.Counter(blocks[p][1] for p in keys)),
+        "n_analysed": len(keys),
+        "require_bank_block": args.require_bank_block or None,
+        "slot0_only": bool(args.slot0_only),
+        "note": "R-18. A count is not a description of a sample.",
+    }
+    print(f"[G9] ROW COMPOSITION (n={len(keys)}): {row_composition['by_bank_block']} "
+          f"| family_slot {row_composition['by_family_slot']}")
+    if not args.require_bank_block and not args.slot0_only:
+        sib = sum(v for k, v in row_composition["by_family_slot"].items() if k not in (0, None))
+        manip = sum(v for k, v in row_composition["by_bank_block"].items()
+                    if k in ("strength", "consistency", "position"))
+        if sib or manip:
+            print(f"[G9] ⚠ R-18 WARNING: {sib} sibling-slot and {manip} designed-variance row(s) "
+                  f"INCLUDED; the fit mixes pseudo-replicated and experimentally-manipulated rows.")
+
     if len(keys) < 30:
         raise SystemExit(f"[G9] only {len(keys)} joined rows — not enough to fit")
 
@@ -817,7 +863,8 @@ def main() -> int:
             return None
 
     out = {
-        "plan_section": "9", "arm": args.arm, "position": args.position,
+        "plan_section": "9", "row_composition": row_composition,
+        "arm": args.arm, "position": args.position,
         "outcome": "strongreject_score (continuous [0,1], NOT binary ASR@0.5)",
         "min_examples": args.min_examples,
         "inference": "CR1 sandwich, t(G-1) reference, plus within-domain permutation",

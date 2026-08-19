@@ -1952,3 +1952,53 @@ instance of yours"* — mismatched **footing** between two arms. This is the sam
 reads as sufficient and is not, and the artifact recorded `n_analysed: 234` without recording what the
 234 were. **A count is not a description of a sample.** Every analysis artifact in this project should
 record the composition of its rows, not just their number — `analyze_g2` now does.
+
+## R-18 blast radius, bounded — and R-13's ordering does not survive either
+
+### ✅ G1, G3 and the probes are CLEAN
+
+`aggressive_patching.py:1170`, `surgical_knockout.py:664` and `probes.py:275,288` all filter
+**`bank_block == "core2x2"`**, and the `core2x2` block is defined with `slots=[0]`. So **G1, G3 and every
+probe result are computed on independent, unmanipulated prompts.** R-18 does not touch them, and the
+two headline re-derivations of this session (G1 +68.9%, G3 75.2%) stand.
+
+That is the whole blast radius: **the defect is confined to the two scripts that filter on
+`condition` alone — `analyze_g2` and `analyze_g9`.**
+
+### `analyze_g9` had the identical defect, now fixed the same way
+
+`analyze_g9.py:522` — `condition == args.arm`, no `bank_block`. Ported the same row-provenance
+recording, the same `--require-bank-block` / `--slot0-only` filters, and the same warning.
+
+### ⛔ R-13's conclusion changes on the clean rows
+
+Incremental R² at matched df, `codeword_last`:
+
+| row set | n | Boombness adds over refusalness | refusalness adds over Boombness | ordering |
+|---|---|---|---|---|
+| **as published** | 234 | +0.0743 | **+0.1091** | refusalness ahead by 1.47× |
+| **clean** | **90** | **+0.0441** | **+0.0378** | **near-equal, Boombness marginally ahead** |
+
+**R-13 corrected the *degrees of freedom* of this table (5-vs-1 → 1-vs-1) and got the right answer for
+that question. It did not correct the *rows*, and on the clean rows the ordering it established —
+"refusalness adds more at the codeword token" — does not hold.** The two increments are within 0.007 of
+each other.
+
+⚠ **Do not now claim "Boombness adds more".** Both increments are ~0.04 on n=90 with G=6; neither is
+well estimated, and the honest statement is that **at matched df on clean rows neither predictor
+dominates**. The published 1.47× advantage was an artifact of the row set, the same way G2's ρ was.
+
+Consistent with G2's retraction, the clean fit also gives boombness β = +0.0557 pooled / **+0.0200
+within-domain, permutation p = 0.807** — a null, as expected once the manufactured correlation is
+removed.
+
+### §9 Q5 (C-9) on clean rows
+
+`n_examples` control: β +0.0557 → +0.0537, **retains 0.96**. The *robustness* to `n_examples` survives
+— but it is now robustness of a null, which is not a finding. C-9 stands as a method result and is
+withdrawn as evidence for G2.
+
+### Artifacts
+`g2_analysis_cwpos_CLEAN.json` · `g9_three_predictor_cwpos_CLEAN.json`, both beside their unfiltered
+counterparts, both carrying `row_composition`. **Every future run of either script records what its
+rows are, and warns when the mix is unsafe.**
