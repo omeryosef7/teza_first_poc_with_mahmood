@@ -15,10 +15,48 @@
       "--out",
       "outputs/boombness/g2_analysis_cwpos.json"
     ],
-    "git_commit": "f6e72a910ddf8c669a318854b0bccd16c6e53bd9",
+    "git_commit": "ee68fe85fe4eeaba063390137375b7eadc265694",
     "git_dirty": true,
     "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+    "inputs": {
+      "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+      "extract": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+      "score": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/base_20260816_203355_3985444",
+      "refusalness": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/refusalness/cwpos_20260817_050713_304734"
+    },
     "refusalness": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/refusalness/cwpos_20260817_050713_304734"
+  },
+  "row_composition": {
+    "n_rows_with_no_bank_block_recorded": 0,
+    "n_rows_with_no_family_slot_recoverable": 0,
+    "note": "R-18. The row set is filtered on `condition` only unless --require-bank-block / --slot0-only are passed. Sibling slots (family_slot != 0) reuse demonstrations from their slot-0 sibling and are NOT independent prompts; the strength / consistency / position blocks are experimental manipulations of codeword readability and do not belong in an observational correlation.",
+    "n_analysed_after_filters": 234,
+    "by_bank_block_BEFORE_filters": {
+      "core2x2": 60,
+      "strength": 24,
+      "consistency": 36,
+      "position": 12,
+      "role_style": 30,
+      "families": 72
+    },
+    "by_family_slot_BEFORE_filters": {
+      "0": 162,
+      "1": 36,
+      "2": 36
+    },
+    "by_bank_block": {
+      "core2x2": 60,
+      "strength": 24,
+      "consistency": 36,
+      "position": 12,
+      "role_style": 30,
+      "families": 72
+    },
+    "by_family_slot": {
+      "0": 162,
+      "1": 36,
+      "2": 36
+    }
   },
   "arm": "natural_doublespeak",
   "judge": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
@@ -29,6 +67,21 @@
   "n_analysed": 234,
   "n_zero_demo_excluded": 36,
   "min_examples": 1,
+  "layers": [
+    4,
+    8,
+    11,
+    12,
+    16,
+    18,
+    20,
+    24,
+    28,
+    31
+  ],
+  "headline_predictor": "d_surface|L12|proj",
+  "cluster_by": "domain",
+  "extract_position": "codeword_last",
   "representation_query_kinds": {
     "behavioral": 270
   },
@@ -42,8 +95,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.1722177423348767,
       "partial_p": 0.00828884173046471,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.31536521774839615,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 1,
+      "holm_thr": 0.001724137931034483
     },
     {
       "name": "d_surface|L12|proj",
@@ -54,8 +111,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.3016657305928492,
       "partial_p": 2.6037134946553157e-06,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.05891554337824199,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 2,
+      "holm_thr": 0.0017857142857142859
     },
     {
       "name": "d_surface|L11|cos",
@@ -66,8 +127,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.2654908386747633,
       "partial_p": 3.8963295380585835e-05,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.17676883088885242,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 3,
+      "holm_thr": 0.001851851851851852
     },
     {
       "name": "d_surface|L31|cos",
@@ -78,8 +143,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.25551853089256277,
       "partial_p": 7.699046636453325e-05,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.2039337904840461,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 4,
+      "holm_thr": 0.0019230769230769232
     },
     {
       "name": "d_surface|L12|cos",
@@ -90,8 +159,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.3173953998125674,
       "partial_p": 7.121872192104184e-07,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.05891554337824199,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 5,
+      "holm_thr": 0.002
     },
     {
       "name": "d_surface|L8|cos",
@@ -102,8 +175,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.18176887085623203,
       "partial_p": 0.005288578274263692,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.31536521774839615,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 6,
+      "holm_thr": 0.0020833333333333333
     },
     {
       "name": "d_surface|L11|proj",
@@ -114,8 +191,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.26140536491952365,
       "partial_p": 5.167312454716152e-05,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.17676883088885242,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 7,
+      "holm_thr": 0.002173913043478261
     },
     {
       "name": "logit_lens|L31",
@@ -124,10 +205,14 @@
       "sd": 3.0631311630212483,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.2596365606796834,
+      "partial_given_hnorm": 0.2596365606796833,
       "partial_p": 5.83082143392527e-05,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.2039337904840461,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 8,
+      "holm_thr": 0.002272727272727273
     },
     {
       "name": "d_surface|L4|proj",
@@ -136,10 +221,14 @@
       "sd": 0.13039547089594167,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.23406850967032478,
+      "partial_given_hnorm": 0.2340685096703248,
       "partial_p": 0.0003042109552519041,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.16302714831495407,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 9,
+      "holm_thr": 0.002380952380952381
     },
     {
       "name": "d_surface|L31|proj",
@@ -150,8 +239,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.2870091934858294,
       "partial_p": 8.154018938154347e-06,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.2039337904840461,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 10,
+      "holm_thr": 0.0025
     },
     {
       "name": "logit_lens|L28",
@@ -160,10 +253,14 @@
       "sd": 3.5992410544139455,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.22512298802821762,
+      "partial_given_hnorm": 0.22512298802821765,
       "partial_p": 0.0005206005700321556,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.14623169358792593,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 11,
+      "holm_thr": 0.002631578947368421
     },
     {
       "name": "semantic_logodds (n=162, OTHER prompt)",
@@ -174,8 +271,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": NaN,
       "partial_p": NaN,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": NaN,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 17,
+      "holm_thr": 0.0038461538461538464
     },
     {
       "name": "d_surface|L4|cos",
@@ -186,8 +287,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.2360521772386665,
       "partial_p": 0.00026928370310379696,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.16302714831495407,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 12,
+      "holm_thr": 0.002777777777777778
     },
     {
       "name": "d_surface|L28|proj",
@@ -198,8 +303,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.18770860156279814,
       "partial_p": 0.003955716629812489,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.14623169358792593,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 13,
+      "holm_thr": 0.0029411764705882353
     },
     {
       "name": "d_surface|L28|cos",
@@ -210,8 +319,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.17852365647728385,
       "partial_p": 0.00617586778901173,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.14623169358792593,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 14,
+      "holm_thr": 0.003125
     },
     {
       "name": "d_surface|L16|proj",
@@ -220,10 +333,14 @@
       "sd": 0.6112747442497248,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.20460555816696754,
-      "partial_p": 0.0016526196379828201,
+      "partial_given_hnorm": 0.20460555816696757,
+      "partial_p": 0.0016526196379828004,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.1308004167789307,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 15,
+      "holm_thr": 0.0033333333333333335
     },
     {
       "name": "d_surface|L24|proj",
@@ -234,8 +351,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.20961705205482145,
       "partial_p": 0.0012585829350802932,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.04734018702278739,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 16,
+      "holm_thr": 0.0035714285714285718
     },
     {
       "name": "d_surface|L24|cos",
@@ -246,8 +367,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.1950607660176376,
       "partial_p": 0.0027290499182050887,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.04734018702278739,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 18,
+      "holm_thr": 0.004166666666666667
     },
     {
       "name": "logit_lens|L24",
@@ -256,10 +381,14 @@
       "sd": 3.528088590909676,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.19611720521317083,
+      "partial_given_hnorm": 0.19611720521317078,
       "partial_p": 0.002584509385977153,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.04734018702278739,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 19,
+      "holm_thr": 0.004545454545454546
     },
     {
       "name": "logit_lens|L8",
@@ -270,8 +399,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": -0.21601717614954613,
       "partial_p": 0.0008807364519333842,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.31536521774839615,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 20,
+      "holm_thr": 0.005
     },
     {
       "name": "d_surface|L16|cos",
@@ -282,8 +415,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.1912334332112794,
       "partial_p": 0.003316226925334894,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.1308004167789307,
-      "holm_rejected": true
+      "holm_rejected": true,
+      "holm_m": 29,
+      "holm_rank": 21,
+      "holm_thr": 0.005555555555555556
     },
     {
       "name": "d_surface|L18|proj",
@@ -292,10 +429,14 @@
       "sd": 0.6577078211548459,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.1685024911202015,
+      "partial_given_hnorm": 0.16850249112020146,
       "partial_p": 0.009814997050516243,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.031619716179776616,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 22,
+      "holm_thr": 0.00625
     },
     {
       "name": "d_surface|L18|cos",
@@ -304,10 +445,14 @@
       "sd": 0.048620774692769965,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.17828351496937633,
-      "partial_p": 0.00624653741929329,
+      "partial_given_hnorm": 0.1782835149693763,
+      "partial_p": 0.006246537419293356,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.031619716179776616,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 23,
+      "holm_thr": 0.0071428571428571435
     },
     {
       "name": "logit_lens|L12",
@@ -318,8 +463,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": -0.18631192612207598,
       "partial_p": 0.004238477567101792,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.05891554337824199,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 24,
+      "holm_thr": 0.008333333333333333
     },
     {
       "name": "d_surface|L20|proj",
@@ -328,10 +477,14 @@
       "sd": 0.7269733188133896,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.1246821600663362,
+      "partial_given_hnorm": 0.12468216006633623,
       "partial_p": 0.05684575881408171,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.018623511560229462,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 25,
+      "holm_thr": 0.01
     },
     {
       "name": "d_surface|L20|cos",
@@ -342,8 +495,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.12886524520858822,
       "partial_p": 0.0489622812726092,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.018623511560229462,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 26,
+      "holm_thr": 0.0125
     },
     {
       "name": "logit_lens|L20",
@@ -352,10 +509,14 @@
       "sd": 1.3176337263094797,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.07416113150729377,
+      "partial_given_hnorm": 0.07416113150729378,
       "partial_p": 0.2585062240326519,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": 0.018623511560229462,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 27,
+      "holm_thr": 0.016666666666666666
     },
     {
       "name": "logit_lens|L16",
@@ -366,8 +527,12 @@
       "p_estimand": "rho_pooled (i.i.d.)",
       "partial_given_hnorm": 0.05911170722523282,
       "partial_p": 0.3680242310575778,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.1308004167789307,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 28,
+      "holm_thr": 0.025
     },
     {
       "name": "logit_lens|L4",
@@ -376,19 +541,66 @@
       "sd": 0.6301132541833975,
       "estimand": "rho_pooled",
       "p_estimand": "rho_pooled (i.i.d.)",
-      "partial_given_hnorm": 0.018145418492082063,
-      "partial_p": 0.7824652290127158,
+      "partial_given_hnorm": 0.01814541849208208,
+      "partial_p": 0.7824652290127132,
+      "partial_p_estimand": "rho_partial_hnorm_pooled (i.i.d.)",
       "hnorm_vs_asr": -0.16302714831495407,
-      "holm_rejected": false
+      "holm_rejected": false,
+      "holm_m": 29,
+      "holm_rank": 29,
+      "holm_thr": 0.05
     }
   ],
+  "holm_family": {
+    "m": 29,
+    "alpha": 0.05,
+    "members": [
+      "d_surface|L11|cos",
+      "d_surface|L11|proj",
+      "d_surface|L12|cos",
+      "d_surface|L12|proj",
+      "d_surface|L16|cos",
+      "d_surface|L16|proj",
+      "d_surface|L18|cos",
+      "d_surface|L18|proj",
+      "d_surface|L20|cos",
+      "d_surface|L20|proj",
+      "d_surface|L24|cos",
+      "d_surface|L24|proj",
+      "d_surface|L28|cos",
+      "d_surface|L28|proj",
+      "d_surface|L31|cos",
+      "d_surface|L31|proj",
+      "d_surface|L4|cos",
+      "d_surface|L4|proj",
+      "d_surface|L8|cos",
+      "d_surface|L8|proj",
+      "logit_lens|L12",
+      "logit_lens|L16",
+      "logit_lens|L20",
+      "logit_lens|L24",
+      "logit_lens|L28",
+      "logit_lens|L31",
+      "logit_lens|L4",
+      "logit_lens|L8",
+      "semantic_logodds"
+    ],
+    "estimand": "rho_pooled",
+    "p_estimand": "rho_pooled (i.i.d.) -- these are the i.i.d. pooled Spearman p-values, WITHDRAWN as the sole inference in retraction R1. The multiplicity correction for the citable within-domain estimand is in `layer_selection`, not here.",
+    "rule": "every predictor this run actually tested: the d_surface/logit_lens columns present on all analysed rows for --layers, plus semantic_logodds. Recorded because C-4 showed a Holm whose family size lives only in the code is a Holm nobody can check.",
+    "n_rows_per_member": {
+      "layer_columns": 234,
+      "semantic_logodds": 162
+    },
+    "members_are_not_all_on_the_same_rows": true
+  },
   "clustered_inference": {
     "predictor": "d_surface|L12|proj",
     "cluster_by": "domain",
     "n": 234,
     "n_clusters": 6,
     "rho_pooled": 0.306667780204175,
-    "rho_within_domain": 0.2617804790998131,
+    "rho_within_domain": 0.26178047909981317,
     "p_iid_pooled_rho": 1.7381137500164314e-06,
     "p_cr1_pooled_slope": 0.0011691638192428055,
     "p_perm_within_domain_rho": 0.0004997501249375312,
@@ -441,11 +653,480 @@
       "p": 0.7058725574204969
     }
   },
+  "layer_selection": {
+    "headline_predictor": "d_surface|L12|proj",
+    "headline": {
+      "rho_pooled": 0.306667780204175,
+      "rho_within_domain": 0.2617804790998132,
+      "p_perm_within_domain_rho": 0.0004997501249375312,
+      "p_perm_maxT_family": 0.0014992503748125937,
+      "p_perm_maxT_stepdown_family": 0.0014992503748125937,
+      "holm_rejected_within_domain": true,
+      "holm_thr": 0.002173913043478261,
+      "holm_rank": 6
+    },
+    "cluster_by": "domain",
+    "clustering_disabled": false,
+    "family_rule": "every predictor column the scan loop evaluated on all analysed rows: d_surface|L*|{cos,proj} and logit_lens|L* for the layers given by --layers, minus any column missing on some analysed row. semantic_logodds is EXCLUDED because it is read on a different prompt and a smaller row set, so it cannot share draws.",
+    "layers_scanned": [
+      4,
+      8,
+      11,
+      12,
+      16,
+      18,
+      20,
+      24,
+      28,
+      31
+    ],
+    "m": 28,
+    "family": [
+      "d_surface|L4|cos",
+      "d_surface|L4|proj",
+      "logit_lens|L4",
+      "d_surface|L8|cos",
+      "d_surface|L8|proj",
+      "logit_lens|L8",
+      "d_surface|L11|cos",
+      "d_surface|L11|proj",
+      "d_surface|L12|cos",
+      "d_surface|L12|proj",
+      "logit_lens|L12",
+      "d_surface|L16|cos",
+      "d_surface|L16|proj",
+      "logit_lens|L16",
+      "d_surface|L18|cos",
+      "d_surface|L18|proj",
+      "d_surface|L20|cos",
+      "d_surface|L20|proj",
+      "logit_lens|L20",
+      "d_surface|L24|cos",
+      "d_surface|L24|proj",
+      "logit_lens|L24",
+      "d_surface|L28|cos",
+      "d_surface|L28|proj",
+      "logit_lens|L28",
+      "d_surface|L31|cos",
+      "d_surface|L31|proj",
+      "logit_lens|L31"
+    ],
+    "n": 234,
+    "n_clusters": 6,
+    "n_perm": 2000,
+    "seed": 20260819,
+    "p_floor": 0.0004997501249375312,
+    "argmax_predictor": "d_surface|L8|proj",
+    "argmax_rho_within_domain": 0.2988494794926142,
+    "headline_is_family_argmax": false,
+    "per_predictor": {
+      "d_surface|L4|cos": {
+        "rho_pooled": 0.2381410629802972,
+        "rho_within_domain": 0.2147842512317195,
+        "p_perm_within_domain_rho": 0.0024987506246876563,
+        "p_perm_maxT_family": 0.018490754622688656,
+        "p_perm_maxT_stepdown_family": 0.013993003498250875,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.0029411764705882353,
+        "holm_rank": 12
+      },
+      "d_surface|L4|proj": {
+        "rho_pooled": 0.27470336810506674,
+        "rho_within_domain": 0.22521707728676443,
+        "p_perm_within_domain_rho": 0.001999000499750125,
+        "p_perm_maxT_family": 0.008995502248875561,
+        "p_perm_maxT_stepdown_family": 0.00849575212393803,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002777777777777778,
+        "holm_rank": 11
+      },
+      "logit_lens|L4": {
+        "rho_pooled": -0.027976115149542735,
+        "rho_within_domain": 0.030745378851327755,
+        "p_perm_within_domain_rho": 0.6466766616691654,
+        "p_perm_maxT_family": 1.0,
+        "p_perm_maxT_stepdown_family": 0.9140429785107447,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.025,
+        "holm_rank": 27
+      },
+      "d_surface|L8|cos": {
+        "rho_pooled": 0.2924592975632496,
+        "rho_within_domain": 0.227409113935658,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0079960019990005,
+        "p_perm_maxT_stepdown_family": 0.0079960019990005,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.0017857142857142859,
+        "holm_rank": 1
+      },
+      "d_surface|L8|proj": {
+        "rho_pooled": 0.34200203308752913,
+        "rho_within_domain": 0.2988494794926142,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0009995002498750624,
+        "p_perm_maxT_stepdown_family": 0.0009995002498750624,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.001851851851851852,
+        "holm_rank": 2
+      },
+      "logit_lens|L8": {
+        "rho_pooled": -0.18787290510061014,
+        "rho_within_domain": -0.16532796974692732,
+        "p_perm_within_domain_rho": 0.01199400299850075,
+        "p_perm_maxT_family": 0.15792103948025987,
+        "p_perm_maxT_stepdown_family": 0.09745127436281859,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.003125,
+        "holm_rank": 13
+      },
+      "d_surface|L11|cos": {
+        "rho_pooled": 0.3054625129472576,
+        "rho_within_domain": 0.2640940878513626,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0014992503748125937,
+        "p_perm_maxT_stepdown_family": 0.0014992503748125937,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.0019230769230769232,
+        "holm_rank": 3
+      },
+      "d_surface|L11|proj": {
+        "rho_pooled": 0.2812654436405468,
+        "rho_within_domain": 0.23915225452669278,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.00399800099950025,
+        "p_perm_maxT_stepdown_family": 0.00399800099950025,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002,
+        "holm_rank": 4
+      },
+      "d_surface|L12|cos": {
+        "rho_pooled": 0.3042309553236116,
+        "rho_within_domain": 0.25912533355901685,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0014992503748125937,
+        "p_perm_maxT_stepdown_family": 0.0014992503748125937,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.0020833333333333333,
+        "holm_rank": 5
+      },
+      "d_surface|L12|proj": {
+        "rho_pooled": 0.306667780204175,
+        "rho_within_domain": 0.2617804790998132,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0014992503748125937,
+        "p_perm_maxT_stepdown_family": 0.0014992503748125937,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002173913043478261,
+        "holm_rank": 6
+      },
+      "logit_lens|L12": {
+        "rho_pooled": -0.16579406141957387,
+        "rho_within_domain": -0.10743504141745404,
+        "p_perm_within_domain_rho": 0.08845577211394302,
+        "p_perm_maxT_family": 0.7106446776611695,
+        "p_perm_maxT_stepdown_family": 0.44177911044477763,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.005555555555555556,
+        "holm_rank": 20
+      },
+      "d_surface|L16|cos": {
+        "rho_pooled": 0.18279633563418243,
+        "rho_within_domain": 0.08684350090521697,
+        "p_perm_within_domain_rho": 0.191904047976012,
+        "p_perm_maxT_family": 0.8975512243878061,
+        "p_perm_maxT_stepdown_family": 0.6071964017991005,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.00625,
+        "holm_rank": 21
+      },
+      "d_surface|L16|proj": {
+        "rho_pooled": 0.21974189588281914,
+        "rho_within_domain": 0.12933101450042092,
+        "p_perm_within_domain_rho": 0.04097951024487756,
+        "p_perm_maxT_family": 0.46026986506746626,
+        "p_perm_maxT_stepdown_family": 0.2543728135932034,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.004545454545454546,
+        "holm_rank": 18
+      },
+      "logit_lens|L16": {
+        "rho_pooled": 0.07360310268584805,
+        "rho_within_domain": 0.04901600114306687,
+        "p_perm_within_domain_rho": 0.4357821089455272,
+        "p_perm_maxT_family": 0.999000499750125,
+        "p_perm_maxT_stepdown_family": 0.9140429785107447,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.01,
+        "holm_rank": 24
+      },
+      "d_surface|L18|cos": {
+        "rho_pooled": 0.1681490959840738,
+        "rho_within_domain": 0.06884942825062529,
+        "p_perm_within_domain_rho": 0.2818590704647676,
+        "p_perm_maxT_family": 0.9790104947526237,
+        "p_perm_maxT_stepdown_family": 0.7656171914042978,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.008333333333333333,
+        "holm_rank": 23
+      },
+      "d_surface|L18|proj": {
+        "rho_pooled": 0.17052749782746232,
+        "rho_within_domain": 0.07942761515612032,
+        "p_perm_within_domain_rho": 0.22438780609695153,
+        "p_perm_maxT_family": 0.9410294852573713,
+        "p_perm_maxT_stepdown_family": 0.670664667666167,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.0071428571428571435,
+        "holm_rank": 22
+      },
+      "d_surface|L20|cos": {
+        "rho_pooled": 0.12329948303605068,
+        "rho_within_domain": 0.02714396582237249,
+        "p_perm_within_domain_rho": 0.6781609195402298,
+        "p_perm_maxT_family": 1.0,
+        "p_perm_maxT_stepdown_family": 0.9140429785107447,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.05,
+        "holm_rank": 28
+      },
+      "d_surface|L20|proj": {
+        "rho_pooled": 0.12602024387728378,
+        "rho_within_domain": 0.047246128857530885,
+        "p_perm_within_domain_rho": 0.4767616191904048,
+        "p_perm_maxT_family": 0.999000499750125,
+        "p_perm_maxT_stepdown_family": 0.9140429785107447,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.0125,
+        "holm_rank": 25
+      },
+      "logit_lens|L20": {
+        "rho_pooled": 0.07616650591105847,
+        "rho_within_domain": 0.041736206570269954,
+        "p_perm_within_domain_rho": 0.5382308845577212,
+        "p_perm_maxT_family": 0.9995002498750625,
+        "p_perm_maxT_stepdown_family": 0.9140429785107447,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.016666666666666666,
+        "holm_rank": 26
+      },
+      "d_surface|L24|cos": {
+        "rho_pooled": 0.19890590390477778,
+        "rho_within_domain": 0.11514273879041488,
+        "p_perm_within_domain_rho": 0.07796101949025487,
+        "p_perm_maxT_family": 0.6271864067966016,
+        "p_perm_maxT_stepdown_family": 0.38780609695152424,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.005,
+        "holm_rank": 19
+      },
+      "d_surface|L24|proj": {
+        "rho_pooled": 0.2135391220259645,
+        "rho_within_domain": 0.143288086946913,
+        "p_perm_within_domain_rho": 0.029985007496251874,
+        "p_perm_maxT_family": 0.303848075962019,
+        "p_perm_maxT_stepdown_family": 0.1634182908545727,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.004166666666666667,
+        "holm_rank": 17
+      },
+      "logit_lens|L24": {
+        "rho_pooled": 0.19869930600373276,
+        "rho_within_domain": 0.15375473348045052,
+        "p_perm_within_domain_rho": 0.01899050474762619,
+        "p_perm_maxT_family": 0.223888055972014,
+        "p_perm_maxT_stepdown_family": 0.127936031984008,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.0035714285714285718,
+        "holm_rank": 15
+      },
+      "d_surface|L28|cos": {
+        "rho_pooled": 0.2285777960251446,
+        "rho_within_domain": 0.15446623956005093,
+        "p_perm_within_domain_rho": 0.022988505747126436,
+        "p_perm_maxT_family": 0.21989005497251374,
+        "p_perm_maxT_stepdown_family": 0.127936031984008,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.0038461538461538464,
+        "holm_rank": 16
+      },
+      "d_surface|L28|proj": {
+        "rho_pooled": 0.22954294459927327,
+        "rho_within_domain": 0.16282008517651658,
+        "p_perm_within_domain_rho": 0.01199400299850075,
+        "p_perm_maxT_family": 0.17341329335332334,
+        "p_perm_maxT_stepdown_family": 0.09895052473763119,
+        "holm_rejected_within_domain": false,
+        "holm_thr": 0.0033333333333333335,
+        "holm_rank": 14
+      },
+      "logit_lens|L28": {
+        "rho_pooled": 0.25491405642649495,
+        "rho_within_domain": 0.2324037099008224,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.005497251374312844,
+        "p_perm_maxT_stepdown_family": 0.005497251374312844,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002272727272727273,
+        "holm_rank": 7
+      },
+      "d_surface|L31|cos": {
+        "rho_pooled": 0.30510379549900407,
+        "rho_within_domain": 0.2461641816507067,
+        "p_perm_within_domain_rho": 0.0009995002498750624,
+        "p_perm_maxT_family": 0.0024987506246876563,
+        "p_perm_maxT_stepdown_family": 0.0024987506246876563,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.0025,
+        "holm_rank": 9
+      },
+      "d_surface|L31|proj": {
+        "rho_pooled": 0.2725609953318648,
+        "rho_within_domain": 0.24086091575708146,
+        "p_perm_within_domain_rho": 0.0009995002498750624,
+        "p_perm_maxT_family": 0.00399800099950025,
+        "p_perm_maxT_stepdown_family": 0.00399800099950025,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002631578947368421,
+        "holm_rank": 10
+      },
+      "logit_lens|L31": {
+        "rho_pooled": 0.27904792761305836,
+        "rho_within_domain": 0.26694938579802685,
+        "p_perm_within_domain_rho": 0.0004997501249375312,
+        "p_perm_maxT_family": 0.0014992503748125937,
+        "p_perm_maxT_stepdown_family": 0.0014992503748125937,
+        "holm_rejected_within_domain": true,
+        "holm_thr": 0.002380952380952381,
+        "holm_rank": 8
+      }
+    },
+    "nested_selection": {
+      "available": true,
+      "n_folds": 6,
+      "folds": [
+        {
+          "cluster": "city_bridge",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L8|proj",
+          "selected_rho_in_selection_folds": 0.29062083518439336,
+          "heldout_rho": 0.3444155161018329
+        },
+        {
+          "cluster": "farm_storage",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L8|proj",
+          "selected_rho_in_selection_folds": 0.2715149897158148,
+          "heldout_rho": 0.5312104909548604
+        },
+        {
+          "cluster": "game_manual",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L8|proj",
+          "selected_rho_in_selection_folds": 0.31848839697648335,
+          "heldout_rho": 0.2843002609398259
+        },
+        {
+          "cluster": "instructional",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L8|proj",
+          "selected_rho_in_selection_folds": 0.30279633685089496,
+          "heldout_rho": 0.30176084483139404
+        },
+        {
+          "cluster": "lab_safety",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L8|proj",
+          "selected_rho_in_selection_folds": 0.33336353506002125,
+          "heldout_rho": 0.022354449483289497
+        },
+        {
+          "cluster": "news_report",
+          "n_test": 39,
+          "skipped": false,
+          "selected_on_other_clusters": "d_surface|L12|proj",
+          "selected_rho_in_selection_folds": 0.28666684492965266,
+          "heldout_rho": 0.062404588311914685
+        }
+      ],
+      "n_folds_skipped": 0,
+      "n_folds_undefined": 0,
+      "in_sample_argmax_abs_rho_within_domain": 0.2988494794926142,
+      "heldout_selected_rho_weighted_mean": 0.2577410251038529,
+      "selection_cost_abs_rho": 0.04110845438876132,
+      "distinct_columns_selected": [
+        "d_surface|L12|proj",
+        "d_surface|L8|proj"
+      ],
+      "selection_is_stable": false
+    },
+    "fixed_headline_heldout": {
+      "available": true,
+      "folds": [
+        {
+          "cluster": "city_bridge",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.3444155161018329
+        },
+        {
+          "cluster": "farm_storage",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.4095315067019522
+        },
+        {
+          "cluster": "game_manual",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.32959709995265646
+        },
+        {
+          "cluster": "instructional",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.2344078242650269
+        },
+        {
+          "cluster": "lab_safety",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.020058587103924632
+        },
+        {
+          "cluster": "news_report",
+          "n_test": 39,
+          "skipped": false,
+          "heldout_rho": 0.062404588311914685
+        }
+      ],
+      "n_folds": 6,
+      "n_folds_skipped": 0,
+      "n_folds_undefined": 0,
+      "heldout_rho_weighted_mean": 0.23340252040621798
+    },
+    "marginal_p_cross_reference": {
+      "same_estimand": "rho_within_domain",
+      "this_block": 0.0004997501249375312,
+      "clustered_inference": 0.0004997501249375312,
+      "seed_here": 20260819,
+      "seed_clustered_inference": 20260817,
+      "note": "Two INDEPENDENT permutation draws of the same marginal quantity on the same rows, not two quantities and not one number reported twice; they differ by Monte-Carlo error only (n_perm draws => se ~ sqrt(p(1-p)/n_perm)). Neither is the citable number for a CHOSEN column: that is p_perm_maxT_stepdown_family."
+    },
+    "p_estimand": "rho_within_domain",
+    "estimand_note": "Every p here is a p-value for rho_within_domain, NEVER for rho_pooled. p_perm_within_domain_rho is the MARGINAL within-domain permutation p -- valid only for a column named before the data were seen; it is the number the pre-2026-08-18 artifact published for a column chosen out of m. p_perm_maxT_family is single-step Westfall-Young over the same shared draws (the correlation-aware analogue of Bonferroni). p_perm_maxT_stepdown_family is the free step-down version, which is uniformly at least as powerful and is THE ONE TO CITE for a chosen column. Holm over the marginal p-values is reported too: it is step-down but correlation-blind, so neither it nor single-step maxT dominates the other and they can disagree (on the Qwen3 artifact Holm rejects at m=28 while single-step maxT gives 0.061). All three control the family-wise error rate over the m columns.",
+    "nested_selection_note": "leave-one-cluster-out: the column is re-chosen by argmax |rho_within_domain| on the other clusters and evaluated on the held-out one, so no cluster contributes to both choosing and scoring. `fixed_headline_heldout` repeats the evaluation WITHOUT re-choosing, so the gap between the two isolates the cost of selection from ordinary out-of-sample shrinkage."
+  },
   "mediation": {
     "n": 234,
     "refusalness_best_layer": 20,
     "refusalness_best_r2": 0.17592816163661829,
-    "refusalness_joint_r2": 0.25649172291031286,
+    "refusalness_joint_r2": 0.25649172291031264,
     "refusalness_L12_sd_within_arm": 0.19393852675389,
     "refusalness_L14_sd_within_arm": 0.255591479710756,
     "refusalness_L16_sd_within_arm": 0.3200482316350851,
@@ -461,8 +1142,8 @@
       "delta_boombness_over_refusal": 0.027959497264913202,
       "r2_boombness_only": 0.11520078035499626,
       "delta_refusal_over_boombness": 0.046970851300122574,
-      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
-      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "r2_refusal_joint_plus_boombness": 0.27268266099506644,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064007018,
       "n_refusal_cols_single": 1,
       "n_refusal_cols_joint": 5,
       "n_boombness_cols": 1,
@@ -504,8 +1185,8 @@
       "delta_boombness_over_refusal": 0.013928361715175752,
       "r2_boombness_only": 0.11520078035499626,
       "delta_refusal_over_boombness": 0.06272850504338989,
-      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
-      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "r2_refusal_joint_plus_boombness": 0.27268266099506644,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064007018,
       "n_refusal_cols_single": 1,
       "n_refusal_cols_joint": 5,
       "n_boombness_cols": 1,
@@ -547,8 +1228,8 @@
       "delta_boombness_over_refusal": 0.04417746653544041,
       "r2_boombness_only": 0.11520078035499626,
       "delta_refusal_over_boombness": 0.06028900763058953,
-      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
-      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "r2_refusal_joint_plus_boombness": 0.27268266099506644,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064007018,
       "n_refusal_cols_single": 1,
       "n_refusal_cols_joint": 5,
       "n_boombness_cols": 1,
@@ -590,8 +1271,8 @@
       "delta_boombness_over_refusal": 0.04164137566908399,
       "r2_boombness_only": 0.11520078035499626,
       "delta_refusal_over_boombness": 0.09113468898699617,
-      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
-      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "r2_refusal_joint_plus_boombness": 0.27268266099506644,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064007018,
       "n_refusal_cols_single": 1,
       "n_refusal_cols_joint": 5,
       "n_boombness_cols": 1,
@@ -633,8 +1314,8 @@
       "delta_boombness_over_refusal": 0.04574033273067735,
       "r2_boombness_only": 0.11520078035499626,
       "delta_refusal_over_boombness": 0.10646771401229937,
-      "r2_refusal_joint_plus_boombness": 0.2726826609950662,
-      "delta_refusal_JOINT_over_boombness": 0.15748188064006996,
+      "r2_refusal_joint_plus_boombness": 0.27268266099506644,
+      "delta_refusal_JOINT_over_boombness": 0.15748188064007018,
       "n_refusal_cols_single": 1,
       "n_refusal_cols_joint": 5,
       "n_boombness_cols": 1,

@@ -1900,3 +1900,55 @@ proves agreement, not correctness**, and I should have said so when I wrote it.
 `bank_block` / `family_slot` filter to `analyze_g2` and `analyze_g9`, re-run, and report both the
 clean and the full estimate. **Not done in this tick because it changes a headline and should not be
 rushed at the end of one.**
+
+## ⛔⛔⛔ R-18 RESOLVED — G2 is RETRACTED
+
+`analyze_g2` now records the **row composition of the analysed set** in every artifact and warns when
+sibling-slot or designed-variance rows are included. Two runs, same inputs, same code:
+
+| | n | composition | ρ pooled | **ρ within-domain** | **p_perm (the cited estimand)** |
+|---|---|---|---|---|---|
+| **as published** | 234 | core2x2 60, strength 24, consistency 36, position 12, role_style 30, families 72 · slots {0:162, 1:36, 2:36} | +0.3067 | **+0.2618** | **5.00e-04** |
+| **clean** | **90** | **core2x2 60, role_style 30 · slots {0:90}** | **+0.0860** | **−0.0518** | **0.658** |
+
+**The within-domain correlation — the estimand this project's own artifact says to cite, "PAIRED WITH
+rho_within_domain, NOT WITH rho_pooled" — goes from +0.2618 (p=5e-4) to −0.0518 (p=0.658).** It does
+not shrink; it crosses zero and becomes a null.
+
+### G2 as published is withdrawn
+
+> ⛔ *"Boombness predicts attack success on Llama-3.1-8B: ρ=+0.307 pooled / +0.262 within-domain at
+> L12, n=234, 6/6 domains positive, p<5e-4."*
+
+That figure is computed over a row set in which **31% are sibling families that share demonstrations
+with their slot-0 siblings** (pseudo-replication — the R1 defect class) and **31% are rows whose
+codeword readability was *experimentally manipulated*** by the `strength` / `consistency` / `position`
+blocks. A manipulation that moves Boombness and ASR together manufactures exactly the correlation the
+statistic is supposed to discover observationally.
+
+**What is left:** on the 90 independent, unmanipulated prompts, **there is no detectable relationship
+between Boombness and attack success.** n=90 over 6 domains cannot exclude a small effect, so the
+honest verdict is **"not established"**, not "proven absent" — but it is no longer a positive finding
+and must stop being reported as one.
+
+### What else this touches
+
+* **G2's multiplicity defence** (maxT family-wise p=0.0015) was computed on the same 234 rows and
+  inherits the problem — surviving a layer-selection correction does not repair the row set.
+* **C-9** (`n_examples` is not a confound; partial ρ retains 99.9%) was computed on the same set. The
+  finding may still hold *within* it, but it was defending a correlation that is not there on the
+  clean rows.
+* **R-13's incremental-R² table** and the **§9 outputs** use the same arm filter via `analyze_g9`.
+* **§18's label** was argued partly from "the metrics are not non-predictive, G2 survives multiplicity
+  correction" as the reason to reject outcome **D**. That reason is now gone. The label was settled as
+  **C-amended** on §7c's *causal* evidence, which is unaffected — but the D-rejection needs rewriting
+  on those grounds instead.
+
+### The lesson, which is FM4 in a new place
+
+Every previous instance of this project's dominant failure was *"the best of mine against a fixed
+instance of yours"* — mismatched **footing** between two arms. This is the same error one level down:
+**the row set itself was heterogeneous, and nobody looked.** The filter was `condition == arm`, which
+reads as sufficient and is not, and the artifact recorded `n_analysed: 234` without recording what the
+234 were. **A count is not a description of a sample.** Every analysis artifact in this project should
+record the composition of its rows, not just their number — `analyze_g2` now does.

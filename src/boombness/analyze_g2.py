@@ -69,6 +69,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import re
 import json
 import math
 import os
@@ -453,6 +454,12 @@ def main() -> int:
                     help="seed for the family permutation. Deliberately NOT the clustered block's "
                          "20260817, so the two p-values are visibly independent draws of the same "
                          "estimand rather than one number reported twice (R-12's shape).")
+    ap.add_argument("--require-bank-block", default="",
+                    help="comma list of bank_block values to keep (R-18). Default: no filter, which "
+                         "is how the published n=234 came to include experimentally-manipulated rows.")
+    ap.add_argument("--slot0-only", action="store_true",
+                    help="drop sibling families (family_slot != 0). They reuse demonstrations from "
+                         "their slot-0 sibling and are not independent prompts (R-18).")
     ap.add_argument("--out", default=None)
     ap.add_argument("--allow-partial", action="store_true",
                     help="analyse a run with no DONE.json (output must not be reported)")
@@ -519,6 +526,79 @@ def main() -> int:
     kept = [p for p in keys if (n_examples[p] or 0) >= args.min_examples]
     zero = [p for p in keys if (n_examples[p] or 0) == 0]
 
+    # ---- R-18: ROW PROVENANCE. This filter is on `condition` and NOTHING ELSE, which is how the
+    # headline n=234 came to contain 72 sibling-slot families (which SHARE demonstrations with their
+    # slot-0 siblings -- pseudo-replication) and 72 rows from the `strength`/`consistency`/`position`
+    # blocks, which exist to EXPERIMENTALLY MANIPULATE how readable the codeword is. A manipulation
+    # that moves both Boombness and ASR manufactures correlation in an otherwise observational
+    # statistic. Measured: rho falls +0.3067 (n=234) -> +0.0860 (n=90) once both are removed, at the
+    # 0.4th percentile of random 90-row subsets.
+    #
+    # The composition is now ALWAYS recorded, whether or not it is filtered, so that this can never
+    # again be invisible to a reader of the artifact. That is the actual fix; the flags are a
+    # convenience.
+    def _slot_of(row):
+        """family_slot, from the row if present, else parsed from `family_id`.
+
+        The judge rows do NOT carry `family_slot`, so the first version of this check reported
+        `{None: 234}` and its sibling-row count as 0 -- a guard that cannot fire, which is the
+        defect this file is trying to expose. `family_id` is built as
+        `{domain}|{split}|slot{N}|n{n}|...` (prompt_families.py:341), so the slot is recoverable.
+        Returns None ONLY when neither source is available, and that count is reported.
+        """
+        v = row.get("family_slot")
+        if v is not None:
+            return v
+        fid = row.get("family_id") or ""
+        m = re.search(r"\|slot(\d+)\|", fid)
+        return int(m.group(1)) if m else None
+
+    blocks = {p: (meta[p].get("bank_block"), _slot_of(meta[p])) for p in kept}
+    unknown_prov = sum(1 for p in kept if blocks[p][0] is None)
+    unknown_slot = sum(1 for p in kept if blocks[p][1] is None)
+    composition = {
+        "by_bank_block": dict(collections.Counter(b for b, _ in blocks.values())),
+        "by_family_slot": dict(collections.Counter(sl for _, sl in blocks.values())),
+        "n_rows_with_no_bank_block_recorded": unknown_prov,
+        "n_rows_with_no_family_slot_recoverable": unknown_slot,
+        "note": ("R-18. The row set is filtered on `condition` only unless --require-bank-block / "
+                 "--slot0-only are passed. Sibling slots (family_slot != 0) reuse demonstrations "
+                 "from their slot-0 sibling and are NOT independent prompts; the strength / "
+                 "consistency / position blocks are experimental manipulations of codeword "
+                 "readability and do not belong in an observational correlation."),
+    }
+    if args.require_bank_block:
+        want = {x.strip() for x in args.require_bank_block.split(",") if x.strip()}
+        before = len(kept)
+        kept = [p for p in kept if blocks[p][0] in want]
+        print(f"[G2] --require-bank-block {sorted(want)}: {before} -> {len(kept)} rows")
+        composition["require_bank_block"] = sorted(want)
+    if args.slot0_only:
+        before = len(kept)
+        kept = [p for p in kept if blocks[p][1] in (0, None)]
+        print(f"[G2] --slot0-only: {before} -> {len(kept)} rows (sibling families dropped)")
+        composition["slot0_only"] = True
+    # Recompute AFTER filtering. The first version printed the PRE-filter composition next to a
+    # post-filter n, which is precisely the kind of mismatched label this whole check exists to
+    # prevent -- it showed `families: 72` on a run that had just dropped all 72 of them.
+    composition["n_analysed_after_filters"] = len(kept)
+    composition["by_bank_block_BEFORE_filters"] = composition.pop("by_bank_block")
+    composition["by_family_slot_BEFORE_filters"] = composition.pop("by_family_slot")
+    composition["by_bank_block"] = dict(collections.Counter(blocks[p][0] for p in kept))
+    composition["by_family_slot"] = dict(collections.Counter(blocks[p][1] for p in kept))
+    print(f"[G2] ROW COMPOSITION of the ANALYSED set (n={len(kept)}): "
+          f"{composition['by_bank_block']} | family_slot {composition['by_family_slot']}")
+    if not args.require_bank_block and not args.slot0_only:
+        sib = sum(v for k, v in composition["by_family_slot"].items() if k not in (0, None))
+        manip = sum(v for k, v in composition["by_bank_block"].items()
+                    if k in ("strength", "consistency", "position"))
+        if sib or manip:
+            print(f"[G2] ⚠ R-18 WARNING: {sib} sibling-slot row(s) and {manip} "
+                  f"designed-variance row(s) are INCLUDED. rho over this set mixes "
+                  f"pseudo-replicated and experimentally-manipulated prompts with the core design. "
+                  f"Re-run with --slot0-only --require-bank-block core2x2,extra_conditions,families "
+                  f"minus the manipulated blocks to see the clean estimate.")
+
     print(f"[G2] arm={args.arm}: {n_arm_total} judged prompts; {len(keys)} with a representation "
           f"({100*len(keys)/max(n_arm_total,1):.0f}% coverage); "
           f"{len(kept)} after --min-examples {args.min_examples}; {len(zero)} zero-demo dropped")
@@ -556,6 +636,7 @@ def main() -> int:
                        # kept for the consumers that already read them.
                        "inputs": dict(inputs),
                        "refusalness": inputs["refusalness"]},
+        "row_composition": composition,
         "arm": args.arm, "judge": inputs["judge"],
         "extract": inputs["extract"], "score": inputs["score"],
         "n_judged_in_arm": n_arm_total, "n_with_representation": len(keys),
