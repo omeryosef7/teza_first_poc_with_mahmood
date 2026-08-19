@@ -83,7 +83,14 @@ at the correct token). So the label is decided here rather than deferred again.
 | **A. Strong positive** | **No** | *Adding* Boombness does not increase attack behaviour — steering the axis suppresses ASR at **both** signs (G4), and no GCG objective was built or should be. |
 | **B. Mechanistic but not causal** | **No** | B requires that "interventions do not affect ASR **or** destroy comprehension". **Both clauses fail.** Removing `d_surface` raises external-set ASR (+0.0305, p_cl=0.0089, 16 clusters, inert control), and comprehension is not destroyed — it *improves* (R-6). |
 | **C. Refusal-only story** | **Closest** | On Llama refusal is the dominant channel: +0.190 against `d_surface`'s +0.031 on AdvBench. |
-| **D. Negative** | **No** | The metrics are not unstable or non-predictive: G2 survives multiplicity correction (maxT p=0.0015) and control for `n_examples`; G1 and G3 are both established. |
+| **D. Negative** | **No — but the margin narrowed on 2026-08-19** | ⛔ The original reason was *"G2 survives multiplicity correction and control for `n_examples`"*. **That reason is gone: G2 is retracted (R-18).** D is still rejected, but now only on the **intervention** evidence, which is the stronger ground anyway: `d_surface` is not "unstable, non-predictive or confounded after alignment fixes" — **removing it causally raises attack success on 495 external harmful prompts against an inert matched control** (§7c), it interacts with the refusal channel, and **G1 and G3 are both established** on independent core-design rows with the corrected readout. What D would require is that the metric fail to *do* anything; it does something, reliably, off-bank. What it does **not** do is *predict* — which is why the label is C-amended and not A. |
+
+⚠ **Updated 2026-08-19.** G2's retraction (R-18) removes the *correlational* leg of this argument
+entirely. The label rests on the **causal** evidence in §7c, which is unaffected — and the result is
+now sharper, not weaker: **Boombness does not predict attack success, and removing the direction it
+measures causally raises it.** Those are consistent (a representation can be causally load-bearing
+without its scalar projection tracking the outcome), but the sprint should stop describing Boombness as
+predictive anywhere.
 
 **The amendment, which is the sprint's actual result:** "refusal-only" is too strong in three specific ways.
 
