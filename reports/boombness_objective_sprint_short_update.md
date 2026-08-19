@@ -1,28 +1,62 @@
 # Boombness sprint — short update
 
-**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-17
-**Full log:** `docs/BOOMBNESS_SPRINT_PROGRESS.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
-**Branch:** `behavioral-causality-sprint` · all four gates answered.
+**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-19
+**Full report:** `reports/boombness_objective_sprint_report.md` ·
+**Live log:** `docs/BOOMBNESS_CONTINUATION_LOG.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
+**Branch:** `behavioral-causality-sprint`
 
-> **This is revision 9. Read only this one.**
-> - Revision 1's headline "Boombness beats refusalness 3.7×" is **retracted** — the two predictors
->   were read at different tokens. That retraction stands.
-> - Revision 3 then claimed refusalness *wins* at matched position and moved the label to **C**.
->   **That was also wrong**: it rested on a cell that was never measured (a wiring bug meant the
->   "last token" run moved the direction-fitting position but not the readout). Rerun on real cells,
->   **neither probe dominates** — both confidence intervals straddle 1.
-> - **§18 settles at B.** The surviving positive finding is about *position*, not direction.
+> ## The result, stated once
 >
-> - Revision 4 passed independent verification on all ten claim clusters, but the verifier found
->   **two wrong tables and thirteen disclosure gaps**, fixed here. The two that mattered: the
->   condition table was still on a mixed population (one cell's **sign** flipped), and the
->   "like for like" increment bullet was itself built on the mixed footing this report retracts.
+> **Boombness does not predict attack success — and removing the direction it measures causally
+> raises attack success.**
 >
-> - **Revision 6 adds the sprint's first clean causal result, and it INVERTS the guiding hypothesis:**
->   surgically *removing* Boombness **raises** ASR. Two further retractions land here too (#6 the role
->   null, #7 the control band). See the new section below.
+> Those are consistent, not contradictory: ablating a direction is a different operation from
+> regressing on its magnitude, and a projected scalar is a lossy summary of the direction it comes
+> from. But the objective this sprint set out to build assumed the two travel together — maximise the
+> axis, get more attack success — and **they do not**. It is dead for two independent reasons.
 >
-> Corrections ⚠, retractions ⛔.
+> **What survives, all causal, all on external harmful sets the prompt bank never generated:**
+> * Removing `d_surface` alone raises attack success on **AdvBench (495 prompts, 16 clusters)**:
+>   **+0.0305, p=0.0089**, against a matched random projection that is inert (−0.0062).
+> * The effect is **localized to a band of layers, ~L6–L14 with a core at L8–L12**, with a matched
+>   control inert at all eleven depths tested, and **exactly zero at L16** — where the same
+>   intervention still changes 29.5% of generations.
+> * It is **specific to this direction**: the effect tracks the cosine with `d_surface`. `d_context`,
+>   fitted by the same 2×2 on the same rows, changes 34.9% of generations and moves ASR by **zero**.
+> * Removing `d_surface` **and** refusal together exceeds the sum of the parts by
+>   **+0.0268 [+0.0029, +0.0584]** beyond a matched random triple — the two channels interact.
+> * **G1** (meaning lives in the demonstrations, not the codeword) and **G3** (the retrieval is
+>   attention-carried and massively redundant) both re-derived on a corrected readout.
+>
+> **§18 outcome label: C, amended** — refusal is the dominant channel on Llama, but `d_surface` is a
+> distinct and interacting second channel the label understates, and on Qwen3-14B the picture inverts.
+> ⛔ *An earlier revision of this document said "§18 settles at B". That is withdrawn: B requires that
+> interventions neither affect ASR nor destroy comprehension, and **both clauses fail.***
+
+> ## Retractions, newest first — read these before any number below
+>
+> - ⛔ **R-18/R-19 (2026-08-19) — G2 is RETRACTED, and the localization result is half retracted.**
+>   `analyze_g2` filtered rows on `condition` and **not** on `bank_block`, so its headline n=234 was
+>   31% sibling families sharing demonstrations and 31% rows whose codeword readability was
+>   *experimentally manipulated*. Within-domain ρ on clean rows: **−0.083** (n=60), **−0.052** (n=90),
+>   **−0.066, p=0.493** (n=108 powered). The published **+0.2618, p=5e-4** is recoverable only by
+>   putting the contaminated rows back. The same defect halves the position/localization finding.
+>   **Unaffected:** G1, G3 and the probes, which filter on `bank_block`.
+> - ⛔ **R-17** — the cross-model *causal* replication claim is withdrawn; Qwen3 complies with 0.8% of
+>   AdvBench, so an intervention cannot be measured against that floor.
+> - ⛔ **R-16 → reversed** — ClearHarm arm B is n.s. at G=6, but AdvBench's 16 clusters settle it.
+> - ⛔ **R-15** — "harm-general, not doublespeak-specific" was **one significant cell of six**; the
+>   split tracked sample size, not harm.
+> - ⛔ **R-14** — every external-set ASR was judged against an **empty goal**; banks fixed, all arms
+>   re-judged, arms moved ≤0.03.
+> - ⛔ **R-13** — the "matched footing" incremental table gave refusalness 5 predictors against
+>   Boombness's 1.
+> - ⛔ **R-12** — the control band was one draw stated three times; the real between-draw sd is
+>   0.0129, not 0.0048.
+> - Earlier: the 3.7× claim, the mixed-footing increments, the role null, the fake 4-draw band.
+>
+> Corrections ⚠, retractions ⛔. Every number in the full report is checked against its committed
+> artifact by `scripts/verify_report_numbers.py` (17/17 passing).
 
 ---
 
