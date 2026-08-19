@@ -1727,6 +1727,31 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### Tick 8 (2026-08-19 ~19:50) — all seven generation jobs COMPLETED, judging in flight
+
+| job | tag | state | elapsed | gens |
+|---|---|---|---|---|
+| 767585 | `fuR14_C` | COMPLETED 0:0 | 38:35 | 495 ✔ |
+| 767586 | `fuR14_Cctrl` | COMPLETED 0:0 | 30:59 | 495 ✔ |
+| 767587 | `fuR16_C` | COMPLETED 0:0 | 38:37 | 495 ✔ |
+| 767588 | `fuR16_Cctrl` | COMPLETED 0:0 | 21:35 | 495 ✔ |
+| 767589 | `fuR20_C` | COMPLETED 0:0 | 29:47 | 495 ✔ |
+| 767590 | `fuR20_Cctrl` | COMPLETED 0:0 | 20:37 | 495 ✔ |
+| 767591 | `fuR12_Cctrl` | COMPLETED 0:0 | 11:30 | 495 ✔ |
+
+All seven carry `DONE.json` and 495 generations. Judging launched as `k_fuR*`.
+
+**Process failure worth recording (cost, not correctness).** The first judge launch (`j_fuR*`) was
+killed at **~40 of 495 rows in all seven runs** — my wrapping shell command hit its 2-minute timeout and
+`SIGTERM` took the whole process group with it, `nohup` notwithstanding (exit 143). Those seven run dirs
+have no `DONE.json` and are correctly refused by `common.require_done`, so **no bad number can enter an
+artifact** — but roughly **280 judge calls were paid for and discarded**. Relaunched with
+`setsid … < /dev/null` so the children leave the process group; verified they survive a subsequent
+timeout. Dead dirs: `judge/j_fuR*_20260819_1943*`.
+
+**Standing rule added:** long-running judge or analysis jobs must be launched with `setsid`, and the
+monitoring call must never wrap them in a shell that can be timed out.
+
 ## Sprint Final Report
 
 _Not started._
