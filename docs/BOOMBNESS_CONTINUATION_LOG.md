@@ -2756,3 +2756,35 @@ early-mid (L6–L14) and is **zero at L18**. I expect refusalness to be **strong
 weak or absent early (L8, L12)** — i.e. the two profiles should be roughly complementary. If instead
 refusalness is also strongest at L8–L12, the two channels share a depth range and the distinctness
 claim rests entirely on cos = 0.019.
+
+## ★ The standing bar is now executable — `scripts/verify_report_numbers.py`
+
+This project's rule is *"every number in the final report must be regenerable by a committed script
+from a committed artifact; if you cannot point at the script and the artifact, the number does not go
+in."* Until now that rule was enforced **by reading**, and reading failed: **R-13's incremental-R²
+table matched no artifact in any commit, and nobody noticed for weeks.** `retraction_sweep.py` catches
+*retracted* figures still asserted as fact; nothing caught a *live* figure that was never derivable.
+
+The new checker asserts each headline claim three ways at once:
+
+1. the number in the report **equals** the number in its JSON artifact (to a stated tolerance);
+2. the artifact is **git-tracked** — `outputs/` is gitignored, so a cited artifact that was never
+   force-added looks fine locally and does not exist for anyone else;
+3. the number **still appears in the report** — catching the case where the deliverable is edited away
+   from its evidence.
+
+It deliberately does **not** recompute statistics; the analysis scripts own those. It checks the
+*chain* from artifact to sentence, which is the link that has actually broken.
+
+**17 checks, all passing** — G1's ±68.9% and −57.0%, G2's powered −0.066/p=0.493, G3's −13.437 against
+the −17.879 ceiling, §14-B's +0.0305/p=0.0089 with its −0.0062 control, §14-SA's +0.0333 and the paired
++0.0268, §14-L's +0.0322 peak and exact-zero L16, §14-D's +0.0449 and 0.399, and both direction
+cosines. Exit 1 on any failure, so it can gate a commit the way the sweep does.
+
+**Four tests break it on purpose** (`tests/test_verify_report_numbers.py`): a tampered artifact value
+(caught — `VALUE MISMATCH`), a number deleted from the report (caught — `NOT IN REPORT`), the
+git-tracking check being present at all, and a pass on the clean tree. Both destructive tests restore
+what they touched and re-assert a clean run afterwards, so a failure cannot leave the tree dirty.
+
+*This is the eighth guard this session and the first that protects the deliverable rather than a
+computation.*
