@@ -920,6 +920,21 @@ Same 72 prompts, target = the §2.6 comprehension log-odds:
 `probe_boombness` is positive and significant at **every** layer tested, and survives Holm at m=27.
 `direction_boombness` is positive and significant through the early-mid stack.
 
+### ⚠ "Three metrics" is not three independent constructs
+
+`direction_boombness` is a projection on `d_surface`. The extraction also fits `d_naive` — the same
+contrast without the 2×2's controls — and the two are **nearly collinear at every depth**
+(`outputs/boombness/direction_cosines.json`, heldout fit): cos = **0.9452 at L8**, **0.9390 at L12**,
+0.93–0.97 throughout. By contrast `d_context` and `d_inter` are near-orthogonal to `d_surface`
+(|cos| ≤ 0.24, mostly ≤ 0.19).
+
+So a reader should not take "three metrics of Boombness" to mean three independent operationalisations:
+the *probe* and the *logit lens* are genuinely different instruments, but any comparison between
+`d_surface` and `d_naive` would be a comparison of one direction with itself to within cos 0.94, and a
+difference there would be noise rather than a metric distinction. The sign disagreement this section
+reports is between the **direction** and the **logit-lens** metrics, which is the comparison that
+carries information.
+
 ### What this section concludes
 
 1. **The axis predicts comprehension far better than it predicts attack success.** That is the
