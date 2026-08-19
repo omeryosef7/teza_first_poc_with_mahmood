@@ -73,11 +73,20 @@ d_surface = ½[(B−C) + (E−A)]     the surface-word effect, context matched  
 d_context = ½[(C−A) + (B−E)]     what the naive direction mostly measures
 ```
 
-⛔ **SINGLE-MODEL as of 2026-08-17.** The correlation below is robust *in Llama* (survives dropping any
-domain, 6/6 domains positive) but **does not replicate on Qwen3-14B**: there the pooled ρ is a similar
-+0.364, yet dropping one domain (`game_manual`) collapses it to **+0.015**, only 3/6 domains are
-positive, and the domain-clustered p is **0.206**. The matching pooled figure was a coincidence, not a
-replication. Read every number in this section as Llama-3.1-8B-specific.
+⛔ **THE CORRELATION BELOW IS RETRACTED (R-18, 2026-08-19).** An earlier revision called it *"robust in
+Llama — survives dropping any domain, 6/6 domains positive"*. It is not robust; it is an artifact of
+which rows were in it. `analyze_g2` filtered on `condition` and not on `bank_block`, so 31% of its
+n=234 were **sibling families sharing demonstrations** and 31% were rows whose codeword readability had
+been **experimentally manipulated**. On clean rows the within-domain ρ is **−0.052** (n=90) and
+**−0.066, p=0.493** (n=108 powered) against a published **+0.2618, p=5e-4**.
+
+*(It also never replicated on Qwen3-14B — pooled +0.364 but +0.015 after dropping one domain, 3/6
+domains positive, clustered p=0.206. That non-replication now reads as the earlier signal, not the
+anomaly.)*
+
+**The 2×2 identification design below is unaffected and remains the sprint's reusable contribution** —
+it is what made `d_surface` and `d_context` separable, and the causal results in the head of this
+document all rest on it.
 
 ⛔ **RETRACTED 2026-08-19 (R-18) — read this before the numbers below.** The claim was
 *"Boombness predicts attack success within the doublespeak arm: ρ = +0.307 at L12, n = 234"*.
