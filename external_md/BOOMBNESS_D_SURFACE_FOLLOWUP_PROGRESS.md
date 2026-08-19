@@ -692,7 +692,7 @@ Implement this plan. Document progress in this external markdown file so we can 
 # Progress Log
 
 **Sprint started:** 2026-08-19. **Branch:** `behavioral-causality-sprint`.
-**Current phase:** B complete (self-review in flight). Phase C next.
+**Current phase:** C running (probe suite launched). B complete and corrected.
 **Gate status:** all six plan §0 claims reproduce from committed artifacts; 7 discrepancies and 5
 cross-cutting defects documented below before proceeding, per the plan's stop rule.
 
@@ -1192,7 +1192,59 @@ matches 0. Any combined Boombness/refusalness metric is restricted to behavioura
 
 ## Probe Validation and Leakage Checks
 
-_Not started. Phase C deliverable._
+**Status:** Phase C launched, running. First results due at the next loop tick.
+
+### Reuse assessment — `probes.py` already covers most of plan §5
+
+963 LOC, and it already implements six train/test regimes with the controls the plan demands:
+
+| plan §5 variant | `probes.py` regime | pool |
+|---|---|---|
+| simple lexical probe | `d1_simple` | whole bank |
+| aligned 2×2 probe | `d2_aligned` | `core2x2` |
+| hard-negative probe | `d3_hard_negative` | train on A vs B (the confounded diagonal), **test on the off-diagonal E and C** |
+| heldout-domain probe | `d4_heldout_ds` | train without cell C, evaluate on all |
+| surface-matched codeword probe | `d5_surface_matched_codeword` | A vs C, both surface "carrot" |
+| concept-surface probe | `d6_surface_matched_concept` | B vs E |
+| hazardous-object generalization | — | **not implemented**; plan marks it optional |
+
+Already built in: group-k-fold over **domains**, shuffled-label controls, `--null-draws` random-direction
+nulls, an explicit `check_leakage` gate (`--leak-tol` 0.05 AUROC, `--leak-z` 2.0), nested inner folds,
+and PCA-64 before the logistic fit — the last because an unregularised fit on ~576 examples in 4096
+dims returned **AUROC = 1.0000 at every layer including layer 0**, i.e. a saturated probe carrying no
+graded information. That trap is already guarded; it is the plan's "stupid probe" problem.
+
+**So Phase C needs no new probe code.** What it needs is the right *population* and an honest coverage
+statement.
+
+### The population decision, and the defect it avoids
+
+Run on the **2,352-row** extract cache (`full2352_20260818_115332_1410155/cache`, 592 MB), not the
+1,464-row one. Handover defect **R-10 / C-13** was exactly a probe cache built over 1,464 rows while
+the bank had grown to 2,352, so whole `bank_block`s had no cached representation and the artifact's
+own n's contradicted the prose.
+
+**Coverage limit found by reading the source, not the docs:** regimes `d2`–`d6` are hardcoded to
+`bank_block == "core2x2"` (`probes.py:275, 288, 293, 297, 300`). The handover's C-13 records this for
+`d5` only; it is in fact **five of the six regimes**. Only `d1_simple` sees the whole bank. That is a
+defensible design choice — the 2×2 identification design lives in `core2x2` — but it means probe AUROC
+is **not** a whole-bank quantity, and the plan's "evaluate probe coverage over the full current bank"
+must be answered as such. Recorded before results arrive so it cannot be quietly dropped afterwards.
+
+### Command (running)
+
+```
+$PY src/boombness/probes.py \
+  --run outputs/boombness/extract_boombness/full2352_20260818_115332_1410155 \
+  --regimes d1_simple,d2_aligned,d3_hard_negative,d4_heldout_ds,\
+            d5_surface_matched_codeword,d6_surface_matched_concept \
+  --folds 3 --null-draws 20 --emit-scores --tag fu2352
+```
+
+Writes a new run dir under `outputs/boombness/probes/fu2352_*` — it does **not** overwrite any
+committed artifact. Log: scratchpad `phaseC_probes.log`.
+
+
 
 ## Clean Fig-9-Style Boombness vs ASR Test
 
@@ -1249,6 +1301,15 @@ _No reviews yet. First review due 4h after sprint start._
   should fit a properly matched control.
 - **D-9:** ClearHarm's clusters are 127/31/17/2/1/1. Null results under clustering there are weak
   evidence of absence.
+
+### Loop
+
+30-minute progress loop armed — cron job `d3c35268`, `*/30 * * * *`, session-only, auto-expires after
+7 days. Each tick: check the 6 inherited SLURM jobs, harvest anything that finished, advance the current
+phase, update this file, commit and push, record blockers. Every 4h a deeper code/output review instead.
+
+**Tick 1 (2026-08-19 ~16:10).** All six jobs still `PD (Priority)` — no change since inheritance, so
+nothing to harvest. Phase C probe suite launched instead. No blockers.
 
 ### Process
 
