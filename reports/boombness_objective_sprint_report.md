@@ -1272,6 +1272,8 @@ findings did. Nothing here is a failed experiment; each is an answer.
 | N8 | Is the ClearHarm joint arm **super-additive** in its two components? | **Not established.** +0.0922 with a domain-clustered CI of [−0.147, +0.133]; 127 of 179 rows sit in one cluster, so the set cannot resolve it. AdvBench (16 clusters) is the right test. ⚠ Currently also blocked by R-14. | §7c |
 | N9 | Is `d_surface` "concept-ness" **off-bank**? | **Not licensed.** The 2×2 named the direction from a contrast that does not exist in a prompt with no codeword. Its off-bank behaviour needs its own interpretation. | §7c |
 | N10 | Do the probe splits **leak** across families? | **No** — the critique's leakage finding is refuted against a real K=20 null (max excess 0.021 against a 0.05 tolerance). A single reused permutation had been mistaken for a null distribution. | C-8 |
+| N13 | Does the `d_surface` causal effect **replicate on Qwen3-14B**? | **Not established, and neither external set can answer it** (R-17). On ClearHarm the point estimate is large (ASR 0.134 → 0.279) but n.s. at G=6 (p=0.181); on AdvBench it is null (p=0.657) — **because Qwen3 complies with only 0.8% of AdvBench** (4/495) against 13.4% of ClearHarm, a 16× drop where Llama drops 1.6×. An intervention cannot be measured against a floor. ⛔ An earlier draft claimed replication from pooled estimates; withdrawn. | §7c, **E11** |
+| N14 | Are two "external harmful sets" interchangeable? | **No, and the choice can decide the answer.** ClearHarm/AdvBench give Llama similar baselines (0.106 / 0.065) and Qwen3 wildly different ones (0.134 / 0.008). A cross-model comparison on **either alone** yields a confident, opposite, wrong conclusion. **Report baseline compliance beside every external-set ASR.** | §7c |
 | N12 | Can plan §4.1's **designed variance** (`strength`, `consistency`, `example_position`) be analysed? | **No, and it is now measured rather than assumed.** The 192 rows sit in three dedicated `bank_block`s (so they have never contaminated a published number — `core2x2` is all-default). But the largest available comparison is **12 behavioural rows per level**, smaller than cells R-15 just declared uninformative, and `position` is **6 vs 6, one row per domain per level**. Every non-default level also moves prompt length, codeword-occurrence count and `n_examples` **simultaneously** — `strength` takes `n_examples` from 4.91 to 2.00, and `n_examples` is a known ASR predictor. Documented and explicitly excluded; regeneration is **E8**. | §9b, E8 |
 | N11 | Is `n_examples` a **confound** for the Boombness↔ASR correlation? | **No.** It predicts ASR (ρ=+0.206) but is essentially uncorrelated with Boombness at `codeword_last` (ρ=−0.034); the partial ρ retains **99.9%** of the raw coefficient. | C-9 |
 
@@ -1428,6 +1430,12 @@ now has a caller, but the external banks ship no `*_meta.json`, so every externa
 `BANK IDENTITY UNCHECKABLE`. Writing the meta file is a few lines and converts a warning into a real
 guard — one that would have caught R-14's sibling (a bank from a different regeneration joining
 perfectly and silently, the stated root cause of retraction R1).
+
+**E11 — an external harmful set chosen for *Qwen3's* baseline compliance.** R-17 leaves "is `d_surface`
+causal on Qwen3?" open rather than answered: ClearHarm is under-powered at G=6 and AdvBench is a floor
+(0.8% baseline compliance). Both sets were inherited from the Llama pipeline. Selecting or filtering a
+set so the second model has real headroom — say 10–15% baseline compliance over ≥12 clusters — is the
+only way to settle it, and it is cheap: no new mechanism, no new generator, just a better-chosen bank.
 
 ### Explicitly NOT recommended
 
