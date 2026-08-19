@@ -2002,3 +2002,58 @@ withdrawn as evidence for G2.
 `g2_analysis_cwpos_CLEAN.json` · `g9_three_predictor_cwpos_CLEAN.json`, both beside their unfiltered
 counterparts, both carrying `row_composition`. **Every future run of either script records what its
 rows are, and warns when the mix is unsafe.**
+
+## ★ The experiment that can actually settle G2 — launched
+
+G2 is retracted, but on **n=90 over 6 domains**, which cannot exclude a small effect. "Not established"
+is the honest verdict and it is also an unsatisfying one. The clean sample is small **for a fixable
+reason**: `core2x2` uses `slots=[0]`, one family per design cell.
+
+### Why the existing sibling families could not be used, and why slot 3 can
+
+`prompt_families._take` returns `pool[(slot*3 + i) % 20]`, so slot *k* is disjoint from slot 0 exactly
+when `3k >= n` and `3k + n <= 20`:
+
+| n_examples | slot 1 | slot 2 | **slot 3** | slot 5 |
+|---|---|---|---|---|
+| 1, 2 | disjoint | disjoint | **disjoint** | disjoint |
+| 4 | **overlaps** | disjoint | **disjoint** | disjoint |
+| 8 | **overlaps** | **overlaps** | **disjoint** | overlaps |
+| 16 | impossible on a 20-sentence pool | | | |
+
+**That table is exactly why the `families` block (slots 1 and 2) is pseudo-replicated** and had to be
+excluded — it was built with the two slots that overlap. **Slot 3 is disjoint from slot 0 at every
+level up to 8**, which is the whole safe range on this pool.
+
+### What was added
+
+New block **`core2x2_slot3`**: the four core-2×2 conditions, all 6 domains, both splits,
+`n_examples ∈ {1, 2, 4, 8}`, `slots=[3]`, behavioural + `semantic_one_word` — **384 rows**.
+`n_examples=16` is **omitted rather than fudged**: it cannot be disjoint on a 20-sentence pool.
+
+Bank **2352 → 2736**, and the regeneration is **purely additive**, verified against the pre-change file:
+
+| check | result |
+|---|---|
+| old `prompt_id`s now missing | **0** |
+| old rows whose content changed | **0** |
+| new rows | 384, all `core2x2_slot3`, all `family_slot=3` |
+| slot-3 vs slot-0 sibling behavioural pairs with an **identical prompt** | **0 of 192** |
+
+So all 244 committed runs still join, exactly as with the `external_bank` fix.
+
+This roughly **doubles** the clean `natural_doublespeak` behavioural sample at the levels that matter
+(60 → ~108 at `n_examples ≥ 1`), which is the difference between "not established at n=90" and an
+answer.
+
+`tests/test_slot_disjointness.py` (5 tests) pins the index arithmetic, **including the negative case**
+— slots 1 and 2 *must* be shown to overlap, or R-18's pseudo-replication finding would need revisiting.
+
+**Launched:** `r18pow_extract` (766890) and `r18pow_base` (766891) on the expanded bank. Judge and the
+clean G2/G9 re-fits follow.
+
+⚠ **Recorded before the result, so it cannot be shaped by it:** the clean estimate at n=90 is
+ρ_within = **−0.052 (p=0.658)**, and core2x2-only at n=60 is **−0.083 (p=0.572)** — two independent
+subsets, both null, both negative. **I expect the enlarged sample to confirm a null.** If it instead
+shows a clear positive correlation, that would mean the clean subsets were unrepresentative in a way I
+have not identified, and I will say so rather than treating it as G2 restored.

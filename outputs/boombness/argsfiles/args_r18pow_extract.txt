@@ -1,0 +1,1 @@
+--bank /home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/boombness_prompt_bank.jsonl --stage both --layers all --logit-lens-layers 0,4,8,12,16,20,24,28,31 --directions d_surface,d_context,d_inter,d_naive --position codeword_last --readout-ids primary --dtype bfloat16 --seed 20260816 --tag r18pow

@@ -6,24 +6,29 @@
   "pools_sha16": "b5e399712b996b7d",
   "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
   "stats": {
-    "bank_content_sha16": "7002854cf834e9f9",
-    "n_rows": 2352,
+    "bank_rows_sha16": "4cd9157399aa1b3c",
+    "n_rows": 2736,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
     "n_benign_remap_rows": 72,
     "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
-    "n_2x2_families_checked": 240,
+    "n_2x2_families_checked": 336,
     "n_alignment_violations": 0,
     "alignment_violations": [],
     "by_condition": {
-      "benign_literal": 720,
+      "benign_literal": 816,
       "benign_remap": 72,
-      "concept_in_benign_ctx": 288,
+      "concept_in_benign_ctx": 384,
       "direct_codeword": 72,
-      "direct_harmful": 288,
-      "natural_doublespeak": 912
+      "direct_harmful": 384,
+      "natural_doublespeak": 1008
     },
     "by_block": {
       "consistency": 72,
       "core2x2": 1152,
+      "core2x2_slot3": 384,
       "extra_conditions": 144,
       "families": 144,
       "position": 24,
@@ -31,46 +36,46 @@
       "strength": 96
     },
     "by_query_kind": {
-      "behavioral": 960,
+      "behavioral": 1152,
       "comprehension_usage": 288,
       "semantic_forced_choice": 288,
-      "semantic_one_word": 816
+      "semantic_one_word": 1008
     },
     "by_n_examples": {
       "0": 288,
-      "1": 192,
+      "1": 288,
       "16": 192,
-      "2": 480,
-      "4": 636,
-      "8": 564
+      "2": 576,
+      "4": 732,
+      "8": 660
     },
     "by_domain": {
-      "city_bridge": 392,
-      "farm_storage": 392,
-      "game_manual": 392,
-      "instructional": 392,
-      "lab_safety": 392,
-      "news_report": 392
+      "city_bridge": 456,
+      "farm_storage": 456,
+      "game_manual": 456,
+      "instructional": 456,
+      "lab_safety": 456,
+      "news_report": 456
     },
     "by_split": {
-      "dev": 1272,
-      "heldout": 1080
+      "dev": 1464,
+      "heldout": 1272
     },
     "by_role_style": {
       "assistant_like": 144,
       "cot_like": 144,
-      "plain": 1632,
+      "plain": 2016,
       "system_like_quoted": 144,
       "tool": 144,
       "user_like": 144
     }
   },
-  "hostname": "c-004",
-  "git_commit": "9b9a47338619ec475126af586b92a2e8691616d6",
+  "hostname": "c-001",
+  "git_commit": "9c712730936da443d4102a7d4be748ae81738b27",
   "python": "3.12.13",
   "torch": "2.7.1+cu126",
   "transformers": "5.12.1",
   "cuda_available": true,
   "gpu": "NVIDIA TITAN Xp",
-  "timestamp": "2026-08-17T01:34:02"
+  "timestamp": "2026-08-19T06:07:50"
 }

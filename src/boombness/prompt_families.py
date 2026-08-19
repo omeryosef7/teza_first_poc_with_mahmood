@@ -465,6 +465,22 @@ def _blocks(preset: str) -> List[Dict]:
              positions=["near"], role_styles=["plain"],
              query_kinds=["behavioral", "semantic_one_word", "semantic_forced_choice",
                           "comprehension_usage"], slots=[0]),
+        # (1b) R-18 POWER BLOCK, added 2026-08-19. G2's published rho was computed over a row set
+        # that mixed sibling families (which SHARE demonstrations) with experimentally-manipulated
+        # designed variance; on the 90 clean prompts the within-domain rho is -0.052 (p=0.658), i.e.
+        # a null on an underpowered sample. This block adds INDEPENDENT core-design families so the
+        # question can actually be answered rather than left at n=90.
+        #
+        # WHY SLOT 3 AND ONLY THESE n_examples. `_take` returns pool[(slot*3 + i) % 20], so slot k
+        # and slot 0 are disjoint exactly when 3k >= n and 3k + n <= 20. For slot 3 that is
+        # n <= 8 (indices 9..16 against 0..7) -- verified in tests. Slot 1 and slot 2 are NOT usable
+        # at n=4 or n=8 (they overlap slot 0), which is precisely why the existing `families` block
+        # is pseudo-replicated and had to be excluded from the clean estimate. n_examples=16 is
+        # impossible on a 20-sentence pool and is omitted rather than fudged.
+        dict(name="core2x2_slot3", domains=domains, splits=list(SPLITS), conditions=list(CORE_2X2),
+             n_examples=[1, 2, 4, 8], strengths=["none"], consistencies=["consistent"],
+             positions=["near"], role_styles=["plain"],
+             query_kinds=["behavioral", "semantic_one_word"], slots=[3]),
         # (2) Extra conditions D and the benign-remap control, matched to the core.
         dict(name="extra_conditions", domains=domains, splits=list(SPLITS),
              conditions=["direct_codeword", "benign_remap"], n_examples=[0, 4, 8],
