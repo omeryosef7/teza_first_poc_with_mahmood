@@ -1567,3 +1567,29 @@ made it look far safer than it is.
 clusters, removing `d_surface` and the refusal direction **together** produces more than the sum of
 removing each alone, by +0.027 [+0.003, +0.058] beyond what a matched random-projection triple
 produces. The two channels interact.
+
+## Plan §15 item 2 written — the only §15 item left is item 6, which is blocked on G1
+
+Report **§1b, "What was actually implemented"**: 36 modules, 32 test files, **584 passing tests**, 244
+committed run directories, mapped by role (generation/audit → representation → intervention → scoring
+→ analysis → infrastructure), so any number in the report can be traced to the module that produced it.
+
+It ends with **what the plan asked for and did not get**, stated rather than glossed:
+
+* **§4.1's designed variance** — generated, isolated in three `bank_block`s, unable to support
+  inference (N12).
+* **`prompt_level_correlation.py` / `example_count_sweep.py` as named scripts** — the *work* exists as
+  `summarize_section9.py` / `summarize_section8.py`, which read committed artifacts instead of
+  re-running the sweeps. Same required outputs, different provenance path. Worth recording because a
+  reader looking for the plan's filenames will not find them.
+* **A second concept pair** — every claim in this report is carrot↔bomb (**E6**).
+
+### §15 status
+| item | subject | status |
+|---|---|---|
+| 2 | what was implemented | ✅ §1b |
+| 6 | aggressive-patching results | ⏳ **blocked on the G1 re-run** (766659, ~1h50m in) |
+| 7 | Boombness metric comparison | ✅ §7b |
+| 14 | negative results | ✅ §8b (now N1–N12) |
+| 15 | failure modes | ✅ §8c (FM1–FM8) |
+| 16 | recommended next experiments | ✅ §9b (E1–E10) |
