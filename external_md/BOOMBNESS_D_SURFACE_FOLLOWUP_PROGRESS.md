@@ -895,7 +895,7 @@ ASR@0.5 is the thresholded rate — see discrepancy **D-8**.
 | 5f | direction-specific, not just better-than-noise | `advbench_direction_specificity.json`, `direction_cosines.json` | " | 495 | " | L8 | " | `d_surface` cos 1.000 → Δ +0.0305 (p 0.0089); `d_naive` cos **0.945** → Δ **+0.0449** (p 0.0089); `d_context` cos **0.188** → Δ **+0.0045** (p 0.399) despite changing 34.9% of generations | **established** |
 | 5g | ClearHarm is **withdrawn**, not supporting | `clearharm_decomposition_regoal.json` | Llama / ClearHarm 179, 6 clusters | 179 | " | L8 | " | baseline 19/179, B 34/179, C 65/179, D 92/179, Dctrl 19/179; arm B **Δ_cl +0.0843, p_cl 0.2102, CI [−0.0665, +0.2350]** | ⛔ **withdrawn on ClearHarm (R-16)**; reinstated on AdvBench |
 | 6a | Qwen3 AdvBench is **floor-limited** | `advbench_decomposition_qwen3.json` | **Qwen3-14B** / AdvBench 495 | 495 | `behavioral` | L8-equiv | " | baseline **0.0081** (4/495), arm B **0.0141** (7/495), Δ **+0.0024**, p_cl **0.657** | **established as a floor, NOT as a causal failure** |
-| 6b | Qwen3 ClearHarm shows reversed channels | `clearharm_decomposition_qwen3.json` | Qwen3-14B / ClearHarm 179 | 179 | " | " | " | baseline **0.1341** (24/179), B **0.2793** (50/179), D **0.2793** (50/179) — B = D to 4 dp; p_cl **0.181** | **exploratory** (underpowered; see D-9) |
+| 6b | Qwen3 ClearHarm shows reversed channels | `clearharm_decomposition_qwen3.json` | Qwen3-14B / ClearHarm 179 | 179 | " | " | " | baseline **0.1341** (24/179), B **0.2793** (50/179), D **0.2793** (50/179) — ⚠ **"B = D to 4 dp" holds only at the 0.5 threshold** (review F8). The **continuous** cluster-mean deltas differ by a third: B **+0.0416** vs D **+0.0557**. A threshold coincidence was being read as a mechanism. p_cl **0.181** | **exploratory** — the "reversed channels" reading is **downgraded**; it rests on a binary tie that the continuous estimand does not reproduce |
 | 6c | Qwen3 G2 carries the R-18 filter defect | `qwen3_g2_analysis.json` | Qwen3-14B | 384 | `behavioral` | L12 | " | argv passes **neither** `--slot0-only` nor `--require-bank-block`; no `row_composition`; 72 sibling-slot rows; ρ_pooled 0.3638 / ρ_within 0.1438; p_cr1_pooled 0.206 vs p_perm_within 0.005 | ⛔ **retracted (R-18 class)** |
 | C1 | comprehension: `project_out` **improves** it | `section4b_whole_answer.json` | Llama / bank | 288 comprehension, 1104 semantic | `comprehension_usage` + semantic | L8 (arm), L8+L18 (control) | whole-answer forced choice | comprehension **+0.2795 [+0.1752, +0.3838], p 0.00099**; semantic **+2.4073**; double-random control comprehension **−0.0041 (p 0.630)** | **established** — but see D-6, D-7, D-10 |
 
@@ -919,7 +919,7 @@ the sprint's favour; three are citability limits; one is the working-tree regres
 | id | finding | why it matters |
 |---|---|---|
 | **D-8** | **Estimand mixing in prose.** In `analyze_external_arms.py`, `asr_at_0.5` comes from the binary `malicious_at_0.5` flag (line 124) while `delta_pooled` / `delta_cluster_mean` / `ci95_domain_clustered` / `p_cl` all come from the continuous `strongreject_score` (line 143). Verified: AdvBench arm B `delta_pooled` 0.006818… = mean_score(B) 0.013889 − mean_score(base) 0.007071 **exactly**. So on Qwen3 the invited subtraction 0.0141 − 0.0081 = 0.0060 is the **binary** gap (3/495), while the reported Δ +0.0024 is the domain-equal-weighted **continuous** mean. | The artifacts are honest — every `paired_vs_baseline` block carries an `estimand_note`. **The prose is what drops the distinction.** This sprint must always state which estimand a Δ is on. |
-| **D-9** | **ClearHarm's clustering has almost no power.** Its 6 "domains" are sized **127 / 31 / 17 / 2 / 1 / 1** — two clusters are single prompts. | "No arm reaches significance under clustering on ClearHarm" is near-uninformative as evidence of absence. It also drives the gap between the pooled ClearHarm baseline (0.1341) and `asr_cluster_mean` (0.0522) — worth knowing before leaning on the 13.4%-vs-0.8% floor contrast in claim 6a. |
+| **D-9** | **ClearHarm's clustering has almost no power.** Its 6 "domains" are sized **127 / 31 / 17 / 2 / 1 / 1** — two clusters are single prompts. | A **null** under clustering on ClearHarm is weak evidence of absence. ⚠ **Corrected 2026-08-19 (review F13):** my original wording said "no arm reaches significance under clustering on ClearHarm". That is true of **Qwen3** but **false of Llama** — `clearharm_decomposition_regoal.json` gives arm C **Δ_cl +0.3941, p_cl 0.0410** and arm D **Δ_cl +0.4603, p_cl 0.0200**, both significant; only arm B is null (+0.0843, p_cl 0.2102). I had described two datasets as one. The 0.1341 / `asr_cluster_mean` 0.0522 gap quoted here is **Qwen3's**, and matters before leaning on the 13.4%-vs-0.8% floor contrast in claim 6a. |
 | **D-10** | **The "inert" double-random control is inert only on comprehension.** In the same artifact, its **semantic** block reads Δ **+0.0666, CI [0.0462, 0.0869], p = 3.93e-04** — significantly non-zero. It is also the composed random-L8 + random-L18 control for arm D, **not** a matched single-layer control for the `project_out`-at-L8 arm it is being used to license. | Do not describe it as inert without qualification, especially since the semantic readout is where the `project_out` effect is claimed largest (+2.4073). Phase E3 should fit a properly matched single-layer control. |
 | **D-11** | **Nothing upstream is committed.** `.gitignore` line 11 ignores `outputs/` wholesale; the analysis JSONs are tracked only because they were force-added. `git ls-files outputs/boombness/score_behavior` and `.../judge` both return **zero** files. Every judge run, score run and extract fit that every artifact points at is untracked and gitignored. | Combined with `argv: ["-"]` on `section4b_whole_answer.json`, the R-6 resolution rests on data existing in exactly one place on one filesystem with no committed code path to it. **This is the single largest reproducibility risk inherited by this sprint.** |
 | **D-12** | **`provenance.git_dirty` is `true` on all three G2 artifacts** (and on 16 of the handover's 19 provenance-carrying files). | The recorded `git_commit` identifies the commit a run was launched *near*, not the code that ran. Treat provenance as advisory. |
@@ -1552,8 +1552,8 @@ dissociation for Phase E3 to chase, not a control that "passes".
 | **F3** | Two Do-Not-Cite **replacement** figures absent from their artifacts: role-framing `F(5,355)=20.30` is **not in `g11_role_full.json`**; "ratio inverts to 0.80" is **0.7472** @codeword_last and **1.5416** @last. | **FIXED** in the ledger. |
 | **F4** | Tick-3's "NEW RESULT" was **already committed** — `advbench_layer_profile.json` carries `c13`/`c14` byte-identical, added by `af4fe7a4` before this sprint; my own D-1/D-2 say so. | **CORRECTED** — see below. |
 | **F5** | This file held **two divergent copies** of the progress log with contradictory status headers, from one of my splices. | **FIXED** — rebuilt, 2410 → 1608 lines. |
-| **F8** | Estimand mixing survives in 5a/5g/**6b**. Worst: Qwen3 "B = D to 4 dp" holds only at the 0.5 threshold; continuous cluster-means are +0.0416 vs +0.0557, a third apart. A threshold coincidence read as a mechanism. | **OPEN.** |
-| **F13** | D-9's "no arm reaches significance under clustering on ClearHarm" is true for Qwen3, **false for Llama** (`_regoal` arm C p_cl **0.041**, arm D **0.020**). Two datasets described as one. | **OPEN.** |
+| **F8** | Estimand mixing in 5a/5g/**6b**. | **PARTLY FIXED tick 12** — 6b, the load-bearing one, is corrected and its "reversed channels" reading downgraded. 5a/5g still print ASR@0.5 beside a continuous Δ; those are labelled but not yet rewritten. |
+| **F13** | D-9 described two datasets as one. | **FIXED tick 12** — D-9 now states the Llama figures (arm C p_cl 0.0410, arm D 0.0200, both significant; only arm B null) and marks the 0.1341/0.0522 pair as Qwen3's. |
 | **F15** | Phase B's excess pools designed-variance blocks into the **treated arm only** (84/324 = 26%; control has none). On `core2x2` alone the excess is **+0.7525** at L12 vs +0.6823 — robust, so disclosure not invalidation. | **OPEN — disclose.** |
 | **A8** | Pairing guard uses value-inequality as a proxy for "≥2 demos"; drops 19 of 322,452 pairs (0.006%), only on `ll|boombness`. | **OPEN, negligible.** |
 
@@ -1863,6 +1863,24 @@ $PY src/boombness/analyze_external_arms.py --baseline judge/abg_base_20260819_01
 
 Row accounting: 495 attempted / 495 judged / 0 skipped / 0 null scores in every one of the 11 arms;
 `dropped_symmetric_difference_vs_baseline = 0` throughout.
+
+### Tick 12 — four of seven composed arms complete, all coherent
+
+| arm | uniq-word | 3-gram repeat | top-word | gate |
+|---|---|---|---|---|
+| `fuF_remS_addR` | 0.911 | 0.007 | 0.143 | PASS |
+| `fuF_addR` | 0.935 | 0.003 | 0.147 | PASS |
+| `fuF_addCtrl8` | 0.781 | 0.061 | 0.106 | PASS |
+| `fuF_addCtrl18` | **0.580** | **0.205** | 0.128 | PASS (nearest the edge) |
+
+Worth noting: the **random** add at L18 degrades generation *more* than the real refusalness add at the
+same layer and dose (uniq 0.580 vs 0.935; 3-gram repeat 0.205 vs 0.003). A norm-matched random direction
+is the harsher perturbation, which is a point in favour of the targeted direction doing something
+structured rather than merely being a large edit.
+
+`fuF_remR_addS`, `fuF_addS`, `fuF_addBoth` — the three arms carrying `d_surface:add` — are markedly
+slower (58 min elapsed at 180–243 of 495 generations vs 16–40 min for the others), consistent with
+longer completions. Judging launched for the four that are done.
 
 ### Tick 10–11 — Phase F composed-intervention matrix launched
 
