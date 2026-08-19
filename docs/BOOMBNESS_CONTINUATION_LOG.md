@@ -2301,3 +2301,54 @@ random projection may simply be more destructive than a late one. `abL{4,12,18,2
 they must be resubmitted when the controller returns. Nothing was lost: all GPU work already submitted
 had completed, and the judge streams run on the login node against the OpenAI API, so they are
 unaffected and still going.
+
+## The last two contaminated-filter scripts checked — both survive, for different reasons
+
+I flagged `analyze_g64` (§7b) and `analyze_role` (§11) as filtering on `condition` with no
+`bank_block` clause, and said the check would probably cost another finding. It does not.
+
+### §7b (metric comparison) — the sign disagreement SURVIVES
+
+Its central claim is that three operationalisations of "Boombness" **disagree in sign** about ASR at
+L12. Recomputed on both row sets:
+
+| metric | full n=234 | **clean n=90** | sign |
+|---|---|---|---|
+| `direction_boombness` (`d_surface\|L12\|proj`) | **+0.3067** | **+0.0860** | positive on both |
+| `logit_lens` (`ll\|L12\|boombness`) | **−0.1658** | **−0.0865** | negative on both |
+
+**The disagreement holds on clean rows.** ⚠ But it now has a different character: on the clean set
+**both correlations are near zero** (+0.086 / −0.087), so what survives is *"two metrics of the same
+construct point in opposite directions, and neither is distinguishable from zero"* rather than *"two
+real effects with opposite signs"*.
+
+That **strengthens §7b's conclusion while weakening its evidence** — the section's point was that
+"Boombness" is not one quantity and that any "Boombness predicts X" claim must name the metric and the
+layer. R-18 makes that point harder, not softer: with G2 retracted, the metric that looked predictive
+was the one carrying the contamination.
+
+### §11 (role framing) — structurally immune
+
+`analyze_role` does filter on `condition` alone, but its comparison is **only among the five non-plain
+role styles**, which live entirely in the `role_style` block at slot 0. `g11_role_full.json` records
+`n_prompts: 180` = 5 styles × 36, and its own identifiability note says role *"is NOT identified
+against `plain`, which shares no families with any role style"*. The contaminated rows are **all
+`plain`** (`strength` 24, `consistency` 36, `position` 12, `core2x2` 60), so they are excluded by the
+very guard §9 once flagged as dead and then repaired. **§11 stands unchanged.**
+
+### R-18 final scope
+
+| script | filter | verdict |
+|---|---|---|
+| `aggressive_patching` (G1) | `bank_block == core2x2` | ✅ clean |
+| `surgical_knockout` (G3) | `bank_block == core2x2` | ✅ clean |
+| `probes` | `bank_block == core2x2` | ✅ clean |
+| `analyze_role` (§11) | `condition` only | ✅ **immune** — compares only within `role_style` |
+| `analyze_g64` (§7b) | `condition` only | ✅ **survives** — sign disagreement holds, on two nulls |
+| `analyze_position` | `condition` only | ⛔ **half retracted (R-19)** |
+| `analyze_g9` | `condition` only | ⛔ **R-13's ordering does not survive** |
+| `analyze_g2` | `condition` only | ⛔ **G2 RETRACTED (R-18)** |
+
+**Three retracted, two survived, three were never exposed.** The audit is now complete: every analysis
+script in the sprint has been checked against this defect, and the answer for each is recorded above
+rather than assumed.
