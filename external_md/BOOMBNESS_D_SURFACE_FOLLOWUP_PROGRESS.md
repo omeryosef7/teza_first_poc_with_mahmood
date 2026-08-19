@@ -1395,6 +1395,69 @@ a handover statement, taken on trust, turned out to be stale (cf. D-2).
 Phase C probe suite still running (loading the 592 MB cache; run dir
 `outputs/boombness/probes/fu2352_20260819_161048_1978941` created).
 
+**Tick 3 (2026-08-19 ~17:15).** Queue empty; all three surviving jobs **COMPLETED** (`abL15_B` 26:43,
+`abL15_Bctrl` 26:14, `abR12_C` 26:01), each generating 495 completions with `DONE.json`.
+`abR8_C`'s directory exists but holds `gens=0` and no `DONE.json` — correctly refused by
+`common.require_done`.
+
+⚠ **Correction to my tick-2 correction — I was wrong, and in the sprint's favour.**
+Tick 2 recorded "the L13/L14 matched controls are not queued at all, so those depths stay arm-only."
+**They had already run and been judged at 10:54–10:55 today**, before this session began:
+`judge/abgL13_Bctrl_20260819_105455_1773722` and `judge/abgL14_Bctrl_20260819_105455_1773596`, both
+`DONE`, both 495 rows. I inferred absence from the queue being empty of them rather than checking the
+judge directories. **Lesson, same as D-2 and the tick-2 IF-2 correction: check the artifact, never
+infer from a schedule.**
+
+### ✅ NEW RESULT — L13 and L14 now have matched random controls, and both are inert
+
+Pure CPU; the judge runs already existed. Command:
+
+```
+$PY src/boombness/analyze_external_arms.py \
+  --baseline outputs/boombness/judge/abg_base_20260819_011714_1480836 \
+  --arm L13_B=outputs/boombness/judge/abgL13_B_20260819_103334_1754334 \
+  --arm L13_Bctrl=outputs/boombness/judge/abgL13_Bctrl_20260819_105455_1773722 \
+  --arm L14_B=outputs/boombness/judge/abgL14_B_20260819_103334_1754335 \
+  --arm L14_Bctrl=outputs/boombness/judge/abgL14_Bctrl_20260819_105455_1773596 \
+  --label "..." --out outputs/boombness_followup/l13_l14_matched_controls.json
+```
+
+Model Llama-3.1-8B-Instruct · AdvBench held-out 495 · 16 domain clusters · `n_common = 495` ·
+Δ and p on the **continuous** StrongReject score, cluster-mean estimand (D-8).
+
+| arm | ASR@0.5 | refusal | Δ pooled | **Δ clustered** | **p_cl** | 95% CI |
+|---|---|---|---|---|---|---|
+| baseline | 0.0646 | 0.9313 | — | — | — | — |
+| **L13_B** | 0.0727 | 0.9253 | +0.0081 | **+0.0138** | 0.0901 | [−0.0024, +0.0299] n.s. |
+| L13_Bctrl | 0.0646 | 0.9313 | +0.0010 | **−0.0002** | 0.8734 | [−0.0033, +0.0028] **inert** |
+| **L14_B** | 0.0707 | 0.9273 | +0.0056 | **+0.0118** | 0.1411 | [−0.0044, +0.0281] n.s. |
+| L14_Bctrl | 0.0646 | 0.9333 | +0.0003 | **+0.0001** | 0.9354 | [−0.0013, +0.0014] **inert** |
+
+The arm values reproduce the handover's L13 +0.0138 (p 0.090) and L14 +0.0118 (p 0.141) **exactly**,
+and the two missing controls are now supplied and inert. So the upper boundary of the causal band —
+L12 **+0.0322 (p 0.0056)** → L13 +0.0138 → L14 +0.0118 → L16 exactly zero — is a **monotone
+four-layer roll-off with a matched inert control at every depth**, not a cliff and not an
+uncontrolled claim. Artifact: `outputs/boombness_followup/l13_l14_matched_controls.json`. **Citable.**
+
+### ⚠ Near-miss — I re-created R-14, and the guard the last sprint left behind caught it
+
+My first judge invocation passed `--gens .../gens.jsonl` and **omitted `--bank`**. All three runs
+aborted immediately with `goal statuses: {'empty_query': 495}`, `null_frac = 1.0000`, writing
+`ABORTED.json` rather than `DONE.json` so `common.require_done` refuses the directory.
+
+That is **exactly R-14** — StrongReject scoring every external completion against an empty goal — which
+the previous sprint called the most serious defect of its session 2 and had to re-judge everything to
+undo. The `--max-null-frac 0.05` guard added afterwards did its job: **0 of 495 were judged, no cost
+was incurred, and no bad number reached an artifact.** Correct form, read from a known-good run's
+`RUNMETA.argv`, is `--gens <score_behavior run DIR>` plus
+`--bank data/boombness_prompts/external/advbench_heldout_495.jsonl`.
+
+Dead run dirs, retained as evidence and refused by the loader:
+`judge/fu_abL15_B_20260819_171502_2016716`, `judge/fu_abL15_Bctrl_…_2016720`,
+`judge/fu_abR12_C_…_2016724`.
+
+Re-launched correctly as `fu2_*`; judging in progress at tick close.
+
 ### Process
 
 - **IF-4 (self-inflicted, corrected):** during the Phase A fan-out, verification subagents re-ran the

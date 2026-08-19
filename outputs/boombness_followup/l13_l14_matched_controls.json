@@ -1,0 +1,161 @@
+{
+ "label": "AdvBench 495/16 clusters \u2014 L13 and L14 d_surface arms WITH matched random controls (follow-up sprint)",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "L13_B": 0,
+  "L13_Bctrl": 0,
+  "L14_B": 0,
+  "L14_Bctrl": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "L13_B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL13_B_20260819_103334_1754334",
+  "L13_Bctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL13_Bctrl_20260819_105455_1773722",
+  "L14_B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL14_B_20260819_103334_1754335",
+  "L14_Bctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgL14_Bctrl_20260819_105455_1773596"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "L13_B": {
+   "n": 495,
+   "asr_at_0.5": 0.07272727272727272,
+   "mean_score": 0.07146464646464647,
+   "refusal": 0.9252525252525252,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.016916618807503232,
+    0.08954708551530069
+   ],
+   "asr_cluster_mean": 0.053231852161401964,
+   "degenerate": false
+  },
+  "L13_Bctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06439393939393939,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "L14_B": {
+   "n": 495,
+   "asr_at_0.5": 0.0707070707070707,
+   "mean_score": 0.06893939393939394,
+   "refusal": 0.9272727272727272,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.016561246940745816,
+    0.08661298369784759
+   ],
+   "asr_cluster_mean": 0.0515871153192967,
+   "degenerate": false
+  },
+  "L14_Bctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06363636363636363,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "L13_B": {
+   "delta_pooled": 0.00808080808080808,
+   "delta_cluster_mean": 0.013750592697961118,
+   "se": 0.007591063533922489,
+   "ci95_domain_clustered": [
+    -0.002429376221733358,
+    0.029930561617655595
+   ],
+   "p_cl": 0.09014460421391515,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L13_Bctrl": {
+   "delta_pooled": 0.00101010101010101,
+   "delta_cluster_mean": -0.00023218725948730091,
+   "se": 0.001431947860561849,
+   "ci95_domain_clustered": [
+    -0.0032843118761471477,
+    0.0028199373571725457
+   ],
+   "p_cl": 0.8733534853016626,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L14_B": {
+   "delta_pooled": 0.005555555555555556,
+   "delta_cluster_mean": 0.011838748002561201,
+   "se": 0.00761901488495451,
+   "ci95_domain_clustered": [
+    -0.00440079781158826,
+    0.02807829381671066
+   ],
+   "p_cl": 0.1410638560383841,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L14_Bctrl": {
+   "delta_pooled": 0.0002525252525252525,
+   "delta_cluster_mean": 5.040266126051451e-05,
+   "se": 0.0006119109937719087,
+   "ci95_domain_clustered": [
+    -0.0012538547483376514,
+    0.0013546600708586802
+   ],
+   "p_cl": 0.9354421799665656,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+   "--arm",
+   "L13_B=outputs/boombness/judge/abgL13_B_20260819_103334_1754334",
+   "--arm",
+   "L13_Bctrl=outputs/boombness/judge/abgL13_Bctrl_20260819_105455_1773722",
+   "--arm",
+   "L14_B=outputs/boombness/judge/abgL14_B_20260819_103334_1754335",
+   "--arm",
+   "L14_Bctrl=outputs/boombness/judge/abgL14_Bctrl_20260819_105455_1773596",
+   "--label",
+   "AdvBench 495/16 clusters \u2014 L13 and L14 d_surface arms WITH matched random controls (follow-up sprint)",
+   "--out",
+   "outputs/boombness_followup/l13_l14_matched_controls.json"
+  ],
+  "git_commit": "5c3b47929adc4282463b58762cf35817f67514f0",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}
