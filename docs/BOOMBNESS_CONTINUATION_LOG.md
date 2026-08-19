@@ -2253,3 +2253,51 @@ above it**. If L12 and L24 come in flat too, the profile is **peaked at the fitt
 reported as **arm minus its own control at each layer** — never as a raw curve. Extended the sweep to
 **L6, L10, L16, L28** (766990–993) to bracket L8 tightly, because if the peak is real its *width* is
 the interesting quantity and four widely-spaced points cannot resolve it.
+
+## ★ The layer profile is a BAND, not a peak and not a plateau — both my predictions were wrong
+
+All five original layers judged. AdvBench 495, arm B's exact intervention at each depth, baseline
+**0.0646**:
+
+| layer | ASR@0.5 | Δ vs baseline | mean score | refusal |
+|---|---|---|---|---|
+| L4 | 0.0667 | +0.0021 | 0.0662 | 0.9313 |
+| **L8** *(where `d_surface` is fitted for interventions)* | **0.1071** | **+0.0425** | 0.1056 | 0.8889 |
+| **L12** *(where `d_surface\|L12\|proj` was G2's headline column)* | **0.1010** | **+0.0364** | 0.0997 | 0.8949 |
+| L18 | 0.0667 | +0.0021 | 0.0657 | 0.9333 |
+| L24 | **0.0646** | **+0.0000** | 0.0636 | 0.9333 |
+
+**Removing `d_surface` raises attack success at L8 and L12, and does nothing at L4, L18 or L24.**
+Refusal moves with it — 0.931 → 0.889/0.895 in the band, unchanged outside it.
+
+### Both recorded predictions were wrong, in opposite directions
+
+* I first predicted a **"broad, low profile"** — helping a little at several depths. It is not broad:
+  three of five layers are indistinguishable from baseline, and L24 matches it to four decimals.
+* I then said a **sharp peak at L8** would be the stronger result. It is not a single-layer peak
+  either: **L12 is 86% as large as L8**.
+
+It is a **mid-stack band, roughly L8–L12**. Recording both wrong predictions because both were written
+down before the numbers, and the shape that emerged was in neither.
+
+### Why the two elevated layers are the two that matter
+
+L8 and L12 are not arbitrary: **L8 is where every §7c intervention projects `d_surface` out**, and
+**L12 is where `d_surface|L12|proj` was the headline column** the whole sprint used as "Boombness".
+The causally-effective depth range coincides with the range the sprint independently selected on
+representational grounds — which is the kind of convergence that is worth something precisely because
+the two selections were made for unrelated reasons.
+
+⚠ **Still not a result until the controls land.** A band is only a band relative to what a *random*
+direction does at the same depths, and random-projection damage can itself vary with layer — a mid-stack
+random projection may simply be more destructive than a late one. `abL{4,12,18,24}_Bctrl` are judging;
+`abL{6,10,16,28}_B` are judged next to resolve the band's **edges**. The profile will be reported as
+**arm minus its own control at each layer**, and not before.
+
+## ⚠ SLURM controller outage (infrastructure, not this project)
+
+`sbatch`, `squeue` and `sinfo` all return `Unable to contact slurm controller (connect failure)` as of
+**08:04**. The four `abL{6,10,16,28}_Bctrl` submissions failed with that error and are **not queued** —
+they must be resubmitted when the controller returns. Nothing was lost: all GPU work already submitted
+had completed, and the judge streams run on the login node against the OpenAI API, so they are
+unaffected and still going.
