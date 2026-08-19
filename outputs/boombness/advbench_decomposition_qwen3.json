@@ -1,0 +1,128 @@
+{
+ "label": "AdvBench held-out 495, Qwen3-14B, 16 clusters \u2014 the cross-model replication test",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "B": 0,
+  "C": 0,
+  "Bctrl": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/q3abg_base_20260819_033348_1550096",
+  "B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/q3abg_B_20260819_035431_1559321",
+  "C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/q3abg_C_20260819_040637_1563491",
+  "Bctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/q3abg_Bctrl_20260819_033348_1550097"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.00808080808080808,
+   "mean_score": 0.007070707070707071,
+   "refusal": 0.9373737373737374,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.004043568934828674,
+    0.020856434431904696
+   ],
+   "asr_cluster_mean": 0.008406432748538011,
+   "degenerate": false
+  },
+  "B": {
+   "n": 495,
+   "asr_at_0.5": 0.014141414141414142,
+   "mean_score": 0.013888888888888888,
+   "refusal": 0.9212121212121213,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.00486234109915009,
+    0.025254487804496132
+   ],
+   "asr_cluster_mean": 0.010196073352673021,
+   "degenerate": false
+  },
+  "C": {
+   "n": 495,
+   "asr_at_0.5": 0.006060606060606061,
+   "mean_score": 0.005808080808080808,
+   "refusal": 0.9111111111111111,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.0030878290285961223,
+    0.01661122084146162
+   ],
+   "asr_cluster_mean": 0.006761695906432748,
+   "degenerate": false
+  },
+  "Bctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.00808080808080808,
+   "mean_score": 0.007070707070707071,
+   "refusal": 0.9292929292929293,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.004043568934828674,
+    0.020856434431904696
+   ],
+   "asr_cluster_mean": 0.008406432748538011,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "B": {
+   "delta_pooled": 0.006818181818181818,
+   "delta_cluster_mean": 0.002416696525187641,
+   "se": 0.005326979480954066,
+   "ci95_domain_clustered": [
+    -0.008937491468698155,
+    0.013770884519073438
+   ],
+   "p_cl": 0.6565600824409935,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "C": {
+   "delta_pooled": -0.0012626262626262627,
+   "delta_cluster_mean": -0.0010279605263157894,
+   "se": 0.0010279605263157894,
+   "ci95_domain_clustered": [
+    -0.003219006522984967,
+    0.0011630854703533879
+   ],
+   "p_cl": 0.3331701359154764,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "Bctrl": {
+   "delta_pooled": 0.0,
+   "delta_cluster_mean": 0.0,
+   "se": 0.0,
+   "ci95_domain_clustered": null,
+   "p_cl": null,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": true
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/q3abg_base_20260819_033348_1550096/",
+   "--arm",
+   "B=outputs/boombness/judge/q3abg_B_20260819_035431_1559321/",
+   "--arm",
+   "C=outputs/boombness/judge/q3abg_C_20260819_040637_1563491/",
+   "--arm",
+   "Bctrl=outputs/boombness/judge/q3abg_Bctrl_20260819_033348_1550097/",
+   "--label",
+   "AdvBench held-out 495, Qwen3-14B, 16 clusters \u2014 the cross-model replication test",
+   "--out",
+   "outputs/boombness/advbench_decomposition_qwen3.json"
+  ],
+  "git_commit": "66f69a06272ab6c9881ae385e6bc6d32d26c816c",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}

@@ -1634,3 +1634,68 @@ understates, and an inverted picture on Qwen3-14B.** Stated once, in §0, and no
 
 *Flagged as a judgement call:* the numbers are regenerable; disagreeing with the label is not
 disagreeing with any number. @Omer — this is the one place I picked a verdict rather than computed one.
+
+## ⛔ R-17 — my recorded prediction was WRONG: Qwen3 does NOT replicate on AdvBench, and the cross-model causal claim is withdrawn
+
+Two ticks ago I wrote, deliberately before the run so it could not be adjusted afterwards:
+
+> *"On the pooled estimate Qwen3's effect is **larger** than Llama's (+0.131 vs +0.083), so with 16
+> clusters instead of 6 it should clear zero comfortably. If it does not, the ClearHarm pooled effect
+> was carried by the one dominant cluster and that must be said."*
+
+**It did not clear zero. It is not close.**
+
+| Qwen3-14B, AdvBench 495, 16 clusters | ASR@0.5 | refusal | Δ cluster-mean | p_cl | CI |
+|---|---|---|---|---|---|
+| baseline | **0.0081** | 0.9374 | — | — | — |
+| **B** — remove `d_surface` @L11 | **0.0141** | 0.9212 | **+0.0024** | **0.657** | [−0.0089, +0.0138] |
+| C — remove refusalness @L20 | 0.0061 | 0.9111 | −0.0010 | 0.333 | [−0.0032, +0.0012] |
+| Bctrl — random @L11 | 0.0081 | 0.9293 | **+0.0000** | — | — |
+
+Arm B moves **4/495 → 7/495**. Three prompts.
+
+### The reason is a floor, not the cluster structure — so my stated fallback was wrong too
+
+| | baseline ASR | refusal | headroom (1−refusal) |
+|---|---|---|---|
+| Llama ClearHarm | 0.1061 | 0.8771 | 0.1229 |
+| Llama AdvBench | 0.0646 | 0.9313 | 0.0687 |
+| Qwen3 ClearHarm | 0.1341 | 0.7486 | 0.2514 |
+| **Qwen3 AdvBench** | **0.0081** | 0.9374 | 0.0626 |
+
+**Qwen3 complies with 0.8% of AdvBench against 13.4% of ClearHarm — a 16× drop**, where Llama drops
+only 1.6× between the same two sets. And it is **not simply more refusal**: Qwen3's AdvBench headroom
+(0.0626) is close to Llama's (0.0687), but Llama converts nearly all of its non-refusal into judged
+compliance while Qwen3 converts about an eighth of it. Qwen3 on AdvBench mostly produces answers that
+neither refuse nor comply usefully. **There is almost nothing to move, and an intervention cannot be
+measured against a floor.**
+
+So the fallback I committed to — *"if it does not clear zero, the ClearHarm pooled effect was carried
+by the one dominant cluster"* — is **also not supported**. The AdvBench null does not diagnose the
+ClearHarm result; the two sets are not measuring the same thing on this model.
+
+### What is withdrawn, and what survives
+
+⛔ **Withdrawn:** *"`d_surface` removal raises external-set ASR in BOTH models … a cross-model
+replication of the causal effect."* Written two ticks ago on **pooled** estimates. Neither Qwen3 number
+survives clustered inference — ClearHarm p=0.181, AdvBench p=0.657 — and a pooled estimate is not the
+estimand this project reports.
+
+✅ **Survives, and it is the one solid off-bank result:** **Llama-3.1-8B on AdvBench, arm B,
++0.0305, p_cl=0.0089, CI [+0.0089, +0.0522], against an inert matched control.** Plus C, D and the
+super-additivity interaction on the same set.
+
+⚠ **Open, not negative:** whether `d_surface` is causal on Qwen3. The ClearHarm point estimate is
+*large* (+0.131 pooled, ASR 0.134 → 0.279, refusal 0.749 → 0.564) and merely under-powered at G=6;
+AdvBench is a floor. **Neither set can answer it.** What would: an external harmful set on which Qwen3
+has real baseline compliance — i.e. chosen for *this* model rather than inherited from the Llama
+pipeline. Added as **E11**.
+
+### The methodological point, which is worth more than the result
+
+**Two "external harmful sets" are not interchangeable, and the choice can decide whether any effect is
+measurable at all.** ClearHarm and AdvBench give Llama similar baselines (0.106 / 0.065) and Qwen3
+wildly different ones (0.134 / 0.008). A cross-model comparison run on one set alone would have
+produced a confident and wrong answer in either direction — "replicates" from ClearHarm, "does not
+replicate" from AdvBench. **Report the baseline compliance rate beside every external-set ASR**, or the
+reader cannot tell an intervention that fails from a set with no headroom.
