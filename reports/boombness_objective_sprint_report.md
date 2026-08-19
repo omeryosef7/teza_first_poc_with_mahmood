@@ -1663,6 +1663,37 @@ whether existing claims stand — and none of them needs new generation.
 
 ### Blocking: re-derive what is currently suspended
 
+### Status as of 2026-08-19 — six of eleven are DONE
+
+This list was written on 2026-08-19 and most of the blocking items were executed the same day. Marked
+here rather than silently left reading as future work:
+
+| # | experiment | status |
+|---|---|---|
+| **E1** | re-judge external arms against a real goal | ✅ **DONE** — all ClearHarm and AdvBench arms re-judged; §7c |
+| **E2** | port the whole-answer readout, re-run G1 and G3 | ✅ **DONE** — G1 +68.9% (vs +68.1%), G3 75.2%; §2 |
+| **E3** | rank G3's edges at `readout_pos` | ✅ **DONE** — R-7 discharged, the null holds; §2 |
+| **E4** | power the cross-condition profile | ⛔ **NOT sound as written** — see below |
+| **E5** | AdvBench super-additivity on 16 clusters | ✅ **DONE and ESTABLISHED** — +0.0268 [+0.0029, +0.0584] against its own control triple; §7c |
+| **E6** | a second concept pair | ⏳ open |
+| **E7** | matched-length cross-model replication | ✅ **DONE** — Qwen3 at 512; the channels are *reversed* between models (§7c) |
+| **E8** | decide plan §4.1's designed variance | ✅ **DONE** — documented and excluded (N12), and R-18 showed it had contaminated G2 |
+| **E9** | the §5.2 alpha sweep at α=0.25 | ✅ **DONE** — +103% harm_ctx, +145% benign_ctx; §6b |
+| **E10** | a bank-identity check that can run | ⏳ open — external banks still ship no `*_meta.json` |
+| **E11** | an external set with real Qwen3 headroom | ⏳ open — not buildable from this repo |
+
+⛔ **E4 is withdrawn as specified.** It proposed adding demonstration `slots` to enlarge the
+36–72-row condition cells. `prompt_families._take` returns `pool[(slot*3+i) % 20]`, so slot *k* is
+disjoint from slot 0 only when `3k ≥ n` and `3k+n ≤ 20` — slots 1 and 2 **overlap** slot 0 at
+n_examples 4 and 8. Adding them would have produced prompts sharing up to 5 of 8 demonstrations and
+inflated the nominal n without adding information: pseudo-replication, the R1 defect. The sound version
+uses **slot 3 only, at n_examples ≤ 8**, which is what the R-18 power block does (§3). Enlarging the
+*condition* cells the same way needs bigger demonstration pools — content work, not a flag.
+
+**Two experiments were added after this list was written** and are reported in §7f: the **layer
+profile** (is the effect localized in depth? — yes, a band ~L6–L12) and the **direction-specificity
+test** (is it about `d_surface` or any bank-fitted direction? — `d_context` moves ASR by exactly zero).
+
 **E1 — Re-judge every external-set arm against a real goal (R-14).** *Cost: API only, no GPU.* Both
 banks now emit `final_query_text`, regenerated with **every `prompt_id` preserved and no other value
 changed**, so all existing `gens.jsonl` still join. This decides §7c, the §10.4-D gate row, and whether
