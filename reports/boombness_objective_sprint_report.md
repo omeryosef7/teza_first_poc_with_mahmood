@@ -1736,9 +1736,21 @@ best new-evidence-per-hour experiment available.**
 cannot resolve it — 127 of 179 rows sit in one cluster. AdvBench's largest cluster is 25.7%. Blocked on
 E1 only.
 
-**E6 — A second concept pair. The pair is now chosen, on evidence: `apple` ↔ `bomb`.**
-Every claim in this sprint is carrot↔bomb, so a second pair is the cheapest test of whether
-`d_surface` is a *concept-surface* direction or a carrot-detector.
+**E6 — A second pair. Chosen on evidence: `apple` ↔ `bomb`. ⛔ And it is two experiments, not one.**
+Every claim in this sprint is carrot↔bomb. An earlier draft called a second pair "the cheapest test of
+whether `d_surface` is a concept-surface direction or a carrot-detector" — that conflates two different
+swaps with very different costs and different meanings:
+
+* **Swap the CODEWORD** (`apple ↔ bomb`): tests whether the direction is a *carrot*-detector. Cheap —
+  only **16 of 240** benign pool sentences carry carrot-specific attributes (`orange`, `peel`, `root`,
+  `crunch`); the rest substitute mechanically.
+* **Swap the CONCEPT** (`carrot ↔ virus`): tests whether it is a *concept-surface* direction. **Not
+  cheap.** `demo_pools.py`'s docstring states the constraint — a doublespeak demo only teaches the
+  mapping if it carries predicates *solely the concept affords* ("was detonated", "was defused") — and
+  **26 of 240** harm sentences carry bomb-specific predicates that break outright under another concept.
+
+The codeword swap is the right first move: it isolates one variable against everything already measured
+with `bomb`, and costs an order of magnitude less.
 `src/boombness/screen_concept_pairs.py` screens candidates **before** a bank is generated for them, on
 the four properties this sprint learned the hard way — single-token bare form (§2.4), **single-token
 capitalised form** (C-5), the capitalised first subtoken not being a common English word (the `' Car'`

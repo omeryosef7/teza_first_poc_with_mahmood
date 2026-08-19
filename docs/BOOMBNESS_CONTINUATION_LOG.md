@@ -2964,3 +2964,41 @@ pairs if the question becomes "does it hold across codewords generally".
 
 `outputs/boombness/concept_pair_screen.json` records all 25 words, both tokenizers, every variant's
 token ids, and the 56 clean / 27 symmetric pairs.
+
+## E6 scoping — "the cheapest test" was wrong, and the design says why
+
+Having chosen the pair, I checked what generating a bank for it actually costs. **`prompt_families.py`
+already takes `--codeword` and `--concept`**, so the obvious read is that E6 is one command. It is not,
+and `demo_pools.py`'s own docstring explains the reason:
+
+> *"demo valence (benign | harm) — **NOT lexically matchable**, and this is inherent to the phenomenon,
+> not a fixable confound: a doublespeak demo only teaches `carrot = bomb` if it carries predicates that
+> **solely a bomb affords** ('was detonated', 'was defused'). A benign carrot sentence cannot contain
+> those predicates and remain benign."*
+
+The pools hold **literal** words, not templates — 240 sentences each for benign / harm / remap / filler
+— and the generator substitutes *within* them. So a new pair does not re-template; it needs sentences.
+
+**Measured, so the estimate is not a guess:**
+
+| | count | why it matters |
+|---|---|---|
+| harm sentences carrying **bomb-specific** predicates (`detonat`, `defus`, `fuse`, `blast`, `timer`, `shrapnel`, `disarm`…) | **26 / 240 (11%)** | these break outright under a different **concept** — "the virus was defused" |
+| benign sentences carrying **carrot-specific** attributes (`orange`, `peel`, `root`, `crunch`) | **16 / 240 (7%)** | these read oddly under a different **codeword** — "a bright orange apple" |
+
+### What that implies, and it validates the pair choice for a second reason
+
+* **Changing the CONCEPT** (`carrot ↔ virus`) requires rewriting the harm pool's affording predicates —
+  the design's own stated constraint, and genuine content work.
+* **Changing the CODEWORD** (`apple ↔ bomb`) touches only **7%** of the benign pool, and mechanically:
+  16 sentences to reword, the rest substitute cleanly.
+
+So `apple ↔ bomb` is the right first choice **not only** because it isolates the codeword variable
+against everything already measured with `bomb`, but because it is **an order of magnitude cheaper than
+the alternative** — 16 sentences against 26 predicate rewrites plus a fresh semantic audit.
+
+⛔ **The report's §9b called E6 "the cheapest test of whether `d_surface` is a concept-surface direction
+or a carrot-detector".** That is now corrected: it is cheap *for a codeword swap* and not cheap for a
+concept swap, and only the concept swap tests the "concept-surface" half of that sentence. A codeword
+swap tests whether the direction is a **carrot**-detector; it cannot test whether it is a **concept**
+direction, because the concept never changes. Both are worth doing and they answer different questions.
