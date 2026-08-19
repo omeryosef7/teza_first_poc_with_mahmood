@@ -409,7 +409,29 @@ within-prompt occurrence comparison.
 
 ---
 
-## 3. Does Boombness predict attack success? (§9) — G2
+## 3. Does Boombness predict attack success? (§9) — G2 ⛔ RETRACTED
+
+> ## ⛔ THIS SECTION IS RETRACTED — R-18, 2026-08-19
+>
+> **`analyze_g2` filtered rows on `condition` and nothing else.** The n=234 below is therefore
+> **31% sibling families that share demonstrations** with their slot-0 sibling (pseudo-replication —
+> the defect retraction R1 was about) and **31% rows from the `strength` / `consistency` / `position`
+> blocks, whose codeword readability was *experimentally manipulated*.** A manipulation that moves
+> Boombness and ASR together manufactures precisely the correlation an observational statistic is
+> supposed to discover.
+>
+> On the **90 independent, unmanipulated prompts**, the within-domain ρ — the estimand this project's
+> own artifact labels *"CITE THIS ONE"* — is **−0.0518 (permutation p = 0.658)** against the
+> published **+0.2618 (p = 5e-4)**. It does not shrink; it crosses zero. Restricting further to
+> `core2x2` alone (n=60) gives **−0.0832 (p = 0.572)** — two independent clean subsets, both null.
+>
+> **Not established.** n=90 over 6 domains cannot exclude a small effect, so this is a null rather
+> than a proof of absence — but it is no longer a positive finding. A power experiment
+> (`core2x2_slot3`, 384 independent rows at a slot provably disjoint from slot 0) is running to
+> settle it. **Everything below is the retracted analysis, kept for the record.**
+>
+> **Not affected:** G1, G3 and the probe results, which filter `bank_block == "core2x2"` and are
+> computed on independent, unmanipulated prompts.
 
 **ρ = +0.307** for `d_surface|L12|proj`, **+0.302** after partialling out the residual-stream norm,
 n = 234. "100% coverage" means all 270 judged doublespeak rows had a representation row — it does not

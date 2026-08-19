@@ -45,9 +45,15 @@ domain, 6/6 domains positive) but **does not replicate on Qwen3-14B**: there the
 positive, and the domain-clustered p is **0.206**. The matching pooled figure was a coincidence, not a
 replication. Read every number in this section as Llama-3.1-8B-specific.
 
-On the corrected direction, **Boombness predicts attack success within the doublespeak arm**:
-Spearman **ρ = +0.307** at L12 (`d_surface|L12|proj`), **+0.302 after partialling out the
-residual-stream norm**, n = 234, 100% prompt coverage.
+⛔ **RETRACTED 2026-08-19 (R-18) — read this before the numbers below.** The claim was
+*"Boombness predicts attack success within the doublespeak arm: ρ = +0.307 at L12, n = 234"*.
+`analyze_g2` filtered rows on `condition` alone, so that n=234 was **31% sibling families sharing
+demonstrations** (pseudo-replication) and **31% rows whose codeword readability was experimentally
+manipulated**. On the **90 independent, unmanipulated prompts the within-domain ρ is −0.0518
+(p = 0.658)**, against a published +0.2618 (p = 5e-4); `core2x2` alone (n=60) gives −0.0832
+(p = 0.572). **Not established** — n=90 cannot exclude a small effect, so this is a null, not a proof
+of absence. G1, G3 and the probes filter on `bank_block` and are **unaffected**. The numbers below are
+the retracted analysis, kept for the record.
 
 ⚠ **The p-value in revision 1 was wrong by ~3.5 orders of magnitude.** The 234 prompts are 6 domains
 × 39 and the predictor is strongly clustered by domain (ICC ≈ 0.45); I reported the i.i.d. p. The
