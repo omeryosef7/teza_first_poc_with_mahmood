@@ -2877,3 +2877,31 @@ decorative. Its legacy-key assertion is now conditional too: `prompt_families` h
 the unambiguous name, so requiring the legacy key would have punished the repair.
 
 **Suite: 88 passed** across `test_common_provenance` + `test_fit_identity_and_ledger`.
+
+## The short update's head was the worst-drifted document in the repo
+
+It is the **most-read** artifact — the one Matan and Mahmood open first — and it had drifted furthest,
+because every session's corrections landed in the full report and the summary was never re-derived.
+
+**What it still said, at the top, in bold:**
+
+> **§18 settles at B.** The surviving positive finding is about *position*, not direction.
+
+Both halves are now false. §18 explicitly **refutes B** (it requires that interventions neither affect
+ASR nor destroy comprehension, and **both clauses fail**), and the position/localization finding is
+**half retracted** by R-19. It was also dated **2026-08-17**, described itself as "revision 9", and
+claimed "all four gates answered" when there are now nine gate rows and one of the four is retracted.
+
+**Rewritten to state one conclusion once**, followed by what survives (all causal, all external-set)
+and the retraction list newest-first. And a second stale claim found below the fold: a paragraph
+calling the G2 correlation *"robust in Llama — survives dropping any domain, 6/6 domains positive"* sat
+**above** the R-18 banner that retracts it, so a reader meeting them in order would have absorbed the
+claim before the retraction. Marked in place, with the 2×2 identification design named as the part
+that genuinely survives.
+
+**The pattern, for the third time this session.** A verdict is corrected where the work happened; the
+summary that quotes it is not. §0 of the report had it twice, the short update has it twice more. The
+sweep cannot catch this class — "settles at B" contains no retracted *figure* to match on — so it needs
+a human read of every summary against the body. **That check is now worth running before any hand-off,
+not at the end of a sprint**, and it should start with the shortest document, because brevity is what
+makes drift invisible.
