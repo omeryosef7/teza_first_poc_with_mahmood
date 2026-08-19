@@ -84,6 +84,7 @@ here.
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
 | **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
+| **§14-D** | **Is the effect specific to `d_surface`?** | **Yes.** `d_context` — fitted by the same 2×2 on the same rows, near-orthogonal (cos 0.188 @L8) — moves ASR by **exactly 0.0000** at L8 while changing **34.9%** of generations. Same bank, same fit, same layer, same operation, comparable perturbation of the text, **+0.0425 vs +0.0000** in behaviour. A stronger control than any random projection, because `d_context` is structured and demonstrably potent. |
 | **§14-L** | **Where in the network does the effect live?** | **A contiguous mid-stack band, ~L6–L12, with a hard edge** (§7f). Significant at **L8 (p=0.0089)**, **L10 (p=0.0190)** and **L12 (p=0.0056)**, marginal at L6, and **null from L16 outward** — L16 is exactly baseline. **Matched controls at five depths are all inert** (−0.0066 to +0.0007). And L16 is not a failed intervention: it changes **29.5%** of generations while changing compliance on **none**. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
 | **§2.6** | Does any intervention preserve comprehension? | **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` does what its name claims, on an instrument that can represent both answers. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
@@ -1268,6 +1269,37 @@ of the direction, not of the depth.**
 
 **L12 is marginally larger than L8** (+0.0322 vs +0.0305), so L8 is not privileged — the sprint picked
 a depth inside the effective band rather than its centre.
+
+### ★ Direction specificity — a control the random projections cannot provide
+
+Every control above is a **norm-matched random direction**. That answers *"is this better than noise?"*
+It does not answer the question a reader should ask next: **is the effect about `d_surface`
+specifically, or about any direction this bank produces?** A random vector has no structure, so its
+inertness is uninformative about structured alternatives.
+
+The extraction fits three sibling directions from the same 2×2, on the same rows, by the same
+procedure. Substituting them into arm B's exact intervention at L8
+(`outputs/boombness/direction_cosines.json` for the cosines):
+
+| direction @L8 | cos with `d_surface` | what it separates | ASR@0.5 | Δ vs baseline | generations changed |
+|---|---|---|---|---|---|
+| baseline | — | — | 0.0646 | — | — |
+| **`d_surface`** | 1.000 | codeword surface vs concept | **0.1071** | **+0.0425** | *(the effect)* |
+| **`d_context`** | **0.1884** | benign vs harmful **context** | **0.0646** | **+0.0000** | **173/495 = 34.9%** |
+
+**`d_context` changes what the model says on more than a third of prompts, and changes whether it
+complies on none of them.** Its ASR is *exactly* the baseline — 32/495 either way.
+
+This is a stronger control than any random projection here, because `d_context` is not noise: it is a
+real fitted direction with its own meaning, near-orthogonal to `d_surface`, and demonstrably **potent**
+— it perturbs a third of the generations. Same bank, same fit, same layer, same operation, comparable
+disturbance to the text, **and +0.0425 versus +0.0000 in behaviour**.
+
+**It is the same argument L16 makes in the depth dimension.** There, the *same direction* four layers
+outside the band changes 29.5% of generations and compliance on none. Here, a *different direction* at
+the same layer changes 34.9% and compliance on none. The effect is bracketed on two independent axes —
+**this direction, this band of layers** — and in both cases the comparison is against a manipulation
+that demonstrably does something, just not to behaviour.
 
 ### ★ This localizes the sprint's central claim to a specific depth
 
