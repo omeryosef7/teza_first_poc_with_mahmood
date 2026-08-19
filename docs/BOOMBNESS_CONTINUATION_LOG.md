@@ -2539,3 +2539,31 @@ so I expect it to reproduce most of the effect — that would be reassuring rath
 about surface/concept representation it should be **substantially smaller or absent**. If `d_context`
 matches `d_surface`, the effect is not about the codeword contrast at all and §7c's interpretation
 needs rewriting — that is the outcome that would cost the most, which is why it is worth running.
+
+### The cosines behind that prediction, verified rather than asserted
+
+I wrote *"the extract shows cosines around 0.9 at mid-stack"* for `d_naive` before checking it. Checked
+(`outputs/boombness/direction_cosines.json`, heldout fit):
+
+| layer | cos(`d_surface`, `d_naive`) | cos(`d_surface`, `d_context`) | cos(`d_surface`, `d_inter`) |
+|---|---|---|---|
+| L4 | 0.9735 | 0.1075 | 0.0398 |
+| L6 | 0.9563 | 0.1629 | 0.0162 |
+| **L8** | **0.9452** | **0.1884** | 0.0411 |
+| L10 | 0.9327 | 0.1073 | 0.0151 |
+| **L12** | **0.9390** | **0.0885** | 0.0186 |
+| L16 | 0.9581 | 0.0584 | 0.0635 |
+| L18 | 0.9616 | −0.0131 | 0.0174 |
+| L24 | 0.9659 | 0.1577 | 0.1190 |
+| L28 | 0.9557 | 0.2370 | 0.1081 |
+
+**`d_naive` is nearly collinear with `d_surface` everywhere (0.93–0.97)**, and **`d_context` and
+`d_inter` are near-orthogonal to it** (|cos| ≤ 0.24, mostly ≤ 0.19). So the specificity test is
+well-posed: `d_naive` at cos 0.945 should reproduce most of the L8 effect, `d_context` at cos 0.188
+should not — and if it does, the band is not about the surface/concept contrast.
+
+⚠ **This also bears on §7b.** The metric comparison treats `direction_boombness` (from `d_surface`) and
+the logit-lens metric as different operationalisations, and finds they disagree in sign. It does **not**
+compare `d_surface` against `d_naive` — which are the same direction to within cos 0.94, so any result
+that differs between them would be noise rather than a metric distinction. Worth stating in §7b so a
+reader does not read "three metrics" as three independent constructs.
