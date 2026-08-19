@@ -1736,11 +1736,27 @@ best new-evidence-per-hour experiment available.**
 cannot resolve it — 127 of 179 rows sit in one cluster. AdvBench's largest cluster is 25.7%. Blocked on
 E1 only.
 
-**E6 — A second concept pair.** Every claim in this sprint is carrot↔bomb. A second pair is the cheapest
-test of whether `d_surface` is a *concept-surface* direction or a carrot-detector. **Plan §2.4's
-tokenization audit is mandatory here and is real work**: the current bank forces single-token by
-construction, and the R-14/C-5 experience shows a pair whose capitalised form is multi-token silently
-breaks the readout. Pick the pair *after* auditing, not before.
+**E6 — A second concept pair. The pair is now chosen, on evidence: `apple` ↔ `bomb`.**
+Every claim in this sprint is carrot↔bomb, so a second pair is the cheapest test of whether
+`d_surface` is a *concept-surface* direction or a carrot-detector.
+`src/boombness/screen_concept_pairs.py` screens candidates **before** a bank is generated for them, on
+the four properties this sprint learned the hard way — single-token bare form (§2.4), **single-token
+capitalised form** (C-5), the capitalised first subtoken not being a common English word (the `' Car'`
+problem), and **symmetric variant counts** (the bomb-4-vs-carrot-1 readout bias).
+
+⚠ **It also shows the current codeword was one of the worst available.** `carrot` has **1 of 4**
+single-token variants on both Llama-3.1-8B and Qwen3-14B and a **multi-token capitalised form** — which
+*is* C-5, the defect that invalidated a readout and forced the whole-answer rebuild. **`apple`,
+`basket` and `button` score 4/4 on both models.** Plan §2.4's audit did run; what it checked was the
+**bare** form on the generated bank, which `carrot` passes. Nobody checked the **capitalised** form
+because nobody knew until C-5 that the model would answer with one. The screener encodes what only
+failure taught.
+
+**`apple` ↔ `bomb` is the recommendation** because it holds the concept fixed and varies only the
+codeword, isolating that variable against everything already measured with `bomb`. 27 of 56 clean pairs
+are also variant-count symmetric; `basket ↔ bomb` and `button ↔ bomb` are the natural third and fourth.
+`outputs/boombness/concept_pair_screen.json` carries all 25 words, both tokenizers and every variant's
+token ids.
 
 **E7 — Matched-length cross-model replication.** The published Llama-vs-Qwen3 non-replication compares a
 **512**-token Llama run against a **192**-token Qwen3 run, and the sprint's own log records that halving
