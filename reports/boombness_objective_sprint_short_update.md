@@ -327,7 +327,12 @@ replicate there.
 
 ---
 
-## ★ THE HEADLINE RESULT — Boombness IS causal, and refusal was hiding it (added 2026-08-18)
+## The arm-F interaction — a real number whose mechanism was refuted
+
+⛔ An earlier draft titled this "THE HEADLINE RESULT — Boombness IS causal" and said it
+superseded the §18 = B label. **Both are withdrawn.** The objective verdict is unchanged and
+negative; the *number* below is real, its **mechanistic interpretation is retracted** (R-8) —
+the gain is largest in `benign_remap`, where the mapping is never taught.
 
 **This supersedes the §18 = B label and reopens §12.** Everything below is at a matched 512-token budget,
 n = 420, every arm complete and coherence-gated on the doublespeak population, domain-clustered over 6
@@ -401,7 +406,7 @@ question for this result too.
 
 ---
 
-## ★ SECOND CAUSAL RESULT — removing the concept component helps attacks, on Llama (added 2026-08-18)
+## Removing the concept component alone — the on-bank result
 
 Unlike the interaction above, this one survived every check **including the ones that refuted the
 interaction's mechanism**. Llama-3.1-8B, 512 tokens, n=420, all arms gate-passed and length-matched by

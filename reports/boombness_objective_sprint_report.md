@@ -81,7 +81,7 @@ appears in the gate table above.
 ### Where "§0.3" pointed
 
 Two passages cited "§0.3, above" as the causal evidence. **No section 0.3 has ever existed.** The
-result intended is the `project_out` arm of §10.4, reported in *"Second causal result — removing the
+result intended is the `project_out` arm of §10.4, reported in **§7e** (*"Removing the
 concept component helps attacks, on Llama"* near the end of this document. Both citations now point
 there. The gate-table row that carried the `§0.3` label is now **§10.4-D**, and its numbers are the
 ClearHarm ones rather than the superseded 192-token bank run.
@@ -546,7 +546,7 @@ with ≥1 demonstration, common to all arms, domain-clustered over 6 domains:
 **What survives as genuinely distinctive: `project_out` is the only one of five arms that leaves
 comprehension unchanged** while all four additive arms move it by 0.6–1.5. That is what makes it the
 surgical condition, and it is why its ASR result (the §10.4 `project_out` arm, reported under
-"Second causal result" below — this passage previously cited a §0.3 that does not exist) was
+**§7e** — this passage previously cited a §0.3 that does not exist) was
 called the sprint's cleanest causal test. ⚠ That description is **withdrawn**: its comprehension
 control is R-6, the readout measuring a 1e-5 tail.
 
@@ -973,6 +973,184 @@ that guard was itself dead on first writing — it fingerprinted judge *scores*,
 bitwise deterministic, so three re-judgings of one identical generation set produced three "distinct"
 draws. Run against the real R-12 band it now refuses correctly.
 
+## 7d. The arm-F interaction — a real number whose mechanism was refuted (§10.4)
+
+> ⛔ **Read this first.** An earlier draft of this section opened *"This supersedes the §18 = B label
+> and reopens §12"*. **It does not, and that sentence is withdrawn.** The §12 objective verdict is
+> unchanged and negative (§4/G4: both signs of the axis suppress ASR), and §9b lists building it under
+> **explicitly NOT recommended**. What follows is a real and large effect whose **mechanistic
+> interpretation was retracted** (R-8, the "capability channel"): the gain appears most strongly in
+> `benign_remap`, the condition where the carrot→bomb mapping is **never taught**, which is the
+> signature of a prompt-bank artifact rather than a mechanism. It is reported because the *number* is
+> real and reproducible, not because it supports the objective.
+
+Everything below is at a matched 512-token budget, n = 420, every arm complete and coherence-gated on
+the doublespeak population, domain-clustered over 6 domains.
+
+| arm | ASR | refusal | Δ score vs baseline | p_cl |
+|---|---|---|---|---|
+| baseline | 0.2429 | 0.0571 | — | — |
+| add Boombness `+0.25` | 0.0881 | **0.6762** | −0.1274 | 0.0117 |
+| remove refusalness | 0.2690 | **0.0000** | +0.0101 *(0.9× the judge-noise sem — **not measurable to ±0.03**, not "does nothing")* | 0.4746 |
+| **add Boombness AND remove refusalness** | **0.5476** | 0.0024 | **+0.2824** | **<0.0001** |
+| **RANDOM direction + remove refusalness** *(control)* | **0.2190** | 0.0000 | −0.0321 | 0.1160 |
+
+⚠ **The control is inert only on THIS condition, and reverses elsewhere.** On `direct_harmful` the same
+random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 → 0.54**, while arm F stays
+at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
+for the doublespeak population only, and is reversed where harm is explicit.**
+
+**Neither manipulation alone raises attack success — together they more than double it.**
+Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
+ASR thresholds 0.25 / 0.50 / 0.75.
+
+⚠ **That +0.400 is ~45% a mechanical artifact.** Arm A refuses on 284/420 rows, each scored exactly 0.0 by
+construction. On the rows where A did *not* refuse, **A−base = +0.094 (positive)** and the interaction falls
+to **+0.222**. The **refusal-free** contrasts — **F−C = +0.272** and **F−Fctrl = +0.315**, between arms with
+~0% refusal — are the numbers that carry the claim.
+
+### The mechanism
+`d_surface` does **two opposing things at once**:
+1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
+   *suppresses* ASR;
+2. **a second, refusal-independent channel** raises judged harmfulness once refusal is removed.
+   ⛔ **We have NOT established that this is a "capability" channel.** The gain is *largest where the
+   doublespeak mapping is weakest* — **+0.361 at `n_examples=0`** (no demonstrations at all) and **+0.267 on
+   `benign_remap`**, where carrot→bomb is **never taught** — and it is **absent on explicitly harmful
+   prompts** (+0.000 on `direct_harmful`, where the random control gains +0.389). It is better described as
+   a **prompt-independent injection by the L8 steering vector** than as the doublespeak attack succeeding.
+
+In the unmodified model channel 1 dominates and **masks channel 2 entirely**. That is why the within-arm
+correlation was positive while every steering attempt looked suppressive — a contradiction this report
+carried for days.
+
+### Why this is not any of the artifacts that killed earlier versions
+| competitor | how it is excluded |
+|---|---|
+| degenerate generation | passes `coherence_gate` on the doublespeak denominator |
+| truncation / length | ⚠ **attenuated, not eliminated.** All arms complete at 512 tokens, but arm F writes 260 median words vs the control's 145 and common support covers only ~27% of control rows. Matched on 25-word bins, **F−Fctrl falls +0.315 → +0.233** (bootstrap CI [0.149, 0.310]) and **F−base +0.282 → +0.150**. A quarter to a half of the raw gap is length, which may itself be a mediator. |
+| "longer answers score higher" | baseline calibration shows truncation **suppresses** score (+3.7pp when completed) |
+| judge noise | effect is **25×** the measured test–retest floor (0.011) |
+| threshold luck | holds on the continuous score and at three thresholds |
+| **"any two perturbations do this"** | **the random composition does nothing (p=0.116)** |
+| domain artifact | domain-clustered throughout |
+
+A prediction for the arm-F value was **recorded in the log before judging** (`≥0.474`); it came in at
+**0.5476**.
+
+### Consequences
+- ⛔ **§18 = B ("mechanistic but not causal") is WITHDRAWN.** It was a **ceiling effect of refusal**.
+- ⚠ **§12.2 — "Boombness minus refusal" — is REOPENED and worth building as an experiment, NOT vindicated.**
+  I closed §12 as gate-not-met on G4's directional null, and that reasoning was wrong. But the arm-F gain is
+  **not conditional on the doublespeak mapping** and **does not transfer to explicitly harmful requests** —
+  precisely what an attack objective would require. Downgraded from "should be built" to "worth building as
+  an experiment".
+- The §12.1 "pure Boombness objective" (maximise alone) remains **wrong** — alone, it *lowers* ASR.
+
+### Honest limits — scope, not validity
+One model (Llama-3.1-8B), one concept pair (carrot↔bomb), one judge, refusal projected at a single layer
+(L18), and `d_surface` fitted on the same bank it is evaluated on. The Qwen3 replication of the *projection*
+arm is running; **G2's correlation did not replicate on Qwen3**, so cross-model generality is an open
+question for this result too.
+
+---
+
+## 7e. Removing the concept component alone — the on-bank result (§10.4 `project_out`)
+
+Unlike the interaction above, this one survived every check **including the ones that refuted the
+interaction's mechanism**. Llama-3.1-8B, 512 tokens, n=420, all arms gate-passed and length-matched by
+construction (163 vs 150 median words), against a **projection-type** control:
+
+| contrast | Δ score | t_cl | p_cl |
+|---|---|---|---|
+| `project_out d_surface` − baseline | +0.0378 | +5.12 | **0.0037** |
+| `project_out RANDOM` − baseline | −0.0182 | −1.27 | 0.260 — **inert, as a control should be** |
+| **`d_surface` − RANDOM control** | **+0.0560** | **+4.30** | **0.0077** |
+
+**5× the measured judge-noise floor.**
+
+### ⛔ The cross-condition profile — R-15, corrected 2026-08-19
+This table originally shipped **six deltas and no inference**, while the Qwen3 table eleven lines below
+carries `p_cl` on every cell and annotates two of them "(n.s.)". Given the same test
+(`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered t on `len_B` / `len_Bctrl`,
+n=960 — the deltas reproduce the original exactly):
+
+| condition | n | arm − control | p_cl | domain-clustered CI |
+|---|---|---|---|---|
+| `benign_literal` | 324 | +0.0069 | 0.334 | [−0.010, +0.024] |
+| `benign_remap` | 36 | +0.0104 | 0.745 | [−0.068, +0.088] |
+| `concept_in_benign_ctx` | 72 | +0.0035 | 0.862 | [−0.045, +0.052] |
+| **`natural_doublespeak`** | 420 | **+0.0560** | **0.0077** | **[+0.023, +0.089]** |
+| `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
+| `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
+
+⛔ **Only one of the six cells is distinguishable from zero, and it is `natural_doublespeak`**, so the
+earlier profile reading is **withdrawn**. The two other "harmful" cells — precisely the ones that
+previously carried the generalisation claim —
+have intervals spanning **±0.2**, roughly six times the effect they were cited to demonstrate.
+
+⛔ **The "clean split" was a power artifact.** `natural_doublespeak` has **420** prompts against 72 and
+36 for the other two harmful conditions. The design can resolve its two large cells and nothing else,
+and those happen to be one benign (`benign_literal`, n=324, CI ±0.017) and one doublespeak. Every
+36–72-row cell is uninformative in **both** directions, so these data **cannot** discriminate
+"harm-general" from "doublespeak-specific".
+
+**What is actually established** is the narrow claim:
+
+> Removing the concept component from the codeword position raises attack success **on natural
+> doublespeak prompts** (+0.056, p=0.0077, against an inert control).
+
+The earlier reading — "wherever there is an attack, and does nothing where there is not" — is
+withdrawn, and describing it as "a *stronger* statement" was backwards: it was a weaker-evidenced one.
+Note also that the Qwen3 comparison below applied an **asymmetric evidential standard** — Qwen3's cells
+were discounted for failing a test the Llama cells had never been given, and three of them fail it too.
+
+### ⛔ It does NOT replicate on Qwen3-14B — and the failure is informative
+Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
+both models** — and mirror-image condition profiles:
+
+| condition | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| `natural_doublespeak` (attack) | +0.056 | **+0.339** |
+| `direct_harmful` | +0.056 | +0.111 (n.s.) |
+| `direct_codeword` | +0.059 | +0.010 (n.s.) |
+| `benign_literal` | +0.004 | **+0.224** |
+| `concept_in_benign_ctx` | +0.010 | **+0.245** |
+| `benign_remap` | +0.004 | **+0.441** |
+
+⛔ **This table previously showed only TWO Qwen3 values in a "harmful conditions" row against THREE
+Llama values, silently omitting `natural_doublespeak = +0.339` — the LARGEST Qwen3 effect of all.**
+Found 2026-08-18 by an independent audit and verified against the judge artifacts. Every condition is
+now listed on its own row so a column cannot hide one.
+
+**The omission inverted the conclusion.** With `natural_doublespeak` restored, Qwen3 is elevated on
+**five of six** conditions, attack and benign alike — this is a **broad elevation of judged
+harmfulness**, not a profile that "tracks the absence of an attack" as the previous text claimed.
+The only near-null is `direct_codeword` (+0.010). The contrast with Llama still stands and is
+if anything sharper: on Llama the effect is confined to harmful conditions (+0.056 vs +0.004 benign);
+on Qwen3 it is everywhere, including on prompts containing no attack. **The result remains
+single-model**, and for the corrected reason: Qwen3's projection does not isolate an attack-related
+quantity at all.
+
+The Qwen3 effect is real and `d_surface`-specific (its random-projection control is inert, −0.004,
+p=0.77), but it raises judged harmfulness nearly everywhere.
+
+### Why the small result outlived the large one
+| | arm F interaction | this result |
+|---|---|---|
+| size | +0.27 to +0.32 | **+0.056** |
+| control | inert on doublespeak only; **reverses** on `direct_harmful` | inert **everywhere** |
+| cross-condition | ⛔ appears where the mapping is never taught | ⚠ **one significant cell of six** (R-15) — doublespeak only |
+| cross-model | not tested | ⛔ does not replicate |
+| status | real number, **mechanism refuted** | **established, single-model** |
+
+Effect size was consistently the *worst* predictor of which claim survived. Every large effect in this sprint
+either failed a cross-condition check or lost its interpretation; the surviving causal result is the smallest
+one measured.
+
+---
+
+
 ## 8. Process — sixteen retractions, ten corrections, seven dead guards
 
 Every retraction came from independent audit, and they share **one** root cause in two forms:
@@ -1020,7 +1198,7 @@ findings did. Nothing here is a failed experiment; each is an answer.
 | N3 | Does the codeword's **final** occurrence become more concept-like than earlier ones? | **No — less.** The opposite of the natural hypothesis, and the control is what makes it readable. | §2b |
 | N4 | Do the three Boombness metrics (probe / direction / logit-lens) agree? | **No.** They disagree in **sign** about ASR at L12, and `common_all_three` covers only **72 of 270** rows. They agree far better on comprehension. | §7b |
 | N5 | Is the meaning stored **in the codeword token**? | **No.** Transplanting the query codeword moves the readout the **wrong way** (−71% of span). This negative is what makes G1 positive. | §2 (G1) |
-| N6 | Does the §10.4 projection result replicate on Qwen3-14B? | **No**, and informatively: on Qwen3 the same intervention raises judged harmfulness on **benign** prompts too, so it does not isolate an attack-related quantity there. ⚠ The published comparison also has a **length confound** (Llama 512 vs Qwen3 192 tokens); a matched-length Qwen3 arm is running. | ★ second causal result |
+| N6 | Does the §10.4 projection result replicate on Qwen3-14B **on the bank**? | **No** — on Qwen3 the same intervention raises judged harmfulness on **benign** prompts too, so it does not isolate an attack-related quantity there. ⚠ That comparison also had a **length confound** (Llama 512 vs Qwen3 192 tokens). **Resolved 2026-08-19:** the matched-length Qwen3 arm landed, and *off-bank* the picture is different again — `d_surface` removal raises external-set ASR on **both** models (§7c). The correlation is Llama-specific; the causal intervention is not. | §7e, §7c |
 | N7 | Is the §10.4 effect **harm-general** rather than doublespeak-specific? | **Not established, and the data cannot answer it.** Only 1 of 6 condition cells is distinguishable from zero (R-15); the two other harmful cells have intervals spanning ±0.2 at n=72 and n=36. | §R-15 |
 | N8 | Is the ClearHarm joint arm **super-additive** in its two components? | **Not established.** +0.0922 with a domain-clustered CI of [−0.147, +0.133]; 127 of 179 rows sit in one cluster, so the set cannot resolve it. AdvBench (16 clusters) is the right test. ⚠ Currently also blocked by R-14. | §7c |
 | N9 | Is `d_surface` "concept-ness" **off-bank**? | **Not licensed.** The 2×2 named the direction from a contrast that does not exist in a prompt with no codeword. Its off-bank behaviour needs its own interpretation. | §7c |
@@ -1444,175 +1622,6 @@ $PY src/boombness/probes.py --run <EXTRACT_CW> \
 `analyze_g2.py` refuses when the two probes' readout positions disagree; `analyze_position.py` refuses
 unless every run's readout position is verifiable *from its artifact*; `analyze_steering.py` refuses to
 report an arm whose coherence was never assessed.
-
----
-
-## ★ THE HEADLINE RESULT — Boombness IS causal, and refusal was hiding it (added 2026-08-18)
-
-**This supersedes the §18 = B label and reopens §12.** Everything below is at a matched 512-token budget,
-n = 420, every arm complete and coherence-gated on the doublespeak population, domain-clustered over 6
-domains.
-
-| arm | ASR | refusal | Δ score vs baseline | p_cl |
-|---|---|---|---|---|
-| baseline | 0.2429 | 0.0571 | — | — |
-| add Boombness `+0.25` | 0.0881 | **0.6762** | −0.1274 | 0.0117 |
-| remove refusalness | 0.2690 | **0.0000** | +0.0101 *(0.9× the judge-noise sem — **not measurable to ±0.03**, not "does nothing")* | 0.4746 |
-| **add Boombness AND remove refusalness** | **0.5476** | 0.0024 | **+0.2824** | **<0.0001** |
-| **RANDOM direction + remove refusalness** *(control)* | **0.2190** | 0.0000 | −0.0321 | 0.1160 |
-
-⚠ **The control is inert only on THIS condition, and reverses elsewhere.** On `direct_harmful` the same
-random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 → 0.54**, while arm F stays
-at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
-for the doublespeak population only, and is reversed where harm is explicit.**
-
-**Neither manipulation alone raises attack success — together they more than double it.**
-Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
-ASR thresholds 0.25 / 0.50 / 0.75.
-
-⚠ **That +0.400 is ~45% a mechanical artifact.** Arm A refuses on 284/420 rows, each scored exactly 0.0 by
-construction. On the rows where A did *not* refuse, **A−base = +0.094 (positive)** and the interaction falls
-to **+0.222**. The **refusal-free** contrasts — **F−C = +0.272** and **F−Fctrl = +0.315**, between arms with
-~0% refusal — are the numbers that carry the claim.
-
-### The mechanism
-`d_surface` does **two opposing things at once**:
-1. **detection** — it makes the request legible to the refusal mechanism (refusal 0.057 → **0.676**), which
-   *suppresses* ASR;
-2. **a second, refusal-independent channel** raises judged harmfulness once refusal is removed.
-   ⛔ **We have NOT established that this is a "capability" channel.** The gain is *largest where the
-   doublespeak mapping is weakest* — **+0.361 at `n_examples=0`** (no demonstrations at all) and **+0.267 on
-   `benign_remap`**, where carrot→bomb is **never taught** — and it is **absent on explicitly harmful
-   prompts** (+0.000 on `direct_harmful`, where the random control gains +0.389). It is better described as
-   a **prompt-independent injection by the L8 steering vector** than as the doublespeak attack succeeding.
-
-In the unmodified model channel 1 dominates and **masks channel 2 entirely**. That is why the within-arm
-correlation was positive while every steering attempt looked suppressive — a contradiction this report
-carried for days.
-
-### Why this is not any of the artifacts that killed earlier versions
-| competitor | how it is excluded |
-|---|---|
-| degenerate generation | passes `coherence_gate` on the doublespeak denominator |
-| truncation / length | ⚠ **attenuated, not eliminated.** All arms complete at 512 tokens, but arm F writes 260 median words vs the control's 145 and common support covers only ~27% of control rows. Matched on 25-word bins, **F−Fctrl falls +0.315 → +0.233** (bootstrap CI [0.149, 0.310]) and **F−base +0.282 → +0.150**. A quarter to a half of the raw gap is length, which may itself be a mediator. |
-| "longer answers score higher" | baseline calibration shows truncation **suppresses** score (+3.7pp when completed) |
-| judge noise | effect is **25×** the measured test–retest floor (0.011) |
-| threshold luck | holds on the continuous score and at three thresholds |
-| **"any two perturbations do this"** | **the random composition does nothing (p=0.116)** |
-| domain artifact | domain-clustered throughout |
-
-A prediction for the arm-F value was **recorded in the log before judging** (`≥0.474`); it came in at
-**0.5476**.
-
-### Consequences
-- ⛔ **§18 = B ("mechanistic but not causal") is WITHDRAWN.** It was a **ceiling effect of refusal**.
-- ⚠ **§12.2 — "Boombness minus refusal" — is REOPENED and worth building as an experiment, NOT vindicated.**
-  I closed §12 as gate-not-met on G4's directional null, and that reasoning was wrong. But the arm-F gain is
-  **not conditional on the doublespeak mapping** and **does not transfer to explicitly harmful requests** —
-  precisely what an attack objective would require. Downgraded from "should be built" to "worth building as
-  an experiment".
-- The §12.1 "pure Boombness objective" (maximise alone) remains **wrong** — alone, it *lowers* ASR.
-
-### Honest limits — scope, not validity
-One model (Llama-3.1-8B), one concept pair (carrot↔bomb), one judge, refusal projected at a single layer
-(L18), and `d_surface` fitted on the same bank it is evaluated on. The Qwen3 replication of the *projection*
-arm is running; **G2's correlation did not replicate on Qwen3**, so cross-model generality is an open
-question for this result too.
-
----
-
-## ★ SECOND CAUSAL RESULT — removing the concept component helps attacks, on Llama (added 2026-08-18)
-
-Unlike the interaction above, this one survived every check **including the ones that refuted the
-interaction's mechanism**. Llama-3.1-8B, 512 tokens, n=420, all arms gate-passed and length-matched by
-construction (163 vs 150 median words), against a **projection-type** control:
-
-| contrast | Δ score | t_cl | p_cl |
-|---|---|---|---|
-| `project_out d_surface` − baseline | +0.0378 | +5.12 | **0.0037** |
-| `project_out RANDOM` − baseline | −0.0182 | −1.27 | 0.260 — **inert, as a control should be** |
-| **`d_surface` − RANDOM control** | **+0.0560** | **+4.30** | **0.0077** |
-
-**5× the measured judge-noise floor.**
-
-### ⛔ The cross-condition profile — R-15, corrected 2026-08-19
-This table originally shipped **six deltas and no inference**, while the Qwen3 table eleven lines below
-carries `p_cl` on every cell and annotates two of them "(n.s.)". Given the same test
-(`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered t on `len_B` / `len_Bctrl`,
-n=960 — the deltas reproduce the original exactly):
-
-| condition | n | arm − control | p_cl | domain-clustered CI |
-|---|---|---|---|---|
-| `benign_literal` | 324 | +0.0069 | 0.334 | [−0.010, +0.024] |
-| `benign_remap` | 36 | +0.0104 | 0.745 | [−0.068, +0.088] |
-| `concept_in_benign_ctx` | 72 | +0.0035 | 0.862 | [−0.045, +0.052] |
-| **`natural_doublespeak`** | 420 | **+0.0560** | **0.0077** | **[+0.023, +0.089]** |
-| `direct_harmful` | 72 | +0.0556 | 0.363 | [−0.087, +0.198] |
-| `direct_codeword` | 36 | +0.0590 | 0.438 | [−0.121, +0.239] |
-
-⛔ **Only one of the six cells is distinguishable from zero, and it is `natural_doublespeak`**, so the
-earlier profile reading is **withdrawn**. The two other "harmful" cells — precisely the ones that
-previously carried the generalisation claim —
-have intervals spanning **±0.2**, roughly six times the effect they were cited to demonstrate.
-
-⛔ **The "clean split" was a power artifact.** `natural_doublespeak` has **420** prompts against 72 and
-36 for the other two harmful conditions. The design can resolve its two large cells and nothing else,
-and those happen to be one benign (`benign_literal`, n=324, CI ±0.017) and one doublespeak. Every
-36–72-row cell is uninformative in **both** directions, so these data **cannot** discriminate
-"harm-general" from "doublespeak-specific".
-
-**What is actually established** is the narrow claim:
-
-> Removing the concept component from the codeword position raises attack success **on natural
-> doublespeak prompts** (+0.056, p=0.0077, against an inert control).
-
-The earlier reading — "wherever there is an attack, and does nothing where there is not" — is
-withdrawn, and describing it as "a *stronger* statement" was backwards: it was a weaker-evidenced one.
-Note also that the Qwen3 comparison below applied an **asymmetric evidential standard** — Qwen3's cells
-were discounted for failing a test the Llama cells had never been given, and three of them fail it too.
-
-### ⛔ It does NOT replicate on Qwen3-14B — and the failure is informative
-Same intervention, same fitting procedure, same relative depth (25% vs 27.5%), same bank, **inert control on
-both models** — and mirror-image condition profiles:
-
-| condition | Llama-3.1-8B | Qwen3-14B |
-|---|---|---|
-| `natural_doublespeak` (attack) | +0.056 | **+0.339** |
-| `direct_harmful` | +0.056 | +0.111 (n.s.) |
-| `direct_codeword` | +0.059 | +0.010 (n.s.) |
-| `benign_literal` | +0.004 | **+0.224** |
-| `concept_in_benign_ctx` | +0.010 | **+0.245** |
-| `benign_remap` | +0.004 | **+0.441** |
-
-⛔ **This table previously showed only TWO Qwen3 values in a "harmful conditions" row against THREE
-Llama values, silently omitting `natural_doublespeak = +0.339` — the LARGEST Qwen3 effect of all.**
-Found 2026-08-18 by an independent audit and verified against the judge artifacts. Every condition is
-now listed on its own row so a column cannot hide one.
-
-**The omission inverted the conclusion.** With `natural_doublespeak` restored, Qwen3 is elevated on
-**five of six** conditions, attack and benign alike — this is a **broad elevation of judged
-harmfulness**, not a profile that "tracks the absence of an attack" as the previous text claimed.
-The only near-null is `direct_codeword` (+0.010). The contrast with Llama still stands and is
-if anything sharper: on Llama the effect is confined to harmful conditions (+0.056 vs +0.004 benign);
-on Qwen3 it is everywhere, including on prompts containing no attack. **The result remains
-single-model**, and for the corrected reason: Qwen3's projection does not isolate an attack-related
-quantity at all.
-
-The Qwen3 effect is real and `d_surface`-specific (its random-projection control is inert, −0.004,
-p=0.77), but it raises judged harmfulness nearly everywhere.
-
-### Why the small result outlived the large one
-| | arm F interaction | this result |
-|---|---|---|
-| size | +0.27 to +0.32 | **+0.056** |
-| control | inert on doublespeak only; **reverses** on `direct_harmful` | inert **everywhere** |
-| cross-condition | ⛔ appears where the mapping is never taught | ⚠ **one significant cell of six** (R-15) — doublespeak only |
-| cross-model | not tested | ⛔ does not replicate |
-| status | real number, **mechanism refuted** | **established, single-model** |
-
-Effect size was consistently the *worst* predictor of which claim survived. Every large effect in this sprint
-either failed a cross-condition check or lost its interpretation; the surviving causal result is the smallest
-one measured.
 
 ---
 
