@@ -948,18 +948,51 @@ round: `d_surface` takes ASR from **0.134 to 0.279** and refusal from 0.749 to 0
 refusalness does **nothing** (−0.004, indistinguishable from the double-random control at −0.008).
 **D equals B to four decimal places** — on Qwen3 the entire joint effect is the `d_surface` channel.
 
-**`d_surface` removal raises external-set attack success in both models** (Llama +0.083 pooled, Qwen3
-+0.131). This is worth separating from G2 explicitly: the **correlational** Boombness↔ASR relationship
-is Llama-specific and does not replicate; the **causal intervention on `d_surface`** does. Those are
-different claims about different quantities and the sprint should stop treating "does not replicate"
-as a property of the direction.
+⚠ **Not established under clustering.** Qwen3's ClearHarm arm B is +0.0416 cluster-mean, **p_cl=0.181**
+— the same 6-clusters-with-one-at-71% limitation that made Llama's ClearHarm arm B non-significant
+before AdvBench settled it.
 
-⚠ **Not established under clustering, and the reason is already known.** Qwen3's arm B is +0.0416
-cluster-mean, p_cl=0.181 — the *identical* 6-clusters-with-one-at-71% limitation that made Llama's
-ClearHarm arm B non-significant before AdvBench settled it. The matching experiment (Qwen3 × AdvBench,
-16 clusters) is running: `q3ab_base`, `q3ab_B`, `q3ab_Bctrl`. On the pooled estimate Qwen3's effect is
-*larger* than Llama's, so it should clear zero comfortably at 16 clusters; if it does not, the pooled
-ClearHarm effect was carried by the one dominant cluster and that will be said here.
+#### ⛔ R-17 — the matching experiment was run, and it does NOT replicate
+
+A prediction was recorded here before that run: *"Qwen3's pooled effect is larger than Llama's, so it
+should clear zero comfortably at 16 clusters."* **It did not.**
+
+| Qwen3-14B, AdvBench 495, 16 clusters | ASR@0.5 | refusal | Δ cluster-mean | p_cl | CI |
+|---|---|---|---|---|---|
+| baseline | **0.0081** | 0.9374 | — | — | — |
+| **B** remove `d_surface` @L11 | 0.0141 | 0.9212 | **+0.0024** | **0.657** | [−0.0089, +0.0138] |
+| C remove refusalness @L20 | 0.0061 | 0.9111 | −0.0010 | 0.333 | [−0.0032, +0.0012] |
+| Bctrl random @L11 | 0.0081 | 0.9293 | +0.0000 | — | — |
+
+Arm B moves **4/495 → 7/495**. **The reason is a floor, not the clustering:**
+
+| | baseline ASR | refusal | headroom |
+|---|---|---|---|
+| Llama ClearHarm / AdvBench | 0.1061 / 0.0646 | 0.877 / 0.931 | 0.123 / 0.069 |
+| **Qwen3 ClearHarm / AdvBench** | **0.1341 / 0.0081** | 0.749 / 0.937 | 0.251 / 0.063 |
+
+**Qwen3 complies with 0.8% of AdvBench against 13.4% of ClearHarm — a 16× drop, where Llama drops
+1.6×.** It is not simply more refusal: Qwen3's AdvBench headroom (0.063) is close to Llama's (0.069),
+but Llama converts nearly all its non-refusal into judged compliance while Qwen3 converts about an
+eighth. **An intervention cannot be measured against a floor.**
+
+⛔ **Withdrawn:** the claim that `d_surface` removal raises external-set ASR *in both models* — it was
+made on **pooled** estimates, and neither Qwen3 number survives clustered inference (p=0.181, p=0.657).
+
+✅ **What survives is Llama-specific and solid:** arm B on AdvBench, **+0.0305, p_cl=0.0089**, inert
+control (§7c above).
+
+⚠ **Open, not negative:** whether `d_surface` is causal on Qwen3 at all. Its ClearHarm point estimate
+is large (ASR 0.134 → 0.279, refusal 0.749 → 0.564) and merely under-powered; AdvBench is a floor.
+**Neither set can answer it**, and the experiment that could is an external harmful set chosen for
+*this model's* baseline compliance rather than inherited from the Llama pipeline (**E11**).
+
+**The methodological point is worth more than the result.** Two "external harmful sets" are not
+interchangeable: they give Llama similar baselines (0.106 / 0.065) and Qwen3 wildly different ones
+(0.134 / 0.008). A cross-model comparison run on **either set alone** would have produced a confident
+and wrong answer — "replicates" from ClearHarm, "does not replicate" from AdvBench. **Report baseline
+compliance beside every external-set ASR**, or a reader cannot distinguish an intervention that fails
+from a set with no headroom.
 
 ### ⚠ Super-additivity on ClearHarm alone — NOT established, and that is the expected result
 

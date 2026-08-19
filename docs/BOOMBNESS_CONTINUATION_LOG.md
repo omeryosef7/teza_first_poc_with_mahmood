@@ -1309,8 +1309,8 @@ removing refusalness does **nothing at all** (−0.004, indistinguishable from t
 at −0.008). **D equals B to four decimals (0.2793 both)** — on Qwen3 the entire joint effect is the
 `d_surface` channel and refusalness contributes zero.
 
-**2. `d_surface` removal raises external-set ASR in BOTH models.** Llama +0.083 pooled, Qwen3 +0.131
-pooled. That is a **cross-model replication of the `d_surface` causal effect** — and it is the
+**2. ⛔ WITHDRAWN (R-17) — `d_surface` removal raises external-set ASR in BOTH models.** Llama +0.083 pooled, Qwen3 +0.131
+pooled. *(This was written on **pooled** estimates and is **retracted** — neither Qwen3 number survives clustering: ClearHarm p=0.181, AdvBench p=0.657. See R-17.)* That was read at the time as a **cross-model replication of the `d_surface` causal effect** — and it is the
 opposite of G2, where the *correlational* Boombness↔ASR relationship did not replicate. Worth stating
 plainly: the correlation is Llama-specific; the causal intervention is not.
 

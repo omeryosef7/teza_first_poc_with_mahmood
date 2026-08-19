@@ -101,6 +101,13 @@ RETRACTED = [
      r"bank-artifact explanation is \*{0,2}excluded"),
     # R-15: "harmful yes, benign no" -- one significant cell of six. The claim pattern is the target;
     # the deltas themselves are NOT retracted (they reproduce exactly), only the reading of them.
+    # R-17: the cross-model CAUSAL replication claim, made on pooled estimates and withdrawn when
+    # Qwen3/AdvBench came back null against a 0.8% baseline. The Llama-only claim is live; only the
+    # "both models" phrasing is retracted.
+    ("R17 cross-model d_surface replication",
+     r"raises external-set ASR in \*{0,2}BOTH models|"
+     r"cross-model replication of the .{0,20}d_surface.{0,20} causal effect|"
+     r"the causal intervention[^\n]{0,30}does\b(?![^\n]{0,40}not)"),
     ("R15 harm-general profile as fact",
      r"harm-general, not\s*\n?doublespeak-specific|"
      r"wherever there is an\s*\n?>?\s*attack|"
