@@ -64,9 +64,17 @@ RETRACTED = [
     ("R6  §2.6 verdicts from a 1e-5 tail",
      r"only arm that leaves comprehension unchanged|"
      r"comprehension (?:is )?preserved \(p\s*=\s*0\.68|p\s*=\s*0\.681"),
-    ("R7  G3 edge null ranked at the retracted token",
-     r"6\.25\s*%[^\n]{0,60}(?:does nothing|no effect)|however distributed|"
-     r"cutting 100%[^\n]{0,40}84%"),
+    # R-7 DISCHARGED 2026-08-19. The retracted object was never the CLAIM ("6.25% of demo edges does
+    # nothing however distributed") -- it was that claim computed from a ranking measured at the
+    # final codeword occurrence rather than at `readout_pos`. The 24-family re-run at `--dst both`
+    # re-derives it correctly, so the claim is now live and must NOT be flagged. What stays retracted
+    # is the superseded ARITHMETIC: the 84% recovery, the 56,832/3,552 edge counts and the 6-family
+    # run they came from. Matching the claim text here would flag the corrected section, which is
+    # how a sweep starts costing more than it saves.
+    ("R7  G3 numbers from the 6-family wrong-token run",
+     r"cutting 100%[^\n]{0,40}84%|"
+     r"56,?832|3,?552\s*edges|"
+     r"recovers\s*\*{0,2}84%|84%,\s*CI\s*\[62%"),
     ("R8  G1 superseded +84% on n=8 / 2 domains",
      r"\+?84%\s*of span|CI\s*\[\+?57%,\s*\+?105%\]|"
      r"n\s*=\s*8\s*families[^\n]{0,40}2\s*\*{0,2}domains"),

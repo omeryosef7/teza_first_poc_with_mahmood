@@ -54,7 +54,7 @@ here.
 |---|---|---|
 | **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The single-layer L18 demonstration transplant moves the semantic readout **+68% of span, CI [+50%, +95%]**, on **24 families across 6 domains** (`g1_stratified.json`); the query-codeword transplant moves it the *wrong way*. ⚠ **Under re-derivation** — see R-8. |
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
-| **G3** (§10) | Can it be removed surgically? | **Not established.** The edge ranking was measured at the wrong token; the fix is in and the re-run is outstanding. See R-7. |
+| **G3** (§10) | Can it be removed surgically? | **Established, re-derived 2026-08-19** on 24 families with the ranking at `readout_pos` (R-7 discharged). Cutting **all** demo edges at all layers recovers **75.2%** of the deletion ceiling; **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001); and **6.25% of the edges does nothing however distributed** — the redundancy is in **edge count**, not depth. Codeword-scope cuts move the readout the **wrong way** (+1.33), so the meaning is in the demonstration **block**. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
 | **§10.4-D** | Does removing `d_surface` **and** refusal raise ASR? | **Yes, on two external sets** (§7c). AdvBench (495, 16 clusters): 0.065 → **0.352**, p_cl<0.0001. ClearHarm (179, 6 clusters): 0.106 → **0.514**, p_cl=0.020, control inert to ±0.004. |
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
@@ -70,7 +70,7 @@ appears in the gate table above.
 | id | what was asserted | status | why |
 |---|---|---|---|
 | R-6 | "`project_out` is the only arm that leaves comprehension unchanged (p=0.681)", and every other §4b verdict | **WITHDRAWN** | The readout scored `' literal'`/`' coded'` at a position where the model emits neither. Median mass on the option pair: **4.4e-05**, with **0/288** rows above 1%. Every verdict was an ordering inside that tail. Rebuilt as a whole-answer forced choice (median mass now **0.297**); re-run outstanding. |
-| R-7 | G3: "cutting 6.25% of demo→query edges does nothing however distributed" | **WITHDRAWN** | The edge *ranking* was computed at the final codeword occurrence, the destination retraction #3 already called fatal, while the readout is ~9 tokens later. The null cannot distinguish "these edges don't matter" from "ranked at the wrong token". Fixed; re-run outstanding. |
+| R-7 | G3: "cutting 6.25% of demo→query edges does nothing however distributed" | **WITHDRAWN, then DISCHARGED 2026-08-19** | The edge *ranking* had been computed at the final codeword occurrence — the destination retraction #3 called fatal — while the readout is ~9 tokens later, so the null could not distinguish "these edges don't matter" from "ranked at the wrong token". Re-run at 24 families with `--dst both` (ranking at `readout_pos`): **the claim survives** — top-k +0.020, bottom-k −0.003, random +0.001, and 5,107 edges do nothing whether concentrated at 2 layers or spread over 32. What stays superseded is the **arithmetic** of the 6-family run: the 84% recovery (now **75.2%**) and the 56,832/3,552 edge counts (now 81,707/5,107). |
 | R-8 | G1: "+84% of span, CI [+57%, +105%], n=8 families, 2 domains" | **SUPERSEDED** by +68% on 24 families / 6 domains (`g1_stratified.json`). Additionally **under re-derivation**: `semantic_logodds` is computed by the same defective readout as R-6 (`aggressive_patching.py:439`), and the codeword has **no capitalised single-token form** while the concept has four, so the readout is structurally biased toward the concept. |
 | R-9 | "§18 = B, mechanistic but not causal" as a settled label | **WITHDRAWN**, and not replaced — see the FINAL row above. |
 | R-10 | The §6.4 metric comparison, presented as probe (n=72) beside direction (n=270) | **RETRACTED**; on the common 72 no metric predicts ASR once `n_examples` is partialled out. §7b. |
@@ -184,55 +184,71 @@ and proven (`signals.string_option_readout`, 3,200× more option mass) but **not
 script**. The *direction* of G1 is not in doubt — the query-codeword arm moves the wrong way on any
 readout — but the **magnitudes in this table are pending re-run** and should not be quoted as final.
 
-### G3: the retrieval is attention-carried and massively redundant — and the redundancy is in the EDGE SET, not depth
-6 families, semantic readout, `--dst both --demo-scope block`:
+### G3: the retrieval is attention-carried, and the redundancy is in the EDGE COUNT — re-derived 2026-08-19
+**24 families / 24 eligible (`effective_G=24`), whole-answer readout, `--dst both` (ranking at
+`readout_pos`), cross-fitting restored.** This replaces the earlier 6-family run whose ranking was
+computed at the destination retraction #3 called fatal — R-7 is **discharged**, and the null it
+questioned survives.
+`outputs/boombness/g3_wholeanswer_block24.json` · `..._codeword24.json`
 
-| arm | edges | layers | Δ readout | % of deletion ceiling |
-|---|---|---|---|---|
-| `no_demo_text` (delete the demos) | — | — | −11.509 | 100% (definition) |
-| `all_layers_demo` | 56,832 | 32 | −9.708 | **84%**, CI [62%, 110%] |
-| `all_demo` | 3,552 | 2 | −0.008 | **0.07%**, CI [−6.7%, +8.2%] |
-| **`subsampled_all_layers_demo`** | **3,552** | **32** | **+0.089** | **−0.77%**, CI [−3.1%, +2.0%] |
-| top-k / bottom-k / random / non-demo / same-head | 16 | 2 | ≈0 | ≈0 |
+| arm | edges | layers | Δ readout | sem | fraction of deletion ceiling |
+|---|---|---|---|---|---|
+| `no_demo_text` (delete the demos) | — | — | **−17.879** | 1.072 | **1.000 — the ceiling** |
+| **`all_layers_demo`** | **81,707** | 32 | **−13.437** | 0.787 | **0.752** |
+| `positive_control` | 8,883 | 2 | +0.258 | 0.306 | −0.014 |
+| `all_demo` | 5,107 | 2 | +0.152 | 0.154 | −0.009 |
+| **`subsampled_all_layers_demo`** | **5,107** | **32** | **+0.079** | 0.090 | −0.004 |
+| `topk_demo` | 16 | 2 | **+0.020** | 0.017 | −0.001 |
+| `random_demo` | 16 | 2 | +0.001 | 0.003 | −0.000 |
+| `bottomk_demo` | 16 | 2 | −0.003 | 0.003 | +0.000 |
+| `same_head_random` / `random_nondemo` | 16 | 2 | +0.003 / −0.044 | 0.023 / 0.037 | ≈0 |
 
-⚠ **Units and signs differ between the last two columns** — the percentages are fractions of the
-deletion ceiling (which is itself negative), so a **positive** raw Δ maps to a **negative** percentage.
-`subsampled_all_layers_demo`'s +0.089 log-odds is −0.77% of span, not +0.089%. The two matched arms
-bound the null at roughly **±8% of the ceiling** (CIs [−3.1%,+2.0%] and [−6.7%,+8.2%]), which is worth
-stating so the matched null is not read as tighter than it is.
+**1. The retrieval is attention-carried.** Cutting every demonstration edge at every layer recovers
+**75.2%** of deleting the demonstrations outright. *(The superseded figure was 84%, computed on the
+invalid single-next-token readout.)*
 
-**The matched arm is the decisive one and it corrected my own claim.** I first read the 84%-vs-0.07%
-contrast as *depth* distribution. But the 32-layer arm also cuts **16× more edges**, so the
-comparison moved two things at once. At an identical 3,552 edges, spreading over 32 layers instead of
-2 changes the readout by **+0.10 log-odds — nothing.** **Layer spread is not the operative variable.**
+**2. The ranking carries no information, and this time it was measured at the right token.**
+`topk` **+0.020**, `bottomk` **−0.003**, `random` **+0.001**, sems 0.017/0.003/0.003 — indistinguishable.
+R-7 flagged that the old null could not separate *"these edges do not matter"* from *"they were ranked
+at the wrong destination"*. Ranked at `readout_pos`, **the null holds**.
 
-⛔ **RETRACTED 2026-08-18 (R-7) — do not quote the paragraph below.** What was true: removing
-**6.25%** of demo edges does nothing *however distributed*; removing 100% recovers 84%. That was the
-basis for saying every localized knockout — top-k, bottom-k, random, same-head — reads zero because
-each removes ~0.03% of a hugely redundant set. The **ranking** that defines top-k / bottom-k /
-same-head was computed at the final codeword occurrence, ~9 tokens before the readout — the
-destination retraction #3 already called fatal. So the null cannot distinguish "these edges do not
-matter" from "the edges were ranked at the wrong token". `surgical_knockout.py:271` is fixed and the
-re-run is outstanding; until it lands, **G3 is not established in either direction**.
+**3. The edge-count-vs-depth tie is broken, and the answer is edge count.** At an identical **5,107**
+edges, concentrating them at 2 layers (+0.152) and spreading them over 32 (+0.079) are both **nothing**;
+only cutting essentially all 81,707 works. **6.25% of the demonstration edges does nothing however
+distributed.** Layer spread is not the operative variable — edge count is, and the response is close to
+all-or-nothing.
 
-**Identification limit, stated rather than hidden:** the converse arm is *impossible*. At seq_len 114
-× 32 heads a layer holds only ~3,648 edges, so any cut above ~7.3k **must** span layers. Edge count
-and layer spread cannot be decoupled upward. `dense_two_layer` attempted it and saturated at 7,264 of
-56,832 — the code now raises rather than silently under-delivering.
+This is the question `dense_two_layer` was built for and can never answer: it is **structurally
+infeasible** (it needs ≥16 chosen layers, at which point it is not a two-layer arm), and the pre-fix
+code met that by silently delivering 7,264 of 56,832 edges — 87% short — while still reporting the arm
+as edge-count-matched. It is now skipped **deliberately**, with the reason recorded in `summary.json`
+and charged to the FailureLedger. The tie is broken from the feasible side instead.
 
-**Movability, restated:** the dynamic-range guard now compares on magnitude against a whitelist of
-true null controls (largest 0.078). `readout_movable = True` via `no_demo_text` (−11.5), so nulls here
-are interpretable. The separate `dynamic_range_established=False` reflects that the positive control
-does not dominate `no_demo_text`, and must **not** be read as "G3 invalid".
+**4. ★ Codeword scope: the information is in the demonstration BLOCK, not the codeword tokens in it.**
+Restricting every cut to edges into the codeword occurrences *inside* the demo block:
 
-⚠ **The "positive control" does not behave like one, and the name should probably go.** It is
-**+3.534** in `g3_dstfix`/`g3_edgematch` but **−1.135** in `g3_dynrange` — it changes **sign** between
-two runs of the same design — and it recovers roughly **−31%** of the deletion span, i.e. it moves
-*opposite* to the effect it is meant to bracket. Anyone opening those artifacts will also find
-`dynamic_range_established: false` and `edge_count_confound.identified: false`; both are definitional
-(the first compares against the deletion ceiling rather than an arm, the second predates the matched
-arm being added) but neither is self-explanatory in the file. Do not cite the positive control as
-validating anything until its intended direction is pinned down.
+| arm | edges | Δ readout | sem |
+|---|---|---|---|
+| **`all_layers_demo`** (codeword scope) | 6,144 | **+1.332** | 0.351 |
+| `subsampled_all_layers_demo` / `all_demo` | 384 | +0.125 / −0.110 | 0.062 / 0.079 |
+| every 16-edge arm | 16 | −0.037 … +0.013 | — |
+
+Cutting **all** attention into the demo-block codeword tokens at every layer does not reproduce the
+deletion effect — it moves the readout the **wrong way** (+1.33), while cutting attention into the
+**whole block** recovers 75%. **G1's conclusion reached independently from the attention side**: the
+meaning is retrieved from the demonstrations as a whole, not from the codeword tokens within them.
+
+**Identification limit, stated rather than hidden.** The converse arm is impossible: a layer holds only
+~3.6k edges, so any cut above ~7.3k *must* span layers. Edge count and layer spread cannot be decoupled
+upward — only downward, which is what the 5,107-edge pair above does.
+
+**On `dynamic_range_established = False`.** The script prints it because `positive_control` (+0.258)
+does not exceed 3× the largest other arm. That is expected and the code says so
+(`analyze_g1_g3.py:225`): the largest arm is `no_demo_text`, the deletion **ceiling** the fractions are
+taken *of*, not an arm awaiting validation — movability is established overwhelmingly by
+`no_demo_text` itself. ⚠ The `positive_control` still does not behave like one (+0.258 here, and it
+changed **sign** between two earlier runs of the same design); **do not cite it as validating
+anything**. Nothing in this section depends on it.
 
 ### §7: semantics move far more than the representation
 The model's *reported meaning* of the codeword travels **59%** of the way from literal to direct
