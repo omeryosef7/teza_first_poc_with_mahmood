@@ -1354,6 +1354,8 @@ findings did. Nothing here is a failed experiment; each is an answer.
 | N8 | Is the ClearHarm joint arm **super-additive** in its two components? | **Not established.** +0.0922 with a domain-clustered CI of [−0.147, +0.133]; 127 of 179 rows sit in one cluster, so the set cannot resolve it. AdvBench (16 clusters) is the right test. ⚠ Currently also blocked by R-14. | §7c |
 | N9 | Is `d_surface` "concept-ness" **off-bank**? | **Not licensed.** The 2×2 named the direction from a contrast that does not exist in a prompt with no codeword. Its off-bank behaviour needs its own interpretation. | §7c |
 | N10 | Do the probe splits **leak** across families? | **No** — the critique's leakage finding is refuted against a real K=20 null (max excess 0.021 against a 0.05 tolerance). A single reused permutation had been mistaken for a null distribution. | C-8 |
+| N15 | Does Boombness predict attack success (G2)? | ⛔ **RETRACTED (R-18) — no, not on prompts that belong in the question.** The published ρ=+0.307/+0.262 came from a row set that was 31% **sibling families sharing demonstrations** and 31% **experimentally-manipulated** designed variance. On the 90 independent, unmanipulated prompts the within-domain ρ is **−0.0518 (p=0.658)**. n=90 cannot exclude a small effect — a null, not a proof of absence. | R-18 |
+| N16 | Is `n_examples` a confound for G2 (C-9)? | **Superseded.** C-9 answered "no" on the unfiltered 234 rows — it was defending a correlation that is not present on the clean 90. The question does not arise until G2 is re-established. | R-18 |
 | N13 | Does the `d_surface` causal effect **replicate on Qwen3-14B**? | **Not established, and neither external set can answer it** (R-17). On ClearHarm the point estimate is large (ASR 0.134 → 0.279) but n.s. at G=6 (p=0.181); on AdvBench it is null (p=0.657) — **because Qwen3 complies with only 0.8% of AdvBench** (4/495) against 13.4% of ClearHarm, a 16× drop where Llama drops 1.6×. An intervention cannot be measured against a floor. ⛔ An earlier draft claimed replication from pooled estimates; withdrawn. | §7c, **E11** |
 | N14 | Are two "external harmful sets" interchangeable? | **No, and the choice can decide the answer.** ClearHarm/AdvBench give Llama similar baselines (0.106 / 0.065) and Qwen3 wildly different ones (0.134 / 0.008). A cross-model comparison on **either alone** yields a confident, opposite, wrong conclusion. **Report baseline compliance beside every external-set ASR.** | §7c |
 | N12 | Can plan §4.1's **designed variance** (`strength`, `consistency`, `example_position`) be analysed? | **No, and it is now measured rather than assumed.** The 192 rows sit in three dedicated `bank_block`s. ⛔ **An earlier draft said they had "never contaminated a published number" — that is FALSE (R-18):** `analyze_g2` filters on `condition`, not `bank_block`, so 72 of them are inside G2's headline n=234 and carry a large part of its correlation. But the largest available comparison is **12 behavioural rows per level**, smaller than cells R-15 just declared uninformative, and `position` is **6 vs 6, one row per domain per level**. Every non-default level also moves prompt length, codeword-occurrence count and `n_examples` **simultaneously** — `strength` takes `n_examples` from 4.91 to 2.00, and `n_examples` is a known ASR predictor. Documented and explicitly excluded; regeneration is **E8**. | §9b, E8 |
@@ -1396,6 +1398,15 @@ decimals. **R-14 is the same shape one level up:** an ASR table cannot be falsif
 numbers, because a judge given no goal still returns a plausible *ordering* that tracks the refusal rate.
 Only the goal string — an input nobody printed — revealed it. **Countermeasure: check the input, not the
 output, for any artifact whose value is what you are trying to establish.**
+
+**FM4b — The heterogeneous row set (R-18, the most expensive instance).** Every other FM4 case was
+mismatched footing between two *arms*. This one is a level down: the **sample itself** was mixed and
+nobody looked. `analyze_g2` filtered on `condition == arm`, which reads as sufficient and is not, and
+the artifact recorded `n_analysed: 234` with no description of the 234 — 31% sibling families sharing
+demonstrations, 31% experimentally-manipulated readability. It cost a headline finding.
+**Countermeasure: a count is not a description of a sample.** Every analysis artifact must record the
+*composition* of its rows, not just their number; `analyze_g2` now does, and warns when the mix is
+unsafe.
 
 **FM4 — The mismatched footing.** Comparing the best of one arm against a fixed instance of another, or
 two probes read at different tokens, or two increments with different degrees of freedom. This produced
