@@ -1634,9 +1634,13 @@ and the correlation with ASR is real. But steering at α=1 destroys generation (
 optimizer maximizing this projection has no reason to stop at 0.25.
 
 **5. Does Boombness predict ASR?**
-**Yes, modestly — in Llama-3.1-8B, and only there** (it does not replicate on Qwen3-14B; see §14). ρ = **+0.307** (`d_surface|L12|proj`), **+0.302** norm-partialled, n = 234, 6/6
-domains positive though two are essentially null, **p < 5e-4** (within-domain permutation; the i.i.d.
-1.7e-06 is withdrawn as pseudo-replication).
+⛔ **RETRACTED (R-18) — not established.** The "yes, modestly" answer rested on ρ = **+0.307**
+(within-domain +0.2618, p<5e-4, n=234), computed over a row set that was **31% sibling families sharing
+demonstrations** and **31% rows whose codeword readability was experimentally manipulated**. On the
+**90 independent, unmanipulated prompts the within-domain ρ is −0.0518 (p = 0.658)**; on `core2x2`
+alone (n=60) it is **−0.0832 (p = 0.572)**. Two clean subsets, both null. n=90 cannot exclude a small
+effect, so this is a **null, not a proof of absence**, and a power experiment is running. Unaffected:
+G1, G3 and the probes, which filter on `bank_block`.
 
 **6. Does Boombness predict ASR better than refusalness?**
 **No.** ⛔ The 3.7× is retracted — it compared the two probes at *different tokens*. At matched footing
@@ -1645,12 +1649,14 @@ straddling 1. ⚠ And the between-probe selection freedom is not matched (20 vs 
 which biases those ratios toward Boombness.
 
 **7. Does Boombness add predictive power beyond refusalness?**
-**Yes, and which probe adds more depends on where you read.** At matched degrees of freedom (one column
-each, n=234): @codeword_last Boombness adds **+0.0743** and refusalness adds **+0.1091**; @last token
-Boombness adds **+0.0053** and refusalness adds **+0.0000005** — i.e. nothing. ⛔ Two earlier drafts
-were wrong here (R-13): one from a mixed-footing artifact, one from a table labelled "matched footing"
-that in fact gave refusalness 5 predictors against Boombness's 1. Boombness is **not** redundant given
-refusalness — at the codeword token it adds 42% over a refusalness-only base.
+⛔ **Superseded twice; the current answer is "neither dominates, on a null."** Three drafts were wrong
+here: one from a mixed-footing artifact, one from a table labelled "matched footing" that gave
+refusalness **5 predictors against Boombness's 1** (R-13), and the corrected 1-vs-1 table — +0.0743 vs
++0.1091 @codeword_last — which was computed over the **same contaminated row set as Q5** (R-18). On the
+**90 clean rows** the two increments are **+0.0441 and +0.0378** — within 0.007 of each other, both
+~0.04 on n=90. **At matched df on clean rows neither predictor dominates**, and since Q5 is itself a
+null this question does not currently have a positive answer to give. @last token refusalness adds
+nothing (4.5e-07), which remains a position fact.
 
 **8. Do user-like / CoT-like framings increase Boombness?**
 ⛔ **RETRACTED — the answer is YES, by a little (retraction #6).** I reported a tight null; the paired
