@@ -1593,3 +1593,44 @@ It ends with **what the plan asked for and did not get**, stated rather than glo
 | 14 | negative results | ✅ §8b (now N1–N12) |
 | 15 | failure modes | ✅ §8c (FM1–FM8) |
 | 16 | recommended next experiments | ✅ §9b (E1–E10) |
+
+## Phase 4: the two ★ sections moved into the body, and §18 is SETTLED
+
+### The sections
+`## ★ THE HEADLINE RESULT` and `## ★ SECOND CAUSAL RESULT` sat **after** the reproduction commands,
+which is how they survived contradicting §0 for so long. Moved into the body as **§7d** and **§7e**,
+beside §7c where the causal results belong.
+
+**§7d's opening sentence was the contradiction itself:** *"This supersedes the §18 = B label and
+reopens §12."* It is now **withdrawn in place**, with a banner saying why: the §12 verdict is unchanged
+and negative, §9b lists building the objective under *explicitly NOT recommended*, and arm F's
+mechanism was retracted (R-8) because its gain is largest in `benign_remap` — where the mapping is
+**never taught**. Its inner "§12.2 is REOPENED and worth building" bullets are withdrawn too, and §19
+Q10 now answers **no** with both prior corrections shown rather than reading as a live reopening.
+
+Dangling cross-references fixed (report ×3, short update ×2), including **N6**, whose *"a matched-length
+Qwen3 arm is running"* was stale — that arm landed and changed the picture (§7c).
+
+### ★ §18 settled — C, amended
+
+Both blockers landed (**R-6 resolved**, **R-7 discharged**), so the label is decided instead of deferred
+for a third time.
+
+| option | verdict | why |
+|---|---|---|
+| A. Strong positive | **No** | *adding* Boombness suppresses ASR at both signs; no objective built or recommended |
+| **B. Mechanistic but not causal** | **No** | B requires interventions *"do not affect ASR **or** destroy comprehension"* — **both clauses fail**: removing `d_surface` raises external ASR (+0.0305, p_cl=0.0089, inert control), and comprehension *improves* (R-6) |
+| **C. Refusal-only story** | **Closest** | on Llama refusal dominates: +0.190 vs `d_surface`'s +0.031 |
+| D. Negative | **No** | G2 survives multiplicity correction and the `n_examples` control; G1 and G3 established |
+
+**The amendment is the sprint's actual result**, and the plan's taxonomy has no box for it:
+(1) `d_surface` is a **distinct** causal channel, near-orthogonal to refusal (cos=0.019) and effective
+alone off-bank against an inert control; (2) the two channels **interact** — +0.0268 [+0.0029, +0.0584]
+beyond a matched random triple, which a pure refusal account cannot produce; (3) **on Qwen3 the refusal
+channel does nothing and `d_surface` does everything**, the inverse of Llama.
+
+**Verdict: C on Llama-3.1-8B, with a real and interacting `d_surface` channel that the C label
+understates, and an inverted picture on Qwen3-14B.** Stated once, in §0, and nowhere else.
+
+*Flagged as a judgement call:* the numbers are regenerable; disagreeing with the label is not
+disagreeing with any number. @Omer — this is the one place I picked a verdict rather than computed one.

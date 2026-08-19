@@ -62,7 +62,42 @@ here.
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
 | **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
-| **FINAL** (§18) | outcome label | **Deferred.** The B label ("mechanistic but not causal") was withdrawn; it cannot be re-decided until R-6 and R-7 land. Recording it as deferred rather than re-asserting either side. |
+| **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
+
+### §18: the outcome label, settled
+
+Both things that blocked this decision have landed — **R-6 is resolved** (`project_out` does not damage
+comprehension; it *improves* the coded reading, +0.2795, p=0.0010) and **R-7 is discharged** (G3 re-derived
+at the correct token). So the label is decided here rather than deferred again.
+
+**The honest answer is C, and it needs an amendment the plan's four-way taxonomy has no box for.**
+
+| plan §18 option | verdict | why |
+|---|---|---|
+| **A. Strong positive** | **No** | *Adding* Boombness does not increase attack behaviour — steering the axis suppresses ASR at **both** signs (G4), and no GCG objective was built or should be. |
+| **B. Mechanistic but not causal** | **No** | B requires that "interventions do not affect ASR **or** destroy comprehension". **Both clauses fail.** Removing `d_surface` raises external-set ASR (+0.0305, p_cl=0.0089, 16 clusters, inert control), and comprehension is not destroyed — it *improves* (R-6). |
+| **C. Refusal-only story** | **Closest** | On Llama refusal is the dominant channel: +0.190 against `d_surface`'s +0.031 on AdvBench. |
+| **D. Negative** | **No** | The metrics are not unstable or non-predictive: G2 survives multiplicity correction (maxT p=0.0015) and control for `n_examples`; G1 and G3 are both established. |
+
+**The amendment, which is the sprint's actual result:** "refusal-only" is too strong in three specific ways.
+
+1. **`d_surface` is a distinct, causally efficacious second channel.** It is near-orthogonal to refusal
+   (cos = 0.019 @L18), and removing it alone raises attack success on 495 external harmful prompts
+   against an inert matched control.
+2. **The two channels interact.** Removing both exceeds the sum of removing each alone by **+0.0268
+   [+0.0029, +0.0584]** beyond a matched random triple (§7c) — so they are not two independent levers,
+   and a pure refusal account cannot produce that term.
+3. **On Qwen3-14B the refusal channel does nothing and `d_surface` does everything** (§7c) — the exact
+   inverse of the Llama picture. A "refusal-only" label is model-specific in a way the taxonomy does not
+   express.
+
+**So: C on Llama-3.1-8B, with a real and interacting `d_surface` channel that the C label understates,
+and an inverted picture on Qwen3-14B.** Stated as a single verdict once, here, and nowhere else in this
+document.
+
+⚠ *This is a judgement call about a four-way taxonomy that does not fit the evidence. The evidence it
+rests on is in §7c and is fully regenerable; a reader who prefers to call this "C" without amendment, or
+to add a fifth category, is disagreeing with the label and not with any number.*
 
 ### Retraction and correction table
 
@@ -1038,13 +1073,14 @@ carried for days.
 A prediction for the arm-F value was **recorded in the log before judging** (`≥0.474`); it came in at
 **0.5476**.
 
-### Consequences
-- ⛔ **§18 = B ("mechanistic but not causal") is WITHDRAWN.** It was a **ceiling effect of refusal**.
-- ⚠ **§12.2 — "Boombness minus refusal" — is REOPENED and worth building as an experiment, NOT vindicated.**
-  I closed §12 as gate-not-met on G4's directional null, and that reasoning was wrong. But the arm-F gain is
-  **not conditional on the doublespeak mapping** and **does not transfer to explicitly harmful requests** —
-  precisely what an attack objective would require. Downgraded from "should be built" to "worth building as
-  an experiment".
+### Consequences — as they stand 2026-08-19, not as first written
+- **§18 = B is withdrawn**, but *not* replaced by "causal via this arm". The label is settled in §0's
+  FINAL row as **C-amended**, on the external-set evidence (§7c), not on this arm.
+- ⛔ **"§12.2 is REOPENED and worth building" is WITHDRAWN.** That reading rested on arm F, whose
+  mechanism was retracted (R-8): the gain is **not conditional on the doublespeak mapping** — it is
+  largest in `benign_remap`, where the mapping is never taught — and it **does not transfer to explicitly
+  harmful requests** (+0.000). Those are exactly the properties an attack objective would need, and the
+  arm has neither. §9b lists building the objective under **explicitly NOT recommended**.
 - The §12.1 "pure Boombness objective" (maximise alone) remains **wrong** — alone, it *lowers* ASR.
 
 ### Honest limits — scope, not validity
@@ -1475,16 +1511,20 @@ categorical proxy — no Userness/CoTness probe was fitted.
 ⚠ Single-model: this does not replicate on Qwen3-14B (see §14).
 
 **10. Can we turn Boombness into a useful GCG objective?**
-⛔ **UPDATED — my earlier "no" was reached by faulty reasoning, and the honest answer is "not as §12.1
-specifies; §12.2 is reopened".**
+**No — and the reasoning has been corrected twice, so read the whole answer.** The first "no" was reached
+by faulty reasoning; a later draft over-corrected to "§12.2 is reopened"; that too is ⛔ **withdrawn**.
+The answer is **no**, for the reasons below.
 - **§12.1 (maximise Boombness alone): still NO** — but for a *demonstrated* reason rather than the one I
   gave. Adding `+0.25` alone drives refusal 0.057 → **0.676** and ASR *down* to 0.088. My original reason
   ("no directional causal support") was **wrong**: there is directional support, it was masked by refusal.
-- **§12.2 (Boombness MINUS refusal): reopened, worth building as an experiment.** Composing the two takes
-  ASR 0.243 → **0.548** (p<0.0001), where neither manipulation alone raises it. ⚠ But **not vindicated**:
-  the gain is *not conditional on the doublespeak mapping* (+0.267 where the mapping is never taught,
-  largest at zero demonstrations) and **does not transfer to explicitly harmful prompts** (+0.000), which is
-  what an attack objective would require.
+- **§12.2 (Boombness MINUS refusal): NO.** Composing the two takes ASR 0.243 → **0.548** (p<0.0001) on
+  the bank, where neither manipulation alone raises it — but the gain is *not conditional on the
+  doublespeak mapping* (+0.267 where the mapping is **never taught**, largest at zero demonstrations) and
+  **does not transfer to explicitly harmful prompts** (+0.000). An attack objective needs both properties
+  and this has neither, so "reopened, worth building" is withdrawn.
+- **What IS causal is a different intervention with the opposite sign.** Off-bank, *removing* `d_surface`
+  raises attack success (§7c: AdvBench +0.0305, p_cl=0.0089, inert control). That is a real causal channel,
+  but it is **subtraction, not maximisation** — it gives an objective nothing to ascend.
 - The 4-draw band figure quoted earlier (p=0.0014) was **retracted** — those four "draws" were one draw
   wearing four labels; on a genuine 4-draw band it is p=0.043.
 
