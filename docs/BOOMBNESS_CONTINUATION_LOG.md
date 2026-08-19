@@ -2314,7 +2314,7 @@ L12. Recomputed on both row sets:
 
 | metric | full n=234 | **clean n=90** | sign |
 |---|---|---|---|
-| `direction_boombness` (`d_surface\|L12\|proj`) | **+0.3067** | **+0.0860** | positive on both |
+| `direction_boombness` (`d_surface\|L12\|proj`) | **+0.3067** *(retracted)* | **+0.0860** | positive on both |
 | `logit_lens` (`ll\|L12\|boombness`) | **−0.1658** | **−0.0865** | negative on both |
 
 **The disagreement holds on clean rows.** ⚠ But it now has a different character: on the clean set
