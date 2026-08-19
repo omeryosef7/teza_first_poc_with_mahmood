@@ -1791,6 +1791,69 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### ✅ Tick 16 — at α = 0.25 the control IS inert, and `d_surface` shows BIDIRECTIONAL control
+
+**Artifact:** `outputs/boombness_followup/phaseF_add_alpha025.json`. AdvBench 495 / 16 clusters,
+cluster-mean estimand on the continuous StrongReject score.
+
+| arm | intervention | ASR@0.5 | refusal | Δ_cl | p_cl | CI |
+|---|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — | — |
+| **addS_025** | `d_surface:add:8-8:0.25` | 0.0081 | **0.9879** | **−0.0329** | **0.0346** | [−0.0632, −0.0027] |
+| **addCtrl8_025** | `random:add:8-8:0.25` | 0.0626 | 0.9354 | **−0.0028** | 0.6239 | [−0.0148, +0.0092] **inert** |
+| addBoth_025 | `d_surface` + `refusalness`, both 0.25 | 0.0061 | 0.9899 | −0.0348 | 0.0288 | [−0.0655, −0.0041] |
+| remR_addS_025 | `refusalness:project_out:18-18:1.0` + `d_surface:add:8-8:0.25` | 0.1879 | 0.7859 | +0.1067 | 0.0011 | [+0.0503, +0.1632] |
+| *(reference)* C_removeR | `refusalness:project_out:18-18:1.0` | 0.2707 | 0.7091 | +0.1895 | 0.0001 | [+0.1097, +0.2692] |
+
+#### The α = 1.0 control failure was a DOSE artifact
+
+At α = 1.0 `random:add` at L8 gave **+0.0889 (p 0.0013)**. At α = 0.25 the same control gives
+**−0.0028 (p 0.6239) — inert.** So the tick-13 control failure was not a property of `add` as an
+operation; it was α = 1.0 being far outside the coherent range on that axis. The α = 0.25 arms have a
+genuinely inert matched control and can be read normally.
+
+#### Bidirectional causal control, with an inert matched control at the same dose
+
+| manipulation of `d_surface` at L8 | Δ_cl | p_cl |
+|---|---|---|
+| **remove** (`project_out`, 1.0) | **+0.0305** | 0.0089 |
+| **add** (0.25) | **−0.0329** | 0.0346 |
+| matched random add (0.25) | −0.0028 | 0.6239 |
+
+**The sign of the behavioural effect follows the sign of the manipulation**, and the matched random
+control does nothing. Refusal rate moves with it too: 0.9313 → **0.9879** when `d_surface` is added,
+the highest of any arm in the sprint.
+
+This is the strongest causal statement the sprint has produced about `d_surface`. It is worth being
+precise about what it does **not** say: it does not resurrect **G4**, which failed on the *on-bank
+doublespeak* prompts at the codeword readout and found both steering signs suppressing. This is a
+different population (external AdvBench, no codeword, no demonstrations) and a different readout, so
+the two coexist — but the bidirectional result here is exactly the property G4 looked for and did not
+find on-bank.
+
+#### The interaction cancels in BOTH directions
+
+| | Δ_cl | vs its single-channel reference | cancelled |
+|---|---|---|---|
+| remove `d_surface`, **add refusalness** (α=1.0, E) | +0.0211 | remove `d_surface` alone +0.0305 | ~31% |
+| remove refusalness, **add `d_surface`** (α=0.25) | +0.1067 | remove refusalness alone +0.1895 | ~44% |
+
+Each channel's removal effect is **partially undone by adding the other channel back**. That symmetry
+is what plan hypothesis 5 predicts if both feed a common decision point.
+
+⚠ **Two of these arms still lack matched composed controls** and no claim rests on them yet.
+Submitted this tick:
+
+| job | tag | intervention |
+|---|---|---|
+| 768468 | `fuF25_addBoth_CTRL` | `random:add:8-8:0.25` + `random:add:18-18:0.25` |
+| 768469 | `fuF25_remR_addS_CTRL` | `refusalness:project_out:18-18:1.0` + `random:add:8-8:0.25` |
+
+plus 768316 `fuF_remS_addR_CTRL` still generating (416/495) for arm E.
+
+**Citable now:** the bidirectional `d_surface` result (add −0.0329 vs remove +0.0305, matched control
+inert). **Held:** both cancellation figures, until 768316/768468/768469 land.
+
 ### Tick 15 — the α = 0.25 re-runs are all coherent, and the α = 1.0 prediction held
 
 Tick 14 predicted 768071 (`fuF_remR_addS`, carrying `d_surface:add:8-8:**1.0**`) would fail the same

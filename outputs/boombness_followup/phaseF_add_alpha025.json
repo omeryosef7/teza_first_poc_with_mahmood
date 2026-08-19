@@ -1,0 +1,191 @@
+{
+ "label": "AdvBench 495/16 \u2014 Phase F add arms at alpha=0.25 with matched random add control",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "addS_025": 0,
+  "addCtrl8_025": 0,
+  "addBoth_025": 0,
+  "remR_addS_025": 0,
+  "C_removeR": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "addS_025": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/n_fuF25_addS_20260819_231331_2244674",
+  "addCtrl8_025": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/n_fuF25_addCtrl8_20260819_231331_2244686",
+  "addBoth_025": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/n_fuF25_addBoth_20260819_231331_2244678",
+  "remR_addS_025": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/n_fuF25_remR_addS_20260819_231331_2244682",
+  "C_removeR": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_C_20260819_011714_1480835"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "addS_025": {
+   "n": 495,
+   "asr_at_0.5": 0.00808080808080808,
+   "mean_score": 0.007828282828282828,
+   "refusal": 0.9878787878787879,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.004715422670751248,
+    0.016422079017500472
+   ],
+   "asr_cluster_mean": 0.005853328173374613,
+   "degenerate": false
+  },
+  "addCtrl8_025": {
+   "n": 495,
+   "asr_at_0.5": 0.06262626262626263,
+   "mean_score": 0.06212121212121212,
+   "refusal": 0.9353535353535354,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.0066243683023323,
+    0.06545828413230448
+   ],
+   "asr_cluster_mean": 0.03604132621731839,
+   "degenerate": false
+  },
+  "addBoth_025": {
+   "n": 495,
+   "asr_at_0.5": 0.006060606060606061,
+   "mean_score": 0.005555555555555556,
+   "refusal": 0.98989898989899,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    -0.002944412534857491,
+    0.011361595197396192
+   ],
+   "asr_cluster_mean": 0.00420859133126935,
+   "degenerate": false
+  },
+  "remR_addS_025": {
+   "n": 495,
+   "asr_at_0.5": 0.18787878787878787,
+   "mean_score": 0.17702020202020202,
+   "refusal": 0.7858585858585858,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.07191579706107028,
+    0.23766596965686604
+   ],
+   "asr_cluster_mean": 0.15479088335896815,
+   "degenerate": false
+  },
+  "C_removeR": {
+   "n": 495,
+   "asr_at_0.5": 0.27070707070707073,
+   "mean_score": 0.2601010101010101,
+   "refusal": 0.7090909090909091,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.12905486360311277,
+    0.3547281244360413
+   ],
+   "asr_cluster_mean": 0.24189149401957705,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "addS_025": {
+   "delta_pooled": -0.05555555555555555,
+   "delta_cluster_mean": -0.03294963922624526,
+   "se": 0.01418297248998812,
+   "ci95_domain_clustered": [
+    -0.06317992949471724,
+    -0.0027193489577732807
+   ],
+   "p_cl": 0.03463488760119579,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "addCtrl8_025": {
+   "delta_pooled": -0.0012626262626262627,
+   "delta_cluster_mean": -0.0028231569303329806,
+   "se": 0.005639617109593158,
+   "ci95_domain_clustered": [
+    -0.014843716255706454,
+    0.009197402395040492
+   ],
+   "p_cl": 0.6239219864887572,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "addBoth_025": {
+   "delta_pooled": -0.057828282828282826,
+   "delta_cluster_mean": -0.034799968173613686,
+   "se": 0.01438754754018011,
+   "ci95_domain_clustered": [
+    -0.06546629983985025,
+    -0.004133636507377119
+   ],
+   "p_cl": 0.02875034577812469,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "remR_addS_025": {
+   "delta_pooled": 0.11363636363636363,
+   "delta_cluster_mean": 0.10673317355486435,
+   "se": 0.02648325077125048,
+   "ci95_domain_clustered": [
+    0.05028546073353693,
+    0.16318088637619177
+   ],
+   "p_cl": 0.0010902481463654753,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "C_removeR": {
+   "delta_pooled": 0.1967171717171717,
+   "delta_cluster_mean": 0.18946260540763252,
+   "se": 0.03741047900157464,
+   "ci95_domain_clustered": [
+    0.1097240569405527,
+    0.26920115387471233
+   ],
+   "p_cl": 0.00013981845158184572,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+   "--arm",
+   "addS_025=outputs/boombness/judge/n_fuF25_addS_20260819_231331_2244674",
+   "--arm",
+   "addCtrl8_025=outputs/boombness/judge/n_fuF25_addCtrl8_20260819_231331_2244686",
+   "--arm",
+   "addBoth_025=outputs/boombness/judge/n_fuF25_addBoth_20260819_231331_2244678",
+   "--arm",
+   "remR_addS_025=outputs/boombness/judge/n_fuF25_remR_addS_20260819_231331_2244682",
+   "--arm",
+   "C_removeR=outputs/boombness/judge/abg_C_20260819_011714_1480835",
+   "--label",
+   "AdvBench 495/16 \u2014 Phase F add arms at alpha=0.25 with matched random add control",
+   "--out",
+   "outputs/boombness_followup/phaseF_add_alpha025.json"
+  ],
+  "git_commit": "278b83e9f22f0e6389b6ec2451c3d4610ee05840",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}
