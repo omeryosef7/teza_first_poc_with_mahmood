@@ -1699,3 +1699,29 @@ wildly different ones (0.134 / 0.008). A cross-model comparison run on one set a
 produced a confident and wrong answer in either direction — "replicates" from ClearHarm, "does not
 replicate" from AdvBench. **Report the baseline compliance rate beside every external-set ASR**, or the
 reader cannot tell an intervention that fails from a set with no headroom.
+
+## A control gap found while looking for E11: neither ClearHarm arm B has a matched control
+
+**E11 is not buildable from this repo.** The only other external harmful manifest is
+`external_maliciousinstruct.csv` — 100 rows in **one** category, so no clustered inference is possible.
+Every other manifest is either a ClearHarm slice or `heldout_495` itself. E11 needs a set that is not
+here; it stays as future work rather than something this session can close.
+
+**But looking for it surfaced a real gap.** On **AdvBench**, arm B has a matched **single**-random
+control at the same layer (`Bctrl`, inert). On **ClearHarm** — for *both* models — the only control is
+`Dctrl`, a **double**-random composition matched to arm D, not to arm B:
+
+| set / model | arm B control |
+|---|---|
+| Llama AdvBench | ✅ `ab_Bctrl` random@L8 — inert (−0.0062) |
+| **Llama ClearHarm** | ⛔ **none** — only the double-random `Dctrl` |
+| **Qwen3 ClearHarm** | ⛔ **none** — only the double-random `Dctrl` |
+
+Qwen3's ClearHarm arm B is the large-but-underpowered result (ASR 0.134 → 0.279) that R-17 leaves
+**open**, and it has been compared only against a control for a *different* intervention. That is the
+mismatched-footing shape this project has retracted three times (R-13, R-15, R-16), and it should not
+survive into the report unnoticed.
+
+Launched: `ch_Bctrl` (766765, Llama random@L8) and a **3-draw band** for Qwen3,
+`q3ch_Bctrl_2026090{1,2,3}` (766766–768, random@L11) — a band rather than one draw, per plan §2.5 and
+per R-12, which is what made a single control draw a retraction in the first place.
