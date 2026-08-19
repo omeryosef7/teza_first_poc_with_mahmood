@@ -692,12 +692,31 @@ Implement this plan. Document progress in this external markdown file so we can 
 # Progress Log
 
 **Sprint started:** 2026-08-19. **Branch:** `behavioral-causality-sprint`.
-**Current phase:** A (reproduce and audit previous ground truth) — IN PROGRESS.
-**Gate status:** Phase A is a hard gate. No Phase B+ science until the section-0 claims reproduce.
+**Current phase:** A complete — **GATE PASSED**. Phase B next.
+**Gate status:** all six plan §0 claims reproduce from committed artifacts; 7 discrepancies and 5
+cross-cutting defects documented below before proceeding, per the plan's stop rule.
 
 ---
 
 ## Session Log
+
+### 2026-08-19 — Entry 2: Phase A audit — GATE PASSED
+
+**Goal.** Recompute every plan §0 headline number from committed JSON; refuse to proceed if any fails.
+
+**Method.** `Workflow` fan-out, 14 agents / 997k tokens / 379 tool calls: seven verifiers (one per claim
+group, structured output, `effort: high`) piped into adversarial refutation passes instructed to default
+to "refuted" under uncertainty. Two refutation passes (`skeptic:EXTERNAL`, `skeptic:QWEN_COMPREHENSION`)
+died on a session limit; those two groups are **single-verified** and marked as such.
+
+**Result.** **All six section-0 claims reproduce.** Seven sub-items did not reproduce as stated — three
+are corrections *in the sprint's favour* (D-1, D-2, D-6), three are citability limits (D-3, D-7, and the
+IF-1 pair D-4/D-5), and none contradicts a section-0 claim. Five further cross-cutting defects were
+surfaced that the plan did not ask about (D-8 … D-12). Full tables above.
+
+**Cost of the audit:** one self-inflicted incident, IF-4, logged under Open Questions and fully reverted.
+
+---
 
 ### 2026-08-19 — Entry 1: orientation and inherited state
 
@@ -836,13 +855,129 @@ behavioural arm, `score_behavior.py` + `judge_boombness.py` for generation and j
 
 ## Previous Sprint Ground Truth
 
-_In progress — a 7-agent verification fan-out is recomputing each headline number from committed JSON,
-each followed by an adversarial refutation pass. Table lands when it returns._
+**Method.** Seven verification agents, one per claim group, each recomputing the headline number from the
+committed JSON (never from prose), followed by an adversarial refutation pass instructed to default to
+"refuted" under uncertainty. 14 agents, 997k tokens, 379 tool calls. Two adversarial passes
+(`skeptic:EXTERNAL`, `skeptic:QWEN_COMPREHENSION`) died on a session limit — recorded below as
+**single-verified** rather than double-verified.
+
+### ✅ GATE VERDICT: PHASE A PASSES
+
+**All six of plan §0's headline claims reproduce from committed artifacts.** No section-0 number was
+contradicted. Seven sub-items did not reproduce as stated; none of them contradicts a section-0 claim —
+they are catalogued in *Phase A Discrepancy Ledger* below and every one is documented before proceeding,
+per the plan's stop rule.
+
+Model throughout: `meta-llama/Llama-3.1-8B-Instruct` (rev `0e9e39f2`, bfloat16, sdpa, 32 layers) unless
+stated. Judge: StrongReject. Δ and p are on the **continuous** StrongReject score, cluster-mean estimand;
+ASR@0.5 is the thresholded rate — see discrepancy **D-8**.
+
+| # | claim (plan §0) | artifact | model / dataset | n | query kind | layer | readout | stored result | verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 1a | G1 `demos_only L18` ≈ **+68.9%** of span | `g1_wholeanswer_sow.json` → `G1.pairs.harm_ctx.arms["transplant\|demos_only\|L18"].frac_of_span` | Llama-3.1-8B / boombness bank (2352 rows, sha16 `71bea179`) | 24 families, 6 domains | `semantic_one_word` | L18 single-layer | `semantic_logodds`, whole-answer, `answer_prefix='Answer:'` | **0.6887** = +68.87%; CI (paired domain bootstrap) **[+51.3%, +97.4%]** | **established** |
+| 1b | `query_only L18` moves the **wrong way** | same artifact, arm `transplant\|query_only\|L18` | " | 24 | `semantic_one_word` | L18 | " | **−0.5700** = −57.0%, CI [−102.8%, −40.1%] | **established** |
+| 1c | whole-prompt transplant is null *(handover, not §0)* | same, arm `transplant\|all\|L18` | " | 24 | " | L18 | " | **+0.1329**, CI [−16.7%, +33.9%] — straddles 0 | **established** |
+| 1d | self-swap no-op check near zero | same, `self_swap_max_abs_delta` / `span` | " | 24 | " | n/a | " | **0.0649 / 8.2171 = 0.79% of span** | **established** |
+| 2a | G3: all demo-block edges, all layers ≈ **75.2%** of deletion ceiling | `g3_wholeanswer_block24.json` → `arms.all_layers_demo.delta_mean ÷ arms.no_demo_text.delta_mean` | Llama / boombness bank | 24 families | behavioural readout at `readout_pos` | all layers, `--dst both`, `--demo-scope block` | whole-answer | **−13.436759 / −17.878933 = 0.75154 → 75.2%**; mean edges cut **81,706.67** | **established** |
+| 2b | sparse top-k knockout **did not work** | same artifact | " | 24 | " | layers [8,18], topk=8 → **16 edges** | " | top-k **+0.01961** (sem 0.01652) · bottom-k **−0.00283** · random **+0.00082** — all within noise | **established** |
+| 2c | codeword-scope knockout moves the **wrong way** | `g3_wholeanswer_codeword24.json` | " | 24 | " | all layers, `--demo-scope codeword` | " | **+1.33** (wrong sign vs the −13.44 block arm) | **established** |
+| 3a | G2 clean powered `d_surface\|L12\|proj`: ρ_within **−0.066**, p **0.493**, n **108** | `g2_analysis_POWER.json` → `clustered_inference.{rho_within_domain, p_perm_within_domain_rho, n}` | Llama / purpose-built power block (`core2x2` 60 + `core2x2_slot3` 48; demos disjoint from every existing family) | **108** independent prompts | `behavioral` | L12 | `d_surface\|L12\|proj` @ `codeword_last` | **ρ = −0.06601851932290928, p_perm = 0.49325337331334335, n = 108** | **established (as a null)** |
+| 3b | clean slot-0 replication | `g2_analysis_cwpos_CLEAN.json` (`--slot0-only --require-bank-block`) | " | **90** | `behavioral` | L12 | " | ρ_pooled **+0.0860**, ρ_within **−0.0518**, p_perm **0.658** | **established (as a null)** |
+| 3c | the **retracted** published value | `g2_analysis_cwpos.json` | " | **234** (contaminated) | `behavioral` | L12 | " | ρ_pooled **+0.3067**, ρ_within **+0.2618**, p_perm **5.00e-04**; `row_composition` confirms core2x2 60 + families 72 + role_style 30 + strength 24 + consistency 36 + position 12, by slot **162/36/36** | ⛔ **retracted (R-18)** |
+| 4a | G4: steering does not license a GCG objective | `steering_analysis.json`, `steering_band_real.json` | Llama / 270 doublespeak rows | 270 | `behavioral` | L8 | StrongReject | both signs suppress; no objective built | **established (as a negative)** |
+| 4b | genuine 4-draw control band | `steering_band_real.json` | " | 4 draws | " | L8 | " | draws **+0.0120 / −0.0551 / −0.0097 / +0.0046**, mean **−0.0120**, between-draw sd **0.03009**; +0.25 arm clearance falls to **p = 0.043** | **established** |
+| 4c | the **fake** 4-draw band | `steering_analysis.json` → `control_band` | " | nominally 4, actually **1** | " | L8 | " | −0.0343 / −0.0338 / −0.0440 / −0.0343, mean −0.0366, sd **0.00494**; four byte-identical completions (sha256 `e4a15fcb` ×4) | ⛔ **retracted (#7)** |
+| 5a | **removing `d_surface` raises external ASR** | `advbench_decomposition.json` | Llama / **AdvBench held-out 495**, 16 domain clusters — no codeword, no demos, no wrapper | 495 | `behavioral` | L8 | StrongReject, cluster-mean | baseline **0.0646** (32/495) → arm B **0.1071** (53/495); **Δ_cl +0.0305, p_cl 0.0089, CI [+0.0089, +0.0522]** | **established — the sprint's headline** |
+| 5b | refusalness removal is stronger | same | " | 495 | " | L8 | " | arm C **0.2707** (134/495), Δ **+0.1895**, p_cl **1.4e-04** | **established** |
+| 5c | removing both is largest, with interaction | same + `advbench_superadd_control.json` | " | 495 | " | L8 | " | arm D **0.3515** (174/495), Δ **+0.2544**, p_cl **4.4e-05**; super-additive excess **+0.0333** CI [+0.0128, +0.0638]; **paired vs the matched random triple +0.0268** CI [+0.0029, +0.0584] | **established** |
+| 5d | matched random controls inert | same | " | 495 | " | L8 | " | B-control **0.0626** (31/495), Δ **−0.0062**, p **0.539** | **established** |
+| 5e | effect is **L6–L12** localised | `advbench_layer_profile.json` | " | 495 | " | **11 depths L4–L28** (see D-1) | " | significant L8 (p 0.0089), L10 (p 0.0190), L12 (**+0.0322**, p 0.0056); marginal L6; L13 +0.0138 (p 0.090), L14 +0.0118 (p 0.141); **null from L16 out**; L16 changes 29.5% of generations and compliance on none | **established** |
+| 5f | direction-specific, not just better-than-noise | `advbench_direction_specificity.json`, `direction_cosines.json` | " | 495 | " | L8 | " | `d_surface` cos 1.000 → Δ +0.0305 (p 0.0089); `d_naive` cos **0.945** → Δ **+0.0449** (p 0.0089); `d_context` cos **0.188** → Δ **+0.0045** (p 0.399) despite changing 34.9% of generations | **established** |
+| 5g | ClearHarm is **withdrawn**, not supporting | `clearharm_decomposition_regoal.json` | Llama / ClearHarm 179, 6 clusters | 179 | " | L8 | " | baseline 19/179, B 34/179, C 65/179, D 92/179, Dctrl 19/179; arm B **Δ_cl +0.0843, p_cl 0.2102, CI [−0.0665, +0.2350]** | ⛔ **withdrawn on ClearHarm (R-16)**; reinstated on AdvBench |
+| 6a | Qwen3 AdvBench is **floor-limited** | `advbench_decomposition_qwen3.json` | **Qwen3-14B** / AdvBench 495 | 495 | `behavioral` | L8-equiv | " | baseline **0.0081** (4/495), arm B **0.0141** (7/495), Δ **+0.0024**, p_cl **0.657** | **established as a floor, NOT as a causal failure** |
+| 6b | Qwen3 ClearHarm shows reversed channels | `clearharm_decomposition_qwen3.json` | Qwen3-14B / ClearHarm 179 | 179 | " | " | " | baseline **0.1341** (24/179), B **0.2793** (50/179), D **0.2793** (50/179) — B = D to 4 dp; p_cl **0.181** | **exploratory** (underpowered; see D-9) |
+| 6c | Qwen3 G2 carries the R-18 filter defect | `qwen3_g2_analysis.json` | Qwen3-14B | 384 | `behavioral` | L12 | " | argv passes **neither** `--slot0-only` nor `--require-bank-block`; no `row_composition`; 72 sibling-slot rows; ρ_pooled 0.3638 / ρ_within 0.1438; p_cr1_pooled 0.206 vs p_perm_within 0.005 | ⛔ **retracted (R-18 class)** |
+| C1 | comprehension: `project_out` **improves** it | `section4b_whole_answer.json` | Llama / bank | 288 comprehension, 1104 semantic | `comprehension_usage` + semantic | L8 (arm), L8+L18 (control) | whole-answer forced choice | comprehension **+0.2795 [+0.1752, +0.3838], p 0.00099**; semantic **+2.4073**; double-random control comprehension **−0.0041 (p 0.630)** | **established** — but see D-6, D-7, D-10 |
+
+### Phase A Discrepancy Ledger
+
+Seven items did not reproduce **as stated**. None contradicts a section-0 claim. Three are corrections in
+the sprint's favour; three are citability limits; one is the working-tree regression already logged as IF-1.
+
+| id | item | what the audit found | consequence |
+|---|---|---|---|
+| **D-1** | "nine-point layer profile" | The committed artifact carries **eleven** depths, not nine. Commit `8b5654a9` had nine; `e9000c5c` added the L13/L14 arms plus the c6/c10/c16/c28 controls; `af4fe7a4` added c13/c14. | **Superseded upward.** Claim 5e is stronger than stated. Use "eleven-point profile". |
+| **D-2** | handover ch. 10.4: the four edge-depth controls "are not yet in any committed artifact" | **Stale, and stale in the sprint's favour.** All four (L6, L10, L16, L28) **are** in the committed JSON, verified against the git blob `af4fe7a4`, not the working tree. | The plan §0 phrase "controls were *mostly* inert" can be strengthened: every control at every controlled depth is committed and inert. |
+| **D-3** | ClearHarm arm-B matched random control (21/179, Δ_cl +0.0039, p_cl 0.208) — cited in handover §13.14 as closing an open item | The number is correct **but exists only in an uncommitted working-tree rewrite** of `clearharm_decomposition_regoal.json` (mtime 08-19 05:35). At HEAD the `Bctrl` key **does not exist**. | ⚠ **Not citable.** ClearHarm arm B has **no committed matched control**. Re-run through a committed module before any use. |
+| **D-4** | `clearharm_decomposition.json` control band | Confirms **IF-1** and sharpens it: the file has exactly **one** commit (`70709348`), and at that commit `control_band = {n_draws: 1, note: "...variance is unestimated"}`. The working-tree 3-draw band is **not a revert to any prior committed state** — it is a fresh uncommitted regression re-inflating the retracted figure on top of a HEAD that had already guarded it. | Do not commit. See Open Questions. |
+| **D-5** | same file, sd 0.0048 | The retracted `between_draw_sd = 0.0048381307473991` exists **only** in the working tree; HEAD never carried it. Two of three draws share `paired_delta_mean = 0.018156424581005588` — effective n = 2. | As above. |
+| **D-6** | "median option mass 0.297" (R-6 resolution) | **Mismatch.** `section4b_whole_answer.json` carries no option-mass field at all. The three arms actually used read **0.3064 / 0.3084 / 0.3155**. The only stored 0.297 (0.29686) comes from a **24-row smoke run** that is not one of the three arms. | Substance of R-6 survives intact — the readout is a healthy ~0.31, not a 1e-5 tail. **Quote 0.31, not 0.297.** |
+| **D-7** | the *retracted* R-6 descriptors (p = 0.681; median option mass 4.4e-05; 0 of 288 rows above 1%) | **No artifact anywhere in the repo carries them.** They exist only in prose. `section4b_whole_answer.json` carries a `supersedes` key naming what it replaces, which is the artifact's own acknowledgement — but the retracted quantities themselves are unevidenced. | The retraction stands on its replacement, not on a recorded baseline. Note when citing R-6. |
+
+### Cross-cutting findings the audit surfaced (not in the plan's claim list)
+
+| id | finding | why it matters |
+|---|---|---|
+| **D-8** | **Estimand mixing in prose.** In `analyze_external_arms.py`, `asr_at_0.5` comes from the binary `malicious_at_0.5` flag (line 124) while `delta_pooled` / `delta_cluster_mean` / `ci95_domain_clustered` / `p_cl` all come from the continuous `strongreject_score` (line 143). Verified: AdvBench arm B `delta_pooled` 0.006818… = mean_score(B) 0.013889 − mean_score(base) 0.007071 **exactly**. So on Qwen3 the invited subtraction 0.0141 − 0.0081 = 0.0060 is the **binary** gap (3/495), while the reported Δ +0.0024 is the domain-equal-weighted **continuous** mean. | The artifacts are honest — every `paired_vs_baseline` block carries an `estimand_note`. **The prose is what drops the distinction.** This sprint must always state which estimand a Δ is on. |
+| **D-9** | **ClearHarm's clustering has almost no power.** Its 6 "domains" are sized **127 / 31 / 17 / 2 / 1 / 1** — two clusters are single prompts. | "No arm reaches significance under clustering on ClearHarm" is near-uninformative as evidence of absence. It also drives the gap between the pooled ClearHarm baseline (0.1341) and `asr_cluster_mean` (0.0522) — worth knowing before leaning on the 13.4%-vs-0.8% floor contrast in claim 6a. |
+| **D-10** | **The "inert" double-random control is inert only on comprehension.** In the same artifact, its **semantic** block reads Δ **+0.0666, CI [0.0462, 0.0869], p = 3.93e-04** — significantly non-zero. It is also the composed random-L8 + random-L18 control for arm D, **not** a matched single-layer control for the `project_out`-at-L8 arm it is being used to license. | Do not describe it as inert without qualification, especially since the semantic readout is where the `project_out` effect is claimed largest (+2.4073). Phase E3 should fit a properly matched single-layer control. |
+| **D-11** | **Nothing upstream is committed.** `.gitignore` line 11 ignores `outputs/` wholesale; the analysis JSONs are tracked only because they were force-added. `git ls-files outputs/boombness/score_behavior` and `.../judge` both return **zero** files. Every judge run, score run and extract fit that every artifact points at is untracked and gitignored. | Combined with `argv: ["-"]` on `section4b_whole_answer.json`, the R-6 resolution rests on data existing in exactly one place on one filesystem with no committed code path to it. **This is the single largest reproducibility risk inherited by this sprint.** |
+| **D-12** | **`provenance.git_dirty` is `true` on all three G2 artifacts** (and on 16 of the handover's 19 provenance-carrying files). | The recorded `git_commit` identifies the commit a run was launched *near*, not the code that ran. Treat provenance as advisory. |
+
+---
 
 ## Retracted / Superseded Claims Not To Cite
 
-_In progress — will be assembled from the handover's Appendix A (23 labelled retraction entries across
-two ledgers, 22 distinct events) after each entry's evidencing artifact is confirmed to exist._
+Assembled from the handover's Appendix A and both retraction ledgers (23 labelled entries, 22 distinct
+events — progress-log #9 ≡ ledger-2 R-10), restricted to entries whose evidencing artifact this audit
+confirmed. **Nothing below may appear in a slide, abstract, or paper without the word "retracted".**
+
+⚠ **Two colliding id schemes.** Ledger 1 (`RETRACTION #1…#9`, `docs/BOOMBNESS_SPRINT_PROGRESS.md`) and
+ledger 2 (`R-6…R-19`, `docs/BOOMBNESS_CONTINUATION_LOG.md`). `#7` ≠ `R-7`.
+
+### The plan's mandated minimum, each confirmed against an artifact
+
+| ⛔ dead figure | where it lived | why dead | replacement (verified) |
+|---|---|---|---|
+| **G2 ρ = +0.3067 pooled / +0.2618 within-domain, p 5e-4, n 234**, "Boombness predicts attack success" | report §0 gate table, §3, §9; short update; six-criteria table; N2/N15 | ⛔ **R-18.** `analyze_g2.py:484` filtered on `condition` only — no `bank_block`, no `family_slot`. 31% sibling families (pseudo-replication) + 31% experimentally-manipulated rows | **Not established.** −0.0518 (n=90), −0.0832 (n=60), **−0.0660, p 0.493 (n=108)**. `g2_analysis_cwpos_CLEAN.json`, `g2_analysis_POWER.json` |
+| **G1 "+84% of span, CI [+57%, +105%], n = 8 families, 2 domains"** | report §2, §8b, limitations | ⛔ **R-8, superseded.** n=8/2 domains pilot; `semantic_logodds` structurally biased at the single-token readout | **+68.87%**, CI [+51.3%, +97.4%], **24 families / 6 domains**. `g1_wholeanswer_sow.json` |
+| **G3 ceiling recovery 84.35%** (`−9.707864 / −11.508745`), edge counts **56,832 / 3,552** | report §2/§10; `g3_dstfix.json`, `g3_edgematch.json` | ⛔ **R-7.** Edge *ranking* still computed at the final codeword occurrence while the readout sits ≈9 tokens later; the 6-family run also failed its own option-mass check (`all_layers_demo` mass 0.0165, `reportable = False`) | **75.15%** (`−13.436759 / −17.878933`), **81,707 / 5,107** edges, 24 families, ranking at `readout_pos`. `g3_wholeanswer_block24.json` |
+| **The "distributed over depth" framing** and **"~93% of demo influence does not flow through attention"** (6.8% of ceiling) | progress log 08-17; report §10 as first written | ⛔ **RETRACTION #3.** Knockout blocked edges into the final codeword occurrence (tok ≈104) while the readout was the last token (≈113) — a 9-token gap on every prompt; the positive control additionally blocked the destination's own self-edge, driving the softmax row uniform | Whole §10 withdrawn and re-run with `--dst both`. `g3_dynrange.json` is the dead artifact. Current claim: **6.25% of demo edges does nothing however distributed** — discharged 2026-08-19, live |
+| **Any sparse top-k attention-edge causal claim** | report §10 lineage | ⛔ Confirmed dead by this audit: at 16 edges, top-k **+0.0196** (sem 0.0165), bottom-k **−0.0028**, random **+0.0008** | The redundancy is in **edge count**, not in any identifiable subset. `g3_wholeanswer_block24.json` |
+| **Any claim that Boombness is a usable GCG objective** | the sprint's original goal | ⛔ **G4 failed.** Both signs of steering suppress ASR; the one arm clearing a random band does so **through refusal**; α = 1's "3.47× ASR" was degenerate (uniq ratio 0.302, trigram repeat 0.551, truncated 1.000) | **No objective was built and none is licensed.** `steering_analysis.json`, `steering_band_real.json`, `coherence_steering.json` |
+| **Any floor-limited Qwen3 AdvBench causal claim** — incl. "removing `d_surface` raises external ASR in BOTH models", Llama +0.083 / Qwen3 +0.131 pooled | continuation log; report §7c/§7f | ⛔ **R-17.** Written on **pooled** estimates; neither Qwen3 number survives clustering (ClearHarm p_cl 0.181, AdvBench p_cl 0.657). Cause is a **floor**: Qwen3 complies with 0.8% of AdvBench | Withdrawn. **"Is `d_surface` causal on Qwen3?" is OPEN, not negative.** `advbench_decomposition_qwen3.json` |
+
+### Further dead figures confirmed by this audit
+
+| ⛔ figure | why dead | replacement |
+|---|---|---|
+| **The 4-draw steering band** (mean −0.0366, sd 0.00494) and everything derived — "clears the band, t = −3.23, p = 0.0014" | ⛔ **RETRACTION #7.** Four byte-identical completions (sha256 `e4a15fcb` ×4); `make_intervention` seeded the control from the literal `20260816 + L`, so `--seed` never reached it. **n = 1 wearing an n = 4 label** | Genuine band mean **−0.0120**, sd **0.03009** (6.1× larger); clearance falls to **p = 0.043**. `steering_band_real.json` |
+| **The ClearHarm 3-draw band, sd 0.0048** | ⛔ **R-12.** `score_behavior.py:123` recursed into composed arms without passing `control_seed` | Real band: 3 distinct sha256s, mean 0.1024, sd **0.0129**. `clearharm_decomposition_regoal.json`. ⚠ **The retracted sd 0.0048 is currently sitting in the working tree** — see IF-1 / D-4 / D-5 |
+| **Every pre-R-14 ClearHarm ASR** (baseline 0.1006, B 0.2067, C 0.3408, D 0.5419) and "arm D takes ASR 0.101 → 0.542" | ⛔ **R-14.** `external_bank.py:62` never emitted `final_query_text`, so **StrongReject scored every external completion against an empty goal**, recorded as `judge_status: "ok"` | Re-judged: 19/179, 34/179, 65/179, 92/179. Every arm moved ≤0.03 and the ordering held — the cost was **measurement validity, not the conclusion**. `clearharm_decomposition_regoal.json` |
+| **ClearHarm arm B "+0.1047 ± 0.0238", "the bank-artifact explanation is excluded"** | ⛔ **R-16.** Empty-goal judging **and** an **iid** SEM treating 179 prompts as independent when 127 share a domain | Withdrawn on ClearHarm (Δ_cl +0.0843, p_cl 0.2102). **Reinstated on AdvBench** (+0.0305, p_cl 0.0089) |
+| **"Boombness beats refusalness 3.7×"** (and its predecessor "40×") | ⛔ **RETRACTION #5.** The two probes were read at **different tokens** | At matched position the ratio **inverts to 0.80**. `position_2x2.json` |
+| **The incremental-R² pair "refusalness +0.144 vs Boombness +0.028"** | ⛔ **R-13.** Both increments against the same model, giving refusalness **5 df against Boombness's 1**. The pair exists in **no committed artifact in any commit** | At matched df on clean rows the ordering **reverses**: Boombness +0.0441, refusalness +0.0378. `g9_three_predictor_cwpos_CLEAN.json` |
+| **"`project_out` is the only arm that leaves comprehension unchanged, p = 0.681"** | ⛔ **R-6.** Forced choice scored leading-space tokens at a position emitting the no-leading-space form | **Resolved in the sprint's favour**: comprehension **improves** +0.2795, p 0.00099. ⚠ See **D-6** (quote median mass ~0.31, not 0.297) and **D-7** (the retracted descriptors have no artifact) |
+| **Role framing "does not move Boombness", F(5,810)=0.175, p=0.972** | ⛔ **RETRACTION #6.** Wrong error term; `plain` and role styles sit in **disjoint `bank_block`s** with zero family-id overlap | Role framing **does** move Boombness: within-stem **F(5,355)=20.30, p=8.1e-18** — though absolutely small. `g11_role_full.json` |
+| **"the §10.4 effect is harmful-yes / benign-no"** | ⛔ **R-15.** One significant cell of six under domain clustering; the split tracks **sample size**, not harm | Not established. The deltas themselves reproduce and are **not** retracted — only the reading. `condition_profile_llama_projout.json` |
+| **The LOCALIZATION claim "both probes are 2–4× more predictive at the codeword token"** | ⛔ **R-19, half wrong.** Same `condition`-only filter | On the clean 90, `d_surface`'s position effect **disappears** (1.18×). Defensible statement is qualitative only |
+| **"§18 = B — mechanistic but not causal"** | ⛔ **R-9.** B requires interventions that do not affect ASR **or** destroy comprehension — **both clauses fail** | **"C, amended"** |
+| **"the designed-variance rows have never contaminated a published number"** (N12) | ⛔ **Falsified by R-18** — they were 31% of G2's n | Corrected in place |
+
+### ⚠ Retracted figures still standing unqualified at HEAD (inherited, not yet fixed)
+
+`retraction_sweep.py` reports clean because it exempts at **blank-line paragraph scope**, and a markdown
+table is one paragraph — a single marker word in any row exempts every row.
+
+| site | text still present | dead by |
+|---|---|---|
+| `reports/boombness_objective_sprint_report.md` §13, criterion 1 | "YES IN LLAMA ONLY — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive" | R-18 |
+| same, criteria 3 and 4 | "comprehension unchanged (p=0.681)" / "project_out: preserved (p=0.681)" | R-6 |
+| same, §8b negative results N2 / N5 / N8 | "ρ≈+0.307 at L12"; G1 query transplant at "−71%"; ClearHarm super-additivity "+0.0922" | R-18; superseded readout (now −57.0%); R-14 |
+| `reports/boombness_objective_sprint_short_update.md` (rev 9) header | "§18 settles at B" | R-9 |
+
+**This sprint will not repair these unilaterally** — they are the previous sprint's deliverables. Logged
+so nothing here inherits them. A row-scoped or claim-scoped sweep is the durable fix.
 
 ## Probe Validation and Leakage Checks
 
@@ -875,10 +1010,48 @@ _No reviews yet. First review due 4h after sprint start._
 
 ## Open Questions / Blockers
 
-- **IF-1 needs a user decision:** discard the working-tree modification to
-  `clearharm_decomposition.json` (which re-introduces the R-12 retracted band), or keep it? Recommended:
-  discard. Not executed unilaterally because it destroys working-tree state.
-- Phase A gate is not yet passed; no Phase B+ execution has begun.
+### Needs a user decision
+
+1. **IF-1 / D-4 / D-5 — the dirty `clearharm_decomposition.json`.** Discard the working-tree
+   modification, or keep it? It re-inflates the R-12 retracted band (`between_draw_sd = 0.0048`) on top
+   of a HEAD that had already guarded it to `n_draws: 1`, and two of its three "draws" are identical.
+   The audit confirmed the file has **exactly one commit** and that commit is the corrected one, so the
+   working tree is a *fresh regression*, not a revert. **Recommended: `git checkout --` it.** Not
+   executed — discarding working-tree state is destructive and pre-dates this session.
+2. **IF-5 — a GitHub personal access token is stored in plaintext in `.git/config`** as part of the
+   `origin` URL. Any process that can read the repo can read it, and it is echoed by `git remote -v`.
+   **Recommended: revoke and rotate that token, then re-add the remote via SSH or a credential helper.**
+   Not done — rotating a credential is the user's call.
+3. **D-3 — ClearHarm arm B has no committed matched control.** The handover cites one (21/179, Δ_cl
+   +0.0039, p_cl 0.208) as closing an open item, but it exists only in an uncommitted working-tree
+   rewrite. Re-run it through a committed module, or stop citing it?
+
+### Standing risks carried into this sprint
+
+- **D-11 is the big one:** `outputs/` is gitignored wholesale; the analysis JSONs are force-added but
+  **every upstream judge / score / extract run directory is untracked**. All committed results rest on
+  data that exists in one place on one filesystem, with no committed path back to it.
+- **D-8:** ASR@0.5 is binary, Δ and p are on the continuous StrongReject score. Every claim this sprint
+  makes must name its estimand.
+- **D-10:** the double-random control is inert on comprehension but moves the semantic readout at
+  p = 3.9e-04, and is a composed L8+L18 control being used to license a single-layer L8 arm. Phase E3
+  should fit a properly matched control.
+- **D-9:** ClearHarm's clusters are 127/31/17/2/1/1. Null results under clustering there are weak
+  evidence of absence.
+
+### Process
+
+- **IF-4 (self-inflicted, corrected):** during the Phase A fan-out, verification subagents re-ran the
+  committed analyzers. Those write to fixed `--out` paths, so four tracked artifacts were overwritten in
+  place and one argsfile deleted; **one subagent then committed the result** (`b420b49d`, "commit
+  trailing analysis artifacts regenerated during the audit"), which would have written the retracted
+  ClearHarm band into history. Caught before it was pushed. `git reset --mixed` to `9a357f9d`, then
+  `git checkout --` on the three agent-damaged artifacts and the deleted argsfile; the pre-existing IF-1
+  dirt was deliberately **left intact** so the state I inherited is preserved exactly.
+  **Standing rule for the rest of this sprint: audit agents must be told the analyzers WRITE, and must
+  redirect `--out` to the scratchpad — "read-only" in the prompt is not sufficient when the tool they
+  are told to run mutates the repo.** No subagent may run `git commit`.
+- Phase A gate is **passed**. Phase B may begin.
 
 ## Sprint Final Report
 
