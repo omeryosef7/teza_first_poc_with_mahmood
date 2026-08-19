@@ -1787,3 +1787,40 @@ instruments rank the arms the same way, not that the denominator is well estimat
 and ordering of G1 are safe; the absolute "% of span" figures inherit a ceiling measured in a tail**,
 and that belongs beside the number. Fixing it needs an option set that admits synonyms, which changes
 what is being measured — filed as future work rather than patched silently.
+
+## ✅ Plan §15 is COMPLETE — item 6 was the last one
+
+Report **§6b, "Aggressive patching — the full arm table"**: both context pairs, transplant and additive
+arms, domain-clustered intervals, from `g1wa_sow`'s 31,104 rows.
+
+**Three things the full table says that the headline number does not:**
+1. The demonstration **block** carries the meaning and the codeword does not — `query_only` moves the
+   readout **backwards** on the harm pair. The §7c attention result says the same thing independently.
+2. The transplant is **not additive over demonstrations**: `first_demo` ~32%, `last_demo` ~10%, block
+   ~69%. The first demonstration is worth three times the last and the parts do not sum.
+3. **The two context pairs are different experiments.** On `benign_ctx` the whole-prompt transplant
+   works (+76.9%) and query-only is nearly inert (−8.2%); on `harm_ctx` whole-prompt is **null** and
+   query-only is strongly negative. The harm pair is the harder one, which is why it carries the
+   headline.
+
+### ⚠ A caveat that only the full table makes visible
+
+`add query_only d_surface α=0.25` moves harm_ctx **−71.7%** — which looks like a mirror of the
+transplant result. **It is not direction-specific:** the `random` (−146.5%) and `orthogonal` (−135.0%)
+controls on that same arm move *further* in the same direction. Whatever happens when the query
+position is perturbed additively is a property of the perturbation, not of `d_surface`.
+
+**Only the *transplant* query-only arm has controls that stay near zero, so that is the one the report
+cites.** Reporting the additive query-only number without its controls beside it would have been a new
+instance of the sprint's most common error — and it is exactly the sort of thing that is invisible in a
+headline and obvious in a full arm table, which is why plan §15 asked for one.
+
+### §15 final status
+| item | subject | status |
+|---|---|---|
+| 2 | what was implemented | ✅ §1b |
+| **6** | **aggressive-patching results** | ✅ **§6b** |
+| 7 | metric comparison | ✅ §7b |
+| 14 | negative results | ✅ §8b (N1–N14) |
+| 15 | failure modes | ✅ §8c (FM1–FM8) |
+| 16 | next experiments | ✅ §9b (E1–E11) |
