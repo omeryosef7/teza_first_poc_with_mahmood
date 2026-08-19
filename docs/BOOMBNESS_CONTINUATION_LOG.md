@@ -2503,3 +2503,39 @@ the sprint's central claim is now localized in depth as well as demonstrated.
 has been unreachable since 08:04. They are reported as arm-only. The five controlled points already
 bracket the band on both sides (L4 and L18/L24 controlled and inert), so the band's *existence* does
 not depend on them; its *edges* are currently arm-only measurements.
+
+## SLURM recovered — the outage cost nothing, and two things went back in
+
+The controller returned some time before **09:33** (down since 08:04). Nothing was lost: all GPU work
+submitted before the outage had already completed, and the judge streams run on the login node against
+the OpenAI API, so they were never affected.
+
+**Resubmitted:** `abL{6,10,16,28}_Bctrl` (767100–103) — the four edge controls whose submissions failed
+during the outage. That completes the layer profile at all nine depths.
+
+## ★ New: a specificity test stronger than a random control
+
+Every control so far has been a **norm-matched random direction**, which answers *"is this better than
+noise?"* It does not answer the obvious follow-up: **is the band about `d_surface` specifically, or
+about any direction fitted on this bank?** A random vector is not a fair comparison for that — it has
+no structure at all, while `d_surface` was fitted on a real contrast.
+
+The extraction already produces three sibling directions from the same 2×2 on the same rows:
+
+| direction | what it is fitted to separate |
+|---|---|
+| **`d_surface`** | codeword surface form vs concept — the sprint's headline direction |
+| **`d_naive`** | the naive concept-minus-codeword contrast, without the 2×2's controls |
+| **`d_context`** | benign vs harmful *context*, holding surface form fixed |
+
+Launched `abL8_naive` and `abL8_context` (767150–151): arm B's exact intervention at L8, same set, same
+seed, **substituting a sibling direction**. `d_naive` and `d_context` are real fitted directions with
+their own meaning, so this is a much sharper specificity test than a random projection.
+
+**Prediction, recorded before the runs.** `d_naive` is the *less* controlled version of the same
+contrast and correlates strongly with `d_surface` (the extract shows cosines around 0.9 at mid-stack),
+so I expect it to reproduce most of the effect — that would be reassuring rather than surprising.
+`d_context` separates a different thing entirely (harm context, not surface identity), so if the band is
+about surface/concept representation it should be **substantially smaller or absent**. If `d_context`
+matches `d_surface`, the effect is not about the codeword contrast at all and §7c's interpretation
+needs rewriting — that is the outcome that would cost the most, which is why it is worth running.
