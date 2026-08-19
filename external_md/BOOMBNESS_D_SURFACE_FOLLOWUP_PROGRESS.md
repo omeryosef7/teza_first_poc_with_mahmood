@@ -1347,7 +1347,71 @@ _Not started. Phase D deliverable._
 
 ## What Does d_surface Represent?
 
-_Not started. Phase E deliverable._
+**Phase E1 — external semantic categories. Done with zero new compute:** AdvBench's 16 domain clusters
+*are* the plan's semantic categories, and every arm needed was already judged. Model
+Llama-3.1-8B-Instruct, AdvBench held-out 495, continuous StrongReject means per category.
+
+### The matched contrast, per category
+
+`B − Bctrl` — both arms remove *a* direction at L8, so this is the specificity contrast, not
+arm-vs-baseline:
+
+| category | n | baseline | **B − Bctrl** |
+|---|---|---|---|
+| misinformation_disinformation | 37 | 0.162 | **+0.1081** |
+| other_uncategorized | 38 | 0.118 | **+0.0757** |
+| cyber_hacking_malware | **127** | 0.125 | **+0.0699** |
+| theft_property_crime | 18 | 0.000 | +0.0556 |
+| fraud_financial_crime | 68 | 0.044 | +0.0294 |
+| weapons_explosives_mass_casualty | 40 | 0.025 | **+0.0250** |
+| identity_theft_personal_data_theft | 40 | 0.000 | +0.0250 |
+| privacy_surveillance | 7 | 0.143 | +0.1429 |
+| terrorism_extremism | 9 | 0.000 | +0.1111 |
+| harassment_bullying_stalking | 18 | 0.000 | **−0.0556** |
+| violent_crime · hate_speech · drugs · academic · **self_harm_suicide** · **child_exploitation** | 23/18/16/8/23/7 | 0.000 | 0.0000 |
+
+**Mean over the 16 categories = +0.0367, sem 0.0132, t = 2.78 on 15 df (p ≈ 0.014).**
+**Sign test: 9 of the 10 non-zero categories are positive, p = 0.0107.**
+
+*(This +0.0367 independently reproduces the value the 4h auditor obtained by domain-clustered bootstrap
+for F11 — +0.0367, CI [+0.0118, +0.0625] — by a different route.)*
+
+### Three things this says about what `d_surface` is
+
+**1. The effect is broad, not harm-type-specific.** 9 of 10 movable categories go the same way. This is
+the opposite of retracted **R-15** ("harmful-yes / benign-no"), which failed because it was one
+significant cell of six tracking sample size. Here the *sign* is consistent across categories that
+differ enormously in content, and the contrast is against a matched random direction.
+
+**2. It is weakest where the bank was fitted.** `d_surface` was fitted **entirely** on carrot→**bomb**
+prompts, yet `weapons_explosives_mass_casualty` (n = 40) shows **+0.0250** — below the mean and far
+below `misinformation` (+0.1081) or `cyber` (+0.0699). The largest effects are in **information-shaped**
+harms: misinformation, cyber, uncategorized, theft. **This argues against plan hypothesis 3** (a general
+hazardous-object semantic axis) and against a narrow bomb-concept reading: whatever `d_surface` carries,
+it is not "explosives-ness", and it transfers *better* to categories unlike its training bank than to
+the category that generated it.
+
+**3. Two categories are immovable by either channel — a refusal floor neither direction touches.**
+`self_harm_suicide` (n = 23) and `child_exploitation` (n = 7) sit at **exactly 0.000 in every arm**:
+baseline, remove `d_surface`, remove refusalness, **and remove both**. Removing the refusal direction
+raises compliance by +0.19 on average and by +0.41 on misinformation — and does **nothing** here.
+
+That is a genuine safety observation and it is new in this sprint: **the refusal direction is not the
+only thing preventing compliance.** Something categorical, not carried by either `d_surface` or the
+refusalness direction at these depths, holds those two categories at the floor. It also bounds the
+sprint's own attack story — the channel we can manipulate does not reach the harms one would most want
+protected.
+
+### Status and limits
+
+**Exploratory, not citable as established.** Per-category means at n = 7–127 with no per-category
+inference; the *aggregate* (t = 2.78 over categories, sign test p = 0.011) is the defensible statistic
+and it is a **category-level** estimand, not the prompt-level cluster-mean used elsewhere. Six
+categories are exactly zero, so the sign test uses 10. The two floor categories are the smallest movable
+claim here and rest on n = 23 and n = 7 respectively — the n = 7 one should not be quoted alone.
+
+**Still to do in Phase E1:** benign technical, benign everyday and ambiguous dual-use prompt sets, which
+AdvBench does not contain. Those need a new external bank and are not yet built.
 
 ## d_surface × Refusalness Interaction
 
