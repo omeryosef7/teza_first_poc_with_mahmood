@@ -1232,22 +1232,34 @@ AdvBench 495, 16 domain clusters, arm B's exact intervention at five depths, **e
 norm-matched random-projection control at the same depth**
 (`outputs/boombness/advbench_layer_profile.json`):
 
-| layer | ASR@0.5 | **arm Δ (clustered)** | **p_cl** | matched control Δ | control p |
-|---|---|---|---|---|---|
-| L4 | 0.0667 | +0.0092 | 0.260 | +0.0007 | 0.288 |
-| L6 | 0.0828 | +0.0159 | 0.0567 *(marginal)* | — | *not run* |
-| **L8** | **0.1071** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
-| **L10** | **0.0970** | **+0.0223** | **0.0190** ✓ | — | *not run* |
-| **L12** | **0.1010** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
-| **L16** | **0.0646** | **+0.0000** | — | — | *not run* |
-| L18 | 0.0667 | +0.0037 | 0.305 | −0.0026 | 0.201 |
-| L24 | 0.0646 | +0.0005 | 0.450 | −0.0066 | 0.512 |
-| L28 | 0.0667 | +0.0037 | 0.305 | — | *not run* |
+| layer | **arm Δ (clustered)** | **p_cl** | matched control Δ | control p |
+|---|---|---|---|---|
+| L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
+| L6 | +0.0159 | 0.0567 *(marginal)* | −0.0033 | 0.745 |
+| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L10** | **+0.0223** | **0.0190** ✓ | +0.0047 | 0.250 |
+| **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
+| L13 | +0.0138 | 0.0901 | *(judging)* | |
+| L14 | +0.0118 | 0.1411 | *(judging)* | |
+| **L16** | **+0.0000** | — | −0.0003 | 0.815 |
+| L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
+| L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+| L28 | +0.0037 | 0.305 | +0.0030 | 0.413 |
 
-**The effect is a contiguous mid-stack band, ~L6–L12, with a hard edge between L12 and L16.** It rises
-out of baseline at L6 (marginal), is significant at **L8, L10 and L12**, and then **stops**: L16 is
-**exactly baseline** and L18/L24/L28 are flat. Refusal tracks it precisely — 0.931 outside, 0.889–0.899
-inside, back to 0.931 at L16. This is not a gradient; it is a bounded region of the residual stream.
+**All nine matched controls are inert**, spanning −0.0066 to +0.0047 with no depth dependence at all.
+That is the point of running one at every depth: "mid-stack random projections are simply more
+destructive than late ones" was a live alternative explanation for a rising curve, and it is excluded.
+**The band is a property of the direction, not of the depth.**
+
+**The shape is a band with graded shoulders**: a **core at L8–L12** where the effect is significant, a
+**shoulder at L6 and again at L13–L14** where it is marginal and decaying, and **zero from L16 outward**
+— L16 is exactly baseline. Refusal tracks it: 0.931 outside, 0.889–0.899 in the core, 0.925–0.927 on
+the L13/L14 shoulder, back to 0.931 at L16.
+
+⛔ **An earlier draft of this section called it "a hard edge between L12 and L16".** That was written
+when L12 and L16 were adjacent probe points with nothing between them. L13 (+0.0138) and L14 (+0.0118)
+fill the gap and the decay is **graded over three layers, not a step**. Four widely-spaced probes made a
+smooth shoulder look like a cliff — worth remembering whenever a sparsely-sampled profile looks sharp.
 
 ### ★ L16 is the most informative point in the profile, and it is not a null
 
@@ -1258,17 +1270,7 @@ L16's Δ is **exactly zero** — the shape of a failed intervention. It is not o
 **The intervention applied, it changed what the model said on nearly a third of prompts, and it changed
 whether the model complied on none of them.** That excludes the uninteresting reading ("`d_surface`
 isn't present at L16") and gives a stronger one: **at L16 the direction is present, ablating it
-perturbs generation, and the perturbation is behaviourally inert.** A layer where the *same direction*
-under the *same operation* four layers away demonstrably moves the text and not the behaviour is a
-tighter control on the band than any random direction can be.
-
-**Every control is inert at every depth**, spanning −0.0066 to +0.0007 with no depth dependence. That
-is the point of running them: "mid-stack random projections are simply more destructive than late ones"
-was a live alternative explanation for a rising curve, and it is now excluded. **The band is a property
-of the direction, not of the depth.**
-
-**L12 is marginally larger than L8** (+0.0322 vs +0.0305), so L8 is not privileged — the sprint picked
-a depth inside the effective band rather than its centre.
+perturbs generation, and the perturbation is behaviourally inert.**
 
 ### ★ Direction specificity — a control the random projections cannot provide
 
@@ -1281,11 +1283,21 @@ The extraction fits three sibling directions from the same 2×2, on the same row
 procedure. Substituting them into arm B's exact intervention at L8
 (`outputs/boombness/direction_cosines.json` for the cosines):
 
-| direction @L8 | cos with `d_surface` | what it separates | ASR@0.5 | Δ vs baseline | generations changed |
+| direction @L8 | cos with `d_surface` | what it separates | ASR | **Δ clustered** | **p_cl** |
 |---|---|---|---|---|---|
-| baseline | — | — | 0.0646 | — | — |
-| **`d_surface`** | 1.000 | codeword surface vs concept | **0.1071** | **+0.0425** | *(the effect)* |
-| **`d_context`** | **0.1884** | benign vs harmful **context** | **0.0646** | **+0.0000** | **173/495 = 34.9%** |
+| `random` | ~0 | nothing | 0.0626 | −0.0062 | 0.539 |
+| **`d_context`** | **0.188** | benign vs harmful **context** | 0.0646 | **+0.0045** | **0.399** |
+| **`d_surface`** | 1.000 | codeword surface vs concept | 0.1071 | **+0.0305** | **0.0089** ✓ |
+| **`d_naive`** | **0.945** | the same contrast, uncontrolled | **0.1232** | **+0.0449** | **0.0089** ✓ |
+
+**The behavioural effect tracks the cosine with `d_surface`** — a dose-response *in direction space*.
+Near-zero cosine gives nothing; cos 0.945 and cos 1.0 both give the full effect. This is the strongest
+evidence in the report that the effect belongs to a **particular direction** rather than to the act of
+projecting something out at L8.
+
+⚠ **`d_naive` slightly exceeds `d_surface`** (+0.0449 vs +0.0305, identical p). `d_naive` is the *less*
+controlled contrast, so the 2×2's controls remove variance that is apparently also behaviourally
+active. Anyone treating `d_surface` as the canonical direction should carry that.
 
 **`d_context` changes what the model says on more than a third of prompts, and changes whether it
 complies on none of them.** Its ASR is *exactly* the baseline — 32/495 either way.
