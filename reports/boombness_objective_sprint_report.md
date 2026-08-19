@@ -54,7 +54,7 @@ here.
 
 | gate | question | verdict |
 |---|---|---|
-| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token.** The single-layer L18 demonstration transplant moves the semantic readout **+68% of span, CI [+50%, +95%]**, on **24 families across 6 domains** (`g1_stratified.json`); the query-codeword transplant moves it the *wrong way*. ⚠ **Under re-derivation** — see R-8. |
+| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token — re-derived on the corrected readout 2026-08-19.** The single-layer L18 demonstration transplant moves the readout **+68.9% of span, CI [+51%, +97%]** (24 families, 6 domains); the **whole-prompt** transplant is **null** (+13%, CI [−17%, +34%]) and the **query-codeword** transplant moves it the **wrong way** (−57%). C-6 discharged: the old readout gave +68.1%, so the instrument defect did not change G1. ⚠ The "% of span" denominator inherits a ceiling measured in a tail (option mass 0.0074). |
 | **G2** (§9) | Does Boombness predict attack success? | **In Llama-3.1-8B only.** ρ=+0.307 pooled / **+0.262 within-domain** at L12, n=234, 6/6 domains positive, p<5e-4. **Survives control for `n_examples`** (β retains 99.9%; partial ρ=+0.271) — plan §9's question 5, previously unanswered. Does **not** replicate on Qwen3-14B (pooled +0.364 but **+0.144 within-domain**, clustered p=0.206). |
 | **G3** (§10) | Can it be removed surgically? | **Established, re-derived 2026-08-19** on 24 families with the ranking at `readout_pos` (R-7 discharged). Cutting **all** demo edges at all layers recovers **75.2%** of the deletion ceiling; **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001); and **6.25% of the edges does nothing however distributed** — the redundancy is in **edge count**, not depth. Codeword-scope cuts move the readout the **wrong way** (+1.33), so the meaning is in the demonstration **block**. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
@@ -247,13 +247,17 @@ Activation transplant on matched fixed pairs, semantic log-odds readout. **Headl
 run** — `g1_stratified.json`, **24 families across all 6 domains**, harm-context pair, bootstrap
 resampling **domains** (families drawn wholesale with their domain):
 
-| arm | % of baseline→ceiling span | domain-clustered CI |
+**Re-derived 2026-08-19 on the corrected whole-answer readout** (`g1_wholeanswer_sow.json`,
+31,104 rows, self-swap no-op |Δ| = 6.5e-02). The old single-token figures are shown beside it:
+
+| arm | **whole-answer (current)** | old readout |
 |---|---|---|
-| **transplant demonstrations, L18** (`demos_only`) | **+68%** | **[+50%, +95%]** |
-| transplant demonstrations, L12 (`demos_only`) | +58% | [+30%, +100%] |
-| transplant first demonstration only, L18 | +29% | [+13%, +49%] |
-| transplant last demonstration only, L18 | +7% | [+2%, +13%] |
-| transplant **query codeword**, L18 | **−71%** — the **wrong way** | [−105%, −56%] |
+| **transplant demonstrations, L18** (`demos_only`) | **+68.9%, CI [+51%, +97%]** | +68.1% [+50%, +95%] |
+| transplant demonstrations, L12 | +48.8% [+18%, +88%] | +58.0% [+30%, +100%] |
+| transplant first demonstration only, L18 | +31.6% [+19%, +48%] | +28.7% [+13%, +49%] |
+| transplant last demonstration only, L18 | +9.5% [+4%, +18%] | +7.0% [+2%, +13%] |
+| transplant **whole prompt**, L18 (`all`) | **+13.3% [−17%, +34%] — null** | +14.1% [−9%, +32%] — null |
+| transplant **query codeword**, L18 | **−57.0% [−103%, −40%] — wrong way** | −70.6% [−105%, −56%] |
 
 **The direction is the finding and it is unambiguous:** transplanting the *demonstrations* moves the
 model's reported meaning most of the way to the donor's; transplanting the *query codeword* moves it
@@ -270,15 +274,22 @@ with the demonstration arm — is **null on the harm-context pair**: +14%, CI **
 claim is specific to transplanting the **demonstration block** at a **single-layer L18 window**, not
 to demonstration transplants in general and not to whole-prompt transplants at all.
 
-⚠ **Under re-derivation (C-6).** Every number in this table is a `semantic_logodds` computed by
-`aggressive_patching.py` with the **single-next-token tail readout** that R-6 retracted elsewhere: the
-two options hold a median **5.6e-06** of next-token mass, the model capitalises its answer, and the
-capitalised codeword is **multi-token** (`Carrot` = ` Car` + `rot`) while the concept has four
-single-token variants — so the instrument is structurally biased **toward the concept** and cannot
-represent the model's preferred spelling of the codeword. The corrected whole-answer readout is built
-and proven (`signals.string_option_readout`, 3,200× more option mass) but **not yet ported to this
-script**. The *direction* of G1 is not in doubt — the query-codeword arm moves the wrong way on any
-readout — but the **magnitudes in this table are pending re-run** and should not be quoted as final.
+✅ **C-6 discharged — and the answer is that it did not change G1.** The old figures came from the
+single-next-token readout that R-6 retracted elsewhere: the options held a median **5.6e-06** of
+next-token mass, the model capitalises, and the capitalised codeword is **multi-token**
+(`Carrot` = ` Car` + `rot`) while the concept has four single-token variants — an instrument
+structurally biased toward the concept. Ported to `signals.string_option_readout` and re-run at 24
+families: **`demos_only|L18` comes in at +68.9% against +68.1%**, and every other arm reproduces. The
+defect was real; the log-odds ordering was robust to it. *That is only knowable after re-deriving it,
+which is the argument for having done so.*
+
+⚠ **What does NOT clear is the ceiling.** `donor_ceiling` option mass is **0.0074** with only 39.6% of
+rows above 1%: on the donor prompt the model answers ` Explos`(ive) or ` Squ`(ash)/` Vegetable` —
+semantically right, lexically outside the option set. **The span denominator is estimated where the
+model wants to say a different word.** The two readouts agreeing does not discharge this, since both
+normalise by the same span. **G1's direction and ordering are safe; the absolute "% of span" figures
+inherit a ceiling measured in a tail.** Fixing it requires an option set admitting synonyms, which
+changes what is measured — future work, not a silent patch.
 
 ### G3: the retrieval is attention-carried, and the redundancy is in the EDGE COUNT — re-derived 2026-08-19
 **24 families / 24 eligible (`effective_G=24`), whole-answer readout, `--dst both` (ranking at
@@ -662,6 +673,71 @@ L4 and L31.
 are the findings; the magnitudes are small.
 
 ---
+
+## 6b. Aggressive patching — the full arm table (plan §15 item 6)
+
+Required by the plan and absent from both reports. `g1wa_sow` — 24 families over 6 domains, both
+context pairs, whole-answer readout, **31,104 rows, zero failures**
+(`outputs/boombness/g1_wholeanswer_sow.json`). Percentages are of each pair's own baseline→ceiling
+span; intervals are domain-clustered.
+
+### Transplant arms — what has to be moved to move the meaning
+
+| arm | harm_ctx | benign_ctx |
+|---|---|---|
+| `demos_only` **L18** | **+68.9%** [+51, +97] | **+94.3%** [+78, +114] |
+| `demos_only` L12 | +48.8% [+18, +88] | +103.7% [+84, +129] |
+| `first_demo` L18 | +31.6% [+19, +48] | +24.1% [+19, +30] |
+| `last_demo` L18 | +9.5% [+4, +18] | +5.7% [+4, +7] |
+| `all` (whole prompt) L18 | **+13.3%** [−17, +34] — **null** | +76.9% [+63, +96] |
+| `query_only` L18 | **−57.0%** [−103, −40] — **wrong way** | −8.2% [−10, −7] |
+
+**Three things this table says that the single headline number does not.**
+
+1. **The demonstration *block* is the carrier, and the codeword is not.** `demos_only` moves the
+   readout most of the way; `query_only` moves it **backwards** on the harm pair. §7c reaches the same
+   conclusion from the attention side — cutting attention into the demo-block *codeword tokens*
+   fails to reproduce the deletion effect while cutting attention into the *whole block* recovers 75%.
+2. **The transplant is not additive over demonstrations.** `first_demo` alone buys ~32% and `last_demo`
+   ~10%, against ~69% for the block — the first demonstration is worth three times the last, and the
+   parts do not sum to the whole.
+3. **The two context pairs are not the same experiment.** On `benign_ctx` the whole-prompt transplant
+   works (+76.9%) and the query-codeword arm is nearly inert (−8.2%); on `harm_ctx` the whole-prompt
+   arm is **null** and the query arm is strongly negative. The harm pair is the harder and more
+   informative one, which is why the headline is quoted from it.
+
+### Additive steering — including α = 0.25, swept for the first time (E9)
+
+The §5.2 sweep had run α ∈ {0.5, 1, 2, 4}. **0.25 — the dose every §12 behavioural claim rests on —
+was never in it.** It is now:
+
+| arm | harm_ctx | benign_ctx |
+|---|---|---|
+| `add all all d_surface α=0.25` | **+103.4%** [+88, +114] | **+145.0%** [+134, +161] |
+| `add all all d_surface α=0.5 … 4.0` | 138–161% (benign_ctx) | monotone in α |
+| `add query_only all d_surface α=0.25` | **−71.7%** [−200, −23] | +90.8% [+78, +109] |
+| `add query_only all random α=1.0` | −146.5% [−384, −94] | — |
+| `add query_only all orthogonal α=1.0` | −135.0% [−281, −83] | — |
+
+**Adding `d_surface` across the whole prompt reaches or overshoots the donor ceiling** (103% on
+harm_ctx, 145% on benign_ctx) — the readout can be driven past the donor's own value, so "% of span"
+is not bounded at 100% and should not be read as a saturating quantity.
+
+**Adding it to the query alone moves harm_ctx the wrong way** (−71.7%), the same asymmetry the
+transplant arms show. ⚠ But the `random` and `orthogonal` controls are **also** strongly negative
+(−146.5%, −135.0%) on that arm, so the query-only *additive* result is **not direction-specific** —
+whatever is happening there is a property of perturbing the query position, not of `d_surface`. Only
+the **transplant** query-only arm has matched controls that stay near zero, so that is the one to cite.
+
+### ⚠ Carried caveats
+* The **ceiling** is measured in a tail (`donor_ceiling` option mass **0.0074**, 39.6% of rows above
+  1%) — the model answers the donor prompt with a synonym outside the option set. Direction and
+  ordering are safe; the absolute percentages inherit that denominator.
+* This is **one concept pair** (carrot↔bomb) and one model. **E6.**
+* `--query-kind semantic_forced_choice` is **not available** for this design: it names both the
+  concept and the codeword, so donor and recipient occurrence positions do not correspond and a
+  position-matched transplant is undefined. The script refuses it, in six seconds, before loading the
+  model.
 
 ## 7. Probes (§6)
 
