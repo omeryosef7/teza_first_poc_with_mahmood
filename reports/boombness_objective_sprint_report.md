@@ -474,14 +474,22 @@ Re-selecting the column inside each bootstrap resample gives [0.84, 2.88] and [0
 conclusion, wider. (b) On **incremental** R², at **matched degrees of freedom** (one column each,
 from `g9_three_predictor_{cwpos,lastpos}.json`, n=234):
 
-| | Boombness adds over refusalness | refusalness adds over Boombness |
+| row set | Boombness adds over refusalness | refusalness adds over Boombness |
 |---|---|---|
-| @ codeword_last | +0.0743 | **+0.1091** |
-| @ last token | **+0.0053** | +0.0000005 |
+| ⛔ @ codeword_last, **unfiltered n=234** | +0.0743 | **+0.1091** |
+| ✅ @ codeword_last, **clean n=90** | **+0.0441** | **+0.0378** |
+| @ last token, unfiltered | **+0.0053** | +0.0000005 |
 
-**Refusalness wins at the codeword token; at the last token it adds nothing at all** (4.5e-07 — the
-joint model does not improve on Boombness alone to seven decimal places). Which probe adds more is a
-*position* fact, not a probe fact — the same lesson this subsection already teaches.
+⛔ **R-18: the ordering does not survive the row set.** R-13 corrected this table's *degrees of
+freedom* (5-vs-1 → 1-vs-1) and was right to. It did not correct its *rows*, and the n=234 set is 31%
+sibling families sharing demonstrations plus 31% experimentally-manipulated designed variance (see the
+G2 row of the gate table). On the **90 independent, unmanipulated prompts the two increments are
+within 0.007 of each other** — the 1.47× refusalness advantage is an artifact of the row set, exactly
+as G2's ρ was.
+
+⚠ **Do not read this as "Boombness adds more".** Both increments are ~0.04 on n=90 over 6 domains;
+neither is well estimated. **At matched df on clean rows, neither predictor dominates.** At the last
+token refusalness adds nothing (4.5e-07), which remains a position fact.
 
 ⛔ **Retraction R-13.** Two earlier drafts of this table were wrong in opposite directions. The first
 quoted +0.104 / +0.039 from the mixed-footing artifact. The second quoted **+0.028 / +0.144
