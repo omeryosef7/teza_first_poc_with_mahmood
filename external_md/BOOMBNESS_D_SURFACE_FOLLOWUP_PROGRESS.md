@@ -1548,7 +1548,7 @@ dissociation for Phase E3 to chase, not a control that "passes".
 | **A2** | `curve()` paired a **row-weighted mean** with a **prompt-clustered SEM**. | **FIXED tick 7** — `curve()` now emits `mean_ROWWEIGHTED` and `mean_promptweighted` side by side, and the SEM field is renamed `sem_rowlevel` (no longer asserting an understatement that is false for 1-row-per-prompt roles, A6). |
 | **F6** | "Representational signal largest late" is mostly **residual-norm growth**. | **CONFIRMED AND CORRECTED tick 7** — family-matched, `proj` grows **17.0×** L8→L31 while `cos` grows **2.0×**. A real 2× depth trend survives (cos peaks L24, t 4.89); the 14× version does not. Phase B Q3 rewritten. |
 | **F9** | "% of generations changed" does **not** separate signal from noise: random controls change 22.0% / 30.7% / **33.9%** — the last more than `L15_B`'s 28.1%. Carries claims 5e and 5f too. | **OPEN — qualify everywhere.** |
-| **F7** | **No multiplicity correction** on the 11-depth profile though the plan requires it. Over 10 testable depths **Holm rejects nothing** (min adj p 0.0562); BH(0.05) keeps L8 and L12. | **OPEN.** |
+| **F7** | No multiplicity correction on the `d_surface` profile. | **CLOSED tick 18** — computed: Holm(m=10) rejects nothing (min adj 0.0562 at L12); BH(0.05) keeps L8 and L12; all 11 controls inert. Claim 5e restated as "pointwise + BH, not Holm". |
 | **F3** | Two Do-Not-Cite **replacement** figures absent from their artifacts: role-framing `F(5,355)=20.30` is **not in `g11_role_full.json`**; "ratio inverts to 0.80" is **0.7472** @codeword_last and **1.5416** @last. | **FIXED** in the ledger. |
 | **F4** | Tick-3's "NEW RESULT" was **already committed** — `advbench_layer_profile.json` carries `c13`/`c14` byte-identical, added by `af4fe7a4` before this sprint; my own D-1/D-2 say so. | **CORRECTED** — see below. |
 | **F5** | This file held **two divergent copies** of the progress log with contradictory status headers, from one of my splices. | **FIXED** — rebuilt, 2410 → 1608 lines. |
@@ -1790,6 +1790,65 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   redirect `--out` to the scratchpad — "read-only" in the prompt is not sufficient when the tool they
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
+
+### Tick 18 — F7 and F9 closed: the `d_surface` profile survives no correction, and "% generations changed" carries no information
+
+Queue cold (768468/469/488/489 all `PENDING`), so this tick closed two standing review defects.
+
+#### F7 — multiplicity on the `d_surface` layer profile. **Holm rejects nothing.**
+
+Computed over the **10 testable depths** of `advbench_layer_profile.json` (L16 is `degenerate: true`,
+`p_cl: null`, and is excluded):
+
+| depth | Δ_cl | p_cl | **Holm (m=10)** | BH(0.05) |
+|---|---|---|---|---|
+| L12 | +0.0322 | 0.0056 | **0.0562** | ✔ reject |
+| L8 | +0.0305 | 0.0089 | 0.0804 | ✔ reject |
+| L10 | +0.0223 | 0.0190 | 0.1518 | — |
+| L6 | +0.0159 | 0.0567 | 0.3969 | — |
+| L13 | +0.0138 | 0.0901 | 0.5409 | — |
+| L14 | +0.0118 | 0.1411 | 0.7053 | — |
+| L4 / L18 / L28 / L24 | ≤ +0.0092 | 0.26–0.45 | 1.0000 | — |
+
+**Not one depth survives Holm** — the smallest adjusted p is 0.0562 at L12. **BH at 0.05 keeps L8 and
+L12** (by the step-up rule). All **11** matched controls are inert: |Δ| ≤ 0.0066, p 0.20–0.94.
+
+This is the honest asymmetry recorded at tick 9, now computed rather than quoted. Compare the
+refusalness profile, where **four of five depths survive Holm at m = 5**. Both profiles use the same
+baseline, estimand and cluster definition, so the comparison is like-for-like; the refusalness effects
+are simply much larger (peak +0.1895 vs +0.0322).
+
+**How claim 5e must now be stated:** the `d_surface` band L6–L12 is a **consistent pattern with
+uniformly inert controls**, significant pointwise and under BH, but **not surviving Holm**. The arm-B
+headline at L8 remains a single pre-specified test outside that family.
+
+#### F9 — "% of generations changed" is retired as evidence
+
+Recomputed against the shared baseline over the 495 common prompts:
+
+| run | Δ_cl behaviour | **% generations changed** |
+|---|---|---|
+| `d_surface` project_out **L12** (significant) | +0.0322 | **47.1%** |
+| `d_surface` project_out **L8** (significant) | +0.0305 | 38.2% |
+| `d_context` project_out **L8** (behaviourally inert) | +0.0045 | **34.9%** |
+| `random` project_out **L12** (inert control) | −0.0003 | **30.7%** |
+| `d_surface` project_out **L16** (exact null) | ≈0 | **29.5%** |
+| `random` project_out L8 (inert control) | −0.0062 | 22.0% |
+| `random` project_out L16 (inert control) | −0.0003 | 18.0% |
+
+**The ranges overlap completely.** An arm with *exactly zero* behavioural effect (L16) changes 29.5% of
+generations; an inert random control changes 30.7%; a behaviourally inert direction (`d_context`)
+changes 34.9%. Meanwhile a significant arm changes 38.2%.
+
+> **"% of generations changed" shows only that an intervention was not a no-op. It carries no
+> information about whether compliance moved, and must never be used as evidence of specificity.**
+
+Corrections applied: my tick-4 framing ("the L12 refusalness intervention changed 41.4% — a *potent*
+edit that leaves compliance alone") is downgraded to "not a no-op"; the same wording in claims **5e**
+(L16 "changes 29.5% and compliance on none") and **5f** (`d_context` "despite changing 34.9%") is
+inherited from the handover and is flagged here rather than silently repeated. In every one of those
+cases the *conclusion* is unaffected — they were arguing the intervention fired — but the rhetorical
+weight put on the number was not earned.
 
 ### Tick 17 — the two coherence failure modes separate cleanly, and the gate's floor tracks refusal
 
