@@ -2122,3 +2122,39 @@ mixed-footing artifact, then a 5-df-vs-1-df table, then a correct 1-vs-1 table o
 set. Each correction fixed a real defect and each left a different one in place. The lesson is not
 "check the footing" or "check the df" but that **a comparison has several independent ways to be
 mismatched, and fixing one does not audit the others.**
+
+## §18 rebuilt on causal grounds — and the sprint's claim is sharper than before
+
+The **D-rejection** was argued from *"G2 survives multiplicity correction and control for
+`n_examples`"*. R-18 removed that reason. D is still rejected, but now only on the **intervention**
+evidence — which is the stronger ground anyway:
+
+> D requires the metric to be "unstable, non-predictive, or confounded after alignment fixes". It **is**
+> non-predictive (R-18). But it is not inert: removing `d_surface` **causally raises attack success on
+> 495 external harmful prompts against an inert matched control**, it **interacts** with the refusal
+> channel, and G1 and G3 are established on independent core-design rows.
+
+**The two facts together are the sprint's actual claim, and R-18 sharpens rather than weakens it:**
+
+> **Boombness does not predict attack success — and removing the direction it measures causally raises
+> attack success.**
+
+Those are consistent: a representation can be causally load-bearing without its scalar projection
+tracking the outcome across prompts. A single number read off a residual stream is a *lossy* summary
+of a direction; ablating the direction is not the same operation as regressing on its magnitude. But
+the sprint spent most of its length describing Boombness as **predictive**, and that framing is now
+wrong everywhere it appears.
+
+**This is arguably the most interesting thing in the sprint.** The original objective assumed
+prediction and causation would travel together — maximise the axis, get more attack success. They do
+not: the axis does not predict, the *opposite* manipulation (removing it) is what moves behaviour, and
+the objective is dead for both reasons rather than one.
+
+## Layer profile: matched controls launched at every swept layer
+
+`abL{4,12,18,24}_B` completed and are judging. But an arm-B layer profile needs a **control** layer
+profile — random-direction effects can themselves vary with depth, and a rising arm-B curve against an
+unmeasured control would be exactly the unmatched comparison this session has retracted three times.
+`abL{4,12,18,24}_Bctrl` (766968–971) launched at the same layers, same seed discipline as `ab_Bctrl`.
+The five-point profile will be reported as **arm minus its own control at each depth**, never as a raw
+curve.
