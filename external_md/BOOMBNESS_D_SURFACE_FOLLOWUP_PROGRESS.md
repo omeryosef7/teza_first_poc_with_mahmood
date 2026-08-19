@@ -1864,6 +1864,32 @@ $PY src/boombness/analyze_external_arms.py --baseline judge/abg_base_20260819_01
 Row accounting: 495 attempted / 495 judged / 0 skipped / 0 null scores in every one of the 11 arms;
 `dropped_symmetric_difference_vs_baseline = 0` throughout.
 
+### Tick 10–11 — Phase F composed-intervention matrix launched
+
+With the queue empty and the refusalness peak established at L18, the plan §8 composed arms were
+submitted at the two channels' **established peaks** (`d_surface` L8, refusalness L18):
+
+| job | tag | `--intervene` | seed |
+|---|---|---|---|
+| 768070 | `fuF_remS_addR` | `d_surface:project_out:8-8:1.0` **+** `refusalness:add:18-18:1.0` | 20260816 |
+| 768071 | `fuF_remR_addS` | `refusalness:project_out:18-18:1.0` **+** `d_surface:add:8-8:1.0` | 20260816 |
+| 768072 | `fuF_addS` | `d_surface:add:8-8:1.0` | 20260816 |
+| 768073 | `fuF_addR` | `refusalness:add:18-18:1.0` | 20260816 |
+| 768074 | `fuF_addBoth` | `d_surface:add:8-8:1.0` **+** `refusalness:add:18-18:1.0` | 20260816 |
+| 768075 | `fuF_addCtrl8` | `random:add:8-8:1.0` | 20260901 |
+| 768076 | `fuF_addCtrl18` | `random:add:18-18:1.0` | 20260901 |
+
+Arms 1–4 of plan §8 (baseline / remove S / remove R / remove both) already exist as the committed
+AdvBench decomposition, so these seven complete the ten-arm matrix.
+
+**Coherence pre-check passed, and it contradicts a prior-sprint expectation.** 768073 (`add`
+refusalness at α = 1.0) finished first and was gated **before** spending judge calls:
+uniq-word ratio **0.935** (gate ≥ 0.45), 3-gram repeat **0.003** (gate ≤ 0.30), top-word fraction
+**0.147** (gate ≤ 0.25). Comfortably coherent. The previous sprint's α = 1 *`d_surface`* steering arm
+was degenerate (uniq 0.302, trigram repeat 0.551, truncated 1.000) and produced the coherence gate in
+the first place — that degeneracy does **not** generalise to the refusalness axis at the same nominal
+dose. Judging launched as `m_fuF_addR`.
+
 ### Tick 8 (2026-08-19 ~19:50) — all seven generation jobs COMPLETED, judging in flight
 
 | job | tag | state | elapsed | gens |
