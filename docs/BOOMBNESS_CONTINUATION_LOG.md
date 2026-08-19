@@ -2716,3 +2716,43 @@ the weaker intervention. That is a caveat for anyone treating `d_surface` as the
 
 **And `d_context` is the load-bearing null**: near-orthogonal, fitted by the same 2×2 on the same rows,
 it changes **34.9%** of generations and moves ASR by **+0.0045 (p=0.40)**.
+
+## The shoulder is controlled — L13 and L14 controls both inert
+
+| layer | arm Δ | p_cl | control ASR | control inert? |
+|---|---|---|---|---|
+| L13 | +0.0138 | 0.0901 | **0.0646** *(= baseline exactly)* | ✅ |
+| L14 | +0.0118 | 0.1411 | **0.0646** *(= baseline exactly)* | ✅ |
+
+Both controls land on the baseline to four decimals. **The shoulder is a real decay of the arm, not a
+drift in the control.** The profile is now controlled at every depth except L15, whose pair has sat
+`PENDING (Priority)` for ~90 minutes — the cluster's L40S nodes are all `mix` while the idle nodes are
+other hardware, so the house remedy ("resubmit with a widened nodelist") is not available without
+breaking the L40S guard. Left queued: L15 is one more point on a shoulder already characterised by
+L13 and L14, so nothing depends on it.
+
+## ★ New: does the REFUSAL channel have a different depth profile?
+
+§7c establishes two channels that are near-orthogonal (cos = 0.019 @L18) and that **interact**
+(super-additivity +0.0268 [+0.0029, +0.0584]). §7f now shows `d_surface`'s channel occupies a
+**specific band, L6–L14 with a core at L8–L12**.
+
+That makes an obvious structural question askable for the first time: **does refusalness occupy the
+same band, or a different one?**
+
+* If the two channels have **different depth profiles**, that is independent structural evidence they
+  are distinct mechanisms — much stronger than a cosine, because a cosine is one number at one layer
+  while a profile is a shape.
+* If they occupy the **same band**, the near-orthogonality is doing all the work of separating them,
+  and the "two channels" reading rests on a single statistic.
+
+Launched `abR{8,12,24,28}_C` (767263–266): arm C's intervention (`refusalness:project_out`) at four
+depths on the same AdvBench set. **L18 already exists** as the published arm C (+0.1895, p=0.0001), so
+this gives a five-point refusalness profile against `d_surface`'s eleven-point one.
+
+**Prediction, recorded before the runs.** Refusalness was *fitted* at L18 and the sprint's refusal
+direction is a late-stack object throughout the literature this project builds on; `d_surface`'s band is
+early-mid (L6–L14) and is **zero at L18**. I expect refusalness to be **strongest late (L18, L24) and
+weak or absent early (L8, L12)** — i.e. the two profiles should be roughly complementary. If instead
+refusalness is also strongest at L8–L12, the two channels share a depth range and the distinctness
+claim rests entirely on cos = 0.019.
