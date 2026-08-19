@@ -73,7 +73,7 @@ differ. Both results are reported; neither is dropped.
 
 ### Current gate table
 
-Every row here is current as of 2026-08-18. Superseded verdicts are in the retraction table, never
+Every row here is current as of **2026-08-19**. Superseded verdicts are in the retraction table, never
 here.
 
 | gate | question | verdict |
@@ -86,7 +86,7 @@ here.
 | **§14-B** | Does removing `d_surface` **alone** raise ASR off-bank? | **Yes on AdvBench** — +0.0305, p_cl=**0.0089**, CI [+0.0089, +0.0522], 16 clusters. **Not significant on ClearHarm** (+0.084, p_cl=0.21) — a power difference (6 clusters, 127/179 in one), not a disagreement. **This excludes the prompt-bank artifact explanation.** ⚠ AdvBench control arms still running. |
 | **§14-L** | **Where in the network does the effect live?** | **A contiguous mid-stack band, ~L6–L12, with a hard edge** (§7f). Significant at **L8 (p=0.0089)**, **L10 (p=0.0190)** and **L12 (p=0.0056)**, marginal at L6, and **null from L16 outward** — L16 is exactly baseline. **Matched controls at five depths are all inert** (−0.0066 to +0.0007). And L16 is not a failed intervention: it changes **29.5%** of generations while changing compliance on **none**. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
-| **§2.6** | Does any intervention preserve comprehension? | **UNKNOWN.** The comprehension readout was measuring a ~1e-5 probability tail. Rebuilt; re-run outstanding. See R-6. |
+| **§2.6** | Does any intervention preserve comprehension? | **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` does what its name claims, on an instrument that can represent both answers. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
 | **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
 
 ### §18: the outcome label, settled

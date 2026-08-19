@@ -2587,3 +2587,27 @@ dense enough to say whether the drop from L12 to L16 is a step or a slope.
 * `abL{6,10,16,28}_Bctrl` — the four edge controls resubmitted after the outage, which retro-fit
   controls to the points that were arm-only.
 * `abL8_context` — the first half of the direction-specificity test.
+
+## A §0 consistency pass caught the report contradicting itself again
+
+Two defects in the gate table, both the same family as the one Phase 4 was supposed to have closed:
+
+**1. The §2.6 row still said "UNKNOWN … re-run outstanding. See R-6."** — while the §18 settlement
+**twelve lines below it** opens *"R-6 is resolved (`project_out` does not damage comprehension; it
+improves the coded reading, +0.2795, p=0.0010)"*. The report was asserting a gate as unresolved and
+using its resolution as a premise on the same screen.
+
+Fixed: the row now carries the answer — comprehension **+0.2795 [+0.175, +0.384], p=0.0010** against a
+flat double-random control (−0.0041, p=0.63), and the semantic readout **+2.4073** toward the concept —
+with the withdrawn "p=0.681" marked as computed on a 4.4e-05 probability tail.
+
+**2. The header said "current as of 2026-08-18"** on a table where six of ten rows had been rewritten on
+the 19th. A staleness marker that is itself stale is worse than none: it tells a reader the table was
+checked on a date when half of it did not exist yet.
+
+**Why this keeps happening, stated plainly.** Every one of these has the same shape — a *verdict* is
+updated in the place where the work was done, and the *summary* that quotes it is not. §0 is the summary
+of everything, so it accumulates the drift from every section. The retraction sweep cannot catch it,
+because "UNKNOWN" contains no retracted figure to match on; only reading §0 against the body does. That
+is a manual check, it has now paid twice, and it should be run at the end of every session rather than
+at the end of the sprint.
