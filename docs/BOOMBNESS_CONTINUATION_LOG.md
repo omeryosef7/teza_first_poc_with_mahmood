@@ -1725,3 +1725,65 @@ survive into the report unnoticed.
 Launched: `ch_Bctrl` (766765, Llama random@L8) and a **3-draw band** for Qwen3,
 `q3ch_Bctrl_2026090{1,2,3}` (766766–768, random@L11) — a band rather than one draw, per plan §2.5 and
 per R-12, which is what made a single control draw a retraction in the first place.
+
+## ★★ G1 RE-ESTABLISHED on the corrected readout — and the numbers barely moved
+
+`g1wa_sow` (766659) ran 3h03m, wrote **31,104 rows with zero failures**, and exited 4 on the tail gate
+— *"the run is written and its healthy readouts are usable"*. Analysed:
+`outputs/boombness/g1_wholeanswer_sow.json`.
+
+**harm_ctx — the headline pair.** baseline +4.052, ceiling +12.269, **span +8.217 ± 1.144**,
+self-swap |Δ| = 6.5e-02 (the no-op invariant holds).
+
+| arm | **whole-answer (corrected)** | old single-token readout |
+|---|---|---|
+| **`transplant demos_only L18`** | **+0.689, CI [+0.51, +0.97]** | +0.681, CI [+0.50, +0.95] |
+| `transplant demos_only L12` | +0.488 [+0.18, +0.88] | +0.580 [+0.30, +1.00] |
+| `transplant first_demo L18` | +0.316 [+0.19, +0.48] | +0.287 [+0.13, +0.49] |
+| `transplant last_demo L18` | +0.095 [+0.04, +0.18] | +0.070 [+0.02, +0.13] |
+| `transplant all L18` (whole prompt) | **+0.133 [−0.17, +0.34] — null** | +0.141 [−0.09, +0.32] — null |
+| **`transplant query_only L18`** | **−0.570 [−1.03, −0.40] — wrong way** | −0.706 [−1.05, −0.56] |
+
+**Every arm reproduces, most of them to within a few points of span.**
+
+### The prediction I recorded before the run, scored
+
+> *"G1's direction should survive on any readout … G1's magnitudes should move, and the old readout's
+> bias was toward the concept, so the corrected `demos_only|L18` should come in at or below +68%."*
+
+**Direction: right.** `demos_only` positive, `query_only` negative, `all` null — unchanged.
+**Magnitude: the prediction was not wrong so much as unnecessary.** It came in at **+68.9%** against
++68.1% — the numbers did not move at all. So **C-6, which looked like it might invalidate G1, does not
+change G1**. The defect was real (the instrument structurally could not represent the codeword's
+preferred spelling); the *log-odds ordering* turned out to be robust to it.
+
+That is worth stating precisely: **the readout fix was necessary to know whether G1 held, and the
+answer is that it does.** "The old number was fine" is only knowable *after* re-deriving it — which is
+the entire argument for having done the work.
+
+### E9 closed — α = 0.25 is now swept
+
+The dose every §12 behavioural claim rests on was never in the §5.2 sweep (0.5/1/2/4 only). It is now:
+
+| arm | harm_ctx | benign_ctx |
+|---|---|---|
+| `add all all d_surface a=0.25` | **+1.034 [+0.88, +1.14]** | **+1.450 [+1.34, +1.61]** |
+| `add query_only all d_surface a=0.25` | −0.717 [−2.00, −0.23] | +0.908 [+0.78, +1.09] |
+
+Adding `d_surface` across the **whole prompt** at α=0.25 reaches or **overshoots** the donor ceiling
+(103% / 145%), while adding it to the **query only** moves harm_ctx the **wrong way** (−0.72). Same
+asymmetry as the transplant arms, from the additive side.
+
+### ⚠ The ceiling caveat stands, and the agreement does NOT discharge it
+
+`donor_ceiling` option mass at n=48 is **0.007414**, with only **39.6%** of rows above 1% — confirming
+at full scale what the n=4 smoke showed. The model answers the donor prompt with ` Explos`(ive) and
+` Squ`(ash)/` Vegetable`: semantically right, lexically outside the option set. **The span denominator
+is estimated where the model wants to say a different word.**
+
+The old and new readouts agreeing does **not** clear this — *both* normalise by the same span
+construction, and the old one had the same problem worse. What the agreement shows is that the two
+instruments rank the arms the same way, not that the denominator is well estimated. **The direction
+and ordering of G1 are safe; the absolute "% of span" figures inherit a ceiling measured in a tail**,
+and that belongs beside the number. Fixing it needs an option set that admits synonyms, which changes
+what is being measured — filed as future work rather than patched silently.
