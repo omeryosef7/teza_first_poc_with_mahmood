@@ -1727,6 +1727,79 @@ at four of five, directly comparable to the nine-point `d_surface` profile.
   are told to run mutates the repo.** No subagent may run `git commit`.
 - Phase A gate is **passed**. Phase B may begin.
 
+### ✅ ESTABLISHED — the refusalness layer profile, and a clean crossover with `d_surface`
+
+**Artifact:** `outputs/boombness_followup/refusalness_layer_profile.json`. Model Llama-3.1-8B-Instruct ·
+AdvBench held-out 495 · 16 domain clusters · `n_common = 495` · Δ and p on the **continuous**
+StrongReject score, cluster-mean estimand. Every depth has a **matched random-projection control at the
+same layer, same seed, same code path**.
+
+| depth | arm C Δ_cl | p_cl | **Holm adj** (m=5) | ASR@0.5 | refusal | control Δ_cl | control p |
+|---|---|---|---|---|---|---|---|
+| **L12** | +0.0028 | 0.4510 | 0.4510 | 0.0646 | 0.9333 | −0.0012 | 0.2194 |
+| **L14** | +0.0475 | 0.0126 | **0.0253** ✔ | 0.1253 | 0.8727 | +0.0005 | 0.2689 |
+| **L16** | +0.1167 | 0.0016 | **0.0063** ✔ | 0.1879 | 0.8040 | +0.0042 | 0.2517 |
+| **L18** | **+0.1895** | 0.0001 | **0.0007** ✔ | **0.2707** | 0.7091 | −0.0021 | 0.2921 |
+| **L20** | +0.0628 | 0.0080 | **0.0240** ✔ | 0.1374 | 0.8586 | +0.0038 | 0.2887 |
+
+**Four of five survive Holm–Bonferroni across the profile** (m = 5, arms only; controls are not
+hypotheses). **All five controls are inert** (|Δ| ≤ 0.0042, p 0.22–0.29). This is the first result in
+the sprint to carry a multiplicity correction, addressing review defect **F7** for this profile.
+
+#### The crossover
+
+Refusalness has an **inverted-U causal profile peaked at L18**: nothing at L12, rising through L14 and
+L16, peaking at L18, falling back by L20. `d_surface` is the mirror image:
+
+| | `d_surface` (arm B) | refusalness (arm C) |
+|---|---|---|
+| significant depths | L8, L10, **L12** | **L14, L16, L18, L20** |
+| peak | L12, **+0.0322** | L18, **+0.1895** |
+| dead by | L16 (exactly 0) | L12 (+0.0028, n.s.) |
+
+**The two channels barely overlap. `d_surface` dies exactly where refusalness begins** — its last
+significant depth is L12, refusalness's first is L14. The refusalness peak is **5.9×** the `d_surface`
+peak.
+
+This upgrades the tick-4 finding from *exploratory* to **established**: it now rests on five depths with
+matched controls and a multiplicity correction, not on two points one of which lacked a control.
+
+#### What it does to the interaction
+
+Committed arm D is `d_surface:project_out:8-8` **+** `refusalness:project_out:18-18` — the two channels
+composed **at their respective peaks, ten layers apart** (this is also review finding F2, which
+corrected the ground-truth table's claim that arm D was an L8 effect). So arm D's super-additive excess
+(+0.0268 against the matched random triple, CI [+0.0029, +0.0584]) is an interaction **across depths**,
+not two effects at one site. Any mechanistic story must carry information from an L8 edit to an L18
+decision point.
+
+#### ⚠ The honest asymmetry
+
+The refusalness profile survives multiplicity; **the `d_surface` profile does not.** Review finding F7:
+over the 10 testable depths of `advbench_layer_profile.json`, Holm rejects **nothing** (min adjusted
+p = 0.0562); BH(0.05) keeps only L8 and L12. The `d_surface` headline (arm B at L8, +0.0305, p_cl
+0.0089) is a **single pre-specified test** rather than a profile scan, so it is not subject to the same
+family — but the *profile* around it is weaker than the refusalness profile by this standard, and that
+should be said plainly rather than left for a reader to discover.
+
+#### Commands
+
+```
+# 7 generation jobs, SLURM 767585-767591, run_boombness.sh + argsfiles args_fuR*.txt
+#   --intervene refusalness:project_out:{L}-{L}:1.0   (arms,     --seed 20260816)
+#   --intervene random:project_out:{L}-{L}:1.0        (controls, --seed 20260901)
+#   --bank advbench_heldout_495.jsonl --fit-dir extract_boombness/full_20260816_185942_1008673
+#   --query-kinds behavioral --max-new 512 --arm base --dtype bfloat16
+# judging (MUST pass --bank or it re-creates R-14):
+setsid $PY src/boombness/judge_boombness.py --gens <score_behavior DIR>/ --bank $BANK --tag k_<tag>
+# analysis:
+$PY src/boombness/analyze_external_arms.py --baseline judge/abg_base_20260819_011714_1480836 \
+    --arm L12_C=... --arm L12_Cctrl=... ... --out outputs/boombness_followup/refusalness_layer_profile.json
+```
+
+Row accounting: 495 attempted / 495 judged / 0 skipped / 0 null scores in every one of the 11 arms;
+`dropped_symmetric_difference_vs_baseline = 0` throughout.
+
 ### Tick 8 (2026-08-19 ~19:50) — all seven generation jobs COMPLETED, judging in flight
 
 | job | tag | state | elapsed | gens |

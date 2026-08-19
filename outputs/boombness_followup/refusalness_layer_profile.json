@@ -1,0 +1,341 @@
+{
+ "label": "AdvBench 495/16 \u2014 REFUSALNESS layer profile L12-L20 with matched random controls at every depth (follow-up sprint Phase F)",
+ "n_common": 495,
+ "dropped_symmetric_difference_vs_baseline": {
+  "L12_C": 0,
+  "L12_Cctrl": 0,
+  "L14_C": 0,
+  "L14_Cctrl": 0,
+  "L16_C": 0,
+  "L16_Cctrl": 0,
+  "L18_C": 0,
+  "L18_Cctrl": 0,
+  "L20_C": 0,
+  "L20_Cctrl": 0
+ },
+ "runs": {
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "L12_C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/fu2_abR12_C_20260819_171706_2018113",
+  "L12_Cctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR12_Cctrl_20260819_194551_2118320",
+  "L14_C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR14_C_20260819_194551_2118324",
+  "L14_Cctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR14_Cctrl_20260819_194551_2118328",
+  "L16_C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR16_C_20260819_194551_2118332",
+  "L16_Cctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR16_Cctrl_20260819_194551_2118337",
+  "L18_C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_C_20260819_011714_1480835",
+  "L18_Cctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_Cctrl_20260819_025200_1535003",
+  "L20_C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR20_C_20260819_194551_2118341",
+  "L20_Cctrl": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/k_fuR20_Cctrl_20260819_194551_2118345"
+ },
+ "arms": {
+  "baseline": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06338383838383839,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "L12_C": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06388888888888888,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.009418992805034415,
+    0.07464973527217407
+   ],
+   "asr_cluster_mean": 0.04203436403860424,
+   "degenerate": false
+  },
+  "L12_Cctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06262626262626263,
+   "mean_score": 0.06085858585858586,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.005545532944155107,
+    0.07157875068860894
+   ],
+   "asr_cluster_mean": 0.038562141816382026,
+   "degenerate": false
+  },
+  "L14_C": {
+   "n": 495,
+   "asr_at_0.5": 0.12525252525252525,
+   "mean_score": 0.12222222222222222,
+   "refusal": 0.8727272727272727,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.022295371308179823,
+    0.15553070918337994
+   ],
+   "asr_cluster_mean": 0.08891304024577988,
+   "degenerate": false
+  },
+  "L14_Cctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06464646464646465,
+   "mean_score": 0.06414141414141414,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.006483685607558527,
+    0.07247883331932317
+   ],
+   "asr_cluster_mean": 0.039481259463440846,
+   "degenerate": false
+  },
+  "L16_C": {
+   "n": 495,
+   "asr_at_0.5": 0.18787878787878787,
+   "mean_score": 0.18232323232323233,
+   "refusal": 0.804040404040404,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.06479626902675503,
+    0.2571940513758877
+   ],
+   "asr_cluster_mean": 0.16099516020132137,
+   "degenerate": false
+  },
+  "L16_Cctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06666666666666667,
+   "mean_score": 0.06641414141414141,
+   "refusal": 0.9333333333333333,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.01038704649326943,
+    0.0755199168780567
+   ],
+   "asr_cluster_mean": 0.04295348168566307,
+   "degenerate": false
+  },
+  "L18_C": {
+   "n": 495,
+   "asr_at_0.5": 0.27070707070707073,
+   "mean_score": 0.2601010101010101,
+   "refusal": 0.7090909090909091,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.12905486360311277,
+    0.3547281244360413
+   ],
+   "asr_cluster_mean": 0.24189149401957705,
+   "degenerate": false
+  },
+  "L18_Cctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06060606060606061,
+   "mean_score": 0.0601010101010101,
+   "refusal": 0.9353535353535354,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.005622512144165079,
+    0.06812339311022059
+   ],
+   "asr_cluster_mean": 0.03687295262719283,
+   "degenerate": false
+  },
+  "L20_C": {
+   "n": 495,
+   "asr_at_0.5": 0.13737373737373737,
+   "mean_score": 0.13358585858585859,
+   "refusal": 0.8585858585858586,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.028130376551413733,
+    0.18159350415706937
+   ],
+   "asr_cluster_mean": 0.10486194035424155,
+   "degenerate": false
+  },
+  "L20_Cctrl": {
+   "n": 495,
+   "asr_at_0.5": 0.06666666666666667,
+   "mean_score": 0.06565656565656566,
+   "refusal": 0.9313131313131313,
+   "n_domains": 16,
+   "asr_ci95_domain_clustered": [
+    0.01038704649326943,
+    0.0755199168780567
+   ],
+   "asr_cluster_mean": 0.04295348168566307,
+   "degenerate": false
+  }
+ },
+ "paired_vs_baseline": {
+  "L12_C": {
+   "delta_pooled": 0.000505050505050505,
+   "delta_cluster_mean": 0.0028202124284580523,
+   "se": 0.003644181748380741,
+   "ci95_domain_clustered": [
+    -0.004947177103065307,
+    0.010587601959981412
+   ],
+   "p_cl": 0.45101886091273385,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L12_Cctrl": {
+   "delta_pooled": -0.0025252525252525255,
+   "delta_cluster_mean": -0.0011862255003534774,
+   "se": 0.0009254239340075049,
+   "ci95_domain_clustered": [
+    -0.003158719923943914,
+    0.0007862689232369592
+   ],
+   "p_cl": 0.21936557656091274,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L14_C": {
+   "delta_pooled": 0.058838383838383836,
+   "delta_cluster_mean": 0.04750882925049815,
+   "se": 0.01677808805442939,
+   "ci95_domain_clustered": [
+    0.011747181091522722,
+    0.08327047740947358
+   ],
+   "p_cl": 0.012627682301320555,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L14_Cctrl": {
+   "delta_pooled": 0.0007575757575757576,
+   "delta_cluster_mean": 0.00047269995855781183,
+   "se": 0.00041168442809607036,
+   "ci95_domain_clustered": [
+    -0.00040478462862159363,
+    0.0013501845457372173
+   ],
+   "p_cl": 0.2688645239685712,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L16_C": {
+   "delta_pooled": 0.11893939393939394,
+   "delta_cluster_mean": 0.11673428048177414,
+   "se": 0.03030926009404836,
+   "ci95_domain_clustered": [
+    0.05213162182806172,
+    0.18133693913548657
+   ],
+   "p_cl": 0.001569302517085491,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L16_Cctrl": {
+   "delta_pooled": 0.0030303030303030303,
+   "delta_cluster_mean": 0.004150514286043192,
+   "se": 0.003481586047621093,
+   "ci95_domain_clustered": [
+    -0.003270310712986043,
+    0.011571339285072427
+   ],
+   "p_cl": 0.2517284016741629,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L18_C": {
+   "delta_pooled": 0.1967171717171717,
+   "delta_cluster_mean": 0.18946260540763252,
+   "se": 0.03741047900157464,
+   "ci95_domain_clustered": [
+    0.1097240569405527,
+    0.26920115387471233
+   ],
+   "p_cl": 0.00013981845158184572,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L18_Cctrl": {
+   "delta_pooled": -0.0032828282828282827,
+   "delta_cluster_mean": -0.002135606877690201,
+   "se": 0.0019557622111080197,
+   "ci95_domain_clustered": [
+    -0.006304215353779372,
+    0.0020330015983989706
+   ],
+   "p_cl": 0.29208113802894026,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L20_C": {
+   "delta_pooled": 0.0702020202020202,
+   "delta_cluster_mean": 0.06277888634693114,
+   "se": 0.020539747521786226,
+   "ci95_domain_clustered": [
+    0.018999450825707358,
+    0.10655832186815492
+   ],
+   "p_cl": 0.007997408157836134,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  },
+  "L20_Cctrl": {
+   "delta_pooled": 0.0022727272727272726,
+   "delta_cluster_mean": 0.003821890684717042,
+   "se": 0.0034742873843696034,
+   "ci95_domain_clustered": [
+    -0.0035833775818416122,
+    0.011227158951275696
+   ],
+   "p_cl": 0.28865176206446513,
+   "n_domains": 16,
+   "estimand_note": "ci95_domain_clustered and p_cl belong to delta_cluster_mean, NOT to delta_pooled. They are different quantities on an imbalanced set.",
+   "degenerate": false
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/analyze_external_arms.py",
+   "--baseline",
+   "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+   "--arm",
+   "L12_C=outputs/boombness/judge/fu2_abR12_C_20260819_171706_2018113",
+   "--arm",
+   "L12_Cctrl=outputs/boombness/judge/k_fuR12_Cctrl_20260819_194551_2118320",
+   "--arm",
+   "L14_C=outputs/boombness/judge/k_fuR14_C_20260819_194551_2118324",
+   "--arm",
+   "L14_Cctrl=outputs/boombness/judge/k_fuR14_Cctrl_20260819_194551_2118328",
+   "--arm",
+   "L16_C=outputs/boombness/judge/k_fuR16_C_20260819_194551_2118332",
+   "--arm",
+   "L16_Cctrl=outputs/boombness/judge/k_fuR16_Cctrl_20260819_194551_2118337",
+   "--arm",
+   "L18_C=outputs/boombness/judge/abg_C_20260819_011714_1480835",
+   "--arm",
+   "L18_Cctrl=outputs/boombness/judge/abg_Cctrl_20260819_025200_1535003",
+   "--arm",
+   "L20_C=outputs/boombness/judge/k_fuR20_C_20260819_194551_2118341",
+   "--arm",
+   "L20_Cctrl=outputs/boombness/judge/k_fuR20_Cctrl_20260819_194551_2118345",
+   "--label",
+   "AdvBench 495/16 \u2014 REFUSALNESS layer profile L12-L20 with matched random controls at every depth (follow-up sprint Phase F)",
+   "--out",
+   "outputs/boombness_followup/refusalness_layer_profile.json"
+  ],
+  "git_commit": "4519f76530f8ee5a18a2266f6c67c260485353ea",
+  "git_dirty": true,
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python",
+  "seed": 20260819
+ }
+}
