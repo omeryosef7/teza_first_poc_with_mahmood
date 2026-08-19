@@ -2391,3 +2391,54 @@ and rows whose codeword readability was experimentally manipulated.
 warns about: the pooled figure mixes between-domain and within-domain variation, which is exactly why
 `p_iid_pooled_rho` is marked WITHDRAWN as a sole basis and the within-domain estimand is the one to
 cite. The published headline was a pooled number.)*
+
+## ★★★ THE LAYER PROFILE, CONTROLLED — the causal effect is a mid-stack band, and every control is inert
+
+AdvBench 495, 16 domain clusters, arm B's exact intervention at five depths, **each with its own
+norm-matched random-projection control at the same depth**
+(`outputs/boombness/advbench_layer_profile.json`):
+
+| layer | **arm Δ (clustered)** | **p_cl** | control Δ | control p |
+|---|---|---|---|---|
+| L4 | +0.0092 | 0.260 | +0.0007 | 0.288 |
+| **L8** | **+0.0305** | **0.0089** ✓ | −0.0062 | 0.539 |
+| **L12** | **+0.0322** | **0.0056** ✓ | −0.0003 | 0.418 |
+| L18 | +0.0037 | 0.305 | −0.0026 | 0.201 |
+| L24 | +0.0005 | 0.450 | −0.0066 | 0.512 |
+
+### Three things, and the second is the one that makes it a result
+
+**1. The effect is a band, L8–L12.** Significant at both (p=0.0089 and 0.0056), and **null at L4, L18
+and L24** — +0.0005 at L24, which is nothing. Removing `d_surface` raises attack success at mid-stack
+depths and nowhere else.
+
+**2. Every control is inert at every depth.** This was the whole reason for running them: a rising arm
+curve against an *unmeasured* control would have been the unmatched comparison this session retracted
+three times, and "mid-stack random projections are simply more destructive" was a live alternative
+explanation. It is now excluded — the five controls span **−0.0066 to +0.0007**, with no depth
+dependence at all. **The band is a property of the direction, not of the depth.**
+
+**3. L12 is marginally *larger* than L8** (+0.0322 vs +0.0305) under clustered inference, despite L8
+being the layer every §7c intervention was fitted and applied at. So L8 is not privileged; the sprint
+picked a depth inside the effective band rather than its centre.
+
+### Why this is worth more than the single-layer result it extends
+
+§7c established that removing `d_surface` causally raises attack success off-bank. That is a claim
+about **one intervention at one depth**. This is a claim about **where in the network the direction
+matters**, with a matched null at every other depth — and the answer coincides with the two layers the
+sprint had independently selected on representational grounds (**L8**, where `d_surface` is fitted for
+interventions; **L12**, the `d_surface|L12|proj` column that was the headline "Boombness"). Those two
+selections were made for unrelated reasons and they land on the same band.
+
+⚠ **It also sharpens R-18 rather than softening it.** L12 is where the *retracted* correlation lived.
+The same layer at which `d_surface`'s projection **fails to predict** attack success (ρ_within = −0.066,
+p = 0.49, n=108) is a layer at which **ablating that direction causally raises it** (+0.0322,
+p = 0.0056). That is the sprint's central claim localized to a specific depth, and it is a sharper
+statement of it than §0 currently makes.
+
+### Still open
+`abL{6,10,16,28}_B` are judging and will resolve the band's **edges** — whether it is a plateau from
+L8–L12 or peaked between them. Their matched controls **could not be submitted**: the SLURM controller
+has been unreachable since 08:04. Until those land the profile is five points, not nine, and the band's
+width is bounded only as "≥L8 and ≥L12, <L4 and <L18".
