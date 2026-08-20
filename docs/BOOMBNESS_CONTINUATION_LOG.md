@@ -3570,3 +3570,52 @@ measured footing:
 |---|---|---|---|
 | 59 | 2026-08-20 | re-tested the report's Qwen3 benign-elevation conclusion against the R-13-immune outcome | **survives**: benign topical +0.256 vs control 0.000 |
 | 60 | 2026-08-20 | recorded why a confirmation counts here | the same test collapsed 0.888 → 0.021 one tick earlier, so it does reject when it should |
+
+## ⛔ R-14 — arm F is a STYLE ARTIFACT on Llama, and I was wrong to exempt Llama earlier
+
+Tick 2026-08-20. Having built the conjunction for Qwen3, the disciplined move was to point it at
+**Llama** rather than assume the artifact was model-specific. I had written, when recording R-13:
+*"the Llama results are not affected by observation, not by assumption — on Llama the benign control
+for arm D was +0.003, i.e. the inflation did not fire there."* That observation was about **arm D**
+and I generalised it to "the Llama results". **That generalisation was wrong.**
+
+All Llama arms, `natural_doublespeak`, n=420 common, domain-clustered
+(`outputs/boombness/llama_arms_topical.json`):
+
+| arm | ASR **plain** | ASR **topical** | **Δ topical vs baseline** | style fraction |
+|---|---|---|---|---|
+| baseline | +0.243 | +0.038 | — | — |
+| **B** remove `d_surface` | +0.269 | +0.067 | **+0.029 [+0.000, +0.060]** | — |
+| B control | +0.229 | +0.048 | +0.010 [+0.002, +0.019] | — |
+| **C** remove refusal | +0.269 | +0.036 | **−0.002 [−0.010, +0.005]** — null | — |
+| **D** remove both | +0.336 | +0.071 | **+0.033 [+0.005, +0.067]** | — |
+| D control | +0.252 | +0.048 | +0.010 [+0.005, +0.014] | — |
+| **F** add `d_surface` + remove refusal | **+0.548** | **+0.055** | **+0.017 [−0.005, +0.038]** ← **CI contains 0** | **~94%** |
+| F control | +0.219 | +0.050 | +0.012 [+0.007, +0.014] | — |
+
+**Arm F has the largest plain ASR in the sprint (+0.548, a +0.305 gain over baseline) and a topical
+gain of +0.017 whose interval includes zero — and its own control sits at +0.012.** Roughly 94% of
+its headline gain is answer style, not harmful content. On the benign conditions it is starker: arm F
+scores **+0.417 plain on `benign_remap`** and **exactly 0.000 topical**, with not one of 36
+completions containing a word distinctive to the goal.
+
+**This is the arm the report already suspected on other grounds.** It flagged that arm F's gain was
+largest on `benign_remap`, "where the carrot→bomb mapping is never taught", and called that the
+signature of a prompt-bank artifact. It is not a bank artifact. It is a **judge** artifact, and the
+conjunction localises it: the completions are fluent, non-refusing, confident and about nothing the
+goal asked for.
+
+**What survives.** Arms **B** (+0.029) and **D** (+0.033) clear their controls (+0.010 both) under
+the conjunction; **C** (remove refusal alone) is null (−0.002). So on Llama the ordering is
+D ≳ B > C ≈ 0 ≫ F-as-published, and refusal removal *alone* does nothing for topical content.
+
+**The methodological lesson, stated against myself.** R-13's evidence was model-specific and I
+extended it to a model-general exemption without testing it. The test cost one CPU command and
+overturned the sprint's second-largest published effect. "Unaffected by observation, not by
+assumption" was only true of the one arm I had actually observed.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 61 | 2026-08-20 | pointed the conjunction at Llama instead of assuming R-13 was Qwen3-only | **R-14**: arm F is ~94% style; Δ topical CI includes zero |
+| 62 | 2026-08-20 | re-ranked all Llama arms on topical content | D +0.033, B +0.029 clear controls; **C is null**; F indistinguishable from its control |
+| 63 | 2026-08-20 | corrected my own R-13 note, which exempted "the Llama results" from one arm's evidence | the exemption was unearned |
