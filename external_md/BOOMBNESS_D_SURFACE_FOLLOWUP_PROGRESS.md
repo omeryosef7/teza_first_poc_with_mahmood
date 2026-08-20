@@ -1353,7 +1353,112 @@ Artifact: `outputs/boombness/probes/fu2352_20260819_161048_1978941/{results.json
 
 ## Clean Fig-9-Style Boombness vs ASR Test
 
-_Not started. Phase D deliverable._
+**Phase D opened 2026-08-20 (tick 46), the plan's only never-started phase.** The user chose the
+strict design when offered the alternatives.
+
+### The bank, and why it looks the way it does
+
+**Artifact:** `data/boombness_prompts/boombness_prompt_bank_phase_d.jsonl` (2,160 rows) +
+`..._phase_d_meta.json`. **Code:** one new preset in `src/boombness/prompt_families.py`, one new
+constant, one opt-in argument. No new module.
+
+```
+python src/boombness/prompt_families.py --preset phase_d \
+  --out data/boombness_prompts/boombness_prompt_bank_phase_d.jsonl --strict
+# -> rows=2160  2x2 families checked=120 violations=0  duplicate prompt_id dropped=0
+```
+
+**`n_examples` is FIXED at 2, and that is the design's central constraint rather than a
+simplification.** `_take` returns `pool[(slot*3 + i) % 20]`, so slot *k* starts at `3k mod 20` and
+covers *n* consecutive sentences; the number of mutually disjoint families per (domain, split) is
+therefore `floor(20/n)`. Plan §6 asks for **≥120 independent behavioural rows per level**, and
+6 domains × 2 splits × **10** slots = 120 **exactly**. Ten disjoint slots exist only at n ≤ 2:
+
+| n | disjoint slots per (domain, split) | independent families/level |
+|---|---|---|
+| 1 | 20 | 240 |
+| **2** | **10** | **120** ✅ |
+| 4 | 5 | 60 |
+| 8 | 2 | 24 |
+| 16 | 1 | 12 |
+
+`PHASE_D_SLOTS_N2 = (0, 14, 8, 2, 16, 10, 4, 18, 12, 6)` → starts 0, 2, 4, …, 18, covering all
+twenty sentences exactly once. **So the demonstration-COUNT factor is deliberately NOT swept**: it
+cannot reach 120 independent families on the current pools, and inflating row counts by reusing demo
+sets across n-levels is precisely the pseudo-replication G2 was retracted for. Reported at its honest
+ceiling instead of faked.
+
+### Verified against the plan's hard constraints, one by one
+
+Measured on the emitted bank, not asserted:
+
+| factor | level | rows | **distinct families** | domains | mean chars | target occ | demos |
+|---|---|---|---|---|---|---|---|
+| baseline | (none, consistent, near, plain) | 120 | **120** | 6 | 630.7 | 3.00 | 2 |
+| strength | weak / medium / strong / aggressive | 120 ea | **120** ea | 6 | 682.7 / 688.7 / 686.7 / 798.7 | 4 / 4 / 4 / 6 | 2 |
+| consistency | mixed / conflicting / irrelevant | 120 ea | **120** ea | 6 | 632.6 / 697.7 / 628.7 | 3 / 4 / 1 | 2 |
+| position | far / distributed | 120 ea | **120** ea | 6 | **630.7 / 630.7** | 3.00 | 2 |
+| role_style | tool / user_like / assistant_like / cot_like / system_like_quoted | 120 ea | **120** ea | 6 | 636.7–720.7 | 3.00 | 2 |
+
+- **rows = families at every level** — 1,800 generated rows, 1,800 distinct `family_id`, and a direct
+  index check finds **0 overlapping demonstration sets** among all 1,800.
+- **0 duplicate prompt texts** (`prompt_sha16`) among the 1,800, **0 duplicate `prompt_id`** in the
+  bank, **0 rows dropped**.
+- **Position is now exactly length-matched at 630.7 characters across near/far/distributed** — see
+  below.
+- 6 domain clusters at every level; dev/heldout split 900/900.
+- Query kind is **behavioral only**, so the token-level Boombness readout and the ASR come from the
+  *same* `prompt_id`. No cross-query-kind join exists anywhere in Phase D.
+
+### Two defects found by building it, both pre-existing
+
+**1. The `position` factor in the main bank is confounded with prompt LENGTH.** `build_prompt` adds
+filler sentences only when `example_position != "near"` (line 321), so the `near` arm runs ~390
+characters shorter than `far`/`distributed`. Any "position matters" result on the main bank is
+partly a length result. Fixed here by an **opt-in** `filler_near` argument, **defaulting to False**:
+Phase D emits the *same six filler sentences* at all three positions and varies only their placement
+(before the demos for `near`, after for `far`, interleaved for `distributed`). Result: 630.7 chars in
+all three arms. The default stays False because `bank_rows_sha16` is joined on by every extraction
+artifact in the repo — **verified: the main carrot bank still regenerates to `4cd9157399aa1b3c` and
+the button bank to `debe267f05efb9ab`, byte-identical.**
+
+**2. ⚠ The main bank's `strength` and `consistency` sweeps break the 2×2 alignment invariant, and
+nothing has ever checked them.** The first draft of this preset emitted all four core conditions at
+every level so `check_alignment` would cover them. **It fired 360 times.** The cause is intrinsic:
+stating a mapping requires naming the codeword, so at `weak` ("Some documents use the word *carrot*
+in unusual ways") the two codeword cells carry 4 target occurrences and the two concept cells carry
+3; at `strong`/`aggressive` the word-swapped concept version would read *"every occurrence of bomb
+must be interpreted as bomb"*, which is not a prompt. `consistency=conflicting` breaks identically
+through `counter_mapping_statement`. `mapping_statement`'s own docstring already knew — *"the 2x2
+core is generated at `none` because levels that name the concept would break the exact word-swap
+alignment"* — but the main bank's `strength`/`consistency` blocks are **single-condition and so never
+reach the gate**. The exemption is real, unavoidable, and until now invisible.
+
+Phase D therefore gives the **baseline block the full 2×2** (120 families, alignment-checked,
+**0 violations**) and the four factor blocks the attack arm alone, with the exemption written into
+the code rather than left silent. Nothing in Phase D's estimand — a *within-attack-arm* correlation —
+forms a 2×2 contrast. What does survive: **`n_target_occurrences` varies with the strength and
+consistency levels by construction** (3 → 4 → 6, and 1/3/4), so it enters the analysis as a covariate.
+Position and role_style are occurrence-balanced at 3.00.
+
+### Pinned, not just commented
+
+`tests/test_slot_disjointness.py` gains six tests (11 pass): the ten slots are pairwise disjoint at
+n=2; they exhaust the pool, so an eleventh cannot exist; they are **not** disjoint at n=4 (pinning
+*why* n is fixed); the preset uses only those slots, only n=2, only `behavioral`, and
+`filler_near=True` everywhere; the baseline cell is emitted exactly once and carries the full 2×2;
+and `filler_near` defaults False in every other preset.
+
+### Runs
+
+| job | what | rows |
+|---|---|---|
+| **769981** | `score_behavior.py --bank ..._phase_d.jsonl --query-kinds behavioral --max-new 512 --arm base` | 2,160 generated (1,800 attack + 360 2×2 controls) |
+
+Judging and the correlation analysis follow. **Decision Gate D is not pre-judged**: E4 (above) now
+predicts that prompt-level Boombness should track ASR only insofar as it tracks the *refusal* flip,
+which is a sharper hypothesis than the one G2 tested and is the reason this phase is worth running
+even though the probe metric is dead.
 
 ## What Does d_surface Represent?
 

@@ -1,0 +1,70 @@
+{
+  "preset": "phase_d",
+  "seed": 20260816,
+  "codeword": "carrot",
+  "concept": "bomb",
+  "pools_sha16": "b5e399712b996b7d",
+  "pools_path": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/data/boombness_prompts/demo_pools.json",
+  "stats": {
+    "bank_rows_sha16": "2b79d5699e0180c9",
+    "n_rows": 2160,
+    "n_duplicate_prompt_id_rows_dropped": 0,
+    "duplicate_drops_by_condition": {},
+    "duplicate_drops_by_block": {},
+    "duplicate_drops_in_core_2x2": {},
+    "n_benign_remap_rows": 0,
+    "n_benign_remap_identical_to_benign_literal_nonzero_demos": 0,
+    "n_2x2_families_checked": 120,
+    "n_alignment_violations": 0,
+    "alignment_violations": [],
+    "by_condition": {
+      "benign_literal": 120,
+      "concept_in_benign_ctx": 120,
+      "direct_harmful": 120,
+      "natural_doublespeak": 1800
+    },
+    "by_block": {
+      "phase_d_base": 480,
+      "phase_d_consistency": 360,
+      "phase_d_position": 240,
+      "phase_d_role": 600,
+      "phase_d_strength": 480
+    },
+    "by_query_kind": {
+      "behavioral": 2160
+    },
+    "by_n_examples": {
+      "2": 2160
+    },
+    "by_domain": {
+      "city_bridge": 360,
+      "farm_storage": 360,
+      "game_manual": 360,
+      "instructional": 360,
+      "lab_safety": 360,
+      "news_report": 360
+    },
+    "by_split": {
+      "dev": 1080,
+      "heldout": 1080
+    },
+    "by_role_style": {
+      "assistant_like": 120,
+      "cot_like": 120,
+      "plain": 1560,
+      "system_like_quoted": 120,
+      "tool": 120,
+      "user_like": 120
+    }
+  },
+  "incidental_repairs": {},
+  "incidental_collisions_after_repair": [],
+  "hostname": "c-002",
+  "git_commit": "99c146bbdb2bba0dd5e7d65e979179c8bc4731e5",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": false,
+  "gpu": null,
+  "timestamp": "2026-08-20T18:01:19"
+}
