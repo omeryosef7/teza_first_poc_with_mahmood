@@ -4338,6 +4338,75 @@ claim (e) rests on is non-topical.
 - "ρ(metric, ASR) = +0.148" in the requirement-3 paragraph is **not locatable in the artifact** and is
   withdrawn; the artifact's d_surface values are +0.1272 (ASR) and +0.1638 (SR).
 
+
+### ⚠ Refutation pass — I wrote the above from the audits before the skeptics landed, and eight details were wrong
+
+A process note first: the two audit agents finished ~11 minutes before their refuters, and I wrote
+review #5 from the audits alone. That was premature — **eight of the audit claims I repeated do not
+survive their own refutation.** None changes a verdict; all change a number or a characterisation.
+Corrected here rather than silently edited above.
+
+**On R5-7, the random-control finding — the core stands, two overstatements do not.**
+
+- ⛔ *"'Norm-matched at the same dose' is vacuous"* — **only "norm-matched" is vacuous.** Under
+  `project_out` with α = 1.0 the dose is fully specified by α — complete removal of a one-dimensional
+  subspace — and is **identically matched** between arm and control. My phrase "same dose and depths"
+  was literally true. The correct and surviving criticism is **only** the spread asymmetry: the arm
+  removes 89.97% of the cell-mean spread at L11, the control 0.018%.
+- ⛔ **The corollary I drew is a non-sequitur and is withdrawn.** I wrote that refusalness@L20
+  capturing 0.102% of cell-mean spread "implies the D20 effect is essentially the `d_surface`@L11
+  projection". `cell_means` A/B/C/E is the *concept/codeword* design; a refusal axis has no reason to
+  align with it, so variance captured on that basis is not a measure of behavioural potency — and
+  the repo's own Llama result (refusalness removal alone = the dominant channel, +0.1895) shows the
+  two are dissociable. **The D20 arm still cannot be decomposed, and I should not have implied it
+  could.**
+
+**On R5-4, the level-independence correction.**
+
+- It is **14 of 15** levels that share the identical pool-sentence set per family, not 13 —
+  `con:irrelevant` reuses the same base sentences and differs only in codeword surface, so only
+  `con:mixed` genuinely differs. The non-independence is therefore *worse* than I wrote.
+- The SE understatement for the headline cell is **11%** (bootstrap 0.0333 vs reported 0.0299), not
+  "15–25%". Direction right, magnitude overstated at the low end.
+
+**On R5-5, the refusal test.** Only **one** of the six per-level ρ's rests on a single refused prompt
+(`str:strong`); `str:aggressive` has two, the same count as a level that comes out positive. And the
+permutation figure is mean rank **0.6362**, one-sided p **0.0072** (two-sided ≈ 0.0143), not 0.6373 /
+0.0135. The conclusion — an underpowered null that I converted into a ✅, with the deletion test
+carrying the real argument — is unchanged.
+
+**On R5-3(ii), the coverage field.** It was **not** a contradiction between artifact and write-up:
+`n_levels_covered` genuinely reported 15/15 and I quoted it faithfully. The defect is that the field
+*meant* something narrower than its name — which is exactly why it is now split into
+`n_levels_metric_available` / `n_levels_rho_estimable`. Calling it a contradiction overstated my own
+error.
+
+**Withdrawn from "smaller items":** the `str:aggressive 0.458 / con:mixed 0.008` figures are **not**
+mislabelled — my sentence says those levels make **ASR** differ, and 0.45833 / 0.00833 are exactly the
+ASR@0.5 level means.
+
+**And one refutation that makes R5-2 STRONGER.** The audit said the dev argmax is unchanged when all
+210 candidates are scored on the common 840-prompt sample. That holds for ASR but is **false for the
+StrongReject headline cell**: on the common sample the argmax moves from `query|L31|cos` (+0.3199) to
+`query|L31|proj` (+0.3240). So the selected metric is not even stable under a change of sample —
+further evidence that the grid is flat and the argmax is noise.
+
+⚠ Two provenance items the refuter established that I had no basis for either way, recorded because
+they *support* the Qwen3 pairing: the four gens runs **are** SLURM jobs with retained logs
+(762143 base; 764538/764539/764540 arms), and `boomb_762143.out` carries the verbatim line
+`[score] enable_thinking=False VERIFIED against the rendered prompt`. Commit `fd4a89aa`'s message
+names job 762143 directly: *"zero of twenty-eight generations contain a think block."* So the
+baseline's thinking-off state is documented, not inferred.
+
+⛔ **But the judge is still not reproducible**, and this is worth carrying: `strong_reject/evaluate.py`
+defaults to `("openai/gpt-4o-mini", "openai/gpt-3.5-turbo")` **tried in order with fallback**, and
+none of the artifacts record which model actually answered. Every StrongReject number in this sprint
+was produced by an unrecorded member of that pair.
+
+**Process rule added:** do not write a review section from an audit before its refutation lands. The
+refuters exist because auditors overstate, and eight of eight corrections here were on the audits'
+side, not the artifacts'.
+
 ### Next corrections, in priority order
 
 1. **Re-run one arm with `in_subspace_random`** — until then no inertness claim in this sprint means
