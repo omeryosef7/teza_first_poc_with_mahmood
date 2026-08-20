@@ -2978,6 +2978,77 @@ should reproduce the pattern: `first_codeword` strongly positive, `first_neighbo
 `last_codeword` ≈ 0. If `apple` behaves differently, the carrot result is lexical and the sprint's
 Phase G claim narrows to a single word.
 
+## ✅✅ E6 RESULT — the Phase G effect REPLICATES on a second codeword. Lexical G is now 2.
+
+Jobs **768832/768833/768834** COMPLETED (14:41–14:45). Artifacts under
+`outputs/boombness/surgical_knockout/{apA_firstcw,apA_nbr,ap_last}_20260820_120438_*`.
+`all_layers_demo`, **1,024 edges**, all 32 layers, 24 families across all 6 domains, **0 ledger
+failures** in every arm.
+
+### The audit gate fired, and one contaminated family was in the analysis
+
+**768829 FAILED (exit 1:0)** under `--strict`. Reading it rather than treating it as a blocker:
+
+- **2,712 of 2,736 rows OK**; `codeword_is_single_token: **true**`, `concept_is_single_token: **true**`
+  — the properties `screen_concept_pairs.py` selected `apple` for hold.
+- The **24 bad rows are 12 family-alignment violations confined to the `instructional` domain** at
+  n8 and n16, all of the form `occurrence_count_mismatch:text=N,tokens=N+1` — the tokenizer finds one
+  more `apple` than the text counter does.
+
+Cross-checking the flagged families against the ones the knockout actually selected: **exactly one
+overlaps** — `instructional|dev|slot0|n8|…|semantic_one_word`, 1 of 24. So I recomputed with and
+without it rather than reporting the pooled number:
+
+| scope | all 24 families | **flagged family excluded (n = 23)** |
+|---|---|---|
+| `first_codeword` | +0.5057 ± 0.0584 | **+0.5038 ± 0.0610** |
+| `first_neighbor` | +0.0000 ± 0.0082 | **−0.0010 ± 0.0085** |
+| `last_codeword` | −0.0509 ± 0.0814 | **−0.0517 ± 0.0850** |
+
+The contaminated family moves nothing (+0.5057 → +0.5038). **All numbers below are the clean n = 23.**
+
+### The prediction, recorded at tick 38, held
+
+> *"If the effect is about **codewords**, apple should reproduce: `first_codeword` strongly positive,
+> `first_neighbor` ≈ 0, `last_codeword` ≈ 0."*
+
+| contrast (clean, domain-clustered, 6 domains) | paired | sign | clustered t | p_cl |
+|---|---|---|---|---|
+| **first − neighbor** | **+0.5049** | **22/23** | **+5.68** | **2.4e-03** |
+| **first − last** | **+0.5555** | 20/23 | **+6.73** | **1.1e-03** |
+
+`first_neighbor` on the apple bank is **−0.0010 ± 0.0085** — the position control is again
+**annihilated**, on a second lexical item.
+
+### Side by side
+
+| | carrot | apple |
+|---|---|---|
+| `first_codeword` | **+0.9718** | **+0.5038** |
+| `first_neighbor` | −0.0154 | **−0.0010** |
+| `last_codeword` | −0.0231 | −0.0517 |
+| first − neighbor, clustered | t +13.46, p 4.1e-05 | t +5.68, p 2.4e-03 |
+
+> **The qualitative structure is identical on both codewords: the first demonstration's codeword
+> carries the effect, the adjacent non-codeword token carries none, the last demonstration carries
+> none. Review #3's identification limit 1 (lexical G = 1) is CLOSED.**
+
+**Stated honestly: the magnitude is about half** (+0.50 vs +0.97). The *pattern* replicates; the
+*effect size* is lexically dependent. So the claim that generalises is the **structure**, not the
+number, and the sprint should say "the first demonstration's codeword carries the effect" rather than
+quote +0.97 as though it were a property of codewords in general.
+
+### ⚠ Defect found in the audit tool — a FAILED strict audit still writes `DONE.json`
+
+768829 exited **1:0** and its run directory nonetheless contains **`DONE.json`**. `common.require_done`
+— the guard the whole repo uses to refuse unfinished runs — would therefore **accept a strict audit
+that failed**. This is the same shape as the `judge_boombness` abort path done right (that one writes
+`ABORTED.json` *instead of* `DONE.json`, which is why the R-14 re-creation was caught at tick 3).
+
+**Recorded, not fixed:** `tokenization_audit.py` is shared with the non-Boombness workstream, and
+changing what it writes on failure could silently invalidate other consumers' assumptions. Flagged for
+a decision. In the meantime the audit's **exit code**, not its `DONE.json`, is the thing to check.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
