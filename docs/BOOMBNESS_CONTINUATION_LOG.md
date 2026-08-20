@@ -3854,3 +3854,43 @@ motivated it. Both fixed; **registry OK, sweep clean, exit 0.**
 | 76 | 2026-08-21 | wrote table rows for R-12…R-19 from the body | registry no longer 8 rows behind the document |
 | 77 | 2026-08-21 | added `registry_check` to the sweep — cited-but-untabled fails the build | found **7 problems** immediately, incl. the two I had orphaned |
 | 78 | 2026-08-21 | documented the **two numbering series** and taught the checker range rows | an ID below R-6 now unambiguously means the older series |
+
+## ★ The §18 contradiction resolved by measurement — the claim was right, its citation was not
+
+Tick 2026-08-21. Audit finding #1 (high): the §18 amendment asserts as **fact** — as one of three legs
+of the sprint's conclusion — that *"on Qwen3-14B the refusal channel does nothing and `d_surface` does
+everything"*, citing **§7c**, while **N13** states the cross-model question is *"not established, and
+neither external set can answer it"* (R-17). One section asserting what another withdraws.
+
+The claim is **testable**, so rather than flag it I tested it. On the **bank** (not the external sets),
+under the style-immune outcome, `natural_doublespeak`, n=420 common, domain-clustered
+(`outputs/boombness/qwen3_channel_test.json`):
+
+| Qwen3 arm | ASR plain | **ASR topical** | **Δ topical vs baseline** |
+|---|---|---|---|
+| baseline | +0.160 | +0.024 | — |
+| **remove refusalness alone** | **+0.888** | **+0.021** | **−0.002 [−0.007, +0.000]** |
+| remove `d_surface` alone | +0.526 | +0.464 | **+0.440 [+0.357, +0.521]** |
+| remove both | +0.774 | +0.600 | **+0.576 [+0.514, +0.645]** |
+| double-random control | +0.888 | +0.021 | −0.002 [−0.010, +0.005] |
+
+**The claim survives, and sharply.** Removing refusal alone takes plain ASR to **0.888** and topical
+content by **−0.002**. Its plain number is *identical to the double-random control's*, and so is its
+topical number — on Qwen3 the refusal channel is **pure style inflation**. `d_surface` alone supplies
+**+0.440 of the +0.576**.
+
+**What was actually wrong was the citation, and that is the more interesting failure.** §7c is the
+external-set evidence, which N13 correctly says cannot answer the question. The effect was real; it
+was being sourced to the one instrument that could not see it. Point 3 is retained, re-cited to the
+bank, and now carries the reason the external sets failed: **wrong instrument, not absent effect.**
+
+This is the fourth time in this sprint that a claim's *evidence* was wrong while the claim was right
+(G1's +68% agreeing across a broken readout, R-14's arm F suspected for the wrong reason, R-19's
+localization, this). It is worth stating why that keeps happening: the sprint has many arms and few
+instruments, so a conclusion drawn from arm X is easy to re-source to arm Y that happens to agree.
+A citation is a claim about *provenance*, and provenance has been the weakest link throughout.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 79 | 2026-08-21 | tested §18 point 3 rather than merely flagging the contradiction | **confirmed**: refusal-only Δ topical **−0.002**, identical to the random control |
+| 80 | 2026-08-21 | re-cited point 3 from §7c (external, cannot answer it) to the bank + topical outcome | contradiction with N13 resolved without weakening the conclusion |

@@ -123,8 +123,28 @@ predictive anywhere.
 2. **The two channels interact.** Removing both exceeds the sum of removing each alone by **+0.0268
    [+0.0029, +0.0584]** beyond a matched random triple (§7c) — so they are not two independent levers,
    and a pure refusal account cannot produce that term.
-3. **On Qwen3-14B the refusal channel does nothing and `d_surface` does everything** (§7c) — the exact
-   inverse of the Llama picture. A "refusal-only" label is model-specific in a way the taxonomy does not
+3. **On Qwen3-14B the refusal channel does nothing and `d_surface` does everything.**
+   ⚠ **Re-cited 2026-08-21.** This previously cited §7c — the *external* sets — while **N13 states
+   that neither external set can answer the cross-model question** (R-17). The claim was asserting as
+   fact what another section withdraws. It is **retained** because it is supported, but by different
+   evidence: the **bank**, under the style-immune outcome, where R-13's inflation cannot operate.
+   `natural_doublespeak`, n=420 common, domain-clustered, ASR **topical**
+   (`outputs/boombness/qwen3_channel_test.json`):
+
+   | Qwen3 arm | ASR plain | **ASR topical** | **Δ topical vs baseline** |
+   |---|---|---|---|
+   | baseline | +0.160 | +0.024 | — |
+   | **remove refusalness alone** | **+0.888** | **+0.021** | **−0.002 [−0.007, +0.000]** — nothing |
+   | remove `d_surface` alone | +0.526 | +0.464 | **+0.440 [+0.357, +0.521]** |
+   | remove both | +0.774 | +0.600 | **+0.576 [+0.514, +0.645]** |
+   | double-random control | +0.888 | +0.021 | −0.002 [−0.010, +0.005] |
+
+   **Removing refusal alone moves plain ASR to 0.888 and topical content by −0.002** — its plain
+   number is identical to the double-random control's, and so is its topical number. On Qwen3 the
+   refusal channel is pure style inflation. `d_surface` alone supplies **+0.440 of the +0.576**. So
+   the claim stands, and the reason the external sets could not establish it (N13) is that they were
+   the wrong instrument, not that the effect is absent.
+
    express.
 
 **So: C on Llama-3.1-8B, with a real and interacting `d_surface` channel that the C label understates,
