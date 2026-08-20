@@ -49,6 +49,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import sys
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -217,13 +218,56 @@ def _surface_word(kind: str, codeword: str, concept: str) -> str:
     return codeword if kind == "codeword" else concept
 
 
+_VOWEL = "aeiouAEIOU"
+
+
+def _fix_indefinite_articles(s: str, word: str) -> str:
+    """Repair the indefinite article **immediately before `word`** after a substitution.
+
+    WHY THIS EXISTS (found 2026-08-20; it would have invalidated E6 on its own). `_substitute` does
+    naive word replacement. Every pool sentence was written for `carrot`, a consonant-initial word,
+    so every indefinite article in the corpus is "a". Swapping in `apple` produced **2,938
+    occurrences of "a apple" across 1,569 of 2,736 rows, and ZERO "an apple"**.
+
+    That is not cosmetic, because it is ASYMMETRIC ACROSS EXACTLY THE CELLS THE 2x2 CONTRASTS: the
+    codeword arm reads "a apple" (ungrammatical) while the concept arm reads "a bomb" (grammatical,
+    671 rows). Any difference measured between `natural_doublespeak` and `direct_harmful` on the
+    apple bank would be confounded with grammaticality — and E6 exists precisely to ask whether
+    `d_surface` is a concept-surface direction or a carrot-detector, a question a grammaticality
+    artifact could silently answer the wrong way. It never fired for `carrot` because "a carrot" is
+    correct, which is why the 2352-row main bank is unaffected.
+
+    SCOPED DELIBERATELY TO `word`. The first draft rewrote every "a|an X" in the text on an
+    ORTHOGRAPHIC vowel test, which is wrong for English: it would turn "an hour" into "a hour" and
+    "a unique" into "an unique". Since the only articles whose correctness can have CHANGED are the
+    ones preceding the substituted word, touching anything else is unnecessary risk. Occurrence
+    counts are untouched, so the alignment invariant is preserved.
+    """
+    if not word:
+        return s
+    want_an = word[0] in _VOWEL
+
+    def repl(m):
+        art, gap, w = m.group(1), m.group(2), m.group(3)
+        upper = art[0].isupper()
+        fixed = ("an" if want_an else "a")
+        return (fixed.capitalize() if upper else fixed) + gap + w
+
+    pat = re.compile(rf"\b([aA]n?)(\s+)({re.escape(word)}|{re.escape(word.capitalize())}|{re.escape(word.upper())})\b")
+    return pat.sub(repl, s)
+
+
 def _substitute(sentences: Sequence[str], src: str, dst: str) -> List[str]:
-    """Case-aware exact word substitution — the house helper, inlined to avoid an import cycle."""
+    """Case-aware exact word substitution — the house helper, inlined to avoid an import cycle.
+
+    Followed by `_fix_indefinite_articles`, because a substitution can change the initial sound of
+    the word an article precedes; see that function for what it cost to discover.
+    """
     out = []
     for s in sentences:
         for v in (src, src.capitalize(), src.upper()):
             s = s.replace(v, dst if v == src else (dst.capitalize() if v == src.capitalize() else dst.upper()))
-        out.append(s)
+        out.append(_fix_indefinite_articles(s, dst))
     return out
 
 
@@ -651,6 +695,62 @@ def _count(rows: List[Dict], key: str) -> Dict[str, int]:
     return dict(sorted(out.items()))
 
 
+
+def incidental_codeword_collisions(pools: Dict, codeword: str) -> List[str]:
+    """Pool sentences that ALREADY contain `codeword` other than as their own natural word.
+
+    WHY (found 2026-08-20 by the mandatory §2.4 audit failing on the apple bank, 24 bad rows and 12
+    alignment violations across 8 core-2x2 families). `instructional|benign[7]` reads
+
+        "Avoid storing a carrot near fruits that emit ethylene gas, such as apples."
+
+    With `carrot` as the codeword that sentence has exactly one target occurrence. Substituting
+    `apple` in gives it TWO — so `benign_literal` carried 10 occurrences where its three sibling
+    cells carried 9, breaking the exact-word-swap invariant that IS the sprint's methodological
+    contribution, and leaving `n_target_occurrences` disagreeing with the text.
+
+    A codeword must therefore be screened against the pool corpus before it is used, exactly as it
+    is screened against the tokenizer. Returns the offending "pool[index]" keys so the caller can
+    refuse or repair rather than discover it 2,736 rows later.
+    """
+    out = []
+    for name, pool in sorted(pools.items()):
+        nat = pool.get("natural_word")
+        for i, sent in enumerate(pool.get("sentences", [])):
+            hits = len(re.findall(rf"(?i)\b{re.escape(codeword)}s?\b", sent))
+            if hits and codeword.casefold() != (nat or "").casefold():
+                out.append(f"{name}[{i}]")
+            elif hits > 1:
+                out.append(f"{name}[{i}]")
+    return out
+
+
+def apply_incidental_repairs(pools: Dict, repairs: Dict[str, str]) -> Dict:
+    """Reword incidental collisions IN MEMORY, leaving demo_pools.json byte-identical on disk.
+
+    The obvious fix — edit the pool file — would change `pools_sha16` and therefore invalidate the
+    provenance of the 2352-row carrot bank and every run joined to it. The collision is a property
+    of the (pool, codeword) PAIR, not of the pool, so the repair belongs to the generation call.
+    Recorded in the bank's meta so the substitution is reproducible and visible.
+    """
+    if not repairs:
+        return pools
+    out = {}
+    for name, pool in pools.items():
+        p = dict(pool)
+        p["sentences"] = list(pool.get("sentences", []))
+        for a, b in repairs.items():
+            p["sentences"] = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, sent) for sent in p["sentences"]]
+        for split in ("dev", "heldout"):
+            if isinstance(pool.get(split), list):
+                v = pool[split]
+                for a, b in repairs.items():
+                    v = [re.sub(rf"(?i)\b{re.escape(a)}\b", b, x) if isinstance(x, str) else x for x in v]
+                p[split] = v
+        out[name] = p
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pools", default=POOL_PATH)
@@ -661,10 +761,26 @@ def main() -> int:
     ap.add_argument("--out", default=BANK_PATH)
     ap.add_argument("--strict", action="store_true",
                     help="exit non-zero if any alignment invariant is violated")
+    ap.add_argument("--incidental-replace", default="", metavar="OLD=NEW[,OLD=NEW]",
+                    help="reword an incidental occurrence of the codeword IN MEMORY, e.g. "
+                         "'apples=bananas'. Leaves demo_pools.json byte-identical so the carrot "
+                         "bank's pools_sha16 and every run joined to it stay valid.")
     args = ap.parse_args()
 
     obj = load_pools(args.pools)
-    rows, stats = generate_bank(obj["pools"], args.codeword, args.concept, args.preset, args.seed)
+    repairs = dict(kv.split("=", 1) for kv in args.incidental_replace.split(",") if "=" in kv)
+    pools = apply_incidental_repairs(obj["pools"], repairs)
+
+    # SCREEN THE CODEWORD AGAINST THE POOL CORPUS, exactly as §2.4 screens it against the tokenizer.
+    collisions = incidental_codeword_collisions(pools, args.codeword)
+    if collisions:
+        print(f"[prompt_families] REFUSING: {len(collisions)} pool sentence(s) already contain "
+              f"{args.codeword!r} incidentally, which breaks the exact-word-swap invariant for the "
+              f"families that draw them: {collisions}. Reword them with --incidental-replace.",
+              file=sys.stderr)
+        return 2
+
+    rows, stats = generate_bank(pools, args.codeword, args.concept, args.preset, args.seed)
 
     n = write_jsonl(args.out, rows)
     meta_path = args.out.replace(".jsonl", "_meta.json")
@@ -672,6 +788,8 @@ def main() -> int:
         json.dump({"preset": args.preset, "seed": args.seed, "codeword": args.codeword,
                    "concept": args.concept, "pools_sha16": obj["_meta"]["content_sha16"],
                    "pools_path": args.pools, "stats": stats,
+                   "incidental_repairs": repairs,
+                   "incidental_collisions_after_repair": collisions,
                    **ds().env_metadata()}, f, indent=2)
 
     print(f"[prompt_families] preset={args.preset} rows={n} -> {args.out}")

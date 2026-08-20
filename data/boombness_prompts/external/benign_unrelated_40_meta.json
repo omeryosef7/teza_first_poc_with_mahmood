@@ -1,0 +1,27 @@
+{
+ "source": "benign_unrelated",
+ "source_file": "data/manifests/benign_unrelated_40.csv",
+ "stats": {
+  "n_rows": 40,
+  "bank_file_sha16": "be70b65fed72b35b",
+  "bank_rows_sha16": "6337a5f1a7beed01",
+  "n_domains": 4,
+  "rows_per_domain": {
+   "science_explanation": 14,
+   "creative_writing": 8,
+   "practical_advice": 11,
+   "math_and_code": 7
+  }
+ },
+ "provenance": {
+  "argv": [
+   "src/boombness/external_bank.py",
+   "--source",
+   "benign_unrelated",
+   "--out",
+   "data/boombness_prompts/external/benign_unrelated_40.jsonl"
+  ],
+  "git_commit": "eebe167de2fe655c175c09d8d32401af6cfb3632",
+  "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+ }
+}
