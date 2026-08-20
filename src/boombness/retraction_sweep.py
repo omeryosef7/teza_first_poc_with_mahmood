@@ -86,14 +86,14 @@ RETRACTED = [
     ("R9  §18=B asserted as a settled label",
      r"outcome\s+B\b[^\n]{0,60}mechanistic but not causal|"
      r"§18\s*(?:label\s*)?(?:is|=)\s*\*{0,2}B\b"),
-    # ---- R-14 / R-15 (2026-08-20): arm F's behavioural gain is ~94% answer style. Added the same
+    # ---- R-20 / R-21 (2026-08-20; renumbered 08-21 — R-14/R-15 were already taken): arm F's behavioural gain is ~94% answer style. Added the same
     # day, because the two previous times this sweep reported CLEAN the pattern list was the weak
     # link, not the documents.
-    ("R14 arm F behavioural gain (judge artifact)",
+    ("R20 arm F behavioural gain (judge artifact)",
      r"\+?0\.863|more than doubl\w+[^\n]{0,30}ASR|"
      r"arm F[^\n]{0,60}\+?0\.(?:548|305|417)|"
      r"\+?0\.(?:548|417)[^\n]{0,40}arm F"),
-    ("R15 Llama exempted from the style artifact",
+    ("R21 Llama exempted from the style artifact",
      r"Llama results are (?:not|un)affected|inflation did not fire"),
     ("R11 Holm backstop stated without L1",
      r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),

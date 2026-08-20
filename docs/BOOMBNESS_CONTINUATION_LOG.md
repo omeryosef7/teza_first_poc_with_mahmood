@@ -530,7 +530,7 @@ this failure.
 too, or refusalness 1). The 1-vs-1 above is matched and citable now; the 5-vs-5 needs `analyze_g9` to
 re-run and is queued behind the Phase-1 workflow that currently owns that file.
 
-## ⛔⛔ R-14 — EVERY external-set ASR number in this sprint was judged against an EMPTY GOAL
+## ⛔⛔ R-20 — EVERY external-set ASR number in this sprint was judged against an EMPTY GOAL
 
 **This is the most serious defect found in either session, and it invalidates the measurement behind
 the sprint's best new result until it is re-judged.** It was caught by a guard that the Phase-1
@@ -608,7 +608,7 @@ So **no generation needs re-running** — only re-judging, which is API-only and
 ### The lesson, which is the same one twice
 
 Retraction #7 and R-12 were both "a control band that could not be falsified by looking at its own
-value". R-14 is the same shape one level up: **an ASR table cannot be falsified by looking at its own
+value". R-20 is the same shape one level up: **an ASR table cannot be falsified by looking at its own
 numbers**, because a broken judge still returns a plausible ordering. Only the *goal string* — the
 input nobody printed — reveals it. The sprint's own house rule says a guard untested against a case it
 should fail is not a guard; here the guard did not exist at all until Phase 1 added it, and it fired
@@ -620,12 +620,12 @@ within hours of existing.
 |---|---|---|
 | 32 | **R-13**: traced the "matched footing" incremental-R² table to its source | it gives refusalness **5 predictors against Boombness's 1**; at matched df the last-token comparison **flips** (refusalness adds 4.5e-07). The published pair is in **no committed artifact**; `g9_three_predictor_cwpos.json` has disagreed with it in all four of its versions. Report + short update corrected. |
 | 33 | G1 headline promoted to the stratified run | +68% CI [+50,+95], **24 families / 6 domains**, replacing the n=8 / 2-domain +84%. Disclosed that the **whole-prompt** transplant is null (+14%, CI [−9,+32]) and flagged the readout as pending re-derivation (C-6). |
-| 34 | wrote report **§7c**, the ClearHarm decomposition | …and suspended it three ticks later (R-14). |
-| 35 | built `analyze_condition_profile.py` and gave the Llama cross-condition table the same test the Qwen3 table already had | see **R-15** below — the "harmful yes, benign no" profile is **one significant cell of six** |
-| 36 | ⛔⛔ **R-14** — external-set ASR judged against an **empty goal** | `external_bank.py` never emitted `final_query_text`. Fixed; both banks regenerated with every `prompt_id` preserved and **0** other values changed, so only re-judging is needed. AdvBench judge streams killed mid-flight. |
+| 34 | wrote report **§7c**, the ClearHarm decomposition | …and suspended it three ticks later (R-20). |
+| 35 | built `analyze_condition_profile.py` and gave the Llama cross-condition table the same test the Qwen3 table already had | see **R-21** below — the "harmful yes, benign no" profile is **one significant cell of six** |
+| 36 | ⛔⛔ **R-20** — external-set ASR judged against an **empty goal** | `external_bank.py` never emitted `final_query_text`. Fixed; both banks regenerated with every `prompt_id` preserved and **0** other values changed, so only re-judging is needed. AdvBench judge streams killed mid-flight. |
 | 37 | launched the **Qwen3-14B ClearHarm replication at `max_new 512`** (766485–489, smoke 766483 clean) | also removes the audit's length confound: the published Llama-vs-Qwen3 non-replication compares a **512**-token Llama run against a **192**-token Qwen3 run |
 
-## ★ R-15 — "harmful yes, benign no" is one significant cell out of six
+## ★ R-21 — "harmful yes, benign no" is one significant cell out of six
 
 ⛔ The report's **SECOND CAUSAL RESULT** previously argued from a cross-condition profile — "≈0 on every
 benign condition and ≈+0.056 on every harmful one", a "clean split" licensing the stronger claim
@@ -664,7 +664,7 @@ Qwen3's "⛔ does not replicate" applies an **asymmetric evidential standard** �
 discounted for failing a test the Llama cells were never given, and when given it, three of them fail
 it too.
 
-## R-14 — re-judge underway, and the first two arms say the damage is bounded
+## R-20 — re-judge underway, and the first two arms say the damage is bounded
 
 Re-judging with `--bank` against the fixed banks. The decisive line is **`null_frac=0.0000`**: goals are
 non-empty, so StrongReject is finally being given the request. First two arms in:
@@ -674,9 +674,9 @@ non-empty, so StrongReject is finally being given the request. First two arms in
 | baseline | 0.1006 *(withdrawn)* | **0.1061** | 0.877 |
 | C (remove refusalness @L18) | 0.3408 *(withdrawn)* | **0.3631** | 0.615 |
 
-**The numbers move by ~0.005–0.02, not by an order of magnitude.** That is consistent with R-14's own
+**The numbers move by ~0.005–0.02, not by an order of magnitude.** That is consistent with R-20's own
 diagnosis — an empty-goal StrongReject score still reads how harmful the *response* is, so it tracked
-compliance closely enough to look right. The severity of R-14 for the **final numbers** is therefore
+compliance closely enough to look right. The severity of R-20 for the **final numbers** is therefore
 lower than feared; its severity as a **measurement-validity failure** is unchanged, because "the wrong
 instrument happened to agree" is not a defence, and nobody could have known it agreed without doing
 this re-judge. Arms B, D, Dctrl and the fixed band are still running.
@@ -720,7 +720,7 @@ streams are reading the bank would switch `compare_bank_hashes(strict=True)` on 
 `clearharm_decomposition.json` had **no provenance block and no script that produces it**. It was
 assembled ad hoc, which is the standing bar failing again in the artifact that carries the sprint's
 best new result. Wrote the missing producer, `src/boombness/analyze_external_arms.py`, which is also
-the harvest path for the R-14 re-judge and the AdvBench super-additivity test.
+the harvest path for the R-20 re-judge and the AdvBench super-additivity test.
 
 Its control-band guard was **itself a dead guard on the first attempt**, and the way it was caught is
 worth recording because it is a new variant.
@@ -757,7 +757,7 @@ failure is still on disk and is the only faithful fixture.
 
 ## ★★ R-16 — ClearHarm arm B, the load-bearing row, is NOT significant under domain clustering
 
-The R-14 re-judge is complete for ClearHarm. **§7c's structure survives** — every arm moved by ≤0.03
+The R-20 re-judge is complete for ClearHarm. **§7c's structure survives** — every arm moved by ≤0.03
 and the ordering is intact — but running the arms through a *committed* analyzer with the clustering
 the design requires changes the verdict on the one row that mattered most.
 
@@ -788,7 +788,7 @@ three decimals. Under domain clustering arm B's t falls from 3.45 to **1.44**.
 reported super-additivity with a "domain-clustered bootstrap CI [−0.1474, +0.1332] — NOT established"
 while reporting arm B with an iid interval. Clustered inference for the claim that failed, iid
 inference for the claim that passed, in one table. That is the **same asymmetric-standard defect as
-R-15**, and it is now the third instance (R-13 was the first).
+R-21**, and it is now the third instance (R-13 was the first).
 
 ### What this does to the ClearHarm conclusion
 
@@ -1049,7 +1049,7 @@ the first version validated after the load and could not be tested at all. Four 
 
 The properly-powered external test. 495 held-out AdvBench prompts, **16 domain clusters, largest
 25.7%** — built in the same commit as ClearHarm for exactly this purpose, judged against real goals
-(post-R-14), analysed by the committed `analyze_external_arms.py`
+(post-R-20), analysed by the committed `analyze_external_arms.py`
 (`outputs/boombness/advbench_decomposition.json`).
 
 | arm | intervention | ASR@0.5 | refusal | Δ pooled | Δ cluster-mean | p_cl | domain-clustered CI |
@@ -1184,7 +1184,7 @@ contaminated a single published number. "Unexamined" was accurate; "contaminatin
 | `consistency` | 36 | 3 | 12 | 2 |
 | `strength` | 48 | 4 | 12 | 2 |
 
-**Compare against R-15, established three hours ago on this same design:** a **36-row** condition cell
+**Compare against R-21, established three hours ago on this same design:** a **36-row** condition cell
 had a domain-clustered CI of **[−0.068, +0.088]** and a **72-row** cell **[−0.087, +0.198]** — both
 declared uninformative, and both *larger* than every comparison available here. The `position` factor
 would be **6 rows against 6**, one per domain per level, which cannot produce a between-cluster
@@ -1210,7 +1210,7 @@ substantially an effect of demonstration count.
 ### 4. Resolution — the third option, and it is the honest one
 
 Not "analyse" (the design cannot carry it, and doing so would manufacture exactly the underpowered,
-confounded cells R-15 just retracted) and not "delete" (the rows are already isolated, and deleting
+confounded cells R-21 just retracted) and not "delete" (the rows are already isolated, and deleting
 them changes the bank hash and breaks the join for ~130 committed runs **for no analytical gain**).
 
 **Documented, measured, and explicitly excluded — with the regeneration named as future work.**
@@ -1386,8 +1386,8 @@ The board in the header is session 1's and is stale. This is the live one.
 |---|---|---|
 | R-12 | ClearHarm control band was one draw stated 3× | **CLOSED** — real band sd 0.0129, fake one understated 2.7× |
 | R-13 | "matched footing" incremental R² gave refusalness 5 predictors vs 1 | **applied** to report + short update |
-| R-14 | **every external ASR judged against an EMPTY GOAL** | **CLOSED** — banks fixed, all arms re-judged, ≤0.03 movement |
-| R-15 | "harmful yes, benign no" is 1 significant cell of 6 | **applied**; the split tracks sample size |
+| R-20 | **every external ASR judged against an EMPTY GOAL** | **CLOSED** — banks fixed, all arms re-judged, ≤0.03 movement |
+| R-21 | "harmful yes, benign no" is 1 significant cell of 6 | **applied**; the split tracks sample size |
 | R-16 | ClearHarm arm B significant only under an iid SEM | **applied — and then REVERSED on AdvBench**, which is the right outcome and both halves are recorded |
 
 ## Guards added this session (each with a test that fails the pre-fix case)
@@ -1560,7 +1560,7 @@ established); conclude the interaction is real.
 **That reasoning is wrong, and the numbers show why: the two intervals OVERLAP** in
 [+0.0128, +0.0170]. "One CI excludes zero and the other does not" is not a test of whether they
 differ — it is the classic difference-of-significance error, and this project has already retracted
-three claims (R-13, R-15, R-16) that came from comparing two arms measured on different footings.
+three claims (R-13, R-21, R-16) that came from comparing two arms measured on different footings.
 
 The quantity that answers the question is the **difference of the two excesses**, bootstrapped **once**
 over the same resampled domains so the two are paired and their correlation is respected. Implemented
@@ -1729,7 +1729,7 @@ control at the same layer (`Bctrl`, inert). On **ClearHarm** — for *both* mode
 
 Qwen3's ClearHarm arm B is the large-but-underpowered result (ASR 0.134 → 0.279) that R-17 leaves
 **open**, and it has been compared only against a control for a *different* intervention. That is the
-mismatched-footing shape this project has retracted three times (R-13, R-15, R-16), and it should not
+mismatched-footing shape this project has retracted three times (R-13, R-21, R-16), and it should not
 survive into the report unnoticed.
 
 Launched: `ch_Bctrl` (766765, Llama random@L8) and a **3-draw band** for Qwen3,
@@ -2837,7 +2837,7 @@ Suite now: **`test_estimand` + `test_fit_identity_and_ledger`: 84 passed, 2 skip
 from a different regeneration joined perfectly and silently"* — retraction **R1**'s stated root cause.
 It needs a `*_meta.json` beside the bank. The generated bank has one; **the external banks never did**,
 so every external judge run this session printed `BANK IDENTITY UNCHECKABLE` and the guard was inert
-for exactly the banks R-14 regenerated.
+for exactly the banks R-20 regenerated.
 
 `external_bank.py` now writes one, with **two** hashes because they answer different questions:
 
@@ -2851,7 +2851,7 @@ are new.
 
 ### Turning it on immediately produced a mismatch, and the mismatch was RIGHT
 
-Run against a real pre-R-14 run (`ch_B`):
+Run against a real pre-R-20 run (`ch_B`):
 
 ```
 checked : ['bank_file_sha16', 'bank_rows_sha16']
@@ -2859,14 +2859,14 @@ mismatch: ['bank_file_sha16']          <- file bytes differ
                                         rows hash AGREES
 ```
 
-That is a true and precise report: **R-14's fix added `final_query_text` to every external row, which
+That is a true and precise report: **R-20's fix added `final_query_text` to every external row, which
 changed the file bytes while leaving every row identity untouched.** The two-hash design says exactly
 that; a single ambiguous `bank_content_sha16` could not.
 
 ### ⛔ And under the original rule it would have been FATAL — the guard would have blocked the repair
 
 `compare_bank_hashes(strict=True)` raised on **any** mismatch. So the moment the meta files existed,
-every pre-R-14 generation would have become **permanently unjudgeable against the corrected bank** —
+every pre-R-20 generation would have become **permanently unjudgeable against the corrected bank** —
 the guard would have blocked precisely the re-judging that fixed the defect it exists to prevent. I
 found this by running the guard against a real artifact instead of assuming it would behave.
 
@@ -3571,7 +3571,7 @@ measured footing:
 | 59 | 2026-08-20 | re-tested the report's Qwen3 benign-elevation conclusion against the R-13-immune outcome | **survives**: benign topical +0.256 vs control 0.000 |
 | 60 | 2026-08-20 | recorded why a confirmation counts here | the same test collapsed 0.888 → 0.021 one tick earlier, so it does reject when it should |
 
-## ⛔ R-14 — arm F is a STYLE ARTIFACT on Llama, and I was wrong to exempt Llama earlier
+## ⛔ R-20 — arm F is a STYLE ARTIFACT on Llama, and I was wrong to exempt Llama earlier
 
 Tick 2026-08-20. Having built the conjunction for Qwen3, the disciplined move was to point it at
 **Llama** rather than assume the artifact was model-specific. I had written, when recording R-13:
@@ -3616,21 +3616,21 @@ assumption" was only true of the one arm I had actually observed.
 
 | # | time | action | outcome |
 |---|---|---|---|
-| 61 | 2026-08-20 | pointed the conjunction at Llama instead of assuming R-13 was Qwen3-only | **R-14**: arm F is ~94% style; Δ topical CI includes zero |
+| 61 | 2026-08-20 | pointed the conjunction at Llama instead of assuming R-13 was Qwen3-only | **R-20**: arm F is ~94% style; Δ topical CI includes zero |
 | 62 | 2026-08-20 | re-ranked all Llama arms on topical content | D +0.033, B +0.029 clear controls; **C is null**; F indistinguishable from its control |
 | 63 | 2026-08-20 | corrected my own R-13 note, which exempted "the Llama results" from one arm's evidence | the exemption was unearned |
 
-## R-14 propagated into the deliverable, and the sweep caught my own unmarked paragraph
+## R-20 propagated into the deliverable, and the sweep caught my own unmarked paragraph
 
-Tick 2026-08-21. R-14 was in this log while the **report still headlined arm F as a causal result** —
+Tick 2026-08-21. R-20 was in this log while the **report still headlined arm F as a causal result** —
 a withdrawn result live in the deliverable is the precise failure this project has retracted for
 before, so it went in first this tick.
 
 Added to the report's retraction table:
-* **R-14** — arm F's behavioural gain is a **judge** artifact, ~94% answer style; topical Δ
+* **R-20** — arm F's behavioural gain is a **judge** artifact, ~94% answer style; topical Δ
   **+0.017, CI [−0.005, +0.038]** against its own control at +0.012; **+0.417 plain / 0.000 topical**
   on `benign_remap`.
-* **R-15** — my claim that "the Llama results are unaffected by the style artifact" is **withdrawn**;
+* **R-21** — my claim that "the Llama results are unaffected by the style artifact" is **withdrawn**;
   it was observed for arm D alone and generalised to the model.
 
 The arm-F row in the §4 table is marked at the point of use, and the full Llama re-ranking now sits
@@ -3638,7 +3638,7 @@ beside the arm-F discussion — which it **supersedes rather than supports**: th
 right verdict for the wrong reason, suspecting the **prompt bank**, which ClearHarm has since
 excluded. The defect is in the judge.
 
-**The sweep worked, and only because its pattern list was updated the same day.** Adding R-14/R-15
+**The sweep worked, and only because its pattern list was updated the same day.** Adding R-20/R-21
 patterns immediately flagged one unqualified occurrence — **my own explanatory paragraph**, which
 stated "+0.305 headline gain" with no marker word, so the paragraph-exemption heuristic correctly
 declined to exempt it. This is the third time the pattern list, not the documents, was the weak link;
@@ -3647,10 +3647,10 @@ the number is retracted, which it should have said regardless of any checker.
 
 | # | time | action | outcome |
 |---|---|---|---|
-| 64 | 2026-08-21 | entered R-14 + R-15 in the report's retraction table; marked arm F at point of use | the deliverable no longer headlines a withdrawn result |
+| 64 | 2026-08-21 | entered R-20 + R-21 in the report's retraction table; marked arm F at point of use | the deliverable no longer headlines a withdrawn result |
 | 65 | 2026-08-21 | extended the sweep pattern list in the same commit as the retraction | caught my own unmarked paragraph; sweep clean over 4 files |
 
-## The headline ablation effect is structurally immune to R-14 — and my own instrument is a one-word test
+## The headline ablation effect is structurally immune to R-20 — and my own instrument is a one-word test
 
 Tick 2026-08-21. Having retracted arm F with the topicality conjunction, the obvious next question is
 whether the **current headline** — the L8–L12 ablation band, +0.0322 (p=0.0056) at L12 — is exposed
@@ -3660,7 +3660,7 @@ set" and then checked it myself rather than waiting.
 **It is not exposed, and the reason is structural.** The §7f layer-profile runs
 (`abL12_B`, `abL10_B`, `ab_base`, …) are on `advbench_heldout_495.jsonl`, the **external** bank. Their
 judge runs report `goal_status` = `noop_codeword_absent` **471** / `noop_concept_already_present`
-**24** — i.e. **the goal IS the visible instruction**, with no codeword→concept substitution. R-14's
+**24** — i.e. **the goal IS the visible instruction**, with no codeword→concept substitution. R-20's
 mechanism requires a *mismatch* between the goal the judge scores against and the prompt the model
 saw; on AdvBench there is none. Measured directly:
 
@@ -3674,7 +3674,7 @@ still over-reward a confident, on-topic non-refusal. What it establishes is that
 fail the specific way arm F failed — scoring high while containing nothing the goal asked for —
 because on AdvBench "what the goal asked for" and "what the prompt asked for" are the same string.
 
-### ⚠ And the instrument that produced R-14 is a SINGLE-WORD test on the bank
+### ⚠ And the instrument that produced R-20 is a SINGLE-WORD test on the bank
 
 The same measurement, run on the sprint's own bank, is less comfortable:
 
@@ -3685,13 +3685,13 @@ The same measurement, run on the sprint's own bank, is less comfortable:
 | ≥2 | 0 |
 
 So on the bank the conjunction reduces to **"does the completion contain the word `bomb`"**. That
-bounds R-14 in two ways worth stating before anyone else does:
+bounds R-20 in two ways worth stating before anyone else does:
 
 1. **Binomial variance on one token.** The CI on arm F's topical delta is an interval on a
    single-word indicator, not on a rich content measure.
 2. **A false-negative mode.** A completion that discusses the concept without using the word — via a
    synonym, a circumlocution, or the codeword itself — scores 0. So the instrument **understates**
-   topical content, which means R-14's "~94% style" is an **upper** bound on the style fraction.
+   topical content, which means R-20's "~94% style" is an **upper** bound on the style fraction.
 
 Both cut in the direction of *caution about the magnitude*, not about the direction: arm F's
 **0.000 topical on 36 `benign_remap` rows** and a paired CI containing zero are not artifacts of a
@@ -3701,13 +3701,13 @@ This limitation is now on the record ahead of the audit lane that was asked to f
 | # | time | action | outcome |
 |---|---|---|---|
 | 66 | 2026-08-21 | launched the periodic audit, one lane aimed at the topicality instrument itself | running |
-| 67 | 2026-08-21 | checked whether the §7f headline is exposed to R-14 | **no** — AdvBench has 495/495 empty distinctive sets, so the mismatch mechanism cannot arise |
-| 68 | 2026-08-21 | measured the instrument's own resolution on the bank | **428/500 rows hinge on ONE word** — R-14's 94% is an upper bound |
+| 67 | 2026-08-21 | checked whether the §7f headline is exposed to R-20 | **no** — AdvBench has 495/495 empty distinctive sets, so the mismatch mechanism cannot arise |
+| 68 | 2026-08-21 | measured the instrument's own resolution on the bank | **428/500 rows hinge on ONE word** — R-20's 94% is an upper bound |
 
 ## Audit #2 — the instrument survives, its description does not, and no number moves
 
 Tick 2026-08-21. One audit lane was aimed squarely at the topicality instrument, because it had just
-been used to **retract** a headline (R-14) and **confirm** another (Qwen3 benign elevation). If it is
+been used to **retract** a headline (R-20) and **confirm** another (Qwen3 benign elevation). If it is
 wrong, both moves are wrong. Its verdict, which I endorse: *"degenerate-by-construction, but every
 bias I could measure runs against the two conclusions it was used to make."*
 
@@ -3729,13 +3729,13 @@ appears)`. Every CI computed from it is **binomial on a single token**. Two cons
 found that I had not:
 
 * **A threshold sweep is vacuous, not merely stable.** Thresholds 0 / 0.25 / 0.5 / 1.0 select the
-  identical row set. R-14 is "perfectly threshold-stable" for the degenerate reason that there is
+  identical row set. R-20 is "perfectly threshold-stable" for the degenerate reason that there is
   only one bit to threshold.
 * **The instrument was never calibrated where a true positive is guaranteed.** `direct_harmful` and
   `concept_in_benign_ctx` are **100% inapplicable** (384/384 `None` each), so sensitivity was never
   measured on the arm that could measure it.
 * **`topicality_gate.py` — the sibling written the same week — already refuses such a bank** with
-  verdict `UNDECIDABLE`. `judge_boombness.goal_topicality` had no such guard, and **R-14 was decided
+  verdict `UNDECIDABLE`. `judge_boombness.goal_topicality` had no such guard, and **R-20 was decided
   by the instrument without the check.** That is a fair hit.
 
 ### Fixed, and re-run
@@ -3758,7 +3758,7 @@ completion** in these runs.
 The audit measured, across the 8 Llama arms, **corr(mean completion length, plain ASR) = +0.984**.
 On this bank the published ASR metric is very nearly a **length meter**. And the residual length bias
 in the *topical* metric (+0.272) **favours arm F**, which writes 1646 chars/completion — 1.83× the
-baseline and the longest of all eight arms — and the instrument condemned it anyway. So **R-14 is not
+baseline and the longest of all eight arms — and the instrument condemned it anyway. So **R-20 is not
 a length artifact; correcting for length would strengthen it.**
 
 Counter-example the audit recorded, which stops "plain ASR = length" becoming a new overclaim: Qwen3
@@ -3771,4 +3771,4 @@ On Qwen3 the inflation is something other than length — and the conjunction ca
 | 69 | 2026-08-21 | audit lane attacks the topicality instrument | one-bit degeneracy confirmed; sibling gate has a guard this one lacked |
 | 70 | 2026-08-21 | word-bounded the match; added `topicality_is_degenerate`; `instrument_resolution` now in every artifact | caveat travels with the numbers |
 | 71 | 2026-08-21 | re-ran all 8 Llama arms + both §14 models | **every number bit-identical**; the substring bug never fired |
-| 72 | 2026-08-21 | recorded corr(length, plain ASR) = **+0.984** on Llama | independent vindication of why R-13/R-14 exist |
+| 72 | 2026-08-21 | recorded corr(length, plain ASR) = **+0.984** on Llama | independent vindication of why R-13/R-20 exist |
