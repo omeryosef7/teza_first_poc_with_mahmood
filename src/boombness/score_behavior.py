@@ -231,7 +231,10 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
                         control_diag[f"L{L}"] = {"how": how}
                 except Exception as e:                                  # diagnostics only
                     control_diag[f"L{L}"] = {"how": how, "diag_error": f"{type(e).__name__}: {e}"}
-            print(f"[score] in_subspace control: {json.dumps(control_diag, sort_keys=True)}")
+            # printed ONCE, not once per prompt (the first version dumped a 4 KB JSON blob per row)
+            if not getattr(make_intervention, "_diag_printed", False):
+                print(f"[score] in_subspace control: {json.dumps(control_diag, sort_keys=True)}")
+                make_intervention._diag_printed = True
         else:
             maker = (_sg.random_control_direction if name == "random"
                      else _sg.orthogonal_control_direction)

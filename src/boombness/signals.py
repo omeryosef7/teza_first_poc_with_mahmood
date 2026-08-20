@@ -436,14 +436,30 @@ def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
         # Vh row is an arbitrary unit vector orthogonal to the other two, which is exactly the
         # direction just removed. The draw therefore still loaded on the arm (measured cos -0.73 at
         # L6) and the orthogonalisation was silently a no-op.
+        # RANK THRESHOLD MUST BE LOOSE, AND THE RESULT RE-ORTHOGONALISED ANYWAY. A 1e-6 relative
+        # cut looked right offline and then failed inside the real run: at several layers the
+        # post-projection residual of the arm direction survives at ~1e-4 of the top singular
+        # value, so rank came back 3 instead of 2, `Vh2[2]` was essentially that numerical residue,
+        # and the draw loaded on the arm -- the run's own diagnostic reported
+        # cos_with_arm_direction = -0.5709 at L8 where it must be ~0. Two independent guards now:
+        # a 1e-3 relative cut, AND an explicit re-orthogonalisation of the drawn vector, which is
+        # correct whatever the rank detection decides.
         U2, S2, Vh2 = torch.linalg.svd(proj, full_matrices=False)
-        keep = int((S2 > (S2.max() * 1e-6)).sum()) if float(S2.max()) > 0 else 0
+        keep = int((S2 > (S2.max() * 1e-3)).sum()) if float(S2.max()) > 0 else 0
         if keep == 0:
             return orthogonal_control_direction(d, seed), "fallback:span_is_the_arm_alone"
         basis = Vh2[:keep]
     pc = __import__("pair_common")
-    v = pc.in_subspace_random(basis, d.float(), 1, seed=seed)[0]
-    tag = "in_subspace_orth" if orthogonalize_against_arm else "in_subspace"
+    v = pc.in_subspace_random(basis, d.float(), 1, seed=seed)[0].float()
+    tag = "in_subspace"
+    if orthogonalize_against_arm:
+        u = d.float().reshape(-1) / (d.float().norm() + 1e-8)
+        v = v - torch.dot(v, u) * u                      # second guard, independent of the rank cut
+        n = v.norm()
+        if float(n) < 1e-6:
+            return orthogonal_control_direction(d, seed), "fallback:draw_collapsed_onto_the_arm"
+        v = v / n * d.float().norm()
+        tag = "in_subspace_orth"
     return v.to(d.dtype), f"{tag}:k={keep}"
 
 

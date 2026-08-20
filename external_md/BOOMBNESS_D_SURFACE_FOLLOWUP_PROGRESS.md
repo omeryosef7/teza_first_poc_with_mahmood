@@ -4451,6 +4451,46 @@ ablating any concept-subspace axis at L8 does what `d_surface` does, and arm B �
 longest-standing behavioural result — is not about `d_surface` at all.** Either way this is the first
 control in the sprint whose failure would mean something.
 
+
+#### ⛔ And the first submitted run was INVALID — caught by reading its own diagnostic, not by trusting the offline test
+
+Job 770317 launched and its per-run diagnostic immediately reported, at the very layer the experiment
+is about:
+
+```
+L8: cos_with_arm_direction = -0.5709,  how = "in_subspace_orth:k=3"
+```
+
+**The control was 57% the arm direction.** The offline check I ran before submitting had reported
+`cos ≈ 1e-8, k=2` — because it used the **heldout** payload and only five layers, while the run loads
+**dev** and all 32. The 1e-6 relative rank cut is too tight: at several layers the post-projection
+numerical residue of the arm direction survives at ~1e-4 of the top singular value, so rank came back
+3 instead of 2 and `Vh2[2]` *was* that residue.
+
+**Cancelled and fixed with two independent guards**, because one of them evidently is not enough:
+
+1. the rank cut is loosened to 1e-3 relative, and
+2. the drawn vector is **explicitly re-orthogonalised** against the arm and re-normalised afterwards
+   — correct whatever the rank detection decides, with a named fallback if the draw collapses.
+
+**Re-verified the way the first check should have been: both splits × all 32 layers.**
+**Worst |cos(arm, control)| = 1.7e-08.** On the `dev` payload the run actually uses:
+
+| layer | cos | ARM removes | `in_subspace_orth` removes | k |
+|---|---|---|---|---|
+| L6 | −3.7e-09 | 87.68% | 4.86% | 2 |
+| **L8** | **+5.6e-09** | **84.02%** | **5.35%** | 2 |
+| L12 | +6.5e-09 | 82.04% | 7.25% | 2 |
+| L18 | −5.4e-09 | 90.67% | 6.76% | 2 |
+
+Resubmitted as **770332** (`--tag abVMC2`). Also fixed: the diagnostic was printing once **per
+prompt** — a 4 KB JSON blob × 495 rows — now printed once.
+
+**Two lessons, both recorded rather than absorbed silently.** A guard that reports its own inputs is
+what caught this; had the diagnostic not been in the run output, an invalid control would have been
+judged and reported. And an offline verification that samples one split and five layers is not a
+verification — the failure lived in the other split at layers I did not check.
+
 ### Next corrections, in priority order
 
 1. **Re-run one arm with `in_subspace_random`** — until then no inertness claim in this sprint means
