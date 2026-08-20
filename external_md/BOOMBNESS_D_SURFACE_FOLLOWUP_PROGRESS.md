@@ -3644,6 +3644,107 @@ and it is not currently detected by `coherence_gate` — which exists to catch a
 by construction cannot catch an *undamaged but mis-scored* one. Recorded as the highest-priority
 methodological gap for the next tick.
 
+## ✅ Phase E consolidated — three named deliverables exist, and four markdown-only numbers now have a producer
+
+**Artifacts:** `outputs/boombness_followup/d_surface_external_decomposition.json`,
+`d_surface_layer_profile_replication.json`, `direction_specificity_extended.json`.
+**Producer:** `src/boombness/consolidate_phase_e.py` (new). **No GPU, no judge, no new generations.**
+
+Plan §7 names three Phase-E artifacts and none of them existed. Worse, an audit of the sources found
+**four numbers this sprint has been citing that live only in this markdown file** — the R3-3 defect,
+four more times. The script merges existing analysis JSON **verbatim, with each source path recorded
+beside it** (nothing that already has a producer is re-derived, so no second drifting derivation is
+created) and computes the four that had none.
+
+### ⛔ M1 — the 16-category breakdown does NOT reproduce as written, and the corrected version is stronger
+
+| | markdown claim | **recomputed from committed judge rows** |
+|---|---|---|
+| mean over categories | +0.0367 | **+0.0305** |
+| sem | 0.0132 | **0.0102** |
+| t (df 15) | 2.78 | **+3.00** |
+| movable categories | 10, of which 9 positive | **8, of which 8 positive** |
+| sign test p | 0.0107 | **0.0039** |
+
+The markdown figures have no producer and are **superseded** by the artifact. The conclusion is
+unchanged and the evidence is slightly stronger.
+
+**The E1 claim itself holds, and sharply — the effect is weakest where the direction was fitted:**
+
+| category | n | Δ | baseline ASR |
+|---|---|---|---|
+| terrorism_extremism | 9 | **+0.1111** | 0.000 |
+| misinformation_disinformation | 37 | **+0.1081** | 0.162 |
+| other_uncategorized | 38 | +0.0789 | 0.132 |
+| cyber_hacking_malware | 127 | +0.0699 | 0.126 |
+| theft_property_crime | 18 | +0.0556 | 0.000 |
+| identity_theft | 40 | +0.0250 | 0.000 |
+| **weapons_explosives_mass_casualty** | 40 | **+0.0250** | 0.025 |
+| fraud_financial_crime | 68 | +0.0147 | 0.044 |
+| *8 further categories* | 158 | **0.0000** | ≤0.143 |
+
+`d_surface` was fitted on carrot↔**bomb**. Its own harm type sits **seventh of eight movable
+categories**, at less than a quarter of the misinformation effect. This is the strongest single piece
+of evidence that `d_surface` is **not** a hazardous-object axis (plan hypothesis 3).
+
+**And the control is now in the same artifact and is inert:** matched random, **−0.0062**, t −0.63,
+2 positive / 2 negative / 12 exactly zero, sign p 0.69. Against 8/0/8 and p 0.0039 for the real arm.
+
+**The refusal floor is now an explicit, named list.** Eight categories are pinned at exactly 0.0000
+in this arm — `self_harm_suicide` (n=23), `child_exploitation` (n=7), `violent_crime_physical_harm`
+(n=21), `hate_speech_discrimination`, `harassment_bullying_stalking`, `drugs_controlled_substances`,
+`privacy_surveillance`, `academic_dishonesty`. Removing `d_surface` does not reach the harms one
+would most want protected.
+
+### ✅ M3 — the multiplicity block, and "Holm rejects nothing" survives with a corrected family size
+
+Holm-adjusted p over the `d_surface` layer profile, **m = 11** (the markdown used m = 10; L15 is now
+in the family and the degenerate L16 is correctly *excluded and named* rather than counted):
+
+`L12 0.0618 · L8 0.0893 · L10 0.1708 · L6 0.4536 · L13 0.631 · L14 0.846 · L4/L15/L18/L24/L28 1.000`
+
+**Holm rejects nothing.** BH(0.05) rejects **L8 and L12**, both at adjusted 0.0491 — matching the
+markdown. The refusalness profile, by contrast, has **four of five depths surviving Holm** (m=5):
+L14, L16, L18, L20. The asymmetry that carries §3's separability claim is now in a file.
+
+### ✅ M6 — cos(d_surface, refusalness) reproduces exactly
+
+| layer | cos | z vs random | shared variance |
+|---|---|---|---|
+| L12 | +0.1279 | **+8.3** | 1.64% |
+| L14 | +0.0972 | +6.3 | 0.94% |
+| L16 | +0.0467 | +3.0 | 0.22% |
+| L18 | +0.0262 | **+1.7** | 0.07% |
+| L20 | +0.0176 | **+1.1** | 0.03% |
+
+Random baseline sd = **0.01541** over 2,000 draws in R⁴⁰⁹⁶ (analytic 1/√d = 0.01563). Matches the
+markdown to four decimals. **At chance by L18**, where refusalness is causally strongest.
+
+### ✅ M2 — the benign arms, aggregated at last
+
+| arm | over-refusal | word-Jaccard vs baseline |
+|---|---|---|
+| baseline | **0.0000** | — |
+| remove `d_surface` | **0.0000** | **0.694** |
+| matched random control | **0.0000** | 0.773 |
+| remove refusalness | **0.0000** | 0.599 |
+
+**Zero over-refusal everywhere** — a clean null, as claimed. Removing `d_surface` perturbs benign text
+**more** than the matched random control (Jaccard 0.694 vs 0.773). ⚠ Note the markdown reported the
+*dissimilarity* (1 − Jaccard: 0.3134 / 0.2271 / 0.4125); this artifact reports **similarity**, and two
+of the three agree to three decimals while `remove_d_surface` differs by 0.008 (tokenization). n = 40
+over 4 clusters — suggestive, not established, unchanged.
+
+### The gaps are fields in the files, not absences
+
+Each artifact carries a `missing_requires_gpu` block naming what it does not contain and its cost:
+`d_inter` (vector exists, no arm ever run anywhere — 1 run + 1 judge, the control already exists);
+the orthogonalised arms (2 + 2, deliberately deprioritised at cos ≤ 0.13); `d_surface` at **L20**, the
+one planned depth never run and the only depth where a *depth-matched* `d_surface`-vs-refusalness
+comparison is possible; refusalness below L12, which is a **data** gap — Llama refusal directions
+exist on disk at exactly L12/14/16/18/20, so the interaction cannot be measured inside `d_surface`'s
+own causal band; and the absent dual-use bank.
+
 ## ✅ NEW INSTRUMENT — `topicality_gate.py`, and it clears this sprint's Llama results by measurement
 
 **Artifacts:** `outputs/boombness_followup/topicality_llama_advbench.json`,
