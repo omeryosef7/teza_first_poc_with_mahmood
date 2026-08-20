@@ -4225,6 +4225,54 @@ here, since Phase D must use the **committed** direction rather than one refitte
 
 Generation (770023) is at 900/2160 after 81 minutes → ~3.2 h, inside its 4 h limit.
 
+
+### ⛔ Incident — the judge API ran out of credits mid-correction, and the partial runs are NOT salvageable
+
+At 20:43 all three re-judges were failing with
+`litellm.RateLimitError: OpenAIException - You have no credits remaining.` Each had reached ~600 of
+960 rows. **The partials cannot be used, and the reason matters:** the judge writes rows in bank
+order, so a truncated run is a *prefix*, not a sample — and the three arms stopped at different
+points, covering **143 / 147 / 144** of the 324 `benign_literal` rows respectively. Different
+subsets means the arms are **not pairable**, which is the entire estimand. No `DONE.json` was
+written either, so `common.require_done` would have refused them downstream regardless. Killed.
+
+Raised with the user, who added credits. **Verified before relaunching rather than assumed** — a
+3-row smoke test (`--tag credtest`): `3/3 judged, null_frac=0.0000`, goal statuses
+`{substituted: 2, noop_concept_already_present: 1}` and **zero `empty`**, which also re-confirms the
+bank join is doing its job.
+
+Relaunched as `q3rj2_*`, and **with a fourth arm the first attempt was missing: the baseline.** The
+original `qwen3nt` baseline was judged with *a* bank, but for a paired contrast all four arms must
+resolve their goals through the *same* bank; re-judging it removes that asymmetry rather than
+assuming it away.
+
+### ✅ Phase D representation half is COMPLETE — and it has zero self-fit rows
+
+`extract_boombness/phaseD_extract_20260820_201555_2809154`, job 770128, 5 minutes, `DONE.json`
+written. **2,160 of 2,160 rows succeeded, 0 failed**, all 32 layers, position `codeword_last`.
+
+The number that matters for plan §2.3 hygiene:
+
+```
+cross_fit: {n_self_fit_rows: 0, n_cross_fit_rows: 2160, self_fit_frac: 0.0}
+```
+
+**Every Phase-D representation is read off a direction fitted on different text.** The `d_surface`
+used here is the committed 2×2 fit (`full_20260816_185942_1008673`); nothing was refitted on Phase
+D's own prompts, which is what would have made a Boombness→ASR correlation circular.
+
+### ⚠ A provenance trap worth naming: `cross_bank_fit: False` does not mean "same bank"
+
+The summary records `cross_bank_fit: false` **and** `cross_bank_fit_declared: true`. That looks
+contradictory and is not. Detection needs the *fit directory* to carry bank hashes, and this one
+carries none — `unknown_identity: ["bank_rows_sha16", "bank_file_sha16", "n_bank_rows_used",
+"fit_dtype"]`. So `bank_identity_mismatch` is `False` because the comparison **could not be made**,
+not because the banks agree. The repo's standing principle — *an absent hash is reported as unknown,
+never as agreement* — is being honoured, but the field NAME reads like a negative finding.
+
+**A future reader must take `cross_bank_fit_declared` as the provenance, not `cross_bank_fit`,
+whenever `unknown_identity` lists the bank hashes.** Recorded here so the trap is on the record.
+
 ### Next corrections, in priority order
 
 1. **Re-judge the three Qwen3 arms with `--bank`** — the `_FATAL_GOAL_STATUSES` guard added after
