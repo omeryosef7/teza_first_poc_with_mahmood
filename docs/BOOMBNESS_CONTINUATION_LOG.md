@@ -3061,3 +3061,60 @@ an earlier orthographic version turned "an hour" into "a hour".
 | 29 | 2026-08-20 | apple bank failed §2.4 on Qwen3; cancelled 4 running E6 jobs | two defects found, one of them result-inverting |
 | 30 | 2026-08-20 | switched E6 to `button` ↔ `bomb`; added the pool-collision screener | audits pass 2736/2736 on **both** models, 0 violations |
 | 31 | 2026-08-20 | relaunched the 4 knockout arms on the button bank (769945–948) | E6 unblocked |
+
+## ⚠ TWO SESSIONS ARE DRIVING THIS SPRINT, AND THEY DISAGREE ABOUT THE E6 FIX
+
+Tick 2026-08-20 18:1x. A second Claude session (uid 47249) is working the same plan in this repo. It
+**cancelled this session's four E6 knockout jobs at 18:12:01** and submitted its own at 18:11:48 —
+same bank, same arms, same layers. That is not a problem in itself: it independently reached
+`button` ↔ `bomb`, which is a good sign for the choice. **The problem is how the two sessions fixed
+the same blocker.**
+
+Both hit `dominance:AssertionError: the value-flow decomposition does not reconstruct the attention
+output` on every prompt.
+
+| | this session | the other session |
+|---|---|---|
+| diagnosis | the tolerance is fp32-calibrated | (implicit) the dtype is wrong |
+| fix | derive the tolerance from the weight dtype (1e-3 fp32, 3e-2 otherwise), commit `e0a3387b` | drop `--dtype bfloat16` so the model loads **fp32** (tags `btn_q3fp32_*`) |
+| Llama-3.1-8B | works | works (8B × 4B = 32 GB, fits) |
+| **Qwen3-14B** | works | **cannot work** |
+
+**The fp32 route cannot run Qwen3-14B on this hardware:**
+
+| dtype | weights alone | fits a 44.4 GB L40S? |
+|---|---|---|
+| float32 | **59.2 GB** | **NO** |
+| bfloat16 | 29.6 GB | yes |
+
+So `btn_q3fp32_firstcw` / `_firstnbr` / `_lastcw` are expected to die the same
+`torch.OutOfMemoryError` that jobs 769187–769189 died of — **which is the exact loop commit
+`bf56ca6b` ("the Qwen3 OOM was a dtype defect, not a resource limit") was written to break.** Forcing
+fp32 to satisfy an fp32-calibrated tolerance re-creates the OOM that motivated bfloat16 in the first
+place.
+
+**This session did not resubmit.** Fighting over a shared queue wastes GPU and produces duplicate
+runs with different dtypes under similar tags, which is a provenance hazard. The tolerance fix is
+committed at `e0a3387b` with `tests/test_dominance_tolerance.py`, which demonstrates rather than
+assumes the diagnosis:
+
+| case | relative reconstruction error | verdict |
+|---|---|---|
+| correct head map | < 1e-6 | — |
+| **wrong GQA head map** | **> 10× the bf16 tolerance** | guard still catches it |
+| **bfloat16 rounding alone** | **between 1e-3 and 3e-2** | the old constant rejected valid arithmetic |
+
+The third row is the load-bearing one: it lands strictly between the old tolerance and the new one,
+so the failure is reproduced, not asserted. Loosening a guard is only legitimate when it still fails
+the case it exists for, and the second row is that proof.
+
+**Recommended resolution:** the Llama fp32 arm is fine and its result stands. For Qwen3 the fp32 arms
+should be replaced by `--dtype bfloat16` runs on top of `e0a3387b`. If both dtypes end up run for
+Llama, they are a free precision check — but they must not be pooled, because a bfloat16 and an fp32
+knockout are different measurements.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 32 | 2026-08-20 | E6 arms failed 0-rows: `dominance` reconstruction assertion on all 24 prompts | fp32-calibrated tolerance vs bfloat16 weights |
+| 33 | 2026-08-20 | dtype-aware tolerance + 3 tests that prove the guard still discriminates | `e0a3387b` |
+| 34 | 2026-08-20 | second session cancelled our jobs and resubmitted with **fp32** | its Qwen3 arms cannot fit (59.2 GB > 44.4 GB); did **not** resubmit into a contested queue |
