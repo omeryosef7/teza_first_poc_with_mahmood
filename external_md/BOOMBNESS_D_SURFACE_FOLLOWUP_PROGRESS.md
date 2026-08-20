@@ -2482,6 +2482,72 @@ timeout. Dead dirs: `judge/j_fuR*_20260819_1943*`.
 **Standing rule added:** long-running judge or analysis jobs must be launched with `setsid`, and the
 monitoring call must never wrap them in a shell that can be timed out.
 
+## ✅ Phase E1 BENIGN — zero over-refusal, but `d_surface` is not inert on benign text
+
+**Jobs 768517–768520, COMPLETED 15:10 each, 40/40 generations, all four `DONE`.** All four pass the
+**committed** `coherence_gate.assess()` — uniq 0.62, 3-gram 0.06, **scorable_frac 1.000** (no short-refusal
+floor problem here, unlike the harmful arms). Llama-3.1-8B, `benign_unrelated_40`, 4 clusters.
+
+### Result 1 — no over-refusal anywhere. Clean null.
+
+| arm | refusal-phrased | generations changed | median words |
+|---|---|---|---|
+| `bng_base` | **0.000** | — | 214 |
+| `bng_B` (remove `d_surface` @L8) | **0.000** | 32/40 | 222 |
+| `bng_Bctrl` (matched random) | **0.000** | 28/40 | 216 |
+| `bng_C` (remove refusalness @L18) | **0.000** | 37/40 | 212 |
+
+**0 of 40 in every arm, and 0.00 in all four clusters.** Removing `d_surface` does **not** make the model
+refuse benign requests. Neither does removing the refusal direction itself (expected — baseline is
+already at the floor, so only an *increase* was detectable).
+
+### Result 2 — but it perturbs benign text more than a random direction. **Suggestive, NOT established.**
+
+The interventions plainly fired (32/40, 28/40, 37/40 generations changed). Measuring the *magnitude* by
+token-set Jaccard distance from baseline:
+
+| arm | mean Jaccard distance | median |
+|---|---|---|
+| `bng_B` (`d_surface`) | **0.3134** | 0.3088 |
+| `bng_Bctrl` (random) | **0.2271** | 0.1789 |
+| `bng_C` (refusalness) | 0.4125 | 0.4627 |
+
+Paired `d_surface` − random = **+0.0863**.
+
+> ⚠ **iid t = 2.24 (39 df), p = 0.031. Domain-clustered t = 2.28 (3 df), p = 0.107.**
+> **The clustered result is the correct estimand and it is NOT significant.** Reported this way round
+> deliberately: quoting the iid p because it is the friendlier one is defect **R-16**, committed three
+> times in the previous sprint. With 4 clusters this test has almost no power (**D-9**), so this is
+> **suggestive and underpowered**, not a finding.
+
+Exact McNemar on which generations changed (`d_surface`-only 6 vs random-only 2) gives **p = 0.289** —
+also not significant.
+
+### What this does to the sprint's central question
+
+Taken with Phase E1's category result, a **middle answer** emerges — and it is more interesting than
+either pole the plan proposed:
+
+- **Against pure harm-salience (plan hypothesis 1's implication).** If `d_surface` only carried harm
+  information, removing it should perturb benign text no more than a random direction. It perturbs it
+  *more* (+0.0863), albeit only at iid significance.
+- **Against "general semantics, behaviourally consequential" (hypotheses 3/4).** It produces **exactly
+  zero** over-refusal on benign content, in every cluster.
+
+> **Best current reading: `d_surface` is a general semantic channel — active when the model writes
+> benign text — whose *behavioural* consequences appear only on harmful content.**
+
+That reconciles the sprint's otherwise awkward findings: weakest on the category it was fitted on
+(`weapons_explosives` +0.0250) yet strongest on information-shaped harms; orthogonal to refusalness;
+causally live at L6–L12 where refusalness is not.
+
+### Limits, stated plainly
+
+n = 40 over 4 clusters. The over-refusal null is **solid** (a floor at 0.000 in every arm and cluster
+cannot be a power artifact in the direction tested). The perturbation difference is **not established**
+and must not be cited as one. Jaccard distance is a crude proxy for "how much did the answer change"
+and says nothing about whether it changed for the better. Ambiguous dual-use prompts remain uncovered.
+
 ## Compute Blocker — diagnosed and mitigated (tick 23)
 
 **Symptom.** From tick 20 to 23 (~2h) not one of 8 submitted jobs started; all `PD (Priority)`.
