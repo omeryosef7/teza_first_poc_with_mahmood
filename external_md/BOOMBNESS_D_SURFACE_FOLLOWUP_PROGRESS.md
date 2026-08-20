@@ -5163,6 +5163,46 @@ the obvious next sprint's first task.
 well as `d_surface`, which is a *prompt-level correlational* fact and is untouched by a causal
 control on arm B.
 
+
+### ⚠ Where the subspace-matched control is VALID, measured rather than assumed — and it corroborates §3 by a new route
+
+`score_behavior.py:197` sets `base = payload["d_surface"]` for **every** control name, so
+`in_subspace_orth` is always built from the 2×2 cell-mean span and always orthogonalised against
+`d_surface`. That makes it the right control for a `d_surface` arm and raises an obvious question for
+the others: is that subspace a sensible basis for controlling a **refusalness** arm?
+
+**Measured — the fraction of each direction's squared norm lying inside the centred cell-mean span:**
+
+| layer | `d_surface` in span | **refusalness in span** |
+|---|---|---|
+| L12 | **100.0000%** | **2.61%** |
+| L14 | 100.0000% | 2.72% |
+| L16 | 100.0000% | 1.33% |
+| L18 | 100.0000% | **0.65%** |
+| L20 | 100.0000% | 1.38% |
+
+`d_surface` is **entirely inside** the span — unsurprising, it is built from those cell means — while
+**refusalness is 0.6–2.7% inside it**. So a draw from this subspace is ~98% orthogonal to refusalness
+by construction, and as a control for a refusalness arm it would be **nearly as uninformative as the
+isotropic draw it was built to replace**.
+
+**Two consequences, both stated rather than discovered later:**
+
+1. ⛔ **`in_subspace_orth` must not be used to control a refusalness arm.** Tonight's re-tests are
+   scoped to `d_surface` arms only (L6, L10, L12 submitted as 771137–771139; L8 already landed).
+   Doing this properly needs a basis for *refusal-relevant* variance — the span of the five committed
+   refusal directions, or the top PCs of activations on refused-versus-complied prompts. That is
+   next-sprint work and is now written into the next-sprint list rather than implied.
+2. ✅ **It independently corroborates §3's separability claim by a different measurement.** §3 rests
+   on cosines (0.128 at L12 → 0.026 at L18, at chance by L18). This is a *subspace* statement:
+   refusalness lives almost entirely outside the three-dimensional space the 2×2 design spans, at
+   every depth where a refusal direction exists. Two unrelated geometries, same conclusion.
+
+⚠ Honest limit on the corroboration: both measurements read the same two fitted objects, so they are
+not independent *evidence* about the model — they are independent *summaries* of the same vectors.
+What the subspace version adds is that the near-orthogonality is not a knife-edge property of one
+direction pair but holds against the whole design subspace.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
@@ -5336,10 +5376,13 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 
 ### 12. What should the next sprint do?
 
-1. **Re-run every remaining inertness claim against `in_subspace_orth`** — one job each. It landed
-   for arm B tonight and was inert, which strengthens that result; the two layer profiles, Phase F's
-   composed arms and the Qwen3 double-random control have NOT been re-tested and still rest on
-   isotropic draws.
+1. **Re-run every remaining `d_surface` inertness claim against `in_subspace_orth`** — one job each.
+   It landed for arm B and was inert; L6/L10/L12 are running. ⛔ **This control CANNOT be used for
+   refusalness arms**: refusalness lies only 0.6–2.7% inside the cell-mean span, so a draw from it is
+   ~98% orthogonal to refusalness anyway. Controlling those needs a basis for refusal-relevant
+   variance — the span of the five committed refusal directions, or the top PCs of activations on
+   refused-versus-complied prompts. Phase F's composed arms and the Qwen3 double-random control are
+   in the same position.
 2. **Run arm B on Qwen3's internal bank** so the +0.3476 can be decomposed.
 3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
    `d_surface`'s own band because only five refusal directions exist on disk.
