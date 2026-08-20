@@ -1,0 +1,416 @@
+{
+  "plan_section": "14 / E6",
+  "codeword": "button",
+  "concept": "bomb",
+  "directions_fitted_on": "the CARROT bank \u2014 E6 tests transfer, not refitting",
+  "runs": {
+    "llama/first_codeword": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_firstcw_20260820_175656_3768488",
+    "llama/first_neighbor": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_firstnbr_20260820_175806_2796999",
+    "llama/last_codeword": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_lastcw_20260820_180353_3770957",
+    "qwen3/first_codeword": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_q3_firstcw_20260820_194550_3780856",
+    "qwen3/first_neighbor": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_q3_firstnbr_20260820_195351_3782260",
+    "qwen3/last_codeword": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/surgical_knockout/btn_q3_lastcw_20260820_195351_3782261"
+  },
+  "deltas_vs_none": {
+    "llama": {
+      "first_codeword": {
+        "all_demo": {
+          "mean": 0.10313744594653447,
+          "sem": 0.01695103138080145,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": 0.26125749945640564,
+          "sem": 0.05404355571708222,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": 0.002533347656329473,
+          "sem": 0.0014046520433006321,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": 0.07162938204904397,
+          "sem": 0.0802748993313322,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -17.384560180207092,
+          "sem": 0.6630205375011086,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -1.8099752118190129,
+          "sem": 0.33465145631728127,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": 0.05495627845327059,
+          "sem": 0.016773439574284496,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.0164573701719443,
+          "sem": 0.010027139235337705,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": 0.004582452277342479,
+          "sem": 0.021785340287466263,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": 0.04574739187955856,
+          "sem": 0.028830773123089255,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": 0.10058451568086942,
+          "sem": 0.017347290714573384,
+          "n": 24
+        }
+      },
+      "first_neighbor": {
+        "all_demo": {
+          "mean": 0.0012498435874780018,
+          "sem": 0.0007904829759078672,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": -0.009564843028783798,
+          "sem": 0.002639988200262795,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": -9.037057558695476e-05,
+          "sem": 0.0003114826136479794,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": -0.027188139036297798,
+          "sem": 0.08646018601192165,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -17.384560180207092,
+          "sem": 0.6630205375011086,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -1.8099752118190129,
+          "sem": 0.33465145631728127,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": 0.001530309518178304,
+          "sem": 0.0008180815279060246,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.016595806926488876,
+          "sem": 0.010041974568212366,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": 0.01251108447710673,
+          "sem": 0.01509120362584436,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": -0.002228759229183197,
+          "sem": 0.0013370039779744772,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": 0.0013321017225583394,
+          "sem": 0.0010425404817782254,
+          "n": 24
+        }
+      },
+      "last_codeword": {
+        "all_demo": {
+          "mean": 0.04351438209414482,
+          "sem": 0.01716043442533147,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": -0.004626918584108353,
+          "sem": 0.05031874478056982,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": -0.009844129284222921,
+          "sem": 0.006102401855232282,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": 0.018599325170119602,
+          "sem": 0.07476616979073693,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -17.384560180207092,
+          "sem": 0.6630205375011086,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -1.8099752118190129,
+          "sem": 0.33465145631728127,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": 0.022595482567946117,
+          "sem": 0.01409728867781165,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.01399746040503184,
+          "sem": 0.009454434925411781,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": -0.0005750743051369985,
+          "sem": 0.01291120037144032,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": -0.02756420026222865,
+          "sem": 0.02762012957531439,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": 0.053864605724811554,
+          "sem": 0.017224972467211965,
+          "n": 24
+        }
+      }
+    },
+    "qwen3": {
+      "first_codeword": {
+        "all_demo": {
+          "mean": -0.10481803165748715,
+          "sem": 0.05648093479261891,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": 0.578015477474158,
+          "sem": 0.16899138572337347,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": -0.04304261373666426,
+          "sem": 0.041818512788266246,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": -0.20385497342795134,
+          "sem": 0.19252248065854824,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -22.334046115245048,
+          "sem": 1.3594683110738592,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -6.481884939518447,
+          "sem": 0.5845643975073143,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": -0.048480195769419275,
+          "sem": 0.05885870157977507,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.012815363006666303,
+          "sem": 0.06096232326121032,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": -0.0019526282170166571,
+          "sem": 0.06681889844440884,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": 0.15875357870633403,
+          "sem": 0.08858706441251947,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": -0.033063771203160286,
+          "sem": 0.05976976824616343,
+          "n": 24
+        }
+      },
+      "first_neighbor": {
+        "all_demo": {
+          "mean": -0.02923326225330432,
+          "sem": 0.044350072493778474,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": -0.019693156937137246,
+          "sem": 0.05512960890695218,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": -0.01579320291057229,
+          "sem": 0.05649607139344124,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": -0.02391301452492674,
+          "sem": 0.1662516664507634,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -22.334046115245048,
+          "sem": 1.3594683110738592,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -6.481884939518447,
+          "sem": 0.5845643975073143,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": -0.020758570327113073,
+          "sem": 0.045613993650785285,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.014391786651685834,
+          "sem": 0.05916917038284465,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": 0.05738338145116965,
+          "sem": 0.057244517349403126,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": -0.04035481911463042,
+          "sem": 0.05899481967127681,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": 0.04305553141360482,
+          "sem": 0.06143973833702385,
+          "n": 24
+        }
+      },
+      "last_codeword": {
+        "all_demo": {
+          "mean": 0.033769967732951045,
+          "sem": 0.06880395007656423,
+          "n": 24
+        },
+        "all_layers_demo": {
+          "mean": -0.34946121733325225,
+          "sem": 0.11666598310136808,
+          "n": 24
+        },
+        "bottomk_demo": {
+          "mean": 0.0269474054997166,
+          "sem": 0.05705090364382402,
+          "n": 24
+        },
+        "dense_two_layer": {
+          "mean": -0.2088963273757448,
+          "sem": 0.15629913411304733,
+          "n": 24
+        },
+        "no_demo_text": {
+          "mean": -22.334046115245048,
+          "sem": 1.3594683110738592,
+          "n": 24
+        },
+        "positive_control": {
+          "mean": -6.481884939518447,
+          "sem": 0.5845643975073143,
+          "n": 24
+        },
+        "random_demo": {
+          "mean": 0.032881263721113406,
+          "sem": 0.05418147855714171,
+          "n": 24
+        },
+        "random_nondemo": {
+          "mean": 0.011089256266131997,
+          "sem": 0.06857978754449721,
+          "n": 24
+        },
+        "same_head_random": {
+          "mean": -0.036765144827465214,
+          "sem": 0.06807646096988859,
+          "n": 24
+        },
+        "subsampled_all_layers_demo": {
+          "mean": 0.021421573590487242,
+          "sem": 0.0623167658903508,
+          "n": 24
+        },
+        "topk_demo": {
+          "mean": -0.04734602648143967,
+          "sem": 0.06335730172533208,
+          "n": 24
+        }
+      }
+    }
+  },
+  "verdict": {
+    "llama": {
+      "ceiling_no_demo_text": -17.384560180207092,
+      "positive_control": -1.8099752118190129,
+      "positive_control_frac_of_ceiling": 0.1041139489901925,
+      "largest_knockout_arm": {
+        "scope": "first_codeword",
+        "arm": "all_layers_demo",
+        "mean": 0.26125749945640564,
+        "frac_of_ceiling": 0.015028133973378061
+      },
+      "signs_by_scope_all_demo": {
+        "first_codeword": 0.10313744594653447,
+        "first_neighbor": 0.0012498435874780018,
+        "last_codeword": 0.04351438209414482
+      }
+    },
+    "qwen3": {
+      "ceiling_no_demo_text": -22.334046115245048,
+      "positive_control": -6.481884939518447,
+      "positive_control_frac_of_ceiling": 0.29022439132038697,
+      "largest_knockout_arm": {
+        "scope": "first_codeword",
+        "arm": "all_layers_demo",
+        "mean": 0.578015477474158,
+        "frac_of_ceiling": 0.02588046404541133
+      },
+      "signs_by_scope_all_demo": {
+        "first_codeword": -0.10481803165748715,
+        "first_neighbor": -0.02923326225330432,
+        "last_codeword": 0.033769967732951045
+      }
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/analyze_e6.py",
+      "--pattern",
+      "llama:first_codeword:btn_firstcw_*",
+      "--pattern",
+      "llama:first_neighbor:btn_firstnbr_*",
+      "--pattern",
+      "llama:last_codeword:btn_lastcw_*",
+      "--pattern",
+      "qwen3:first_codeword:btn_q3_firstcw_*",
+      "--pattern",
+      "qwen3:first_neighbor:btn_q3_firstnbr_*",
+      "--pattern",
+      "qwen3:last_codeword:btn_q3_lastcw_*",
+      "--out",
+      "outputs/boombness/e6_button_knockout.json"
+    ],
+    "git_commit": "defec9746b0b520a90a0560586042a56c6980dea"
+  }
+}

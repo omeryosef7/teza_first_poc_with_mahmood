@@ -3293,3 +3293,56 @@ import-checked locally before resubmission.
 | 41 | 2026-08-20 | Qwen3 E6 arms refused by the tail gate at 2.486e-05 | isolated to the model, not the bank or the readout |
 | 42 | 2026-08-20 | added `--enable-thinking` to `surgical_knockout`, threaded into both templating paths | option mass **2.486e-05 → 0.3155**, gate PASS |
 | 43 | 2026-08-20 | remaining two Qwen3 arms resubmitted (770112, 770113) | E6 Qwen3 unblocked |
+
+## ★ E6 ANSWERED — the attention-edge null holds for a second codeword, and the positional gradient does not replicate
+
+Plan §14 / E6. `button` replaces `carrot`; the concept and the **fitted directions are unchanged**, so
+this tests transfer, not refitting. Script `src/boombness/analyze_e6.py`, artifact
+`outputs/boombness/e6_button_knockout.json`. All six runs passed their option-mass gate; the script
+**refuses** any run that did not, so the three fp32 arms that failed the gate cannot enter.
+
+**Read the ceiling first.** A knockout delta is meaningless without the range it sits in:
+
+| | Llama-3.1-8B | Qwen3-14B |
+|---|---|---|
+| `no_demo_text` — delete the demonstrations (**true ceiling**) | **−17.385** | **−22.334** |
+| `positive_control` — the hook at full strength | −1.810 (**10.4%** of ceiling) | −6.482 (**29.0%** of ceiling) |
+| **largest** knockout arm of any scope | +0.2613 (**1.50%**) | +0.5780 (**2.59%**) |
+
+The hook fires — `positive_control` moves 10–29% of the ceiling on both models — so a null here is a
+statement about attention edges, not about a dead hook. That is the check the module's docstring
+calls mandatory, and it passes.
+
+**The result: cutting demonstration attention edges recovers at most 2.6% of the deletion range.**
+Deleting the demonstration *text* moves the readout 17–22 log-odds; cutting the *edges that carry it*
+moves it by ~0.1–0.6. This reproduces G3's redundancy finding on a **second codeword**, on **two
+models**, with a **validated readout** and an **explicit ceiling** — none of which the original G3
+had.
+
+**The positional gradient does NOT replicate — it inverts.** `all_demo` by demonstration scope:
+
+| scope | Llama | Qwen3 |
+|---|---|---|
+| `first_codeword` | **+0.1031** | **−0.1048** |
+| `first_neighbor` | +0.0012 | −0.0292 |
+| `last_codeword` | +0.0435 | +0.0338 |
+
+Llama's "the first codeword occurrence matters most" ordering is the Phase G position effect. On
+Qwen3 the same cell has the **opposite sign**. Given that every one of these is ≤2.6% of the ceiling,
+the honest reading is that they are **noise around zero**, and the Llama gradient should not be
+reported as a positional finding. This is the substance of the audit's F2 — which its verifier
+"largely refuted" as framed — arriving from a different direction: not that the arms have the wrong
+sign relative to the ceiling, but that they are indistinguishable from zero **and** unstable across
+models.
+
+**What E6 does and does not settle.** It settles that the edge-knockout null is not a
+carrot-specific artifact: change the codeword and the null persists on both models. It does **not**
+test whether `d_surface` is a *concept*-surface direction, because the concept never changed — the
+log's own E6 scoping note already recorded that a codeword swap cannot answer that, and it still
+cannot.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 44 | 2026-08-20 | all three Qwen3 E6 arms completed post-fix; the other session's fp32 arms failed the gate | 6 usable runs, 3 correctly excluded |
+| 45 | 2026-08-20 | wrote `analyze_e6.py` + artifact, ceiling-relative | **E6 answered**: knockout ≤2.6% of ceiling on both models |
+| 46 | 2026-08-20 | positional gradient compared across models | **inverts** — Llama +0.103 vs Qwen3 −0.105; treat as noise |
