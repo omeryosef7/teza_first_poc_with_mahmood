@@ -3942,6 +3942,104 @@ is floor-limited (R-17), the Qwen3 arm-D judging is invalid at the judge input (
 representational port is blocked numerically. Three independent reasons, none of them evidence that
 the mechanism fails on Qwen3.
 
+
+## ✅✅ THE QWEN3 RE-JUDGE OVERTURNS R-13 — and delivers the cross-model replication Phase H could not
+
+**Artifacts:** `outputs/boombness/judge/q3rj2_{base,C20,D20,D20ctrl}_20260820_211*`,
+`outputs/boombness_followup/topicality_qwen3_rejudged.json`. All four arms: **960 rows,
+`null_frac = 0.0000`, goal statuses `{substituted: 816, noop_concept_already_present: 144}`, zero
+`empty`.**
+
+**The arms are matched, verified from their configs rather than assumed** — same seed 20260816, same
+`max_new=192`, same `bfloat16`, same `enable_thinking=false`, same model. Only `--intervene` differs,
+and the control is a **norm-matched *double* random** at the same two layers as arm D.
+
+### What the empty goal was doing, and what is actually there
+
+| `benign_literal` (n=324) — attack success is **zero by construction** | as judged (empty goal) | **re-judged** |
+|---|---|---|
+| baseline | 0.003 | **0.0000** |
+| remove refusalness (L20) | **0.994** | **0.0000** |
+| **norm-matched double-random control** | **0.954** | **0.0093** |
+| remove both (L11 + L20) | 0.880 | **0.2222** |
+
+**R-13's diagnosis is refuted.** It read those 0.95–0.99 figures as StrongReject scoring fluent,
+on-topic *benign* answers as jailbreaks — "the judge scores answer style, not harmful content".
+With a real goal the judge does no such thing: the two arms it condemned fall to **0.000** and
+**0.009**. The phenomenon was **the empty goal**, not a rubric that ignores topicality. R-13's
+*conclusion* — that the comparison was uninterpretable — was right, and is now **resolved rather than
+standing**: the deltas are measurable.
+
+### The cross-model result, paired and domain-clustered (6 clusters, 5 df)
+
+Qwen3-14B, internal doublespeak bank, `natural_doublespeak` n = 420. **Baseline ASR = 0.1714 — this
+is NOT the 0.8% AdvBench floor that blocked R-17.** There is dynamic range here.
+
+| arm | ΔASR | p_cl | Δ StrongReject | p_cl |
+|---|---|---|---|---|
+| remove refusalness (L20) | **−0.0048** | 0.61 | −0.0089 | 0.42 |
+| **remove both** (`d_surface` L11 + refusalness L20) | **+0.3476** | **0.00028** | **+0.3190** | **0.00017** |
+| norm-matched double-random control | +0.0143 | 0.44 | +0.0021 | 0.85 |
+
+**A large effect with an inert matched control at the same dose and depths.** This is the
+cross-model replication plan §10 asked for, arrived at behaviourally after the representational
+route was blocked numerically.
+
+### ⚠ But most of it is NOT doublespeak-specific, and the benign arm is what shows it
+
+Removing both channels also produces **+0.2222 (p_cl 0.0037)** on prompts about a **literal carrot**,
+where success is zero by construction. And it is real content, not judge noise: of the flagged
+benign rows, **97.2% contain the concept word** (`has_concept_rate_malicious = 0.972`, against 0.421
+in the unflagged rows and 0.000 in the control).
+
+Per-domain, (Δ on doublespeak) − (Δ on benign_literal):
+
+| arm | doublespeak-specific excess | p_cl |
+|---|---|---|
+| remove refusalness | −0.0048 | 0.61 |
+| **remove both** | **+0.1254** | **0.030** |
+| double-random control | +0.0050 | 0.81 |
+
+**So the honest statement is:** removing both channels raises Qwen3's doublespeak ASR by +0.348, of
+which **+0.125 is attributable to the taught mapping (p 0.030)** and **+0.222 is a non-specific "emit
+bomb content regardless of the prompt" effect**. Roughly **64% of the raw gain is non-specific.**
+Reporting the +0.348 alone would be reporting mostly an intervention artifact — and the only reason
+this is visible is that a benign arm was run.
+
+### ⚠ The topicality gate returns UNDECIDABLE here, correctly
+
+Every goal on this bank reduces to the single content word *bomb*, so `goal_content_overlap` is {0,1}
+and identical to `has_concept` — the degeneracy guard added after review #4 fires and the gate
+refuses a verdict rather than letting the threshold choose one. The raw `has_concept` rate above is
+the informative quantity and is quoted as such, not as a gate verdict.
+
+### What this does and does not establish
+
+**Establishes.** (1) Qwen3-14B has behavioural dynamic range on the internal bank (17.1% baseline),
+so **the "floor-limited, cannot test" status from R-17 applies to AdvBench, not to this model**.
+(2) A composed intervention moves it far, with an inert norm- and depth-matched double-random
+control. (3) A doublespeak-specific component survives the benign subtraction.
+
+**Does not establish.** ⛔ **Which channel does the work.** This set has no arm B — `d_surface` alone
+was never run on Qwen3's internal bank — so the +0.348 cannot be decomposed, and `d_surface`'s own
+contribution is unmeasured. ⛔ It is **not** a replication of the *Llama* pattern: on Llama,
+refusalness removal alone was the dominant channel (+0.1895); on Qwen3 it is **inert** (−0.0048).
+That is either a genuine cross-model difference or a weaker refusal direction at L20, and nothing
+here separates the two.
+
+⚠ Provenance: the 2,352-row bank (hash-certified join), `max_new=192` against the Llama arms' 512,
+and the judge reports `BANK IDENTITY UNVERIFIED` for the legacy-key reason documented above.
+
+### ⛔ Ledger update
+
+- **R-13's mechanism ("the judge scores answer style, not harmful content") is REFUTED.** Its
+  withdrawal of "every Qwen3 ASR delta in this comparison" is **superseded** — they are re-measured
+  above. Its methodological point stands in weakened form: a benign arm *is* the discriminator, and
+  it is what exposed the 64% non-specific component here.
+- **My own topicality-gate FAIL verdicts on those arms are superseded too.** They diagnosed a
+  rubric-topicality failure; the real defect was upstream, at the judge input. The gate's new
+  provenance guard is what would have caught it, and now does.
+
 ## 4h Code and Output Review — Review #4 (2026-08-20 19:40)
 
 Eight agents, 732k tokens, 275 tool calls: four adversarial audits of **this session's own** new code
