@@ -3244,3 +3244,52 @@ instruments disagree about whether the rows are even assessable. **This needs on
 | 38 | 2026-08-20 | built the R-13 topicality gate; validated it fires on the two artifact arms and not on `q3_D20` | committed `3c51baac` |
 | 39 | 2026-08-20 | ran the periodic audit: 3 lanes, each adversarially verified | 9+ confirmed, several refuted |
 | 40 | 2026-08-20 | **closed my own two provenance holes** with `analyze_clearharm.py` | both numbers reproduce; artifact committed |
+
+## E6 on Qwen3: the readout was reading the model's REASONING, and the tail gate caught it
+
+Tick 2026-08-20. Both Qwen3 E6 knockout arms were refused by the tail gate with median option mass
+**2.486e-05** on the unintervened arm. That is the R-13/C-5 tail regime — but the readout code was
+not at fault: `surgical_knockout` already defaults to `whole_answer` and applies the answer prefix.
+
+**Isolated by holding everything else fixed** — same button bank, same query kind, same readout mode,
+same prefix, same commit:
+
+| model | `none` option mass | gate |
+|---|---|---|
+| Llama-3.1-8B | **0.273** | PASS |
+| Qwen3-14B | **2.486e-05** | FAILED |
+
+It is the **chat template**. Qwen3 opens a `<think>` block in the assistant prefix, so appending
+`Answer:` places the readout position **inside the reasoning stream** and the answer words hold ~1e-5
+of the next-token mass. `score_behavior` has passed `--enable-thinking false` for every Qwen3 run
+since that flag was added; **`surgical_knockout` never had the flag at all** — and its own comment at
+`:880` had already observed that `resolve_occurrences` "takes an `enable_thinking` argument this call
+did not pass". Nothing acted on it.
+
+Fixed and threaded into **both** templating paths (`resolve_occurrences` and the dense-two-layer
+`apply_template`), because passing it to one and not the other is the shape that has now produced
+**eight** defects in this project — and this file was already sitting on half of it.
+
+**Verified rather than assumed:**
+
+| | before | after |
+|---|---|---|
+| Qwen3 `none` option mass | 2.486e-05 | **0.3155** |
+| gate | FAILED | **PASS** |
+
+A ~12,700× recovery, now comparable to Llama's 0.273. Provenance confirmed present in
+`metadata.json` / `RUNMETA.json` / `config.json`.
+
+**Two process notes.** First, no published number changes, because **the gate refused to produce
+one** — this is the tail gate built two days ago catching a failure mode nobody predicted: a
+model-specific template silently turning a validated readout into a tail readout. Second, the first
+fix attempt (770086) died at import with `ModuleNotFoundError: ds_common` because I placed that
+import **before** `common`, which is what puts `doublespeak_causality` on `sys.path`. That cost a GPU
+slot to learn something a one-second local import would have told me, and the reordered version was
+import-checked locally before resubmission.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 41 | 2026-08-20 | Qwen3 E6 arms refused by the tail gate at 2.486e-05 | isolated to the model, not the bank or the readout |
+| 42 | 2026-08-20 | added `--enable-thinking` to `surgical_knockout`, threaded into both templating paths | option mass **2.486e-05 → 0.3155**, gate PASS |
+| 43 | 2026-08-20 | remaining two Qwen3 arms resubmitted (770112, 770113) | E6 Qwen3 unblocked |
