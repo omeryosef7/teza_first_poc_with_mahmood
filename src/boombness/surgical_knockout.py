@@ -635,11 +635,14 @@ def main() -> int:
     ap.add_argument("--skip-arms-reason", default="",
                     help="why. Mandatory whenever --skip-arms is non-empty.")
     ap.add_argument("--dtype", default="float32", choices=["float32", "bfloat16"],
-                    help="model weight dtype. DEFAULT float32 -- every committed knockout number "
-                         "was produced in fp32 and this default must not change. bfloat16 exists "
-                         "ONLY because a 14B model in fp32 (~59 GiB) cannot load on a 44 GiB L40S; "
-                         "the dtype is recorded in run metadata and fp32/bf16 runs must not be "
-                         "compared without a same-model dtype control.")
+                    help="model weight dtype. USE float32. bfloat16 is REFUTED, not merely "
+                         "risky: dominance.py:179 rejects a value-flow reconstruction whose "
+                         "relative error exceeds 1e-3, and bf16 carries eps ~7.8e-3, so every row "
+                         "fails that guard (measured: job 769906, Llama-3.1-8B, 24/24 rows, "
+                         "'the value-flow decomposition does not reconstruct the attention "
+                         "output'). The choice is kept as a flag only so this fact is discoverable "
+                         "at the CLI and so the dtype lands in run metadata. A 14B model in fp32 "
+                         "needs ~59 GiB: shard it over two GPUs, do not lower the precision.")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
 

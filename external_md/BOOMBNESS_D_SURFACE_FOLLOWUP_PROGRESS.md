@@ -3322,6 +3322,83 @@ The `<think>`-token risk from attempt 1 is unchanged and still unjudged: `option
 the arbiter, and if it fires the reported result is "Phase G cannot be ported to Qwen3 without
 threading `enable_thinking` through the knockout" — not a number.
 
+### ⛔ Attempt 3 — the dtype control DID ITS JOB and REFUTED my own fix. bf16 is not admissible here.
+
+**769906 (`llbf16_firstcw`, Llama-3.1-8B, apple bank, bf16) FAILED on all 24 rows:**
+
+```
+[knockout] 0 rows -> .../surgical_knockout/llbf16_firstcw_20260820_171613_3760625
+[knockout] failures: {'dominance:AssertionError:L8: the value-flow decomposition does not
+                      reconstruct the at...': 24}
+```
+
+This is `dominance.py:179` — the guard that compares the reconstructed attention output against the
+module's **actual** output and refuses a relative error above **1e-3**. bfloat16 carries ~8 bits of
+mantissa (eps ≈ 7.8e-3), so a reconstruction error above that tolerance is not a bug, it is
+arithmetic. **`surgical_knockout.py` was in fp32 for a numerical reason, and the comment at line 677
+did not say so.**
+
+Two things follow, and the second is the one worth keeping.
+
+1. **My `--dtype bfloat16` "fix" was the wrong lever.** The flag stays — it is inert at its
+   `float32` default and it is now the thing that documents *why* fp32 is mandatory — but bf16 must
+   never be used with this module. The help text is being corrected from "exists only because a 14B
+   model cannot load on 44 GiB" to name the `dominance` tolerance as the blocker.
+2. **The control is the reason this is a one-line correction and not a retracted cross-model
+   result.** Had I run the three Qwen3 bf16 arms without 769906, the plausible outcome was not a
+   crash but a *number* — Qwen3's own reconstruction error might have landed just under 1e-3 at some
+   layers and just over at others, producing a partial arm set that looked like a weak cross-model
+   effect. The dtype control was submitted precisely because "Qwen3-bf16 vs Llama-fp32" is a
+   confounded comparison, and it converted a silent confound into a loud failure in 20 minutes of
+   GPU. **This is the third time this sprint that a matched control, not a result, was the thing
+   that mattered.**
+
+`dominance.py:165-183` also deserves a note: its own comment records that an earlier version of this
+check summed `D_attn` and called that a self-test, which is an **algebraic tautology** that passes for
+any `Y` including one built with a wrong GQA head map. The check that replaced it is what caught the
+dtype. A guard that can fail is worth more than one that cannot.
+
+**The remaining route for Phase H is fp32 on two GPUs** — Qwen3-14B fp32 is ~59 GiB against a 44 GiB
+L40S, and `device_map="auto"` already shards across whatever is visible, so `--gpus=2 --mem=96G` is a
+submission change with no code change and no numerical compromise. **Not submitted — see the
+concurrency incident below.**
+
+### ⛔ INCIDENT — a second Claude session is working this repo, and it cancelled these jobs
+
+At **17:37:17** jobs **769903** (Qwen3 `first_codeword`, 60% through weight loading), **769907** and
+**769915** were all `CANCELLED by 47249` — simultaneously, by this account, and **not by me**. At
+**17:41:32**, jobs 769941/769942 appeared, which I did not submit: `tokenization_audit.py` against
+`data/boombness_prompts/boombness_prompt_bank_button.jsonl`, a bank that did not exist an hour ago.
+`ListAgents` reports **three live interactive peer sessions** in this working directory. HEAD has
+moved to **`4ff9d59c`**, a commit authored on top of mine that edits `src/boombness/prompt_families.py`
+(+124 lines).
+
+**That session's finding is correct and it matters to this one.** `4ff9d59c` reports that the apple
+bank fails the plan §2.4 gate two ways: 8 core-2×2 families carry an **incidental collision**
+(`instructional/benign[7]` mentions apples, so substituting `apple` yields two target occurrences
+where `carrot` yields one), and — the serious one — **article agreement**: the generator does naive
+word substitution and never repairs the indefinite article, so the corpus's uniform `a` produced
+**2,938 ungrammatical `a apple` occurrences across 1,569 of 2,736 rows and zero grammatical ones**,
+while the concept arm reads a grammatical `a bomb` in 671 rows. **The ungrammaticality is asymmetric
+across exactly the two cells the 2×2 contrasts.** E6 exists to ask whether `d_surface` is a
+concept-surface direction or a `carrot`-detector, and a grammaticality artifact could answer that
+question the wrong way silently.
+
+**Consequence for Phase H as I designed it: the vehicle is void.** Every attempt (769001-004,
+769187-189, 769903-906) used the apple bank, chosen at tick 43 because it was the only bank
+tokenization-sound on both models. That soundness argument was about the *tokenizer* and never
+checked the *corpus*, which is exactly the gap `4ff9d59c` closes. **The Qwen3 cross-model port must
+be re-based on the button bank before it is worth any more GPU**, and
+
+> ⛔ **the E6 apple result at line ~2981 ("the Phase G effect REPLICATES on a second codeword,
+> lexical G is now 2") is hereby marked PENDING RE-TEST, not established.** It was measured on a bank
+> whose two contrasted cells differ in grammaticality as well as in codeword.
+
+**Stopping GPU submission and escalating.** Two sessions sharing one branch, one working tree, one
+`outputs/` and one SLURM account will keep cancelling and duplicating each other's work; the three
+lost jobs above are the first instance, not a one-off. No further jobs submitted from this session
+until the user says how to divide the work.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
