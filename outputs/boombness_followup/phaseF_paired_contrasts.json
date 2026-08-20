@@ -1,0 +1,81 @@
+{
+ "label": "Phase F composed PAIRED contrasts \u2014 the headline numbers, which analyze_external_arms does not emit",
+ "note": "analyze_external_arms.py emits only paired_vs_baseline. Review #3 found the headline contrasts existed in no committed artifact. This file closes that gap.",
+ "n_common": 495,
+ "estimand": "mean over per-domain mean paired deltas; 16 domain clusters",
+ "runs": {
+  "base": "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "C": "outputs/boombness/judge/abg_C_20260819_011714_1480835",
+  "F6": "outputs/boombness/judge/n_fuF25_remR_addS_20260819_231331_2244682",
+  "F6ctrl": "outputs/boombness/judge/p_remR_addS_CTRL_20260820_071344_2399521",
+  "E": "outputs/boombness/judge/m_fuF_remS_addR_20260819_214330_2192946",
+  "Ectrl": "outputs/boombness/judge/p_remS_addR_CTRL2_20260820_064339_2390552",
+  "B": "outputs/boombness/judge/abg_B_20260819_013447_1506491"
+ },
+ "contrasts_continuous": {
+  "F6_minus_F6ctrl": {
+   "delta_cluster_mean": -0.13275589926331935,
+   "sem": 0.030781012185339813,
+   "t": -4.312915327928933,
+   "df": 15,
+   "p_cl": 0.0006156055586237219,
+   "n_clusters": 16
+  },
+  "F6_minus_C": {
+   "delta_cluster_mean": -0.08272943185276817,
+   "sem": 0.021874047372103963,
+   "t": -3.782081589448931,
+   "df": 15,
+   "p_cl": 0.001808285966877543,
+   "n_clusters": 16
+  },
+  "F6ctrl_minus_C": {
+   "delta_cluster_mean": 0.050026467410551174,
+   "sem": 0.016428782099507586,
+   "t": 3.045050272597541,
+   "df": 15,
+   "p_cl": 0.008185686269136072,
+   "n_clusters": 16
+  },
+  "E_minus_Ectrl": {
+   "delta_cluster_mean": 0.026613939832036203,
+   "sem": 0.012288413522180196,
+   "t": 2.16577508431002,
+   "df": 15,
+   "p_cl": 0.04685129116640252,
+   "n_clusters": 16
+  },
+  "E_minus_B": {
+   "delta_cluster_mean": -0.009442720855072912,
+   "sem": 0.004309123887173987,
+   "t": -2.191331951067586,
+   "df": 15,
+   "p_cl": 0.04462733185156598,
+   "n_clusters": 16
+  }
+ },
+ "contrasts_binary_asr0.5": {
+  "F6_minus_F6ctrl": {
+   "delta_cluster_mean": -0.1374993086563075,
+   "sem": 0.03085909576593436,
+   "t": -4.45571411745947,
+   "df": 15,
+   "p_cl": 0.00046240252956142314,
+   "n_clusters": 16
+  },
+  "F6_minus_C": {
+   "delta_cluster_mean": -0.0871006106606089,
+   "sem": 0.02401153078888814,
+   "t": -3.6274493045198355,
+   "df": 15,
+   "p_cl": 0.002481964029552808,
+   "n_clusters": 16
+  }
+ },
+ "holm_family_m4": {
+  "F6_minus_F6ctrl": 0.0024624222344948876,
+  "F6_minus_C": 0.005424857900632629,
+  "E_minus_B": 0.08925466370313195,
+  "E_minus_Ectrl": 0.08925466370313195
+ }
+}

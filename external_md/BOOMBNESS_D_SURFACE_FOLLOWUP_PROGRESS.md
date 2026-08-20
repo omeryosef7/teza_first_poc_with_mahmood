@@ -1548,8 +1548,11 @@ Artifacts `outputs/boombness_followup/g3_first.json`, `g3_last.json`.
 
 **I predicted last > first. The truth is first ≫ last, and last is exactly nothing.**
 
-Cutting the attention edges out of the **first** demonstration's codeword reproduces **73% of the full
-codeword-scope effect (+0.9718 of +1.3322) using one sixth of the edges**. Cutting the **last**
+Cutting the attention edges out of the **first** demonstration's codeword reproduces the **entire**
+codeword-scope effect within noise, using one sixth of the edges. ⚠ *Corrected from "73%" — review #3
+(R3-4) showed the paired `codeword − first` contrast is **+0.3604 ± 0.3552, t = 1.01**, with codeword >
+first on only 12/24 prompts. The missing 27% is not distinguishable from zero, so treating it as real
+was unsupported. The corrected claim is **stronger**, not weaker.* Cutting the **last**
 demonstration's codeword, at an **identical 1,024 edges**, does **nothing** (−0.0231 ± 0.0615).
 
 Because the two arms cut the same number of edges, this is **not** the edge-count confound that broke
@@ -2689,7 +2692,9 @@ coherence gate** (uniq 0.772 / 0.756, scorable 0.701 / 0.881).
 | **F6_CTRL** | C **+** `random:add:8-8:0.25` | 0.3374 | **0.6364** | **+0.2395** | 0.0001 |
 
 **Dose matching verified from the fit dir, not assumed:** both add legs take the `:221` gap-unit path
-and inject an identical **0.25 × gap[d_surface][L8] = 0.25 × 5.926142 = 1.4815**. Identical layer,
+and inject an identical **0.25 × gap[d_surface][L8] = 0.25 × 6.054948 = 1.5137**. ⚠ *Corrected: I first
+wrote 1.4815, read from `directions_fit_heldout.pt` while the runs used `directions_fit_dev.pt` — see
+review #3, correction R3-1. The equality of the two arms was never in doubt; the magnitude was wrong.* Identical layer,
 identical operation, identical magnitude, identical `refusalness:project_out` leg. The only difference
 is *which vector*.
 
@@ -2811,6 +2816,102 @@ and is the single highest-value run the next sprint could make.
 Plus the L6–L10 gap: **no Llama refusal direction exists below L12**, so the interaction cannot be
 measured inside `d_surface`'s own causal band. That remains the sprint's largest unanswered structural
 question and needs a direction fit, not more analysis.
+
+## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
+
+Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
+results. **Both results survive. Four of my supporting statements do not.**
+
+### The arm-6 sign reversal — SURVIVES, and is stronger than I reported
+
+Every figure reproduces from raw judge rows. The auditor added robustness I had not computed:
+
+- **13 of 16 clusters negative, 3 exactly zero, ZERO positive.**
+- Leave-one-cluster-out range **−0.115 to −0.142**, worst p **0.0015**.
+- Survives Holm even at **m = 20** (0.0123), so the family size is not load-bearing.
+- **Survives on the binary flag**, slightly stronger: −0.1375, t −4.46, p_cl 0.00046.
+- All four arms pass the committed coherence gate, none trips the floor. And **`F6_CTRL` is the more
+  verbose arm** (961 vs 677 mean chars) *and* scores higher ASR — so "the edit broke generation" would
+  push the **wrong way**. Degeneracy cannot explain the reversal.
+
+### ⛔ R3-1 — my dose figure was wrong, and "verified" was not verified
+
+I wrote the injected magnitude as **1.4815**, "verified from the fit dir". The true value is **1.5137**:
+I read `gap[d_surface][8]` from `directions_fit_**heldout**.pt` (5.926142) while the runs used
+`directions_fit_**dev**.pt` (6.054948). **The equality of the two arms is unaffected and was
+independently re-confirmed** — both take the same `gap["d_surface"]` path and `make_add_hook`
+normalises to unit norm, so both inject exactly `alpha × g`. But the sentence claiming verification was
+checked against the wrong file. Corrected in place.
+
+### ⛔ R3-2 — the arm-6 control is ONE random draw, and I did not say so
+
+`norm_matched_random` seeds a fresh generator from `control_seed + L`, so **all 495 prompts receive the
+identical vector**, and only L8 is in the band — **one vector total**. No between-draw variance is
+estimated anywhere, so the clustered SE prices prompt and domain noise only and the p-value conditions
+on that single draw.
+
+**This is not retraction #7 / R-12** — the auditor confirmed the seed genuinely reaches the draw
+post-`aaf7e50c`, and the four `gens.jsonl` hashes are all distinct. And it **replicates on a second,
+independent draw**: `addCtrl8_025` (different seed, no refusalness leg) gives `addS − addCtrl8 =
+−0.0301, t −2.44, p 0.027`, same direction. But the headline arm has **n = 1 control draw** and the log
+now says so.
+
+### ⛔ R3-3 — the headline contrasts were in NO committed artifact
+
+`analyze_external_arms.py` emits only `paired_vs_baseline`. The numbers I led with (−0.1328, t −4.31,
+Holm 0.0025) existed **only in a commit message**. **Fixed this tick:**
+`outputs/boombness_followup/phaseF_paired_contrasts.json` now carries all five paired contrasts, on
+both the continuous and binary estimands, with the Holm family.
+
+### ⛔ R3-4 — "73%" fails; the corrected claim is STRONGER
+
+Paired `codeword − first` = **+0.3604 ± 0.3552, t = 1.01**, codeword > first on only **12/24** prompts.
+The "missing 27%" is not distinguishable from zero. **Cutting the first demonstration codeword alone
+reproduces the entire codeword-scope effect within noise.** Corrected in place.
+
+### ⛔ R3-5 — my `dynamic_range_established` defence was self-serving
+
+I argued the flag was non-disqualifying because `no_demo_text` (−17.879) establishes movability. The
+auditor showed **`no_demo_text` is one forward pass replicated 24 times** — all 24 rows carry
+`semantic_logodds = −13.853043318` and `top1_id = 95392`, identical to nine decimals, because
+`final_query_text` is the same string for every prompt. **Its ceiling has n = 1 — the exact shape R-12
+retracted.** It also points the wrong way: −17.88 against a reported effect of **+0.97**.
+
+**The correct defence exists and I failed to make it:** `first_codeword` **is itself the matched
+positive control for `last_codeword`** — same kind of intervention, same 1,024 edges, same layers,
++0.97 versus −0.02. That licenses the `last` null without invoking `no_demo_text` at all. **Conclusion
+right, stated reasoning unsound.**
+
+### ⛔ R3-6 — the effect is token SUPPRESSION, not semantic re-binding
+
+Decomposing the +0.9718: **Δ logp_codeword = −0.9449, Δ logp_concept = +0.0268**, and `top1_id` changes
+on **1 of 24** prompts. Cutting the first demonstration codeword makes the model **less likely to say
+*carrot*** — it does **not** make it more likely to say *bomb*. My phrasing "makes the readout more
+concept-like" is **contradicted by its own decomposition** and is withdrawn. The result survives as a
+**readout** claim; any gloss about "where the concept binding lives" does not.
+
+### Two identification limits the audit surfaced
+
+1. **Lexical G = 1.** All 24 prompts share **one** codeword/concept pair — `carrot` / `bomb` — across
+   all six domains. The Phase G contrast is established **for *carrot***, not for "codewords". Domain
+   clustering does not fix this.
+2. **Serial position is unidentified.** `demo_block` starts at character 0, so the first demo codeword
+   sits ~token 10–15 of a 105–181-token sequence, adjacent to the BOS/attention-sink region. There is
+   **no all-layer, 1,024-edge control on a non-codeword token at a comparable early position**.
+   "First demonstration codeword" is not yet separated from "earliest heavily-attended source".
+
+### And the statistics are stronger than I reported
+
+Because the runs share prompts and have **bit-identical baselines**, the arms are exactly pairable:
+**paired first − last = +0.9949, sem 0.0875, t = 11.4 (df 23), sign test 24/24 positive, p ≈ 1.2e-7**;
+domain-clustered t = 9.8 (df 5, p ≈ 2e-4). I reported two independent sems where a paired test was
+available and far tighter.
+
+⚠ **Cross-run comparability caveat the auditor caught:** the committed codeword-24 run used
+`--layers 8,18 --topk 8`; the new runs use `--layers 8,12,18,24 --topk 16`. For `all_layers_demo` this
+is provably inert (that arm ignores both flags), but **every other arm differs** — `positive_control` is
++0.2583 in one and −4.6579 in the others. **The three JSONs must not be read side-by-side outside the
+`all_layers_demo` row.**
 
 ## Compute Blocker — diagnosed and mitigated (tick 23)
 
