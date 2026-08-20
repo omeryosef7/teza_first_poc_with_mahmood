@@ -3532,3 +3532,41 @@ unrelated numbers.
 | 56 | 2026-08-20 | built `analyze_topical_asr.py` — the R-13-immune conjunction outcome | one definition, applied identically to both models |
 | 57 | 2026-08-20 | recomputed §14 on committed data, no GPU, no new judging | **arm D REPLICATES**: Δ topical +0.576 Qwen3, +0.033 Llama |
 | 58 | 2026-08-20 | the Qwen3 double-random control under the conjunction | **0.888 → 0.021**, Δ −0.002 — the artifact is fully absorbed |
+
+## The Qwen3 "broad elevation" conclusion is CONFIRMED — a test that could have killed it did not
+
+Tick 2026-08-20, immediately after §14. The report's Qwen3 section concludes that the projection arm
+"does not isolate an attack-related quantity" **because Qwen3 is elevated on benign conditions too**.
+R-13 had just shown that the rubric can manufacture exactly that pattern, so this conclusion was
+sitting on the same foundation the §14 result had just been retracted from. It had to be re-tested,
+and it could plausibly have gone the other way.
+
+Same conjunction, `projout` vs its matched control:
+
+| condition | n | `projout` topical | control topical | Δ topical vs baseline |
+|---|---|---|---|---|
+| `natural_doublespeak` | 420 | **+0.464** | +0.005 | **+0.440 [+0.357, +0.521]** |
+| `benign_literal` | 324 | **+0.256** | **0.000** | **+0.256 [+0.173, +0.340]** |
+| `benign_remap` | 36 | **+0.472** | **0.000** | **+0.472 [+0.361, +0.583]** |
+
+**The benign elevation survives.** On prompts about a literal carrot, removing `d_surface` from Qwen3
+produces completions that score as harmful **and contain bomb-distinctive words** — 25.6% of them,
+against a control at exactly zero. That is genuine concept content in a context where no attack was
+mounted, not the judge rewarding confident prose.
+
+**Why this is worth more than a confirmation.** The same instrument, applied to arm D on the same
+model one tick earlier, collapsed a control from **0.888 plain to 0.021 topical**. So the artifact is
+real, large, and demonstrably detectable by this test — which is what makes its *absence* here
+evidence rather than an assumption. A confirmation from an instrument that never rejects anything
+would be worthless; this one rejects hard when the artifact is present.
+
+Two conclusions on the same model, from the same outcome, pointing opposite ways, and both now on
+measured footing:
+* **arm D** (remove `d_surface` **and** refusal) — attack-specific, control inert, **replicates**;
+* **`projout`** (remove `d_surface` alone) — elevates attack **and** benign alike, so it does **not**
+  isolate an attack-related quantity on Qwen3.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 59 | 2026-08-20 | re-tested the report's Qwen3 benign-elevation conclusion against the R-13-immune outcome | **survives**: benign topical +0.256 vs control 0.000 |
+| 60 | 2026-08-20 | recorded why a confirmation counts here | the same test collapsed 0.888 → 0.021 one tick earlier, so it does reject when it should |
