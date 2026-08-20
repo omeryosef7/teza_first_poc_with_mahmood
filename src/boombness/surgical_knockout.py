@@ -595,7 +595,8 @@ def main() -> int:
                          "position actually being measured; 'codeword' reproduces the old, wrong "
                          "behaviour; 'both' cuts into each.")
     ap.add_argument("--demo-scope", default="codeword",
-                    choices=["codeword", "block", "first_codeword", "second_codeword", "last_codeword"],
+                    choices=["codeword", "block", "first_codeword", "second_codeword", "last_codeword",
+                             "first_neighbor"],
                     help="which source positions count as 'the demonstrations'. 'codeword' = the "
                          "demonstration CODEWORD occurrences only (the original scope). 'block' = "
                          "EVERY token of the demonstration block. The G3 result motivates this: "
@@ -818,7 +819,8 @@ def main() -> int:
         d_surface = d_surface_by_split[fit_split]
         if args.demo_scope == "codeword":
             demo_pos = last[:-1]             # the demonstration codeword occurrences
-        elif args.demo_scope in ("first_codeword", "second_codeword", "last_codeword"):
+        elif args.demo_scope in ("first_codeword", "second_codeword", "last_codeword",
+                                 "first_neighbor"):
             # POSITION-RESOLVED demo scopes (follow-up sprint, plan §9 units 2-3).
             #
             # Motivated by this sprint's own Phase B result: the LAST demonstration codeword is
@@ -840,6 +842,16 @@ def main() -> int:
                 demo_pos = demos[:1]
             elif args.demo_scope == "second_codeword":
                 demo_pos = demos[1:2]
+            elif args.demo_scope == "first_neighbor":
+                # SERIAL-POSITION CONTROL (review #3 identification limit 2).
+                #
+                # first/second/last give a monotone decay (+0.972 / +0.327 / -0.023), which is exactly
+                # what "distance from BOS / attention-sink proximity" would produce as well as what
+                # "demonstration ordinality" would. This arm cuts the token IMMEDIATELY BEFORE the
+                # first demonstration codeword: same sequence region, same 1024 edges, but NOT the
+                # codeword. If the decay is about position, this should behave like first_codeword.
+                # If it is about the codeword, this should be near zero.
+                demo_pos = [demos[0] - 1] if demos and demos[0] - 1 >= 0 else []
             else:
                 demo_pos = demos[-1:]
         else:

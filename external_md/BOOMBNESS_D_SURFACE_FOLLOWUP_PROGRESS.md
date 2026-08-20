@@ -2817,6 +2817,49 @@ Plus the L6–L10 gap: **no Llama refusal direction exists below L12**, so the i
 measured inside `d_surface`'s own causal band. That remains the sprint's largest unanswered structural
 question and needs a direction fit, not more analysis.
 
+## Phase G — the position effect is a MONOTONE DECAY, and that makes the confound decisive
+
+Job **768780** COMPLETED (9:22, 24 families). Artifact `outputs/boombness_followup/g3_second.json`.
+`all_layers_demo`, **1,024 edges in every arm**, same layers, same 24 prompts:
+
+| scope | Δ | sem |
+|---|---|---|
+| **`first_codeword`** | **+0.9718** | 0.0706 |
+| **`second_codeword`** | **+0.3272** | 0.0473 |
+| **`last_codeword`** | **−0.0231** | 0.0615 |
+
+**Tick 35 pre-registered two readings.** (a) *the first is special* → the second should already be
+small. (b) *the effect decays with position* → the second should be intermediate.
+**(b) wins.** +0.97 → +0.33 → −0.02 is a graded serial-position effect, not a first-demonstration
+singularity. My tick-34 gloss — "the first demonstration establishes the mapping and later ones inherit
+it" — is **not** what the data show; it predicted a step, and this is a slope.
+
+### Why this makes review #3's identification limit the decisive question
+
+A monotone decay across demonstration positions is **exactly** what *"distance from BOS /
+attention-sink proximity"* predicts, just as much as *"demonstration ordinality"* does. The first demo
+codeword is earliest in the sequence, the second next, the last latest. **The two explanations are
+currently indistinguishable**, and the graded result makes that worse, not better — a step function
+would have been harder to explain by position alone.
+
+### The control that separates them — submitted
+
+| job | tag | scope |
+|---|---|---|
+| **768801** | `g3wa24_nbr` | `--demo-scope first_neighbor` — the token **immediately before** the first demonstration codeword |
+
+Same sequence region, same **1,024 edges**, same layers, same prompts — but **not a codeword**.
+
+- If the decay is about **position**, `first_neighbor` should behave like `first_codeword` (≈ +0.97).
+- If it is about the **codeword**, `first_neighbor` should be near **zero**.
+
+Recorded before the run lands, as at tick 33. Note that tick 33's prediction was **falsified**, which is
+the reason to keep writing them down.
+
+⚠ Carrying forward from review #3 and not yet addressed: **lexical G = 1** — all 24 prompts use
+`carrot`/`bomb`, so whatever this establishes is established *for carrot*. `first_neighbor` does not fix
+that; a second codeword/concept pair would.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
