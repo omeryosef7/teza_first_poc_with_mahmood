@@ -5071,6 +5071,15 @@ Between 00:53 and 01:05 on 2026-08-21, four commits appeared on this branch that
 it down for me i want only you to work on it"* — still stands, so stand-down messages went out again
 (the two reachable Remote Control peers; no local interactive sessions are listed any more).
 
+**⚠ The source is UNIDENTIFIED, and both reachable peers ruled themselves out with specifics.**
+`c-002-stateless-hare` and `c-002-delegated-sundae` each replied: no SLURM jobs, no background
+processes, no commits, no `scancel`, idle since the first stand-down. Neither is it, and no local
+interactive session is listed any more. One of them flagged commit `939b6d96` at 01:28:55 as evidence
+the peer was still active — **that one is mine** (the Sprint Final Report rewrite), so it is not
+evidence. As of 01:30 there have been **no further foreign commits since 01:05:18**, so whatever it
+was has probably stopped. Raised with the user, who knows which terminals are open; the author field
+cannot discriminate because every session commits as the same git user.
+
 **Checked before doing anything else: did it clobber my work?** No. Those commits touch
 `docs/BOOMBNESS_CONTINUATION_LOG.md`, `reports/`, and three files under `src/boombness/`; the diff of
 my own staged rewrite shows **0 lines removed outside the Sprint Final Report section** I was
