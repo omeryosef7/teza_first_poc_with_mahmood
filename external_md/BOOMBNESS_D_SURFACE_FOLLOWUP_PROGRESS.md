@@ -2574,6 +2574,80 @@ Compare the genuinely broken 768316: `scorable_frac` **1.000** with uniq **0.127
 Both completed controls judged (`p_addBoth_CTRL`, `p_remS_addR_CTRL2`). Arm E's release is now waiting
 only on the judge, not on compute.
 
+## Phase F closed — arm E released, and the F-3 re-test answers with a hard NO
+
+All four dose-corrected jobs completed. **Artifact:**
+`outputs/boombness_followup/phaseF_composed_matched.json`.
+
+### ⛔ The F-3 re-test: adding refusalness at a matched dose is IMPOSSIBLE — it degenerates
+
+Tick 17 launched `fuF_addR_gapdose` = `refusalness:add:18-18:**14.653462**` — one diff-of-means, the
+dose RETRACTION F-3 showed was missing. It **completed and failed the gate outright**:
+
+| | uniq | 3-gram repeat | truncated | scorable | verdict |
+|---|---|---|---|---|---|
+| `fuF_addR_gapdose` | **0.237** | **0.704** | 0.54 | **0.996** | ⛔ **DEGENERATE** |
+
+This is the **true broken-text signature**, not the refusal floor: `scorable_frac` 0.996 with only
+**2 of 495** short rows. **Not judged** — ~495 judge calls avoided and no fake number produced.
+
+> **So F-3's retracted claim cannot be re-earned by matching the dose.** At magnitude **1.0** the
+> refusalness add is coherent but is only ~7% of one diff-of-means and moves ASR by −0.0111 (n.s.);
+> at magnitude **14.65** it is a meaningful dose but destroys generation. There is no dose in
+> {1.0, 14.65} that is both interpretable and comparable to the random control. Establishing
+> refusalness-`add` specificity would need an **intermediate-dose sweep**, which this sprint did not run.
+> The α = 1.0 sign-reversal claim **stays retracted**.
+
+### ✅ Arm E released — its dose-matched composed control is inert
+
+| arm | intervention | Δ_cl | p_cl | CI |
+|---|---|---|---|---|
+| B_removeS | `d_surface:project_out:8-8:1.0` | +0.0305 | 0.0089 | [+0.0089, +0.0522] |
+| **E_removeS_addR** | `d_surface:project_out:8-8:1.0` + `refusalness:add:18-18:1.0` | **+0.0211** | 0.0234 | [+0.0033, +0.0389] |
+| **E_CTRL** (dose-matched) | `random:project_out:8-8:1.0` + `random:add:18-18:**0.068243**` | **−0.0055** | 0.5809 | [−0.0265, +0.0154] **inert** |
+| addBoth_025 | `d_surface` + `refusalness`, both 0.25 | −0.0348 | 0.0288 | [−0.0655, −0.0041] |
+| **addBoth_CTRL** | `random:add` both @0.25 | **−0.0016** | 0.8057 | [−0.0153, +0.0121] **inert** |
+
+Both composed controls are **inert** once dosed correctly — replacing the tick-13 situation where the
+α = 1.0 control was itself a +0.0889 jailbreak.
+
+### The interaction, with paired clustered inference and multiplicity
+
+| contrast | Δ | sem | t (15 df) | p_cl | **Holm (m=2)** |
+|---|---|---|---|---|---|
+| **E − B** — does restoring refusalness cancel the `d_surface` removal? | **−0.0094** | 0.0043 | −2.19 | **0.0446** | **0.0892** |
+| **E − E_CTRL** — is arm E specific vs its matched composed control? | **+0.0266** | 0.0123 | +2.17 | **0.0469** | **0.0892** |
+
+Both are individually significant and **neither survives Holm across the two pre-specified contrasts**.
+
+> **Verdict: SUGGESTIVE, NOT ESTABLISHED.** Restoring refusalness cancels ~31% of the `d_surface`
+> removal effect (+0.0305 → +0.0211), in the direction plan hypothesis 5 predicts, against an inert
+> dose-matched control — but at p_cl ≈ 0.045 uncorrected and ≈ 0.089 corrected. Applying the same
+> standard used against the `d_surface` layer profile in F7, this does not clear the bar.
+
+A note that makes the effect more interesting than its p-value: the refusalness leg in arm E is at
+magnitude **1.0 ≈ 7% of one diff-of-means**. A 7%-strength restoration cancelling ~31% of the removal
+effect implies a **strongly non-linear dose response** — or that the cancellation is not really about
+dose at all. An intermediate-dose sweep would settle both this and the F-3 question in one experiment,
+and is the single highest-value run the next sprint could make.
+
+### Phase F status at close
+
+| plan §8 arm | status |
+|---|---|
+| 1 baseline · 2 remove `d_surface` · 3 remove refusalness · 4 remove both | ✅ established (committed AdvBench decomposition) |
+| 5 remove `d_surface` + add refusalness | ✅ run, controlled, **suggestive not established** |
+| 6 remove refusalness + add `d_surface` | ✅ run (α=0.25); control judged this tick |
+| 7 add `d_surface` | ✅ run at α=0.25; ⛔ degenerate at α=1.0 |
+| 8 add refusalness | ✅ at α=1.0 (under-dosed, n.s.); ⛔ **degenerate** at matched dose |
+| 9 add both | ✅ run at α=0.25, control inert |
+| 10 matched random controls | ✅ all present and inert **at α=0.25**; ⛔ NOT inert at α=1.0 |
+| layer profile L12–L20 | ✅ **established**, 4/5 survive Holm |
+
+Plus the L6–L10 gap: **no Llama refusal direction exists below L12**, so the interaction cannot be
+measured inside `d_surface`'s own causal band. That remains the sprint's largest unanswered structural
+question and needs a direction fit, not more analysis.
+
 ## Compute Blocker — diagnosed and mitigated (tick 23)
 
 **Symptom.** From tick 20 to 23 (~2h) not one of 8 submitted jobs started; all `PD (Priority)`.
