@@ -5104,6 +5104,65 @@ loaded the module at process start, so the running shards are unaffected — but
 in this repo will use the peer's version. That is an improvement and I would have adopted it anyway;
 it is recorded so nobody later reads two judge runs on either side of 00:57 as the same instrument.
 
+
+## ✅✅ THE SUBSPACE-MATCHED CONTROL LANDS — arm B survives a control that could have falsified it
+
+**Artifacts:** `outputs/boombness/score_behavior/abVMC2_20260821_010052_955575` (495 generations,
+0 failures), judged in three shards `judge/vmcJ{0,1,2}_20260821_012704_*` (165 rows each,
+`null_frac 0.0000`, `DONE.json` on all three).
+
+R5-7 established that every "the matched random control is inert" statement in this repo was inert
+**by construction**. This is the test that replaces it: `in_subspace_orth` at L8, drawn inside the
+span of the centred 2×2 cell means and **exactly orthogonal to `d_surface`** (verified
+|cos| ≤ 1.7e-08 over both splits × 32 layers), otherwise byte-identical to the committed arm B.
+
+### The result, paired against the same baseline, domain-clustered (G = 16)
+
+| arm | Δ StrongReject | p_cl | Δ ASR@0.5 | p_cl |
+|---|---|---|---|---|
+| **ARM B** — `d_surface` @ L8 | **+0.0305** | **0.0089** | **+0.0306** | **0.0089** |
+| control — isotropic random | −0.0062 | 0.54 | −0.0064 | 0.53 |
+| **control — subspace-matched, ⊥ arm** | **−0.0033** | **0.149** | **−0.0032** | **0.165** |
+
+**Paired arm-minus-control:** vs isotropic **+0.0367** (p_cl 0.0140); vs subspace-matched
+**+0.0339** (p_cl 0.0103).
+
+**The prediction recorded before the run — *"near zero means arm B's specificity survives a control
+that could have falsified it"* — is what happened.** This is the first control in the sprint whose
+failure would have meant something, and it did not fail. Arm B, the sprint's longest-standing
+behavioural result, is **strengthened**: ablating a *different* direction inside the same concept
+subspace, at the same layer, with the same operation and dose, does nothing.
+
+### ⚠ But "variance-matched" was my word and it is wrong — the honest name is SUBSPACE-matched
+
+The control removes **5.35%** of the cell-mean spread at L8; the arm removes **84.02%**. So it is
+~1,000× stronger than the isotropic control (0.005%) and still **~16× weaker than the arm**. It does
+**not** answer *"would any perturbation of comparable magnitude do this?"* — it answers *"does
+ablating the rest of the concept subspace do this?"*, which is the **direction-specificity** question
+and is the one requirement-4-style specificity actually needs. I have renamed it in the prose
+accordingly; the flag name `in_subspace_orth` was always accurate.
+
+⚠ Note also its standard error is **4× smaller** than the arm's or the isotropic control's (0.0022 vs
+0.0102 / 0.0098) — this control barely perturbs the outcome at all, which is consistent with it being
+a much smaller edit than the arm and is a further reason not to call it magnitude-matched.
+
+### What this does and does not settle
+
+**Settles:** arm B is about `d_surface` specifically, not about "ablating something in the concept
+subspace at L8". R5-7's methodological point stands in full — isotropic controls certify nothing in
+high dimensions — but its **practical** consequence for the sprint's headline behavioural result is
+now measured, and it is benign.
+
+**Does not settle:** every *other* inertness claim in the sprint — the `d_surface` layer profile's
+eleven matched controls, the refusalness profile's five, Phase F's composed controls, and the Qwen3
+double-random control — still rests on isotropic draws. **Those remain "a random rank-1 projection at
+the same depth did nothing".** Re-running them against `in_subspace_orth` is one job each and is now
+the obvious next sprint's first task.
+
+⚠ And this does not rescue Gate D: requirement 4 failed on `d_naive`/`d_context` predicting ASR as
+well as `d_surface`, which is a *prompt-level correlational* fact and is untouched by a causal
+control on arm B.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
