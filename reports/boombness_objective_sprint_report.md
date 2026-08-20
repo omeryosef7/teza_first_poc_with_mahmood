@@ -78,7 +78,7 @@ here.
 
 | gate | question | verdict |
 |---|---|---|
-| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token — re-derived on the corrected readout 2026-08-19.** The single-layer L18 demonstration transplant moves the readout **+68.9% of span, CI [+51%, +97%]** (24 families, 6 domains); the **whole-prompt** transplant is **null** (+13%, CI [−17%, +34%]) and the **query-codeword** transplant moves it the **wrong way** (−57%). C-6 discharged: the old readout gave +68.1%, so the instrument defect did not change G1. ⚠ The "% of span" denominator inherits a ceiling measured in a tail (option mass 0.0074). |
+| **G1** (§5) | Where does the codeword's meaning live? | **In the demonstrations, not the token — re-derived on the corrected readout 2026-08-19.** The single-layer L18 demonstration transplant moves the readout **+68.9% of span, CI [+51%, +97%]** (24 families, 6 domains); the **whole-prompt** transplant is **null** (+13%, CI [−17%, +34%]) and the **query-codeword** transplant moves it the **wrong way** (−57%). C-6 discharged: the old readout gave +68.1%, so the instrument defect did not change G1. ⚠ The "% of span" denominator inherits a ceiling measured in a tail (option mass 0.0074) — **resolved 2026-08-20** by also reporting the absolute Δ log-odds, which needs no ceiling: `demos_only` **+5.659 [+3.305, +8.314]**, `query_only` **−4.684 [−5.358, −4.043]**, G=6. |
 | **G2** (§9) | Does Boombness predict attack success? | ⛔ **RETRACTED (R-18) — a null replicated across three independent clean samples.** `analyze_g2` filtered on `condition` only, so the published n=234 was 31% sibling families sharing demonstrations and 31% experimentally-manipulated rows. Within-domain ρ on clean rows: **−0.083** (n=60), **−0.052** (n=90), and **−0.066, p=0.493** (n=108, the powered re-run on a purpose-built block of rows whose demonstrations are disjoint from every existing family). The published **+0.2618 (p=5e-4)** is recoverable only by putting the contaminated rows back. |
 | **G3** (§10) | Can it be removed surgically? | **Established, re-derived 2026-08-19** on 24 families with the ranking at `readout_pos` (R-7 discharged). Cutting **all** demo edges at all layers recovers **75.2%** of the deletion ceiling; **no 16-edge subset matters** (top-k +0.020 vs bottom-k −0.003 vs random +0.001); and **6.25% of the edges does nothing however distributed** — the redundancy is in **edge count**, not depth. Codeword-scope cuts move the readout the **wrong way** (+1.33), so the meaning is in the demonstration **block**. |
 | **G4** (§12) | Is it a usable objective? | **No.** Both signs of `d_surface` suppress ASR. Only `+0.25` exceeds a 4-draw random-control band, by **triggering refusal**. |
@@ -295,6 +295,39 @@ resampling **domains** (families drawn wholesale with their domain):
 **The direction is the finding and it is unambiguous:** transplanting the *demonstrations* moves the
 model's reported meaning most of the way to the donor's; transplanting the *query codeword* moves it
 **backwards**. The meaning is retrieved from the demonstrations at answer time.
+
+#### The same result in a unit that does not depend on the ceiling (added 2026-08-20)
+
+Every percentage above divides by `donor_ceiling − none`, and on this run **the donor ceiling fails
+its own option-mass gate**: median **0.00741** with only **39.6%** of rows above 1%, against
+**0.0763** for the recipient baseline measured the same way. That is not a fixable prefix problem —
+the donor context is the `direct_harmful` prompt, so the span's upper endpoint is by construction
+measured exactly where a safety-tuned model is least willing to emit a bare answer word. The run
+therefore carries `option_mass_gate: NOT REPORTABLE`, and it is the **denominator** that trips it.
+
+The **numerator** — an arm's paired delta against its own baseline — never touches the ceiling. So
+the same run is reported here in absolute Δ semantic log-odds, domain-clustered paired bootstrap
+(G=6), from `outputs/boombness/g1_whole_answer_absolute.json` via
+`analyze_g1_g3.py --g1-run <g1wa_sow>`:
+
+| arm (L18) | harm_ctx Δ log-odds | CI95 | benign_ctx Δ log-odds | CI95 |
+|---|---|---|---|---|
+| **`demos_only`** | **+5.659** | **[+3.305, +8.314]** | **+14.426** | **[+12.812, +16.421]** |
+| `all` | +1.092 | [−0.955, +3.421] — **null** | +11.755 | [+10.219, +13.639] |
+| `first_demo` | +2.595 | [+1.171, +4.362] | +3.682 | [+3.065, +4.231] |
+| `last_demo` | +0.780 | [+0.261, +1.574] | +0.867 | [+0.603, +1.129] |
+| **`query_only`** | **−4.684** | **[−5.358, −4.043] — wrong way** | **−1.260** | **[−1.482, −1.058] — wrong way** |
+
+Every element of the finding holds in this unit, and `query_only`'s inversion now excludes zero on
+**both** context pairs rather than one. **Cite the absolute Δ and its clustered CI**; read the
+percentages as context, with the gate status above attached to them.
+
+⚠ **On why the percentages nonetheless agree.** `frac_of_span` for `demos_only|L18|harm_ctx` is
+**+0.689** on the corrected readout against **+0.681** on the invalid one. The baseline and the
+ceiling moved *together*, so the ratio was insensitive to the defect that made both endpoints
+untrustworthy. That is a fact about this dataset, not a property of the method — nothing in the old
+run distinguished "the ratio is robust" from "both endpoints are unreliable", and the agreement
+should not be read as evidence that the old readout was adequate.
 
 ⛔ **R-8 — the earlier "+84%, CI [+57%, +105%]" headline is superseded.** It came from a pilot of
 **n=8 families in only 2 domains**, so its effective number of independent units was nearer 2 than 8.
