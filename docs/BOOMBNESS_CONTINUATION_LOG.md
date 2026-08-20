@@ -3002,3 +3002,62 @@ or a carrot-detector".** That is now corrected: it is cheap *for a codeword swap
 concept swap, and only the concept swap tests the "concept-surface" half of that sentence. A codeword
 swap tests whether the direction is a **carrot**-detector; it cannot test whether it is a **concept**
 direction, because the concept never changes. Both are worth doing and they answer different questions.
+
+## E6 gate: the apple bank failed §2.4 twice, and the second defect would have inverted the result
+
+Tick 2026-08-20. The mandatory tokenization audit on the apple bank **failed on Qwen3** — 24 bad rows,
+12 alignment violations across 8 core-2×2 families. Four E6 knockout jobs were already running on that
+bank; they were cancelled.
+
+**Defect 1 — incidental collision.** `instructional|benign[7]` is a sentence about storing a carrot
+near ethylene-emitting fruits *such as apples*. Under `carrot` that is one target occurrence; under
+`apple` it is **two**, so `benign_literal` carried 10 occurrences where its three sibling cells carried
+9, and `n_target_occurrences` disagreed with the text.
+
+**Defect 2 — article agreement. This is the one that mattered.** The generator substitutes words
+naively and never repairs the indefinite article. Every pool sentence was written for `carrot`, a
+consonant-initial word, so the entire corpus uses "a".
+
+| | apple bank |
+|---|---|
+| ungrammatical `a apple` | **2,938 occurrences across 1,569 / 2,736 rows** |
+| grammatical `an apple` | **0** |
+| grammatical `a bomb` (concept arm) | 671 rows |
+
+So the **codeword arm is systematically ungrammatical while the concept arm is grammatical** — an
+asymmetry across *exactly the two cells the 2×2 contrasts*. E6 exists to ask whether `d_surface` is a
+concept-surface direction or a carrot-detector; a grammaticality artifact sitting on the codeword arm
+could have answered that question the wrong way with no visible symptom.
+
+**Why the obvious fix was wrong.** Repairing the article breaks the **exact-word-swap invariant** — "a
+bomb" and "an apple" differ in two tokens, and 336 families then fail `check_alignment`. The invariant
+and grammaticality are in **direct conflict for any vowel-initial codeword**. Engineering around that
+conflict would mean weakening the invariant that is the sprint's methodological contribution.
+
+**Resolution: change the codeword, not the checker.** E6 is now **`button` ↔ `bomb`**:
+
+| candidate | vowel-initial? | incidental pool collisions | verdict |
+|---|---|---|---|
+| `apple` | **yes** → article confound | 1 | rejected |
+| `basket` | no | **4** | rejected |
+| **`button`** | **no** | **0** | **chosen** |
+
+`button` was already screener-certified 4/4 single-token variants on **both** tokenizers. Generated
+clean: **2,736 rows, 336 families, 0 violations**, and the §2.4 audit now passes **2736/2736 ok, 0 bad,
+0 ambiguous, 0 violations on both Llama-3.1-8B and Qwen3-14B** (jobs 769941/769942).
+
+**Two guards added, both encoding what only failure taught:**
+- `incidental_codeword_collisions()` screens a candidate codeword against the **pool corpus**, the way
+  §2.4 screens it against the **tokenizer**. It refuses `apple` by name and points at the sentence.
+- `apply_incidental_repairs()` rewords collisions **in memory**, so `demo_pools.json` stays
+  byte-identical. Verified: the carrot bank regenerates **byte-identical**, so no existing run's
+  provenance is invalidated — editing the pool file would have broken 130 runs' join.
+
+The article repair is kept for future vowel-initial pairs but **scoped to the substituted word only**;
+an earlier orthographic version turned "an hour" into "a hour".
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 29 | 2026-08-20 | apple bank failed §2.4 on Qwen3; cancelled 4 running E6 jobs | two defects found, one of them result-inverting |
+| 30 | 2026-08-20 | switched E6 to `button` ↔ `bomb`; added the pool-collision screener | audits pass 2736/2736 on **both** models, 0 violations |
+| 31 | 2026-08-20 | relaunched the 4 knockout arms on the button bank (769945–948) | E6 unblocked |
