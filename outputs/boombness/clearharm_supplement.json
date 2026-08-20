@@ -1,0 +1,69 @@
+{
+  "plan_section": "14",
+  "condition": "clearharm_direct",
+  "judge_runs": {
+    "base": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/ch_base_20260818_174921_186338",
+    "B": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/ch_B_20260818_183415_219575",
+    "C": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/ch_C_20260818_183416_219574",
+    "D": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/ch_D_20260818_180038_196460"
+  },
+  "arms": {
+    "B": "d_surface:project_out:8-8",
+    "C": "refusalness:project_out:18-18",
+    "D": "both"
+  },
+  "super_additivity": {
+    "n": 179,
+    "n_clusters": 6,
+    "mean_excess": 0.09217877094972067,
+    "ci95_domain_clustered": [
+      -0.14743589743589744,
+      0.13320463320463322
+    ],
+    "frac_boot_le_zero": 0.209,
+    "sum_of_singles": 0.3372905027932961,
+    "joint": 0.42946927374301674,
+    "n_boot": 10000,
+    "seed": 20260818,
+    "note": "established only if the CI excludes 0; it does not"
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/analyze_clearharm.py",
+      "--fit-dir",
+      "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+      "--out",
+      "outputs/boombness/clearharm_supplement.json"
+    ],
+    "git_commit": "d6d1c922bce807d19e4e1e381bafce0901099b4d",
+    "python": "/home/sharifm/students/omeryosef/miniconda3/envs/poc_stage2/bin/python"
+  },
+  "direction_cosines": {
+    "fit_dir": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+    "direction_file": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673/directions_fit_dev.pt",
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "d_model": 4096,
+    "cos_by_layer": {
+      "12": 0.12967492640018463,
+      "14": 0.10040543973445892,
+      "16": 0.039097853004932404,
+      "18": 0.01925588957965374,
+      "20": 0.010873108170926571
+    },
+    "layers_with_refusal_direction": [
+      12,
+      14,
+      16,
+      18,
+      20
+    ],
+    "refusal_layers_available": [
+      12,
+      14,
+      16,
+      18,
+      20
+    ],
+    "caveat": "arm B projects at L8, where no house refusal direction exists; the cosine is measured only at layers where BOTH are fitted and does not speak for L8."
+  }
+}

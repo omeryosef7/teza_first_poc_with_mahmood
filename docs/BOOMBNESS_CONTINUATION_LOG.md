@@ -3179,3 +3179,68 @@ keyword fractions). Per-condition tables in `outputs/boombness/qwen3_armD_*.json
 | 35 | 2026-08-20 | analysed the completed Qwen3 arm-D judges (4 × 960 rows) | benign control at ASR 0.954 under a **random** direction |
 | 36 | 2026-08-20 | ruled out degeneracy — coherence gate on the benign population alone | baseline vs control indistinguishable on all four statistics |
 | 37 | 2026-08-20 | keyword diagnostic separated content from style | **R-13**: 0/324 harmful keywords at ASR 0.99; the judge scores style |
+
+## Periodic audit, 2026-08-20 (3 lanes × independent adversarial verification, 6 agents)
+
+Every finding below was re-derived by a second agent whose default was that the finding is wrong.
+**Verdicts are the verifier's, not the auditor's.** Refuted items are listed too, because an audit
+that only records its hits is a press release.
+
+### Fixed this tick — and both were MINE
+
+| id | finding | verdict | status |
+|---|---|---|---|
+| A-1 | **`cos(d_surface, refusalness) = 0.019 @L18` exists in no artifact** | CONFIRMED | **FIXED** |
+| A-2 | **ClearHarm super-additivity `+0.0922` matches no artifact** | CONFIRMED | **FIXED** |
+
+I computed both in ad-hoc shell heredocs and never wrote them anywhere — the exact
+"no script regenerates this" provenance failure this project **retracted a role-statistics claim
+for**, and which I criticised in `analyze_g64` and `analyze_g2` earlier in this same session. Closed
+by `src/boombness/analyze_clearharm.py` → `outputs/boombness/clearharm_supplement.json`. Both
+reproduce exactly: excess **+0.0922, CI [−0.1474, +0.1332], n=179, G=6, established: NO**; cosines
+**L12 +0.1297 · L14 +0.1004 · L16 +0.0391 · L18 +0.0193 · L20 +0.0109**.
+
+Writing the script surfaced a second thing the heredoc had hidden: `load_refusal_dirs` **refuses** a
+partial layer set ("a layer profile must not silently run on a subset of the layers it was asked
+for"), and the house set now holds L{12,14,16,18,20,24,28} — more layers than my original ad-hoc call
+saw. The script now discovers the available set and intersects, and records `refusal_layers_available`
+so the caveat that **L8 has no refusal direction** is in the artifact rather than in my prose.
+
+### Confirmed, not yet fixed — deliverable-level
+
+| id | finding | verdict | owner |
+|---|---|---|---|
+| A-3 | the FINAL §18 label's supporting argument **cites §7c for a claim §7c withdraws** | CONFIRMED | report |
+| A-4 | **NEW, the audit itself missed it**: G2's retraction says "replicated across three independent clean samples" — **the three samples are nested** | CONFIRMED | report |
+| A-5 | §4b still prints **seven live verdicts that R-6 withdrew**; only one arm has been rebuilt | CONFIRMED | report §4b |
+| A-6 | the R-19 replacement table is **in no committed artifact** — in the very section retracted for that | CONFIRMED | other session |
+| A-7 | gate row §14-L asserts a phrase the body retracts, and understates the control set | CONFIRMED | report |
+| A-8 | the n=60 leg is **prose-only** | CONFIRMED | report |
+| A-9 | `retraction_sweep` pattern list **lags R-19**; the retraction table lags the report by **eight IDs** | CONFIRMED | sweep |
+| A-10 | **36 of 54 artifacts cannot name the invocation that produced them** | CONFIRMED | repo-wide |
+| A-11 | `clearharm_decomposition.json` in the worktree ≠ HEAD and still holds the **retracted 3-draw band** (R-12) | CONFIRMED | mine — supersede |
+| A-12 | Qwen3 `remBoth` is cleared by the other session's `topicality_gate.py` **on a single word** (median goal content-word count = 1, substring match) | CONFIRMED mechanically | other session |
+| A-13 | `min_asr_rise` **differed between the two published runs** (0.10 Qwen vs 0.03 Llama); at the Qwen threshold one Llama arm would not have been gated | CONFIRMED — "changes a published sentence" | other session |
+
+### Refuted or overstated — recorded so they are not re-raised
+
+| finding | verdict |
+|---|---|
+| Phase E4's conclusion is guaranteed by the StrongReject rubric (refused rows score exactly 0, so the paired delta is ≥0 by construction) | **OVERSTATED, and largely pre-disclosed** — the script computes this evidence in its own `instrument` block |
+| the knockout arms move the readout opposite in sign to the module's own ceiling, and the mandatory `positive_control` threshold is prose-only | **largely REFUTED** |
+| the two topicality implementations have diverged | **REFUTED as framed**; a weaker real point survives (they share `make_goal`, not the metric) |
+| `g2_analysis_POWER.json` silent stale join | REFUTED, heavily overstated |
+| `wilson95_IID_UNDERSTATES` with ratio < 1 | confirmed arithmetically, **REFUTED as a defect** |
+| the artifacts lane's own finding 5 | **REFUTED, and wrong in the direction that UNDERSTATES the defect** — the verifier caught the auditor |
+
+**The two sessions have now built two topicality metrics.** Mine is judge-side
+(`judge_boombness.goal_topicality`, goal-minus-visible words, returns `None` when goal == prompt); the
+other session's is a standalone `topicality_gate.py`. The verifier refuted "they have diverged" as
+framed, but A-12/A-13 are both defects of the standalone one, and on the Llama AdvBench arms the two
+instruments disagree about whether the rows are even assessable. **This needs one owner, not two.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 38 | 2026-08-20 | built the R-13 topicality gate; validated it fires on the two artifact arms and not on `q3_D20` | committed `3c51baac` |
+| 39 | 2026-08-20 | ran the periodic audit: 3 lanes, each adversarially verified | 9+ confirmed, several refuted |
+| 40 | 2026-08-20 | **closed my own two provenance holes** with `analyze_clearharm.py` | both numbers reproduce; artifact committed |
