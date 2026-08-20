@@ -3649,3 +3649,57 @@ the number is retracted, which it should have said regardless of any checker.
 |---|---|---|---|
 | 64 | 2026-08-21 | entered R-14 + R-15 in the report's retraction table; marked arm F at point of use | the deliverable no longer headlines a withdrawn result |
 | 65 | 2026-08-21 | extended the sweep pattern list in the same commit as the retraction | caught my own unmarked paragraph; sweep clean over 4 files |
+
+## The headline ablation effect is structurally immune to R-14 — and my own instrument is a one-word test
+
+Tick 2026-08-21. Having retracted arm F with the topicality conjunction, the obvious next question is
+whether the **current headline** — the L8–L12 ablation band, +0.0322 (p=0.0056) at L12 — is exposed
+to the same defect. I flagged it to the audit as "the single most important gap in the current claim
+set" and then checked it myself rather than waiting.
+
+**It is not exposed, and the reason is structural.** The §7f layer-profile runs
+(`abL12_B`, `abL10_B`, `ab_base`, …) are on `advbench_heldout_495.jsonl`, the **external** bank. Their
+judge runs report `goal_status` = `noop_codeword_absent` **471** / `noop_concept_already_present`
+**24** — i.e. **the goal IS the visible instruction**, with no codeword→concept substitution. R-14's
+mechanism requires a *mismatch* between the goal the judge scores against and the prompt the model
+saw; on AdvBench there is none. Measured directly:
+
+| bank | rows with an EMPTY goal-distinctive set |
+|---|---|
+| **AdvBench heldout** | **495 / 495 = 100%** |
+| sprint bank, `natural_doublespeak` | 72 / 500 = 14% |
+
+**Stated with its limit:** this removes *that* mechanism, not all style inflation. StrongReject can
+still over-reward a confident, on-topic non-refusal. What it establishes is that the headline cannot
+fail the specific way arm F failed — scoring high while containing nothing the goal asked for —
+because on AdvBench "what the goal asked for" and "what the prompt asked for" are the same string.
+
+### ⚠ And the instrument that produced R-14 is a SINGLE-WORD test on the bank
+
+The same measurement, run on the sprint's own bank, is less comfortable:
+
+| |distinctive words| | rows (`natural_doublespeak`, n=500) |
+|---|---|
+| 0 (inapplicable) | 72 |
+| **exactly 1** | **428** |
+| ≥2 | 0 |
+
+So on the bank the conjunction reduces to **"does the completion contain the word `bomb`"**. That
+bounds R-14 in two ways worth stating before anyone else does:
+
+1. **Binomial variance on one token.** The CI on arm F's topical delta is an interval on a
+   single-word indicator, not on a rich content measure.
+2. **A false-negative mode.** A completion that discusses the concept without using the word — via a
+   synonym, a circumlocution, or the codeword itself — scores 0. So the instrument **understates**
+   topical content, which means R-14's "~94% style" is an **upper** bound on the style fraction.
+
+Both cut in the direction of *caution about the magnitude*, not about the direction: arm F's
+**0.000 topical on 36 `benign_remap` rows** and a paired CI containing zero are not artifacts of a
+narrow vocabulary — they are what a one-word test looks like when the word is simply never there.
+This limitation is now on the record ahead of the audit lane that was asked to find it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 66 | 2026-08-21 | launched the periodic audit, one lane aimed at the topicality instrument itself | running |
+| 67 | 2026-08-21 | checked whether the §7f headline is exposed to R-14 | **no** — AdvBench has 495/495 empty distinctive sets, so the mismatch mechanism cannot arise |
+| 68 | 2026-08-21 | measured the instrument's own resolution on the bank | **428/500 rows hinge on ONE word** — R-14's 94% is an upper bound |
