@@ -5065,138 +5065,177 @@ of the shared file.
 
 ## Sprint Final Report
 
-**Status: INTERIM, written 2026-08-20 while the queue is blocked.** 8 jobs pending; three claims below
-are marked *held* pending controls that have not run. This section will be rewritten when they land.
+**Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
+blocked and is now wrong in its headlines — it says Phase D "was not run" and Phases G and H "not
+started", all three of which have since completed. Every claim below points to a committed artifact,
+and every downgrade this sprint made to its own results is carried forward rather than quietly
+dropped.
+
+**One caveat governs the whole report, and it is the sprint's largest methodological finding:**
+⛔ **every "the matched random control is inert" statement in this repo is inert by construction**
+(R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove ~0.01–0.04% of the structure
+the arms remove; at L8 the arm removes 84.0% of the 2×2 cell-mean spread and the isotropic control
+0.005%. A variance-matched control (`in_subspace_orth`, orthogonal to the arm, removing 5.2% at L8)
+was built tonight and its first behavioural test is judging now. **Until it lands, "the control was
+inert" should be read as "a random rank-1 projection at the same depth did nothing", which is nearly
+a tautology.**
 
 ### 1. What did we verify from the previous sprint?
 
-**All six of the handover's section-0 headline claims reproduce exactly from committed JSON** (Phase A,
-14-agent fan-out; independently re-verified in review #1). G1 `demos_only L18` = 0.6887 of span; G3 =
-75.15% of the deletion ceiling on 81,707 edges; G2 powered clean ρ = −0.0660, p = 0.493, n = 108; G4
-both signs suppress; AdvBench arm B +0.0305, p_cl 0.0089; Qwen3 4/495 — a floor, not a failure.
-
-Seven sub-items did not reproduce as stated. Three favoured the sprint (the layer profile has **11**
-depths not nine; the four edge-depth controls **are** committed; R-6's option mass is ~0.31 not 0.297).
-Three were citability limits (ClearHarm arm B has **no committed matched control**; the retracted R-6
-descriptors exist in **no artifact**; the dirty `clearharm_decomposition.json` is a fresh regression, not
-a revert). **The largest inherited risk is D-11:** `outputs/` is gitignored, so every upstream judge,
-score and extract run is untracked — all committed results rest on data with no committed path to it.
+**All six of the handover's section-0 headline claims reproduce from committed JSON** (Phase A,
+14-agent fan-out, re-verified in review #1). G1 `demos_only L18` = 0.6887 of span; G3 = 75.15% of the
+deletion ceiling; G2 clean ρ = −0.0660, p = 0.493, n = 108; G4 both signs suppress; AdvBench arm B
++0.0305, p_cl 0.0089; Qwen3 4/495. Seven sub-items did not reproduce as stated — three favoured the
+sprint, three were citability limits. **The largest inherited risk remains D-11:** `outputs/` is
+gitignored, so every judge, score and extract run is untracked.
 
 ### 2. What is `d_surface` most likely measuring?
 
-**Not "explosives-ness", and not the refusal axis.** Two independent results converge:
+**A generic mid-to-late semantic magnitude that is neither harm-specific nor `d_surface`-specific.**
+Three independent results converge, and the third is new tonight:
 
-- **E1 by category:** the effect is *weakest where the direction was fitted* — `weapons_explosives`
-  (n=40) gives +0.0250 against misinformation +0.1081 and cyber +0.0699 (n=127). Broad, not
-  harm-type-specific: 9 of 10 movable categories positive, sign test p = 0.0107.
-- **Phase B token level:** the demo-position gradient tracks *"this codeword has a taught referent"*,
-  not *"the referent is harmful"* — the structure-matched benign control (`benign_remap`) shows an
-  equal or larger gradient, though at n = 24 pairs that is underpowered.
+- **E1 by category** (`d_surface_external_decomposition.json`): the effect is *weakest where the
+  direction was fitted* — `weapons_explosives_mass_casualty` **+0.0250**, seventh of eight movable
+  categories, against misinformation +0.1081 and terrorism +0.1111. Mean over 16 categories +0.0305
+  (t 3.00, df 15), 8 positive / 0 negative / 8 pinned at zero, sign p 0.0039. Matched control
+  −0.0062, p 0.69.
+- **Phase B token level**: the demo-position gradient tracks "this codeword has a taught referent",
+  not "the referent is harmful" — and ⛔ **F-2**: it is *not direction-specific*.
+- **Gate D** (`clean_fig9_correlation.json`): at the prompt level `d_naive` (+0.1672) and
+  `d_context` (+0.1471) predict ASR as well as `d_surface` (+0.1638). Whatever is predictive is
+  carried by all three.
 
-Best current reading: a **mid-stack semantic/salience channel that is not harm-specific**, weighted
-toward information-shaped content. Plan hypothesis 3 (a hazardous-object axis) is **disfavoured**.
-The decisive test — benign prompts — is **queued, not run** (768502–768505).
+Plan hypothesis 3 (a hazardous-object axis) is **disfavoured**. Hypothesis 4 (an artifact of the bank
+that transfers because harmful prompts share structure) is the best current fit.
 
 ### 3. Is `d_surface` separable from refusalness?
 
-**Yes, on three independent axes.**
+**Yes on geometry and depth; the causal half now carries the R5-7 caveat.**
 
-- **Geometrically:** cos = 0.128 (L12) → 0.026 (L18) → 0.018 (L20), against a random-vector sd of
-  0.0154. At most **1.64%** shared variance, and **at chance by L18** where refusalness is causally
-  strongest. 99.2–99.98% of `d_surface` is orthogonal to it.
-- **Causally, by depth:** `d_surface` L6–L12 (peak L12 +0.0322); refusalness L14–L20 (peak L18
-  +0.1895). They barely overlap.
-- **By robustness:** four of five refusalness depths survive Holm (m=5); **not one** `d_surface` depth
-  survives Holm (m=10).
+- **Geometrically** (`direction_specificity_extended.json`, M6): cos = 0.1279 (L12, z 8.3) → 0.0262
+  (L18, z 1.7) → 0.0176 (L20, z 1.1) against a 2,000-draw random sd of 0.01541. **At chance by L18**,
+  where refusalness is causally strongest. ≤1.64% shared variance.
+- **By depth**: `d_surface` L6–L12 (peak L12 +0.0322); refusalness L14–L20 (peak L18 +0.1895).
+- **By robustness** (M3): **four of five** refusalness depths survive Holm (m=5); **not one** of
+  eleven `d_surface` depths survives Holm (m=11), smallest adjusted 0.0618 at L12. BH keeps L8 and
+  L12 at 0.0491.
 
-Caveat kept in view: the two direction families are fitted by different procedures on different data,
-so near-orthogonality is partly expected. The geometry establishes the **negative** firmly — they are
-not the same direction — and the causal dissociation carries the functional claim.
+⚠ The "matched inert control at every depth" that supports the profile is an isotropic control
+(R5-7). The **geometry** result is untouched by that and carries the negative claim on its own.
 
 ### 4. Why does removing `d_surface` increase ASR?
 
-**Still open, but the space has narrowed.** It is not because `d_surface` *is* refusalness (Q3). It is
-not specific to the harm type it was fitted on (Q2). The two channels **interact**: removals compose
-super-additively (+0.0268 vs the matched random triple), and each channel's removal is partly undone by
-adding the other back (~31% and ~44%) — though **both cancellation figures are held** pending controls.
+**On AdvBench, entirely through the refusal gate** (`e4_pathway_advbench.json`): stratifying by the
+baseline's refusal state, the effect is +0.0327 (p 0.0100) on prompts the baseline refused — 21 up,
+**0 down**, 440 flat — and +0.0072 (p 0.28) on prompts it already answered. Every point of movement in
+every arm is a refusal→non-refusal flip; the matched control produces zero flips.
 
-The sharpest remaining tension: the representational signal peaks **late** (scale-free `cos` excess
-peaks L24) while ablation only changes behaviour at **L6–L12**. Correcting for residual-norm growth cut
-that discrepancy from 14× to **2×**, but it is not resolved.
+⛔ **But the "not the content" half was never measurable** (R4-3): 29 of the 34 already-answered
+prompts sit at the maximum score, so the effective n is 5 and the MDE (0.0202) is 8× the effect a
+content pathway of equal relative strength would produce (0.0025). **The gate half is established;
+the content half is untested.**
+
+⚠ And this does **not** generalise: on the internal doublespeak bank the refusal gate is essentially
+off (refusal rate **1.39%**, ρ(refused, ASR) = −0.042), and there the ASR variance is content quality.
+The same rubric measures different things on the two datasets.
 
 ### 5. Does token-level Boombness behave differently from prompt-level?
 
-**Yes.** Later demo occurrences are more concept-like than the first (paired, family-matched excess
-+0.5414 at L8, t = 3.26), and the *query* codeword goes the other way in behavioural prompts. But
-⛔ **RETRACTION F-2**: the gradient is **not direction-specific** — `d_naive` is larger and `d_context`
-carries 45–67% of it. Three of four directions show it.
+**Yes, but neither is direction-specific.** Later demo occurrences are more concept-like than the
+first (paired, family-matched +0.5414 at L8, t 3.26) and the query codeword goes the other way — but
+⛔ **F-2** retracts direction-specificity at the token level, and **Gate D** independently finds the
+same at the prompt level. Two grains, one conclusion.
 
 ### 6. Is there a clean Fig-9-style Boombness→ASR correlation?
 
-**Not attempted this sprint; and the metric it would need is dead.** Phase C's decision gate **failed**:
-`d1`–`d4` read token identity (AUROC 1.0000 at all 17 layers, nested selection picking layer 0);
-`d5`/`d6` are surface-matched but flat at ~0.98 from the first block, measuring context detection rather
-than depth-developed concept. No probe is usable as a graded metric, so **plan §11's candidate objective
-"maximize probe margin" is dead on arrival**. Phase D was not run.
+**Yes — and it is not usable.** Phase D built a bank with **120 independent families per level**
+across 15 levels, and the correlation is real: nested selection (210 candidates on dev → one metric
+on heldout) gives **heldout ρ = +0.2982, p_cl 0.00039, permutation p ≤ 0.0005** on 900 disjoint
+prompts, where G2's clean estimate was ρ = −0.066 on n = 108.
+
+Three things bound it:
+- **two thirds is the design's own manipulation** — between-level ρ +0.7024 vs within-level +0.1638;
+- the within-level SEs are **~11% too small** (the 15 levels share all 120 families, R5-4); the
+  family bootstrap gives 0.0333 and the effect survives (0/2,000 replicates ≤ 0);
+- ⛔ **`d_naive` and `d_context` do it as well or better**, which is what fails the gate.
 
 ### 7. Are any surgical interventions actually useful?
 
-**Phase G not started** — it is GPU work and the queue has been blocked. The inherited answer stands:
-whole-demo-block edge cutting recovers 75.2% of the ceiling, no 16-edge subset matters.
+**Yes — the single most localised causal result in the sprint** (`surgical_units.json`). Cutting
+attention to the **first demonstration's codeword** reproduces the entire codeword-scope effect:
+paired first − last = **+0.9949**, t 11.4, **24/24**, domain-clustered p ≈ 2e-4. It replicates on a
+second, tokenisation-audited codeword — `button`: **+0.2659**, t 5.20, 21/24, p_cl 0.0046.
 
-### 8. Does the result replicate across datasets / models?
+Bounds: ⛔ **it is token suppression, not concept re-binding** (R3-6: Δlogp_codeword −0.9449 against
+Δlogp_concept +0.0268); the effect size is **lexically graded 3.6×** and the carrot arm has one more
+readout query position than the other banks (R4-9), so the clean comparison is apple vs button; and
+the apple bank is **void** on grammaticality.
 
-**Not tested this sprint** (Phase H not started). Inherited status unchanged: Qwen3 AdvBench is
-floor-limited (0.8% baseline compliance) and the causal question there is **open, not negative**.
+### 8. Does the result replicate across datasets and models?
+
+**Partly, and the inherited framing was wrong.** `cross_model_dynamic_range.json`: Qwen3's AdvBench
+baseline is 0.0081 (floor) but its **ClearHarm baseline is 0.1341** and its **internal doublespeak
+baseline 0.1714** — both usable. **R-17's "Qwen3 is floor-limited" is about AdvBench, not about
+Qwen3.**
+
+On the internal bank, remove-both gives **ΔASR +0.3476, p_cl 0.00028** against an inert control, and
+remove-refusalness alone is **inert (−0.0048)** — the opposite of the Llama pattern. ⛔ But the
+**doublespeak-specific** component is **not robust** (R5-6): +0.1254 p 0.030 as reported, +0.1142
+p 0.075 stratum-matched, 4 of 6 jackknife replicates p > 0.05, +0.0478 p 0.267 under proportional
+transport. And the arm cannot be decomposed — no arm B exists on that bank.
+
+**The representational port is blocked, not negative:** the knockout stack does not run numerically on
+Qwen3 (20 of 21 rows non-finite readout logits).
 
 ### 9. Is a GCG objective justified?
 
-**No — and this sprint removed one of its candidate objectives outright.** Probe margin is dead (Q6).
-The `d_surface` layer profile survives no multiplicity correction. The one encouraging signal is
-bidirectional control (add −0.0329 / remove +0.0305 against an inert dose-matched control), but that
-arm **does not clear the committed coherence gate** and is explicitly *not* citable yet.
+**No.** Three of plan §11's five candidate objectives are individually dead: probe margin (Gate C
+failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface` layer profile
+(survives no multiplicity correction), and prompt-level Boombness (Gate D, requirement 4).
+
+> **Prompt-level Boombness is not currently a usable optimization target.**
 
 ### 10. Strongest new findings
 
-1. **The refusalness layer profile and the L8/L18 crossover** — five depths, matched inert control at
-   every one, four surviving Holm. `d_surface` dies exactly where refusalness begins. Arm D's
-   super-additivity is therefore an interaction **across depths**, not two effects at one site.
-2. **`d_surface` ⊥ refusalness**, at chance by L18.
-3. **A refusal floor neither channel touches** — `self_harm_suicide` (n=23) and `child_exploitation`
-   (n=7) sit at exactly 0.000 in *every* arm including remove-both. The refusal direction is not the
-   only thing preventing compliance, and the channel we can manipulate does not reach the harms one
-   would most want protected.
-4. **Methodological:** the coherence gate's two failure modes are orthogonal — ratios detect
-   degeneracy; the scorable-fraction floor tracks refusal rate at **r = −0.878** and must not be read
-   as degeneracy. And **"% of generations changed" carries no information** about whether compliance
-   moved (null arms change 29.5%, inert controls 30.7%).
+1. **Cutting the first demonstration's codeword reproduces the whole effect**, on two
+   tokenisation-audited codewords, with `first_codeword` as its own matched positive control.
+2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
+   categories positive.
+3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
+4. **A clean prompt-level Boombness→ASR correlation exists and is still not `d_surface`** — the
+   sharpest possible negative for the objective.
+5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
+6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
+   in high dimensions.** Also: StrongReject ≈ 0.9 × ASR on AdvBench, so continuous and binary
+   estimands are one measurement; and a judge run with `bank=None` scores against the empty string.
 
 ### 11. What was retracted or downgraded during this sprint?
 
-**Three of my own headline claims, plus corrections.**
-
 | id | claim | why |
 |---|---|---|
-| **F-1** | the Phase B demo gradient as a doublespeak result | no control; `benign_literal` shows the same gradient — half the effect was the control |
-| **F-2** | "`d_context` shows nothing — the gradient is surface-specific" | each direction has its own control baseline; `d_context` carries 45–67% |
-| **F-3** | "sign reversal against a **matched** control" for refusalness:add | **14.8× dose mismatch** — refusal directions are unit-norm so `alpha * v.norm()` is a no-op |
-| — | coherence "PASS" verdicts (ticks 12/15/16) | hand-rolled statistic instead of the committed `coherence_gate.assess()` |
-| — | "about 4 sigma" on the Phase B excess | quadrature over paired domains; true t ≈ 3.0–3.3 |
-| — | "largest late" | mostly residual-norm growth: `proj` 17.0× vs `cos` 2.0× |
-| — | tick-3 "NEW RESULT" (L13/L14 controls) | already committed pre-sprint in `advbench_layer_profile.json` |
-| — | Qwen3 "reversed channels" (6b) | "B = D to 4 dp" holds only at the 0.5 threshold |
+| F-1 | Phase B gradient as a doublespeak result | no control; `benign_literal` shows the same |
+| F-2 | the gradient is surface-specific | `d_context` carries 45–67% |
+| F-3 | "sign reversal against a matched control" | 14.8× dose mismatch |
+| C-1 | my cancellation of a peer's jobs "because they would fail" | false by 17 seconds |
+| — | "bfloat16 is inadmissible" | miscalibrated guard, not bad arithmetic |
+| R4-2 | "no prompt in any arm moves down" | false outside `base_refused` |
+| R4-3 | "moves a gate, not the content" | the content half has effective n = 5 |
+| R4-4 | R-13's mechanism, and my gate's PASS on `remBoth` | judged against the empty string |
+| R4-7 | "every Llama arm passes the topicality gate" | 2 gated at the documented threshold |
+| R5-1 | requirement 7 ("predictive only at L29–31") | 49/210 metrics survive Holm inside L6–L13 |
+| R5-6 | Qwen3 doublespeak-specificity | fails three robustness checks |
+| R5-7 | every "matched random control is inert" | inert by construction |
 
-All three F-retractions share one shape: **a comparison whose control was not what I said it was.**
+Plus four guards found to be **incapable of failing**: the stale-join check, the `--layers/--topk`
+comparability check, `--min-separation`, and my first orthogonalisation.
 
 ### 12. What should the next sprint do?
 
-1. **Land the held controls** (768316/468/469/488/489) — three interaction claims depend on them.
-2. **Run the benign arm** (768502–768505). It is the single cheapest discriminator between
-   harm-salience and general semantic salience, and it needs no judge.
-3. **Fit Llama refusal directions at L6/L8/L10.** Phase F cannot measure the interaction *inside*
-   `d_surface`'s causal band because no refusal direction exists below L12.
-4. **Fix the refusalness `add` dosing** (`score_behavior.py:178`) forward, with a new gap-unit mode —
-   do not edit in place; every committed `refusalness:add` number depends on the current behaviour.
-5. **Track `outputs/` properly or record hashes** (D-11).
-6. **Do not build the GCG objective.** Two of its candidate metrics are now dead.
-
+1. **Land the variance-matched control** (770343, judging now) and, if it moves ASR, re-run the whole
+   arm matrix against it. Every inertness claim depends on this.
+2. **Run arm B on Qwen3's internal bank** so the +0.3476 can be decomposed.
+3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
+   `d_surface`'s own band because only five refusal directions exist on disk.
+4. **Make `judge_boombness` record `prompt_sha16` and the judge model actually used**; the rubric
+   falls back between two models and no artifact says which answered.
+5. **Do not build the GCG objective.**
