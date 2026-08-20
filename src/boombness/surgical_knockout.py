@@ -72,9 +72,12 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 from common import (DATA_DIR, FailureLedger, RunDir, ds, pair, read_jsonl,  # noqa: E402
                     seed_everything, validate_direction_payload)
+# MUST come after `common`: importing it is what puts doublespeak_causality on sys.path, so an
+# earlier `from ds_common import ...` raises ModuleNotFoundError at import time and kills the run
+# before a single row (job 770086). score_behavior.py has the same ordering for the same reason.
+from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 import signals as sg  # noqa: E402
 from dominance import dominance_at  # noqa: E402
 from extract_boombness import resolve_occurrences  # noqa: E402
