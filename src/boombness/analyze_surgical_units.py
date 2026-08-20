@@ -31,6 +31,7 @@ import collections
 import glob
 import hashlib
 import json
+import math
 import os
 import statistics as st
 import subprocess
@@ -64,7 +65,13 @@ def load(run_dir: str, arm: str) -> Tuple[Dict[str, dict], Dict[str, dict], dict
         elif r.get("arm") == arm:
             eff[r["prompt_id"]] = r
     cfg_path = os.path.join(run_dir, "config.json")
-    cfg = json.load(open(cfg_path)) if os.path.exists(cfg_path) else {}
+    raw = json.load(open(cfg_path)) if os.path.exists(cfg_path) else {}
+    # `RunDir` writes the CLI under config["args"], not at the top level. The first version read
+    # `cfg.get("layers")` from the top level, which is absent in all 49 committed runs -- so the
+    # comparability guard below compared None to None, never fired, and the artifact recorded
+    # `"config": {"layers": null, "topk": null}` for runs that all used 8,12,18,24 / 16. A guard
+    # that cannot fail is not a guard (review #4).
+    cfg = dict(raw.get("args", {})) if isinstance(raw.get("args"), dict) else {}
     return base, eff, cfg
 
 
@@ -84,14 +91,38 @@ def contrast(a_dir: str, b_dir: str, arm: str) -> dict:
         return {"error": "no shared prompt_id", "n": 0}
 
     # -- guard: the two runs must be comparable on this arm ---------------------------------
-    flags = {k: (ca.get(k), cb.get(k)) for k in ("layers", "topk")}
-    differ = {k: v for k, v in flags.items() if v[0] != v[1]}
+    # Flags compared: the two that change which edges an arm cuts, PLUS the ones that change what
+    # experiment it is. Review #4's point stands even where no shipped contrast is affected -- the
+    # only cross-run check here was one float comparison on one derived scalar, and bank, model,
+    # dtype, fit_dir, query_kind, condition and seed were all unchecked.
+    SENSITIVE = ("layers", "topk")
+    IDENTITY = ("bank", "model", "dtype", "fit_dir", "query_kind", "condition", "seed", "dst")
+    flags = {k: (ca.get(k), cb.get(k)) for k in SENSITIVE + IDENTITY}
+    if not ca or not cb:
+        return {"error": "one run has no config.json/args block; comparability is unverifiable",
+                "n": len(pids)}
+    id_differ = {k: flags[k] for k in IDENTITY if flags[k][0] != flags[k][1]}
+    if id_differ:
+        return {"error": f"the two runs are not the same experiment: they differ on "
+                         f"{sorted(id_differ)}", "n": len(pids), "config_diff": id_differ}
+    differ = {k: flags[k] for k in SENSITIVE if flags[k][0] != flags[k][1]}
     if differ and arm != "all_layers_demo":
         return {"error": f"runs differ on {sorted(differ)} and arm {arm!r} is sensitive to them; "
                          f"only all_layers_demo ignores --layers/--topk", "n": len(pids),
                 "config_diff": differ}
 
     # -- guard: identical baselines, else this is not a pairing -----------------------------
+    # NON-FINITE FIRST. `nan > 1e-9` is False, so a NaN baseline sailed through this guard and then
+    # crashed inside cluster_mean_ci's stdev -- reproduced on the Qwen3 run, whose readout logits
+    # are non-finite on 19 of 20 shared prompts. Refuse it here, by name (review #4).
+    nonfinite = [p for p in pids
+                 if not (math.isfinite(float(ba[p][READOUT])) and math.isfinite(float(bb[p][READOUT]))
+                         and math.isfinite(float(ea[p][READOUT])) and math.isfinite(float(eb[p][READOUT])))]
+    if nonfinite:
+        return {"error": f"{len(nonfinite)} of {len(pids)} shared prompts have a NON-FINITE "
+                         f"{READOUT} in at least one run; a contrast over them is meaningless",
+                "n": len(pids), "n_nonfinite": len(nonfinite),
+                "example_prompt_ids": nonfinite[:3]}
     worst = max(abs(float(ba[p][READOUT]) - float(bb[p][READOUT])) for p in pids)
     if worst > 1e-9:
         return {"error": f"baselines are NOT identical (max |diff| = {worst:.3e}); the two runs are "
@@ -120,12 +151,24 @@ def contrast(a_dir: str, b_dir: str, arm: str) -> dict:
 
 
 def arm_mean(run_dir: str, arm: str) -> dict:
+    """Per-run mean effect. Non-finite rows are DROPPED AND COUNTED, never averaged in.
+
+    `contrast()` grew a non-finite guard after review #4; this function ran first and had none, so
+    a run with NaN readout logits (the Qwen3 knockout: 19 of 20 rows) crashed here before the guard
+    could speak. Dropping is right for a per-run summary -- unlike a contrast, a mean over the
+    finite subset is still a statement about that subset -- but only if the count is reported.
+    """
     base, eff, _ = load(run_dir, arm)
     pids = sorted(set(base) & set(eff))
-    vals = [float(eff[p][READOUT]) - float(base[p][READOUT]) for p in pids]
+    ok = [p for p in pids
+          if math.isfinite(float(base[p][READOUT])) and math.isfinite(float(eff[p][READOUT]))]
+    vals = [float(eff[p][READOUT]) - float(base[p][READOUT]) for p in ok]
     sem = st.stdev(vals) / len(vals) ** 0.5 if len(vals) > 1 else None
-    return {"n": len(pids), "mean": st.mean(vals) if vals else None, "sem": sem,
-            "baseline_fingerprint": base_fingerprint(base, pids)}
+    return {"n": len(ok), "n_shared_prompts": len(pids),
+            "n_dropped_nonfinite": len(pids) - len(ok),
+            "mean": st.mean(vals) if vals else None, "sem": sem,
+            "reportable": len(pids) > 0 and len(ok) == len(pids),
+            "baseline_fingerprint": base_fingerprint(base, ok)}
 
 
 def main() -> None:
@@ -167,7 +210,11 @@ def main() -> None:
         json.dump(out, fh, indent=2)
     print(f"[units] wrote {args.out}")
     for label, e in out["sets"].items():
-        print(f"  {label}: ref {e['reference']['tag']} mean={e['reference']['mean']:+.4f}")
+        m = e["reference"]["mean"]
+        drop = e["reference"].get("n_dropped_nonfinite", 0)
+        print(f"  {label}: ref {e['reference']['tag']} "
+              f"mean={'n/a' if m is None else format(m, '+.4f')}"
+              + (f"  [DROPPED {drop} non-finite]" if drop else ""))
         for k, c in e["contrasts"].items():
             if "error" in c:
                 print(f"     {k:34s} REFUSED: {c['error']}")

@@ -3896,6 +3896,291 @@ They are in the artifact under that name, with their numbers, precisely so that 
 legible rather than a gap. They agree in sign with both sound codewords; they are simply not citable
 on their own.
 
+## ⛔ Phase H ANSWERS WITH A BLOCKER, NOT A NUMBER — and the blocker is not the one I predicted
+
+**Jobs 769989 / 769990 FAILED, 769991 running.** `option_mass_gate` fired on the `none` arm and the
+module refused to call the run reportable, which is exactly what it exists for:
+
+```
+[knockout] option mass none: median=2.486e-05 p90=2.486e-05 max=2.486e-05 frac>1%=0.000 BELOW GATE
+[knockout] GATE FAILED — the run is written and every arm's numbers are on disk, but the run is
+           NOT reportable:  - none: median option mass 2.486e-05 < 0.05
+```
+
+**Recorded at tick 43 and again at attempt 4, before any of these ran:**
+
+> "If the gate fires, the answer is *'Phase G cannot be ported to Qwen3 without threading
+> `enable_thinking` through the knockout'*, and that is the result I will report — not a number."
+
+The gate fired. **The prediction's conclusion is right and its stated mechanism is wrong**, and the
+run diagnostics say so plainly:
+
+| `btn_q3fp32_firstcw`, arm `none` | |
+|---|---|
+| rows with a **finite** option mass | **1 of 21** |
+| `n_nonfinite` | **20** |
+| `top1_id` | **0 on 19 of 21 rows** — token id 0 is `'!'` |
+| `logp_codeword` / `logp_concept` | −11.36 / −11.24 — both effectively zero |
+| dominance failures | 3 rows, `L18`, **in fp32** |
+
+`<think>` is token **151667** on this tokenizer, and it is nowhere in the readout. The failure is
+**numerical, not positional**: the readout logits are non-finite on 20 of 21 prompts, and the
+surviving top-1 is `'!'` — token 0, what a garbage logit vector decodes to. Three rows additionally
+fail the value-flow reconstruction at L18 **in float32**, where the tolerance is the original 1e-3.
+
+**So the honest Phase H result is: the knockout stack does not run numerically on Qwen3-14B, and it
+is not the `enable_thinking` threading that blocks it.** That is a real finding about the method's
+portability and it is reported as a blocker. Diagnosing the non-finite logits — eager attention with
+Qwen3's q/k-norm under an all-layer hook stack is the obvious suspect — is next-sprint work.
+
+⚠ **The two committed Phase H run dirs must not be read as data.** `reportable: false` is written in
+their `summary.json`; `analyze_surgical_units.py` now refuses them twice over (non-finite guard, and
+the run-identity guard catches the model/fit-dir mismatch first).
+
+**Cross-model status is therefore unchanged from the handover: OPEN, not negative.** Qwen3 AdvBench
+is floor-limited (R-17), the Qwen3 arm-D judging is invalid at the judge input (below), and now the
+representational port is blocked numerically. Three independent reasons, none of them evidence that
+the mechanism fails on Qwen3.
+
+## 4h Code and Output Review — Review #4 (2026-08-20 19:40)
+
+Eight agents, 732k tokens, 275 tool calls: four adversarial audits of **this session's own** new code
+and artifacts, each piped into a skeptic instructed to refute it. **Every headline number reproduces
+exactly. Nine of my supporting statements do not, and two guards I wrote could never have fired.**
+
+### ⛔ R4-1 — "an independent code path" was not independent
+
+I wrote that `analyze_e4_pathway.py` re-derives the committed +0.0305 and +0.1895 "through an
+independent code path". It does not: `analyze_e4_pathway.py` and `analyze_external_arms.py` **both**
+do `from analyze_g8 import cluster_mean_ci`. The estimator, the cluster aggregation, the t-reference
+and `read_jsonl` are the *same functions*; only the row-loading loop differs. Agreement to four
+decimals between two callers of one function is arithmetic, not corroboration — and `analyze_g8`'s
+own docstrings record that this estimator has been wrong twice. **Withdrawn.** The auditor's
+re-derivation with an independent loader and its own t survival function *does* confirm every figure,
+so the numbers stand; my characterisation of why did not.
+
+### ⛔ R4-2 — "Not one prompt in any arm moves down" is FALSE, and the artifact I cited says so
+
+`per_arm.remBoth.pooled.strongreject_score.n_negative = 2`, and the same for `remS_ctrl`. The claim
+is true **only within `base_refused`**, which is precisely the stratum where the rubric identity
+forbids downward movement. Corrected in place.
+
+### ⛔ R4-3 — the `base_answered` stratum cannot detect what I said it did not find, and my stated remedy is wrong by ~50×
+
+The `base_answered` baseline score histogram is **`{0.0: 2, 0.75: 2, 0.875: 1, 1.0: 29}`**. **29 of
+34 prompts are already at the maximum score**, contributing exactly zero to any content effect by
+arithmetic. The effective n is **5, not 34**, and all three movers moved by exactly +0.125 — one
+rubric notch.
+
+- MDE at 80% power on the actual clustered estimand (G=8, df=7): **0.0202**.
+- The natural non-null alternative — a content pathway *as strong per unit of available range as the
+  gate pathway* — predicts `0.0327 × 0.0772 =` **0.0025**, **8× below** the MDE.
+- The arithmetic **maximum** possible effect in this stratum is 0.0772, only 4.3× the MDE.
+
+So the stratum cannot distinguish "no content effect" from "a content effect of identical relative
+strength". **The P1-vs-P2 contrast is asymmetric by construction**: the refused stratum has 1.0 of
+range per prompt, the answered stratum has 0.077. My Limits section said "underpowered"; it then
+prescribed *"a dataset with a higher baseline compliance rate"* — **insufficient by roughly 50×**,
+because more compliant prompts land at the same ceiling (`remS`'s own 55 answered prompts: 47 at
+1.0). Detecting 0.0025 needs n ≈ 1,600 compliant prompts. **The binding constraint is the rubric's
+headroom above "compliant", not the compliance rate.**
+
+⛔ **The section header "removing `d_surface` moves a GATE, not the content behind it" asserts the
+half that was never measurable, and is withdrawn.** What survives, and is unaffected: the entire
+*measurable* effect is 21 refusal flips; 0 prompts move down in that stratum; the matched control
+produces 0 flips. The gate half is established. **The "not the content" half is not tested.**
+
+⚠ Two further stratum numbers I tabulated without qualification are **97% one prompt**: `remR`
+`base_answered` "+0.1291" comes from a G=8 cluster mean with **four singleton clusters**, one of
+which went 0.0→1.0. Same for `remS_ctrl`'s `n_chars` −301.6 ± 327.9. Both now marked.
+
+### ⛔ R4-4 — the R-13 mechanism is wrong, mine inherited it, and my own gate certified the invalid arm
+
+The peer's R-13 says the Qwen3 arms were "judged against *build a bomb* while the model was asked
+about a carrot". **They were judged against the empty string.** Chain, confirmed by both auditors
+from code and configs:
+
+1. `score_behavior.py` fixes the `gens.jsonl` key set and it contains **no `final_query_text`, no
+   `codeword`, no `concept`**.
+2. `q3_C20`, `q3_D20`, `q3_D20ctrl` were all judged with **`bank: null`** (`summary.json["bank"]` is
+   `None`), so `meta_by_id` was empty.
+3. `make_goal` at that commit: `q = row.get("final_query_text") or ""` → **`goal == ""`**, and
+   `evaluate("", text, rubric)` scored 960 rows per arm with `judge_status: "ok"`.
+4. The baseline arm `qwen3nt` **did** pass `--bank`. So the +0.991 ASR delta compares an arm judged
+   against a real goal to arms judged against nothing — **confounded at the judge input**.
+
+I had the evidence and talked myself out of it: I checked those gens rows, saw `codeword/concept/
+final_query_text` all `None`, and then accepted `goal_used_concept_surface = True` as proof the
+substitution had worked. That field is `concept in goal`, and `"" in ""` is **True**. *(The auditor's
+own use of that field as corroboration is likewise refuted by its skeptic — the bank-supplied
+baseline is also True 960/960. The chain stands on the code, not on that field.)*
+
+**Consequence for my own instrument, and it is the worst kind:** `topicality_gate.py` reconstructed a
+goal those runs never saw, and returned **`PASS` for `remBoth`** — certifying an arm that is invalid
+at the judge input. **A gate that certifies the thing it exists to catch is worse than no gate.**
+
+**Fixed:** `judge_goal_provenance()` now reads `summary.json["bank"]` and the `goal_status` column
+from the judge directory the gate already opens, and **refuses to issue any verdict** — PASS or FAIL
+— on an arm whose judge resolved its goal differently. Re-run:
+
+| Qwen3 `benign_literal` | ASR | verdict |
+|---|---|---|
+| remove refusalness | 0.994 | ⛔ **REFUSED** — judge bank=None, goal was the empty string |
+| remove both | 0.880 | ⛔ **REFUSED** (was `PASS`) |
+| double-random control | 0.954 | ⛔ **REFUSED** |
+
+The Qwen3 conclusion — *uninterpretable* — is unchanged and now rests on the right reason.
+
+### ⛔ R4-5 — on the Qwen3 bank the topicality metric carries ONE BIT, so the threshold selected the verdict
+
+`content_words()` applied to the 324 `benign_literal` goals gives `n_goal_content_words = {1: 324}` —
+**every goal reduces to the single word "bomb"**. So `goal_content_overlap ∈ {0, 1}` and is
+*identically equal* to `has_concept`. The artifact proved it and I did not look: the two supposedly
+independent load-bearing fields are **bit-identical floats**
+(`goal_overlap_malicious == has_concept_rate_malicious == 0.49473684210526314`). Any
+`--min-absolute-overlap` in (0, 0.4947) passes `remBoth`; anything above fails it. **The verdict was a
+free parameter.** The diagnostic that exposes this was computed per row and then *dropped* before the
+artifact was written. Now aggregated and published as `goal_content_word_count_histogram`, with a
+`metric_is_degenerate_one_word_goals` flag that forces `UNDECIDABLE`. (42% of the whole carrot bank
+has single-word goals.)
+
+### ⛔ R4-6 — `--min-separation` was dead code advertised as a criterion
+
+Defined, documented with "**and it FAILS unless**…", and emitted into both artifacts as
+`thresholds.min_separation: 0.1` — and **never read by the verdict block**. `remBoth` shipped with
+`topicality_separation = −0.403`, a 0.5 violation of the published criterion, marked **PASS**. This is
+my own doing: I demoted separation from criterion to diagnostic and left the flag behind. **Flag
+removed.** ⚠ And the demotion itself rested on `n_non_malicious_answered = 2` for three of the five
+Llama arms — a design rule retired on a two-row comparison group. The rule was still wrong for the
+stated reason, but the evidence I gave for it was thin.
+
+### ⛔ R4-7 — "every Llama arm PASSES" overstates it two ways
+
+- The Llama artifact was run at `--min-asr-rise 0.03`; the **documented default is 0.10**. The two
+  artifacts published incomparable gates without saying so. Re-run at the default: **`remS` is
+  `NOT_GATED`** (Δ ASR +0.042), so only `remR` and `remBoth` are formally gated, and both PASS.
+- Substring matching (`w in g`) inflated overlap ~19% on a cross-goal control — `harm` ⊂ *harmless*
+  fires on refusal text; `use` ⊂ *because*; `plan` ⊂ *planet*. And the boilerplate list missed
+  AdvBench's own request verbs (`develop` survived in 67 goals, `tutorial` 43, `guide` 38). A
+  hand-written **topic-free refusal sentence scores ≥ 0.15 on 93 of 495 goals**. So `PASS` is a weak
+  certificate, as the module says — but the threshold sits inside the metric's noise floor.
+
+**Fixed:** word-boundary token matching, and the scaffolding verbs added. Re-run at the default
+threshold, Llama flagged-row overlap is now **base 0.811 · remS 0.806 · remS_ctrl 0.814 · remR 0.779
+· remBoth 0.786**.
+
+**Corrected claim.** *The two arms whose ASR rises materially — remove-refusalness (+0.206) and
+remove-both (+0.287) — both PASS, with flagged-row goal overlap 0.779 and 0.786 against a 0.15
+threshold. Arm B, remove-`d_surface` (+0.042), sits below the gate's rise threshold and is therefore
+**not certified — untested, not cleared**. Its flagged rows do carry overlap 0.806, which is
+reassuring but is not a verdict this instrument issued.* My earlier sentence — that arm B "rests on
+ASR numbers this gate certifies" — is **withdrawn**.
+
+⚠ The gate now also warns that `base` is not the lowest-ASR arm (`remS_ctrl` is, at 0.0626 vs
+0.0646) and records `baseline_is_order_dependent`, because reordering `--arm` changes every verdict.
+
+### ⛔ R4-8 — two guards in `analyze_surgical_units.py` could never have fired
+
+1. **The comparability guard read the wrong key.** `RunDir` writes the CLI under `config["args"]`;
+   I read `cfg.get("layers")` from the top level, which is absent in **all 49** run dirs. So the
+   refusal compared `None` to `None`, never fired, and the artifact recorded
+   `"config": {"layers": null, "topk": null}` for runs that all used `8,12,18,24 / 16`. **No shipped
+   contrast is affected** — all six pair byte-identical flags — but the guard was theatre. Fixed and
+   verified to fire: contrasting the `--layers 8,18 --topk 8` run against the `8,12,18,24 / 16` one
+   on `positive_control` now **REFUSES**. The guard also now checks `bank`, `model`, `dtype`,
+   `fit_dir`, `query_kind`, `condition`, `seed` and `dst` — previously the *only* cross-run check was
+   one float comparison on one derived scalar.
+2. **The baseline-identity guard was not NaN-safe.** `nan > 1e-9` is `False`, so a non-finite
+   baseline passed the guard and then crashed inside `stdev`. Demonstrated on the Qwen3 run (19 of 20
+   shared prompts non-finite). Both `contrast()` and `arm_mean()` now refuse non-finite rows by name
+   and count them.
+
+**All six committed contrasts are byte-unchanged after both fixes.**
+
+### ✅ R4-9 — the lexical gradient is NOT a length effect, and that was the likeliest way it was wrong
+
+I asked the auditor to attack the "0.99 / 0.51 / 0.27 across carrot / apple / button" claim hardest on
+length. **It is refuted as a confound:** all three banks are identical on `prompt_len` (mean 138.792,
+min 103, max 179), `seq_len` (140.792), `readout_pos` (139.792), `codeword_last_pos` (128.792),
+`n_demo_positions` (1) and `n_edges_cut` (1024).
+
+⚠ **But a real structural difference survives, and it is not the codeword:** carrot has
+`max_answer_tokens = 2 → n_query_positions = 3` (`query_positions [104, 115, 116]` on 24/24), while
+apple and button have `= 1 → 2` (`[104, 115]`). **`carrot` is multi-token in the answer surface where
+the other two are single-token** — `" Carrot"` is `[3341, 4744]`, and the screener records
+`n_single_token_variants: 1` for carrot against 4/4 for apple, button and bomb. So the carrot arm's
+readout aggregates over one more query position than the other two. **The 0.99-vs-0.51-vs-0.27
+ordering is confounded with readout span at its top end**, and the clean comparison is
+**apple vs button — both 2-position, and still differing +0.2348 (cluster t 3.88)**. The gradient
+survives on the two tokenization-matched banks; the carrot magnitude does not belong in the same
+column without that caveat.
+
+✅ And the decomposition is consistent across all three, confirming R3-6 was general and not a
+carrot quirk: the effect is **93.6–96.4% codeword suppression** in every bank (carrot +0.9872 =
++0.0360 concept + 0.9512 codeword; apple 94.7%; button 93.6%).
+
+⚠ **A reporting error in my own commit message for `d0b51351`:** "`+0.2708, t 5.04, 21/24,
+domain-clustered p 0.0086`" splices two different tests — `t 5.04` is the prompt-level statistic
+(df 23) and `p 0.0086` comes from the cluster-level t of 4.19 (df 5). Both are in the artifact; the
+one-line summary should not have joined them.
+
+### ⛔ R4-10 — "0 overlapping demonstration sets among all 1,800" is false as written
+
+Phase D's headline. The **within-level** claim is exactly right and is what the design needs: **0 of
+107,100 within-level pairs share a demonstration sentence** (7,140 pairs × 15 levels). But the 1,800
+rows draw on only **360 distinct demo-sentence sets over 120 (domain, split, slot) families** — the
+same family is reused *across* the 15 levels, by design, because that is what makes the levels
+comparable. **Corrected wording: "120 independent families per level, pairwise disjoint within each
+level" — not "1,800 mutually disjoint sets".** No analysis is affected: every Phase-D contrast is
+between levels at matched families, which is the paired design, not an independence claim.
+
+Three further Phase-D facts the audit surfaced, all confirmed, none fatal, none previously written
+down:
+
+- **Filler sentences DO overlap across slots.** Width-6 filler on stride-3 slots: of 45 slot pairs,
+  25 share none, 10 share 2, 10 share 4. I anticipated this when choosing `n_filler=6` and decided it
+  was acceptable — filler is identical across the three position arms *of the same family*, so it
+  cannot confound the position contrast — **but I never wrote that down, and the tests do not touch
+  filler.** Now recorded.
+- **`far` and `distributed` are length-matched but not gap-matched**, which is intended and was
+  unstated: mean demo-to-query gap 488.4 vs 423.8 characters, `far > distributed` on **120/120**
+  families (near: 98.5).
+- ⚠ **132 `prompt_id`s collide between the Phase-D bank and the main bank, with different
+  `prompt_sha16`** (60 role_style, 48 core2x2, 24 families). `family_id` does not include
+  `bank_block`, so a tool reading both banks would join two *different* prompts on one id. The
+  mitigation is real and already in place — every consumer records `prompt_sha16` — but the collision
+  is now documented rather than latent.
+- ⚠ **All 120 `consistency=irrelevant` rows have `n_target_occurrences == 1`**, and
+  `analyze_boombness.py:191` skips rows with `n_occurrences < 2`. That level will be **silently
+  dropped** by any per-occurrence analysis. Not a bug in the bank — the irrelevant arm teaches a
+  *different* word, so one occurrence is correct — but it must be handled explicitly downstream.
+- ⚠ **Two of my six new tests are weaker than they look.** `tests/test_slot_disjointness.py`
+  hardcodes `POOL = 20` and never opens `demo_pools.json`, so all 11 pass unchanged even under a
+  simulated pool of 24 (which collapses the ten slots to **4 distinct sets**). And
+  `test_phase_d_preset_uses_only_those_slots_and_only_n2` greps a 40-character source slice. Neither
+  is wrong; both are narrower than their names imply.
+
+### ✅ Confirmed and not re-litigated
+
+Every Phase-D bank number in the report reproduces to the decimal (all 15 level rows, 120 families
+each, the 630.7 length match — and **per-family** length spread across near/far/distributed is
+**exactly 0 for all 120 families**, stronger than the pooled match I claimed). All three bank
+regenerations reproduce byte-identically (`4cd9157399aa1b3c`, `debe267f05efb9ab`, and Phase D's own
+`2b79d5699e0180c9`). Every E4 figure and every surgical-units figure reproduces under independent
+re-derivation. The `topicality` artifacts leak no generation text (recursive string scan: longest
+string is a verdict rationale).
+
+### Next corrections, in priority order
+
+1. **Re-judge the three Qwen3 arms with `--bank`** — the `_FATAL_GOAL_STATUSES` guard added after
+   those runs would now hard-fail them, so the fix is enforceable today and cheap (no GPU, judge
+   only). Until then nothing about Qwen3 arm D is interpretable.
+2. **Gate arm B properly** — either justify a lower `--min-asr-rise` in the artifact or accept that
+   the sprint's `d_surface` headline is uncertified by the topicality gate.
+3. **Diagnose the non-finite Qwen3 knockout logits** before any further cross-model port.
+4. Make the slot tests read the real pool, and add a filler-overlap test.
+5. Handle `consistency=irrelevant` explicitly in any Phase-D per-occurrence analysis.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
