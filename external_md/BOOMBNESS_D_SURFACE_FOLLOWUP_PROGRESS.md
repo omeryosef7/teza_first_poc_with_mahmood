@@ -5203,6 +5203,43 @@ not independent *evidence* about the model — they are independent *summaries* 
 What the subspace version adds is that the near-orthogonality is not a knife-edge property of one
 direction pair but holds against the whole design subspace.
 
+
+### The layer-profile re-check — three more depths submitted, judged, and an analyzer that refuses the wrong control
+
+**Runs 771137/771138/771139** (`in_subspace_orth:project_out:{6,10,12}` on AdvBench heldout 495),
+all **495 generations, 0 failures**. Their own diagnostics, verified before judging:
+
+| job | layer | cos(arm, control) | ARM removes | CONTROL removes | k |
+|---|---|---|---|---|---|
+| 771137 | L6 | +5.6e-09 | 87.68% | 5.40% | 2 |
+| 771138 | L10 | +6.5e-09 | 81.14% | 5.88% | 2 |
+| 771139 | L12 | −9.3e-10 | 82.04% | 7.25% | 2 |
+
+Judging in six shards (2 per depth, 248+247). **L12 is the one that matters most**: it is the layer
+profile's peak (+0.0322) and, with L8, one of only two depths BH keeps.
+
+**`analyze_control_recheck.py`** produces the artifact rather than leaving the numbers in prose
+(R3-3). It uses the identical estimand to `analyze_external_arms.py` — paired per prompt against the
+same baseline, domain-clustered — so the output is directly comparable to the committed profile, and
+it computes the arm-minus-control contrast **paired per prompt**, which is tighter than differencing
+two independently-clustered means.
+
+**Two guards it enforces, both of which encode tonight's scoping measurement:**
+
+- it reads each arm's **actual intervention** from the generation run's `summary.json` rather than
+  trusting the tag, and **refuses any arm whose direction is not `d_surface`** — because
+  `in_subspace_orth` is measured to be a valid control only there (d_surface is 100.0000% inside the
+  cell-mean span; refusalness 0.65–2.72%);
+- it refuses a "subspace control" run whose recorded direction is not `in_subspace_orth`, and asserts
+  the judge shards of one run are duplicate-free before unioning them.
+
+**Prediction, recorded before the numbers land.** The committed profile has L6 +0.0159, L10 +0.0223,
+L12 +0.0322 against isotropic controls of |Δ| ≤ 0.0066. Arm B at L8 already passed this test
+(−0.0033, p 0.149). If L12's subspace-matched control is also inert, the profile's two BH-surviving
+depths both survive a control that could have falsified them. **If L12's control moves ASR, the
+profile's peak is not about `d_surface`** — and since Gate D already showed `d_naive` and `d_context`
+predict as well at the prompt level, that would make the direction non-specific at *both* grains.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
