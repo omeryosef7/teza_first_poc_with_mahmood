@@ -3504,6 +3504,44 @@ be re-based on the button bank before it is worth any more GPU**, and
 lost jobs above are the first instance, not a one-off. No further jobs submitted from this session
 until the user says how to divide the work.
 
+### Attempt 4 (769989–769991) — fp32 sharded over two GPUs, on the button bank
+
+The user's decision on the concurrency incident: *"shut it down for me i want only you to work on
+it."* Stand-down messages went to all three peer sessions; two acknowledged and idled. The third had
+already queued **769982–769985** — Qwen3 button knockout ×3 plus a redundant Llama arm — and **every
+one of them passed `--dtype bfloat16`**, the flag this session added an hour earlier and then
+refuted. They were guaranteed to fail 24/24 rows on the `dominance` gate. Cancelled, and their
+argsfiles are preserved (`args_btn_q3_*.txt`) so nothing is unrecoverable.
+
+Resubmitted correctly — **fp32, unchanged precision, memory solved by hardware rather than by
+lowering it**:
+
+```
+sbatch --time=2:00:00 --gpus=2 --mem=96G ...  # 2 x 44 GiB L40S = 88 GiB > the ~59 GiB fp32 model
+```
+
+| job | tag | scope | model | dtype | GPUs |
+|---|---|---|---|---|---|
+| 769989 | `btn_q3fp32_firstcw` | `first_codeword` | Qwen3-14B | **fp32** | 2 |
+| 769990 | `btn_q3fp32_firstnbr` | `first_neighbor` | Qwen3-14B | **fp32** | 2 |
+| 769991 | `btn_q3fp32_lastcw` | `last_codeword` | Qwen3-14B | **fp32** | 2 |
+
+`device_map="auto"` already shards across whatever is visible, so this needs no code change. The
+Llama arm the peer queued is dropped as redundant — `btn_firstcw` (769967) is already complete and
+is the arm the Qwen3 runs will be compared against.
+
+**The `<think>`-token risk is still live and still unjudged.** `surgical_knockout.py` does not thread
+`enable_thinking`, and handover defect C-8 found the thinking-ON Qwen3 extract's final token is a
+`<think>` control token. `option_mass_gate` (`--min-option-mass 0.05`) is the arbiter. If it fires,
+the reported Phase H result is *"cannot be ported to Qwen3 without threading `enable_thinking`
+through the knockout"* — a blocker, not a number.
+
+**Prediction, recorded before the runs land.** Given that the effect size is now known to be
+lexically graded on Llama by 3.6× (carrot 0.99 → button 0.27), a Qwen3 magnitude anywhere in
+roughly 0.1–1.0 is consistent with replication; only a **sign flip or a null with `first_codeword`
+indistinguishable from `first_neighbor`** would be evidence against. Stated now so the reading is
+not chosen after seeing the number.
+
 ## ✅✅ E6 RE-TEST ON THE BUTTON BANK — the Phase G effect SURVIVES a clean codeword, and the effect size is LEXICALLY GRADED
 
 **Artifact:** `outputs/boombness_followup/surgical_units.json` — the plan §9 deliverable, and the
