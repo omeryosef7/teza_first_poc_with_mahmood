@@ -205,6 +205,72 @@ def evaluate(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, float],
     return res
 
 
+def level_of(r: dict) -> str:
+    """The designed-variance LEVEL a row belongs to. One factor varies per block."""
+    b = r.get("bank_block")
+    return {"phase_d_base": "base",
+            "phase_d_strength": "str:" + str(r.get("strength")),
+            "phase_d_consistency": "con:" + str(r.get("consistency")),
+            "phase_d_position": "pos:" + str(r.get("example_position")),
+            "phase_d_role": "role:" + str(r.get("role_style"))}.get(b, "?" + str(b))
+
+
+def between_vs_within_level(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, float],
+                            level: Dict[str, str], pids: List[str], name: str) -> dict:
+    """Split the correlation into the part the DESIGN put there and the part it did not.
+
+    THIS IS THE TEST THAT DECIDES WHAT THE CORRELATION MEANS, and without it a designed-variance
+    bank is a trap rather than an improvement. The bank deliberately makes ASR differ across levels
+    -- `str:aggressive` is at 0.46 and `con:mixed` at 0.008 -- so ANY metric that also differs across
+    levels will correlate with ASR when the levels are pooled, whether or not it tracks anything
+    within a level. That is the same shape as the between-domain trap in this module's self-test,
+    one grain up, and it is the shape G2 died of.
+
+      * BETWEEN-level: rho over the 15 level means. Reads the manipulation.
+      * WITHIN-level: rho inside each level (fixed manipulation, 120 independent families), then a
+        cluster mean over levels with G-1 df. This is prompt-to-prompt variance the design did not
+        create, and it is the only part that could support a per-prompt objective.
+
+    Also reports COVERAGE: a demo-based metric is undefined wherever there are no demo occurrences
+    of the codeword -- `consistency=irrelevant` teaches a different word, so its 120 prompts have the
+    codeword only at the query. Those rows are legitimately absent, but a headline rho computed on
+    14 of 15 levels must say so.
+    """
+    per_level: Dict[str, Tuple[List[float], List[float]]] = collections.defaultdict(
+        lambda: ([], []))
+    for p in pids:
+        v = metrics.get(p, {}).get(name)
+        o = outcome.get(p)
+        if v is None or o is None:
+            continue
+        per_level[level[p]][0].append(v)
+        per_level[level[p]][1].append(o)
+    all_levels = sorted({level[p] for p in pids})
+    covered = sorted(per_level)
+    lm = [st.mean(per_level[l][0]) for l in covered]
+    la = [st.mean(per_level[l][1]) for l in covered]
+    within = {}
+    for l in covered:
+        r = spearman(*per_level[l])
+        if r is not None:
+            within[l] = r
+    cl = cluster_mean_ci({l: [r] for l, r in within.items()}, n_effective=len(within))
+    return {
+        "n_levels_total": len(all_levels), "n_levels_covered": len(covered),
+        "levels_uncovered": sorted(set(all_levels) - set(covered)),
+        "coverage_note": "a demo-based metric is undefined where the codeword never appears in a "
+                         "demonstration (consistency=irrelevant teaches a different word)",
+        "n_prompts_used": sum(len(v[0]) for v in per_level.values()),
+        "between_level_rho": spearman(lm, la) if len(lm) > 2 else None,
+        "level_means": {l: {"metric": st.mean(per_level[l][0]),
+                            "outcome": st.mean(per_level[l][1]),
+                            "n": len(per_level[l][0])} for l in covered},
+        "within_level_rho_by_level": within,
+        "within_level_mean_rho": cl.get("mean"), "within_level_se": cl.get("se"),
+        "within_level_p_vs_0": cl.get("p_vs_0"), "within_level_n_levels": cl.get("n_clusters"),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -239,6 +305,7 @@ def main() -> None:
                          f"(e.g. {dupes[:3]}); the shards overlap and the union is not a partition")
 
     domain = {r["prompt_id"]: str(r.get("domain")) for r in ex}
+    level = {r["prompt_id"]: level_of(r) for r in ex}
     split = {r["prompt_id"]: str(r.get("split")) for r in ex}
     block = {r["prompt_id"]: str(r.get("bank_block")) for r in ex}
     ex_pids = sorted({r["prompt_id"] for r in ex})
@@ -278,6 +345,16 @@ def main() -> None:
         "selection_protocol": "best |within-domain mean rho| chosen on dev; that ONE metric tested "
                               "on heldout, where the family size is 1 and no correction applies",
         "row_accounting": accounting,
+        "bank_refusal_context": {
+            "kw_refusal_rate": (sum(1.0 for p in common if ju[p].get("refused")) / len(common))
+                               if common else None,
+            "asr_at_0.5": (sum(1.0 for p in common if ju[p].get("malicious_at_0.5")) / len(common))
+                          if common else None,
+            "note": "if the refusal rate is near zero the refusal GATE is not the mechanism on this "
+                    "bank, and a metric predicting ASR here is predicting content, not compliance -- "
+                    "the opposite regime from AdvBench, where Phase E4 found every point of "
+                    "StrongReject movement was a refusal flip",
+        },
         "n_dev": len(dev), "n_heldout": len(hel),
         "directions": {},
     }
@@ -303,6 +380,18 @@ def main() -> None:
                 "selected_on_dev": best,
                 "dev": usable[best],
                 "HELDOUT_TEST": hel_res,
+                "HELDOUT_between_vs_within_level": between_vs_within_level(
+                    met, outcome, level, hel, best),
+                "ALL_between_vs_within_level": between_vs_within_level(
+                    met, outcome, level, common, best),
+                # GATE REQUIREMENT 3: "the metric is not just refusalness". Testable here with no
+                # refusalness direction, because the judge records a keyword refusal flag per row.
+                # If the metric predicts ASR only by predicting refusal, it is the refusal channel
+                # wearing a different name.
+                "vs_refusal_within_level": between_vs_within_level(
+                    met, {p: (1.0 if ju[p].get("refused") else 0.0) for p in common
+                          if ju[p].get("refused") is not None},
+                    level, common, best),
                 "dev_grid_holm": holm(dev_ps),
                 "dev_top5": sorted(
                     ({"metric": k, "within_domain_mean_rho": v["within_domain"]["mean_rho"],
@@ -322,10 +411,13 @@ def main() -> None:
                 continue
             h = r["HELDOUT_TEST"]
             wd = h.get("within_domain", {})
-            print(f"  {d:10s} {oc:22s} selected={r['selected_on_dev']:28s} "
-                  f"dev_rho={r['dev']['within_domain']['mean_rho']:+.4f}  "
-                  f"HELDOUT rho={wd.get('mean_rho'):+.4f} "
-                  f"p_cl={wd.get('p_vs_0')} perm_p={h.get('perm_p_within_domain')}")
+            bw = r["ALL_between_vs_within_level"]
+            print(f"  {d:10s} {oc:22s} sel={r['selected_on_dev']:22s} "
+                  f"HELDOUT rho={wd.get('mean_rho'):+.4f} p_cl={wd.get('p_vs_0'):.2g} "
+                  f"| BETWEEN-level {bw['between_level_rho']:+.4f} "
+                  f"WITHIN-level {bw['within_level_mean_rho']:+.4f} "
+                  f"p={bw['within_level_p_vs_0'] and round(bw['within_level_p_vs_0'],4)} "
+                  f"cover={bw['n_levels_covered']}/{bw['n_levels_total']}")
 
 
 if __name__ == "__main__":
