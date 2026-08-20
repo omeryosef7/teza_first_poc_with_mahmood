@@ -4284,6 +4284,68 @@ whenever `unknown_identity` lists the bank hashes.** Recorded here so the trap i
 4. Make the slot tests read the real pool, and add a filler-overlap test.
 5. Handle `consistency=irrelevant` explicitly in any Phase-D per-occurrence analysis.
 
+
+### Phase D analysis written and SELF-TESTED before any real data touches it (`analyze_phase_d.py`)
+
+The generation run is still in flight, so the gate's machinery was built and validated first —
+against synthetic data with known answers, so that a null on the real data can be believed.
+
+**The selection problem, and the only honest answer to it.** There are 3 positions × 35 layer choices
+× 2 readouts = **210 candidate metrics per direction**. Reporting the best of 210 is exactly how a
+null becomes a finding, and it is close to what G2 did. So the gate is **nested on the bank's own
+split**:
+
+> choose the single best metric on **dev** → test **that one metric** on **heldout**.
+
+The heldout test has a family of exactly one, so its p-value needs no correction and means what it
+says. The full dev grid is reported with Holm over all 210, but **the dev grid is selection, not
+evidence**. Dev and heldout are 900 prompts each, disjoint by construction.
+
+**Negative controls are other directions, not noise.** `d_context` and `d_naive` were extracted on
+the same rows and go through the identical pipeline. If all three predict equally the metric is
+reading prompt structure — which is precisely what retraction **F-2** already established for the
+token-level gradient, so this is a live possibility, not a formality.
+
+**Estimand.** Per-domain Spearman ρ aggregated over the 6 domain clusters (G−1 df), with a
+**within-domain permutation null** (labels shuffled *inside* each domain). Shuffling globally would
+let the null be broken by between-domain differences in both metric and ASR — the exact confound
+clustering exists to price — and would return an optimistically small p. The pooled ρ is reported
+too, because G2 reported it and the two must be comparable, but it is **not** the estimand.
+
+#### The self-test, and the one result that needed a second look
+
+| synthetic case | expected | measured |
+|---|---|---|
+| planted within-domain signal | ρ > 0, p small | ρ **+0.5496**, p_cl 1.3e-05, perm p 0.0025 ✅ |
+| pure null | ρ ≈ 0, p large | ρ −0.0723, **p_cl 0.0357** ⚠ |
+| signal ONLY between domains | pooled high, within ≈ 0 | pooled **+0.9709**, within **−0.0464** ✅ |
+| constant metric (all ties) | no correlation | `None` ✅ |
+
+The third row is the one that matters: a metric that differs across domains and an ASR that differs
+across domains produce a **pooled ρ of +0.97 with nothing whatsoever inside any domain**. That is the
+shape of a false Fig-9, and the estimand rejects it.
+
+The pure-null row looked like a false positive at α = 0.05, so **I measured the false-positive rate
+rather than explaining it away** — 400 independent null draws:
+
+| α | 0.01 | 0.05 | 0.10 |
+|---|---|---|---|
+| cluster-t false-positive rate | **0.0100** | **0.0475** | **0.1050** |
+
+Calibrated. The single p = 0.0357 was a chance draw at the ~4% level — what a valid test does 5% of
+the time. ⚠ The permutation null measures 0.0667 at α = 0.05, but over only 60 draws (MC se ≈ 0.028),
+so it is **within one standard error of nominal and is not a strong check**; the cluster-t is the
+better-verified of the two and both are reported.
+
+**Guards in the script:** a stale-join `SystemExit` if any prompt joins on `prompt_id` but differs in
+`prompt_sha16` (R1's failure mode, and Phase D shares 132 ids with the main bank); full row
+accounting by split, domain and block; and metrics that are constant or unestimable are dropped with
+a `degenerate` flag rather than silently correlated.
+
+**Not yet available, and it will be stated as a gap rather than skipped:** the plan's metric list
+includes *refusalness* and *Boombness minus refusalness*, and no refusalness run exists on the Phase-D
+bank. Probe margin is dead on arrival (Decision Gate C failed).
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
