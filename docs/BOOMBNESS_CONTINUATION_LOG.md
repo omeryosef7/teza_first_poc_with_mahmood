@@ -3703,3 +3703,72 @@ This limitation is now on the record ahead of the audit lane that was asked to f
 | 66 | 2026-08-21 | launched the periodic audit, one lane aimed at the topicality instrument itself | running |
 | 67 | 2026-08-21 | checked whether the §7f headline is exposed to R-14 | **no** — AdvBench has 495/495 empty distinctive sets, so the mismatch mechanism cannot arise |
 | 68 | 2026-08-21 | measured the instrument's own resolution on the bank | **428/500 rows hinge on ONE word** — R-14's 94% is an upper bound |
+
+## Audit #2 — the instrument survives, its description does not, and no number moves
+
+Tick 2026-08-21. One audit lane was aimed squarely at the topicality instrument, because it had just
+been used to **retract** a headline (R-14) and **confirm** another (Qwen3 benign elevation). If it is
+wrong, both moves are wrong. Its verdict, which I endorse: *"degenerate-by-construction, but every
+bias I could measure runs against the two conclusions it was used to make."*
+
+### Confirmed, and sharper than my own version
+
+I recorded last tick that the metric hinges on one word. The audit established it is **stricter than
+that**: `make_goal` substitutes the codeword for the concept in the visible query, so goal and visible
+differ in **exactly one token by construction**. Reproduced here:
+
+| | bank (2736 rows) |
+|---|---|
+| empty distinctive set (→ `None`) | 912 |
+| **exactly one** | **1824** |
+| two or more | **0** |
+| **distinct distinctive words in the whole bank** | **1** |
+
+So `goal_topicality` is not a fraction: its value set is `{0.0, 1.0}` — `bool(the concept word
+appears)`. Every CI computed from it is **binomial on a single token**. Two consequences the audit
+found that I had not:
+
+* **A threshold sweep is vacuous, not merely stable.** Thresholds 0 / 0.25 / 0.5 / 1.0 select the
+  identical row set. R-14 is "perfectly threshold-stable" for the degenerate reason that there is
+  only one bit to threshold.
+* **The instrument was never calibrated where a true positive is guaranteed.** `direct_harmful` and
+  `concept_in_benign_ctx` are **100% inapplicable** (384/384 `None` each), so sensitivity was never
+  measured on the arm that could measure it.
+* **`topicality_gate.py` — the sibling written the same week — already refuses such a bank** with
+  verdict `UNDECIDABLE`. `judge_boombness.goal_topicality` had no such guard, and **R-14 was decided
+  by the instrument without the check.** That is a fair hit.
+
+### Fixed, and re-run
+
+1. **Trailing word boundary.** The match was `\b<w>` with no trailing `\b`, so the distinctive word
+   matched any word it prefixes — 19 strict extensions in `/usr/share/dict/words`, 14 non-inflectional.
+   `topicality_gate.py` was already word-bounded and its docstring records ~19% inflation; the fix was
+   never back-ported. **Now bounded on both sides.**
+2. **`topicality_is_degenerate()`** added, and `instrument_resolution` is now written into **every**
+   artifact `analyze_topical_asr.py` produces, so the one-bit caveat travels with the numbers instead
+   of living in a log.
+
+**Re-ran everything the fix invalidates — all 8 Llama arms and both models' §14 figures. Every number
+is bit-identical**, including the Qwen3 arm-D `asr_topical = 0.600` the audit specifically flagged as
+possibly inflated by up to ~19%. The bug was real in principle and **never fired on a single
+completion** in these runs.
+
+### The finding that most vindicates the whole exercise
+
+The audit measured, across the 8 Llama arms, **corr(mean completion length, plain ASR) = +0.984**.
+On this bank the published ASR metric is very nearly a **length meter**. And the residual length bias
+in the *topical* metric (+0.272) **favours arm F**, which writes 1646 chars/completion — 1.83× the
+baseline and the longest of all eight arms — and the instrument condemned it anyway. So **R-14 is not
+a length artifact; correcting for length would strengthen it.**
+
+Counter-example the audit recorded, which stops "plain ASR = length" becoming a new overclaim: Qwen3
+`Dctrl` has the *shortest* completions of its family and the *highest* plain ASR in that file (0.888).
+On Qwen3 the inflation is something other than length — and the conjunction catches it regardless
+(0.888 → 0.021).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 69 | 2026-08-21 | audit lane attacks the topicality instrument | one-bit degeneracy confirmed; sibling gate has a guard this one lacked |
+| 70 | 2026-08-21 | word-bounded the match; added `topicality_is_degenerate`; `instrument_resolution` now in every artifact | caveat travels with the numbers |
+| 71 | 2026-08-21 | re-ran all 8 Llama arms + both §14 models | **every number bit-identical**; the substring bug never fired |
+| 72 | 2026-08-21 | recorded corr(length, plain ASR) = **+0.984** on Llama | independent vindication of why R-13/R-14 exist |

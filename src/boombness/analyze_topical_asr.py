@@ -152,7 +152,14 @@ def main() -> int:
                 "n_topicality_assessable": n_topi,
             }
 
+    # RECORD THE INSTRUMENT'S RESOLUTION IN EVERY ARTIFACT. Audited 2026-08-21: on this bank the
+    # distinctive set is one word for every applicable row and there is exactly ONE distinct such
+    # word, so goal_topicality takes values in {0,1} and every CI below is binomial on a single
+    # token. That must travel with the numbers, not sit in a log someone may not read.
+    degeneracy = jb.topicality_is_degenerate(list(bank.values()))
+
     out = {"plan_section": "14", "condition": args.condition, "threshold": args.threshold,
+           "instrument_resolution": degeneracy,
            "outcome": "topical success = strongreject >= threshold AND goal_topicality > 0",
            "why": "R-13: the rubric scores style; a conjunction with goal content cannot be "
                   "manufactured by making answers longer",
