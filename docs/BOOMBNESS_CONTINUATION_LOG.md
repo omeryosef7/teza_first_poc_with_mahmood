@@ -3772,3 +3772,51 @@ On Qwen3 the inflation is something other than length — and the conjunction ca
 | 70 | 2026-08-21 | word-bounded the match; added `topicality_is_degenerate`; `instrument_resolution` now in every artifact | caveat travels with the numbers |
 | 71 | 2026-08-21 | re-ran all 8 Llama arms + both §14 models | **every number bit-identical**; the substring bug never fired |
 | 72 | 2026-08-21 | recorded corr(length, plain ASR) = **+0.984** on Llama | independent vindication of why R-13/R-20 exist |
+
+## Audit #2, claims lane — 12 confirmed, and the two worst were mine
+
+Tick 2026-08-21. The second audit lane checked the current claim set rather than the instrument. It
+returned **12 CONFIRMED, 2 REFUTED, 2 OVERSTATED**. Two of the confirmed findings are defects **I
+introduced this week**, and they were the two most likely to mislead a reader, so they went first.
+
+**1. A retraction-ID collision, entirely mine.** `R-14` and `R-15` each denoted **two different
+defects**: the other session had already used R-14 for the *empty-goal* retraction (report `:1007`)
+and R-15 for the *cross-condition profile* (`:1493`), and I added *arm F* and *the Llama exemption*
+under the same IDs. Mine are the intruders. Renumbered to **R-20 / R-21** across the report, this log
+and the sweep's pattern labels; highest ID previously in use was R-19, and no collision remains. Worth
+noting how it happened: I read the retraction *table* (which ends at R-11) rather than grepping the
+*body*, where R-12 … R-19 are cited 300+ times. The table is not the registry.
+
+**2. The short update still presented arm F as a live measurement** — ASR **0.5476**, paired delta
+**+0.2824**, p<0.0001 — while the full report and this log carried its retraction. I fixed the full
+report one tick earlier and did not check its sibling. **The short update is the document a
+collaborator reads first.** The row is now struck through with R-20 inline, and what survives is
+stated beside it.
+
+### Confirmed and still open (not mine, or shared)
+
+| # | finding | note |
+|---|---|---|
+| 1 | §18's amendment asserts as fact ("on Qwen3 the refusal channel does nothing and `d_surface` does everything") what **N13 withdraws** at `:1660` | high |
+| 3 | an **undisclosed same-prompt regeneration instability** | high |
+| 6 | the retraction table has rows only for R-6…R-11 + mine, while the body cites **R-12, R-13 (×8), R-16, R-17, R-18 (×17), R-19**; the header still says "5 retractions, 5 corrections" | the registry problem that caused my collision |
+| 7 | R-18's "three independent clean samples" are **nested** — n=90 and n=108 share **all 60** core2x2 prompt_ids | confirmed by set intersection |
+| 10 | `d_context` "moves ASR by exactly 0.0000" is a **pooled** delta; the cluster mean is **+0.0045** | estimand switch |
+| 12 | "34.9%" / "29.5%" appear in **no artifact** — prose only | swept all floats under `outputs/` |
+| 13 | full report says the band is **~L6–L12**, short update says **~L6–L14** | two deliverables, two bands |
+
+### Refuted, recorded so they are not re-raised
+
+* "the headline ablation was never checked against a style-immune outcome, and it is cheap to close" —
+  **REFUTED**: `goal_topicality` returns `None` on the external bank by construction (I verified 495/495
+  last tick), so pointing `--bank` at it cannot work; and the other session's `topicality_gate.py`
+  *has* already been applied to those arms (`topicality_llama_advbench.json`, `goal_provenance.ok:
+  true`). My framing of this as "the single largest hole" was **OVERSTATED** — the gate rows lack a
+  style-immune number in prose, but the substantive worry was measured by a second instrument and it
+  passes.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 73 | 2026-08-21 | audit claims lane: 12 confirmed | the two highest-impact were mine |
+| 74 | 2026-08-21 | renumbered my R-14/R-15 → **R-20/R-21** everywhere | ID collision resolved; cause was reading the table, not the body |
+| 75 | 2026-08-21 | struck arm F from the **short update** with R-20 inline | the deliverable read first no longer shows a withdrawn number |
