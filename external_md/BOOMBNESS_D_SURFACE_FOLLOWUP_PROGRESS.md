@@ -4136,6 +4136,46 @@ and the judge reports `BANK IDENTITY UNVERIFIED` for the legacy-key reason docum
   rubric-topicality failure; the real defect was upstream, at the judge input. The gate's new
   provenance guard is what would have caught it, and now does.
 
+
+## ✅ All eleven plan-named deliverables now exist
+
+`src/boombness/consolidate_deliverables.py` closes the last four. Same policy as the Phase-E
+consolidation: numbers with a committed producer are **copied with their source path recorded**,
+never re-derived; only the two cross-model blocks compute anything, and only because the Qwen3 arms
+were re-judged tonight and no analysis had read them.
+
+| plan deliverable | status |
+|---|---|
+| `token_level_occurrence_readouts.jsonl` / `token_level_dynamics_summary.json` | ✅ Phase B |
+| `probe_validation.json` | ✅ **new** — indexes the run behind Decision Gate C's failure |
+| `clean_fig9_correlation.json` | ✅ Decision Gate D |
+| `d_surface_external_decomposition.json` / `..._layer_profile_replication.json` / `direction_specificity_extended.json` | ✅ Phase E |
+| `refusal_interaction.json` | ✅ **new** — indexes the six Phase-F artifacts |
+| `surgical_units.json` | ✅ Phase G |
+| `cross_model_dynamic_range.json` / `cross_model_decomposition.json` | ✅ **new** — Phase H |
+
+### ⛔ And the dynamic-range table overturns a second inherited claim
+
+Plan §10 forbids using a floor-limited setup to claim mechanism failure, so the precondition check
+is per **(model, dataset)** — which nobody had ever tabulated:
+
+| model | dataset | baseline ASR | verdict |
+|---|---|---|---|
+| Llama-3.1-8B | AdvBench heldout 495 | 0.0646 | USABLE |
+| Llama-3.1-8B | ClearHarm 179 | 0.1061 | USABLE |
+| **Qwen3-14B** | **AdvBench heldout 495** | **0.0081** | **FLOOR** |
+| **Qwen3-14B** | **ClearHarm 179** | **0.1341** | **USABLE** |
+| **Qwen3-14B** | **internal doublespeak** | **0.1714** | **USABLE** |
+| Qwen3-14B | internal `benign_literal` | 0.0000 | floor *by construction* — as intended |
+
+**R-17's "Qwen3 is floor-limited" is a statement about AdvBench, not about Qwen3.** Two of the three
+harmful datasets give that model plenty of room, and one of them — ClearHarm at 0.1341 — has been
+sitting in the repo unremarked the whole time. The inherited framing that the Qwen3 causal question
+is *untestable* is therefore too strong: it was untestable **on the dataset it was tried on**.
+
+The specificity numbers reproduce exactly through this independent path: `remove_both` excess
+**+0.1254, p_cl 0.030**; `remove_refusalness` −0.0048, p 0.61; double-random control +0.0050, p 0.81.
+
 ## 4h Code and Output Review — Review #4 (2026-08-20 19:40)
 
 Eight agents, 732k tokens, 275 tool calls: four adversarial audits of **this session's own** new code
