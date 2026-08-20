@@ -3399,3 +3399,51 @@ longer.
 | 47 | 2026-08-20 | checked §5.2 before running it — found the board entry stale | α=0.25 **was** swept on 2026-08-19; board corrected |
 | 48 | 2026-08-20 | traced which run backs `g1_stratified.json` | it uses **`readout_ids=primary`**, the readout C-6 invalidated |
 | 49 | 2026-08-20 | diagnosed why the whole-answer redo is gated | **only** `donor_ceiling` fails (0.0074 vs baseline 0.0763) — the span's denominator |
+
+## ★ G1 RESTORED — the finding survives the readout fix, in a unit that does not need the gated ceiling
+
+Tick 2026-08-20, following directly from the previous tick's finding that G1 had no valid backing.
+
+The blocked quantity was the **denominator** (`donor_ceiling`, gated at option mass 0.00741). The
+**numerator** — the paired delta of an arm against its own baseline — never touches it. So
+`analyze_g1_g3` now emits `delta_logodds` with a domain-clustered paired bootstrap alongside
+`frac_of_span`, and G1 has a citable number again. Artifact:
+`outputs/boombness/g1_whole_answer_absolute.json`, from the **whole-answer** run `g1wa_sow`.
+
+**`transplant | * | L18`, absolute Δ semantic log-odds, domain-clustered (G=6):**
+
+| scope | harm_ctx Δ | CI95 | benign_ctx Δ | CI95 |
+|---|---|---|---|---|
+| **`demos_only`** | **+5.659** | **[+3.305, +8.314]** | **+14.426** | **[+12.812, +16.421]** |
+| `all` | +1.092 | [−0.955, +3.421] | +11.755 | [+10.219, +13.639] |
+| `first_demo` | +2.595 | [+1.171, +4.362] | +3.682 | [+3.065, +4.231] |
+| `last_demo` | +0.780 | [+0.261, +1.574] | +0.867 | [+0.603, +1.129] |
+| **`query_only`** | **−4.684** | **[−5.358, −4.043]** | **−1.260** | **[−1.482, −1.058]** |
+
+**Every qualitative element of G1 survives the readout fix:**
+
+1. **`demos_only` is the largest mover** on both context pairs — the meaning is retrieved from the
+   demonstration block.
+2. **`query_only` moves the WRONG WAY** and its interval excludes zero on both pairs
+   (−4.68 and −1.26). Transplanting the query codeword's own states pushes the readout *away* from
+   the concept. This was the sharpest part of the original G1 and it is now measured on an
+   instrument that can represent both answers.
+3. **`first_demo` > `last_demo`** on both pairs (+2.60 vs +0.78; +3.68 vs +0.87).
+
+**And the old headline number was not wrong, only badly supported.** `frac_of_span` for
+`demos_only|L18|harm_ctx` on the corrected readout is **+0.689**, against the committed **+0.681**
+from the invalid-readout run — a 0.8-point difference. The baseline and the ceiling moved together,
+so the ratio was insensitive to the defect that made both endpoints untrustworthy. That is luck, not
+method: nothing in the old run distinguished "the ratio is robust" from "both endpoints are garbage".
+
+**Reporting rule adopted here:** quote the **absolute Δ log-odds with its clustered CI** as the
+citable G1 number, and quote `frac_of_span` beside it as context with its gate status stated. The
+absolute delta needs no ceiling; the fraction does, and that ceiling currently fails its own gate.
+This does not change the sprint's headline unit unilaterally — it makes a valid number available
+while the unit question is open.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 50 | 2026-08-20 | added `_paired_boot_delta` — a domain-clustered CI for the absolute delta, needing no ceiling | G1 has a citable number on the corrected readout |
+| 51 | 2026-08-20 | recomputed G1 on `g1wa_sow` (whole-answer) | **all three qualitative claims survive**; `query_only` still inverts, CI excludes 0 |
+| 52 | 2026-08-20 | compared corrected `frac_of_span` to the committed figure | **+0.689 vs +0.681** — the old number was right by luck, not by method |

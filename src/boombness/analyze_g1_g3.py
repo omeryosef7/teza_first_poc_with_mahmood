@@ -119,6 +119,58 @@ def _paired_boot_frac(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20
             "bootstrap_unit": "domain (families drawn wholesale with their domain)"}
 
 
+
+def _paired_boot_delta(h, readout, iv, scope, win, dname, alpha, n_boot: int = 20000,
+                       seed: int = 20260817) -> Dict:
+    """Domain-clustered percentile CI for the ABSOLUTE paired delta (arm - baseline).
+
+    WHY A SECOND BOOTSTRAP (2026-08-20). `frac_of_span` divides by `donor_ceiling - none`, and on
+    the whole-answer readout the donor ceiling FAILS its own option-mass gate: median 0.00741 with
+    only 39.6% of rows above 1%, against 0.0763 for the recipient baseline measured the same way.
+    That is not a fixable prefix problem -- the donor context is the `direct_harmful` prompt, so the
+    span's upper endpoint is by construction measured exactly where a safety-tuned model is least
+    willing to emit a bare answer word.
+
+    The NUMERATOR has no such problem. This returns the paired delta on its own, so G1 has a number
+    that does not depend on the gated denominator. It is reported ALONGSIDE `frac_of_span`, never
+    instead of it: changing the sprint's headline unit is a decision for the humans, not a side
+    effect of an analysis script.
+    """
+    import random as _r
+    fam = {}
+    for r in h:
+        pid = r.get("recipient_prompt_id")
+        if pid is None:
+            continue
+        f = fam.setdefault(pid, {"dom": r.get("domain")})
+        if r["intervention"] == "none":
+            f["b"] = r[readout]
+        elif (r["intervention"] == iv and r.get("scope") == scope and r.get("window") == win
+              and r.get("direction", "") == dname and r.get("alpha", 0.0) == alpha):
+            f["a"] = r[readout]
+    fams = [v for v in fam.values() if {"b", "a"} <= set(v)]
+    ndom = len({v.get("dom") for v in fams})
+    if len(fams) < 3:
+        return {"delta": float("nan"), "ci": [float("nan")] * 2,
+                "n_families": len(fams), "n_domains": ndom}
+    by_dom: Dict[object, List[Dict]] = {}
+    for v in fams:
+        by_dom.setdefault(v.get("dom"), []).append(v)
+    dom_keys = sorted(by_dom, key=str)
+    rng = _r.Random(seed)
+    draws = []
+    for _ in range(n_boot):
+        sample = []
+        for _ in dom_keys:
+            sample.extend(by_dom[rng.choice(dom_keys)])
+        draws.append(sum(x["a"] - x["b"] for x in sample) / len(sample))
+    draws.sort()
+    return {"delta": sum(x["a"] - x["b"] for x in fams) / len(fams),
+            "ci": [draws[int(0.025 * len(draws))], draws[int(0.975 * len(draws))]],
+            "n_families": len(fams), "n_domains": ndom,
+            "bootstrap_unit": "domain", "needs_donor_ceiling": False}
+
+
 def g1(run: str, readout: str = "semantic_logodds") -> Dict:
     rows = read_jsonl(os.path.join(run, "results.jsonl"))
     out: Dict[str, object] = {"run": os.path.abspath(run), "readout": readout, "pairs": {}}
@@ -164,7 +216,13 @@ def g1(run: str, readout: str = "semantic_logodds") -> Dict:
                             # delta-method interval is too WIDE. It also used z=1.96 at n=8. The
                             # bootstrap resamples whole families, preserving the pairing.
                             boot = _paired_boot_frac(h, readout, iv, scope, win, dname, alpha)
+                            dboot = _paired_boot_delta(h, readout, iv, scope, win, dname, alpha)
                             arms[key] = {"mean": m, "sem": s, "n": n,
+                                         # ABSOLUTE paired delta: valid even when the donor ceiling
+                                         # fails its option-mass gate, because it never uses it.
+                                         "delta_logodds": dboot["delta"],
+                                         "delta_ci95_domain_clustered": dboot["ci"],
+                                         "delta_n_domains": dboot["n_domains"],
                                          "frac_of_span": frac, "frac_sem": fs,
                                          "frac_ci95_deltamethod":
                                              [frac - 1.96 * fs, frac + 1.96 * fs]
