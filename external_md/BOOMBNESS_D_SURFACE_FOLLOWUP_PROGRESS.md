@@ -3150,6 +3150,69 @@ is that **`first_codeword` is itself the matched positive control for `first_nei
 not quoting. The three arms that carry the comparison — `none`, `all_layers_demo`, `no_demo_text` — all
 survive.
 
+### ⛔ Attempt 2 (769187–769189) ALSO died on memory — and the cause is a hardcoded dtype, not the model size
+
+`--skip-arms` reclaimed nothing, because the OOM never reaches an arm. It fires while `accelerate`
+is still moving weights onto the card, inside the very first `k_proj` forward:
+
+```
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB.
+GPU 0 has a total capacity of 44.39 GiB of which 19.31 MiB is free.
+... 43.86 GiB is allocated by PyTorch
+```
+
+43.86 GiB allocated for a **14.8 B-parameter** model is the tell. `surgical_knockout.py:677` calls
+
+```python
+lm = dc.load_model(args.model or dc.PRIMARY_MODEL, dtype=torch.float32, attn_implementation="eager")
+```
+
+**`torch.float32`, hardcoded, no flag.** Qwen3-14B in fp32 is ~59 GiB of weights and cannot be
+resident on a 44 GiB L40S at any batch size, arm count, or `--topk`. Llama-3.1-8B in fp32 is ~32 GiB
+and fits, which is why this never surfaced — every previous consumer of this module was the 8 B model.
+
+This is house rule 4 ("an OOM means the code is wrong — wrong dtype, wrong backend, wrong node — not
+that the experiment should be trimmed"). Attempt 2's `--skip-arms` was **treating a code defect as a
+resource limit**, and the skip-reason string I wrote into the ledger
+(`OOM-on-Qwen3-14B-at-44GiB-L40S`) is wrong on the mechanism. Recorded here rather than edited away.
+
+### Fix — a `--dtype` flag that defaults to the committed behaviour
+
+```python
+ap.add_argument("--dtype", default="float32", choices=["float32", "bfloat16"], ...)
+_DTYPES = {"float32": torch.float32, "bfloat16": torch.bfloat16}
+lm = dc.load_model(..., dtype=_DTYPES[args.dtype], attn_implementation="eager")
+```
+
+Six lines. **The default is `float32`, deliberately**: every committed knockout number in this repo
+and the previous sprint was produced in fp32, and a default change would silently re-base all of
+them. `bfloat16` is opt-in and is recorded in `summary.json` via the existing `run.note_model(...,
+dtype=str(lm.dtype))` call, so no run can be mistaken for the other afterwards.
+
+### Attempt 3 (769903–769906) — and it carries its own dtype control
+
+`--skip-arms` is **dropped**. With bf16 the memory pressure that motivated it is gone, so the Qwen3
+arms now run the *identical* arm set to the committed Llama apple arms (`apA_*`), which is what makes
+the cross-model comparison a comparison.
+
+| job | tag | model | dtype | `--demo-scope` |
+|---|---|---|---|---|
+| 769903 | `q3c_firstcw` | Qwen3-14B | bf16 | `first_codeword` |
+| 769904 | `q3c_firstnbr` | Qwen3-14B | bf16 | `first_neighbor` |
+| 769905 | `q3c_lastcw` | Qwen3-14B | bf16 | `last_codeword` |
+| **769906** | **`llbf16_firstcw`** | **Llama-3.1-8B** | **bf16** | `first_codeword` |
+
+**769906 is the point of the fix.** Qwen3-bf16 versus Llama-fp32 is confounded by dtype, and a
+cross-model null under that confound would be uninterpretable. 769906 re-runs the *committed*
+`apA_firstcw` arm (Llama, apple bank, fp32, `first_codeword`, effect **+0.63**) changing **only** the
+dtype. If it reproduces, dtype is measured to be inert on this readout and the Qwen3 comparison is
+clean; if it does not, the cross-model test is abandoned rather than reported, and the finding
+becomes "this readout is not dtype-stable".
+
+The `<think>`-token risk from attempt 1 is unchanged and still unjudged: `option_mass_gate` remains
+the arbiter, and if it fires the reported result is "Phase G cannot be ported to Qwen3 without
+threading `enable_thinking` through the knockout" — not a number.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised

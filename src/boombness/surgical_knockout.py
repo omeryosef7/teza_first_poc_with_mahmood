@@ -634,6 +634,12 @@ def main() -> int:
                          "never absent-and-unexplained.")
     ap.add_argument("--skip-arms-reason", default="",
                     help="why. Mandatory whenever --skip-arms is non-empty.")
+    ap.add_argument("--dtype", default="float32", choices=["float32", "bfloat16"],
+                    help="model weight dtype. DEFAULT float32 -- every committed knockout number "
+                         "was produced in fp32 and this default must not change. bfloat16 exists "
+                         "ONLY because a 14B model in fp32 (~59 GiB) cannot load on a 44 GiB L40S; "
+                         "the dtype is recorded in run metadata and fp32/bf16 runs must not be "
+                         "compared without a same-model dtype control.")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
 
@@ -674,7 +680,8 @@ def main() -> int:
     ledger = FailureLedger()
 
     # eager is MANDATORY: under SDPA the 4-D mask is ignored and every knockout silently no-ops.
-    lm = dc.load_model(args.model or dc.PRIMARY_MODEL, dtype=torch.float32,
+    _DTYPES = {"float32": torch.float32, "bfloat16": torch.bfloat16}
+    lm = dc.load_model(args.model or dc.PRIMARY_MODEL, dtype=_DTYPES[args.dtype],
                        attn_implementation="eager")
     run.note_bank(args.bank)
     run.note_model(lm.model_id, revision=lm.revision, dtype=str(lm.dtype),
