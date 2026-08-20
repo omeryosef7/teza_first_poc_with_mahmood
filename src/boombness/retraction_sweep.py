@@ -23,7 +23,7 @@ NOT swept:
 Exit code is 1 if any unqualified occurrence is found, so this can gate a commit.
 """
 from __future__ import annotations
-import argparse, glob, re, sys
+import argparse, glob, os, re, sys
 
 # (label, regex) for every figure this sprint has retracted or superseded.
 RETRACTED = [
@@ -193,6 +193,45 @@ def sweep(paths):
     return bad
 
 
+
+def registry_check(path):
+    """Every retraction ID CITED in the body must have a ROW in the registry table.
+
+    WHY (2026-08-21). The table listed R-6..R-11 while the body cited R-12, R-13, R-16, R-17, R-18 and
+    R-19 more than 300 times between them, and the header still said "5 retractions, 5 corrections".
+    Anyone looking for the next free ID reads the TABLE -- which is how this session filed two new
+    retractions as R-14/R-15 when both were already taken by defects the body had been discussing for
+    days. The collision was the symptom; an unverifiable registry was the cause, and a registry nobody
+    can check is not a registry.
+
+    A row is `| R-N |` or `| **R-N** |` at the start of a line; anything else mentioning R-N is a
+    citation. Returns a list of problems, empty when the table is complete.
+    """
+    text = open(path, encoding="utf-8").read()
+    tabled, cited = set(), set()
+    for line in text.split("\n"):
+        # A row label may cover a RANGE ("| R-1 … R-5 |"), which tables every id in it. Without
+        # this, closing the registry with a range row leaves the checker reporting the very ids the
+        # row exists to cover.
+        m = re.match(r"\s*\|\s*\*{0,2}(R-\d+)\*{0,2}\s*(?:[.…]{1,3}|-|to)\s*\*{0,2}(R-\d+)\*{0,2}\s*\|", line)
+        if m:
+            for i in range(int(m.group(1).split("-")[1]), int(m.group(2).split("-")[1]) + 1):
+                tabled.add(f"R-{i}")
+            continue
+        m = re.match(r"\s*\|\s*\*{0,2}(R-\d+)\*{0,2}\s*\|", line)
+        if m:
+            tabled.add(m.group(1))
+            continue
+        cited.update(re.findall(r"\bR-\d+\b", line))
+    key = lambda x: int(x.split("-")[1])
+    problems = [f"{r} is cited in the body but has NO ROW in the registry table"
+                for r in sorted(cited - tabled, key=key)]
+    # A tabled-but-uncited ID is NOT a defect -- the table IS the record, and a retraction whose
+    # claim was excised entirely will correctly have no other mention. Only the reverse direction
+    # breaks the registry, so only that direction fails the check.
+    return problems
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--paths", nargs="*", default=DELIVERABLES,
@@ -205,7 +244,18 @@ def main() -> int:
     print(f"\n[sweep] {len(args.paths)} file(s); {len(bad)} unqualified occurrence(s) of a retracted figure")
     if not bad:
         print("[sweep] clean — every retracted figure appears only inside a paragraph that marks it as such")
-    return 1 if bad else 0
+
+    # SECOND CHECK: is the registry itself complete? See registry_check for what this cost.
+    reg = registry_check(DELIVERABLES[0])
+    if reg:
+        print(f"\n[sweep] REGISTRY: {len(reg)} problem(s) in {os.path.basename(DELIVERABLES[0])}")
+        for r in reg:
+            print(f"   {r}")
+        print("[sweep] a retraction ID that is cited but not tabled makes the table unusable for "
+              "picking the next free ID — which is exactly how R-14/R-15 were assigned twice.")
+    else:
+        print("[sweep] registry OK — every cited retraction ID has a row in the table")
+    return 1 if (bad or reg) else 0
 
 
 if __name__ == "__main__":

@@ -3820,3 +3820,37 @@ stated beside it.
 | 73 | 2026-08-21 | audit claims lane: 12 confirmed | the two highest-impact were mine |
 | 74 | 2026-08-21 | renumbered my R-14/R-15 → **R-20/R-21** everywhere | ID collision resolved; cause was reading the table, not the body |
 | 75 | 2026-08-21 | struck arm F from the **short update** with R-20 inline | the deliverable read first no longer shows a withdrawn number |
+
+## The retraction registry is now checkable, and it was worse than the audit said
+
+Tick 2026-08-21. Audit finding #6 said the retraction table had rows only for R-6…R-11 while the body
+cited R-12, R-13, R-16, R-17, R-18 and R-19. Fixing that properly meant making the registry
+**verifiable**, not just longer — a table nobody can check is not a registry, and my R-20/R-21
+collision was the symptom.
+
+`retraction_sweep.py` now runs a **second check**: every retraction ID *cited* in the report body must
+have a *row* in the table. It fails the build (exit 1) when one does not. It found **7 problems on its
+first run**, including R-14 and R-15 — the other session's, which I had left cited-but-untabled after
+renumbering mine away from them.
+
+Rows written from the body for **R-12, R-13, R-14, R-15, R-16, R-17, R-18, R-19**. Two refinements
+the check forced, both of which are the check being right and my first draft being wrong:
+
+1. **A tabled-but-uncited ID is not a defect.** The table *is* the record; a retraction whose claim
+   was excised entirely will correctly have no other mention. Only "cited but not tabled" breaks the
+   registry, so only that direction fails now.
+2. **Two numbering series exist**, which nothing had said out loud. R-1…R-5 belong to the sprint's
+   **first** series, recorded in `BOOMBNESS_SPRINT_PROGRESS.md` (R-5 = the "Boombness beats
+   refusalness 3.7×" claim), and the report's table starts at R-6. An ID below R-6 means a *different*
+   series. That is now a row in the table, so the registry is closed rather than merely tidier — and
+   the checker understands range labels so closing it that way actually satisfies it.
+
+The checker also caught its own author twice in five minutes: my new header phrase "Retractions
+R-1 … R-21" was read as a *citation* of R-1, and my first range row did not satisfy the check that
+motivated it. Both fixed; **registry OK, sweep clean, exit 0.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 76 | 2026-08-21 | wrote table rows for R-12…R-19 from the body | registry no longer 8 rows behind the document |
+| 77 | 2026-08-21 | added `registry_check` to the sweep — cited-but-untabled fails the build | found **7 problems** immediately, incl. the two I had orphaned |
+| 78 | 2026-08-21 | documented the **two numbering series** and taught the checker range rows | an ID below R-6 now unambiguously means the older series |
