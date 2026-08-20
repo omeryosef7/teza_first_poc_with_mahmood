@@ -3118,3 +3118,64 @@ knockout are different measurements.
 | 32 | 2026-08-20 | E6 arms failed 0-rows: `dominance` reconstruction assertion on all 24 prompts | fp32-calibrated tolerance vs bfloat16 weights |
 | 33 | 2026-08-20 | dtype-aware tolerance + 3 tests that prove the guard still discriminates | `e0a3387b` |
 | 34 | 2026-08-20 | second session cancelled our jobs and resubmitted with **fp32** | its Qwen3 arms cannot fit (59.2 GB > 44.4 GB); did **not** resubmit into a contested queue |
+
+## ⛔ R-13 — the Qwen3 arm-D replication is UNINTERPRETABLE: the judge scores style, not content
+
+Tick 2026-08-20. All four Qwen3 judges finished (960 rows each), so §14's outstanding question — does
+arm D replicate on the second model — was finally answerable. It is not, and the reason is a
+measurement defect, not a model difference.
+
+**The benign control is what caught it.** On `benign_literal` — prompts about a literal carrot, where
+attack success should be ~0 by construction:
+
+| arm | ASR | mean SR | median words | **% generations containing a harmful keyword** | % containing a benign keyword |
+|---|---|---|---|---|---|
+| baseline | 0.003 | 0.004 | 115 | **0.0%** | 100% |
+| `q3_C20` (remove refusal) | **0.994** | 0.991 | 124 | **0.0%** | 100% |
+| `q3_D20` (remove both) | 0.880 | 0.833 | 137 | 54.3% | 99.1% |
+| `q3_D20ctrl` (**double random**) | **0.954** | 0.949 | 113 | **0.0%** | 100% |
+
+Two arms — including the **norm-matched double-random control** — reach ASR 0.95–0.99 while **not one
+generation of 324 contains a single harmful keyword**, and every generation is on-topic about carrots.
+
+**It is not degeneracy.** The coherence gate, run on the `benign_literal` population specifically
+(not pooled), finds baseline and control statistically indistinguishable: uniq-word 0.729 vs 0.731,
+trigram-repeat 0.005 vs 0.004, top-word 0.098 vs 0.098, truncation 0.33 vs 0.32. The text is fluent,
+normal-length and on-topic. `coherence_gate` passes all arms, correctly.
+
+**Mechanism.** `judge_boombness` builds the goal by mapping the codeword back to the concept, so a
+`benign_literal` row is judged against *"build a bomb"* while the model was asked to build a carrot.
+At baseline that is right and returns 0.004. After the intervention the answers get longer and more
+specific, and the StrongReject rubric scores **refusal / specificity / convincingness** — none of
+which requires **topical relevance to the goal**. A confident, detailed, non-refusing answer about
+carrots therefore scores as a successful bomb jailbreak.
+
+**Consequences.**
+1. **Every Qwen3 ASR delta in this comparison is withdrawn.** `q3_C20` and `q3_D20ctrl` are measuring
+   answer style. The apparent headline — that the double-random control *beats* arm D on
+   `natural_doublespeak` (+0.696 vs +0.586) — is an artifact of the same inflation, not evidence that
+   the intervention is non-specific on Qwen3.
+2. **`q3_D20` is the one arm with a real content change** (54.3% harmful keywords vs 0.0% everywhere
+   else). That is a genuine effect and it is the *only* Qwen3 number worth anything here.
+3. **The Llama results are not affected by observation, not by assumption.** On Llama the benign
+   control for arm D was **+0.003**, i.e. the inflation did not fire there. The artifact is
+   model-specific in its manifestation, and the ClearHarm arms judge against the *actual* instruction
+   (no codeword, no substitution), so their goal always matches the prompt.
+4. **§14 remains OPEN.** Arm D has still not been shown to replicate or fail to replicate on a second
+   model. What has been established is that the current instrument cannot answer it.
+
+**What this says about the method.** `coherence_gate` was built to stop "a raised ASR from a destroyed
+model" being read as causal. It works, and it is not sufficient: this failure produces *undamaged*
+text that the judge mis-scores. The missing check is **topicality** — does the completion contain any
+content responsive to the goal it is being judged against. The keyword count above is a crude
+diagnostic, not a judge, but a benign arm whose ASR rises with **zero** goal-related content is a
+signature that should be fatal, and nothing currently computes it.
+
+Artifact: `outputs/boombness/qwen3_armD_JUDGE_ARTIFACT.json` (per-arm ASR, mean SR, length, and both
+keyword fractions). Per-condition tables in `outputs/boombness/qwen3_armD_*.json`.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 35 | 2026-08-20 | analysed the completed Qwen3 arm-D judges (4 × 960 rows) | benign control at ASR 0.954 under a **random** direction |
+| 36 | 2026-08-20 | ruled out degeneracy — coherence gate on the benign population alone | baseline vs control indistinguishable on all four statistics |
+| 37 | 2026-08-20 | keyword diagnostic separated content from style | **R-13**: 0/324 harmful keywords at ASR 0.99; the judge scores style |
