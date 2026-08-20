@@ -4176,6 +4176,178 @@ is *untestable* is therefore too strong: it was untestable **on the dataset it w
 The specificity numbers reproduce exactly through this independent path: `remove_both` excess
 **+0.1254, p_cl 0.030**; `remove_refusalness` −0.0048, p 0.61; double-random control +0.0050, p 0.81.
 
+
+## 4h Code and Output Review — Review #5 (2026-08-21 00:05)
+
+Four agents over the two newest results. **Every headline number in both reproduces exactly under
+independent code — including independent rank/Pearson and an independently implemented Student-t.
+Then most of what I said the numbers *meant* comes apart.** Nine corrections, two of them to guards
+I wrote this session, and one that reaches back across the whole sprint.
+
+### ⛔ R5-1 — my central mechanistic argument for killing the objective is REFUTED by my own artifact
+
+I wrote that Gate D fails requirement 7 because *"the predictive signal lives in the top three layers
+while every causal effect lives at L6–L12 … a metric that predicts at a depth where intervention does
+nothing cannot be optimised against."* **The artifact I cited says otherwise.** Inside
+`clean_fig9_correlation.json`'s own `dev_grid_holm`:
+
+- `d_surface` / StrongReject: **49 of 210 metrics survive Holm over all 210**, and the survivors
+  include `demo_max|cos` **and** `demo_max|proj` at **L9, L10, L11, L12, L13**, `query|proj` at L4,
+  L5, **L6**, and the band metric **`query|L6_12|proj`** itself.
+- `d_surface` / ASR: **97 of 210 survive**, spanning **every layer L3–L31**.
+- On heldout, `query|L{L}|cos` is significantly positive at essentially every depth: L0 +0.0751
+  (p 0.0023), L5 +0.2314 (0.0060), **L6 +0.1921 (0.0077)**, L13 +0.2490 (0.0056), L31 +0.2982.
+
+**The metric is Holm-significantly predictive inside the stated causal band.** Requirement 7's failure
+is **WITHDRAWN**.
+
+> **Gate D still FAILS, and now on requirement 4 alone: `d_naive` (+0.1672) and `d_context` (+0.1471)
+> match or beat `d_surface` (+0.1638), so no control direction fails.** That verdict is untouched and
+> is the whole basis for not building the objective. It is a cleaner conclusion than the one I wrote:
+> the objective is dead because the signal **is not `d_surface`** — full stop, no depth argument
+> needed.
+
+### ⛔ R5-2 — the dev grid is FLAT, so "L29–L31" was never identifiable
+
+Top-15 dev metrics span **+0.3238 → +0.3060**, a range of 0.018 against a per-metric cluster SE of
+0.03–0.05. `demo_max|cos` is essentially flat in depth (L6–L12 mean +0.2698 vs L29–L31 +0.3038).
+The argmax over 210 near-ties is noise. **A large majority of the 210 candidates would have passed
+the heldout test** — so the nested protocol is *valid* but nearly *vacuous as evidence*: it protects
+against selection, and there was nothing to select.
+
+### ⛔ R5-3 — two guards I wrote this session, both fixed
+
+**(i) The stale-join guard was a no-op.** `judge_boombness` does not copy `prompt_sha16` into its
+result rows — its `base` dict names fifteen fields and that is not one of them — so the mismatch list
+was always empty and `n_prompt_sha16_mismatch: 0` was written unconditionally. **My write-up then
+cited that zero as evidence.** Fixed: the code now counts judge rows carrying the hash, and when
+none do it falls back to bank-path equality and **says which check actually ran**:
+`"prompt_sha16 ABSENT from every judge row … fell back to bank-path equality, which passed. Weaker:
+it certifies the same bank FILE, not the same bytes."`
+
+**(ii) `n_levels_covered` conflated *available* with *estimable*.** A level can carry the metric on
+all 120 prompts and contribute nothing, because Spearman is undefined when the **outcome** is
+constant inside it. The field said 15/15 while the mean was over **14** (all 60 heldout `con:mixed`
+prompts score exactly 0.000), and for the refusal comparison it said 15/15 while the mean used **6**.
+Now split into `n_levels_metric_available` / `n_levels_rho_estimable` with both exclusion lists named.
+
+### ⛔ R5-4 — the 15 levels are not independent, so the within-level SEs are 15–25% too small
+
+All **120 (domain, split, slot) families appear in all 15 levels**, and 13 of the 15 use the
+*identical* pool-sentence set per family. So `between_vs_within_level` averages 15 ρ's over the same
+120 units on largely the same text and then treats them as 15 independent clusters — pseudo-
+replication reappearing one grain up, inside the very function written to price it.
+
+| | cluster-over-levels SE | family-bootstrap SE (2,000 reps over the 120 families) |
+|---|---|---|
+| `d_surface` / SR | 0.0299 (p 8.1e-05) | **0.0343**, CI95 [+0.0956, +0.2316] |
+| `d_surface` / ASR | 0.0307 (p 1.2e-03) | **0.0385**, CI95 [+0.0561, +0.2060] |
+
+**The within-level effect survives** — 0 of 2,000 bootstrap replicates reach ≤ 0 — but the p-values
+as reported are anticonservative and the correct SE is the family bootstrap.
+
+### ⛔ R5-5 — requirement 3 passes, but not on the test I ran
+
+I claimed the metric is not a refusal detector from ρ = +0.068, p = 0.26. That mean is over **six**
+estimable levels, two of which rest on **a single refused prompt each** and supply both negative
+signs. It is an underpowered null, and I converted it into a ✅. The properly powered version says
+the **opposite**: the 25 refused prompts sit at mean within-level normalized metric rank **0.6373**
+against a null of 0.5, permutation p **0.0135** — the metric *does* predict refusal.
+
+**The conclusion survives on the test I failed to run.** Delete all 25 refused prompts and the effect
+is unchanged: heldout ρ **+0.3098** (vs +0.2982), within-level **+0.1666** (vs +0.1638). *Refusal
+cannot mediate an effect that is unchanged when refusal is deleted.* Requirement 3 ✅, evidence
+replaced.
+
+### ⛔ R5-6 — the Qwen3 doublespeak-SPECIFIC excess does not survive robustness. Downgraded.
+
+`+0.1254, p_cl 0.030` reproduces to seven decimals, and then fails three independent checks:
+
+| check | excess | p |
+|---|---|---|
+| as reported (all 420 doublespeak rows) | +0.1254 | **0.0300** |
+| **stratum-matched** (324 rows; the `strength`/`consistency`/`position` blocks exist only on the doublespeak side) | +0.1142 | **0.0750** |
+| leave-one-domain-out | — | **4 of 6 give p > 0.05** |
+| proportional transport (the non-specific channel is 38% larger on doublespeak, so additive subtraction under-corrects) | +0.0478 | **0.267** |
+
+⛔ **"A doublespeak-specific component survives the benign subtraction" is DOWNGRADED from established
+to not robust.** The raw **+0.3476 (p 0.00028)** and the benign **+0.2222** stand; what does not stand
+is the claim that the difference between them is reliably non-zero. Per-domain excess ranges
+−0.0005 to +0.2735 with two of six domains at essentially nothing.
+
+### ⛔⛔ R5-7 — THE RANDOM CONTROLS IN THIS SPRINT ARE INERT BY CONSTRUCTION, and this reaches everywhere
+
+The most consequential finding of the review, and it is not about Qwen3.
+
+`norm_matched_random` rescales the draw to ‖`d_surface`‖ — but `d_surface` is stored **unit norm**,
+and `pair_common.py:650` renormalises the hook direction anyway, so **for `project_out` the norm has
+literally zero effect on the computation.** "Norm-matched at the same dose" means nothing more than
+"a rank-1 projection at the same layers". What that projection removes:
+
+| layer | fraction of cell-mean spread removed by the ARM | by the CONTROL |
+|---|---|---|
+| L11 | `d_surface` **89.97%** | **0.018%** |
+| L20 | `refusalness` 0.102% | 0.061% |
+
+The control removes roughly **5,000× less structure** than the arm. `cos(d_surface, random)` is
+−0.014 ≈ 1/√5120 — exactly an isotropic draw. **So every "the matched random control is inert"
+statement in this sprint is a fact about high-dimensional geometry, not an experimental result.** A
+variance-matched alternative, `pair_common.in_subspace_random`, exists in the repo and has never been
+used.
+
+This does not invalidate the arms' effects, and it does not touch the *other-direction* controls
+(`d_naive`, `d_context`) that carry Gate D's verdict — those are real directions and they are exactly
+the controls that **did** fire. But every random-control inertness claim — E4's, the layer profiles',
+Phase F's, and my own Qwen3 write-up — must be read as **"a random rank-1 projection at the same
+depth does nothing", which is nearly a tautology**, not as "an intervention of comparable magnitude
+does nothing".
+
+⚠ A corollary the auditor drew and I am recording: `refusalness@L20` removes only **0.102%** of the
+cell-mean spread, barely above random's 0.061%. That is consistent with C20 being inert and implies
+the D20 effect is essentially the `d_surface@L11` projection alone — the decomposition I correctly
+said this arm set could not perform.
+
+### ⛔ R5-8 — the 97.2% concept-word figure has a 54.3% base rate
+
+`D20` on `benign_literal`: flagged rows 0.9722, unflagged 0.4206, **all rows 0.5432**. I quoted the
+first two and not the third. And on the doublespeak side the same arm emits the concept word in
+**79.8%** of all rows — which is precisely why the additive benign subtraction under-corrects
+(R5-6). The "0.000 in the control" comparator rests on **n = 3** flagged rows.
+
+⚠ Related, and it cuts against my own dynamic-range framing: of the **72** baseline doublespeak rows
+flagged malicious, only **9 (12.5%)** contain the goal's distinctive word. For a *doublespeak* prompt
+a non-topical answer is not proof of non-compliance — but I used that same marker as evidence the
+benign gain was "real content", so applied consistently it says 87.5% of the baseline ASR that
+claim (e) rests on is non-topical.
+
+### Smaller items, recorded
+
+- **6 heldout tests, not 1.** Three directions × two outcomes. The `d_surface` headline is the larger
+  of its two outcomes, so its family is 2, not 1. Bonferroni p = 0.00078 — survives, but "family
+  size = one" is true per cell and false for the headline as reported.
+- **Dev and heldout are scored with different fit vectors** (cross-split by design, `is_self_fit`
+  false on 7080/7080). Not a leak; it does mean the heldout test re-applies a *recipe*, not a vector.
+- **Template sentences leak across the split**: 4 distinct intensifier strings appear byte-identical
+  in both halves, touching 600 of 1800 prompts. Harmless for the estimand — each is constant within
+  its level and injects no within-level variance — but the honest framing is that **the split holds
+  out demonstration sentences, not the design**.
+- The `arm` column is `"base"` on all 960 rows of all four Qwen3 runs, including intervened ones.
+  Nothing downstream used it; anything grouping by `arm` would silently pool them.
+- `str:aggressive 0.458 / con:mixed 0.008` are **ASR** level means, printed adjacent to a
+  StrongReject table. On SR they are 0.390 and 0.007.
+- "ρ(metric, ASR) = +0.148" in the requirement-3 paragraph is **not locatable in the artifact** and is
+  withdrawn; the artifact's d_surface values are +0.1272 (ASR) and +0.1638 (SR).
+
+### Next corrections, in priority order
+
+1. **Re-run one arm with `in_subspace_random`** — until then no inertness claim in this sprint means
+   what it says.
+2. **Report the family bootstrap SE** alongside the cluster-over-levels SE wherever a within-level ρ
+   is quoted.
+3. Make `judge_boombness` write `prompt_sha16` into its result rows, so the stale-join guard can
+   actually run rather than fall back.
+4. Re-state the Qwen3 specificity claim as *not robust* wherever it appears downstream.
+
 ## 4h Code and Output Review — Review #4 (2026-08-20 19:40)
 
 Eight agents, 732k tokens, 275 tool calls: four adversarial audits of **this session's own** new code

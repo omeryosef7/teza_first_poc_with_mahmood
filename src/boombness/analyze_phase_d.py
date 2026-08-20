@@ -205,6 +205,15 @@ def evaluate(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, float],
     return res
 
 
+def load_cfg(run_dir: str) -> Optional[dict]:
+    p = os.path.join(run_dir, "config.json")
+    if not os.path.exists(p):
+        return None
+    with open(p) as fh:
+        raw = json.load(fh)
+    return raw.get("args") if isinstance(raw.get("args"), dict) else raw
+
+
 def level_of(r: dict) -> str:
     """The designed-variance LEVEL a row belongs to. One factor varies per block."""
     b = r.get("bank_block")
@@ -256,10 +265,20 @@ def between_vs_within_level(metrics: Dict[str, Dict[str, float]], outcome: Dict[
             within[l] = r
     cl = cluster_mean_ci({l: [r] for l, r in within.items()}, n_effective=len(within))
     return {
-        "n_levels_total": len(all_levels), "n_levels_covered": len(covered),
-        "levels_uncovered": sorted(set(all_levels) - set(covered)),
-        "coverage_note": "a demo-based metric is undefined where the codeword never appears in a "
-                         "demonstration (consistency=irrelevant teaches a different word)",
+        "n_levels_total": len(all_levels),
+        "n_levels_metric_available": len(covered),
+        "levels_metric_unavailable": sorted(set(all_levels) - set(covered)),
+        # AVAILABLE IS NOT ESTIMABLE, and conflating them hid a real gap (review #5). A level can
+        # carry the metric on all 120 prompts and still contribute NOTHING to the mean, because
+        # Spearman is undefined when the OUTCOME is constant inside it -- e.g. every heldout
+        # `con:mixed` prompt scores StrongReject 0.000. The old field said 15/15 while the mean was
+        # taken over 14, and for the refusal comparison it said 15/15 while the mean used 6.
+        "n_levels_rho_estimable": len(within),
+        "levels_rho_not_estimable": sorted(set(covered) - set(within)),
+        "coverage_note": "metric_available: a demo-based metric is undefined where the codeword "
+                         "never appears in a demonstration (consistency=irrelevant teaches a "
+                         "different word). rho_estimable: additionally requires the OUTCOME to vary "
+                         "inside the level. The mean below is over rho_estimable levels ONLY.",
         "n_prompts_used": sum(len(v[0]) for v in per_level.values()),
         "between_level_rho": spearman(lm, la) if len(lm) > 2 else None,
         "level_means": {l: {"metric": st.mean(per_level[l][0]),
@@ -320,13 +339,43 @@ def main() -> None:
         "by_block": dict(collections.Counter(block[p] for p in common)),
     }
     # STALE-JOIN GUARD. prompt_id does not hash the prompt text (R1); prompt_sha16 does.
+    #
+    # THE FIRST VERSION OF THIS GUARD WAS A NO-OP, found by review #5. `judge_boombness` does not
+    # copy `prompt_sha16` into its result rows -- its `base` dict names fifteen fields and that is
+    # not one of them -- so `ju_sha.get(p) is not None` was False for every prompt, `mism` was
+    # always empty, and the artifact wrote `n_prompt_sha16_mismatch: 0` unconditionally. The
+    # write-up then cited that zero as evidence. A guard that cannot fail is worse than no guard,
+    # because it is quoted.
+    #
+    # Fixed by refusing to be silent about which check actually ran: if no judge row carries the
+    # hash, fall back to bank-PATH equality between the two runs' configs and SAY SO in the
+    # artifact; if neither check is available, raise.
     ex_sha = {r["prompt_id"]: r.get("prompt_sha16") for r in ex}
-    ju_sha = {p: ju[p].get("prompt_sha16") for p in common}
-    mism = [p for p in common if ju_sha.get(p) is not None and ex_sha.get(p) != ju_sha.get(p)]
-    accounting["n_prompt_sha16_mismatch"] = len(mism)
-    if mism:
-        raise SystemExit(f"[phaseD] {len(mism)} prompts join on prompt_id but differ in "
-                         f"prompt_sha16 -- the extraction and the judge scored DIFFERENT text")
+    n_ju_with_sha = sum(1 for p in common if ju[p].get("prompt_sha16") is not None)
+    accounting["n_judge_rows_with_prompt_sha16"] = n_ju_with_sha
+    if n_ju_with_sha:
+        mism = [p for p in common if ju[p].get("prompt_sha16") is not None
+                and ex_sha.get(p) != ju[p]["prompt_sha16"]]
+        accounting["stale_join_check"] = "prompt_sha16 compared per row"
+        accounting["n_prompt_sha16_mismatch"] = len(mism)
+        if mism:
+            raise SystemExit(f"[phaseD] {len(mism)} prompts join on prompt_id but differ in "
+                             f"prompt_sha16 -- extraction and judge scored DIFFERENT text")
+    else:
+        ex_bank = (load_cfg(args.extract) or {}).get("bank")
+        ju_banks = {(load_cfg(j) or {}).get("bank") for j in args.judge}
+        accounting["extract_bank"] = ex_bank
+        accounting["judge_banks"] = sorted(str(b) for b in ju_banks)
+        if ex_bank and ju_banks == {ex_bank}:
+            accounting["stale_join_check"] = (
+                "prompt_sha16 ABSENT from every judge row, so the per-row content check was "
+                "IMPOSSIBLE; fell back to bank-path equality, which passed. Weaker: it certifies "
+                "the same bank FILE, not the same bytes.")
+            accounting["n_prompt_sha16_mismatch"] = None
+        else:
+            raise SystemExit(f"[phaseD] no judge row carries prompt_sha16 AND the bank paths differ "
+                             f"(extract {ex_bank!r} vs judge {sorted(str(b) for b in ju_banks)}); "
+                             f"nothing establishes the two runs scored the same prompts")
 
     dev = [p for p in common if split[p] == "dev"]
     hel = [p for p in common if split[p] == "heldout"]
@@ -417,7 +466,7 @@ def main() -> None:
                   f"| BETWEEN-level {bw['between_level_rho']:+.4f} "
                   f"WITHIN-level {bw['within_level_mean_rho']:+.4f} "
                   f"p={bw['within_level_p_vs_0'] and round(bw['within_level_p_vs_0'],4)} "
-                  f"cover={bw['n_levels_covered']}/{bw['n_levels_total']}")
+                  f"estimable={bw['n_levels_rho_estimable']}/{bw['n_levels_total']}")
 
 
 if __name__ == "__main__":
