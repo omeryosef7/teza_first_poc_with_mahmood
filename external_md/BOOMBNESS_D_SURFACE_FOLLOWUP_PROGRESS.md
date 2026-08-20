@@ -1460,6 +1460,102 @@ predicts that prompt-level Boombness should track ASR only insofar as it tracks 
 which is a sharper hypothesis than the one G2 tested and is the reason this phase is worth running
 even though the probe metric is dead.
 
+
+## ⛔ DECISION GATE D — FAILED, but on requirement 4, and the reason is a genuine finding
+
+**Artifact:** `outputs/boombness_followup/clean_fig9_correlation.json`.
+**Producer:** `src/boombness/analyze_phase_d.py`. Llama-3.1-8B, Phase-D bank,
+**1,800 joined prompts** (900 dev / 900 heldout, disjoint), 6 domain clusters, 15 designed levels,
+0 `prompt_sha16` mismatches, 6 judge shards asserted to be a partition.
+
+Plan §6 asked whether prompt-level Boombness predicts ASR under clean inference. **It does.** Plan
+§11 then asks whether that licenses a GCG objective. **It does not**, and the failure is specific.
+
+### It predicts — and unlike G2, this survives every guard the design was built for
+
+Metric chosen on **dev** from 210 candidates, then that single metric tested on **heldout** where the
+family size is one:
+
+| direction | outcome | selected on dev | **heldout ρ** | p_cl | perm p |
+|---|---|---|---|---|---|
+| `d_surface` | ASR@0.5 | `demo_max\|L29\|cos` | **+0.2456** | 0.0059 | 0.0005 |
+| `d_surface` | StrongReject | `query\|L31\|cos` | **+0.2982** | 0.00039 | 0.0005 |
+
+G2's clean powered result was ρ = −0.066, p = 0.49 on n = 108. This is a real positive on n = 900
+heldout prompts, and the difference is the bank: 120 **independent** families per level instead of
+rows that shared demonstrations.
+
+### ⛔ But `d_naive` and `d_context` do it just as well — requirement 4 fails
+
+| direction | within-level ρ (ASR) | within-level ρ (StrongReject) |
+|---|---|---|
+| `d_surface` | +0.1272 | +0.1638 |
+| `d_context` | +0.1368 | +0.1471 |
+| **`d_naive`** | **+0.1554** | **+0.1672** |
+
+`d_naive` is the *strongest* on both outcomes. The plan's gate requires that **random / control
+directions fail**; here every direction tested succeeds, and the one fitted with no contextual
+control at all wins. **This is retraction F-2's shape at the prompt level**: the signal is not
+`d_surface`, it is a generic late-layer semantic magnitude that all three directions load on.
+
+### ⚠ And two thirds of the pooled correlation is the design's own manipulation
+
+The bank deliberately makes ASR differ across levels — `str:aggressive` sits at **0.458**,
+`con:mixed` at **0.008** — so any metric that also differs across levels correlates with ASR when the
+levels are pooled. That is the between-domain trap from this module's self-test, one grain up. Split:
+
+| | `d_surface` / StrongReject |
+|---|---|
+| **between-level** ρ (15 level means) | **+0.7024** |
+| **within-level** mean ρ (fixed manipulation, cluster-t over levels) | **+0.1638**, p 0.0001 |
+
+The within-level component is real and significant, and it is the only part that could ever support
+a per-prompt objective. It is also **five times smaller** than the between-level part. A Fig-9-style
+scatter over pooled levels would look far more convincing than the evidence warrants.
+
+### ✅ Requirement 3 passes, and the reason inverts Phase E4
+
+The metric is **not** a refusal detector: within-level ρ(metric, keyword-refusal) = **+0.0676,
+p = 0.26** (`d_naive` +0.0666, p = 0.28), against ρ(metric, ASR) = +0.148.
+
+**Because on this bank the refusal gate is essentially off.** Refusal rate **1.39%**, ASR 10.9%,
+ρ(refused, ASR) = −0.042. Llama complies with these doublespeak prompts almost always; the variance
+in ASR is *content quality*, not compliance. **That is the opposite regime from AdvBench**, where
+Phase E4 found every point of StrongReject movement was a refusal flip. The two datasets measure
+different things through the same rubric, and neither result generalises to the other.
+
+### ⚠ Coverage, stated rather than buried
+
+`demo_max|L29|cos` is **undefined for one of the 15 levels**: `consistency=irrelevant` teaches a
+*different* codeword, so its 120 prompts contain the target only at the query and have no demo
+occurrence. The ASR headline is therefore over **14/15 levels (1,680 prompts)**; the StrongReject
+headline uses a query-position metric and covers 15/15. The artifact carries `n_levels_covered` and
+`levels_uncovered` on every row.
+
+### Gate D verdict, requirement by requirement
+
+| plan §11 requirement | verdict |
+|---|---|
+| 1. predicts ASR under within-domain / clustered inference | ✅ heldout ρ +0.2982, p_cl 0.0004 |
+| 2. survives multiplicity correction | ✅ nested selection; heldout family size = 1 |
+| 3. is not just refusalness | ✅ ρ 0.068 with refusal, p 0.26; bank refusal rate 1.4% |
+| 4. **random / control directions fail** | ⛔ **NO — `d_naive` and `d_context` match or beat it** |
+| 5. comprehension preserved | ⚠ not tested |
+| 6. replicates on heldout | ✅ by construction |
+| 7. intervention has the expected sign | ⛔ **NO — predictive at L29–L31; causal band is L6–L12** |
+
+> **Prompt-level Boombness is not currently a usable optimization target.**
+
+Written as the plan requires — but with a sharper reason than G2 could give. It is **not** that
+nothing predicts ASR. It is that **what predicts it is not `d_surface`, and not where `d_surface`
+acts**: the predictive signal lives in the top three layers of the stack, while every causal effect
+this sprint has measured lives at L6–L12 for `d_surface` and L14–L20 for refusalness. **A metric that
+predicts at a depth where intervention does nothing cannot be optimised against.**
+
+⛔ Therefore **the plan §11 GCG objective is not attempted**, and three of its five candidate
+objectives are now individually dead: probe margin (Decision Gate C failed), the `d_surface` layer
+profile (survives no multiplicity correction), and prompt-level Boombness (this gate).
+
 ## What Does d_surface Represent?
 
 **Phase E1 — external semantic categories. Done with zero new compute:** AdvBench's 16 domain clusters
