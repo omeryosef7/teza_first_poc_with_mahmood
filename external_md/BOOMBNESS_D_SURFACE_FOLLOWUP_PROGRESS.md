@@ -5063,6 +5063,38 @@ that script is shared with the non-Boombness workstream and its own docstring wa
 of the shared file.
 
 
+
+### ⚠ A second concurrency episode — a peer resumed, and this time its work is being ADOPTED
+
+Between 00:53 and 01:05 on 2026-08-21, four commits appeared on this branch that are not mine:
+`53efbf00`, `cbf671a0`, `846abfa8`, `2a8c3900`. The user's instruction of 2026-08-20 ~17:55 — *"shut
+it down for me i want only you to work on it"* — still stands, so stand-down messages went out again
+(the two reachable Remote Control peers; no local interactive sessions are listed any more).
+
+**Checked before doing anything else: did it clobber my work?** No. Those commits touch
+`docs/BOOMBNESS_CONTINUATION_LOG.md`, `reports/`, and three files under `src/boombness/`; the diff of
+my own staged rewrite shows **0 lines removed outside the Sprint Final Report section** I was
+deliberately replacing. Nothing was lost in either direction.
+
+**And its central finding is one I am adopting rather than reverting, because it independently
+reproduces mine.** `cbf671a0` fixes `judge_boombness`'s distinctive-word match, which used `\b<w>`
+with **no trailing boundary**, so the word matched anything it prefixes — and its commit message
+cites `topicality_gate.py:114-127`, written a few hours earlier in *this* session, as already having
+the word-bounded version. It also reports the metric is a **single-bit indicator** — 1,824 of 2,736
+bank rows have exactly one distinctive word and the number of distinct such words across the whole
+bank is **1** — which is the same degeneracy my R5-5 found and now guards with
+`metric_is_degenerate_one_word_goals`.
+
+**Two sessions, working independently, found the same two defects in the same instrument and fixed
+them the same way.** That is genuine convergent evidence that both defects are real, and it is the
+one good thing to come out of the duplication.
+
+⚠ **One live hazard, flagged rather than assumed away:** `cbf671a0` edited `judge_boombness.py` while
+my three variance-matched-control judge shards (pids 433016/7/8) were mid-run against it. Python
+loaded the module at process start, so the running shards are unaffected — but the *next* judge run
+in this repo will use the peer's version. That is an improvement and I would have adopted it anyway;
+it is recorded so nobody later reads two judge runs on either side of 00:57 as the same instrument.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
