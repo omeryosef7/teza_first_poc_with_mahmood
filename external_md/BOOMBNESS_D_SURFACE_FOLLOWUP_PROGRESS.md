@@ -1487,7 +1487,54 @@ prerequisite. **This is GPU work and is not started — see Open Questions.**
 
 ## Better Surgical Patching Results
 
-_Not started. Phase G deliverable._
+**Phase G started (tick 33).** The plan is explicit that the top-16 edge search should not be repeated
+as if it were likely to work — the previous sprint established that **no 16-edge subset matters**
+(top-k +0.0196 vs bottom-k −0.0028 vs random +0.0008) and that the redundancy is in sheer edge count.
+So Phase G opens on the plan's units **2 and 3** instead, which this sprint has a specific reason to
+run.
+
+### The motivation is this sprint's own Phase B result
+
+Phase B found the **last** demonstration codeword is measurably more concept-like than the **first**
+(paired, family-matched excess **+0.5414 at L8, t = 3.26**). That is a *representational* gradient.
+**Does it have a causal counterpart?** If the later demonstrations are where the meaning actually
+accumulates, cutting attention out of the *last* demonstration should cost more than cutting it out of
+the *first* — at an identical number of edges.
+
+That is a genuinely position-resolved question the existing `--demo-scope {codeword, block}` could not
+ask: `codeword` cuts **all** demonstration codewords at once.
+
+### Code added: two `--demo-scope` choices, four lines
+
+`src/boombness/surgical_knockout.py` now accepts `first_codeword` and `last_codeword`.
+`last` holds the codeword occurrence indices with the query occurrence last, so `last[:-1]` are the
+demonstrations; the new scopes take `demos[:1]` and `demos[-1:]`. A prompt with no demonstrations
+yields an empty scope and is charged to the `FailureLedger` by name via the existing
+`no_demo_positions:<scope>` guard — **not dropped silently**.
+
+### Runs submitted
+
+| job | tag | scope |
+|---|---|---|
+| 768703 | `g3wa24_first` | `--demo-scope first_codeword` |
+| 768704 | `g3wa24_last` | `--demo-scope last_codeword` |
+
+Both at the **current G3 configuration** so they are comparable to the committed
+`g3_wholeanswer_block24.json`: `--layers 8,12,18,24 --n-families 24 --dst both
+--query-kind semantic_one_word --condition natural_doublespeak --seed 20260816`, ranking at
+`readout_pos`, whole-answer readout.
+
+### The comparison this sets up, and its built-in control
+
+The two arms cut **the same number of edges** (one codeword occurrence each, same layers, same
+top-k budget) and differ only in **which** occurrence. So the contrast is **edge-count-matched by
+construction** — the confound that broke the previous sprint's depth reading (`g3_edgematch.json`,
+where 2 layers vs 32 layers at an identical 3,552 edges gave −0.008 vs +0.089) cannot apply.
+
+Pre-registered prediction, recorded before the runs land: **if Phase B's gradient is causal, the
+`last_codeword` arm should move the readout more than `first_codeword`.** If they are equal, the
+representational gradient is epiphenomenal for this readout — which would be a real negative and would
+sharpen the tension already recorded between where the signal is largest and where ablation matters.
 
 ## Cross-Model Replication With Dynamic Range
 

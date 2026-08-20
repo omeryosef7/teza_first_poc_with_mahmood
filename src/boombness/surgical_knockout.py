@@ -594,7 +594,8 @@ def main() -> int:
                          "why every arm read about zero. 'readout' (default) cuts into the "
                          "position actually being measured; 'codeword' reproduces the old, wrong "
                          "behaviour; 'both' cuts into each.")
-    ap.add_argument("--demo-scope", default="codeword", choices=["codeword", "block"],
+    ap.add_argument("--demo-scope", default="codeword",
+                    choices=["codeword", "block", "first_codeword", "last_codeword"],
                     help="which source positions count as 'the demonstrations'. 'codeword' = the "
                          "demonstration CODEWORD occurrences only (the original scope). 'block' = "
                          "EVERY token of the demonstration block. The G3 result motivates this: "
@@ -817,6 +818,21 @@ def main() -> int:
         d_surface = d_surface_by_split[fit_split]
         if args.demo_scope == "codeword":
             demo_pos = last[:-1]             # the demonstration codeword occurrences
+        elif args.demo_scope in ("first_codeword", "last_codeword"):
+            # POSITION-RESOLVED demo scopes (follow-up sprint, plan §9 units 2-3).
+            #
+            # Motivated by this sprint's own Phase B result: the LAST demonstration codeword is
+            # measurably more concept-like than the FIRST (paired family-matched excess +0.5414 at
+            # L8, t = 3.26). That is a REPRESENTATIONAL gradient. These two scopes ask whether it
+            # has a CAUSAL counterpart -- does cutting attention out of the last demonstration cost
+            # more than cutting it out of the first?
+            #
+            # `last` holds the codeword occurrence indices with the QUERY occurrence last, so
+            # last[:-1] are the demonstration occurrences. A prompt with no demonstrations has
+            # len(last) == 1 and yields an empty scope, which the existing `if not demo_pos` guard
+            # below charges to the FailureLedger by name rather than dropping silently.
+            demos = last[:-1]
+            demo_pos = demos[:1] if args.demo_scope == "first_codeword" else demos[-1:]
         else:
             # Every token of the demonstration block. Located by character offset of the
             # recorded demo_block inside the TEMPLATED prompt, so it cannot drift from the
