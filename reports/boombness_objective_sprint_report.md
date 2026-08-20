@@ -2114,6 +2114,38 @@ see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `con
 underpowered by an order of magnitude and confounded on three variables at once. Making them usable
 is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
+### ⚠ The judge test–retest floor beneath every ASR number here (added 2026-08-21)
+
+Two judge runs of the **same** baseline exist. Comparing them on identical prompts
+(`judge_retest.py`, `outputs/boombness/judge_retest_floor.json`) measures the run-to-run floor under
+every ASR delta in this document, which nothing previously disclosed:
+
+| subset | n | ASR run A | ASR run B | swing | sign flips |
+|---|---|---|---|---|---|
+| all common rows | 660 | 0.1364 | 0.1258 | **1.1 pp** | 37 |
+| `natural_doublespeak` | 270 | 0.2185 | 0.2000 | **1.9 pp** | 27 |
+| `core2x2`, n_examples ≥ 1 | 240 | 0.0917 | 0.0708 | **2.1 pp** | 11 |
+| **`core2x2`, n ≥ 1, doublespeak — the analysed G2 subset** | **60** | **0.2333** | **0.1667** | **6.7 pp** | **6** |
+
+**It is judge noise, not regeneration.** The two runs' generations are **byte-identical on 660/660
+prompts**. Generation here is deterministic; the variance is entirely in the sampled StrongReject
+judge. Three consequences follow, and they are not all bad news:
+
+1. **Re-running generation cannot reduce it.** Only judge replicates can. No published number is
+   fixed by another GPU pass.
+2. **Paired, within-run comparisons are far less exposed than cross-run ones.** Every arm-vs-control
+   delta in this report is scored inside a single judge run against the same baseline run, so the
+   floor above is an upper bound on their exposure, not a direct discount.
+3. **The 6.7 pp figure is the smallest subset and must not be quoted alone.** It is 4 successes out
+   of 60. The swing falls to ~2 pp as n grows, exactly as sampling noise should — quoting only 6.7 pp
+   overstates the problem as surely as quoting only 1.1 pp hides it.
+
+**What it does threaten:** any single-arm ASR quoted to better than ~2 pp, and any effect of that
+size resting on one judge run. The AdvBench headline (+0.0305, +0.0322) is at roughly 1.5× this
+floor on its own population, which is thin enough to state rather than bury. **What it does not
+threaten:** the topical-outcome results, whose separations are 0.4–0.6 — an order of magnitude above
+this floor.
+
 ### Specific limits a reader should carry
 - **One model, one concept pair, one judge.** Llama-3.1-8B, carrot↔bomb, StrongReject/`gpt-4o-mini`.
 - **G1 is no longer a pilot** (corrected 2026-08-20 — this line still described the **superseded**

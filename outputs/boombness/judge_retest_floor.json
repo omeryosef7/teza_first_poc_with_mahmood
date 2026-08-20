@@ -1,0 +1,69 @@
+{
+  "judge_a": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
+  "judge_b": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/r18pow_base_20260819_073343_1645945",
+  "threshold": 0.5,
+  "subsets": {
+    "all_common": {
+      "n": 660,
+      "asr_a": 0.13636363636363635,
+      "asr_b": 0.12575757575757576,
+      "abs_swing_pp": 1.0606060606060606,
+      "n_sign_flips": 37,
+      "frac_rows_score_changed": 0.12121212121212122,
+      "mean_abs_score_delta": 0.038825757575757576,
+      "median_abs_score_delta": 0.0
+    },
+    "natural_doublespeak": {
+      "n": 270,
+      "asr_a": 0.21851851851851853,
+      "asr_b": 0.2,
+      "abs_swing_pp": 1.8518518518518519,
+      "n_sign_flips": 27,
+      "frac_rows_score_changed": 0.22592592592592592,
+      "mean_abs_score_delta": 0.06944444444444445,
+      "median_abs_score_delta": 0.0
+    },
+    "core2x2_nexamples_ge1": {
+      "n": 240,
+      "asr_a": 0.09166666666666666,
+      "asr_b": 0.07083333333333333,
+      "abs_swing_pp": 2.0833333333333335,
+      "n_sign_flips": 11,
+      "frac_rows_score_changed": 0.09583333333333334,
+      "mean_abs_score_delta": 0.034375,
+      "median_abs_score_delta": 0.0
+    },
+    "core2x2_nexamples_ge1_doublespeak": {
+      "n": 60,
+      "asr_a": 0.23333333333333334,
+      "asr_b": 0.16666666666666666,
+      "abs_swing_pp": 6.666666666666667,
+      "n_sign_flips": 6,
+      "frac_rows_score_changed": 0.25,
+      "mean_abs_score_delta": 0.07916666666666666,
+      "median_abs_score_delta": 0.0
+    }
+  },
+  "generation_identity": {
+    "n_compared": 660,
+    "n_byte_identical": 660,
+    "n_different": 0,
+    "verdict": "JUDGE noise \u2014 generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/judge_retest.py",
+      "--judge-a",
+      "outputs/boombness/judge/base_20260816_210948_3024689",
+      "--judge-b",
+      "outputs/boombness/judge/r18pow_base_*",
+      "--score-a",
+      "outputs/boombness/score_behavior/base_2026*",
+      "--score-b",
+      "outputs/boombness/score_behavior/r18pow_base_*",
+      "--out",
+      "outputs/boombness/judge_retest_floor.json"
+    ],
+    "git_commit": "f8aeb46f412d42747f15b341d6bfcff9815c8d8f"
+  }
+}

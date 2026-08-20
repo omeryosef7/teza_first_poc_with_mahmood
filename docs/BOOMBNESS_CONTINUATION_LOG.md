@@ -3894,3 +3894,46 @@ A citation is a claim about *provenance*, and provenance has been the weakest li
 |---|---|---|---|
 | 79 | 2026-08-21 | tested §18 point 3 rather than merely flagging the contradiction | **confirmed**: refusal-only Δ topical **−0.002**, identical to the random control |
 | 80 | 2026-08-21 | re-cited point 3 from §7c (external, cannot answer it) to the bank + topical outcome | contradiction with N13 resolved without weakening the conclusion |
+
+## ★ The judge test–retest floor — the audit's best finding, and it is JUDGE noise, not regeneration
+
+Tick 2026-08-21. The audit's highest-value item (its own words: *"the most valuable thing in the whole
+lane"*) was an **undisclosed same-prompt instability** between two judge runs of the same baseline.
+Verified, extended, and **relabelled** — because the label was wrong in a way that changes the remedy.
+
+`judge_retest.py` → `outputs/boombness/judge_retest_floor.json`:
+
+| subset | n | ASR A | ASR B | swing | flips |
+|---|---|---|---|---|---|
+| all common rows | 660 | 0.1364 | 0.1258 | **1.1 pp** | 37 |
+| `natural_doublespeak` | 270 | 0.2185 | 0.2000 | **1.9 pp** | 27 |
+| `core2x2` n≥1 | 240 | 0.0917 | 0.0708 | **2.1 pp** | 11 |
+| **the analysed G2 subset** | **60** | 0.2333 | 0.1667 | **6.7 pp** | 6 |
+
+**The auditor's 6.7 pp reproduces exactly** — my first cut got 2.1 pp because I did not restrict to
+`natural_doublespeak`, and the auditor was right about the subset. Its correction of the *earlier*
+lane's numbers ("14/72 vs 10/72, 5.6 pp" → 14/60 vs 10/60, 6.7 pp) also holds.
+
+**But it is not "regeneration instability".** The two runs' generations are **byte-identical on
+660/660 prompts**. Generation is deterministic; the variance is entirely the **sampled StrongReject
+judge**. That relabelling is the substantive contribution here, because it changes what to do:
+
+1. **Re-running generation cannot reduce it** — only judge replicates can. No GPU pass fixes any
+   published number.
+2. **Paired within-run comparisons are far less exposed than cross-run ones.** Every arm-vs-control
+   delta in the report is scored inside one judge run against the same baseline run, so this floor is
+   an **upper bound** on their exposure rather than a discount to subtract.
+3. **6.7 pp is the smallest subset and must not be quoted alone** — it is 4 successes out of 60, and
+   the swing falls to ~2 pp as n grows, exactly as sampling noise should. Quoting only 6.7 pp
+   overstates the problem as surely as quoting only 1.1 pp would hide it. The report states all four.
+
+**What it threatens:** any single-arm ASR quoted finer than ~2 pp, and the AdvBench headline
+(+0.0305/+0.0322) sits at roughly **1.5× this floor** — thin enough to state plainly, which the report
+now does. **What it does not threaten:** the topical-outcome results, whose separations are 0.4–0.6,
+an order of magnitude above it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 81 | 2026-08-21 | verified the audit's instability finding; reproduced 6.7 pp exactly on the analysed subset | my first cut used the wrong subset; the auditor was right |
+| 82 | 2026-08-21 | compared the two runs' **generations** | **660/660 byte-identical** — it is judge noise, not regeneration |
+| 83 | 2026-08-21 | wrote `judge_retest.py` + artifact; disclosed all four subsets in the report | the floor beneath every ASR number is now on the record |
