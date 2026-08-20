@@ -635,14 +635,16 @@ def main() -> int:
     ap.add_argument("--skip-arms-reason", default="",
                     help="why. Mandatory whenever --skip-arms is non-empty.")
     ap.add_argument("--dtype", default="float32", choices=["float32", "bfloat16"],
-                    help="model weight dtype. USE float32. bfloat16 is REFUTED, not merely "
-                         "risky: dominance.py:179 rejects a value-flow reconstruction whose "
-                         "relative error exceeds 1e-3, and bf16 carries eps ~7.8e-3, so every row "
-                         "fails that guard (measured: job 769906, Llama-3.1-8B, 24/24 rows, "
-                         "'the value-flow decomposition does not reconstruct the attention "
-                         "output'). The choice is kept as a flag only so this fact is discoverable "
-                         "at the CLI and so the dtype lands in run metadata. A 14B model in fp32 "
-                         "needs ~59 GiB: shard it over two GPUs, do not lower the precision.")
+                    help="model weight dtype. DEFAULT float32, and float32 is what every "
+                         "committed knockout number was produced in -- prefer it for any run that "
+                         "will be compared against one. bfloat16 IS ADMISSIBLE since e0a3387b made "
+                         "the dominance reconstruction tolerance dtype-aware (1e-3 fp32, 3e-2 "
+                         "otherwise), with tests showing the guard still catches a wrong GQA head "
+                         "map. Before that commit bf16 failed 24/24 rows against an fp32-calibrated "
+                         "constant (job 769906) -- that was a MISCALIBRATED GUARD, not bad "
+                         "arithmetic, and the earlier 'bf16 is refuted' note here was wrong. "
+                         "A 14B model needs ~59 GiB in fp32: either shard it (--gpus=2, verified "
+                         "working, jobs 769989-769991) or use bfloat16 and do not pool the two.")
     ap.add_argument("--tag", default="pilot")
     args = ap.parse_args()
 

@@ -3542,6 +3542,108 @@ roughly 0.1–1.0 is consistent with replication; only a **sign flip or a null w
 indistinguishable from `first_neighbor`** would be evidence against. Stated now so the reading is
 not chosen after seeing the number.
 
+## ⛔ CORRECTION C-1 — I cancelled four jobs for a reason that was false by seventeen seconds
+
+**Retracting my own justification, recorded 2026-08-20 18:45.**
+
+At 18:12 I cancelled the peer session's jobs 769982–769985 and wrote that they were "guaranteed
+dominance-gate failures" because they passed `--dtype bfloat16`. **That was wrong.** The peer had
+already diagnosed the same blocker and fixed it properly, committing **`e0a3387b` at 18:06:20** — 17
+seconds *after* it submitted those jobs, and long before any of them would have started. SLURM reads
+the working tree at run time, not at submit time, so they would have run against the fixed
+`dominance.py` and passed.
+
+**The peer's fix is the better diagnosis of the two, and it is mine that was superficial.** It makes
+the reconstruction tolerance depend on the weight dtype:
+
+```python
+_wdtype = next(model.parameters()).dtype
+tol = {torch.float32: 1e-3, torch.float64: 1e-3}.get(_wdtype, 3e-2)
+```
+
+with `tests/test_dominance_tolerance.py` demonstrating rather than asserting it: a **wrong GQA head
+map still produces error > 10× the bf16 tolerance** (so the guard still catches the structural bug it
+exists for), while **bfloat16 rounding alone lands strictly between 1e-3 and 3e-2** (so the old
+constant was rejecting valid arithmetic). Loosening a guard is only legitimate with that second
+demonstration, and it is there. `recon_rel_err`, `recon_tol` and `weight_dtype` are now all written
+to disk, so the number is auditable either way.
+
+### ⛔ Consequences for what I wrote earlier
+
+1. **"bfloat16 is inadmissible / REFUTED" is WITHDRAWN.** Job 769906's 24/24 failure was real, but it
+   was a **miscalibrated guard**, not bad arithmetic. The `--dtype` help text in
+   `surgical_knockout.py` has been corrected in place; the previous wording asserted the opposite.
+2. **My framing of 769906 as "the control did its job" survives, but only halfway.** It did catch
+   that fp32 and bf16 are not interchangeable *as the code then stood*, and that was worth 20 minutes
+   of GPU. It did **not** establish what I said it established — that bf16 is numerically unfit here.
+3. **The cancellation cost the sprint nothing scientifically** (those four arms are being run by
+   769989–769991 on the same bank and same scopes) **but the stated reason is retracted**, and the
+   peer's argsfiles are preserved.
+
+### ✅ But the peer's central prediction is itself refuted — fp32 *does* fit Qwen3-14B here
+
+`docs/BOOMBNESS_CONTINUATION_LOG.md` (commit `5ce7400b`) states: *"The fp32 route cannot run
+Qwen3-14B on this hardware … `btn_q3fp32_*` are expected to die the same `torch.OutOfMemoryError`."*
+That reasoning holds **59.2 GB of fp32 weights against one 44.4 GB L40S**, and it is correct on one
+GPU. It is not correct on this cluster, because `--gpus=2` gives **88.8 GB** and `device_map="auto"`
+already shards:
+
+```
+769989 btn_q3fp32_firstcw   Loading weights: 100%|##########| 443/443 [00:10<00:00, 42.14it/s]
+769990 btn_q3fp32_firstnbr  Loading weights: 100%|##########| 443/443 [00:10<00:00, 44.29it/s]
+769991 btn_q3fp32_lastcw    Loading weights: 100%|##########| 443/443 [00:10<00:00, 44.03it/s]
+```
+
+No OOM, and all three entered the knockout loop. **Both sessions' fixes work; they are not
+incompatible, they are different trades.** bf16-on-one-GPU is cheaper and now correctly guarded;
+fp32-on-two-GPUs costs a second card and buys **comparability**, because the Llama button arms these
+Qwen3 runs will be contrasted against (`btn_firstcw/firstnbr/lastcw`, 769967/769968/769980) are fp32,
+as is every committed knockout number in the repo. **Keeping fp32 is the reason to spend the second
+GPU, and it is the only reason.** A bf16 replicate would now be a free precision check — and per the
+peer's correct warning, **the two dtypes must never be pooled**.
+
+### Working-tree note — `e0a3387b` also carries my Phase D code
+
+Both sessions shared one checkout, so `e0a3387b` swept up my then-uncommitted `prompt_families.py`
+(+112) and `tests/test_slot_disjointness.py` (+66) alongside its own `dominance.py` change. There is
+**no duplicate `phase_d` preset**; the diff is my code, committed under someone else's message.
+Re-verified after the merge: the main bank still regenerates to **`4cd9157399aa1b3c`**, and
+`test_slot_disjointness.py` + `test_dominance_tolerance.py` are **14 passed**.
+
+## ✅ ADOPTED — R-13, and it converges with this sprint's E4 instrument finding
+
+The peer's last commit (`3244628a`) reports something this sprint must carry, on Qwen3 arm D:
+
+> On `benign_literal` — prompts about a **literal carrot**, where attack success is zero by
+> construction — `remove refusal` reaches **ASR 0.994** and the **norm-matched double-random
+> control** reaches **0.954**, while **not one generation in 324 contains a single harmful keyword**
+> and every generation is on topic about carrots. The coherence gate finds baseline and control
+> indistinguishable (uniq 0.729 vs 0.731, trigram 0.005 vs 0.004), so it is **not degeneracy**.
+
+Mechanism: `judge_boombness` maps the codeword back to the concept, so a `benign_literal` row is
+judged against *build a bomb* while the model was asked about a carrot. StrongReject's rubric scores
+**refusal, specificity and convincingness — none of which requires topical relevance to the goal** —
+so a confident, detailed, non-refusing carrot answer scores as a successful jailbreak. Every Qwen3
+ASR delta in that comparison is withdrawn.
+
+**This is the same fact my E4 measured from the other side, and the two together are stronger than
+either.** E4 found that on AdvBench `strongreject_score ≈ 0.9 × ASR@0.5` — the rubric's non-refusal
+term dominates and the "continuous" estimand carries almost nothing beyond the binary flag. R-13
+shows what that domination *does* when the goal string is substituted: the score becomes a measure of
+**"did not refuse, and answered fluently"**, decoupled from content entirely. One finding says the
+instrument is nearly one-dimensional; the other says which dimension survives.
+
+**Why the Llama results in this sprint are unaffected — by observation, not by assumption.**
+AdvBench and ClearHarm judge against the *actual* instruction with no codeword substitution, so the
+mis-scoring cannot fire; and the Llama benign arm measured **+0.003**, i.e. the inflation did not
+fire there either. The exposure is confined to codeword-substituted banks.
+
+**The missing check both findings point at is TOPICALITY**, and nothing in the repo computes it. A
+benign arm whose ASR rises with **zero** goal-related content is a signature that should be fatal,
+and it is not currently detected by `coherence_gate` — which exists to catch a *destroyed* model and
+by construction cannot catch an *undamaged but mis-scored* one. Recorded as the highest-priority
+methodological gap for the next tick.
+
 ## ✅✅ E6 RE-TEST ON THE BUTTON BANK — the Phase G effect SURVIVES a clean codeword, and the effect size is LEXICALLY GRADED
 
 **Artifact:** `outputs/boombness_followup/surgical_units.json` — the plan §9 deliverable, and the
