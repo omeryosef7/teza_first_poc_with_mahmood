@@ -3619,3 +3619,33 @@ assumption" was only true of the one arm I had actually observed.
 | 61 | 2026-08-20 | pointed the conjunction at Llama instead of assuming R-13 was Qwen3-only | **R-14**: arm F is ~94% style; Δ topical CI includes zero |
 | 62 | 2026-08-20 | re-ranked all Llama arms on topical content | D +0.033, B +0.029 clear controls; **C is null**; F indistinguishable from its control |
 | 63 | 2026-08-20 | corrected my own R-13 note, which exempted "the Llama results" from one arm's evidence | the exemption was unearned |
+
+## R-14 propagated into the deliverable, and the sweep caught my own unmarked paragraph
+
+Tick 2026-08-21. R-14 was in this log while the **report still headlined arm F as a causal result** —
+a withdrawn result live in the deliverable is the precise failure this project has retracted for
+before, so it went in first this tick.
+
+Added to the report's retraction table:
+* **R-14** — arm F's behavioural gain is a **judge** artifact, ~94% answer style; topical Δ
+  **+0.017, CI [−0.005, +0.038]** against its own control at +0.012; **+0.417 plain / 0.000 topical**
+  on `benign_remap`.
+* **R-15** — my claim that "the Llama results are unaffected by the style artifact" is **withdrawn**;
+  it was observed for arm D alone and generalised to the model.
+
+The arm-F row in the §4 table is marked at the point of use, and the full Llama re-ranking now sits
+beside the arm-F discussion — which it **supersedes rather than supports**: that passage reached the
+right verdict for the wrong reason, suspecting the **prompt bank**, which ClearHarm has since
+excluded. The defect is in the judge.
+
+**The sweep worked, and only because its pattern list was updated the same day.** Adding R-14/R-15
+patterns immediately flagged one unqualified occurrence — **my own explanatory paragraph**, which
+stated "+0.305 headline gain" with no marker word, so the paragraph-exemption heuristic correctly
+declined to exempt it. This is the third time the pattern list, not the documents, was the weak link;
+it is now routine to extend it in the same commit that declares a retraction. The paragraph now says
+the number is retracted, which it should have said regardless of any checker.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 64 | 2026-08-21 | entered R-14 + R-15 in the report's retraction table; marked arm F at point of use | the deliverable no longer headlines a withdrawn result |
+| 65 | 2026-08-21 | extended the sweep pattern list in the same commit as the retraction | caught my own unmarked paragraph; sweep clean over 4 files |
