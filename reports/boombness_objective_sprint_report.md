@@ -2029,7 +2029,11 @@ is a generator change plus fresh extraction and behavioural runs (**E8**), not a
 
 ### Specific limits a reader should carry
 - **One model, one concept pair, one judge.** Llama-3.1-8B, carrot↔bomb, StrongReject/`gpt-4o-mini`.
-- **G1 is a pilot**: n=8 families from **2 domains**, and its headline is one arm of ~130.
+- **G1 is no longer a pilot** (corrected 2026-08-20 — this line still described the **superseded**
+  R-8 run). It is **24 families across all 6 domains**, re-derived on the corrected whole-answer
+  readout: `demos_only|L18` **+5.659 log-odds, CI [+3.305, +8.314]** (harm ctx). The arm-selection
+  exposure is real and stays: the headline is one arm of ~130, and the all-layer variant of the
+  same transplant is null (+1.092, CI [−0.955, +3.421]).
 - **G3's identification is one-sided by construction** (a layer holds only ~3,648 edges).
 - **G1/G3 run on `semantic_one_word` prompts; G2/G4's ASR claims run on `behavioral` ones.** C7 showed
   this is not merely a join hazard — it changes the sign of a reported effect.

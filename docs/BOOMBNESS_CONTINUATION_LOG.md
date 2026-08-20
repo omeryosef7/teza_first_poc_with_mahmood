@@ -18,20 +18,30 @@ number does not go in.
 
 ## Phase board
 
-| plan § | subject | status | evidence / blocker |
+**Re-derived from the filesystem 2026-08-20**, not edited incrementally. Every row below was checked
+against an artifact, a source file or a report section this tick. The previous board was stale on
+**six of its seven** open rows — it still listed as NOT STARTED work the other session had finished
+days earlier. That is this project's signature failure ("the deliverable was never re-derived from
+the current state of the evidence") applied to the tracking document itself, which is worse than
+usual because the board is what decides where the next tick spends GPU.
+
+| plan § | subject | status | evidence checked this tick |
 |---|---|---|---|
-| — | Phase 0 orient + this log | **DONE** | this file |
-| — | Phase 1.1 `t_sf` | **DONE — verified** | see defect T4 |
-| — | Phase 1.2 comprehension readout | **FIXED TWICE — smoke 764744 running** | forced prefix (476× mass) then whole-answer scoring (the codeword has no capitalized single token) |
-| — | Phase 1.3 `analyze_steering` | **DONE — artifact replaced** | no G4 conclusion changes; intervals were 1.03–1.69× too narrow |
-| — | Phase 1.4 `surgical_knockout` dst | **code fixed, UNVERIFIED; GPU re-run pending** | G3 not established until re-run |
-| — | Phase 1.5 Tier-2 remainder | **PARTIAL** | T5 done for g64 only; T6/T9/T10 landed unverified; T8 + silent-failures NOT STARTED |
-| §15 | missing report sections 2/6/7/14/15/16 | **PARTIAL** | item 7 (metric comparison) **written** as report §7b; 2/6/14/15/16 outstanding |
-| §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
-| §8/§9 | 9 of 12 named plots | NOT STARTED | |
-| §5.2 | alpha sweep dose 0.25 | **RUN, but NOT REPORTABLE** | `g1wa_sow_...1793337` swept 0.25–4 on the whole-answer readout; gated off on `donor_ceiling` — see below |
-| §14 | ClearHarm arm | **★ DECOMPOSED** | B +0.105 / C +0.233 / D +0.430 vs random +0.013–0.018. AdvBench replication 765111–114 |
-| §4.1 | strength / consistency / example_position | NOT STARTED | generated, confounded, unanalysed — decide analyse-or-delete |
+| — | Phase 1.1 `t_sf` | **DONE — verified** | `tests/test_boombness_stats.py` |
+| — | Phase 1.2 comprehension/semantic readout | **DONE — verified** | whole-answer; option mass 5.6e-05 → 0.297 |
+| — | Phase 1.3 `analyze_steering` | **DONE — verified** | re-ran, artifact replaced |
+| — | Phase 1.4 `surgical_knockout` dst | **DONE** | R-7 discharged; G3 re-derived at 24 families |
+| — | Phase 1.5 Tier-2 remainder | **DONE** | `validate_direction_payload` in `common.py` (T8); bank sha names split; `tests/test_silent_failures.py` |
+| §15 | report items 2 / 6 / 7 / 14 / 15 / 16 | **DONE** | §1b (item 2), §6b (item 6), §7b (item 7), §8b/§8c/§9b |
+| §9 | `correlation_summary.json`, `regression_summary.md` | **DONE** | `outputs/boombness/section9/` |
+| §8/§9 | the 12 named plots | **DONE** | all 9 previously-missing plots found on disk |
+| §5.2 | alpha sweep incl. α=0.25 | **RUN; percentages gated** | `g1wa_sow` (31,104 rows); ceiling fails its gate — **absolute Δ reported instead** |
+| §14 | ClearHarm / AdvBench external arms | **DONE** | `clearharm_decomposition.json`, `advbench_decomposition.json` |
+| §14 | E6 second codeword | **DONE — answered** | `e6_button_knockout.json`; knockout ≤2.6% of ceiling on both models |
+| §14 | arm D on a second **model** | **OPEN** | blocked by R-13: the Qwen3 judge scores style, not content |
+| §4.1 | strength / consistency / example_position | **DEFERRED — WITH REASON** | report §"designed variance"; 3 dedicated `bank_block`s no analysis reads, so **non-contaminating**; underpowered ~10× and confounded on 3 variables. Fixing needs a generator change + fresh runs (E8), not a re-analysis |
+| §12 | build the GCG objective? | **REOPENED, undecided** | see gate table |
+| — | G1 headline **unit** (% of span vs Δ log-odds) | **OPEN — needs a human** | both now reported side by side; the % denominator fails its gate |
 
 ## Gate table
 

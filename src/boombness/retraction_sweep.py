@@ -77,7 +77,12 @@ RETRACTED = [
      r"recovers\s*\*{0,2}84%|84%,\s*CI\s*\[62%"),
     ("R8  G1 superseded +84% on n=8 / 2 domains",
      r"\+?84%\s*of span|CI\s*\[\+?57%,\s*\+?105%\]|"
-     r"n\s*=\s*8\s*families[^\n]{0,40}2\s*\*{0,2}domains"),
+     # MARKDOWN EMPHASIS CAN SIT ANYWHERE. The first version required the bold markers to follow
+     # the digit (`2 **domains**`) and the report writes `**2 domains**`, so the sweep reported
+     # CLEAN while "G1 is a pilot: n=8 families from **2 domains**" sat live in the limits list
+     # (found 2026-08-20). Strip-insensitive: allow `*` and `_` freely between the tokens.
+     r"n\s*=\s*8\s*[*_]{0,2}families[^\n]{0,40}[*_]{0,2}2\s*[*_]{0,2}domains|"
+     r"G1 is a pilot"),
     ("R9  §18=B asserted as a settled label",
      r"outcome\s+B\b[^\n]{0,60}mechanistic but not causal|"
      r"§18\s*(?:label\s*)?(?:is|=)\s*\*{0,2}B\b"),
