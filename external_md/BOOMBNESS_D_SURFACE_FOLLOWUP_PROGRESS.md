@@ -4170,6 +4170,61 @@ regenerations reproduce byte-identically (`4cd9157399aa1b3c`, `debe267f05efb9ab`
 re-derivation. The `topicality` artifacts leak no generation text (recursive string scan: longest
 string is a verdict rationale).
 
+
+### ✅ R4-4 correction in flight — the three Qwen3 arms are being re-judged against a HASH-CERTIFIED bank
+
+Review #4's top correction, launched at 20:12. The right bank is not the current one: the generations
+were made against the **2,352-row** bank, recovered from git at `82bc1a3c` and archived at
+`data/boombness_prompts/archive/boombness_prompt_bank_2352.jsonl`.
+
+**The join is certified by hash, and that is the point** — `common.compare_bank_hashes`' own docstring
+records that the committed 2352-row bank hashes to `71bea179345ed118` on file bytes, and the
+generations' `metadata.json` records `bank_content_sha16: 71bea179345ed118`, `bank_n_rows: 2352`.
+Recomputed here: **identical**, and **0 of 960 prompt_ids fail to resolve**.
+
+**And re-running `make_goal` over the join is direct proof of the R4-4 mechanism:**
+
+| goal status, 960 rows | with `bank=None` (as judged) | **with the 2,352-row bank** |
+|---|---|---|
+| `empty` | **960** | **0** |
+| `substituted` | 0 | **816** |
+| `noop_concept_already_present` | 0 | **144** |
+
+The original runs scored every row against the empty string. With the bank they resolve to a real
+goal in all 960. That is the confound, demonstrated rather than argued.
+
+```
+python src/boombness/judge_boombness.py --gens outputs/boombness/score_behavior/q3_{C20,D20,D20ctrl}_... \
+       --bank data/boombness_prompts/archive/boombness_prompt_bank_2352.jsonl --tag q3rj_{C20,D20,D20ctrl}
+```
+
+⚠ **The judge prints `BANK IDENTITY UNVERIFIED` and it is right to.** The archived meta is the legacy
+schema — it carries `bank_content_sha16`, not the newer `bank_file_sha16`/`bank_rows_sha16` that
+`compare_bank_hashes` looks for — so the guard reports **unknown** rather than asserting agreement,
+exactly as designed. The hash equality above was verified by hand and is recorded here; the artifact
+will say `unverified`, and that discrepancy is a key-name change, not a join failure.
+
+Three background jobs (pids 2562031/2/3), ~95 min for 960 rows each. **No claim about Qwen3 arm D —
+in either direction — until they land.**
+
+### Phase D representation extraction submitted (770128)
+
+Independent of the generations, so it runs in parallel rather than after:
+
+```
+extract_boombness.py --bank ..._phase_d.jsonl --stage score --fit-dir full_20260816_185942_1008673
+                     --allow-cross-bank-fit --layers all --position codeword_last
+                     --directions d_surface,d_context,d_inter,d_naive
+```
+
+`--stage score` matters: the `bank_block == "core2x2"` filter at `extract_boombness.py:405` lives in
+`stage_fit` only, so a bank with new block names is scoreable but not fittable — which is correct
+here, since Phase D must use the **committed** direction rather than one refitted on its own prompts.
+`--allow-cross-bank-fit` is declared rather than defaulted, so `cross_bank_fit` is recorded in
+`summary.json` instead of hidden.
+
+Generation (770023) is at 900/2160 after 81 minutes → ~3.2 h, inside its 4 h limit.
+
 ### Next corrections, in priority order
 
 1. **Re-judge the three Qwen3 arms with `--bank`** — the `_FATAL_GOAL_STATUSES` guard added after
