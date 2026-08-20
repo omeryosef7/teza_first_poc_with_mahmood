@@ -2574,6 +2574,69 @@ Compare the genuinely broken 768316: `scorable_frac` **1.000** with uniq **0.127
 Both completed controls judged (`p_addBoth_CTRL`, `p_remS_addR_CTRL2`). Arm E's release is now waiting
 only on the judge, not on compute.
 
+## ✅✅ THE SPRINT'S STRONGEST RESULT — plan §8 arm 6: a sign dissociation against a dose-matched control
+
+**Artifact:** `outputs/boombness_followup/phaseF_arm6_matched.json`. AdvBench 495 / 16 clusters,
+Llama-3.1-8B, cluster-mean estimand on the continuous StrongReject score. **Both arms pass the committed
+coherence gate** (uniq 0.772 / 0.756, scorable 0.701 / 0.881).
+
+| arm | intervention | ASR@0.5 | refusal | Δ_cl | p_cl |
+|---|---|---|---|---|---|
+| baseline | — | 0.0646 | 0.9313 | — | — |
+| **C** | `refusalness:project_out:18-18:1.0` | 0.2707 | 0.7091 | **+0.1895** | 0.0001 |
+| **F6** | C **+** `d_surface:add:8-8:0.25` | 0.1879 | **0.7859** | **+0.1067** | 0.0011 |
+| **F6_CTRL** | C **+** `random:add:8-8:0.25` | 0.3374 | **0.6364** | **+0.2395** | 0.0001 |
+
+**Dose matching verified from the fit dir, not assumed:** both add legs take the `:221` gap-unit path
+and inject an identical **0.25 × gap[d_surface][L8] = 0.25 × 5.926142 = 1.4815**. Identical layer,
+identical operation, identical magnitude, identical `refusalness:project_out` leg. The only difference
+is *which vector*.
+
+### The two contrasts, paired and domain-clustered (16 clusters, 15 df)
+
+| contrast | Δ | sem | t | p_cl | **Holm (m=4)** |
+|---|---|---|---|---|---|
+| **F6 − F6_CTRL** — real direction vs matched random | **−0.1328** | 0.0308 | **−4.31** | **0.0006** | **0.0024 ✔** |
+| **F6 − C** — does adding `d_surface` cancel the refusalness removal? | **−0.0827** | 0.0219 | **−3.78** | **0.0018** | **0.0054 ✔** |
+
+Holm is taken over **all four** Phase F composed contrasts (the two here plus arm E's two), so this is
+corrected against the sprint's own family, not a favourable sub-selection. **Both arm-6 contrasts
+survive; both arm-E contrasts do not.**
+
+### Why this is the strongest thing the sprint has produced
+
+**The control does not merely fail to reproduce the effect — it moves the opposite way.** Adding a
+norm-matched random vector on top of refusalness-removal makes the jailbreak *worse* (+0.2395 against
+C's +0.1895, refusal 0.7091 → 0.6364). Adding `d_surface` at the identical dose makes it *better*
+(+0.1067, refusal 0.7091 → **0.7859**). The gap is **−0.1328 at p_cl = 0.0006.**
+
+A sign reversal against a dose-matched control cannot be explained by "the edit was large", by
+perturbation, or by degeneracy — the three explanations that killed the α = 1.0 arms, RETRACTION #8's
+"capability channel", and F-3. **This is what F-3 wrongly claimed and this genuinely delivers**, on the
+opposite axis and with the doses actually matched.
+
+### What it establishes
+
+1. **`d_surface` is causally specific**, not a stand-in for "any direction at L8". Established under
+   multiplicity correction, with an active-but-opposite control.
+2. **Bidirectional control replicates in a composed setting.** Adding `d_surface` suppresses compliance
+   here just as it did standalone (−0.0329), and removing it raises compliance (+0.0305).
+3. **The interaction is real in this direction:** adding `d_surface` back cancels **44%** of the
+   refusalness-removal effect (+0.1895 → +0.1067), p_cl 0.0018.
+4. **Asymmetry between the two directions of the interaction.** Arm 6 (restore `d_surface` after
+   removing refusalness) is strongly established; arm E (restore refusalness after removing
+   `d_surface`) is only suggestive. The plain reason is **power** — the refusalness effect is 6× larger
+   (+0.1895 vs +0.0305), so a 44% cancellation of it is far easier to detect than a 31% cancellation of
+   the smaller one. **This is not evidence that the interaction is one-directional**, and must not be
+   written that way.
+
+### Limits
+
+One layer pair (add at L8, remove at L18) and one dose (0.25). ASR@0.5 is shown for scale only; every Δ
+and p is on the continuous score, cluster-mean (**D-8**). The `F6_CTRL` arm being *active* rather than
+inert means "the control is inert" is **not** available as a supporting argument here — the argument is
+the sign reversal, which is stronger.
+
 ## Phase F closed — arm E released, and the F-3 re-test answers with a hard NO
 
 All four dose-corrected jobs completed. **Artifact:**
