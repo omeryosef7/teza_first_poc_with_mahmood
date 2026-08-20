@@ -209,7 +209,11 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--extract", required=True, help="extract_boombness run dir (phase_d bank)")
-    ap.add_argument("--judge", required=True, help="judge run dir over the phase_d generations")
+    ap.add_argument("--judge", required=True, action="append",
+                    help="judge run dir over the phase_d generations. Repeatable: the judge loop is "
+                         "sequential so the run was SHARDED with --offset/--limit, and the shards "
+                         "are read together here rather than merged into a fake single run dir. "
+                         "The union is asserted complete and duplicate-free below.")
     ap.add_argument("--condition", default="natural_doublespeak")
     ap.add_argument("--directions", default="d_surface,d_context,d_naive")
     ap.add_argument("--outcome", default="malicious_at_0.5,strongreject_score")
@@ -220,8 +224,19 @@ def main() -> None:
 
     ex = [r for r in read_jsonl(os.path.join(args.extract, "results.jsonl"))
           if r.get("condition") == args.condition]
-    ju = {r["prompt_id"]: r for r in read_jsonl(os.path.join(args.judge, "results.jsonl"))
-          if r.get("judge_status") == "ok" and r.get("condition") == args.condition}
+    ju: Dict[str, dict] = {}
+    shard_rows, dupes = {}, []
+    for jd in args.judge:
+        rs = [r for r in read_jsonl(os.path.join(jd, "results.jsonl"))
+              if r.get("judge_status") == "ok" and r.get("condition") == args.condition]
+        shard_rows[os.path.basename(jd.rstrip("/"))] = len(rs)
+        for r in rs:
+            if r["prompt_id"] in ju:
+                dupes.append(r["prompt_id"])
+            ju[r["prompt_id"]] = r
+    if dupes:
+        raise SystemExit(f"[phaseD] {len(dupes)} prompt_id appear in more than one judge shard "
+                         f"(e.g. {dupes[:3]}); the shards overlap and the union is not a partition")
 
     domain = {r["prompt_id"]: str(r.get("domain")) for r in ex}
     split = {r["prompt_id"]: str(r.get("split")) for r in ex}
@@ -255,7 +270,8 @@ def main() -> None:
         "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
                                      capture_output=True, text=True).stdout.strip(),
         "inputs": {"extract": os.path.relpath(args.extract, REPO),
-                   "judge": os.path.relpath(args.judge, REPO)},
+                   "judge_shards": [os.path.relpath(j, REPO) for j in args.judge],
+                   "judge_shard_rows": shard_rows},
         "condition": args.condition,
         "estimand": "per-domain Spearman rho aggregated over 6 domain clusters (G-1 df); the "
                     "pooled rho is reported for comparability with G2 but is NOT the estimand",

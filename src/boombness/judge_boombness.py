@@ -190,6 +190,10 @@ def main() -> int:
                     help="bank jsonl, to recover final_query_text/codeword/concept when the "
                          "generation rows do not carry them")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--offset", type=int, default=0,
+                    help="skip this many gens rows before --limit. For sharding one gens dir over "
+                         "several concurrent judge processes; the shards are read together by the "
+                         "analysis rather than merged into a fake single run.")
     ap.add_argument("--max-null-frac", type=float, default=0.05)
     ap.add_argument("--seed", type=int, default=20260816)
     ap.add_argument("--tag", default="judge")
@@ -227,6 +231,15 @@ def main() -> int:
     evaluate = load_strongreject_evaluate()
 
     rows = read_jsonl(gens_path)
+    # SHARDING. The judge loop is strictly sequential -- one `evaluate()` call per row at ~12.5
+    # rows/min -- so a 2,160-row bank is ~3 hours in one process while the API happily served four
+    # concurrent judges at that same per-process rate. `--offset` lets N shards split one gens dir
+    # with no merge step: each writes its own run dir and `analyze_phase_d.py` accepts several
+    # --judge dirs and asserts the union is complete and duplicate-free. Slicing happens BEFORE the
+    # bank join and before any filtering, so shard boundaries are plain row indices and
+    # offset/limit compose exactly like a Python slice.
+    if args.offset:
+        rows = rows[args.offset:]
     if args.limit:
         rows = rows[:args.limit]
 

@@ -4444,6 +4444,33 @@ a `degenerate` flag rather than silently correlated.
 includes *refusalness* and *Boombness minus refusalness*, and no refusalness run exists on the Phase-D
 bank. Probe margin is dead on arrival (Decision Gate C failed).
 
+
+### Phase D judging sharded — 3 hours to 36 minutes, with no merged-run fiction
+
+The judge loop is strictly sequential (`for i, g in enumerate(rows)`, one `evaluate()` per row) at
+~12.5 rows/min, so 2,160 Phase-D rows was a ~3-hour single process. But the API had already served
+**four concurrent judges at that same per-process rate** during the Qwen3 re-judge, so the bottleneck
+is per-request latency, not throughput.
+
+**Change: `--offset`, mirroring the existing `--limit`.** Six lines including the comment. Slicing
+happens before the bank join and before any filtering, so shard boundaries are plain row indices and
+`offset`/`limit` compose exactly like a Python slice.
+
+```
+for i in 0..5:  judge_boombness.py --gens phaseD_base_... --bank ..._phase_d.jsonl \
+                                   --offset $((i*360)) --limit 360 --tag pdJ$i
+```
+
+**No merge step, deliberately.** Concatenating six run directories into one would mean hand-writing a
+`summary.json` and a `DONE.json` for a run that never happened — a fabricated artifact, and exactly
+the kind of thing this sprint keeps catching. Instead `analyze_phase_d.py --judge` became repeatable:
+it reads all six, records `judge_shard_rows` per shard in the artifact, and **raises `SystemExit` if
+any `prompt_id` appears in more than one shard** — so the union is asserted to be a partition rather
+than assumed.
+
+Measured: 6 × ~10 rows/min = ~60 rows/min aggregate, all six at 50/360 after five minutes. **~36
+minutes** for the full bank.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
