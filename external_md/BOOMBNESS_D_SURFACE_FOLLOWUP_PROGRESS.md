@@ -3504,6 +3504,75 @@ be re-based on the button bank before it is worth any more GPU**, and
 lost jobs above are the first instance, not a one-off. No further jobs submitted from this session
 until the user says how to divide the work.
 
+## ✅✅ E6 RE-TEST ON THE BUTTON BANK — the Phase G effect SURVIVES a clean codeword, and the effect size is LEXICALLY GRADED
+
+**Artifact:** `outputs/boombness_followup/surgical_units.json` — the plan §9 deliverable, and the
+producer review #3 said did not exist (**R3-3**: the headline contrasts lived only in a commit
+message). **Producer:** `src/boombness/analyze_surgical_units.py` (new).
+
+The apple bank was voided an hour earlier (see the incident above): its two contrasted cells differ
+in *grammaticality* as well as in codeword. `button` is the peer session's replacement — consonant-
+initial, so no article repair is needed and the exact-word-swap invariant survives; zero incidental
+pool collisions; and **both tokenization audits pass on both models** (769941 Llama / 769942 Qwen3:
+`rows ok=2736 bad=0 ambiguous=0`, `token-alignment violations=0`, every `button` and `bomb` variant
+single-token).
+
+### Runs
+
+| job | tag | scope | elapsed | rows | failures |
+|---|---|---|---|---|---|
+| 769967 | `btn_firstcw` | `first_codeword` | 3:57 | 288 | none |
+| 769968 | `btn_firstnbr` | `first_neighbor` | 8:24 | 288 | none |
+| 769980 | `btn_lastcw` | `last_codeword` | — | 288 | none |
+
+All fp32 (the only admissible precision — see the bf16 refutation above), `--layers 8,12,18,24
+--topk 16`, Llama-3.1-8B, 24 families over 6 domains, option-mass gate OK on every arm.
+
+### The contrast, paired and domain-clustered
+
+The three runs differ only in `--demo-scope`, so they score the same prompts and their `none` arms
+are **bit-identical** — the script verifies this (max |diff| < 1e-9) and refuses the contrast
+otherwise. `all_layers_demo` is the only arm quoted, because it is the only one that ignores
+`--layers`/`--topk` and is therefore comparable across runs.
+
+| codeword | first − first_neighbor | first − last | sign | clustered p (G=6) |
+|---|---|---|---|---|
+| **carrot** | **+0.9872**, t 13.30 | **+0.9949**, t 11.36 | 24/24, 24/24 | 4.1e-5, 1.9e-4 |
+| ~~apple~~ (**VOID**) | +0.5057, t 8.79 | +0.5566, t 5.41 | 23/24, 21/24 | 1.9e-3, 4.2e-4 |
+| **button** | **+0.2708**, t 5.04 | **+0.2659**, t 5.20 | 21/24, 21/24 | **8.6e-3**, **4.6e-3** |
+
+### What this establishes, and what it costs
+
+**1. Lexical generality is 2 SOUND codewords, not 1 — and not the 2 previously claimed.** The
+earlier "lexical G is now 2" rested on apple, which is void. It is now carrot + button, on a bank
+certified clean by the very screener that condemned apple. Both directions of the contrast
+(`first_neighbor` for serial position, `last_codeword` for occurrence role) reproduce, and the
+matched-control logic is unchanged: **`first_codeword` is itself the matched positive control** for
+both nulls — same intervention, same 1,024 edges, same layers (R3-5).
+
+**2. The effect size is strongly lexical: 0.99 → 0.51 → 0.27.** Same sign, same significance, but a
+**3.6×** spread across three codewords. So the magnitude reported for carrot is a property of
+*carrot*, not of "a codeword", and no cross-model or cross-bank comparison may read a smaller number
+as a weaker mechanism. This also retires any lingering reading of the apple/carrot gap as noise — it
+is a real, ordered, lexical gradient.
+
+**3. It does not rescue the interpretation R3-6 withdrew.** This is a **readout** claim about
+`semantic_logodds`. R3-6 decomposed the carrot effect as Δlogp_codeword = −0.9449 against
+Δlogp_concept = +0.0268 — **token suppression, not concept re-binding** — and nothing here revisits
+that. Cutting the first demonstration's codeword makes the model less likely to say the codeword; it
+does not make it more likely to say the concept.
+
+**4. ⚠ The serial-position limit from review #3 is still open at the *bank* level.** `first_neighbor`
+controls the *token* adjacent to the codeword, but `demo_block` still starts at character 0, so the
+first demonstration sits in the BOS/attention-sink region in all three banks. The three-codeword
+replication does not address that, because all three share the layout.
+
+### The apple runs are kept, labelled `apple_VOID`
+
+They are in the artifact under that name, with their numbers, precisely so that the retraction is
+legible rather than a gap. They agree in sign with both sound codewords; they are simply not citable
+on their own.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
