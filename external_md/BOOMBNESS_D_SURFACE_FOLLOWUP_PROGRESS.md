@@ -2860,6 +2860,61 @@ the reason to keep writing them down.
 `carrot`/`bomb`, so whatever this establishes is established *for carrot*. `first_neighbor` does not fix
 that; a second codeword/concept pair would.
 
+## ✅ The serial-position confound is RULED OUT — the effect is the codeword, not the position
+
+Job **768801** COMPLETED (11:16, 24 families, `effective_G = 24`, zero ledger failures).
+Artifact `outputs/boombness_followup/g3_neighbor.json`.
+
+All four arms: `all_layers_demo`, **1,024 edges**, all 32 layers, same 24 prompts, bit-identical
+baselines.
+
+| scope | Δ | sem |
+|---|---|---|
+| **`first_codeword`** | **+0.9718** | 0.0706 |
+| **`first_neighbor`** — the token *immediately before* it, **not** a codeword | **−0.0154** | **0.0107** |
+| `second_codeword` | +0.3272 | 0.0473 |
+| `last_codeword` | −0.0231 | 0.0615 |
+
+**Tick 36's prediction, recorded before the run:** *"If the decay is about **position**,
+`first_neighbor` should behave like `first_codeword` (≈ +0.97). If it is about the **codeword**, it
+should be near zero."*
+
+> **It is near zero. The effect is the codeword.**
+
+Cutting 1,024 attention edges out of the token one position earlier — same sequence region, same
+attention-sink proximity, same layers, same budget — does **nothing** (−0.0154 ± 0.0107). Cutting the
+codeword itself does **+0.97**.
+
+### Paired contrasts (row = family here, so these are family-level)
+
+| contrast | paired | t | sign test | **domain-clustered** | p_cl |
+|---|---|---|---|---|---|
+| **first − neighbor** | **+0.9872** ± 0.0742 | **+13.30** | **24/24** | +0.9872 ± 0.0733, t **+13.46** | **4.1e-05** |
+| first − second | +0.6446 ± 0.0704 | +9.15 | 23/24 | t +11.37 | 9.2e-05 |
+| second − last | +0.3503 ± 0.0856 | +4.09 | 18/24 | t +3.66 | 1.5e-02 |
+| first − last | +0.9949 ± 0.0875 | +11.36 | 24/24 | t +9.78 | 1.9e-04 |
+
+Every step of the decay is significant under domain clustering, and the position control is
+annihilated at **24/24 prompts**.
+
+### What is now established, and what it is not
+
+**Established:** the attention edges out of a demonstration's **codeword token** are causally
+load-bearing for the readout, the effect **decays monotonically** across demonstration occurrences
+(+0.97 → +0.33 → −0.02), and it is **not** explained by absolute sequence position or
+attention-sink proximity. This closes **identification limit 2** from review #3.
+
+**Not established, and carried forward:**
+1. **Lexical G = 1.** All 24 prompts use `carrot`/`bomb`. This is established **for `carrot`**. A second
+   codeword/concept pair is the only fix, and it is a bank change rather than a scope flag.
+2. **It is token suppression, not re-binding** (review #3, R3-6): Δ logp_codeword = −0.9449 vs
+   Δ logp_concept = +0.0268. Cutting the first demonstration's codeword makes the model **less likely
+   to say *carrot***; it does not make it more likely to say *bomb*.
+3. **The mechanism is still unnamed.** A decay that is codeword-specific and *suppresses the codeword*
+   is consistent with the first mention establishing the token's retrievability and later mentions being
+   redundant — but that is a hypothesis, and the sprint has now been wrong twice about how to read this
+   arm (tick 33's prediction, tick 34's "step" gloss).
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
