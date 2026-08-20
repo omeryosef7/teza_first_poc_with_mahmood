@@ -3447,3 +3447,27 @@ while the unit question is open.
 | 50 | 2026-08-20 | added `_paired_boot_delta` — a domain-clustered CI for the absolute delta, needing no ceiling | G1 has a citable number on the corrected readout |
 | 51 | 2026-08-20 | recomputed G1 on `g1wa_sow` (whole-answer) | **all three qualitative claims survive**; `query_only` still inverts, CI excludes 0 |
 | 52 | 2026-08-20 | compared corrected `frac_of_span` to the committed figure | **+0.689 vs +0.681** — the old number was right by luck, not by method |
+
+## Report: G1's ceiling caveat discharged with a number
+
+Tick 2026-08-20. Checking the report before editing showed it is **more current than the committed
+artifact**: the other session had already re-derived G1 on the corrected readout
+(+68.9% of span, CI [+51%, +97%]) while `g1_stratified.json` still holds the primary-readout figure.
+So last tick's "G1 has no valid backing" was true of the **artifact** and stale about the **report** —
+recorded here rather than quietly dropped.
+
+What the report still carried was an undischarged warning on its own gate row: *"the % of span
+denominator inherits a ceiling measured in a tail (option mass 0.0074)"*. A warning is not a
+resolution. The absolute Δ log-odds table now sits in §2 beside the percentages, the gate row points
+at it, and the caveat is closed with numbers instead of prose.
+
+One thing worth stating in the report and now stated there: **`query_only`'s inversion excludes zero
+on BOTH context pairs in the absolute unit** (−4.684 [−5.358, −4.043] and −1.260 [−1.482, −1.058]),
+where the percentage table shows it clearly on only one. The ceiling-free unit is not merely a
+workaround; on this arm it is the more sensitive instrument.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 53 | 2026-08-20 | read the report before editing it | it was ahead of the artifact; last tick's finding narrowed to the artifact |
+| 54 | 2026-08-20 | added the absolute-Δ table to §2 and pointed the gate row at it | the tail-ceiling ⚠ is **discharged**, not restated |
+| 55 | 2026-08-20 | retraction sweep across 4 deliverables | clean |
