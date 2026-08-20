@@ -5175,10 +5175,13 @@ dropped.
 ⛔ **every "the matched random control is inert" statement in this repo is inert by construction**
 (R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove ~0.01–0.04% of the structure
 the arms remove; at L8 the arm removes 84.0% of the 2×2 cell-mean spread and the isotropic control
-0.005%. A variance-matched control (`in_subspace_orth`, orthogonal to the arm, removing 5.2% at L8)
-was built tonight and its first behavioural test is judging now. **Until it lands, "the control was
-inert" should be read as "a random rank-1 projection at the same depth did nothing", which is nearly
-a tautology.**
+0.005%. A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept subspace,
+exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **On arm B it is
+inert (−0.0033, p_cl 0.149) while the arm is +0.0305 (p_cl 0.0089), so the sprint's headline
+behavioural result survives a control that could have falsified it.** Every OTHER inertness claim in
+this repo — the two layer profiles, Phase F's composed controls, the Qwen3 double-random — still rests
+on isotropic draws and should still be read as "a random rank-1 projection at the same depth did
+nothing", which is nearly a tautology. Re-running each against `in_subspace_orth` is one job apiece.
 
 ### 1. What did we verify from the previous sprint?
 
@@ -5306,7 +5309,9 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    sharpest possible negative for the objective.
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
-   in high dimensions.** Also: StrongReject ≈ 0.9 × ASR on AdvBench, so continuous and binary
+   in high dimensions** — and the one arm re-tested against a subspace-matched control (arm B)
+   **passed**, so the criticism is about what the other controls *establish*, not about the result
+   they happened to accompany. Also: StrongReject ≈ 0.9 × ASR on AdvBench, so continuous and binary
    estimands are one measurement; and a judge run with `bank=None` scores against the empty string.
 
 ### 11. What was retracted or downgraded during this sprint?
@@ -5331,8 +5336,10 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 
 ### 12. What should the next sprint do?
 
-1. **Land the variance-matched control** (770343, judging now) and, if it moves ASR, re-run the whole
-   arm matrix against it. Every inertness claim depends on this.
+1. **Re-run every remaining inertness claim against `in_subspace_orth`** — one job each. It landed
+   for arm B tonight and was inert, which strengthens that result; the two layer profiles, Phase F's
+   composed arms and the Qwen3 double-random control have NOT been re-tested and still rest on
+   isotropic draws.
 2. **Run arm B on Qwen3's internal bank** so the +0.3476 can be decomposed.
 3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
    `d_surface`'s own band because only five refusal directions exist on disk.
