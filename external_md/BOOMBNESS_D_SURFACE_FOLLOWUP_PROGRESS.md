@@ -4483,7 +4483,7 @@ numerical residue of the arm direction survives at ~1e-4 of the top singular val
 | L12 | +6.5e-09 | 82.04% | 7.25% | 2 |
 | L18 | −5.4e-09 | 90.67% | 6.76% | 2 |
 
-Resubmitted as **770332** (`--tag abVMC2`). Also fixed: the diagnostic was printing once **per
+Resubmitted as **770343** (`--tag abVMC2`). Also fixed: the diagnostic was printing once **per
 prompt** — a 4 KB JSON blob × 495 rows — now printed once.
 
 **Two lessons, both recorded rather than absorbed silently.** A guard that reports its own inputs is
