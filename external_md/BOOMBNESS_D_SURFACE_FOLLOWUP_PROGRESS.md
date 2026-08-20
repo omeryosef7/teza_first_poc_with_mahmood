@@ -2548,6 +2548,32 @@ cannot be a power artifact in the direction tested). The perturbation difference
 and must not be cited as one. Jaccard distance is a crude proxy for "how much did the answer change"
 and says nothing about whether it changed for the better. Ambiguous dual-use prompts remain uncovered.
 
+### Tick 30 — two dose-corrected controls landed; the tick-17 coherence discriminator held as a prediction
+
+| job | tag | state | elapsed | gate |
+|---|---|---|---|---|
+| 768521 | `fuF25_addBoth_CTRL` | COMPLETED | 21:26 | uniq 0.874, 3-gram 0.011, scorable 0.533 → **OK** |
+| 768523 | `fuF_remS_addR_CTRL2` | COMPLETED | 18:45 | uniq 0.844, 3-gram 0.013, scorable **0.424** → ⛔ floor |
+| 768522 | `fuF25_remR_addS_CTRL` | RUNNING | 45:56 | 442/495 |
+| 768524 | `fuF_addR_gapdose` | RUNNING | 45:56 | 284/495 |
+
+**The tick-17 methodology made a falsifiable prediction and it held.** Tick 17 concluded that the gate's
+*ratio* thresholds detect degeneracy while its *scorable-fraction* floor tracks refusal rate
+(r = −0.878), so an arm with **healthy ratios and a low scorable fraction** should be a refusing arm,
+not a broken one. `fuF_remS_addR_CTRL2` is exactly that shape, and the classification confirms it:
+
+| run | short rows | **refusal-phrased** | empty |
+|---|---|---|---|
+| `fuF_remS_addR_CTRL2` | 285/495 (58%) | **285/285 = 100%** | 0 |
+| `fuF25_addBoth_CTRL` | 231/495 (47%) | 230/231 = 100% | 0 |
+| `fuF_remS_addR` (arm E) | 228/495 (46%) | 228/228 = 100% | 0 |
+
+Compare the genuinely broken 768316: `scorable_frac` **1.000** with uniq **0.127** and truncated
+**0.990**. The two signatures remain cleanly separable on a run neither was derived from.
+
+Both completed controls judged (`p_addBoth_CTRL`, `p_remS_addR_CTRL2`). Arm E's release is now waiting
+only on the judge, not on compute.
+
 ## Compute Blocker — diagnosed and mitigated (tick 23)
 
 **Symptom.** From tick 20 to 23 (~2h) not one of 8 submitted jobs started; all `PD (Priority)`.
