@@ -1532,9 +1532,63 @@ construction** — the confound that broke the previous sprint's depth reading (
 where 2 layers vs 32 layers at an identical 3,552 edges gave −0.008 vs +0.089) cannot apply.
 
 Pre-registered prediction, recorded before the runs land: **if Phase B's gradient is causal, the
-`last_codeword` arm should move the readout more than `first_codeword`.** If they are equal, the
-representational gradient is epiphenomenal for this readout — which would be a real negative and would
-sharpen the tension already recorded between where the signal is largest and where ablation matters.
+`last_codeword` arm should move the readout more than `first_codeword`.**
+
+### ❌ THE PREDICTION WAS WRONG — and the opposite result decomposes a known anomaly
+
+Jobs **768703 / 768704**, COMPLETED 22:32 each, 24 families, both `DONE`.
+Artifacts `outputs/boombness_followup/g3_first.json`, `g3_last.json`.
+
+| arm (all layers, `--dst both`) | Δ | sem | edges cut |
+|---|---|---|---|
+| *committed* codeword scope — **all** demo codewords | **+1.3322** | 0.3508 | 6,144 |
+| **`first_codeword` only** | **+0.9718** | 0.0706 | **1,024** |
+| **`last_codeword` only** | **−0.0231** | 0.0615 | **1,024** |
+| *(ceiling)* `no_demo_text` | −17.8789 | 1.0723 | — |
+
+**I predicted last > first. The truth is first ≫ last, and last is exactly nothing.**
+
+Cutting the attention edges out of the **first** demonstration's codeword reproduces **73% of the full
+codeword-scope effect (+0.9718 of +1.3322) using one sixth of the edges**. Cutting the **last**
+demonstration's codeword, at an **identical 1,024 edges**, does **nothing** (−0.0231 ± 0.0615).
+
+Because the two arms cut the same number of edges, this is **not** the edge-count confound that broke
+the previous sprint's depth reading. The difference is ≈ 14 sem.
+
+> **The previously unexplained "codeword-scope knockout moves the readout the WRONG way (+1.33)"
+> anomaly localizes almost entirely to the FIRST demonstration.**
+
+### The dissociation this creates
+
+| | where it is largest |
+|---|---|
+| **Representation** (Phase B) | the **LAST** demo codeword is most concept-like (+0.5414 at L8, t = 3.26) |
+| **Causality** (Phase G) | the **FIRST** demo codeword carries the attention effect (+0.9718 vs −0.0231) |
+
+**They run in opposite directions across demonstration positions.** A reading consistent with both: the
+**first demonstration establishes** the codeword→concept mapping and its attention edges are
+load-bearing; later demonstrations **inherit** an already-established mapping, so they end up more
+concept-like in the residual stream while being causally redundant. That is a testable story, not an
+established one.
+
+It also parallels the sprint's other unresolved tension — signal largest late, ablation effective early
+— and suggests both may be instances of *"where the representation is strongest is not where the
+computation happens."*
+
+### Caveats, stated plainly
+
+1. **`dynamic_range_established: False`** on both runs. The flag fires because the `positive_control`
+   (−4.658) does not dominate `no_demo_text` (−17.879). Per `analyze_g1_g3.py:225-231` — and confirmed
+   by the tick-6 audit for the committed `g3_wholeanswer_block24.json`, which carries the same flag —
+   this is **non-disqualifying**: movability is established by `no_demo_text` itself, which is
+   identical (−17.8789) in both runs and in the committed one.
+2. **The sign is still unexplained.** Cutting attention *out of* the first demonstration makes the
+   readout **more** concept-like, not less. This sprint decomposes that anomaly by position; it does
+   not explain it.
+3. `semantic_one_word` readout, `natural_doublespeak` only, n = 24 families. No matched-control arm
+   for position specifically — `random_demo` in each run is drawn from that run's own scope, so it
+   controls for "cutting 1,024 edges" but not for "cutting *this* occurrence versus *that* one". The
+   edge-count match is what carries the contrast.
 
 ## Cross-Model Replication With Dynamic Range
 
