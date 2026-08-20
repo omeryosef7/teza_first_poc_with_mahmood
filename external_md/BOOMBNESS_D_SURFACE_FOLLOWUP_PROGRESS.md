@@ -2915,6 +2915,69 @@ attention-sink proximity. This closes **identification limit 2** from review #3.
    redundant — but that is a hypothesis, and the sprint has now been wrong twice about how to read this
    arm (tick 33's prediction, tick 34's "step" gloss).
 
+## Closing lexical G = 1 — the E6 codeword swap, launched (tick 38)
+
+Review #3's remaining identification limit: **all 24 Phase G prompts use `carrot`/`bomb`**, so the
+result is established *for carrot*, not for codewords. Confirmed against the bank —
+`target_surface` is `carrot` (1,968 rows) or `bomb` (768, the concept-surface cells) and `concept` is
+**`bomb` on all 2,736 rows**. One pair, exactly as the auditor said.
+
+**No new code was needed.** Two pieces of prior work made this a command rather than a project:
+
+1. `src/boombness/screen_concept_pairs.py` + `outputs/boombness/concept_pair_screen.json` — the
+   previous sprint **already screened** candidate pairs on single-token bare form, single-token
+   capitalised form (defect C-5), first-subtoken-not-a-common-word, and variant-count symmetry.
+   `symmetric_pairs[0]` is **`apple` / `bomb`**, variant counts symmetric.
+2. `prompt_families.py` already exposes **`--codeword` / `--concept`**.
+
+This is the **E6 codeword swap** the last pre-sprint commit (`8b9e10e4`) scoped as "16 sentences" and
+never ran.
+
+### Bank generated
+
+```
+$PY src/boombness/prompt_families.py --codeword apple --concept bomb --preset main \
+    --seed 20260816 --out data/boombness_prompts/boombness_prompt_bank_apple.jsonl
+# 2,736 rows · 2x2 families checked=336 violations=0 · duplicate prompt_ids dropped=0
+```
+
+**Written to a NEW path.** `--out` defaults to the main `BANK_PATH`; overwriting the bank every
+committed result depends on would have been unrecoverable. Main bank verified untouched.
+
+### ⚠ The mandatory tokenization audit could not run on the login node
+
+Plan §2.4 makes a tokenization audit mandatory before activation work on a new bank. Run locally it
+reports `SKIP … gated repo … 401` for Llama-3.1-8B and **still writes a run directory** — a skip that
+looks like a completed audit if you only check that the directory exists. Resubmitted to a compute node
+with `--strict` (**768829**) so a failure is an exit code rather than a log line.
+
+### Runs queued, and how they will be read
+
+| job | tag | scope |
+|---|---|---|
+| **768829** | `apple_audit` | tokenization audit, `--strict` |
+| **768833** | `apA_firstcw` | `first_codeword` on the apple bank |
+| **768834** | `apA_nbr` | `first_neighbor` on the apple bank |
+| **768832** | `ap_last` | `last_codeword` on the apple bank |
+
+**Only the `all_layers_demo` arm will be interpreted**, and the reason is specific: that arm ignores
+`--layers`/`--topk` and cuts every (head, source) edge with **no ranking**, so the `d_surface` matrix is
+replicated and unused (confirmed by review #3 at `surgical_knockout.py:947-957` and `pick_edges:498`).
+That makes it legitimate to run against the **carrot-fitted** `--fit-dir` — the direction never enters
+the computation. Every *ranked* arm in these runs is uninterpretable and will not be quoted.
+
+**Process note.** The first submission derived tags with `cut -d_ -f1`, which mapped both
+`first_codeword` and `first_neighbor` to `ap_first` — two different arms writing the same tag. Caught
+before either ran. Replacements were submitted **first** and the mis-tagged pair cancelled only after
+the new job ids came back (the tick-23 rule: never `scancel` before the replacement is known good).
+
+### Prediction, recorded before the runs land
+
+If the Phase G effect is about **codewords** rather than about `carrot` specifically, the apple bank
+should reproduce the pattern: `first_codeword` strongly positive, `first_neighbor` ≈ 0,
+`last_codeword` ≈ 0. If `apple` behaves differently, the carrot result is lexical and the sprint's
+Phase G claim narrows to a single word.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
