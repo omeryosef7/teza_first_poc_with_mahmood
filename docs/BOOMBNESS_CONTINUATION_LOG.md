@@ -29,7 +29,7 @@ number does not go in.
 | §15 | missing report sections 2/6/7/14/15/16 | **PARTIAL** | item 7 (metric comparison) **written** as report §7b; 2/6/14/15/16 outstanding |
 | §9 | `correlation_summary.json`, `regression_summary.md` | NOT STARTED | named outputs never produced |
 | §8/§9 | 9 of 12 named plots | NOT STARTED | |
-| §5.2 | alpha sweep dose 0.25 | NOT STARTED | the dose every behavioural claim rests on was never swept |
+| §5.2 | alpha sweep dose 0.25 | **RUN, but NOT REPORTABLE** | `g1wa_sow_...1793337` swept 0.25–4 on the whole-answer readout; gated off on `donor_ceiling` — see below |
 | §14 | ClearHarm arm | **★ DECOMPOSED** | B +0.105 / C +0.233 / D +0.430 vs random +0.013–0.018. AdvBench replication 765111–114 |
 | §4.1 | strength / consistency / example_position | NOT STARTED | generated, confounded, unanalysed — decide analyse-or-delete |
 
@@ -3346,3 +3346,56 @@ cannot.
 | 44 | 2026-08-20 | all three Qwen3 E6 arms completed post-fix; the other session's fp32 arms failed the gate | 6 usable runs, 3 correctly excluded |
 | 45 | 2026-08-20 | wrote `analyze_e6.py` + artifact, ceiling-relative | **E6 answered**: knockout ≤2.6% of ceiling on both models |
 | 46 | 2026-08-20 | positional gradient compared across models | **inverts** — Llama +0.103 vs Qwen3 −0.105; treat as noise |
+
+## ⛔ G1's headline has NO currently-valid backing, and the board was stale about why
+
+Tick 2026-08-20. The phase board said **§5.2's α=0.25 dose was NOT STARTED**. That is wrong: the
+other session ran it on 2026-08-19 (`g1wa_sow_20260819_015025_1793337`, α = 0.25/0.5/1/2/4, 31,104
+rows, `--readout-ids whole_answer`). Board corrected. But tracing it produced a worse fact.
+
+**The two candidate runs behind G1, and neither is usable:**
+
+| run | readout | α | status |
+|---|---|---|---|
+| `g1strat_...3374345` — **backs the committed `g1_stratified.json` +68% headline** | **`primary`** | 0.5–4 | the LEGACY single-token readout, invalid per C-6 |
+| `g1wa_sow_...1793337` — the whole-answer redo | `whole_answer` | **0.25**–4 | **gate: NOT REPORTABLE** |
+
+So the **+68% of span** figure I promoted into the report's §0 gate table is computed with the
+readout that C-6 established cannot represent the codeword's preferred spelling, and the redo that
+fixes that is gated off. R-8 marks the headline "under re-derivation"; the sharper truth is that the
+re-derivation **has been attempted and is blocked**.
+
+**Why the redo is blocked, and it is not a bug:**
+
+| option-mass bucket | n | median | frac >1% | gated? |
+|---|---|---|---|---|
+| `none` (recipient baseline) | 48 | 0.0763 | 0.854 | yes — **passes** |
+| **`donor_ceiling`** | 48 | **0.00741** | **0.396** | yes — **FAILS** |
+| `transplant` | 3120 | 0.0632 | 0.769 | no |
+| `add` | 25920 | 0.1436 | 0.812 | no |
+| `add_control_band` | 1920 | 0.1806 | 0.854 | no |
+
+Only the **donor ceiling** fails, and it fails by 10× against the recipient baseline measured on the
+same readout. `GATED_INTERVENTIONS = ("none", "donor_ceiling")` exists precisely because those two
+buckets "measure the INSTRUMENT rather than an arm", and `analyze_g1_g3.py:128` uses `donor_ceiling`
+as the **upper endpoint of the span that `frac_of_span` divides by**.
+
+**The methodological point, which is bigger than this run.** The donor context is the
+`direct_harmful` prompt — "build a bomb". A safety-tuned model is *least* willing to answer that with
+a bare word, so the span's upper endpoint is, by construction, measured exactly where the
+forced-choice readout is weakest. That is not repairable with a better prefix; it is a property of
+where the ceiling is defined. **The "% of span" unit is therefore structurally fragile in a way the
+raw log-odds delta is not** — the numerator is fine, the denominator is the problem.
+
+**Recommendation, for the record rather than unilaterally:** G1 should be reported as an absolute
+Δ log-odds with the ceiling quoted beside it as context, not as a percentage of a span whose upper
+endpoint has 39.6% of its rows above 1% option mass. That is a change to the sprint's headline UNIT
+and it should not be made by one session mid-flight — but every number in the current unit is
+currently either invalid (old readout) or gated (new readout), so the choice cannot be deferred much
+longer.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 47 | 2026-08-20 | checked §5.2 before running it — found the board entry stale | α=0.25 **was** swept on 2026-08-19; board corrected |
+| 48 | 2026-08-20 | traced which run backs `g1_stratified.json` | it uses **`readout_ids=primary`**, the readout C-6 invalidated |
+| 49 | 2026-08-20 | diagnosed why the whole-answer redo is gated | **only** `donor_ceiling` fails (0.0074 vs baseline 0.0763) — the span's denominator |
