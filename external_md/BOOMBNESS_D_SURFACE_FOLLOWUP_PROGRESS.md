@@ -3102,6 +3102,54 @@ Prediction, recorded before the runs land: if the option-mass gate passes, the L
 magnitude that need not match — the apple/carrot comparison already showed the effect size is
 lexically dependent, so it is likely model-dependent too.
 
+### Attempt 1 (769001–769004) — the audit PASSED on the science and the arms died on MEMORY
+
+**Not the `<think>` failure I anticipated.** The option-mass gate never got a chance to speak.
+
+**Audit 769001** — exit 1:0 under `--strict`, but reading it rather than treating the exit code as the
+answer:
+
+| Qwen3-14B, apple bank | |
+|---|---|
+| `codeword_is_single_token` | ✅ **true** |
+| `concept_is_single_token` | ✅ **true** |
+| rows OK | **2,712 / 2,736** |
+| bad | 24 — the **same** `instructional` n8/n16 families as the Llama audit |
+
+So the 24 bad rows are a **bank property, not a model property** — identical on both models. **The apple
+bank is tokenization-sound on Qwen3**, which is what this audit existed to establish. The `--strict`
+exit reflects those 24 rows, and the same one-family overlap applies as on Llama.
+
+**Arms 769002–769004** — all three `torch.OutOfMemoryError: CUDA out of memory … GPU 0 has a total
+capacity of 44.39 GiB of which 19.31 MiB is free`. Qwen3-14B in bf16 is ~28 GiB of weights on a 44 GiB
+L40S, leaving too little for the all-layer attention hooks. **A resource limit, not a scientific one.**
+
+### Attempt 2 (769187–769189) — using the module's own lever, not a hack
+
+`surgical_knockout.py` provides `--skip-arms`, and its help text is explicit that a skipped arm "is
+counted in the FailureLedger and named with its reason in summary.json; it is **never
+absent-and-unexplained**." So the memory is reclaimed *on the record* rather than by trimming the
+experiment quietly:
+
+```
+--skip-arms dense_two_layer,positive_control,subsampled_all_layers_demo
+--skip-arms-reason OOM-on-Qwen3-14B-at-44GiB-L40S:only-all_layers_demo-is-interpretable-here-...
+```
+
+| job | tag | scope |
+|---|---|---|
+| 769187 | `q3b_firstcw` | `first_codeword` |
+| 769188 | `q3b_firstnbr` | `first_neighbor` |
+| 769189 | `q3b_lastcw` | `last_codeword` |
+
+**Why skipping these three costs nothing here.** `dense_two_layer` is the arm the handover documents as
+**structurally infeasible** (it silently truncated to 13% of its target). `positive_control` was shown
+by review #3 (**R3-5**) to be the *wrong* movability anchor — its ceiling is n = 1 — and the correct one
+is that **`first_codeword` is itself the matched positive control for `first_neighbor` and
+`last_codeword`**, which is preserved. `subsampled_all_layers_demo` is a variance probe on an arm I am
+not quoting. The three arms that carry the comparison — `none`, `all_layers_demo`, `no_demo_text` — all
+survive.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
