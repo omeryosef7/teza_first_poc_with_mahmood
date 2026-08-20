@@ -379,6 +379,74 @@ def orthogonal_control_direction(d: torch.Tensor, seed: int) -> torch.Tensor:
     return pc.orthogonal_random(d, 1, seed=seed + ORTHOGONAL_SEED_OFFSET)[0]
 
 
+def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
+                                  seed: int, orthogonalize_against_arm: bool = False):
+    """A VARIANCE-MATCHED control: random INSIDE the span of the 2x2 cell means, not in R^4096.
+
+    WHY THIS EXISTS (review #5). Every "the matched random control is inert" statement in this sprint
+    used `random_control_direction`, an isotropic draw in the full hidden space. Review #5 measured
+    what that actually controls for: at L11 on Qwen3, projecting out `d_surface` removes 89.97% of
+    the spread of the four cell means, while the isotropic control removes 0.018% -- about 5000x
+    less -- and cos(d_surface, random) is 0.014, exactly the 1/sqrt(hidden) of an isotropic draw. So
+    the control's inertness is a property of high-dimensional geometry, not an experimental result:
+    a random rank-1 projection at the same depth was never going to do anything, whatever the model
+    represents there.
+
+    This control draws inside the span of the (mean-centred) cell means instead. That subspace is
+    where the 2x2 design's variance lives and where `d_surface` itself lies, so a draw from it
+    removes a COMPARABLE amount of real structure. The question it answers is the one that matters:
+    is the behavioural effect about THIS axis, or about ablating any direction carrying the concept
+    contrast?
+
+    It is deliberately a STRONG control -- with four cells the centred span is at most 3-dimensional,
+    so a draw has a substantial expected overlap with `d_surface`. That is the point: an isotropic
+    control can only fail to falsify, while this one can. Its realised overlap and the spread it
+    removes are recorded by the caller so the strength is measured rather than assumed.
+
+    Falls back to `orthogonal_control_direction` (recorded, never silent) if the payload has no
+    usable cell means at this layer.
+    """
+    cm = payload.get("cell_means")
+    if not isinstance(cm, dict):
+        return orthogonal_control_direction(d, seed), "fallback:no_cell_means"
+    rows = []
+    for cell in sorted(cm):
+        v = cm[cell].get(layer) if isinstance(cm[cell], dict) else None
+        if v is not None:
+            rows.append(v.float().reshape(-1))
+    if len(rows) < 2:
+        return orthogonal_control_direction(d, seed), f"fallback:{len(rows)}_cell_means_at_L{layer}"
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)          # centre: the SPREAD is the structure, not the mean
+    # An orthonormal basis for the centred span; drop numerically-null directions so the draw cannot
+    # be dominated by a component that carries no variance.
+    U, S, Vh = torch.linalg.svd(M, full_matrices=False)
+    keep = int((S > (S.max() * 1e-6)).sum())
+    basis = Vh[:keep]
+    if orthogonalize_against_arm:
+        # Strictly the better control, and the one that answers the question cleanly: remove the
+        # arm direction FROM THE BASIS, so the draw lives in the part of the concept subspace that
+        # is not `d_surface`. Without this the draw shares variance with the arm (cos ran -0.48 to
+        # +0.81 over layers on the Llama fit), so an effect from the control would be ambiguous
+        # between "any concept-subspace axis works" and "the control partly IS the arm".
+        u = (d.float().reshape(-1) / (d.float().norm() + 1e-8)).reshape(1, -1)
+        proj = basis - (basis @ u.T) @ u
+        # RANK MUST COME FROM THE SINGULAR VALUES, NOT THE ROW COUNT. The first version kept
+        # `Vh[:proj.shape[0]]`, i.e. 3 rows for a 3-row matrix whose rank is now 2 -- and the third
+        # Vh row is an arbitrary unit vector orthogonal to the other two, which is exactly the
+        # direction just removed. The draw therefore still loaded on the arm (measured cos -0.73 at
+        # L6) and the orthogonalisation was silently a no-op.
+        U2, S2, Vh2 = torch.linalg.svd(proj, full_matrices=False)
+        keep = int((S2 > (S2.max() * 1e-6)).sum()) if float(S2.max()) > 0 else 0
+        if keep == 0:
+            return orthogonal_control_direction(d, seed), "fallback:span_is_the_arm_alone"
+        basis = Vh2[:keep]
+    pc = __import__("pair_common")
+    v = pc.in_subspace_random(basis, d.float(), 1, seed=seed)[0]
+    tag = "in_subspace_orth" if orthogonalize_against_arm else "in_subspace"
+    return v.to(d.dtype), f"{tag}:k={keep}"
+
+
 def orthogonalize(d: torch.Tensor, against: torch.Tensor) -> torch.Tensor:
     """Remove the `against` component from d (used for Boombness ⟂ refusal, plan §10.4)."""
     a = _unit(against.float().reshape(-1))

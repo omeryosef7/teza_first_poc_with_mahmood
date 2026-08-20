@@ -4407,6 +4407,50 @@ was produced by an unrecorded member of that pair.
 refuters exist because auditors overstate, and eight of eight corrections here were on the audits'
 side, not the artifacts'.
 
+
+### ✅ R5-7 acted on — a VARIANCE-MATCHED control now exists, and building it exposed a second silent bug
+
+Review #5's top correction. `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶, so they remove
+~1/hidden of whatever the arm removes and their inertness is arithmetic. `in_subspace_random` existed
+in `pair_common` and had never been called. Two new control names, ~40 lines in `signals.py` plus the
+wiring in `score_behavior.py`:
+
+- **`in_subspace`** — random inside the span of the centred 2×2 cell means.
+- **`in_subspace_orth`** — the same, **orthogonalised against the arm direction first**, so the draw
+  lives in the part of the concept subspace that is *not* `d_surface`. This is the one that answers
+  the question cleanly: *is the effect about this axis, or about ablating any concept-carrying axis?*
+
+**⛔ The first implementation of the orthogonalisation was a silent no-op.** I projected the basis
+rows against the arm direction and then kept `Vh[:proj.shape[0]]` — 3 rows for a 3-row matrix whose
+rank had just dropped to 2. The third `Vh` row is an arbitrary unit vector orthogonal to the other
+two, i.e. **exactly the direction I had removed**. Measured `cos(arm, control) = −0.73` at L6 when it
+should have been zero. Fixed by taking the rank from the **singular values**, not the row count.
+Verified after the fix: `cos ≈ 1e-8`, `k = 2`.
+
+**What the three controls actually remove**, as a fraction of the spread of the four cell means —
+this table is the whole argument, and it is now measured per run and written into the metadata:
+
+| layer | **ARM** (`d_surface`) | **`in_subspace_orth`** | isotropic `random` |
+|---|---|---|---|
+| L6 | 83.08% | **8.85%** | 0.0366% |
+| **L8** | **77.91%** | **6.46%** | **0.0053%** |
+| L10 | 74.53% | 7.70% | 0.0324% |
+| L12 | 75.46% | 15.10% | 0.0299% |
+| L18 | 85.82% | 3.94% | 0.0107% |
+
+At L8 the new control removes **1,200× more** structure than the one every "inert control" claim in
+this sprint rests on, while being exactly orthogonal to the arm.
+
+**Run submitted: 770317**, `in_subspace_orth:project_out:8-8:1.0` on AdvBench heldout 495, otherwise
+byte-identical to the committed arm B (same bank, same fit dir, `max_new 512`, bf16, `behavioral`).
+
+**The prediction, recorded before it lands.** Arm B is **+0.0305, p_cl 0.0089**; its isotropic control
+was −0.0018. If `in_subspace_orth` also lands near zero, arm B's specificity survives a control that
+could actually have falsified it, and that is a real strengthening. **If it lands near +0.03, then
+ablating any concept-subspace axis at L8 does what `d_surface` does, and arm B — the sprint's
+longest-standing behavioural result — is not about `d_surface` at all.** Either way this is the first
+control in the sprint whose failure would mean something.
+
 ### Next corrections, in priority order
 
 1. **Re-run one arm with `in_subspace_random`** — until then no inertness claim in this sprint means

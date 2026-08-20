@@ -192,18 +192,57 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
     # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
     # names a draw actually selects one.
-    if name in ("random", "orthogonal"):
+    if name in ("random", "orthogonal", "in_subspace", "in_subspace_orth"):
         import signals as _sg
         base = payload["d_surface"]
-        maker = _sg.random_control_direction if name == "random" else _sg.orthogonal_control_direction
-        dmap = {L: maker(v, seed=int(control_seed) + L) for L, v in base.items()}
+        control_diag = {}
+        if name in ("in_subspace", "in_subspace_orth"):
+            # VARIANCE-MATCHED control (review #5). `random`/`orthogonal` are isotropic draws in
+            # R^hidden and therefore remove ~1/hidden of any structure the arm removes -- their
+            # inertness is geometry, not evidence. This one draws inside the span of the centred
+            # 2x2 cell means, so it ablates a comparable amount of the design's own variance.
+            dmap = {}
+            for L, v in base.items():
+                d, how = _sg.in_subspace_control_direction(
+                    payload, L, v, seed=int(control_seed) + L,
+                    orthogonalize_against_arm=(name == "in_subspace_orth"))
+                dmap[L] = d
+                # Measure the control's STRENGTH rather than asserting it: its overlap with the arm
+                # direction, and the fraction of cell-mean spread each removes. Written to the run
+                # metadata so a reader can see what was actually controlled for.
+                try:
+                    cm = payload.get("cell_means") or {}
+                    rows = [cm[c][L].float().reshape(-1) for c in sorted(cm)
+                            if isinstance(cm.get(c), dict) and cm[c].get(L) is not None]
+                    if len(rows) >= 2:
+                        M = torch.stack(rows)
+                        M = M - M.mean(dim=0, keepdim=True)
+                        tot = float((M ** 2).sum())
+                        fa = float(((M @ v.float().reshape(-1, 1)) ** 2).sum()) / tot if tot else None
+                        fc = float(((M @ d.float().reshape(-1, 1)) ** 2).sum()) / tot if tot else None
+                        control_diag[f"L{L}"] = {
+                            "how": how,
+                            "cos_with_arm_direction": float(
+                                torch.dot(v.float().reshape(-1), d.float().reshape(-1))
+                                / (v.float().norm() * d.float().norm() + 1e-8)),
+                            "frac_cellmean_spread_removed_by_ARM": fa,
+                            "frac_cellmean_spread_removed_by_CONTROL": fc}
+                    else:
+                        control_diag[f"L{L}"] = {"how": how}
+                except Exception as e:                                  # diagnostics only
+                    control_diag[f"L{L}"] = {"how": how, "diag_error": f"{type(e).__name__}: {e}"}
+            print(f"[score] in_subspace control: {json.dumps(control_diag, sort_keys=True)}")
+        else:
+            maker = (_sg.random_control_direction if name == "random"
+                     else _sg.orthogonal_control_direction)
+            dmap = {L: maker(v, seed=int(control_seed) + L) for L, v in base.items()}
         gaps = (payload.get("gap") or {}).get("d_surface", {})
     else:
         dmap = payload[name] if name in payload else None
         if dmap is None:
             raise SystemExit(f"direction {name!r} not in the fitted payload "
                              f"(have {sorted(k for k in payload if k.startswith('d_'))} "
-                             "plus the derived controls random/orthogonal)")
+                             "plus the derived controls random/orthogonal/in_subspace/in_subspace_orth)")
         gaps = (payload.get("gap") or {}).get(name, {})
     ctxs = []
     for L in band:
