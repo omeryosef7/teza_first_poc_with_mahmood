@@ -52,3 +52,69 @@ def test_the_power_block_exists_and_uses_only_the_safe_levels():
     assert "slots=[3]" in block
     assert "n_examples=[1, 2, 4, 8]" in block
     assert "16" not in block.split("n_examples=[1, 2, 4, 8]")[1][:40]
+
+
+# --------------------------------------------------------------------------- #
+# PHASE D (plan §6). The whole preset rests on one arithmetic claim: the ten slots in
+# `PHASE_D_SLOTS_N2` give PAIRWISE DISJOINT demonstration sets at n_examples=2, which is what
+# turns "120 behavioral rows per level" into "120 INDEPENDENT FAMILIES per level". G2 was
+# retracted for exactly the difference between those two sentences, so it is pinned here rather
+# than left to a comment.
+# --------------------------------------------------------------------------- #
+def test_phase_d_slots_are_pairwise_disjoint_at_n2():
+    slots = pf.PHASE_D_SLOTS_N2
+    assert len(slots) == 10, "120 rows/level = 6 domains x 2 splits x 10 slots; ten is load-bearing"
+    assert len(set(slots)) == 10, "a repeated slot is the same family counted twice"
+    sets = {s: idx(s, 2) for s in slots}
+    for a in slots:
+        for b in slots:
+            if a < b:
+                assert not (sets[a] & sets[b]), \
+                    f"slots {a} and {b} share demonstrations {sets[a] & sets[b]} at n=2"
+
+
+def test_phase_d_slots_exhaust_the_pool_which_is_why_ten_is_the_ceiling():
+    """The ten sets cover all 20 sentences exactly once -- so an 11th disjoint slot cannot exist."""
+    covered = set()
+    for s in pf.PHASE_D_SLOTS_N2:
+        covered |= idx(s, 2)
+    assert covered == set(range(POOL))
+
+
+def test_phase_d_slots_are_NOT_disjoint_at_n4_which_is_why_n_examples_is_fixed_at_2():
+    """Pins the reason the demonstration-COUNT factor is not swept: at n=4 only 5 slots fit."""
+    overlaps = [(a, b) for a in pf.PHASE_D_SLOTS_N2 for b in pf.PHASE_D_SLOTS_N2
+                if a < b and (idx(a, 4) & idx(b, 4))]
+    assert overlaps, "if these became disjoint at n=4 the preset should be widened"
+
+
+def test_phase_d_preset_uses_only_those_slots_and_only_n2():
+    blocks = pf._blocks("phase_d")
+    assert blocks, "phase_d preset is missing"
+    for b in blocks:
+        assert b["n_examples"] == [2], f"{b['name']} sweeps n_examples; that breaks independence"
+        assert list(b["slots"]) == list(pf.PHASE_D_SLOTS_N2), f"{b['name']} uses other slots"
+        assert b["query_kinds"] == ["behavioral"], f"{b['name']} mixes query kinds"
+        assert b.get("filler_near") is True, \
+            f"{b['name']} would leave the `near` arm ~390 chars shorter than far/distributed"
+
+
+def test_phase_d_baseline_level_is_emitted_exactly_once():
+    """Three duplicate baselines would be dropped by the prompt_id dedup and would make the
+    per-condition drop counts asymmetric, tripping the violation check for a spurious reason."""
+    base = [b for b in pf._blocks("phase_d")
+            if "none" in b["strengths"] and "consistent" in b["consistencies"]
+            and "near" in b["positions"] and "plain" in b["role_styles"]]
+    assert len(base) == 1, f"the (none, consistent, near, plain) cell is in {len(base)} blocks"
+    assert base[0]["name"] == "phase_d_base"
+    assert list(base[0]["conditions"]) == list(pf.CORE_2X2), \
+        "the baseline block must carry the full 2x2 or NOTHING in phase_d is alignment-checked"
+
+
+def test_filler_near_defaults_off_so_every_committed_bank_is_unchanged():
+    """`bank_rows_sha16` of the main bank is joined on by every extraction artifact in the repo."""
+    import inspect
+    sig = inspect.signature(pf.build_prompt)
+    assert sig.parameters["filler_near"].default is False
+    for b in pf._blocks("main") + pf._blocks("pilot") + pf._blocks("smoke"):
+        assert not b.get("filler_near"), f"{b['name']} would rewrite committed prompts"

@@ -103,6 +103,24 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
     `direction[L]` is a d_model vector (it is unit-normalized here).
     """
     model = lm.model
+    # RECONSTRUCTION TOLERANCE IS DTYPE-DEPENDENT, and hardcoding it at 1e-3 broke E6 (2026-08-20).
+    # The decomposition below is computed on CPU in float32, but its INPUTS (attention probs, the
+    # value cache, o_proj) come from the model, and `attn_true` is the module's OWN output. When the
+    # model runs in bfloat16 the module accumulated in bfloat16 while we recompute in float32, so
+    # the two cannot agree to 1e-3 -- bfloat16 carries ~8 mantissa bits, eps ~= 3.9e-3, and error
+    # accumulates over T source positions. 1e-3 was calibrated when `dominance.main()` and
+    # `surgical_knockout` both loaded float32; commit bf56ca6b changed surgical_knockout to
+    # bfloat16 to fix a Qwen3 OOM and this fp32-calibrated constant was not revisited, so all 24
+    # prompts of every E6 arm died with `dominance:AssertionError:L8`.
+    #
+    # The tolerance is LOOSENED, so it is worth being explicit about what the guard still catches.
+    # Its purpose is to detect a wrong GQA head map or wrong o_proj slicing. Those are STRUCTURAL
+    # errors: they mix unrelated heads and produce a relative error of order 1, not of order eps.
+    # `tests/test_dominance_tolerance.py` permutes the head map and confirms the error stays far
+    # above even the bfloat16 tolerance, so the guard still discriminates the failure it exists for.
+    # `recon_rel_err` is returned either way, so the actual number is always on disk.
+    _wdtype = next(model.parameters()).dtype
+    tol = {torch.float32: 1e-3, torch.float64: 1e-3}.get(_wdtype, 3e-2)
     nq, nkv, hd = head_dims(model)
     rep = nq // nkv
     layers_mod = ds()._get_layers(model)
@@ -176,12 +194,13 @@ def dominance_at(lm, input_ids: List[int], dst: int, layers: Sequence[int],
                 num = float((got - want).norm())
                 den = float(want.norm()) or 1.0
                 recon_err[L] = num / den
-                if num / den > 1e-3:
+                if num / den > tol:
                     raise AssertionError(
                         f"L{L}: the value-flow decomposition does not reconstruct the attention "
-                        f"output (relative error {num/den:.3e}). The GQA head map or the o_proj "
-                        "slicing is wrong.")
-    res: Dict[str, Dict[int, torch.Tensor]] = {"D_attn": D_attn, "recon_rel_err": recon_err}
+                        f"output (relative error {num/den:.3e} > tol {tol:.1e} for "
+                        f"{_wdtype}). The GQA head map or the o_proj slicing is wrong.")
+    res: Dict[str, Dict[int, torch.Tensor]] = {"D_attn": D_attn, "recon_rel_err": recon_err,
+                                               "recon_tol": tol, "weight_dtype": str(_wdtype)}
     if direction is not None:
         res["D_dir"] = D_dir
     return res
