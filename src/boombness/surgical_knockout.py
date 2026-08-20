@@ -72,6 +72,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ds_common import parse_enable_thinking as dc_parse_thinking  # noqa: E402
 from common import (DATA_DIR, FailureLedger, RunDir, ds, pair, read_jsonl,  # noqa: E402
                     seed_everything, validate_direction_payload)
 import signals as sg  # noqa: E402
@@ -604,6 +605,13 @@ def main() -> int:
                          "of the effect of deleting the demonstrations, which suggests the mapping "
                          "is carried by the PREDICATES ('exploded', 'defused') rather than by the "
                          "repeated codeword. 'block' is the direct test of that.")
+    ap.add_argument("--enable-thinking", default=None, choices=[None, "true", "false"],
+                    help="chat-template thinking mode. REQUIRED for Qwen3-class models. Measured "
+                         "2026-08-20 on the button bank, identical code and prefix: the "
+                         "unintervened arm's option mass is 0.273 on Llama-3.1-8B and 2.486e-05 on "
+                         "Qwen3-14B, because Qwen3's template opens a <think> block in the "
+                         "assistant prefix and the forced-answer readout then scores REASONING "
+                         "tokens instead of the answer. The tail gate caught it and refused the run.")
     ap.add_argument("--readout-ids", default="whole_answer",
                     choices=["primary", "whole_answer"],
                     help="CORRECTION C-6 (2026-08-19). `whole_answer` (default) teacher-forces "
@@ -666,6 +674,7 @@ def main() -> int:
     # Same shell-safe-empty rule as score_behavior.main(); see normalize_answer_prefix.
     answer_prefix = normalize_answer_prefix(args.answer_prefix)
     args.answer_prefix = answer_prefix
+    enable_thinking = dc_parse_thinking(args.enable_thinking)
     seed_everything(args.seed)
 
     import numpy as np
@@ -771,6 +780,7 @@ def main() -> int:
              direction_splits_available=sorted(fitted),
              direction_payload_verdicts=verdicts,
              readout_mode=args.readout_ids, answer_prefix=answer_prefix,
+             enable_thinking=enable_thinking,
              min_option_mass=args.min_option_mass,
              semantic_variants_first_pair=first_variants,
              readout_note=("whole_answer: signals.string_option_readout, called exactly as "
@@ -786,7 +796,12 @@ def main() -> int:
     truncated_ids: List[str] = []
     for row in rows:
         try:
-            templated, prompt_ids, last, _, _ = resolve_occurrences(dc, lm.tokenizer, row)
+            # BOTH templating paths get the mode. The pre-2026-08-20 code passed it to NEITHER,
+            # so `resolve_occurrences` used extract_boombness's module-level global — the sixth
+            # instance of this project's one-of-two-paths shape, and the file's own comment below
+            # had already noticed the argument was not being passed.
+            templated, prompt_ids, last, _, _ = resolve_occurrences(
+                dc, lm.tokenizer, row, enable_thinking=enable_thinking)
         except ValueError as e:
             ledger.fail(f"resolve:{e}", row["prompt_id"])
             continue
@@ -962,7 +977,7 @@ def main() -> int:
                 if not q:
                     ledger.fail("no_demo_text:missing_query", row["prompt_id"])
                     continue
-                t2 = dc.apply_template(lm.tokenizer, q)
+                t2 = dc.apply_template(lm.tokenizer, q, enable_thinking=enable_thinking)
                 ctx2 = t2 + answer_prefix
                 ids2 = lm.tokenizer(ctx2, add_special_tokens=False)["input_ids"]
                 _emit(arm, _read(ctx2, ids2), n_edges_cut=-1, seq_len_used=len(ids2))
