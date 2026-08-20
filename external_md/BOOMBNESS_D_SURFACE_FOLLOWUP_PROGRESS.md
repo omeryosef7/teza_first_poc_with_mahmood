@@ -3049,6 +3049,59 @@ that failed**. This is the same shape as the `judge_boombness` abort path done r
 changing what it writes on failure could silently invalidate other consumers' assumptions. Flagged for
 a decision. In the meantime the audit's **exit code**, not its `DONE.json`, is the thing to check.
 
+## Cross-Model Replication With Dynamic Range — Phase H opened on Phase G (tick 43)
+
+Everything established so far is Llama-3.1-8B. The newest and best-controlled result — the first
+demonstration's codeword carrying the attention effect — is the natural thing to port, because
+`surgical_knockout.py` reads a **representation** rather than ASR, so it does **not** need the
+behavioural dynamic range that blocked Qwen3 on AdvBench (0.8% baseline compliance, R-17).
+
+### The E6 bank turns out to be the *only* sound vehicle, and that was not the reason it was built
+
+From `concept_pair_screen.json`, per-model, on **Qwen/Qwen3-14B**:
+
+| word | bare single-token | space single | capitalised single |
+|---|---|---|---|
+| **`carrot`** | ❌ **false** | true | ❌ **false** |
+| **`apple`** | ✅ true | ✅ true | ✅ true |
+| `bomb` | ✅ true | ✅ true | ✅ true |
+
+**The main carrot bank is tokenization-unsound on Qwen3** — `carrot` is multi-token there, which makes
+"the codeword's position" a span and breaks every point-wise patch (plan §2.4). The apple bank built
+at tick 38 to close lexical G = 1 happens to be **clean on both models**, so it is the vehicle for the
+cross-model test. That is a payoff from `screen_concept_pairs.py` having screened *both* models before
+either bank existed.
+
+### Runs submitted
+
+| job | tag | what |
+|---|---|---|
+| **769001** | `apple_audit_q3` | tokenization audit, apple bank, **Qwen3**, `--strict` |
+| **769002** | `q3ap_firstcw` | `first_codeword` |
+| **769003** | `q3ap_nbr` | `first_neighbor` (position control) |
+| **769004** | `q3ap_lastcw` | `last_codeword` |
+
+All against `extract_boombness/qwen3_cw_20260817_140633_992753` (verified 5120-d, the correct Qwen3
+dimensionality), `--model Qwen/Qwen3-14B`, otherwise identical configuration to the Llama arms.
+
+### ⚠ A known risk I am NOT assuming away
+
+`surgical_knockout.py` has **no `--enable-thinking` flag** — its own comment at line 868 records that
+`resolve_occurrences` "takes an `enable_thinking` argument this call did not pass." On Qwen3 that
+matters: handover defect **C-8** found the thinking-ON extract's final token is a `<think>` control
+token and is unusable as a readout position.
+
+I am **not** pre-judging it. The module's **`option_mass_gate`** refuses to finish when the median
+next-token mass on the answer options falls below `--min-option-mass` (0.05) — a readout sitting on a
+`<think>` token should trip exactly that. **If the gate fires, the answer is "Phase G cannot be ported
+to Qwen3 without threading `enable_thinking` through the knockout", and that is the result I will
+report** — not a number.
+
+Prediction, recorded before the runs land: if the option-mass gate passes, the Llama pattern
+(`first_codeword` positive, `first_neighbor` ≈ 0, `last_codeword` ≈ 0) should reproduce, with a
+magnitude that need not match — the apple/carrot comparison already showed the effect size is
+lexically dependent, so it is likely model-dependent too.
+
 ## 4h Code and Output Review — Review #3 (2026-08-20 09:00)
 
 Two adversarial auditors, 191k tokens, 82 tool calls, aimed at the two newest and least-scrutinised
