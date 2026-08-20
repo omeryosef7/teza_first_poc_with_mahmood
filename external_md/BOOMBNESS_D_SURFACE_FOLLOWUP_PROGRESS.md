@@ -2482,6 +2482,41 @@ timeout. Dead dirs: `judge/j_fuR*_20260819_1943*`.
 **Standing rule added:** long-running judge or analysis jobs must be launched with `setsid`, and the
 monitoring call must never wrap them in a shell that can be timed out.
 
+## Compute Blocker — diagnosed and mitigated (tick 23)
+
+**Symptom.** From tick 20 to 23 (~2h) not one of 8 submitted jobs started; all `PD (Priority)`.
+
+**Diagnosis.** `sprio -u $USER` shows **FAIRSHARE = 338** against a partition base of 100,000,000 —
+i.e. fair-share throttling after this sprint's ~20 GPU jobs in one day. Partition state at tick 23:
+**25 running / 77 pending** across all users. This is the scheduler working correctly, not a fault.
+
+**Mitigation applied — right-sized walltimes for backfill.** `run_boombness.sh` hardcodes
+`#SBATCH --time=06:00:00`. A 6-hour request is nearly unbackfillable; SLURM's backfill scheduler
+starts short jobs early when they fit a gap before a higher-priority reservation. Observed runtimes in
+this sprint: **16–40 min** for a 495-prompt coherent arm, **1h51–2h06** for a degenerate one, and the
+benign bank is only **40 prompts** (≈5 min expected).
+
+Resubmitted all 8 with limits sized from those observations:
+
+| jobs | tag | old limit | **new limit** | basis |
+|---|---|---|---|---|
+| 768517–768520 | `bng_base/B/Bctrl/C` | 6:00:00 | **0:25:00** | 40 prompts, ≈5 min expected |
+| 768521–768523 | `fuF25_addBoth_CTRL`, `fuF25_remR_addS_CTRL`, `fuF_remS_addR_CTRL2` | 6:00:00 | **1:15:00** | 495 prompts, 16–40 min observed |
+| 768524 | `fuF_addR_gapdose` | 6:00:00 | **2:30:00** | wider margin — a gap-dosed `add` may degenerate, and the worst degenerate arm ran 2h06 |
+
+⚠ **Process note:** the first resubmit attempt used `set -- $spec`, which is bash syntax; this shell is
+**tcsh**, so the four `sbatch` calls failed *after* the `scancel` had already run, briefly leaving those
+jobs unqueued. Caught and restored in the same tick with explicit per-job commands. **Standing rule
+added: no shell-array or `set --` constructs in this session; one explicit command per job**, and never
+`scancel` before the replacement command is known to work.
+
+**Not done:** `--time` is passed on the `sbatch` line rather than edited into `run_boombness.sh`, because
+that script is shared with the non-Boombness workstream and its own docstring warns that overriding
+`#SBATCH` directives on the command line has caused a mis-scheduling incident before (the `--exclude`
+/ `--nodelist` trap, 2026-08-06). `--time` does not interact with `--nodelist`, but the edit stays out
+of the shared file.
+
+
 ## Sprint Final Report
 
 **Status: INTERIM, written 2026-08-20 while the queue is blocked.** 8 jobs pending; three claims below
