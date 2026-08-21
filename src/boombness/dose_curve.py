@@ -131,7 +131,24 @@ def main() -> int:
     base = _rows(args.baseline)
 
     # ---- LADDER (calibration). k=0 and k=7 reuse existing runs by identity, not by tag.
-    LADDER_PAT = {0: f"{JUDGE}/abg_B_*", 7: f"{JUDGE}/angJ8k0_*"}
+    # ⛔ R-27 (audit #7): this map made both "plumbing checks" TAUTOLOGIES. k=0 loaded `abg_B_*` and
+    # the check then re-globbed `abg_B_*` and asserted equality with itself; likewise k=7 with
+    # `angJ8k0_*`. `agree: true` was guaranteed whether or not `dose_mix_direction` worked, and no
+    # `dm8k0`/`dm8k7` run existed, so the docstring's promise ("if it does not, the dose_mix path is
+    # broken") was unfulfilled -- the endpoints were never behaviourally verified at all. This is the
+    # dead-guard class, and I wrote the docstring asserting it was a real check.
+    #
+    # Fixed by RUNNING the endpoints (`dmJ{L}k0`, `dmJ{L}k7`) so the comparison is between two
+    # independently produced runs. Falls back to the reuse globs only when those do not exist, and
+    # the check then reports `tautological: true` instead of a green `agree`.
+    #
+    # Also: these globs were hardcoded to L8 while `--layer` is a flag, so `--layer 12` would have
+    # spliced L8 judge results into an L12 ladder at k=0 and k=7. Now layer-parameterised.
+    LADDER_PAT = {}
+    for _k, _reuse in ((0, f"{JUDGE}/{'abg_B_' if L == 8 else f'abgL{L}_B_'}*"),
+                       (7, f"{JUDGE}/angJ{L}k0_*")):
+        if not glob.glob(f"{JUDGE}/dmJ{L}k{_k}_*"):
+            LADDER_PAT[_k] = _reuse
     ladder = {}
     for k in range(args.n_steps):
         v, how = sg.dose_mix_direction(pl, L, k, n_steps=args.n_steps)
@@ -165,16 +182,27 @@ def main() -> int:
 
     # ---- plumbing checks (geometry-derived, not data-derived)
     checks = {}
-    if 0 in have:
-        arm = _delta(base, _rows(f"{JUDGE}/abg_B_*"), args.threshold)
-        checks["k0_is_d_surface"] = {"ladder_k0": have[0]["delta"], "existing_L8_arm": arm["delta"],
-                                     "agree": abs(have[0]["delta"] - arm["delta"]) < 1e-9}
-    if 7 in have:
-        a0 = _delta(base, _rows(f"{JUDGE}/angJ{L}k0_*"), args.threshold)
-        if a0:
-            checks["k7_is_angle0"] = {"ladder_k7": have[7]["delta"], "angle0": a0["delta"],
-                                      "agree": abs(have[7]["delta"] - a0["delta"]) < 1e-9}
+    for k, ref_pat, name in ((0, f"{JUDGE}/{'abg_B_' if L == 8 else f'abgL{L}_B_'}*",
+                              "k0_is_d_surface"),
+                             (7, f"{JUDGE}/angJ{L}k0_*", "k7_is_angle0")):
+        if k not in have:
+            continue
+        taut = k in LADDER_PAT          # ladder value WAS loaded from the reference glob
+        ref = _delta(base, _rows(ref_pat), args.threshold)
+        if not ref:
+            continue
+        checks[name] = {"ladder_value": have[k]["delta"], "reference_value": ref["delta"],
+                        "agree": abs(have[k]["delta"] - ref["delta"]) < 1e-9,
+                        "tautological": taut,
+                        "meaning": ("VACUOUS -- the ladder value was loaded from this same run, so "
+                                    "`agree` is guaranteed and verifies nothing about the dose_mix "
+                                    "code path (R-27)") if taut else
+                                   ("REAL -- an independently generated dmJ%dk%d run is compared "
+                                    "against the reference direction it is geometrically identical "
+                                    "to" % (L, k))}
     doc["plumbing_checks"] = checks
+    doc["plumbing_checks_are_real"] = bool(checks) and not any(
+        c.get("tautological") for c in checks.values())
 
     if len(have) >= 4:
         xs = [have[k]["dose"] for k in sorted(have)]

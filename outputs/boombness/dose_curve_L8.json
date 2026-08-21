@@ -160,20 +160,25 @@
       "--out",
       "outputs/boombness/dose_curve_L8.json"
     ],
-    "git_commit": "baa9050a4b32a3fb8e7e40d5c7515aed7b4a95ff"
+    "git_commit": "3e49c4a9ff86500ea125f283b64282c666d0fed6"
   },
   "plumbing_checks": {
     "k0_is_d_surface": {
-      "ladder_k0": 0.04242424242424243,
-      "existing_L8_arm": 0.04242424242424243,
-      "agree": true
+      "ladder_value": 0.04242424242424243,
+      "reference_value": 0.04242424242424243,
+      "agree": true,
+      "tautological": true,
+      "meaning": "VACUOUS -- the ladder value was loaded from this same run, so `agree` is guaranteed and verifies nothing about the dose_mix code path (R-27)"
     },
     "k7_is_angle0": {
-      "ladder_k7": 0.00202020202020202,
-      "angle0": 0.00202020202020202,
-      "agree": true
+      "ladder_value": 0.00202020202020202,
+      "reference_value": 0.00202020202020202,
+      "agree": true,
+      "tautological": true,
+      "meaning": "VACUOUS -- the ladder value was loaded from this same run, so `agree` is guaranteed and verifies nothing about the dose_mix code path (R-27)"
     }
   },
+  "plumbing_checks_are_real": false,
   "ladder_fit": {
     "0.0457": 0.00202020202020202,
     "0.0810": 0.010101010101010102,

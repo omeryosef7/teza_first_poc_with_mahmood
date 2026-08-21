@@ -5868,7 +5868,7 @@ rows and `DONE.json` each, every `config.json` declaring the spec requested. Jud
 (773072-773075).
 
 **While waiting I re-read §0's "conclusion, stated once" — the block the short update mirrors and the
-one a reader quotes — and found it still saying the L12 arm clears "**~16 band-sds**".** That is the
+one a reader quotes — and found it still saying the L12 arm clears "**~16 band-sds**", a **retracted** figure.** That is the
 **4096-d random band R-23 discredited three days ago.** A random direction in 4096-d is nearly
 orthogonal to everything and perturbs almost nothing; scoring against it inflates the apparent margin.
 Against the in-subspace null the arm exceeds every control at all four layers, but by **1.80×–3.60×**,
@@ -5895,7 +5895,7 @@ sentence now hits the warning first.
 |---|---|---|---|
 | 232 | 2026-08-21 | 773042-773045 completed | 4/4 distinct, 495 rows + DONE, specs verified |
 | 233 | 2026-08-21 | submitted judging 773072-773075 | L6 and L12 replications pending |
-| 234 | 2026-08-21 | found "~16 band-sds" live in §0's conclusion block | the discredited 4096-d band, in the most-quoted paragraph |
+| 234 | 2026-08-21 | found the **retracted** "~16 band-sds" live in §0's conclusion block | the discredited 4096-d band, in the most-quoted paragraph |
 | 235 | 2026-08-21 | widened the pattern to any band-sd count; **tested on a planted case** | exit 1 planted / 0 clean; **third** narrowness failure in this file |
 | 236 | 2026-08-21 | §0 now states the dose/specificity qualification inline | headline can no longer be quoted without it |
 
@@ -5995,3 +5995,85 @@ way.
 | 244 | 2026-08-21 | submitted L10 + **L13** replications (773124-773127) | **L13 sits outside the outcome-selected top-4** — the point of the test |
 | 245 | 2026-08-21 | checked dose gaps at both | rung carries **more** dose at both; confound pushes against the advantage |
 | 246 | 2026-08-21 | pre-committed the reading for L13 | sign-consistency only; no significance claim from an underpowered layer |
+
+## ⛔ R-27 — audit #7 takes down the entire dose-ladder inference chain, including my "bound"
+
+Tick 2026-08-21. Audit #7 returned six result-affecting defects. I verified the three load-bearing
+ones myself before touching a document; all three held.
+
+**(a) The geometric bound of C-13 is algebraically FALSE.** `dose(u) ≤ c²a + s²b` requires
+⟨M·d, M·w⟩ = 0. Perpendicularity of `d` and `w` does **not** give that — it needs `d_surface` to be an
+**eigenvector** of `MᵀM`, and `d_surface` is only *approximately* PC1 (cos 0.9998–1.0000, not 1).
+Measured cross terms: **−0.0092 … +0.0131**, nonzero at every layer.
+
+**And `d_naive` — a vector already sitting in the payload — falsifies the bound at all three layers:**
+
+| L | dose(`d_naive`) | bound demanded \|cos\| ≥ | actual | |
+|---|---|---|---|---|
+| 6 | 0.8329 | 0.9720 | 0.9698 | **violated** |
+| 8 | 0.7919 | **0.9662** | **0.9613** | **violated** |
+| 12 | 0.7595 | 0.9555 | 0.9549 | **violated** |
+
+**And this is the part I want recorded most plainly.** C-13 quoted that exact pair as *confirmation*:
+*"`d_naive` sits at dose 0.79, where the bound demands |cos| ≳ 0.95 — and it measures 0.9613. The
+geometry predicted the observation."* The bound demanded **0.9662**. I rounded it down to "~0.95" in
+prose and then read a **violation as agreement**. I have been careful all session about post-hoc
+readings of numbers; this was a post-hoc rounding of a *threshold*, which is the same error wearing a
+different hat, and it produced the most confident sentence I wrote this week.
+
+Replaced with the **exact optimum** computed numerically over the real quadratic form (no cross-term
+assumption): min |cos| to reach dose 0.7 is **0.8903** at L8, not the 0.8983 the false formula gave —
+i.e. the old bound was wrong in the **anti-conservative** direction, demanding more entanglement than
+geometry actually forces.
+
+**(b) `d_naive` is not a different construction — it is a rung of the ladder's own family.** Measured:
+`‖d̂_naive − (cos θ·û + sin θ·w_naive)‖ ≈ 5e-09`, with `w_naive` **fully inside** the 2-D complement
+(span fraction **1.000000**) at **φ ≈ 121–125°** from `basis[0]`. The ladder is the **φ = 0 slice** of
+a two-parameter family `u(θ, φ)`. So "a held-out point above the calibration curve" does not show that
+the 2×2's identification step means anything — it shows the effect depends on **φ, an arbitrary
+rotation the ladder holds fixed by fiat**.
+
+**(c) The ladder is materially basis-dependent.** Built on `basis[1]` instead, dose at k=7 is 0.1141
+rather than 0.0457 — **2.5×**. "Beats every dose-matched mixture" was really "beats one arbitrary
+path".
+
+**(d) Dose and cosine cannot both be matched** (the ladder is one-parameter), and matching **cosine**
+instead **reverses** the sign of the "residual dose works against the advantage" argument.
+
+**(e) The 0.0081 scatter threshold is ~2× too small.** It is attained at the lowest-dose endpoint
+where leave-one-out forces `curve_at` to clamp — it measures boundary extrapolation, not replicate
+noise. The real held-out scatter is RMS **0.0151**, against which `d_naive`'s **+0.0152** residual is
+**1.13 SD — entirely unexceptional**. `dose_sufficient = False` is not supported.
+
+**(f) No significance survives cluster-level inference.** At L8 only **4 domains** carry a nonzero net,
+so the smallest p any cluster-level test can return is 2/2⁴ = **0.125**. The percentile cluster
+bootstrap reported 0.021 for data that *cannot* be significant at cluster level. Holm across the three
+layers kills the rest.
+
+**(g) Both "plumbing checks" were tautologies.** `LADDER_PAT` loaded k=0 from `abg_B_*` and the check
+then re-globbed `abg_B_*` and compared it to itself; same for k=7. `agree: true` was guaranteed
+regardless of whether `dose_mix_direction` worked, and **no `dm8k0`/`dm8k7` run existed**, so the
+endpoints were never behaviourally verified. I reported "both plumbing checks pass exactly" as what
+*licensed* reading the rest. Fixed: the field now reports `tautological: true` and **VACUOUS**, and
+**773219/773220 are running the real endpoints** so the check becomes genuine. Also fixed a latent bug
+in the same map — the globs were hardcoded to L8 while `--layer` is a flag, so `--layer 12` would have
+spliced L8 results into an L12 ladder.
+
+### What survives
+
+**The ladder as a measurement.** The dose-response is monotone and saturating from 0.046 to 0.84,
+which is a real and useful curve. **Nothing inferred from it survives**: not the bound, not "dose is
+not sufficient", not `d_naive`'s advantage, not the significance at L8/L12.
+
+That returns the sprint to the position it held before this thread began, with one addition: a
+measured dose-response curve, and a much clearer account of why this bank cannot separate dose from
+direction identity.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 247 | 2026-08-21 | audit #7 returned; verified the cross term myself | **−0.0092…+0.0131**, nonzero — the bound's premise is false |
+| 248 | 2026-08-21 | tested `d_naive` against my own bound | **violated at all three layers**; C-13 had read it as confirmation |
+| 249 | 2026-08-21 | replaced the closed form with the exact numerical optimum | L8: 0.8903, not 0.8983 (old one anti-conservative) |
+| 250 | 2026-08-21 | verified `d_naive` lies in the ladder family | span fraction **1.000000**, φ ≈ 121–125° |
+| 251 | 2026-08-21 | filed **R-27** (six defects); struck the dose inferences | ladder survives as a curve; every inference withdrawn |
+| 252 | 2026-08-21 | de-tautologised the plumbing checks; submitted 773219/773220 | artifact now says **VACUOUS**; real endpoints running |

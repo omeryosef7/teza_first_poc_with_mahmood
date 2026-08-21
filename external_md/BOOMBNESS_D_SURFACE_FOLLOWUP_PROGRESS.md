@@ -5056,6 +5056,31 @@ reported.
 
 
 
+## ⚠ OPERATIONAL — the concurrent writer materialised, and it ate a commit message (not the work)
+
+At 23:05 a `git commit` of mine failed with
+`fatal: cannot lock ref 'HEAD': is at 3e49c4a9… but expected 68ef5f20…`. Diagnosis:
+
+- **A second session is committing into this same working directory**, and it stages broadly
+  (`git add -A` or `commit -a`). Between my `git add` and my `git commit`, it committed — sweeping
+  **my staged edit into its commit** (`3e49c4a9 "extend replication to an UNSELECTED layer; launch
+  audit #7"`).
+- **No work was lost.** Verified: both of my edits are present in `HEAD` and `HEAD == origin`, so
+  the content is pushed. What was lost is **my commit message** — the reasoning for closing
+  next-sprint item 3 and adding item 6 is now filed under an unrelated headline.
+- Earlier today the same session swept `analyze_dissociation.py` into a commit **while I was still
+  writing it**. It happened to be syntactically valid.
+
+**Why this matters beyond tidiness.** This log's audit trail is commit-message-shaped: every
+retraction in the table above is traceable because a message explains it. A broad `git add -A` from
+another process silently re-attributes that reasoning, and a badly-timed one can commit a
+half-written file as though it were finished. The user asked for a single session on this sprint;
+three peers were queried and all three correctly denied it, so the writer is not reachable on the
+message bus.
+
+**Mitigation adopted here:** stage explicit paths (never `-A`), and keep the add→commit window as
+short as possible. That narrows the race; it does not close it.
+
 ## ✅✅ THERE IS A USABLE DOSE WINDOW — α = 7.33 is GATE-CLEAN, and F-3's test is finally runnable
 
 **The dose-response is non-monotone in both directions, and the middle of the range works.**

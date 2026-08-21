@@ -3,46 +3,74 @@
     "L6": {
       "dose_d_surface": 0.8768239688421499,
       "max_dose_in_complement": 0.08012859361984599,
-      "min_abs_cos_with_d_surface_to_reach": {
-        "0.3": 0.5253372896374919,
-        "0.5": 0.7259588463948141,
-        "0.7": 0.8820732540067817,
-        "0.8": 0.9505638930770115
+      "max_dose_over_all_directions": 0.8768240300281125,
+      "d_surface_is_max_dose_direction": true,
+      "cross_terms_with_complement_basis": [
+        -0.007023479287144377,
+        0.006223499594765369
+      ],
+      "min_abs_cos_with_d_surface_to_reach_EXACT": {
+        "0.3": 0.5187032418952618,
+        "0.5": 0.7206982543640897,
+        "0.7": 0.8802992518703242,
+        "0.8": 0.9501246882793017
       },
-      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.88 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+      "superseded_closed_form": "c^2 >= (f-b)/(a-b) -- WRONG (R-27): assumes a zero cross term that requires d_surface to be an eigenvector of M^T M; d_naive falsifies it at L6/L8/L12",
+      "reading": "EXACT: a direction removing 70% of the cell-mean spread must have |cos| >= 0.8803 with d_surface. High dose does force near-collinearity, but this is a computed optimum over the real quadratic form, not the (false) closed-form inequality this field used to report."
     },
     "L8": {
       "dose_d_surface": 0.8402006196015032,
       "max_dose_in_complement": 0.11429965311195878,
-      "min_abs_cos_with_d_surface_to_reach": {
-        "0.3": 0.5057870087256349,
-        "0.5": 0.7289308440736733,
-        "0.7": 0.8982537796682462,
-        "0.8": 0.9719154753945718
+      "max_dose_over_all_directions": 0.8402006196015032,
+      "d_surface_is_max_dose_direction": true,
+      "cross_terms_with_complement_basis": [
+        -0.00915577227533569,
+        0.013055368015172706
+      ],
+      "min_abs_cos_with_d_surface_to_reach_EXACT": {
+        "0.3": 0.4912718204488778,
+        "0.5": 0.7182044887780549,
+        "0.7": 0.8902743142144638,
+        "0.8": 0.9675810473815462
       },
-      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.90 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+      "superseded_closed_form": "c^2 >= (f-b)/(a-b) -- WRONG (R-27): assumes a zero cross term that requires d_surface to be an eigenvector of M^T M; d_naive falsifies it at L6/L8/L12",
+      "reading": "EXACT: a direction removing 70% of the cell-mean spread must have |cos| >= 0.8903 with d_surface. High dose does force near-collinearity, but this is a computed optimum over the real quadratic form, not the (false) closed-form inequality this field used to report."
     },
     "L10": {
       "dose_d_surface": 0.8114456002264713,
       "max_dose_in_complement": 0.13186127260090483,
-      "min_abs_cos_with_d_surface_to_reach": {
-        "0.3": 0.49740735258359636,
-        "0.5": 0.7360106116908589,
-        "0.7": 0.914335368800137,
-        "0.8": 0.9915432112104584
+      "max_dose_over_all_directions": 0.8114456002264713,
+      "d_surface_is_max_dose_direction": true,
+      "cross_terms_with_complement_basis": [
+        -0.0067914411906139175,
+        0.006070087981497538
+      ],
+      "min_abs_cos_with_d_surface_to_reach_EXACT": {
+        "0.3": 0.4912718204488778,
+        "0.5": 0.7306733167082294,
+        "0.7": 0.912718204488778,
+        "0.8": 0.9925187032418953
       },
-      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.91 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+      "superseded_closed_form": "c^2 >= (f-b)/(a-b) -- WRONG (R-27): assumes a zero cross term that requires d_surface to be an eigenvector of M^T M; d_naive falsifies it at L6/L8/L12",
+      "reading": "EXACT: a direction removing 70% of the cell-mean spread must have |cos| >= 0.9127 with d_surface. High dose does force near-collinearity, but this is a computed optimum over the real quadratic form, not the (false) closed-form inequality this field used to report."
     },
     "L12": {
       "dose_d_surface": 0.8204428847812593,
       "max_dose_in_complement": 0.12019742950016081,
-      "min_abs_cos_with_d_surface_to_reach": {
-        "0.3": 0.5067255452641746,
-        "0.5": 0.7364678629963618,
-        "0.7": 0.909944530303678,
-        "0.8": 0.9852949384479541
+      "max_dose_over_all_directions": 0.8204428847812593,
+      "d_surface_is_max_dose_direction": true,
+      "cross_terms_with_complement_basis": [
+        -0.005325093037686384,
+        0.003218987306244135
+      ],
+      "min_abs_cos_with_d_surface_to_reach_EXACT": {
+        "0.3": 0.5037406483790524,
+        "0.5": 0.7356608478802993,
+        "0.7": 0.9102244389027432,
+        "0.8": 0.9850374064837906
       },
-      "reading": "a direction removing 70% of the cell-mean spread must have |cos| >= 0.91 with d_surface; at the arm's dose the bound saturates. High dose and d_surface-identity are geometrically entangled in this design."
+      "superseded_closed_form": "c^2 >= (f-b)/(a-b) -- WRONG (R-27): assumes a zero cross term that requires d_surface to be an eigenvector of M^T M; d_naive falsifies it at L6/L8/L12",
+      "reading": "EXACT: a direction removing 70% of the cell-mean spread must have |cos| >= 0.9102 with d_surface. High dose does force near-collinearity, but this is a computed optimum over the real quadratic form, not the (false) closed-form inequality this field used to report."
     }
   },
   "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
@@ -90,6 +118,6 @@
       "--out",
       "outputs/boombness/dose_vs_effect.json"
     ],
-    "git_commit": "e351586c77c3a8c94a538363f56e678119f8bef3"
+    "git_commit": "3e49c4a9ff86500ea125f283b64282c666d0fed6"
   }
 }

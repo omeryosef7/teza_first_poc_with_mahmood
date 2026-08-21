@@ -50,16 +50,33 @@ def _rows(pat):
 
 
 def dose_identity_bound(payload, layer):
+    import torch
     """How similar to `d_surface` is a direction FORCED to be, in order to reach a given dose?
 
-    THE FINAL WORD ON R-25/R-26, AND IT IS GEOMETRY, NOT SAMPLING. Write a unit direction as
-    u = c*d_surface + s*w with w in the orthogonal complement. Then
+    ⛔ THE CLOSED-FORM VERSION OF THIS WAS WRONG (R-27, audit #7). It read:
 
-        dose(u) <= c^2 * a + s^2 * b,   a = dose(d_surface) ~ 0.81-0.88,  b = max dose in complement ~ 0.08-0.13
+        dose(u) <= c^2*a + s^2*b   =>   reaching dose f REQUIRES c^2 >= (f-b)/(a-b)
 
-    so reaching dose f REQUIRES c^2 >= (f - b) / (a - b). Measured on this payload, a direction that
-    removes 70% of the cell-mean spread must already have |cos| >= 0.88-0.91 with `d_surface`, and at
-    the arm's own dose the bound saturates at ~1.
+    which needs the cross term <M d, M w> to vanish for w perpendicular to d. Perpendicularity does
+    NOT give that -- it needs d to be an EIGENVECTOR of M^T M, and `d_surface` is only APPROXIMATELY
+    PC1 (cos 0.9998-1.0000, not 1). Measured cross terms are -0.0092..+0.0131, and the bound is wrong
+    in the ANTI-CONSERVATIVE direction: it demands MORE collinearity than geometry actually forces.
+
+    `d_naive`, which is sitting in the same payload, FALSIFIES it at every layer:
+
+        L6  dose 0.8329 -> bound demanded |cos| >= 0.9720, actual 0.9698   (violated by 0.0022)
+        L8  dose 0.7919 -> bound demanded |cos| >= 0.9662, actual 0.9613   (violated by 0.0049)
+        L12 dose 0.7595 -> bound demanded |cos| >= 0.9555, actual 0.9549   (violated by 0.0006)
+
+    A bound refuted by a vector already on disk is not a bound. Worse, the log recorded d_naive's
+    0.9613 as CONFIRMING a demand of "~0.95" -- the demand was 0.9662, so the observation was a
+    violation read as agreement, because the threshold had been rounded down in prose.
+
+    Replaced with the EXACT optimum, computed numerically over the actual quadratic form rather than
+    from an inequality: for each |cos| = c, sweep the complement rotation phi, take the true
+    dose(c, phi) = u^T A u with A = M^T M / tot, and report the smallest c whose best phi reaches f.
+    No cross-term assumption. The qualitative conclusion survives -- high dose does force near-
+    collinearity -- but the numbers move and the statement is now a computation, not a false theorem.
 
     That is why `d_naive` -- the one high-dose alternative that exists -- has cos 0.95-0.97 with
     `d_surface`: its similarity is not a coincidence to be explained away, it is FORCED by its dose.
@@ -83,18 +100,51 @@ def dose_identity_bound(payload, layer):
     Mp = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
     b = float(torch.linalg.svdvals(Mp)[0] ** 2) / tot
     import math
-    def mincos(f):
-        if f <= b:
-            return 0.0
-        r = (f - b) / (a - b)
-        return math.sqrt(r) if r <= 1 else None      # None = dose unattainable by ANY direction
+    # complement basis (2-D)
+    Mp = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
+    B = []
+    for i in range(Mp.shape[0]):
+        w = Mp[i].clone()
+        for bb in B:
+            w = w - torch.dot(w, bb) * bb
+        if float(w.norm()) > 1e-4 * float(Mp.norm()):
+            B.append(w / w.norm())
+    A_of = lambda v: float(((M @ (v / v.norm()).reshape(-1, 1)) ** 2).sum()) / tot
+
+    def max_dose_at_cos(c, n_phi=721):
+        s = math.sqrt(max(0.0, 1.0 - c * c))
+        best = -1.0
+        for j in range(n_phi):
+            ph = math.pi * j / n_phi
+            w = math.cos(ph) * B[0] + math.sin(ph) * B[1]
+            best = max(best, A_of(c * u + s * w))
+        return best
+
+    def mincos_exact(f, n_c=401):
+        for j in range(n_c + 1):                     # ascending c: first c that can reach f
+            c = j / n_c
+            if max_dose_at_cos(c) >= f:
+                return c
+        return None                                  # unattainable by ANY direction
+
+    max_dose_any = max_dose_at_cos(0.0)
+    for c in (0.5, 0.9, 1.0):
+        max_dose_any = max(max_dose_any, max_dose_at_cos(c))
     return {"dose_d_surface": a, "max_dose_in_complement": b,
-            "min_abs_cos_with_d_surface_to_reach": {str(f): mincos(f)
-                                                    for f in (0.3, 0.5, 0.7, 0.8)},
-            "reading": "a direction removing 70%% of the cell-mean spread must have |cos| >= %.2f "
-                       "with d_surface; at the arm's dose the bound saturates. High dose and "
-                       "d_surface-identity are geometrically entangled in this design."
-                       % (mincos(0.7) or 1.0)}
+            "max_dose_over_all_directions": max_dose_any,
+            "d_surface_is_max_dose_direction": bool(a >= max_dose_any - 1e-6),
+            "cross_terms_with_complement_basis": [float(torch.dot(M @ u, M @ bb)) / tot
+                                                  for bb in B[:2]],
+            "min_abs_cos_with_d_surface_to_reach_EXACT": {str(f): mincos_exact(f)
+                                                          for f in (0.3, 0.5, 0.7, 0.8)},
+            "superseded_closed_form": "c^2 >= (f-b)/(a-b) -- WRONG (R-27): assumes a zero cross term "
+                                      "that requires d_surface to be an eigenvector of M^T M; "
+                                      "d_naive falsifies it at L6/L8/L12",
+            "reading": "EXACT: a direction removing 70%% of the cell-mean spread must have |cos| >= "
+                       "%.4f with d_surface. High dose does force near-collinearity, but this is a "
+                       "computed optimum over the real quadratic form, not the (false) closed-form "
+                       "inequality this field used to report."
+                       % (mincos_exact(0.7) or 1.0)}
 
 
 def main() -> int:
