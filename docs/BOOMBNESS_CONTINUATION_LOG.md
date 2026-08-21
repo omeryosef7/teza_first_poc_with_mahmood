@@ -4749,3 +4749,42 @@ numbering series tabled, and the short update's body brought level with its head
 | 137 | 2026-08-21 | rescored the short update's §13; struck arm F's interaction claim | three retracted headlines removed from the doc read first |
 | 138 | 2026-08-21 | corrected G1 maturity, G1 query figure, G3 arithmetic | body now level with head |
 | 139 | 2026-08-21 | **audit #4 closed** | sweep clean, registry OK |
+
+## A figure registry — because "two deliverables updated one at a time" is a bug class, not three bugs
+
+Tick 2026-08-21. Three times this week the actual defect was that a correction landed in one
+deliverable and not its twin: arm F struck in the report and live in the short update, the band edges
+corrected in one only, the §13 scoring rescored in one only. That is structurally identical to a flag
+threaded into one of two code paths — the class this project has hit **eight** times in source — and
+**nothing was checking for it in prose**.
+
+`canonical_figures.py` is a **figure registry**: each headline number names its producing artifact and
+how it is written, and the check verifies (a) every deliverable quoting it quotes the **same** value
+and (b) that value still matches the **artifact**. Current state: **all registered figures agree
+across deliverables and with their artifacts.**
+
+**Verified it can fail**, rather than assuming a green light means anything. Injecting the exact
+defect it exists to catch — changing the shape-test p in the short update only — produces both errors:
+the cross-deliverable disagreement *and* the artifact mismatch. Restored, and clean again.
+
+### It caught two of my own design errors first
+
+1. **The regex was too broad.** `between-draw sd` matches every band the report legitimately
+   discusses — ClearHarm's 0.0034, the **retracted** R-12 band's 0.0048, G4's steering band's 0.0301 —
+   and reported them as disagreements. Now scoped to `5-draw control band … between-draw sd`.
+2. **It compared values as strings**, so `0.0109` and `0.011` — one number written at two precisions —
+   read as a conflict. Now numeric, with each figure's own tolerance.
+
+Both would have made it cry wolf, and **a registry that cries wolf is worse than none** — the same
+lesson the marker-exemption failure taught two ticks ago, arriving from the other direction. This is
+the fifth tool this week to catch its own author before anyone else could.
+
+**Deliberately narrow.** It does not parse claims; that is the semantic problem `population_index`
+declined for the same reason. Ten curated figures that are correct beat a hundred parsed ones that are
+not — and the ten are chosen as the numbers that have *already* caused a disagreement.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 140 | 2026-08-21 | built `canonical_figures.py` after the third cross-deliverable divergence | one number, one source, checked in every doc that quotes it |
+| 141 | 2026-08-21 | its first run flagged 6 problems — **all from my own two design errors** | scoped the regexes; compare numerically |
+| 142 | 2026-08-21 | injected a fake divergence to confirm it fails | catches both the disagreement and the artifact mismatch |

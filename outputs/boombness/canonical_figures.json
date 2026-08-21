@@ -1,0 +1,47 @@
+{
+  "figures": {
+    "advbench_band_mean": {
+      "regex": "5-draw control band\\D{0,20}([+-]?0\\.\\d{3,5})",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0012"
+        ],
+        "reports/boombness_objective_sprint_short_update.md": [
+          "0.0012"
+        ]
+      },
+      "artifact_value": 0.0012121212121212121
+    },
+    "advbench_band_sd": {
+      "regex": "5-draw control band[^\\n]{0,60}?between-draw sd\\s*(0\\.\\d{3,5})",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0026"
+        ]
+      },
+      "artifact_value": 0.0025777374050858274
+    },
+    "layer_shape_p": {
+      "regex": "permutation\\D{0,12}p\\s*=\\s*(0\\.0\\d{2,4})",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0109"
+        ],
+        "reports/boombness_objective_sprint_short_update.md": [
+          "0.011"
+        ]
+      },
+      "artifact_value": 0.01086989130108699
+    }
+  },
+  "problems": [],
+  "note": "a curated registry, not a parser. It checks numbers that have already caused a cross-deliverable disagreement or would be expensive to get wrong.",
+  "provenance": {
+    "argv": [
+      "src/boombness/canonical_figures.py",
+      "--out",
+      "outputs/boombness/canonical_figures.json"
+    ],
+    "git_commit": "81b2813ed78a8e53c32968dafbdc97187aadf8a1"
+  }
+}
