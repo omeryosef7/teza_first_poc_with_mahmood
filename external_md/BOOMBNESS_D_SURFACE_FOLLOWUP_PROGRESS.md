@@ -4332,6 +4332,44 @@ per draw — since the peer's result shows a draw can fail that gate for a reaso
 do with degeneracy.
 
 
+
+### ⛔ The fix I planned would have been R-12 in a new costume — replaced with an EXHAUSTIVE sweep
+
+The top item on my own next-sprint list was *"re-run the causal controls at ≥3 seeds per depth and
+report a band"*. **Checking whether that would work before spending the GPU showed it would not.**
+
+After removing `d_surface` from the rank-3 cell-mean span, the orthogonal complement is
+**two-dimensional**. Two random directions in 2-D have mean |cos| = 2/π ≈ 0.64 — and measured on the
+actual payload, three "independent" seeds gave pairwise cosines of **1.0000, 0.9116 and 0.9958**.
+Reporting those as a control *band* would have been **the R-12 mistake in a new costume**: draws that
+look independent because they carry different seeds, while covering almost none of the available
+space. The band's width would have measured nothing.
+
+**A 2-D space does not need sampling — it can be swept.** Projection is **sign-invariant**, so the
+distinct rank-1 projections form a half-circle, and four directions at 45° cover it. Implemented as
+`in_subspace_angle{k}`, fully deterministic (no RNG anywhere), verified before submitting:
+
+| k | angle | cos with arm | removes | cos with k=0 |
+|---|---|---|---|---|
+| 0 | 0° | 5.2e-07 | 4.57% | +1.0000 |
+| 1 | 45° | 1.4e-07 | 8.32% | +0.7071 |
+| 2 | **90°** | 3.2e-07 | **11.41%** | −0.0000 |
+| 3 | 135° | 5.9e-07 | 7.66% | −0.7071 |
+
+Exactly orthogonal to the arm throughout, mutually spaced as the geometry demands, and spanning
+**4.6%–11.4%** of the cell-mean spread — so the sweep includes a control **2.5× stronger** than the
+single draw the published table used.
+
+**This changes what the control can establish.** A band of random draws would have supported *"a
+typical orthogonal direction does nothing"*. An exhaustive sweep supports the far stronger *"**no**
+direction orthogonal to `d_surface` inside the concept subspace does anything, and here is the
+strongest one"* — an upper bound rather than a sample.
+
+**Submitted at L8** (771867–771870), the most-cited depth. Prediction recorded: the arm is +0.0278;
+if the **90° control at 11.41% spread removal** — the strongest available orthogonal edit — is still
+inert, the direction-specificity of the L8 effect is established against the whole complement rather
+than against one draw.
+
 ## ✅✅✅ THE POSITIVE CONTROL FIRES AT L31 — a DOUBLE DISSOCIATION, and the withdrawn claim is restored in corrected form
 
 **Artifacts:** `score_behavior/unemb{8,31}_*` (495 generations each, 0 failures), judged in four

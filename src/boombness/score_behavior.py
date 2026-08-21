@@ -192,7 +192,20 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
     # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
     # names a draw actually selects one.
-    if name == "unembed_refusal":
+    if name.startswith("in_subspace_angle"):
+        import signals as _sg
+        k = int(name.replace("in_subspace_angle", ""))
+        base = payload["d_surface"]
+        dmap, diag = {}, {}
+        for L in base:
+            v, how = _sg.in_subspace_angle_direction(payload, L, k)
+            dmap[L] = v
+            cosv = float(torch.dot(base[L].float() / base[L].float().norm(),
+                                   v.float() / v.float().norm()))
+            diag[f"L{L}"] = {"how": how, "cos_with_arm": cosv}
+        print(f"[score] {name}: L8={json.dumps(diag.get('L8'))} L12={json.dumps(diag.get('L12'))}")
+        gaps = {}
+    elif name == "unembed_refusal":
         # POSITIVE CONTROL FOR LATE ABLATION. The span test showed the entire concept subspace is
         # inert at L31 while acting at L8, which is consistent with two very different stories:
         # (i) L31 ablation is architecturally weak -- one layer before the unembedding there is

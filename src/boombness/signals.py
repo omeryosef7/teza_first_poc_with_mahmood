@@ -488,6 +488,49 @@ def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
     return v.to(d.dtype), f"{tag}:k={keep}"
 
 
+def in_subspace_angle_direction(payload: dict, layer: int, k: int, n_angles: int = 4):
+    """The k-th of `n_angles` evenly spaced directions in the 2-D complement of the arm.
+
+    WHY THIS REPLACES RANDOM SEEDS. After removing `d_surface` from the rank-3 cell-mean span the
+    orthogonal complement is **two-dimensional**, and random draws there are not independent samples
+    of anything: two random directions in 2-D have mean |cos| = 2/pi ~ 0.64, and measured on this
+    payload three "independent" seeds gave cos 1.000 / 0.912 / 0.996 with each other. Reporting them
+    as a control BAND would be the R-12 mistake in a new costume -- draws that look independent
+    because they have different seeds, while spanning almost none of the available space.
+
+    A 2-D space admits an exhaustive sweep instead. Projection is SIGN-INVARIANT, so the distinct
+    rank-1 projections form a half-circle: angles in [0, pi). `n_angles` evenly spaced over that
+    half-circle cover the complement completely, and the strongest of them is a genuine upper bound
+    on "any direction orthogonal to the arm inside the concept subspace", not a sample from one.
+
+    Deterministic: no RNG at all. The basis is the same Gram-Schmidt used elsewhere, so index k is
+    reproducible from (payload, layer, k, n_angles).
+    """
+    cm = payload.get("cell_means")
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    d = payload["d_surface"][layer].float().reshape(-1)
+    u = d / (d.norm() + 1e-8)
+    proj = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
+    basis = []
+    for i in range(proj.shape[0]):
+        w = proj[i].clone()
+        for b in basis:
+            w = w - torch.dot(w, b) * b
+        nb = w.norm()
+        if float(nb) > 1e-4 * float(proj.norm()):
+            basis.append(w / nb)
+    if len(basis) < 2:
+        raise SystemExit(f"in_subspace_angle: complement at L{layer} has rank {len(basis)}, "
+                         f"an angle sweep needs 2")
+    theta = math.pi * k / n_angles
+    v = math.cos(theta) * basis[0] + math.sin(theta) * basis[1]
+    v = v / (v.norm() + 1e-8) * d.norm()
+    return v.to(payload["d_surface"][layer].dtype), f"angle:{k}/{n_angles}:rank{len(basis)}"
+
+
 def cell_span_basis_direction(payload: dict, layer: int, index: int):
     """The `index`-th orthonormal basis vector of the centred 2x2 cell-mean span.
 

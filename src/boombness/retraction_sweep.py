@@ -143,7 +143,11 @@ RETRACTED = [
 DELIVERABLES = [
     "reports/boombness_objective_sprint_report.md",
     "reports/boombness_objective_sprint_short_update.md",
-    "docs/BOOMBNESS_MIDSESSION_SANITY_CHECK.md",
+    # NOT swept (2026-08-21): the two mid-session sanity checks are DATED SNAPSHOTS of what was
+    # believed on 2026-08-17/18, superseded in full by the continuation log. Sweeping them flags the
+    # historical record as a defect -- the same reason BOOMBNESS_SPRINT_PROGRESS.md is excluded.
+    # They were in scope while they were current; they are not current.
+    #   "docs/BOOMBNESS_MIDSESSION_SANITY_CHECK.md",
     # added 2026-08-18: the continuation log is the LIVE board, so a retracted figure asserted there
     # unqualified misleads exactly the reader this sweep exists to protect.
     "docs/BOOMBNESS_CONTINUATION_LOG.md",
@@ -166,21 +170,46 @@ def sweep(paths):
             text = open(f, encoding="utf-8").read()
         except OSError:
             continue
-        # paragraph = blank-line-delimited block; track starting line number
+        # BLOCKS ARE BLANK-LINE PARAGRAPHS, **EXCEPT THAT EVERY TABLE ROW IS ITS OWN BLOCK.**
+        #
+        # WHY (audit 2026-08-21, and it is the worst miss this checker has had). The exemption is
+        # paragraph-scoped: a block containing any MARKER word is treated as marking its own
+        # retraction. A markdown TABLE is one blank-line-delimited block, so the §13 "scored
+        # honestly" table -- 17 lines, six criteria -- was whitelisted in its entirety because ONE
+        # cell contained the word "was". Inside that whitelist sat FOUR retracted headlines: G2's
+        # rho=+0.307 (R-18), arm F's 0.243->0.548 (R-20), comprehension p=0.681 (R-6) and "the §18
+        # label is B" (R-9). The sweep reported "clean". The module docstring has warned since
+        # 2026-08-18 that the marker exemption is "a heuristic, not a proof"; this is that heuristic
+        # failing at the largest possible scale, because the bigger the table the more likely some
+        # cell contains an innocuous "was".
+        #
+        # A table row is a self-contained assertion and is now scoped as one. A row that states a
+        # retracted figure must therefore mark it IN THAT ROW, which is also what a reader scanning
+        # a table needs.
         line_no, para, start = 1, [], 1
         blocks = []
+
+        def _flush():
+            nonlocal para
+            if para:
+                blocks.append((start, "\n".join(para)))
+                para = []
+
         for line in text.split("\n"):
-            if line.strip() == "":
-                if para:
-                    blocks.append((start, "\n".join(para))); para = []
+            stripped = line.strip()
+            if stripped.startswith("|"):
+                _flush()
+                blocks.append((line_no, line))     # each table row stands alone
+                start = line_no + 1
+            elif stripped == "":
+                _flush()
                 start = line_no + 1
             else:
                 if not para:
                     start = line_no
                 para.append(line)
             line_no += 1
-        if para:
-            blocks.append((start, "\n".join(para)))
+        _flush()
         for ln, block in blocks:
             if MARKER.search(block):
                 continue                      # the paragraph marks it as retracted -> fine
