@@ -5728,3 +5728,90 @@ plumbing failure loud instead of letting it masquerade as a finding.
 | 217 | 2026-08-21 | submitted judging 772993-772998 | ladder deltas pending |
 | 218 | 2026-08-21 | **pre-registered** `dose_curve.py` in a commit predating the data | decision rule fixed before any ladder outcome is visible |
 | 219 | 2026-08-21 | built in two geometry-derived plumbing checks (k=0 ≡ `d_surface`, k=7 ≡ `angle0`) | a broken `dose_mix` path fails loudly instead of reading as a result |
+
+## The dose ladder returns: dose is NOT sufficient — and this is the first positive result in ten ticks
+
+Tick 2026-08-21. 772993-772998 judged, 495 rows each. Ran `dose_curve.py` **unmodified** since its
+pre-registration commit (`git diff HEAD` on the file is empty, and that is checked in the tick's
+command, not asserted).
+
+**Both geometry-derived plumbing checks pass exactly**, which is what licenses reading anything else:
+
+| check | ladder | existing run | agree |
+|---|---|---|---|
+| k=0 **is** `d_surface` | 0.042424242 | 0.042424242 (L8 arm) | ✅ |
+| k=7 **is** `in_subspace_angle0` | 0.002020202 | 0.002020202 (angle0) | ✅ |
+
+### The ladder
+
+| k | dose | Δ ASR |
+|---|---|---|
+| 0 | 0.8402 | +0.0424 |
+| 1 | 0.7969 | +0.0444 |
+| 2 | 0.6835 | +0.0424 |
+| 3 | 0.5224 | +0.0404 |
+| 4 | 0.3456 | +0.0263 |
+| 5 | 0.1881 | +0.0222 |
+| 6 | 0.0810 | +0.0101 |
+| 7 | 0.0457 | +0.0020 |
+
+Clean and monotone, and it **saturates**: from dose 0.52 to 0.84 the effect moves +0.0404 → +0.0424.
+Most of the effect is bought by the first half of the dose. R-25's saturation prediction — made from an
+extrapolation — is now measured directly.
+
+### ⛔ Pre-registered verdict: `dose_sufficient = False`
+
+**The decisive comparison needs no curve fit at all:**
+
+| | dose | cos with `d_surface` | Δ ASR | flips |
+|---|---|---|---|---|
+| ladder k=1 | 0.7969 | 0.9749 | **+0.0444** | 22 |
+| **`d_naive`** | 0.7919 | 0.9613 | **+0.0586** | **29** |
+
+Matched to **0.005 in dose** and **0.014 in cosine**, and `d_naive` still delivers **+0.0141 more** —
+seven extra flips, about a third of `d_surface`'s entire effect, and 1.7× the ladder's own scatter.
+Two directions at the same dose and the same distance from `d_surface` do measurably different things.
+
+**And the angle controls said so all along.** Their 12 points sit at near-constant dose
+(0.046–0.114) yet span **−0.0141 … +0.0182**, a range of **0.0323** — with the effect at dose 0.0942
+(−0.0141) *below* the effect at dose 0.0832 (+0.0182). At constant dose, identity moves the outcome by
+as much as dose does across its whole range. That was visible in data I already had, and I read it as
+null-scatter.
+
+**Honest limit on the verdict.** The pre-registered scatter (0.0081) came from the **ladder's** own
+leave-one-out residuals, and the held-out angle family scatters much wider (residuals −0.0257…+0.0116).
+So the two angle points the rule flagged as "above curve" are **inside their own family's spread and I
+do not count them**. The robust flag is `d_naive`: it sits at high dose where the ladder is dense and
+flat, and it is confirmed by the direct k=1 comparison that uses no fit. Disclosing this rather than
+switching metrics after the fact — a tighter-than-appropriate scatter estimate is exactly the kind of
+choice pre-registration exists to keep me honest about.
+
+### What this does to the sprint's position — the first thing to *survive* in ten ticks
+
+R-25 was right that the in-subspace null was dose-confounded. But **"it is all dose" is now refuted by
+my own pre-registered test**, and refuted with a comparison matched on both dose and geometry. The
+accurate picture is neither of the two stories I have told:
+
+- **Dose explains the broad trend** — a clean monotone, saturating curve from 0.046 to 0.84.
+- **Dose is not sufficient** — at matched dose and matched cosine, direction identity moves ASR by
+  ~0.014, comparable to a third of the headline effect.
+- **`d_surface` is not the privileged direction.** It is beaten, at its own dose, by `d_naive`.
+
+**And per the reading I committed in advance, R-26's narrow summary is now wrong.** I wrote that
+`d_naive`'s advantage showed "the 2×2's identification step buys no behavioural effect and costs a
+little". The ladder says something sharper: the identification step moves you **off** the stronger
+direction by more than dose or geometry accounts for. The confounded contrast is not merely *as good* —
+it is better than any dose-and-cosine-matched mixture of `d_surface` with the complement.
+
+That is a real, positive, pre-registered finding, and it is the first claim in this thread that a
+control has failed to kill.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 220 | 2026-08-21 | 772993-772998 judged | 6 rungs × 495 rows |
+| 221 | 2026-08-21 | ran `dose_curve.py` unmodified since pre-registration | verified via `git diff`, not asserted |
+| 222 | 2026-08-21 | both plumbing checks | k=0 ≡ `d_surface`, k=7 ≡ `angle0`, **exact** |
+| 223 | 2026-08-21 | pre-registered verdict | **`dose_sufficient = False`** |
+| 224 | 2026-08-21 | direct dose+cos-matched comparison | k=1 **+0.0444** vs `d_naive` **+0.0586** — no fit required |
+| 225 | 2026-08-21 | disclosed the scatter-metric limitation | 2 angle flags not counted; `d_naive` is the robust one |
+| 226 | 2026-08-21 | revised **R-26**'s narrow reading, as pre-committed | identification moves you **off** the stronger direction |

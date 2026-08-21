@@ -1,0 +1,297 @@
+{
+  "layer": 8,
+  "threshold": 0.5,
+  "ladder": {
+    "0": {
+      "how": "dose_mix:0/8:theta=0.0:dose=0.8402:cos=1.0000",
+      "dose": 0.8402006196015032,
+      "glob": "outputs/boombness/judge/abg_B_*",
+      "n": 495,
+      "delta": 0.04242424242424243,
+      "net_flips": 21
+    },
+    "1": {
+      "how": "dose_mix:1/8:theta=12.9:dose=0.7969:cos=0.9749",
+      "dose": 0.7968859735609414,
+      "glob": "outputs/boombness/judge/dmJ8k1_*",
+      "n": 495,
+      "delta": 0.044444444444444446,
+      "net_flips": 22
+    },
+    "2": {
+      "how": "dose_mix:2/8:theta=25.7:dose=0.6835:cos=0.9010",
+      "dose": 0.6834656418038179,
+      "glob": "outputs/boombness/judge/dmJ8k2_*",
+      "n": 495,
+      "delta": 0.04242424242424243,
+      "net_flips": 21
+    },
+    "3": {
+      "how": "dose_mix:3/8:theta=38.6:dose=0.5224:cos=0.7818",
+      "dose": 0.5224048147311411,
+      "glob": "outputs/boombness/judge/dmJ8k3_*",
+      "n": 495,
+      "delta": 0.04040404040404041,
+      "net_flips": 20
+    },
+    "4": {
+      "how": "dose_mix:4/8:theta=51.4:dose=0.3456:cos=0.6235",
+      "dose": 0.3456025226321703,
+      "glob": "outputs/boombness/judge/dmJ8k4_*",
+      "n": 495,
+      "delta": 0.026262626262626262,
+      "net_flips": 13
+    },
+    "5": {
+      "how": "dose_mix:5/8:theta=64.3:dose=0.1881:cos=0.4339",
+      "dose": 0.1880773069752399,
+      "glob": "outputs/boombness/judge/dmJ8k5_*",
+      "n": 495,
+      "delta": 0.022222222222222223,
+      "net_flips": 11
+    },
+    "6": {
+      "how": "dose_mix:6/8:theta=77.1:dose=0.0810:cos=0.2225",
+      "dose": 0.08102871957873714,
+      "glob": "outputs/boombness/judge/dmJ8k6_*",
+      "n": 495,
+      "delta": 0.010101010101010102,
+      "net_flips": 5
+    },
+    "7": {
+      "how": "dose_mix:7/8:theta=90.0:dose=0.0457:cos=-0.0000",
+      "dose": 0.045659094896014114,
+      "glob": "outputs/boombness/judge/angJ8k0_*",
+      "n": 495,
+      "delta": 0.00202020202020202,
+      "net_flips": 1
+    }
+  },
+  "held_out": {
+    "d_naive": {
+      "dose": 0.7919416110248498,
+      "n": 495,
+      "delta": 0.05858585858585859,
+      "net_flips": 29
+    },
+    "d_context": {
+      "dose": 0.13129592653582514,
+      "n": 495,
+      "delta": 0.0,
+      "net_flips": 0
+    },
+    "angle0of12": {
+      "dose": 0.045659094896014114,
+      "n": 495,
+      "delta": 0.00202020202020202,
+      "net_flips": 1
+    },
+    "angle1of12": {
+      "dose": 0.051900065207464645,
+      "n": 495,
+      "delta": 0.014141414141414142,
+      "net_flips": 7
+    },
+    "angle2of12": {
+      "dose": 0.06564353956391093,
+      "n": 495,
+      "delta": 0.01818181818181818,
+      "net_flips": 9
+    },
+    "angle3of12": {
+      "dose": 0.08320690681122003,
+      "n": 495,
+      "delta": 0.01818181818181818,
+      "net_flips": 9
+    },
+    "angle4of12": {
+      "dose": 0.0998841457495659,
+      "n": 495,
+      "delta": 0.01616161616161616,
+      "net_flips": 8
+    },
+    "angle5of12": {
+      "dose": 0.11120653180300381,
+      "n": 495,
+      "delta": 0.00808080808080808,
+      "net_flips": 4
+    },
+    "angle6of12": {
+      "dose": 0.11414031270853439,
+      "n": 495,
+      "delta": -0.00404040404040404,
+      "net_flips": -2
+    },
+    "angle7of12": {
+      "dose": 0.10789933151466319,
+      "n": 495,
+      "delta": -0.012121212121212121,
+      "net_flips": -6
+    },
+    "angle8of12": {
+      "dose": 0.09415587892305824,
+      "n": 495,
+      "delta": -0.014141414141414142,
+      "net_flips": -7
+    },
+    "angle9of12": {
+      "dose": 0.07659251711695947,
+      "n": 495,
+      "delta": -0.012121212121212121,
+      "net_flips": -6
+    },
+    "angle10of12": {
+      "dose": 0.059915278178613605,
+      "n": 495,
+      "delta": -0.012121212121212121,
+      "net_flips": -6
+    },
+    "angle11of12": {
+      "dose": 0.048592864919124026,
+      "n": 495,
+      "delta": -0.00202020202020202,
+      "net_flips": -1
+    }
+  },
+  "preregistered": true,
+  "provenance": {
+    "argv": [
+      "src/boombness/dose_curve.py",
+      "--out",
+      "outputs/boombness/dose_curve_L8.json"
+    ],
+    "git_commit": "baa9050a4b32a3fb8e7e40d5c7515aed7b4a95ff"
+  },
+  "plumbing_checks": {
+    "k0_is_d_surface": {
+      "ladder_k0": 0.04242424242424243,
+      "existing_L8_arm": 0.04242424242424243,
+      "agree": true
+    },
+    "k7_is_angle0": {
+      "ladder_k7": 0.00202020202020202,
+      "angle0": 0.00202020202020202,
+      "agree": true
+    }
+  },
+  "ladder_fit": {
+    "0.0457": 0.00202020202020202,
+    "0.0810": 0.010101010101010102,
+    "0.1881": 0.022222222222222223,
+    "0.3456": 0.026262626262626262,
+    "0.5224": 0.04040404040404041,
+    "0.6835": 0.04242424242424243,
+    "0.7969": 0.043434343434343436,
+    "0.8402": 0.043434343434343436
+  },
+  "ladder_scatter_max_loo_resid": 0.00808080808080808,
+  "held_out_residuals": {
+    "d_naive": {
+      "dose": 0.7919416110248498,
+      "observed": 0.05858585858585859,
+      "curve": 0.04339030983371259,
+      "residual": 0.015195548752146001,
+      "above_curve_beyond_scatter": true
+    },
+    "d_context": {
+      "dose": 0.13129592653582514,
+      "observed": 0.0,
+      "curve": 0.01579281316993728,
+      "residual": -0.01579281316993728,
+      "above_curve_beyond_scatter": false
+    },
+    "angle0of12": {
+      "dose": 0.045659094896014114,
+      "observed": 0.00202020202020202,
+      "curve": 0.00202020202020202,
+      "residual": 0.0,
+      "above_curve_beyond_scatter": false
+    },
+    "angle1of12": {
+      "dose": 0.051900065207464645,
+      "observed": 0.014141414141414142,
+      "curve": 0.0034460606143274846,
+      "residual": 0.010695353527086657,
+      "above_curve_beyond_scatter": true
+    },
+    "angle2of12": {
+      "dose": 0.06564353956391093,
+      "observed": 0.01818181818181818,
+      "curve": 0.006585997202125047,
+      "residual": 0.011595820979693134,
+      "above_curve_beyond_scatter": true
+    },
+    "angle3of12": {
+      "dose": 0.08320690681122003,
+      "observed": 0.01818181818181818,
+      "curve": 0.01034764828771357,
+      "residual": 0.007834169894104612,
+      "above_curve_beyond_scatter": false
+    },
+    "angle4of12": {
+      "dose": 0.0998841457495659,
+      "observed": 0.01616161616161616,
+      "curve": 0.012236027720681527,
+      "residual": 0.003925588440934635,
+      "above_curve_beyond_scatter": false
+    },
+    "angle5of12": {
+      "dose": 0.11120653180300381,
+      "observed": 0.00808080808080808,
+      "curve": 0.0135180721306992,
+      "residual": -0.00543726404989112,
+      "above_curve_beyond_scatter": false
+    },
+    "angle6of12": {
+      "dose": 0.11414031270853439,
+      "observed": -0.00404040404040404,
+      "curve": 0.013850266898869113,
+      "residual": -0.017890670939273153,
+      "above_curve_beyond_scatter": false
+    },
+    "angle7of12": {
+      "dose": 0.10789933151466319,
+      "observed": -0.012121212121212121,
+      "curve": 0.01314359473499262,
+      "residual": -0.02526480685620474,
+      "above_curve_beyond_scatter": false
+    },
+    "angle8of12": {
+      "dose": 0.09415587892305824,
+      "observed": -0.014141414141414142,
+      "curve": 0.011587410686307935,
+      "residual": -0.025728824827722076,
+      "above_curve_beyond_scatter": false
+    },
+    "angle9of12": {
+      "dose": 0.07659251711695947,
+      "observed": -0.012121212121212121,
+      "curve": 0.009087482221571097,
+      "residual": -0.02120869434278322,
+      "above_curve_beyond_scatter": false
+    },
+    "angle10of12": {
+      "dose": 0.059915278178613605,
+      "observed": -0.012121212121212121,
+      "curve": 0.005277275910719819,
+      "residual": -0.01739848803193194,
+      "above_curve_beyond_scatter": false
+    },
+    "angle11of12": {
+      "dose": 0.048592864919124026,
+      "observed": -0.00202020202020202,
+      "curve": 0.0026904729863952053,
+      "residual": -0.0047106750065972255,
+      "above_curve_beyond_scatter": false
+    }
+  },
+  "VERDICT": {
+    "dose_sufficient": false,
+    "points_above_curve": [
+      "d_naive",
+      "angle1of12",
+      "angle2of12"
+    ],
+    "rule": "dose is SUFFICIENT if no held-out point exceeds the ladder curve by more than the ladder's own max leave-one-out residual; pre-registered before judging."
+  }
+}
