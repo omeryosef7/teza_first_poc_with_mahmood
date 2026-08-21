@@ -4295,6 +4295,38 @@ and that is the point of running it. **If L31 comes back null, I will weaken the
 final report rather than keep it as written.**
 
 
+
+### ⚠ Adopted from a peer, and it applies to MY controls too: every per-depth control here is n = 1 DRAW
+
+A third concurrency episode (commits `dfb9c965`, `36e6b9a5` at 08:06/08:35, jobs 771633–771635 —
+none mine; see the incident note below). Its finding is sound and I am adopting it, because it lands
+on my own work:
+
+> Three AdvBench random-control draws exist and are genuinely independent, but **one fails the
+> coherence gate** — not on repetition (uniq 0.833, trigram 0.014 all healthy) but on
+> `scorable_frac 0.446`, because **274 of 495 generations are under 8 words**: that seed pushes the
+> model into terse refusals. So the band is n = 2 and `analyze_steering` refuses to call that a band.
+> **"Arm B beats a random BAND on AdvBench" is not currently supported**; what is supported is that
+> it beats each of two individual coherent draws.
+
+**Why this matters for the re-check I ran tonight.** My subspace-matched controls are **one draw per
+depth** — `--seed 20260901`, a single `in_subspace_orth` vector at each of L6/L8/L10/L12. The
+Holm-corrected arm-minus-control result therefore **conditions on one control draw at each depth**,
+exactly the shape R3-2 flagged for the arm-6 control and exactly what the peer's inventory just
+showed can go wrong. It is not the R-12 failure — the draws are genuinely seeded and differ across
+depths — but **no between-draw variance is estimated anywhere in that table**, and the write-up did
+not say so.
+
+**Partial mitigation already on disk, stated for what it is.** The *correlational* subspace test does
+use **three independent seeds** (20260901/2/3) and they agree closely — within-level ρ spans
+0.089–0.163 across seeds at three layers, all significant. That bounds draw-to-draw variability for
+the *prediction* side. It says nothing about the *causal* side, where each depth has one draw.
+
+⛔ **Added to the next-sprint list, above everything else on it:** re-run the four causal
+subspace-matched controls at ≥3 seeds per depth and report a band, with the coherence gate applied
+per draw — since the peer's result shows a draw can fail that gate for a reason that has nothing to
+do with degeneracy.
+
 ## ⛔ THE CONTROL FIRED — the L31 null is NOT direction-specific, and the central claim is WEAKENED as promised
 
 **Artifacts:** `score_behavior/span{8,31}_*` (495 generations each, 0 failures, three composed hooks
