@@ -87,14 +87,22 @@ a change of concept. Both halves were run:
 | | |
 |---|---|
 | alignment of the two fitted directions | **cos ≈ 0.61**, against a within-concept ceiling of **0.995** |
-| causal effect of the **knife**-fitted direction on AdvBench | **+0.0182** (9 flips), control **+0.0000** |
-| causal effect of the **bomb**-fitted direction (the headline) | **+0.0364** (18 flips) |
-| **effect ratio** | **0.50** at **cos 0.61** |
+| causal effect of the **knife**-fitted direction on AdvBench (L8) | **+0.0182** (9 flips) — but an **orthogonal** in-subspace control gives the same (R-23) |
+| causal effect of the **bomb**-fitted direction, layer-matched (L8) | **+0.0424** (21 flips); at L12, +0.0364 (18) |
+| **effect ratio** | ⛔ **retracted (R-23)** — cross-layer, and matched at cos 0 |
+| **codeword held, concept varied** (`carrot→knife`) | cos **0.6117** |
+| **concept held, codeword varied** (`button→bomb`) | cos **0.5539** ⛔ **R-24** |
 
-**Read together: mostly concept-specific in direction, mostly concept-general in consequence.** Two
-thirds of the direction's variance is concept-specific, but the concept-*general* component carries
-most of the causal work — a 61%-aligned direction delivers 50% of the effect, and it does so on 495
-generic harmful instructions containing none of `carrot`, `bomb` or `knife`.
+⛔ **E12 is retracted in full (R-23 behavioural, R-24 representational), and the retraction is the
+result.** The behavioural half died because the effect ratio was computed across two different layers
+*and* because an in-subspace direction **orthogonal** to `d_surface` reproduces the knife effect exactly
+at the same layer (knife z = 1.34 against that null; it does not clear). The representational half died
+to a control I had pre-committed to: holding the **concept** fixed and swapping only the **codeword**
+moves `d_surface` **further** (cos 0.5539) than holding the codeword fixed and swapping the concept
+(0.6117). **So `d_surface`, as estimated at the codeword token, is at least as much a function of which
+token carries the codeword as of what that codeword means.** The mechanism is demonstrated for
+`carrot↔bomb` and for that pairing only; **`d_surface` names an estimator, and this sprint has now
+tested and failed to show that it names a concept.**
 
 **So the scope statement for this report is:** the mechanism is demonstrated for `carrot ↔ bomb`, and
 **shown to transfer, at roughly half strength, to a second concept**. It is not shown to be
@@ -198,7 +206,9 @@ appears in the gate table above.
 | R-14 | the **external-bank** arms — every completion judged against an **EMPTY GOAL** | **RETRACTED, re-judged.** `make_goal` reads the request from `final_query_text`; `external_bank.py` emitted the instruction only as `full_prompt`, so both external banks lacked that key and StrongReject scored against no request at all — recorded as `judge_status: "ok"`. It looked plausible because an empty-goal score still reads how harmful the *response* is, so values tracked the refusal rate. Banks regenerated with every `prompt_id` preserved, all arms re-judged; every arm moved ≤0.03 and the ordering held, so the cost was **measurement validity, not the conclusion**. |
 | R-15 | the **cross-condition profile** table | **CORRECTED 2026-08-19.** It shipped six deltas and no inference while the Qwen3 table eleven lines below carried `p_cl` on every cell and annotated two "(n.s.)" — the same asymmetric-standard defect as R-13, and its third instance. Re-run under one test (`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered, n=960); the deltas reproduce exactly. |
 | **R-22** | arm F's **mechanistic interpretation** — the "capability channel" reading | **RETRACTED.** The gain is **not conditional on the doublespeak mapping**: it appears most strongly in `benign_remap`, where carrot→bomb is never taught. ⚠ **Renumbered 2026-08-21** — this was cited as *R-8*, which the registry already assigns to G1's "+84% of span" supersession. Two meanings, one ID, in the same document. See also **R-20**, which retracts the arm-F *number* on separate grounds (a judge artifact, ~94% answer style). |
-| #1 … #9 | the sprint's **`#N` retraction series** (a THIRD numbering) | **RECORDED — different series.** The body cites "retraction **#3**", "**#6**", "**#7**", "**#9**"; these live in `docs/BOOMBNESS_SPRINT_PROGRESS.md` and are **not** the R-N series. **#7 is the same event tabled here as R-12** (the fake control band). Listed so the registry is genuinely closed: **three** numbering series exist — `#N`, R-1…R-5 (progress log), and R-6…R-22 (this table). Do not open a fourth; take the next ID from this table. |
+| **R-23** | E12's **effect-ratio inference** — "a 61%-aligned direction delivers 50% of the effect, therefore the shared component is the causally active part" | **RETRACTED.** Two independent defects, either fatal. (a) **Cross-layer**: the knife arm is `d_surface:project_out:8-8`, the bomb comparator I divided by is `12-12`; every other object in E12's causal apparatus, including the 5-draw band, is L8. Layer-matched the ratio is **9/21 = 0.43**. (b) **Not identified**: an in-subspace direction built to be **orthogonal** to `d_surface` (cos = 0.0000) projected out at the same L8 gives **+0.0182 / 9 flips**, bit-for-bit the knife result; across the four such controls the effect spans −0.0121…+0.0182 *at cosine zero*. Against that null the knife arm is **z = 1.34** (does not clear); bomb L8 is z = 3.23 (clears). The "~7 band-sds" used the 4096-d random band (sd 0.0026), a much weaker null. **Surviving:** the bomb L8 effect, and the representational cosine 0.6117. **Withdrawn:** every statement that `d_surface` is shown to transfer to a second concept. `outputs/boombness/e12_insubspace_null.json`. Found by audit #5, which I had briefed to attack E12. |
+| **R-24** | E12's **representational** interpretation — "cos 0.6117 measures the concept-general fraction of `d_surface`" | **RETRACTED, by a pre-committed test.** Before running it I wrote: *cos(carrot-bomb, button-bomb) ≈ 0.99 → the codeword is irrelevant and 0.6117 is the concept; ≈ 0.6 → 0.6117 is bank/codeword structure and E12's interpretation collapses.* Three fits share **identical** family sets, template, model, dtype and seed, so exactly one factor varies per contrast: **concept varied, codeword held** (`carrot→knife`) gives **0.6117**; **codeword varied, concept held** (`button→bomb`) gives **0.5539**, against a within-fit split ceiling of 0.995/0.993. A pure codeword swap moves `d_surface` **more** than a pure concept swap. The 0.6117 therefore cannot be read as concept overlap. Caveat, stated because it is real: swapping the codeword also changes the identity of the readout token under `--position codeword_last`, so part of the 0.5539 is "different token, different residual content" — which is the reason the original attribution fails, not a rescue of it. `outputs/boombness/e12_codeword_control_cosines.json`. **With R-23 this retracts E12 in full.** |
+| #1 … #9 | the sprint's **`#N` retraction series** (a THIRD numbering) | **RECORDED — different series.** The body cites "retraction **#3**", "**#6**", "**#7**", "**#9**"; these live in `docs/BOOMBNESS_SPRINT_PROGRESS.md` and are **not** the R-N series. **#7 is the same event tabled here as R-12** (the fake control band). Listed so the registry is genuinely closed: **three** numbering series exist — `#N`, R-1…R-5 (progress log), and R-6…R-24 (this table). Do not open a fourth; take the next ID from this table. |
 | R-1 … R-5 | the sprint's **first** retraction series | **RECORDED ELSEWHERE — different numbering.** These five predate this table and live in `docs/BOOMBNESS_SPRINT_PROGRESS.md` (e.g. R-5 = the "Boombness beats refusalness 3.7×" claim, cited at §"what was implemented"). They are listed here so the registry is closed: **two numbering series exist**, and an ID below R-6 refers to the progress log's series, not this one. Do not reuse R-1…R-5 for new retractions. |
 | R-12 | the G4 steering **control band** — "3 independent draws, between-draw sd 0.0048" | **RETRACTED, then CLOSED.** `score_behavior.py:123` recursed into composed arms without passing `control_seed`, so three draws launched at different `--seed` values drew the **same** directions and produced byte-identical generations (sha256 `276b6af…` ×3). The band was n=1. Re-run with the seed threaded; §"the control band, resolved". |
 | R-13 | the Qwen3 §14 comparison, and the `n`/`df` of the condition table | **RETRACTED.** The StrongReject rubric scores answer *style*: two Qwen3 arms, one a double-random control, reached ASR 0.95–0.99 with **0 of 324** generations containing a word distinctive to the goal. Superseded by the topical conjunction; see R-20 for the same defect on Llama. |
@@ -2249,23 +2259,36 @@ run: project out the **knife**-fitted `d_surface` on **AdvBench**, whose 495 pro
 
 | direction projected out | Δ ASR | net compliance flips | CI95 |
 |---|---|---|---|
-| **`bomb`-fitted** (the headline) | **+0.0364** | **18** | [+0.0202, +0.0533] |
-| **`knife`-fitted** | **+0.0182** | **9** | [+0.0077, +0.0309] |
-| knife-fitted **random control** | **+0.0000** | 0 | [−0.0059, +0.0067] |
-| 5-draw control band | +0.0012 (sd 0.0026) | — | — |
+| **`bomb`-fitted, L8** (layer-matched) | **+0.0424** | **21** | — |
+| `bomb`-fitted, **L12** *(the comparator I originally published)* | +0.0364 | 18 | [+0.0202, +0.0533] |
+| **`knife`-fitted, L8** | **+0.0182** | **9** | [+0.0077, +0.0309] |
+| knife-fitted **random control** (4096-d norm-matched) | **+0.0000** | 0 | [−0.0059, +0.0067] |
+| 5-draw random control band | +0.0012 (sd 0.0026) | — | — |
+| **in-subspace control, cos = 0.0000 with `d_surface`, L8** | **+0.0182** | **9** | — |
 
-**It transfers.** A direction fitted on `carrot↔knife` raises attack success on generic harmful
-instructions by **+0.0182** — about **7 band-sds** — with its own matched control at **exactly zero**.
-And it fails the same way the headline does: on the **453** prompts where the model refuses in both
-arms the delta is **+0.0000**, so the entire effect is **8 of 9** genuine refusal→compliance flips.
+⛔ **The quantitative agreement claimed here is RETRACTED — see R-23.** Two things are wrong with it.
 
-**The two halves of E12 agree quantitatively.** The knife direction is **cos ≈ 0.61** aligned with the
-bomb direction and produces **0.0182/0.0364 = 0.50** of its effect. A direction 61% aligned delivering
-50% of the causal effect is what you expect if **the shared component is the causally active part** —
-the concept-general ~⅓ of the variance does the work, and the concept-specific remainder adds little.
+**The ratio was cross-layer.** The knife arm intervenes at **L8**; the bomb comparator I divided by is
+**L12**. Every other object in E12's causal apparatus — including the 5-draw band — is L8. The
+layer-matched ratio is **9/21 = 0.43**, not 0.50.
 
-That is a stronger statement than either half alone, and it is the first result in this sprint where a
-representational measurement and a behavioural one **predict each other**.
+**And the ratio is not identified at all.** The last row is the one that matters: an in-subspace
+direction constructed to be **orthogonal** to `d_surface` (cos = 0.0000), projected out at the same
+L8, produces **+0.0182 with 9 flips** — bit-for-bit the knife result. Across the four such controls
+the effect spans **−0.0121 … +0.0182** *at cosine zero*, so effect is not a monotone function of
+alignment and "61% aligned delivers ~half the effect" has no inferential content. Against that hard
+null (mean +0.0010, sd 0.0128) the **knife arm is z = 1.34 — it does not clear it**; the bomb L8 arm
+is **z = 3.23** and does. The "~7 band-sds" figure came from the 4096-d random band (sd 0.0026), which
+is a far weaker null than perturbing inside the same rank-3 cell-mean subspace
+(`outputs/boombness/e12_insubspace_null.json`).
+
+**What survives.** The bomb-fitted L8 effect clears both nulls. The knife arm's flips are near-perfectly
+**nested** inside the bomb arm's (9/9 against L12, 8/9 against L8; hypergeometric p = 3.6e-11), so it is
+an attenuated version of the same intervention rather than a separate one — but the cos-0 control is
+*also* 8/9 nested, so nesting identifies a pool of ~21 fragile prompts that many L8 perturbations
+recruit, not a shared concept axis. **E12's behavioural half does not license any statement about
+concept-generality.** ⛔ And the representational half fell too, hours later, to its own pre-committed
+control — **R-24**. E12 is retracted in full; see the codeword-control section.
 
 ### ✅ The AdvBench headline now clears a real 5-draw control band (added 2026-08-21)
 

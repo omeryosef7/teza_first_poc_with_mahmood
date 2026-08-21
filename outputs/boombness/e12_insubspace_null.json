@@ -1,0 +1,33 @@
+{
+  "what": "In-subspace orthogonal null for the L8 project_out family, and the layer-matched knife/bomb comparison.",
+  "why": "E12 claimed cos(knife,bomb)=0.6117 predicts an effect ratio 0.50, i.e. the shared component is the causally active part. Both inputs to that claim are wrong: the ratio was cross-layer, and a cos=0 direction reaches the knife effect exactly.",
+  "layer": 8,
+  "in_subspace_null_deltas": {
+    "angle_k0": 0.00202,
+    "angle_k1": 0.01818,
+    "angle_k2": -0.00404,
+    "angle_k3": -0.01212
+  },
+  "in_subspace_null_cos_with_d_surface": 0.0,
+  "null_mean": 0.00101,
+  "null_sd": 0.01283,
+  "null_n": 4,
+  "arms": {
+    "bomb_L8": 0.04242,
+    "bomb_L12_published_comparator": 0.03636,
+    "knife_L8": 0.01818
+  },
+  "z_vs_in_subspace_null": {
+    "knife_L8": 1.34,
+    "bomb_L8": 3.23
+  },
+  "layer_matched_effect_ratio_flips": "9/21 = 0.4286 (published 0.50 was knife L8 over bomb L12)",
+  "verdict": "knife z=1.34 does not clear the hard in-subspace null; bomb L8 z=3.23 does. The cosine-to-effect-ratio inference is not identified: at cos=0 the observed effect spans -0.0121..+0.0182.",
+  "sources": {
+    "bomb_L8": "outputs/boombness/judge/abg_B_*",
+    "bomb_L12": "outputs/boombness/judge/abgL12_B_*",
+    "knife_L8": "outputs/boombness/judge/abgK_B_*",
+    "angles": "outputs/boombness/judge/angJ8k{0,1,2,3}_*"
+  },
+  "regenerate": "src/boombness/effect_decomposition.py --baseline outputs/boombness/judge/abg_base_* --arm <arm> --bank data/boombness_prompts/external/advbench_heldout_495.jsonl"
+}

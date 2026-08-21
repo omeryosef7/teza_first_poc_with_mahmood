@@ -1,0 +1,57 @@
+{
+  "script": "src/probes/activation_extraction.py",
+  "manifest": "configs/manifests/role_probe_sprint_v1.json",
+  "component": "post_attention_layernorm",
+  "space": "norm_mid",
+  "residual_space": "normalized mid-block (upstream all_pre_mlp_hidden_states)",
+  "positions": [
+    "codeword_last",
+    "final_prompt"
+  ],
+  "n_items": 510,
+  "acts_shape": [
+    510,
+    32,
+    2,
+    4096
+  ],
+  "cohort": "clearharm",
+  "conditions": [
+    "doublespeak",
+    "benign",
+    "neutral"
+  ],
+  "corpus": "data/splits/clearharm_doublespeak_v3.json",
+  "preflight_doublespeak_checked": 8,
+  "preflight_other_resolved": 16,
+  "preflight_corpus_span_match_rate": 1.0,
+  "hostname": "rack-gww-dgx1",
+  "git_commit": "36a0e73215fbead1d33942d48693c037c1784ebd",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "Tesla V100-SXM2-32GB",
+  "timestamp": "2026-08-14T22:22:00",
+  "model_meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "rack-gww-dgx1",
+    "git_commit": "36a0e73215fbead1d33942d48693c037c1784ebd",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "Tesla V100-SXM2-32GB",
+    "timestamp": "2026-08-14T22:22:00"
+  }
+}

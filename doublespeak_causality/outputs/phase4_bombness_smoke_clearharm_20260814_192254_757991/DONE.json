@@ -1,0 +1,1 @@
+{"status": "ok", "n": 8, "arms": ["neu_base", "neu_bomb_add", "neu_bomb_random"], "patch_band": [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "readout_layers": [20, 24, 28, 31], "alpha": 1.0}

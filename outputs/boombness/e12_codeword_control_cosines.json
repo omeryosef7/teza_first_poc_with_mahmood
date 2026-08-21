@@ -1,0 +1,231 @@
+{
+  "fit_a": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/full_20260816_185942_1008673/directions_fit_dev.pt",
+  "fit_b": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/extract_boombness/buttonfit_20260821_150557_1157907/directions_fit_dev.pt",
+  "label_a": "carrot_bomb",
+  "label_b": "button_bomb",
+  "question": "does d_surface survive a change of CONCEPT (E12)?",
+  "population_a": {
+    "bank_file": null,
+    "population": null,
+    "is_external_bank": false,
+    "goal_semantics": null,
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "condition": null,
+    "n": null,
+    "n_clusters": null
+  },
+  "population_b": {
+    "bank_file": null,
+    "population": null,
+    "is_external_bank": false,
+    "goal_semantics": null,
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "condition": null,
+    "n": null,
+    "n_clusters": null
+  },
+  "cosines": {
+    "d_surface": {
+      "by_layer": {
+        "0": 0.527409553527832,
+        "1": 0.5398288369178772,
+        "2": 0.5081983208656311,
+        "3": 0.5204111933708191,
+        "4": 0.5708332657814026,
+        "5": 0.5872093439102173,
+        "6": 0.6248940825462341,
+        "7": 0.6415532231330872,
+        "8": 0.6615768074989319,
+        "9": 0.6563648581504822,
+        "10": 0.6672235131263733,
+        "11": 0.666770875453949,
+        "12": 0.6261882185935974,
+        "13": 0.602366030216217,
+        "14": 0.5446450710296631,
+        "15": 0.514933168888092,
+        "16": 0.48728951811790466,
+        "17": 0.4886665940284729,
+        "18": 0.5509792566299438,
+        "19": 0.5271674990653992,
+        "20": 0.5188618898391724,
+        "21": 0.4889637231826782,
+        "22": 0.4895651936531067,
+        "23": 0.5016543865203857,
+        "24": 0.527120053768158,
+        "25": 0.5214572548866272,
+        "26": 0.5252841114997864,
+        "27": 0.5257837176322937,
+        "28": 0.522059440612793,
+        "29": 0.5197674632072449,
+        "30": 0.520108163356781,
+        "31": 0.549570620059967
+      },
+      "n_layers": 32,
+      "mean": 0.5538970390334725,
+      "min": 0.48728951811790466,
+      "max": 0.6672235131263733,
+      "within_concept_ceiling": {
+        "carrot_bomb": {
+          "mean": 0.9950312189757824,
+          "min": 0.9893384575843811,
+          "max": 0.999767541885376,
+          "n_layers": 32
+        },
+        "button_bomb": {
+          "mean": 0.9927970338612795,
+          "min": 0.9854748249053955,
+          "max": 0.9998018741607666,
+          "n_layers": 32
+        }
+      },
+      "across_over_ceiling": 0.5572886271668002
+    },
+    "d_context": {
+      "by_layer": {
+        "0": 0.605758786201477,
+        "1": 0.714489221572876,
+        "2": 0.716128945350647,
+        "3": 0.7374186515808105,
+        "4": 0.7296174764633179,
+        "5": 0.7399920225143433,
+        "6": 0.7618534564971924,
+        "7": 0.7873870730400085,
+        "8": 0.81663978099823,
+        "9": 0.8044583797454834,
+        "10": 0.8232312798500061,
+        "11": 0.8130387663841248,
+        "12": 0.8162248134613037,
+        "13": 0.8250725865364075,
+        "14": 0.8291882276535034,
+        "15": 0.8371724486351013,
+        "16": 0.8502167463302612,
+        "17": 0.8583977222442627,
+        "18": 0.8493614196777344,
+        "19": 0.8444727659225464,
+        "20": 0.8318902254104614,
+        "21": 0.8285410404205322,
+        "22": 0.8287234306335449,
+        "23": 0.8304053544998169,
+        "24": 0.8304117918014526,
+        "25": 0.8354582190513611,
+        "26": 0.8294039964675903,
+        "27": 0.8353883028030396,
+        "28": 0.8360423445701599,
+        "29": 0.8478209972381592,
+        "30": 0.8510203957557678,
+        "31": 0.8859180808067322
+      },
+      "n_layers": 32,
+      "mean": 0.8072232734411955,
+      "min": 0.605758786201477,
+      "max": 0.8859180808067322,
+      "within_concept_ceiling": {
+        "carrot_bomb": {
+          "mean": 0.9157845713198185,
+          "min": 0.8863739371299744,
+          "max": 0.9603222608566284,
+          "n_layers": 32
+        },
+        "button_bomb": {
+          "mean": 0.9233442135155201,
+          "min": 0.8954980373382568,
+          "max": 0.9568740129470825,
+          "n_layers": 32
+        }
+      },
+      "across_over_ceiling": 0.8778322432852009
+    },
+    "d_naive": {
+      "by_layer": {
+        "0": 0.5266109704971313,
+        "1": 0.5386958122253418,
+        "2": 0.5056231021881104,
+        "3": 0.5230249762535095,
+        "4": 0.5831716656684875,
+        "5": 0.5985043048858643,
+        "6": 0.6448025703430176,
+        "7": 0.6640619039535522,
+        "8": 0.6860828995704651,
+        "9": 0.6747300028800964,
+        "10": 0.6764370203018188,
+        "11": 0.6685796976089478,
+        "12": 0.640091061592102,
+        "13": 0.6124246716499329,
+        "14": 0.5700738430023193,
+        "15": 0.5525987148284912,
+        "16": 0.5463009476661682,
+        "17": 0.553175151348114,
+        "18": 0.5845926403999329,
+        "19": 0.5633490085601807,
+        "20": 0.5550921559333801,
+        "21": 0.5385342836380005,
+        "22": 0.5399428606033325,
+        "23": 0.5558135509490967,
+        "24": 0.5804404616355896,
+        "25": 0.5826749801635742,
+        "26": 0.5910793542861938,
+        "27": 0.5970023274421692,
+        "28": 0.6031590700149536,
+        "29": 0.6113179326057434,
+        "30": 0.6215630173683167,
+        "31": 0.6823258399963379
+      },
+      "n_layers": 32,
+      "mean": 0.5928711500018835,
+      "min": 0.5056231021881104,
+      "max": 0.6860828995704651,
+      "within_concept_ceiling": {
+        "carrot_bomb": {
+          "mean": 0.9908583518117666,
+          "min": 0.9816310405731201,
+          "max": 0.999592661857605,
+          "n_layers": 32
+        },
+        "button_bomb": {
+          "mean": 0.9873918294906616,
+          "min": 0.9726276397705078,
+          "max": 0.9996379017829895,
+          "n_layers": 32
+        }
+      },
+      "across_over_ceiling": 0.5993894560005071
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/compare_fits.py",
+      "--fit-a",
+      "outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+      "--fit-b",
+      "outputs/boombness/extract_boombness/buttonfit_20260821_150557_1157907",
+      "--label-a",
+      "carrot_bomb",
+      "--label-b",
+      "button_bomb",
+      "--out",
+      "outputs/boombness/e12_codeword_control_cosines.json"
+    ],
+    "git_commit": "34936dec4668d02a332a5d7c7cd90a315d722aec"
+  },
+  "_interpretation": {
+    "design": "Three fits, IDENTICAL family sets (dev e92f0ae88e3cfc3d, heldout 667cc4fa9d6bdddc), template, model, dtype, seed. Only one factor varies per contrast.",
+    "reference": "carrot->bomb (full_20260816_185942_1008673)",
+    "concept_varied_codeword_held": {
+      "bank": "carrot->knife",
+      "cos_d_surface": 0.6117
+    },
+    "codeword_varied_concept_held": {
+      "bank": "button->bomb",
+      "cos_d_surface": 0.5539
+    },
+    "within_concept_split_ceiling": {
+      "carrot_bomb": 0.995,
+      "button_bomb": 0.9928
+    },
+    "pre_committed_test": "Written before the fit ran: cos ~0.99 => codeword is irrelevant and 0.6117 is the concept; cos ~0.6 => 0.6117 is bank/codeword structure and E12's interpretation collapses.",
+    "outcome": "COLLAPSE branch. 0.5539 < 0.6117: a pure codeword swap moves d_surface MORE than a pure concept swap.",
+    "conclusion": "The 0.6117 cannot be read as 'the concept-general fraction of d_surface'. At --position codeword_last, d_surface is at least as much a function of which token carries the codeword as of what that codeword means.",
+    "caveat": "The codeword swap also changes the identity of the readout token, so part of the 0.5539 is 'different token, different residual content' rather than 'the direction is lexical'. That does not rescue the original claim: it is precisely the reason a 0.61 cannot be attributed to concept overlap.",
+    "retraction": "R-24"
+  }
+}

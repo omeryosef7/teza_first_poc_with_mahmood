@@ -1,0 +1,32 @@
+{
+  "schema": "DONE/1",
+  "run_id": "d3_actscope_decision_L18_test_20260815_085800_758209",
+  "status": "ok",
+  "rows_written": 2,
+  "end_ts": "2026-08-15T12:14:56",
+  "end_epoch": 1786785296.2862272,
+  "wall_seconds": 847.605,
+  "raw_rows": 40,
+  "by_family": {
+    "existing": {
+      "n_layers": 1,
+      "n_valid": 0,
+      "valid_layers": [],
+      "invalid_layers": [
+        18
+      ],
+      "best_layer": 18,
+      "best_score": 1.0
+    },
+    "clearharm": {
+      "n_layers": 1,
+      "n_valid": 0,
+      "valid_layers": [],
+      "invalid_layers": [
+        18
+      ],
+      "best_layer": 18,
+      "best_score": 0.75
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "script": "src/probes/activation_extraction.py",
+  "manifest": "configs/manifests/role_probe_sprint_v1.json",
+  "component": "resid_post",
+  "space": "resid_post",
+  "residual_space": "hidden_states[L+1] (D1)",
+  "positions": [
+    "codeword_last",
+    "final_prompt"
+  ],
+  "n_items": 1197,
+  "acts_shape": [
+    1197,
+    32,
+    2,
+    4096
+  ],
+  "cohort": "advbench",
+  "conditions": [
+    "doublespeak",
+    "benign",
+    "neutral"
+  ],
+  "corpus": "data/splits/advbench_doublespeak_v1.json",
+  "preflight_doublespeak_checked": 8,
+  "preflight_other_resolved": 16,
+  "preflight_corpus_span_match_rate": 1.0,
+  "hostname": "n-801",
+  "git_commit": "199be5ca3560c925b65e2adab8d8074ca8cb3414",
+  "python": "3.12.13",
+  "torch": "2.7.1+cu126",
+  "transformers": "5.12.1",
+  "cuda_available": true,
+  "gpu": "NVIDIA L40S",
+  "timestamp": "2026-08-15T18:55:26",
+  "model_meta": {
+    "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "revision": null,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "num_layers": 32,
+    "hidden_size": 4096,
+    "eos_token_ids": [
+      128001,
+      128008,
+      128009
+    ],
+    "hostname": "n-801",
+    "git_commit": "199be5ca3560c925b65e2adab8d8074ca8cb3414",
+    "python": "3.12.13",
+    "torch": "2.7.1+cu126",
+    "transformers": "5.12.1",
+    "cuda_available": true,
+    "gpu": "NVIDIA L40S",
+    "timestamp": "2026-08-15T18:55:27"
+  }
+}

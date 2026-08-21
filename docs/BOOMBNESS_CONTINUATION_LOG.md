@@ -4941,19 +4941,9 @@ direction.
 | alignment of the two fitted directions | **cos ≈ 0.61** |
 | ratio of their causal effects | **0.0182 / 0.0364 = 0.50** |
 
-**A direction 61% aligned delivers 50% of the effect.** That is what you expect if the **shared
-component is the causally active part**: the concept-general ~⅓ of variance does the work and the
-concept-specific remainder adds little. Two independent measurements — one representational, one
-behavioural, taken days apart with different instruments — **predict each other**. That has not
-happened before in this sprint; every prior agreement between two numbers here turned out to be a
-shared artifact (G1's +68% agreeing across a broken readout) or a coincidence (plain ASR tracking
-length on both populations for different reasons).
-
-**It also revises E12's own headline from one tick ago.** I wrote that `d_surface` is "~⅔
-concept-specific" and bounded the sprint's claims accordingly. The causal half says the bounding was
-too pessimistic: the concept-specific majority of the *variance* carries a minority of the *effect*.
-The honest summary is now **"mostly concept-specific in direction, mostly concept-general in
-consequence"** — and the second clause is the one that matters for whether these results generalise.
+⛔ **RETRACTED 2026-08-21 — R-23. Both numbers in the row above are wrong as paired.** See the
+tick below. Kept in place, struck, because this block is what audit #5 was pointed at and the
+correction only makes sense beside it.
 
 | # | time | action | outcome |
 |---|---|---|---|
@@ -4970,7 +4960,7 @@ things I could predict it would find, done rather than waited for.
 **bomb**-fitted direction, and §0's conclusion said nothing about whether that generalises — which is
 now a measured quantity, not an open question. Added a scope block:
 
-> **Mostly concept-specific in direction, mostly concept-general in consequence.** Two thirds of the
+> ⛔ **RETRACTED (R-23).** Was: "Mostly concept-specific in direction, mostly concept-general in consequence." Two thirds of the
 > direction's variance is concept-specific, but a 61%-aligned direction delivers **50%** of the causal
 > effect, on 495 generic harmful instructions containing none of `carrot`, `bomb` or `knife`. The
 > mechanism is demonstrated for `carrot↔bomb` and **shown to transfer at roughly half strength** to a
@@ -4997,3 +4987,120 @@ over-firing checker teaches its user is to stop reading it.
 | 156 | 2026-08-21 | launched audit #5 aimed at E12 | running |
 | 157 | 2026-08-21 | added E12's scope statement to §0 | the generality bound is stated where the conclusion is |
 | 158 | 2026-08-21 | registered E12's two headline figures; **fixed my own over-broad pattern** | registry clean; second over-broad pattern of mine |
+
+## ⛔ R-23 — audit #5 kills E12's causal half. Two defects, either one fatal.
+
+Tick 2026-08-21. I briefed audit #5 to attack E12 because it was the newest and least-scrutinised
+result. It did, and it was right on both criticals. I verified each myself before touching a document.
+
+**(a) The effect ratio was a cross-layer comparison.** The knife arm is `d_surface:project_out:8-8`
+(`abK_B_…/config.json`). The bomb comparator I divided by — **+0.0364, 18 flips** — is `12-12`
+(`abL12_B_…`). The layer-matched bomb arm existed all along (`ab_B_…`, `8-8`, judged `abg_B_…`) and
+gives **+0.0424 / 21 flips**. Every other object in E12's causal apparatus is L8, including all five
+control-band draws. The layer-matched ratio is **9/21 = 0.43**, not 0.50. I compared an L8 numerator to
+an L12 denominator and reported the quotient to two significant figures.
+
+**(b) The inference is not identified — and this is the one that actually kills it.** The
+`in_subspace_angle` controls are constructed orthogonal to `d_surface` inside the rank-3 cell-mean span
+(`signals.py:491-540`). At L8, measured this tick with the same script that produced the headline:
+
+| L8 arm | cos with `d_surface` | Δ ASR | flips |
+|---|---|---|---|
+| bomb-fitted | 1.0000 | **+0.0424** | 21 |
+| **knife-fitted** | **0.6117** | **+0.0182** | 9 |
+| in-subspace angle k=0 | 0.0000 | +0.0020 | 1 |
+| **in-subspace angle k=1** | **0.0000** | **+0.0182** | **9** |
+| in-subspace angle k=2 | 0.0000 | −0.0040 | −2 |
+| in-subspace angle k=3 | 0.0000 | −0.0121 | −6 |
+
+A direction with **zero** alignment reproduces the knife result **exactly**. At cos 0 the effect spans
+−0.0121…+0.0182, so effect is not a monotone function of cosine and "61% aligned → ~half the effect"
+has no content. Against this hard null (mean +0.0010, sd 0.0128, n=4) the **knife arm is z = 1.34 and
+does not clear it**; bomb L8 is **z = 3.23** and does. My "~7 band-sds" came from the 4096-d
+norm-matched random band (sd 0.0026) — a much weaker null than perturbing *inside the same subspace*.
+Artifact: `outputs/boombness/e12_insubspace_null.json`.
+
+**Why I did not catch this.** I ran the angle sweep myself and it appears nowhere in this log — I
+treated the 4096-d random draw as *the* control because it was the control the headline used, and never
+asked what the hardest available null was. That is the **dead-guard** class again in a new costume: a
+control that exists in the repo, is stronger than the one I quoted, and was never pointed at the claim.
+The `signals.py:508-511` docstring even asserts "0.0129 maximum observed at any sampled point", which
+disagrees with the +0.0182 measured here — a stale comment I should have checked when I cited it.
+
+**What survives, stated narrowly.** The **bomb-fitted L8 effect clears both nulls**. The knife flips
+are near-perfectly nested in the bomb flips (9/9 vs L12, 8/9 vs L8, hypergeometric p = 3.6e-11) — but
+the cos-0 control is *also* 8/9 nested, so nesting marks a pool of ~21 fragile AdvBench prompts that
+many L8 perturbations recruit, not a shared concept axis. The **representational** half — cos 0.6117 —
+is untouched by this; it is a geometric fact about two fits.
+
+**Two further audit findings that narrow the representational half rather than kill it.**
+- **The 0.995 "ceiling" is a split-noise ceiling only.** dev-vs-heldout uses disjoint family sets from
+  the *same* bank: same template, domains, codeword, model, dtype, seed. It bounds family-sampling
+  noise and nothing the concept swap varied. Attenuation-correcting by it (0.6147) is near-vacuous.
+- **The two banks share more than I said.** `family_set_sha16` is **identical** in both fits
+  (dev `e92f0ae88e3cfc3d`, heldout `667cc4fa9d6bdddc`); the knife bank is a concept-swapped clone at
+  every row the fit touches. I did rule out a mean-offset artifact: removing the global cell-mean
+  moves the cross-concept cosine only 0.6117 → 0.6057.
+
+**This makes the running `button` fit (job 772414) more important, not less.** Same concept (`bomb`),
+different codeword — the only ceiling in flight that varies something the concept swap also varied.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 156 | 2026-08-21 | audit #5 returned; verified F1 myself | knife=L8, published comparator=L12; layer-matched ratio **0.43** |
+| 157 | 2026-08-21 | verified F2 myself — L8 in-subspace angle sweep | cos-0 direction gives **+0.0182 / 9 flips**, identical to knife |
+| 158 | 2026-08-21 | recomputed z against the hard null | knife **1.34** (fails), bomb L8 **3.23** (clears) |
+| 159 | 2026-08-21 | filed **R-23**; struck the claim in report §0, §E12 and this log | E12's causal half withdrawn; representational half kept, ceiling narrowed |
+
+## ⛔ R-24 — the pre-committed codeword control fires, and E12 is retracted in full
+
+Tick 2026-08-21, same tick as R-23. Job 772414 (`buttonfit`) finished. This was the control I wrote
+into audit #5's brief as the strongest objection to E12 — *the two banks share the codeword and the demo
+pools; how much of the 0.61 is shared bank structure rather than shared concept semantics?* — and then
+built, with the interpretation fixed in advance:
+
+> if cos(carrot-bomb fit, button-bomb fit) ≈ 0.99, a codeword change does not move the direction and
+> E12's 0.61 is genuinely the **concept**; if it is also ≈ 0.6, then 0.61 is bank/codeword structure
+> and **E12's interpretation collapses**.
+
+**It is 0.5539.** The collapse branch, and past it — the codeword swap moves the direction *more* than
+the concept swap did.
+
+The design is clean in the way that matters: all three fits carry **identical** `family_set_sha16`
+(dev `e92f0ae88e3cfc3d`, heldout `667cc4fa9d6bdddc`), the same 2736-row bank shape, template, model,
+dtype and seed. Verified from the bank files that each holds exactly one (codeword, concept) pair.
+Exactly one factor varies per contrast:
+
+| contrast | what varies | cos `d_surface` |
+|---|---|---|
+| `carrot→bomb` vs `carrot→knife` | **concept only** | **0.6117** |
+| `carrot→bomb` vs `button→bomb` | **codeword only** | **0.5539** |
+| within-fit dev/heldout split | family sample only | 0.9950 / 0.9928 |
+
+(`d_context` behaves differently — 0.8072 across the codeword swap — which is consistent with it being
+the less codeword-bound of the two estimators, and is worth its own look.)
+
+**The conclusion I have to draw.** `d_surface`, estimated at `--position codeword_last`, is at least as
+much a function of *which token carries the codeword* as of *what that codeword means*. The 0.6117 can
+no longer be read as "the concept-general fraction". Together with R-23 — where a cos-0 direction
+reproduced the knife effect exactly — **both halves of E12 are gone, and neither died of noise: each
+died to a control that was specified before it ran.**
+
+**The caveat that does not rescue it.** Swapping the codeword also changes the identity of the readout
+token, so part of the 0.5539 is "different token, different residual content" rather than "the
+direction is lexical". I state it because it is true, but it cuts the same way: it is precisely why a
+0.61 cannot be attributed to concept overlap.
+
+**What this costs the sprint.** Nothing that was independently established. The surviving claim set is
+unchanged and was never routed through E12: removing `d_surface` at L8 raises ASR on AdvBench by
+**+0.0424 / 21 flips**, clearing both the 5-draw random band and the hard in-subspace null (z = 3.23),
+replicated at four layers under an independent judge, with a disruption-matched control at +0.0020.
+What is gone is the *generality* gloss I put on it for one tick. **`d_surface` is demonstrated for
+`carrot↔bomb`. It is not demonstrated to be a concept axis, and this sprint has now tested that twice
+and failed both times.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 160 | 2026-08-21 | job 772414 `buttonfit` completed; ran `compare_fits.py` | **cos 0.5539** — the pre-committed collapse branch |
+| 161 | 2026-08-21 | verified all three fits share `family_set_sha16` and one (codeword,concept) pair each | contrast is clean; exactly one factor varies |
+| 162 | 2026-08-21 | filed **R-24**; rewrote report §0 and the E12 sections | **E12 retracted in full**; surviving claim set unaffected |
