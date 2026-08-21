@@ -21,6 +21,24 @@
       },
       "artifact_value": 0.0025777374050858274
     },
+    "e12_cross_concept_cos": {
+      "regex": "\\(bomb-dev vs knife-dev\\)[^|]*\\|\\s*\\*\\*\\+?(0\\.6\\d{2,3})\\*\\*",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.6117"
+        ]
+      },
+      "artifact_value": 0.6117389239370823
+    },
+    "e12_knife_causal_delta": {
+      "regex": "`?knife`?-fitted[^\\n]{0,80}?\\+(0\\.01\\d{2})",
+      "quoted_in": {
+        "reports/boombness_objective_sprint_report.md": [
+          "0.0182"
+        ]
+      },
+      "artifact_value": 0.01818181818181818
+    },
     "layer_shape_p": {
       "regex": "permutation\\D{0,12}p\\s*=\\s*(0\\.0\\d{2,4})",
       "quoted_in": {
@@ -42,6 +60,6 @@
       "--out",
       "outputs/boombness/canonical_figures.json"
     ],
-    "git_commit": "81b2813ed78a8e53c32968dafbdc97187aadf8a1"
+    "git_commit": "b6895d515c641ac3d1a16c03b6ae27266eba51a5"
   }
 }

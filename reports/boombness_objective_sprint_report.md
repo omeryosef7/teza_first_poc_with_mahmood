@@ -78,6 +78,29 @@ lower bound is close to zero; this is a real interaction, not a comfortable one.
 That is a power difference, not a disagreement — the point estimates agree and only the intervals
 differ. Both results are reported; neither is dropped.
 
+### What E12 does to the scope of all of this (added 2026-08-21)
+
+Every causal result below was obtained with a `d_surface` fitted on **`carrot ↔ bomb`**. E12 refitted
+the same estimator on **`carrot ↔ knife`** and asked whether the direction — and its effect — survive
+a change of concept. Both halves were run:
+
+| | |
+|---|---|
+| alignment of the two fitted directions | **cos ≈ 0.61**, against a within-concept ceiling of **0.995** |
+| causal effect of the **knife**-fitted direction on AdvBench | **+0.0182** (9 flips), control **+0.0000** |
+| causal effect of the **bomb**-fitted direction (the headline) | **+0.0364** (18 flips) |
+| **effect ratio** | **0.50** at **cos 0.61** |
+
+**Read together: mostly concept-specific in direction, mostly concept-general in consequence.** Two
+thirds of the direction's variance is concept-specific, but the concept-*general* component carries
+most of the causal work — a 61%-aligned direction delivers 50% of the effect, and it does so on 495
+generic harmful instructions containing none of `carrot`, `bomb` or `knife`.
+
+**So the scope statement for this report is:** the mechanism is demonstrated for `carrot ↔ bomb`, and
+**shown to transfer, at roughly half strength, to a second concept**. It is not shown to be
+concept-independent, and the name `d_surface` should be read as naming an estimator, not a proven
+concept-general axis.
+
 ### Current gate table
 
 Every row here is current as of **2026-08-19**. Superseded verdicts are in the retraction table, never

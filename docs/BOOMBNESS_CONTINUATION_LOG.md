@@ -4960,3 +4960,40 @@ consequence"** — and the second clause is the one that matters for whether the
 | 153 | 2026-08-21 | ran E12's causal half on AdvBench | knife-fitted direction: **+0.0182**, control **+0.0000** |
 | 154 | 2026-08-21 | decomposed it by refusal transition | **+0.0000** on 453 both-refused rows; 8 of 9 real flips |
 | 155 | 2026-08-21 | compared cos (0.61) to effect ratio (0.50) | the shared component is the causally active one; **revises last tick's bound** |
+
+## §0 now carries E12's scope, and the figure registry carries E12's numbers
+
+Tick 2026-08-21. Audit #5 launched at E12 — the newest and least-scrutinised result. While it runs, two
+things I could predict it would find, done rather than waited for.
+
+**1. §0 did not mention E12 at all.** Every causal result in the report was obtained with the
+**bomb**-fitted direction, and §0's conclusion said nothing about whether that generalises — which is
+now a measured quantity, not an open question. Added a scope block:
+
+> **Mostly concept-specific in direction, mostly concept-general in consequence.** Two thirds of the
+> direction's variance is concept-specific, but a 61%-aligned direction delivers **50%** of the causal
+> effect, on 495 generic harmful instructions containing none of `carrot`, `bomb` or `knife`. The
+> mechanism is demonstrated for `carrot↔bomb` and **shown to transfer at roughly half strength** to a
+> second concept. **`d_surface` names an estimator, not a proven concept-general axis.**
+
+**2. E12's figures were not in the canonical registry** — the tool built last week for exactly the
+cross-deliverable problem. A registry that lags its own results is the phase-board failure in a
+different costume, so both are registered now.
+
+### And the registry caught me being sloppy again, in the same way
+
+My first E12 pattern matched **both** rows of the cosine table — the headline dev-vs-dev **0.6117**
+and the independent-split **0.6049** — and reported the table as disagreeing with itself. That is the
+**second** time one of my registry patterns has been too broad; the first conflated every band's
+between-draw sd.
+
+The lesson is narrower than "be careful": **writing a regex that pins exactly one figure is harder
+than it looks, and an entry that cannot pin one should not be added.** That is now in the file as a
+comment, because the failure mode of this tool is silent over-firing, and the first thing an
+over-firing checker teaches its user is to stop reading it.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 156 | 2026-08-21 | launched audit #5 aimed at E12 | running |
+| 157 | 2026-08-21 | added E12's scope statement to §0 | the generality bound is stated where the conclusion is |
+| 158 | 2026-08-21 | registered E12's two headline figures; **fixed my own over-broad pattern** | registry clean; second over-broad pattern of mine |

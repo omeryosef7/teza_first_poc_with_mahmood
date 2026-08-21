@@ -46,6 +46,22 @@ FIGURES = {
     "advbench_band_sd": (
         r"5-draw control band[^\n]{0,60}?between-draw sd\s*(0\.\d{3,5})",
         "outputs/boombness/advbench_band.json", ["control_band", "between_draw_sd"], 5e-4),
+    # E12 (2026-08-21). Registered the same day the result landed, because the figure registry was
+    # built precisely for numbers that cross deliverables, and a registry that lags its own results
+    # is the phase-board failure in a different costume.
+    # Pin the HEADLINE row only. The first pattern also matched the independent-split row (0.6049),
+    # which the report legitimately reports beside the headline (0.6117) -- so the registry flagged a
+    # table for containing two rows. That is the SECOND time one of these patterns has been too
+    # broad (the first conflated every band's between-draw sd). Writing a regex that pins exactly one
+    # figure is harder than it looks, and a registry entry that cannot do so should not be added.
+    "e12_cross_concept_cos": (
+        r"\(bomb-dev vs knife-dev\)[^|]*\|\s*\*\*\+?(0\.6\d{2,3})\*\*",
+        "outputs/boombness/e12_concept_swap_cosines.json",
+        ["cosines", "d_surface", "mean"], 5e-3),
+    "e12_knife_causal_delta": (
+        r"`?knife`?-fitted[^\n]{0,80}?\+(0\.01\d{2})",
+        "outputs/boombness/e12_causal_knife.json",
+        ["groups", "ALL", "delta"], 1e-3),
     "layer_shape_p": (
         r"permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})",
         "outputs/boombness/layer_profile_shape_test.json", ["p_perm"], 2e-3),
