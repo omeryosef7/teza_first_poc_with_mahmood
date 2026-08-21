@@ -1840,12 +1840,15 @@ here rather than silently left reading as future work:
 | **E3** | rank G3's edges at `readout_pos` | ✅ **DONE** — R-7 discharged, the null holds; §2 |
 | **E4** | power the cross-condition profile | ⛔ **NOT sound as written** — see below |
 | **E5** | AdvBench super-additivity on 16 clusters | ✅ **DONE and ESTABLISHED** — +0.0268 [+0.0029, +0.0584] against its own control triple; §7c |
-| **E6** | a second concept pair | ⏳ open |
+| **E6** | a second concept pair | ✅ **DONE — answered.** `button` ↔ `bomb`, chosen after `apple` failed §2.4 twice (an incidental pool collision, and an article-agreement asymmetry that would have confounded the codeword arm against the concept arm). Audits pass **2736/2736, 0 bad, 0 ambiguous, 0 violations on both models**. Result: cutting demonstration attention edges recovers **≤2.6% of the deletion ceiling on both models**, and the Llama positional gradient **inverts** on Qwen3 — treat it as noise. `e6_button_knockout.json` |
 | **E7** | matched-length cross-model replication | ✅ **DONE** — Qwen3 at 512; the channels are *reversed* between models (§7c) |
 | **E8** | decide plan §4.1's designed variance | ✅ **DONE** — documented and excluded (N12), and R-18 showed it had contaminated G2 |
 | **E9** | the §5.2 alpha sweep at α=0.25 | ✅ **DONE** — +103% harm_ctx, +145% benign_ctx; §6b |
 | **E10** | a bank-identity check that can run | ⏳ open — external banks still ship no `*_meta.json` |
 | **E11** | an external set with real Qwen3 headroom | ⏳ open — not buildable from this repo |
+| **E12** | **a CONCEPT swap, not a codeword swap** | ⏳ **open — and it is now the highest-value experiment left.** E6 changed the *codeword* and held the concept, so it tests whether `d_surface` is a **carrot**-detector; it **cannot** test whether it is a *concept-surface* direction, which is the claim the name makes. Measured cost: a codeword swap touches **16 of 240** benign sentences (7%); a concept swap requires rewriting the **26 of 240 (11%)** harm sentences carrying bomb-specific affordances (`detonat`, `defus`, `fuse`, `timer`) plus a fresh §2.4 audit — an order of magnitude more, and the only route to the claim. |
+| **E13** | a **profile-shape** test with a null on the effects themselves | ⏳ open. `layer_profile_test.py` conditions on the observed multiset of per-layer effects, so it tests **arrangement**, not whether the effects are real — a lucky contiguous run of noise would still fire it. A stronger null resamples the per-prompt deltas. |
+| **E14** | judge replicates as standard, not as an audit response | ⏳ open. Generation here is **deterministic** (660/660 byte-identical), so all run-to-run variance is the sampled judge, and it is **population-specific**: 1.9 pp on the bank, **0.2 pp on AdvBench**. Two replicates per reported arm would let every ASR carry its own floor instead of borrowing one. |
 
 ⛔ **E4 is withdrawn as specified.** It proposed adding demonstration `slots` to enlarge the
 36–72-row condition cells. `prompt_families._take` returns `pool[(slot*3+i) % 20]`, so slot *k* is

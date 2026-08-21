@@ -4788,3 +4788,40 @@ not — and the ten are chosen as the numbers that have *already* caused a disag
 | 140 | 2026-08-21 | built `canonical_figures.py` after the third cross-deliverable divergence | one number, one source, checked in every doc that quotes it |
 | 141 | 2026-08-21 | its first run flagged 6 problems — **all from my own two design errors** | scoped the regexes; compare numerically |
 | 142 | 2026-08-21 | injected a fake divergence to confirm it fails | catches both the disagreement and the artifact mismatch |
+
+## The "next experiments" list is current again — and the highest-value one is now visible
+
+Tick 2026-08-21. §9b is the section a collaborator uses to decide what to fund next, and it was
+written on 2026-08-19 — before E6 was answered and before this week's instrument work. Refreshed.
+
+**E6 closed.** It was still marked ⏳ open while the answer has been in `e6_button_knockout.json`
+since 08-20: `button` ↔ `bomb` (chosen after `apple` failed §2.4 **twice**), audits **2736/2736 clean
+on both models**, and cutting demonstration attention edges recovers **≤2.6% of the deletion ceiling
+on both models**, with the Llama positional gradient **inverting** on Qwen3.
+
+**Three experiments added, each one made visible by this week rather than invented:**
+
+* **E12 — a CONCEPT swap, not a codeword swap. This is now the highest-value experiment left.**
+  E6 changed the codeword and held the concept, so it tests whether `d_surface` is a **carrot**-
+  detector. It **cannot** test whether it is a *concept-surface* direction — which is the claim the
+  name makes and the claim the whole sprint rests on. The costs were measured while scoping E6: a
+  codeword swap touches **16/240** benign sentences; a concept swap needs the **26/240** harm
+  sentences carrying bomb-specific affordances (`detonat`, `defus`, `fuse`, `timer`) rewritten, plus
+  a fresh §2.4 audit. An order of magnitude more work, and the only route to the claim.
+* **E13 — a profile-shape test with a null on the effects themselves.** `layer_profile_test.py`
+  conditions on the observed multiset, so it tests **arrangement**, not reality. I built it and it is
+  the weaker of the two nulls; saying so here rather than letting p=0.0109 read as more than it is.
+* **E14 — judge replicates as standard.** Generation is deterministic (660/660 byte-identical), so
+  all run-to-run variance is the sampled judge, and it is **population-specific** — 1.9 pp on the
+  bank, **0.2 pp on AdvBench**. Two replicates per reported arm would let every ASR carry its **own**
+  floor instead of borrowing another population's, which is the mistake I made and published.
+
+**What this list now says about the sprint's position.** Every blocking item is done; the open ones
+are all *extensions*, and the single most valuable is the one E6 was mistaken for. That is worth
+stating plainly: **E6 was the cheap half of the question, and the expensive half is untouched.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 143 | 2026-08-21 | closed E6 in §9b — answered since 08-20, still marked open | the list no longer reads as if E6 were pending |
+| 144 | 2026-08-21 | added **E12** (concept swap), **E13** (stronger shape null), **E14** (judge replicates) | each is a gap this week exposed, with its cost measured |
+| 145 | 2026-08-21 | sweep clean, registry OK, all canonical figures agree | deliverables consistent |
