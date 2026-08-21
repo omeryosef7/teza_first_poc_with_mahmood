@@ -5056,7 +5056,77 @@ reported.
 
 
 
-## ⛔⛔ THE FULL DOSE CURVE — EVERY non-zero dose fails the gate, including the α = 1.0 arm the sprint has been citing
+## ✅✅ THERE IS A USABLE DOSE WINDOW — α = 7.33 is GATE-CLEAN, and F-3's test is finally runnable
+
+**The dose-response is non-monotone in both directions, and the middle of the range works.**
+
+| dose | fraction of gap | median words | short (<8 w) | refusal-prefix | scorable | uniq | 3-gram | **gate** |
+|---|---|---|---|---|---|---|---|---|
+| baseline | 0.000 | 14 | 0.459 | 0.931 | 0.541 | 0.841 | 0.010 | ✅ OK |
+| α 1.00 | 0.068 | 6 | 0.525 | 0.952 | 0.475 | 0.864 | 0.006 | ⛔ short |
+| α 1.83 | 0.125 | 6 | 0.580 | 0.958 | 0.420 | 0.874 | 0.006 | ⛔ short |
+| α 3.66 | 0.250 | 6 | 0.535 | 0.974 | 0.465 | 0.903 | 0.005 | ⛔ short |
+| **α 7.33** | **0.500** | **14** | **0.135** | **0.990** | **0.865** | **0.940** | **0.004** | ✅ **OK** |
+| α 14.65 | 1.000 | 419 | 0.004 | 1.000 | 0.996 | 0.237 | 0.704 | ⛔ collapse |
+
+### The mechanism: three regimes, not two
+
+- **Low dose (0.07–0.25 gap): terse refusals.** Median drops 14 → 6 words. The model refuses
+  curtly, more than half the outputs fall under 8 words, and the gate trips on `scorable_frac`.
+- **Mid dose (0.5 gap): articulate refusals.** Median returns to **14** words, short rows fall to
+  **0.135** — *below the baseline's 0.459* — refusal-prefix hits **99.0%**, and every lexical
+  statistic is healthy (uniq 0.940, the best in the table). The model writes *proper refusal
+  paragraphs*.
+- **Full dose (1.0 gap): collapse.** 419-word repetitive text, uniq 0.237, 54% truncated.
+
+So `scorable_frac` is **U-shaped** in dose (0.541 → 0.475 → 0.420 → 0.465 → **0.865** → 0.996) while
+coherence is inverted-U. **A single scalar cannot order these regimes**, and any two-point sample
+would have missed the window entirely — which is exactly what happened for three days.
+
+### ✅ What this unblocks
+
+F-3's retracted specificity claim needs *"refusalness added at a dose comparable to the random
+control it is compared against"*, in a run that is not degenerate. **α = 7.33 is that run**: half of
+one diff-of-means, gate-clean, with the strongest lexical health in the whole table.
+
+**Launched: `fuF_addRand_g02` (773065)** — `random:add:18-18:7.326731`, the dose-matched random
+control, identical in every other respect. Once it is gate-checked, both arms get judged and F-3's
+question — does adding *refusalness* suppress ASR where a magnitude-matched *random* direction does
+not? — can finally be answered on evidence rather than retracted.
+
+⚠ Pre-registered: the control may itself degenerate at this magnitude (the α = 1.0 random-add was
+gate-clean, but 7.33 is 7× that). If it does, the comparison is still blocked — and that would be a
+statement about *any* add-intervention at this dose, not about refusalness.
+
+### ⛔ And the honest part: I got this wrong 30 minutes ago, from partial data
+
+I wrote **"every non-zero dose fails the gate"** and committed it — with **two of the four sweep
+points still generating**. The very next point refuted it. That is the same error as
+"exhaustive / a bound, not a sample" three sections earlier: **a claim asserted across an interval
+where only some points had been sampled.** The difference is that this time the refuting evidence
+was *already running on the cluster while I typed the claim*.
+
+The ceiling argument in the superseded section is **not** rescued either — it was built to explain a
+universal failure that does not exist. What survives from it: the baseline sits at
+`scorable_frac 0.541`, only four points above threshold, which correctly explains why the **low**
+doses fail. It does not explain α = 7.33, and I should not have generalised a mechanism from three
+points to a curve I had not finished measuring.
+
+## ⛔ SUPERSEDED 30 MINUTES LATER — "every non-zero dose fails the gate" was WRONG, and I wrote it while two of the four sweep points were still running
+
+> ⛔ **I published this section's headline from HALF the sweep.** Two jobs (α 7.33 and α 10.99) were
+> still generating, and **α 7.33 refutes it outright: it is GATE-CLEAN.** The corrected curve and
+> the finding it produces are in the section immediately above this one. The α = 1.0 retraction
+> below **stands and is unaffected** — that arm does fail the gate. What does not stand is the
+> generalisation I drew from it.
+>
+> **This is the sprint's own recurring error committed by me in real time:** a claim asserted over
+> an interval where only the endpoints had been sampled. It is the *identical* mistake to
+> "exhaustive / a bound, not a sample", three sections earlier in this same document, and I made it
+> **while the machine that would refute it was already running.** The rule I keep re-learning:
+> **do not write the headline until the sweep finishes.**
+
+## ⛔ THE PARTIAL DOSE CURVE (superseded headline; the α = 1.0 retraction below stands)
 
 Adding the pre-existing α = 1.0 arm (`fuF_addR_20260819_204413_3655580`) to the curve changes the
 conclusion, and retracts a claim.
