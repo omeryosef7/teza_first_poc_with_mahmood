@@ -2180,6 +2180,47 @@ four decimals; L8 and L10 move by ≤0.002. Together with the AdvBench judge flo
 in 495) this makes judge sampling a non-issue for the band — the earlier disclosure that only L12 had
 been re-judged is superseded.
 
+### ★ E12 — does `d_surface` survive a change of CONCEPT? Partly. (added 2026-08-21)
+
+E6 changed the **codeword** (`carrot` → `button`) and held the concept, so it can only test whether
+the direction is a *carrot*-detector. `d_surface` is named for the claim that it carries **concept
+surface identity**, and that claim requires changing the **concept**.
+
+`carrot ↔ knife` (codeword held fixed; `knife` matches `bomb` at **4/4 single-token variants on both
+models**, so the concept changes while the readout properties do not). Bank: 2,736 rows, 336 families,
+**0 alignment violations**; §2.4 audits pass **2736/2736, 0 bad, 0 violations on both models**
+(22 `variable_span_width` rows disclosed). Fit by the same 2×2 estimator, then compared per layer
+(`compare_fits.py`, `outputs/boombness/e12_concept_swap_cosines.json`):
+
+| comparison | mean cos | range |
+|---|---|---|
+| **within `bomb`** (dev vs heldout, disjoint families) — *ceiling* | **+0.9950** | [+0.9893, +0.9998] |
+| **within `knife`** (dev vs heldout) — *ceiling* | **+0.9942** | [+0.9880, +0.9999] |
+| **across concepts** (bomb-dev vs knife-dev) | **+0.6117** | [+0.5264, +0.6665] |
+| across concepts (bomb-heldout vs knife-heldout) | +0.6049 | [+0.5253, +0.6659] |
+
+**The ceiling is what makes this interpretable.** The estimator is near-perfectly stable within a
+concept — two disjoint halves of the data give the *same* direction to **cos = 0.995** — so the
+cross-concept **0.61 is not estimation noise**. It also reproduces on the independent split (0.605),
+so it is not a one-sample accident.
+
+**Answer: `d_surface` is substantially but not wholly concept-general.** At cos ≈ 0.61 against a 0.995
+ceiling, roughly **37% of the direction's variance is shared across concepts and ~63% is
+concept-specific**. It is neither the concept-independent "surface identity" axis its name implies,
+nor a mere bomb-detector.
+
+**What this does to the sprint's other claims.** Every causal result here was obtained with the
+**bomb**-fitted direction, so each is a statement about a direction that is ~⅔ bomb-specific. That
+does not invalidate them — the ablation effect, its band and its refusal-transition decomposition all
+stand as measured — but it **bounds their generality**: "removing `d_surface` raises attack success"
+is established for `carrot↔bomb`, and E12 says one should expect a *related but materially different*
+direction for another concept. `d_context` behaves the same way (0.495 against a 0.87–0.92 ceiling),
+so this is a property of the 2×2 estimator, not of `d_surface` alone.
+
+⚠ **What E12 does not settle.** A cosine compares *fitted* directions; it does not show either is
+causal. Whether the knife-fitted direction produces the same **behavioural** effect is a separate
+experiment, and it has not been run.
+
 ### ✅ The AdvBench headline now clears a real 5-draw control band (added 2026-08-21)
 
 Plan §2.5 requires a control to be a **band, not one draw**, and R-12 retracted a band that turned out

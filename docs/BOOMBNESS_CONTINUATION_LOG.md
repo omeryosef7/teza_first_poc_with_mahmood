@@ -4871,3 +4871,45 @@ Qwen3 audit still running; **E12 does not proceed past the audit until both mode
 | 147 | 2026-08-21 | generated the pool via the existing generator to a **new** file | carrot bank's provenance untouched |
 | 148 | 2026-08-21 | screener caught an incidental collision; **repair helper would have gutted the harm pools** | repairs now pool-scoped; 40/40 harm sentences verified intact |
 | 149 | 2026-08-21 | knife bank: 2736 rows, **0 violations**; Llama audit clean with **22 ambiguous** disclosed | awaiting Qwen3 before proceeding |
+
+## ★★★ E12 ANSWERED — `d_surface` is ~⅔ concept-SPECIFIC, and the ceiling is what proves it
+
+Tick 2026-08-21. The experiment E6 was mistaken for is done, and it needed **no generation and no
+judge** — only two direction fits and a cosine.
+
+`carrot ↔ knife`, codeword held fixed. `knife` matches `bomb` at **4/4 single-token variants on both
+models**, so the concept changes while the readout properties do not. §2.4 passes **2736/2736, 0 bad,
+0 violations on both models**.
+
+| comparison | mean cos | range |
+|---|---|---|
+| **within `bomb`** (dev vs heldout, disjoint families) — *ceiling* | **+0.9950** | [+0.9893, +0.9998] |
+| **within `knife`** — *ceiling* | **+0.9942** | [+0.9880, +0.9999] |
+| **across concepts** | **+0.6117** | [+0.5264, +0.6665] |
+| across concepts, independent split | +0.6049 | [+0.5253, +0.6659] |
+
+**The ceiling is the whole result.** Without it, 0.61 is a number one could argue either way. With it,
+the estimator is shown to reproduce itself to **0.995** on disjoint families — so **0.61 is not
+noise**, and it repeats on the independent split. This is E6's lesson applied before the fact rather
+than after: a similarity means nothing until you know what identity scores.
+
+**Answer: substantially but not wholly concept-general** — ~**37%** shared variance, ~**63%**
+concept-specific. Neither the concept-independent axis the name implies, nor a bomb-detector.
+
+**What it does to everything else.** Every causal result in this sprint used the **bomb**-fitted
+direction, so each concerns a direction that is about two-thirds bomb-specific. The results stand as
+measured — the ablation effect, its band, the refusal-transition decomposition — but their
+**generality is now bounded**, and stated: they are established for `carrot↔bomb`, and E12 predicts a
+*related but materially different* direction for another concept. `d_context` behaves the same
+(0.495 against a 0.87–0.92 ceiling), so this is a property of the **2×2 estimator**, not of
+`d_surface` alone — which is a more useful finding than either direction alone.
+
+**What it does not settle**, stated in the report and the script's docstring: a cosine compares
+*fitted* directions and shows nothing about causality. Whether the knife-fitted direction produces the
+same **behavioural** effect is a separate experiment and has not been run.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 150 | 2026-08-21 | both §2.4 audits passed → E12 proceeded | 2736/2736, 0 violations, both models |
+| 151 | 2026-08-21 | fitted `d_surface` on `carrot↔knife`; compared per layer | across-concept cos **+0.6117** |
+| 152 | 2026-08-21 | computed the **within-concept ceiling** from the dev/heldout split | **0.995** — so 0.61 is a real concept effect, not estimator noise |

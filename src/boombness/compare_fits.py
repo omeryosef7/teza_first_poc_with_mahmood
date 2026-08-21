@@ -71,14 +71,45 @@ def main() -> int:
             out["cosines"][name] = {"by_layer": per, "n_layers": len(vals),
                                     "mean": sum(vals) / len(vals),
                                     "min": min(vals), "max": max(vals)}
+    # THE CEILING IS PART OF THE NUMBER. A cross-concept cosine of 0.61 means nothing until you know
+    # what the SAME concept scores against itself: if the estimator were noisy, 0.61 might BE
+    # agreement. Each fit dir carries a dev and a heldout direction fitted on disjoint families, so
+    # the within-concept cosine is the noise ceiling and it costs nothing to compute. (Same lesson as
+    # E6's knockout, where a +0.1 delta was meaningless until read against a -17 deletion ceiling.)
+    def _within(fit_glob, name):
+        import torch as _t
+        d = sorted(glob.glob(fit_glob))[-1]
+        try:
+            a = _t.load(os.path.join(d, "directions_fit_dev.pt"), map_location="cpu", weights_only=False)
+            b = _t.load(os.path.join(d, "directions_fit_heldout.pt"), map_location="cpu", weights_only=False)
+        except Exception:
+            return None
+        if name not in a or name not in b:
+            return None
+        v = []
+        for L in sorted(set(a[name]) & set(b[name])):
+            u, w = a[name][L].float(), b[name][L].float()
+            v.append(float(torch.dot(u, w) / (u.norm() * w.norm())))
+        return {"mean": sum(v) / len(v), "min": min(v), "max": max(v), "n_layers": len(v)} if v else None
+
+    for name in list(out["cosines"]):
+        out["cosines"][name]["within_concept_ceiling"] = {
+            args.label_a: _within(args.fit_a, name),
+            args.label_b: _within(args.fit_b, name)}
+        ceil = [c["mean"] for c in out["cosines"][name]["within_concept_ceiling"].values() if c]
+        if ceil:
+            out["cosines"][name]["across_over_ceiling"] = out["cosines"][name]["mean"] / (sum(ceil) / len(ceil))
+
     out["provenance"] = {"argv": sys.argv,
                          "git_commit": subprocess.run(["git", "rev-parse", "HEAD"],
                                                       capture_output=True, text=True).stdout.strip()}
     with open(args.out, "w") as f:
         json.dump(out, f, indent=2)
     for name, c in out["cosines"].items():
-        print(f"  {name:12s} n_layers={c['n_layers']:>3d}  mean cos={c['mean']:+.4f}  "
-              f"range [{c['min']:+.4f}, {c['max']:+.4f}]")
+        cl = c.get("within_concept_ceiling") or {}
+        cs = " ".join(f"{k}={v['mean']:+.4f}" for k, v in cl.items() if v)
+        print(f"  {name:12s} across={c['mean']:+.4f} [{c['min']:+.4f},{c['max']:+.4f}]   "
+              f"within-concept ceiling: {cs}   ratio={c.get('across_over_ceiling', float('nan')):.3f}")
     print(f"[compare_fits] -> {args.out}")
     return 0
 
