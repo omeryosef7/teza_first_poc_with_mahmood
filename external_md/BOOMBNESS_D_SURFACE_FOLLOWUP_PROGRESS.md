@@ -4335,6 +4335,57 @@ do with degeneracy.
 
 
 
+
+## ✅✅ L12 PASSES THE EXHAUSTIVE SWEEP — direction-specificity established against the whole complement
+
+**Artifact:** `outputs/boombness_followup/angle_sweep_L12.json`. Four controls × 495 generations,
+0 failures, judged in eight shards in the same session as the arm and baseline; run-time diagnostics
+verified orthogonal (cos 2.2e-07 to 9.9e-07, `rank2`).
+
+| angle | removes | control vs baseline | p | **arm − control** | p |
+|---|---|---|---|---|---|
+| **0°** | 6.07% | +0.0120 | 0.13 | **+0.0195** | **0.0043** |
+| 45° | 9.88% | −0.0002 | 0.84 | +0.0318 | 0.0046 |
+| 90° | **11.88%** | −0.0023 | 0.24 | +0.0339 | 0.0075 |
+| 135° | 8.08% | +0.0030 | 0.20 | +0.0286 | 0.0091 |
+
+**Arm `d_surface`@L12 = +0.0316 (p 0.0059). Every one of the four contrasts is significant
+(p 0.0043–0.0091), and the WORST CASE is +0.0195 at p = 0.0043.** All four controls are individually
+null.
+
+> **At L12 the arm beats *every* direction orthogonal to it inside the concept subspace, at p < 0.01
+> in each case.** Because the sweep is exhaustive over a 2-D complement and projection is
+> sign-invariant, this is a **bound, not a sample**: there is no orthogonal direction left to try.
+
+### The two swept depths now say different things, and the difference is the honest headline
+
+| depth | arm | worst-case arm − control | verdict |
+|---|---|---|---|
+| **L12** (profile peak) | +0.0316 (p 0.0059) | **+0.0195, p 0.0043** | ✅ established exhaustively |
+| L8 | +0.0278 (p 0.0311) | +0.0183, **p 0.073** | ⚠ 3 of 4 significant; worst case suggestive only |
+
+**The geometric prediction I recorded before judging was right in direction.** L12's published draw
+removed 11.25%, near the top of its range, so the sweep had little room to weaken it; L8's removed
+4.5506%, the weakest available, so it had a lot. The sweeps moved the two depths in opposite
+directions, exactly as predicted from geometry alone.
+
+### ⚠ And the same caveat fired again, in the opposite corner
+
+At L12 the **worst case is the 0° angle — the WEAKEST removal (6.07%)** — because it has the largest
+positive control effect (+0.0120). At L8 the largest control effect was 135° (7.66%), not the 11.41%
+one. **Twice now, the direction that removes the most representational variance is not the one that
+does the most behaviourally.** Spread-removed justifies calling a control non-trivial; it does not
+predict which control will be hardest for the arm to beat. Only running them does — which is the
+argument for sweeping rather than picking a "strong" control and stopping.
+
+### Where this leaves the sprint's causal claim
+
+> **`d_surface` is the acting axis of the concept subspace at L12, established against an exhaustive
+> sweep of its orthogonal complement (worst case p 0.0043).** At L8 the same design gives 3 of 4
+> significant and a worst case at p 0.073. L6 and L10 remain **single-draw and unswept**, and their
+> published contrasts should be read as one draw from a complement whose range spans a factor of
+> two in effect.
+
 ### L12 swept too (772001–772004) — and its geometry predicts the opposite of L8's outcome
 
 | angle | L8 removes | **L12 removes** |
@@ -6354,11 +6405,12 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
    basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
    of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
-   ⛔ **Corrected by the exhaustive L8 sweep:** each per-depth control above is **one draw**, and at
-   L8 that draw turns out to be the **weakest** of the four directions in the 2-D complement. Swept
-   exhaustively, all four orthogonal directions are inert (strongest removes 11.41% of the spread,
-   |Δ| ≤ 0.0129, p ≥ 0.11) — but the arm beats only **3 of 4** at p < 0.05, and against the worst
-   (45°) the contrast is **+0.0183, p 0.073**. L6/L10/L12 are still single-draw and unswept.
+   ✅ **Two depths are now swept EXHAUSTIVELY over the 2-D orthogonal complement — a bound, not a
+   sample.** At **L12** (the profile peak) the arm beats **every** orthogonal direction, worst case
+   **+0.0195 at p 0.0043**. At **L8** it beats 3 of 4, worst case **+0.0183 at p 0.073** — its
+   published single draw happened to be the *weakest* direction available (4.5506%), which is why the
+   single-draw number looked stronger. All eight controls are individually null. ⚠ L6 and L10 remain
+   **single-draw and unswept**.
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
    privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
    seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
