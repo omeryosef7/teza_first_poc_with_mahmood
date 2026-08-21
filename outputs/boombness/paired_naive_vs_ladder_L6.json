@@ -1,0 +1,40 @@
+{
+  "arm_a": {
+    "label": "d_naive_L6",
+    "glob": "outputs/boombness/judge/J_abL6_naive_*"
+  },
+  "arm_b": {
+    "label": "ladder_k1_L6",
+    "glob": "outputs/boombness/judge/J_dm6k1_*"
+  },
+  "n": 495,
+  "n_clusters": 16,
+  "delta_a_minus_b": 0.00808080808080808,
+  "net": 4,
+  "n_discordant": 8,
+  "up": 6,
+  "down": 2,
+  "ci95_domain_clustered": [
+    -0.003436426116838488,
+    0.017684887459807074
+  ],
+  "p_bootstrap": 0.2337,
+  "p_exact_sign_test_on_discordant": 0.2890625,
+  "note": "the inference rests on the 8 discordant prompts, not on 495; the sign test is the assumption-free companion to the bootstrap",
+  "provenance": {
+    "argv": [
+      "src/boombness/paired_arm_test.py",
+      "--arm-a",
+      "outputs/boombness/judge/J_abL6_naive_*",
+      "--arm-b",
+      "outputs/boombness/judge/J_dm6k1_*",
+      "--label-a",
+      "d_naive_L6",
+      "--label-b",
+      "ladder_k1_L6",
+      "--out",
+      "outputs/boombness/paired_naive_vs_ladder_L6.json"
+    ],
+    "git_commit": "1247939e185d836ca008cc2081605952c05ef492"
+  }
+}

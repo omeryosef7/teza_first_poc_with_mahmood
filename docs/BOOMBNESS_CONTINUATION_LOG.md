@@ -5898,3 +5898,52 @@ sentence now hits the warning first.
 | 234 | 2026-08-21 | found "~16 band-sds" live in §0's conclusion block | the discredited 4096-d band, in the most-quoted paragraph |
 | 235 | 2026-08-21 | widened the pattern to any band-sd count; **tested on a planted case** | exit 1 planted / 0 clean; **third** narrowness failure in this file |
 | 236 | 2026-08-21 | §0 now states the dose/specificity qualification inline | headline can no longer be quoted without it |
+
+## Replication verdict: a SPLIT, and I am taking the pre-committed reading
+
+Tick 2026-08-21. 773072-773075 judged, 495 rows each. `d_naive` versus its own dose- and
+cosine-matched ladder rung, at three layers:
+
+| L | dose `d_naive` | dose rung | gap (naive−rung) | Δ | CI95 (clustered) | p boot | sign p | discordant | |
+|---|---|---|---|---|---|---|---|---|---|
+| **6** | 0.8329 | 0.8325 | **+0.0004** | +0.0081 | [−0.0034, +0.0177] | 0.234 | 0.289 | 8 | **ns** |
+| **8** | 0.7919 | 0.7969 | −0.0050 | +0.0141 | [+0.0025, +0.0299] | 0.021 | 0.039 | 9 | SIG |
+| **12** | 0.7595 | 0.7805 | −0.0210 | +0.0222 | [+0.0020, +0.0421] | 0.047 | 0.0074 | 15 | SIG |
+
+**Pre-committed rule, applied without renegotiation:** *"above at both → property of the direction;
+neither → withdraw; split → report the split and treat as unreplicated, rather than picking the
+supporting layer."* This is a **split**. So the claim is **replicated in direction but not uniformly
+significant, and I am not upgrading it to established.**
+
+**What genuinely strengthens it, stated separately from the verdict.** At **L8 and L12 the matched rung
+carries MORE dose than `d_naive`** (0.7969 vs 0.7919; 0.7805 vs 0.7595) and still yields **less**
+effect. Residual dose difference therefore works **against** the advantage rather than producing it —
+the one confound that could most easily have manufactured this result is pushing the other way at both
+significant layers. All three point estimates are positive.
+
+**What genuinely weakens it.** The layer with the **best** dose match — L6, matched to **0.0004**, the
+cleanest such comparison anywhere in this bank — is the one that **fails**. I do not think that is a
+dose artifact (at L8/L12 dose favours the rung and `d_naive` still wins, so the mechanism cannot be
+leftover dose), but it is the comparison with the least to explain away, and it did not clear. Eight
+discordant prompts is thin.
+
+**What I am deliberately not doing.** Pooling the 32 discordant pairs (27 up, 5 down) into one sign
+test. It would read as p ≈ 1e-4 and it would be wrong: the three layers share the same model, the same
+495 prompts and the same bank, and their directions overlap heavily, so those pairs are nowhere near
+independent. Quoting that number would be the pseudo-replication error this sprint already retracted
+once (R-18's "three independent clean samples" that shared all 60 core rows).
+
+**Standing position after this thread.** `d_surface` is one high-variance direction of the bank's
+cell-mean structure; removing it raises AdvBench ASR; the effect is largely but not entirely dose; and
+`d_naive` — the confounded contrast the 2×2 exists to replace — appears to beat it at matched dose,
+consistently in sign across three layers and significantly at two. That last clause is the only
+*positive* claim to survive this thread, and it is deliberately stated at the strength the split
+supports rather than the strength the pooled number would suggest.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 237 | 2026-08-21 | 773072-773075 judged | 4 × 495 rows |
+| 238 | 2026-08-21 | ran the pre-committed replication test | **L6 ns (p=0.23), L8 SIG, L12 SIG** — a split |
+| 239 | 2026-08-21 | applied the pre-committed rule unrenegotiated | **replicated in direction, NOT upgraded to established** |
+| 240 | 2026-08-21 | checked the dose gaps' direction | at L8/L12 the rung has **more** dose and **less** effect — the confound pushes against the result |
+| 241 | 2026-08-21 | declined to pool 27-up/5-down across layers | non-independent; would repeat R-18's pseudo-replication |

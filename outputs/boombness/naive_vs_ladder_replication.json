@@ -1,0 +1,50 @@
+{
+  "layers": {
+    "L6": {
+      "dose_d_naive": 0.8329,
+      "dose_rung": 0.8325,
+      "dose_gap_naive_minus_rung": 0.00039999999999995595,
+      "delta": 0.00808080808080808,
+      "ci95": [
+        -0.003436426116838488,
+        0.017684887459807074
+      ],
+      "p_bootstrap": 0.2337,
+      "p_sign": 0.2890625,
+      "n_discordant": 8,
+      "significant": false
+    },
+    "L8": {
+      "dose_d_naive": 0.7919,
+      "dose_rung": 0.7969,
+      "dose_gap_naive_minus_rung": -0.0050000000000000044,
+      "delta": 0.014141414141414142,
+      "ci95": [
+        0.0024813895781637717,
+        0.029850746268656716
+      ],
+      "p_bootstrap": 0.0212,
+      "p_sign": 0.0390625,
+      "n_discordant": 9,
+      "significant": true
+    },
+    "L12": {
+      "dose_d_naive": 0.7595,
+      "dose_rung": 0.7805,
+      "dose_gap_naive_minus_rung": -0.02100000000000002,
+      "delta": 0.022222222222222223,
+      "ci95": [
+        0.002008032128514056,
+        0.042105263157894736
+      ],
+      "p_bootstrap": 0.0467,
+      "p_sign": 0.00738525390625,
+      "n_discordant": 15,
+      "significant": true
+    }
+  },
+  "preregistered_rule": "above at both L6 and L12 -> property of the direction; neither -> withdraw; split -> report the split and treat as UNREPLICATED, do not pick the supporting layer",
+  "VERDICT": "SPLIT. Positive point estimate at all three layers; CI excludes zero at L8 and L12, not at L6. Per the pre-registered rule the claim is treated as REPLICATED IN DIRECTION but NOT uniformly significant, and is NOT upgraded to established.",
+  "why_not_residual_dose": "At L8 and L12 the matched rung carries MORE dose than d_naive (0.7969 vs 0.7919; 0.7805 vs 0.7595) and still yields LESS effect, so leftover dose difference works AGAINST the advantage rather than producing it. At L6 the doses are matched to 0.0004 and the effect is the weakest of the three, which is a power observation, not a dose artifact.",
+  "pooling_caveat": "The three layers share the same model, prompts and bank and their directions overlap heavily; pooling the 32 discordant pairs as if independent would overstate the evidence and is deliberately not done."
+}
