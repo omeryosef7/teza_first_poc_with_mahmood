@@ -5033,6 +5033,63 @@ reported.
 
 
 
+## NEXT-SPRINT ITEMS 2 AND 3 LAUNCHED — the Qwen3 decomposition, and refusal directions inside `d_surface`'s band
+
+Both were listed as open in the final report's answer 12 and both are now in flight. **No new
+analysis code**: item 3 is the existing `build_refusal_direction_llama.py` with a different
+`--layers`, and item 2 is `score_behavior.py` with one leg removed from a proven arm.
+
+### Item 2 — arm B on Qwen3's internal bank (jobs 772472 / 772473)
+
+The committed Qwen3 design has three cells and is **missing the one that decomposes the effect**:
+
+| arm | intervention | ΔASR |
+|---|---|---|
+| `remove_refusalness_L20` | refusalness @ L20 | **−0.0048** (inert) |
+| `remove_both_L11_L20` | `d_surface` @ L11 **+** refusalness @ L20 | **+0.3476** (p 0.00028) |
+| `norm_matched_double_random` | random @ L11 + random @ L20 | +0.0143 (inert) |
+| **`d_surface` @ L11 alone** | **— never run —** | **this tick** |
+
+⚠ **PRE-REGISTERED, before the judges run.** The Llama analogue is mildly super-additive:
+B +0.0305 and C +0.1895 sum to +0.2200 against D's +0.2544. On Qwen3 the refusalness leg is
+already **inert on its own**, so:
+- **If arm B ≈ +0.35** — `d_surface` carries the whole thing and the refusalness leg is redundant.
+- **If arm B ≈ 0** — then *neither leg moves ASR alone and the pair moves it by +0.35*. That is a
+  **strong interaction**, not a decomposition, and it would be a genuinely new result: removing a
+  refusal axis does nothing until a concept axis is also removed. It would also mean the effect
+  cannot be attributed to `d_surface` in the way the report's phrasing currently implies.
+- Anything in between splits the credit.
+
+I am recording this now because **both outcomes are interesting and I do not want to discover which
+one I predicted after seeing it.**
+
+**Second arm, 772473: a control that can fail.** Qwen3's only control is the isotropic
+`norm_matched_double_random`, which R5-7 established certifies nothing. This adds
+`in_subspace_orth @ L11` — inside the concept subspace, exactly orthogonal to `d_surface`.
+⚠ **Its validity is conditional and the run reports the condition:** the control is subspace-matched
+only if Qwen3's `d_surface` lies inside the cell-mean span the way Llama's does (100.0000%). The
+run-time `frac_cellmean_spread_removed_by_CONTROL` diagnostic decides that, and if Qwen3's geometry
+differs I will say so rather than quietly reuse Llama's justification.
+
+**Bank drift caught before launch.** These arms must join the 08-18 baseline, and the bank file has
+since grown **2352 → 2736 rows** (`71bea179345ed118` → `4cd9157399aa1b3c`). Running against the
+current file would have produced a silently different prompt set. Verified the growth is additive —
+all 2352 old ids present in the new bank, **0 missing, 0 content differences** — and then pinned the
+exact bank as `boombness_prompt_bank_pinned_82bc1a3c_2352.jsonl` rather than relying on that. This
+is the stale-cross-run-join class the repo built `prompt_sha16` for.
+
+### Item 3 — Llama refusal directions at L6/L8/L10 (job 772476)
+
+Only L12–L20 exist on disk, which is **why the `d_surface` × refusalness interaction has never been
+measurable inside `d_surface`'s own causal band (L6–L12)**. Same script, `--layers 6,8,10`, same
+single bench (`pair_carrot_bomb.json`, 60 harmful / 20 harmless), `--validate` on so each layer gets
+the non-tautological generation-based sign check. Written to a **new** output directory so the
+existing `refusal_direction_llama_SELECTED.json` — selected over L12–L20 — is not clobbered.
+
+**Scheduling note:** the first submission put three Qwen3-14B loads on **n-801** simultaneously,
+which is both the documented slow-load node and the documented contention failure (~16× slowdown at
+3 model loads/node). Cancelled at 30 s and respread one job per node.
+
 ## 4h Code and Output Review — Review #9 (2026-08-21 15:20) — THE FINAL REPORT AUDITED LINE BY LINE
 
 **Scope:** every numeric claim and every verdict in `## Sprint Final Report`, checked against the
