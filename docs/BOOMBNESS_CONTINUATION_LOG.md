@@ -5255,3 +5255,56 @@ its header no longer claims to be "current as of 2026-08-19" while carrying rows
 | 175 | 2026-08-21 | added a C-12 sweep pattern | caught a 4th live instance in an audit-findings row |
 | 176 | 2026-08-21 | widened the R-24 pattern past a comma | caught the **scope statement** and the **section heading**, both live |
 | 177 | 2026-08-21 | added an E12 gate row; re-dated the gate header | gate table now answers the question E12 asked |
+
+## L6's null densified 4 → 12 angles: it now clears, and the statistic it clears by is not a t
+
+Tick 2026-08-21. All six L6 dense-angle judgments (772496-772501) COMPLETED, 495 rows each, `DONE.json`
+present. With the four original runs reused as angles 0/3/6/9 of 12, L6's null now has **10 of 12**
+points (angles 10 and 11 are jobs 772653/772654, PENDING).
+
+| layer | arm Δ | flips | in-subspace null (k) | t(df) | p | rank p | max ctrl | arm/max |
+|---|---|---|---|---|---|---|---|---|
+| **L6** | +0.0182 | 9 | **+0.0046 ± 0.0040 (k=10)** | **3.35 (9)** | **0.0086** | **0.09** | +0.0101 | **1.80×** |
+| L8 | +0.0424 | 21 | +0.0010 ± 0.0128 (k=4) | 3.23 (3) | 0.0483 | 0.20 | +0.0182 | 2.33× |
+| L10 | +0.0323 | 16 | −0.0040 ± 0.0029 (k=4) | 12.73 (3) | 0.0010 | 0.20 | ≤0 | — |
+| L12 | +0.0364 | 18 | +0.0035 ± 0.0056 (k=4) | 5.90 (3) | 0.0097 | 0.20 | +0.0101 | 3.60× |
+
+**L6 now clears p < 0.05** (0.0086, up from 0.0625 at k=4) and its rank p drops 0.20 → **0.09**. The
+arm **exceeds every control at every layer**.
+
+**Two things I fixed rather than published.**
+
+**1. The column was still labelled `t(3)` when df was 9.** The p-value was computed correctly from
+`len(v)-1`, so only the *label* was wrong — but a mislabeled statistic is exactly what I would flag in
+someone else's table, and "t(3)" beside a df-9 p is the kind of detail a reader checks the rest of the
+document against. Now prints `t(df)` with the actual df, and `df` is written into the artifact.
+
+**2. The null is a systematic sweep, not an iid sample, and the t-test quietly assumes otherwise.**
+The L6 deltas are not scattered — they ramp smoothly with θ:
+
+| angle (of 12) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Δ ASR | −0.0020 | +0.0000 | +0.0020 | +0.0020 | +0.0061 | +0.0081 | **+0.0101** | +0.0081 | +0.0081 | +0.0040 |
+
+That is a deterministic curve sampled on a grid, so its `sd` is the **spread of a curve**, not sampling
+noise around a mean, and a t statistic is the wrong idealisation even though it is computable. The
+artifact now also carries the assumption-free quantity, which is what I will quote:
+**`arm / max_control`** — how the arm compares to the largest effect any in-subspace direction achieves
+anywhere on the sampled grid. **L6 1.80×, L8 2.33×, L12 3.60×**, and at L10 every control is ≤ 0.
+
+This is the honest version of the claim. It is weaker than "p = 0.0086" sounds and stronger than
+"p = 0.0625" sounded, and it does not depend on pretending a grid sweep is a random sample.
+
+**Regression-checked the refactor**: `angle_glob()` resolves an angle by its *angle*, not by whichever
+tag exists (k-of-4 ≡ 3k-of-12, verified cos 1.0000 before the dense sweep was submitted), so the four
+original runs are reused rather than double-counted or dropped. Run in 4-angle mode it reproduces last
+tick's corrected table digit-for-digit.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 178 | 2026-08-21 | 772496-772501 COMPLETED | 6 × 495 judged rows, all DONE |
+| 179 | 2026-08-21 | wired `angle_glob()`; regression-checked in 4-angle mode | reproduces last tick digit-for-digit |
+| 180 | 2026-08-21 | L6 null 4 → 10 angles | **p 0.0625 → 0.0086**, rank p 0.20 → 0.09 |
+| 181 | 2026-08-21 | fixed the `t(3)` label (df was 9) | mislabeled statistic corrected before publication |
+| 182 | 2026-08-21 | added `arm/max_control`, the assumption-free statistic | L6 1.80×, L8 2.33×, L12 3.60×; arm exceeds all controls at all four layers |
+| 183 | 2026-08-21 | submitted angles 10/11 (772653/772654) | PENDING; completes L6's 12-point grid |

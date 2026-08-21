@@ -38,6 +38,26 @@ from common import read_jsonl  # noqa: E402
 JUDGE = "outputs/boombness/judge"
 
 
+def angle_glob(layer: int, k: int, n_angles: int) -> str:
+    """Glob for the judge run of angle k-of-n_angles at `layer`.
+
+    THE SAME DIRECTION HAS TWO NAMES. The original sweep ran `n_angles=4` and tagged its runs
+    `angJ<L>k{0,1,2,3}`; the dense sweep runs `n_angles=12` tagged `angJ<L>k{k}of12`. Because the
+    angles are theta = pi*k/n, **k-of-4 and 3k-of-12 are the same direction** -- verified on CPU
+    before the dense sweep was submitted: `k=3of12` vs `k=1of4` gave cos **1.0000**. So the four
+    original runs ARE angles 0/3/6/9 of 12 and must be reused, not re-run.
+
+    Resolve by ANGLE, not by filename: an index divisible by 3 is asked for under its of-4 name.
+    Addressing these by "whichever tag happens to exist" is how the same direction ends up counted
+    twice, or a real draw silently dropped.
+    """
+    if n_angles == 4:
+        return f"{JUDGE}/angJ{layer}k{k}_*" if layer != 8 else f"{JUDGE}/angJ8k{k}_*"
+    if n_angles == 12 and k % 3 == 0:
+        return f"{JUDGE}/angJ{layer}k{k // 3}_*"
+    return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
+
+
 def _rows(pat):
     """Load a judge run, UNIONING shards.
 
@@ -80,9 +100,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--baseline", default=f"{JUDGE}/abg_base_*")
     ap.add_argument("--threshold", type=float, default=0.5)
-    ap.add_argument("--angles", type=lambda s: [int(x) for x in s.split(",")],
-                    default=[0, 1, 2, 3],
-                    help="angle indices forming the null at each layer")
+    ap.add_argument("--angles", type=lambda s: [int(x) for x in s.split(",")] if s else None,
+                    default=None,
+                    help="explicit angle indices; default is range(n_angles) for that layer")
+    ap.add_argument("--n-angles", type=lambda s: {(int(k) if k != "default" else k): int(v)
+                                                  for k, v in
+                                                  (p.split("=") for p in s.split(","))},
+                    default={"default": 4},
+                    help="per-layer angle-sweep resolution, e.g. 'default=4,6=12'")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -93,14 +118,14 @@ def main() -> int:
 
     # layer -> (arm glob, random-control glob, angle glob template)
     LAYERS = {
-        6:  (f"{JUDGE}/abgL6_B_*",   f"{JUDGE}/abgL6_Bctrl_*",  f"{JUDGE}/angJ6k{{k}}_*"),
-        8:  (f"{JUDGE}/abg_B_*",     f"{JUDGE}/abg_Bctrl_*",     f"{JUDGE}/angJ8k{{k}}_*"),
-        10: (f"{JUDGE}/abgL10_B_*",  f"{JUDGE}/abgL10_Bctrl_*", f"{JUDGE}/angJ10k{{k}}_*"),
-        12: (f"{JUDGE}/abgL12_B_*",  f"{JUDGE}/abgL12_Bctrl_*", f"{JUDGE}/angJ12k{{k}}_*"),
+        6:  (f"{JUDGE}/abgL6_B_*",   f"{JUDGE}/abgL6_Bctrl_*"),
+        8:  (f"{JUDGE}/abg_B_*",     f"{JUDGE}/abg_Bctrl_*"),
+        10: (f"{JUDGE}/abgL10_B_*",  f"{JUDGE}/abgL10_Bctrl_*"),
+        12: (f"{JUDGE}/abgL12_B_*",  f"{JUDGE}/abgL12_Bctrl_*"),
     }
 
     out = {}
-    for L, (armpat, ctrlpat, angtpl) in LAYERS.items():
+    for L, (armpat, ctrlpat) in LAYERS.items():
         ad, arm = _rows(armpat)
         if not arm:
             out[f"L{L}"] = {"status": "arm judge run NOT FOUND", "glob": armpat}
@@ -110,12 +135,16 @@ def main() -> int:
         # prompt ids. Comparing an arm scored on 495 against a null scored on 248 is the mismatch
         # that made the first version of this table wrong.
         angs, missing = {}, []
-        for k in args.angles:
-            lab, a = _rows(angtpl.format(k=k))
+        n_ang = args.n_angles.get(L, args.n_angles.get("default", 4))
+        for k in (args.angles if args.angles else range(n_ang)):
+            if k >= n_ang:
+                continue
+            g = angle_glob(L, k, n_ang)
+            lab, a = _rows(g)
             if a:
                 angs[k] = (lab, a)
             else:
-                missing.append(angtpl.format(k=k))
+                missing.append(g)
         common = set(base) & set(arm)
         for _, a in angs.values():
             common &= set(a)
@@ -147,12 +176,23 @@ def main() -> int:
             # dressing a 4-point null up as a precise one.
             try:
                 from analyze_g8 import t_sf
-                rec["p_t_df3_one_sided"] = t_sf(z, len(v) - 1) if z is not None else None
+                rec["p_t_one_sided"] = t_sf(z, len(v) - 1) if z is not None else None
             except Exception:
-                rec["p_t_df3_one_sided"] = None
+                rec["p_t_one_sided"] = None
             rec["rank_p_one_sided"] = (
                 (sum(1 for x in v if x >= rec["arm"]["delta"]) + 1) / (len(v) + 1))
             rec["rank_p_floor"] = 1.0 / (len(v) + 1)
+            rec["n_angles_used"] = len(v)
+            rec["df"] = len(v) - 1
+            # THE NULL IS A SYSTEMATIC SWEEP, NOT AN IID SAMPLE. theta runs on a grid, and the
+            # measured deltas vary smoothly with it (at L6: -0.0020 -> +0.0101 -> back down). A t
+            # statistic treats `sd` as sampling noise around a mean; here it is really the SPREAD of
+            # a deterministic curve. So the assumption-free statistic is reported alongside and
+            # should be preferred when quoting: how the arm compares to the LARGEST control effect
+            # anywhere on the sampled grid.
+            rec["max_control_delta"] = max(v)
+            rec["arm_over_max_control"] = (rec["arm"]["delta"] / max(v)) if max(v) > 0 else None
+            rec["arm_exceeds_all_controls"] = rec["arm"]["delta"] > max(v)
         else:
             rec["in_subspace_null"]["status"] = "TOO FEW angle runs to estimate a null (need >=3)"
             rec["z_vs_in_subspace_null"] = None
@@ -170,6 +210,7 @@ def main() -> int:
         "shard_policy": "judge shards (_0/_1) are DISJOINT HALVES and are unioned; pooling near-duplicate replicates would "
                                   "shrink the null's sd in the direction that flatters the headline",
         "inference_caveat": "The null has n=4, so sd is estimated from four points: the ratio is a t with df=3, not a z, and the assumption-free rank test cannot fall below 1/5=0.20 with four controls. More angle draws are the fix; quoting the z alone would dress a 4-point null as a precise one.",
+        "n_angles": {str(k): v for k, v in args.n_angles.items()},
         "threshold": args.threshold,
         "baseline_run": os.path.basename(sorted(glob.glob(args.baseline))[-1]),
         "layers": out,
@@ -179,23 +220,25 @@ def main() -> int:
     with open(args.out, "w") as f:
         json.dump(doc, f, indent=2)
 
-    print(f"  {'layer':6s} {'arm Δ':>9s} {'flips':>6s} | {'hard null':>18s} {'t(3)':>6s} "
-          f"{'p':>7s} {'rank p':>7s} | {'random ctrl':>11s}")
+    print(f"  {'layer':6s} {'arm Δ':>9s} {'flips':>6s} | {'hard null (k)':>21s} {'t(df)':>11s} "
+          f"{'p':>7s} {'rank p':>7s} {'max ctrl':>9s} {'arm/max':>8s}")
     for L, r in out.items():
         if "arm" not in r:
             print(f"  {L:6s} {r.get('status')}")
             continue
         nl = r["in_subspace_null"]
         ns = (f"{nl.get('mean', float('nan')):+.4f}±{nl.get('sd', float('nan')):.4f}"
-              if "mean" in nl else "n/a")
+              f"(k={r.get('n_angles_used', '?')})" if "mean" in nl else "n/a")
         z = r["z_vs_in_subspace_null"]
         rc = r["random_control_same_layer"]
-        pv = r.get("p_t_df3_one_sided"); rp = r.get("rank_p_one_sided")
-        print(f"  {L:6s} {r['arm']['delta']:+9.4f} {r['arm']['net_flips']:>6d} | {ns:>18s} "
-              f"{(f'{z:+.2f}' if z is not None else 'n/a'):>6s} "
+        pv = r.get("p_t_one_sided"); rp = r.get("rank_p_one_sided")
+        mc = r.get("max_control_delta"); am = r.get("arm_over_max_control")
+        print(f"  {L:6s} {r['arm']['delta']:+9.4f} {r['arm']['net_flips']:>6d} | {ns:>21s} "
+              f"{(f'{z:+.2f}({r.get(chr(100)+chr(102))})' if z is not None else 'n/a'):>11s} "
               f"{(f'{pv:.4f}' if pv is not None else 'n/a'):>7s} "
-              f"{(f'{rp:.2f}' if rp is not None else 'n/a'):>7s} | "
-              f"{(f'{rc[chr(100)+chr(101)+chr(108)+chr(116)+chr(97)]:+.4f}' if rc else 'n/a'):>11s}")
+              f"{(f'{rp:.2f}' if rp is not None else 'n/a'):>7s} "
+              f"{(f'{mc:+.4f}' if mc is not None else 'n/a'):>9s} "
+              f"{(f'{am:.2f}x' if am else 'n/a'):>8s}")
     print(f"\n[hardnull] -> {args.out}")
     return 0
 
