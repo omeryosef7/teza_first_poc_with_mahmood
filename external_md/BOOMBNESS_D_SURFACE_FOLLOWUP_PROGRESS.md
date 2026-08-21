@@ -4333,6 +4333,64 @@ do with degeneracy.
 
 
 
+
+## ⛔ THE EXHAUSTIVE SWEEP WEAKENS THE L8 CLAIM — and shows the published draw was the weakest direction available
+
+**Artifact:** `outputs/boombness_followup/angle_sweep_L8.json`. Four controls, 495 generations each,
+0 failures, all judged in the same 2026-08-21 session as the arm and baseline, all verified exactly
+orthogonal to `d_surface` at run time (cos 1.3e-07 to 5.3e-07, `rank2` complement).
+
+| angle | removes | control vs baseline | p | **arm − control** | p |
+|---|---|---|---|---|---|
+| 0° | 4.57% | +0.0013 | 0.49 | +0.0265 | **0.031** |
+| **45°** | 8.32% | **+0.0094** | 0.11 | **+0.0183** | **0.073** |
+| 90° | **11.41%** | −0.0079 | 0.41 | +0.0356 | **0.016** |
+| 135° | 7.66% | −0.0129 | 0.18 | +0.0406 | **0.015** |
+
+### ✅ What is established, and it is the stronger half
+
+**No direction orthogonal to `d_surface` inside the concept subspace moves ASR.** All four are
+individually null (p 0.11–0.49), *including the strongest available edit* — the 90° direction, which
+removes **11.41%** of the cell-mean spread, 2.5× the draw the published table used. Largest control
+effect anywhere in the complement: |Δ| = 0.0129. This is now an **upper bound over the whole
+complement**, not a sample: an exhaustive half-circle sweep, and projection is sign-invariant, so
+there is no fifth direction to try.
+
+### ⛔ But the arm-minus-control contrast does NOT survive its worst case
+
+**Worst case = 45°: arm − control = +0.0183, p = 0.0727.** The arm beats **three of four** directions
+significantly (0.031, 0.016, 0.015) and the fourth only suggestively.
+
+⛔ **And the published single-draw figure was flattered by which direction it happened to be.** The
+committed control (seed 20260909) removes **4.5506%** — essentially the **0° direction, the weakest
+in the complement**. Its contrast is the +0.0319 (p 0.0092) the re-check table reports. Had the seed
+landed near 45°, the same table would have read +0.0183 at p 0.073. **That is not a criticism of the
+seed; it is the reason a 2-D complement must be swept rather than sampled**, which is exactly why
+this run exists.
+
+### The corrected claim for L8
+
+> **No direction orthogonal to `d_surface` in the concept subspace moves ASR — established
+> exhaustively.** The arm beats **3 of 4** such directions at p < 0.05; against the worst of them the
+> contrast is **+0.0183, p = 0.073 — suggestive, not significant.** So `d_surface` is the acting
+> axis, and the *margin* by which it beats the rest of its own subspace is smaller and less certain
+> than the single-draw number implied.
+
+⚠ **This applies to the other three depths too.** L6/L10/L12 each still rest on **one draw**, and
+tonight's Holm-corrected table (all four surviving, L12 at 0.0136) uses those single draws. Sweeping
+L12 is the obvious next run — it is the strongest depth and its published draw removes 11.25%, which
+is near the *top* of L8's range rather than the bottom, so its number may move the other way.
+
+### Why this was worth the GPU
+
+The single-draw result was **not wrong** — every number in it reproduces. It was **fragile in a way
+nothing in the pipeline could reveal**, because a control drawn once cannot report where it sits in
+the space of controls it was sampled from. The sweep costs four runs and converts "the arm beat a
+control" into "the arm beat every control, by this much at worst". **Both the strengthening (all four
+inert, including the strongest) and the weakening (worst-case p 0.073) come from the same four runs,
+and reporting only the first half would be the exact failure this sprint has been correcting all
+night.**
+
 ### ⛔ The fix I planned would have been R-12 in a new costume — replaced with an EXHAUSTIVE sweep
 
 The top item on my own next-sprint list was *"re-run the causal controls at ≥3 seeds per depth and
@@ -6270,8 +6328,11 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
    basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
    of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
-   ⚠ Each per-depth control is **one draw**; the correlational side uses three seeds, the causal side
-   does not.
+   ⛔ **Corrected by the exhaustive L8 sweep:** each per-depth control above is **one draw**, and at
+   L8 that draw turns out to be the **weakest** of the four directions in the 2-D complement. Swept
+   exhaustively, all four orthogonal directions are inert (strongest removes 11.41% of the spread,
+   |Δ| ≤ 0.0129, p ≥ 0.11) — but the arm beats only **3 of 4** at p < 0.05, and against the worst
+   (45°) the contrast is **+0.0183, p 0.073**. L6/L10/L12 are still single-draw and unswept.
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
    privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
    seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
