@@ -79,11 +79,16 @@
 Five retractions and three corrections have landed since revision 5. The full report's **§0a** is the
 authoritative flat version; this is the same content, shorter.
 
-**Still standing.** Projecting out `d_surface` at L6–L12 raises AdvBench attack success — L8 **+0.0424
-pooled / +0.0305 clustered** (21 flips), L12 +0.0364, n=495 — and the arm beats **every** direction in
-the same rank-3 cell-mean subspace at all four layers (**1.80×–3.60×**). The gain is real
-refusal→compliance flips, not the judge rewarding longer refusals (+0.0000 on the both-refused rows).
-The dose-response is monotone and **saturating**.
+**Still standing — but only L12 survives multiplicity.** Projecting out `d_surface` raises AdvBench
+attack success: L8 **+0.0424 pooled / +0.0305 clustered** (21 flips), L12 +0.0364, L10 +0.0323,
+L6 +0.0182, n=495. Under a **cluster sign-flip test** (the honest one — see R-27): **L12 p=0.0039,
+Holm over the 11-layer family 0.043 → survives**; L8 p=0.0078 (Holm 0.078) and L10 p=0.0156 are
+significant *only uncorrected*; **L6 p=0.0625 is not significant at all**. The four layers were
+themselves the **top four of eleven** by this same statistic, which is why Holm uses m=11. The arm
+beats every direction in the same rank-3 cell-mean subspace (1.80× / 2.33× / 3.60× at L6/L8/L12;
+undefined at L10, where every control is ≤0). The gain is real refusal→compliance flips, not longer
+refusals (+0.0000 on the 440–451 both-refused rows, verified at all four layers). The dose-response is
+**saturating** (and monotone except at the top rung, where it falls by one flip).
 
 **The caveat that must travel with it (R-25).** `d_surface` is essentially **PC1** of the bank's
 cell-mean structure (cos 0.9998–1.0000), so projecting it out removes **0.81–0.88** of that spread
@@ -102,6 +107,11 @@ geometric bound that was **algebraically false**.
 **Not established, and not shown absent either.** A follow-up comparison returned no cluster-level
 significance at any of five layers — but that design's **minimum detectable effect is ≈+0.03** and the
 largest effect it produced was **+0.0222**, so those nulls are uninformative about absence.
+
+**Two things worth knowing before you act on any of this.** At matched dose, **`d_naive` beats
+`d_surface` by 38%** (+0.0586 / 29 flips vs +0.0424 / 21) — the 2×2's identification step moved *off*
+the stronger direction. And the scope is **one model, one concept pair**: the Qwen3-14B replication is
+**retracted (R-17)** and the concept swap failed both pre-committed controls (R-23/R-24).
 
 **The objective.** Unchanged: **do not build it.** R-26 is fresh evidence against, not for.
 

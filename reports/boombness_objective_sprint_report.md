@@ -6,7 +6,7 @@
 `docs/BOOMBNESS_CONTINUATION_LOG.md`). **The retraction registry is the table in §0 below and it is authoritative: every ID cited
 anywhere in this document has a row there. Take the next free ID from that table and nowhere else —
 `retraction_sweep.py` fails the build if a cited ID is missing a row.**
-**Summary for collaborators:** `reports/boombness_objective_sprint_short_update.md` (revision 5)
+**Summary for collaborators:** `reports/boombness_objective_sprint_short_update.md` (**revision 6**, 2026-08-22)
 **Status:** ⚠ **This line was stale for four days and is now dated.** It read "every claim below
 re-derived by an independent verifier; the 15 gaps it found are fixed" — true of the 2026-08-18
 verifier, but **three further audits (#5, #6, #7) have since forced retractions R-23…R-27 and
@@ -33,11 +33,30 @@ committed script.
 
 | claim | evidence | caveat that must travel with it |
 |---|---|---|
-| **Projecting out `d_surface` at L6–L12 raises AdvBench attack success.** L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495. ⚠ **These are POOLED deltas.** The same L8 effect **domain-clustered is +0.0305**, and the short update quotes that one — both are correct, and an unlabelled comparison of the two reads as a contradiction. Labelled here 2026-08-22 after finding exactly that mismatch across the two deliverables. | `insubspace_null_by_layer.json` | **Confounded with dose (R-25).** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), removing **0.81–0.88** of that spread against **≤0.132** for any in-subspace control. This is *not* shown to be about the direction's content. |
-| The arm exceeds **every** in-subspace control at all four layers, by **1.80×–3.60×** | `insubspace_null_by_layer.json` | The earlier "~16 band-sds" scored against a 4096-d random band and is **retracted (R-23)**; that band is far too weak a null. |
-| The gain is **real refusal→compliance flips**, not the judge rewarding longer refusals | `effect_decomposition.py` | On the 443–453 both-refused rows the delta is **+0.0000**. |
-| The dose-response is **monotone and saturating** | `dose_curve_L8.json` | Measured, from dose 0.046 to 0.84. From 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
+| **Projecting out `d_surface` raises AdvBench attack success — but only L12 survives multiplicity.** ⚠ **Corrected 2026-08-22 (audit #8).** An earlier revision of this row said "at L6–L12", implying four co-equal layers. Cluster sign-flip test, arm vs baseline: **L12 p=0.0039 (Holm over the 11-layer family 0.043 — SURVIVES)**; L8 p=0.0078 (Holm 0.078, fails); L10 p=0.0156 (Holm 0.141, fails); **L6 p=0.0625 — not significant even uncorrected**. Every layer sits exactly at its attainable floor (flips are one-directional: 18/0, 21/0, 16/0, 10/1). Deltas: L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495, POOLED — the same L8 effect **domain-clustered is +0.0305**, which the short update quotes. | `insubspace_null_by_layer.json` | **Confounded with dose (R-25).** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), removing **0.81–0.88** of that spread against **≤0.132** for any in-subspace control. This is *not* shown to be about the direction's content. |
+| The arm exceeds **every** in-subspace control at all four layers | `insubspace_null_by_layer.json` | Ratio **1.80× / 2.33× / 3.60×** at L6 / L8 / L12; **at L10 it is undefined** because every control there is ≤0 — so "1.80×–3.60×" (an earlier revision) covered 3 of 4 layers, corrected 2026-08-22. Null strength is also **uneven**: 12 angles at L6/L8, 8 at L12, only **4 at L10**, whose rank-p can never fall below 0.20. The earlier "~16 band-sds" scored against a 4096-d random band and is **withdrawn** on the same grounds as R-23 (that band is far too weak a null); ⚠ note R-23's registry row names the *~7* figure, so this withdrawal is recorded here and in §14-B, not as a separate ID. |
+| The gain is **real refusal→compliance flips**, not the judge rewarding longer refusals | `effect_decomposition.py` (script; the committed artifacts are `headline_effect_decomposition.json` for L12) | Verified at **all four** layers 2026-08-22: on the **440–451** both-refused rows the delta is **+0.0000** exactly. ⚠ An earlier revision said "443–453" — 443 is L12 only and **453 came from the E12 knife arm retracted by R-23**, so the range was stitched from one headline layer plus a retracted one. The claim itself holds; the numbers were wrong. |
+| The dose-response is **saturating** | `dose_curve_L8.json` | ⚠ **"Monotone" struck 2026-08-22.** It is monotone over dose 0.046→0.68 and **falls at the top rung** (+0.0444 at dose 0.7969 → +0.0424 at 0.8402, one net flip). Only the *isotonic fit* is monotone, which is what a monotone fit does. Saturating is correct and unaffected: from 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
 | **Dose and direction-identity are entangled in this bank** | `dose_vs_effect.json` (`dose_identity_bound`, exact) | A direction removing 70% of cell-mean spread must have \|cos\| ≥ **0.88–0.91** with `d_surface`. Separating them needs a **different design**, not more compute. |
+
+### Three things a reader of this block alone would otherwise miss (added 2026-08-22, audit #8)
+
+**1. At matched dose, `d_naive` beats `d_surface` by 38%.** Dose 0.7919 vs 0.8402 (94%), Δ **+0.0586
+/ 29 flips** vs **+0.0424 / 21** (`dose_vs_effect.json`). The 2×2's identification step did not merely
+buy nothing — it moved *off* the stronger direction, which is the confounded contrast the design exists
+to replace. ⚠ This is **not** significant at cluster level either (see "not established" below); it is
+listed because a reader of the flat block was concluding `d_surface` is the operative direction.
+
+**2. The four layers were outcome-selected, and nothing is corrected for it.** L6/L8/L10/L12 are the
+**top four of the eleven** depths in `advbench_layer_profile.json`, ranked by the same arm delta
+re-tested here, and chosen after that profile ran (`LAYER_SELECTION_CAVEAT` in
+`insubspace_null_by_layer.json`). The Holm column in the first row is over m=11 for that reason.
+
+**3. Scope: one model, one concept pair.** The cross-model replication is **retracted (R-17)** — the
+matching Qwen3-14B experiment was run and does **not** replicate (+0.364 pooled, but +0.015 after
+dropping one domain, 3/6 domains). And the concept-transfer test failed both pre-committed controls
+(R-23/R-24), so **`d_surface` names an estimator and is not shown to name a concept**. Everything above
+is `carrot↔bomb`, Llama-3.1-8B, one judge.
 
 ### What was retracted this session
 
@@ -48,6 +67,13 @@ Corrections **C-11** (a population mismatch I published), **C-12** (a figure cor
 three sentences later), **C-13** (an over-claim caught within one tick).
 
 ### What is NOT established — and is not shown absent either
+
+⚠ **An asymmetry in this block, corrected 2026-08-22.** An earlier revision demanded a cluster-level
+p-value of the `d_naive` comparison in order to call it "not established", while quoting the surviving
+headline with **no** significance statement at all. That is the same asymmetric evidential standard
+this report has already retracted three times (R-13, R-15). Both are now stated on the same footing:
+the headline is cluster-significant uncorrected at L8/L10/L12 and survives Holm **only at L12**; the
+`d_naive` comparison is significant nowhere.
 
 The `d_naive`-versus-matched-rung comparison returned **no cluster-level significance at any of five
 layers** (p = 0.375 / 0.125 / 0.625 / 0.156 / 0.0625), with four positive point estimates and one

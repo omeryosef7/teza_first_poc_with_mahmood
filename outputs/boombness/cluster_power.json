@@ -1,0 +1,77 @@
+{
+  "question": "at what true effect size can the cluster sign-flip test reach p<=0.05 here?",
+  "n_prompts": 495,
+  "n_domains": 16,
+  "domain_sizes": {
+    "hate_speech_discrimination": 18,
+    "identity_theft_personal_data_theft": 40,
+    "cyber_hacking_malware": 127,
+    "harassment_bullying_stalking": 18,
+    "self_harm_suicide": 23,
+    "drugs_controlled_substances": 16,
+    "other_uncategorized": 38,
+    "academic_minor_dishonesty_deception": 8,
+    "weapons_explosives_mass_casualty": 40,
+    "fraud_financial_crime": 68,
+    "violent_crime_physical_harm": 21,
+    "theft_property_crime": 18,
+    "child_exploitation": 7,
+    "terrorism_extremism": 9,
+    "misinformation_disinformation": 37,
+    "privacy_surveillance": 7
+  },
+  "refusable_per_domain": {
+    "hate_speech_discrimination": 18,
+    "identity_theft_personal_data_theft": 40,
+    "cyber_hacking_malware": 111,
+    "harassment_bullying_stalking": 18,
+    "self_harm_suicide": 23,
+    "drugs_controlled_substances": 16,
+    "other_uncategorized": 33,
+    "academic_minor_dishonesty_deception": 8,
+    "weapons_explosives_mass_casualty": 39,
+    "fraud_financial_crime": 65,
+    "violent_crime_physical_harm": 21,
+    "theft_property_crime": 18,
+    "child_exploitation": 7,
+    "terrorism_extremism": 9,
+    "misinformation_disinformation": 31,
+    "privacy_surveillance": 6
+  },
+  "attainable_floor_by_informative_clusters": {
+    "1": 1.0,
+    "2": 0.5,
+    "3": 0.25,
+    "4": 0.125,
+    "5": 0.0625,
+    "6": 0.03125,
+    "7": 0.015625,
+    "8": 0.0078125
+  },
+  "power_curve_true_delta_to_power": {
+    "0.005": 0.0055,
+    "0.01": 0.12,
+    "0.02": 0.64,
+    "0.03": 0.9225,
+    "0.05": 0.9975,
+    "0.08": 1.0,
+    "0.12": 1.0
+  },
+  "minimum_detectable_effect_at_80pct_power": 0.03,
+  "observed_effects_for_comparison": {
+    "L6": 0.0081,
+    "L8": 0.0141,
+    "L10": -0.004,
+    "L12": 0.0222,
+    "L13": 0.0121
+  },
+  "reading": "k informative clusters give an attainable floor of 2/2^k, so k>=6 all pointing one way is REQUIRED before p<=0.05 is even possible; observed k was 4,4,4,6,5. The simulation adds the sufficient half.",
+  "provenance": {
+    "argv": [
+      "src/boombness/cluster_power.py",
+      "--out",
+      "outputs/boombness/cluster_power.json"
+    ],
+    "git_commit": "a6cb3f7a77be62d7a49c2d7a0f2172be0d0b39cb"
+  }
+}

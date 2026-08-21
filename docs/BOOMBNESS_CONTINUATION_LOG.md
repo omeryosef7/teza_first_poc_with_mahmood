@@ -6375,3 +6375,70 @@ complete rather than merely plausible.
 | 280 | 2026-08-22 | corrected G2 / G4 / FINAL / P8.2, keeping superseded text struck | gate table no longer contradicts §0 |
 | 281 | 2026-08-22 | found the sweep **excludes this file entirely** | right for the tick log, wrong for the live head |
 | 282 | 2026-08-22 | added `LIVE_PREFIX_ENDS_AT`; **tested both directions** | sweep now covers 4 files; exit 1 planted / 0 clean |
+
+## Audit #8: the flat summary I wrote to be trustworthy had eight defects, one of them good news
+
+Tick 2026-08-22. I pointed audit #8 at §0a and the short update's current-state block precisely
+because they are now what a collaborator reads *instead of* the body. It found eight things. Verified
+the two most consequential myself.
+
+### The headline's own significance — asked for the first time, and I should have asked earlier
+
+Audit #7 killed the `d_naive` claim with a cluster-level test. **I never applied that test to the
+surviving headline.** Applied now (arm vs baseline, domain sign-flip, exact enumeration):
+
+| L | Δ | informative clusters | flips | cluster p | Holm (m=11) | |
+|---|---|---|---|---|---|---|
+| **L12** | +0.0364 | 9/16 | **18/0** | **0.0039** | **0.043** | **SURVIVES** |
+| L8 | **+0.0424** | 8/16 | 21/0 | 0.0078 | 0.078 | fails |
+| L10 | +0.0323 | 7/16 | 16/0 | 0.0156 | 0.141 | fails |
+| **L6** | +0.0182 | 5/16 | 10/1 | **0.0625** | 0.500 | **not significant even uncorrected** |
+
+**Partly good news:** unlike `d_naive` (4–6 informative domains), the headline arms produce
+**one-directional** flips — 18/0, 21/0, 16/0 — so 7–9 domains are informative and every layer sits
+exactly at its attainable floor. The effect is real enough to reach the floor.
+
+**But §0a's framing was wrong.** "L6–L12" implied four co-equal supporting layers. **Only L12 survives
+multiplicity**; L8 and L10 are significant only uncorrected; **L6 is not significant at all** — and L6
+was listed as a surviving layer.
+
+**And the audit named an asymmetry I had not noticed in myself.** I demanded a cluster-level p of the
+`d_naive` comparison in order to call it "not established", and quoted the headline with **no
+significance statement whatsoever**. That is the same asymmetric evidential standard this report has
+already retracted **three times** (R-13, R-15). Both are now stated on the same footing, and the
+admission is in §0a rather than only here.
+
+### The commit that added §0a deleted the artifact §0a cites
+
+§0a opens *"Every row points at a **committed** artifact"*. `cluster_power.json` was **not tracked** —
+and `git log --diff-filter=D` names commit **3efd2ae2**, *"Phase 4: add a flat current-state section"*,
+as the commit that removed it. The sentence asserting the property and the change violating it were
+the same commit. Re-added with `-f` and verified tracked.
+
+### Four more corrections, all verified
+
+- **"Monotone"** — it is not. The top rung **falls** (+0.0444 at dose 0.7969 → +0.0424 at 0.8402).
+  Only the *isotonic fit* is monotone, which is what a monotone fit does. "Saturating" stands.
+- **"443–453 both-refused rows"** — true range **440–451**. `443` is L12 only, and **`453` came from
+  the E12 knife arm retracted by R-23**: I stitched a range for the surviving headline out of one
+  headline layer and one retracted one. The claim itself I re-verified at all four layers: +0.0000
+  exactly, everywhere.
+- **"1.80×–3.60× at all four layers"** — covers **3 of 4**. At L10 the ratio is *undefined* (every
+  control ≤0). The nulls are also uneven: 12 angles at L6/L8, 8 at L12, **4 at L10**.
+- **R-26's central number was missing from both blocks** — at matched dose `d_naive` beats `d_surface`
+  by **38%** (+0.0586/29 vs +0.0424/21). A reader of the flat block was concluding `d_surface` is the
+  operative direction; it is not.
+
+### Also added: the scope a reader of §0a alone would not have learned
+
+The **layer set is outcome-selected** (top four of eleven, no correction — hence Holm m=11), and the
+scope is **one model, one concept pair**: the Qwen3 replication is **retracted (R-17)** and the concept
+swap failed both pre-committed controls (R-23/R-24).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 283 | 2026-08-22 | applied the cluster test to the **surviving headline** for the first time | **only L12 survives Holm**; L6 not significant at all |
+| 284 | 2026-08-22 | accepted the **asymmetric-standard** finding | I demanded of `d_naive` what I never asked of the headline |
+| 285 | 2026-08-22 | found §0a's own commit had **deleted** an artifact §0a cites | re-tracked `cluster_power.json` |
+| 286 | 2026-08-22 | struck "monotone"; fixed 443–453 → **440–451**; fixed the ratio range | one endpoint had come from a **retracted** arm |
+| 287 | 2026-08-22 | added R-26's number, the selection bias, and the single-model scope | the flat block now says what the body says |
