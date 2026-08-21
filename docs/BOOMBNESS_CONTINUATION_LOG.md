@@ -6120,3 +6120,53 @@ selection question (L13 sits outside the outcome-selected top-4), not because a 
 | 255 | 2026-08-21 | recorded that L8's 0.125 **is** its attainable floor | the old 0.021 was below what the design can produce |
 | 256 | 2026-08-21 | rewrote the replication artifact to "withdrawn" | reason and floor stored in the artifact, not just prose |
 | 257 | 2026-08-21 | submitted L10/L13 judging (773228-773231) | completing the record with the corrected inference |
+
+## The corrected bound closes the `d_naive` puzzle — geometrically, and against the claim
+
+Tick 2026-08-21. The exact-optimum computation launched last tick finished. Two things came out of it,
+and the second is the useful one.
+
+**1. Against the CORRECTED bound, `d_naive` is legal — and almost exactly saturates it.**
+
+| L | dose(`d_naive`) | exact min \|cos\| needed | actual | |
+|---|---|---|---|---|
+| 6 | 0.8329 | 0.9698 | 0.9698 | satisfied, **saturating to 4 dp** |
+| 8 | 0.7919 | 0.9610 | 0.9613 | satisfied by 0.0003 |
+| 12 | 0.7595 | 0.9543 | 0.9549 | satisfied by 0.0006 |
+
+So the false closed form was not merely imprecise — it was wrong by *just enough* to turn a direction
+sitting **on** the frontier into an apparent violation. And C-13 then read that violation as
+confirmation. Both errors pointed the same way because both came from the same sloppy inequality.
+
+**2. `d_naive` is a FRONTIER point; the ladder is an INTERIOR path. That closes the puzzle.**
+
+Asked forward instead of inverted — *hold a direction's cosine fixed, sweep the complement rotation φ,
+how much dose is attainable?* — the gap to the maximum is:
+
+| direction | L6 | L8 | L12 | on frontier? |
+|---|---|---|---|---|
+| **`d_naive`** | **+0.00011** | **+0.00064** | **+0.00094** | **yes** |
+| ladder k=1 | +0.00821 | +0.01356 | +0.00673 | no |
+| `d_context` | +0.01288 | +0.01915 | +0.02556 | no |
+
+**`d_naive` is dose-optimal for its collinearity. The `dose_mix` ladder — the φ=0 slice through
+`basis[0]` — is not.** That is the geometric reason the comparison behaved the way it did: matched on
+**dose**, the rung carries more dose (which I reported as the confound pushing *against* `d_naive`);
+matched on **cosine**, `d_naive` carries more dose. The sign of "who holds the residual dose
+advantage" flips with which quantity you match, exactly as audit #7 said — and now there is a reason
+rather than an observation.
+
+**So the ladder was never a fair comparison family.** It is an interior path, so *any* frontier
+direction will sit above its curve. "`d_naive` beats every dose-matched mixture" was really "a frontier
+point beats an interior path", which is a statement about my construction, not about the model.
+
+That is the closing account of this thread, and it argues **against** the claim I was chasing rather
+than for it. Combined with the cluster-level result — nothing significant at any layer — the `d_naive`
+line is finished, and finished with an explanation instead of an unexplained null.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 258 | 2026-08-21 | exact-bound test completed | `d_naive` **satisfies** the corrected bound, saturating it to 4 dp at L6 |
+| 259 | 2026-08-21 | added `frontier_gap` (forward question, one cheap sweep) | `d_naive` gaps **0.0001–0.0009**; ladder gaps 0.0067–0.0136 |
+| 260 | 2026-08-21 | identified the ladder as an **interior path** | any frontier direction sits above it — the comparison was never fair |
+| 261 | 2026-08-21 | closed the `d_naive` line | explained geometrically, against the claim, not merely un-replicated |

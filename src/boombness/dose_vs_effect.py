@@ -147,6 +147,54 @@ def dose_identity_bound(payload, layer):
                        % (mincos_exact(0.7) or 1.0)}
 
 
+
+def frontier_gap(payload, layer, name, n_phi=1441):
+    """How far below the exact dose-vs-cosine FRONTIER does direction `name` sit?
+
+    Inverting the bound ("what |cos| is needed to reach this dose?") is expensive and awkward. The
+    same question asked forward is one cheap evaluation: hold the direction's own cosine with
+    `d_surface` fixed, sweep the complement rotation phi, and take the largest dose attainable at
+    that cosine. `gap = max_dose_at_that_cos - dose(direction)`. A gap of ~0 means the direction is
+    dose-OPTIMAL for its collinearity -- it sits on the frontier.
+
+    WHY IT MATTERS (R-27 follow-up). Against the corrected exact bound, `d_naive` is not merely legal
+    (it violated the false closed form) -- it is essentially ON the frontier: needed 0.9698 / has
+    0.9698 at L6, needed 0.9610 / has 0.9613 at L8. The `dose_mix` ladder, which is the phi=0 slice
+    through `basis[0]`, is NOT on the frontier. That is the geometric explanation of why `d_naive`
+    looked special: matched on DOSE the ladder rung has more dose, matched on COSINE `d_naive` has
+    more dose, and the sign of "who has the residual dose advantage" flips with which you match --
+    exactly as audit #7 found. `d_naive` is a frontier point; the ladder is an interior path.
+    """
+    import torch, math
+    cm = payload.get("cell_means") or {}
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    tot = float((M ** 2).sum())
+    u = payload["d_surface"][layer].float().reshape(-1)
+    u = u / u.norm()
+    x = payload[name][layer].float().reshape(-1)
+    x = x / x.norm()
+    c = float(torch.dot(u, x))
+    Mp = M - (M @ u.reshape(-1, 1)) @ u.reshape(1, -1)
+    B = []
+    for i in range(Mp.shape[0]):
+        w = Mp[i].clone()
+        for bb in B:
+            w = w - torch.dot(w, bb) * bb
+        if float(w.norm()) > 1e-4 * float(Mp.norm()):
+            B.append(w / w.norm())
+    A_of = lambda v: float(((M @ (v / v.norm()).reshape(-1, 1)) ** 2).sum()) / tot
+    s = math.sqrt(max(0.0, 1.0 - c * c))
+    best = max(A_of(c * u + s * (math.cos(math.pi * j / n_phi) * B[0]
+                                 + math.sin(math.pi * j / n_phi) * B[1]))
+               for j in range(n_phi))
+    d = A_of(x)
+    return {"cos_with_d_surface": c, "dose": d, "max_dose_at_this_cos": best,
+            "frontier_gap": best - d, "on_frontier": bool(best - d < 5e-3)}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--fit-dir", default="outputs/boombness/extract_boombness/full_20260816_185942_1008673")
@@ -223,7 +271,22 @@ def main() -> int:
         }
 
     bounds = {f"L{L}": dose_identity_bound(pl, L) for L in (6, 8, 10, 12)}
+    frontier = {}
+    for L in (6, 8, 12):
+        for nm in ("d_naive", "d_context"):
+            try:
+                frontier[f"{nm}@L{L}"] = frontier_gap(pl, L, nm)
+            except Exception:
+                pass
+        try:
+            import signals as _sg
+            v, _h = _sg.dose_mix_direction(pl, L, 1, n_steps=8)
+            pl.setdefault("_tmp_rung", {})[L] = v
+            frontier[f"ladder_k1@L{L}"] = frontier_gap(pl, L, "_tmp_rung")
+        except Exception:
+            pass
     doc = {"dose_identity_bound": bounds,
+           "frontier_gaps": frontier,
            "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
            "threshold": args.threshold, "directions": out, "verdict": verdict,
            "caveat": "delta_over_dose is only comparable between directions of SIMILAR dose; the "

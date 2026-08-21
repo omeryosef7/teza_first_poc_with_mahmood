@@ -73,6 +73,71 @@
       "reading": "EXACT: a direction removing 70% of the cell-mean spread must have |cos| >= 0.9102 with d_surface. High dose does force near-collinearity, but this is a computed optimum over the real quadratic form, not the (false) closed-form inequality this field used to report."
     }
   },
+  "frontier_gaps": {
+    "d_naive@L6": {
+      "cos_with_d_surface": 0.9697957634925842,
+      "dose": 0.83290027948524,
+      "max_dose_at_this_cos": 0.833012739284533,
+      "frontier_gap": 0.00011245979929297434,
+      "on_frontier": true
+    },
+    "d_context@L6": {
+      "cos_with_d_surface": 0.16084206104278564,
+      "dose": 0.08975557768175933,
+      "max_dose_at_this_cos": 0.10263484040069952,
+      "frontier_gap": 0.012879262718940188,
+      "on_frontier": false
+    },
+    "ladder_k1@L6": {
+      "cos_with_d_surface": 0.974928081035614,
+      "dose": 0.8324964521319576,
+      "max_dose_at_this_cos": 0.8407086484767327,
+      "frontier_gap": 0.008212196344775102,
+      "on_frontier": false
+    },
+    "d_naive@L8": {
+      "cos_with_d_surface": 0.9613239765167236,
+      "dose": 0.7919418722029459,
+      "max_dose_at_this_cos": 0.7925841962004682,
+      "frontier_gap": 0.0006423239975222872,
+      "on_frontier": true
+    },
+    "d_context@L8": {
+      "cos_with_d_surface": 0.20662231743335724,
+      "dose": 0.13129592653582514,
+      "max_dose_at_this_cos": 0.15044181539670995,
+      "frontier_gap": 0.019145888860884808,
+      "on_frontier": false
+    },
+    "ladder_k1@L8": {
+      "cos_with_d_surface": 0.9749279022216797,
+      "dose": 0.7968859735609414,
+      "max_dose_at_this_cos": 0.8104462532478585,
+      "frontier_gap": 0.013560279686917087,
+      "on_frontier": false
+    },
+    "d_naive@L12": {
+      "cos_with_d_surface": 0.9548555612564087,
+      "dose": 0.7594935862955601,
+      "max_dose_at_this_cos": 0.7604378448475608,
+      "frontier_gap": 0.000944258552000754,
+      "on_frontier": true
+    },
+    "d_context@L12": {
+      "cos_with_d_surface": 0.0782884955406189,
+      "dose": 0.09930797961961622,
+      "max_dose_at_this_cos": 0.12486506361215256,
+      "frontier_gap": 0.02555708399253634,
+      "on_frontier": false
+    },
+    "ladder_k1@L12": {
+      "cos_with_d_surface": 0.9749280214309692,
+      "dose": 0.7805143502634848,
+      "max_dose_at_this_cos": 0.7872435973219338,
+      "frontier_gap": 0.006729247058449017,
+      "on_frontier": false
+    }
+  },
   "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
   "threshold": 0.5,
   "directions": {
@@ -118,6 +183,6 @@
       "--out",
       "outputs/boombness/dose_vs_effect.json"
     ],
-    "git_commit": "3e49c4a9ff86500ea125f283b64282c666d0fed6"
+    "git_commit": "896114aa0d7066e07909080afeaa311694306ada"
   }
 }
