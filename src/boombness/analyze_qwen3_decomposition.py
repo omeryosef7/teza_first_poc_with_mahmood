@@ -133,15 +133,22 @@ def main() -> None:
     for cond, blk in out["conditions"].items():
         print(f"  == {cond} (n={blk['n_rows']})")
         for t, v in blk["arms"].items():
-            m = v.get("malicious_at_0.5")
-            if m:
-                print(f"     {t:9s} asr {v['asr']:.4f}  dASR {m['delta_cluster_mean']:+.4f} "
-                      f"p {m['p_cl']:.4g}")
+            m = v.get("malicious_at_0.5") or {}
+            dm, pv = m.get("delta_cluster_mean"), m.get("p_cl")
+            if dm is None:
+                # benign_literal is zero by construction: every delta can be identically 0, which
+                # makes the clustered p undefined rather than 1.0. Print it as such instead of
+                # crashing -- and note that a None p here is EXPECTED, not a failure.
+                print(f"     {t:9s} asr {v['asr']:.4f}  "
+                      f"{'(baseline)' if t == 'base' else 'dASR n/a (degenerate)'}")
             else:
-                print(f"     {t:9s} asr {v['asr']:.4f}  (baseline)")
+                print(f"     {t:9s} asr {v['asr']:.4f}  dASR {dm:+.4f} "
+                      f"p {'n/a' if pv is None else format(pv, '.4g')}")
         it = blk.get("INTERACTION_super_additivity", {}).get("malicious_at_0.5")
         if it and it.get("interaction_cluster_mean") is not None:
-            print(f"     INTERACTION {it['interaction_cluster_mean']:+.4f}  p {it['p_cl']:.4g}")
+            ip = it.get("p_cl")
+            print(f"     INTERACTION {it['interaction_cluster_mean']:+.4f}  "
+                  f"p {'n/a' if ip is None else format(ip, '.4g')}")
 
 
 if __name__ == "__main__":
