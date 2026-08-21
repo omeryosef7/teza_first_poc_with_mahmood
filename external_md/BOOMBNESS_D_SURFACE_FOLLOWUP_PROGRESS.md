@@ -5066,6 +5066,20 @@ this sprint flagged in review #4 and then committed itself. The new script tests
 All three cross significantly, so the double dissociation is real *as a dissociation* and not merely
 as two separately-reported cells.
 
+✅ **The family bootstrap (F2) is now in `clean_fig9_correlation.json`** — a `family_bootstrap`
+function added to `analyze_phase_d.py`, resampling the 120 families with replacement and refitting
+the within-domain estimand each replicate. The survival claim holds exactly as published (**0 of
+2,000 replicates ≤ 0**, percentile CI [+0.2381, +0.3517]).
+
+⛔ **But the published SE does not reproduce: 0.0286, not 0.0333** — and it is *smaller* than the
+domain-clustered 0.0354, so resampling families **does not widen this estimand**. I had been
+reading R5-4's "within-level SEs are ~11% too small" as if it applied to the heldout number it sits
+next to in answer 6. It does not; those are different quantities. The corrected text now says so.
+
+**Regression check on the re-run:** every other field in the artifact is bit-identical to the
+committed version (one whole-artifact recursive diff, 1e-12 tolerance), so the new field is the only
+change and the re-run did not silently move anything.
+
 ### The five claims the report retracted elsewhere and kept asserting anyway
 
 1. **`d_naive` as independent evidence** (R6-2 struck it — it is `d_surface + d_context` exactly),
@@ -6741,7 +6755,13 @@ prompts, where G2's clean estimate was ρ = −0.066 on n = 108.
 Three things bound it:
 - **two thirds is the design's own manipulation** — between-level ρ +0.7024 vs within-level +0.1638;
 - the within-level SEs are **~11% too small** (the 15 levels share all 120 families, R5-4); the
-  family bootstrap gives 0.0333 and the effect survives (0/2,000 replicates ≤ 0);
+  family bootstrap is **now in the artifact** (`clean_fig9_correlation.json →
+  HELDOUT_family_bootstrap`, added in review #9 to close F2) and **the effect survives:
+  0 of 2,000 replicates ≤ 0**, percentile CI [+0.2381, +0.3517]. ⚠ **The SE does not reproduce as
+  published**: the committed resample gives **0.0286**, not the markdown-only 0.0333 (itself a
+  correction of a markdown-only 0.0343). It is also *smaller* than the domain-clustered 0.0354,
+  i.e. resampling families does **not** widen this particular estimand — R5-4's ~11% understatement
+  is about the **within-level** SEs, a different quantity, and must not be read as applying here;
 - ⛔ **`d_inter` and random orthogonal axes in the same subspace do it as well or better**, which
   is what fails the gate. (`d_naive` did too, but it is `d_surface + d_context` exactly — R6-2 —
   so it is not independent evidence and is struck from this list.)
