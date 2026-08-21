@@ -47,6 +47,16 @@
   "results": {
     "llama": {
       "n_common": 420,
+      "population": {
+        "bank_file": "boombness_prompt_bank.jsonl",
+        "population": "sprint bank, carrot/bomb (goal is a SUBSTITUTED counterfactual)",
+        "is_external_bank": false,
+        "goal_semantics": "goal is a substituted counterfactual (codeword -> concept)",
+        "model": "llama",
+        "condition": "natural_doublespeak",
+        "n": 420,
+        "n_clusters": null
+      },
       "arms": {
         "baseline": {
           "asr_plain": {
@@ -142,6 +152,16 @@
     },
     "qwen3": {
       "n_common": 420,
+      "population": {
+        "bank_file": "boombness_prompt_bank.jsonl",
+        "population": "sprint bank, carrot/bomb (goal is a SUBSTITUTED counterfactual)",
+        "is_external_bank": false,
+        "goal_semantics": "goal is a substituted counterfactual (codeword -> concept)",
+        "model": "qwen3",
+        "condition": "natural_doublespeak",
+        "n": 420,
+        "n_clusters": null
+      },
       "arms": {
         "baseline": {
           "asr_plain": {
@@ -256,6 +276,6 @@
       "--out",
       "outputs/boombness/section14_topical_asr.json"
     ],
-    "git_commit": "53efbf00a7ce4dc7df90689505133611e024cb79"
+    "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
   }
 }

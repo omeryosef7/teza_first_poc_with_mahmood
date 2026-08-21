@@ -2,6 +2,16 @@
   "judge_a": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/base_20260816_210948_3024689",
   "judge_b": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/r18pow_base_20260819_073343_1645945",
   "threshold": 0.5,
+  "population": {
+    "bank_file": "boombness_prompt_bank.jsonl",
+    "population": "sprint bank, carrot/bomb (goal is a SUBSTITUTED counterfactual)",
+    "is_external_bank": false,
+    "goal_semantics": "goal is a substituted counterfactual (codeword -> concept)",
+    "model": null,
+    "condition": null,
+    "n": null,
+    "n_clusters": null
+  },
   "subsets": {
     "all_common": {
       "n": 660,
@@ -61,9 +71,11 @@
       "outputs/boombness/score_behavior/base_2026*",
       "--score-b",
       "outputs/boombness/score_behavior/r18pow_base_*",
+      "--bank",
+      "data/boombness_prompts/boombness_prompt_bank.jsonl",
       "--out",
       "outputs/boombness/judge_retest_floor.json"
     ],
-    "git_commit": "f8aeb46f412d42747f15b341d6bfcff9815c8d8f"
+    "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
   }
 }

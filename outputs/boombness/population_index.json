@@ -1,6 +1,6 @@
 {
   "note": "one row per top-level committed artifact. A citation that pairs two rows with different `bank` or `model` is a population transfer and needs a stated reason.",
-  "n_artifacts": 61,
+  "n_artifacts": 62,
   "rows": [
     {
       "artifact": "outputs/boombness/advbench_decomposition.json",
@@ -384,7 +384,7 @@
     },
     {
       "artifact": "outputs/boombness/judge_retest_floor.json",
-      "bank": null,
+      "bank": "bank(carrot)",
       "model": null,
       "condition": null,
       "n": null,
@@ -401,6 +401,16 @@
       "n_clusters": null,
       "has_provenance": true,
       "plan_section": "14"
+    },
+    {
+      "artifact": "outputs/boombness/population_index.json",
+      "bank": "AdvBench-495",
+      "model": "Qwen3-14B",
+      "condition": null,
+      "n": null,
+      "n_clusters": null,
+      "has_provenance": true,
+      "plan_section": null
     },
     {
       "artifact": "outputs/boombness/position_2x2.json",
@@ -574,7 +584,7 @@
     },
     {
       "artifact": "outputs/boombness/section14_topical_asr.json",
-      "bank": null,
+      "bank": "bank(carrot)",
       "model": "Qwen3-14B",
       "condition": "natural_doublespeak",
       "n": null,
@@ -619,6 +629,6 @@
       "--out",
       "outputs/boombness/population_index.json"
     ],
-    "git_commit": "66e6db569e2781797c4ade009d10c6ae8f8134d1"
+    "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
   }
 }

@@ -4058,3 +4058,45 @@ is diagnosis, not a fix — recorded as such rather than as a solved problem.
 |---|---|---|---|
 | 91 | 2026-08-21 | built `population_index.py` after the third population-transfer defect | **48/61 artifacts state no population**; 13 carry provenance |
 | 92 | 2026-08-21 | recorded the index's own two limits, both found by running it | heuristic fingerprint; multi-population artifacts mis-labelled |
+
+## Population blocks: diagnosis converted into a partial fix
+
+Tick 2026-08-21, following the previous tick's finding that 48 of 61 artifacts could not say what
+population they describe.
+
+`common.population_block()` now emits a self-describing block, and the field that matters most is
+**`goal_semantics`**, because it is the discriminator that would have caught **two of the three**
+defects on its own:
+
+| population | `goal_semantics` |
+|---|---|
+| AdvBench-495 / ClearHarm-179 | *goal == visible prompt (no substitution; **R-13's style artifact cannot arise**)* |
+| sprint bank | *goal is a substituted counterfactual (codeword → concept)* |
+
+An artifact carrying that line cannot be quietly quoted against the other kind: the R-13 style
+artifact **requires** the goal/prompt mismatch, and the judge floor differs 10× between them for the
+same reason. Wired into `analyze_topical_asr.py` and `judge_retest.py`; both artifacts regenerated.
+
+**The multi-population case is fixed where it bit.** `population_index.py` had labelled
+`section14_topical_asr.json` "Qwen3" although it holds Llama results too, because a top-level
+fingerprint cannot describe an artifact covering several populations. That file now carries a block
+**per model**, so the index reads both correctly.
+
+**Honest accounting of what this did and did not fix:**
+
+| | before | after |
+|---|---|---|
+| artifacts indexed | 61 | 62 |
+| **state no identifiable population** | **48** | **46** |
+
+**Two of forty-eight.** The other 46 are historical artifacts from scripts the other session owns or
+that predate this, and writing a population block into them retroactively would be inventing
+provenance rather than recording it — precisely the failure this whole line of work is about. The
+right shape is that *new* artifacts carry it and the index shows who does not, which is now true.
+Recorded as a partial fix with the number attached, rather than as a cleared item.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 93 | 2026-08-21 | added `common.population_block()` with a `goal_semantics` discriminator | the field that would have caught two of three defects |
+| 94 | 2026-08-21 | wired it into the scripts I own; regenerated their artifacts | `section14` now states its population **per model** |
+| 95 | 2026-08-21 | re-ran the index | **48 → 46** unlabelled; the rest are not mine to invent provenance for |

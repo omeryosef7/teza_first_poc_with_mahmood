@@ -2,6 +2,16 @@
   "judge_a": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
   "judge_b": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abrep_base_20260821_033532_4024998",
   "threshold": 0.5,
+  "population": {
+    "bank_file": "advbench_heldout_495.jsonl",
+    "population": "AdvBench-495 (external; goal == prompt)",
+    "is_external_bank": true,
+    "goal_semantics": "goal == visible prompt (no substitution; R-13's style artifact cannot arise)",
+    "model": null,
+    "condition": null,
+    "n": null,
+    "n_clusters": null
+  },
   "subsets": {
     "all_common": {
       "n": 495,
@@ -31,9 +41,11 @@
       "outputs/boombness/score_behavior/ab_base_2026*",
       "--score-b",
       "outputs/boombness/score_behavior/ab_base_2026*",
+      "--bank",
+      "data/boombness_prompts/external/advbench_heldout_495.jsonl",
       "--out",
       "outputs/boombness/judge_retest_advbench.json"
     ],
-    "git_commit": "e664a3368d3a7fd9f198b5710742a96014e7635a"
+    "git_commit": "f434b44c2009b9c40ecd465f9a799a6637dfe76f"
   }
 }

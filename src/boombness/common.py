@@ -1222,6 +1222,51 @@ def validate_direction_payload(payload: Dict[str, Any], path: str = "", model: A
     return v
 
 
+
+# --------------------------------------------------------------------------- #
+# POPULATION BLOCKS (2026-08-21)
+# --------------------------------------------------------------------------- #
+POPULATIONS = {
+    "advbench_heldout_495.jsonl": "AdvBench-495 (external; goal == prompt)",
+    "clearharm_179.jsonl": "ClearHarm-179 (external; goal == prompt)",
+    "boombness_prompt_bank.jsonl": "sprint bank, carrot/bomb (goal is a SUBSTITUTED counterfactual)",
+    "boombness_prompt_bank_button.jsonl": "sprint bank, button/bomb (substituted counterfactual)",
+    "boombness_prompt_bank_apple.jsonl": "sprint bank, apple/bomb — WITHDRAWN, failed §2.4",
+}
+
+
+def population_block(bank_path=None, model=None, condition=None, n=None, n_clusters=None,
+                     **extra) -> Dict[str, Any]:
+    """A self-describing statement of WHICH POPULATION a result is about.
+
+    WHY (three defects in one week, all the same move -- a quantity measured on population X used to
+    support a statement about population Y):
+      * R-21  -- a Qwen3-measured style artifact was used to exempt "the Llama results";
+      * §18 point 3 -- a BANK effect was cited to the EXTERNAL-set section, which cannot answer it;
+      * the judge noise floor -- measured on the bank (1.9 pp) and quoted against the AdvBench
+        headline, whose own floor is 0.2 pp.
+    The direction of the error differed each time, so it is a shortcut rather than a bias, and it is
+    only checkable if artifacts SAY what they are about. `population_index.py` found **48 of 61**
+    committed artifacts could not.
+
+    `goal_semantics` is the field that would have caught two of the three: on external banks the
+    judged goal IS the visible prompt, while on the sprint bank it is a counterfactual built by
+    substituting the concept for the codeword. Numbers from the two are not interchangeable, and the
+    R-13 style artifact can only arise where they differ.
+    """
+    base = os.path.basename(str(bank_path)) if bank_path else None
+    label = POPULATIONS.get(base, base)
+    external = bool(base and ("advbench" in base.lower() or "clearharm" in base.lower()))
+    out = {"bank_file": base, "population": label, "is_external_bank": external,
+           "goal_semantics": ("goal == visible prompt (no substitution; R-13's style artifact "
+                              "cannot arise)" if external else
+                              "goal is a substituted counterfactual (codeword -> concept)"
+                              if base else None),
+           "model": model, "condition": condition, "n": n, "n_clusters": n_clusters}
+    out.update(extra)
+    return out
+
+
 def read_jsonl(path: str) -> List[Dict[str, Any]]:
     out = []
     with open(path) as f:

@@ -39,7 +39,7 @@ import sys
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import population_block, read_jsonl  # noqa: E402
 import judge_boombness as jb  # noqa: E402
 
 
@@ -130,7 +130,13 @@ def main() -> int:
         for a in arms.values():
             common &= set(a)
         common = sorted(common)
-        res[model] = {"n_common": len(common), "arms": {}}
+        # PER-MODEL population block. `population_index.py` fingerprints an artifact once and so
+        # labelled this file "Qwen3" although it holds Llama results too — an artifact covering
+        # several populations must state it per result, not at the top.
+        res[model] = {"n_common": len(common),
+                      "population": population_block(args.bank, model=model,
+                                                     condition=args.condition, n=len(common)),
+                      "arms": {}}
         for name, rows in arms.items():
             byd_a: Dict[str, List[float]] = {}
             byd_t: Dict[str, List[float]] = {}

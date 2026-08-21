@@ -26,7 +26,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import read_jsonl  # noqa: E402
+from common import population_block, read_jsonl  # noqa: E402
 
 
 def _load(d):
@@ -48,6 +48,10 @@ def main() -> int:
     ap.add_argument("--score-a", default=None, help="score_behavior run behind --judge-a")
     ap.add_argument("--score-b", default=None, help="score_behavior run behind --judge-b")
     ap.add_argument("--threshold", type=float, default=0.5)
+    ap.add_argument("--bank", default=None,
+                    help="the prompt bank these judge runs cover. The floor is POPULATION-SPECIFIC "
+                         "(bank 1.9 pp vs AdvBench 0.2 pp), so an artifact that does not name its "
+                         "population invites exactly the transfer error this field exists to stop.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -65,7 +69,9 @@ def main() -> int:
                                                        and r.get("condition") == "natural_doublespeak",
     }
     out = {"judge_a": os.path.abspath(A), "judge_b": os.path.abspath(B),
-           "threshold": args.threshold, "subsets": {}}
+           "threshold": args.threshold,
+           "population": population_block(args.bank),
+           "subsets": {}}
     for name, f in subsets.items():
         ids = sorted(p for p in (set(a) & set(b)) if f(a[p]))
         if not ids:
