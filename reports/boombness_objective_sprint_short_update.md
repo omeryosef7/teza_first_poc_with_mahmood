@@ -470,7 +470,24 @@ A prediction for the arm-F value was **recorded in the log before judging** (`�
 
 ### Honest limits — scope, not validity
 One model (Llama-3.1-8B), one concept pair (carrot↔bomb), one judge, refusal projected at a single layer
-(L18), and `d_surface` fitted on the same bank it is evaluated on. The Qwen3 replication of the *projection*
+(L18), and `d_surface` fitted on the same bank it is evaluated on.
+
+**"One concept pair" is now a tested limitation, not just an untested one (added 2026-08-21).** A
+concept swap *was* run — a second bank replacing the concept (`carrot↔knife`) and a third replacing the
+codeword while holding the concept (`button↔bomb`), all sharing identical family sets. **Both halves
+failed their own pre-committed controls and the whole experiment is retracted** (R-23, R-24 in the full
+report):
+
+- *Behaviourally* — a direction constructed **orthogonal** to `d_surface` (cos 0.0000), projected out at
+  the same layer, reproduced the transferred effect **exactly** (+0.0182, 9 flips). So the transfer did
+  not clear a null of "project out *something* in this subspace".
+- *Representationally* — swapping only the **codeword** moved `d_surface` **further** (cos 0.5539) than
+  swapping only the **concept** (0.6117), against a 0.995 within-fit ceiling. So the alignment between
+  the two concept fits cannot be read as concept overlap.
+
+**Read this as: `d_surface` is demonstrated for `carrot↔bomb`, and an attempt to show it names a concept
+rather than an estimator was made and did not succeed.** That is a stronger statement than the untested
+limitation it replaces, and it is why "second concept pair" remains on the suggested-next list below. The Qwen3 replication of the *projection*
 arm is running; **G2's correlation did not replicate on Qwen3**, so cross-model generality is an open
 question for this result too.
 

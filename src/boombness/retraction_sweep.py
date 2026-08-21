@@ -129,6 +129,14 @@ RETRACTED = [
      r"\+?0\.0425[^\n]{0,40}\+?0\.0000|"
      r"\+?0\.0000[^\n]{0,40}\+?0\.0425|"
      r"`?d_context`?[^\n]{0,60}exactly\s+\*{0,2}0\.0000"),
+    # ---- R-25 (2026-08-21): the in-subspace null was never dose-matched. The NUMBERS are fine, so
+    # the pattern must catch the INFERENCE, not a figure. Phrases that assert the null establishes
+    # content/specificity, or that treat the four layers as independent replications.
+    ("R25 in-subspace null read as establishing content",
+     r"beats?[^\n]{0,40}(?:every|any) (?:other )?direction[^\n]{0,30}subspace|"
+     r"exceeds all[^\n]{0,30}controls?[^\n]{0,40}(?:so|therefore|hence)|"
+     r"replicated at (?:all )?four layers|"
+     r"hard null[^\n]{0,40}(?:establish|prove|confirm)"),
     ("R11 Holm backstop stated without L1",
      r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),
     # ---- 2026-08-19 SESSION 2. Added the same day they were declared, per the rule above.

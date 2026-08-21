@@ -38,6 +38,31 @@ from common import read_jsonl  # noqa: E402
 JUDGE = "outputs/boombness/judge"
 
 
+
+def unused_angle_runs(layer, used_dirs):
+    """Judge runs that DECLARE an in-subspace angle at `layer` but did not enter the null.
+
+    `missing` only lists globs that failed at the *declared* resolution, so it printed `[]` while
+    completed controls sat unused: four `a8J12k*` runs at L12 (an n_angles=8 sweep, tagged with a
+    prefix `angle_glob` never emits, so they are unreachable at ANY --n-angles setting) and two
+    already-judged `angJ8k{1,2}of12` runs at L8. `"missing": []` is true of the globs and false as a
+    completeness statement, which is the more misleading of the two.
+
+    Resolve by DECLARED SPEC, not by tag, so a run is found whatever it is called.
+    """
+    out = []
+    used = {os.path.abspath(d) for d in used_dirs}
+    for d in sorted(glob.glob(f"{JUDGE}/*")):
+        if not os.path.isdir(d) or os.path.abspath(d) in used:
+            continue
+        if not os.path.exists(os.path.join(d, "DONE.json")):
+            continue
+        s = declared_spec(d)
+        if s and s.startswith("in_subspace_angle") and f":{layer}-{layer}:" in s:
+            out.append({"run": os.path.basename(d), "declares": s})
+    return out
+
+
 def angle_glob(layer: int, k: int, n_angles: int) -> str:
     """Glob for the judge run of angle k-of-n_angles at `layer`.
 
@@ -57,6 +82,48 @@ def angle_glob(layer: int, k: int, n_angles: int) -> str:
         return f"{JUDGE}/angJ{layer}k{k // 3}_*"
     return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
 
+
+
+
+def cellmean_dose(payload, layer, v=None):
+    """Fraction of the cell-mean spread that projecting out `v` removes at `layer`.
+
+    THE CONTROL THAT WAS NEVER DOSE-MATCHED. `d_surface` is not merely *a* direction in the rank-3
+    cell-mean span -- it is essentially **PC1** of it (measured cos with PC1: 0.9998-1.0000 at L6/8/
+    10/12). The `in_subspace_angle` controls live in the orthogonal complement by construction, i.e.
+    in the two LOW-variance components. So the arm removes 0.81-0.88 of the cell-mean spread and no
+    control removes more than 0.13: a 6-11x dose gap that has nothing to do with concept content.
+
+    Within the L6 null this dose explains almost all of the variation -- Spearman rho(dose, delta) =
+    **0.961** across the 12 angles. The smooth unimodal hump in delta(theta) that an earlier tick
+    recorded as evidence the null is well-behaved IS the dose curve.
+
+    `score_behavior.py` already computes exactly this quantity for the `in_subspace` control family
+    (`frac_cellmean_spread_removed_by_ARM` / `_by_CONTROL`) and drops it on the `in_subspace_angle`
+    path, which logs only `cos_with_arm`. The one number that would have exposed the confound was
+    recorded for every other control and not for this one. It is now recorded here.
+
+    NOTE ON WHAT THIS DOES *NOT* LICENCE. Dividing delta by dose is not a fair repair either: the
+    dose-response saturates hard (extrapolating the within-null OLS line to the arm's dose predicts
+    ~+0.25 against +0.018 observed), so `delta/dose` penalises the arm for being 10x outside the
+    fitted range. And a dose-matched in-subspace control CANNOT EXIST: the complement holds only
+    1 - frac_arm ~ 0.16 of the spread in total. The honest reading is that this design cannot
+    separate direction-identity from dose, not that either normalisation settles it.
+    """
+    cm = payload.get("cell_means") or {}
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    if len(rows) < 2:
+        return None
+    import torch
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    tot = float((M ** 2).sum())
+    if tot <= 0:
+        return None
+    d = (payload["d_surface"][layer] if v is None else v).float().reshape(-1)
+    u = d / (d.norm() + 1e-8)
+    return float(((M @ u.reshape(-1, 1)) ** 2).sum()) / tot
 
 
 def declared_spec(judge_dir: str):
@@ -140,9 +207,20 @@ def main() -> int:
                                                   (p.split("=") for p in s.split(","))},
                     default={"default": 4},
                     help="per-layer angle-sweep resolution, e.g. 'default=4,6=12'")
+    ap.add_argument("--fit-dir",
+                    default="outputs/boombness/extract_boombness/full_20260816_185942_1008673",
+                    help="fit payload used to compute the cell-mean dose of each direction")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
+    payload = None
+    if args.fit_dir:
+        try:
+            import torch
+            payload = torch.load(os.path.join(args.fit_dir, "directions_fit_dev.pt"),
+                                 map_location="cpu", weights_only=False)
+        except Exception as e:
+            print(f"[hardnull] could not load fit payload for dose: {e}", file=sys.stderr)
     _, base = _rows(args.baseline)
     if not base:
         print(f"[hardnull] baseline not found: {args.baseline}", file=sys.stderr)
@@ -204,6 +282,23 @@ def main() -> int:
                                              for v in rec["angle_n_scored"].values()))
         # PASS 2 -- every delta on the SAME ids.
         rec["arm"] = _delta(base, arm, args.threshold, ids=common)
+        if payload is not None:
+            import signals as _sg
+            arm_dose = cellmean_dose(payload, L)
+            doses = {}
+            for k in angs:
+                try:
+                    v, _h = _sg.in_subspace_angle_direction(payload, L, k, n_angles=n_ang)
+                    doses[f"angle{k}"] = cellmean_dose(payload, L, v)
+                except Exception:
+                    pass
+            rec["dose_cellmean_frac"] = {"ARM": arm_dose, **doses}
+            if arm_dose and doses:
+                rec["dose_gap_arm_over_max_control"] = arm_dose / max(doses.values())
+                rec["dose_confounded"] = rec["dose_gap_arm_over_max_control"] > 2.0
+        rec["unused_angle_runs_at_this_layer"] = unused_angle_runs(
+            L, [h for h in glob.glob(armpat)] +
+               [h for k in angs for h in glob.glob(angle_glob(L, k, n_ang))])
         nulls = {f"angle{k}": _delta(base, a, args.threshold, ids=common)["delta"]
                  for k, (_, a) in angs.items()}
         rec["in_subspace_null"] = {"deltas": nulls, "missing": missing}
@@ -277,6 +372,16 @@ def main() -> int:
                                   "shrink the null's sd in the direction that flatters the headline",
         "inference_caveat": "The null has n=4, so sd is estimated from four points: the ratio is a t with df=3, not a z, and the assumption-free rank test cannot fall below 1/5=0.20 with four controls. More angle draws are the fix; quoting the z alone would dress a 4-point null as a precise one.",
         "n_angles": {str(k): v for k, v in args.n_angles.items()},
+        "DOSE_CAVEAT": "d_surface is essentially PC1 of the cell-mean span (cos 0.9998-1.0000), so "
+                       "the ARM removes 0.81-0.88 of that spread while every in-subspace control "
+                       "removes <=0.13 -- a 6-11x dose gap unrelated to concept content. Within the "
+                       "L6 null, Spearman rho(dose, delta) = 0.961. A dose-matched in-subspace "
+                       "control cannot exist (the complement holds only ~0.16 of the spread in "
+                       "total). Read arm/max_control as NOT separating direction-identity from dose.",
+        "LAYER_SELECTION_CAVEAT": "L6/L8/L10/L12 are the top four of eleven layers in "
+                       "advbench_layer_profile.json, ranked by the same arm delta re-tested here, "
+                       "and were chosen after that profile ran. No multiplicity correction is "
+                       "applied in this script. Treat every p as uncorrected and selection-biased.",
         "threshold": args.threshold,
         "baseline_run": os.path.basename(sorted(glob.glob(args.baseline))[-1]),
         "layers": out,

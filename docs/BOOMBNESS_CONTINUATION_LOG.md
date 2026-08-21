@@ -5398,3 +5398,130 @@ judging started (772816/772817).
 | 191 | 2026-08-21 | added `max_adjacent_jump` / `margin_exceeds_max_jump` | answers `signals.py`'s sup objection with a measurement |
 | 192 | 2026-08-21 | diagnostic flags **L8's grid as the weak one** (margin/jump 1.09×) | L8's 2.33× marked provisional pending its dense grid |
 | 193 | 2026-08-21 | submitted L8 gens 772812-772815 + judges 772816/772817 | 6 jobs, at cap (772472 belongs to the other session) |
+
+## L8's dense grid generated; audit #6 launched; the short update finally records E12's outcome
+
+Tick 2026-08-21.
+
+**L8 dense sweep generated.** 772812-772815 completed; all eight `of12` angle runs plus the four
+original = **12 runs, 12 distinct `gens.jsonl` hashes**, 495 rows and `DONE.json` each. Judging: k=1,2
+done (772816/772817), k=4,5,7,8,10,11 submitted (772863-772868). L8's `arm/max = 2.33×` stays marked
+**provisional** until this grid lands — it is the layer the grid-adequacy diagnostic flagged at
+margin/jump **1.09×**.
+
+**Audit #6 launched** (8th tick since #5), aimed at the newest and least-scrutinised apparatus: the
+in-subspace null itself — `insubspace_null_test.py`, `in_subspace_angle_direction`, and the intervention
+plumbing. I briefed it with the attacks I most fear rather than a generic sweep, including the two I
+cannot rule out myself: **is a 2-D complement a fair null at all** (after removing `d_surface` from a
+rank-3 span, the controls explore only two dimensions, and they may be systematically less potent for
+reasons unrelated to concept content), and **is the four-layer set outcome-selected** (if L6/L8/L10/L12
+were picked after seeing which layers showed an effect, the multiplicity is worse than reported and
+this script applies no correction at all). Also asked: arm/control comparability field-by-field, whether
+`project_out` is genuinely scale-invariant or the norm-matching is load-bearing, ring-adjacency
+off-by-one in the grid diagnostic, judge-config consistency, and an independent recomputation of every
+headline number. Scalar/code-only brief, per the standing constraint.
+
+**The short update now records E12's outcome.** It is the document collaborators read first and it had
+**no mention** that a concept swap was ever run. Its "one concept pair (carrot↔bomb)" limitation was
+technically true, but true by omission. It now says the swap **was** run and **failed**, with both
+pre-committed controls named. That is a stronger and more useful limitation than the untested one it
+replaces: not "we haven't checked" but "we checked and it didn't hold".
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 194 | 2026-08-21 | 772812-772815 completed | L8 grid generated: **12/12 distinct hashes**, 495 rows each |
+| 195 | 2026-08-21 | submitted L8 judging 772863-772868 | completes L8's 12-point null |
+| 196 | 2026-08-21 | launched **audit #6** at the null apparatus | briefed on 2-D-complement fairness and layer-selection multiplicity |
+| 197 | 2026-08-21 | short update records the retracted concept swap | closes the 4th deliverable lag, and closes it with a negative |
+
+## ⛔ R-25 — audit #6: the hard null was never dose-matched, and `d_surface` is PC1
+
+Tick 2026-08-21. Audit #6 returned on the in-subspace null apparatus. **Every number in
+`insubspace_null_by_layer.json` reproduces digit-for-digit** under independent recomputation — the
+arithmetic, the shard unioning, the intersection policy, the `k-of-4 ≡ 3k-of-12` identity, and the
+declared-spec guard all work as documented. What fails is the **interpretation**, and I verified all
+three findings myself before touching anything.
+
+### 1. `d_surface` *is* PC1 of the cell-mean span, so the null is a dose comparison
+
+| layer | cos(`d_surface`, PC1) | cell-mean singular values | dose removed by ARM | by any control | gap |
+|---|---|---|---|---|---|
+| L6 | **0.9999** | [5.23, 1.58, 1.16, 0] | **0.8768** | 0.043–0.080 | **11.0×** |
+| L8 | **0.9998** | [6.07, 2.24, 1.41, 0] | **0.8402** | 0.046–0.114 | **7.4×** |
+| L10 | **0.9999** | [6.33, 2.55, 1.67, 0] | **0.8114** | 0.057–0.132 | **6.2×** |
+| L12 | **1.0000** | [7.18, 2.75, 1.93, 0] | **0.8204** | 0.060–0.119 | **6.9×** |
+
+The `in_subspace_angle` controls live in the **orthogonal complement by construction** — that is, in
+the two *low-variance* components. They are systematically weaker for a reason that has nothing to do
+with concept content: they are the residual after the biggest direction was removed.
+
+**And within the null, dose explains nearly everything.** Across L6's 12 angles, Spearman
+ρ(dose, Δ) = **0.961**:
+
+| θ | 0° | 15° | 30° | 45° | 60° | 75° | 90° | 105° | 120° | 135° | 150° | 165° |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| dose | .043 | .047 | .054 | .064 | .073 | .079 | **.080** | .077 | .069 | .060 | .051 | .045 |
+| Δ ASR | −.0020 | .0000 | +.0020 | +.0020 | +.0061 | +.0081 | **+.0101** | +.0081 | +.0081 | +.0040 | .0000 | −.0020 |
+
+**The "smooth unimodal hump" I recorded two ticks ago as evidence the null was well-behaved IS the
+dose curve.** I looked directly at the signature of this confound and wrote it up as a strength. That
+is the part of this I most want on the record.
+
+**What I am NOT doing: dividing by dose.** Δ/dose ranks the arm 9th of 13 at L6 — but that
+normalisation is not fair either. The dose-response **saturates hard**: extrapolating the within-null
+OLS line to the arm's dose predicts **+0.250** against **+0.018** observed, a 10× extrapolation
+outside the fitted range. So Δ/dose penalises the arm for being far off the end of the curve.
+
+**And a dose-matched in-subspace control cannot exist.** The complement holds only ~1 − 0.84 ≈ **0.16**
+of the cell-mean spread *in total*, and the largest single direction in it reaches 0.13. There is no
+direction in this subspace that removes what `d_surface` removes, because any direction that did would
+be ±`d_surface`. This is **structural, not an oversight I can patch with another run.**
+
+**⛔ R-25, stated precisely.** RETRACTED: *"the arm beats every direction in the same subspace,
+therefore the effect is about this direction's content."* SURVIVING: the arm does beat every control
+as measured (`arm_exceeds_all_controls` true at all four layers, independently confirmed). The design
+**cannot separate direction-identity from dose**, and neither the raw comparison nor a dose
+normalisation settles it. On the auditor's behaviour-level dose metric (net flips / total flips
+perturbed), the arm **ties** its best control at L8 (21/21 vs 9/9) and L12; only **L10** survives every
+normalisation attempted.
+
+**The diagnostic existed and was dropped on exactly this path.** `score_behavior.py` records
+`frac_cellmean_spread_removed_by_ARM`/`_by_CONTROL` for the `in_subspace` control family, and the
+`in_subspace_angle` branch logs only `cos_with_arm`. The one number that would have exposed this was
+computed for every other control and not for this one. It is now written into the artifact for the arm
+and every angle, with `dose_gap_arm_over_max_control` and a `dose_confounded` flag (**true at all four
+layers**), plus a top-level `DOSE_CAVEAT`.
+
+### 2. The four layers are the top four of eleven, chosen on the statistic being re-tested
+
+`advbench_layer_profile.json`, sorted by arm delta: **L8 +0.0422, L12 +0.0364, L10 +0.0313,
+L6 +0.0187**, then L13 +0.0081, L14 +0.0056, L4, L18, L28, L24, L16. The hard-null set is **exactly
+the top four, in rank order**, selected two days after that profile ran. So "replicated at four
+layers" is not four replications — it is the four largest of eleven ordered draws, with the arm at each
+layer a *selected max-order statistic* and each control a single unselected draw. **No multiplicity
+correction is applied anywhere in this script**, and L6's own clustered p in that profile is **0.0567**
+before any correction. A `LAYER_SELECTION_CAVEAT` now sits at the top of the artifact.
+
+### 3. Eight completed control runs were excluded while the artifact said `"missing": []`
+
+L12 has four `a8J12k{1,3,5,7}` runs (an n=8 sweep) that `angle_glob` cannot emit a tag for at **any**
+`--n-angles` setting; L8 had two already-judged `angJ8k{1,2}of12`. `"missing": []` was true of the
+globs and false as a completeness statement. Fixed by scanning **declared specs** rather than tags:
+`unused_angle_runs_at_this_layer` now lists them (8 shards at L12, 2 at L8). Per the auditor's
+recomputation the omission did **not** flatter the result — adding them takes L12 to t=6.23 (df 7,
+from 5.90) and L8's null mean from +0.0010 to +0.0061 with `arm/max` unchanged at both.
+
+### Not bugs, checked and cleared
+Scale-invariance (`project_out` normalises `d` before use; the `d.norm()` rescale is cosmetic;
+α=1.0 in all 44 configs); arm/control comparability (every field identical except `intervene`);
+judge consistency (cross-pass drift ≤0.002, an order of magnitude below every effect; though the judge
+model that actually answered is **never recorded** — worth fixing); the ring-adjacency wrap
+(`cos(angle11, angle0) = −0.9659` = exactly 15° at n=12); L10's `n/a`; and generation degeneracy.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 198 | 2026-08-21 | audit #6 returned; verified finding 1 myself | `d_surface` = PC1 (cos 0.9998–1.0000); dose gap **6–11×** |
+| 199 | 2026-08-21 | recomputed ρ(dose, Δ) on L6's 12 angles | **0.961** — the "unimodal hump" was the dose curve |
+| 200 | 2026-08-21 | verified layer selection | tested set = **top-4 of 11**, ranked by the same statistic |
+| 201 | 2026-08-21 | verified excluded runs | 4 L12 angles unreachable by tag at any resolution |
+| 202 | 2026-08-21 | filed **R-25**; wired dose + completeness into the artifact | `dose_confounded=true` at all four layers |
