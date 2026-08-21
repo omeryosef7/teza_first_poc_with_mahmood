@@ -103,6 +103,28 @@ def make_goal(row: Dict) -> Tuple[str, str]:
     return q, GOAL_CODEWORD_ABSENT
 
 
+def _judge_model_candidates():
+    """The model list StrongREJECT will try, in order, with fallback. Best-effort and never fatal."""
+    # The default does NOT live on `evaluate` -- it is the `models=None` fallback inside
+    # `_generate_judge_response`, `models = "openai/gpt-4o-mini", "openai/gpt-3.5-turbo"`. Read it
+    # out of the source rather than hardcoding it, so this tracks the checkout instead of drifting
+    # from it, and say so loudly if the line ever moves.
+    import inspect
+    import re
+    try:
+        from strong_reject import evaluate as _mod  # type: ignore
+        src = inspect.getsource(_mod._generate_judge_response)
+        m = re.search(r"models\s*=\s*((?:\s*\"[^\"]+\"\s*,?)+)", src)
+        if not m:
+            return {"error": "no `models = ...` fallback found in _generate_judge_response"}
+        return {"candidates": re.findall(r"\"([^\"]+)\"", m.group(1)),
+                "source": "strong_reject.evaluate._generate_judge_response fallback",
+                "note": "tried IN ORDER with fallback; this is the candidate set, NOT the model "
+                        "that actually answered any given row"}
+    except Exception as e:                                            # provenance only
+        return {"error": f"{type(e).__name__}: {e}"}
+
+
 def wilson(k: int, n: int, z: float = 1.96):
     """iid Wilson interval. NOT valid on its own for this design -- prompts are clustered in 6
     domains, so this understates the width by roughly 1.9x (audit 11). Callers must report
@@ -341,8 +363,16 @@ def main() -> int:
         text = g.get("generation", "")
         goal, goal_status = make_goal(src)
         goal_status_counts[goal_status] += 1
+        # `prompt_sha16` IS THE CONTENT HASH, and omitting it disabled a downstream guard.
+        # `prompt_id` names "this cell of this family" and deliberately does not depend on the text,
+        # so two runs can join on it while referring to different prompts (retraction R1). Every
+        # bank row carries `prompt_sha16` for exactly that reason -- but this dict never copied it,
+        # so `analyze_phase_d.py`'s stale-join check found the field absent on every judge row, its
+        # mismatch list was always empty, and it wrote `n_prompt_sha16_mismatch: 0` unconditionally.
+        # The write-up then cited that zero as evidence (review #5, R5-3). One field, added here so
+        # the check can actually run instead of falling back to bank-path equality.
         base = {k: src.get(k) for k in
-                ("prompt_id", "family_id", "condition", "cell", "domain", "split",
+                ("prompt_id", "prompt_sha16", "family_id", "condition", "cell", "domain", "split",
                  "bank_block", "n_examples", "strength", "consistency", "example_position",
                  "role_style", "target_surface", "arm", "model")}
         base["goal_status"] = goal_status
@@ -432,6 +462,14 @@ def main() -> int:
     summary: Dict[str, object] = {
         "gens": os.path.abspath(gens_path), "bank": args.bank,
         "judge": "strongreject_rubric via poc_stage3.strongreject_scoring",
+        # WHICH MODEL ANSWERED IS NOT RECORDED ANYWHERE, and it is not one model. StrongREJECT's
+        # `evaluate` defaults to a TUPLE tried in order with fallback, so a run can silently be
+        # scored by the second entry if the first errors or rate-limits -- and every StrongReject
+        # number in this repo was produced by an unrecorded member of that pair (review #5).
+        # The candidate list is read from the installed package here rather than hardcoded, so it
+        # tracks the checkout. It identifies the CANDIDATES, not the responder: pinning the actual
+        # responder needs a change inside strong_reject, which is next-sprint work.
+        "judge_model_candidates": _judge_model_candidates(),
         "primary_threshold": PRIMARY_THRESHOLD, "thresholds_reported": list(MAL_THRESHOLDS),
         "n_generations": len(scored), "n_judged": len(ok), "judge_null_frac": null_frac,
         "goal_status_counts": dict(sorted(goal_status_counts.items())),

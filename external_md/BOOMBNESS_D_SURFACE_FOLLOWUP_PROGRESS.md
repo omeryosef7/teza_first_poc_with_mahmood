@@ -4181,6 +4181,49 @@ The specificity numbers reproduce exactly through this independent path: `remove
 
 
 
+
+### ✅ Two provenance holes closed in `judge_boombness.py`
+
+Both were identified by reviews #5 and #6 and left on the next-sprint list; both are one-field fixes
+and are done.
+
+**1. `prompt_sha16` is now written on every judge row.** `prompt_id` names *"this cell of this
+family"* and deliberately does not depend on the prompt text, so two runs can join on it while
+referring to different prompts — that is retraction **R1**. Every bank row carries `prompt_sha16` for
+exactly this reason, and the judge's `base` dict listed fifteen fields without it. The consequence
+was concrete: `analyze_phase_d.py`'s stale-join guard found the field absent on every judge row, its
+mismatch list was therefore always empty, and it wrote `n_prompt_sha16_mismatch: 0` unconditionally —
+**a zero my own write-up then cited as evidence** (R5-3). The guard can now actually run instead of
+falling back to bank-path equality. Verified: `prompt_sha16: 0baa51b38273cfb6` on a fresh 2-row run.
+
+**2. The judge model candidates are recorded.** No artifact in this repo says which model produced
+any StrongReject score, and it is **not one model**: the rubric falls back through a tuple, tried in
+order. Now in `summary.json`:
+
+```json
+"judge_model_candidates": {
+  "candidates": ["openai/gpt-4o-mini", "openai/gpt-3.5-turbo"],
+  "source": "strong_reject.evaluate._generate_judge_response fallback",
+  "note": "tried IN ORDER with fallback; this is the candidate set, NOT the model that
+           actually answered any given row"
+}
+```
+
+⚠ **Stated precisely because it is a partial fix:** this identifies the *candidates*, not the
+responder. A run scored entirely by `gpt-3.5-turbo` after the first model rate-limited would look
+identical in the artifact. Pinning the actual responder needs a change inside `strong_reject`, and
+that stays on the next-sprint list.
+
+The value is read **out of the installed source** (`_generate_judge_response`'s `models=None`
+fallback) rather than hardcoded, so it tracks the checkout; if that line ever moves, the field records
+an explicit error instead of a stale pair. It is also not on `evaluate`'s signature, which is where I
+first looked and got an error field for my trouble — worth noting, since the obvious place is the
+wrong one.
+
+⚠ **Neither fix is retroactive.** Every judge run committed before 2026-08-21 06:18 lacks both
+fields, which is why `analyze_phase_d.py` still needs its bank-path fallback and why the sprint's
+existing StrongReject numbers remain attributable only to the pair, not to a model.
+
 ### The dissociation is currently ACROSS layers — closing it WITHIN one (771432–771434)
 
 Tonight's two headline results sit at different depths, and that is a weakness in how the central
