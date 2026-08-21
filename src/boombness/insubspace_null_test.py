@@ -239,6 +239,26 @@ def main() -> int:
             rec["max_control_delta"] = max(v)
             rec["arm_over_max_control"] = (rec["arm"]["delta"] / max(v)) if max(v) > 0 else None
             rec["arm_exceeds_all_controls"] = rec["arm"]["delta"] > max(v)
+            # GRID ADEQUACY. `signals.py`'s own docstring objects that four points cannot bound a
+            # sup, because ASR(theta) is a STEP function (greedy decode, judge threshold at 0.5) and
+            # at L8 the control traversed 0.0173 inside ONE unsampled 45-deg interval -- more than
+            # the max at any sampled point. That objection is quantitative, so answer it
+            # quantitatively instead of asserting the grid is fine: report the largest jump between
+            # ADJACENT samples on the theta grid (it is a closed half-circle, so the last wraps to
+            # the first). A grid whose adjacent samples differ by much less than the arm's margin
+            # over the max control is one where interpolation is defensible; a grid where they are
+            # comparable is not, and the max-control number should then be read as a lower bound.
+            ks = sorted(int(x[5:]) for x in nulls)
+            ring = [nulls[f"angle{k}"] for k in ks]
+            jumps = [abs(ring[(i + 1) % len(ring)] - ring[i]) for i in range(len(ring))] \
+                if len(ring) > 2 else []
+            if jumps:
+                rec["max_adjacent_jump"] = max(jumps)
+                rec["grid_resolution_deg"] = 180.0 / len(ring)
+                # is the arm's margin over the sampled max large next to what one gap can hide?
+                rec["margin_over_max_control"] = rec["arm"]["delta"] - max(v)
+                rec["margin_exceeds_max_jump"] = (
+                    rec["margin_over_max_control"] > max(jumps))
         else:
             rec["in_subspace_null"]["status"] = "TOO FEW angle runs to estimate a null (need >=3)"
             rec["z_vs_in_subspace_null"] = None

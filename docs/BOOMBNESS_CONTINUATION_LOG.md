@@ -5352,3 +5352,49 @@ identical, i.e. a special case that special-cased nothing.
 | 186 | 2026-08-21 | submitted L8 dense angles 772760-772763 | L8 has the widest null (sd 0.0128) and weakest ratio (2.33×) |
 | 187 | 2026-08-21 | added a declared-spec guard to the angle resolver | glob-over-tags can no longer blend two directions into one null point |
 | 188 | 2026-08-21 | adversarially tested it with a planted wrong-direction run | exit 1 on collision, 0 on clean; dirs cleaned |
+
+## L6's null is complete at 12 angles, and the grid now answers the objection against it
+
+Tick 2026-08-21. 772757/772758 judged; **L6's null is a complete 12-point θ-grid at 15° resolution**,
+all n=495, `population_matched=true`.
+
+| θ | 0° | 15° | 30° | 45° | 60° | 75° | **90°** | 105° | 120° | 135° | 150° | 165° |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Δ ASR | −0.0020 | +0.0000 | +0.0020 | +0.0020 | +0.0061 | +0.0081 | **+0.0101** | +0.0081 | +0.0081 | +0.0040 | +0.0000 | −0.0020 |
+
+It is a single smooth unimodal hump — rising from −0.0020, peaking at 90°, returning to −0.0020 — not
+scatter. That settles the point from two ticks ago: **this null is a deterministic curve sampled on a
+grid**, so its `sd` describes a curve's spread, not sampling noise.
+
+**L6 summary: arm +0.0182 vs null +0.0037 ± 0.0043 (k=12), t(11)=3.37, p=0.0062, rank p 0.08,
+max control +0.0101, arm/max 1.80×.**
+
+**The grid-adequacy objection, answered with a number instead of a claim.** `signals.py`'s own
+docstring says four points cannot bound a sup, because ASR(θ) is a **step** function (greedy decode,
+judge threshold 0.5) and at L8 the control once traversed 0.0173 inside a single unsampled 45°
+interval — *more than the maximum at any sampled point*. That is a quantitative objection, so it now
+gets a quantitative answer: the largest jump between **adjacent** samples (the grid is a closed
+half-circle, so the last wraps to the first), compared against the arm's margin over the sampled max.
+
+| layer | k | resolution | max adjacent jump | arm margin over max ctrl | margin / jump |
+|---|---|---|---|---|---|
+| **L6** | 12 | **15°** | **0.0040** | **0.0081** | **2.0×** |
+| L8 | 4 | 45° | **0.0222** | 0.0242 | **1.09×** ⚠ |
+| L10 | 4 | 45° | 0.0061 | 0.0323 | 5.3× |
+| L12 | 4 | 45° | 0.0101 | 0.0263 | 2.6× |
+
+**L6's grid is now fine and L8's is the weak one** — its margin barely exceeds what a single gap can
+hide, which is exactly the docstring's warning, measured. I had already submitted L8's densification
+for a different reason (widest sd, weakest ratio); this says it was the right call for a sharper
+reason. **Until L8's grid is dense, its `arm/max = 2.33×` should be read as provisional.**
+
+L8 dense sweep: angles 1,2,4,5 generated (772760-772763); 7,8,10,11 submitted (772812-772815);
+judging started (772816/772817).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 189 | 2026-08-21 | 772757/772758 judged | **L6 null complete: 12/12 angles, n=495, matched** |
+| 190 | 2026-08-21 | L6 full grid | p 0.0086 → **0.0062**, rank p **0.08**; curve is a smooth unimodal hump |
+| 191 | 2026-08-21 | added `max_adjacent_jump` / `margin_exceeds_max_jump` | answers `signals.py`'s sup objection with a measurement |
+| 192 | 2026-08-21 | diagnostic flags **L8's grid as the weak one** (margin/jump 1.09×) | L8's 2.33× marked provisional pending its dense grid |
+| 193 | 2026-08-21 | submitted L8 gens 772812-772815 + judges 772816/772817 | 6 jobs, at cap (772472 belongs to the other session) |
