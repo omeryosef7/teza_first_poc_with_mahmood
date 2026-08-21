@@ -488,6 +488,50 @@ def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
     return v.to(d.dtype), f"{tag}:k={keep}"
 
 
+def cell_span_basis_direction(payload: dict, layer: int, index: int):
+    """The `index`-th orthonormal basis vector of the centred 2x2 cell-mean span.
+
+    WHY THIS EXISTS -- it tests the one alternative explanation that would deflate the sprint's
+    central result. Prediction rises with depth and causation falls with depth, giving
+    Spearman -0.850. But a projection at L31 sits one layer before the unembedding with almost no
+    computation left to amplify it, while an L8 edit propagates through twenty-three layers. So
+    "causation falls with depth" might be a GENERIC property of late ablation rather than anything
+    about `d_surface` -- two independent depth trends dressed up as a dissociation.
+
+    The discriminating test is to ablate the ENTIRE 3-dimensional concept subspace, which is the
+    largest edit that subspace admits, at both depths. If the full span moves ASR at L8 and does
+    nothing at L31, the late null is architectural and the anti-alignment claim must be weakened.
+    If the full span moves ASR at L31 too, then late ablation CAN act, and `d_surface`'s late null
+    is a fact about that direction rather than about depth.
+
+    Composing `cell_span0+cell_span1+cell_span2` at one layer projects out each in turn; because the
+    vectors are orthonormal, sequential projection equals projecting out their span.
+
+    Basis is the deterministic Gram-Schmidt of the centred cell means (same construction as
+    `in_subspace_control_direction`), so the three indices are stable and jointly orthonormal.
+    """
+    cm = payload.get("cell_means")
+    if not isinstance(cm, dict):
+        raise SystemExit("cell_span requires `cell_means` in the fit payload")
+    rows = [cm[c][layer].float().reshape(-1) for c in sorted(cm)
+            if isinstance(cm.get(c), dict) and cm[c].get(layer) is not None]
+    if len(rows) < 2:
+        raise SystemExit(f"cell_span: only {len(rows)} cell means at L{layer}")
+    M = torch.stack(rows)
+    M = M - M.mean(dim=0, keepdim=True)
+    basis = []
+    for i in range(M.shape[0]):
+        w = M[i].clone()
+        for b in basis:
+            w = w - torch.dot(w, b) * b
+        n = w.norm()
+        if float(n) > 1e-4 * float(M.norm()):
+            basis.append(w / n)
+    if index >= len(basis):
+        raise SystemExit(f"cell_span{index}: span at L{layer} has rank {len(basis)}")
+    return basis[index], f"cell_span:{index}/{len(basis)}"
+
+
 def orthogonalize(d: torch.Tensor, against: torch.Tensor) -> torch.Tensor:
     """Remove the `against` component from d (used for Boombness ⟂ refusal, plan §10.4)."""
     a = _unit(against.float().reshape(-1))

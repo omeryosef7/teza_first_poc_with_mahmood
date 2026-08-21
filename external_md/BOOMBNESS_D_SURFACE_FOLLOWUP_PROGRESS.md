@@ -4225,6 +4225,45 @@ fields, which is why `analyze_phase_d.py` still needs its bank-path fallback and
 existing StrongReject numbers remain attributable only to the pair, not to a model.
 
 
+
+### ⚠ The alternative explanation I have to rule out myself, and the control for it (771509/771510)
+
+The anti-alignment (Spearman −0.850) is the sprint's central claim, and there is one explanation for
+it that would deflate it substantially, which I did not list among the limits:
+
+> **A projection at L31 sits one layer before the unembedding, with almost no computation left to
+> amplify it; an L8 edit propagates through twenty-three layers.** So "causation falls with depth"
+> may be a **generic architectural property of late ablation**, not a fact about `d_surface`. Under
+> that reading the −0.850 is just (prediction rises with depth, for representational reasons) ×
+> (causal efficacy falls with depth, for architectural reasons) — **two independent depth trends
+> dressed up as a dissociation.**
+
+Nothing in the sprint currently distinguishes those. Every late arm ever run — L18, L24, L28, and now
+L29/L30/L31 — ablates a **single** direction, so "late single-direction ablations do nothing" is
+consistent with both stories.
+
+**The discriminating test: ablate the ENTIRE 3-dimensional concept subspace**, which is the largest
+edit that subspace admits, **at both depths.**
+
+- If the full span moves ASR at **L8** and does nothing at **L31** → the late null is architectural,
+  and the anti-alignment claim must be **weakened to a statement about depth, not about direction**.
+- If the full span moves ASR at **L31 too** → late ablation *can* act, and `d_surface`'s late null is
+  a fact about that direction rather than about depth. The central claim then stands as written.
+
+Implemented as `cell_span{0,1,2}`, the deterministic Gram-Schmidt basis of the centred cell means,
+composed at one layer — sequential projection of orthonormal vectors equals projecting out their
+span. Verified before submitting: the three vectors are orthonormal (max |GᵀG − I| = 3.1e-07 at L8,
+2.4e-07 at L31) and **the span captures `d_surface` at 1.000000** at both depths, so it strictly
+contains the arm that was already tested.
+
+**771509 (L8) / 771510 (L31)**, otherwise identical to the profile arms, to be judged against the
+same 2026-08-21 baseline.
+
+**Prediction, recorded before they land.** I expect the full span at L8 to move ASR **more** than
+`d_surface` alone (+0.0305) since it strictly contains it. L31 is the one I genuinely cannot call —
+and that is the point of running it. **If L31 comes back null, I will weaken the central claim in the
+final report rather than keep it as written.**
+
 ## ✅✅✅ THE SPRINT'S CENTRAL RESULT — prediction and causation are ANTI-ALIGNED across depth
 
 **Artifact:** `outputs/boombness_followup/subspace_prediction.json` (`prediction_profile`,

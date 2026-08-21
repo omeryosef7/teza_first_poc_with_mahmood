@@ -192,7 +192,18 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # The "4-draw random-control band" built on them was n=1, and its 0.0049 "between-draw sd" was
     # judge noise on one generation set. `control_seed` now comes from `--seed`, so the flag that
     # names a draw actually selects one.
-    if name in ("random", "orthogonal", "in_subspace", "in_subspace_orth"):
+    if name.startswith("cell_span"):
+        import signals as _sg
+        idx = int(name.replace("cell_span", "") or 0)
+        base = payload["d_surface"]
+        dmap, diag = {}, {}
+        for L in base:
+            v, how = _sg.cell_span_basis_direction(payload, L, idx)
+            dmap[L] = v
+            diag[f"L{L}"] = how
+        print(f"[score] {name}: {json.dumps(diag, sort_keys=True)}")
+        gaps = {}
+    elif name in ("random", "orthogonal", "in_subspace", "in_subspace_orth"):
         import signals as _sg
         base = payload["d_surface"]
         control_diag = {}
