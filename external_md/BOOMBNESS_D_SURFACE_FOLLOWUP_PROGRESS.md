@@ -5294,6 +5294,86 @@ the refusalness profile, Phase F's composed arms and the Qwen3 double-random con
 isotropic-controlled and still untested — measured earlier tonight to need a *different* basis, since
 refusalness lies only 0.65–2.72% inside the cell-mean span.
 
+
+## ✅✅ GATE D REQUIREMENT 4, RE-TESTED PROPERLY — the signal belongs to the SUBSPACE, not to `d_surface`
+
+**Artifact:** `outputs/boombness_followup/subspace_prediction.json`.
+**Producer:** `src/boombness/analyze_subspace_prediction.py`. **No GPU** — the extraction cached the
+final-occurrence representation per prompt (`[32, 4096]` × 2,160), and on this bank the final
+occurrence **is** the query occurrence (`is_query == is_final` on 7080/7080), which is the position
+Gate D's selected metrics use. So any direction can be scored offline.
+
+### ⛔ First: my own Gate D evidence for requirement 4 was not a control
+
+I failed requirement 4 on "`d_naive` and `d_context` predict as well as `d_surface`". Measured:
+
+- `cos(d_surface, d_naive)` = **0.93–0.97** at the selected layers L29–L31; `d_context` 0.25–0.39.
+- As **measurements** the per-prompt values correlate at Spearman **0.980** (`d_naive`) and **0.873**
+  (`d_context`) — **0.966 / 0.795 within level**. The three "independent directions" are close to one
+  measurement.
+- And decisively: **all four fitted directions lie 100.0000% inside the same 3-dimensional subspace**
+  at every layer. They are four *coordinates* of the span of the four 2×2 cell means, not four
+  directions.
+
+Comparing `d_surface` against them asks whether a different coordinate of the same space predicts.
+**That is not a specificity test**, and my write-up treated it as one.
+
+### The proper control: a random axis in that span, orthogonal to `d_surface`, three seeds
+
+Within-level Spearman against StrongReject (the estimand that strips the designed between-level
+variance):
+
+| layer | `d_surface` | `d_inter` | **ctrl s1** | **ctrl s2** | **ctrl s3** | `hnorm` |
+|---|---|---|---|---|---|---|
+| L29 | +0.1334 | **−0.1368** | +0.1300 | +0.1036 | +0.1247 | −0.018 (p 0.50) |
+| L30 | +0.1502 | **−0.1407** | +0.1342 | +0.1079 | +0.1288 | +0.007 (p 0.79) |
+| L31 | +0.1638 | **−0.1369** | +0.1140 | +0.0894 | +0.1102 | +0.008 (p 0.71) |
+
+**A random axis in the concept subspace, exactly orthogonal to `d_surface`, predicts ASR at 65–95% of
+`d_surface`'s strength, on three independent seeds and at all three layers.** And `d_inter` — also
+near-orthogonal (cos 0.008–0.087) — predicts *equally strongly with the opposite sign*.
+
+**The boring explanation is excluded, not assumed:** residual norm predicts **nothing**
+(|ρ| ≤ 0.018, p 0.50–0.79 at every layer) and token position is +0.052 (p 0.048), a third of the
+effect. So this is not "any scalar predicts".
+
+### ⛔ Requirement 4 fails — CONFIRMED, and for the first time on a control that could have passed
+
+The verdict is unchanged; the evidence for it is now sound. **Prompt-level Boombness is not a usable
+optimization target**, and the reason is sharper than "other directions also predict": the predictive
+information is carried by **the 2×2 concept subspace as a whole**, with each axis picking it up at a
+sign and strength set by its orientation. Optimising `d_surface` would be optimising an arbitrary
+coordinate of a 3-D space.
+
+### ✅ And this DISSOLVES the "grain disagreement" I claimed an hour ago — into something better
+
+I wrote that `d_surface` is *causally specific* (it beats a subspace-orthogonal control at L8) yet
+*correlationally non-specific*, and called that the project's sharpest open question. **It is not a
+contradiction.** The same control — a random orthogonal axis in the same span — was run on both sides
+tonight, and the two results are complementary:
+
+> **Prediction is distributed across the concept subspace; causation is concentrated on one axis
+> within it.**
+
+The subspace *carries* information that tracks ASR (any axis reads some of it). Only the `d_surface`
+axis, when **ablated**, *moves* ASR — the orthogonal control removes 5.4–7.3% of the same subspace's
+spread and changes nothing behaviourally (L8 −0.0033, p 0.15) while still predicting correlationally
+(+0.114 at L31). ⛔ **My "the two grains disagree" framing is withdrawn**; that sentence is corrected
+in the Sprint Final Report.
+
+That a direction can be **read** from a subspace without being the direction that **acts** is the
+most interesting thing this sprint found, and it is exactly the representation-versus-behaviour
+dissociation the project has been circling since the causal-circuit sprint.
+
+### Limits
+
+- One model, one bank, one position (the query occurrence), one outcome.
+- Three control seeds, not a distribution; the spread across them (0.089–0.134 at L31) is real and
+  not characterised.
+- The within-level SEs inherit R5-4's ~11% understatement (the 15 levels share all 120 families).
+- This says nothing about *what* the subspace encodes — only that the predictive part of it is not
+  aligned with `d_surface` in particular.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
@@ -5438,11 +5518,12 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
    categories positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
-4. **A clean prompt-level Boombness→ASR correlation exists and is still not `d_surface`** — the
-   sharpest possible negative for the objective. **And it now sits against a causal result that says
-   the opposite:** `d_surface` beats a subspace-matched control at all four profile depths (L8
-   surviving Holm). **Causally specific, correlationally not** — the sharpest open question the
-   project has.
+4. **Prediction is distributed across the concept subspace; causation is concentrated on one axis
+   within it.** A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
+   its strength (three seeds, three layers) — yet ablating that same control moves nothing (L8
+   −0.0033, p 0.15) while ablating `d_surface` does (+0.0305, p 0.009). A direction can be **read**
+   from a subspace without being the direction that **acts**. This is the sprint's most interesting
+   finding and it subsumes what I briefly mis-framed as a disagreement between grains.
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
    in high dimensions** — and the one arm re-tested against a subspace-matched control (arm B)
