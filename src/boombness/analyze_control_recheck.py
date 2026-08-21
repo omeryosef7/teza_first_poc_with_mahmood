@@ -2,7 +2,10 @@
 
 WHY. Review #5 (R5-7) established that every "the matched random control is inert" claim in this
 repo used an ISOTROPIC draw in R^4096, which removes ~0.01-0.04% of the structure the arm removes
-(at L8: arm 84.0% of the 2x2 cell-mean spread, isotropic control 0.005%). Its inertness is
+(at L8 the arm removes 84.02% of the 2x2 cell-mean spread; the isotropic control's own fraction
+was never logged -- review #9 A4 withdrew the "0.005%" that stood here, whose only measured
+cousins are R5-7's 0.018%/0.061% on Qwen3 -- orders of magnitude below the arm either way). Its
+inertness is
 high-dimensional geometry, not an experimental result -- such a control cannot fail, so it certifies
 nothing.
 

@@ -4622,9 +4622,12 @@ orthogonal to `d_surface` at run time (cos 1.3e-07 to 5.3e-07, `rank2` complemen
 **No direction orthogonal to `d_surface` inside the concept subspace moves ASR.** All four are
 individually null (p 0.11–0.49), *including the strongest available edit* — the 90° direction, which
 removes **11.41%** of the cell-mean spread, 2.5× the draw the published table used. Largest control
-effect anywhere in the complement: |Δ| = 0.0129. This is now an **upper bound over the whole
-complement**, not a sample: an exhaustive half-circle sweep, and projection is sign-invariant, so
-there is no fifth direction to try.
+effect anywhere in the complement: |Δ| = 0.0129. ⛔ **SUPERSEDED — this said "an upper bound over
+the whole complement, not a sample: an exhaustive half-circle sweep … no fifth direction to try".
+That is refuted** (see the refutation below and review #9 B4): four angles are a systematic sample
+of a step function, not a bound, and the L12 densification showed the function moves further
+between grid points than the largest value it takes at them. Sign-invariance removes the
+*antipodal* duplicates, not the continuum between the samples.
 
 ### ⛔ But the arm-minus-control contrast does NOT survive its worst case
 
@@ -4691,7 +4694,8 @@ single draw the published table used.
 **This changes what the control can establish.** A band of random draws would have supported *"a
 typical orthogonal direction does nothing"*. An exhaustive sweep supports the far stronger *"**no**
 direction orthogonal to `d_surface` inside the concept subspace does anything, and here is the
-strongest one"* — an upper bound rather than a sample.
+strongest one"* — an upper bound rather than a sample. ⛔ **SUPERSEDED: this reasoning is wrong;
+four samples of a step function bound nothing. See the refutation below.**
 
 **Submitted at L8** (771867–771870), the most-cited depth. Prediction recorded: the arm is +0.0278;
 if the **90° control at 11.41% spread removal** — the strongest available orthogonal edit — is still
@@ -5028,6 +5032,98 @@ re-check will have been judged on 2026-08-21**, and the session-matched table wi
 reported.
 
 
+
+## 4h Code and Output Review — Review #9 (2026-08-21 15:20) — THE FINAL REPORT AUDITED LINE BY LINE
+
+**Scope:** every numeric claim and every verdict in `## Sprint Final Report`, checked against the
+committed JSON. This is the citable section, it had been rewritten twice as results landed and were
+retracted, and **it had drifted badly**: 20 corrections, of which **five are claims the report was
+still making after retracting them elsewhere in this same document.**
+
+**I verified the audit before acting on it** — ten independent re-derivations from the artifacts,
+all ten confirming. Two of its findings correct errors that ran *against* my own conclusions.
+
+### The two provenance gaps are now CLOSED by producing the artifacts, not by softening the claims
+
+⛔ Finding 4's L8/L31 double dissociation and answer 6's family bootstrap existed **only in this
+markdown**. That is the exact defect the sprint retracted at R3-3 and again over the token-level
++0.5414 — and it had recurred twice more without being caught.
+
+✅ **`outputs/boombness_followup/dissociation_L8_L31.json`** (new, `analyze_dissociation.py`, ~90
+lines reusing `analyze_control_recheck`'s `load`/`paired`/`paired_diff` verbatim). All six published
+numbers reproduce **exactly**, so the arithmetic was right and only the provenance was missing.
+
+✅ **And the claim came out stronger than it went in.** The published version compared two marginal
+p-values — "significant at L31, null at L8" — which is the difference-of-two-significances error
+this sprint flagged in review #4 and then committed itself. The new script tests the **interaction**:
+
+| depth × direction contrast | Δ | p |
+|---|---|---|
+| `unembed_refusal` L31 − L8 | **+0.1113** | **0.0002** |
+| `unembed_refusal` − `d_surface`, both at L31 | **+0.1072** | **0.0001** |
+| cell span L8 − L31 | **+0.0395** | **0.0039** |
+
+All three cross significantly, so the double dissociation is real *as a dissociation* and not merely
+as two separately-reported cells.
+
+### The five claims the report retracted elsewhere and kept asserting anyway
+
+1. **`d_naive` as independent evidence** (R6-2 struck it — it is `d_surface + d_context` exactly),
+   still used twice to fail Gate D requirement 4.
+2. **"Every point of movement is a refusal flip; the control produces zero flips"** — R4-2 retracted
+   the first half; both halves are false (three already-answered prompts move under `remS`; the
+   control produces one answered→refused flip).
+3. **"The `d_surface` layer profile survives no multiplicity correction"** used to kill a
+   *predictive* objective — R5-1 already withdrew exactly this; the predictive dev grid has **49 of
+   210** Holm survivors (97 of 210 on ASR).
+4. **"L8 surviving Holm"** in the next-sprint list, contradicting the report's own headline three
+   pages earlier that all four depths survive.
+5. **"Exhaustive / a bound, not a sample"**, refuted hours earlier — and **two further copies**
+   were still live in the body, found only by grepping for the word "bound" rather than for the
+   phrasing I remembered writing. **Third time this sprint that a retraction needed a second sweep
+   to land.**
+
+### Errors that ran against my own conclusions
+
+- **The orthogonal axis predicts at 83.0–118.8%, not "83–106%".** The true maximum (L29, seed 02) is
+  **118.8%** — the orthogonal control is *stronger* than `d_surface`, not merely comparable. The
+  understatement made requirement 4's failure look milder than measured. Carried in five places.
+- **"Weakest in the category it was fitted on" is false**: `fraud_financial_crime` is lower
+  (+0.0147) and eight categories sit at 0.0. The correct claim — seventh of eight movable — was
+  already in the very next clause.
+
+### The rest
+
+| # | claim | correction |
+|---|---|---|
+| A1 | control removes "5.35%" at L8 | **4.5506%** (deterministic run); 5.35% was a retracted offline recompute |
+| A3 | `d_inter` cos "0.008–0.087" | **0.015–0.084** at L29–L31 |
+| A4 | isotropic control "0.005%" | **no producer**; withdrawn (measured cousins: 0.018% / 0.061%) |
+| A5 | token-level "+0.5414, t 3.26" | artifact says **+0.5494**, 768/636 pairs, not family-restricted |
+| A6 | "lexically graded 3.6×" | **3.74×** on first−last; 3.6× is first−neighbour |
+| B6 | "two tokenisation-audited codewords" | carrot has **1** single-token variant vs 4 — it *failed* that audit |
+| B8 | "reproduces the **entire** codeword-scope effect" | **UNVERIFIED** — no all-position arm in the artifact |
+| B9 | t 11.4 beside p 2e-4 | prompt-level df 23 spliced with domain-level df 5 — R4-9 flagged this splice once already |
+| B11 | Gate C "AUROC 1.0000 at every layer" | true for d1–d4; d5/d6 sit at ~0.98 |
+| C1 | "peak L12 +0.0322" | session-matched **+0.0316**; the report quoted both |
+| C2 | the m=11 Holm table | computed on 08-19 values; four depths moved and it was not recomputed |
+| E2 | "make the judge record `prompt_sha16`" | already done; only the judge-model half is open |
+| F3/F4/F5 | MDE 0.0202/0.0025, ρ = −0.042, "seven sub-items (3+3)" | markdown-only or arithmetically impossible; flagged in place |
+
+**Also fixed in source, not just prose:** `analyze_control_recheck.py`'s docstring published the
+unproduced 0.005% as a measured fact.
+
+### What this says about the process
+
+The sprint's self-correction machinery works — every one of these was catchable from the committed
+artifacts, and the audit caught them all. What it does **not** do is propagate. Five retracted
+claims stayed live in the citable summary because retraction was recorded where the *result* was
+discussed and never chased into the report. The retraction table had the same shape of failure: it
+stopped at review #5 and omitted every item from reviews #6 and #7. Both are now fixed, and the
+table carries a note saying it was itself incomplete.
+
+The concrete lesson, third instance: **grep for the concept, not for the sentence you remember
+writing.**
 
 ## 4h Code and Output Review — Review #8 (2026-08-21 14:50)
 
@@ -6549,8 +6645,10 @@ need a **different basis**: refusalness lies only 0.65–2.72% inside the cell-m
 **All six of the handover's section-0 headline claims reproduce from committed JSON** (Phase A,
 14-agent fan-out, re-verified in review #1). G1 `demos_only L18` = 0.6887 of span; G3 = 75.15% of the
 deletion ceiling; G2 clean ρ = −0.0660, p = 0.493, n = 108; G4 both signs suppress; AdvBench arm B
-+0.0305, p_cl 0.0089; Qwen3 4/495. Seven sub-items did not reproduce as stated — three favoured the
-sprint, three were citability limits. **The largest inherited risk remains D-11:** `outputs/` is
++0.0305, p_cl 0.0089; Qwen3 4/495. ⚠ **"Seven sub-items did not reproduce as stated — three
+favoured the sprint, three were citability limits" is withdrawn** (review #9, F5): 3 + 3 ≠ 7 and no
+artifact enumerates the list. What is supported is that the six headline claims reproduce and that
+several sub-items did not; the count and its breakdown are not evidenced. **The largest inherited risk remains D-11:** `outputs/` is
 gitignored, so every judge, score and extract run is untracked.
 
 ### 2. What is `d_surface` most likely measuring?
@@ -6603,22 +6701,33 @@ both and carries the negative claim on its own.
 
 **On AdvBench, entirely through the refusal gate** (`e4_pathway_advbench.json`): stratifying by the
 baseline's refusal state, the effect is +0.0327 (p 0.0100) on prompts the baseline refused — 21 up,
-**0 down**, 440 flat — and +0.0072 (p 0.28) on prompts it already answered. Every point of movement in
-every arm is a refusal→non-refusal flip; the matched control produces zero flips.
+**0 down**, 440 flat — and +0.0072 (p 0.28) on prompts it already answered. ⛔ **The stronger
+gloss — "every point of movement in every arm is a refusal→non-refusal flip; the matched control
+produces zero flips" — is FALSE on both halves and is withdrawn** (review #9, B2). Movement outside
+the gate exists in every real arm: three already-answered prompts move up under `remS` (+0.0072),
+three under `remR` (+0.1291), and `remBoth` moves three up and two down. And the matched control
+produces **one** flip — `False->True`, answered→refused. The accurate statement: *the control
+produces zero refusal→non-refusal flips and one flip the other way, and the overwhelming majority
+of the arms' movement, but not all of it, is gate-crossing.*
 
 ⛔ **But the "not the content" half was never measurable** (R4-3): 29 of the 34 already-answered
 prompts sit at the maximum score, so the effective n is 5 and the MDE (0.0202) is 8× the effect a
-content pathway of equal relative strength would produce (0.0025). **The gate half is established;
+content pathway of equal relative strength would produce (0.0025 — ⚠ both figures are
+markdown-only, review #9 F3; the 29-of-34 ceiling that motivates them IS in the artifact). **The gate half is established;
 the content half is untested.**
 
 ⚠ And this does **not** generalise: on the internal doublespeak bank the refusal gate is essentially
-off (refusal rate **1.39%**, ρ(refused, ASR) = −0.042), and there the ASR variance is content quality.
+off (refusal rate **1.39%** ✓ artifact-backed; ρ(refused, ASR) = −0.042 ⚠ markdown-only,
+review #9 F4), and there the ASR variance is content quality.
 The same rubric measures different things on the two datasets.
 
 ### 5. Does token-level Boombness behave differently from prompt-level?
 
 **Yes, but neither is direction-specific.** Later demo occurrences are more concept-like than the
-first (paired, family-matched +0.5414 at L8, t 3.26) and the query codeword goes the other way — but
+first (paired excess **+0.5494** at L8 over 768 treated / 636 control pairs — the committed value in
+`token_level_dynamics_summary.json`; ⚠ the **+0.5414, t 3.26** figure this report carried is the
+228-shared-family restriction, which exists in **no artifact**, review #9 A5) and the query
+codeword goes the other way — but
 ⛔ **F-2** retracts direction-specificity at the token level, and **Gate D** independently finds the
 same at the prompt level. Two grains, one conclusion.
 
@@ -6640,14 +6749,26 @@ Three things bound it:
 ### 7. Are any surgical interventions actually useful?
 
 **Yes — the single most localised causal result in the sprint** (`surgical_units.json`). Cutting
-attention to the **first demonstration's codeword** reproduces the entire codeword-scope effect:
-paired first − last = **+0.9949**, t 11.4, **24/24**, domain-clustered p ≈ 2e-4. It replicates on a
-second, tokenisation-audited codeword — `button`: **+0.2659**, t 5.20, 21/24, p_cl 0.0046.
+attention to the **first demonstration's codeword** carries most of the codeword-scope effect:
+paired first − last = **+0.9949** (prompt-level t 11.36, df 23, 24/24; domain-clustered p 1.9e-4,
+df 5 — ⚠ **two different estimands, quoted side by side; review #9 B9 flags that the sprint caught
+this splice once already at R4-9 and then repeated it**). It replicates on a second codeword —
+`button`: **+0.2659** (prompt-level t 5.20, 21/24; clustered p 0.0046).
 
-Bounds: ⛔ **it is token suppression, not concept re-binding** (R3-6: Δlogp_codeword −0.9449 against
-Δlogp_concept +0.0268); the effect size is **lexically graded 3.6×** and the carrot arm has one more
-readout query position than the other banks (R4-9), so the clean comparison is apple vs button; and
-the apple bank is **void** on grammaticality.
+Bounds, three of them tightened by review #9:
+- ⛔ **It is token suppression, not concept re-binding** (R3-6: Δlogp_codeword −0.9449 against
+  Δlogp_concept +0.0268).
+- ⛔ **"reproduces the *entire* effect" is UNVERIFIED** (B8): `surgical_units.json` has only
+  `first`/`neighbour`/`last` arms and no all-codeword-position arm, and the nearest comparator
+  (`g3_wholeanswer_codeword24.json`, Δ 1.3322) ran at a different edge budget (6144 vs 1024).
+- ⛔ **Only `button` is tokenisation-clean** (B6): `concept_pair_screen.json` gives carrot
+  **1** single-token variant against 4 for apple, button and bomb, so "two tokenisation-audited
+  codewords" is wrong — carrot is the one that *failed* that audit, which is why R4-9 flagged its
+  readout span. The replication set is **carrot + button** (apple is `apple_VOID` on
+  grammaticality); the earlier "so the clean comparison is apple vs button" is superseded (B7).
+- The lexical grading is **3.74×** on first − last (carrot 0.9949 / button 0.2659); the **3.6×**
+  previously quoted is the first − *neighbour* contrast (3.645×), i.e. a different estimand from
+  the two numbers beside it (A6).
 
 ### 8. Does the result replicate across datasets and models?
 
@@ -6667,9 +6788,17 @@ Qwen3 (20 of 21 rows non-finite readout logits).
 
 ### 9. Is a GCG objective justified?
 
-**No.** Three of plan §11's five candidate objectives are individually dead: probe margin (Gate C
-failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface` layer profile
-(survives no multiplicity correction), and prompt-level Boombness (Gate D, requirement 4).
+**No** — but on two grounds, not three, and the third was killed with the wrong evidence.
+Plan §11's five candidates: probe margin is dead (Gate C failed — AUROC 1.0000 at all 17 layers for
+d1–d4, reading token identity; ⚠ d5/d6 are surface-matched and sit at ~0.98, so "every layer" was
+an over-statement, review #9 B11), and prompt-level Boombness is dead (Gate D, requirement 4).
+⛔ **The "maximize L6–L12 Boombness signal" objective was killed by citing the wrong family** (B10,
+and this is R5-1 re-appearing after the report had already retracted it): "survives no multiplicity
+correction" is true of the **causal ablation** profile (0 of 11 Holm rejects) but the objective is
+**predictive**, and the predictive dev grid has **49 of 210** metrics surviving Holm on StrongReject
+(97 of 210 on ASR at 0.5), with survivors at L9–L13. That candidate is **not** independently dead;
+it dies with prompt-level Boombness under Gate D requirement 4, which is a sufficient reason on its
+own.
 
 > **Prompt-level Boombness is not currently a usable optimization target.**
 
@@ -6686,9 +6815,13 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
    basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
    of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
-   ✅ **All four depths are now swept EXHAUSTIVELY over the 2-D orthogonal complement — a bound, not
-   a sample. Not one of the sixteen orthogonal directions moves ASR** (largest |Δ| 0.0129, smallest
-   p 0.113). ⛔ **But the margin claim does not hold uniformly, and the single-draw Holm table
+   ✅ **All four depths are swept at four angles each over the 2-D orthogonal complement — a
+   systematic SAMPLE, not a bound. Not one of the sixteen orthogonal directions moves ASR**
+   (largest |Δ| 0.0129, smallest p 0.113), and at L12 a densification to eight angles left all
+   eight controls null. ⛔ "Exhaustive / a bound, not a sample" is **withdrawn**: ASR(θ) is a step
+   function, and the measured function moves further *between* grid points (0.0137 at 22.5°
+   spacing) than the largest value it takes *at* them (0.0120) — halving the spacing made that
+   ratio worse, 1.02 → 1.13, which is what sampling a step function looks like. ⛔ **But the margin claim does not hold uniformly, and the single-draw Holm table
    over-stated it:** the arm beats **every** orthogonal direction at **L12** (worst case p 0.0043)
    and **L10** (p 0.018), **3 of 4** at L8 (worst case p 0.073), and **only 2 of 4 at L6, where the
    worst case is +0.0039 at p 0.242 — not established.**
@@ -6697,11 +6830,20 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    seeds and three layers, and `d_inter` (cos 0.015–0.084) predicts equally with the opposite sign.
    ⛔ The depth anti-alignment (Spearman −0.850) is not by itself a mechanism — the whole subspace is
    equally inert at L31, so that null is **not specific to `d_surface`**. ✅ **But it IS a
-   within-layer dissociation at subspace granularity, now established by a positive control:** at
-   L31 `unembed_refusal` moves ASR **+0.1031 (p 0.0002)** while the entire concept subspace moves
-   −0.0108 (p 0.24) and is readable at ρ +0.164. And the two directions **double-dissociate** —
-   `unembed_refusal` is null at L8 (−0.0082, p 0.39) where `d_surface` acts, so no single
-   architectural depth gradient can explain the pattern.
+   within-layer dissociation at subspace granularity, established by a positive control and now
+   COMMITTED** (`dissociation_L8_L31.json`, written in response to review #9 F1, which found these
+   six numbers existed only in this markdown — the same provenance defect as R3-3). All six
+   reproduce exactly through the shared estimator: at L31 `unembed_refusal` moves ASR
+   **+0.1031 (p 0.0002)** while the entire concept subspace moves −0.0108 (p 0.24); at L8 the
+   subspace moves +0.0287 (p 0.0071) and `unembed_refusal` is null (−0.0082, p 0.39); `d_surface`
+   is null at L31 (−0.0041, p 0.255). ✅ **And the dissociation is now tested as an interaction
+   rather than as two marginal p-values** — the error this sprint flagged in review #4 and had been
+   committing here: depth × direction, paired per prompt, gives `unembed_refusal` L31−L8
+   **+0.1113 (p 0.0002)**, `unembed_refusal` − `d_surface` at L31 **+0.1072 (p 0.0001)**, and the
+   cell span L8−L31 **+0.0395 (p 0.0039)**. All three interactions are significant, so the crossing
+   pattern is real and no single architectural depth gradient explains it.
+   ⚠ `ρ +0.164` is `d_surface`'s own within-level rho at L31, not the subspace's; the readability
+   claim beside it is imprecise and is restated here as `d_surface`'s.
 
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
@@ -6727,6 +6869,36 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 | R5-1 | requirement 7 ("predictive only at L29–31") | 49/210 metrics survive Holm inside L6–L13 |
 | R5-6 | Qwen3 doublespeak-specificity | fails three robustness checks |
 | R5-7 | every "matched random control is inert" | inert by construction |
+| R3-1…R3-5 | Phase-B/E sub-claims (see review #3) | superseded in place |
+| R3-6 | "concept re-binding" | it is token suppression |
+| R4-1 | (see review #4) | superseded in place |
+| R4-5 | (see review #4) | superseded in place |
+| R4-9 | carrot's "tokenisation-audited" status | 1 single-token variant vs 4; readout span confounded |
+| R4-10 | "0 overlapping demonstration sets among all 1,800" | corrected to 120 independent families per level |
+| R5-2 | "L29–L31 was never identifiable" | the dev grid is flat there |
+| R5-4 | within-level SEs | ~11% too small; levels share all 120 families |
+| R5-5 | requirement 3's null | the metric DOES predict refusal (rank 0.6362, p 0.0072) |
+| R5-8 | "97.2% of rows carry the concept word" | base rate is 54.3% |
+| R6-1 | the subspace-prediction run | dropped cross-fit |
+| R6-2 | `d_naive` as independent evidence | `d_naive ≡ d_surface + d_context` exactly |
+| R6-3 | the control direction | environment-dependent SVD; 2 of 4 runs not re-derivable |
+| R6-5 | "the paired contrast is always tighter" | 11% WIDER at L8 |
+| R6-6 | arms and controls compared across judging days | replaced by the session-matched re-judge |
+| R7-1 | the pre-registered sweep prediction | failed: span +0.0287 vs predicted +0.0305 |
+| R7-2 | "the superset adds nothing" | not supported by the interval |
+| R7-3 | the subset/superset ordering | reverses under the pooled estimand |
+| R7-4 | "depth, not direction" | withdrawn, then re-withdrawn in the opposite direction |
+| R7-5 | internal consistency | the document contradicted itself in 18 places |
+| — | "L12's control nearly fired at p 0.062" | SVD-basis draw; deterministic replacement −0.0048, p 0.24 |
+| — | anti-alignment (Spearman −0.850) as a mechanism | a description only; the whole subspace is inert at L31 |
+| — | "lexical G is now 2" on apple | the apple bank is VOID on grammaticality; the pair is carrot + button |
+| — | "exhaustive / a bound, not a sample" | ASR(θ) is a step function; refuted by densification |
+| — | "L6 direction-specificity is established" | only 2 of 4 angles; worst case p 0.242 |
+| R9-* | **all of review #9's findings below** | 20 corrections to this report; see the review section |
+
+⚠ **This table was itself materially incomplete until review #9** — it stopped at review #5 and
+omitted every item from reviews #6 and #7 and every 08-21 result, including four claims this report
+was still making in its own body. That is the failure mode the table exists to prevent.
 
 Plus four guards found to be **incapable of failing**: the stale-join check, the `--layers/--topk`
 comparability check, `--min-separation`, and my first orthogonalisation.
@@ -6734,7 +6906,9 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 ### 12. What should the next sprint do?
 
 1. ✅ **Done for `d_surface`** — L6/L8/L10/L12 all re-tested; the arm beats the subspace-matched
-   control at every depth, L8 surviving Holm. ⛔ **This control CANNOT be used for
+   control at every depth and **all four survive Holm** (adjusted 0.0136 / 0.0276 / 0.0347 /
+   0.0347). ⚠ "L8 surviving Holm" was the superseded SVD-basis run and contradicted this report's
+   own headline; corrected in review #9 (E1). ⛔ **This control CANNOT be used for
    refusalness arms**: refusalness lies only 0.6–2.7% inside the cell-mean span, so a draw from it is
    ~98% orthogonal to refusalness anyway. Controlling those needs a basis for refusal-relevant
    variance — the span of the five committed refusal directions, or the top PCs of activations on
@@ -6743,6 +6917,9 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 2. **Run arm B on Qwen3's internal bank** so the +0.3476 can be decomposed.
 3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
    `d_surface`'s own band because only five refusal directions exist on disk.
-4. **Make `judge_boombness` record `prompt_sha16` and the judge model actually used**; the rubric
-   falls back between two models and no artifact says which answered.
+4. ✅/⚠ **Partly done.** `judge_boombness` now writes `prompt_sha16` on every row and records
+   `judge_model_candidates`; existing artifacts predate the fix, so they still report
+   `n_judge_rows_with_prompt_sha16: 0` and must be re-judged or joined on scalars. **Still open:
+   recording the judge model *actually used*** — the rubric falls back between two models and
+   pinning the responder needs a change inside `strong_reject`.
 5. **Do not build the GCG objective.**
