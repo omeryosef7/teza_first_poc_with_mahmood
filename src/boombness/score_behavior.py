@@ -194,11 +194,18 @@ def make_intervention(dc, pc, lm, spec: Optional[Dict], payload: Optional[Dict],
     # names a draw actually selects one.
     if name.startswith("in_subspace_angle"):
         import signals as _sg
-        k = int(name.replace("in_subspace_angle", ""))
+        # `in_subspace_angleK` (K of 4) or `in_subspace_angleKofN` for a denser sweep. Four points
+        # SAMPLE the half-circle; they do not prove the effect is null between them. N is how the
+        # interpolation assumption gets tested rather than assumed.
+        spec_k = name.replace("in_subspace_angle", "")
+        if "of" in spec_k:
+            k, n_ang = (int(x) for x in spec_k.split("of"))
+        else:
+            k, n_ang = int(spec_k), 4
         base = payload["d_surface"]
         dmap, diag = {}, {}
         for L in base:
-            v, how = _sg.in_subspace_angle_direction(payload, L, k)
+            v, how = _sg.in_subspace_angle_direction(payload, L, k, n_angles=n_ang)
             dmap[L] = v
             cosv = float(torch.dot(base[L].float() / base[L].float().norm(),
                                    v.float() / v.float().norm()))

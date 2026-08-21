@@ -4354,11 +4354,19 @@ do with degeneracy.
 ### ✅ The strong half, and it is now exhaustive at every depth
 
 **Not one of the sixteen orthogonal directions moves ASR.** Largest effect anywhere: |Δ| = 0.0129;
-smallest p across all sixteen: 0.113. Since each sweep covers the whole 2-D complement and projection
-is sign-invariant, **there is no orthogonal direction left to try at any of the four depths.**
+smallest p across all sixteen: 0.113.
 
-> **No direction orthogonal to `d_surface` inside the 2×2 concept subspace moves behaviour, at L6,
-> L8, L10 or L12 — established as a bound, not a sample.**
+⛔ **Correcting my own wording before an auditor does: four angles per depth SAMPLE the half-circle,
+they do not exhaust it.** The complement is a continuum; a direction at 22.5° was never run. Saying
+"a bound, not a sample" and "no orthogonal direction left to try" over-claims — what is established
+is a **four-point cover at 45° spacing**, plus the assumption that the effect does not spike between
+sampled angles. That assumption is **plausible** (the intervention is continuous in θ and all four
+points are null with |Δ| ≤ 0.0129) but it was **untested**, so it is being tested: an 8-point sweep at
+22.5° spacing is submitted at L12, the depth carrying the strongest claim.
+
+> **Corrected claim:** *no direction orthogonal to `d_surface` inside the 2×2 concept subspace moves
+> behaviour, at any of four evenly spaced angles per depth across L6/L8/L10/L12 — sixteen controls,
+> all null.* Whether that extends to the whole continuum is what the densification tests.
 
 ### ⛔ The weak half: the *margin* claim does not hold uniformly, and L6 fails outright
 
