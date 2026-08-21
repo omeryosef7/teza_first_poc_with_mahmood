@@ -1,0 +1,40 @@
+{
+  "arm_a": {
+    "label": "d_naive_L8",
+    "glob": "outputs/boombness/judge/abgL8_naive_*"
+  },
+  "arm_b": {
+    "label": "ladder_k1_L8",
+    "glob": "outputs/boombness/judge/dmJ8k1_*"
+  },
+  "n": 495,
+  "n_clusters": 16,
+  "delta_a_minus_b": 0.014141414141414142,
+  "net": 7,
+  "n_discordant": 9,
+  "up": 8,
+  "down": 1,
+  "ci95_domain_clustered": [
+    0.0024813895781637717,
+    0.029850746268656716
+  ],
+  "p_bootstrap": 0.0212,
+  "p_exact_sign_test_on_discordant": 0.0390625,
+  "note": "the inference rests on the 9 discordant prompts, not on 495; the sign test is the assumption-free companion to the bootstrap",
+  "provenance": {
+    "argv": [
+      "src/boombness/paired_arm_test.py",
+      "--arm-a",
+      "outputs/boombness/judge/abgL8_naive_*",
+      "--arm-b",
+      "outputs/boombness/judge/dmJ8k1_*",
+      "--label-a",
+      "d_naive_L8",
+      "--label-b",
+      "ladder_k1_L8",
+      "--out",
+      "outputs/boombness/paired_naive_vs_ladder_L8.json"
+    ],
+    "git_commit": "15094a58845459f3d1f9fac4da0981394f065104"
+  }
+}

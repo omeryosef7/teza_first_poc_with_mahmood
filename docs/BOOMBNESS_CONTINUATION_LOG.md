@@ -5815,3 +5815,48 @@ control has failed to kill.
 | 224 | 2026-08-21 | direct dose+cos-matched comparison | k=1 **+0.0444** vs `d_naive` **+0.0586** — no fit required |
 | 225 | 2026-08-21 | disclosed the scatter-metric limitation | 2 angle flags not counted; `d_naive` is the robust one |
 | 226 | 2026-08-21 | revised **R-26**'s narrow reading, as pre-committed | identification moves you **off** the stronger direction |
+
+## An interval on the `d_naive` advantage, and two replications submitted before believing it
+
+Tick 2026-08-21. Last tick's headline — `d_naive` beats a dose- and cosine-matched ladder rung by
++0.0141 — was a point estimate with no interval. Put one on it, paired and domain-clustered, using
+runs that already existed (`paired_arm_test.py`, new, so the number is regenerable):
+
+| | |
+|---|---|
+| `d_naive` − ladder k=1, L8 | **+0.0141** (net +7), n=495, G=16 |
+| domain-clustered bootstrap CI95 | **[+0.0025, +0.0299]** — excludes 0 |
+| bootstrap p | **0.0212** |
+| **discordant prompts** | **9** (8 up, 1 down) |
+| exact sign test on those 9 | **p = 0.0391** |
+
+**It clears, and it is thin.** The whole inference rests on **nine** prompts where the two arms differ
+at all — everything else is a tie. "+0.0141 over 495 prompts" sounds sturdier than "8 up, 1 down out of
+9", and they are the same fact; the script now prints the discordant count and an exact sign test next
+to the bootstrap **precisely so the second framing is unavoidable**. This sprint has already retracted a
+ratio quoted to two significant figures off 9 events (R-23/F4). I am not going to repeat that by
+quoting a p-value and omitting its denominator.
+
+**So: replications submitted before treating it as a result.** `d_naive` versus its own dose-matched
+rung at **two further layers**, chosen by dose-matching rather than convenience:
+
+| layer | `d_naive` dose | closest rung | rung dose | dose gap |
+|---|---|---|---|---|
+| **L6** | 0.8329 | k=1 | 0.8325 | **0.0004** |
+| **L12** | 0.7595 | k=1 | 0.7805 | 0.0210 |
+
+L6's match is near-exact — a dose gap of 0.0004 makes it the cleanest test of the claim available
+anywhere in this bank. Jobs **773042-773045** (generation; judging next tick).
+
+**Pre-committing again, because it is cheap and it worked last time.** If `d_naive` is above its
+matched rung at **both** L6 and L12, the effect is a property of that direction and not of L8. If it is
+above at neither, last tick's finding is a nine-prompt fluctuation and I will withdraw it. If it splits,
+I will report the split and treat the claim as unreplicated rather than pick the supporting layer.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 227 | 2026-08-21 | wrote `paired_arm_test.py` (paired, clustered, + sign test) | the +0.0141 is now regenerable, not ad-hoc |
+| 228 | 2026-08-21 | interval on the L8 advantage | CI **[+0.0025, +0.0299]**, p=0.0212 — clears, on **9 discordant prompts** |
+| 229 | 2026-08-21 | dose-matched the replication rungs at L6 and L12 | L6 gap **0.0004**, L12 gap 0.0210 |
+| 230 | 2026-08-21 | submitted 773042-773045 | replication at two layers, judging next tick |
+| 231 | 2026-08-21 | pre-committed the three-way reading | both / neither / split, decided before the data |
