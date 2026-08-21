@@ -156,12 +156,24 @@ def main() -> None:
                          "bound: ASR(theta) is a step function (greedy decoding, 0.5 threshold) and "
                          "at L8 the effect moves 0.0173 within one unsampled interval, more than "
                          "the 0.0129 max at any sampled point.")
+    ap.add_argument("--expect-baseline", type=int, default=0,
+                    help="assert the baseline's judged-row count (e.g. 495). Every other "
+                         "completeness check is derived from it, so it must be pinned separately.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
+    # THE BASELINE'S OWN COUNT IS UNGUARDED, and it is the reference every other guard uses.
+    # `n_expect` is derived FROM the baseline, so a truncated baseline would quietly set a wrong
+    # target and every arm and control would then "agree" with it -- the completeness check would
+    # pass while measuring the wrong population. Review #8 found this: the guard the docstring
+    # argues for did not protect its own reference point. `--expect-baseline` pins it against the
+    # bank the runs were generated from.
     base = load([args.baseline])
     n_expect = len(base)
-    out_sweep_only = not args.layer
+    if args.expect_baseline and n_expect != args.expect_baseline:
+        raise SystemExit(f"[recheck] baseline has {n_expect} judged rows, expected "
+                         f"{args.expect_baseline}. Every other completeness check is derived from "
+                         f"this number, so a wrong baseline silently rebases the whole comparison.")
     out = {
         "script": "src/boombness/analyze_control_recheck.py",
         "purpose": "re-test d_surface layer-profile depths against a SUBSPACE-matched control that "
@@ -230,13 +242,27 @@ def main() -> None:
         L, rest = spec.split("=", 1)
         arm_s, ctrls = rest.split(":")
         arm = load(arm_s.split(","), expect=n_expect)
+        # DIRECTION/LAYER GUARD, which --layer has and --sweep did not (review #8). Without it an
+        # L8 arm paired against L12 angle controls passes silently: `intervention_of` was called
+        # and recorded but never checked.
+        iv_arm = intervention_of(arm_s.split(",")[0])
+        if iv_arm and iv_arm.get("direction") != "d_surface":
+            raise SystemExit(f"[recheck] sweep L{L}: arm direction is {iv_arm.get('direction')!r}")
+        if iv_arm and iv_arm.get("layers") and int(iv_arm["layers"][0]) != int(L):
+            raise SystemExit(f"[recheck] sweep L{L}: arm acts at {iv_arm['layers']}, not L{L}")
         entry = {"arm": {"runs": [os.path.relpath(x, REPO) for x in arm_s.split(",")],
+                         "intervention": iv_arm,
                          **{f: paired(base, arm, f) for f in (SCORE, FLAG)}},
                  "controls": {}, "worst_case": {}}
         per = {}
         for i, cd in enumerate(ctrls.split(",")):
             ctrl = load(cd.split("|"), expect=n_expect)
             iv = intervention_of(cd.split("|")[0])
+            if iv and not str(iv.get("direction", "")).startswith("in_subspace_angle"):
+                raise SystemExit(f"[recheck] sweep L{L} control {i}: direction is "
+                                 f"{iv.get('direction')!r}, not an angle control")
+            if iv and iv.get("layers") and int(iv["layers"][0]) != int(L):
+                raise SystemExit(f"[recheck] sweep L{L} control {i}: acts at {iv['layers']}")
             per[i] = {"run": os.path.relpath(cd, REPO), "intervention": iv,
                       "vs_baseline": {f: paired(base, ctrl, f) for f in (SCORE, FLAG)},
                       "arm_minus_control": {f: paired_diff(base, arm, ctrl, f)

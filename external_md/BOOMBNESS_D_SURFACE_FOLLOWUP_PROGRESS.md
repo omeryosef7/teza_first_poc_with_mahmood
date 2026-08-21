@@ -4975,6 +4975,71 @@ re-check will have been judged on 2026-08-21**, and the session-matched table wi
 reported.
 
 
+
+## 4h Code and Output Review — Review #8 (2026-08-21 14:50)
+
+Four agents over the sixteen-control sweep and the Sprint Final Report. **Every number in all three
+sweep artifacts reproduces to 6 dp** under an independent re-implementation, and the plumbing audit
+came back clean: same baseline for all 20 runs, prompt-id sets exactly equal (not merely
+intersecting), 0 duplicates, `n_failed: 0` and `option_mass_gate: PASS` everywhere, and the shipped
+code verified byte-identical to the commits stamped in the artifacts.
+
+The headline finding — that "exhaustive / a bound, not a sample" is refuted by the data and had not
+propagated out of the prose into the code and artifacts — is written up above and is **fixed**.
+Three further items:
+
+### ⛔ R8-1 — my own completeness guard did not protect its own reference point
+
+`analyze_control_recheck.py` refuses any arm whose judged-row count differs from the baseline's. But
+**the baseline was the one load with no check**, and `n_expect` is derived *from* it — so a truncated
+baseline would quietly set a wrong target and every arm and control would then "agree" with it. The
+guard would pass while measuring the wrong population. **Fixed:** `--expect-baseline` pins it
+independently (495 here, against the bank the runs were generated from).
+
+### ⛔ R8-2 — the `--sweep` path had no direction or layer guard at all
+
+`--layer` refuses a non-`d_surface` arm and a mis-named control; **`--sweep` did neither**.
+`intervention_of()` was called and its result *recorded in the artifact*, but never checked — so an
+L8 arm paired against L12 angle controls would have produced a clean-looking table. Verified from the
+recorded blocks that it never fired in practice. **Fixed and tested:** deliberately pairing the L12
+arm with the L6 controls now aborts with `sweep L12 control 0: acts at [6]`.
+
+### ⛔ R8-3 — the auditor's sharpest claim generalises from one depth, and all four refute it
+
+The audit reports that at L12 `Spearman(spread removed, control ASR effect) = −1.000`, concluding
+that *"the only geometrically smooth handle on θ runs backwards to the behaviour"*. Computed at every
+depth:
+
+| depth | Spearman(spread, effect) |
+|---|---|
+| L6 | **+1.000** |
+| L8 | 0.000 |
+| L10 | −0.400 |
+| **L12** | **−1.000** |
+| **pooled, 16 controls** | **−0.347** (t = −1.38, df 14, **p ≈ 0.19**) |
+
+It swings from **+1 to −1**. With four points a Spearman can only take 0, ±0.4, ±0.8, ±1, and
+|ρ| = 1 arises 8.3% of the time under the null — so both extremes are what noise looks like here.
+**No relationship is established in either direction.**
+
+⛔ **And this corrects me as well as the auditor.** I wrote twice — after L8 and again after L12 —
+that "the direction removing the most representational variance is not the one that does the most
+behaviourally", presenting a two-observation coincidence as a pattern. **L6 goes the other way with
+ρ = +1.000.** The defensible statement is the weaker one: *spread-removed justifies calling a control
+non-trivial, and does not predict its behavioural effect either way — which is still the argument for
+sweeping rather than picking one "strong" control, but is not the finding I claimed.*
+
+### ✅ One elegant thing the audit contributed, verified at all four depths
+
+Spread-removed is a **quadratic form** in θ — `f(θ) = A cos²θ + B sin²θ + C sinθ cosθ` — so it obeys
+`f(0) + f(90) = f(45) + f(135)`. Measured: L6 12.31/12.32, L8 15.98/15.98, L10 18.85/18.86,
+L12 17.95/17.96. **The four sampled points therefore determine the whole continuum of that quantity**,
+whose true range (e.g. L12: 5.93–12.02%) barely exceeds the grid's (6.07–11.88%).
+
+So the geometry *is* fully covered by four points. It is only the **behaviour** that is not — which
+is exactly the distinction R8-3 is about, and the reason the sweep is a systematic sample rather than
+a bound.
+
 ## 4h Code and Output Review — Review #7 (2026-08-21 09:05)
 
 Four agents over the weakened central claim and the document's internal consistency. **All four
