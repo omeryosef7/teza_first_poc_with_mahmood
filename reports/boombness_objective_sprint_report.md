@@ -2141,6 +2141,41 @@ see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `con
 underpowered by an order of magnitude and confounded on three variables at once. Making them usable
 is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
+### ⚠ Multiplicity over the layer family: no single layer survives Holm (added 2026-08-21)
+
+An audit asked whether the headline layer survives correction over **its own layer family**. It does
+not, and by a small margin. All 10 layer arms carrying a clustered p, Holm step-down at α=0.05
+(`advbench_layer_profile.json → paired_vs_baseline`):
+
+| layer | Δ (clustered) | p_cl | Holm threshold | rejected? |
+|---|---|---|---|---|
+| **L12** | +0.0322 | **0.00562** | **0.00500** | **no — misses** |
+| L8 | +0.0305 | 0.00893 | 0.00556 | no |
+| L10 | +0.0223 | 0.01898 | 0.00625 | no |
+| L6 | +0.0159 | 0.05670 | 0.00714 | no |
+| L13 | +0.0138 | 0.09014 | 0.00833 | no |
+| L14 | +0.0118 | 0.14106 | 0.01000 | no |
+| L4 / L18 / L28 / L24 | +0.0092 … +0.0005 | 0.26–0.45 | — | no |
+
+**So "L12, p=0.0056" must not be quoted as a corrected result.** Uncorrected it is the family maximum
+of 10, and this report has retracted claims for exactly that (R-18's layer selection, G2's 20-column
+scan).
+
+**What the profile still supports, stated as a band rather than a layer.** Per-layer Holm is the
+right test for "L12 is special", which is not the claim. The claim is a contiguous band with a hard
+edge, and the descriptive pattern is not a single spike:
+
+* **three adjacent layers** — L8, L10, L12 — are each individually p < 0.02 with Δ ∈ [+0.022, +0.032];
+* L6 is marginal (0.057) and L13/L14 decay monotonically (0.090, 0.141);
+* **everything from L16 outward is flat** — +0.0037, +0.0037, +0.0005, and L16 is exactly baseline;
+* the **matched controls at 3 depths are inert** (c4, c6, c8).
+
+A single significant layer flanked by nulls would be a selection artifact. A monotone rise-and-fall
+across six ordered layers with a hard edge is a different kind of evidence — but it is **descriptive**,
+and this report does not currently have a test of the *profile shape* against a null in which layer
+labels are exchangeable. **That test is not run, so the band claim is asserted at the descriptive
+level and the per-layer p-values are reported uncorrected and labelled as such.**
+
 ### ✅ Is the headline just longer text? No — decomposed by refusal transition (added 2026-08-21)
 
 **The objection is serious and it applies here.** Across **33 AdvBench arms**,

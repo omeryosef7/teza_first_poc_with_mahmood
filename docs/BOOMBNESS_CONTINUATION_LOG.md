@@ -4201,3 +4201,40 @@ justifies the absolute Δ as the citable unit.
 | 99 | 2026-08-21 | audit #3 caught my heredoc replication with no producer | **third instance**; artifact now exists, number identical |
 | 100 | 2026-08-21 | verified G1's sign claim across all 13 layer-sets × 2 pairs | **2 of 4 cells sign-robust**; the claim is about the diagonal |
 | 101 | 2026-08-21 | corrected the report; recorded 26/165 ceiling overshoots | three findings logged as still open |
+
+## ⚠ No layer survives Holm — the headline is a band claim or it is nothing
+
+Tick 2026-08-21, acting on the first of the three findings left open from audit #3.
+
+The audit asked whether the headline layer survives correction over its **own layer family**. It does
+not, and it is closer than the audit stated: over the **10** layer arms carrying a clustered p, Holm
+step-down gives L12 **p=0.00562 against a threshold of 0.00500**. It misses. Nothing else is close.
+
+**So "L12, p=0.0056" cannot be quoted as a corrected result** — uncorrected it is the maximum of a
+family of 10, and this report has already retracted claims for exactly that (R-18's layer selection,
+G2's 20-column scan). Quoting it uncorrected while retracting others for the same move would be the
+asymmetric-standard defect this sprint has now hit **four** times.
+
+**But per-layer Holm is the wrong test for the claim actually being made.** "L12 is special" is not
+the claim; "there is a contiguous band with a hard edge" is. The descriptive pattern is not a spike:
+
+* L8, L10, L12 each individually p < 0.02, Δ ∈ [+0.022, +0.032];
+* L6 marginal (0.057); L13, L14 decay monotonically (0.090, 0.141);
+* **L16 onward flat** — +0.0037, +0.0037, +0.0005, L16 exactly baseline;
+* matched controls inert at three depths.
+
+A lone significant layer flanked by nulls is a selection artifact. A monotone rise-and-fall across six
+ordered layers with a hard edge is a different kind of evidence — **but I do not have a test of it.**
+The right one is a permutation test on the *profile shape* against a null in which layer labels are
+exchangeable, and it has not been run.
+
+**So the report now says exactly that**: per-layer p-values reported **uncorrected and labelled**,
+no layer claimed as surviving multiplicity, and the band asserted at the **descriptive** level with
+the missing test named. That is weaker than the previous wording and it is what the evidence
+supports. Writing the permutation test is the obvious next piece of real work on this claim.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 102 | 2026-08-21 | Holm over the 10-arm layer family | **nothing survives**; L12 p=0.00562 vs thr 0.00500 |
+| 103 | 2026-08-21 | separated "L12 is significant" from "there is a band" | the second is the claim; the first is not quotable |
+| 104 | 2026-08-21 | report states the band descriptively and **names the test it lacks** | weaker wording, honestly bounded |
