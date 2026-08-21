@@ -4348,9 +4348,12 @@ force a weakening.
 
 ⛔ **The sentence I built the central result on — *"at L31 the metric predicts ASR at ρ +0.164 and
 ablating the very same direction at the very same layer changes nothing"* — can no longer be read as
-evidence that `d_surface` is causally inert late.** Removing the whole 3-D span, which strictly
-contains `d_surface` (captured at 1.000000), is *also* inert at L31. **The L31 null is a property of
-the depth, not of the direction.**
+evidence that `d_surface` *specifically* is causally inert late.** Removing the whole 3-D span, which
+strictly contains `d_surface` (captured at 1.000000), is *also* inert at L31. ⛔ **Corrected by
+review #7: I first wrote "the L31 null is a property of the depth, not of the direction", which is a
+false dichotomy the experiment cannot license. What is shown is narrower — no direction inside THIS
+subspace acts at L31 while the same edit acts at L8. Whether the cause is depth or this subspace is
+undecided until the `unembed_refusal` positive control lands.**
 
 ⛔ Consequently the **Spearman −0.850 anti-alignment stands as a description and not as a
 mechanism.** It conflates two trends that are both real but not the same claim: readability rising
@@ -4361,9 +4364,11 @@ described it as one.
 ### What survives, and is now better supported
 
 ✅ **Within the layers where ablation demonstrably works, the causal effect is concentrated on the
-`d_surface` axis — and the superset test confirms it by a new route.** At L8, ablating all three
-dimensions gives **+0.0287** against `d_surface` alone at **+0.0278**: **adding the other two
-dimensions of the subspace adds nothing.** Combined with the orthogonal-axis controls being inert at
+`d_surface` axis — and the superset test is consistent with that, weakly.** At L8, ablating all three
+dimensions gives **+0.0287** against `d_surface` alone at **+0.0278**. ⛔ **Corrected by review #7:
+the paired contrast is +0.00097 with CI [−0.0083, +0.0102], so the other two dimensions add *no more
+than about a third of the `d_surface` effect* — not "nothing"; the ordering reverses under the pooled
+estimand; and the 0.0009 gap is a third of this pipeline's judge-rerun noise (0.0028).** Combined with the orthogonal-axis controls being inert at
 four Holm-corrected depths, two independent designs — a *subset* control and a *superset* control —
 now agree that the L6–L12 effect is carried by that one axis.
 
@@ -4583,6 +4588,108 @@ Launched: `abrep_L6`, `abrep_L8`, `abrep_L10` (the baseline and L12 arm already 
 With the four new control shards judging alongside, **every arm, control and baseline in the
 re-check will have been judged on 2026-08-21**, and the session-matched table will be the one
 reported.
+
+
+## 4h Code and Output Review — Review #7 (2026-08-21 09:05)
+
+Four agents over the weakened central claim and the document's internal consistency. **All four
+table numbers reproduce exactly**, and three attacks on the method FAILED — but claim (c) is
+over-stated, the pre-registered prediction actually failed, and my weakening of (b) went too far.
+
+### ✅ What the audit could NOT break (recorded so the defects are correctly scoped)
+
+- **Hook composition is correct.** `pair_common.py:653` returns a new tensor and PyTorch chains
+  forward hooks, so three `AllPositionProjectOut` at one layer apply *sequentially* — demonstrated
+  on the run's own torch build. With orthonormal vectors that is span projection.
+- **Orthonormality and superset containment hold at run time**, from the runs' own logs: max
+  |GᵀG − I| = 3.14e-07 (L8) / 2.38e-07 (L31), and `d_surface` is captured at **1.000000**. Its
+  coefficients in the basis are L8 `[−0.956, 0.157, −0.250]` — a genuine 3-D superset, not a
+  relabelled `d_surface`.
+- **The L31 hook is not inert.** `span31` changes `n_chars` on **326/495 (65.9%)** of generations,
+  and the refuter measured the ablation as **~99% complete at both depths** (residual in-span
+  component 2.8e-04 of |h| at L8, 2.7e-04 at L31 — no asymmetry). **The L31 null is a null of
+  behaviour, not a hook that failed to fire.**
+- **The depth contrast is real:** paired span@L8 − span@L31 = **+0.0395, CI [+0.0148, +0.0643],
+  p 0.0039**, and L31's CI upper bound (+0.0081) lies below L8's point estimate.
+
+### ⛔ R7-1 — my pre-registered prediction FAILED, and claim (c) did not say so
+
+At 07:13 I wrote: *"I expect the full span at L8 to move ASR **more** than `d_surface` alone
+(**+0.0305**)."* The span gives **+0.0287** — **lower**. I then compared against **+0.0278**, the
+*re-judged* figure for the same generations, under which the span is higher and "adds nothing" reads
+naturally. The comparator switch is defensible (same-session judging) **and is disclosed elsewhere in
+this log** — but **claim (c) never says the pre-registered target was missed.** It is now on the
+record: *against the number I pre-registered, the superset came in below the subset.*
+
+### ⛔ R7-2 — "adds nothing" is not what the interval supports
+
+The paired contrast, per prompt, same clustering as the repo's own `paired_delta`:
+
+**span8 − d_surface8 = +0.00097, se 0.0044, CI95 [−0.0083, +0.0102]**, two-sided p 0.826;
+20,000-draw domain bootstrap [−0.0063, +0.0101].
+
+That interval admits the other two dimensions contributing anywhere from **−30% to +37% of
+`d_surface`'s own effect**. It *does* exclude "they add as much again", so the test is not vacuous.
+**Corrected wording: the other two dimensions add no more than about 0.010 — roughly a third of the
+`d_surface` effect — not "nothing".**
+
+⚠ And the gap being interpreted (0.0009) is **one third of this pipeline's pure judge-rerun noise**:
+re-judging byte-identical generations moved the L8 estimate by **0.0028** and its p by 3.5×.
+
+### ⛔ R7-3 — the ordering reverses under the other estimand, and the p-gap is one domain
+
+| | cluster-mean | pooled |
+|---|---|---|
+| span L8 | **+0.0287** | +0.0384 |
+| `d_surface` L8 | +0.0278 | **+0.0409** |
+
+`analyze_external_arms.py`'s own docstring requires both estimands be named; I reported only the one
+under which the span is larger. **Cluster-mean says span > subset; pooled says span < subset.**
+
+And the p-value ordering I bolded (0.0071 vs 0.0311) is **one 18-prompt domain**:
+`harassment_bullying_stalking` has `d_surface − base = −0.0556` against span's exactly 0.0000. Drop
+it and `d_surface` returns to p = 0.0089. **A superset looking "more significant" than its subset on
+a 0.0009 point-estimate difference is a domain artefact, and nothing about mechanism follows.**
+
+### ⛔ R7-4 — I over-withdrew (b): "depth, not direction" is a false dichotomy
+
+I wrote *"the L31 null is a property of the depth, not of the direction"* and *"it is **not** a
+within-layer representation-versus-behaviour dissociation"*. The experiment cannot license the first
+and the second withdraws more than the control earned. What the span arm actually shows is narrower:
+
+> **No direction inside this 3-D concept subspace acts at L31, while the same edit acts at L8.**
+
+A third reading fits every number and I did not consider it: **the subspace is causally disconnected
+from behaviour at L31 while remaining linearly readable there (ρ +0.164)** — which *is* a within-layer
+representation/behaviour dissociation, at **subspace** rather than single-axis granularity. To license
+"depth" one needs a direction that *does* act at L31, and that test (`unembed_refusal`, 771636/771637)
+is running now — it was submitted before this audit reported.
+
+**Corrected position:** the control kills the *direction-specific* reading of the L31 null. It does
+**not** kill the dissociation; it relocates it from one axis to the whole subspace, and whether the
+cause is depth or this subspace is **undecided until the positive control lands.**
+
+### ⛔ R7-5 — the document contradicts itself in 18 places, and one of my "corrected in place" notes is false
+
+The second audit traced every retraction through the log. **18 confirmed cases** where a withdrawn
+claim still stands unmarked at its original location while the withdrawal lives hundreds of lines
+later. Worst of them: at line 3297 the claim *"not one prompt in any arm moves down"* is still live,
+and my R4-2 entry says it was **"corrected in place"** — **it never was.** The artifact says
+`n_negative = 2` for both `remBoth` and `remS_ctrl`.
+
+This is a structural property of an 18-hour append-only log, not an accident, and rewriting history
+would destroy the record of what I believed when. **Fix applied: an inline ⛔ marker at each live
+location pointing forward to its withdrawal**, so no passage can be read as current without meeting
+its retraction. The false "corrected in place" sentence is corrected to say the correction is the
+marker.
+
+### Corrections to the audit itself
+
+`p_cl` is **two-sided** (`analyze_g8.py:66`), not one-sided as the audit labelled it. The
+"same bank sha16 everywhere" claim is wrong — the invariant is `bank_rows_sha16 = 81961bb8738a59d5`,
+identical across all five runs, while `bank_file_sha16` differs. The claimed 4.6× L8/L31 asymmetry in
+residual ablation error does not exist. And "the comparator change is never flagged" is refuted — it
+is flagged, though not where claim (c) is made.
 
 ## 4h Code and Output Review — Review #6 (2026-08-21 04:40)
 
