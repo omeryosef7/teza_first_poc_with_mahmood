@@ -5220,8 +5220,10 @@ arm moves there is generic, not doublespeak.
 
 **Roughly two thirds of the +0.3810 reproduces on prompts with no doublespeak content at all.** The
 doublespeak-attributable part is **+0.1248** — and it sits at p 0.032 on 6 domains, i.e. in exactly
-the fragile band where **R5-6 already showed D20's near-identical +0.1254 fails three of four
-robustness checks** (stratum-matched, jackknife, proportional transport). The two numbers agree to
+the fragile band where **R5-6 already showed D20's near-identical +0.1254 fails robustness**
+(stratum-matched and jackknife). ⚠ R5-6 also listed *proportional transport* as a third failure, but
+that is **markdown-only and not reproducible** — re-implemented, transport *passes*, and review #10
+showed my implementation of it **cannot fail by construction**. Two checks, not three. The two numbers agree to
 within 0.0006, which is unsurprising now that we know they are the same effect, and that agreement
 means **R5-6's downgrade transfers to arm B and should be assumed to apply until re-tested.**
 
@@ -5229,10 +5231,13 @@ means **R5-6's downgrade transfers to arm B and should be assumed to apply until
 
 1. **Answer 8's "remove-both gives +0.3476 … and the arm cannot be decomposed — no arm B exists on
    that bank"** is superseded: arm B exists, and the decomposition is *all `d_surface`*.
-2. The Llama/Qwen3 contrast is sharper than recorded. Llama's arm B on AdvBench is **+0.0305**;
-   Qwen3's on its internal bank is **+0.3810**, an order of magnitude larger. ⚠ Different banks and
-   different baselines (0.0081 vs 0.1595), so this is **not** a clean cross-model effect-size
-   comparison and must not be cited as one.
+2. The Llama/Qwen3 contrast looks large but **must not be cited as an effect-size comparison** —
+   review #10 found two defects in how I stated it. Llama's arm B on AdvBench is **+0.0305**;
+   Qwen3's on its internal bank is **+0.3810**. ⛔ **The baselines I quoted were the wrong pair:**
+   "0.0081 vs 0.1595" is *Qwen3*-AdvBench vs *Qwen3*-internal. Llama's AdvBench baseline is
+   **0.0646**. ⛔ **And the two numbers are different estimands:** +0.0305 is a *continuous
+   StrongReject* delta; +0.3810 is a *binary ASR@0.5* delta. Different models, banks, baselines
+   **and metrics** — this is a four-way mismatch, not a comparison.
 3. `d_surface` being non-harm-specific was already the sprint's conclusion on Llama (finding 2).
    **This is the strongest evidence yet for it**, and on a second model: the axis moves benign
    prompts by +0.2562.
@@ -5338,8 +5343,11 @@ the convenient way later.
 
 ## ⛔✅ ITEM 3 CLOSED AS AN EVALUATED NEGATIVE — there is no causally valid refusal direction in `d_surface`'s band
 
-**Artifact:** `doublespeak_causality/outputs/stage_gcg_full_lowlayers/` (job 772476). Same script,
-same bench (60 harmful / 20 harmless), `--layers 6,8,10`, `--validate`.
+**Artifacts:** `stage_gcg_full_lowlayers/` (job 772476, **L6/L8/L10 only** — those are the rows this
+run produced) **and** the pre-existing `stage_gcg_full/refusal_direction_llama_L{12,14,16,18,20}.json`
+(fitted 2026-07-30, git `7e6fc492`). ⚠ **Five of the eight rows below are pre-existing, not from
+772476** — review #10 caught me flagging only L12 that way and implying the new run swept all eight.
+Same script, same bench (60 harmful / 20 harmless), `--validate`.
 
 The item was written as *"fit Llama refusal directions at L6/L8/L10 — the interaction cannot be
 measured inside `d_surface`'s own band because only five refusal directions exist on disk."* That
@@ -5364,10 +5372,14 @@ started**. Not reduced, not partially — unchanged.
 ### ✅ Two independent measurements put the boundary in the same place
 
 `d_surface_layer_profile_replication.json → multiplicity_M3.refusalness_profile` has **exactly one
-non-surviving depth: L12, p 0.451**, against L14/L16/L18/L20 at p 0.00014–0.0126. That is a
-*behavioural ASR profile on the doublespeak bank*. This run is a *generation-based sign check on the
-pair benchmark* — different prompts, different outcome, different script — and it fails at exactly
-L6–L12 and passes at exactly L14–L20. **The refusal axis becomes causally live between L12 and
+non-surviving depth: L12**, against L14/L16/L18/L20. ⚠ Quoted precisely: "non-surviving" is a
+**Holm** statement (`holm_rejects = [L14_C, L16_C, L18_C, L20_C]`), while p 0.451 and the
+0.00014–0.0126 range are **raw** p's. Holm-adjusted the four survivors span 0.00070–0.0253; L12's
+raw and adjusted are both 0.451. Verdict unchanged, but the two columns should not be mixed. That is a
+*behavioural ASR profile on the doublespeak bank*. The direction-fitting validation is a *generation-based
+sign check on the pair benchmark* — different prompts, different outcome, different script — and
+across the two runs combined it fails at exactly L6–L12 and passes at exactly L14–L20. (772476
+contributed L6/L8/L10; the L12–L20 rows are the July fit.) **The refusal axis becomes causally live between L12 and
 L14 on both measurements.**
 
 ### ⛔ What I nearly claimed and the data does not support
@@ -5479,6 +5491,112 @@ check rather than assume. (The diagnostic covers 14 layers; L11 is the one used 
 **Scheduling note:** the first submission put three Qwen3-14B loads on **n-801** simultaneously,
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
+
+## 4h Code and Output Review — Review #10 (2026-08-21 20:30) — THREE PARALLEL AUDITS, AND THE WORST BUG WAS MINE FROM TODAY
+
+Three independent read-only auditors fanned out over (a) `analyze_qwen3_decomposition.py`,
+(b) `analyze_phase_d.py`'s new family bootstrap, (c) every numeric claim in the four sections
+written today. **Every load-bearing number survives. Three real defects were found, and the most
+serious was in code I wrote and shipped this afternoon.**
+
+### ⛔⛔ THE WORST ONE — my "family bootstrap" was an iid bootstrap
+
+`analyze_phase_d.py` keyed families on `family_id`. **`family_id` is a 9-part pipe-delimited *cell*
+key and is unique per prompt** — 1,800 ids for 1,800 prompts, which I verified directly. So
+`by_fam` had one prompt per family and the bootstrap resampled *prompts*, iid. **The function was
+precisely the thing it was written to correct.** The real family is the 3-part prefix
+(`domain|split|stem`): **120 families × 15 levels**, 60 in heldout, each entirely inside one domain.
+
+⛔ **And my guard could not catch it.** `len(fams) < 3` catches the *all-collapsed* failure (every
+prompt in one family). The failure that actually happened is *all-unique* — the opposite end — and
+it fails **silently**, returning a plausible SE. That is now a hard error
+(`len(fams) >= len(pids)`). **Seventh guard this sprint that could not fail in the direction that
+mattered.**
+
+⚠ **But the auditor's predicted consequence does NOT reproduce, and I checked before repeating it.**
+It projected the correct SE at **~0.0484**, 1.73× wider, from an ICC of 0.354 and a simulation.
+Measured on the real data after the fix: **0.0277**, against the iid 0.0286 — essentially unchanged,
+and slightly *smaller*. The family layer is strongly present in the metric and **does not propagate
+to the rank-correlation estimand**. The bug was real, the fix is right, the alarming number was not.
+Heldout CI moves [+0.2381, +0.3517] → [+0.2430, +0.3512]; **the conclusion is untouched.**
+
+Three further bootstrap defects fixed at the same time:
+- **`one_sided_p_le_zero` was sign-blind.** It reported **1.0** for `d_inter` — "no evidence" for the
+  *strongest* effect in the table, whose mean rho is −0.27 with every replicate negative. Now
+  sign-aware and renamed: it is CI-inversion evidence, **not a p-value** (the bootstrap is centred
+  on the estimate, not the null).
+- **All 8 bootstraps used identical draws** (`random.Random(seed)` re-seeded per call with the same
+  seed). Now varied per direction×outcome — via `zlib.crc32`, not `hash()`, because string `hash()`
+  is per-process randomised and would have destroyed reproducibility. (I wrote the `hash()` version
+  first and caught it before running.)
+- The bootstrap **holds domains fixed** while the clustered SE prices *between*-domain heterogeneity.
+  These are different variance components; the artifact now says so rather than inviting the
+  comparison.
+
+### ⛔ A SIXTH GUARD INCAPABLE OF FAILING — and this one I published
+
+My "proportional transport" robustness check uses k = (1−base_ds)/(1−base_bl). On this bank
+base_ds (0.1595) ≫ base_bl (0.0031), so **k < 1 always**, and every arm has Δ_bl > 0. Therefore
+`excess − k·Δ_bl ≥ excess` — **the check can only ever raise the excess and lower its p.** It is
+arithmetically incapable of downgrading anything, and I presented it in a table as one of R5-6's
+robustness checks.
+
+The transport is *mathematically the right correction* for unequal ceiling headroom (the auditor
+could construct no coherent case for the reciprocal), and I had already written that I would not
+cite it as rehabilitating the number. **That is not enough** — it was still tabulated as a check.
+It is now stamped `CANNOT_DOWNGRADE` in the artifact and demoted to a sensitivity direction. Also
+noted: k is estimated from the same data and treated as known, so its p is anticonservative.
+
+**Consequence for R5-6:** its "fails three of four checks" is really **two** — stratum-matched and
+jackknife. The transport failure is markdown-only and does not reproduce.
+
+### ⛔ Provenance defects in the artifact I just committed
+
+1. **`session_matching` recorded the tag prefix, not the session.** The artifact read *"all arms
+   from judging session `'q3dec_'`"* — while the thing that actually pins the batch, `--session
+   20260821_182849`, appeared nowhere. The one property the script exists to enforce (R6-6) was
+   unverifiable from its own output. Fixed; `judging_session` and `expect_rows_per_arm` are now
+   recorded.
+2. **No shard-count guard.** `load_shards` raised only on an *empty* glob. All 12 judge runs stamped
+   the same second by luck; had they straddled a second boundary the glob would have matched a
+   subset, **every arm would have lost the same rows, the prompt-id set-equality guard would still
+   have passed, and every published number would have come from half the bank silently.** This is
+   the review-#6 half-run failure in its third costume. Now requires ≥2 shards with distinct
+   offsets.
+3. `loo = {d: v for d, v in loo.items() if v}` could not filter anything, so `loo_n_domains_tested`
+   was the constant 6 dressed as a check. Removed.
+
+### ✅ What the audits confirmed
+
+- **The decomposition is arithmetically sound.** The interaction contrast (D−S)−(B−S)−(C−S) = D−B−C+S
+  is the correct 2×2 form, and 0.3476190 − 0.3809524 − 0.0261905 = −0.0595238 reproduces the
+  published value exactly.
+- **The stratum matching is genuinely matched** — independently reconstructed from the bank
+  *generator* rather than trusting my comment: doublespeak 72+180+72+48+36+12 = 420, benign
+  72+180+72 = 324. Restricting the benign side is a true no-op. ⚠ Flagged as silently dependent on
+  the **pinned** bank: with the 2736-row bank, `core2x2_slot3` contains `benign_literal` and is not
+  in `MATCHED_BLOCKS`, so the benign side would start losing rows.
+- **Both LOO counts recounted independently** — B11 2 of 6, D20 5 of 6. Both match.
+- **All 8 load-bearing claims CONFIRM**, including all 24 cells of the item-3 layer table and the
+  L12→L14 = +0.2123 largest-gap claim (all seven gaps recomputed).
+- **The five unjudged Phase F arms are legitimately excluded**, each with a documented gate failure
+  or retraction.
+
+### Five wording errors in today's write-ups, all corrected above
+
+Wrong baseline pair (Llama's AdvBench baseline is 0.0646, not the 0.0081 I quoted — that is Qwen3's);
+an **estimand splice** in the same sentence (+0.0305 is continuous StrongReject, +0.3810 is binary
+ASR); "three of four robustness checks" (two); the item-3 table implying job 772476 swept all eight
+layers when it ran three; and raw p's quoted under a Holm survival claim.
+
+### The pattern, tenth review running
+
+Of the three defects that mattered, **two were guards that could not fail** and one was a
+**provenance field that recorded the wrong variable**. Not one was a wrong formula. The arithmetic
+in this sprint has been reliable throughout; what fails, repeatedly, is *the machinery that is
+supposed to catch arithmetic being wrong*. Seven dead guards now. The angle sweep, the half-run
+loader, the all-unique family key and the sign-blind bootstrap evidence are all the same error:
+**a check that is only tested against the failure mode its author already imagined.**
 
 ## 4h Code and Output Review — Review #9 (2026-08-21 15:20) — THE FINAL REPORT AUDITED LINE BY LINE
 
@@ -7204,11 +7322,16 @@ Three things bound it:
 - the within-level SEs are **~11% too small** (the 15 levels share all 120 families, R5-4); the
   family bootstrap is **now in the artifact** (`clean_fig9_correlation.json →
   HELDOUT_family_bootstrap`, added in review #9 to close F2) and **the effect survives:
-  0 of 2,000 replicates ≤ 0**, percentile CI [+0.2381, +0.3517]. ⚠ **The SE does not reproduce as
-  published**: the committed resample gives **0.0286**, not the markdown-only 0.0333 (itself a
-  correction of a markdown-only 0.0343). It is also *smaller* than the domain-clustered 0.0354,
-  i.e. resampling families does **not** widen this particular estimand — R5-4's ~11% understatement
-  is about the **within-level** SEs, a different quantity, and must not be read as applying here;
+  0 of 2,000 replicates cross zero**, percentile CI [+0.2430, +0.3512], SE **0.0277** over the
+  **60** heldout families. ⛔ **The first version of this bootstrap was wrong and is corrected**
+  (review #10): `family_id` is a 9-part cell key that is **unique per prompt**, so resampling it
+  was an *iid prompt* bootstrap — precisely the thing the bootstrap existed to avoid. The real
+  family is its 3-part prefix (120 families × 15 levels). ⚠ **The correction barely moved the
+  number** (0.0286 → 0.0277), so the family layer adds almost no variance to *this* estimand even
+  though it is strongly present in the metric. The SE remains *smaller* than the domain-clustered
+  0.0354, but the two price **different variance components** (this one holds domains fixed) and
+  neither is a corrected version of the other; R5-4's ~11% understatement is about the
+  **within-level** SEs, a third quantity again;
 - ⛔ **`d_inter` and random orthogonal axes in the same subspace do it as well or better**, which
   is what fails the gate. (`d_naive` did too, but it is `d_surface + d_context` exactly — R6-2 —
   so it is not independent evidence and is struck from this list.)
