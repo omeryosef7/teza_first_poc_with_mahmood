@@ -4331,6 +4331,74 @@ subspace-matched controls at ≥3 seeds per depth and report a band, with the co
 per draw — since the peer's result shows a draw can fail that gate for a reason that has nothing to
 do with degeneracy.
 
+
+## ✅✅✅ THE POSITIVE CONTROL FIRES AT L31 — a DOUBLE DISSOCIATION, and the withdrawn claim is restored in corrected form
+
+**Artifacts:** `score_behavior/unemb{8,31}_*` (495 generations each, 0 failures), judged in four
+shards at `null_frac 0.0000`, paired against the same 2026-08-21 baseline as everything else.
+
+`unembed_refusal` is the difference of the unembedding rows for a refusal opener and a compliance
+opener (`'I'` − `'Sure'`, ids 40/40914, unit norm) — a direction with **guaranteed output relevance
+by construction**. It was submitted to answer one question: *can anything at all move behaviour from
+L31?*
+
+| arm | Δ StrongReject | se | p_cl |
+|---|---|---|---|
+| **L31 — `unembed_refusal`** | **+0.1031** | 0.0214 | **0.0002** |
+| L31 — full 3-D concept subspace | −0.0108 | 0.0089 | 0.242 |
+| L31 — `d_surface` | −0.0041 | 0.0035 | 0.255 |
+| **L8 — `unembed_refusal`** | **−0.0082** | 0.0092 | **0.389** |
+| L8 — full 3-D concept subspace | +0.0287 | 0.0092 | 0.0071 |
+| L8 — `d_surface` | +0.0278 | 0.0117 | 0.0311 |
+
+### ⛔ L31 is NOT architecturally dead — and this restores what I withdrew at 08:15
+
+**A rank-1 projection at L31 moves ASR by +0.103, p = 0.0002** — the second-largest single-direction
+effect anywhere in this sprint, behind only refusalness at L18. So the "late ablation is
+architecturally weak" explanation, which I accepted at 08:15 and used to weaken the central claim,
+**is refuted by direct test.**
+
+Review #7's R7-4 said I had over-withdrawn and that a third reading fitted every number. It was
+right, and the reading is now established rather than merely possible:
+
+> **The 2×2 concept subspace is causally disconnected from behaviour at L31 while remaining linearly
+> readable there** — ρ = +0.164 for a metric read off it, against −0.0108 (p 0.24) for ablating the
+> whole thing, at a layer where a different rank-1 edit moves ASR by +0.103.
+
+That is a **within-layer representation/behaviour dissociation**, at subspace rather than single-axis
+granularity. ⛔ **My 08:15 sentence "the L31 null is a property of the depth, not of the direction" is
+withdrawn in the opposite direction from how I first corrected it**: it is a property of *this
+subspace*, and depth is now excluded by measurement.
+
+### ✅ And it is a DOUBLE dissociation, which is stronger than what the sprint set out to show
+
+The two directions have **opposite depth profiles**, each measured on the same 495 prompts against
+the same baseline:
+
+| | at **L8** | at **L31** |
+|---|---|---|
+| `d_surface` (and its whole subspace) | **+0.0278 / +0.0287, p ≤ 0.031** | −0.0041 / −0.0108, p ≥ 0.24 |
+| `unembed_refusal` | −0.0082, p 0.39 | **+0.1031, p 0.0002** |
+
+Each direction is potent exactly where the other is inert. **No single architectural depth gradient
+can produce that pattern**, which is precisely what a one-sided null could never establish and what
+the anti-alignment curve on its own could not distinguish.
+
+### Stated no more strongly than it should be
+
+⚠ **`unembed_refusal` is a positive control, not a discovered mechanism.** It was *built* to be
+output-relevant, so its late potency is partly by design — the finding is not "this direction matters"
+but "**a** direction can matter at L31, therefore the subspace's null there is informative". Its own
+L8 null is the interesting half and was not designed in.
+
+⚠ Single draw per cell; one model; one bank; one readout position; judged in one session (which is
+what makes these six numbers directly comparable). The concept-subspace L31 null inherits the n=1
+control-draw limitation recorded earlier.
+
+⚠ This does **not** rescue Gate D. Requirement 4 still fails: an orthogonal axis in the concept
+subspace *predicts* at 83–106% of `d_surface`. Readability is distributed across the subspace;
+causal efficacy is concentrated on one axis of it **and only in L6–L12**.
+
 ## ⛔ THE CONTROL FIRED — the L31 null is NOT direction-specific, and the central claim is WEAKENED as promised
 
 **Artifacts:** `score_behavior/span{8,31}_*` (495 generations each, 0 failures, three composed hooks
@@ -6169,10 +6237,13 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
    privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
    seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
-   ⛔ The depth anti-alignment (Spearman −0.850) is a **description, not a mechanism**: the whole
-   subspace is equally inert at L31, so that null is **not specific to `d_surface`**. Whether it is a
-   property of the depth or of this subspace is **undecided** — the `unembed_refusal` positive
-   control at L31 is judging as this is written.
+   ⛔ The depth anti-alignment (Spearman −0.850) is not by itself a mechanism — the whole subspace is
+   equally inert at L31, so that null is **not specific to `d_surface`**. ✅ **But it IS a
+   within-layer dissociation at subspace granularity, now established by a positive control:** at
+   L31 `unembed_refusal` moves ASR **+0.1031 (p 0.0002)** while the entire concept subspace moves
+   −0.0108 (p 0.24) and is readable at ρ +0.164. And the two directions **double-dissociate** —
+   `unembed_refusal` is null at L8 (−0.0082, p 0.39) where `d_surface` acts, so no single
+   architectural depth gradient can explain the pattern.
 
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
