@@ -4100,3 +4100,48 @@ Recorded as a partial fix with the number attached, rather than as a cleared ite
 | 93 | 2026-08-21 | added `common.population_block()` with a `goal_semantics` discriminator | the field that would have caught two of three defects |
 | 94 | 2026-08-21 | wired it into the scripts I own; regenerated their artifacts | `section14` now states its population **per model** |
 | 95 | 2026-08-21 | re-ran the index | **48 → 46** unlabelled; the rest are not mine to invent provenance for |
+
+## ★★★ The headline is real compliance, not longer text — and the objection was nearly fatal
+
+Tick 2026-08-21. R-20 retracted arm F because plain ASR tracked completion length. The honest
+follow-through is to point that same test at the claim I had just *strengthened*, not only at the one
+I wanted to kill. It very nearly took it out.
+
+**Step 1 — the objection reproduces, and worse, on the headline's own population.** Across **33
+AdvBench arms**, corr(mean length, plain ASR) = **+0.9992** (bank: +0.984 across 8 arms). The L12 arm
+writes 30% more than its control and scores 56% higher.
+
+**Step 2 — the naive stratification looks damning.** The entire effect sits on the 110/495 prompts
+where the arm wrote more (**+0.1545**), and is **+0.0026** on the other 385. Read alone, that is a
+retraction.
+
+**Step 3 — but stratifying on length is the wrong test, and stopping at step 2 would have been a
+serious error.** Compliance is *necessarily* longer than refusal, so length is a plausible
+**mediator**. Conditioning on a post-treatment variable destroys real effects exactly as readily as it
+exposes fake ones. The correct discriminator is the **refusal transition**, which length cannot fake:
+
+| subset | n | Δ ASR | CI95 | net extra successes |
+|---|---|---|---|---|
+| **both arms still REFUSED** (incl. 79 *longer* refusals) | **443** | **+0.0000** | [+0.0000, +0.0000] | **+0** |
+| **baseline REFUSED → arm COMPLIED** | 18 | **+0.9444** | [+0.7692, +1.0000] | **+17** |
+| neither refused | 34 | +0.0294 | — | +1 |
+| ALL | 495 | +0.0364 | [+0.0202, +0.0533] | +18 |
+
+**Longer refusals contribute exactly zero.** On 443 prompts the model refuses in both arms —
+including 79 where the intervened completion is longer, median **33 → 127 chars** — and the delta is
+**0.0000 with a zero-width interval**. The judge does not reward length when the content is a refusal.
+The whole effect is **17 of 18 genuine refusal→compliance flips**.
+
+So **+0.9992 is the mechanism's signature, not its explanation**: arms that produce more compliance
+produce more text, and the causal direction is compliance → length.
+
+**Why this mattered more than a confirmation.** The same instrument that killed arm F was pointed at
+the surviving headline and could have killed it too — step 2 is exactly what a retraction looks like.
+What saved it was not arguing from plausibility but finding a discriminator the confound cannot
+imitate. A confound test that only ever fires on results you already doubt is not a test.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 96 | 2026-08-21 | pointed R-20's length test at the surviving headline | **+0.9992** across 33 AdvBench arms — objection reproduces |
+| 97 | 2026-08-21 | naive length stratification | effect entirely on the longer 110/495 (+0.1545 vs +0.0026) — looked fatal |
+| 98 | 2026-08-21 | decomposed by refusal transition instead (`effect_decomposition.py`) | **longer refusals contribute +0.0000**; effect is 17 real compliance flips |

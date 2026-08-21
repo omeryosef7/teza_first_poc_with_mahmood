@@ -2114,6 +2114,38 @@ see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `con
 underpowered by an order of magnitude and confounded on three variables at once. Making them usable
 is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
+### ✅ Is the headline just longer text? No — decomposed by refusal transition (added 2026-08-21)
+
+**The objection is serious and it applies here.** Across **33 AdvBench arms**,
+corr(mean completion length, plain ASR) = **+0.9992** (on the sprint bank, across 8 Llama arms, it is
++0.984). Plain ASR is very nearly a **length meter** on both populations — and that observation is
+what retracted arm F (R-20). The headline had to face the same test.
+
+**Stratifying by length is not the test.** Compliance is *necessarily* longer than refusal, so length
+is a plausible **mediator**; conditioning on a post-treatment variable destroys real effects as
+readily as it exposes fake ones. Indeed the naive stratification looks damning: the entire effect
+sits on the 110/495 prompts where the arm wrote more (+0.1545) and is +0.0026 on the other 385.
+
+**The discriminator is the refusal transition, which length cannot fake**
+(`effect_decomposition.py`, `outputs/boombness/headline_effect_decomposition.json`; L12 vs baseline,
+domain-clustered, G=16):
+
+| subset | n | Δ ASR | CI95 | net extra successes |
+|---|---|---|---|---|
+| **both arms still REFUSED** (incl. 79 *longer* refusals) | **443** | **+0.0000** | [+0.0000, +0.0000] | **+0** |
+| **baseline REFUSED → arm COMPLIED** | 18 | **+0.9444** | [+0.7692, +1.0000] | **+17** |
+| neither refused | 34 | +0.0294 | [+0.0000, +0.1765] | +1 |
+| ALL | 495 | +0.0364 | [+0.0202, +0.0533] | +18 |
+
+**Longer refusals contribute exactly zero.** On 443 prompts the model still refuses in both arms —
+including 79 where the intervened completion is *longer* (median 33 → 127 chars) — and the ASR delta
+is **0.0000 with a zero-width interval**. The judge does not reward length when the content is a
+refusal. The entire effect is **17 of 18 genuine refusal→compliance flips**.
+
+So the +0.9992 across-arm correlation is the **mechanism's signature, not its explanation**: arms that
+produce more compliance produce more text. The causal direction is compliance → length, and the
+within-prompt decomposition is what establishes it.
+
 ### ⚠ The judge test–retest floor beneath every ASR number here (added 2026-08-21)
 
 Two judge runs of the **same** baseline exist. Comparing them on identical prompts
