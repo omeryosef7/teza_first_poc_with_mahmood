@@ -4337,6 +4337,56 @@ do with degeneracy.
 
 
 
+
+## ✅⛔ ALL FOUR DEPTHS SWEPT EXHAUSTIVELY — the claim holds at L10/L12, is suggestive at L8, and FAILS at L6
+
+**Artifacts:** `angle_sweep_L6_L10.json`, `angle_sweep_L8.json`, `angle_sweep_L12.json`.
+**16 control runs** (4 angles × 4 depths), 495 generations each, 0 failures, all judged in the same
+2026-08-21 session as the arms and baseline, every direction verified orthogonal at run time.
+
+| depth | ARM | p | **worst-case arm − control** | p | contrasts sig. | largest control effect | min p |
+|---|---|---|---|---|---|---|---|
+| **L6** | +0.0157 | 0.057 | **+0.0039** | **0.242** | **2 / 4** | 0.0118 | 0.135 |
+| L8 | +0.0278 | 0.031 | +0.0183 | 0.073 | 3 / 4 | 0.0129 | 0.113 |
+| **L10** | +0.0211 | 0.026 | **+0.0236** | **0.018** | **4 / 4** | 0.0123 | 0.207 |
+| **L12** | +0.0316 | 0.0059 | **+0.0195** | **0.0043** | **4 / 4** | 0.0120 | 0.134 |
+
+### ✅ The strong half, and it is now exhaustive at every depth
+
+**Not one of the sixteen orthogonal directions moves ASR.** Largest effect anywhere: |Δ| = 0.0129;
+smallest p across all sixteen: 0.113. Since each sweep covers the whole 2-D complement and projection
+is sign-invariant, **there is no orthogonal direction left to try at any of the four depths.**
+
+> **No direction orthogonal to `d_surface` inside the 2×2 concept subspace moves behaviour, at L6,
+> L8, L10 or L12 — established as a bound, not a sample.**
+
+### ⛔ The weak half: the *margin* claim does not hold uniformly, and L6 fails outright
+
+The single-draw Holm table reported **all four depths surviving** (L12 0.0136, L8 0.0276,
+L6/L10 0.0347). Swept exhaustively:
+
+- **L10 and L12 hold** — the arm beats **every** orthogonal direction, worst case p 0.018 / 0.0043.
+- **L8 is suggestive** — 3 of 4, worst case p 0.073.
+- ⛔ **L6 FAILS.** At its hardest angle the arm-minus-control contrast is **+0.0039, p 0.242** — the
+  arm is *indistinguishable* from a control there — and only 2 of 4 contrasts reach 0.05. L6's arm
+  was already the weakest (p 0.057). **Its place in the Holm table was an artifact of a weak draw.**
+
+### The lesson this sprint keeps re-learning, now quantified
+
+Three of the four published draws sat near the **weak** end of their complement — but that did **not**
+determine the outcome: **L10's draw was also near-min (5.88% of a 5.70–13.15% range) and L10 still
+passes 4/4.** So a weak draw does not doom a depth and a strong draw does not save one; **only the
+sweep tells you which**. The single-draw design was not biased, it was *uninformative about its own
+uncertainty* — and at L6 that uncertainty spanned the whole conclusion.
+
+### The corrected causal claim, final form
+
+> **`d_surface` is the acting axis of the concept subspace at L10 and L12**, established against an
+> exhaustive sweep of its orthogonal complement (worst case p 0.018 and 0.0043). **At L8 the evidence
+> is suggestive** (3/4, worst case p 0.073). **At L6 it is not established.** And at all four depths,
+> **no orthogonal direction in that subspace does anything at all** — the sixteen-control bound is the
+> most robust single result the sprint has.
+
 ### ⚠ Where every published single draw actually sat — and a suspicion I checked and cleared
 
 With all four complements swept, each published draw can be placed in the range of what was available
@@ -6441,12 +6491,12 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    L12 +0.0364; adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**) — session-matched, deterministic
    basis. And ablating the **entire** 3-D subspace at L8 (+0.0287) adds **no more than about a third
    of** `d_surface`'s own effect (+0.0278; paired contrast +0.00097, CI [−0.0083, +0.0102]).
-   ✅ **Two depths are now swept EXHAUSTIVELY over the 2-D orthogonal complement — a bound, not a
-   sample.** At **L12** (the profile peak) the arm beats **every** orthogonal direction, worst case
-   **+0.0195 at p 0.0043**. At **L8** it beats 3 of 4, worst case **+0.0183 at p 0.073** — its
-   published single draw happened to be the *weakest* direction available (4.5506%), which is why the
-   single-draw number looked stronger. All eight controls are individually null. ⚠ L6 and L10 remain
-   **single-draw and unswept**.
+   ✅ **All four depths are now swept EXHAUSTIVELY over the 2-D orthogonal complement — a bound, not
+   a sample. Not one of the sixteen orthogonal directions moves ASR** (largest |Δ| 0.0129, smallest
+   p 0.113). ⛔ **But the margin claim does not hold uniformly, and the single-draw Holm table
+   over-stated it:** the arm beats **every** orthogonal direction at **L12** (worst case p 0.0043)
+   and **L10** (p 0.018), **3 of 4** at L8 (worst case p 0.073), and **only 2 of 4 at L6, where the
+   worst case is +0.0039 at p 0.242 — not established.**
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
    privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
    seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
