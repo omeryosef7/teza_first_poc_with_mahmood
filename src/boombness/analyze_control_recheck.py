@@ -164,6 +164,24 @@ def main() -> None:
                 "vs_subspace_matched": paired_diff(base, arm, sub, field)}
         out["layers"][f"L{L}"] = entry
 
+    # MULTIPLICITY over the depths tested. The arm-minus-control contrast is the specificity test,
+    # and it is run once per depth, so the family is the depth set -- exactly the correction this
+    # sprint applied to the layer profile itself (where Holm rejected nothing at m=11). Reporting
+    # four individually-significant contrasts without it would be the defect the sprint keeps
+    # catching in its own inherited results.
+    for field in (SCORE, FLAG):
+        ps = {k: e["arm_minus_control"][field]["vs_subspace_matched"].get("p_cl")
+              for k, e in out["layers"].items()}
+        items = sorted(((k, v) for k, v in ps.items() if v is not None), key=lambda kv: kv[1])
+        m, adj, run = len(items), {}, 0.0
+        for i, (k, v) in enumerate(items):
+            run = max(run, min(1.0, (m - i) * v))
+            adj[k] = run
+        out.setdefault("multiplicity_arm_minus_subspace_control", {})[field] = {
+            "family": "one specificity contrast per depth tested",
+            "m": m, "raw": dict(items), "holm_adjusted": adj,
+            "holm_rejects_at_0.05": sorted(k for k, v in adj.items() if v <= 0.05)}
+
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w") as fh:
         json.dump(out, fh, indent=2)
@@ -180,6 +198,11 @@ def main() -> None:
               f"{f(i['delta_cluster_mean']):>10} {g(i['p_cl']):>7} "
               f"{f(s['delta_cluster_mean']):>14} {g(s['p_cl']):>7} "
               f"{f(dm['delta_cluster_mean']):>9} {g(dm['p_cl']):>8}")
+    h = out["multiplicity_arm_minus_subspace_control"][SCORE]
+    print(f"\n  Holm over the {h['m']} specificity contrasts: "
+          f"rejects {h['holm_rejects_at_0.05'] or 'NOTHING'} at 0.05")
+    print("  adjusted: " + ", ".join(f"{k} {v:.4f}" for k, v in sorted(h["holm_adjusted"].items(),
+                                                                      key=lambda kv: kv[1])))
 
 
 if __name__ == "__main__":

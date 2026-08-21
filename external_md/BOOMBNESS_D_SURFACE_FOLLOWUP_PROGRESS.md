@@ -5240,6 +5240,60 @@ depths both survive a control that could have falsified them. **If L12's control
 profile's peak is not about `d_surface`** — and since Gate D already showed `d_naive` and `d_context`
 predict as well at the prompt level, that would make the direction non-specific at *both* grains.
 
+
+## ✅ THE LAYER PROFILE RE-CHECKED — `d_surface` is causally specific at all four depths, and only L8 survives Holm
+
+**Artifact:** `outputs/boombness_followup/control_recheck_subspace.json`.
+**Producer:** `src/boombness/analyze_control_recheck.py`. AdvBench heldout 495, one baseline, four
+depths, paired per prompt, domain-clustered (G = 16).
+
+The isotropic controls the committed profile used cannot fail (R5-7). These are the same four depths
+re-tested against `in_subspace_orth` — same layer, same operation, same α, drawn inside the concept
+subspace and **exactly orthogonal to `d_surface`**.
+
+| layer | **ARM** | p_cl | isotropic ctrl | p | **subspace ctrl** | p | **arm − subspace** | p |
+|---|---|---|---|---|---|---|---|---|
+| L6 | +0.0159 | 0.057 | −0.0033 | 0.75 | +0.0065 | 0.41 | **+0.0094** | 0.035 |
+| **L8** | **+0.0305** | **0.009** | −0.0062 | 0.54 | **−0.0033** | 0.15 | **+0.0339** | **0.010** |
+| L10 | +0.0223 | 0.019 | +0.0047 | 0.25 | −0.0057 | 0.57 | **+0.0280** | 0.038 |
+| **L12** | **+0.0322** | **0.006** | −0.0003 | 0.42 | **+0.0103** | **0.062** | **+0.0219** | 0.021 |
+
+### What survives
+
+**The specificity contrast is positive and individually significant at every depth** — the arm
+exceeds a control that ablates a *different* direction in the same subspace, at the same layer, by
++0.0094 to +0.0339. That is the direction-specificity test the isotropic controls were never able to
+perform, and `d_surface` passes it four times out of four.
+
+**⛔ But only L8 survives Holm over the four depths** (adjusted: L8 **0.0413**, L12 0.0638, L6 0.0705,
+L10 0.0705). The family is the depth set, because the contrast is run once per depth — the same
+correction this sprint applied to the layer profile itself, where Holm rejected nothing at m = 11.
+Reporting four individually-significant contrasts without it would be exactly the defect this sprint
+keeps catching in inherited results. **So: one depth establishes causal direction-specificity;
+the other three are consistent with it and do not independently establish it.**
+
+### ⚠ And the closest a control has come to firing in this whole sprint is at the profile's peak
+
+At **L12** the subspace-matched control is **+0.0103, p = 0.062** — 32% of the arm's +0.0322. It does
+not cross 0.05 and it would not survive any correction, so it is **not** a positive result. But it is
+the only control in the sprint that has come near, and it sits at the profile's largest effect and one
+of the two depths BH keeps. Stated plainly rather than rounded to "inert": *at L12, ablating a
+different concept-subspace direction produces about a third of the arm's effect, at p = 0.062.*
+
+### What this does and does not change
+
+**Changes:** the committed layer profile's inertness claims at L6/L8/L10/L12 are no longer resting on
+a control that cannot fail. At L8 the specificity is established with correction; at the other three
+it is supported without correction.
+
+**Does not change:** ⛔ Gate D still fails — `d_naive` and `d_context` predict ASR as well as
+`d_surface` at the *prompt* level, and that is a correlational fact untouched by any causal control.
+**The two grains disagree, and that disagreement is now the sharpest open question in the project:**
+`d_surface` is causally specific at L8 and correlationally non-specific at the prompt level. ⛔ And
+the refusalness profile, Phase F's composed arms and the Qwen3 double-random control are all still
+isotropic-controlled and still untested — measured earlier tonight to need a *different* basis, since
+refusalness lies only 0.65–2.72% inside the cell-mean span.
+
 ## Sprint Final Report
 
 **Rewritten 2026-08-21 01:30.** The previous version was written mid-sprint while the queue was
