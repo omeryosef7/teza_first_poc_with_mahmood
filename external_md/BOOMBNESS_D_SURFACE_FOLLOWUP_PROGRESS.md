@@ -5056,6 +5056,54 @@ reported.
 
 
 
+## ✅✅ F-3 IS RUNNABLE — magnitude-matched controls are CLEAN, and the "asymmetry" is refuted
+
+The relaunched controls, dosed in **gap units** (α = the gap fraction) rather than in refusal-norm
+units, are **both gate-clean**:
+
+| arm | effective magnitude | uniq | 3-gram | truncated | scorable | gate |
+|---|---|---|---|---|---|---|
+| refusalness add | **7.326731** | 0.940 | 0.004 | 0.01 | 0.865 | ✅ |
+| **random add (matched)** | **7.396252** | **0.909** | **0.015** | **0.07** | **0.925** | ✅ |
+| refusalness add | **10.990097** | 0.750 | 0.187 | 0.10 | 0.863 | ✅ |
+| **random add (matched)** | **11.094378** | **0.731** | **0.079** | **0.18** | **0.974** | ✅ |
+
+⛔ **The coherence asymmetry I nearly published is REFUTED by its own control.** At matched
+magnitude the random direction is entirely coherent (uniq 0.909 against the refusalness arm's
+0.940). The earlier catastrophe — uniq 0.066, top-word 0.952, 100% truncated — was **100% the
+14.65× overdose** and carried no information about random directions at all.
+
+### ✅ The new diagnostic earned its place within one run
+
+`_report_add_magnitude` printed:
+
+> `[score] ADD DOSE random L18: alpha=0.5 x unit=14.792503 -> EFFECTIVE MAGNITUDE 7.396252`
+
+**and immediately corrected me again.** I had inferred the gap unit as **14.653462** from the log's
+tick-17 note (1/0.068243); the payload's actual value is **14.792503**. So my "matched" controls sit
+at 7.396 and 11.094 against the arms' 7.327 and 10.990 — **matched to 0.95%, not exactly.** For a
+coherence comparison that is immaterial (against the 1,365% error it replaces), but it is a real
+residual mismatch and the numbers reported are the *measured magnitudes*, never the alphas. Had I
+kept inferring the constant instead of printing it, I would have published "exactly matched" and
+been wrong twice in the same experiment.
+
+### 🔬 Judging launched — five arms, one session (773308)
+
+`base`, `refusalness@7.33`, `random@7.40`, `refusalness@10.99`, `random@11.09` — all 495 rows,
+verified before any judge call. The second pair is a **replication with a known handicap** (the
+α 10.99 arm's uniq is 0.750 vs 0.940), not an equal second sample.
+
+⚠ **Pre-registered, before the judges return:**
+- **Arm suppresses ASR, matched control does not** ⇒ F-3's retracted specificity claim is re-earned
+  honestly, at a dose that is both meaningful (half a diff-of-means) and coherent.
+- **Both suppress** ⇒ the suppression is a magnitude effect, not a refusalness effect, and F-3 stays
+  retracted — this is the outcome the isotropic-control critique (R5-7) predicts is possible and
+  which no previous run could distinguish.
+- **Neither moves** ⇒ additive steering does not reach ASR at any coherent dose, closing plan §8's
+  add-arms as a measured negative.
+- ⚠ AdvBench baseline refusal is **93.1%**, so the *downward* dynamic range is small; a null must be
+  read against that ceiling, not as evidence of no effect.
+
 ## ⛔⛔ I REPRODUCED F-3's OWN DEFECT WHILE BUILDING F-3's REPLACEMENT — a 14.65× overdose from an identical-looking flag
 
 The dose-matched random control came back **catastrophically degenerate**: `uniq 0.066`,
