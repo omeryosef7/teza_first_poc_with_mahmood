@@ -24,7 +24,10 @@ conda activate poc_stage2
 if [ -f "$PROJECT_DIR/.env" ]; then set -a; source "$PROJECT_DIR/.env"; set +a; fi
 export PYTHONUNBUFFERED=1
 export PYTHONPATH="$PROJECT_DIR/src/boombness:${PYTHONPATH:-}"
+# Provenance: batch nodes have no git binary (review #10), so the commit is exported from the
+# submitting host by the caller. Recorded as unavailable rather than crashing if absent.
 echo "=== analysis ==="; date; hostname
+echo "git_commit(env)=${BOOMB_GIT_COMMIT:-UNSET}"
 if [ ! -f "$ANALYSIS_ARGS_FILE" ]; then echo "ERROR argsfile not found: $ANALYSIS_ARGS_FILE"; exit 1; fi
 ARGS="$(cat "$ANALYSIS_ARGS_FILE")"
 echo "args: $ARGS"

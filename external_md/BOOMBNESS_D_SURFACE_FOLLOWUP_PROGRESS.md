@@ -5056,6 +5056,70 @@ reported.
 
 
 
+## ⛔ DOSE SWEEP, FIRST TWO POINTS — and the reason there is no usable dose is a CEILING, not degeneracy
+
+**Artifact:** `/tmp` gate output reproduced below; runs
+`fuF_addR_g08_20260821_201111_4162011` (α 1.831683 = **1/8 gap**) and
+`fuF_addR_g04_20260821_201346_3034028` (α 3.663366 = **1/4 gap**), 495 rows each, 0 failures.
+The 1/2 and 3/4 points sat **55 minutes** in `ReqNodeNotAvail`/`Resources` and were resubmitted on a
+wider nodelist (773017 / 773018) per the house 30-minute rule.
+
+### Both new doses fail the coherence gate — but in a different MODE from the gap dose
+
+| arm | scorable | uniq | trigram | truncated | mode |
+|---|---|---|---|---|---|
+| α 1.83 (1/8) | **0.420** ⛔ | 0.874 | 0.006 | 0.03 | short outputs, healthy lexical stats |
+| α 3.66 (1/4) | **0.465** ⛔ | 0.903 | 0.005 | 0.02 | short outputs, healthy lexical stats |
+| α 14.65 (1/1) | 0.996 | **0.237** ⛔ | **0.704** ⛔ | 0.54 | long repetitive collapse |
+
+The two new points are the repo's **"refusal-induced floor"** signature, not the "truly broken"
+signature — healthy uniq/trigram, just short. The gap dose is the opposite: long, repetitive,
+half-truncated.
+
+### ⛔ And then the base rate killed my first reading of it
+
+Measuring refusal-prefix rate and length (scalars only; no generation text printed), I first read
+this as *"the intervention works — it drives refusal to 96–97%."* **That is an R5-8 error and the
+baseline refutes it:**
+
+| arm | mean words | median | short (<8 w) | **refusal-prefix rate** |
+|---|---|---|---|---|
+| **baseline, no intervention** | 37.4 | 14 | **0.459** | **0.931** |
+| α 1.83 (1/8 gap) | 27.6 | 6 | 0.580 | 0.958 |
+| α 3.66 (1/4 gap) | 23.2 | 6 | 0.535 | 0.974 |
+| α 14.65 (gap) | 287.1 | 419 | 0.004 | 1.000 |
+
+**The AdvBench baseline already refuses 93.1% of the time and is already 45.9% short-output.** The
+two doses add **+2.7 and +4.3 points** on top of that — a real nudge in the right direction, and
+nowhere near "the intervention works spectacularly". I nearly published the 96–97% without its
+base rate, which is precisely the mistake R5-8 recorded five reviews ago.
+
+### ✅ The conclusion, and it is better than "it degenerates"
+
+**There is no usable dose, and the reason is a CEILING, not degeneracy.** Below the gate threshold
+the arm has almost nowhere to move — the baseline is already at a refusal ceiling — and above it,
+generation collapses. Adding a refusal direction to a model that already refuses 93% of AdvBench
+cannot demonstrate specificity through ASR, because ASR is floored *before the intervention starts*.
+
+This is **plan §10's dynamic-range rule at the other end**: §10 forbids using a *floor*-limited
+setup to claim mechanism failure (that is R-17 on Qwen3/AdvBench). The add-refusalness arm is
+**ceiling**-limited on Llama/AdvBench, and the same rule applies — its null is a statement about the
+setup, not about refusalness.
+
+⛔ **So plan §8's experiments 7–9 close as an EVALUATED NEGATIVE with a mechanism**, not as an
+untried stage: F-3's retracted specificity claim cannot be re-earned on this bank at any dose,
+because the bank has no headroom for it. Re-earning it needs a dataset where the baseline refuses
+far less — the internal doublespeak bank baselines at **1.39%** refusal and is the obvious candidate.
+
+### ⚠ A gate-calibration observation, recorded because it cuts close
+
+The gate fails a run at `scorable_frac < 0.5`. The **baseline sits at ≈0.541** — it passes by about
+four points. So on this dataset the gate's short-output criterion is nearly triggered by the
+*uninterved* model, and the two new arms are on the far side of a threshold that the control is
+already near. That does not make the gate wrong (the arms genuinely have more short rows), but it
+does mean **"DEGENERATE" here should not be read as "broken text"** — the lexical statistics say the
+opposite, and the verdict string's own wording ("the refusal/collapse mode") already hedges it.
+
 ## PLAN §8's ADD-ARMS — the one stage genuinely left open, and the sweep the log itself asked for (772973–772976)
 
 ### Audit first: five 495-row arms exist that were never judged
@@ -5550,6 +5614,24 @@ noted: k is estimated from the same data and treated as known, so its p is antic
 **Consequence for R5-6:** its "fails three of four checks" is really **two** — stratum-matched and
 jackknife. The transport failure is markdown-only and does not reproduce.
 
+### ⛔ A fourth defect, found only because I re-read the job log
+
+The re-analysis was moved to `cpu-killable` (the login node could no longer read 12 judge
+directories inside 550 s). It **died in 8 seconds**: `FileNotFoundError: 'git'` — the batch nodes
+have no git binary, and the script calls `git rev-parse HEAD` for provenance *while building the
+output dict*. So nothing was written and **the artifact silently stayed at its previous contents**,
+still carrying every defect below. `sacct` said `FAILED`, but the artifact on disk looked fine.
+
+⚠ **A provenance lookup was able to destroy the analysis** — and to leave a stale file that reads as
+current. Now fail-soft: the commit comes from `BOOMB_GIT_COMMIT`, exported by the wrapper from the
+submitting host (so the real hash is still recorded), and degrades to an explicit
+`unavailable:<reason>` marker rather than to silence. Re-run verified: `git_commit`
+`1444e278…`, `judging_session 20260821_182849`, `expect_rows_per_arm 960`, headline unchanged at
+**+0.380952**.
+
+**This is the same shape as the 0-byte judge log earlier today** — a failure whose external
+signature is indistinguishable from success. Second instance in one day.
+
 ### ⛔ Provenance defects in the artifact I just committed
 
 1. **`session_matching` recorded the tag prefix, not the session.** The artifact read *"all arms
@@ -5564,7 +5646,9 @@ jackknife. The transport failure is markdown-only and does not reproduce.
    the review-#6 half-run failure in its third costume. Now requires ≥2 shards with distinct
    offsets.
 3. `loo = {d: v for d, v in loo.items() if v}` could not filter anything, so `loo_n_domains_tested`
-   was the constant 6 dressed as a check. Removed.
+   was the constant 6 dressed as a check. The **filter** is removed; the count is kept as a plain
+   count with a comment saying it is structural, not a check. (Being precise about which half was
+   removed, since the artifact still carries the key.)
 
 ### ✅ What the audits confirmed
 

@@ -97,6 +97,31 @@ def load_shards(prefix: str, tag: str, session: str) -> tuple:
 FIELDS = ("malicious_at_0.5", "strongreject_score")
 
 
+def _git_commit() -> str:
+    """Provenance that survives a compute node without git on PATH.
+
+    Review #10: this analysis was moved to `cpu-killable` because the login node was too
+    contended to read 12 judge directories. The job then died in 8 seconds on
+    `FileNotFoundError: 'git'` -- the batch nodes have no git binary -- and because the crash
+    happened while BUILDING the output dict, nothing was written and the artifact silently stayed
+    at its previous contents. A provenance lookup must never be able to destroy the analysis.
+
+    `BOOMB_GIT_COMMIT` is exported by the SLURM wrapper from the submitting host, so the real
+    commit is still recorded; the fallbacks degrade to an explicit marker rather than to silence.
+    """
+    env = os.environ.get("BOOMB_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
+                           capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+        return f"unavailable:git_rc_{r.returncode}"
+    except (FileNotFoundError, OSError) as exc:
+        return f"unavailable:{type(exc).__name__}"
+
+
 def interaction(base, arm_b, arm_c, arm_d, field: str) -> dict:
     """(D - B - C + base) per prompt, then domain-clustered. Super-additivity of the two legs."""
     pids = sorted(set(base) & set(arm_b) & set(arm_c) & set(arm_d))
@@ -161,8 +186,7 @@ def main() -> None:
                             f"(tag prefix {a.tag_prefix!r}) -- R6-6",
         "judging_session": a.session,
         "expect_rows_per_arm": a.expect_rows,
-        "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
-                                     capture_output=True, text=True).stdout.strip(),
+        "git_commit": _git_commit(),
         "runs": runs,
         "shard_offsets": offs,
         "n_judged_rows": {t: len(rows[t]) for t in tags},
