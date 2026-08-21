@@ -4701,7 +4701,7 @@ rather than aspirational.
 verified that a cited ID *has a row* — it cannot see whether the citations mean the *same thing*,
 which is why R-8 passed it repeatedly. It now also collects the **quoted gloss** following each
 citation and flags an ID carrying two distinct ones, merging glosses where one contains the other
-(`"+84% of span"` and `"+84% of span, CI [...]"` are one figure quoted at two lengths).
+(the two **superseded** `"+84% of span"` variants are one figure quoted at two lengths).
 
 It is **advisory, not fatal**, and that is the point. On the current documents it raises two
 candidates, and **both are false positives** — R-8's remaining pair are length variants of one
@@ -4710,10 +4710,42 @@ Over-trusting a heuristic is precisely what let a 17-line table hide four retrac
 one "was"; the lesson is not "add more heuristics", it is "know which of your checks are proofs".
 
 Retrospectively it would have caught the real thing: the original R-8 glosses were
-`"capability channel"` and `"+84% of span"` — neither contains the other.
+the **retracted** `"capability channel"` and `"+84% of span"` glosses — neither contains the other.
 
 | # | time | action | outcome |
 |---|---|---|---|
 | 134 | 2026-08-21 | split arm F's mechanistic retraction out of R-8 → **R-22** | one ID no longer means two retractions |
 | 135 | 2026-08-21 | tabled the `#N` series; §0's "closed" claim is now true | **three** series, all recorded |
 | 136 | 2026-08-21 | added a meaning-collision check, **advisory by design** | 2 candidates, both false positives, and it would have caught the real one |
+
+## The short update is no longer three retractions behind its own head
+
+Tick 2026-08-21, closing the last of audit #4. The short update is **the document a collaborator
+reads first**, and its head had been kept current while its body had not. Below the fold a reader
+still found:
+
+| passage | said | now |
+|---|---|---|
+| §13 scoring | "Boombness predicts ASR (**met**)"; comprehension "**not established**"; controls "a **4-draw band**" | **rescored**: criterion 1 is **NO (R-18)**; comprehension **improves, +0.2795 p=0.0010**; the 4-draw band was **R-12**, one draw repeated — genuine bands now exist on both external sets |
+| interaction | "Neither manipulation alone raises attack success — **together they more than double it**", +0.400 p=0.0001 | ⛔ **R-20** — a judge artifact, ~94% style; paired gain **+0.017, CI [−0.005, +0.038]**, control +0.012 |
+| G1 maturity | "**G1 is a pilot**: n=8 families from 2 domains" | **no longer a pilot** — 24 families, 6 domains; arm-selection caveat kept |
+| G1 query transplant | −71% | **−57.0%**, and flagged **sign-robust only on the diagonal** (13/13 negative in a harmful context, **5/13 positive** in a benign one) |
+| G3 arithmetic | 84%, 56,832 / 3,552 edges | **75.2%** — superseded by the 24-family re-run (R-7) |
+
+**The §13 scoring is the one that mattered most**, for the same reason as the full report's: it is the
+section that *sounds* conservative, so a reader trusts it, and it was restating three retracted
+headlines in that voice. Both deliverables had the same defect independently, and I fixed the full
+report two ticks before noticing the sibling — which is the third time this week that fixing one
+document and not its twin has been the actual bug.
+
+**Sweep clean over 3 files**, registry OK, 2 advisories (both known false positives).
+
+**Audit #4 is now closed:** 4 findings, all acted on — §13 rescored in both deliverables, §0's
+forbidden per-layer quote replaced with the band comparison, R-8's collision split to R-22, the third
+numbering series tabled, and the short update's body brought level with its head.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 137 | 2026-08-21 | rescored the short update's §13; struck arm F's interaction claim | three retracted headlines removed from the doc read first |
+| 138 | 2026-08-21 | corrected G1 maturity, G1 query figure, G3 arithmetic | body now level with head |
+| 139 | 2026-08-21 | **audit #4 closed** | sweep clean, registry OK |

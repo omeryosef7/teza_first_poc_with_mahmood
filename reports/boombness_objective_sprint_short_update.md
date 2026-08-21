@@ -223,7 +223,10 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
 - **Not in the codeword token.** The **single-layer L18** demonstration transplant, harm-context pair,
   moves the model's reported meaning **+68% of the baseline→ceiling span, domain-clustered CI
   [+50%, +95%]**, on **24 families across all 6 domains** (`g1_stratified.json`); transplanting the
-  *query codeword* moves it the **wrong way** (−71%, CI [−105%, −56%]). Meaning is retrieved from the
+  *query codeword* moves it the **wrong way** (**−57.0%** on the corrected whole-answer readout;
+  ~~−71%, CI [−105%, −56%]~~ was the superseded single-token readout). ⚠ That contrast is
+  **sign-robust only on the diagonal** — see the full report: `query_only` is negative at 13/13
+  layer-sets in a harmful context, but **positive at 5/13** in a benign one. Meaning is retrieved from the
   demonstrations at answer time, not stored in the codeword.
   ⛔ **R-8: the earlier +84%, CI [+57%, +105%] is superseded** — it was a pilot of n=8 families in
   only **2 domains** (effective independent units nearer 2 than 8). Revision 1's "[+23%, +135%]" was a
@@ -240,13 +243,14 @@ Two caveats we owe you, both of which revision 1 dropped or half-stated:
   to 2 than to 8, and this is a pilot.
 - ⚠ **Attention-carried and massively redundant — but the redundancy is in the EDGE SET, not in
   depth. I had this wrong and the matched experiment corrected it.** Cutting query→demo attention at
-  all 32 layers recovers **84%** (CI [62%, 110%]) of the effect of deleting the demonstrations; the
+  all 32 layers recovers **75.2%** of the effect of deleting the demonstrations (~~84%, CI [62%, 110%]~~
+  and the 56,832 / 3,552 edge counts are **superseded** by the 24-family re-run — R-7); the
   same cut at 2 layers recovers **0.07%** (CI [−6.7%, +8.2%]). I read that as depth-distribution,
   but the 32-layer arm also cut **16× more edges**, so the comparison moved two things at once. The
   matched arm settles it: **3,552 edges spread over 32 layers moves the readout +0.09 — the same
   nothing as 3,552 edges at 2 layers (−0.01).** Layer spread is not the operative variable.
   What is true: removing **6.25%** of the demo edges does nothing *however they are distributed*,
-  while removing 100% recovers 84%. That is why every localized knockout (top-k, bottom-k, random,
+  while removing 100% recovers **75.2%** (~~84%~~, superseded — R-7). That is why every localized knockout (top-k, bottom-k, random,
   same-head) reads zero — each removes ~0.03% of a hugely redundant set.
   The converse test is impossible by construction: at seq_len 114 × 32 heads a layer holds only
   ~3,648 edges, so any cut above ~7.3k edges *must* involve more layers. Identification is one-sided
@@ -414,9 +418,12 @@ random composition raises score by **+0.389 (p=0.008)** and cuts refusal **0.96 
 at baseline (+0.000, refusal 0.96). On `concept_in_benign_ctx` it gains +0.203. **Specificity is established
 for the doublespeak population only, and is reversed where harm is explicit.**
 
-**Neither manipulation alone raises attack success — together they more than double it.**
-Interaction contrast (F−A) − (C−base) = **+0.400 continuous, p=0.0001**, and +0.471 / +0.433 / +0.364 at
-ASR thresholds 0.25 / 0.50 / 0.75.
+⛔ **RETRACTED (R-20).** ~~Neither manipulation alone raises attack success — together they more than
+double it.~~ ~~Interaction contrast +0.400 continuous, p=0.0001.~~ Arm F's gain is a **judge
+artifact, ~94% answer style**: under an outcome the rubric cannot inflate its paired gain is
+**+0.017, CI [−0.005, +0.038]**, containing zero, against its own control at +0.012. What survives on
+that outcome is **B** (remove `d_surface`, +0.029) and **D** (remove both, +0.033), each clearing its
+control at +0.010, while **C** (remove refusalness alone) is **null** at −0.002.
 
 ⚠ **That +0.400 is ~45% a mechanical artifact.** Arm A refuses on 284/420 rows, each scored exactly 0.0 by
 construction. On the rows where A did *not* refuse, **A−base = +0.094 (positive)** and the interaction falls
@@ -615,11 +622,15 @@ labels are automated (StrongReject rubric via `gpt-4o-mini`). No completion text
 report, in any commit message, or in any analysis artifact. Only the local open-weight model was
 attacked — the API is used as a *judge*, never as a target.
 
-**We do NOT claim to have found the mechanism.** Against plan §13's six criteria: Boombness predicts
-ASR (**met**); adding it *increases* behaviour (**not met** — adding it *decreases* ASR by triggering
-refusal); removing it reduces ASR (**ambiguous** — indistinguishable from a norm-matched random
-perturbation, p=0.070); comprehension preserved (**not established** — see below); random controls
-fail (**partial** — a 4-draw band separates +0.25 but not −0.25); replicates across models
+**We do NOT claim to have found the mechanism.** ⛔ **RESCORED 2026-08-21 — the previous scoring
+predated R-6, R-18 and R-20 and restated all three.** Against plan §13's six criteria: Boombness
+predicts ASR (⛔ **NO — R-18 retracts it**; ~~met~~); adding it increases behaviour (**not met**, and
+its supporting arm is retracted — R-20); removing it reduces ASR (**NO — it RAISES it**, +0.0422
+against a **5-draw control band** at +0.0012, sd 0.0026; ~~ambiguous, p=0.070~~ superseded);
+comprehension preserved (**YES, and it improves** — +0.2795, p=0.0010 on the corrected readout;
+~~not established~~ was **R-6**, a 4.4e-05 tail); random controls fail (**YES** — genuine bands now
+exist on both external sets; the earlier "4-draw band" was **R-12**, one draw repeated); replicates
+across models
 (**partial** — the ~2× confound, the L31 effect ⚠(depth-mismatched — see C9) and the token-level result replicate on Qwen3-14B; the
 mid-layer band does not). **Two met, three partial, one no.**
 
@@ -633,7 +644,8 @@ mid-layer band does not). **Two met, three partial, one no.**
   41× (Qwen3) better *separated* at the codeword token than at the last token, so "carries more signal"
   and "is better estimated" are not separated by this design. The L31 result is unaffected (gaps
   converge to 1.1×).
-- **G1 is a pilot**: n=8 families from **2 domains**, and its headline is one arm of ~130 — the
+- **G1 is no longer a pilot** (corrected; the ~~n=8 families / 2 domains~~ figure is **R-8**). It is
+  **24 families across 6 domains**. The arm-selection exposure stands: its headline is one arm of ~130 — the
   all-layer variant of the same transplant goes the *opposite* way.
 - **G3's identification is one-sided by construction** (a layer holds only ~3,648 edges).
 - **G1/G3 run on `semantic_one_word` prompts; G2/G4's ASR claims on `behavioral` ones** — and this is
