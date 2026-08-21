@@ -2141,6 +2141,39 @@ see **N12**. They occupy three dedicated `bank_block`s (`strength` 96 rows, `con
 underpowered by an order of magnitude and confounded on three variables at once. Making them usable
 is a generator change plus fresh extraction and behavioural runs (**E8**), not a re-analysis.
 
+### ✅ Is the control matched on what matters? A disruption-matched comparison (added 2026-08-21)
+
+**The objection.** `project_out` is scale-free, so norm-matching a random control does **not** equalise
+how much it perturbs the model. Measured: the L12 arm changes **47.1%** of generations against
+baseline; its matched control changes **30.7%** — **1.53×** less. An arm that disrupts more could
+score higher for that reason alone, and no dose-matched control was reported.
+
+**The matched control already existed in the data.** Across 28 AdvBench arms, disruption and Δ ASR:
+
+| arm | generations changed | Δ ASR |
+|---|---|---|
+| **`abL6_Bctrl`** — random direction | **48.9%** | **+0.0020** |
+| **`abL12_B`** — `d_surface` (headline) | **47.1%** | **+0.0364** |
+| `abL10_B` — `d_surface` | 44.0% | +0.0323 |
+| `abL8_context` — `d_context` | 34.9% | +0.0000 |
+| `abL12_Bctrl` — random | 30.7% | +0.0000 |
+
+**A random direction that disrupts *more* than the headline arm produces essentially no gain.**
+`abL6_Bctrl` perturbs 48.9% of generations — above the arm's 47.1% — for **+0.0020**, an **18×**
+difference at matched disruption. And across all **13 control arms**, disruption spans **13.7%–48.9%
+(3.6×)** while Δ ASR spans only **−0.0061 to +0.0020**: nothing a random direction does to the model,
+at any dose in this range, converts into attack success.
+
+So the effect is not "this arm perturbs more". Disruption is **necessary but nowhere near sufficient** —
+the `d_surface` arms at 33–47% disruption give +0.018 to +0.042, while controls across the same range
+give ~0.
+
+⚠ **The honest caveat.** The across-*all*-arms correlation between disruption and Δ ASR is **+0.898**,
+which looks alarming until it is decomposed: it is carried by the refusal-removal arms (`ab_C`,
+`ab_D`), which disrupt 88–92% and gain +0.21/+0.29. Within the controls alone the correlation is
+**+0.497** on a range of ±0.006 — statistically visible, practically nil. The disruption-matched pair
+above, not the correlation, is what answers the objection.
+
 ### ⚠ Multiplicity over the layer family: no single layer survives Holm (added 2026-08-21)
 
 An audit asked whether the headline layer survives correction over **its own layer family**. It does

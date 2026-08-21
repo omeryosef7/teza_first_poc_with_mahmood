@@ -4285,3 +4285,48 @@ not instead of it.
 | 105 | 2026-08-21 | wrote the profile-shape permutation test I said was missing | **p = 0.0109**; band licensed, no layer establishable |
 | 106 | 2026-08-21 | scan window is **L6–L14**, not L6–L12 | my audit-#2 "fix" of the short update used the wrong criterion |
 | 107 | 2026-08-21 | restored the short update's band and put the test behind it in both deliverables | both now carry both criteria |
+
+## ★ The disruption-matched control the audit asked for already existed in the data
+
+Tick 2026-08-21, closing the second of audit #3's three open findings.
+
+**The objection was sound.** `project_out` is scale-free, so norm-matching a random control does not
+equalise how much it perturbs the model. The L12 arm changes **47.1%** of generations; its matched
+control changes **30.7%** — 1.53× less. An arm that disrupts more could score higher for that reason.
+
+**I did not need a new run.** Computing disruption for all 28 AdvBench arms found the matched control
+already on disk:
+
+| arm | generations changed | Δ ASR |
+|---|---|---|
+| **`abL6_Bctrl`** — random | **48.9%** | **+0.0020** |
+| **`abL12_B`** — `d_surface`, the headline | **47.1%** | **+0.0364** |
+| `abL10_B` — `d_surface` | 44.0% | +0.0323 |
+| `abL8_context` — `d_context` | 34.9% | +0.0000 |
+| `abL12_Bctrl` — random | 30.7% | +0.0000 |
+
+**A random direction that disrupts MORE than the headline arm yields +0.0020** — an **18×** gap at
+matched disruption. Across all **13 control arms** disruption spans **13.7%–48.9% (3.6×)** while
+Δ ASR spans **−0.0061 to +0.0020**. Nothing a random direction does to this model, at any dose in
+range, converts into attack success.
+
+**The caveat, because the naive number looks bad.** Across *all* arms, corr(disruption, ΔASR) =
+**+0.898**. Decomposed, that is carried by the refusal-removal arms (88–92% disruption, +0.21/+0.29).
+Within controls alone it is +0.497 on a range of ±0.006 — visible, practically nil. **The matched
+pair answers the objection; the correlation does not**, and quoting the correlation either way would
+mislead.
+
+**Pattern worth noting.** This is the third time in three ticks that the answer to a serious objection
+was already in the committed data — the refusal-transition decomposition, the scan statistic, and now
+the disruption-matched control. The sprint has generated far more evidence than it has analysed, and
+the audits are mostly finding **unanalysed** data rather than **missing** data. That is a much better
+position than it felt like two days ago.
+
+**One finding remains open:** the Qwen3 arm-D **L25** variant was generated and never judged, so its
+outcome is unknown and unreported.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 108 | 2026-08-21 | computed disruption for all 28 AdvBench arms | the matched control was already on disk |
+| 109 | 2026-08-21 | `abL6_Bctrl` (48.9%, +0.0020) vs `abL12_B` (47.1%, **+0.0364**) | **18× at matched disruption** — the objection is answered |
+| 110 | 2026-08-21 | decomposed the alarming +0.898 all-arm correlation | carried by refusal-removal arms; controls alone span ±0.006 |
