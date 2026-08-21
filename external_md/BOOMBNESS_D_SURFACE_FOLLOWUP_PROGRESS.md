@@ -5056,6 +5056,63 @@ reported.
 
 
 
+## PLAN §8's ADD-ARMS — the one stage genuinely left open, and the sweep the log itself asked for (772973–772976)
+
+### Audit first: five 495-row arms exist that were never judged
+
+A sweep for generated-but-never-analysed runs found **34 unjudged `score_behavior` runs**, five of
+them full 495-row Phase F arms from 08-19/08-20:
+
+| arm | intervention | why unjudged |
+|---|---|---|
+| `fuF_addS` | `d_surface:add:8:1.0` | ⛔ retracted by F-3 — 14.8× dose mismatch vs its control |
+| `fuF_addBoth` | `d_surface:add` + `refusalness:add`, α 1.0 | ⛔ same F-3 retraction |
+| `fuF_remR_addS` | `refusalness:project_out` + `d_surface:add`, α 1.0 | ⛔ same F-3 retraction |
+| `fuF_addR_gapdose` | `refusalness:add:18:14.653462` | ⛔ **DEGENERATE** at the gate (uniq 0.237, 3-gram 0.704) |
+| `fuF_remS_addR_CTRL` | `random` + `random` | ⛔ gate: "truly broken" |
+
+✅ **Every one is legitimately excluded and every exclusion is documented**, each with a recorded
+gate failure or retraction. ~2,475 judge calls correctly not spent. My initial reading of this as a
+skipped-stage gap was wrong, and checking was still the right move.
+
+### ⛔ But it surfaces the one plan stage that IS genuinely unanswered
+
+Plan §8 lists ten interventions; experiments **7 (add `d_surface`), 8 (add refusalness), 9 (add
+both)** have **no clean answer**. The log states the reason itself:
+
+> "There is no dose in {1.0, 14.65} that is both interpretable and comparable to the random control.
+> Establishing refusalness-`add` specificity would need an **intermediate-dose sweep**, which this
+> sprint did not run."
+
+At α = 1.0 the add is coherent but is only ~7% of one diff-of-means (ASR −0.0111, n.s.); at
+α = 14.65 it is a real dose but destroys generation. **Two points, both unusable, and nobody looked
+between them** — the same shape as the angle sweep, where sampling two endpoints said nothing about
+the interior.
+
+### The sweep, dosed as fractions of the gap dose so the axis is interpretable
+
+| job | α | fraction of one diff-of-means |
+|---|---|---|
+| 772973 | 1.831683 | **1/8** |
+| 772974 | 3.663366 | **1/4** |
+| 772975 | 7.326731 | **1/2** |
+| 772976 | 10.990097 | **3/4** |
+
+Everything else replicates `fuF_addR_gapdose` exactly (AdvBench 495, same `fit_dir`, `max_new` 512,
+`whole_answer` readout, seed 20260816).
+
+⚠ **Pre-registered, and the honest outcome space is three-way:**
+- **A dose exists that is coherent AND meaningful** (passes the degeneracy gate at ≥ 1/4 gap) ⇒ F-3's
+  retracted specificity claim can finally be tested properly, and plan §8's add-arms get their answer.
+- **Degeneracy sets in below 1/4 gap** ⇒ the add-intervention is unusable at any comparable dose, and
+  §8's experiments 7–9 close as an **evaluated negative** rather than an untried stage. That is a
+  publishable statement about the method, not a failure.
+- Anything non-monotone in α would mean the degeneracy is not a simple dose effect and needs its own
+  explanation.
+
+**Gate before judging, as established practice** — the degeneracy gate runs on the generations and
+only gate-clean arms get judged, so a broken arm costs 0 judge calls.
+
 ## ⛔ THE +0.1248 DOES NOT SURVIVE — R5-6's checks re-run as code, and they now have an artifact
 
 **Artifact:** `qwen3_decomposition_sessionmatched.json → R5_6_robustness`. R5-6 downgraded D20's
