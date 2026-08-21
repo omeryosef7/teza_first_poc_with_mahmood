@@ -2,10 +2,6 @@
   "layers": {
     "L6": {
       "delta_a_minus_b": 0.00808080808080808,
-      "ci95_domain_clustered": [
-        -0.003436426116838488,
-        0.017684887459807074
-      ],
       "p_bootstrap": 0.2337,
       "n_informative_clusters": 4,
       "p_cluster_signflip": 0.375,
@@ -14,14 +10,10 @@
       "n_discordant": 8,
       "up": 6,
       "down": 2,
-      "p_exact_sign_test_on_discordant": 0.2890625
+      "in_outcome_selected_top4": true
     },
     "L8": {
       "delta_a_minus_b": 0.014141414141414142,
-      "ci95_domain_clustered": [
-        0.0024813895781637717,
-        0.029850746268656716
-      ],
       "p_bootstrap": 0.0212,
       "n_informative_clusters": 4,
       "p_cluster_signflip": 0.125,
@@ -30,14 +22,22 @@
       "n_discordant": 9,
       "up": 8,
       "down": 1,
-      "p_exact_sign_test_on_discordant": 0.0390625
+      "in_outcome_selected_top4": true
+    },
+    "L10": {
+      "delta_a_minus_b": -0.00404040404040404,
+      "p_bootstrap": 0.4386,
+      "n_informative_clusters": 4,
+      "p_cluster_signflip": 0.625,
+      "min_attainable_cluster_p": 0.125,
+      "significant_at_cluster_level": false,
+      "n_discordant": 4,
+      "up": 1,
+      "down": 3,
+      "in_outcome_selected_top4": true
     },
     "L12": {
       "delta_a_minus_b": 0.022222222222222223,
-      "ci95_domain_clustered": [
-        0.002008032128514056,
-        0.042105263157894736
-      ],
       "p_bootstrap": 0.0467,
       "n_informative_clusters": 6,
       "p_cluster_signflip": 0.15625,
@@ -46,11 +46,26 @@
       "n_discordant": 15,
       "up": 13,
       "down": 2,
-      "p_exact_sign_test_on_discordant": 0.00738525390625
+      "in_outcome_selected_top4": true
+    },
+    "L13": {
+      "delta_a_minus_b": 0.012121212121212121,
+      "p_bootstrap": 0.0042,
+      "n_informative_clusters": 5,
+      "p_cluster_signflip": 0.0625,
+      "min_attainable_cluster_p": 0.0625,
+      "significant_at_cluster_level": false,
+      "n_discordant": 6,
+      "up": 6,
+      "down": 0,
+      "in_outcome_selected_top4": false
     }
   },
-  "VERDICT": "WITHDRAWN (R-27f). No layer is significant at cluster level: L6 p=0.375, L8 p=0.125, L12 p=0.156. At L8 only 4 of 16 domains carry a nonzero net, so 0.125 IS the smallest p attainable there -- the earlier 'p=0.021' came from a percentile cluster bootstrap that is anti-conservative when few clusters are informative.",
-  "superseded_claim": "'d_naive beats its dose-matched rung; significant at L8 and L12'",
-  "why_the_sign_test_does_not_rescue_it": "p_exact_sign_test_on_discordant treats the 9/15 discordant PROMPTS as independent, which is the pseudo-replication this file's docstring exists to prevent: at L8 the 9 discordant prompts sit in 4 domains (one contributes 3); at L12, 5 of 15 share one domain.",
-  "what_remains": "All point estimates are positive (+0.0081/+0.0141/+0.0222) and d_naive lies inside the ladder's own two-parameter family (R-27b), so this is at most a hint that effect depends on the complement rotation phi -- not evidence about direction meaning, and not significant."
+  "n_layers": 5,
+  "n_positive": 4,
+  "n_negative": 1,
+  "any_significant_at_cluster_level": false,
+  "VERDICT": "CLOSED / NULL. Five layers, no cluster-level significance anywhere. L8 and L13 sit exactly AT their attainable floors (0.125 with 4 informative clusters; 0.0625 with 5), so neither could have cleared 0.05 whatever the data. Point estimates are 4 positive and 1 NEGATIVE (L10 -0.0040), so the sign-consistency that was the last support for this line does not hold either.",
+  "why_it_is_closed_with_an_explanation": "R-27 follow-up: d_naive sits ON the exact dose-vs-cosine frontier (gap 0.0001-0.0009) while the dose_mix ladder is an INTERIOR path (gap 0.0067-0.0136). Any frontier direction sits above an interior path's curve, so 'd_naive beats every dose-matched mixture' was a fact about the construction, not the model.",
+  "preregistration_honoured": "The three-way rule (both / neither / split) was fixed before the L6+L12 data and applied unrenegotiated; L13 was chosen specifically because it lies OUTSIDE the outcome-selected top-4, and its positive point estimate is reported without any significance claim, exactly as pre-committed."
 }

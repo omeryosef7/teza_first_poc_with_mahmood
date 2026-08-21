@@ -6210,3 +6210,45 @@ fix is always to address each side by its own identity.
 | 263 | 2026-08-22 | verified by **byte-identity of `gens.jsonl`**, not judged deltas | stricter check, and available before judging |
 | 264 | 2026-08-22 | **re-created the tautology** in the first wiring | both hashes resolved to one file; green flag, zero content |
 | 265 | 2026-08-22 | fixed to address the generation run by identity | `dm8k0` True / `dm8k7` False — discriminates correctly |
+
+## Five layers, one negative, nothing significant: the `d_naive` line is closed
+
+Tick 2026-08-22. 773228-773231 judged. The full picture, under cluster-level inference:
+
+| layer | in selected top-4? | Δ | up/down | cluster p | attainable floor | significant |
+|---|---|---|---|---|---|---|
+| L6 | yes | +0.0081 | 6/2 | 0.3750 | 0.1250 | no |
+| L8 | yes | +0.0141 | 8/1 | **0.1250** | **0.1250** | no — *at the floor* |
+| **L10** | yes | **−0.0040** | 1/3 | 0.6250 | 0.1250 | no |
+| L12 | yes | +0.0222 | 13/2 | 0.1562 | 0.0312 | no |
+| **L13** | **no** | +0.0121 | **6/0** | **0.0625** | **0.0625** | no — *at the floor* |
+
+**Two things this settles.**
+
+**The sign-consistency argument is gone.** I had written that "all point estimates are positive" as the
+one thing still supporting this line after significance collapsed. **L10 is −0.0040.** Four positive,
+one negative, none significant.
+
+**L8 and L13 sit exactly AT their attainable floors** (4 informative clusters → 0.125; 5 → 0.0625).
+Neither could have cleared 0.05 whatever the data said. L13 is the sharper illustration: **6 up, 0
+down** — a perfectly one-sided result, the most extreme outcome its cluster structure permits — and it
+*still* cannot reach significance. That is a property of the design, not of the effect, and it is worth
+carrying into whatever comes next: with 16 domains of which 4–6 are informative, this comparison cannot
+produce a significant result at cluster level almost regardless of the truth.
+
+**The pre-registration held.** The three-way rule was fixed before the L6/L12 data and applied
+unrenegotiated. L13 was chosen *because* it lies outside the outcome-selected top-4, and its positive
+point estimate is reported with **no significance claim**, exactly as pre-committed — which is easier
+to honour when the number is 0.0625 than it would have been at 0.049.
+
+**Closed with an explanation, not a shrug.** `d_naive` sits **on** the exact dose-vs-cosine frontier
+(gap 0.0001–0.0009); the `dose_mix` ladder is an **interior** path (gap 0.0067–0.0136). Any frontier
+direction sits above an interior path's curve, so the original observation was a fact about my
+construction rather than about the model.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 266 | 2026-08-22 | 773228-773231 judged; ran L10/L13 under cluster inference | **L10 −0.0040 (negative)**, L13 +0.0121 (6/0) |
+| 267 | 2026-08-22 | withdrew the sign-consistency argument | 4 positive, **1 negative**, none significant |
+| 268 | 2026-08-22 | recorded that L8 and L13 sit **at** their attainable floors | the design cannot produce significance here regardless of truth |
+| 269 | 2026-08-22 | closed the `d_naive` line in the artifact | verdict + frontier explanation stored in JSON, not only prose |

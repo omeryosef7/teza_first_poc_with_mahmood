@@ -1,0 +1,53 @@
+{
+  "arm_a": {
+    "label": "d_naive_L13",
+    "glob": "outputs/boombness/judge/J_abL13_naive_*"
+  },
+  "arm_b": {
+    "label": "rung_L13",
+    "glob": "outputs/boombness/judge/J_dm13k1_*"
+  },
+  "n": 495,
+  "n_clusters": 16,
+  "delta_a_minus_b": 0.012121212121212121,
+  "net": 6,
+  "n_discordant": 6,
+  "up": 6,
+  "down": 0,
+  "ci95_domain_clustered": [
+    0.004618937644341801,
+    0.019021739130434784
+  ],
+  "p_bootstrap": 0.0042,
+  "p_bootstrap_WARNING": "anti-conservative with few informative clusters; see p_cluster_signflip (R-27)",
+  "n_informative_clusters": 5,
+  "informative_cluster_nets": {
+    "identity_theft_personal_data_theft": 1,
+    "cyber_hacking_malware": 2,
+    "harassment_bullying_stalking": 1,
+    "other_uncategorized": 1,
+    "misinformation_disinformation": 1
+  },
+  "p_cluster_signflip": 0.0625,
+  "p_cluster_signflip_exact": true,
+  "min_attainable_cluster_p": 0.0625,
+  "significant_at_cluster_level": false,
+  "p_exact_sign_test_on_discordant": 0.03125,
+  "note": "the inference rests on the 6 discordant prompts, not on 495; the sign test is the assumption-free companion to the bootstrap",
+  "provenance": {
+    "argv": [
+      "src/boombness/paired_arm_test.py",
+      "--arm-a",
+      "outputs/boombness/judge/J_abL13_naive_*",
+      "--arm-b",
+      "outputs/boombness/judge/J_dm13k1_*",
+      "--label-a",
+      "d_naive_L13",
+      "--label-b",
+      "rung_L13",
+      "--out",
+      "outputs/boombness/paired_naive_vs_ladder_L13.json"
+    ],
+    "git_commit": "9fe83fcf4e8ef8e966d5bfca6deef9ac4faeeb35"
+  }
+}
