@@ -132,7 +132,14 @@ RETRACTED = [
     ("C12 the +0.0425 / +0.0000 specificity pair",
      r"\+?0\.0425[^\n]{0,40}\+?0\.0000|"
      r"\+?0\.0000[^\n]{0,40}\+?0\.0425|"
-     r"`?d_context`?[^\n]{0,60}exactly\s+\*{0,2}0\.0000"),
+     # MATCH THE WORD "zero", NOT ONLY THE NUMERAL. The short update said `d_context` "moves ASR by
+     # **zero**" and this pattern -- pinned to `exactly 0.0000` -- sailed past it for four days, in a
+     # bullet that ALSO asserted R-26's retracted specificity claim. FOURTH narrowness failure in
+     # this file, and the same root cause every time: I write the pattern against the phrasing in
+     # front of me instead of the class of claim. Numeral OR word, and specificity phrasing too.
+     r"`?d_context`?[^\n]{0,60}(?:exactly\s+)?\*{0,2}(?:0\.0000|zero)\b|"
+     r"specific to this direction|"
+     r"effect tracks the cosine"),
     # ---- R-25 (2026-08-21): the in-subspace null was never dose-matched. The NUMBERS are fine, so
     # the pattern must catch the INFERENCE, not a figure. Phrases that assert the null establishes
     # content/specificity, or that treat the four layers as independent replications.

@@ -33,7 +33,7 @@ committed script.
 
 | claim | evidence | caveat that must travel with it |
 |---|---|---|
-| **Projecting out `d_surface` at L6–L12 raises AdvBench attack success.** L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495 | `insubspace_null_by_layer.json` | **Confounded with dose (R-25).** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), removing **0.81–0.88** of that spread against **≤0.132** for any in-subspace control. This is *not* shown to be about the direction's content. |
+| **Projecting out `d_surface` at L6–L12 raises AdvBench attack success.** L8 **+0.0424** (21 flips), L12 **+0.0364** (18), L10 +0.0323, L6 +0.0182, n=495. ⚠ **These are POOLED deltas.** The same L8 effect **domain-clustered is +0.0305**, and the short update quotes that one — both are correct, and an unlabelled comparison of the two reads as a contradiction. Labelled here 2026-08-22 after finding exactly that mismatch across the two deliverables. | `insubspace_null_by_layer.json` | **Confounded with dose (R-25).** `d_surface` is essentially **PC1** of the cell-mean span (cos 0.9998–1.0000), removing **0.81–0.88** of that spread against **≤0.132** for any in-subspace control. This is *not* shown to be about the direction's content. |
 | The arm exceeds **every** in-subspace control at all four layers, by **1.80×–3.60×** | `insubspace_null_by_layer.json` | The earlier "~16 band-sds" scored against a 4096-d random band and is **retracted (R-23)**; that band is far too weak a null. |
 | The gain is **real refusal→compliance flips**, not the judge rewarding longer refusals | `effect_decomposition.py` | On the 443–453 both-refused rows the delta is **+0.0000**. |
 | The dose-response is **monotone and saturating** | `dose_curve_L8.json` | Measured, from dose 0.046 to 0.84. From 0.52 to 0.84 the effect barely moves. The ladder is a valid *measurement*; every *inference* drawn from it is retracted (R-27). |
@@ -2448,7 +2448,7 @@ score higher for that reason alone, and no dose-matched control was reported.
 | **`abL6_Bctrl`** — random direction | **48.9%** | **+0.0020** |
 | **`abL12_B`** — `d_surface` (headline) | **47.1%** | **+0.0364** |
 | `abL10_B` — `d_surface` | 44.0% | +0.0323 |
-| `abL8_context` — `d_context` | 34.9% | +0.0000 |
+| `abL8_context` — `d_context` | 34.9% | +0.0000 ⚠ **pooled; clustered +0.0045. RETRACTED as evidence of specificity — R-26: `d_context`'s dose is 6× lower and sits where every direction is inert** |
 | `abL12_Bctrl` — random | 30.7% | +0.0000 |
 
 **A random direction that disrupts *more* than the headline arm produces essentially no gain.**

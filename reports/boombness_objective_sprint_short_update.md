@@ -1,6 +1,6 @@
 # Boombness sprint — short update
 
-**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-19
+**For:** Matan, Mahmood · **From:** Omer · **Date:** 2026-08-19, **revision 6 — 2026-08-22**
 **Full report:** `reports/boombness_objective_sprint_report.md` ·
 **Live log:** `docs/BOOMBNESS_CONTINUATION_LOG.md` · **Plan:** `docs/BOOMBNESS_OBJECTIVE_SPRINT_PLAN.md`
 **Branch:** `behavioral-causality-sprint`
@@ -17,14 +17,25 @@
 >
 > **What survives, all causal, all on external harmful sets the prompt bank never generated:**
 > * Removing `d_surface` alone raises attack success on **AdvBench (495 prompts, 16 clusters)**:
->   **+0.0305, p=0.0089**, against a matched random projection that is inert (−0.0062).
+>   **+0.0305 domain-clustered** (pooled: **+0.0424**), p=0.0089. ⚠ **Estimand labelled 2026-08-22** —
+>   the full report's §0a quotes the *pooled* +0.0424 for the same effect, and comparing the two
+>   unlabelled reads as a contradiction. ⛔ "against a matched random projection that is inert
+>   (−0.0062)" is **retracted (R-23/R-25)**: a random direction in 4096-d is near-orthogonal to
+>   everything and barely perturbs the model, so it is far too weak a null. Against directions inside
+>   the *same* rank-3 cell-mean subspace the arm still wins at all four layers, but by
+>   **1.80×–3.60×**, not against an inert control.
 > * The effect is **localized to a band of layers, ~L6–L14 with a core at L8–L12** (scan-statistic
 >   window, permutation p=0.011 under layer-label exchangeability; no single layer survives Holm),
 >   with a matched
 >   control inert at all eleven depths tested, and **exactly zero at L16** — where the same
 >   intervention still changes 29.5% of generations.
-> * It is **specific to this direction**: the effect tracks the cosine with `d_surface`. `d_context`,
->   fitted by the same 2×2 on the same rows, changes 34.9% of generations and moves ASR by **zero**.
+> * ⛔ **RETRACTED (R-26, C-12).** Was: *"It is **specific to this direction**: the effect tracks the
+>   cosine with `d_surface`. `d_context`, fitted by the same 2×2 on the same rows, changes 34.9% of
+>   generations and moves ASR by **zero**."* `d_context` removes only **0.13** of the cell-mean spread
+>   against `d_surface`'s **0.84** — a 6× dose gap, and 0.13 sits *inside the range where every
+>   in-subspace direction is inert regardless of meaning*. So its near-zero ASR says nothing about
+>   specificity. Its clustered delta is **+0.0045**, not zero (the pooled 0.00025 was the estimand
+>   switch C-12 retracted twice).
 > * Removing `d_surface` **and** refusal together exceeds the sum of the parts by
 >   **+0.0268 [+0.0029, +0.0584]** beyond a matched random triple — the two channels interact.
 > * **G1** (meaning lives in the demonstrations, not the codeword) and **G3** (the retrieval is
@@ -59,6 +70,42 @@
 >
 > Corrections ⚠, retractions ⛔. Every number in the full report is checked against its committed
 > artifact by `scripts/verify_report_numbers.py` (17/17 passing).
+
+
+---
+
+## Current state — 2026-08-22 (revision 6). Read this before the rest.
+
+Five retractions and three corrections have landed since revision 5. The full report's **§0a** is the
+authoritative flat version; this is the same content, shorter.
+
+**Still standing.** Projecting out `d_surface` at L6–L12 raises AdvBench attack success — L8 **+0.0424
+pooled / +0.0305 clustered** (21 flips), L12 +0.0364, n=495 — and the arm beats **every** direction in
+the same rank-3 cell-mean subspace at all four layers (**1.80×–3.60×**). The gain is real
+refusal→compliance flips, not the judge rewarding longer refusals (+0.0000 on the both-refused rows).
+The dose-response is monotone and **saturating**.
+
+**The caveat that must travel with it (R-25).** `d_surface` is essentially **PC1** of the bank's
+cell-mean structure (cos 0.9998–1.0000), so projecting it out removes **0.81–0.88** of that spread
+while any in-subspace control removes **≤0.132**. The effect is therefore **not shown to be about the
+direction's content** rather than about how much variance it removes — and in this bank the two
+**cannot** be separated: reaching 70% dose forces \|cos\| ≥ **0.88–0.91** with `d_surface`. That needs
+a different design, not more compute.
+
+**Retracted since revision 5.** **R-23/R-24** — the concept-transfer experiment failed both of its
+pre-committed controls, so `d_surface` is **not** shown to name a concept (details already in the
+"Honest limits" section below). **R-25** — the "content, not magnitude" reading above. **R-26** —
+§14-D's specificity conclusion: `d_context` moves ASR by ~zero because its dose is **6× lower**, which
+says nothing about meaning. **R-27** — an entire dose-ladder inference chain of mine, including a
+geometric bound that was **algebraically false**.
+
+**Not established, and not shown absent either.** A follow-up comparison returned no cluster-level
+significance at any of five layers — but that design's **minimum detectable effect is ≈+0.03** and the
+largest effect it produced was **+0.0222**, so those nulls are uninformative about absence.
+
+**The objective.** Unchanged: **do not build it.** R-26 is fresh evidence against, not for.
+
+---
 
 ---
 

@@ -2641,7 +2641,7 @@ Arm B's exact intervention at L8 on AdvBench 495, substituting a **sibling direc
 |---|---|---|---|---|
 | baseline | — | 0.0646 | — | — |
 | **`d_surface`** | 1.000 | **0.1071** | **+0.0425** | (the effect) |
-| **`d_context`** | **0.1884** | **0.0646** | **+0.0000** | **173/495 = 34.9%** |
+| **`d_context`** | **0.1884** | **0.0646** | **+0.0000** ⚠ *pooled; **retracted** as specificity evidence (R-26) — dose 6× lower* | **173/495 = 34.9%** |
 | `d_naive` | 0.9452 | judging | | |
 
 **`d_context` changes what the model says on more than a third of prompts and changes whether it
@@ -2711,7 +2711,7 @@ I called it a cliff because I had no points inside the gap. **Four widely-spaced
 decay look like a step**, which is worth remembering the next time a profile with sparse sampling
 looks sharp.
 
-## ★★ DIRECTION SPECIFICITY — the effect tracks the cosine
+## ⛔ ★★ DIRECTION SPECIFICITY — **RETRACTED (R-26)**. Heading was: "the effect tracks the cosine"
 
 `outputs/boombness/advbench_direction_specificity.json`. All four are the **same operation at the same
 layer on the same prompts**; only the direction differs.
@@ -4312,7 +4312,7 @@ already on disk:
 | **`abL6_Bctrl`** — random | **48.9%** | **+0.0020** |
 | **`abL12_B`** — `d_surface`, the headline | **47.1%** | **+0.0364** |
 | `abL10_B` — `d_surface` | 44.0% | +0.0323 |
-| `abL8_context` — `d_context` | 34.9% | +0.0000 |
+| `abL8_context` — `d_context` | 34.9% | +0.0000 ⚠ *pooled; **retracted** as specificity evidence (R-26)* |
 | `abL12_Bctrl` — random | 30.7% | +0.0000 |
 
 **A random direction that disrupts MORE than the headline arm yields +0.0020** — an **18×** gap at
@@ -5557,7 +5557,7 @@ make was sitting on disk the whole time.
 |---|---|---|---|---|
 | `d_surface` | 0.8402 | +0.0424 | 21 | 0.0505 |
 | **`d_naive`** | **0.7919** | **+0.0586** | **29** | **0.0740** |
-| `d_context` | 0.1313 | +0.0000 | 0 | 0.0000 |
+| `d_context` | 0.1313 | +0.0000 | 0 | 0.0000 ⚠ *dose 0.13 sits inside the inert control range — this row is dose evidence; **retracted** as specificity evidence (R-26)* |
 
 **`d_naive` carries 94% of `d_surface`'s dose and produces a 38% *larger* effect.** At matched dose
 `d_surface` is **not** the stronger direction — and the direction that beats it is the **naive,
