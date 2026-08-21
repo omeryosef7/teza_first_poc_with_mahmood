@@ -149,12 +149,13 @@ def main() -> None:
                     help="repeatable, one per depth. Comma-separated dirs are judge SHARDS of one "
                          "run and are unioned; the union is asserted duplicate-free.")
     ap.add_argument("--sweep", action="append", default=[], metavar="L=ARM:C0,C1,C2,C3",
-                    help="EXHAUSTIVE angle sweep of the arm's orthogonal complement inside the "
-                         "concept subspace. The complement is 2-D, so random draws are not "
-                         "independent (measured pairwise cos 0.91-1.00 across three seeds) and a "
-                         "'band' over them would measure nothing. Evenly spaced angles over the "
-                         "half-circle cover it instead, and the WORST case over them is an upper "
-                         "bound on 'any orthogonal direction in the subspace', not a sample.")
+                    help="SYSTEMATIC angle sweep of the arm's orthogonal complement. The "
+                         "complement is 2-D, so random draws are not independent (measured pairwise "
+                         "cos 0.91-1.00 across three seeds) and a 'band' over them measures little. "
+                         "Evenly spaced angles cover the half-circle at pi/K resolution. NOT a "
+                         "bound: ASR(theta) is a step function (greedy decoding, 0.5 threshold) and "
+                         "at L8 the effect moves 0.0173 within one unsampled interval, more than "
+                         "the 0.0129 max at any sampled point.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -243,8 +244,10 @@ def main() -> None:
             entry["controls"][f"angle_{i}"] = per[i]
         for f in (SCORE, FLAG):
             # The MINIMUM arm-minus-control over the sweep: the hardest case for the arm, and the
-            # right summary because the sweep is exhaustive rather than a sample. No multiplicity
-            # correction is applied to a minimum -- taking the worst case is already conservative.
+            # summary of a SYSTEMATIC sweep -- but note it is a minimum over K noisy estimates, which
+            # is biased DOWNWARD, so it understates the arm's typical margin while being the right
+            # thing to report for a worst-case reading. No multiplicity correction is applied: a
+            # minimum is already conservative and correcting it would be conservative twice.
             diffs = [(i, per[i]["arm_minus_control"][f]) for i in per
                      if per[i]["arm_minus_control"][f].get("delta_cluster_mean") is not None]
             worst = min(diffs, key=lambda kv: kv[1]["delta_cluster_mean"])
@@ -254,9 +257,13 @@ def main() -> None:
                 "worst_angle": worst[0], "arm_minus_control": worst[1],
                 "strongest_control_angle": strongest[0],
                 "strongest_control_vs_baseline": strongest[1],
-                "note": "worst_case is the MINIMUM arm-minus-control over an exhaustive sweep of "
-                        "the 2-D orthogonal complement; it is an upper bound on what any direction "
-                        "orthogonal to the arm inside this subspace can do, not a sampled band."}
+                "note": "worst_case is the MINIMUM arm-minus-control over a SYSTEMATIC sweep of "
+                        "the 2-D orthogonal complement at pi/K resolution. It is NOT a bound on "
+                        "what any orthogonal direction can do: ASR(theta) is a step function "
+                        "(greedy decoding, 0.5 judge threshold), and the effect is measured to move "
+                        "more within one unsampled interval at L8 (0.0173) than the largest value "
+                        "at any sampled point (0.0129). Read it as K systematically spaced controls, "
+                        "not as a supremum."}
         out.setdefault("angle_sweep", {})[f"L{L}"] = entry
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

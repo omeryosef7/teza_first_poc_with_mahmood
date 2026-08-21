@@ -4338,7 +4338,53 @@ do with degeneracy.
 
 
 
-## ✅⛔ ALL FOUR DEPTHS SWEPT EXHAUSTIVELY — the claim holds at L10/L12, is suggestive at L8, and FAILS at L6
+
+### ⛔ "A bound, not a sample" is REFUTED BY THE DATA — and the retraction had not propagated
+
+I corrected this wording in one paragraph at 13:50. Review #8 found the corrected claim still
+asserted in **shipped code and in the machine-readable artifacts**, and — more importantly — supplied
+the argument that makes it not merely imprecise but **false**.
+
+**1. ASR(θ) is not continuous, so finitely many points cannot bound it.** My hedge was *"the
+intervention is continuous in θ"*. True of the intervention, **false of the readout**: decoding is
+greedy argmax and the judge thresholds at 0.5, so ASR(θ) is a **step function** of θ, jumping wherever
+two logits cross. Bounding a supremum from K samples requires a smoothness constant and there is
+none.
+
+**2. The measured function already moves further between grid points than the "bound" it was said to
+establish.** Control-vs-baseline across each 45° interval (the wrap 135°→180° ≡ 0° included, since
+the projector is sign-invariant):
+
+| depth | values at 0/45/90/135 | max step across one interval | max \|value\| sampled | ratio |
+|---|---|---|---|---|
+| L6 | −0.0022, +0.0059, +0.0118, +0.0035 | 0.0082 | 0.0118 | 0.70 |
+| **L8** | +0.0013, +0.0094, −0.0079, −0.0129 | **0.0173** | 0.0129 | **1.35** |
+| L10 | −0.0080, −0.0025, −0.0123, −0.0116 | 0.0098 | 0.0123 | 0.80 |
+| **L12** | +0.0120, −0.0002, −0.0023, +0.0030 | **0.0123** | 0.0120 | **1.02** |
+
+**At L8 the effect traverses 0.0173 inside a single unsampled interval — larger than the 0.0129 I
+quoted as the maximum over the whole complement.** Four points whose inter-point variation exceeds
+the claimed supremum cannot establish that supremum. Arithmetic from the published numbers; no new
+compute needed to see it.
+
+**3. The retraction had not propagated, and that is the worse failure.** The wrong claim survived in
+`signals.py`'s docstring, `analyze_control_recheck.py`'s argparse help and two comments, the markdown
+section header — and in **twelve copies of the `worst_case[*].note` string across three artifacts**,
+which is what a downstream reader or script actually consumes. **Fixed in code and all three
+artifacts regenerated**; `grep -c exhaustive` is now 0 in both modules and 0 across the artifacts, and
+every number is byte-identical.
+
+**4. And the densification does not fix it either.** Eight angles halve the resolution to 22.5°; they
+do not turn a sample into a bound. The four intermediate L12 runs are still worth judging — they test
+whether anything hides between the original grid points — but the honest framing of the result is:
+
+> **K systematically spaced controls, all null.** Not *"no orthogonal direction does anything"*.
+
+⚠ One more correction the audit prompted: `worst_case` is a **minimum over K noisy estimates, biased
+downward**. It is the right statistic for a worst-case reading, but it understates the arm's typical
+margin, and the L6 "failure" is the cell most exposed to that bias. Recorded in the code comment.
+
+## ✅⛔ ALL FOUR DEPTHS SWEPT AT FOUR ANGLES EACH — sixteen controls, all null (a systematic sample, NOT a bound)
 
 **Artifacts:** `angle_sweep_L6_L10.json`, `angle_sweep_L8.json`, `angle_sweep_L12.json`.
 **16 control runs** (4 angles × 4 depths), 495 generations each, 0 failures, all judged in the same

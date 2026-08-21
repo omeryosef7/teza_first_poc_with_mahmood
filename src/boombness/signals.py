@@ -498,10 +498,22 @@ def in_subspace_angle_direction(payload: dict, layer: int, k: int, n_angles: int
     as a control BAND would be the R-12 mistake in a new costume -- draws that look independent
     because they have different seeds, while spanning almost none of the available space.
 
-    A 2-D space admits an exhaustive sweep instead. Projection is SIGN-INVARIANT, so the distinct
-    rank-1 projections form a half-circle: angles in [0, pi). `n_angles` evenly spaced over that
-    half-circle cover the complement completely, and the strongest of them is a genuine upper bound
-    on "any direction orthogonal to the arm inside the concept subspace", not a sample from one.
+    A 2-D space can at least be sampled SYSTEMATICALLY instead. Projection is SIGN-INVARIANT
+    (`h - alpha*(h.d)d` is quadratic in d), so distinct rank-1 projections form a half-circle:
+    angles in [0, pi), and `n_angles` evenly spaced points cover it at pi/n_angles resolution.
+
+    ⛔ THIS IS A SYSTEMATIC SAMPLE, NOT A BOUND, and an earlier version of this docstring claimed
+    otherwise. Bounding a sup from finitely many points needs a smoothness constant, and there is
+    none here: decoding is greedy argmax and the judge thresholds at 0.5, so ASR(theta) is a STEP
+    function of theta -- the intervention is continuous in theta, the readout is not. Measured, the
+    control effect at L8 traverses 0.0173 inside a single unsampled 45-degree interval, which is
+    LARGER than the 0.0129 maximum observed at any sampled point. Four points whose inter-point
+    variation exceeds the claimed supremum cannot bound that supremum.
+
+    What the sweep does buy over one random draw is real and worth the compute: it reports where a
+    single draw sat in the range of available controls (three of four published draws turned out to
+    be near the weak end), and it turns "a control did nothing" into "K systematically spaced
+    controls did nothing".
 
     Deterministic: no RNG at all. The basis is the same Gram-Schmidt used elsewhere, so index k is
     reproducible from (payload, layer, k, n_angles).
