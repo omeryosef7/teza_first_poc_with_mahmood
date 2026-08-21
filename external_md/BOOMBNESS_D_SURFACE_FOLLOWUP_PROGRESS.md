@@ -4179,6 +4179,61 @@ The specificity numbers reproduce exactly through this independent path: `remove
 
 
 
+
+## ✅✅ THE RE-CHECK, REDONE CLEAN — all four depths now survive Holm, and L12's "near-miss" was an artifact
+
+**Artifact:** `outputs/boombness_followup/control_recheck_sessionmatched.json` — supersedes
+`control_recheck_subspace.json`, which is kept for the audit trail.
+
+Two defects review #6 found are fixed **in the experiment, not in the prose**: the control basis is
+now deterministic (Gram-Schmidt in fixed order, verified bit-identical across repeat calls and
+matching the runs' own logs to four decimals), and **every arm, control and baseline is judged in one
+session** (2026-08-21), removing R6-6's uncontrolled nuisance.
+
+| layer | ARM | p_cl | **subspace ctrl** | p | **arm − control** | p | **Holm-adj** |
+|---|---|---|---|---|---|---|---|
+| L6 | +0.0157 | 0.057 | +0.0030 | 0.73 | **+0.0127** | 0.020 | **0.0347** ✅ |
+| L8 | +0.0278 | 0.031 | −0.0041 | 0.25 | **+0.0319** | 0.0092 | **0.0276** ✅ |
+| L10 | +0.0211 | 0.026 | −0.0092 | 0.32 | **+0.0303** | 0.017 | **0.0347** ✅ |
+| **L12** | **+0.0316** | **0.0059** | **−0.0048** | **0.24** | **+0.0364** | **0.0034** | **0.0136** ✅ |
+
+### ⛔ The L12 near-miss was an artifact of the non-deterministic basis, and it is withdrawn
+
+I reported at 03:30 that *"the closest a control has come to firing in this whole sprint"* was L12's
++0.0103, p 0.062, and flagged it prominently as the one place a control nearly fired. **That draw came
+from the environment-dependent SVD basis.** The deterministic replacement removes **11.25%** of the
+cell-mean spread — a **55% stronger** control — and yet lands at **−0.0048, p 0.24**. Comfortably
+inert. **The near-miss is withdrawn: it was a property of an arbitrary basis rotation, not of the
+model.**
+
+### And the headline is now much stronger than the version it replaces
+
+- **All four depths survive Holm** over the depth family (previously **only L8**). L12 goes from
+  adjusted 0.0638 to **0.0136** and becomes the *strongest* result, not the shakiest.
+- Every subspace-matched control is inert (p 0.24–0.73), and the two strongest controls — L12 at
+  11.25% of the spread and L6 at 5.40% — are the two furthest from significance.
+- The arms themselves moved slightly under session-matched judging (L8 +0.0305 → +0.0278,
+  L12 +0.0322 → +0.0316), well within the judge's own noise.
+
+**`d_surface`'s causal direction-specificity is established at all four depths of its layer profile,
+with correction, against a control that ablates a comparable amount of the same concept subspace and
+could have failed.**
+
+### What this does NOT touch
+
+⛔ **Gate D still fails**, and tonight's subspace-prediction result says why: a random orthogonal axis
+in that same subspace **predicts** ASR at 83–106% of `d_surface`'s strength. The two results are the
+sprint's central finding and they are not in tension:
+
+> **Prediction is distributed across the concept subspace; causation is concentrated on one axis
+> within it.** Ablating the orthogonal axis changes nothing behaviourally (p 0.24–0.73 at four
+> depths) while reading it predicts ASR as well as reading `d_surface`.
+
+⚠ Still isotropic-controlled and untested: the refusalness profile, Phase F's composed arms, the
+Qwen3 double-random control. Measured earlier, they need a **different basis** — refusalness lies only
+0.65–2.72% inside the cell-mean span. ⚠ And the isotropic controls in the table above remain
+08-19-judged; they are not the headline contrast and are inert either way.
+
 ### ✅ The determinism fix is verified END-TO-END, and the session nuisance is being removed
 
 **771193/771194 completed**, and their run diagnostics now match the offline recomputation **exactly**
@@ -5550,12 +5605,13 @@ dropped.
 (R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove ~0.01–0.04% of the structure
 the arms remove; at L8 the arm removes 84.0% of the 2×2 cell-mean spread and the isotropic control
 0.005%. A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept subspace,
-exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **Run at all four `d_surface` profile depths, the arm beats it every time**
-(arm − control: L6 +0.0094, L8 +0.0339, L10 +0.0280, L12 +0.0219, each individually significant),
-**though only L8 survives Holm over the four depths.** So `d_surface`'s causal
-direction-specificity is now established at L8 and supported at the other three. ⚠ At L12 — the
-profile's peak — the control reaches **+0.0103, p = 0.062**, the closest any control in this sprint
-has come to firing. Every claim OUTSIDE the `d_surface` profile — the refusalness profile, Phase F's
+exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **Run at all four `d_surface` profile depths with a deterministic basis and one judging session,
+the arm beats it every time and ALL FOUR survive Holm** (arm − control: L6 +0.0127, L8 +0.0319,
+L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**). So `d_surface`'s
+causal direction-specificity is **established with correction at every depth of its profile**. ⛔ The
+earlier "L12 control nearly fired at p 0.062" is **withdrawn** — that draw came from an
+environment-dependent SVD basis; the deterministic replacement is 55% stronger and lands at
+−0.0048, p 0.24. Every claim OUTSIDE the `d_surface` profile — the refusalness profile, Phase F's
 composed controls, the Qwen3 double-random — still rests on isotropic draws, and measurement shows they
 need a **different basis**: refusalness lies only 0.65–2.72% inside the cell-mean span.
 
