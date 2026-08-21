@@ -46,17 +46,35 @@ SCORE = "strongreject_score"
 FLAG = "malicious_at_0.5"
 
 
-def load(dirs: List[str]) -> Dict[str, dict]:
-    out, dupes = {}, []
+def load(dirs: List[str], expect: int = 0) -> Dict[str, dict]:
+    """Union of judge shards. Duplicate-free AND complete -- the second check was missing.
+
+    Review #6: two judge directories share the tag `abgL6_B` over the same generations, one with 40
+    rows and one with 495. The 40-row one flows through `paired()` without any error and returns
+    `delta_cluster_mean: 0.0` -- a silent, plausible null. Duplicate-freeness cannot catch that; only
+    an expected-count check can. `expect` is the baseline's row count, so every arm must match the
+    thing it is paired against.
+
+    Also: the `judge_status != "ok"` filter runs BEFORE the duplicate check, so a duplicated id whose
+    first copy failed judging would have evaded it. Duplicates are now counted over ALL rows.
+    """
+    out, dupes, seen_any = {}, [], set()
     for d in dirs:
         for r in read_jsonl(os.path.join(d, "results.jsonl")):
-            if r.get("judge_status") != "ok":
+            pid = r.get("prompt_id")
+            if pid is None:
                 continue
-            if r["prompt_id"] in out:
-                dupes.append(r["prompt_id"])
-            out[r["prompt_id"]] = r
+            if pid in seen_any:
+                dupes.append(pid)
+            seen_any.add(pid)
+            if r.get("judge_status") == "ok":
+                out[pid] = r
     if dupes:
-        raise SystemExit(f"[recheck] {len(dupes)} prompt_id in more than one shard of {dirs}")
+        raise SystemExit(f"[recheck] {len(dupes)} duplicate prompt_id across {dirs}")
+    if expect and len(out) != expect:
+        raise SystemExit(f"[recheck] {dirs} yields {len(out)} judged rows, expected {expect}. "
+                         f"A partial or smoke-sized judge run silently returns a plausible null; "
+                         f"pass the right directory or state the discrepancy.")
     return out
 
 
@@ -93,7 +111,17 @@ def paired(base: Dict[str, dict], arm: Dict[str, dict], field: str) -> dict:
 
 
 def paired_diff(base, arm, ctrl, field: str) -> dict:
-    """(arm - base) - (ctrl - base), per prompt. Tighter than differencing two cluster means."""
+    """(arm - base) - (ctrl - base), per prompt.
+
+    NOT always tighter than differencing two independently-clustered means, contrary to what this
+    docstring and the write-up first claimed: measured, it is tighter at L6/L10/L12 and 11% WIDER at
+    L8 (0.011553 vs 0.010400). Conservative in direction, so nothing was inflated -- but the blanket
+    claim was wrong, so both SEs are now emitted and the reader can see which is which.
+
+    The baseline term cancels algebraically (d = arm[p] - ctrl[p]); the baseline enters only through
+    the prompt-id intersection, the null check, and the domain used for clustering. A real and
+    previously unstated strength follows: this contrast is IMMUNE to baseline judge noise.
+    """
     pids = sorted(set(base) & set(arm) & set(ctrl))
     d = {}
     for p in pids:
@@ -107,7 +135,9 @@ def paired_diff(base, arm, ctrl, field: str) -> dict:
         cl[str(base[p].get("domain"))].append(d[p])
     r = cluster_mean_ci(dict(cl), n_effective=len(d))
     return {"n": len(d), "delta_cluster_mean": r.get("mean"), "se": r.get("se"),
-            "p_cl": r.get("p_vs_0"), "n_domains": r.get("n_clusters")}
+            "p_cl": r.get("p_vs_0"), "n_domains": r.get("n_clusters"),
+            "note": "baseline cancels algebraically; this contrast is immune to baseline judge "
+                    "noise. It is not always tighter than quadrature over the two arms' SEs."}
 
 
 def main() -> None:
@@ -122,6 +152,7 @@ def main() -> None:
     args = ap.parse_args()
 
     base = load([args.baseline])
+    n_expect = len(base)
     out = {
         "script": "src/boombness/analyze_control_recheck.py",
         "purpose": "re-test d_surface layer-profile depths against a SUBSPACE-matched control that "
@@ -140,9 +171,9 @@ def main() -> None:
     for spec in args.layer:
         L, rest = spec.split("=", 1)
         arm_s, iso_s, sub_s = rest.split(":")
-        arm = load(arm_s.split(","))
-        iso = load(iso_s.split(","))
-        sub = load(sub_s.split(","))
+        arm = load(arm_s.split(","), expect=n_expect)
+        iso = load(iso_s.split(","), expect=n_expect)
+        sub = load(sub_s.split(","), expect=n_expect)
         # GUARD: refuse a non-d_surface arm, and refuse a control that is not the right one.
         iv = intervention_of(arm_s.split(",")[0])
         if iv and iv.get("direction") != "d_surface":
@@ -151,7 +182,11 @@ def main() -> None:
         iv_sub = intervention_of(sub_s.split(",")[0])
         if iv_sub and iv_sub.get("direction") != "in_subspace_orth":
             raise SystemExit(f"[recheck] L{L}: subspace control run is {iv_sub.get('direction')!r}")
-        entry = {"arm_intervention": iv, "subspace_control_intervention": iv_sub,
+        entry = {"runs": {"arm": [os.path.relpath(x, REPO) for x in arm_s.split(",")],
+                          "control_isotropic": [os.path.relpath(x, REPO) for x in iso_s.split(",")],
+                          "control_subspace_matched": [os.path.relpath(x, REPO)
+                                                       for x in sub_s.split(",")]},
+                 "arm_intervention": iv, "subspace_control_intervention": iv_sub,
                  "n_common": len(set(base) & set(arm) & set(iso) & set(sub)), "vs_baseline": {},
                  "arm_minus_control": {}}
         for field in (SCORE, FLAG):

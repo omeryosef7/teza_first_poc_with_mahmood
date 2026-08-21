@@ -444,11 +444,36 @@ def in_subspace_control_direction(payload: dict, layer: int, d: torch.Tensor,
         # cos_with_arm_direction = -0.5709 at L8 where it must be ~0. Two independent guards now:
         # a 1e-3 relative cut, AND an explicit re-orthogonalisation of the drawn vector, which is
         # correct whatever the rank detection decides.
+        # DETERMINISTIC BASIS. After removing the arm from an orthonormal rank-3 span the residual
+        # has singular values ~[1, 1, 0] -- the top two are equal to ~2e-7 relative -- so SVD's
+        # choice of basis inside that degenerate 2-D eigenspace is arbitrary and depends on the
+        # LAPACK build. Review #6 found the four SLURM runs agreed byte-for-byte with each other
+        # (same nodes, same environment) but NOT with an offline recomputation on the login node:
+        # the L8 control differed by a rotation, so the run's control removed 5.1971% of the
+        # cell-mean spread where the offline check said 5.35%. The draw is reproducible only within
+        # one environment, which is not reproducible.
+        #
+        # Fixed by never relying on SVD's basis choice: project the arm out of the ORIGINAL basis
+        # rows and Gram-Schmidt them in a fixed order. Rank still comes from the singular values,
+        # but the basis vectors are now a deterministic function of (payload, layer) alone.
         U2, S2, Vh2 = torch.linalg.svd(proj, full_matrices=False)
         keep = int((S2 > (S2.max() * 1e-3)).sum()) if float(S2.max()) > 0 else 0
         if keep == 0:
             return orthogonal_control_direction(d, seed), "fallback:span_is_the_arm_alone"
-        basis = Vh2[:keep]
+        rows, basis_list = [], []
+        for i in range(proj.shape[0]):
+            w = proj[i].clone()
+            for b in basis_list:
+                w = w - torch.dot(w, b) * b
+            n = w.norm()
+            if float(n) > 1e-4 * float(proj.norm()):
+                basis_list.append(w / n)
+            if len(basis_list) == keep:
+                break
+        if not basis_list:
+            return orthogonal_control_direction(d, seed), "fallback:gram_schmidt_collapsed"
+        basis = torch.stack(basis_list)
+        keep = basis.shape[0]
     pc = __import__("pair_common")
     v = pc.in_subspace_random(basis, d.float(), 1, seed=seed)[0].float()
     tag = "in_subspace"

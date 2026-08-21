@@ -75,7 +75,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--extract", required=True)
-    ap.add_argument("--fit", required=True, help="directions_fit_*.pt actually used by the extract")
+    ap.add_argument("--fit", required=True,
+                    help="directions_fit_{dev,heldout}.pt -- pass the PREFIX path to either; both "
+                         "are loaded and each row is scored CROSS-FIT, with the direction fitted on "
+                         "the OTHER split, exactly as the extraction wrote its own columns.")
     ap.add_argument("--judge", action="append", required=True)
     ap.add_argument("--layers", default="29,30,31")
     ap.add_argument("--seeds", default="20260901,20260902,20260903")
@@ -86,7 +89,17 @@ def main() -> None:
     cache = torch.load(os.path.join(args.extract, "cache", "final_occurrence_reps.pt"),
                        map_location="cpu", weights_only=False)
     reps = cache["reps"]
-    fit = torch.load(args.fit, map_location="cpu", weights_only=False)
+    # CROSS-FIT, which the first version dropped (review #6, D1). The extraction scores every row
+    # with the direction fitted on the OTHER split -- `directions_fitted_on` is "heldout" on all
+    # 3000 dev rows and "dev" on all 3000 heldout rows, `is_self_fit` false on 7080/7080. Scoring
+    # everything from one payload is a stated-method violation. Its measured impact here is small
+    # (only 6 of 900 dev prompts share a family with the dev fit, ~0.33% of rows) but the cross-fit
+    # numbers are systematically ~11% higher, and the honest run is the one that matches the extract.
+    base_fit = args.fit.replace("_dev.pt", "").replace("_heldout.pt", "")
+    fits = {sp: torch.load(f"{base_fit}_{sp}.pt", map_location="cpu", weights_only=False)
+            for sp in ("dev", "heldout")}
+    fit = fits["dev"]                      # geometry/subspace reporting only; scoring is cross-fit
+    other = {"dev": "heldout", "heldout": "dev"}
     ex = [r for r in read_jsonl(os.path.join(args.extract, "results.jsonl"))
           if r.get("condition") == args.condition]
     ju: Dict[str, dict] = {}
@@ -99,10 +112,14 @@ def main() -> None:
             if p in ju and reps.get(p) is not None]
     outcome = {p: float(ju[p]["strongreject_score"]) for p in pids}
 
-    def score(L: int, d: torch.Tensor, cos: bool) -> Dict[str, float]:
-        dn = d.float() / (d.float().norm() + 1e-8)
+    split_of = {r["prompt_id"]: str(r.get("split")) for r in ex}
+
+    def score(L: int, dmap, cos: bool) -> Dict[str, float]:
+        """`dmap` maps split -> direction; each prompt is scored with the OTHER split's vector."""
         out = {}
+        norm = {sp: (v.float() / (v.float().norm() + 1e-8)) for sp, v in dmap.items()}
         for p in pids:
+            dn = norm[other[split_of[p]]]
             h = reps[p][L].float()
             out[p] = float(torch.dot(h, dn) / (h.norm() + 1e-8)) if cos else float(torch.dot(h, dn))
         return out
@@ -139,16 +156,23 @@ def main() -> None:
         entry = {}
         for name in ("d_surface", "d_naive", "d_context", "d_inter"):
             if name in fit:
-                entry[name] = {ro: within_level(score(L, fit[name][L], ro == "cos"), outcome, level)
-                               for ro in ("cos", "proj")}
+                entry[name] = {ro: within_level(
+                    score(L, {sp: fits[sp][name][L] for sp in fits}, ro == "cos"), outcome, level)
+                    for ro in ("cos", "proj")}
         for seed in [int(s) for s in args.seeds.split(",")]:
-            d, how = sg.in_subspace_control_direction(
-                fit, L, fit["d_surface"][L].float(), seed=seed, orthogonalize_against_arm=True)
-            cosv = float(torch.dot(fit["d_surface"][L].float() / fit["d_surface"][L].float().norm(),
-                                   d.float() / d.float().norm()))
+            dmap, hows, coss = {}, {}, {}
+            for sp, pay in fits.items():
+                dd, how = sg.in_subspace_control_direction(
+                    pay, L, pay["d_surface"][L].float(), seed=seed,
+                    orthogonalize_against_arm=True)
+                dmap[sp] = dd
+                hows[sp] = how
+                coss[sp] = float(torch.dot(pay["d_surface"][L].float()
+                                           / pay["d_surface"][L].float().norm(),
+                                           dd.float() / dd.float().norm()))
             entry[f"in_subspace_orth_seed{seed}"] = {
-                "how": how, "cos_with_d_surface": cosv,
-                **{ro: within_level(score(L, d, ro == "cos"), outcome, level)
+                "how": hows, "cos_with_d_surface": coss,
+                **{ro: within_level(score(L, dmap, ro == "cos"), outcome, level)
                    for ro in ("cos", "proj")}}
         # BORING-EXPLANATION CONTROLS: if a bare scalar predicts, none of the above means anything.
         entry["hnorm"] = {"proj": within_level(
