@@ -174,6 +174,8 @@ appears in the gate table above.
 | R-11 | "the mid-band attenuation does not survive multiplicity correction … `holm_rejected` True only at L4 and L31" | **CORRECTED** to **L1, L4 and L31** at the honest family (m=32, all layers actually tested). The conclusion is unchanged — none of the three is in the L16–L24 mid-band — and the backstop is *stronger*, not weaker. |
 | R-14 | the **external-bank** arms — every completion judged against an **EMPTY GOAL** | **RETRACTED, re-judged.** `make_goal` reads the request from `final_query_text`; `external_bank.py` emitted the instruction only as `full_prompt`, so both external banks lacked that key and StrongReject scored against no request at all — recorded as `judge_status: "ok"`. It looked plausible because an empty-goal score still reads how harmful the *response* is, so values tracked the refusal rate. Banks regenerated with every `prompt_id` preserved, all arms re-judged; every arm moved ≤0.03 and the ordering held, so the cost was **measurement validity, not the conclusion**. |
 | R-15 | the **cross-condition profile** table | **CORRECTED 2026-08-19.** It shipped six deltas and no inference while the Qwen3 table eleven lines below carried `p_cl` on every cell and annotated two "(n.s.)" — the same asymmetric-standard defect as R-13, and its third instance. Re-run under one test (`analyze_condition_profile.py`, paired by `prompt_id`, domain-clustered, n=960); the deltas reproduce exactly. |
+| **R-22** | arm F's **mechanistic interpretation** — the "capability channel" reading | **RETRACTED.** The gain is **not conditional on the doublespeak mapping**: it appears most strongly in `benign_remap`, where carrot→bomb is never taught. ⚠ **Renumbered 2026-08-21** — this was cited as *R-8*, which the registry already assigns to G1's "+84% of span" supersession. Two meanings, one ID, in the same document. See also **R-20**, which retracts the arm-F *number* on separate grounds (a judge artifact, ~94% answer style). |
+| #1 … #9 | the sprint's **`#N` retraction series** (a THIRD numbering) | **RECORDED — different series.** The body cites "retraction **#3**", "**#6**", "**#7**", "**#9**"; these live in `docs/BOOMBNESS_SPRINT_PROGRESS.md` and are **not** the R-N series. **#7 is the same event tabled here as R-12** (the fake control band). Listed so the registry is genuinely closed: **three** numbering series exist — `#N`, R-1…R-5 (progress log), and R-6…R-22 (this table). Do not open a fourth; take the next ID from this table. |
 | R-1 … R-5 | the sprint's **first** retraction series | **RECORDED ELSEWHERE — different numbering.** These five predate this table and live in `docs/BOOMBNESS_SPRINT_PROGRESS.md` (e.g. R-5 = the "Boombness beats refusalness 3.7×" claim, cited at §"what was implemented"). They are listed here so the registry is closed: **two numbering series exist**, and an ID below R-6 refers to the progress log's series, not this one. Do not reuse R-1…R-5 for new retractions. |
 | R-12 | the G4 steering **control band** — "3 independent draws, between-draw sd 0.0048" | **RETRACTED, then CLOSED.** `score_behavior.py:123` recursed into composed arms without passing `control_seed`, so three draws launched at different `--seed` values drew the **same** directions and produced byte-identical generations (sha256 `276b6af…` ×3). The band was n=1. Re-run with the seed threaded; §"the control band, resolved". |
 | R-13 | the Qwen3 §14 comparison, and the `n`/`df` of the condition table | **RETRACTED.** The StrongReject rubric scores answer *style*: two Qwen3 arms, one a double-random control, reached ASR 0.95–0.99 with **0 of 324** generations containing a word distinctive to the goal. Superseded by the topical conjunction; see R-20 for the same defect on Llama. |
@@ -1440,7 +1442,7 @@ not rest on them; its **edges** are currently uncontrolled measurements.
 > and reopens §12"*. **It does not, and that sentence is withdrawn.** The §12 objective verdict is
 > unchanged and negative (§4/G4: both signs of the axis suppress ASR), and §9b lists building it under
 > **explicitly NOT recommended**. What follows is a real and large effect whose **mechanistic
-> interpretation was retracted** (R-8, the "capability channel"): the gain appears most strongly in
+> interpretation was retracted** (**R-22**, the "capability channel"): the gain appears most strongly in
 > `benign_remap`, the condition where the carrot→bomb mapping is **never taught**, which is the
 > signature of a prompt-bank artifact rather than a mechanism. It is reported because the *number* is
 > real and reproducible, not because it supports the objective.
@@ -1525,7 +1527,7 @@ it suspected the **prompt bank**, and ClearHarm (§14) has since excluded that. 
 **judge**.
 
 - ⛔ **"§12.2 is REOPENED and worth building" is WITHDRAWN.** That reading rested on arm F, whose
-  mechanism was retracted (R-8): the gain is **not conditional on the doublespeak mapping** — it is
+  mechanism was retracted (**R-22**): the gain is **not conditional on the doublespeak mapping** — it is
   largest in `benign_remap`, where the mapping is never taught — and it **does not transfer to explicitly
   harmful requests** (+0.000). Those are exactly the properties an attack objective would need, and the
   arm has neither. §9b lists building the objective under **explicitly NOT recommended**.

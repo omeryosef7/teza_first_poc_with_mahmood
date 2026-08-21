@@ -4671,7 +4671,7 @@ claim — ≈16 between-draw sds is a stronger statement than an uncorrected p=0
 comparator plan §2.5 asks for. The report had the better evidence and was leading with the worse.
 
 **Two findings from audit #4 remain open**, both registry-shaped and both needing more than an edit:
-* **R-8 denotes two different things** — G1's "+84% of span" supersession, and "the capability
+* **R-8 denotes two different things** — G1's **superseded** "+84% of span", and "the capability
   channel". `registry_check` verifies a cited ID *has a row*, not that the row is *about the same
   thing*, so it cannot catch this class.
 * **A third `#N` series exists** (#3, #6, #7, #9) with no rows, so §0's "the registry is closed" is
@@ -4681,3 +4681,39 @@ comparator plan §2.5 asks for. The report had the better evidence and was leadi
 |---|---|---|---|
 | 132 | 2026-08-21 | §0 headline + gate rows §14-L and §14-B re-quoted | the forbidden per-layer p is gone from §0 |
 | 133 | 2026-08-21 | replaced it with the band comparison and the shape test | **stronger** evidence, and the one §2.5 asks for |
+
+## The registry is genuinely closed — R-22 split out, a third series tabled, and a check for the class
+
+Tick 2026-08-21, closing audit #4's last two findings.
+
+**1. R-8 carried two retractions.** Four usages meant G1's "+84% of span" supersession (which the
+table assigns); three meant arm F's **"capability channel"** mechanistic reading. §0 makes the table
+authoritative, so the latter is the intruder → renumbered **R-22**, with its own row that also points
+at **R-20**, which retracts arm F's *number* on separate grounds. Two retractions about the same arm,
+for different reasons, previously sharing an ID with a third retraction about a different finding.
+
+**2. A third numbering series exists.** The body cites "retraction #3, #6, #7, #9" — a `#N` series
+living in the progress log, with **#7 the same event tabled here as R-12**. §0 claimed the registry
+was closed and listed **two** series; there are **three**. Now tabled as a row, so the claim is true
+rather than aspirational.
+
+**3. A check for the class, and a deliberate decision to make it advisory.** `registry_check`
+verified that a cited ID *has a row* — it cannot see whether the citations mean the *same thing*,
+which is why R-8 passed it repeatedly. It now also collects the **quoted gloss** following each
+citation and flags an ID carrying two distinct ones, merging glosses where one contains the other
+(`"+84% of span"` and `"+84% of span, CI [...]"` are one figure quoted at two lengths).
+
+It is **advisory, not fatal**, and that is the point. On the current documents it raises two
+candidates, and **both are false positives** — R-8's remaining pair are length variants of one
+figure, R-18's are a claim and its verdict. A fuzzy check made fatal would be silenced within a day.
+Over-trusting a heuristic is precisely what let a 17-line table hide four retracted headlines behind
+one "was"; the lesson is not "add more heuristics", it is "know which of your checks are proofs".
+
+Retrospectively it would have caught the real thing: the original R-8 glosses were
+`"capability channel"` and `"+84% of span"` — neither contains the other.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 134 | 2026-08-21 | split arm F's mechanistic retraction out of R-8 → **R-22** | one ID no longer means two retractions |
+| 135 | 2026-08-21 | tabled the `#N` series; §0's "closed" claim is now true | **three** series, all recorded |
+| 136 | 2026-08-21 | added a meaning-collision check, **advisory by design** | 2 candidates, both false positives, and it would have caught the real one |

@@ -382,7 +382,7 @@ replicate there.
 
 ⛔ An earlier draft titled this "THE HEADLINE RESULT — Boombness IS causal" and said it
 superseded the §18 = B label. **Both are withdrawn.** The objective verdict is unchanged and
-negative; the *number* below is real, its **mechanistic interpretation is retracted** (R-8) —
+negative; the *number* below is real, its **mechanistic interpretation is retracted** (**R-22**) —
 the gain is largest in `benign_remap`, where the mapping is never taught.
 
 **This supersedes the §18 = B label and reopens §12.** Everything below is at a matched 512-token budget,

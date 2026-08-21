@@ -255,11 +255,34 @@ def registry_check(path):
     key = lambda x: int(x.split("-")[1])
     problems = [f"{r} is cited in the body but has NO ROW in the registry table"
                 for r in sorted(cited - tabled, key=key)]
+
+    # MEANING COLLISION. Having a row does not mean the citations are about the SAME THING. R-8 was
+    # cited for BOTH G1's "+84% of span" supersession AND arm F's "capability channel" -- two
+    # retractions, one ID, in one document -- and the has-a-row check passed it, because it verifies
+    # existence and not identity. Detect it mechanically: collect the QUOTED gloss that follows each
+    # citation, and flag an ID carrying two or more distinct ones. Quoted glosses are the convention
+    # this report already uses ("R-8, the \"capability channel\""), so this is low-noise, and it is
+    # deliberately conservative -- it cannot catch an ID whose two meanings are both unquoted.
+    glosses = {}
+    for m in re.finditer(r"\b(R-\d+)\b([^\n]{0,80})", text):
+        rid, tail = m.group(1), m.group(2)
+        for q in re.findall(r"[\"\u201c]([^\"\u201d\n]{6,60})[\"\u201d]", tail):
+            glosses.setdefault(rid, set()).add(re.sub(r"\s+", " ", q).strip().lower())
+    # Merge glosses that are the same meaning worded differently: "+84% of span" and
+    # "+84% of span, CI [...]" are one figure quoted at two lengths, not two retractions.
+    advisories = []
+    for rid, gs in sorted(glosses.items(), key=lambda kv: key(kv[0])):
+        merged = []
+        for g in sorted(gs, key=len, reverse=True):
+            if not any(g in m or m in g for m in merged):
+                merged.append(g)
+        if len(merged) > 1:
+            advisories.append(f"{rid} is cited with {len(merged)} distinct quoted glosses "
+                              f"{merged[:3]} -- check they are one retraction, not two")
+    return problems, advisories
     # A tabled-but-uncited ID is NOT a defect -- the table IS the record, and a retraction whose
     # claim was excised entirely will correctly have no other mention. Only the reverse direction
     # breaks the registry, so only that direction fails the check.
-    return problems
-
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -275,7 +298,14 @@ def main() -> int:
         print("[sweep] clean — every retracted figure appears only inside a paragraph that marks it as such")
 
     # SECOND CHECK: is the registry itself complete? See registry_check for what this cost.
-    reg = registry_check(DELIVERABLES[0])
+    reg, adv = registry_check(DELIVERABLES[0])
+    if adv:
+        print(f"\n[sweep] registry ADVISORY ({len(adv)}) — heuristic, does not fail the build:")
+        for a in adv:
+            print(f"   {a}")
+        print("[sweep] this is a HEURISTIC and is advisory on purpose. Over-trusting a heuristic is "
+              "exactly what let a 17-line table hide four retracted headlines behind one word; a "
+              "fuzzy check made fatal would train the next reader to ignore it.")
     if reg:
         print(f"\n[sweep] REGISTRY: {len(reg)} problem(s) in {os.path.basename(DELIVERABLES[0])}")
         for r in reg:
