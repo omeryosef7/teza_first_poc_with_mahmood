@@ -5307,12 +5307,14 @@ dropped.
 (R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove ~0.01–0.04% of the structure
 the arms remove; at L8 the arm removes 84.0% of the 2×2 cell-mean spread and the isotropic control
 0.005%. A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept subspace,
-exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **On arm B it is
-inert (−0.0033, p_cl 0.149) while the arm is +0.0305 (p_cl 0.0089), so the sprint's headline
-behavioural result survives a control that could have falsified it.** Every OTHER inertness claim in
-this repo — the two layer profiles, Phase F's composed controls, the Qwen3 double-random — still rests
-on isotropic draws and should still be read as "a random rank-1 projection at the same depth did
-nothing", which is nearly a tautology. Re-running each against `in_subspace_orth` is one job apiece.
+exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **Run at all four `d_surface` profile depths, the arm beats it every time**
+(arm − control: L6 +0.0094, L8 +0.0339, L10 +0.0280, L12 +0.0219, each individually significant),
+**though only L8 survives Holm over the four depths.** So `d_surface`'s causal
+direction-specificity is now established at L8 and supported at the other three. ⚠ At L12 — the
+profile's peak — the control reaches **+0.0103, p = 0.062**, the closest any control in this sprint
+has come to firing. Every claim OUTSIDE the `d_surface` profile — the refusalness profile, Phase F's
+composed controls, the Qwen3 double-random — still rests on isotropic draws, and measurement shows they
+need a **different basis**: refusalness lies only 0.65–2.72% inside the cell-mean span.
 
 ### 1. What did we verify from the previous sprint?
 
@@ -5437,7 +5439,10 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    categories positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
 4. **A clean prompt-level Boombness→ASR correlation exists and is still not `d_surface`** — the
-   sharpest possible negative for the objective.
+   sharpest possible negative for the objective. **And it now sits against a causal result that says
+   the opposite:** `d_surface` beats a subspace-matched control at all four profile depths (L8
+   surviving Holm). **Causally specific, correlationally not** — the sharpest open question the
+   project has.
 5. **Qwen3 has dynamic range on two of three datasets**, overturning an inherited blocker.
 6. ⛔ **Methodological, and the most portable result here: isotropic random controls certify nothing
    in high dimensions** — and the one arm re-tested against a subspace-matched control (arm B)
@@ -5467,8 +5472,8 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 
 ### 12. What should the next sprint do?
 
-1. **Re-run every remaining `d_surface` inertness claim against `in_subspace_orth`** — one job each.
-   It landed for arm B and was inert; L6/L10/L12 are running. ⛔ **This control CANNOT be used for
+1. ✅ **Done for `d_surface`** — L6/L8/L10/L12 all re-tested; the arm beats the subspace-matched
+   control at every depth, L8 surviving Holm. ⛔ **This control CANNOT be used for
    refusalness arms**: refusalness lies only 0.6–2.7% inside the cell-mean span, so a draw from it is
    ~98% orthogonal to refusalness anyway. Controlling those needs a basis for refusal-relevant
    variance — the span of the five committed refusal directions, or the top PCs of activations on
