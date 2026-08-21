@@ -5159,6 +5159,20 @@ single bench (`pair_carrot_bomb.json`, 60 harmful / 20 harmless), `--validate` o
 the non-tautological generation-based sign check. Written to a **new** output directory so the
 existing `refusal_direction_llama_SELECTED.json` — selected over L12–L20 — is not clobbered.
 
+### ✅ The control's pre-registered validity condition RESOLVED — and it is met
+
+Run-time diagnostic from 772473, at the layer that matters:
+
+| model | layer | arm removes | subspace-matched control removes | cos(arm, control) |
+|---|---|---|---|---|
+| Qwen3-14B | **L11** | **89.97%** | **3.63%** | 1.9e-09 |
+| Llama-3.1-8B | L8 | 84.02% | 4.55% | ≤1.7e-08 |
+
+Qwen3's geometry mirrors Llama's closely enough that the control is a real subspace-matched control
+on this model too — ~25× weaker than the arm, but ~2 orders of magnitude stronger than the isotropic
+draw it replaces. **I do not have to reuse Llama's justification**, which is what I said I would
+check rather than assume. (The diagnostic covers 14 layers; L11 is the one used here.)
+
 **Scheduling note:** the first submission put three Qwen3-14B loads on **n-801** simultaneously,
 which is both the documented slow-load node and the documented contention failure (~16× slowdown at
 3 model loads/node). Cancelled at 30 s and respread one job per node.
