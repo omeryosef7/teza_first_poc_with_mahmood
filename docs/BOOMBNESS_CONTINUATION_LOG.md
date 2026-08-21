@@ -4330,3 +4330,42 @@ outcome is unknown and unreported.
 | 108 | 2026-08-21 | computed disruption for all 28 AdvBench arms | the matched control was already on disk |
 | 109 | 2026-08-21 | `abL6_Bctrl` (48.9%, +0.0020) vs `abL12_B` (47.1%, **+0.0364**) | **18× at matched disruption** — the objection is answered |
 | 110 | 2026-08-21 | decomposed the alarming +0.898 all-arm correlation | carried by refusal-removal arms; controls alone span ±0.006 |
+
+## Audit #3 closed — its last finding is REFUTED, and the guards are why
+
+Tick 2026-08-21. The final open item was: *"the Qwen3 arm-D **L25** variant was generated and never
+judged; its outcome is unknown and unreported."* Checked, and it does not hold as stated.
+
+| run | generations | `summary.json` | `DONE.json` |
+|---|---|---|---|
+| `q3_D` (L25 arm) | **106 / 960** | **absent** | absent |
+| `q3_Dctrl` (its control) | **0** | **absent** | absent |
+
+**Neither run finished**, so neither was "generated". `require_done` refuses both by design, and
+judging a 106-row partial arm against a **zero-row control** would have been strictly worse than not
+judging it.
+
+**The cause is recorded and is itself a guard firing.** Qwen3's fitted `d_surface` layers are
+`[4, 8, 11, 12, 16, 18, 20, 24, 28, 31, 34, 36, 38, 39]` — **L25 is not among them**. The random
+control is *derived from* `d_surface` at the layer it acts on, so at L25 there is nothing to derive
+from, and the run died with `random/project_out produced no hooks over layers [25]`. That is the
+failure that settled the Qwen3 depth choice in favour of **L20**, which is fitted, equidistant from
+Llama's relative depth, and has a house refusal direction — and the L20 set is the one that was run,
+judged and reported.
+
+**So the audit's premise inverts into a small piece of evidence for the pipeline.** The arm that
+could not have a valid control never produced a number, was never given a `DONE.json`, and never
+reached a report. The thing worth noticing is the counterfactual: *arm D at L25 would have run fine on
+its own* and produced a publishable-looking number — it is the **control failing** that stopped it.
+That is the third time in this sprint a control, not an effect, has been the thing that caught a
+problem.
+
+**Audit #3 is now closed:** 2 findings acted on (G1's wording; my heredoc provenance), 2 answered with
+data already on disk (multiplicity → the shape test; disruption-matching → `abL6_Bctrl`), 1 refuted
+(this one).
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 111 | 2026-08-21 | checked the "unjudged L25 variant" | **106/960 and 0/960 rows, no summary, no DONE** — never generated |
+| 112 | 2026-08-21 | traced the cause to Qwen3's fitted layer set | L25 unfitted → the derived random control had nothing to derive from |
+| 113 | 2026-08-21 | closed audit #3 | 2 fixed, 2 answered from existing data, 1 refuted |
