@@ -18,30 +18,40 @@ number does not go in.
 
 ## Phase board
 
-**Re-derived from the filesystem 2026-08-20**, not edited incrementally. Every row below was checked
-against an artifact, a source file or a report section this tick. The previous board was stale on
-**six of its seven** open rows — it still listed as NOT STARTED work the other session had finished
-days earlier. That is this project's signature failure ("the deliverable was never re-derived from
-the current state of the evidence") applied to the tracking document itself, which is worse than
-usual because the board is what decides where the next tick spends GPU.
+**Re-derived 2026-08-21 (second full re-derivation).** Every row checked against an artifact or a
+source file this tick. The board has been stale twice; it is not a document to edit incrementally.
 
-| plan § | subject | status | evidence checked this tick |
+| plan § | subject | status | evidence |
 |---|---|---|---|
-| — | Phase 1.1 `t_sf` | **DONE — verified** | `tests/test_boombness_stats.py` |
-| — | Phase 1.2 comprehension/semantic readout | **DONE — verified** | whole-answer; option mass 5.6e-05 → 0.297 |
-| — | Phase 1.3 `analyze_steering` | **DONE — verified** | re-ran, artifact replaced |
-| — | Phase 1.4 `surgical_knockout` dst | **DONE** | R-7 discharged; G3 re-derived at 24 families |
-| — | Phase 1.5 Tier-2 remainder | **DONE** | `validate_direction_payload` in `common.py` (T8); bank sha names split; `tests/test_silent_failures.py` |
-| §15 | report items 2 / 6 / 7 / 14 / 15 / 16 | **DONE** | §1b (item 2), §6b (item 6), §7b (item 7), §8b/§8c/§9b |
+| — | Phase 1.1–1.5 (the external critique's Tier-1/2) | **DONE — verified** | tests + re-runs; see defect table |
+| §15 | report items 2 / 6 / 7 / 14 / 15 / 16 | **DONE** | §1b, §6b, §7b, §8b, §8c, §9b |
 | §9 | `correlation_summary.json`, `regression_summary.md` | **DONE** | `outputs/boombness/section9/` |
-| §8/§9 | the 12 named plots | **DONE** | all 9 previously-missing plots found on disk |
-| §5.2 | alpha sweep incl. α=0.25 | **RUN; percentages gated** | `g1wa_sow` (31,104 rows); ceiling fails its gate — **absolute Δ reported instead** |
-| §14 | ClearHarm / AdvBench external arms | **DONE** | `clearharm_decomposition.json`, `advbench_decomposition.json` |
-| §14 | E6 second codeword | **DONE — answered** | `e6_button_knockout.json`; knockout ≤2.6% of ceiling on both models |
-| §14 | arm D on a second **model** | **★ ANSWERED — it REPLICATES** | `section14_topical_asr.json`; Δ topical +0.576 Qwen3 / +0.033 Llama, controls inert on both |
-| §4.1 | strength / consistency / example_position | **DEFERRED — WITH REASON** | report §"designed variance"; 3 dedicated `bank_block`s no analysis reads, so **non-contaminating**; underpowered ~10× and confounded on 3 variables. Fixing needs a generator change + fresh runs (E8), not a re-analysis |
-| §12 | build the GCG objective? | **REOPENED, undecided** | see gate table |
-| — | G1 headline **unit** (% of span vs Δ log-odds) | **OPEN — needs a human** | both now reported side by side; the % denominator fails its gate |
+| §8/§9 | the 12 named plots | **DONE** | all present on disk |
+| §5.2 | alpha sweep incl. α=0.25 | **RUN; % gated, absolute Δ citable** | ceiling fails its option-mass gate; G1 quoted as Δ log-odds |
+| §14 | ClearHarm + AdvBench external arms | **DONE** | decomposition artifacts; goal-fixed re-judge |
+| §14 | E6 second codeword (`button`) | **DONE — answered** | knockout ≤2.6% of ceiling, both models |
+| §14 | arm D on a second model | **DONE — replicates** | topical Δ +0.576 Qwen3 / +0.033 Llama, controls inert |
+| **§2.5** | **control must be a BAND, not one draw** | **DONE — both populations** | AdvBench **5 draws** (+0.0012, sd 0.0026); ClearHarm **3 draws** (+0.0086, sd 0.0034) |
+| §4.1 | strength / consistency / example_position | **DEFERRED — WITH REASON** | 3 `bank_block`s no analysis reads → non-contaminating; needs a generator change (E8) |
+| §12 | build the GCG objective? | **REOPENED, undecided** | needs a human |
+| — | G1 headline **unit** (% of span vs Δ log-odds) | **OPEN — needs a human** | both reported side by side |
+
+### The surviving claim set, and what backs each
+
+| claim | status | backing |
+|---|---|---|
+| Removing `d_surface` raises attack success on an external harmful set | **supported** | +0.0422 vs a **5-draw band** at +0.0012 (sd 0.0026); replicated under an independent judge at 4 layers; 17–18 real refusal→compliance flips, longer refusals contribute **+0.0000**; disruption-matched control at 48.9% perturbation gives +0.0020 |
+| The effect is localized to a contiguous band | **supported, descriptively + shape test** | scan statistic **p=0.0109**; **no single layer survives Holm** |
+| Meaning is retrieved from the demonstrations | **supported on the diagonal only** | 2 of 4 (context × scope) cells sign-robust across 13 layer-sets |
+| Arm D replicates on a second model | **supported** | topical outcome, control inert on both |
+| Cutting demo attention edges does ~nothing | **supported, both models** | ≤2.6% of the deletion ceiling |
+| Boombness predicts attack success (**G2**) | ⛔ **RETRACTED** | R-18 |
+| Arm F more than doubles ASR | ⛔ **RETRACTED** | R-20 — ~94% answer style |
+
+### Instruments built this week (all with committed producers)
+
+`analyze_topical_asr` · `judge_retest` · `generation_change` · `effect_decomposition` ·
+`layer_profile_test` · `population_index` · `unanalysed_inventory` · `retraction_sweep.registry_check`
 
 ## Gate table
 
