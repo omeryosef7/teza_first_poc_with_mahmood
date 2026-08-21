@@ -205,6 +205,57 @@ def evaluate(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, float],
     return res
 
 
+def family_bootstrap(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, float],
+                     domain: Dict[str, str], family: Dict[str, str], pids: List[str],
+                     name: str, n_boot: int, seed: int) -> dict:
+    """Resample FAMILIES with replacement; refit the within-domain estimand each replicate.
+
+    WHY (R5-4). The 15 strength levels are built from the SAME 120 families, so prompts sharing a
+    family are not independent across levels and the domain-clustered SE prices only the domain
+    layer. Measured, that makes the within-level SEs ~11% too small. Resampling at the family level
+    prices the dependence the design actually has.
+
+    Reported as a percentile interval plus the count of replicates at or below zero -- the latter is
+    the one-sided evidence the sprint quoted, and it was markdown-only until review #8 (F2) caught
+    that no artifact carried it.
+    """
+    by_fam: Dict[str, List[str]] = collections.defaultdict(list)
+    for p in pids:
+        by_fam[family.get(p, p)].append(p)
+    fams = sorted(by_fam)
+    if len(fams) < 3:
+        return {"degenerate": True, "reason": f"only {len(fams)} families; a family bootstrap "
+                                              f"needs >=3 or the interval is degenerate"}
+    rng = random.Random(seed)
+    reps: List[float] = []
+    for _ in range(n_boot):
+        draw: List[str] = []
+        for _ in range(len(fams)):
+            draw.extend(by_fam[fams[rng.randrange(len(fams))]])
+        pool: Dict[str, Tuple[List[float], List[float]]] = collections.defaultdict(
+            lambda: ([], []))
+        for p in draw:
+            v = metrics.get(p, {}).get(name)
+            o = outcome.get(p)
+            if v is None or o is None:
+                continue
+            pool[domain[p]][0].append(v)
+            pool[domain[p]][1].append(o)
+        r = within_domain_rho({k: (list(a), list(b)) for k, (a, b) in pool.items()}).get("mean_rho")
+        if r is not None:
+            reps.append(r)
+    if len(reps) < n_boot // 2:
+        return {"degenerate": True, "reason": f"only {len(reps)}/{n_boot} replicates estimable"}
+    reps.sort()
+    lo = reps[int(0.025 * (len(reps) - 1))]
+    hi = reps[int(0.975 * (len(reps) - 1))]
+    return {"n_families": len(fams), "n_replicates": len(reps),
+            "se_family_bootstrap": st.pstdev(reps) if len(reps) > 1 else None,
+            "ci95_percentile": [lo, hi],
+            "n_replicates_le_zero": sum(1 for r in reps if r <= 0.0),
+            "one_sided_p_le_zero": (sum(1 for r in reps if r <= 0.0) + 1) / (len(reps) + 1)}
+
+
 def load_cfg(run_dir: str) -> Optional[dict]:
     p = os.path.join(run_dir, "config.json")
     if not os.path.exists(p):
@@ -303,6 +354,8 @@ def main() -> None:
     ap.add_argument("--directions", default="d_surface,d_context,d_naive")
     ap.add_argument("--outcome", default="malicious_at_0.5,strongreject_score")
     ap.add_argument("--n-perm", type=int, default=2000)
+    ap.add_argument("--n-boot", type=int, default=2000,
+                    help="family-level bootstrap replicates for the heldout estimand (R5-4)")
     ap.add_argument("--seed", type=int, default=20260820)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
@@ -325,6 +378,7 @@ def main() -> None:
 
     domain = {r["prompt_id"]: str(r.get("domain")) for r in ex}
     level = {r["prompt_id"]: level_of(r) for r in ex}
+    family = {r["prompt_id"]: str(r.get("family_id")) for r in ex}
     split = {r["prompt_id"]: str(r.get("split")) for r in ex}
     block = {r["prompt_id"]: str(r.get("bank_block")) for r in ex}
     ex_pids = sorted({r["prompt_id"] for r in ex})
@@ -429,6 +483,8 @@ def main() -> None:
                 "selected_on_dev": best,
                 "dev": usable[best],
                 "HELDOUT_TEST": hel_res,
+                "HELDOUT_family_bootstrap": family_bootstrap(
+                    met, outcome, domain, family, hel, best, args.n_boot, args.seed),
                 "HELDOUT_between_vs_within_level": between_vs_within_level(
                     met, outcome, level, hel, best),
                 "ALL_between_vs_within_level": between_vs_within_level(

@@ -95,6 +95,24 @@ RETRACTED = [
      r"\+?0\.(?:548|417)[^\n]{0,40}arm F"),
     ("R21 Llama exempted from the style artifact",
      r"Llama results are (?:not|un)affected|inflation did not fire"),
+    # ---- R-23 / R-24 (2026-08-21): E12 retracted in full. Added in the SAME tick as the retraction,
+    # because the sweep had just reported "clean" on a run where it carried no pattern for either --
+    # a guard that has never been pointed at a claim cannot vouch for it, and I nearly took that
+    # "clean" as evidence. Both patterns carry CLAIM context, not bare numbers: "0.50" and "0.61"
+    # alone would fire on dozens of unrelated lines in a document full of two-digit ratios.
+    ("R23 E12 effect ratio / concept-general consequence",
+     r"0\.0182\s*/\s*0\.0364|"
+     r"(?:delivers|delivering)[^\n]{0,30}50%[^\n]{0,30}effect|"
+     r"61%[^\n]{0,40}(?:delivers|half|50%)|"
+     r"shared component is the caus\w+ active|"
+     r"concept-general in consequence|"
+     r"(?:7|~7)\s*band-sds"),
+    ("R24 cos 0.61 read as the concept-general fraction",
+     r"substantially but not wholly concept-general|"
+     r"concept-general (?:fraction|component)[^\n]{0,40}0\.61|"
+     r"0\.61\d{0,2}[^\n]{0,50}concept-general|"
+     r"`?d_surface`?[^\n]{0,40}does what its name claims|"
+     r"transfers? at (?:roughly )?half strength"),
     ("R11 Holm backstop stated without L1",
      r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),
     # ---- 2026-08-19 SESSION 2. Added the same day they were declared, per the rule above.

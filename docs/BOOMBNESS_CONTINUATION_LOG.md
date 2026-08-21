@@ -4893,8 +4893,10 @@ the estimator is shown to reproduce itself to **0.995** on disjoint families —
 noise**, and it repeats on the independent split. This is E6's lesson applied before the fact rather
 than after: a similarity means nothing until you know what identity scores.
 
-**Answer: substantially but not wholly concept-general** — ~**37%** shared variance, ~**63%**
-concept-specific. Neither the concept-independent axis the name implies, nor a bomb-detector.
+⛔ **RETRACTED (R-24).** Was: "**Answer: substantially but not wholly concept-general** — ~**37%**
+shared variance, ~**63%** concept-specific." The codeword control (0.5539, further than the concept
+swap's 0.6117) shows the 0.61 is not a concept-overlap measurement at all, so neither the percentage
+nor the word "concept-general" survives.
 
 **What it does to everything else.** Every causal result in this sprint used the **bomb**-fitted
 direction, so each concerns a direction that is about two-thirds bomb-specific. The results stand as
@@ -4929,8 +4931,9 @@ instructions containing no `carrot`, no `bomb` and no `knife`. Both arms coheren
 | knife-fitted **random control** | **+0.0000** | **0** | [−0.0059, +0.0067] |
 | 5-draw control band | +0.0012 (sd 0.0026) | — | — |
 
-**It transfers**, at ~7 band-sds, with its matched control at exactly zero — and it fails the same
-way: on the **453** prompts refused in both arms the delta is **+0.0000**, so the whole effect is
+⛔ **RETRACTED (R-23) — "at ~7 band-sds" used the weak 4096-d random band; against the hard
+in-subspace null the knife arm is z = 1.34 and does not clear.** Original text: **It transfers**, at
+~7 band-sds, with its matched control at exactly zero — and it fails the same way: on the **453** prompts refused in both arms the delta is **+0.0000**, so the whole effect is
 **8 of 9** real refusal→compliance flips. Same decomposition, same signature, a different concept's
 direction.
 
@@ -4939,7 +4942,7 @@ direction.
 | | |
 |---|---|
 | alignment of the two fitted directions | **cos ≈ 0.61** |
-| ratio of their causal effects | **0.0182 / 0.0364 = 0.50** |
+| ratio of their causal effects | ⛔ **RETRACTED (R-23)** — was **0.0182 / 0.0364 = 0.50**, an L8 numerator over an L12 denominator |
 
 ⛔ **RETRACTED 2026-08-21 — R-23. Both numbers in the row above are wrong as paired.** See the
 tick below. Kept in place, struck, because this block is what audit #5 was pointed at and the
@@ -4947,9 +4950,9 @@ correction only makes sense beside it.
 
 | # | time | action | outcome |
 |---|---|---|---|
-| 153 | 2026-08-21 | ran E12's causal half on AdvBench | knife-fitted direction: **+0.0182**, control **+0.0000** |
+| 153 | 2026-08-21 | ran E12's causal half on AdvBench | knife-fitted direction: **+0.0182**, control **+0.0000** — ⛔ **R-23**: an *orthogonal* direction gives the same |
 | 154 | 2026-08-21 | decomposed it by refusal transition | **+0.0000** on 453 both-refused rows; 8 of 9 real flips |
-| 155 | 2026-08-21 | compared cos (0.61) to effect ratio (0.50) | the shared component is the causally active one; **revises last tick's bound** |
+| 155 | 2026-08-21 | compared cos (0.61) to effect ratio (0.50) | ⛔ **RETRACTED (R-23)** — cross-layer ratio, and not identified; was: "the shared component is the causally active one" |
 
 ## §0 now carries E12's scope, and the figure registry carries E12's numbers
 
@@ -5014,8 +5017,8 @@ an L12 denominator and reported the quotient to two significant figures.
 | in-subspace angle k=3 | 0.0000 | −0.0121 | −6 |
 
 A direction with **zero** alignment reproduces the knife result **exactly**. At cos 0 the effect spans
-−0.0121…+0.0182, so effect is not a monotone function of cosine and "61% aligned → ~half the effect"
-has no content. Against this hard null (mean +0.0010, sd 0.0128, n=4) the **knife arm is z = 1.34 and
+−0.0121…+0.0182, so effect is not a monotone function of cosine and the **retracted** "61% aligned → ~half the effect"
+has no content (**R-23**). Against this hard null (mean +0.0010, sd 0.0128, n=4) the **knife arm is z = 1.34 and
 does not clear it**; bomb L8 is **z = 3.23** and does. My "~7 band-sds" came from the 4096-d
 norm-matched random band (sd 0.0026) — a much weaker null than perturbing *inside the same subspace*.
 Artifact: `outputs/boombness/e12_insubspace_null.json`.
@@ -5104,3 +5107,59 @@ and failed both times.**
 | 160 | 2026-08-21 | job 772414 `buttonfit` completed; ran `compare_fits.py` | **cos 0.5539** — the pre-committed collapse branch |
 | 161 | 2026-08-21 | verified all three fits share `family_set_sha16` and one (codeword,concept) pair each | contrast is clean; exactly one factor varies |
 | 162 | 2026-08-21 | filed **R-24**; rewrote report §0 and the E12 sections | **E12 retracted in full**; surviving claim set unaffected |
+
+## Audit #5's deliverable lane: two guards that could not have caught what they were built for
+
+Same tick. The audit's second lane checked whether the deliverables are self-consistent. Two of its
+findings are about **my own tooling**, and both are the dead-guard class.
+
+**1. `canonical_figures.py` could detect disagreement but never ABSENCE.** Check (a) fires only when
+`len(nums) > 1` — two or more deliverables quoting the figure. A figure **missing** from the short
+update yields exactly one value and passed in silence. So the registry printed *"all registered figures
+agree"* on precisely the failure it was written for: the short update lagging the report, which is what
+all three incidents in its own docstring were. Fixed with a declared `FIGURE_SCOPE` (`SCOPE_ALL` /
+`SCOPE_REPORT_ONLY`) and a check (c) for absence. **Scope is declared, not inferred** — inferring it
+from "how many files happen to quote this today" is the address-by-incidental-property bug.
+
+**Tested against a case it must fail**, per the standing rule: deleted `sd 0.0026` from the short
+update → exit **1** with the right message; restored → exit **0**. On its *first real run* it also
+found a live discrepancy — which turned out to be my regex requiring "between-draw sd" while the short
+update writes "sd". Widened, still pinned to its own band.
+
+**2. `retraction_sweep.py` reported "clean" while carrying no pattern for R-23 or R-24.** I had run it
+minutes after filing both and read the clean result as reassurance. It was vacuous: a guard that has
+never been pointed at a claim cannot vouch for it. Added patterns for both, carrying **claim context**
+rather than bare numbers ("0.50" and "0.61" alone would fire all over a document full of ratios). They
+immediately found **6 unqualified occurrences** — 4 genuinely live retracted claims I had struck only
+partially, including a tick-log row still asserting "the shared component is the causally active one",
+and the E12 result table's ratio row (table rows are their own block, so the ⛔ note *below* the table
+did not cover it — the §13 fix working as designed). Now 0.
+
+**3. Three stale passages in the report, fixed.** §2.6's gate row claimed the semantic readout was
+"the first direct confirmation that `d_surface` **does what its name claims**" — which R-24 now
+contradicts inside the same table; narrowed to "for this concept pair". E12 was still listed in §9b as
+"⏳ open — the highest-value experiment left" *after* it had run and been retracted (the identical
+defect the log recorded fixing for E6 one tick earlier). And `d_context`'s ceiling was quoted as
+"0.87–0.92" when the artifact says **0.9158 / 0.8269** — the low end silently excluded the knife
+ceiling.
+
+**4. One inversion worth recording.** The audit flagged four report/short-update statements —
+"one concept pair (carrot↔bomb)", "this needs a second concept pair" — as **falsified by E12**. With
+E12 retracted they are **true again**, and I left them alone. A finding written against a result that
+is withdrawn hours later can invert; taking the audit's list mechanically would have introduced four
+errors.
+
+**5. Two artifact facts no deliverable quoted, now added to the report.** Cross-concept `d_naive` is
+**0.6224** — *higher* than `d_surface`'s 0.6117. The naive confounded direction the whole 2×2 exists to
+replace is marginally **more** concept-transferable than the identified one: the 2×2 buys
+identification, not generality. And `d_context`'s much lower split ceiling (0.83–0.92 vs 0.995) gives
+**§14-D's specificity control a live alternative explanation** — "`d_context` does nothing" and
+"`d_context` is measured badly" are not separated by that control as designed. Both disclosed.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 163 | 2026-08-21 | added absence check (c) + declared scope to `canonical_figures.py` | tested both directions (exit 1 on lag, 0 on clean); found a real regex/wording mismatch on first run |
+| 164 | 2026-08-21 | added R-23/R-24 patterns to `retraction_sweep.py` | **6 unqualified occurrences** surfaced; the prior "clean" was vacuous; now 0 |
+| 165 | 2026-08-21 | fixed §2.6's name claim, E12's stale ⏳ row, `d_context`'s misquoted ceiling | report self-consistent with R-24 |
+| 166 | 2026-08-21 | declined 4 audit items inverted by the retraction | "one concept pair" is true again; not changed |
+| 167 | 2026-08-21 | disclosed `d_naive` 0.6224 and the §14-D `d_context` confound | 2×2 buys identification, not generality |

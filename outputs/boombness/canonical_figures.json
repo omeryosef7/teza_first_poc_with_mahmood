@@ -10,16 +10,21 @@
           "0.0012"
         ]
       },
-      "artifact_value": 0.0012121212121212121
+      "artifact_value": 0.0012121212121212121,
+      "scope": "all"
     },
     "advbench_band_sd": {
-      "regex": "5-draw control band[^\\n]{0,60}?between-draw sd\\s*(0\\.\\d{3,5})",
+      "regex": "5-draw control band[^\\n]{0,60}?(?:between-draw )?sd\\s*(0\\.\\d{3,5})",
       "quoted_in": {
         "reports/boombness_objective_sprint_report.md": [
           "0.0026"
+        ],
+        "reports/boombness_objective_sprint_short_update.md": [
+          "0.0026"
         ]
       },
-      "artifact_value": 0.0025777374050858274
+      "artifact_value": 0.0025777374050858274,
+      "scope": "all"
     },
     "e12_cross_concept_cos": {
       "regex": "\\(bomb-dev vs knife-dev\\)[^|]*\\|\\s*\\*\\*\\+?(0\\.6\\d{2,3})\\*\\*",
@@ -28,7 +33,8 @@
           "0.6117"
         ]
       },
-      "artifact_value": 0.6117389239370823
+      "artifact_value": 0.6117389239370823,
+      "scope": "report_only"
     },
     "e12_knife_causal_delta": {
       "regex": "`?knife`?-fitted[^\\n]{0,80}?\\+(0\\.01\\d{2})",
@@ -37,7 +43,8 @@
           "0.0182"
         ]
       },
-      "artifact_value": 0.01818181818181818
+      "artifact_value": 0.01818181818181818,
+      "scope": "report_only"
     },
     "layer_shape_p": {
       "regex": "permutation\\D{0,12}p\\s*=\\s*(0\\.0\\d{2,4})",
@@ -49,7 +56,8 @@
           "0.011"
         ]
       },
-      "artifact_value": 0.01086989130108699
+      "artifact_value": 0.01086989130108699,
+      "scope": "all"
     }
   },
   "problems": [],
@@ -60,6 +68,6 @@
       "--out",
       "outputs/boombness/canonical_figures.json"
     ],
-    "git_commit": "b6895d515c641ac3d1a16c03b6ae27266eba51a5"
+    "git_commit": "190459f2ca2e0c107b903dc3668e784abffbc694"
   }
 }

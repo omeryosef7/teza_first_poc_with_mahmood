@@ -125,7 +125,7 @@ here.
 | **§14-D** | **Is the effect specific to `d_surface`?** | **Yes.** `d_context` — fitted by the same 2×2 on the same rows, near-orthogonal (cos 0.188 @L8) — moves ASR by **+0.0045, CI [−0.0066, +0.0157], p=0.399, G=16** at L8 while changing a large fraction of generations. ⚠ **Corrected 2026-08-21 (estimand switch).** This previously read "**exactly 0.0000**", which is the *pooled* delta (0.00025); every other number in this table is **domain-clustered**, and the clustered mean is +0.0045. The conclusion is unchanged — the interval covers zero and p=0.399 — but "exactly zero" overstated it, and mixing a pooled estimate into a clustered table is the estimand switch this sprint has already retracted for twice. Source: `advbench_direction_specificity.json` `paired_vs_baseline.d_context`. It changes **34.9%** of generations (173/495) — that figure appeared in **no artifact** when the audit swept every float under `outputs/`, and is now produced by `generation_change.py` into `outputs/boombness/generation_change.json`, where it reproduces exactly. Companion figures from the same artifact: **29.5%** (146/495) for the out-of-band L16 arm and **38.2%** (189/495) for `d_surface` at L8. Same bank, same fit, same layer, same operation, comparable perturbation of the text, **+0.0425 vs +0.0000** in behaviour. A stronger control than any random projection, because `d_context` is structured and demonstrably potent. |
 | **§14-L** | **Where in the network does the effect live?** | **A contiguous band, ~L6–L14** (scan-statistic window; permutation **p=0.0109** under layer-label exchangeability). ⚠ **No single layer survives Holm** over the 10-layer family, so per-layer p-values are uncorrected and not quotable as results; the *shoulder* is graded, not a hard edge. Individually strongest: L8, L10, L12. Superseded per-layer text: ~~Significant at **L8 (p=0.0089)**, **L10 (p=0.0190)** and **L12 (p=0.0056)**, marginal at L6, and **null from L16 outward** — L16 is exactly baseline. **Matched controls at five depths are all inert** (−0.0066 to +0.0007). And L16 is not a failed intervention: it changes **29.5%** of generations while changing compliance on **none**. |
 | **§14-SA** | Is the joint arm super-additive? | **Established on AdvBench, against its own control** — +0.0333, CI [+0.0128, +0.0638]; and by the **paired** difference against the matched random triple, **+0.0268, CI [+0.0029, +0.0584]** (comparing the two intervals separately would have been the difference-of-significance fallacy — they overlap). ⚠ Lower bound near zero. **Not established on ClearHarm** (+0.0677, CI [−0.218, +0.123]), as predicted from its cluster imbalance. |
-| **§2.6** | Does any intervention preserve comprehension? | **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` does what its name claims, on an instrument that can represent both answers. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
+| **§2.6** | Does any intervention preserve comprehension? | **ANSWERED for `project_out d_surface` — it does not damage comprehension, it IMPROVES it.** On the rebuilt whole-answer readout (`section4b_whole_answer.json`): comprehension **+0.2795 [+0.175, +0.384], p=0.0010**, while the norm-matched double-random control is flat (−0.0041, p=0.63). The semantic readout moves **+2.4073** toward the concept — the first direct confirmation that `d_surface` moves the model's reading of the codeword **for this concept pair**, on an instrument that can represent both answers. ⚠ **Narrowed 2026-08-21:** this row previously said "does what its name claims". It does not license that — R-24 shows a pure codeword swap moves `d_surface` further than a pure concept swap, and all evidence in this row is `carrot↔bomb`. ⛔ The withdrawn version of this row said "comprehension unchanged, p=0.681", computed on a readout whose two options held a median **4.4e-05** of next-token mass (R-6). |
 | **FINAL** (§18) | outcome label | **C, amended** — see below. Both blockers have landed (R-6 resolved, R-7 discharged), so this is decided rather than deferred. |
 
 ### §18: the outcome label, settled
@@ -1879,7 +1879,7 @@ here rather than silently left reading as future work:
 | **E9** | the §5.2 alpha sweep at α=0.25 | ✅ **DONE** — +103% harm_ctx, +145% benign_ctx; §6b |
 | **E10** | a bank-identity check that can run | ⏳ open — external banks still ship no `*_meta.json` |
 | **E11** | an external set with real Qwen3 headroom | ⏳ open — not buildable from this repo |
-| **E12** | **a CONCEPT swap, not a codeword swap** | ⏳ **open — and it is now the highest-value experiment left.** E6 changed the *codeword* and held the concept, so it tests whether `d_surface` is a **carrot**-detector; it **cannot** test whether it is a *concept-surface* direction, which is the claim the name makes. Measured cost: a codeword swap touches **16 of 240** benign sentences (7%); a concept swap requires rewriting the **26 of 240 (11%)** harm sentences carrying bomb-specific affordances (`detonat`, `defus`, `fuse`, `timer`) plus a fresh §2.4 audit — an order of magnitude more, and the only route to the claim. |
+| **E12** | **a CONCEPT swap, not a codeword swap** | ✅ **DONE 2026-08-21 — and ⛔ RETRACTED IN FULL (R-23 behavioural, R-24 representational).** It ran, both halves failed their own pre-committed controls, and the failure is the result: `d_surface` is **not** shown to be a concept-surface direction. Original framing kept below.** E6 changed the *codeword* and held the concept, so it tests whether `d_surface` is a **carrot**-detector; it **cannot** test whether it is a *concept-surface* direction, which is the claim the name makes. Measured cost: a codeword swap touches **16 of 240** benign sentences (7%); a concept swap requires rewriting the **26 of 240 (11%)** harm sentences carrying bomb-specific affordances (`detonat`, `defus`, `fuse`, `timer`) plus a fresh §2.4 audit — an order of magnitude more, and the only route to the claim. |
 | **E13** | a **profile-shape** test with a null on the effects themselves | ⏳ open. `layer_profile_test.py` conditions on the observed multiset of per-layer effects, so it tests **arrangement**, not whether the effects are real — a lucky contiguous run of noise would still fire it. A stronger null resamples the per-prompt deltas. |
 | **E14** | judge replicates as standard, not as an audit response | ⏳ open. Generation here is **deterministic** (660/660 byte-identical), so all run-to-run variance is the sampled judge, and it is **population-specific**: 1.9 pp on the bank, **0.2 pp on AdvBench**. Two replicates per reported arm would let every ASR carry its own floor instead of borrowing one. |
 
@@ -2237,7 +2237,7 @@ concept — two disjoint halves of the data give the *same* direction to **cos =
 cross-concept **0.61 is not estimation noise**. It also reproduces on the independent split (0.605),
 so it is not a one-sample accident.
 
-**Answer: `d_surface` is substantially but not wholly concept-general.** At cos ≈ 0.61 against a 0.995
+⛔ **Answer RETRACTED (R-24): this said "`d_surface` is substantially but not wholly concept-general".** The codeword control kills the reading — swapping only the codeword gives **0.5539**, further than swapping only the concept (0.6117), so the 0.61 is not a concept-overlap measurement. Original text follows. At cos ≈ 0.61 against a 0.995
 ceiling, roughly **37% of the direction's variance is shared across concepts and ~63% is
 concept-specific**. It is neither the concept-independent "surface identity" axis its name implies,
 nor a mere bomb-detector.
@@ -2247,8 +2247,25 @@ nor a mere bomb-detector.
 does not invalidate them — the ablation effect, its band and its refusal-transition decomposition all
 stand as measured — but it **bounds their generality**: "removing `d_surface` raises attack success"
 is established for `carrot↔bomb`, and E12 says one should expect a *related but materially different*
-direction for another concept. `d_context` behaves the same way (0.495 against a 0.87–0.92 ceiling),
+direction for another concept. `d_context` behaves the same way (0.495 against a **0.83–0.92** ceiling — the knife ceiling is 0.8269, which an earlier revision of this sentence silently excluded),
 so this is a property of the 2×2 estimator, not of `d_surface` alone.
+
+**Two things in the artifact that no revision of this report quoted, both sharper than what it did quote.**
+
+**1. `d_naive` transfers slightly *better* than `d_surface`.** Cross-concept means:
+`d_surface` **0.6117** (ceiling 0.995), `d_context` 0.4948, **`d_naive` 0.6224** (ceiling 0.991).
+The naive, confounded direction — the one the entire 2×2 design exists to replace — is marginally
+*more* concept-transferable than the identified one. So the concept-specificity is not a property the
+2×2 introduced or could remove: **the 2×2 buys identification, and it does not buy generality.** With
+R-24 this is the expected result rather than a surprise, since both estimators are read at the same
+codeword token.
+
+**2. This gives §14-D's specificity control a live alternative explanation.** That control leans on
+`d_context` moving ASR by ~zero. But `d_context` is estimated far less reliably than `d_surface` — a
+within-concept split ceiling of **0.83–0.92** against `d_surface`'s **0.995**. A noisier direction is a
+weaker intervention, so "`d_context` does nothing" and "`d_context` is measured badly" are **not
+separated** by that control as designed. Disclosed 2026-08-21; not previously connected in either
+deliverable.
 
 #### E12's causal half — the knife-fitted direction transfers, at half strength
 
@@ -2276,7 +2293,7 @@ layer-matched ratio is **9/21 = 0.43**, not 0.50.
 direction constructed to be **orthogonal** to `d_surface` (cos = 0.0000), projected out at the same
 L8, produces **+0.0182 with 9 flips** — bit-for-bit the knife result. Across the four such controls
 the effect spans **−0.0121 … +0.0182** *at cosine zero*, so effect is not a monotone function of
-alignment and "61% aligned delivers ~half the effect" has no inferential content. Against that hard
+alignment and the **retracted** R-23 claim "61% aligned delivers ~half the effect" has no inferential content. Against that hard
 null (mean +0.0010, sd 0.0128) the **knife arm is z = 1.34 — it does not clear it**; the bomb L8 arm
 is **z = 3.23** and does. The "~7 band-sds" figure came from the 4096-d random band (sd 0.0026), which
 is a far weaker null than perturbing inside the same rank-3 cell-mean subspace

@@ -44,7 +44,12 @@ FIGURES = {
     # A registry that cries wolf is worse than none, which is the same lesson the marker-exemption
     # failure taught. The pattern must pin the population it belongs to.
     "advbench_band_sd": (
-        r"5-draw control band[^\n]{0,60}?between-draw sd\s*(0\.\d{3,5})",
+        # "between-draw" is OPTIONAL: the short update writes "sd 0.0026", the report writes
+        # "between-draw sd 0.0026". Requiring the long form made the figure look ABSENT from the short
+        # update -- which the new absence check (c) correctly reported on its first run. Still pinned
+        # to its own band by the "5-draw control band" prefix, so the over-breadth failure noted above
+        # does not return.
+        r"5-draw control band[^\n]{0,60}?(?:between-draw )?sd\s*(0\.\d{3,5})",
         "outputs/boombness/advbench_band.json", ["control_band", "between_draw_sd"], 5e-4),
     # E12 (2026-08-21). Registered the same day the result landed, because the figure registry was
     # built precisely for numbers that cross deliverables, and a registry that lags its own results
@@ -65,6 +70,32 @@ FIGURES = {
     "layer_shape_p": (
         r"permutation\D{0,12}p\s*=\s*(0\.0\d{2,4})",
         "outputs/boombness/layer_profile_shape_test.json", ["p_perm"], 2e-3),
+}
+
+
+#: name -> which deliverables MUST quote this figure.
+#: WHY THIS EXISTS. Check (a) below compares the values two deliverables quote -- but it only fires
+#: when `len(nums) > 1`, i.e. when at least two deliverables quote the figure at all. A figure MISSING
+#: from the short update produces exactly one value and passed in silence. So the registry reported
+#: "all registered figures agree" on precisely the failure it was built to catch: the short update
+#: lagging the report. Detecting disagreement is not detecting absence, and the three incidents in the
+#: module docstring were all ABSENCE (a figure struck in one file, still live in the other).
+#: Found by the 2026-08-21 audit. Scope must be DECLARED per figure -- inferring it from "how many
+#: files happen to quote this today" is the address-by-incidental-property bug this repo has hit four
+#: times in one file.
+SCOPE_ALL = "all"          # every deliverable in DELIVERABLES must quote it
+SCOPE_REPORT_ONLY = "report_only"   # only the full report; must be justified in the comment
+
+FIGURE_SCOPE = {
+    "advbench_band_mean": SCOPE_ALL,
+    "advbench_band_sd": SCOPE_ALL,
+    # E12's two figures are RETRACTED (R-23 behavioural, R-24 representational). They are quoted only
+    # in the full report, inside the sections that explain the retraction; the short update never
+    # carried the claim and must not acquire it now. Declared report-only for that reason, not
+    # because it happens to be where they currently sit.
+    "e12_cross_concept_cos": SCOPE_REPORT_ONLY,
+    "e12_knife_causal_delta": SCOPE_REPORT_ONLY,
+    "layer_shape_p": SCOPE_ALL,
 }
 
 
@@ -120,6 +151,18 @@ def main() -> int:
                     if abs(float(v) - float(av)) > t:
                         problems.append(f"{name}: deliverables quote {v} but "
                                         f"{os.path.basename(apat)} says {av:.5f}")
+        # (c) ABSENCE. A figure declared SCOPE_ALL that a deliverable does not quote is a lag, which
+        # is the failure mode that motivated this module. Checks (a) and (b) are both silent on it.
+        scope = FIGURE_SCOPE.get(name, SCOPE_ALL)
+        entry["scope"] = scope
+        if scope == SCOPE_ALL:
+            for f in texts:
+                if f not in quoted:
+                    problems.append(f"{name}: declared SCOPE_ALL but NOT QUOTED in "
+                                    f"{os.path.basename(f)} -- deliverable lag, or the regex no "
+                                    f"longer matches that file's wording")
+        elif name not in FIGURE_SCOPE:
+            problems.append(f"{name}: no declared scope")
         report[name] = entry
 
     out = {"figures": report, "problems": problems,
@@ -140,7 +183,7 @@ def main() -> int:
         for p in problems:
             print(f"   {p}")
     else:
-        print("\n[figures] all registered figures agree across deliverables and with their artifacts")
+        print("\n[figures] all registered figures agree, and every SCOPE_ALL figure is present in every deliverable")
     return 1 if problems else 0
 
 

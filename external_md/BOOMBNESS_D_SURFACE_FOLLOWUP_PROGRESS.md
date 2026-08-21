@@ -6463,11 +6463,11 @@ variance):
 | L30 | +0.1502 | **−0.1407** | +0.1342 | +0.1079 | +0.1288 | +0.007 (p 0.79) |
 | L31 | +0.1638 | **−0.1369** | +0.1140 | +0.0894 | +0.1102 | +0.008 (p 0.71) |
 
-**A random axis in the concept subspace, exactly orthogonal to `d_surface`, predicts ASR at 83–106%
+**A random axis in the concept subspace, exactly orthogonal to `d_surface`, predicts ASR at 83.0–118.8%
 of `d_surface`'s strength, on three independent seeds and at all three layers — matching or beating
 it at L29 and L30.** (Table corrected in review #6: the first version scored from one fit payload
 instead of cross-fit; the corrected numbers are stronger.) And `d_inter` — also
-near-orthogonal (cos 0.008–0.087) — predicts *equally strongly with the opposite sign*.
+near-orthogonal (cos 0.015–0.084 at L29–L31) — predicts *equally strongly with the opposite sign*.
 
 **The boring explanation is excluded, not assumed:** residual norm predicts **nothing**
 (|ρ| ≤ 0.018, p 0.50–0.79 at every layer) and token position is +0.052 (p 0.048), a third of the
@@ -6522,13 +6522,22 @@ dropped.
 
 **One caveat governs the whole report, and it is the sprint's largest methodological finding:**
 ⛔ **every "the matched random control is inert" statement in this repo is inert by construction**
-(R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove ~0.01–0.04% of the structure
-the arms remove; at L8 the arm removes 84.0% of the 2×2 cell-mean spread and the isotropic control
-0.005%. A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept subspace,
-exactly orthogonal to the arm, removing 5.35% at L8) was built and run tonight. **Run at all four `d_surface` profile depths with a deterministic basis and one judging session,
+(R5-7). `random`/`orthogonal` are isotropic draws in R⁴⁰⁹⁶ and remove a negligible fraction of the
+structure the arms remove; at L8 the arm removes 84.02% of the 2×2 cell-mean spread. ⚠ **The
+companion figure "and the isotropic control 0.005%" is withdrawn (review #9, A4): no
+`frac_cellmean_spread_removed_by_CONTROL` was ever logged for an isotropic arm.** The only measured
+isotropic values in this repo are R5-7's **0.018%** (Qwen3 L11) and **0.061%** (L20); the argument
+is unchanged — three orders of magnitude below the arm — but the specific number had no producer.
+A **subspace-matched** control (`in_subspace_orth` — drawn inside the concept subspace,
+exactly orthogonal to the arm, removing **4.5506%** at L8 in the deterministic-basis run that the
+Holm table actually uses) was built and run. **Run at all four `d_surface` profile depths with a deterministic basis and one judging session,
 the arm beats it every time and ALL FOUR survive Holm** (arm − control: L6 +0.0127, L8 +0.0319,
-L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**). So `d_surface`'s
-causal direction-specificity is **established with correction at every depth of its profile**. ⛔ The
+L10 +0.0303, L12 +0.0364; Holm-adjusted 0.0347 / 0.0276 / 0.0347 / **0.0136**). ⚠ **That is the
+single-draw result, and the angle sweep does not sustain it uniformly** (review #9, B5): swept
+against every orthogonal direction, the margin holds at L12 and L10, at 3 of 4 angles at L8, and
+**fails at L6** (worst case +0.0039, p 0.242). So `d_surface`'s causal direction-specificity is
+established with correction **at L10 and L12, suggestive at L8, and not established at L6** — and
+over **4 of the 11 depths** in its profile, not all of them. ⛔ The
 earlier "L12 control nearly fired at p 0.062" is **withdrawn** — that draw came from an
 environment-dependent SVD basis; the deterministic replacement is 55% stronger and lands at
 −0.0048, p 0.24. Every claim OUTSIDE the `d_surface` profile — the refusalness profile, Phase F's
@@ -6549,16 +6558,23 @@ gitignored, so every judge, score and extract run is untracked.
 **A generic mid-to-late semantic magnitude that is neither harm-specific nor `d_surface`-specific.**
 Three independent results converge, and the third is new tonight:
 
-- **E1 by category** (`d_surface_external_decomposition.json`): the effect is *weakest where the
-  direction was fitted* — `weapons_explosives_mass_casualty` **+0.0250**, seventh of eight movable
-  categories, against misinformation +0.1081 and terrorism +0.1111. Mean over 16 categories +0.0305
+- **E1 by category** (`d_surface_external_decomposition.json`): the effect is *not concentrated
+  where the direction was fitted* — `weapons_explosives_mass_casualty` **+0.0250**, seventh of eight
+  movable categories, against misinformation +0.1081 and terrorism +0.1111. ⛔ **"Weakest in the
+  category it was fitted on" is FALSE and is withdrawn** (review #9, B1): `fraud_financial_crime`
+  is lower at +0.0147 and eight further categories sit at exactly 0.0. "Seventh of eight movable"
+  is the correct and sufficient statement. Mean over 16 categories +0.0305
   (t 3.00, df 15), 8 positive / 0 negative / 8 pinned at zero, sign p 0.0039. Matched control
   −0.0062, p 0.69.
 - **Phase B token level**: the demo-position gradient tracks "this codeword has a taught referent",
   not "the referent is harmful" — and ⛔ **F-2**: it is *not direction-specific*.
-- **Gate D** (`clean_fig9_correlation.json`): at the prompt level `d_naive` (+0.1672) and
-  `d_context` (+0.1471) predict ASR as well as `d_surface` (+0.1638). Whatever is predictive is
-  carried by all three.
+- **Gate D** (`clean_fig9_correlation.json`): at the prompt level `d_context` predicts ASR
+  (+0.1471) about as well as `d_surface` (+0.1638). ⛔ **`d_naive` (+0.1672) must NOT be counted as
+  a third direction** (R6-2, re-flagged by review #9 B3): `d_naive ≡ d_surface + d_context`
+  exactly, so "carried by all three" was arithmetic, not evidence. `d_context` is also not
+  near-orthogonal at the layers Gate D selects (cos rises to 0.37 at L31) and falls to 62%
+  (+0.1014, p 0.0051) once residualised. **The surviving requirement-4 evidence is `d_inter` plus
+  the three orthogonal draws**, not the sibling directions.
 
 Plan hypothesis 3 (a hazardous-object axis) is **disfavoured**. Hypothesis 4 (an artifact of the bank
 that transfers because harmful prompts share structure) is the best current fit.
@@ -6570,13 +6586,18 @@ that transfers because harmful prompts share structure) is the best current fit.
 - **Geometrically** (`direction_specificity_extended.json`, M6): cos = 0.1279 (L12, z 8.3) → 0.0262
   (L18, z 1.7) → 0.0176 (L20, z 1.1) against a 2,000-draw random sd of 0.01541. **At chance by L18**,
   where refusalness is causally strongest. ≤1.64% shared variance.
-- **By depth**: `d_surface` L6–L12 (peak L12 +0.0322); refusalness L14–L20 (peak L18 +0.1895).
+- **By depth**: `d_surface` L6–L12 (peak L12 **+0.0316** session-matched, +0.0322 in the 08-19
+  judging the m=11 table below still uses); refusalness L14–L20 (peak L18 +0.1895).
 - **By robustness** (M3): **four of five** refusalness depths survive Holm (m=5); **not one** of
   eleven `d_surface` depths survives Holm (m=11), smallest adjusted 0.0618 at L12. BH keeps L8 and
   L12 at 0.0491.
 
-⚠ The "matched inert control at every depth" that supports the profile is an isotropic control
-(R5-7). The **geometry** result is untouched by that and carries the negative claim on its own.
+⚠ Two limits on that block (review #9, C2/C3). The m=11 Holm table is computed on the **08-19**
+arm values; four of the eleven depths moved under the session-matched re-judge (L8 +0.0305 →
++0.0278, L12 +0.0322 → +0.0316) and the table was **not** recomputed. And "matched inert control at
+every depth" is an isotropic control (R5-7) at **seven** of the eleven depths — L6/L8/L10/L12 now
+have subspace-matched controls plus a 4-angle sweep each. The **geometry** result is untouched by
+both and carries the negative claim on its own.
 
 ### 4. Why does removing `d_surface` increase ASR?
 
@@ -6612,7 +6633,9 @@ Three things bound it:
 - **two thirds is the design's own manipulation** — between-level ρ +0.7024 vs within-level +0.1638;
 - the within-level SEs are **~11% too small** (the 15 levels share all 120 families, R5-4); the
   family bootstrap gives 0.0333 and the effect survives (0/2,000 replicates ≤ 0);
-- ⛔ **`d_naive` and `d_context` do it as well or better**, which is what fails the gate.
+- ⛔ **`d_inter` and random orthogonal axes in the same subspace do it as well or better**, which
+  is what fails the gate. (`d_naive` did too, but it is `d_surface + d_context` exactly — R6-2 —
+  so it is not independent evidence and is struck from this list.)
 
 ### 7. Are any surgical interventions actually useful?
 
@@ -6654,8 +6677,8 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 
 1. **Cutting the first demonstration's codeword reproduces the whole effect**, on two
    tokenisation-audited codewords, with `first_codeword` as its own matched positive control.
-2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
-   categories positive.
+2. **`d_surface` is not harm-specific** — the category it was fitted on ranks seventh of the eight
+   that move at all, and 8/8 movable categories are positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
 4. **Within L6–L12, causation is concentrated on the `d_surface` axis, by a SUBSET and a SUPERSET
    control.** A random axis in the same 2×2 span, exactly orthogonal to `d_surface`, is inert at
@@ -6670,8 +6693,8 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
    and **L10** (p 0.018), **3 of 4** at L8 (worst case p 0.073), and **only 2 of 4 at L6, where the
    worst case is +0.0039 at p 0.242 — not established.**
    **Correlationally the subspace as a whole becomes more readable with depth and `d_surface` is not
-   privileged in it** — an orthogonal axis predicts ASR at **83–106%** of its strength across three
-   seeds and three layers, and `d_inter` (cos 0.008–0.087) predicts equally with the opposite sign.
+   privileged in it** — an orthogonal axis predicts ASR at **83.0–118.8%** of its strength across three
+   seeds and three layers, and `d_inter` (cos 0.015–0.084) predicts equally with the opposite sign.
    ⛔ The depth anti-alignment (Spearman −0.850) is not by itself a mechanism — the whole subspace is
    equally inert at L31, so that null is **not specific to `d_surface`**. ✅ **But it IS a
    within-layer dissociation at subspace granularity, now established by a positive control:** at
