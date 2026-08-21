@@ -6077,3 +6077,46 @@ direction identity.
 | 250 | 2026-08-21 | verified `d_naive` lies in the ladder family | span fraction **1.000000**, φ ≈ 121–125° |
 | 251 | 2026-08-21 | filed **R-27** (six defects); struck the dose inferences | ladder survives as a curve; every inference withdrawn |
 | 252 | 2026-08-21 | de-tautologised the plumbing checks; submitted 773219/773220 | artifact now says **VACUOUS**; real endpoints running |
+
+## Fixing the inference before generating more numbers with it
+
+Tick 2026-08-21. R-27(f) said the percentile cluster bootstrap in `paired_arm_test.py` is
+anti-conservative. Rather than re-run the L10/L13 comparisons with the broken test and correct them
+afterwards, I fixed the test first.
+
+**Added a cluster-level sign-flip randomization**, which is the right null here: if the two arms are
+exchangeable, each *cluster's* net contribution is equally likely to carry either sign, so flipping
+cluster signs generates the exact null at the level the data are actually correlated. Also reported:
+the number of **informative** clusters (domains with a nonzero net) and the **minimum attainable p**
+that follows from it.
+
+| layer | Δ | old bootstrap p | informative clusters | **min attainable p** | **cluster sign-flip p** | significant? |
+|---|---|---|---|---|---|---|
+| L6 | +0.0081 | 0.2337 | 4 / 16 | 0.1250 | **0.3750** | no |
+| L8 | +0.0141 | **0.0212** | **4 / 16** | **0.1250** | **0.1250** | **no** |
+| L12 | +0.0222 | **0.0467** | 6 / 16 | 0.0312 | **0.1562** | **no** |
+
+**Nothing is significant at cluster level, and L8 could never have been.** With four informative
+domains the smallest p any cluster-level test can return is 2/2⁴ = 0.125 — L8's observed value *is*
+that floor. The bootstrap reported 0.021 for data that cannot go below 0.125 at the level it claims to
+cluster on. My independently recomputed values match audit #7's exactly (0.375 / 0.125 / 0.156).
+
+**The sign test does not rescue it either**, and I had labelled it "the assumption-free companion".
+It treats the 9 (or 15) discordant **prompts** as independent — the exact pseudo-replication the
+file's own docstring says it exists to prevent. At L8 those 9 prompts sit in **4** domains, one
+contributing 3; at L12, 5 of 15 share a single domain.
+
+**`naive_vs_ladder_replication.json` rewritten** from "significant at L8 and L12" to **withdrawn**,
+with the reason and the floor recorded in the artifact rather than only in prose.
+
+**L10 and L13 judged next tick.** They will be reported with the corrected inference; on this evidence
+neither can reach significance either, and I am running them to complete the record and to answer the
+selection question (L13 sits outside the outcome-selected top-4), not because a positive is expected.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 253 | 2026-08-21 | added cluster sign-flip randomization + informative-cluster count to `paired_arm_test.py` | the honest test now sits beside the anti-conservative one |
+| 254 | 2026-08-21 | re-ran L6/L8/L12 | **0.375 / 0.125 / 0.156 — none significant**; matches audit #7 exactly |
+| 255 | 2026-08-21 | recorded that L8's 0.125 **is** its attainable floor | the old 0.021 was below what the design can produce |
+| 256 | 2026-08-21 | rewrote the replication artifact to "withdrawn" | reason and floor stored in the artifact, not just prose |
+| 257 | 2026-08-21 | submitted L10/L13 judging (773228-773231) | completing the record with the corrected inference |
