@@ -1,0 +1,364 @@
+{
+  "question": "Does removing d_surface beat a null of OTHER directions in the same rank-3 cell-mean subspace, at each layer where the effect was claimed to replicate?",
+  "why": "R-23: the sprint's significance came from a 4096-d random band (sd 0.0026). The in-subspace null is ~5x wider and is the null that matches the intervention.",
+  "shard_policy": "judge shards (_0/_1) are DISJOINT HALVES and are unioned; pooling near-duplicate replicates would shrink the null's sd in the direction that flatters the headline",
+  "inference_caveat": "The null has n=4, so sd is estimated from four points: the ratio is a t with df=3, not a z, and the assumption-free rank test cannot fall below 1/5=0.20 with four controls. More angle draws are the fix; quoting the z alone would dress a 4-point null as a precise one.",
+  "n_angles": {
+    "default": 4,
+    "6": 12,
+    "8": 12,
+    "12": 8
+  },
+  "DOSE_CAVEAT": "d_surface is essentially PC1 of the cell-mean span (cos 0.9998-1.0000), so the ARM removes 0.81-0.88 of that spread while every in-subspace control removes <=0.13 -- a 6-11x dose gap unrelated to concept content. Within the L6 null, Spearman rho(dose, delta) = 0.961. A dose-matched in-subspace control cannot exist (the complement holds only ~0.16 of the spread in total). Read arm/max_control as NOT separating direction-identity from dose.",
+  "LAYER_SELECTION_CAVEAT": "L6/L8/L10/L12 are the top four of eleven layers in advbench_layer_profile.json, ranked by the same arm delta re-tested here, and were chosen after that profile ran. No multiplicity correction is applied in this script. Treat every p as uncorrected and selection-biased.",
+  "threshold": 0.5,
+  "baseline_run": "abg_base_20260819_011714_1480836",
+  "layers": {
+    "L6": {
+      "arm_run": "2 shards: abgL6_B_20260819_080434_1661744, abgL6_B_20260819_081115_1663775 [40 overlapping ids, later run wins]",
+      "n_common": 495,
+      "n_arm_scored": 495,
+      "angle_runs": {
+        "angle0": "2 shards: angJ6k0_0_20260821_124554_1220587, angJ6k0_1_20260821_124554_1220588",
+        "angle1": "angJ6k1of12_20260821_162827_4087286",
+        "angle2": "angJ6k2of12_20260821_162827_4087291",
+        "angle3": "2 shards: angJ6k1_0_20260821_124554_1220592, angJ6k1_1_20260821_124554_1220593",
+        "angle4": "angJ6k4of12_20260821_162827_4087289",
+        "angle5": "angJ6k5of12_20260821_162827_4087287",
+        "angle6": "2 shards: angJ6k2_0_20260821_124554_1220597, angJ6k2_1_20260821_124554_1220598",
+        "angle7": "angJ6k7of12_20260821_162827_4087288",
+        "angle8": "angJ6k8of12_20260821_162827_4087290",
+        "angle9": "2 shards: angJ6k3_0_20260821_124554_1220602, angJ6k3_1_20260821_124554_1220603",
+        "angle10": "angJ6k10of12_20260821_173739_4121283",
+        "angle11": "angJ6k11of12_20260821_173739_4121282"
+      },
+      "angle_n_scored": {
+        "angle0": 495,
+        "angle1": 495,
+        "angle2": 495,
+        "angle3": 495,
+        "angle4": 495,
+        "angle5": 495,
+        "angle6": 495,
+        "angle7": 495,
+        "angle8": 495,
+        "angle9": 495,
+        "angle10": 495,
+        "angle11": 495
+      },
+      "population_matched": true,
+      "arm": {
+        "n": 495,
+        "delta": 0.01818181818181818,
+        "net_flips": 9
+      },
+      "dose_cellmean_frac": {
+        "ARM": 0.8768239688421499,
+        "angle0": 0.04314483029400222,
+        "angle1": 0.046564540513612106,
+        "angle2": 0.05400980523406751,
+        "angle3": 0.0634856293753317,
+        "angle4": 0.07245297522249969,
+        "angle5": 0.07850912356125798,
+        "angle6": 0.08003123145682921,
+        "angle7": 0.07661147917187003,
+        "angle8": 0.06916624886851859,
+        "angle9": 0.05969038648602776,
+        "angle10": 0.050723029166491775,
+        "angle11": 0.044666938189573444
+      },
+      "dose_gap_arm_over_max_control": 10.956022453748322,
+      "dose_confounded": true,
+      "unused_angle_runs_at_this_layer": [],
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": -0.00202020202020202,
+          "angle1": 0.0,
+          "angle2": 0.00202020202020202,
+          "angle3": 0.00202020202020202,
+          "angle4": 0.006060606060606061,
+          "angle5": 0.00808080808080808,
+          "angle6": 0.010101010101010102,
+          "angle7": 0.00808080808080808,
+          "angle8": 0.00808080808080808,
+          "angle9": 0.00404040404040404,
+          "angle10": 0.0,
+          "angle11": -0.00202020202020202
+        },
+        "missing": [],
+        "mean": 0.003703703703703704,
+        "sd": 0.004292704219959157,
+        "n": 12
+      },
+      "z_vs_in_subspace_null": 3.372725847450125,
+      "clears_hard_null_z2": true,
+      "p_t_one_sided": 0.006222139582611693,
+      "rank_p_one_sided": 0.07692307692307693,
+      "rank_p_floor": 0.07692307692307693,
+      "n_angles_used": 12,
+      "df": 11,
+      "max_control_delta": 0.010101010101010102,
+      "arm_over_max_control": 1.7999999999999998,
+      "arm_exceeds_all_controls": true,
+      "max_adjacent_jump": 0.00404040404040404,
+      "grid_resolution_deg": 15.0,
+      "margin_over_max_control": 0.008080808080808079,
+      "margin_exceeds_max_jump": true,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.00202020202020202,
+        "net_flips": 1
+      }
+    },
+    "L8": {
+      "arm_run": "abg_B_20260819_013447_1506491",
+      "n_common": 495,
+      "n_arm_scored": 495,
+      "angle_runs": {
+        "angle0": "angJ8k0_20260821_105123_1042515",
+        "angle1": "angJ8k1of12_20260821_180750_4131488",
+        "angle2": "angJ8k2of12_20260821_180923_3015652",
+        "angle3": "angJ8k1_20260821_105123_1042519",
+        "angle4": "angJ8k4of12_20260821_183856_4137481",
+        "angle5": "angJ8k5of12_20260821_183856_4137480",
+        "angle6": "angJ8k2_20260821_105123_1042523",
+        "angle7": "angJ8k7of12_20260821_183856_4137479",
+        "angle8": "angJ8k8of12_20260821_183856_4137476",
+        "angle9": "angJ8k3_20260821_105123_1042527",
+        "angle10": "angJ8k10of12_20260821_183856_4137477",
+        "angle11": "angJ8k11of12_20260821_183856_4137478"
+      },
+      "angle_n_scored": {
+        "angle0": 495,
+        "angle1": 495,
+        "angle2": 495,
+        "angle3": 495,
+        "angle4": 495,
+        "angle5": 495,
+        "angle6": 495,
+        "angle7": 495,
+        "angle8": 495,
+        "angle9": 495,
+        "angle10": 495,
+        "angle11": 495
+      },
+      "population_matched": true,
+      "arm": {
+        "n": 495,
+        "delta": 0.04242424242424243,
+        "net_flips": 21
+      },
+      "dose_cellmean_frac": {
+        "ARM": 0.8402006196015032,
+        "angle0": 0.045659094896014114,
+        "angle1": 0.051900065207464645,
+        "angle2": 0.06564353956391093,
+        "angle3": 0.08320690681122003,
+        "angle4": 0.0998841457495659,
+        "angle5": 0.11120653180300381,
+        "angle6": 0.11414031270853439,
+        "angle7": 0.10789933151466319,
+        "angle8": 0.09415587892305824,
+        "angle9": 0.07659251711695947,
+        "angle10": 0.059915278178613605,
+        "angle11": 0.048592864919124026
+      },
+      "dose_gap_arm_over_max_control": 7.361120708920929,
+      "dose_confounded": true,
+      "unused_angle_runs_at_this_layer": [],
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.00202020202020202,
+          "angle1": 0.014141414141414142,
+          "angle2": 0.01818181818181818,
+          "angle3": 0.01818181818181818,
+          "angle4": 0.01616161616161616,
+          "angle5": 0.00808080808080808,
+          "angle6": -0.00404040404040404,
+          "angle7": -0.012121212121212121,
+          "angle8": -0.014141414141414142,
+          "angle9": -0.012121212121212121,
+          "angle10": -0.012121212121212121,
+          "angle11": -0.00202020202020202
+        },
+        "missing": [],
+        "mean": 0.0016835016835016834,
+        "sd": 0.012858891585493472,
+        "n": 12
+      },
+      "z_vs_in_subspace_null": 3.1682933532701747,
+      "clears_hard_null_z2": true,
+      "p_t_one_sided": 0.008945772176705946,
+      "rank_p_one_sided": 0.07692307692307693,
+      "rank_p_floor": 0.07692307692307693,
+      "n_angles_used": 12,
+      "df": 11,
+      "max_control_delta": 0.01818181818181818,
+      "arm_over_max_control": 2.3333333333333335,
+      "arm_exceeds_all_controls": true,
+      "max_adjacent_jump": 0.012121212121212123,
+      "grid_resolution_deg": 15.0,
+      "margin_over_max_control": 0.024242424242424246,
+      "margin_exceeds_max_jump": true,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": -0.00202020202020202,
+        "net_flips": -1
+      }
+    },
+    "L10": {
+      "arm_run": "abgL10_B_20260819_083136_1669413",
+      "n_common": 495,
+      "n_arm_scored": 495,
+      "angle_runs": {
+        "angle0": "2 shards: angJ10k0_0_20260821_124554_1220607, angJ10k0_1_20260821_124554_1220608",
+        "angle1": "2 shards: angJ10k1_0_20260821_124554_1220612, angJ10k1_1_20260821_124554_1220613",
+        "angle2": "2 shards: angJ10k2_0_20260821_124554_1220617, angJ10k2_1_20260821_124554_1220618",
+        "angle3": "2 shards: angJ10k3_0_20260821_124554_1220622, angJ10k3_1_20260821_124554_1220623"
+      },
+      "angle_n_scored": {
+        "angle0": 495,
+        "angle1": 495,
+        "angle2": 495,
+        "angle3": 495
+      },
+      "population_matched": true,
+      "arm": {
+        "n": 495,
+        "delta": 0.03232323232323232,
+        "net_flips": 16
+      },
+      "dose_cellmean_frac": {
+        "ARM": 0.8114456002264713,
+        "angle0": 0.05702873095720167,
+        "angle1": 0.09928808727574337,
+        "angle2": 0.13152573636553896,
+        "angle3": 0.08926639934677211
+      },
+      "dose_gap_arm_over_max_control": 6.169481522394107,
+      "dose_confounded": true,
+      "unused_angle_runs_at_this_layer": [],
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.0,
+          "angle1": -0.00404040404040404,
+          "angle2": -0.006060606060606061,
+          "angle3": -0.006060606060606061
+        },
+        "missing": [],
+        "mean": -0.00404040404040404,
+        "sd": 0.0028569970957032223,
+        "n": 4
+      },
+      "z_vs_in_subspace_null": 12.727922061357855,
+      "clears_hard_null_z2": true,
+      "p_t_one_sided": 0.0010462380081266527,
+      "rank_p_one_sided": 0.2,
+      "rank_p_floor": 0.2,
+      "n_angles_used": 4,
+      "df": 3,
+      "max_control_delta": 0.0,
+      "arm_over_max_control": null,
+      "arm_exceeds_all_controls": true,
+      "max_adjacent_jump": 0.006060606060606061,
+      "grid_resolution_deg": 45.0,
+      "margin_over_max_control": 0.03232323232323232,
+      "margin_exceeds_max_jump": true,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.00202020202020202,
+        "net_flips": 1
+      }
+    },
+    "L12": {
+      "arm_run": "abgL12_B_20260819_072331_1641327",
+      "n_common": 495,
+      "n_arm_scored": 495,
+      "angle_runs": {
+        "angle0": "2 shards: angJ12k0_0_20260821_114815_1136790, angJ12k0_1_20260821_114815_1136791",
+        "angle1": "2 shards: a8J12k1_0_20260821_141317_1418218, a8J12k1_1_20260821_141317_1418219",
+        "angle2": "2 shards: angJ12k1_0_20260821_114815_1136795, angJ12k1_1_20260821_114815_1136796",
+        "angle3": "2 shards: a8J12k3_0_20260821_141317_1418223, a8J12k3_1_20260821_141317_1418224",
+        "angle4": "2 shards: angJ12k2_0_20260821_114816_1136800, angJ12k2_1_20260821_114816_1136801",
+        "angle5": "2 shards: a8J12k5_0_20260821_141317_1418228, a8J12k5_1_20260821_141317_1418229",
+        "angle6": "2 shards: angJ12k3_0_20260821_114816_1136805, angJ12k3_1_20260821_114816_1136806",
+        "angle7": "2 shards: a8J12k7_0_20260821_141317_1418233, a8J12k7_1_20260821_141317_1418234"
+      },
+      "angle_n_scored": {
+        "angle0": 495,
+        "angle1": 495,
+        "angle2": 495,
+        "angle3": 495,
+        "angle4": 495,
+        "angle5": 495,
+        "angle6": 495,
+        "angle7": 495
+      },
+      "population_matched": true,
+      "arm": {
+        "n": 495,
+        "delta": 0.03636363636363636,
+        "net_flips": 18
+      },
+      "dose_cellmean_frac": {
+        "ARM": 0.8204428847812593,
+        "angle0": 0.060722680685814934,
+        "angle1": 0.07559910419674112,
+        "angle2": 0.09878172087248202,
+        "angle3": 0.11669044272804273,
+        "angle4": 0.11883460159919478,
+        "angle5": 0.1039581856821899,
+        "angle6": 0.08077559178821295,
+        "angle7": 0.06286685474480962
+      },
+      "dose_gap_arm_over_max_control": 6.9040740132949505,
+      "dose_confounded": true,
+      "unused_angle_runs_at_this_layer": [],
+      "in_subspace_null": {
+        "deltas": {
+          "angle0": 0.010101010101010102,
+          "angle1": 0.00808080808080808,
+          "angle2": 0.0,
+          "angle3": -0.00202020202020202,
+          "angle4": -0.00202020202020202,
+          "angle5": -0.00404040404040404,
+          "angle6": 0.006060606060606061,
+          "angle7": 0.006060606060606061
+        },
+        "missing": [],
+        "mean": 0.002777777777777778,
+        "sd": 0.005392463763652177,
+        "n": 8
+      },
+      "z_vs_in_subspace_null": 6.228295647018265,
+      "clears_hard_null_z2": true,
+      "p_t_one_sided": 0.00043317121426124367,
+      "rank_p_one_sided": 0.1111111111111111,
+      "rank_p_floor": 0.1111111111111111,
+      "n_angles_used": 8,
+      "df": 7,
+      "max_control_delta": 0.010101010101010102,
+      "arm_over_max_control": 3.5999999999999996,
+      "arm_exceeds_all_controls": true,
+      "max_adjacent_jump": 0.0101010101010101,
+      "grid_resolution_deg": 22.5,
+      "margin_over_max_control": 0.02626262626262626,
+      "margin_exceeds_max_jump": true,
+      "random_control_same_layer": {
+        "n": 495,
+        "delta": 0.0,
+        "net_flips": 0
+      }
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/insubspace_null_test.py",
+      "--n-angles",
+      "default=4,6=12,8=12,12=8",
+      "--out",
+      "outputs/boombness/insubspace_null_by_layer.json"
+    ],
+    "git_commit": "bc26234ccbe2795170fb57f9f66ced9a1110d1f4"
+  }
+}

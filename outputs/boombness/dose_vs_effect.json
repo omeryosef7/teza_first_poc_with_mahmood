@@ -1,0 +1,48 @@
+{
+  "question": "is the ASR effect about WHICH direction, or HOW MUCH cell-mean spread it removes?",
+  "threshold": 0.5,
+  "directions": {
+    "d_surface": {
+      "layer": 8,
+      "dose_cellmean_frac": 0.8402006196015032,
+      "n": 495,
+      "delta": 0.04242424242424243,
+      "net_flips": 21,
+      "delta_over_dose": 0.050492991119625366,
+      "judge_run": "abg_B_20260819_013447_1506491"
+    },
+    "d_naive": {
+      "layer": 8,
+      "dose_cellmean_frac": 0.7919416110248498,
+      "n": 495,
+      "delta": 0.05858585858585859,
+      "net_flips": 29,
+      "delta_over_dose": 0.07397749754561168,
+      "judge_run": "abgL8_naive_20260819_103334_1754336"
+    },
+    "d_context": {
+      "layer": 8,
+      "dose_cellmean_frac": 0.13129592653582514,
+      "n": 495,
+      "delta": 0.0,
+      "net_flips": 0,
+      "delta_over_dose": 0.0,
+      "judge_run": "abgL8_context_20260819_100335_1734759"
+    }
+  },
+  "verdict": {
+    "dose_ratio_naive_over_surface": 0.9425625172717178,
+    "dose_matched": true,
+    "naive_effect_over_surface_effect": 1.380952380952381,
+    "reading": "d_naive carries 94% of d_surface's dose and produces a 38% LARGER effect (+0.0586 vs +0.0424, 29 vs 21 flips). At matched dose d_surface is NOT the stronger direction, so the ASR effect is not evidence that d_surface's CONTENT is what matters. d_context, at 0.13 dose -- inside the in-subspace controls' own dose range -- moves ASR by +0.0000, which the dose account predicts and the content account does not distinguish from 'wrong meaning'."
+  },
+  "caveat": "delta_over_dose is only comparable between directions of SIMILAR dose; the dose-response saturates, so comparing it across a 6x gap is the error this script exists to expose.",
+  "provenance": {
+    "argv": [
+      "src/boombness/dose_vs_effect.py",
+      "--out",
+      "outputs/boombness/dose_vs_effect.json"
+    ],
+    "git_commit": "bc26234ccbe2795170fb57f9f66ced9a1110d1f4"
+  }
+}

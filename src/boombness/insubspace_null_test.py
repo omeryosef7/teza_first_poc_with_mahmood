@@ -80,6 +80,14 @@ def angle_glob(layer: int, k: int, n_angles: int) -> str:
         return f"{JUDGE}/angJ{layer}k{k}_*"
     if n_angles == 12 and k % 3 == 0:
         return f"{JUDGE}/angJ{layer}k{k // 3}_*"
+    # n=8: the EVEN indices are the of-4 sweep again (k-of-4 == 2k-of-8), and the ODD ones were run
+    # under a DIFFERENT TAG PREFIX -- `a8J12k1_*`, not `angJ12k1of8_*`. Audit #6 found four completed
+    # L12 controls that no `--n-angles` setting could address, because the resolver only ever emitted
+    # the `angJ...of{n}` spelling. A run you cannot name is a run you silently drop, which is the same
+    # failure as naming the wrong one, pointing the other way.
+    if n_angles == 8:
+        return (f"{JUDGE}/angJ{layer}k{k // 2}_*" if k % 2 == 0
+                else f"{JUDGE}/a8J{layer}k{k}_*")
     return f"{JUDGE}/angJ{layer}k{k}of{n_angles}_*"
 
 
@@ -257,6 +265,8 @@ def main() -> int:
                 want.add(f"in_subspace_angle{k // 3}:project_out:{L}-{L}:1.0")
             if n_ang == 4:
                 want.add(f"in_subspace_angle{k}:project_out:{L}-{L}:1.0")
+            if n_ang == 8 and k % 2 == 0:
+                want.add(f"in_subspace_angle{k // 2}:project_out:{L}-{L}:1.0")
             lab, a = None, None
             for h in sorted(glob.glob(g)):
                 ds = declared_spec(h)

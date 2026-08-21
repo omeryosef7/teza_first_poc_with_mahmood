@@ -5525,3 +5525,63 @@ model that actually answered is **never recorded** — worth fixing); the ring-a
 | 200 | 2026-08-21 | verified layer selection | tested set = **top-4 of 11**, ranked by the same statistic |
 | 201 | 2026-08-21 | verified excluded runs | 4 L12 angles unreachable by tag at any resolution |
 | 202 | 2026-08-21 | filed **R-25**; wired dose + completeness into the artifact | `dose_confounded=true` at all four layers |
+
+## ⛔ R-26 — the dose-matched test R-25 said couldn't exist did exist, and `d_surface` loses it
+
+Tick 2026-08-21. L8's dense judging completed (772863-772868, 495 rows each). All four layers are now
+at their best available resolution and **complete** — `unused_angle_runs` is empty everywhere after
+teaching the resolver the `of8` spelling (four L12 controls were tagged `a8J12k*`, a prefix
+`angle_glob` never emitted, so no `--n-angles` setting could reach them):
+
+| layer | k | res | t(df) | p | rank p | arm/max | margin/jump | dose gap |
+|---|---|---|---|---|---|---|---|---|
+| L6 | 12 | 15° | 3.37 (11) | 0.0062 | 0.08 | 1.80× | 2.00× | 11.0× |
+| **L8** | **12** | **15°** | **3.17 (11)** | **0.0089** | **0.08** | 2.33× | **2.00×** | 7.4× |
+| L10 | 4 | 45° | 12.73 (3) | 0.0010 | 0.20 | — | 5.33× | 6.2× |
+| **L12** | **8** | **22.5°** | **6.23 (7)** | **0.0004** | 0.11 | 3.60× | 2.60× | 6.9× |
+
+L12's t moved 5.90 → **6.23 (df 7)**, matching audit #6's independent prediction exactly — a good check
+that the `of8` wiring is right rather than merely different. **L8's "provisional" flag lifts on
+grid-adequacy grounds** (margin/jump 1.09× → **2.00×** at 15°). The **dose** caveat is untouched by any
+of this.
+
+### The part that matters
+
+R-25 said a dose-matched control "cannot exist". That is true **inside the complement** — it holds only
+~0.16 of the spread — but I stated it too broadly, and the broader version was wrong. `d_naive` and
+`d_context` are cell-mean contrasts fitted by the **same 2×2 on the same rows**, they live in the
+**same span**, and both were already run at L8. The comparison the angle sweep structurally could not
+make was sitting on disk the whole time.
+
+| direction @ L8 | dose (cell-mean frac removed) | Δ ASR | flips | Δ/dose |
+|---|---|---|---|---|
+| `d_surface` | 0.8402 | +0.0424 | 21 | 0.0505 |
+| **`d_naive`** | **0.7919** | **+0.0586** | **29** | **0.0740** |
+| `d_context` | 0.1313 | +0.0000 | 0 | 0.0000 |
+
+**`d_naive` carries 94% of `d_surface`'s dose and produces a 38% *larger* effect.** At matched dose
+`d_surface` is **not** the stronger direction — and the direction that beats it is the **naive,
+confounded contrast the entire 2×2 design exists to replace**.
+
+**⛔ R-26.** RETRACTED: §14-D's "the effect is specific to `d_surface`, because `d_context` moves ASR
+by ~zero". `d_context`'s dose (0.13) sits **inside the in-subspace controls' own dose range** (≤0.114),
+where every direction is inert regardless of content. So "`d_context` does nothing" is exactly what the
+dose account predicts and carries **no information about meaning**. SURVIVING: removing `d_surface`
+does raise ASR on AdvBench, at every layer tested, above every control measured. WITHDRAWN: that this
+is *specific* to `d_surface` or evidence about its content.
+
+**What this does to the sprint's position.** The surviving claim is now narrower than at any point in
+this thread, and I would rather state it plainly than let it erode a tick at a time: **projecting out a
+high-variance direction of the prompt bank's cell-mean structure at L6–L12 raises AdvBench attack
+success, and `d_surface` is one such direction but not the best one.** Every stronger reading tried
+this session — concept-generality (R-23/R-24), content-over-magnitude (R-25), specificity versus other
+fitted directions (R-26) — has been tested and has failed. That is four consecutive negatives, and they
+are consistent with each other, which is itself the most informative thing here.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 203 | 2026-08-21 | 772863-772868 judged | L8 at 12 angles; all layers complete, `unused=0` |
+| 204 | 2026-08-21 | taught the resolver the `of8` spelling | 4 unreachable L12 controls recovered; L12 t **6.23**, matching the audit's prediction |
+| 205 | 2026-08-21 | built `dose_vs_effect.py` | the dose-matched test R-25 said was impossible |
+| 206 | 2026-08-21 | ran it | **`d_naive` at 94% dose → 38% larger effect** |
+| 207 | 2026-08-21 | filed **R-26**; retracted §14-D's specificity row | withdrawn: specificity and content; surviving: the raw ASR effect |
