@@ -15,6 +15,10 @@
 set -euo pipefail
 R=/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood
 cd "$R"
+source /home/sharifm/students/omeryosef/miniconda3/etc/profile.d/conda.sh
+conda activate poc_stage2
+if [ -f "$R/.env" ]; then set -a; source "$R/.env"; set +a; fi
+export PYTHONPATH="$R/src/boombness:${PYTHONPATH:-}"
 BANK=$R/data/boombness_prompts/boombness_prompt_bank_pinned_82bc1a3c_2352.jsonl
 SB=outputs/boombness/score_behavior
 STAMP=q3dec
@@ -25,8 +29,8 @@ ARMS=(
   "C20:$SB/q3_C20_20260818_154112_366026"
   "D20:$SB/q3_D20_20260818_154112_366027"
   "D20ctrl:$SB/q3_D20ctrl_20260818_154112_366028"
-  "B11:__B11__"
-  "B11ctrl:__B11CTRL__"
+  "B11:outputs/boombness/score_behavior/q3B11_20260821_155952_4084982"
+  "B11ctrl:outputs/boombness/score_behavior/q3B11ctrl_20260821_160051_2982112"
 )
 for entry in "${ARMS[@]}"; do
   tag="${entry%%:*}"; gens="${entry#*:}"

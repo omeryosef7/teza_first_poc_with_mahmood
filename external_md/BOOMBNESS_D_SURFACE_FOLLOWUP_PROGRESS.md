@@ -5056,6 +5056,81 @@ reported.
 
 
 
+## ITEM 2 — generation complete on the control, and a cross-time confound closed rather than assumed
+
+**Control arm 772473 done:** 960 rows, **0 failures**, intervention verified
+`in_subspace_orth / project_out / L11 / alpha 1.0`. Arm B (772472) is at 900/960 — it ran at roughly
+half the control's throughput because six jobs from the other session shared its node. I did **not**
+cancel them; I did that once to a peer already and was wrong about it (CORRECTION C-1).
+
+### Bank provenance certified end-to-end
+
+The new run records `bank_file_sha16 = 71bea179345ed118` — **byte-for-byte the bank the 08-18 arms
+used** (the legacy `bank_content_sha16` those runs wrote meant file bytes, and this is that value).
+The pinned copy is also byte-identical to the file at commit `82bc1a3c`. With the earlier row-level
+check (960 ids per arm, 0 missing, 0 `prompt_sha16` mismatches, identical id sets across all four
+arms), the join carrying this decomposition is certified at three levels.
+
+### ⚠ The confound I nearly assumed away — probe 772818
+
+The new arms were generated **today**; base/C20/D20 were generated **08-17/08-18**. Decoding is
+greedy and seed, bank, dtype and GPU type all match, so generations *should* reproduce. But the
+environment is not identical — today's runs emit a `torch_dtype` deprecation warning the originals
+did not, i.e. **the transformers version moved underneath the comparison.** If baseline generations
+come out differently today, then `arm B − baseline` mixes the intervention with environment drift,
+and no amount of session-matched *judging* repairs it, because the defect would be upstream in the
+**generations**.
+
+This is R6-6's shape (arms compared across judging days) one level down, and I was about to treat
+determinism as an assumption. **772818 tests it:** baseline arm, no intervention, first 40 rows,
+same everything, compared byte-for-byte against the corresponding rows of the 08-17 baseline.
+
+⚠ **Pre-registered.** Identical bytes ⇒ the cross-time comparison is sound and I will say so with
+the evidence. Any mismatch ⇒ the 08-17 baseline cannot be paired against today's arms and the
+decomposition needs its baseline regenerated first. **This control can fail, which is the point.**
+
+### ✅ RESULT — the probe PASSES: 40/40 byte-identical
+
+Job 772818 completed (40 rows, 0 failures) and every one of the 40 shared prompts reproduces the
+08-17 baseline **exactly**, compared by SHA-256 of the generation string:
+
+> **IDENTICAL 40/40, DIFFERENT 0.**
+
+So greedy decoding on this stack is reproducible across the transformers upgrade, and
+`arm B − baseline` is a clean intervention contrast rather than a mixture of intervention and
+environment drift. **The cross-time pairing is certified, not assumed** — which is what I wanted,
+because the alternative was to regenerate a 960-row baseline on faith.
+
+### ⚠ OPERATIONAL — the judge batch died silently on the login node, and the cause is worth recording
+
+The first launch of the six-arm batch produced a **0-byte log and no processes**. Not a crash, not a
+config error: **`import openai` hangs for >90 s on the login node**, stalled in importlib
+`_fill_cache` — an NFS directory listing. Login-node load average was **19.3 with 86 users** and
+`/home/sharifm` is **93% full**. `set -euo pipefail` then made the death silent.
+
+Two fixes, both kept:
+1. **`src/boombness/slurm/run_judge_cpu.sh`** (new) — judging is pure API traffic with no model and
+   no GPU, so it now runs on **`cpu-killable`** rather than idling an L40S through
+   `run_boombness.sh`, and it is off the contended login node entirely. Job **772854** running.
+2. The diagnosis is written into that script's header so the next silent 0-byte log is one grep
+   away from its cause.
+
+**Lesson, and it generalises past this repo:** a 0-byte log under `set -e` is not evidence of
+"nothing happened" — here it was evidence of a *hang*, which looks identical from the outside. The
+existing house rule distinguishes a hung SLURM job from a slow one by the weight-loading bar; the
+same distinction was needed one level up, on the login node, and I did not have a rule for it until
+now.
+
+
+
+### ⚠ A power limit stated before the result, not after
+
+The internal bank has **6 domains**, so every clustered test here has **G−1 = 5 df**. The committed
+`remove_both` effect clears that comfortably (+0.3476, p 0.00028), but the interaction contrast is a
+difference of three deltas and will be noisier. **If the interaction lands ambiguous, that is a
+power statement about 6 clusters, not evidence of additivity** — recorded now so it cannot be read
+the convenient way later.
+
 ## ⛔✅ ITEM 3 CLOSED AS AN EVALUATED NEGATIVE — there is no causally valid refusal direction in `d_surface`'s band
 
 **Artifact:** `doublespeak_causality/outputs/stage_gcg_full_lowlayers/` (job 772476). Same script,
