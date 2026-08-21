@@ -144,15 +144,23 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--baseline", required=True)
-    ap.add_argument("--layer", action="append", default=[], required=True,
+    ap.add_argument("--layer", action="append", default=[],
                     metavar="L=ARM_DIR[,ARM_DIR2]:ISO_DIR:SUB_DIR[,SUB_DIR2]",
                     help="repeatable, one per depth. Comma-separated dirs are judge SHARDS of one "
                          "run and are unioned; the union is asserted duplicate-free.")
+    ap.add_argument("--sweep", action="append", default=[], metavar="L=ARM:C0,C1,C2,C3",
+                    help="EXHAUSTIVE angle sweep of the arm's orthogonal complement inside the "
+                         "concept subspace. The complement is 2-D, so random draws are not "
+                         "independent (measured pairwise cos 0.91-1.00 across three seeds) and a "
+                         "'band' over them would measure nothing. Evenly spaced angles over the "
+                         "half-circle cover it instead, and the WORST case over them is an upper "
+                         "bound on 'any orthogonal direction in the subspace', not a sample.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
     base = load([args.baseline])
     n_expect = len(base)
+    out_sweep_only = not args.layer
     out = {
         "script": "src/boombness/analyze_control_recheck.py",
         "purpose": "re-test d_surface layer-profile depths against a SUBSPACE-matched control that "
@@ -168,7 +176,7 @@ def main() -> None:
         "baseline": os.path.relpath(args.baseline, REPO),
         "layers": {},
     }
-    for spec in args.layer:
+    for spec in (args.layer or []):
         L, rest = spec.split("=", 1)
         arm_s, iso_s, sub_s = rest.split(":")
         arm = load(arm_s.split(","), expect=n_expect)
@@ -216,6 +224,40 @@ def main() -> None:
             "family": "one specificity contrast per depth tested",
             "m": m, "raw": dict(items), "holm_adjusted": adj,
             "holm_rejects_at_0.05": sorted(k for k, v in adj.items() if v <= 0.05)}
+
+    for spec in args.sweep:
+        L, rest = spec.split("=", 1)
+        arm_s, ctrls = rest.split(":")
+        arm = load(arm_s.split(","), expect=n_expect)
+        entry = {"arm": {"runs": [os.path.relpath(x, REPO) for x in arm_s.split(",")],
+                         **{f: paired(base, arm, f) for f in (SCORE, FLAG)}},
+                 "controls": {}, "worst_case": {}}
+        per = {}
+        for i, cd in enumerate(ctrls.split(",")):
+            ctrl = load(cd.split("|"), expect=n_expect)
+            iv = intervention_of(cd.split("|")[0])
+            per[i] = {"run": os.path.relpath(cd, REPO), "intervention": iv,
+                      "vs_baseline": {f: paired(base, ctrl, f) for f in (SCORE, FLAG)},
+                      "arm_minus_control": {f: paired_diff(base, arm, ctrl, f)
+                                            for f in (SCORE, FLAG)}}
+            entry["controls"][f"angle_{i}"] = per[i]
+        for f in (SCORE, FLAG):
+            # The MINIMUM arm-minus-control over the sweep: the hardest case for the arm, and the
+            # right summary because the sweep is exhaustive rather than a sample. No multiplicity
+            # correction is applied to a minimum -- taking the worst case is already conservative.
+            diffs = [(i, per[i]["arm_minus_control"][f]) for i in per
+                     if per[i]["arm_minus_control"][f].get("delta_cluster_mean") is not None]
+            worst = min(diffs, key=lambda kv: kv[1]["delta_cluster_mean"])
+            strongest = max(((i, per[i]["vs_baseline"][f]) for i in per),
+                            key=lambda kv: abs(kv[1].get("delta_cluster_mean") or 0.0))
+            entry["worst_case"][f] = {
+                "worst_angle": worst[0], "arm_minus_control": worst[1],
+                "strongest_control_angle": strongest[0],
+                "strongest_control_vs_baseline": strongest[1],
+                "note": "worst_case is the MINIMUM arm-minus-control over an exhaustive sweep of "
+                        "the 2-D orthogonal complement; it is an upper bound on what any direction "
+                        "orthogonal to the arm inside this subspace can do, not a sampled band."}
+        out.setdefault("angle_sweep", {})[f"L{L}"] = entry
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w") as fh:
