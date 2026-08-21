@@ -5692,3 +5692,39 @@ identification buys nothing") becomes the wrong summary.
 | 213 | 2026-08-21 | implemented `dose_mix_direction` + `dose_mix{k}of{n}` plumbing | ladder spans dose 0.84 → 0.046 with cos recorded at every rung |
 | 214 | 2026-08-21 | verified k=0 ≡ `d_surface` and that the ladder nearly saturates C-13's bound | built-in regression check; bound shown non-vacuous |
 | 215 | 2026-08-21 | submitted 772960-772965 (L8, k=1…6) | 6 jobs, at cap |
+
+## The dose ladder is generated, and its analysis is committed before the judging finishes
+
+Tick 2026-08-21. 772960-772965 completed: six ladder rungs at L8, **495 rows and `DONE.json` each,
+six distinct `gens.jsonl` hashes**, every `config.json` declaring the `dose_mix{k}of8` spec it was
+asked for. Judging submitted (772993-772998).
+
+**I wrote and committed `dose_curve.py` while the judge jobs were still running.** That is deliberate.
+Everything in this thread since R-23 has been a claim of mine failing a control, and the failure mode
+common to several of them was choosing how to read a number *after* seeing it — the "~7 band-sds"
+framing, the effect-ratio pairing, the "smooth unimodal hump" reading. The cheapest guard against
+doing it again is to fix the analysis in a commit that predates the data. The only inputs available
+when it was written were the ladder's geometry (dose and cos per rung, computed on CPU) and the
+already-published points.
+
+**The pre-registered rule.** The ladder is the calibration set: isotonic fit of dose → Δ. `d_naive`,
+`d_context` and the 12 angle controls are **held out** and scored against that curve. Dose is
+**sufficient** iff no held-out point exceeds the curve by more than the ladder's own maximum
+leave-one-out residual. Isotonic rather than linear because the dose-response is *known in advance* to
+saturate — R-25 measured the within-null OLS line extrapolating to +0.250 against +0.018 observed — so
+a line is the wrong family, and monotonicity is the weakest assumption under which "off the curve"
+still means something.
+
+**Two plumbing checks that come from geometry, not from the data.** Ladder `k=0` **is** `d_surface`
+(cos 1.0000) and must reproduce the existing L8 arm exactly; ladder `k=7` **is**
+`in_subspace_angle0` (both equal the leading complement basis vector) and must reproduce that control
+exactly. Both resolve **by identity**, not by tag. If either disagrees, the `dose_mix` path is broken
+and nothing else in the artifact is interpretable — which is the right way round, because it makes a
+plumbing failure loud instead of letting it masquerade as a finding.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 216 | 2026-08-21 | 772960-772965 completed | 6 rungs, **6/6 distinct hashes**, 495 rows + DONE each, specs verified |
+| 217 | 2026-08-21 | submitted judging 772993-772998 | ladder deltas pending |
+| 218 | 2026-08-21 | **pre-registered** `dose_curve.py` in a commit predating the data | decision rule fixed before any ladder outcome is visible |
+| 219 | 2026-08-21 | built in two geometry-derived plumbing checks (k=0 ≡ `d_surface`, k=7 ≡ `angle0`) | a broken `dose_mix` path fails loudly instead of reading as a result |
