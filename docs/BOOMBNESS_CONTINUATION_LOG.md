@@ -4145,3 +4145,59 @@ imitate. A confound test that only ever fires on results you already doubt is no
 | 96 | 2026-08-21 | pointed R-20's length test at the surviving headline | **+0.9992** across 33 AdvBench arms — objection reproduces |
 | 97 | 2026-08-21 | naive length stratification | effect entirely on the longer 110/495 (+0.1545 vs +0.0026) — looked fatal |
 | 98 | 2026-08-21 | decomposed by refusal transition instead (`effect_decomposition.py`) | **longer refusals contribute +0.0000**; effect is 17 real compliance flips |
+
+## Audit #3 — G1's wording overreached, and I repeated my own provenance failure
+
+Tick 2026-08-21. Two hits, and the first is mine.
+
+### 1. I computed the replication in a heredoc. Again.
+
+The audit found that `judge_retest_advbench.json` has **`judge_a` and `judge_b` both set to the
+`_base` arm** — it is a **baseline-only floor measurement**, containing no arm, no L12 and no delta.
+The **+0.0364 CI [+0.0200, +0.0539]** replication table I put in this log two ticks ago **had no
+committed producer**; `0.0539` occurred exactly once in the repo, in my own log line.
+
+This is the third instance and it is the same one I criticised in `analyze_g64`, then fixed in myself
+with `analyze_clearharm.py`, then did again. The number was right — re-running it through
+`effect_decomposition.py` gives **+0.0364, CI [+0.0200, +0.0539]**, identical — but "right" is not the
+standard; **regenerable** is. `outputs/boombness/headline_replicate_decomposition.json` now exists,
+and the replicate decomposition is cleaner than the original: **18/18** refusal→compliance flips,
+`both_still_refused` exactly **+0.0000**.
+
+### 2. G1's headline was a claim about *scope* evidenced by one cell of a *layer sweep*
+
+The report said transplanting the demonstrations moves the readout to the donor while the query
+codeword moves it **backwards**, citing L18 — one of **13 layer-sets** in a family of **165 arms per
+context pair**. The full sweep:
+
+| context | scope | negative | positive | range |
+|---|---|---|---|---|
+| harm_ctx | **`query_only`** | **13/13** | 0 | [−1.141, −0.521] |
+| benign_ctx | **`demos_only`** | 0 | **13/13** | [+0.272, +1.096] |
+| benign_ctx | `query_only` | 8 | **5** | [−0.232, **+0.666**] |
+| harm_ctx | `demos_only` | **4** | 9 | [**−1.270**, +0.803] |
+
+**Two cells are sign-robust across the entire sweep; two are not.** `query_only` in a *benign* context
+moves **forwards** at early layers (+0.666 at L0-4), and `demos_only` in a *harmful* context moves
+**backwards** at L0-4 (−1.270) — more strongly than any `query_only` cell. So the finding is about the
+**diagonal**, not about scope, and stating it as a property of scope overreached. The report now
+carries the whole table and says which half survives.
+
+The audit also found **26 of 165** benign cells with `frac_of_span > 1.0` — the readout overshoots its
+own ceiling — which independently corroborates the ceiling problem already flagged and further
+justifies the absolute Δ as the citable unit.
+
+### Still open from this audit, not yet acted on
+
+* **L12 is the argmax on the clustered estimand but L8 is the argmax on the pooled one**, and
+  11 × 0.005617 = **0.0618** — the headline layer does **not** survive Bonferroni over its own
+  11-layer family.
+* **The L12 arm changes 47.1% of generations; its "inert" control changes 30.7%** — 1.53×, and
+  `project_out` is scale-free so norm-matching does not equalise disruption.
+* The Qwen3 arm-D L25 variant was generated and **never judged**; only the L20 pair was.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 99 | 2026-08-21 | audit #3 caught my heredoc replication with no producer | **third instance**; artifact now exists, number identical |
+| 100 | 2026-08-21 | verified G1's sign claim across all 13 layer-sets × 2 pairs | **2 of 4 cells sign-robust**; the claim is about the diagonal |
+| 101 | 2026-08-21 | corrected the report; recorded 26/165 ceiling overshoots | three findings logged as still open |

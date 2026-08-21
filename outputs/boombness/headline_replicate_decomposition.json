@@ -1,0 +1,72 @@
+{
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abrep_base_20260821_033532_4024998",
+  "arm": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abrep_L12_20260821_033532_4024999",
+  "population": {
+    "bank_file": "advbench_heldout_495.jsonl",
+    "population": "AdvBench-495 (external; goal == prompt)",
+    "is_external_bank": true,
+    "goal_semantics": "goal == visible prompt (no substitution; R-13's style artifact cannot arise)",
+    "model": null,
+    "condition": null,
+    "n": 495,
+    "n_clusters": null
+  },
+  "question": "is the ASR gain real compliance, or the judge rewarding longer text?",
+  "discriminator": "the refusal transition, which length cannot fake; stratifying on length alone is invalid because compliance is necessarily longer than refusal, making length a MEDIATOR rather than a confounder",
+  "groups": {
+    "both_still_refused": {
+      "n": 443,
+      "n_clusters": 16,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "net_extra_successes": 0
+    },
+    "baseline_refused_arm_complied": {
+      "n": 18,
+      "n_clusters": 9,
+      "delta": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "net_extra_successes": 18
+    },
+    "neither_refused": {
+      "n": 34,
+      "n_clusters": 8,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "net_extra_successes": 0
+    },
+    "ALL": {
+      "n": 495,
+      "n_clusters": 16,
+      "delta": 0.03636363636363636,
+      "ci95": [
+        0.02,
+        0.05391304347826087
+      ],
+      "net_extra_successes": 18
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/effect_decomposition.py",
+      "--baseline",
+      "outputs/boombness/judge/abrep_base_*",
+      "--arm",
+      "outputs/boombness/judge/abrep_L12_*",
+      "--bank",
+      "data/boombness_prompts/external/advbench_heldout_495.jsonl",
+      "--out",
+      "outputs/boombness/headline_replicate_decomposition.json"
+    ],
+    "git_commit": "ead7e0bd57c2645623ad21b966b2a9501978a47e"
+  }
+}

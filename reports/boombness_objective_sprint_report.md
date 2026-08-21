@@ -326,9 +326,36 @@ resampling **domains** (families drawn wholesale with their domain):
 | transplant **whole prompt**, L18 (`all`) | **+13.3% [−17%, +34%] — null** | +14.1% [−9%, +32%] — null |
 | transplant **query codeword**, L18 | **−57.0% [−103%, −40%] — wrong way** | −70.6% [−105%, −56%] |
 
-**The direction is the finding and it is unambiguous:** transplanting the *demonstrations* moves the
-model's reported meaning most of the way to the donor's; transplanting the *query codeword* moves it
-**backwards**. The meaning is retrieved from the demonstrations at answer time.
+**The direction is the finding — and it is layer- and context-dependent, not unambiguous.**
+⚠ **Corrected 2026-08-21 after an audit.** The sentence here previously read "transplanting the
+demonstrations moves the meaning most of the way to the donor; transplanting the query codeword moves
+it **backwards**", evidenced by the **L18** cell. That is one of **13 layer-sets** in a family of
+**165 arms per context pair**, and the sign is not a property of the scope alone. Every layer-set,
+both pairs, from `g1_whole_answer_absolute.json`:
+
+| context | scope | layer-sets negative | positive | range of `frac_of_span` |
+|---|---|---|---|---|
+| harm_ctx | **`query_only`** | **13 / 13** | 0 | [−1.141, −0.521] |
+| benign_ctx | **`demos_only`** | 0 | **13 / 13** | [+0.272, +1.096] |
+| benign_ctx | `query_only` | 8 | **5** | [−0.232, **+0.666**] |
+| harm_ctx | `demos_only` | **4** | 9 | [**−1.270**, +0.803] |
+
+**Two cells are sign-robust across the whole layer sweep and two are not.** What survives without
+qualification: transplanting the **query codeword into a harmful context moves the readout backwards
+at every layer-set tested**, and transplanting the **demonstrations into a benign context moves it
+forwards at every layer-set tested**. What does **not** survive: the same contrast off-diagonal —
+`query_only` in a *benign* context moves **forwards** at early layers (**+0.666** at L0-4, +0.491 at
+L5-8, +0.375 at L8), and `demos_only` in a *harmful* context moves **backwards** at L0-4 (−1.270) and
+all-layers (−1.268), more strongly than any `query_only` cell does.
+
+**The finding is therefore about the diagonal, not about scope.** The meaning is retrieved from the
+demonstrations at answer time *in the direction the design was built to test*; the reverse-direction
+cells are mixed and were never the evidence. Stating it as a property of scope overreached.
+
+⚠ **A second thing the audit found and this section should carry:** **26 of 165** benign-context cells
+have `frac_of_span > 1.0` — the readout overshoots its own donor ceiling. That is independent
+corroboration of the ceiling problem already flagged above (the donor ceiling fails its option-mass
+gate), and a further reason the **absolute Δ log-odds**, not the percentage, is the citable unit.
 
 #### The same result in a unit that does not depend on the ceiling (added 2026-08-20)
 
