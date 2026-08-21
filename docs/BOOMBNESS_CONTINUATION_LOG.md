@@ -4647,3 +4647,37 @@ this tick because each needs care:
 | 129 | 2026-08-21 | audit #4: §13 restates four retracted headlines, sweep passes it | paragraph-scoped exemption whitelisted a 17-line table |
 | 130 | 2026-08-21 | **table rows now scoped individually** | caught 10 occurrences the old scoping called clean |
 | 131 | 2026-08-21 | rescored §13; marked R5's row; descoped dated snapshots; marked 4 historical rows | sweep clean over 3 files |
+
+## §0 no longer quotes the figure its own body forbids
+
+Tick 2026-08-21, acting on audit #4's second finding. §0 quoted **"L12, +0.0322, p=0.0056"** twice —
+in the headline block and in gate row §14-L — while §"Multiplicity over the layer family" says in
+bold that **it must not be quoted as a corrected result**, because it is the maximum of a 10-layer
+family in which **nothing survives Holm**. Gate row §14-B did the same with L8's **p_cl=0.0089**.
+
+The report was, in effect, retracting a claim in one section and leading with it in another — the
+asymmetric-standard defect it has already retracted three claims for.
+
+**All three now quote what is actually defensible**, which was available the whole time:
+
+| where | was | now |
+|---|---|---|
+| §0 headline | +0.0322 (**p=0.0056**) | +0.0322 vs a **5-draw band** at +0.0012 (sd 0.0026), ≈16 band-sds; per-layer p labelled **uncorrected, not quotable**; band licensed by the **shape test, p=0.0109** |
+| gate §14-L | "~L6–L12, **with a hard edge**"; "significant at L8/L10/L12" | "~L6–L14" (scan window), **no layer survives Holm**, shoulder **graded not hard** |
+| gate §14-B | +0.0305, **p_cl=0.0089** | **+0.0422 vs the band**, per-layer figure struck as uncorrected |
+
+**The substantive point:** replacing a per-layer p with the band comparison does not weaken the
+claim — ≈16 between-draw sds is a stronger statement than an uncorrected p=0.0056, and it is the
+comparator plan §2.5 asks for. The report had the better evidence and was leading with the worse.
+
+**Two findings from audit #4 remain open**, both registry-shaped and both needing more than an edit:
+* **R-8 denotes two different things** — G1's "+84% of span" supersession, and "the capability
+  channel". `registry_check` verifies a cited ID *has a row*, not that the row is *about the same
+  thing*, so it cannot catch this class.
+* **A third `#N` series exists** (#3, #6, #7, #9) with no rows, so §0's "the registry is closed" is
+  false; #7 is the same event already tabled as R-12.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 132 | 2026-08-21 | §0 headline + gate rows §14-L and §14-B re-quoted | the forbidden per-layer p is gone from §0 |
+| 133 | 2026-08-21 | replaced it with the band comparison and the shape test | **stronger** evidence, and the one §2.5 asks for |
