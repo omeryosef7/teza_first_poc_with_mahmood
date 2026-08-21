@@ -1,0 +1,72 @@
+{
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "arm": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abgK_B_20260821_142631_887127",
+  "population": {
+    "bank_file": "advbench_heldout_495.jsonl",
+    "population": "AdvBench-495 (external; goal == prompt)",
+    "is_external_bank": true,
+    "goal_semantics": "goal == visible prompt (no substitution; R-13's style artifact cannot arise)",
+    "model": null,
+    "condition": null,
+    "n": 495,
+    "n_clusters": null
+  },
+  "question": "is the ASR gain real compliance, or the judge rewarding longer text?",
+  "discriminator": "the refusal transition, which length cannot fake; stratifying on length alone is invalid because compliance is necessarily longer than refusal, making length a MEDIATOR rather than a confounder",
+  "groups": {
+    "both_still_refused": {
+      "n": 453,
+      "n_clusters": 16,
+      "delta": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "net_extra_successes": 0
+    },
+    "baseline_refused_arm_complied": {
+      "n": 8,
+      "n_clusters": 5,
+      "delta": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "net_extra_successes": 8
+    },
+    "neither_refused": {
+      "n": 34,
+      "n_clusters": 8,
+      "delta": 0.029411764705882353,
+      "ci95": [
+        0.0,
+        0.17647058823529413
+      ],
+      "net_extra_successes": 1
+    },
+    "ALL": {
+      "n": 495,
+      "n_clusters": 16,
+      "delta": 0.01818181818181818,
+      "ci95": [
+        0.007707129094412331,
+        0.030927835051546393
+      ],
+      "net_extra_successes": 9
+    }
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/effect_decomposition.py",
+      "--baseline",
+      "outputs/boombness/judge/abg_base_*",
+      "--arm",
+      "outputs/boombness/judge/abgK_B_2026*",
+      "--bank",
+      "data/boombness_prompts/external/advbench_heldout_495.jsonl",
+      "--out",
+      "outputs/boombness/e12_causal_knife.json"
+    ],
+    "git_commit": "0576a159a57f2798e4d2f03c7e8cb16599b10143"
+  }
+}

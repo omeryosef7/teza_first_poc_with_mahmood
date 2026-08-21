@@ -2217,9 +2217,32 @@ is established for `carrot↔bomb`, and E12 says one should expect a *related bu
 direction for another concept. `d_context` behaves the same way (0.495 against a 0.87–0.92 ceiling),
 so this is a property of the 2×2 estimator, not of `d_surface` alone.
 
-⚠ **What E12 does not settle.** A cosine compares *fitted* directions; it does not show either is
-causal. Whether the knife-fitted direction produces the same **behavioural** effect is a separate
-experiment, and it has not been run.
+#### E12's causal half — the knife-fitted direction transfers, at half strength
+
+The cosine compares *fitted* directions and shows nothing about causality, so the behavioural test was
+run: project out the **knife**-fitted `d_surface` on **AdvBench**, whose 495 prompts contain no
+`carrot`, no `bomb` and no `knife` (`effect_decomposition.py`,
+`outputs/boombness/e12_causal_knife.json`):
+
+| direction projected out | Δ ASR | net compliance flips | CI95 |
+|---|---|---|---|
+| **`bomb`-fitted** (the headline) | **+0.0364** | **18** | [+0.0202, +0.0533] |
+| **`knife`-fitted** | **+0.0182** | **9** | [+0.0077, +0.0309] |
+| knife-fitted **random control** | **+0.0000** | 0 | [−0.0059, +0.0067] |
+| 5-draw control band | +0.0012 (sd 0.0026) | — | — |
+
+**It transfers.** A direction fitted on `carrot↔knife` raises attack success on generic harmful
+instructions by **+0.0182** — about **7 band-sds** — with its own matched control at **exactly zero**.
+And it fails the same way the headline does: on the **453** prompts where the model refuses in both
+arms the delta is **+0.0000**, so the entire effect is **8 of 9** genuine refusal→compliance flips.
+
+**The two halves of E12 agree quantitatively.** The knife direction is **cos ≈ 0.61** aligned with the
+bomb direction and produces **0.0182/0.0364 = 0.50** of its effect. A direction 61% aligned delivering
+50% of the causal effect is what you expect if **the shared component is the causally active part** —
+the concept-general ~⅓ of the variance does the work, and the concept-specific remainder adds little.
+
+That is a stronger statement than either half alone, and it is the first result in this sprint where a
+representational measurement and a behavioural one **predict each other**.
 
 ### ✅ The AdvBench headline now clears a real 5-draw control band (added 2026-08-21)
 

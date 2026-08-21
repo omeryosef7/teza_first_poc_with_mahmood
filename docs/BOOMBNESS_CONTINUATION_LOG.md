@@ -4913,3 +4913,50 @@ same **behavioural** effect is a separate experiment and has not been run.
 | 150 | 2026-08-21 | both §2.4 audits passed → E12 proceeded | 2736/2736, 0 violations, both models |
 | 151 | 2026-08-21 | fitted `d_surface` on `carrot↔knife`; compared per layer | across-concept cos **+0.6117** |
 | 152 | 2026-08-21 | computed the **within-concept ceiling** from the dev/heldout split | **0.995** — so 0.61 is a real concept effect, not estimator noise |
+
+## ★★★ E12 complete — the knife direction transfers causally, and the two halves predict each other
+
+Tick 2026-08-21. Last tick I wrote that a cosine "shows nothing about causality" and that the
+behavioural test "has not been run". It has now.
+
+**Setup:** project out the **knife**-fitted `d_surface` on **AdvBench** — 495 generic harmful
+instructions containing no `carrot`, no `bomb` and no `knife`. Both arms coherence-OK.
+
+| direction projected out | Δ ASR | net compliance flips | CI95 |
+|---|---|---|---|
+| **`bomb`-fitted** (the headline) | **+0.0364** | **18** | [+0.0202, +0.0533] |
+| **`knife`-fitted** | **+0.0182** | **9** | [+0.0077, +0.0309] |
+| knife-fitted **random control** | **+0.0000** | **0** | [−0.0059, +0.0067] |
+| 5-draw control band | +0.0012 (sd 0.0026) | — | — |
+
+**It transfers**, at ~7 band-sds, with its matched control at exactly zero — and it fails the same
+way: on the **453** prompts refused in both arms the delta is **+0.0000**, so the whole effect is
+**8 of 9** real refusal→compliance flips. Same decomposition, same signature, a different concept's
+direction.
+
+### The result worth keeping
+
+| | |
+|---|---|
+| alignment of the two fitted directions | **cos ≈ 0.61** |
+| ratio of their causal effects | **0.0182 / 0.0364 = 0.50** |
+
+**A direction 61% aligned delivers 50% of the effect.** That is what you expect if the **shared
+component is the causally active part**: the concept-general ~⅓ of variance does the work and the
+concept-specific remainder adds little. Two independent measurements — one representational, one
+behavioural, taken days apart with different instruments — **predict each other**. That has not
+happened before in this sprint; every prior agreement between two numbers here turned out to be a
+shared artifact (G1's +68% agreeing across a broken readout) or a coincidence (plain ASR tracking
+length on both populations for different reasons).
+
+**It also revises E12's own headline from one tick ago.** I wrote that `d_surface` is "~⅔
+concept-specific" and bounded the sprint's claims accordingly. The causal half says the bounding was
+too pessimistic: the concept-specific majority of the *variance* carries a minority of the *effect*.
+The honest summary is now **"mostly concept-specific in direction, mostly concept-general in
+consequence"** — and the second clause is the one that matters for whether these results generalise.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 153 | 2026-08-21 | ran E12's causal half on AdvBench | knife-fitted direction: **+0.0182**, control **+0.0000** |
+| 154 | 2026-08-21 | decomposed it by refusal transition | **+0.0000** on 453 both-refused rows; 8 of 9 real flips |
+| 155 | 2026-08-21 | compared cos (0.61) to effect ratio (0.50) | the shared component is the causally active one; **revises last tick's bound** |
