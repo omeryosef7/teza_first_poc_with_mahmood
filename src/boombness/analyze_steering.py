@@ -63,6 +63,10 @@ def main() -> int:
                     help="report arms whose judge run predates the goal_topicality field (R-13)")
     ap.add_argument("--allow-style-asr", action="store_true",
                     help="report an arm whose ASR rose with zero goal-related content (NOT a result)")
+    ap.add_argument("--band-arm", action="append", default=None, metavar="ARM",
+                    help="DECLARE an arm as a control-band draw, by the name shown in the table. "
+                         "Repeatable. Overrides the tag-prefix heuristic, which has silently "
+                         "matched zero arms twice in this sprint.")
     ap.add_argument("--allow-missing-coherence", action="store_true",
                     help="report an arm whose coherence was never assessed (default: refuse)")
     ap.add_argument("--allow-partial", action="store_true",
@@ -279,12 +283,27 @@ def main() -> int:
     # the band silently reported "0 draws" while the `ctrlband_*` runs sat in `ctrls` looking used.
     # That is the THIRD guard this sprint that never executed. A guard that cannot fire is worse
     # than no guard, because it reads as a check that passed.
-    BAND_PREFIXES = ("ctrl_rand_s", "ctrlband_s")
-    band = [r for r in rows if r["arm"].startswith(BAND_PREFIXES)]
+    # ADDRESS BY IDENTITY, NOT BY AN INCIDENTAL PROPERTY (fixed again 2026-08-21). The prefix list
+    # is a naming convention, and it has now failed TWICE: audit B1 caught `ctrl_rand_s` vs
+    # `ctrlband_s`, and the post-R-12 re-runs are tagged `ctrlbandfix_s<seed>`, which the patched
+    # list still missed. Every occurrence of this class in this project has been an arm addressed by
+    # a filename rather than by what it IS. `--band-arm` lets the caller DECLARE membership; the
+    # prefix heuristic stays as a fallback and the artifact records which mechanism was used, so a
+    # future mismatch is visible rather than silent.
+    BAND_PREFIXES = ("ctrl_rand_s", "ctrlband_s", "ctrlbandfix_s")
+    declared = set(args.band_arm or [])
+    band = [r for r in rows if r["arm"] in declared] if declared else \
+           [r for r in rows if r["arm"].startswith(BAND_PREFIXES)]
+    band_selection = "declared via --band-arm" if declared else f"prefix match {BAND_PREFIXES}"
+    if declared:
+        missing = sorted(declared - {r["arm"] for r in rows})
+        if missing:
+            raise SystemExit(f"[steer] --band-arm names arms that were not passed: {missing}")
     if not band:
-        print(f"\n[steer] control band: NO arms matched {BAND_PREFIXES}. Arms present: "
+        print(f"\n[steer] control band: NO arms matched ({band_selection}). Arms present: "
               f"{[r['arm'] for r in rows]}. If you passed band draws, their names do not match — "
-              f"do not read the absence of a band as 'the band was checked'.")
+              f"do not read the absence of a band as 'the band was checked'. Use --band-arm to "
+              f"declare them explicitly rather than relying on the tag.")
     if len(band) >= 3:
         ds_ = [r["paired_delta_mean"] for r in band]
         k = len(ds_)

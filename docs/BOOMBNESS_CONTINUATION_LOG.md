@@ -4410,3 +4410,47 @@ being written, which is an argument for writing them, not against.
 | 114 | 2026-08-21 | built `unanalysed_inventory.py` to pre-empt the audits' recurring finding | **78 judge runs cited by no artifact** |
 | 115 | 2026-08-21 | used it: found `abrep_L6/L8/L10` and ran the band replication | **all four band layers replicate**, 8/8 CIs exclude zero |
 | 116 | 2026-08-21 | its "judged over an incomplete run" list was 3 **false positives** | path-form bug in my own basename(); now 0 |
+
+## ★ R-12 closed — ClearHarm has a real control band, from draws that were already on disk
+
+Tick 2026-08-21. R-12 retracted the ClearHarm control band as **n=1**: the composed-spec recursion
+dropped `control_seed`, so three "independent" draws produced byte-identical generations
+(sha `276b6af4` ×3) and a fake between-draw sd of 0.0048. I fixed the seed and relaunched the draws —
+and then **never analysed them**. The unanalysed-evidence inventory built last tick surfaced them.
+
+**The fix is confirmed at the level that matters.** The three re-run generations now hash to
+`61249763`, `3b962119`, `485698e9` — genuinely distinct, where R-12's were identical.
+
+| | R-12 (retracted) | now |
+|---|---|---|
+| independent draws | **1** (repeated 3×) | **3** |
+| between-draw sd | 0.0048 (**fake**) | **0.0034** (real) |
+| band mean | — | **+0.0086** |
+
+Against it: **arm B +0.1047**, **arm D +0.4295** — roughly **28** and **124** between-draw sds above
+the band. The comparison R-12 said could not be made can now be made.
+
+**One draw was correctly thrown away.** A fourth run (`s20260903`) carries an **`ABORTED.json`** with
+`goal_status_counts: {'empty_query': 179}` — it hit the other session's empty-goal defect and aborted
+rather than contributing a number. The band is 3 draws, not 4, and the reason is recorded.
+
+### The band matcher failed for the third time, so I stopped patching the symptom
+
+`analyze_steering` selects band draws by **tag prefix**. That list already carried a fix comment from
+audit B1 (`ctrl_rand_s` vs `ctrlband_s`, "ZERO arms ever matched and the band silently reported 0
+draws"). My re-runs are tagged `ctrlbandfix_s<seed>` — and the patched list missed them too.
+
+Adding a third prefix would have been the third instance of the same patch. Instead `--band-arm`
+lets the caller **declare** membership, with the prefix heuristic kept as a fallback and the
+selection mechanism recorded. This project's standing rule is *address by identity, not by an
+incidental property*; band membership was being inferred from a filename, which is exactly what that
+rule forbids.
+
+**Credit where due:** the guard printed *"do not read the absence of a band as 'the band was
+checked'"* and refused to proceed silently — so the third recurrence cost minutes, not a retraction.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 117 | 2026-08-21 | mined the inventory for the post-R-12 band draws | three distinct generation hashes — the seed fix works |
+| 118 | 2026-08-21 | computed the band | **3 draws, sd 0.0034 real, mean +0.0086**; arm B ≈28 sd above it |
+| 119 | 2026-08-21 | band matcher missed a third naming variant → added `--band-arm` | membership is declared, not inferred from a tag |
