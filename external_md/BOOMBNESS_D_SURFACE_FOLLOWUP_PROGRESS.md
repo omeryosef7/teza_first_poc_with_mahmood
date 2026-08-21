@@ -4180,6 +4180,37 @@ The specificity numbers reproduce exactly through this independent path: `remove
 
 
 
+
+### The dissociation is currently ACROSS layers — closing it WITHIN one (771432–771434)
+
+Tonight's two headline results sit at different depths, and that is a weakness in how the central
+claim is stated:
+
+- **Prediction** lives at **L29–L31** — Gate D's nested selection picks `query|L31|cos` and
+  `demo_max|L29|cos`, and a random orthogonal axis there predicts at 83–106% of `d_surface`.
+- **Causation** lives at **L6–L12** — where the arm beats a subspace-matched control at all four
+  depths, every one surviving Holm.
+
+So "reads there, acts here" is currently an inference from two *different* loci. The committed causal
+profile stops at **L28** and is already null from L16 onward (L16 0.0000, L18 +0.0037, L24 +0.0005,
+L28 +0.0037, all p ≥ 0.30) — but **nobody has ever ablated `d_surface` at L29, L30 or L31**, which are
+precisely the layers the prediction comes from.
+
+**Submitted: `d_surface:project_out:{29,30,31}` on AdvBench heldout 495** (771432–771434), otherwise
+identical to the committed profile arms, to be judged in the same 2026-08-21 session as the baseline
+and the re-check.
+
+**Prediction, recorded before they land.** Extrapolating the profile (null from L16 on) these should
+be null. If they are, the dissociation closes at a single locus and becomes a much stronger sentence:
+
+> *At L31 the metric predicts ASR at ρ = +0.164, and ablating the very same direction at the very
+> same layer changes nothing.*
+
+If instead one of them moves ASR, the profile has a second causal band nobody has looked at, the
+"causation is at L6–L12" framing is incomplete, and that is a more interesting result than the
+prediction. Either way the sentence the sprint ends on is decided by these three runs rather than by
+an extrapolation across eighteen layers.
+
 ## ✅✅ THE RE-CHECK, REDONE CLEAN — all four depths now survive Holm, and L12's "near-miss" was an artifact
 
 **Artifact:** `outputs/boombness_followup/control_recheck_sessionmatched.json` — supersedes
