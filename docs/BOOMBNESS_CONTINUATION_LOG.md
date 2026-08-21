@@ -2661,7 +2661,7 @@ structure at all, so its inertness is unsurprising and uninformative about struc
   thing under test.
 
 So the comparison is: same bank, same fit, same layer, same operation, comparable perturbation of the
-text — **and the behavioural effect is +0.0425 for one direction and +0.0000 for the other.**
+text — ⛔ **SUPERSEDED (C-12, 2026-08-21):** was "**and the behavioural effect is +0.0425 for one direction and +0.0000 for the other**". Both figures are pooled, from a superseded L8 table; the clustered pair that matches the gate table is **+0.0305 vs +0.0045**, and the current artifact's pooled pair is +0.0422 vs +0.0003. **+0.0425 is in no current artifact.** The specificity conclusion survives at ~7×, not as the ∞ that "+0.0000" implied.
 
 **This is the same argument L16 makes in the depth dimension** (§7f: the same direction four layers
 away changes 29.5% of generations and compliance on none). Together they bracket the effect on two
@@ -3811,7 +3811,7 @@ stated beside it.
 | 3 | an **undisclosed same-prompt regeneration instability** | high |
 | 6 | the retraction table has rows only for R-6…R-11 + mine, while the body cites **R-12, R-13 (×8), R-16, R-17, R-18 (×17), R-19**; the header still says "5 retractions, 5 corrections" | the registry problem that caused my collision |
 | 7 | R-18's "three independent clean samples" are **nested** — n=90 and n=108 share **all 60** core2x2 prompt_ids | confirmed by set intersection |
-| 10 | `d_context` "moves ASR by exactly 0.0000" is a **pooled** delta; the cluster mean is **+0.0045** | estimand switch |
+| 10 | ⛔ `d_context` **was** written as "moves ASR by exactly 0.0000" — that is a **pooled** delta; the cluster mean is **+0.0045** | estimand switch (retracted; see C-12, which found the same pooled zero re-asserted a second time in the same cell) |
 | 12 | "34.9%" / "29.5%" appear in **no artifact** — prose only | swept all floats under `outputs/` |
 | 13 | full report says the band is **~L6–L12**, short update says **~L6–L14** | two deliverables, two bands |
 
@@ -5216,3 +5216,42 @@ absent), and the never-exercised `KofN` spec was verified on CPU before the GPU 
 | 170 | 2026-08-21 | fixed `_rows` to union shards; added `population_matched` + `n_common` | all four layers now n=495, matched |
 | 171 | 2026-08-21 | recomputed; filed **C-11** | L6 t 3.07→**2.90** (p 0.0625), L10 9.16→**12.73**, L12 5.82→**5.90** |
 | 172 | 2026-08-21 | submitted judging 772496-772501 for the six new L6 draws | will take L6's null from 4 to 12 angles |
+
+## C-12 — a correction that left the same claim standing three sentences later
+
+Tick 2026-08-21, while the L6 judge jobs run. Read audit #5's verification lane in full (the lane that
+re-derived the other lanes' numbers adversarially). It confirmed everything I had already actioned and
+found **one defect the other lanes missed**, inside the very row they audited.
+
+**§14-D's gate row corrected `d_context` from a pooled "exactly 0.0000" to the clustered +0.0045 — and
+then its own closing sentence re-asserted the pooled zero**: *"+0.0425 vs +0.0000 in behaviour"*. So
+the cell retracted a figure and restated it, three sentences apart. This is the two-deliverables bug
+class at **paragraph** scale: a correction applied to one of two places that must agree.
+
+**And `+0.0425` is in no artifact at all.** `advbench_direction_specificity.json`
+`paired_vs_baseline.d_surface` gives `delta_pooled` **0.0422** and `delta_cluster_mean` **0.0305**;
+0.0425 traces to a superseded L8 table in this log (§2285/§2643). The table it sits in is
+domain-clustered, so the figures that belong there are **+0.0305 vs +0.0045** — a **~7×** gap, not the
+∞ that "+0.0000" implied. Fixed in the gate row and at §1441, and the log's live assertion at §2664
+marked superseded. The specificity conclusion **survives**, correctly stated.
+
+**Then the sweep pattern I wrote for R-24 missed a live retracted claim by one comma.** Hunting the
+above, I found the report's *scope statement* — the single sentence a reader is most likely to quote —
+still reading **"shown to transfer, at roughly half strength, to a second concept"**. My pattern was
+`transfers? at (?:roughly )?half strength`; the text has a comma after "transfer". **Third time a
+pattern here has been too narrow.** Widened to allow punctuation between the verb and the phrase, and
+it immediately caught a *second* live instance: the E12 section **heading** itself still announced
+"the knife-fitted direction transfers, at half strength". Two of the most-read lines in the document,
+both asserting a claim retracted two ticks ago, both invisible to the guard meant to find them.
+
+**Also closed from the audit's Q1:** the gate table now has an **E12 row** (recording the double
+failure, since a gate table that omits a decided question is worse than one with a negative row), and
+its header no longer claims to be "current as of 2026-08-19" while carrying rows dated 08-21.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 173 | 2026-08-21 | read audit #5's adversarial verification lane in full | all prior findings confirmed; one new defect inside §14-D |
+| 174 | 2026-08-21 | fixed the §14-D estimand re-assertion; filed **C-12** | clustered **+0.0305 vs +0.0045**; `+0.0425` is in no artifact |
+| 175 | 2026-08-21 | added a C-12 sweep pattern | caught a 4th live instance in an audit-findings row |
+| 176 | 2026-08-21 | widened the R-24 pattern past a comma | caught the **scope statement** and the **section heading**, both live |
+| 177 | 2026-08-21 | added an E12 gate row; re-dated the gate header | gate table now answers the question E12 asked |

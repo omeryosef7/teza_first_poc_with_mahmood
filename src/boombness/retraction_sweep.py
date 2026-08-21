@@ -112,7 +112,23 @@ RETRACTED = [
      r"concept-general (?:fraction|component)[^\n]{0,40}0\.61|"
      r"0\.61\d{0,2}[^\n]{0,50}concept-general|"
      r"`?d_surface`?[^\n]{0,40}does what its name claims|"
-     r"transfers? at (?:roughly )?half strength"),
+     # PUNCTUATION BETWEEN THE TOKENS. The first version required "transfer at"; the report wrote
+     # "shown to transfer, AT roughly half strength" -- one comma, and the pattern missed a LIVE
+     # retracted claim sitting in the report's scope statement, the single sentence a reader is most
+     # likely to quote. Third time a pattern here has been too narrow. Allow punctuation/words
+     # between the verb and the phrase.
+     r"transfers?[^\n]{0,20}(?:roughly )?half strength|"
+     r"shown to transfer(?![^\n]{0,12}\bnot\b)"),
+    # ---- C-12 (2026-08-21): the SECOND estimand switch inside the §14-D cell. The cell corrected
+    # d_context's pooled "exactly 0.0000" to the clustered +0.0045, and then its own closing sentence
+    # re-asserted the pooled zero three sentences later -- next to "+0.0425", which is in NO artifact
+    # (pooled 0.0422, clustered 0.0305; 0.0425 traces to a superseded L8 table). A correction that
+    # leaves the same claim standing elsewhere in the same cell is the two-deliverables bug at
+    # paragraph scale, so it gets a pattern rather than a one-time edit.
+    ("C12 the +0.0425 / +0.0000 specificity pair",
+     r"\+?0\.0425[^\n]{0,40}\+?0\.0000|"
+     r"\+?0\.0000[^\n]{0,40}\+?0\.0425|"
+     r"`?d_context`?[^\n]{0,60}exactly\s+\*{0,2}0\.0000"),
     ("R11 Holm backstop stated without L1",
      r"only at \*{0,2}L4 and L31|holm_rejected[^\n]{0,40}only at L4"),
     # ---- 2026-08-19 SESSION 2. Added the same day they were declared, per the rule above.
