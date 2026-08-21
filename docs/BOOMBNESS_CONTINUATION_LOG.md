@@ -3937,3 +3937,43 @@ an order of magnitude above it.
 | 81 | 2026-08-21 | verified the audit's instability finding; reproduced 6.7 pp exactly on the analysed subset | my first cut used the wrong subset; the auditor was right |
 | 82 | 2026-08-21 | compared the two runs' **generations** | **660/660 byte-identical** — it is judge noise, not regeneration |
 | 83 | 2026-08-21 | wrote `judge_retest.py` + artifact; disclosed all four subsets in the report | the floor beneath every ASR number is now on the record |
+
+## Audit backlog cleared — three fixes, and one of them reversed my own over-correction
+
+Tick 2026-08-21. The last three CONFIRMED items from audit #2, all deliverable defects.
+
+**#13 — two deliverables, two bands.** The full report said the causal band is **~L6–L12**, the short
+update **~L6–L14**. Resolved by the artifact rather than by picking one: `advbench_layer_profile.json`
+gives L13 **p=0.090** and L14 **p=0.141** — neither significant, against L8 **0.0089**, L10 **0.0190**,
+L12 **0.0056**. **~L6–L12 is correct**; the short update is fixed.
+
+**#10 — an estimand switch in the gate table.** §14-D read that `d_context` *"moves ASR by exactly
+0.0000"*. That is the **pooled** delta (0.00025); every other number in that table is
+**domain-clustered**, and the clustered mean is **+0.0045, CI [−0.0066, +0.0157], p=0.399, G=16**. The
+conclusion is unchanged — the interval covers zero — but "exactly zero" overstated it, and mixing a
+pooled estimate into a clustered table is the estimand switch this sprint has already retracted for
+twice. Corrected in both places it appeared.
+
+**#12 — and here I over-corrected, then caught it.** The audit swept every float under `outputs/` and
+found no match for the quoted **34.9%** or **29.5%** generation-change figures, so I withdrew 34.9%
+"pending an artifact". That was wrong: the numbers were **prose without a producer, not prose without
+a basis**, and the distinction matters. `generation_change.py` computes both from committed
+`gens.jsonl` in seconds:
+
+| arm | changed generations | |
+|---|---|---|
+| L16, outside the band | **146 / 495** | **29.5%** |
+| `d_context` at L8 | **173 / 495** | **34.9%** |
+| `d_surface` at L8 | 189 / 495 | 38.2% |
+
+**Both reproduce exactly.** The figure is restored with its artifact, plus the `d_surface` companion
+the report never had. The lesson against myself: "appears in no artifact" is a statement about
+**provenance**, and the correct response is to *build the producer*, not to delete a number that a
+committed input already determines. Withdrawal is for claims the evidence does not support, not for
+claims the evidence was never asked to support.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 84 | 2026-08-21 | resolved the band disagreement from the layer-profile artifact | **~L6–L12**; L13/L14 not significant; short update fixed |
+| 85 | 2026-08-21 | corrected the `d_context` pooled-vs-clustered estimand switch | +0.0045 CI [−0.0066, +0.0157] p=0.399; conclusion unchanged |
+| 86 | 2026-08-21 | wrote `generation_change.py`; **reversed my own withdrawal** of 34.9% | both figures reproduce exactly; sourced rather than deleted |

@@ -1,0 +1,41 @@
+{
+  "baseline": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_base_20260818_185458_3888976",
+  "n_baseline": 495,
+  "arms": {
+    "L16_out_of_band": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/abL16_B_20260819_073537_3351400",
+      "n_common": 495,
+      "n_changed": 146,
+      "frac_changed": 0.29494949494949496
+    },
+    "L8_d_context": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/abL8_context_20260819_093910_3553154",
+      "n_common": 495,
+      "n_changed": 173,
+      "frac_changed": 0.34949494949494947
+    },
+    "L8_d_surface": {
+      "run": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/score_behavior/ab_B_20260818_185458_3888974",
+      "n_common": 495,
+      "n_changed": 189,
+      "frac_changed": 0.38181818181818183
+    }
+  },
+  "note": "a changed generation is a byte difference against the baseline completion for the same prompt_id; generation is deterministic here (verified 660/660 identical across two runs of the same config), so a difference is the intervention, not noise",
+  "provenance": {
+    "argv": [
+      "src/boombness/generation_change.py",
+      "--baseline",
+      "outputs/boombness/score_behavior/ab_base_*",
+      "--arm",
+      "L16_out_of_band:outputs/boombness/score_behavior/abL16_B_*",
+      "--arm",
+      "L8_d_context:outputs/boombness/score_behavior/abL8_context_*",
+      "--arm",
+      "L8_d_surface:outputs/boombness/score_behavior/ab_B_*",
+      "--out",
+      "outputs/boombness/generation_change.json"
+    ],
+    "git_commit": "e4c8441c28b4c97fbef501fb8cea46923bb96b78"
+  }
+}
