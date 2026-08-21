@@ -198,6 +198,84 @@ def main() -> None:
                            "NON-specific, so this excess is the doublespeak-attributable part"}
     out["specificity"] = spec
 
+    # ---- R5-6 robustness re-test, now as CODE rather than an ad-hoc review computation.
+    # R5-6 downgraded D20's +0.1254 specific excess on three checks but left no script, so the
+    # numbers were markdown-only -- the same provenance gap review #9 closed elsewhere. Applying
+    # the checks to BOTH arms reproduces R5-6 (a regression on D20) and answers the new open item
+    # (does arm B's +0.1248 survive?).
+    def excess_over(pool_ds, pool_bl, base_ds, base_bl, drop_domain=None, k=1.0):
+        per = {}
+        for name, (bp, ap_) in (("ds", (base_ds, pool_ds)), ("bl", (base_bl, pool_bl))):
+            cl = collections.defaultdict(list)
+            for pid in sorted(set(bp) & set(ap_)):
+                dom = str(bp[pid].get("domain"))
+                if drop_domain is not None and dom == drop_domain:
+                    continue
+                cl[dom].append((1.0 if ap_[pid]["malicious_at_0.5"] else 0.0)
+                               - (1.0 if bp[pid]["malicious_at_0.5"] else 0.0))
+            per[name] = {d: st.mean(v) for d, v in cl.items()}
+        doms = sorted(set(per["ds"]) & set(per["bl"]))
+        if len(doms) < 2:
+            return None
+        r = cluster_mean_ci({d: [per["ds"][d] - k * per["bl"][d]] for d in doms},
+                            n_effective=len(doms))
+        return {"excess": r.get("mean"), "p_cl": r.get("p_vs_0"), "n_domains": r.get("n_clusters")}
+
+    MATCHED_BLOCKS = {"role_style", "families", "core2x2"}
+    rob = {}
+    for t in [x for x in tags if x not in ("base",)]:
+        ds, bl = by["natural_doublespeak"], by["benign_literal"]
+        entry = {"as_reported": excess_over(ds[t], bl[t], ds["base"], bl["base"])}
+
+        # CHECK 1 -- stratum-matched. strength/consistency/position blocks exist ONLY on the
+        # doublespeak side (420 = 324 + 96), so the raw contrast compares unlike row sets.
+        sub = {c: {a_: {pid: r for pid, r in pool.items()
+                        if r.get("bank_block") in MATCHED_BLOCKS}
+                   for a_, pool in by[c].items()} for c in by}
+        entry["stratum_matched"] = excess_over(sub["natural_doublespeak"][t],
+                                               sub["benign_literal"][t],
+                                               sub["natural_doublespeak"]["base"],
+                                               sub["benign_literal"]["base"])
+        entry["stratum_matched"]["n_ds_rows"] = len(sub["natural_doublespeak"][t])
+
+        # CHECK 2 -- leave-one-domain-out.
+        doms = sorted({str(r.get("domain")) for r in ds["base"].values()})
+        loo = {d: excess_over(ds[t], bl[t], ds["base"], bl["base"], drop_domain=d) for d in doms}
+        loo = {d: v for d, v in loo.items() if v}
+        entry["leave_one_domain_out"] = loo
+        entry["loo_n_p_above_0.05"] = sum(1 for v in loo.values()
+                                          if v["p_cl"] is not None and v["p_cl"] > 0.05)
+        entry["loo_n_domains_tested"] = len(loo)
+
+        # CHECK 3 -- proportional transport. Additive subtraction assumes the NON-SPECIFIC channel
+        # is the same size on both conditions. It is not: the two conditions have different
+        # headroom (1 - baseline ASR), so a benign delta does not transport one-for-one.
+        # k = headroom_ds / headroom_bl, applied to the benign delta before subtracting.
+        b_ds = asr(ds["base"])
+        b_bl = asr(bl["base"])
+        k_head = ((1.0 - b_ds) / (1.0 - b_bl)) if (1.0 - b_bl) > 0 else None
+        if k_head:
+            entry["proportional_transport_headroom"] = {
+                "k": k_head, "baseline_ds": b_ds, "baseline_bl": b_bl,
+                **(excess_over(ds[t], bl[t], ds["base"], bl["base"], k=k_head) or {}),
+                "note": "k = (1-base_ds)/(1-base_bl); corrects for unequal ceiling headroom"}
+        # REMOVED 2026-08-21: a second transport keyed to concept-word emission rate was written
+        # here and DELETED after it returned k = 1.000 for every arm. `goal_used_concept_surface`
+        # is True for 100% of rows in both conditions -- the topicality audit already established
+        # the field is non-discriminative (`concept in goal` is true both when the concept is
+        # missing and when substitution worked). The check could only ever reproduce the
+        # as-reported number: a guard incapable of failing, which is the defect class R5-7 and the
+        # four dead guards belong to. Modelling R5-8's channel needs a real emission measurement,
+        # which means reading generation text.
+        rob[t] = entry
+    out["R5_6_robustness"] = {
+        "why": "R5-6 downgraded D20's specific excess on three checks but left no code, so those "
+               "numbers were markdown-only. Re-implemented here and applied to every arm.",
+        "caveat": "R5-6's own transport constant (a 38% larger non-specific channel) is NOT "
+                  "reproducible without its script; two transports are defined explicitly here "
+                  "instead of reverse-engineering it, and both are reported.",
+        "arms": rob}
+
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w") as fh:
         json.dump(out, fh, indent=1)

@@ -5056,6 +5056,64 @@ reported.
 
 
 
+## ⛔ THE +0.1248 DOES NOT SURVIVE — R5-6's checks re-run as code, and they now have an artifact
+
+**Artifact:** `qwen3_decomposition_sessionmatched.json → R5_6_robustness`. R5-6 downgraded D20's
+specific excess on three checks in review #5 but **left no script**, so those numbers were
+markdown-only — the same provenance gap review #9 closed elsewhere. They are now code, applied to
+every arm, which both re-tests arm B and gives R5-6 an artifact it never had.
+
+| check | **B11** | p | D20 | p |
+|---|---|---|---|---|
+| as reported | +0.1248 | **0.032** | +0.1254 | 0.048 |
+| **stratum-matched** (324 rows) | +0.1173 | **0.063** ⛔ | +0.1296 | 0.064 ⛔ |
+| leave-one-domain-out | — | **2 of 6 give p > 0.05** | — | **5 of 6** |
+| proportional transport (headroom, k 0.843) | +0.1650 | 0.0085 | +0.1603 | 0.013 |
+
+### ⛔ Verdict: arm B's doublespeak-specific component is NOT established
+
+**It fails the stratum-matched check** (p 0.063), and that is the check that matters most: the
+`strength`, `consistency` and `position` blocks exist **only** on the doublespeak side
+(420 = 324 + 96), so the as-reported contrast compares unlike row sets. Restricted to the 324 rows
+the two conditions actually share, the excess loses significance. **So R5-6's downgrade does
+transfer to arm B, as I assumed it would when I first reported the number — now measured rather
+than assumed.**
+
+What survives unchanged: the raw **+0.3810 (p 0.00031)**, its **direction-specificity** against the
+subspace-matched control (−0.0119, p 0.601), and the **benign +0.2562**. What does not survive is
+the claim that the *difference* between the doublespeak and benign effects is reliably non-zero.
+
+⚠ **Arm B is nonetheless less fragile than D20** — 2 of 6 leave-one-domain-out replicates lose
+significance against D20's 5 of 6. Both fail the stratum check, so neither is citable, but they are
+not equally weak and I am not going to flatten that.
+
+### ⚠ The transport check disagrees with itself, and I will not pick the flattering one
+
+R5-6's transport scaled the benign channel **up** (its non-specific channel measured ~38% larger on
+doublespeak) and drove the excess **down** to +0.0478. My headroom transport scales it **down**
+(k = 0.843, because doublespeak has less ceiling headroom: baselines 0.1595 vs 0.0031) and drives
+the excess **up** to +0.1650, p 0.0085.
+
+**These corrections point in opposite directions because they model different nuisances**, and
+R5-6's exact constant is **not reproducible** — there is no script behind it. So proportional
+transport is **not a decisive check in either direction**, and I am explicitly *not* citing my
+headroom version as rehabilitating the number. The stratum-matched check is the one that decides,
+and it says no.
+
+### ⛔ I wrote a fifth guard incapable of failing, and deleted it
+
+I also implemented a transport keyed to concept-word emission rate — R5-8's actual non-specific
+channel. It returned **k = 1.000 for every arm**, because `goal_used_concept_surface` is `True` for
+**100% of rows in both conditions**. The topicality audit had already established that field is
+non-discriminative (`concept in goal` is true both when the concept is missing and when
+substitution worked), and I used it anyway.
+
+That check could only ever reproduce the as-reported number. **Deleted rather than published** —
+this is the fifth guard-that-cannot-fail this sprint (after the stale-join check, the
+`--layers/--topk` comparability check, `--min-separation`, and my first orthogonalisation), and the
+first one I caught *because the output was suspiciously round* rather than by auditing the code.
+Modelling R5-8's channel properly needs a real emission measurement, i.e. reading generation text.
+
 ## ✅✅ ITEM 2 RESULT — Qwen3's +0.3476 is ENTIRELY the `d_surface` leg, it is direction-specific, and two thirds of it is not doublespeak
 
 **Artifact:** `outputs/boombness_followup/qwen3_decomposition_sessionmatched.json`
@@ -7137,8 +7195,9 @@ alone — is **+0.3810, p 0.00031**, statistically indistinguishable from remove
 It is **direction-specific** — a subspace-matched, exactly-orthogonal control at the same layer
 moves −0.0119 (p 0.601), the first Qwen3 control here that could have failed. ⛔ **But only about a
 third is doublespeak**: `benign_literal`, zero by construction, moves **+0.2562**, leaving a
-specific excess of **+0.1248 (p 0.032)** — within 0.0006 of D20's +0.1254, so **R5-6's downgrade of
-that number applies here too until re-tested.** ⛔ But the
+specific excess of **+0.1248 (p 0.032)** — within 0.0006 of D20's +0.1254. ⛔ **Re-tested the same
+day: it fails R5-6's stratum-matched check (+0.1173, p 0.063), so the doublespeak-specific
+component is NOT established.** The raw effect and its direction-specificity are unaffected. ⛔ But the
 **doublespeak-specific** component is **not robust** (R5-6): +0.1254 p 0.030 as reported, +0.1142
 p 0.075 stratum-matched, 4 of 6 jackknife replicates p > 0.05, +0.0478 p 0.267 under proportional
 transport. ⛔ ~~And the arm cannot be decomposed — no arm B exists on that bank.~~ **Superseded: arm B was run
@@ -7278,9 +7337,10 @@ comparability check, `--min-separation`, and my first orthogonalisation.
 2. ✅ **DONE 2026-08-21.** Arm B run on Qwen3's internal bank: the +0.3476 is **entirely the
    `d_surface` leg** (+0.3810, p 0.00031; interaction with refusalness null at −0.0595, p 0.145),
    direction-specific against a subspace-matched control (−0.0119, p 0.601), but only ~a third
-   doublespeak-specific (+0.1248, p 0.032, with R5-6's downgrade presumed to apply). **New open
-   item:** re-test that +0.1248 under R5-6's three robustness checks, which the near-identical
-   D20 figure failed.
+   doublespeak-specific (+0.1248, p 0.032). ⛔ **And that third does NOT survive:** re-run as code,
+   R5-6's stratum-matched check drops it to +0.1173 at **p 0.063**, with 2 of 6 leave-one-domain-out
+   replicates also losing significance. The raw +0.3810 and its direction-specificity stand; the
+   doublespeak-specific *component* is not established on either arm.
 3. **Fit Llama refusal directions at L6/L8/L10** — the interaction cannot be measured inside
    `d_surface`'s own band because only five refusal directions exist on disk.
 4. ✅/⚠ **Partly done.** `judge_boombness` now writes `prompt_sha16` on every row and records
