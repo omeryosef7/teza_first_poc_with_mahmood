@@ -1628,7 +1628,30 @@ AdvBench does not contain. Those need a new external bank and are not yet built.
 
 **Status:** blocked on data, and the blocker is now precisely characterised.
 
-### ⛔ BLOCKER F-B1 — the refusalness layer profile is capped at L20, and it is a data gap, not a bug
+### ✅ BLOCKER F-B1 — RESOLVED 2026-08-21, and it was never a data gap either
+
+> ⛔ **SUPERSEDED HEADING.** This was recorded as *"the refusalness layer profile is capped at L20,
+> and it is a data gap, not a bug"* — i.e. the directions were assumed to be merely **missing**.
+> **They are not missing; they do not work.** I fitted them (job 772476, L6/L8/L10, same script and
+> bench), and projecting the L6/L8/L10 — **and the pre-existing L12** — direction out of *every*
+> layer leaves harmful-prompt refusal at **1.000, unchanged**, while L14–L20 all yield positive
+> ablation gains. See `## ⛔✅ ITEM 3 CLOSED AS AN EVALUATED NEGATIVE` above.
+>
+> **Two consequences.**
+> 1. **Phase F's plan band is retrospectively justified in its deviation.** §8 specifies
+>    *"L6, L8, L10, L12, optional L14/L16"*; the sprint actually ran **L12–L20** and recorded that as
+>    a blocker-driven compromise. It was not a compromise — **L6–L12 is causally empty for
+>    refusalness**, so the plan's requested band could not have carried the refusalness legs no
+>    matter how much data was thrown at it. The stage was not skipped; the band the plan asked for
+>    does not exist on this model.
+> 2. **The question "does the interaction hold where `d_surface` is strongest?" is now answered, and
+>    the answer is that it cannot be posed there** — composing a live axis with a provably inert one
+>    is not an interaction test. Any future attempt should be redirected to L12–L20, where both
+>    axes are live, or dropped.
+>
+> The original text follows unchanged for the record.
+
+### ⛔ BLOCKER F-B1 (original text) — the refusalness layer profile is capped at L20, and it is a data gap, not a bug
 
 Three of the four inherited `arm C` jobs (L8, L24, L28) died with
 `no refusal directions matched .../refusal_direction_llama_L*.pt`. Diagnosed at tick 2:
