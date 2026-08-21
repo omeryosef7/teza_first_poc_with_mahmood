@@ -51,7 +51,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))), "doublespeak_causality"))
 from analyze_g8 import cluster_mean_ci  # noqa: E402
-from analyze_phase_d import spearman, level_of  # noqa: E402
+from analyze_phase_d import spearman, pearson, level_of  # noqa: E402
 from common import read_jsonl, REPO_ROOT as REPO  # noqa: E402
 import signals as sg  # noqa: E402
 
@@ -81,6 +81,19 @@ def main() -> None:
                          "the OTHER split, exactly as the extraction wrote its own columns.")
     ap.add_argument("--judge", action="append", required=True)
     ap.add_argument("--layers", default="29,30,31")
+    ap.add_argument("--profile-layers", default="",
+                    help="comma list, or 'all'. Emits the PREDICTION profile across depth so it can "
+                         "be set beside the committed CAUSAL profile. Cheap: the cached reps cover "
+                         "every layer, so this needs no GPU and no new generations.")
+    ap.add_argument("--causal-baseline", default="",
+                    help="judge dir for the baseline the --causal-arm dirs are paired against")
+    ap.add_argument("--causal-arm", action="append", default=[], metavar="L=DIR[,DIR2]",
+                    help="repeatable. Ablation arms at depths the committed profile does not cover, "
+                         "so their causal delta is DERIVED from judge rows here rather than typed "
+                         "into the artifact by hand.")
+    ap.add_argument("--causal-profile", default="",
+                    help="advbench_layer_profile.json, to pair depth-by-depth with the prediction "
+                         "profile and report their rank correlation.")
     ap.add_argument("--seeds", default="20260901,20260902,20260903")
     ap.add_argument("--condition", default="natural_doublespeak")
     ap.add_argument("--out", required=True)
@@ -181,6 +194,65 @@ def main() -> None:
     tok = {r["prompt_id"]: float(r.get("token_pos") or 0) for r in ex if r.get("is_query_occurrence")}
     out["token_position_control"] = within_level({p: tok[p] for p in pids if p in tok},
                                                  outcome, level)
+
+    # THE PREDICTION PROFILE, next to the causal one. The single most informative view of the
+    # sprint's central finding: if the layer where a direction is most READABLE is also the layer
+    # where ablating it does LEAST, "prediction is distributed, causation is concentrated" stops
+    # being an inference across two experiments and becomes one anti-aligned pair of curves.
+    if args.profile_layers:
+        pl = list(range(len(cache["layers"]))) if args.profile_layers == "all" else \
+            [int(x) for x in args.profile_layers.split(",")]
+        prof = {}
+        for L in pl:
+            r = within_level(score(L, {sp: fits[sp]["d_surface"][L] for sp in fits}, True),
+                             outcome, level)
+            prof[f"L{L}"] = {"within_level_rho": r["mean_rho"], "p_cl": r["p_cl"],
+                             "n_levels": r["n_levels"]}
+        out["prediction_profile"] = prof
+        if args.causal_profile:
+            with open(args.causal_profile) as fh:
+                cau = json.load(fh)["paired_vs_baseline"]
+            pairs = [(prof[k]["within_level_rho"], cau[k]["delta_cluster_mean"])
+                     for k in prof if k in cau and cau[k].get("p_cl") is not None]
+            extra = {}
+            if args.causal_arm and args.causal_baseline:
+                cb = {r["prompt_id"]: r for r in read_jsonl(
+                    os.path.join(args.causal_baseline, "results.jsonl"))
+                    if r.get("judge_status") == "ok"}
+                for spec in args.causal_arm:
+                    Lk, dirs = spec.split("=", 1)
+                    arm = {}
+                    for dd in dirs.split(","):
+                        for r in read_jsonl(os.path.join(dd, "results.jsonl")):
+                            if r.get("judge_status") == "ok":
+                                arm[r["prompt_id"]] = r
+                    if len(arm) != len(cb):
+                        raise SystemExit(f"[subspace] causal arm {Lk} has {len(arm)} rows against "
+                                         f"a {len(cb)}-row baseline; refusing a partial arm")
+                    ps = sorted(set(cb) & set(arm))
+                    dd2 = {p: float(arm[p]["strongreject_score"])
+                           - float(cb[p]["strongreject_score"]) for p in ps}
+                    cl = collections.defaultdict(list)
+                    for p in dd2:
+                        cl[str(cb[p].get("domain"))].append(dd2[p])
+                    rr = cluster_mean_ci(dict(cl), n_effective=len(dd2))
+                    extra[f"L{Lk}"] = rr.get("mean")
+                    out.setdefault("causal_extra", {})[f"L{Lk}"] = {
+                        "delta_cluster_mean": rr.get("mean"), "se": rr.get("se"),
+                        "p_cl": rr.get("p_vs_0"), "n": len(dd2),
+                        "runs": [os.path.relpath(x, REPO) for x in dirs.split(",")],
+                        "baseline": os.path.relpath(args.causal_baseline, REPO)}
+            for k, v in extra.items():
+                if k in prof:
+                    pairs.append((prof[k]["within_level_rho"], v))
+            xs = [a for a, _ in pairs]
+            ys = [b for _, b in pairs]
+            out["prediction_vs_causation"] = {
+                "n_layers_with_both": len(pairs),
+                "spearman": spearman(xs, ys), "pearson": pearson(xs, ys),
+                "note": "negative means the layers where the direction is most readable are the "
+                        "layers where ablating it does least. Degenerate causal arms (p_cl null) "
+                        "are excluded, not counted as zero."}
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w") as fh:

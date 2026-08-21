@@ -4224,6 +4224,69 @@ wrong one.
 fields, which is why `analyze_phase_d.py` still needs its bank-path fallback and why the sprint's
 existing StrongReject numbers remain attributable only to the pair, not to a model.
 
+
+## ✅✅✅ THE SPRINT'S CENTRAL RESULT — prediction and causation are ANTI-ALIGNED across depth
+
+**Artifact:** `outputs/boombness_followup/subspace_prediction.json` (`prediction_profile`,
+`causal_extra`, `prediction_vs_causation`). **New runs:** 771432–771434, judged in six shards, all
+`null_frac 0.0000`, paired against the same 2026-08-21 baseline as the rest of the re-check.
+
+The dissociation was previously an inference across two experiments at different depths. It is now
+**one pair of curves over the same 32 layers**, and they run in opposite directions.
+
+| layer | **PREDICTS** (within-level ρ) | **CAUSES** (Δ ASR) |
+|---|---|---|
+| L8 | +0.0600 (p 0.038) | **+0.0305 (p 0.009)** |
+| L12 | +0.0546 (p 0.042) | **+0.0322 (p 0.006)** |
+| L18 | +0.1025 (p 0.004) | +0.0037 (p 0.31) |
+| L24 | +0.1169 (p 0.002) | +0.0005 (p 0.45) |
+| L28 | +0.1311 (p 0.0004) | +0.0037 (p 0.31) |
+| **L29** | +0.1370 (p 0.0003) | **+0.0002 (p 0.33)** |
+| **L30** | +0.1535 (p 0.0001) | **−0.0044 (p 0.23)** |
+| **L31** | **+0.1638 (p 0.0001)** | **−0.0041 (p 0.26)** |
+
+> **Spearman(prediction, causation) over the 13 depths with both measurements = −0.850**
+> (Pearson −0.846). Degenerate causal arms are excluded, not counted as zero.
+
+Aggregated:
+
+| band | mean prediction | mean causation |
+|---|---|---|
+| causal band **L6–L12** | +0.0519 | **+0.0252** |
+| late **L24–L31** | **+0.1405** | −0.0008 |
+
+Prediction is **2.7× stronger** late than in the causal band; causation is **−0.03×** — i.e. gone.
+
+### The prediction that made it, recorded before the runs
+
+At 05:48 I wrote: *"extrapolating the profile (null from L16 on) these should be null … If they are,
+the dissociation closes at a single locus."* They are null. **The sentence the sprint ends on is now
+measured at one locus rather than inferred across eighteen layers:**
+
+> **At L31 the `d_surface` metric predicts ASR at ρ = +0.164 (p = 1e-4), and ablating the very same
+> direction at the very same layer changes nothing (−0.0041, p = 0.26).**
+
+And the converse holds at the other end: at L8–L12, where ablation moves ASR most, the metric is at
+its **weakest** predictively (+0.055 to +0.060, barely clearing 0.05).
+
+### What it means, stated no more strongly than it should be
+
+Combined with tonight's other two results — a random orthogonal axis in the same subspace **predicts**
+at 83–106% of `d_surface`, and ablating that axis **does nothing** at four depths (Holm-corrected) —
+the picture is consistent and now measured three ways:
+
+> **Late layers make the concept subspace legible; early-mid layers make one axis of it act.**
+> Readability and causal efficacy are carried by different depths and, within a depth, by different
+> directions.
+
+⚠ **Limits, and they matter.** This is one model, one bank, one readout position, one outcome. The
+prediction profile is a *correlational* profile on 1,800 prompts and inherits R5-4's ~11% SE
+understatement. The causal profile's depths were run at different times against two baselines (the
+committed L4–L28 arms in the 08-19 session; L29–L31 tonight against the 08-21 baseline) — the
+anti-alignment is far too large to be judging noise, but the two halves are not session-matched to
+each other. And ⛔ **none of this says what the subspace encodes** — only where it is readable and
+where it acts.
+
 ### The dissociation is currently ACROSS layers — closing it WITHIN one (771432–771434)
 
 Tonight's two headline results sit at different depths, and that is a weakness in how the central
@@ -5811,8 +5874,11 @@ failed — AUROC 1.0000 at every layer, reading token identity), the `d_surface`
 2. **`d_surface` is not harm-specific** — weakest in the category it was fitted on, 8/8 movable
    categories positive.
 3. **Removing `d_surface` moves a refusal gate**, not the content behind it (established half).
-4. **Prediction is distributed across the concept subspace; causation is concentrated on one axis
-   within it.** A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
+4. **Prediction and causation are ANTI-ALIGNED across depth — Spearman −0.850 over 13 layers.** At
+   L31 the metric predicts ASR at ρ +0.164 (p 1e-4) and ablating the same direction at the same
+   layer does nothing (−0.0041, p 0.26); at L8–L12, where ablation moves ASR most, prediction is at
+   its weakest. **Prediction is also distributed across the concept subspace while causation is
+   concentrated on one axis within it.** A random axis in the 2×2 span, orthogonal to `d_surface`, predicts ASR at 65–95% of
    its strength (three seeds, three layers) — yet ablating that same control moves nothing (L8
    −0.0033, p 0.15) while ablating `d_surface` does (+0.0305, p 0.009). A direction can be **read**
    from a subspace without being the direction that **acts**. This is the sprint's most interesting
