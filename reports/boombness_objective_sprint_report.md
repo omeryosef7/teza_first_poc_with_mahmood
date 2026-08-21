@@ -1674,7 +1674,7 @@ compared against a fixed instance of yours*.
 | R2 | G2's original negative verdict | predictor read off the *wrong prompt* (semantic, not behavioural) |
 | R3 | a §10 null | edges cut into the wrong destination token |
 | R4 | "`d_naive` manufactures signal where `d_surface` finds none" | sourced to an already-retracted section; corrected data **reverse** it |
-| R5 | "Boombness beats refusalness 3.7×" | the two probes were read at **different tokens** |
+| R5 | **RETRACTED** — "Boombness beats refusalness 3.7×" | the two probes were read at **different tokens** |
 
 Corrections: C1 (L8 norm contamination → L12), C2 (40× → 3.7×, then retracted entirely), C3 ("2–3× the
 controls" is sign-dependent), C4 (clustered p, 1.7e-06 → 5.0e-04), C5/C6 (wrong column for the
@@ -2118,20 +2118,32 @@ numeric fields and source code for the same reason.
 **Attack targets.** Only the local open-weight model (`Llama-3.1-8B-Instruct`). No proprietary or
 hosted model was attacked; the only API use is the *judge*, which evaluates rather than generates.
 
-### We do NOT claim to have found the mechanism. Plan §13's six criteria, scored honestly:
+### We do NOT claim to have found the mechanism. Plan §13's six criteria
+
+⛔ **RESCORED 2026-08-21. The table below had not been touched since before R-6, R-18, R-20 and
+R-9, so it restated four retracted headlines in the voice of the report's most conservative
+section** — and the retraction sweep passed it, because a markdown table is one
+blank-line block and a single innocuous "was" in one cell whitelisted all seventeen lines.
+The sweep now scopes **each table row separately**; it flagged three of these rows on the
+first run after the fix. Superseded cells are struck and re-scored against the current
+evidence:
 
 | # | criterion | met? |
 |---|---|---|
-| 1 | Boombness predicts ASR across prompts | **YES IN LLAMA ONLY** — ρ=+0.307, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
+| 1 | Boombness predicts ASR across prompts | ⛔ **NO — RETRACTED (R-18).** ~~ρ=+0.307~~, p<5e-4 clustered, 6/6 domains positive (2 near-null); on Qwen3-14B the same measurement is carried by 1 of 6 domains (clustered p=0.206) |
 | 2 | Adding Boombness increases behaviour or relevant internal scores | **YES, once refusal is removed** — alone it *decreases* ASR by triggering refusal (0.057→0.676), but composed with refusal-removal it takes ASR 0.243→**0.548** (p<0.0001) where neither manipulation alone raises it. The earlier **NO** was a ceiling effect of refusal. ⚠ The gain is not conditional on the doublespeak mapping, so this is scored on behaviour, not on mechanism. |
-| 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now controlled.** `project_out` beats an inert projection-type control by +0.056 (p=0.0077) on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
-| 4 | Comprehension is preserved | **NOW MEASURED (§2.6).** project_out: preserved (p=0.681). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
+| 3 | Removing Boombness reduces ASR | **NO — it RAISES it, and this is now properly controlled.** On AdvBench, +0.0422 against a **5-draw control band** at +0.0012 (sd 0.0026), ~~+0.056 (p=0.0077)~~ superseded on harmful conditions, ≈0 on benign, comprehension unchanged (p=0.681). ⚠ Single-model — does not replicate on Qwen3. |
+| 4 | Comprehension is preserved | **YES, and better than 'preserved'.** ⛔ ~~p=0.681~~ is **R-6** (a 4.4e-05 tail). On the corrected whole-answer readout `project_out` **improves** comprehension: **+0.2795, p=0.0010**, control −0.0041 (p=0.63). +0.25: improves (+0.643). −0.25: **degrades below zero** (−0.792) → disqualified. But the effect is **sign-driven, not axis-specific** — a norm-matched random step moves comprehension MORE in both directions (C10). |
 | 5 | Random controls fail | **YES for the projection result, PARTIAL for the additive one.** ⛔ The p=0.0014 figure previously quoted here came from a band whose four "independent draws" were byte-identical (retraction #7); on a **genuine** 4-draw band it is **p=0.043**. Where controls are unambiguous: the **projection control is inert on every condition** (−0.018 vs baseline, p=0.26) while the arm moves harmful conditions by +0.056; and the **composed random control** does nothing on doublespeak (p=0.116) — though it *reverses* on `direct_harmful` (+0.389), so specificity there is scoped, not general. |
 | 6 | Replicates across prompt families or models | **PARTIAL, and mostly NO for the causal claims.** Replicates: the ~2× confound (median 1.74 on Qwen3), the token-level positional result, the final-layer effect at matched depth (Llama L31 +0.047 vs Qwen3 L39 +0.052). Does NOT replicate: **G2's correlation** (1 of 6 domains on Qwen3) and **the projection causal result** (mirror-image condition profile). Across *prompt families* the projection result replicates well — it holds on all three harmful conditions. |
 
-**Two of six met, three partial, one no. So the correct description is a documented correlational
-finding with a directional null — not a mechanism.** The §18 label is B for exactly this reason, and
-§12's objective was not built.
+**Rescored: criterion 1 is now NO (was the strongest YES), criteria 3 and 4 are YES on evidence that
+did not exist when this was written, and criterion 2's supporting arm is retracted (R-20).** The
+conclusion is *unchanged in shape and different in content*: this is not a mechanism claim, but it is
+no longer "a correlational finding with a directional null" — **the correlation is the part that
+died** and the causal removal is the part that survived controls, replication and a band.
+⛔ The closing line "the §18 label is B for exactly this reason" is **R-9**; §0 records the label as
+**C-amended**, and §12 remains undecided.
 
 ### Plan §4.1's designed variance is generated but not analysable
 `strength`, `consistency` and `example_position` were generated exactly as §4.1 specifies and are

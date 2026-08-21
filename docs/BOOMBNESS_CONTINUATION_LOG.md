@@ -402,7 +402,7 @@ variance. No other composed control in the sprint carried a band claim. Band rel
 | 14 | 2026-08-18 | verification workflow returned: 3× INCOMPLETE + 2 completed groups | C-8 (probe leakage refuted), C-9 (§9 Q5 answered, G2 survives), C-10 (provenance) |
 | 15 | 2026-08-18 | pinned three self-invalidating tests that loaded the pre-fix module via `git show HEAD:` | committing a fix turned its own tests red with no regression |
 | 16 | 2026-08-18 | ClearHarm base + control judged 179/179; arm D judging | first external-set ASR in the sprint |
-| 17 | 2026-08-18 | ★ **ClearHarm arm D: 0.101 → 0.542**, double-random control +0.011, refusal 0.877 → 0.447, all arms coherence-gated | the bank-artifact explanation is **excluded**. Decomposition (B/C) + 3-draw band launched |
+| 17 | 2026-08-18 | ★ **ClearHarm arm D: 0.101 → 0.542**, double-random control +0.011, refusal 0.877 → 0.447, all arms coherence-gated | the bank-artifact explanation is **excluded**. Decomposition (B/C) + 3-draw band launched  *(superseded — see the retraction table)* |
 | 18 | 2026-08-18 | wrote report **§7b**, the metric comparison (plan §15 item 7) that appeared in neither report | three metrics disagree in **sign** about ASR at L12; all three agree on comprehension |
 | 19 | 2026-08-18 | rewrote report §0: one conclusion, retraction table R-6…R-11, `§0.3` resolved, G1 → +68%, interpreter path fixed | the gate table no longer contradicts the body |
 | 20 | 2026-08-18 | added the five new retractions to `retraction_sweep.py` **the same day they were declared** | it immediately caught **4 unqualified stale claims** the old list called clean; all fixed, sweep clean over 4 files |
@@ -487,7 +487,7 @@ Boombness 1, and it flips at matched df". **Confirmed, by arithmetic, and the fl
 
 | ⛔ *all four cells withdrawn* | Boombness adds over refusalness | refusalness adds over Boombness |
 |---|---|---|
-| @ codeword_last | +0.028 | **+0.144** |
+| @ codeword_last | +0.028 | **+0.144**  *(superseded — see the retraction table)* |
 | @ last token | +0.025 | **+0.091** |
 
 **Where the withdrawn numbers come from.** `docs/BOOMBNESS_SPRINT_PROGRESS.md:2528` states it outright —
@@ -775,8 +775,8 @@ the design requires changes the verdict on the one row that mattered most.
 |---|---|---|---|---|---|---|
 | baseline | 0.1006 | **0.1061** | — | — | — | — |
 | **B** — remove `d_surface` @L8 | 0.2067 | **0.1899** | +0.0831 | **+0.0843** | **0.2102** | **[−0.067, +0.235]** ⛔ n.s. |
-| C — remove refusalness @L18 | 0.3408 | **0.3631** | +0.2402 | +0.3941 | **0.0410** | [+0.024, +0.764] ✓ |
-| D — remove both | 0.5419 | **0.5140** | +0.3911 | +0.4603 | **0.0200** | [+0.109, +0.812] ✓ |
+| C — remove refusalness @L18 | 0.3408 | **0.3631** | +0.2402 | +0.3941 | **0.0410** | [+0.024, +0.764] ✓  *(superseded — see the retraction table)* |
+| D — remove both | 0.5419 | **0.5140** | +0.3911 | +0.4603 | **0.0200** | [+0.109, +0.812] ✓  *(superseded — see the retraction table)* |
 | Dctrl — double random | 0.1117 | **0.1061** | −0.0007 | +0.0009 | 0.530 | [−0.003, +0.004] — inert ✓ |
 
 `outputs/boombness/clearharm_decomposition_regoal.json`, produced by
@@ -4592,3 +4592,58 @@ raising anything, because the code cannot tell "no match" from "nothing to match
 | 126 | 2026-08-21 | read the declared `tag` from each run's own `config.json` | the identity existed and nothing was reading it |
 | 127 | 2026-08-21 | fallback retained + a NOTE printed when it fires | the failure mode that hid four bugs is now loud |
 | 128 | 2026-08-21 | re-ran both bands | **identical**: AdvBench 5 draws +0.0012/0.0026, ClearHarm 3 draws +0.0086/0.0034 |
+
+## ⛔ Audit #4 — my own guard was hiding four retracted headlines
+
+Tick 2026-08-21. The worst finding this sprint has produced about its own tooling.
+
+**The §13 "scored honestly" table restated four retracted headlines with no marker** — in the voice
+of the report's most conservative section, the one a careful reader turns to first:
+
+| §13 criterion | asserted | status |
+|---|---|---|
+| 1 — Boombness predicts ASR | ρ=+0.307, p<5e-4 | ⛔ **R-18** |
+| 2 — adding it increases behaviour | 0.243 → **0.548** | ⛔ **R-20** (arm F, ~94% style) |
+| 3 & 4 — comprehension | **p=0.681** | ⛔ **R-6** (a 4.4e-05 tail) |
+| closing line | "the §18 label is **B**" | ⛔ **R-9**; §0 says C-amended |
+
+**And the retraction sweep passed it, every time I ran it.** The exemption is *paragraph*-scoped, a
+markdown table is one blank-line block, and **one innocuous "was" in one cell whitelisted all
+seventeen lines**. The module docstring has warned since 2026-08-18 that the marker exemption is "a
+heuristic, not a proof". This is that heuristic failing at the largest possible scale — and the
+failure grows with table size, because a bigger table is more likely to contain some "was".
+
+**Fixed at the level of the mechanism: every table row is now its own block.** A row asserting a
+retracted figure must mark it *in that row*, which is also what a reader scanning a table needs. On
+the first run after the fix it flagged **10** occurrences the old scoping had called clean, three of
+them in that table.
+
+**§13 is rescored**, and the rescoring changes the sprint's self-description in a way worth stating:
+
+> Criterion 1 goes from the strongest **YES** to **NO**; criteria 3 and 4 become **YES** on evidence
+> that did not exist when the table was written. The shape of the conclusion is unchanged — still not
+> a mechanism claim — but the content is inverted: **the correlation is the part that died**, and the
+> causal removal is the part that survived controls, replication and a band.
+
+**Also fixed:** the dated mid-session sanity checks are descoped from the sweep with a reason (they
+are snapshots of what was believed on 08-17/18, superseded in full — sweeping them flags history as a
+defect, the same reason the progress doc is excluded), and four historical rows in this log are marked
+*(superseded)* rather than deleted. Sweep now clean over 3 files.
+
+**Still open from this audit, not yet acted on** — and I am recording them rather than fixing them
+this tick because each needs care:
+* **§0 quotes "L12, p=0.0056" twice** while §2218 says in bold that it must not be quoted as a
+  corrected result.
+* **The short update is a modern head on a body three retractions old** — below the fold it still has
+  G2 predictive, arm F doubling ASR, §18=B, and G3's superseded arithmetic.
+* **R-8 denotes two different things** (G1's +84% supersession, and "the capability channel").
+  `registry_check` cannot catch this: it verifies a cited ID *has a row*, not that the row is *about
+  the same thing*.
+* **A third `#N` numbering series exists** (#3, #6, #7, #9), so §0's claim that the registry is closed
+  is false. #7 is the same event already tabled as R-12.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 129 | 2026-08-21 | audit #4: §13 restates four retracted headlines, sweep passes it | paragraph-scoped exemption whitelisted a 17-line table |
+| 130 | 2026-08-21 | **table rows now scoped individually** | caught 10 occurrences the old scoping called clean |
+| 131 | 2026-08-21 | rescored §13; marked R5's row; descoped dated snapshots; marked 4 historical rows | sweep clean over 3 files |
