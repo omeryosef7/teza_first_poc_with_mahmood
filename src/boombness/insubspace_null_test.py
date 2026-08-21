@@ -13,10 +13,14 @@ The surviving headline claim is "removing `d_surface` raises AdvBench ASR, repli
 layers". Those four layers were tested against the WEAK null only. This script applies the hard one
 to all of them, and reports both side by side so the difference is visible rather than asserted.
 
-JUDGE REPLICATES. L6/L10/L12 have two independent judge passes over byte-identical generations
-(`_0`, `_1`). The null uses ONE pass (`_0`) and reports the other as a robustness row. Pooling both
-would put 8 near-duplicate values in a 4-value null and shrink its sd -- anti-conservative in exactly
-the direction that would flatter the headline, which is the mistake this script exists to undo.
+JUDGE SHARDS ARE HALVES, NOT REPLICATES -- AND THE FIRST VERSION OF THIS SCRIPT GOT THAT WRONG.
+The `_0` / `_1` suffixes on the L6/L10/L12 angle judge runs are `--offset 0 --limit 248` and
+`--offset 248`: **disjoint halves of the same 495 prompts**, verified overlap 0. The first version
+read them as independent judge passes and used `_0` alone, which measured the NULL on 248 prompts
+while measuring the ARM on all 495 -- a population mismatch, and the population-transfer bug class
+this repo has now hit four times. Every delta here is therefore computed on the INTERSECTION of the
+prompt ids actually scored in every run entering that layer's comparison, and `n` is reported per
+layer so a mismatch is visible rather than silent. Shards are unioned back to the full 495 first.
 """
 from __future__ import annotations
 
@@ -35,16 +39,36 @@ JUDGE = "outputs/boombness/judge"
 
 
 def _rows(pat):
+    """Load a judge run, UNIONING shards.
+
+    A judge glob may resolve to several runs that are disjoint `--offset/--limit` shards of one
+    population (`angJ6k1_0` + `angJ6k1_1` = 248 + 247 = 495). Taking `hits[-1]` -- the old behaviour
+    -- silently kept one shard and dropped the rest. Union by prompt_id; if two shards genuinely
+    overlap on an id, that is a re-judge and the later run wins, which is reported.
+    """
     hits = sorted(glob.glob(pat))
     if not hits:
         return None, None
-    d = hits[-1]
-    return d, {r["prompt_id"]: r for r in read_jsonl(os.path.join(d, "results.jsonl"))
-               if r.get("strongreject_score") is not None}
+    merged, dupes = {}, 0
+    for d in hits:
+        f = os.path.join(d, "results.jsonl")
+        if not os.path.exists(f):
+            continue
+        for r in read_jsonl(f):
+            if r.get("strongreject_score") is None:
+                continue
+            if r["prompt_id"] in merged:
+                dupes += 1
+            merged[r["prompt_id"]] = r
+    label = os.path.basename(hits[-1]) if len(hits) == 1 else \
+        f"{len(hits)} shards: {', '.join(os.path.basename(h) for h in hits)}"
+    if dupes:
+        label += f" [{dupes} overlapping ids, later run wins]"
+    return label, merged
 
 
-def _delta(base, arm, thr):
-    ids = sorted(set(base) & set(arm))
+def _delta(base, arm, thr, ids=None):
+    ids = sorted(set(base) & set(arm)) if ids is None else sorted(ids)
     if not ids:
         return None
     suc = lambda r: 1 if r["strongreject_score"] >= thr else 0
@@ -56,9 +80,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--baseline", default=f"{JUDGE}/abg_base_*")
     ap.add_argument("--threshold", type=float, default=0.5)
-    ap.add_argument("--replicate", choices=["0", "1"], default="0",
-                    help="which independent judge pass over the SAME generations to use for the "
-                         "null. L6/L10/L12 have two; L8 has one and ignores this.")
+    ap.add_argument("--angles", type=lambda s: [int(x) for x in s.split(",")],
+                    default=[0, 1, 2, 3],
+                    help="angle indices forming the null at each layer")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -69,10 +93,10 @@ def main() -> int:
 
     # layer -> (arm glob, random-control glob, angle glob template)
     LAYERS = {
-        6:  (f"{JUDGE}/abgL6_B_*",   f"{JUDGE}/abgL6_Bctrl_*",  f"{JUDGE}/angJ6k{{k}}_%s_*" % args.replicate),
+        6:  (f"{JUDGE}/abgL6_B_*",   f"{JUDGE}/abgL6_Bctrl_*",  f"{JUDGE}/angJ6k{{k}}_*"),
         8:  (f"{JUDGE}/abg_B_*",     f"{JUDGE}/abg_Bctrl_*",     f"{JUDGE}/angJ8k{{k}}_*"),
-        10: (f"{JUDGE}/abgL10_B_*",  f"{JUDGE}/abgL10_Bctrl_*", f"{JUDGE}/angJ10k{{k}}_%s_*" % args.replicate),
-        12: (f"{JUDGE}/abgL12_B_*",  f"{JUDGE}/abgL12_Bctrl_*", f"{JUDGE}/angJ12k{{k}}_%s_*" % args.replicate),
+        10: (f"{JUDGE}/abgL10_B_*",  f"{JUDGE}/abgL10_Bctrl_*", f"{JUDGE}/angJ10k{{k}}_*"),
+        12: (f"{JUDGE}/abgL12_B_*",  f"{JUDGE}/abgL12_Bctrl_*", f"{JUDGE}/angJ12k{{k}}_*"),
     }
 
     out = {}
@@ -81,15 +105,32 @@ def main() -> int:
         if not arm:
             out[f"L{L}"] = {"status": "arm judge run NOT FOUND", "glob": armpat}
             continue
-        rec = {"arm_run": os.path.basename(ad or ""), "arm": _delta(base, arm, args.threshold)}
 
-        nulls, missing = {}, []
-        for k in range(4):
-            _, a = _rows(angtpl.format(k=k))
+        # PASS 1 -- gather every run that will enter this layer's comparison, and intersect their
+        # prompt ids. Comparing an arm scored on 495 against a null scored on 248 is the mismatch
+        # that made the first version of this table wrong.
+        angs, missing = {}, []
+        for k in args.angles:
+            lab, a = _rows(angtpl.format(k=k))
             if a:
-                nulls[f"angle{k}"] = _delta(base, a, args.threshold)["delta"]
+                angs[k] = (lab, a)
             else:
                 missing.append(angtpl.format(k=k))
+        common = set(base) & set(arm)
+        for _, a in angs.values():
+            common &= set(a)
+        rec = {"arm_run": ad, "n_common": len(common),
+               "n_arm_scored": len(set(base) & set(arm)),
+               "angle_runs": {f"angle{k}": lab for k, (lab, _) in angs.items()},
+               "angle_n_scored": {f"angle{k}": len(set(base) & set(a))
+                                  for k, (_, a) in angs.items()}}
+        rec["population_matched"] = (len(common) == rec["n_arm_scored"]
+                                     and all(v == len(common)
+                                             for v in rec["angle_n_scored"].values()))
+        # PASS 2 -- every delta on the SAME ids.
+        rec["arm"] = _delta(base, arm, args.threshold, ids=common)
+        nulls = {f"angle{k}": _delta(base, a, args.threshold, ids=common)["delta"]
+                 for k, (_, a) in angs.items()}
         rec["in_subspace_null"] = {"deltas": nulls, "missing": missing}
         if len(nulls) >= 3:
             v = list(nulls.values())
@@ -126,8 +167,7 @@ def main() -> int:
                     "cell-mean subspace, at each layer where the effect was claimed to replicate?",
         "why": "R-23: the sprint's significance came from a 4096-d random band (sd 0.0026). The "
                "in-subspace null is ~5x wider and is the null that matches the intervention.",
-        "judge_replicate_used": args.replicate,
-        "judge_replicate_policy": "one pass per angle; pooling near-duplicate replicates would "
+        "shard_policy": "judge shards (_0/_1) are DISJOINT HALVES and are unioned; pooling near-duplicate replicates would "
                                   "shrink the null's sd in the direction that flatters the headline",
         "inference_caveat": "The null has n=4, so sd is estimated from four points: the ratio is a t with df=3, not a z, and the assumption-free rank test cannot fall below 1/5=0.20 with four controls. More angle draws are the fix; quoting the z alone would dress a 4-point null as a precise one.",
         "threshold": args.threshold,

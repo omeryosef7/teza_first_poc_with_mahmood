@@ -5163,3 +5163,56 @@ identification, not generality. And `d_context`'s much lower split ceiling (0.83
 | 165 | 2026-08-21 | fixed §2.6's name claim, E12's stale ⏳ row, `d_context`'s misquoted ceiling | report self-consistent with R-24 |
 | 166 | 2026-08-21 | declined 4 audit items inverted by the retraction | "one concept pair" is true again; not changed |
 | 167 | 2026-08-21 | disclosed `d_naive` 0.6224 and the §14-D `d_context` confound | 2×2 buys identification, not generality |
+
+## C-11 — I committed the hard-null table with a population mismatch. Self-caught, corrected.
+
+Tick 2026-08-21. Last tick I published the in-subspace null table and described the `_0` / `_1`
+suffixes on the L6/L10/L12 angle judge runs as **"two independent judge passes over byte-identical
+generations"**. They are not. Their configs read `--offset 0 --limit 248` and `--offset 248`:
+**disjoint halves of the same 495 prompts**, measured overlap **0**.
+
+**What that broke.** `_delta` intersects the baseline and the arm, so with `_0` alone the **null** was
+computed on **248** prompts while the **arm** was computed on all **495**. Comparing an effect measured
+on one population against a null measured on a different, smaller one is the **population-transfer**
+bug class — the fourth instance in this repo, and this time I wrote it, reviewed it, and pushed it.
+
+**How it surfaced.** Not from re-reading my own code. I was preparing to judge six new L6 runs and
+opened an existing judge `config.json` to copy its arguments; `limit: 248, offset: 0` was sitting in
+it. The lesson I want recorded is that the "replicate" reading was never checked against an artifact —
+I inferred it from a filename suffix, which is **address-by-incidental-property** again: `_0`/`_1`
+looked like replicate indices, so I treated them as replicate indices.
+
+**The fix.** `_rows()` now **unions shards** by `prompt_id` instead of taking `hits[-1]` (which
+silently kept one half and dropped the other), and each layer now computes every delta on the
+**intersection of ids scored in every run entering that comparison**, with `n_common`,
+`n_arm_scored`, `angle_n_scored` and a `population_matched` boolean written into the artifact so a
+future mismatch is visible rather than silent. All four layers now report `n_common = 495`,
+`population_matched = true`. The misnamed `--replicate` flag is gone.
+
+**Corrected table** (`outputs/boombness/insubspace_null_by_layer.json`, all n=495):
+
+| layer | arm Δ | flips | in-subspace null | t(3) | p | published last tick |
+|---|---|---|---|---|---|---|
+| L6 | +0.0182 | 9 | +0.0035 ± 0.0051 | **2.90** | **0.0625** | t 3.07, p 0.054 |
+| L8 | +0.0424 | 21 | +0.0010 ± 0.0128 | 3.23 | 0.0483 | unchanged (L8 angles were never sharded) |
+| L10 | +0.0323 | 16 | −0.0040 ± 0.0029 | **12.73** | 0.0010 | t 9.16 |
+| L12 | +0.0364 | 18 | +0.0035 ± 0.0056 | **5.90** | 0.0097 | t 5.82 |
+
+**The conclusion is unchanged in direction and slightly worse for L6.** The arm still exceeds the
+null at all four layers; L6 still fails p<0.05 and now fails it more clearly (0.0625 vs 0.054). The
+"two independent judge passes" robustness row I reported last tick **was not a robustness check at
+all** — it was the same measurement on the other half of the prompts — and is withdrawn. Real judge
+replicates exist elsewhere in the sprint but not for these angle runs.
+
+**Still true and worth keeping separate from the error:** the six new L6 draws generated cleanly (495
+rows each, `DONE.json` present, six distinct `gens.jsonl` hashes — R-12's collapse mode checked and
+absent), and the never-exercised `KofN` spec was verified on CPU before the GPU spend, including that
+`k=3of12` ≡ `k=1of4` at cos 1.0000 so the existing four are reused rather than repeated.
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 168 | 2026-08-21 | six L6 dense-angle jobs 772444-772449 | all COMPLETED, 495 rows each, 6 distinct gens hashes |
+| 169 | 2026-08-21 | opened a judge config to copy args; found `limit 248 / offset 248` | `_0`/`_1` are **halves**, not replicates — last tick's table had a population mismatch |
+| 170 | 2026-08-21 | fixed `_rows` to union shards; added `population_matched` + `n_common` | all four layers now n=495, matched |
+| 171 | 2026-08-21 | recomputed; filed **C-11** | L6 t 3.07→**2.90** (p 0.0625), L10 9.16→**12.73**, L12 5.82→**5.90** |
+| 172 | 2026-08-21 | submitted judging 772496-772501 for the six new L6 draws | will take L6's null from 4 to 12 angles |
