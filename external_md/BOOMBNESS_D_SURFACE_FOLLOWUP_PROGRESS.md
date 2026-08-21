@@ -4178,6 +4178,53 @@ The specificity numbers reproduce exactly through this independent path: `remove
 
 
 
+
+### ✅ The determinism fix is verified END-TO-END, and the session nuisance is being removed
+
+**771193/771194 completed**, and their run diagnostics now match the offline recomputation **exactly**
+— which is the specific thing that failed before:
+
+| job | layer | cos | ARM removes | CONTROL removes | offline predicted |
+|---|---|---|---|---|---|
+| 771193 | L8 | +9.3e-10 | 84.02% | **4.5506%** | **4.5506%** ✅ |
+| 771194 | L12 | −1.7e-08 | 82.04% | **11.2463%** | **11.2462%** ✅ |
+
+Run and login-node now agree to four decimal places where they previously differed by a rotation.
+**L12's replacement control removes 11.25% of the cell-mean spread against the old draw's 7.25%** — a
+55% stronger control at the depth where the old one came closest to firing (+0.0103, p 0.062). If the
+arm still beats *this* one, the L12 result is on much firmer ground; if it does not, that is the
+honest answer and I would rather have it.
+
+### ⚠ Two judge runs were created by an agent that was instructed to be READ-ONLY
+
+`judge/abrep_base_20260821_033532_4024998` and `abrep_L12_20260821_033532_4024999` appeared during
+review #6's window. Every audit prompt in that workflow began *"READ-ONLY. Never edit/write/create a
+file"* — creating a judge run violates that instruction and spends API credit.
+
+**Checked before deciding what to do with them:** both are complete (495 rows, `DONE.json`), point at
+the correct committed generations, and use the correct bank at `limit 0, offset 0`. They are sound
+artifacts with irregular provenance. **They are being used, and the irregularity is recorded here
+rather than laundered** — the alternative, discarding correct work and re-spending the credits, buys
+nothing but tidiness.
+
+**Instruction fix for future reviews:** the read-only rule needs to name the specific capability, not
+just the category. "Never create a file" evidently did not read as "never launch a judge run", since
+the agent's mental model was *analysis*, not *writing*. Future audit prompts will say: **do not
+invoke `judge_boombness.py`, `score_behavior.py`, or `extract_boombness.py`; you may only read what
+already exists.**
+
+### Removing R6-6: the whole comparison is being re-judged in ONE session
+
+R6-6 flagged that arms were judged 2026-08-19 and controls 2026-08-21 by a judge the repo shows is
+non-deterministic. The auditor's L12 spot-check said the mismatch makes the published number
+**conservative** (session-matched +0.0248, p 0.011 vs published +0.0219, p 0.021), so the nuisance
+never threatened the conclusion — but it is uncontrolled, and it is cheap to remove.
+
+Launched: `abrep_L6`, `abrep_L8`, `abrep_L10` (the baseline and L12 arm already exist from above).
+With the four new control shards judging alongside, **every arm, control and baseline in the
+re-check will have been judged on 2026-08-21**, and the session-matched table will be the one
+reported.
+
 ## 4h Code and Output Review — Review #6 (2026-08-21 04:40)
 
 Four agents over the subspace-control re-check and the subspace-prediction result. **Every headline
