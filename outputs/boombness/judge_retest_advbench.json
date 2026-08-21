@@ -1,0 +1,39 @@
+{
+  "judge_a": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abg_base_20260819_011714_1480836",
+  "judge_b": "/home/sharifm/students/omeryosef/first_poc/teza_first_poc_with_mahmood/outputs/boombness/judge/abrep_base_20260821_033532_4024998",
+  "threshold": 0.5,
+  "subsets": {
+    "all_common": {
+      "n": 495,
+      "asr_a": 0.06464646464646465,
+      "asr_b": 0.06666666666666667,
+      "abs_swing_pp": 0.20202020202020202,
+      "n_sign_flips": 1,
+      "frac_rows_score_changed": 0.00202020202020202,
+      "mean_abs_score_delta": 0.00202020202020202,
+      "median_abs_score_delta": 0.0
+    }
+  },
+  "generation_identity": {
+    "n_compared": 495,
+    "n_byte_identical": 495,
+    "n_different": 0,
+    "verdict": "JUDGE noise \u2014 generations are byte-identical, so re-running generation cannot reduce it; only judge replicates can"
+  },
+  "provenance": {
+    "argv": [
+      "src/boombness/judge_retest.py",
+      "--judge-a",
+      "outputs/boombness/judge/abg_base_20260819_011714_1480836",
+      "--judge-b",
+      "outputs/boombness/judge/abrep_base_*",
+      "--score-a",
+      "outputs/boombness/score_behavior/ab_base_2026*",
+      "--score-b",
+      "outputs/boombness/score_behavior/ab_base_2026*",
+      "--out",
+      "outputs/boombness/judge_retest_advbench.json"
+    ],
+    "git_commit": "e664a3368d3a7fd9f198b5710742a96014e7635a"
+  }
+}

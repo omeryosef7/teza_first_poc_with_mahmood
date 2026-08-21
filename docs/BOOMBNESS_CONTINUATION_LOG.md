@@ -3977,3 +3977,47 @@ claims the evidence was never asked to support.
 | 84 | 2026-08-21 | resolved the band disagreement from the layer-profile artifact | **~L6–L12**; L13/L14 not significant; short update fixed |
 | 85 | 2026-08-21 | corrected the `d_context` pooled-vs-clustered estimand switch | +0.0045 CI [−0.0066, +0.0157] p=0.399; conclusion unchanged |
 | 86 | 2026-08-21 | wrote `generation_change.py`; **reversed my own withdrawal** of 34.9% | both figures reproduce exactly; sourced rather than deleted |
+
+## ★ The headline replicates under an independent judge, and its noise floor is 10× smaller than I said
+
+Tick 2026-08-21. Two ticks ago I disclosed the judge test–retest floor and wrote that the AdvBench
+headline "sits at roughly 1.5× this floor". That used the **bank's** floor as a proxy for a population
+it does not describe — an instrument-transfer assumption of exactly the kind this sprint keeps
+retracting. So I measured it directly instead, which cost two judge runs and no GPU.
+
+**The floor is population-specific:**
+
+| population | n | swing | sign flips |
+|---|---|---|---|
+| sprint bank, doublespeak | 270 | 1.9 pp | 27 |
+| **AdvBench heldout** | **495** | **0.2 pp** | **1 of 495** |
+
+Obvious in hindsight: AdvBench prompts are unambiguously harmful and the judged goal **is** the
+prompt, so the rubric has a well-posed task. On the bank the goal is a substituted counterfactual and
+scores sit near the threshold, which is where a sampled judge flips.
+
+**And the headline reproduces essentially exactly under an independent judge run** — same 495
+generations (byte-identical), fresh sampling, paired binary ASR delta, domain-clustered G=16:
+
+| judge run | Δ ASR | CI95 | bootstrap frac ≤ 0 |
+|---|---|---|---|
+| original | **+0.0364** | [+0.0202, +0.0533] | 0.0001 |
+| **independent replicate** | **+0.0364** | [+0.0200, +0.0539] | 0.0000 |
+
+So the headline sits at roughly **18×** its own population's floor, not 1.5×. The report's disclosure
+now carries the measured numbers and **explicitly corrects its own first draft**, since the 1.5×
+figure was mine and had already been published.
+
+**The general lesson, which is the third instance this week.** A property measured on one population
+was carried to another without test: R-13's artifact was Qwen3-specific and I exempted "the Llama
+results" (R-21); §18 point 3 sourced a bank effect to external sets that could not see it; and here I
+sourced a bank noise floor to AdvBench. Each time the *direction* of the error differed — twice it
+made things look worse, once better — which is why the habit rather than the conclusion is the thing
+to fix. **Measuring the floor on the population you are quoting costs one command.**
+
+| # | time | action | outcome |
+|---|---|---|---|
+| 87 | 2026-08-21 | ran two independent judge replicates on the AdvBench headline pair (API only, no GPU) | 495 rows each |
+| 88 | 2026-08-21 | measured the judge floor on AdvBench itself | **0.2 pp, 1 flip in 495** — 10× smaller than the bank's |
+| 89 | 2026-08-21 | re-derived the headline under the replicate judge | **+0.0364 both runs**, CIs nearly identical — robust to judge sampling |
+| 90 | 2026-08-21 | corrected my own published "1.5× the floor" to the measured **~18×** | third instance this week of transferring a measurement across populations |

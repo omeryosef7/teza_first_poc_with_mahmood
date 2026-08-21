@@ -2140,11 +2140,36 @@ judge. Three consequences follow, and they are not all bad news:
    of 60. The swing falls to ~2 pp as n grows, exactly as sampling noise should — quoting only 6.7 pp
    overstates the problem as surely as quoting only 1.1 pp hides it.
 
-**What it does threaten:** any single-arm ASR quoted to better than ~2 pp, and any effect of that
-size resting on one judge run. The AdvBench headline (+0.0305, +0.0322) is at roughly 1.5× this
-floor on its own population, which is thin enough to state rather than bury. **What it does not
-threaten:** the topical-outcome results, whose separations are 0.4–0.6 — an order of magnitude above
-this floor.
+**The floor is population-specific, and on the headline's own population it is ~10× smaller**
+(measured 2026-08-21, `outputs/boombness/judge_retest_advbench.json`). An independent judge run of the
+same 495 AdvBench baseline generations gives:
+
+| population | n | swing | sign flips |
+|---|---|---|---|
+| sprint bank, doublespeak | 270 | 1.9 pp | 27 |
+| **AdvBench heldout** | **495** | **0.2 pp** | **1** |
+
+That is expected in hindsight: AdvBench prompts are unambiguously harmful and the judged goal **is**
+the prompt, so the rubric has a well-posed task; on the bank the goal is a substituted counterfactual
+and scores sit near the threshold. **And the headline effect reproduces under the independent judge
+run essentially exactly** — paired binary ASR delta, L12 arm vs baseline, domain-clustered over
+G=16:
+
+| judge run | Δ ASR | CI95 | bootstrap frac ≤ 0 |
+|---|---|---|---|
+| original | **+0.0364** | [+0.0202, +0.0533] | 0.0001 |
+| **independent replicate** | **+0.0364** | [+0.0200, +0.0539] | 0.0000 |
+
+(That binary Δ is a different statistic from §7f's +0.0322, which is computed on the continuous
+score; both are reported rather than conflated.)
+
+⚠ **Correcting this section's own first draft.** It previously said the AdvBench headline "is at
+roughly 1.5× this floor" — that used the **bank** floor as a proxy for a population it does not
+describe. Measured directly, the headline sits at roughly **18×** its own population's floor.
+
+**What the floor does threaten:** single-arm ASR on the **bank** quoted finer than ~2 pp, and any
+bank effect of that size resting on one judge run. **What it does not threaten:** the AdvBench
+headline, or the topical-outcome results whose separations are 0.4–0.6.
 
 ### Specific limits a reader should carry
 - **One model, one concept pair, one judge.** Llama-3.1-8B, carrot↔bomb, StrongReject/`gpt-4o-mini`.
