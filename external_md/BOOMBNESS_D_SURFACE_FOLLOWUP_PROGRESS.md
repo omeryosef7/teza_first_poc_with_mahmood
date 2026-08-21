@@ -5067,7 +5067,16 @@ reported.
 | α 1.83 | 0.125 | 6 | 0.580 | 0.958 | 0.420 | 0.874 | 0.006 | ⛔ short |
 | α 3.66 | 0.250 | 6 | 0.535 | 0.974 | 0.465 | 0.903 | 0.005 | ⛔ short |
 | **α 7.33** | **0.500** | **14** | **0.135** | **0.990** | **0.865** | **0.940** | **0.004** | ✅ **OK** |
+| **α 10.99** | **0.750** | **17** | **0.137** | **0.992** | **0.863** | **0.750** | **0.187** | ✅ **OK** |
 | α 14.65 | 1.000 | 419 | 0.004 | 1.000 | 0.996 | 0.237 | 0.704 | ⛔ collapse |
+
+**The window is TWO points wide, and the collapse is sharp.** α 10.99 completed after the section
+below was written and also passes. Tracking `uniq_word_ratio` across the top of the range:
+**0.940 → 0.750 → 0.237** at 0.50 → 0.75 → 1.00 of the gap dose, with `trigram_repeat`
+**0.004 → 0.187 → 0.704**. Both are still inside their thresholds (≥0.45, ≤0.3) at 3/4 dose and both
+blow through them by full dose: **the entire collapse happens in the last quarter of the range.**
+α 10.99 is usable but visibly degrading, so **α 7.33 is the arm to test on and α 10.99 is a
+replication with a known handicap**, not an equal second sample.
 
 ### The mechanism: three regimes, not two
 
