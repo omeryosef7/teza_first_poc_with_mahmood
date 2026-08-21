@@ -46,6 +46,7 @@ import math
 import os
 import random
 import statistics as st
+import zlib
 import subprocess
 import sys
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -226,6 +227,14 @@ def family_bootstrap(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, fl
     if len(fams) < 3:
         return {"degenerate": True, "reason": f"only {len(fams)} families; a family bootstrap "
                                               f"needs >=3 or the interval is degenerate"}
+    # GUARD (review #10). The `len(fams) < 3` check above catches the ALL-COLLAPSED failure
+    # (every prompt in one family). It cannot catch the ALL-UNIQUE failure -- one family per
+    # prompt -- which silently degrades this into an iid bootstrap and UNDERSTATES the SE by
+    # ~1.7x here. That is the failure that actually shipped, so it is now an explicit error.
+    if len(fams) >= len(pids):
+        raise SystemExit(f"[phaseD] family bootstrap has {len(fams)} families for {len(pids)} "
+                         f"prompts -- one family per prompt is an iid bootstrap, not a family "
+                         f"bootstrap. Check the family key.")
     rng = random.Random(seed)
     reps: List[float] = []
     for _ in range(n_boot):
@@ -249,11 +258,25 @@ def family_bootstrap(metrics: Dict[str, Dict[str, float]], outcome: Dict[str, fl
     reps.sort()
     lo = reps[int(0.025 * (len(reps) - 1))]
     hi = reps[int(0.975 * (len(reps) - 1))]
-    return {"n_families": len(fams), "n_replicates": len(reps),
+    centre = st.mean(reps)
+    # Sign-aware: count replicates that cross zero AGAINST the observed sign. Hard-coding
+    # "<= 0" reported 1.0 for d_inter (mean rho -0.27, every replicate negative) -- i.e. "no
+    # evidence" for the strongest effect in the table, with the sign flipped. Review #10.
+    opposite = (sum(1 for r in reps if r <= 0.0) if centre >= 0
+                else sum(1 for r in reps if r >= 0.0))
+    return {"n_families": len(fams), "n_prompts": len(pids), "n_replicates": len(reps),
             "se_family_bootstrap": st.pstdev(reps) if len(reps) > 1 else None,
             "ci95_percentile": [lo, hi],
-            "n_replicates_le_zero": sum(1 for r in reps if r <= 0.0),
-            "one_sided_p_le_zero": (sum(1 for r in reps if r <= 0.0) + 1) / (len(reps) + 1)}
+            "n_replicates_crossing_zero_against_observed_sign": opposite,
+            "evidence_frac_crossing_zero": opposite / len(reps),
+            "scope": "domains are held FIXED (families are resampled globally, and all domains "
+                     "appear in every replicate), so this prices WITHIN-domain sampling error. "
+                     "The domain-clustered SE prices BETWEEN-domain heterogeneity of rho. The two "
+                     "are different variance components and neither is a corrected version of the "
+                     "other -- do not compare them directly (review #10).",
+            "not_a_p_value": "the bootstrap distribution is centred on the observed estimate, not "
+                             "on the null, so the crossing fraction is CI-inversion evidence and "
+                             "is sign-aware; it is not a permutation p"}
 
 
 def load_cfg(run_dir: str) -> Optional[dict]:
@@ -378,7 +401,11 @@ def main() -> None:
 
     domain = {r["prompt_id"]: str(r.get("domain")) for r in ex}
     level = {r["prompt_id"]: level_of(r) for r in ex}
-    family = {r["prompt_id"]: str(r.get("family_id")) for r in ex}
+    # `family_id` is a 9-part pipe-delimited CELL key and is UNIQUE PER PROMPT (1800 ids for
+    # 1800 prompts). Using it whole made the "family bootstrap" an iid prompt bootstrap -- the
+    # exact defect it existed to correct. The family is the first three parts
+    # (domain|split|stem): 120 keys x 15 levels. Found by review #10.
+    family = {r["prompt_id"]: "|".join(str(r.get("family_id")).split("|")[:3]) for r in ex}
     split = {r["prompt_id"]: str(r.get("split")) for r in ex}
     block = {r["prompt_id"]: str(r.get("bank_block")) for r in ex}
     ex_pids = sorted({r["prompt_id"] for r in ex})
@@ -484,7 +511,8 @@ def main() -> None:
                 "dev": usable[best],
                 "HELDOUT_TEST": hel_res,
                 "HELDOUT_family_bootstrap": family_bootstrap(
-                    met, outcome, domain, family, hel, best, args.n_boot, args.seed),
+                    met, outcome, domain, family, hel, best, args.n_boot,
+                    args.seed + (zlib.crc32(f"{direction}|{oc}".encode()) % 100000)),
                 "HELDOUT_between_vs_within_level": between_vs_within_level(
                     met, outcome, level, hel, best),
                 "ALL_between_vs_within_level": between_vs_within_level(

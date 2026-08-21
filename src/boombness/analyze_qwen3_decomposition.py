@@ -82,6 +82,16 @@ def load_shards(prefix: str, tag: str, session: str) -> tuple:
     if dupes:
         raise SystemExit(f"[q3dec] {len(dupes)} duplicate prompt_id across shards of {tag} -- "
                          f"two judging batches almost certainly overlap; pin --session")
+    # GUARD (review #10). Nothing here checked how MANY shards were found. All 12 judge runs of
+    # this batch happened to stamp the same second; had they straddled a second boundary, this
+    # glob would have matched a subset, every arm would have lost the same rows, the prompt-id
+    # set-equality guard downstream would still pass, and every published number would come from
+    # half the bank with no warning. Distinct, ascending offsets are required.
+    if len(dirs) < 2:
+        raise SystemExit(f"[q3dec] only {len(dirs)} shard for {tag}; expected the batch's shards. "
+                         f"A --session stamp that straddles a second matches a subset silently.")
+    if len(set(offsets)) != len(offsets):
+        raise SystemExit(f"[q3dec] duplicate shard offsets {offsets} for {tag}")
     return rows, [os.path.relpath(d, REPO) for d in dirs], sorted(o for o in offsets if o is not None)
 
 FIELDS = ("malicious_at_0.5", "strongreject_score")
@@ -147,7 +157,10 @@ def main() -> None:
         "purpose": "decompose Qwen3's +0.3476 remove-both effect with the never-run d_surface-only "
                    "arm, and test super-additivity directly rather than by comparing p-values",
         "estimand": "paired per prompt vs the same baseline, domain-clustered (G-1 df)",
-        "session_matching": f"all arms from judging session {a.tag_prefix!r} (R6-6)",
+        "session_matching": f"all arms from judging session {a.session!r} "
+                            f"(tag prefix {a.tag_prefix!r}) -- R6-6",
+        "judging_session": a.session,
+        "expect_rows_per_arm": a.expect_rows,
         "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO,
                                      capture_output=True, text=True).stdout.strip(),
         "runs": runs,
@@ -241,7 +254,9 @@ def main() -> None:
         # CHECK 2 -- leave-one-domain-out.
         doms = sorted({str(r.get("domain")) for r in ds["base"].values()})
         loo = {d: excess_over(ds[t], bl[t], ds["base"], bl["base"], drop_domain=d) for d in doms}
-        loo = {d: v for d, v in loo.items() if v}
+        # NOTE: no `if v` filter here -- excess_over returns None only for <2 domains and LOO
+        # always leaves 5, so such a filter was structurally incapable of removing anything and
+        # `loo_n_domains_tested` was the constant 6 dressed as a check (review #10).
         entry["leave_one_domain_out"] = loo
         entry["loo_n_p_above_0.05"] = sum(1 for v in loo.values()
                                           if v["p_cl"] is not None and v["p_cl"] > 0.05)
@@ -258,7 +273,14 @@ def main() -> None:
             entry["proportional_transport_headroom"] = {
                 "k": k_head, "baseline_ds": b_ds, "baseline_bl": b_bl,
                 **(excess_over(ds[t], bl[t], ds["base"], bl["base"], k=k_head) or {}),
-                "note": "k = (1-base_ds)/(1-base_bl); corrects for unequal ceiling headroom"}
+                "note": "k = (1-base_ds)/(1-base_bl); corrects for unequal ceiling headroom",
+                "CANNOT_DOWNGRADE": "by construction base_ds >> base_bl on this bank, so k < 1 "
+                                    "always, and every arm here has delta_bl > 0. Therefore this "
+                                    "transport can ONLY raise the excess and lower its p. It is "
+                                    "NOT a robustness check -- it cannot fail. Reported as a "
+                                    "sensitivity direction only (review #10). k is also estimated "
+                                    "from the same data and treated as known, so the p is "
+                                    "anticonservative by an unquantified amount."}
         # REMOVED 2026-08-21: a second transport keyed to concept-word emission rate was written
         # here and DELETED after it returned k = 1.000 for every arm. `goal_used_concept_surface`
         # is True for 100% of rows in both conditions -- the topicality audit already established
